@@ -1,0 +1,5 @@
+rootProject.name = 'korge-root'
+
+include(
+        'korge',
+)
