@@ -1,6 +1,9 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korag.AG
+import com.soywiz.korim.format.displayImage
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.vfs.VfsFile
 
 class Texture(val base: Base, val x: Int = 0, val y: Int = 0, val width: Int = base.width, val height: Int = base.height) {
 	val x0: Float = (x).toFloat() / base.width.toFloat()
@@ -14,4 +17,13 @@ class Texture(val base: Base, val x: Int = 0, val y: Int = 0, val width: Int = b
 
 	class Base(val base: AG.Texture, val width: Int, val height: Int) {
 	}
+
+}
+
+suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
+	val tex = ag.createTexture()
+	//println("tex:$tex")
+	val bmp = this.readBitmap()
+	tex.upload(bmp, mipmaps = mipmaps)
+	return Texture(tex, bmp.width, bmp.height)
 }
