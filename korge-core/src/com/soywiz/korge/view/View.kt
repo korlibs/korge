@@ -100,4 +100,10 @@ open class View(val views: Views) {
 	fun localToGlobal(p: Point2d, out: Point2d = Point2d()): Point2d = globalMatrix.run { transform(p.x, p.y, out) }
 	fun hitTest(pos: Point2d): View? = hitTest(pos.x, pos.y)
 	open fun hitTest(x: Double, y: Double): View? = null
+
+	protected fun checkGlobalBounds(x: Double, y: Double, sLeft: Double, sTop: Double, sRight: Double, sBottom: Double): Boolean {
+		val lx = globalToLocalX(x, y)
+		val ly = globalToLocalY(x, y)
+		return lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
+	}
 }

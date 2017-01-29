@@ -10,14 +10,10 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
-		val lx = globalToLocalX(x, y)
-		val ly = globalToLocalY(x, y)
 		val sLeft = -tex.width * anchorX
 		val sTop = -tex.height * anchorY
 		val sRight = sLeft + tex.width
 		val sBottom = sTop + tex.height
-		val hits = lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
-		//println("GLOBAL($x, $y) - LOCAL($lx, $ly) - ($sLeft, $sTop, $sRight, $sBottom) : $hits")
-		return if (hits) this else null
+		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom)) this else null
 	}
 }

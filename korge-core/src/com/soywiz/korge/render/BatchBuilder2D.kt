@@ -16,7 +16,7 @@ class BatchBuilder2D(val ag: AG) {
 	private var indexPos = 0
 	private var quadCount = 0
 	private var currentTex: Texture.Base? = null
-	private var currentFiltering: Boolean = false
+	private var currentSmoothing: Boolean = false
 
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
@@ -47,6 +47,18 @@ class BatchBuilder2D(val ag: AG) {
 		addVertex(x1, y1, tex.x1, tex.y0, col1)
 		addVertex(x2, y2, tex.x1, tex.y1, col1)
 		addVertex(x3, y3, tex.x0, tex.y1, col1)
+
+		quadCount++
+
+		if (quadCount >= maxQuads) flush()
+	}
+
+	fun setStateFast(tex: Texture.Base, smoothing: Boolean) {
+		if (tex != currentTex || currentSmoothing != smoothing) {
+			flush()
+			currentTex = tex
+			currentSmoothing = smoothing
+		}
 	}
 
 	private val identity = Matrix2d()
@@ -57,11 +69,7 @@ class BatchBuilder2D(val ag: AG) {
 		val y0 = y.toDouble()
 		val y1 = (y + height).toDouble()
 
-		if (tex.base != currentTex || currentFiltering != filtering) {
-			flush()
-			currentTex = tex.base
-			currentFiltering = filtering
-		}
+		setStateFast(tex.base, filtering)
 
 		addQuadFast(
 			m.transformX(x0, y0).toFloat(), m.transformY(x0, y0).toFloat(),
@@ -70,11 +78,6 @@ class BatchBuilder2D(val ag: AG) {
 			m.transformX(x0, y1).toFloat(), m.transformY(x0, y1).toFloat(),
 			tex, col1
 		)
-		quadCount++
-
-		if (quadCount >= maxQuads) {
-			flush()
-		}
 	}
 
 	companion object {
@@ -86,7 +89,7 @@ class BatchBuilder2D(val ag: AG) {
 				SET(out, DefaultShaders.u_ProjMat * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
 			},
 			fragment = FragmentShader {
-				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["a"])
+				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["rgba"])
 			},
 			name = "BatchBuilder2D.Tinted"
 		)
@@ -109,7 +112,7 @@ class BatchBuilder2D(val ag: AG) {
 						vertexCount = indexPos,
 						uniforms = mapOf<Uniform, Any>(
 							DefaultShaders.u_ProjMat to mat,
-							DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentFiltering)
+							DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)
 						)
 					)
 				}

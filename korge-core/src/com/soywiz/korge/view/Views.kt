@@ -9,7 +9,7 @@ import com.soywiz.korio.inject.Singleton
 
 @Singleton
 class Views(val ag: AG, val injector: AsyncInjector) {
-	val mouse = Point2d()
+	val mouse = Point2d(-1000.0, -1000.0)
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 	fun container() = Container(this)
@@ -31,11 +31,4 @@ class Views(val ag: AG, val injector: AsyncInjector) {
 			}
 		}
 	}
-}
-
-fun View.dump(emit: (String) -> Unit = ::println) = this.views.dumpView(this, emit)
-fun View.dumpToString(): String {
-	val out = arrayListOf<String>()
-	dump { out += it }
-	return out.joinToString("\n")
 }

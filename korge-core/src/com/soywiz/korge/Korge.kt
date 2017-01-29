@@ -8,6 +8,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.sceneContainer
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
 import com.soywiz.korio.inject.AsyncDependency
@@ -25,7 +26,11 @@ object Korge {
 	operator fun invoke(module: Module, args: Array<String> = arrayOf()) = EventLoop.main {
 		val injector = AsyncInjector()
 
-		Application().frame("Game") {
+		Application().frame(module.title) {
+			if (module.icon != null) {
+				icon = ResourcesVfs[module.icon!!].readBitmap()
+			}
+
 			val canvas = agCanvas {
 			}
 
@@ -46,7 +51,7 @@ object Korge {
 			}
 
 			ag.onRender {
-				ag.clear(Colors.RED)
+				ag.clear(module.bgcolor)
 				views.render()
 			}
 

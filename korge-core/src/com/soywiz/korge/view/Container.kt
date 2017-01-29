@@ -23,7 +23,7 @@ open class Container(views: Views) : View(views) {
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
-		for (child in children) return child.hitTest(x, y) ?: continue
+		for (child in children.reversed()) return child.hitTest(x, y) ?: continue
 		return null
 	}
 }
