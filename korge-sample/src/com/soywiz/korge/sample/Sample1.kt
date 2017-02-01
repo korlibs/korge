@@ -2,8 +2,8 @@ package com.soywiz.korge.sample
 
 import com.soywiz.korag.AG
 import com.soywiz.korge.Korge
-import com.soywiz.korge.TextureResource
-import com.soywiz.korge.bitmapfont.BitmapFontRef
+import com.soywiz.korge.bitmapfont.BitmapFont
+import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -30,30 +30,29 @@ object Sample1Module : Module() {
 }
 
 class Sample1Scene(
-        @Path("korge.png") val korgeTex: TextureResource,
-        @Path("tiles.png") val tilesetTex: TextureResource,
-        @Path("font/font.fnt") val fontRef: BitmapFontRef,
-        val ag: AG,
+        @Path("korge.png") val korgeTex: Texture,
+        @Path("tiles.png") val tilesetTex: Texture,
+        @Path("font/font.fnt") val font: BitmapFont,
         injector: AsyncInjector
 ) : Scene(injector) {
     suspend override fun init() {
         super.init()
 
-        val image = views.image(korgeTex.tex, 0.5).apply {
+        val image = views.image(korgeTex, 0.5).apply {
             scale = 0.2
             rotation = Math.toRadians(-90.0)
             //smoothing = false
         }
         root += image
 
-        val tileset = TileSet(tilesetTex.tex, 32, 32)
+        val tileset = TileSet(tilesetTex, 32, 32)
 
         val tilemap = views.tileMap(Bitmap32(8, 8), tileset).apply {
             alpha = 0.8
         }
         root += tilemap
 
-        root += views.text(fontRef.font, "Hello world!").apply {
+        root += views.text(font, "Hello world!").apply {
             x = 100.0
             y = 100.0
         }

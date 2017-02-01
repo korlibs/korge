@@ -77,16 +77,3 @@ object Korge {
 @Singleton
 class ResourcesRoot {
 }
-
-@Prototype
-class TextureResource(
-	private val ag: AG,
-	private val path: Path
-) : AsyncDependency {
-	lateinit var tex: Texture
-
-	suspend override fun init() {
-		tex = ResourcesVfs[path.path].readTexture(ag)
-	}
-}
-

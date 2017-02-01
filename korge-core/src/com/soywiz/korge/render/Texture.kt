@@ -1,10 +1,17 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korag.AG
+import com.soywiz.korge.resources.Path
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.inject.AsyncDependency
+import com.soywiz.korio.inject.Loader
+import com.soywiz.korio.inject.LoaderClass
+import com.soywiz.korio.inject.Prototype
 import com.soywiz.korio.util.clamp
+import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 
+@LoaderClass(TextureLoader::class)
 class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: Int = base.width, val bottom: Int = base.height) {
 	val x = left
 	val y = top
@@ -40,4 +47,11 @@ suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
 	val bmp = this.readBitmap()
 	tex.upload(bmp, mipmaps = mipmaps)
 	return Texture(tex, bmp.width, bmp.height)
+}
+
+class TextureLoader(
+		private val ag: AG,
+		private val path: Path
+) : Loader<Texture> {
+	override suspend fun load() = ResourcesVfs[path.path].readTexture(ag)
 }

@@ -6,12 +6,14 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korim.geom.Matrix2d
-import com.soywiz.korio.inject.AsyncDependency
+import com.soywiz.korio.inject.Loader
+import com.soywiz.korio.inject.LoaderClass
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 
+@LoaderClass(BitmapFontLoader::class)
 class BitmapFont(
         val glyphs: Map<Int, Glyph>
 ) {
@@ -74,13 +76,9 @@ suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {
     //println(xml)
 }
 
-class BitmapFontRef(
+class BitmapFontLoader(
         private val path: Path,
         private val ag: AG
-) : AsyncDependency {
-    lateinit var font: BitmapFont; private set
-
-    suspend override fun init() {
-        font = ResourcesVfs[path.path].readBitmapFont(ag)
-    }
+) : Loader<BitmapFont> {
+    override suspend fun load() = ResourcesVfs[path.path].readBitmapFont(ag)
 }
