@@ -21,7 +21,7 @@ import com.soywiz.korui.frame
 import com.soywiz.korui.ui.agCanvas
 
 object Korge {
-	val VERSION = "0.5.2"
+	val VERSION = "0.5.3"
 
 	operator fun invoke(module: Module, args: Array<String> = arrayOf()) = EventLoop.main {
 		val injector = AsyncInjector()
