@@ -16,57 +16,57 @@ import com.soywiz.korui.frame
 import com.soywiz.korui.ui.agCanvas
 
 object Korge {
-	val VERSION = "0.5.4"
+    val VERSION = "0.5.5"
 
-	operator fun invoke(module: Module, args: Array<String> = arrayOf()) = EventLoop.main {
-		val injector = AsyncInjector()
+    operator fun invoke(module: Module, args: Array<String> = arrayOf()) = EventLoop.main {
+        val injector = AsyncInjector()
 
-		Application().frame(module.title) {
-			if (module.icon != null) {
-				icon = ResourcesVfs[module.icon!!].readBitmap()
-			}
+        Application().frame(module.title) {
+            if (module.icon != null) {
+                icon = ResourcesVfs[module.icon!!].readBitmap()
+            }
 
-			val canvas = agCanvas {
-			}
+            val canvas = agCanvas {
+            }
 
-			val ag = canvas.ag
-			injector.map(ag)
-			val views = injector.get<Views>()
+            val ag = canvas.ag
+            injector.map(ag)
+            val views = injector.get<Views>()
 
-			ag.onReady {
-				go {
-					val sc = views.sceneContainer()
-					views.root += sc
-					sc.changeToScene(module.mainScene)
+            ag.onReady {
+                go {
+                    val sc = views.sceneContainer()
+                    views.root += sc
+                    sc.changeToScene(module.mainScene)
 
-					animationFrameLoop {
-						canvas.repaint()
-					}
-				}
-			}
+                    animationFrameLoop {
+                        canvas.repaint()
+                    }
+                }
+            }
 
-			ag.onRender {
-				ag.clear(module.bgcolor)
-				views.render()
-			}
+            ag.onRender {
+                ag.clear(module.bgcolor)
+                views.render()
+            }
 
-			canvas.onClick {
-				views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
-			}
-			canvas.onOver {
-				views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
-			}
-		}
-	}
+            canvas.onClick {
+                views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+            }
+            canvas.onOver {
+                views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+            }
+        }
+    }
 
-	fun animationFrameLoop(callback: () -> Unit) {
-		var step: (() -> Unit)? = null
-		step = {
-			callback()
-			EventLoop.requestAnimationFrame(step!!)
-		}
-		step()
-	}
+    fun animationFrameLoop(callback: () -> Unit) {
+        var step: (() -> Unit)? = null
+        step = {
+            callback()
+            EventLoop.requestAnimationFrame(step!!)
+        }
+        step()
+    }
 }
 
 @Singleton

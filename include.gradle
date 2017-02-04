@@ -27,6 +27,8 @@ compileTestJava.options.encoding = 'UTF-8'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
+kotlin { experimental { coroutines 'enable' } }
+
 repositories {
     mavenLocal()
     maven { url "https://dl.bintray.com/kotlin/kotlin-eap-1.1" }

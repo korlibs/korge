@@ -3,11 +3,11 @@ package com.soywiz.korge.render
 import com.soywiz.korag.AG
 
 class RenderContext(
-	val ag: AG
+        val ag: AG
 ) {
-	val batch = BatchBuilder2D(ag)
+    val batch = BatchBuilder2D(ag)
 
-	fun flush() {
-		batch.flush()
-	}
+    fun flush() {
+        batch.flush()
+    }
 }

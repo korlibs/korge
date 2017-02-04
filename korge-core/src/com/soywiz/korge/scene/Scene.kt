@@ -3,16 +3,13 @@ package com.soywiz.korge.scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.inject.AsyncDependency
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.inject.Inject
 
-open class Scene(
-	val injector: AsyncInjector
-) : AsyncDependency {
-	lateinit var views: Views
-	lateinit var root: Container
+open class Scene : AsyncDependency {
+    @Inject lateinit var views: Views
+    lateinit var root: Container; private set
 
-	suspend override fun init() {
-		views = injector.get()
-		root = views.container()
-	}
+    suspend override fun init() {
+        root = views.container()
+    }
 }

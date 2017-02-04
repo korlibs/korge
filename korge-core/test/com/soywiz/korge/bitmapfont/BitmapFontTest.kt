@@ -6,7 +6,6 @@ import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.sync
 import com.soywiz.korio.vfs.ResourcesVfs
 import org.junit.Assert
-import org.junit.Assert.*
 import org.junit.Test
 
 class BitmapFontTest {

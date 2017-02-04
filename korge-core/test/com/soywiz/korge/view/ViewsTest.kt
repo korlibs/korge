@@ -9,26 +9,26 @@ import org.junit.Assert
 import org.junit.Test
 
 class ViewsTest {
-	val ag = LogAG()
-	val views = Views(ag, AsyncInjector())
-	val tex = Texture(views.ag.createTexture(), 10, 10)
+    val ag = LogAG()
+    val views = Views(ag, AsyncInjector())
+    val tex = Texture(views.ag.createTexture(), 10, 10)
 
-	@Test
-	fun name() = sync(EventLoopTest()) {
-		views.root += views.container().apply {
-			this += views.image(tex)
-		}
-		Assert.assertEquals(
-			"""
+    @Test
+    fun name() = sync(EventLoopTest()) {
+        views.root += views.container().apply {
+            this += views.image(tex)
+        }
+        Assert.assertEquals(
+                """
 				|Container(0)
 				| Container(1)
 				|  Image(2)
 			""".trimMargin(),
-			views.root.dumpToString()
-		)
-		views.render()
-		Assert.assertEquals(
-			"""
+                views.root.dumpToString()
+        )
+        views.render()
+        Assert.assertEquals(
+                """
 				createTexture():0
 				createBuffer(VERTEX):0
 				Buffer[0].afterSetMem(mem[64])
@@ -43,7 +43,7 @@ class ViewsTest {
 				Buffer[1].close()
 				Buffer[0].close()
 			""".trimIndent(),
-			ag.getLogAsString()
-		)
-	}
+                ag.getLogAsString()
+        )
+    }
 }

@@ -1,6 +1,5 @@
 package com.soywiz.korge.sample
 
-import com.soywiz.korag.AG
 import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.render.Texture
@@ -17,7 +16,6 @@ import com.soywiz.korio.async.sleepNextFrame
 import com.soywiz.korio.async.tween.Easing
 import com.soywiz.korio.async.tween.rangeTo
 import com.soywiz.korio.async.tween.tween
-import com.soywiz.korio.inject.AsyncInjector
 
 object Sample1 {
     @JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)
@@ -32,9 +30,8 @@ object Sample1Module : Module() {
 class Sample1Scene(
         @Path("korge.png") val korgeTex: Texture,
         @Path("tiles.png") val tilesetTex: Texture,
-        @Path("font/font.fnt") val font: BitmapFont,
-        injector: AsyncInjector
-) : Scene(injector) {
+        @Path("font/font.fnt") val font: BitmapFont
+) : Scene() {
     suspend override fun init() {
         super.init()
 

@@ -1,22 +1,21 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korag.log.LogAG
-import com.soywiz.korge.service.Ads
 import org.junit.Assert
 import org.junit.Test
 
 class BatchBuilderTest {
-	val ag = LogAG(16, 16)
-	val bb = BatchBuilder2D(ag)
+    val ag = LogAG(16, 16)
+    val bb = BatchBuilder2D(ag)
 
-	@Test
-	fun simpleBatch() {
-		val tex = Texture(ag.createTexture(), 100, 100)
-		bb.addQuad(tex, 0f, 0f)
-		bb.flush()
+    @Test
+    fun simpleBatch() {
+        val tex = Texture(ag.createTexture(), 100, 100)
+        bb.addQuad(tex, 0f, 0f)
+        bb.flush()
 
-		Assert.assertEquals(
-			"""
+        Assert.assertEquals(
+                """
 				createTexture():0
 				createBuffer(VERTEX):0
 				Buffer[0].afterSetMem(mem[64])
@@ -31,19 +30,19 @@ class BatchBuilderTest {
 				Buffer[1].close()
 				Buffer[0].close()
 			""".trimIndent(),
-			ag.getLogAsString()
-		)
-	}
+                ag.getLogAsString()
+        )
+    }
 
-	@Test
-	fun batch2() {
-		val tex = Texture(ag.createTexture(), 100, 100)
-		bb.addQuad(tex, 0f, 0f)
-		bb.addQuad(tex, 100f, 0f)
-		bb.flush()
+    @Test
+    fun batch2() {
+        val tex = Texture(ag.createTexture(), 100, 100)
+        bb.addQuad(tex, 0f, 0f)
+        bb.addQuad(tex, 100f, 0f)
+        bb.flush()
 
-		Assert.assertEquals(
-			"""
+        Assert.assertEquals(
+                """
 				createTexture():0
 				createBuffer(VERTEX):0
 				Buffer[0].afterSetMem(mem[128])
@@ -62,7 +61,7 @@ class BatchBuilderTest {
 				Buffer[1].close()
 				Buffer[0].close()
 			""".trimIndent(),
-			ag.getLogAsString()
-		)
-	}
+                ag.getLogAsString()
+        )
+    }
 }
