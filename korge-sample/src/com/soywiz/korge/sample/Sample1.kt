@@ -49,7 +49,7 @@ class Sample1Scene(
         }
         root += tilemap
 
-        root += views.text(font, "Hello world!").apply {
+        root += views.text(font, "Hello world! F,", textSize = 72.0).apply {
             x = 100.0
             y = 100.0
         }

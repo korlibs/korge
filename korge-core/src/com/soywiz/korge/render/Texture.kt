@@ -19,8 +19,8 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 
     val x0: Float = (left).toFloat() / base.width.toFloat()
     val x1: Float = (right).toFloat() / base.width.toFloat()
-    val y0: Float = (top).toFloat() / base.width.toFloat()
-    val y1: Float = (bottom).toFloat() / base.width.toFloat()
+    val y0: Float = (top).toFloat() / base.height.toFloat()
+    val y1: Float = (bottom).toFloat() / base.height.toFloat()
 
     fun slice(x: Int, y: Int, width: Int, height: Int) = sliceBounds(x, y, x + width, y + height)
 
@@ -41,7 +41,6 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 
 suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
     val tex = ag.createTexture()
-    //println("tex:$tex")
     val bmp = this.readBitmap()
     tex.upload(bmp, mipmaps = mipmaps)
     return Texture(tex, bmp.width, bmp.height)
