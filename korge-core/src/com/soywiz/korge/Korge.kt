@@ -22,13 +22,9 @@ object Korge {
         val injector = AsyncInjector()
 
         Application().frame(module.title) {
-            if (module.icon != null) {
-                icon = ResourcesVfs[module.icon!!].readBitmap()
-            }
+            if (module.icon != null) icon = ResourcesVfs[module.icon!!].readBitmap()
 
-            val canvas = agCanvas {
-            }
-
+            val canvas = agCanvas { }
             val ag = canvas.ag
             injector.map(ag)
             val views = injector.get<Views>()
@@ -45,16 +41,21 @@ object Korge {
                 }
             }
 
+            var lastTime = System.currentTimeMillis()
             ag.onRender {
                 ag.clear(module.bgcolor)
+                val currentTime = System.currentTimeMillis()
+                val delta = (currentTime - lastTime).toInt()
+                lastTime = currentTime
+                views.update(delta)
                 views.render()
             }
 
             canvas.onClick {
-                views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+                views.input.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
             }
             canvas.onOver {
-                views.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+                views.input.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
             }
         }
     }

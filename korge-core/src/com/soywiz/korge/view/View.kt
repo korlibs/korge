@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.component.Component
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.geom.Matrix2d
@@ -7,7 +8,7 @@ import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
 
-open class View(val views: Views) : Extra by Extra.Mixin() {
+open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     var parent: Container? = null
     val id = views.lastId++
     var alpha: Double = 1.0; set(v) = run {
@@ -38,6 +39,16 @@ open class View(val views: Views) : Extra by Extra.Mixin() {
 
     private var _globalAlpha: Double = 1.0
     private var _globalCol1: Int = -1
+
+    private var componentsByClass: HashMap<Class<out Component>, Component>? = null
+
+    inline fun <reified T : Component> getOrCreateComponent(noinline gen: (View) -> T): T = getOrCreateComponent(T::class.java, gen)
+
+    fun <T : Component> getOrCreateComponent(clazz: Class<T>, gen: (View) -> T): T {
+        if (componentsByClass == null) componentsByClass = hashMapOf()
+        if (clazz !in componentsByClass!!) componentsByClass!![clazz] = gen(this)
+        return componentsByClass!![clazz] as T
+    }
 
     protected val localMatrix: Matrix2d get() {
         if (!validLocal) {
@@ -86,7 +97,7 @@ open class View(val views: Views) : Extra by Extra.Mixin() {
         validGlobalInv = false
     }
 
-    open fun render(ctx: RenderContext) {
+    override fun render(ctx: RenderContext) {
     }
 
     override fun toString(): String = "${javaClass.simpleName}($id)"
@@ -106,5 +117,11 @@ open class View(val views: Views) : Extra by Extra.Mixin() {
         val lx = globalToLocalX(x, y)
         val ly = globalToLocalY(x, y)
         return lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
+    }
+
+    open fun update(dtMs: Int) {
+        if (componentsByClass != null) for (c in componentsByClass!!.values) {
+            c.update(dtMs)
+        }
     }
 }

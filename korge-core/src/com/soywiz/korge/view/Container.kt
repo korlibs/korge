@@ -26,4 +26,9 @@ open class Container(views: Views) : View(views) {
         for (child in children.reversed()) return child.hitTest(x, y) ?: continue
         return null
     }
+
+    override fun update(dtMs: Int) {
+        super.update(dtMs)
+        for (child in children) child.update(dtMs)
+    }
 }

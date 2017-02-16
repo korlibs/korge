@@ -2,6 +2,8 @@ package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
+import com.soywiz.korge.input.component.onOut
+import com.soywiz.korge.input.component.onOver
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
@@ -54,11 +56,12 @@ class Sample1Scene(
             y = 100.0
         }
 
-        go {
-            while (true) {
-                image.alpha = if (views.root.hitTest(views.mouse) == image) 1.0 else 0.7
-                sleepNextFrame()
-            }
+        image.onOver {
+            image.alpha = 1.0
+        }
+
+        image.onOut {
+            image.alpha = 0.7
         }
 
         go {

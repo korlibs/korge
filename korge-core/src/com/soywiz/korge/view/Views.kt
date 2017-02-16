@@ -1,15 +1,18 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
+import com.soywiz.korge.input.Input
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
-import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 
 @Singleton
-class Views(val ag: AG, val injector: AsyncInjector) {
-    val mouse = Point2d(-1000.0, -1000.0)
+class Views(
+        val ag: AG,
+        val injector: AsyncInjector,
+        val input: Input
+) {
     var lastId = 0
     val renderContext = RenderContext(ag)
     fun container() = Container(this)
@@ -30,5 +33,10 @@ class Views(val ag: AG, val injector: AsyncInjector) {
                 dumpView(child, emit, "$indent ")
             }
         }
+    }
+
+    fun update(dtMs: Int) {
+        input.frame.reset()
+        root.update(dtMs)
     }
 }
