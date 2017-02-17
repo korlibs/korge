@@ -16,7 +16,6 @@ class Views(
     var lastId = 0
     val renderContext = RenderContext(ag)
     fun container() = Container(this)
-    fun image(tex: Texture, anchorX: Double = 0.0, anchorY: Double = anchorX) = Image(tex, anchorX, anchorY, this)
 
     val root: Container = container()
     fun render() {

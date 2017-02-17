@@ -18,3 +18,5 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
         return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom)) this else null
     }
 }
+
+fun Views.image(tex: Texture, anchorX: Double = 0.0, anchorY: Double = anchorX) = Image(tex, anchorX, anchorY, this)

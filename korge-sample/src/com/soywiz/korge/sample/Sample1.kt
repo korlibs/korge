@@ -9,12 +9,12 @@ import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.View
+import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.sleepNextFrame
 import com.soywiz.korio.async.tween.Easing
 import com.soywiz.korio.async.tween.rangeTo
 import com.soywiz.korio.async.tween.tween
