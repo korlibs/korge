@@ -1,17 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.LogAG
-import com.soywiz.korge.input.Input
+import com.soywiz.korge.ViewsForTesting
 import com.soywiz.korge.render.Texture
 import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.sync
-import com.soywiz.korio.inject.AsyncInjector
 import org.junit.Assert
 import org.junit.Test
 
-class ViewsTest {
-    val ag = LogAG()
-    val views = Views(ag, AsyncInjector(), Input())
+class ViewsTest : ViewsForTesting() {
     val tex = Texture(views.ag.createTexture(), 10, 10)
 
     @Test

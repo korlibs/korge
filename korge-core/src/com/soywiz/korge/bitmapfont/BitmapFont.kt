@@ -6,8 +6,10 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korim.geom.Matrix2d
+import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.inject.Optional
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.vfs.ResourcesVfs
@@ -70,7 +72,7 @@ suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {
         val tex = texFile.readTexture(ag)
         textures[id] = tex
     }
-    
+
     val texture = textures.values.first()
 
     val glyphs = xml["chars"]["char"].map {
@@ -98,9 +100,30 @@ suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {
     )
 }
 
+annotation class FontDescriptor(val face: String, val size: Int, val chars: String = "0123456789")
+
 class BitmapFontAsyncFactory(
-        private val path: Path,
+        @Optional private val path: Path?,
+        @Optional private val descriptor: FontDescriptor?,
         private val ag: AG
 ) : AsyncFactory<BitmapFont> {
-    override suspend fun create() = ResourcesVfs[path.path].readBitmapFont(ag)
+    override suspend fun create() = if (path != null) {
+        ResourcesVfs[path.path].readBitmapFont(ag)
+    } else if (descriptor != null) {
+        com.soywiz.korim.font.BitmapFontGenerator.generate(descriptor.face, descriptor.size, descriptor.chars).convert(ag)
+    } else {
+        invalidOp("BitmapFont injection requires @Path or @FontDescriptor annotations")
+    }
+}
+
+private fun com.soywiz.korim.font.BitmapFont.convert(ag: AG): BitmapFont {
+    val font = this
+    val tex = Texture(ag.createTexture().upload(font.atlas), font.atlas.width, font.atlas.height)
+    val glyphs = arrayListOf<BitmapFont.Glyph>()
+    for (info in font.glyphInfos) {
+        val bounds = info.bounds
+        val texSlice = tex.slice(bounds.x, bounds.y, bounds.width, bounds.height)
+        glyphs += BitmapFont.Glyph(info.id, texSlice, 0, 0, info.advance)
+    }
+    return BitmapFont(font.size, glyphs.map { it.id to it }.toMap(), mapOf())
 }

@@ -26,6 +26,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     var skewX: Double = 0.0; set(v) = run { if (field != v) run { field = v; invalidateMatrix() } }
     var skewY: Double = 0.0; set(v) = run { if (field != v) run { field = v; invalidateMatrix() } }
     var rotation: Double = 0.0; set(v) = run { if (field != v) run { field = v; invalidateMatrix() } }
+    var rotationDegrees: Double; set(v) = run { rotation = Math.toRadians(v) }; get() = Math.toDegrees(rotation)
 
     var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
 
@@ -40,14 +41,26 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     private var _globalAlpha: Double = 1.0
     private var _globalCol1: Int = -1
 
-    private var componentsByClass: HashMap<Class<out Component>, Component>? = null
+    private var componentsByClass: HashMap<Class<out Component>, ArrayList<Component>>? = null
 
     inline fun <reified T : Component> getOrCreateComponent(noinline gen: (View) -> T): T = getOrCreateComponent(T::class.java, gen)
 
+    fun removeComponent(c: Component) {
+        val cc = componentsByClass?.get(c::class.java)
+        cc?.remove(c)
+    }
+
+    fun addComponent(c: Component) {
+        if (componentsByClass == null) componentsByClass = hashMapOf()
+        val array = componentsByClass!!.getOrPut(c::class.java) { arrayListOf() }
+        array += c
+    }
+
     fun <T : Component> getOrCreateComponent(clazz: Class<T>, gen: (View) -> T): T {
         if (componentsByClass == null) componentsByClass = hashMapOf()
-        if (clazz !in componentsByClass!!) componentsByClass!![clazz] = gen(this)
-        return componentsByClass!![clazz] as T
+        val array = componentsByClass!!.getOrPut(clazz) { arrayListOf() }
+        if (array.isEmpty()) array += gen(this)
+        return componentsByClass!![clazz]!!.first() as T
     }
 
     protected val localMatrix: Matrix2d get() {
@@ -100,7 +113,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     override fun render(ctx: RenderContext) {
     }
 
-    override fun toString(): String = "${javaClass.simpleName}($id)"
+    override fun toString(): String = "${this::class.java.simpleName}($id)"
 
     fun globalToLocalX(x: Double, y: Double): Double = globalMatrixInv.run { transformX(x, y) }
     fun globalToLocalY(x: Double, y: Double): Double = globalMatrixInv.run { transformY(x, y) }
@@ -120,7 +133,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     }
 
     open fun update(dtMs: Int) {
-        if (componentsByClass != null) for (c in componentsByClass!!.values) {
+        if (componentsByClass != null) for (c in componentsByClass!!.values.flatMap { it }) {
             c.update(dtMs)
         }
     }

@@ -2,22 +2,25 @@ package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
+import com.soywiz.korge.bitmapfont.FontDescriptor
+import com.soywiz.korge.component.Component
 import com.soywiz.korge.input.component.onOut
 import com.soywiz.korge.input.component.onOver
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.tween.Easing
+import com.soywiz.korge.tween.rangeTo
+import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.tween.Easing
-import com.soywiz.korio.async.tween.rangeTo
-import com.soywiz.korio.async.tween.tween
 
 object Sample1 {
     @JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)
@@ -29,22 +32,46 @@ object Sample1Module : Module() {
     override var mainScene = Sample1Scene::class.java
 }
 
+class MouseSampleController(view: View) : Component(view) {
+    val temp = Point2d()
+    override fun update(dtMs: Int) {
+        //view.globalToLocal(views.input.mouse, temp)
+        view.x = views.input.mouse.x
+        view.y = views.input.mouse.y
+        view.rotationDegrees = (view.rotationDegrees + 1) % 360
+    }
+}
+
+fun View.mouseSampleController() = this.apply { MouseSampleController(this).attach() }
+
 class Sample1Scene(
         @Path("korge.png") val korgeTex: Texture,
         @Path("tiles.png") val tilesetTex: Texture,
-        @Path("font/font.fnt") val font: BitmapFont
+        @Path("font/font.fnt") val font: BitmapFont,
+        @FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
 ) : Scene() {
     suspend override fun init() {
         super.init()
 
+        val tileset = TileSet(tilesetTex, 32, 32)
+
+        root += views.container().apply {
+            this += views.tileMap(Bitmap32(8, 8), tileset).apply {
+                this.x = 25.0
+                this.y = 25.0
+                alpha = 0.8
+            }.mouseSampleController()
+        }
+
         val image = views.image(korgeTex, 0.5).apply {
             scale = 0.2
             rotation = Math.toRadians(-90.0)
+            alpha = 0.7
             //smoothing = false
+            onOver { alpha = 1.0 }
+            onOut { alpha = 0.7 }
         }
         root += image
-
-        val tileset = TileSet(tilesetTex, 32, 32)
 
         val tilemap = views.tileMap(Bitmap32(8, 8), tileset).apply {
             alpha = 0.8
@@ -56,12 +83,9 @@ class Sample1Scene(
             y = 100.0
         }
 
-        image.onOver {
-            image.alpha = 1.0
-        }
-
-        image.onOut {
-            image.alpha = 0.7
+        root += views.text(font2, "2017", textSize = 40.0).apply {
+            x = 0.0
+            y = 0.0
         }
 
         go {

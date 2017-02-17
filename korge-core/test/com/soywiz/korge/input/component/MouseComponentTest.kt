@@ -1,20 +1,13 @@
 package com.soywiz.korge.input.component
 
-import com.soywiz.korag.log.LogAG
-import com.soywiz.korge.input.Input
+import com.soywiz.korge.ViewsForTesting
 import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.image
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.inject.AsyncInjector
 import org.junit.Assert
 import org.junit.Test
 
-class MouseComponentTest {
-    val ag = LogAG()
-    val input = Input()
-    val views = Views(ag, AsyncInjector(), input)
-
+class MouseComponentTest : ViewsForTesting() {
     @Test
     fun name() = syncTest {
         val log = arrayListOf<String>()

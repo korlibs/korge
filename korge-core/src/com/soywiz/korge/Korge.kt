@@ -22,7 +22,13 @@ object Korge {
         val injector = AsyncInjector()
 
         Application().frame(module.title) {
-            if (module.icon != null) icon = ResourcesVfs[module.icon!!].readBitmap()
+            if (module.icon != null) {
+                try {
+                    icon = ResourcesVfs[module.icon!!].readBitmap()
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
 
             val canvas = agCanvas { }
             val ag = canvas.ag
