@@ -4,5 +4,6 @@ include(
         'korge-core',
         'korge',
         'korge-android',
+        'korge-ext-spriter',
         'korge-sample',
 )
