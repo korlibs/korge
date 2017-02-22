@@ -6,7 +6,7 @@ import com.soywiz.korge.view.Views
 class SceneContainer(views: Views) : Container(views) {
     suspend fun changeToScene(clazz: Class<out Scene>) {
         val instance = views.injector.create(clazz)
-        this += instance.root
+        this += instance!!.root
     }
 }
 
