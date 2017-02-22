@@ -39,3 +39,26 @@ class Views(
         root.update(dtMs)
     }
 }
+
+/*
+object ViewFactory {
+    inline fun Container.container(): Container {
+        val container = views.container()
+        this += container
+        return container
+    }
+}
+
+inline fun viewFactory(callback: ViewFactory.() -> Unit) {
+    ViewFactory.callback()
+}
+*/
+
+inline fun Container.container(): Container = container { }
+
+inline fun Container.container(callback: Container.() -> Unit): Container {
+    val child = views.container()
+    this += child
+    callback(child)
+    return child
+}

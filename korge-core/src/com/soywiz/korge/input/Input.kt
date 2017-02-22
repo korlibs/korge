@@ -8,6 +8,7 @@ import com.soywiz.korio.util.Extra
 class Input {
     val frame = Frame()
     val mouse = Point2d(-1000.0, -1000.0)
+    var mouseButtons = 0
 
     class Frame : Extra by Extra.Mixin() {
         fun reset() {

@@ -20,3 +20,13 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
 }
 
 fun Views.image(tex: Texture, anchorX: Double = 0.0, anchorY: Double = anchorX) = Image(tex, anchorX, anchorY, this)
+
+fun Container.image(texture: Texture, anchorX: Double = 0.0, anchorY: Double = 0.0): Image = image(texture, anchorX, anchorY) { }
+
+inline fun Container.image(texture: Texture, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: Image.() -> Unit): Image {
+    val child = views.image(texture, anchorX, anchorY)
+    this += child
+    callback(child)
+    return child
+}
+

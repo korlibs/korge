@@ -1,9 +1,9 @@
 package com.soywiz.korge.view.tiles
 
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.Texture
 import com.soywiz.korge.util.IntArray2
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
 
 class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(views) {
     val tileWidth = tileset.width.toDouble()
@@ -46,3 +46,12 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
 }
 
 fun Views.tileMap(map: IntArray2, tileset: TileSet) = TileMap(map, tileset, this)
+
+fun Container.tileMap(map: IntArray2, tileset: TileSet): TileMap = tileMap(map, tileset) { }
+
+inline fun Container.tileMap(map: IntArray2, tileset: TileSet, callback: TileMap.() -> Unit): TileMap {
+    val child = views.tileMap(map, tileset)
+    this += child
+    callback(child)
+    return child
+}

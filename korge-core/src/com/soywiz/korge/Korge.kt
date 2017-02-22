@@ -55,11 +55,20 @@ object Korge {
                 views.render()
             }
 
-            canvas.onClick {
+            fun updateMousePos() {
                 views.input.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
             }
+
             canvas.onOver {
-                views.input.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+                updateMousePos()
+            }
+            canvas.onUp {
+                views.input.mouseButtons = 0
+                updateMousePos()
+            }
+            canvas.onDown {
+                views.input.mouseButtons = 1
+                updateMousePos()
             }
         }
     }

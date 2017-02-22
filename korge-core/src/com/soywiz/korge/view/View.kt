@@ -138,3 +138,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
         }
     }
 }
+
+fun View.hasAncestor(ancestor: View): Boolean {
+    return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
+}
