@@ -18,9 +18,7 @@ import com.soywiz.korui.ui.agCanvas
 object Korge {
     val VERSION = "0.6.0"
 
-    operator fun invoke(module: Module, args: Array<String> = arrayOf()) = EventLoop.main {
-        val injector = AsyncInjector()
-
+    operator fun invoke(module: Module, args: Array<String> = arrayOf(), injector: AsyncInjector = AsyncInjector()) = EventLoop {
         Application().frame(module.title) {
             if (module.icon != null) {
                 try {
