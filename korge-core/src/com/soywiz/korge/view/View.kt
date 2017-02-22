@@ -32,11 +32,12 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
     private var _localMatrix = Matrix2d()
     private var _globalMatrix = Matrix2d()
+    private var _globalMatrixVersion = 0
+    private var _globalMatrixInvVersion = 0
     private var _globalMatrixInv = Matrix2d()
 
     internal var validLocal = false
     internal var validGlobal = false
-    internal var validGlobalInv = false
 
     private var _globalAlpha: Double = 1.0
     private var _globalCol1: Int = -1
@@ -77,8 +78,10 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
             if (parent != null) {
                 _globalMatrix.copyFrom(parent!!.globalMatrix)
                 _globalMatrix.premulitply(localMatrix)
+                _globalMatrixVersion++
             } else {
                 _globalMatrix.copyFrom(localMatrix)
+                _globalMatrixVersion++
             }
             _globalAlpha = if (parent != null) parent!!.globalAlpha * alpha else alpha
             _globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
@@ -90,8 +93,8 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
 
     protected val globalMatrixInv: Matrix2d get() {
-        if (!validGlobalInv) {
-            validGlobalInv = true
+        if (_globalMatrixVersion != _globalMatrixInvVersion) {
+            _globalMatrixInvVersion = _globalMatrixVersion
             _globalMatrixInv.setToInverse(globalMatrix)
         }
         return _globalMatrixInv
@@ -99,15 +102,11 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
     private fun invalidateMatrix() {
         validLocal = false
-        validGlobal = false
-        validGlobalInv = false
         invalidate()
     }
 
     open fun invalidate() {
-        if (validGlobal && validGlobalInv) return
         validGlobal = false
-        validGlobalInv = false
     }
 
     override fun render(ctx: RenderContext) {

@@ -6,12 +6,10 @@ open class Container(views: Views) : View(views) {
     val children = arrayListOf<View>()
 
     override fun invalidate() {
-        if (validGlobal && validGlobalInv) return
         validGlobal = false
-        validGlobalInv = false
         for (child in children) {
+            if (!child.validGlobal) continue
             child.validGlobal = false
-            child.validGlobalInv = false
             child.invalidate()
         }
     }
