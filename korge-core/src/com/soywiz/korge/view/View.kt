@@ -93,9 +93,10 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
     protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
 
     protected val globalMatrixInv: Matrix2d get() {
+        val mat = globalMatrix
         if (_globalMatrixVersion != _globalMatrixInvVersion) {
             _globalMatrixInvVersion = _globalMatrixVersion
-            _globalMatrixInv.setToInverse(globalMatrix)
+            _globalMatrixInv.setToInverse(mat)
         }
         return _globalMatrixInv
     }
