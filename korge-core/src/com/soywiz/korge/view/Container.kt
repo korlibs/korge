@@ -9,7 +9,11 @@ open class Container(views: Views) : View(views) {
         if (validGlobal && validGlobalInv) return
         validGlobal = false
         validGlobalInv = false
-        for (child in children) child.invalidate()
+        for (child in children) {
+            child.validGlobal = false
+            child.validGlobalInv = false
+            child.invalidate()
+        }
     }
 
     operator fun plusAssign(view: View) {

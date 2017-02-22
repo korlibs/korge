@@ -14,6 +14,7 @@ import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.rangeTo
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.View
+import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.tiles.TileSet
@@ -55,15 +56,16 @@ class Sample1Scene(
 
         val tileset = TileSet(tilesetTex, 32, 32)
 
-        root += views.container().apply {
-            this += views.tileMap(Bitmap32(8, 8), tileset).apply {
-                this.x = 25.0
-                this.y = 25.0
+        root.container() {
+            //this.text(font, "hello")
+            this.tileMap(Bitmap32(8, 8), tileset) {
+                this.x = -128.0
+                this.y = -128.0
                 alpha = 0.8
-            }.mouseSampleController()
-        }
+            }
+        }.mouseSampleController()
 
-        val image = views.image(korgeTex, 0.5).apply {
+        val image = root.image(korgeTex, 0.5).apply {
             scale = 0.2
             rotation = Math.toRadians(-90.0)
             alpha = 0.7
@@ -71,19 +73,17 @@ class Sample1Scene(
             onOver { alpha = 1.0 }
             onOut { alpha = 0.7 }
         }
-        root += image
 
-        val tilemap = views.tileMap(Bitmap32(8, 8), tileset).apply {
+        val tilemap = root.tileMap(Bitmap32(8, 8), tileset) {
             alpha = 0.8
         }
-        root += tilemap
 
-        root += views.text(font, "Hello world! F,", textSize = 72.0).apply {
+        root.text(font, "Hello world! F,", textSize = 72.0).apply {
             x = 100.0
             y = 100.0
         }
 
-        root += views.text(font2, "2017", textSize = 40.0).apply {
+        root.text(font2, "2017", textSize = 40.0).apply {
             x = 0.0
             y = 0.0
         }
