@@ -4,8 +4,10 @@ import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.input.component.onDown
 import com.soywiz.korge.input.component.onOut
 import com.soywiz.korge.input.component.onOver
+import com.soywiz.korge.input.component.onUp
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
@@ -72,6 +74,8 @@ class Sample1Scene(
             //smoothing = false
             onOver { alpha = 1.0 }
             onOut { alpha = 0.7 }
+            //onDown { scale = 0.3 }
+            //onUp { scale = 0.2 }
         }
 
         val tilemap = root.tileMap(Bitmap32(8, 8), tileset) {

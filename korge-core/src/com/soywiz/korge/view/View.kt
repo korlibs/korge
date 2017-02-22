@@ -72,31 +72,31 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
         return _localMatrix
     }
 
-    protected val globalMatrix: Matrix2d get() {
-        if (!validGlobal) {
-            validGlobal = true
-            if (parent != null) {
-                _globalMatrix.copyFrom(parent!!.globalMatrix)
-                _globalMatrix.premulitply(localMatrix)
-                _globalMatrixVersion++
-            } else {
-                _globalMatrix.copyFrom(localMatrix)
-                _globalMatrixVersion++
-            }
-            _globalAlpha = if (parent != null) parent!!.globalAlpha * alpha else alpha
-            _globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
+    private fun _ensureGlobal() = this.apply {
+        if (validGlobal) return@apply
+        validGlobal = true
+        if (parent != null) {
+            _globalMatrix.copyFrom(parent!!.globalMatrix)
+            _globalMatrix.premulitply(localMatrix)
+            _globalMatrixVersion++
+        } else {
+            _globalMatrix.copyFrom(localMatrix)
+            _globalMatrixVersion++
         }
-        return _globalMatrix
+        _globalAlpha = if (parent != null) parent!!.globalAlpha * alpha else alpha
+        _globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
     }
+
+    protected val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
 
     protected val globalAlpha: Double get() = run { globalMatrix; _globalAlpha }
     protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
 
     protected val globalMatrixInv: Matrix2d get() {
-        val mat = globalMatrix
+        _ensureGlobal()
         if (_globalMatrixVersion != _globalMatrixInvVersion) {
             _globalMatrixInvVersion = _globalMatrixVersion
-            _globalMatrixInv.setToInverse(mat)
+            _globalMatrixInv.setToInverse(_globalMatrix)
         }
         return _globalMatrixInv
     }
