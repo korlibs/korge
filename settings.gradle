@@ -5,5 +5,6 @@ include(
         'korge',
         'korge-android',
         'korge-ext-spriter',
+        'korge-ext-tiled',
         'korge-sample',
 )

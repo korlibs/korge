@@ -1,4 +1,4 @@
-package com.soywiz.korge.spriter
+package com.soywiz.korge.ext.spriter
 
 import com.brashmonkey.spriter.Loader
 import com.brashmonkey.spriter.Timeline

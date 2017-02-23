@@ -1,0 +1,20 @@
+apply from: "../include.gradle"
+
+apply plugin: 'application'
+apply plugin: 'jtransc'
+
+apply plugin: 'kotlin'
+
+mainClassName = "com.soywiz.korge.sample.Sample1"
+
+dependencies {
+    compile project(":korge-core")
+}
+
+jtransc {
+    assets = ["korge-sample/resources"]
+    minimizeNames = true
+    //minimizeNames = false
+    treeshaking = true
+    //treeshaking = false
+}
