@@ -9,6 +9,7 @@ mainClassName = "com.soywiz.korge.sample.Sample1"
 
 dependencies {
     compile project(":korge-core")
+    testCompile "com.soywiz:korge:$korVersion"
 }
 
 jtransc {

@@ -49,6 +49,13 @@ dependencies {
     compile "com.soywiz:korag-core:$korVersion"
     compile "com.soywiz:korau-core:$korVersion"
     compile "com.soywiz:korui-core:$korVersion"
+
+    testCompile "com.soywiz:korio:$korVersion"
+    //testCompile "com.soywiz:korim:$korVersion"
+    testCompile "com.soywiz:korag:$korVersion"
+    testCompile "com.soywiz:korau:$korVersion"
+    testCompile "com.soywiz:korui:$korVersion"
+
     //compile "com.soywiz:korte:$korVersion"
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
