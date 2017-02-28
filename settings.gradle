@@ -6,5 +6,6 @@ include(
         'korge-android',
         'korge-ext-spriter',
         'korge-ext-tiled',
+        'korge-ext-particle',
         'korge-sample',
 )

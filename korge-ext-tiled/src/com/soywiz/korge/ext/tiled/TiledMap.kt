@@ -44,6 +44,7 @@ class TiledMap {
 		val properties = hashMapOf<String, Any>()
 
 		class Patterns : Layer() {
+			//val tilemap = TileMap(Bitmap32(0, 0), )
 			var map: Bitmap32 = Bitmap32(0, 0)
 		}
 
