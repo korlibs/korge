@@ -1,11 +1,8 @@
 apply from: "../include.gradle"
 
-apply plugin: 'application'
-apply plugin: 'jtransc'
-
 apply plugin: 'kotlin'
 
 dependencies {
     compile project(":korge-core")
-    testCompile "com.soywiz:korge:$korVersion"
+    testCompile project(":korge")
 }

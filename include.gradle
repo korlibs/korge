@@ -1,13 +1,11 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "https://dl.bintray.com/kotlin/kotlin-eap-1.1" }
         jcenter()
         mavenCentral()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 
@@ -19,7 +17,6 @@ apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
@@ -31,7 +28,6 @@ kotlin { experimental { coroutines 'enable' } }
 
 repositories {
     mavenLocal()
-    maven { url "https://dl.bintray.com/kotlin/kotlin-eap-1.1" }
     mavenCentral()
 }
 
@@ -140,28 +136,5 @@ publishing {
     }
 }
 
-// gradle bintrayUpload
-if (project.hasProperty('BINTRAY_USER')) {
-    bintray {
-        // https://github.com/bintray/gradle-bintray-plugin#buildgradle
-        //Properties bintray = new Properties()
-        //bintray.load(new FileInputStream(System.getProperty("user.home") + "/.bintray.properties"))
-
-        user = BINTRAY_USER
-        key = BINTRAY_KEY
-        publications = ['MyPublication']
-        publish = true
-        override = true
-
-        pkg {
-            repo = "soywiz-maven"
-            name = project.name
-            userOrg = 'soywiz'
-            licenses = ['Apache-2.0']
-            vcsUrl = 'https://github.com/soywiz/korge.git'
-        }
-    }
-}
-
-task deploy(dependsOn: ['install', 'bintrayUpload', 'uploadArchives']) {
+task deploy(dependsOn: ['install', 'uploadArchives']) {
 }
