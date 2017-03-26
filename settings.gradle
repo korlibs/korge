@@ -8,4 +8,5 @@ include(
         'korge-ext-tiled',
         'korge-ext-particle',
         'korge-sample',
+        'korfl',
 )

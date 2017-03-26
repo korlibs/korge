@@ -1,0 +1,17 @@
+apply from: "../include.gradle"
+
+apply plugin: 'kotlin'
+
+dependencies {
+    compile project(':korge-core')
+	compile project(':korio-core')
+	testCompile "com.soywiz:korio:$korVersion"
+}
+
+sourceSets {
+	main.java.srcDirs = ['src', 'src2']
+	test.java.srcDirs = ['test']
+	main.resources.srcDirs = ['resources']
+	test.resources.srcDirs = ['testresources']
+	main.java.srcDirs += 'src/main/kotlin'
+}
