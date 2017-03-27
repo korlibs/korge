@@ -1,9 +1,11 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
+import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 
@@ -40,6 +42,14 @@ class Views(
     }
 }
 
+class ViewsLog(
+	val injector: AsyncInjector = AsyncInjector(),
+	val ag: LogAG = LogAG(),
+	val input: Input = Input()
+) {
+	val views = Views(ag, injector, input)
+}
+
 /*
 object ViewFactory {
     inline fun Container.container(): Container {
@@ -61,4 +71,8 @@ inline fun Container.container(callback: Container.() -> Unit): Container {
     this += child
     callback(child)
     return child
+}
+
+fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture {
+	return Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
 }

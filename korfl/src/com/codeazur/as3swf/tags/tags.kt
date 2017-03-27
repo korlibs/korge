@@ -1732,12 +1732,11 @@ open class TagDefineMorphShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitio
 	}
 
 	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineMorphShape = com.codeazur.as3swf.tags.TagDefineMorphShape()
+		val tag: TagDefineMorphShape = TagDefineMorphShape()
 		throw(Error("Not implemented yet."))
-		return tag
 	}
 
-	fun export(handler: ShapeExporter? = null, ratio: Double = 0.0): Unit {
+	fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
 		var j: Int = 0
 		val exportShape: com.codeazur.as3swf.data.SWFShape = com.codeazur.as3swf.data.SWFShape()
 		val numEdges: Int = startEdges.records.size
@@ -1815,7 +1814,7 @@ open class TagDefineMorphShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitio
 		return curvedEdge
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineMorphShape.Companion.TYPE
+	override val type = TagDefineMorphShape.Companion.TYPE
 	override val name = "DefineMorphShape"
 	override val version = 3
 	override val level = 1
@@ -1845,7 +1844,7 @@ open class TagDefineMorphShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitio
 	}
 }
 
-class TagDefineMorphShape2 : com.codeazur.as3swf.tags.TagDefineMorphShape(), ITag {
+class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 	companion object {
 		const val TYPE = 84
 	}
@@ -3270,7 +3269,7 @@ class TagNameCharacter : _BaseTag(), ITag {
 	}
 }
 
-open class TagPlaceObject : _BaseTag(), com.codeazur.as3swf.tags.IDisplayListTag {
+open class TagPlaceObject : _BaseTag(), IDisplayListTag {
 	companion object {
 		const val TYPE = 4
 	}
@@ -3360,7 +3359,7 @@ open class TagPlaceObject : _BaseTag(), com.codeazur.as3swf.tags.IDisplayListTag
 	}
 }
 
-open class TagPlaceObject2 : com.codeazur.as3swf.tags.TagPlaceObject(), com.codeazur.as3swf.tags.IDisplayListTag {
+open class TagPlaceObject2 : com.codeazur.as3swf.tags.TagPlaceObject(), IDisplayListTag {
 	companion object {
 		const val TYPE = 26
 	}
@@ -3402,53 +3401,23 @@ open class TagPlaceObject2 : com.codeazur.as3swf.tags.TagPlaceObject(), com.code
 	suspend override fun publish(data: SWFData, version: Int): Unit {
 		var flags: Int = 0
 		val body: SWFData = SWFData()
-		if (hasMove) {
-			flags = flags or 0x01
-		}
-		if (hasCharacter) {
-			flags = flags or 0x02
-		}
-		if (hasMatrix) {
-			flags = flags or 0x04
-		}
-		if (hasColorTransform) {
-			flags = flags or 0x08
-		}
-		if (hasRatio) {
-			flags = flags or 0x10
-		}
-		if (hasName) {
-			flags = flags or 0x20
-		}
-		if (hasClipDepth) {
-			flags = flags or 0x40
-		}
-		if (hasClipActions) {
-			flags = flags or 0x80
-		}
+		if (hasMove) flags = flags or 0x01
+		if (hasCharacter) flags = flags or 0x02
+		if (hasMatrix) flags = flags or 0x04
+		if (hasColorTransform) flags = flags or 0x08
+		if (hasRatio) flags = flags or 0x10
+		if (hasName) flags = flags or 0x20
+		if (hasClipDepth) flags = flags or 0x40
+		if (hasClipActions) flags = flags or 0x80
 		body.writeUI8(flags)
 		body.writeUI16(depth)
-		if (hasCharacter) {
-			body.writeUI16(characterId)
-		}
-		if (hasMatrix) {
-			body.writeMATRIX(matrix!!)
-		}
-		if (hasColorTransform) {
-			body.writeCXFORM(colorTransform!!)
-		}
-		if (hasRatio) {
-			body.writeUI16(ratio)
-		}
-		if (hasName) {
-			body.writeString(instanceName)
-		}
-		if (hasClipDepth) {
-			body.writeUI16(clipDepth)
-		}
-		if (hasClipActions) {
-			body.writeCLIPACTIONS(clipActions!!, version)
-		}
+		if (hasCharacter) body.writeUI16(characterId)
+		if (hasMatrix) body.writeMATRIX(matrix!!)
+		if (hasColorTransform) body.writeCXFORM(colorTransform!!)
+		if (hasRatio) body.writeUI16(ratio)
+		if (hasName) body.writeString(instanceName)
+		if (hasClipDepth) body.writeUI16(clipDepth)
+		if (hasClipActions) body.writeCLIPACTIONS(clipActions!!, version)
 		data.writeTagHeader(type, body.length)
 		data.writeBytes(body)
 	}
@@ -3486,7 +3455,7 @@ open class TagPlaceObject2 : com.codeazur.as3swf.tags.TagPlaceObject(), com.code
 	}
 }
 
-open class TagPlaceObject3 : com.codeazur.as3swf.tags.TagPlaceObject2(), com.codeazur.as3swf.tags.IDisplayListTag {
+open class TagPlaceObject3 : com.codeazur.as3swf.tags.TagPlaceObject2(), IDisplayListTag {
 	companion object {
 		const val TYPE = 70
 	}
@@ -3722,7 +3691,7 @@ open class TagPlaceObject3 : com.codeazur.as3swf.tags.TagPlaceObject2(), com.cod
  *
  * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/display/DisplayObject.html#metaData
  */
-class TagPlaceObject4 : com.codeazur.as3swf.tags.TagPlaceObject3(), com.codeazur.as3swf.tags.IDisplayListTag {
+class TagPlaceObject4 : com.codeazur.as3swf.tags.TagPlaceObject3(), IDisplayListTag {
 	companion object {
 		const val TYPE = 94
 	}
@@ -3840,7 +3809,7 @@ class TagProtect : _BaseTag(), ITag {
 	}
 }
 
-open class TagRemoveObject : _BaseTag(), com.codeazur.as3swf.tags.IDisplayListTag {
+open class TagRemoveObject : _BaseTag(), IDisplayListTag {
 	companion object {
 		const val TYPE = 5
 	}
@@ -3871,7 +3840,7 @@ open class TagRemoveObject : _BaseTag(), com.codeazur.as3swf.tags.IDisplayListTa
 	}
 }
 
-class TagRemoveObject2 : com.codeazur.as3swf.tags.TagRemoveObject(), com.codeazur.as3swf.tags.IDisplayListTag {
+class TagRemoveObject2 : com.codeazur.as3swf.tags.TagRemoveObject(), IDisplayListTag {
 	companion object {
 		const val TYPE = 28
 	}
@@ -3990,7 +3959,7 @@ class TagSetTabIndex : _BaseTag(), ITag {
 	}
 }
 
-class TagShowFrame : _BaseTag(), com.codeazur.as3swf.tags.IDisplayListTag {
+class TagShowFrame : _BaseTag(), IDisplayListTag {
 	companion object {
 		const val TYPE = 1
 	}

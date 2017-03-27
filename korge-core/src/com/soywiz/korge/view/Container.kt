@@ -15,7 +15,8 @@ open class Container(views: Views) : View(views) {
     }
 
     operator fun plusAssign(view: View) {
-        view.parent?.children?.remove(view)
+		view.removeFromParent()
+		view.index = children.size
         children += view
         view.parent = this
     }
@@ -29,8 +30,8 @@ open class Container(views: Views) : View(views) {
         return null
     }
 
-    override fun update(dtMs: Int) {
-        super.update(dtMs)
+    override fun updateInternal(dtMs: Int) {
+        super.updateInternal(dtMs)
         for (child in children) child.update(dtMs)
     }
 }

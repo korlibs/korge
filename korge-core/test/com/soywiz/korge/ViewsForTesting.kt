@@ -1,13 +1,11 @@
 package com.soywiz.korge
 
-import com.soywiz.korag.log.LogAG
-import com.soywiz.korge.input.Input
-import com.soywiz.korge.view.Views
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korge.view.ViewsLog
 
 open class ViewsForTesting {
-    val injector = AsyncInjector()
-    val ag = LogAG()
-    val input = Input()
-    val views = Views(ag, injector, input)
+	val viewsLog = ViewsLog()
+	val injector = viewsLog.injector
+	val ag = viewsLog.ag
+	val input = viewsLog.input
+	val views = viewsLog.views
 }

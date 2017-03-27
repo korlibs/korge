@@ -1127,7 +1127,7 @@ class SWFMatrix {
 	var yscale: Double = 0.0
 	var rotation: Double = 0.0
 
-	val matrix: Matrix2d get() = Matrix2d(scaleX, rotateSkew0, rotateSkew1, scaleY, translateX.toDouble(), translateY.toDouble())
+	val matrix: Matrix2d get() = Matrix2d(scaleX, rotateSkew0, rotateSkew1, scaleY, translateX.toDouble() / 20.0, translateY.toDouble() / 20.0)
 
 	fun parse(data: SWFData) {
 		data.resetBitsPending()
@@ -1748,17 +1748,15 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 	}
 
-	open fun export(_handler: ShapeExporter? = null): Unit {
-		var handler = _handler
+	open fun export(_handler: ShapeExporter): Unit {
+		val handler = _handler
 		// Reset the flag so that shapes can be exported multiple times
 		// TODO: This is a temporary bug fix. edgeMaps shouldn't need to be recreated for subsequent exports
 		edgeMapsCreated = false
 		// Create edge maps
 		createEdgeMaps()
 		// If no handler is passed, default to DefaultShapeExporter (does nothing)
-		if (handler == null) {
-			handler = ShapeExporter(null)
-		}
+
 		// Let the doc handler know that a shape export starts
 		handler.beginShape()
 		// Export fills and strokes for each group separately
@@ -2488,7 +2486,7 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 		writeShapeRecords(data, fillBits, lineBits, level)
 	}
 
-	override fun export(_handler: ShapeExporter?): Unit {
+	override fun export(_handler: ShapeExporter): Unit {
 		fillStyles = ArrayList(initialFillStyles)
 		lineStyles = ArrayList(initialLineStyles)
 		super.export(_handler)
