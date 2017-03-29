@@ -16,19 +16,25 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.ImageFormats
+import com.soywiz.korim.color.BGRA
+import com.soywiz.korim.color.BGRA_5551
+import com.soywiz.korim.color.RGB
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.nativeImageFormatProvider
 import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.util.*
-import com.soywiz.korio.vfs.LocalVfs
+import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.extract8
+import com.soywiz.korio.util.getu
+import com.soywiz.korio.util.toIntCeil
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.math.Matrix2d
+import kotlin.collections.set
 
 @AsyncFactoryClass(SwfLibraryFactory::class)
 class SwfLibrary(
@@ -192,7 +198,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagDefineShape -> {
 					val rasterizer = SWFShapeRasterizer(swf, it.shapeBounds.rect)
 					it.export(if (debug) LoggerShapeExporter(rasterizer) else rasterizer)
-					val symbol = AnSymbolShape(it.characterId, it.name, rasterizer.bounds, null)
+					val symbol = AnSymbolShape(it.characterId, it.name, rasterizer.bounds, null, rasterizer.path)
 					lib.addSymbol(symbol)
 					shapesToPopulate += symbol to rasterizer
 				}
@@ -246,6 +252,9 @@ fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(1
 class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() {
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
 	val image = NativeImage(bounds.width.toIntCeil(), bounds.height.toIntCeil())
+	val path = GraphicsPath()
+	var processingFills = false
+
 	val ctx = image.getContext2d().apply {
 		translate(-bounds.x, -bounds.y)
 	}
@@ -259,11 +268,12 @@ class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() 
 	}
 
 	override fun beginFills() {
+		processingFills = true
 		ctx.beginPath()
 	}
 
 	override fun endFills() {
-		ctx.fill()
+		processingFills = false
 	}
 
 	override fun beginLines() {
@@ -272,6 +282,7 @@ class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() 
 
 	override fun closePath() {
 		ctx.closePath()
+		if (processingFills) path.close()
 	}
 
 	override fun endLines() {
@@ -345,14 +356,17 @@ class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() 
 
 	override fun moveTo(x: Double, y: Double) {
 		ctx.moveTo(x, y)
+		if (processingFills) path.moveTo(x, y)
 	}
 
 	override fun lineTo(x: Double, y: Double) {
 		ctx.lineTo(x, y)
+		if (processingFills) path.lineTo(x, y)
 	}
 
 	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
 		ctx.quadraticCurveTo(controlX, controlY, anchorX, anchorY)
+		if (processingFills) path.quadTo(controlX, controlY, anchorX, anchorY)
 	}
 }
 

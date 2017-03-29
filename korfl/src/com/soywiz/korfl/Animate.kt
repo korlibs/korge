@@ -1,8 +1,13 @@
 package com.soywiz.korfl
 
+import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.replaceWith
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.math.Matrix2d
@@ -19,7 +24,7 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(0, "")
 
-class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: Texture?) : AnSymbol(id, name) {
+class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: Texture?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
 
@@ -48,14 +53,22 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 }
 
 class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnElement(library, shapeSymbol) {
-	init {
-		val tex = shapeSymbol.texture
-		if (tex != null) {
-			val image = views.image(tex)
-			image.x = shapeSymbol.bounds.x
-			image.y = shapeSymbol.bounds.y
-			this += image
-		}
+	val dx = shapeSymbol.bounds.x.toFloat()
+	val dy = shapeSymbol.bounds.y.toFloat()
+	val tex = shapeSymbol.texture ?: views.dummyTexture
+	val smoothing = true
+
+	override fun render(ctx: RenderContext) {
+		ctx.batch.addQuad(tex, x = dx, y = dy, m = globalMatrix, filtering = smoothing, col1 = globalCol1)
+	}
+
+	override fun hitTest(x: Double, y: Double): View? {
+		val sLeft = dx.toDouble()
+		val sTop = dy.toDouble()
+		val sRight = sLeft + tex.width
+		val sBottom = sTop + tex.height
+
+		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) && (shapeSymbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) ?: true)) this else null
 	}
 }
 

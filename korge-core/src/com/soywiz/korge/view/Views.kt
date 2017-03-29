@@ -6,6 +6,7 @@ import com.soywiz.korge.input.Input
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 
@@ -18,6 +19,9 @@ class Views(
     var lastId = 0
     val renderContext = RenderContext(ag)
     fun container() = Container(this)
+	val dummyTexture by lazy {
+		texture(Bitmap32(1, 1))
+	}
 
     val root: Container = container()
     fun render() {
