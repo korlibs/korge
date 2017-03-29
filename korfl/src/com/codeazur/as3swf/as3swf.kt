@@ -8,8 +8,10 @@ import com.codeazur.as3swf.factories.ISWFTagFactory
 import com.codeazur.as3swf.factories.SWFActionFactory
 import com.codeazur.as3swf.factories.SWFFilterFactory
 import com.codeazur.as3swf.factories.SWFTagFactory
+import com.codeazur.as3swf.tags.IDefinitionTag
 import com.codeazur.as3swf.tags.ITag
 import com.codeazur.as3swf.tags.TagEnd
+import com.codeazur.as3swf.tags.TagJPEGTables
 import com.codeazur.as3swf.timeline.Frame
 import com.codeazur.as3swf.timeline.Layer
 import com.codeazur.as3swf.timeline.Scene
@@ -19,11 +21,12 @@ import com.codeazur.as3swf.utils.FlashByteArray
 import com.codeazur.as3swf.utils.toFlash
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.lang.Float16
+import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.substr
 import java.util.*
 
 @Suppress("unused")
-open class SWF : SWFTimelineContainer() {
+open class SWF : SWFTimelineContainer(), Extra by Extra.Mixin() {
 	protected var bytes: SWFData = SWFData()
 
 	var signature: String? = null
@@ -463,7 +466,7 @@ class SWFData : BitArray() {
 
 	fun readSHAPE(unitDivisor: Double = 20.0): SWFShape = SWFShape(unitDivisor).apply { parse(this@SWFData) }
 	fun writeSHAPE(value: SWFShape) = value.publish(this)
-	fun readSHAPEWITHSTYLE(level: Int = 1, unitDivisor: Double = 20.0): SWFShapeWithStyle = SWFShapeWithStyle(unitDivisor).apply { parse(this@SWFData) }
+	fun readSHAPEWITHSTYLE(level: Int = 1, unitDivisor: Double = 20.0): SWFShapeWithStyle = SWFShapeWithStyle(unitDivisor).apply { parse(this@SWFData, level) }
 	fun writeSHAPEWITHSTYLE(value: SWFShapeWithStyle, level: Int = 1) = value.publish(this, level)
 	fun readSTRAIGHTEDGERECORD(numBits: Int) = SWFShapeRecordStraightEdge(numBits).apply { parse(this@SWFData) }
 	fun writeSTRAIGHTEDGERECORD(value: SWFShapeRecordStraightEdge) = value.publish(this)
@@ -799,22 +802,23 @@ open class SWFTimelineContainer {
 	internal var rootTimelineContainer: SWFTimelineContainer = this
 
 	var backgroundColor: Int = 0xffffff
-	var jpegTablesTag: com.codeazur.as3swf.tags.TagJPEGTables? = null
+	var jpegTablesTag: TagJPEGTables? = null
 
-	fun getCharacter(characterId: Int): com.codeazur.as3swf.tags.IDefinitionTag? {
+	fun getCharacter(characterId: Int): IDefinitionTag? {
 		val tagIndex = rootTimelineContainer.dictionary[characterId] ?: 0
 		if (tagIndex >= 0 && tagIndex < rootTimelineContainer.tags.size) {
-			return rootTimelineContainer.tags[tagIndex] as com.codeazur.as3swf.tags.IDefinitionTag
+			return rootTimelineContainer.tags[tagIndex] as IDefinitionTag
 		}
 		return null
 	}
 
 	suspend fun parseTags(data: SWFData, version: Int): Unit {
 		parseTagsInit(data, version)
-		while (true) {
+		while (data.bytesAvailable > 0) {
 			dispatchProgress(_tmpData!!.position, _tmpData!!.length)
 			val tag = parseTag(_tmpData!!, true) ?: break
-			if (tag.type == com.codeazur.as3swf.tags.TagEnd.TYPE) break
+			//println(tag)
+			if (tag.type == TagEnd.TYPE) break
 		}
 		parseTagsFinalize()
 	}
@@ -954,7 +958,7 @@ open class SWFTimelineContainer {
 			}
 		// Global JPEG Table
 			com.codeazur.as3swf.tags.TagJPEGTables.TYPE -> {
-				processJPEGTablesTag(tag as com.codeazur.as3swf.tags.TagJPEGTables, currentTagIndex)
+				processJPEGTablesTag(tag as TagJPEGTables, currentTagIndex)
 			}
 		}
 	}
@@ -1060,7 +1064,7 @@ open class SWFTimelineContainer {
 		backgroundColor = tag.color
 	}
 
-	protected fun processJPEGTablesTag(tag: com.codeazur.as3swf.tags.TagJPEGTables, currentTagIndex: Int): Unit {
+	protected fun processJPEGTablesTag(tag: TagJPEGTables, currentTagIndex: Int): Unit {
 		jpegTablesTag = tag
 	}
 

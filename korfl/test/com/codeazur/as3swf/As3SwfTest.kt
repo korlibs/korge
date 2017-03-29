@@ -38,4 +38,20 @@ class As3SwfTest {
 		println(emptyData.hexString)
 		println(emptyData.toUtf8String())
 	}
+
+
+	@Test
+	fun name3() = syncTest {
+		val swf2 = SWF().loadBytes(ResourcesVfs["test1.swf"].readAll())
+		println(swf2.frameSize.rect)
+		for (tag in swf2.tags) {
+			println(tag)
+		}
+
+		val swf = SWF()
+		swf.tags += TagFileAttributes()
+		val emptyData = swf.publish()
+		println(emptyData.hexString)
+		println(emptyData.toUtf8String())
+	}
 }

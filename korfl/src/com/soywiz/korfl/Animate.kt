@@ -2,6 +2,7 @@ package com.soywiz.korfl
 
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.math.Matrix2d
@@ -22,30 +23,26 @@ class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: 
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
 
-//class AnSymbolPlace(val depth: Int, val charId: Int)
-//class AnSymbolUpdate(val depth: Int, val transform: Matrix2d.Computed)
-//class AnSymbolRemove(val depth: Int)
-//class AnSymbolFrame {
-//	val places = arrayListOf<AnSymbolPlace>()
-//	val updates = arrayListOf<AnSymbolUpdate>()
-//	val removes = arrayListOf<AnSymbolRemove>()
-//}
+class AnSymbolBitmap(id: Int, name: String?, val bmp: Bitmap) : AnSymbol(id, name) {
+	//override fun create(library: AnLibrary): AnElement = AnShape(library, this)
+}
 
 class AnSymbolTimelineFrame(
 	val uid: Int,
-	val transform: Matrix2d.Computed
+	val transform: Matrix2d.Computed,
+	val name: String?
 )
 
-class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>() {
-}
+class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
 class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int)
 
+class AnSymbolUidDef(val characterId: Int)
+
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	val labels = hashMapOf<String, Int>()
-	//val frames = Array<AnSymbolFrame>(limits.totalFrames) { AnSymbolFrame() } // @TODO: Remove this!
 	val timelines = Array<AnDepthTimeline>(limits.totalDepths) { AnDepthTimeline(it) }
-	val uidToCharacterId = IntArray(limits.totalUids) { -1 }
+	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
@@ -53,18 +50,22 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnElement(library, shapeSymbol) {
 	init {
 		val tex = shapeSymbol.texture
-		if (tex != null) this += views.image(tex, shapeSymbol.bounds.x, shapeSymbol.bounds.y)
+		if (tex != null) {
+			val image = views.image(tex)
+			image.x = shapeSymbol.bounds.x
+			image.y = shapeSymbol.bounds.y
+			this += image
+		}
 	}
 }
 
 class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnElement(library, mcSymbol) {
-	//val totalFrames = mcSymbol.frames.size
 	val totalDepths = mcSymbol.limits.totalDepths
 	val totalUids = mcSymbol.limits.totalUids
 	var nextFrame = 0
 	val singleFrame = mcSymbol.limits.totalFrames <= 1
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
-	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidToCharacterId[it]) }
+	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidInfo[it].characterId) }
 	var firstUpdate = true
 
 	init {
@@ -89,15 +90,15 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 			for (depth in 0 until totalDepths) {
 				val timeline = mcSymbol.timelines[depth]
 				timeline.findAndHandle(currentTime) { index, left, right, ratio ->
+					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 					if ((left != null) && (right != null) && (left.uid == right.uid)) {
 						//println("$currentTime: $index")
-						val view = viewUids[left.uid]
 						children[depth].replaceWith(view)
 						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+						view.name = left.name
 						//view.setComputedTransform(left.transform)
 					} else {
 						//println("$currentTime: $index")
-						val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 						children[depth].replaceWith(view)
 						if (left != null) {
 							view.setComputedTransform(left.transform)
@@ -134,6 +135,9 @@ class AnLibrary(val views: Views, val fps: Double) {
 	fun create(name: String) = symbolsByName[name]?.create(this) ?: invalidOp("Can't find symbol with name '$name'")
 	fun createShape(name: String) = create(name) as AnShape
 	fun createMovieClip(name: String) = create(name) as AnMovieClip
+
+	fun getBitmap(id: Int) = (symbolsById[id] as AnSymbolBitmap).bmp
+	fun getBitmap(name: String) = (symbolsByName[name] as AnSymbolBitmap).bmp
 
 	fun createMainTimeLine() = createMovieClip(0)
 }

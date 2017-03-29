@@ -27,16 +27,12 @@ object ActionValueType {
 	}
 }
 
-object BitmapFormat {
-	const val BIT_8 = 3
-	const val BIT_15 = 4
-	const val BIT_24 = 5
+enum class BitmapFormat(val id: Int) {
+	BIT_8(3), BIT_15(4), BIT_24_32(5), UNKNOWN(-1);
 
-	fun toString(bitmapFormat: Int) = when (bitmapFormat) {
-		BIT_8 -> "8 BPP"
-		BIT_15 -> "15 BPP"
-		BIT_24 -> "24 BPP"
-		else -> "unknown"
+	companion object {
+		val BY_ID = values().map { it.id to it }.toMap()
+		operator fun get(index: Int) = BY_ID[index] ?: UNKNOWN
 	}
 }
 
@@ -102,40 +98,39 @@ object CSMTableHint {
 	}
 }
 
-object GradientInterpolationMode {
-	const val NORMAL = 0
-	const val LINEAR = 1
+enum class GradientInterpolationMode(val id: Int) {
+	NORMAL(0), LINEAR(1);
 
-	fun toString(interpolationMode: Int) = when (interpolationMode) {
-		NORMAL -> "rgb"
-		LINEAR -> "linearRgb"
-		else -> "rgb"
+	companion object {
+		val BY_ID = values().map { it.id to it }.toMap()
+		operator fun get(index: Int) = BY_ID[index] ?: NORMAL
 	}
 }
 
-object GradientSpreadMode {
-	const val PAD = 0
-	const val REFLECT = 1
-	const val REPEAT = 2
+enum class GradientSpreadMode(val id: Int) {
+	PAD(0), REFLECT(1), REPEAT(2);
 
-	fun toString(spreadMode: Int): String = when (spreadMode) {
-		PAD -> "pad"
-		REFLECT -> "reflect"
-		REPEAT -> "repeat"
-		else -> "unknown"
+	companion object {
+		val BY_ID = values().map { it.id to it }.toMap()
+		operator fun get(index: Int) = BY_ID[index] ?: PAD
 	}
 }
 
-object LineCapsStyle {
-	const val ROUND = 0
-	const val NO = 1
-	const val SQUARE = 2
+enum class ScaleMode(val id: Int) {
+	NONE(0), HORIZONTAL(1), VERTICAL(2), NORMAL(3);
 
-	fun toString(lineCapsStyle: Int): String = when (lineCapsStyle) {
-		ROUND -> "round"
-		NO -> "none"
-		SQUARE -> "square"
-		else -> "unknown"
+	companion object {
+		val BY_ID = values().map { it.id to it }.toMap()
+		operator fun get(index: Int) = BY_ID[index] ?: NORMAL
+	}
+}
+
+enum class LineCapsStyle(val id: Int) {
+	ROUND(0), NO(1), SQUARE(2);
+
+	companion object {
+		val BY_ID = values().map { it.id to it }.toMap()
+		operator fun get(index: Int) = BY_ID[index] ?: LineCapsStyle.ROUND
 	}
 }
 

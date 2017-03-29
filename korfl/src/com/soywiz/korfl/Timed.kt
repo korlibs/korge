@@ -18,6 +18,7 @@ open class Timed<T> {
 	}
 
 	inline fun <TR> findAndHandle(time: Int, callback: (index: Int, left: T?, right: T?, ratio: Double) -> TR): TR {
+		if (objects.isEmpty()) return callback(0, null, null, 0.0)
 		val index = findNearIndex(time)
 		val timeAtIndex = times[index]
 		if (time < timeAtIndex && index <= 0) {

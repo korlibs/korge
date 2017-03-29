@@ -49,6 +49,8 @@ fun View.mouseSampleController() = this.apply { MouseSampleController(this).atta
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
 	@Path("simple.swf") val swfLibrary: SwfLibrary,
+	@Path("test1.swf") val swfLibraryTest1: SwfLibrary,
+	@Path("test4.swf") val swfLibraryTest4: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
@@ -75,6 +77,7 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
+
 		val image = root.image(korgeTex, 0.5).apply {
 			scale = 0.2
 			rotation = Math.toRadians(-90.0)
@@ -88,6 +91,25 @@ class Sample1Scene(
 
 		val tilemap = root.tileMap(Bitmap32(8, 8), tileset) {
 			alpha = 0.8
+		}
+
+
+		root.container {
+			val mc = swfLibraryTest1.an.createMainTimeLine().apply {
+				//speed = 0.1
+			}
+			this += mc
+			//mc.addUpdatable { println(mc.dumpToString()) }
+		}
+
+		root.container {
+			val mc = swfLibraryTest4.an.createMainTimeLine().apply {
+				x = 320.0
+				y = 320.0
+				//speed = 0.1
+			}
+			this += mc
+			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
 		root.text(font, "Hello world! F,", textSize = 72.0).apply {

@@ -850,8 +850,8 @@ class SWFGlyphEntry {
 }
 
 open class SWFGradient {
-	var spreadMode: Int = 0
-	var interpolationMode: Int = 0
+	var spreadMode: GradientSpreadMode = GradientSpreadMode.PAD
+	var interpolationMode: GradientInterpolationMode = GradientInterpolationMode.NORMAL
 
 	// Forward declarations of properties in SWFFocalGradient
 	var focalPoint: Double = 0.0
@@ -860,8 +860,8 @@ open class SWFGradient {
 
 	open fun parse(data: SWFData, level: Int): Unit {
 		data.resetBitsPending()
-		spreadMode = data.readUB(2)
-		interpolationMode = data.readUB(2)
+		spreadMode = GradientSpreadMode[data.readUB(2)]
+		interpolationMode = GradientInterpolationMode[data.readUB(2)]
 		val numGradients: Int = data.readUB(4)
 		for (i in 0 until numGradients) records.add(data.readGRADIENTRECORD(level))
 	}
@@ -869,8 +869,8 @@ open class SWFGradient {
 	open fun publish(data: SWFData, level: Int = 1): Unit {
 		val numRecords: Int = records.size
 		data.resetBitsPending()
-		data.writeUB(2, spreadMode)
-		data.writeUB(2, interpolationMode)
+		data.writeUB(2, spreadMode.id)
+		data.writeUB(2, interpolationMode.id)
 		data.writeUB(4, numRecords)
 		for (i in 0 until numRecords) {
 			data.writeGRADIENTRECORD(records[i], level)
@@ -937,9 +937,7 @@ class SWFKerningRecord {
 		data.writeSI16(adjustment)
 	}
 
-	fun toString(indent: Int = 0): String {
-		return "Code1: $code1, Code2: $code2, Adjustment: $adjustment"
-	}
+	fun toString(indent: Int = 0): String = "Code1: $code1, Code2: $code2, Adjustment: $adjustment"
 }
 
 open class SWFLineStyle {
@@ -949,8 +947,8 @@ open class SWFLineStyle {
 	var _level: Int = 0
 
 	// Forward declaration of SWFLineStyle2 properties
-	var startCapsStyle: Int = LineCapsStyle.ROUND
-	var endCapsStyle: Int = LineCapsStyle.ROUND
+	var startCapsStyle: LineCapsStyle = LineCapsStyle.ROUND
+	var endCapsStyle: LineCapsStyle = LineCapsStyle.ROUND
 	var jointStyle: Int = LineJointStyle.ROUND
 	var hasFillFlag: Boolean = false
 	var noHScaleFlag: Boolean = false
@@ -1000,7 +998,7 @@ open class SWFLineStyle {
 class SWFLineStyle2 : SWFLineStyle() {
 	override fun parse(data: SWFData, level: Int): Unit {
 		width = data.readUI16()
-		startCapsStyle = data.readUB(2)
+		startCapsStyle = LineCapsStyle[data.readUB(2)]
 		jointStyle = data.readUB(2)
 		hasFillFlag = (data.readUB(1) == 1)
 		noHScaleFlag = (data.readUB(1) == 1)
@@ -1008,7 +1006,7 @@ class SWFLineStyle2 : SWFLineStyle() {
 		pixelHintingFlag = (data.readUB(1) == 1)
 		data.readUB(5)
 		noClose = (data.readUB(1) == 1)
-		endCapsStyle = data.readUB(2)
+		endCapsStyle = LineCapsStyle[data.readUB(2)]
 		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) miterLimitFactor = data.readFIXED8()
 		if (hasFillFlag) {
 			fillType = data.readFILLSTYLE(level)
@@ -1019,7 +1017,7 @@ class SWFLineStyle2 : SWFLineStyle() {
 
 	override fun publish(data: SWFData, level: Int): Unit {
 		data.writeUI16(width)
-		data.writeUB(2, startCapsStyle)
+		data.writeUB(2, startCapsStyle.id)
 		data.writeUB(2, jointStyle)
 		data.writeUB(1, hasFillFlag)
 		data.writeUB(1, noHScaleFlag)
@@ -1027,7 +1025,7 @@ class SWFLineStyle2 : SWFLineStyle() {
 		data.writeUB(1, pixelHintingFlag)
 		data.writeUB(5, 0)
 		data.writeUB(1, noClose)
-		data.writeUB(2, endCapsStyle)
+		data.writeUB(2, endCapsStyle.id)
 		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
 		if (hasFillFlag) {
 			data.writeFILLSTYLE(fillType!!, level)
@@ -1038,9 +1036,9 @@ class SWFLineStyle2 : SWFLineStyle() {
 
 	override fun toString(): String {
 		var str: String = "[SWFLineStyle2] Width: " + width + ", " +
-			"StartCaps: " + com.codeazur.as3swf.data.consts.LineCapsStyle.toString(startCapsStyle) + ", " +
-			"EndCaps: " + com.codeazur.as3swf.data.consts.LineCapsStyle.toString(endCapsStyle) + ", " +
-			"Joint: " + com.codeazur.as3swf.data.consts.LineJointStyle.toString(jointStyle) + ", "
+			"StartCaps: " + (startCapsStyle) + ", " +
+			"EndCaps: " + (endCapsStyle) + ", " +
+			"Joint: " + LineJointStyle.toString(jointStyle) + ", "
 		if (noClose) str += "NoClose, "
 		if (noHScaleFlag) str += "NoHScale, "
 		if (noVScaleFlag) str += "NoVScale, "
@@ -1310,8 +1308,8 @@ open class SWFMorphLineStyle {
 	var endColor: Int = 0
 
 	// Forward declaration of SWFMorphLineStyle2 properties
-	var startCapsStyle: Int = LineCapsStyle.ROUND
-	var endCapsStyle: Int = LineCapsStyle.ROUND
+	var startCapsStyle: LineCapsStyle = LineCapsStyle.ROUND
+	var endCapsStyle: LineCapsStyle = LineCapsStyle.ROUND
 	var jointStyle: Int = LineJointStyle.ROUND
 	var hasFillFlag: Boolean = false
 	var noHScaleFlag: Boolean = false
@@ -1364,7 +1362,7 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 	override fun parse(data: SWFData, level: Int): Unit {
 		startWidth = data.readUI16()
 		endWidth = data.readUI16()
-		startCapsStyle = data.readUB(2)
+		startCapsStyle = LineCapsStyle[data.readUB(2)]
 		jointStyle = data.readUB(2)
 		hasFillFlag = (data.readUB(1) == 1)
 		noHScaleFlag = (data.readUB(1) == 1)
@@ -1372,8 +1370,8 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		pixelHintingFlag = (data.readUB(1) == 1)
 		var reserved: Int = data.readUB(5)
 		noClose = (data.readUB(1) == 1)
-		endCapsStyle = data.readUB(2)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) miterLimitFactor = data.readFIXED8()
+		endCapsStyle = LineCapsStyle[data.readUB(2)]
+		if (jointStyle == LineJointStyle.MITER) miterLimitFactor = data.readFIXED8()
 		if (hasFillFlag) {
 			fillType = data.readMORPHFILLSTYLE(level)
 		} else {
@@ -1385,7 +1383,7 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 	override fun publish(data: SWFData, level: Int): Unit {
 		data.writeUI16(startWidth)
 		data.writeUI16(endWidth)
-		data.writeUB(2, startCapsStyle)
+		data.writeUB(2, startCapsStyle.id)
 		data.writeUB(2, jointStyle)
 		data.writeUB(1, hasFillFlag)
 		data.writeUB(1, noHScaleFlag)
@@ -1393,8 +1391,8 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		data.writeUB(1, pixelHintingFlag)
 		data.writeUB(5, 0) // Reserved
 		data.writeUB(1, noClose)
-		data.writeUB(2, endCapsStyle)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
+		data.writeUB(2, endCapsStyle.id)
+		if (jointStyle == LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
 		if (hasFillFlag) {
 			data.writeMORPHFILLSTYLE(fillType!!, level)
 		} else {
@@ -1407,9 +1405,9 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		var str: String = "[SWFMorphLineStyle2] " +
 			"StartWidth: " + startWidth + ", " +
 			"EndWidth: " + endWidth + ", " +
-			"StartCaps: " + com.codeazur.as3swf.data.consts.LineCapsStyle.toString(startCapsStyle) + ", " +
-			"EndCaps: " + com.codeazur.as3swf.data.consts.LineCapsStyle.toString(endCapsStyle) + ", " +
-			"Joint: " + com.codeazur.as3swf.data.consts.LineJointStyle.toString(jointStyle)
+			"StartCaps: " + (startCapsStyle) + ", " +
+			"EndCaps: " + (endCapsStyle) + ", " +
+			"Joint: " + (jointStyle)
 		if (hasFillFlag) {
 			str += ", Fill: " + fillType.toString()
 		} else {
@@ -1830,11 +1828,6 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 	}
 
-	object GradientType {
-		val LINEAR = "linear"
-		val RADIAL = "radial"
-	}
-
 	protected fun exportFillPath(handler: ShapeExporter, groupIndex: Int): Unit {
 		val path: ArrayList<IEdge> = createPathFromEdgeMap(fillEdgeMaps[groupIndex])
 		var pos: Point2d = Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE)
@@ -1863,8 +1856,6 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 								val alphas = arrayListOf<Double>()
 								val ratios = arrayListOf<Int>()
 								matrix = fillStyle.gradientMatrix!!.matrix.clone()
-								matrix.tx /= 20
-								matrix.ty /= 20
 								for (gri in 0 until fillStyle.gradient!!.records.size) {
 									val gradientRecord = fillStyle.gradient!!.records[gri]
 									colors.add(ColorUtils.rgb(gradientRecord.color))
@@ -1874,8 +1865,8 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 								handler.beginGradientFill(
 									if (fillStyle.type == 0x10) GradientType.LINEAR else GradientType.RADIAL,
 									colors, alphas, ratios, matrix,
-									GradientSpreadMode.toString(fillStyle.gradient!!.spreadMode),
-									GradientInterpolationMode.toString(fillStyle.gradient!!.interpolationMode),
+									fillStyle.gradient!!.spreadMode,
+									fillStyle.gradient!!.interpolationMode,
 									fillStyle.gradient!!.focalPoint
 								)
 							}
@@ -1920,11 +1911,12 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun exportLinePath(handler: ShapeExporter, groupIndex: Int): Unit {
-		val path: ArrayList<IEdge> = createPathFromEdgeMap(lineEdgeMaps[groupIndex])
-		var pos: Point2d = Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE)
-		var lineStyleIdx: Int = Integer.MAX_VALUE
+		val path = createPathFromEdgeMap(lineEdgeMaps[groupIndex])
+		var pos = Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE)
+		var lineStyleIdx = Integer.MAX_VALUE
 		if (path.size > 0) {
 			handler.beginLines()
+			var basePoint: Point2d? = null
 			for (i in 0 until path.size) {
 				val e: IEdge = path[i]
 				if (lineStyleIdx != e.lineStyleIdx) {
@@ -1951,9 +1943,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							ColorUtils.alpha(lineStyle.color),
 							lineStyle.pixelHintingFlag,
 							scaleMode,
-							com.codeazur.as3swf.data.consts.LineCapsStyle.toString(lineStyle.startCapsStyle),
-							com.codeazur.as3swf.data.consts.LineCapsStyle.toString(lineStyle.endCapsStyle),
-							com.codeazur.as3swf.data.consts.LineJointStyle.toString(lineStyle.jointStyle),
+							(lineStyle.startCapsStyle),
+							(lineStyle.endCapsStyle),
+							LineJointStyle.toString(lineStyle.jointStyle),
 							lineStyle.miterLimitFactor)
 
 						if (lineStyle.hasFillFlag) {
@@ -1966,8 +1958,6 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 									val ratios = arrayListOf<Int>()
 									var gradientRecord: com.codeazur.as3swf.data.SWFGradientRecord
 									val matrix = fillStyle.gradientMatrix!!.matrix.clone()
-									matrix.tx /= 20
-									matrix.ty /= 20
 									for (gri in 0 until fillStyle.gradient!!.records.size) {
 										gradientRecord = fillStyle.gradient!!.records[gri]
 										colors.add(ColorUtils.rgb(gradientRecord.color))
@@ -1977,8 +1967,8 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 									handler.lineGradientStyle(
 										if (fillStyle.type == 0x10) GradientType.LINEAR else GradientType.RADIAL,
 										colors, alphas, ratios, matrix,
-										GradientSpreadMode.toString(fillStyle.gradient!!.spreadMode),
-										GradientInterpolationMode.toString(fillStyle.gradient!!.interpolationMode),
+										fillStyle.gradient!!.spreadMode,
+										fillStyle.gradient!!.interpolationMode,
 										fillStyle.gradient!!.focalPoint
 									)
 								}
@@ -1990,12 +1980,17 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 					}
 				}
 				if (e.from != pos) {
+					basePoint = e.from
 					handler.moveTo(e.from.x, e.from.y)
 				}
 				if (e is CurvedEdge) {
 					handler.curveTo(e.control.x, e.control.y, e.to.x, e.to.y)
 				} else {
 					handler.lineTo(e.to.x, e.to.y)
+				}
+
+				if (e.to == basePoint) {
+					handler.closePath()
 				}
 				pos = e.to
 			}
@@ -2681,3 +2676,5 @@ class SWFZoneRecord {
 		return str
 	}
 }
+
+enum class GradientType { LINEAR, RADIAL }

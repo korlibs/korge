@@ -13,6 +13,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var index: Int = 0
 	var speed: Double = 1.0
 	var parent: Container? = null
+	var name: String? = null
 	val id = views.lastId++
 	var alpha: Double = 1.0; set(v) = run {
 		if (field != v) {

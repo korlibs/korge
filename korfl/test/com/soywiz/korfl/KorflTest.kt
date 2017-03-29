@@ -23,21 +23,11 @@ class KorflTest {
 		}
 	}
 
-	private fun binarySearch2(array: IntArray, v: Int): Int {
-		val res = Arrays.binarySearch(array, v)
-		return if (res < 0) -res - 1 else res
-	}
-
 	@Test
-	fun name4() {
-		val v = intArrayOf(7, 10, 14)
-		println(binarySearch2(v, -10))
-		println(binarySearch2(v, 0))
-		println(binarySearch2(v, 7))
-		println(binarySearch2(v, 8))
-		println(binarySearch2(v, 10))
-		println(binarySearch2(v, 11))
-		println(binarySearch2(v, 14))
-		println(binarySearch2(v, 20))
+	fun name5() = syncTest {
+		//val lib = ResourcesVfs["test1.swf"].readSWF(views)
+		//val lib = ResourcesVfs["test2.swf"].readSWF(views)
+		val lib = ResourcesVfs["test4.swf"].readSWF(views, debug = true)
+		println(lib)
 	}
 }

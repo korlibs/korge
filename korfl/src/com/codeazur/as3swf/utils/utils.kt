@@ -51,7 +51,6 @@ object NumberUtils {
 	fun roundPixels400(pixels: Double): Double = Math.round(pixels * 10000).toDouble() / 10000
 }
 
-
 fun ByteArray.toFlash(): FlashByteArray = FlashByteArray(this)
 
 @Suppress("UNUSED_PARAMETER")

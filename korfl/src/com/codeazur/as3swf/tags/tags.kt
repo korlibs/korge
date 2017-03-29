@@ -1,6 +1,7 @@
 package com.codeazur.as3swf.tags
 
 import com.codeazur.as3swf.SWFData
+import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
 import com.codeazur.as3swf.utils.FlashByteArray
@@ -24,7 +25,7 @@ abstract class _BaseTag : ITag {
 
 interface IDefinitionTag : ITag {
 	var characterId: Int
-	fun clone(): com.codeazur.as3swf.tags.IDefinitionTag
+	fun clone(): IDefinitionTag
 }
 
 interface IDisplayListTag : ITag
@@ -125,7 +126,7 @@ class TagDebugID : _BaseTag() {
 	}
 }
 
-class TagDefineBinaryData : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 87
 	}
@@ -153,7 +154,7 @@ class TagDefineBinaryData : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag 
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBinaryData = com.codeazur.as3swf.tags.TagDefineBinaryData()
 		tag.characterId = characterId
 		if (binaryData.length > 0) {
@@ -174,7 +175,7 @@ class TagDefineBinaryData : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag 
 	}
 }
 
-open class TagDefineBits : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineBits : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 6
 	}
@@ -183,7 +184,7 @@ open class TagDefineBits : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	protected var bitmapData = FlashByteArray()
+	var bitmapData = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -200,8 +201,8 @@ open class TagDefineBits : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		}
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBits = com.codeazur.as3swf.tags.TagDefineBits()
+	override fun clone(): IDefinitionTag {
+		val tag: TagDefineBits = TagDefineBits()
 		tag.characterId = characterId
 		tag.bitmapType = bitmapType
 		if (bitmapData.length > 0) {
@@ -229,7 +230,7 @@ open class TagDefineBits : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 	*/
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBits.Companion.TYPE
+	override val type = TagDefineBits.Companion.TYPE
 	override val name = "DefineBits"
 	override val version = 1
 	override val level = 1
@@ -241,7 +242,7 @@ open class TagDefineBits : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-open class TagDefineBitsJPEG2 : com.codeazur.as3swf.tags.TagDefineBits(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineBitsJPEG2 : TagDefineBits(), IDefinitionTag {
 	companion object {
 		const val TYPE = 21
 	}
@@ -257,7 +258,7 @@ open class TagDefineBitsJPEG2 : com.codeazur.as3swf.tags.TagDefineBits(), com.co
 		}
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG2 = com.codeazur.as3swf.tags.TagDefineBitsJPEG2()
 		tag.characterId = characterId
 		tag.bitmapType = bitmapType
@@ -281,12 +282,12 @@ open class TagDefineBitsJPEG2 : com.codeazur.as3swf.tags.TagDefineBits(), com.co
 	}
 }
 
-open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), IDefinitionTag {
 	companion object {
 		const val TYPE = 35
 	}
 
-	protected var bitmapAlphaData = FlashByteArray()
+	var bitmapAlphaData = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -317,7 +318,7 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), c
 		}
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG3 = com.codeazur.as3swf.tags.TagDefineBitsJPEG3()
 		tag.characterId = characterId
 		tag.bitmapType = bitmapType
@@ -346,7 +347,7 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), c
 	}
 }
 
-class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefinitionTag {
 	companion object {
 		const val TYPE = 90
 	}
@@ -384,7 +385,7 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), com.co
 		}
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG4 = com.codeazur.as3swf.tags.TagDefineBitsJPEG4()
 		tag.characterId = characterId
 		tag.bitmapType = bitmapType
@@ -415,103 +416,85 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), com.co
 	}
 }
 
-open class TagDefineBitsLossless : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 20
 	}
 
-	var bitmapFormat: Int = 0
+	open val hasAlpha = false
+	var bitmapFormat: BitmapFormat = BitmapFormat.UNKNOWN
 	var bitmapWidth: Int = 0
 	var bitmapHeight: Int = 0
 	var bitmapColorTableSize: Int = 0
 
 	override var characterId: Int = 0
 
-	protected var zlibBitmapData = FlashByteArray()
+	var zlibBitmapData = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
-		bitmapFormat = data.readUI8()
+		bitmapFormat = BitmapFormat[data.readUI8()]
 		bitmapWidth = data.readUI16()
 		bitmapHeight = data.readUI16()
-		if (bitmapFormat == com.codeazur.as3swf.data.consts.BitmapFormat.BIT_8) {
-			bitmapColorTableSize = data.readUI8()
-		}
-		data.readBytes(zlibBitmapData, 0, length - (if (bitmapFormat == com.codeazur.as3swf.data.consts.BitmapFormat.BIT_8) 8 else 7))
+		if (bitmapFormat == BitmapFormat.BIT_8) bitmapColorTableSize = data.readUI8()
+		data.readBytes(zlibBitmapData, 0, length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7))
 	}
 
 	suspend override fun publish(data: SWFData, version: Int): Unit {
-		val body: SWFData = SWFData()
+		val body = SWFData()
 		body.writeUI16(characterId)
-		body.writeUI8(bitmapFormat)
+		body.writeUI8(bitmapFormat.id)
 		body.writeUI16(bitmapWidth)
 		body.writeUI16(bitmapHeight)
-		if (bitmapFormat == com.codeazur.as3swf.data.consts.BitmapFormat.BIT_8) {
-			body.writeUI8(bitmapColorTableSize)
-		}
-		if (zlibBitmapData.length > 0) {
-			body.writeBytes(zlibBitmapData)
-		}
+		if (bitmapFormat == BitmapFormat.BIT_8) body.writeUI8(bitmapColorTableSize)
+		if (zlibBitmapData.length > 0) body.writeBytes(zlibBitmapData)
 		data.writeTagHeader(type, body.length, true)
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBitsLossless = com.codeazur.as3swf.tags.TagDefineBitsLossless()
+	override fun clone(): IDefinitionTag {
+		val tag = TagDefineBitsLossless()
 		tag.characterId = characterId
 		tag.bitmapFormat = bitmapFormat
 		tag.bitmapWidth = bitmapWidth
 		tag.bitmapHeight = bitmapHeight
-		if (zlibBitmapData.length > 0) {
-			tag.zlibBitmapData.writeBytes(zlibBitmapData)
-		}
+		if (zlibBitmapData.length > 0) tag.zlibBitmapData.writeBytes(zlibBitmapData)
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBitsLossless.Companion.TYPE
+	override val type = TagDefineBitsLossless.Companion.TYPE
 	override val name = "DefineBitsLossless"
 	override val version = 2
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String {
-		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Format: " + com.codeazur.as3swf.data.consts.BitmapFormat.toString(bitmapFormat) + ", " +
-			"Size: (" + bitmapWidth + "," + bitmapHeight + ")"
-	}
+	override fun toString(indent: Int, flags: Int) = "${Tag.toStringCommon(type, name, indent)}ID: $characterId, Format: $bitmapFormat, Size: ($bitmapWidth,$bitmapHeight)"
 }
 
-class TagDefineBitsLossless2 : com.codeazur.as3swf.tags.TagDefineBitsLossless(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineBitsLossless2 : TagDefineBitsLossless(), IDefinitionTag {
 	companion object {
 		const val TYPE = 36
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBitsLossless2 = com.codeazur.as3swf.tags.TagDefineBitsLossless2()
+	override fun clone(): IDefinitionTag {
+		val tag = TagDefineBitsLossless2()
 		tag.characterId = characterId
 		tag.bitmapFormat = bitmapFormat
 		tag.bitmapWidth = bitmapWidth
 		tag.bitmapHeight = bitmapHeight
-		if (zlibBitmapData.length > 0) {
-			tag.zlibBitmapData.writeBytes(zlibBitmapData)
-		}
+		if (zlibBitmapData.length > 0) tag.zlibBitmapData.writeBytes(zlibBitmapData)
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBitsLossless2.Companion.TYPE
+	override val hasAlpha = true
+	override val type = TagDefineBitsLossless2.TYPE
 	override val name = "DefineBitsLossless2"
 	override val version = 3
 	override val level = 2
 
-	override fun toString(indent: Int, flags: Int): String {
-		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Format: " + com.codeazur.as3swf.data.consts.BitmapFormat.toString(bitmapFormat) + ", " +
-			"Size: (" + bitmapWidth + "," + bitmapHeight + ")"
-	}
+	override fun toString(indent: Int, flags: Int): String = "${Tag.toStringCommon(type, name, indent)}ID: $characterId, Format: $bitmapFormat, Size: ($bitmapWidth,$bitmapHeight)"
 }
 
-class TagDefineButton : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineButton : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 7
 		val STATE_UP = "up"
@@ -562,7 +545,7 @@ class TagDefineButton : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineButton()
 		tag.characterId = characterId
 		for (i in 0 until characters.size) {
@@ -630,7 +613,7 @@ class TagDefineButton : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-open class TagDefineButton2 : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 34
 	}
@@ -688,7 +671,7 @@ open class TagDefineButton2 : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTa
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineButton2 = com.codeazur.as3swf.tags.TagDefineButton2()
 		tag.characterId = characterId
 		tag.trackAsMenu = trackAsMenu
@@ -745,7 +728,7 @@ open class TagDefineButton2 : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTa
 	}
 }
 
-class TagDefineButtonCxform : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineButtonCxform : _BaseTag(), IDefinitionTag {
 	companion object {
 		val TYPE = 23
 	}
@@ -767,7 +750,7 @@ class TagDefineButtonCxform : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTa
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineButtonCxform()
 		tag.characterId = characterId
 		tag.buttonColorTransform = buttonColorTransform.clone()
@@ -787,7 +770,7 @@ class TagDefineButtonCxform : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTa
 	}
 }
 
-class TagDefineButtonSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineButtonSound : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 17
 	}
@@ -838,7 +821,7 @@ class TagDefineButtonSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineButtonSound()
 		tag.characterId = characterId
 		tag.buttonSoundChar0 = buttonSoundChar0
@@ -865,7 +848,7 @@ class TagDefineButtonSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag
 	}
 }
 
-class TagDefineEditText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineEditText : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 37
 	}
@@ -985,7 +968,7 @@ class TagDefineEditText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineEditText()
 		tag.characterId = characterId
 		tag.bounds = bounds.clone()
@@ -1035,7 +1018,7 @@ class TagDefineEditText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-open class TagDefineFont : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineFont : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 10
 	}
@@ -1080,7 +1063,7 @@ open class TagDefineFont : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag = throw(Error("Not implemented yet."))
+	override fun clone(): IDefinitionTag = throw(Error("Not implemented yet."))
 
 	fun export(handler: ShapeExporter, glyphIndex: Int): Unit {
 		glyphShapeTable[glyphIndex].export(handler)
@@ -1110,7 +1093,7 @@ open class TagDefineFont : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitionTag {
 	companion object {
 		const val TYPE = 48
 	}
@@ -1325,7 +1308,7 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), com.codeaz
 	}
 }
 
-class TagDefineFont3 : com.codeazur.as3swf.tags.TagDefineFont2(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineFont3 : com.codeazur.as3swf.tags.TagDefineFont2(), IDefinitionTag {
 	companion object {
 		const val TYPE = 75
 	}
@@ -1348,7 +1331,7 @@ class TagDefineFont3 : com.codeazur.as3swf.tags.TagDefineFont2(), com.codeazur.a
 	}
 }
 
-class TagDefineFont4 : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineFont4 : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 91
 	}
@@ -1397,7 +1380,7 @@ class TagDefineFont4 : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineFont4 = com.codeazur.as3swf.tags.TagDefineFont4()
 		tag.characterId = characterId
 		tag.hasFontData = hasFontData
@@ -1655,7 +1638,7 @@ class TagDefineFontName : _BaseTag(), ITag {
 	}
 }
 
-open class TagDefineMorphShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 46
 	}
@@ -1731,7 +1714,7 @@ open class TagDefineMorphShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitio
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: TagDefineMorphShape = TagDefineMorphShape()
 		throw(Error("Not implemented yet."))
 	}
@@ -1962,7 +1945,7 @@ class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 	}
 }
 
-class TagDefineScalingGrid : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineScalingGrid : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 78
 	}
@@ -1984,7 +1967,7 @@ class TagDefineScalingGrid : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineScalingGrid = com.codeazur.as3swf.tags.TagDefineScalingGrid()
 		tag.characterId = characterId
 		tag.splitter = splitter.clone()
@@ -2067,7 +2050,7 @@ class TagDefineSceneAndFrameLabelData : _BaseTag(), ITag {
 	}
 }
 
-open class TagDefineShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineShape : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 2
 	}
@@ -2092,7 +2075,7 @@ open class TagDefineShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag 
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineShape = com.codeazur.as3swf.tags.TagDefineShape()
 		throw(Error("Not implemented yet."))
 		return tag
@@ -2116,7 +2099,7 @@ open class TagDefineShape : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag 
 	}
 }
 
-open class TagDefineShape2 : com.codeazur.as3swf.tags.TagDefineShape(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineShape2 : com.codeazur.as3swf.tags.TagDefineShape(), IDefinitionTag {
 	companion object {
 		const val TYPE = 22
 	}
@@ -2135,7 +2118,7 @@ open class TagDefineShape2 : com.codeazur.as3swf.tags.TagDefineShape(), com.code
 	}
 }
 
-open class TagDefineShape3 : com.codeazur.as3swf.tags.TagDefineShape2(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineShape3 : com.codeazur.as3swf.tags.TagDefineShape2(), IDefinitionTag {
 	companion object {
 		const val TYPE = 32
 	}
@@ -2154,7 +2137,7 @@ open class TagDefineShape3 : com.codeazur.as3swf.tags.TagDefineShape2(), com.cod
 	}
 }
 
-class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), IDefinitionTag {
 	companion object {
 		const val TYPE = 83
 	}
@@ -2218,7 +2201,7 @@ class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), com.codeazur
 	}
 }
 
-class TagDefineSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineSound : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 14
 
@@ -2283,7 +2266,7 @@ class TagDefineSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineSound()
 		tag.characterId = characterId
 		tag.soundFormat = soundFormat
@@ -2384,7 +2367,7 @@ class TagDefineSound : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), IDefinitionTag {
 	companion object {
 		const val TYPE = 39
 	}
@@ -2415,7 +2398,7 @@ class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), com.codeazur
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineSprite = com.codeazur.as3swf.tags.TagDefineSprite()
 		throw(Error("Not implemented yet."))
 		return tag
@@ -2434,7 +2417,7 @@ class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), com.codeazur
 	}
 }
 
-open class TagDefineText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+open class TagDefineText : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 11
 	}
@@ -2494,7 +2477,7 @@ open class TagDefineText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 		data.writeBytes(body)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineText = com.codeazur.as3swf.tags.TagDefineText()
 		tag.characterId = characterId
 		tag.textBounds = textBounds.clone()
@@ -2528,7 +2511,7 @@ open class TagDefineText : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
 	}
 }
 
-class TagDefineText2 : com.codeazur.as3swf.tags.TagDefineText(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineText2 : com.codeazur.as3swf.tags.TagDefineText(), IDefinitionTag {
 	companion object {
 		const val TYPE = 33
 	}
@@ -2553,7 +2536,7 @@ class TagDefineText2 : com.codeazur.as3swf.tags.TagDefineText(), com.codeazur.as
 	}
 }
 
-class TagDefineVideoStream : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag {
+class TagDefineVideoStream : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 60
 	}
@@ -2590,7 +2573,7 @@ class TagDefineVideoStream : _BaseTag(), com.codeazur.as3swf.tags.IDefinitionTag
 		data.writeUI8(codecId)
 	}
 
-	override fun clone(): com.codeazur.as3swf.tags.IDefinitionTag {
+	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineVideoStream = com.codeazur.as3swf.tags.TagDefineVideoStream()
 		tag.characterId = characterId
 		tag.numFrames = numFrames

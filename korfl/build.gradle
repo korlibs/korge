@@ -4,6 +4,7 @@ apply plugin: 'kotlin'
 
 dependencies {
     compile project(':korge-core')
+	compile "com.soywiz:korim:$korVersion" // debug
 	testCompile "com.soywiz:korio-core:$korVersion"
 	testCompile "com.soywiz:korio:$korVersion"
 }
