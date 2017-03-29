@@ -14,12 +14,15 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.rangeTo
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.text
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.async.go
+import com.soywiz.korma.geom.Point2d
 
 object Sample1 {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)

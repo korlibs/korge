@@ -1,7 +1,7 @@
 package com.codeazur.as3swf.data.etc
 
-import com.soywiz.korim.geom.Point2d
 import com.codeazur.as3swf.utils.FlashByteArray
+import com.soywiz.korma.geom.Point2d
 
 class CurvedEdge(aFrom: Point2d, var control: Point2d, aTo: Point2d, aLineStyleIdx: Int = 0, aFillStyleIdx: Int = 0) : com.codeazur.as3swf.data.etc.StraightEdge(aFrom, aTo, aLineStyleIdx, aFillStyleIdx), com.codeazur.as3swf.data.etc.IEdge {
 	override fun reverseWithNewFillStyle(newFillStyleIdx: Int): com.codeazur.as3swf.data.etc.IEdge {

@@ -2,9 +2,9 @@ package com.soywiz.korfl
 
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.*
-import com.soywiz.korim.geom.Matrix2d
-import com.soywiz.korim.geom.Rectangle
 import com.soywiz.korio.error.invalidOp
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.math.Matrix2d
 
 open class AnElement(val library: AnLibrary, val symbol: AnSymbol) : Container(library.views) {
 }
@@ -22,26 +22,30 @@ class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: 
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
 
-class AnSymbolPlace(val depth: Int, val charId: Int) {
+//class AnSymbolPlace(val depth: Int, val charId: Int)
+//class AnSymbolUpdate(val depth: Int, val transform: Matrix2d.Computed)
+//class AnSymbolRemove(val depth: Int)
+//class AnSymbolFrame {
+//	val places = arrayListOf<AnSymbolPlace>()
+//	val updates = arrayListOf<AnSymbolUpdate>()
+//	val removes = arrayListOf<AnSymbolRemove>()
+//}
+
+class AnSymbolTimelineFrame(
+	val uid: Int,
+	val transform: Matrix2d.Computed
+)
+
+class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>() {
 }
 
-class AnSymbolUpdate(val depth: Int, val transform: Matrix2d.Computed) {
-}
-
-class AnSymbolRemove(val depth: Int) {
-}
-
-class AnSymbolFrame() {
-	val places = arrayListOf<AnSymbolPlace>()
-	val updates = arrayListOf<AnSymbolUpdate>()
-	val removes = arrayListOf<AnSymbolRemove>()
-}
-
-class AnSymbolLimits(val maxDepths: Int, val totalFrames: Int)
+class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	val labels = hashMapOf<String, Int>()
-	val frames = Array<AnSymbolFrame>(limits.totalFrames) { AnSymbolFrame() }
+	//val frames = Array<AnSymbolFrame>(limits.totalFrames) { AnSymbolFrame() } // @TODO: Remove this!
+	val timelines = Array<AnDepthTimeline>(limits.totalDepths) { AnDepthTimeline(it) }
+	val uidToCharacterId = IntArray(limits.totalUids) { -1 }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
@@ -54,65 +58,65 @@ class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnElement(li
 }
 
 class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnElement(library, mcSymbol) {
-	val totalFrames = mcSymbol.frames.size
-	val maxDepths = mcSymbol.limits.maxDepths
-	val dummyDepths = Array<View>(maxDepths) { View(views) }
+	//val totalFrames = mcSymbol.frames.size
+	val totalDepths = mcSymbol.limits.totalDepths
+	val totalUids = mcSymbol.limits.totalUids
 	var nextFrame = 0
-	val singleFrame = mcSymbol.frames.size <= 1
+	val singleFrame = mcSymbol.limits.totalFrames <= 1
+	val dummyDepths = Array<View>(totalDepths) { View(views) }
+	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidToCharacterId[it]) }
+	var firstUpdate = true
 
 	init {
 		for (d in dummyDepths) this += d
-		gotoFrame(0)
+		updateInternal(0)
 	}
 
-	private fun reset() {
+	override fun reset() {
+		super.reset()
 		println("reset")
+		for (view in viewUids) view.reset()
 		for (n in children.indices) children[n].replaceWith(dummyDepths[n])
 		nextFrame = 0
 	}
 
-	fun eval(frame: AnSymbolFrame) {
-		for (r in frame.removes) children[r.depth] = dummyDepths[r.depth]
-		for (r in frame.places) {
-			children[r.depth].replaceWith(library.create(r.charId))
-		}
-		for (r in frame.updates) {
-			val view = children[r.depth]
-			view.setComputedTransform(r.transform)
-		}
-	}
-
-	fun gotoFrame(index: Int) {
-		val ni = index % (totalFrames + 1)
-		if (ni < nextFrame) reset()
-		if (nextFrame >= totalFrames) return
-		while (nextFrame <= ni) {
-			val frame = mcSymbol.frames[nextFrame]
-			eval(frame)
-			nextFrame++
-		}
-	}
-
-	fun step() {
-		gotoFrame(nextFrame)
-	}
-
-	private var pendingTime = 0
+	private var currentTime = 0
 
 	override fun updateInternal(dtMs: Int) {
-		if (!singleFrame) {
-			pendingTime += dtMs
-			while (pendingTime >= library.msPerFrame) {
-				step()
-				pendingTime -= library.msPerFrame
+		if (firstUpdate || !singleFrame) {
+			firstUpdate = false
+			currentTime += dtMs
+			for (depth in 0 until totalDepths) {
+				val timeline = mcSymbol.timelines[depth]
+				timeline.findAndHandle(currentTime) { index, left, right, ratio ->
+					if ((left != null) && (right != null) && (left.uid == right.uid)) {
+						//println("$currentTime: $index")
+						val view = viewUids[left.uid]
+						children[depth].replaceWith(view)
+						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+						//view.setComputedTransform(left.transform)
+					} else {
+						//println("$currentTime: $index")
+						val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+						children[depth].replaceWith(view)
+						if (left != null) {
+							view.setComputedTransform(left.transform)
+						}
+					}
+				}
+			}
+			if (currentTime >= mcSymbol.limits.totalTime) {
+				currentTime -= mcSymbol.limits.totalTime
 			}
 		}
+
 		super.updateInternal(dtMs)
 	}
 }
 
 class AnLibrary(val views: Views, val fps: Double) {
-	val msPerFrame: Int = (1000 / fps).toInt()
+	val msPerFrameDouble: Double = (1000 / fps)
+	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: Int = 0xFFFFFFFF.toInt()
 	val symbolsById = arrayListOf<AnSymbol>()
 	val symbolsByName = hashMapOf<String, AnSymbol>()

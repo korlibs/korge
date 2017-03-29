@@ -9,8 +9,6 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.NamedColors
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.geom.IRectangle
-import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.compression.uncompressGzip
 import com.soywiz.korio.compression.uncompressZlib
 import com.soywiz.korio.crypto.Base64
@@ -21,6 +19,8 @@ import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.util.readIntArray_le
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
+import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.Point2d
 
 @AsyncFactoryClass(TiledMapFactory::class)
 class TiledMap {
@@ -91,8 +91,8 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 				val height = image?.int("height", 0) ?: 0
 				val tex = folder[source].readTexture(ag)
 				tiledMap.tilesets += TiledMap.TiledTileset(
-						tileset = TileSet(Texture(tex.base), tilewidth, tileheight, columns, tilecount),
-						firstgid = firstgid
+					tileset = TileSet(Texture(tex.base), tilewidth, tileheight, columns, tilecount),
+					firstgid = firstgid
 				)
 			}
 			"layer", "objectgroup", "imagelayer" -> {
@@ -204,8 +204,8 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 }
 
 class TiledMapFactory(
-		val ag: AG,
-		val path: Path
+	val ag: AG,
+	val path: Path
 ) : AsyncFactory<TiledMap> {
 	suspend override fun create(): TiledMap = ResourcesVfs[path.path].readTiledMap(ag)
 }

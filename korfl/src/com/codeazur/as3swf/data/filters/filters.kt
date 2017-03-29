@@ -36,8 +36,8 @@ class FilterBevel(id: Int) : Filter(id) {
 	var compositeSource: Boolean = false
 	var onTop: Boolean = false
 	var passes: Int = 0
-	val filterType = if (onTop) FilterType.FULL else if (innerShadow) FilterType.INNER else FilterType.OUTER
-	val angleDegrees = angle * 180 / Math.PI
+	val filterType get() = if (onTop) FilterType.FULL else if (innerShadow) FilterType.INNER else FilterType.OUTER
+	val angleDegrees get() = angle * 180 / Math.PI
 
 
 	//override val filter: BitmapFilter get() {

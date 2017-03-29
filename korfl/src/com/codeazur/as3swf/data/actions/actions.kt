@@ -46,11 +46,7 @@ open class Action(
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String = "${toBytecodeLabel(indent)}unknown (0x${code.toString(16)})"
 
 	fun toBytecodeLabel(indent: Int): String {
-		return if (lbl != null) {
-			lbl + ":\n" + " ".repeat(indent + 2)
-		} else {
-			" ".repeat(2)
-		}
+		return if (lbl != null) "$lbl:\n${" ".repeat(indent + 2)}" else " ".repeat(2)
 	}
 
 	companion object {

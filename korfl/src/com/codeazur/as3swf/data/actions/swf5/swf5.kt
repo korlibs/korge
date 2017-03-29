@@ -497,12 +497,8 @@ open class ActionWith(code: Int, length: Int, pos: Int) : Action(code, length, p
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String {
 		var str: String = toBytecodeLabel(indent) + "with {"
 		val ctx = ActionExecutionContext(withBody, ArrayList(context.cpool), labelCount)
-		for (i in 0 until withBody.size) {
-			str += "\n" + " ".repeat(indent + 4) + withBody[i].toBytecode(indent + 4, ctx)
-		}
-		if (ctx.endLabel != null) {
-			str += "\n" + " ".repeat(indent + 4) + ctx.endLabel + ":"
-		}
+		for (i in 0 until withBody.size) str += "\n" + " ".repeat(indent + 4) + withBody[i].toBytecode(indent + 4, ctx)
+		if (ctx.endLabel != null) str += "\n" + " ".repeat(indent + 4) + ctx.endLabel + ":"
 		str += "\n" + " ".repeat(indent + 2) + "}"
 		return str
 	}

@@ -3,11 +3,11 @@ package com.soywiz.korge.view
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.geom.Matrix2d
-import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
+import com.soywiz.korma.geom.Point2d
+import com.soywiz.korma.math.Matrix2d
 
 open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var index: Int = 0
@@ -41,10 +41,34 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
 
+	fun setMatrix(matrix: Matrix2d) {
+		this._localMatrix.copyFrom(matrix)
+		validLocal = true
+		invalidate()
+	}
+
+	companion object {
+		private val tempTransform = Matrix2d.Transform()
+	}
+
+	fun setMatrixInterpolated(ratio: Double, l: Matrix2d, r: Matrix2d) {
+		this._localMatrix.setToInterpolated(ratio, l, r)
+		tempTransform.setMatrix(this._localMatrix)
+		this._x = tempTransform.x
+		this._y = tempTransform.y
+		this._scaleX = tempTransform.scaleX
+		this._scaleY = tempTransform.scaleY
+		this._skewX = tempTransform.skewX
+		this._skewY = tempTransform.skewY
+		this._rotation = tempTransform.rotation
+		validLocal = true
+		invalidate()
+	}
+
 	fun setComputedTransform(transform: Matrix2d.Computed) {
 		val m = transform.matrix
 		val t = transform.transform
-		_localMatrix = m
+		_localMatrix.copyFrom(m)
 		_x = t.x; _y = t.y
 		_scaleX = t.scaleX; _scaleY = t.scaleY
 		_skewX = t.skewY; _skewY = t.skewY
@@ -175,6 +199,16 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		return lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
 	}
 
+	open fun reset() {
+		_localMatrix.setToIdentity()
+		_x = 0.0; _y = 0.0
+		_scaleX = 1.0; _scaleY = 1.0
+		_skewX = 0.0; _skewY = 0.0
+		_rotation = 0.0
+		validLocal = true
+		invalidate()
+	}
+
 	fun update(dtMs: Int) {
 		updateInternal((dtMs * speed).toInt())
 	}
@@ -203,12 +237,12 @@ fun View.hasAncestor(ancestor: View): Boolean {
 }
 
 fun View.replaceWith(view: View) {
-	if (parent != null) {
-		view.parent?.children?.remove(view)
-		parent!!.children[this.index] = view
-		view.index = this.index
-		view.parent = parent
-		parent = null
-		this.index = -1
-	}
+	if (this == view) return
+	if (parent == null) return
+	view.parent?.children?.remove(view)
+	parent!!.children[this.index] = view
+	view.index = this.index
+	view.parent = parent
+	parent = null
+	this.index = -1
 }

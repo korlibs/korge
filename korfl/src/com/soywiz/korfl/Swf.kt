@@ -3,16 +3,37 @@ package com.soywiz.korfl
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.tags.*
+import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.geom.Matrix2d
-import com.soywiz.korim.geom.Rectangle
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.inject.AsyncFactory
+import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.extract8
 import com.soywiz.korio.util.toIntCeil
+import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.math.Matrix2d
+
+@AsyncFactoryClass(SwfLibraryFactory::class)
+class SwfLibrary(
+	val an: AnLibrary
+) {
+
+}
+
+class SwfLibraryFactory(
+	val path: Path,
+	val views: Views
+) : AsyncFactory<SwfLibrary> {
+	suspend override fun create(): SwfLibrary = SwfLibrary(ResourcesVfs[path.path].readSWF(views))
+}
+
+inline val TagPlaceObject.depth0: Int get() = this.depth - 1
+inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
 object SwfLoader {
 	suspend fun load(views: Views, data: ByteArray): AnLibrary {
@@ -24,26 +45,43 @@ object SwfLoader {
 		fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
 			var maxDepth = -1
 			var totalFrames = 0
+			val items = hashSetOf<Pair<Int, Int>>()
 			// Find limits
 			for (it in tags) {
 				when (it) {
 					is TagPlaceObject -> {
-						maxDepth = Math.max(maxDepth, it.depth)
+						if (it.hasCharacter) {
+							items += it.depth0 to it.characterId
+						}
+						maxDepth = Math.max(maxDepth, it.depth0)
 					}
 					is TagShowFrame -> {
 						totalFrames++
 					}
 				}
 			}
-			return AnSymbolLimits(maxDepth + 1, totalFrames)
+			return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt())
 		}
 
 		fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 			lib.addSymbol(mc)
 
 			var currentFrame = 0
+			val uniqueIds = hashMapOf<Pair<Int, Int>, Int>()
+			val depthCharacterIds = Array(mc.limits.totalDepths) { 0 }
+
+			fun getUid(depth: Int): Int {
+				val characterId = depthCharacterIds[depth]
+				return uniqueIds.getOrPut(depth to characterId) {
+					val uid = uniqueIds.size
+					mc.uidToCharacterId[uid] = characterId
+					uid
+				}
+			}
+
 			for (it in tags) {
-				//println("Tag: $tag")
+				//println("Tag: $it")
+				val currentTime = (currentFrame * lib.msPerFrameDouble).toInt()
 				when (it) {
 					is TagFileAttributes -> {
 
@@ -65,18 +103,18 @@ object SwfLoader {
 						parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, it.name, findLimits(it.tags)))
 					}
 					is TagPlaceObject -> {
-						val frame = mc.frames[currentFrame]
-
 						val matrix = if (it.hasMatrix) it.matrix!!.matrix else Matrix2d()
+						if (it.hasCharacter) depthCharacterIds[it.depth0] = it.characterId
+						mc.timelines[it.depth0].add(currentTime, AnSymbolTimelineFrame(getUid(it.depth0), Matrix2d.Computed(matrix)))
 
-						if (it.hasCharacter) {
-							frame.places += AnSymbolPlace(it.depth, it.characterId)
-						}
-						frame.updates += AnSymbolUpdate(it.depth, Matrix2d.Computed(matrix))
+						//val frame = mc.frames[currentFrame]
+						//if (it.hasCharacter) frame.places += AnSymbolPlace(it.depth0, it.characterId)
+						//frame.updates += AnSymbolUpdate(it.depth0, Matrix2d.Computed(matrix))
 					}
 					is TagRemoveObject -> {
-						val frame = mc.frames[currentFrame]
-						frame.removes += AnSymbolRemove(it.depth)
+						depthCharacterIds[it.depth0] = -1
+						mc.timelines[it.depth0].add(currentTime, AnSymbolTimelineFrame(-1, Matrix2d.Computed(Matrix2d())))
+						//mc.frames[currentFrame].removes += AnSymbolRemove(it.depth0)
 					}
 					is TagShowFrame -> {
 						currentFrame++

@@ -2,16 +2,17 @@ package com.codeazur.as3swf.data
 
 import com.codeazur.as3swf.SWFData
 import com.codeazur.as3swf.data.actions.IAction
-import com.codeazur.as3swf.data.consts.ActionValueType
-import com.codeazur.as3swf.data.consts.GradientInterpolationMode
-import com.codeazur.as3swf.data.consts.GradientSpreadMode
+import com.codeazur.as3swf.data.consts.*
 import com.codeazur.as3swf.data.etc.CurvedEdge
 import com.codeazur.as3swf.data.etc.IEdge
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.*
-import com.soywiz.korim.geom.Matrix2d
-import com.soywiz.korim.geom.Point2d
-import com.soywiz.korim.geom.Rectangle
+import com.soywiz.korma.geom.Point2d
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.math.Matrix2d
+import java.util.HashMap
+import kotlin.collections.ArrayList
+import kotlin.collections.set
 
 class SWFActionValue {
 	var type: Int = 0
@@ -23,7 +24,7 @@ class SWFActionValue {
 	var constant: Int = 0
 
 	companion object {
-		private var ba: FlashByteArray = SWFActionValue.Companion.initTmpBuffer()
+		private var ba = SWFActionValue.initTmpBuffer()
 
 		private fun initTmpBuffer(): FlashByteArray {
 			val baTmp = FlashByteArray()
@@ -43,16 +44,16 @@ class SWFActionValue {
 			ActionValueType.REGISTER -> register = data.readUI8()
 			ActionValueType.BOOLEAN -> boolean = (data.readUI8() != 0)
 			ActionValueType.DOUBLE -> {
-				SWFActionValue.Companion.ba.position = 0
-				SWFActionValue.Companion.ba[4] = data.readUI8()
-				SWFActionValue.Companion.ba[5] = data.readUI8()
-				SWFActionValue.Companion.ba[6] = data.readUI8()
-				SWFActionValue.Companion.ba[7] = data.readUI8()
-				SWFActionValue.Companion.ba[0] = data.readUI8()
-				SWFActionValue.Companion.ba[1] = data.readUI8()
-				SWFActionValue.Companion.ba[2] = data.readUI8()
-				SWFActionValue.Companion.ba[3] = data.readUI8()
-				number = SWFActionValue.Companion.ba.readDouble()
+				SWFActionValue.ba.position = 0
+				SWFActionValue.ba[4] = data.readUI8()
+				SWFActionValue.ba[5] = data.readUI8()
+				SWFActionValue.ba[6] = data.readUI8()
+				SWFActionValue.ba[7] = data.readUI8()
+				SWFActionValue.ba[0] = data.readUI8()
+				SWFActionValue.ba[1] = data.readUI8()
+				SWFActionValue.ba[2] = data.readUI8()
+				SWFActionValue.ba[3] = data.readUI8()
+				number = SWFActionValue.ba.readDouble()
 			}
 			ActionValueType.INTEGER -> integer = data.readUI32()
 			ActionValueType.CONSTANT_8 -> constant = data.readUI8()
@@ -72,16 +73,16 @@ class SWFActionValue {
 			ActionValueType.REGISTER -> data.writeUI8(register)
 			ActionValueType.BOOLEAN -> data.writeUI8(boolean)
 			ActionValueType.DOUBLE -> {
-				SWFActionValue.Companion.ba.position = 0
-				SWFActionValue.Companion.ba.writeDouble(number)
-				data.writeUI8(SWFActionValue.Companion.ba[4])
-				data.writeUI8(SWFActionValue.Companion.ba[5])
-				data.writeUI8(SWFActionValue.Companion.ba[6])
-				data.writeUI8(SWFActionValue.Companion.ba[7])
-				data.writeUI8(SWFActionValue.Companion.ba[0])
-				data.writeUI8(SWFActionValue.Companion.ba[1])
-				data.writeUI8(SWFActionValue.Companion.ba[2])
-				data.writeUI8(SWFActionValue.Companion.ba[3])
+				SWFActionValue.ba.position = 0
+				SWFActionValue.ba.writeDouble(number)
+				data.writeUI8(SWFActionValue.ba[4])
+				data.writeUI8(SWFActionValue.ba[5])
+				data.writeUI8(SWFActionValue.ba[6])
+				data.writeUI8(SWFActionValue.ba[7])
+				data.writeUI8(SWFActionValue.ba[0])
+				data.writeUI8(SWFActionValue.ba[1])
+				data.writeUI8(SWFActionValue.ba[2])
+				data.writeUI8(SWFActionValue.ba[3])
 			}
 			ActionValueType.INTEGER -> data.writeUI32(integer)
 			ActionValueType.CONSTANT_8 -> data.writeUI8(constant)
@@ -108,16 +109,16 @@ class SWFActionValue {
 
 	override fun toString(): String {
 		return when (type) {
-			ActionValueType.STRING -> "" + (string) + " (string)"
-			ActionValueType.FLOAT -> "" + number + " (float)"
+			ActionValueType.STRING -> "$string (string)"
+			ActionValueType.FLOAT -> "$number (float)"
 			ActionValueType.NULL -> "null"
 			ActionValueType.UNDEFINED -> "undefined"
-			ActionValueType.REGISTER -> "" + register + " (register)"
-			ActionValueType.BOOLEAN -> "" + boolean + " (boolean)"
-			ActionValueType.DOUBLE -> "" + number + " (double)"
-			ActionValueType.INTEGER -> "" + integer + " (integer)"
-			ActionValueType.CONSTANT_8 -> "" + constant + " (constant8)"
-			ActionValueType.CONSTANT_16 -> "" + constant + " (constant16)"
+			ActionValueType.REGISTER -> "$register (register)"
+			ActionValueType.BOOLEAN -> "$boolean (boolean)"
+			ActionValueType.DOUBLE -> "$number (double)"
+			ActionValueType.INTEGER -> "$integer (integer)"
+			ActionValueType.CONSTANT_8 -> "$constant (constant8)"
+			ActionValueType.CONSTANT_16 -> "$constant (constant16)"
 			else -> "unknown"
 		}
 	}
@@ -179,7 +180,7 @@ class SWFButtonCondAction {
 			if (action == null) break
 			actions.add(action)
 		}
-		labelCount = com.codeazur.as3swf.data.actions.Action.Companion.resolveOffsets(actions)
+		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
 	fun publish(data: SWFData): Unit {
@@ -236,7 +237,7 @@ class SWFButtonCondAction {
 		if (condOverDownToIdle) a.add("overDownToIdle")
 		var str: String = "CondActionRecord (" + a.joinToString(", ") + ")"
 		if (condKeyPress > 0) str += ", KeyPress: " + condKeyPress
-		if ((flags and com.codeazur.as3swf.SWF.Companion.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -264,7 +265,7 @@ class SWFButtonRecord {
 	var characterId: Int = 0
 	var placeDepth: Int = 0
 	var placeMatrix: SWFMatrix? = null
-	var colorTransform: com.codeazur.as3swf.data.SWFColorTransformWithAlpha? = null
+	var colorTransform: SWFColorTransformWithAlpha? = null
 	var blendMode: Int = 0
 
 	protected var filterList = ArrayList<com.codeazur.as3swf.data.filters.IFilter>()
@@ -332,7 +333,7 @@ class SWFButtonRecord {
 		data.characterId = characterId
 		data.placeDepth = placeDepth
 		data.placeMatrix = placeMatrix!!.clone()
-		if (colorTransform != null) data.colorTransform = colorTransform!!.clone() as com.codeazur.as3swf.data.SWFColorTransformWithAlpha
+		if (colorTransform != null) data.colorTransform = colorTransform!!.clone() as SWFColorTransformWithAlpha
 		for (i in 0 until filterList.size) data.filterList.add(filterList[i].clone())
 		data.blendMode = blendMode
 		return data
@@ -376,7 +377,7 @@ class SWFClipActionRecord {
 		while (true) {
 			actions.add(data.readACTIONRECORD() ?: break)
 		}
-		labelCount = com.codeazur.as3swf.data.actions.Action.Companion.resolveOffsets(actions)
+		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
 	fun publish(data: SWFData, version: Int): Unit {
@@ -398,7 +399,7 @@ class SWFClipActionRecord {
 		if (keyCode > 0) {
 			str += ", KeyCode: " + keyCode
 		}
-		if ((flags and com.codeazur.as3swf.SWF.Companion.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -423,22 +424,14 @@ class SWFClipActions {
 	fun parse(data: SWFData, version: Int): Unit {
 		data.readUI16() // reserved, always 0
 		eventFlags = data.readCLIPEVENTFLAGS(version)
-		while (true) {
-			records.add(data.readCLIPACTIONRECORD(version) ?: break)
-		}
+		while (true) records.add(data.readCLIPACTIONRECORD(version) ?: break)
 	}
 
 	fun publish(data: SWFData, version: Int): Unit {
 		data.writeUI16(0) // reserved, always 0
 		data.writeCLIPEVENTFLAGS(eventFlags, version)
-		for (i in 0 until records.size) {
-			data.writeCLIPACTIONRECORD(records[i], version)
-		}
-		if (version >= 6) {
-			data.writeUI32(0)
-		} else {
-			data.writeUI16(0)
-		}
+		for (i in 0 until records.size) data.writeCLIPACTIONRECORD(records[i], version)
+		if (version >= 6) data.writeUI32(0) else data.writeUI16(0)
 	}
 
 	fun toString(indent: Int = 0, flags: Int = 0): String {
@@ -573,9 +566,9 @@ open class SWFColorTransform {
 	var gMult: Double get() = (_gMult.toDouble() / 256); set(value) = run { _gMult = clamp((value * 256).toInt()); updateHasMultTerms() }
 	var bMult: Double get() = (_bMult.toDouble() / 256); set(value) = run { _bMult = clamp((value * 256).toInt()); updateHasMultTerms() }
 
-	var rAdd: Int get() = _rAdd; set(value: Int) = run { _rAdd = clamp(value); updateHasAddTerms() }
-	var gAdd: Int get() = _gAdd; set(value: Int) = run { _gAdd = clamp(value); updateHasAddTerms() }
-	var bAdd: Int get() = _bAdd; set(value: Int) = run { _bAdd = clamp(value); updateHasAddTerms() }
+	var rAdd: Int get() = _rAdd; set(value) = run { _rAdd = clamp(value); updateHasAddTerms() }
+	var gAdd: Int get() = _gAdd; set(value) = run { _gAdd = clamp(value); updateHasAddTerms() }
+	var bAdd: Int get() = _bAdd; set(value) = run { _bAdd = clamp(value); updateHasAddTerms() }
 
 	open fun parse(data: SWFData): Unit {
 		data.resetBitsPending()
@@ -627,8 +620,8 @@ open class SWFColorTransform {
 		}
 	}
 
-	open fun clone(): com.codeazur.as3swf.data.SWFColorTransform {
-		val colorTransform: com.codeazur.as3swf.data.SWFColorTransform = com.codeazur.as3swf.data.SWFColorTransform()
+	open fun clone(): SWFColorTransform {
+		val colorTransform = SWFColorTransform()
 		colorTransform.hasAddTerms = hasAddTerms
 		colorTransform.hasMultTerms = hasMultTerms
 		colorTransform.rMult = rMult
@@ -640,25 +633,12 @@ open class SWFColorTransform {
 		return colorTransform
 	}
 
-	protected open fun updateHasMultTerms(): Unit {
-		hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256)
-	}
+	protected open fun updateHasMultTerms(): Unit = run { hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) }
+	protected open fun updateHasAddTerms(): Unit = run { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
 
-	protected open fun updateHasAddTerms(): Unit {
-		hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0)
-	}
-
-	protected fun clamp(value: Int): Int {
-		return Math.min(Math.max(value, -32768), 32767)
-	}
-
-	fun isIdentity(): Boolean {
-		return !hasMultTerms && !hasAddTerms
-	}
-
-	override fun toString(): String {
-		return "($rMult,$gMult,$bMult,$rAdd,$gAdd,$bAdd)"
-	}
+	protected fun clamp(value: Int): Int = Math.min(Math.max(value, -32768), 32767)
+	fun isIdentity(): Boolean = !hasMultTerms && !hasAddTerms
+	override fun toString(): String = "($rMult,$gMult,$bMult,$rAdd,$gAdd,$bAdd)"
 }
 
 class SWFColorTransformWithAlpha : SWFColorTransform() {
@@ -723,8 +703,8 @@ class SWFColorTransformWithAlpha : SWFColorTransform() {
 		}
 	}
 
-	override fun clone(): com.codeazur.as3swf.data.SWFColorTransform {
-		val colorTransform: com.codeazur.as3swf.data.SWFColorTransformWithAlpha = com.codeazur.as3swf.data.SWFColorTransformWithAlpha()
+	override fun clone(): SWFColorTransform {
+		val colorTransform = SWFColorTransformWithAlpha()
 		colorTransform.hasAddTerms = hasAddTerms
 		colorTransform.hasMultTerms = hasMultTerms
 		colorTransform.rMult = rMult
@@ -767,22 +747,13 @@ class SWFFillStyle {
 			0x00 -> {
 				rgb = if (level <= 2) data.readRGB() else data.readRGBA()
 			}
-			0x10,
-			0x12,
-			0x13 -> {
-				gradientMatrix = data.readMATRIX()
-				gradient = if (type == 0x13) data.readFOCALGRADIENT(level) else data.readGRADIENT(level)
+			0x10, 0x12, 0x13 -> {
+				gradientMatrix = data.readMATRIX(); gradient = if (type == 0x13) data.readFOCALGRADIENT(level) else data.readGRADIENT(level)
 			}
-			0x40,
-			0x41,
-			0x42,
-			0x43 -> {
-				bitmapId = data.readUI16()
-				bitmapMatrix = data.readMATRIX()
+			0x40, 0x41, 0x42, 0x43 -> {
+				bitmapId = data.readUI16(); bitmapMatrix = data.readMATRIX()
 			}
-			else -> {
-				throw(Error("Unknown fill style type: 0x" + type.toString(16)))
-			}
+			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
 		}
 	}
 
@@ -790,30 +761,18 @@ class SWFFillStyle {
 		data.writeUI8(type)
 		when (type) {
 			0x00 -> {
-				if (level <= 2) {
-					data.writeRGB(rgb)
-				} else {
-					data.writeRGBA(rgb)
-				}
+				if (level <= 2) data.writeRGB(rgb) else data.writeRGBA(rgb)
 			}
 			0x10, 0x12 -> {
-				data.writeMATRIX(gradientMatrix!!)
-				data.writeGRADIENT(gradient!!, level)
+				data.writeMATRIX(gradientMatrix!!); data.writeGRADIENT(gradient!!, level)
 			}
 			0x13 -> {
-				data.writeMATRIX(gradientMatrix!!)
-				data.writeFOCALGRADIENT(gradient!! as com.codeazur.as3swf.data.SWFFocalGradient, level)
+				data.writeMATRIX(gradientMatrix!!); data.writeFOCALGRADIENT(gradient!! as SWFFocalGradient, level)
 			}
-			0x40,
-			0x41,
-			0x42,
-			0x43 -> {
-				data.writeUI16(bitmapId)
-				data.writeMATRIX(bitmapMatrix!!)
+			0x40, 0x41, 0x42, 0x43 -> {
+				data.writeUI16(bitmapId); data.writeMATRIX(bitmapMatrix!!)
 			}
-			else -> {
-				throw(Error("Unknown fill style type: 0x" + type.toString(16)))
-			}
+			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
 		}
 	}
 
@@ -904,9 +863,7 @@ open class SWFGradient {
 		spreadMode = data.readUB(2)
 		interpolationMode = data.readUB(2)
 		val numGradients: Int = data.readUB(4)
-		for (i in 0 until numGradients) {
-			records.add(data.readGRADIENTRECORD(level))
-		}
+		for (i in 0 until numGradients) records.add(data.readGRADIENTRECORD(level))
 	}
 
 	open fun publish(data: SWFData, level: Int = 1): Unit {
@@ -931,9 +888,7 @@ open class SWFGradient {
 		return gradient
 	}
 
-	override fun toString(): String {
-		return "(" + records.joinToString(",") + "), SpreadMode: " + spreadMode + ", InterpolationMode: " + interpolationMode
-	}
+	override fun toString(): String = "(${records.joinToString(",")}), SpreadMode: $spreadMode, InterpolationMode: $interpolationMode"
 }
 
 class SWFGradientRecord {
@@ -950,11 +905,7 @@ class SWFGradientRecord {
 
 	fun publish(data: SWFData, level: Int): Unit {
 		data.writeUI8(ratio)
-		if (level <= 2) {
-			data.writeRGB(color)
-		} else {
-			data.writeRGBA(color)
-		}
+		if (level <= 2) data.writeRGB(color) else data.writeRGBA(color)
 	}
 
 	fun clone(): com.codeazur.as3swf.data.SWFGradientRecord {
@@ -981,16 +932,8 @@ class SWFKerningRecord {
 	}
 
 	fun publish(data: SWFData, wideCodes: Boolean): Unit {
-		if (wideCodes) {
-			data.writeUI16(code1)
-		} else {
-			data.writeUI8(code1)
-		}
-		if (wideCodes) {
-			data.writeUI16(code2)
-		} else {
-			data.writeUI8(code2)
-		}
+		if (wideCodes) data.writeUI16(code1) else data.writeUI8(code1)
+		if (wideCodes) data.writeUI16(code2) else data.writeUI8(code2)
 		data.writeSI16(adjustment)
 	}
 
@@ -1006,9 +949,9 @@ open class SWFLineStyle {
 	var _level: Int = 0
 
 	// Forward declaration of SWFLineStyle2 properties
-	var startCapsStyle: Int = com.codeazur.as3swf.data.consts.LineCapsStyle.ROUND
-	var endCapsStyle: Int = com.codeazur.as3swf.data.consts.LineCapsStyle.ROUND
-	var jointStyle: Int = com.codeazur.as3swf.data.consts.LineJointStyle.ROUND
+	var startCapsStyle: Int = LineCapsStyle.ROUND
+	var endCapsStyle: Int = LineCapsStyle.ROUND
+	var jointStyle: Int = LineJointStyle.ROUND
 	var hasFillFlag: Boolean = false
 	var noHScaleFlag: Boolean = false
 	var noVScaleFlag: Boolean = false
@@ -1066,9 +1009,7 @@ class SWFLineStyle2 : SWFLineStyle() {
 		data.readUB(5)
 		noClose = (data.readUB(1) == 1)
 		endCapsStyle = data.readUB(2)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) {
-			miterLimitFactor = data.readFIXED8()
-		}
+		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) miterLimitFactor = data.readFIXED8()
 		if (hasFillFlag) {
 			fillType = data.readFILLSTYLE(level)
 		} else {
@@ -1087,9 +1028,7 @@ class SWFLineStyle2 : SWFLineStyle() {
 		data.writeUB(5, 0)
 		data.writeUB(1, noClose)
 		data.writeUB(2, endCapsStyle)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) {
-			data.writeFIXED8(miterLimitFactor)
-		}
+		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
 		if (hasFillFlag) {
 			data.writeFILLSTYLE(fillType!!, level)
 		} else {
@@ -1227,9 +1166,7 @@ class SWFMorphFillStyle {
 				data.writeMATRIX(startBitmapMatrix)
 				data.writeMATRIX(endBitmapMatrix)
 			}
-			else -> {
-				throw(Error("Unknown fill style type: 0x" + type.toString(16)))
-			}
+			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
 		}
 	}
 
@@ -1363,9 +1300,7 @@ class SWFMorphGradientRecord {
 		return gradientRecord
 	}
 
-	override fun toString(): String {
-		return "[" + startRatio + "," + ColorUtils.rgbaToString(startColor) + "," + endRatio + "," + ColorUtils.rgbaToString(endColor) + "]"
-	}
+	override fun toString(): String = "[$startRatio,${ColorUtils.rgbaToString(startColor)},$endRatio,${ColorUtils.rgbaToString(endColor)}]"
 }
 
 open class SWFMorphLineStyle {
@@ -1375,9 +1310,9 @@ open class SWFMorphLineStyle {
 	var endColor: Int = 0
 
 	// Forward declaration of SWFMorphLineStyle2 properties
-	var startCapsStyle: Int = com.codeazur.as3swf.data.consts.LineCapsStyle.ROUND
-	var endCapsStyle: Int = com.codeazur.as3swf.data.consts.LineCapsStyle.ROUND
-	var jointStyle: Int = com.codeazur.as3swf.data.consts.LineJointStyle.ROUND
+	var startCapsStyle: Int = LineCapsStyle.ROUND
+	var endCapsStyle: Int = LineCapsStyle.ROUND
+	var jointStyle: Int = LineJointStyle.ROUND
 	var hasFillFlag: Boolean = false
 	var noHScaleFlag: Boolean = false
 	var noVScaleFlag: Boolean = false
@@ -1421,11 +1356,7 @@ open class SWFMorphLineStyle {
 	}
 
 	override fun toString(): String {
-		return "[SWFMorphLineStyle] " +
-			"StartWidth: " + startWidth + ", " +
-			"EndWidth: " + endWidth + ", " +
-			"StartColor: " + ColorUtils.rgbaToString(startColor) + ", " +
-			"EndColor: " + ColorUtils.rgbaToString(endColor)
+		return "[SWFMorphLineStyle] StartWidth: $startWidth, EndWidth: $endWidth, StartColor: ${ColorUtils.rgbaToString(startColor)}, EndColor: ${ColorUtils.rgbaToString(endColor)}"
 	}
 }
 
@@ -1442,9 +1373,7 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		var reserved: Int = data.readUB(5)
 		noClose = (data.readUB(1) == 1)
 		endCapsStyle = data.readUB(2)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) {
-			miterLimitFactor = data.readFIXED8()
-		}
+		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) miterLimitFactor = data.readFIXED8()
 		if (hasFillFlag) {
 			fillType = data.readMORPHFILLSTYLE(level)
 		} else {
@@ -1465,9 +1394,7 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		data.writeUB(5, 0) // Reserved
 		data.writeUB(1, noClose)
 		data.writeUB(2, endCapsStyle)
-		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) {
-			data.writeFIXED8(miterLimitFactor)
-		}
+		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
 		if (hasFillFlag) {
 			data.writeMORPHFILLSTYLE(fillType!!, level)
 		} else {
@@ -1599,8 +1526,8 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	var lineStyles = ArrayList<SWFLineStyle>()
 	var referencePoint = Point2d(0, 0)
 
-	protected var fillEdgeMaps = ArrayList<java.util.HashMap<Int, ArrayList<IEdge>>>()
-	protected var lineEdgeMaps = ArrayList<java.util.HashMap<Int, ArrayList<IEdge>>>()
+	protected var fillEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
+	protected var lineEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
 	protected var currentFillEdgeMap = hashMapOf<Int, ArrayList<IEdge>>()
 	protected var currentLineEdgeMap = hashMapOf<Int, ArrayList<IEdge>>()
 	protected var numGroups: Int = 0
@@ -1612,17 +1539,11 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		var ret: Int = 0
 		for (i in 0 until records.size) {
 			val shapeRecord: SWFShapeRecord = records[i]
-			if (shapeRecord.type == SWFShapeRecord.Companion.TYPE_STYLECHANGE) {
-				val shapeRecordStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = shapeRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
-				if (shapeRecordStyleChange.fillStyle0 > ret) {
-					ret = shapeRecordStyleChange.fillStyle0
-				}
-				if (shapeRecordStyleChange.fillStyle1 > ret) {
-					ret = shapeRecordStyleChange.fillStyle1
-				}
-				if (shapeRecordStyleChange.stateNewStyles) {
-					break
-				}
+			if (shapeRecord.type == SWFShapeRecord.TYPE_STYLECHANGE) {
+				val shapeRecordStyleChange: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
+				if (shapeRecordStyleChange.fillStyle0 > ret) ret = shapeRecordStyleChange.fillStyle0
+				if (shapeRecordStyleChange.fillStyle1 > ret) ret = shapeRecordStyleChange.fillStyle1
+				if (shapeRecordStyleChange.stateNewStyles) break
 			}
 		}
 		return ret
@@ -1632,8 +1553,8 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		var ret: Int = 0
 		for (i in 0 until records.size) {
 			val shapeRecord: SWFShapeRecord = records[i]
-			if (shapeRecord.type == SWFShapeRecord.Companion.TYPE_STYLECHANGE) {
-				val shapeRecordStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = shapeRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+			if (shapeRecord.type == SWFShapeRecord.TYPE_STYLECHANGE) {
+				val shapeRecordStyleChange: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
 				if (shapeRecordStyleChange.lineStyle > ret) {
 					ret = shapeRecordStyleChange.lineStyle
 				}
@@ -1684,7 +1605,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 				if (states == 0) {
 					shapeRecord = com.codeazur.as3swf.data.SWFShapeRecordEnd()
 				} else {
-					val styleChangeRecord: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = data.readSTYLECHANGERECORD(states, fillBits, lineBits, level)
+					val styleChangeRecord: SWFShapeRecordStyleChange = data.readSTYLECHANGERECORD(states, fillBits, lineBits, level)
 					if (styleChangeRecord.stateNewStyles) {
 						fillBits = styleChangeRecord.numFillBits
 						lineBits = styleChangeRecord.numLineBits
@@ -1707,7 +1628,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			if (shapeRecord.isEdgeRecord) {
 				// EdgeRecordFlag (set)
 				data.writeUB(1, 1)
-				if (shapeRecord.type == SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE) {
+				if (shapeRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE) {
 					// StraightFlag (set)
 					data.writeUB(1, 1)
 					data.writeSTRAIGHTEDGERECORD(shapeRecord as SWFShapeRecordStraightEdge)
@@ -1719,11 +1640,11 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			} else {
 				// EdgeRecordFlag (not set)
 				data.writeUB(1, 0)
-				if (shapeRecord.type == SWFShapeRecord.Companion.TYPE_END) {
+				if (shapeRecord.type == SWFShapeRecord.TYPE_END) {
 					data.writeUB(5, 0)
 				} else {
 					var states: Int = 0
-					val styleChangeRecord = shapeRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+					val styleChangeRecord = shapeRecord as SWFShapeRecordStyleChange
 					if (styleChangeRecord.stateNewStyles) states = states or 0x10
 					if (styleChangeRecord.stateLineStyle) states = states or 0x08
 					if (styleChangeRecord.stateFillStyle1) states = states or 0x04
@@ -1741,7 +1662,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun determineReferencePoint(): Unit {
-		val styleChangeRecord = records[0] as com.codeazur.as3swf.data.SWFShapeRecordStyleChange?
+		val styleChangeRecord = records[0] as SWFShapeRecordStyleChange?
 		if (styleChangeRecord != null && styleChangeRecord.stateMoveTo) {
 			referencePoint.x = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaX / unitDivisor)
 			referencePoint.y = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaY / unitDivisor)
@@ -1784,15 +1705,15 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			var currentLineStyleIdx: Int = 0
 			var subPath: ArrayList<IEdge> = ArrayList<IEdge>()
 			numGroups = 0
-			fillEdgeMaps = arrayListOf<java.util.HashMap<Int, ArrayList<IEdge>>>()
-			lineEdgeMaps = arrayListOf<java.util.HashMap<Int, ArrayList<IEdge>>>()
-			currentFillEdgeMap = java.util.HashMap<Int, ArrayList<IEdge>>()
-			currentLineEdgeMap = java.util.HashMap<Int, ArrayList<IEdge>>()
+			fillEdgeMaps = arrayListOf<HashMap<Int, ArrayList<IEdge>>>()
+			lineEdgeMaps = arrayListOf<HashMap<Int, ArrayList<IEdge>>>()
+			currentFillEdgeMap = HashMap<Int, ArrayList<IEdge>>()
+			currentLineEdgeMap = HashMap<Int, ArrayList<IEdge>>()
 			for (i in 0 until records.size) {
 				val shapeRecord: SWFShapeRecord = records[i]
 				when (shapeRecord.type) {
 					SWFShapeRecord.TYPE_STYLECHANGE -> {
-						val styleChangeRecord: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = shapeRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+						val styleChangeRecord: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
 						if (styleChangeRecord.stateLineStyle || styleChangeRecord.stateFillStyle0 || styleChangeRecord.stateFillStyle1) {
 							processSubPath(subPath, currentLineStyleIdx, currentFillStyleIdx0, currentFillStyleIdx1)
 							subPath = ArrayList<IEdge>()
@@ -1821,21 +1742,15 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 						} else {
 							if (styleChangeRecord.stateLineStyle) {
 								currentLineStyleIdx = styleChangeRecord.lineStyle
-								if (currentLineStyleIdx > 0) {
-									currentLineStyleIdx += lineStyleIdxOffset
-								}
+								if (currentLineStyleIdx > 0) currentLineStyleIdx += lineStyleIdxOffset
 							}
 							if (styleChangeRecord.stateFillStyle0) {
 								currentFillStyleIdx0 = styleChangeRecord.fillStyle0
-								if (currentFillStyleIdx0 > 0) {
-									currentFillStyleIdx0 += fillStyleIdxOffset
-								}
+								if (currentFillStyleIdx0 > 0) currentFillStyleIdx0 += fillStyleIdxOffset
 							}
 							if (styleChangeRecord.stateFillStyle1) {
 								currentFillStyleIdx1 = styleChangeRecord.fillStyle1
-								if (currentFillStyleIdx1 > 0) {
-									currentFillStyleIdx1 += fillStyleIdxOffset
-								}
+								if (currentFillStyleIdx1 > 0) currentFillStyleIdx1 += fillStyleIdxOffset
 							}
 						}
 						if (styleChangeRecord.stateMoveTo) {
@@ -1886,20 +1801,19 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun processSubPath(subPath: ArrayList<IEdge>, lineStyleIdx: Int, fillStyleIdx0: Int, fillStyleIdx1: Int): Unit {
-		var path: ArrayList<IEdge>? = null
 		if (fillStyleIdx0 != 0) {
-			path = currentFillEdgeMap[fillStyleIdx0]
+			var path = currentFillEdgeMap[fillStyleIdx0]
 			if (path == null) {
 				path = ArrayList<IEdge>()
 				currentFillEdgeMap[fillStyleIdx0] = path
 			}
-			for (_j in 0..subPath.size - 1) {
+			for (_j in 0 until subPath.size) {
 				val j = subPath.size - 1 - _j
 				path.add(subPath[j].reverseWithNewFillStyle(fillStyleIdx0))
 			}
 		}
 		if (fillStyleIdx1 != 0) {
-			path = currentFillEdgeMap[fillStyleIdx1]
+			var path = currentFillEdgeMap[fillStyleIdx1]
 			if (path == null) {
 				path = ArrayList<IEdge>()
 				currentFillEdgeMap[fillStyleIdx1] = path
@@ -1907,7 +1821,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			path.addAll(subPath)
 		}
 		if (lineStyleIdx != 0) {
-			path = currentLineEdgeMap[lineStyleIdx]
+			var path = currentLineEdgeMap[lineStyleIdx]
 			if (path == null) {
 				path = ArrayList<IEdge>()
 				currentLineEdgeMap[lineStyleIdx] = path
@@ -1928,11 +1842,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		if (path.size > 0) {
 			handler.beginFills()
 			for (i in 0 until path.size) {
-				val e: IEdge = path[i]
+				val e = path[i]
 				if (fillStyleIdx != e.fillStyleIdx) {
-					if (fillStyleIdx != Integer.MAX_VALUE) {
-						handler.endFill()
-					}
+					if (fillStyleIdx != Integer.MAX_VALUE) handler.endFill()
 					fillStyleIdx = e.fillStyleIdx
 					pos = Point2d(Integer.MAX_VALUE, Integer.MAX_VALUE)
 					try {
@@ -1950,12 +1862,11 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 								val colors = arrayListOf<Int>()
 								val alphas = arrayListOf<Double>()
 								val ratios = arrayListOf<Int>()
-								var gradientRecord: com.codeazur.as3swf.data.SWFGradientRecord
 								matrix = fillStyle.gradientMatrix!!.matrix.clone()
 								matrix.tx /= 20
 								matrix.ty /= 20
 								for (gri in 0 until fillStyle.gradient!!.records.size) {
-									gradientRecord = fillStyle.gradient!!.records[gri]
+									val gradientRecord = fillStyle.gradient!!.records[gri]
 									colors.add(ColorUtils.rgb(gradientRecord.color))
 									alphas.add(ColorUtils.alpha(gradientRecord.color))
 									ratios.add(gradientRecord.ratio)
@@ -1973,7 +1884,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							0x42,
 							0x43 -> {
 								// Bitmap fill
-								val m: SWFMatrix = fillStyle.bitmapMatrix!!
+								val m = fillStyle.bitmapMatrix!!
 								matrix = Matrix2d()
 								matrix.createBox(m.xscale / 20, m.yscale / 20, m.rotation, m.translateX / 20.0, m.translateY / 20.0)
 								handler.beginBitmapFill(
@@ -2092,7 +2003,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 	}
 
-	protected fun createPathFromEdgeMap(edgeMap: java.util.HashMap<Int, ArrayList<IEdge>>): ArrayList<IEdge> {
+	protected fun createPathFromEdgeMap(edgeMap: HashMap<Int, ArrayList<IEdge>>): ArrayList<IEdge> {
 		val newPath: ArrayList<IEdge> = ArrayList<IEdge>()
 		val styleIdxArray = arrayListOf<Int>()
 		for (styleIdx in edgeMap.keys) {
@@ -2105,7 +2016,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		return newPath
 	}
 
-	protected fun cleanEdgeMap(edgeMap: java.util.HashMap<Int, ArrayList<IEdge>>): Unit {
+	protected fun cleanEdgeMap(edgeMap: HashMap<Int, ArrayList<IEdge>>): Unit {
 		for (styleIdx in edgeMap.keys) {
 			val subPath = edgeMap[styleIdx]
 			if (subPath != null && subPath.size > 0) {
@@ -2158,20 +2069,14 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 				coordMap.remove(key)
 			} else {
 				val i = coordMapArray.indexOf(edge)
-				if (i > -1) {
-					coordMapArray.removeAt(i)
-				}
+				if (i > -1) coordMapArray.removeAt(i)
 			}
 		}
 	}
 
 	protected fun findNextEdgeInCoordMap(edge: IEdge): IEdge? {
-		val key: String = "" + edge.to.x + "_" + edge.to.y
-		val coordMapArray = coordMap[key]
-		if (coordMapArray != null && coordMapArray.size > 0) {
-			return coordMapArray[0]
-		}
-		return null
+		val coordMapArray = coordMap["${edge.to.x}_${edge.to.y}"]
+		return if (coordMapArray != null && coordMapArray.isNotEmpty()) coordMapArray[0] else null
 	}
 
 	open fun toString(indent: Int = 0): String {
@@ -2192,8 +2097,8 @@ open class SWFShapeRecord {
 		const val TYPE_CURVEDEDGE = 4
 	}
 
-	open val type = SWFShapeRecord.Companion.TYPE_UNKNOWN
-	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.Companion.TYPE_CURVEDEDGE)
+	open val type = SWFShapeRecord.TYPE_UNKNOWN
+	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.TYPE_CURVEDEDGE)
 	open fun parse(data: SWFData, level: Int = 1): Unit = Unit
 	open fun publish(data: SWFData, level: Int = 1): Unit = Unit
 	open fun clone(): SWFShapeRecord = SWFShapeRecord()
@@ -2233,14 +2138,14 @@ class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		return record
 	}
 
-	override val type = SWFShapeRecord.Companion.TYPE_CURVEDEDGE
+	override val type = SWFShapeRecord.TYPE_CURVEDEDGE
 
 	override fun toString(indent: Int): String = "[SWFShapeRecordCurvedEdge] ControlDelta: $controlDeltaX,$controlDeltaY, AnchorDelta: $anchorDeltaX,$anchorDeltaY"
 }
 
 class SWFShapeRecordEnd : SWFShapeRecord() {
 	override fun clone() = com.codeazur.as3swf.data.SWFShapeRecordEnd()
-	override val type = SWFShapeRecord.Companion.TYPE_END
+	override val type = SWFShapeRecord.TYPE_END
 	override fun toString(indent: Int) = "[SWFShapeRecordEnd]"
 }
 
@@ -2259,24 +2164,14 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 
 	override fun publish(data: SWFData, level: Int): Unit {
 		val deltas = arrayListOf<Int>()
-		if (generalLineFlag || !vertLineFlag) {
-			deltas.add(deltaX)
-		}
-		if (generalLineFlag || vertLineFlag) {
-			deltas.add(deltaY)
-		}
+		if (generalLineFlag || !vertLineFlag) deltas.add(deltaX)
+		if (generalLineFlag || vertLineFlag) deltas.add(deltaY)
 		numBits = data.calculateMaxBits(true, deltas)
-		if (numBits < 2) {
-			numBits = 2
-		}
+		if (numBits < 2) numBits = 2
 		data.writeUB(4, numBits - 2)
 		data.writeUB(1, generalLineFlag)
-		if (!generalLineFlag) {
-			data.writeUB(1, vertLineFlag)
-		}
-		for (i in 0 until deltas.size) {
-			data.writeSB(numBits, deltas[i])
-		}
+		if (!generalLineFlag) data.writeUB(1, vertLineFlag)
+		for (i in 0 until deltas.size) data.writeSB(numBits, deltas[i])
 	}
 
 	override fun clone(): SWFShapeRecord {
@@ -2289,7 +2184,7 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		return record
 	}
 
-	override val type = SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE
+	override val type = SWFShapeRecord.TYPE_STRAIGHTEDGE
 
 	override fun toString(indent: Int): String {
 		var str: String = "[SWFShapeRecordStraightEdge] "
@@ -2325,11 +2220,11 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 	var fillStyles = ArrayList<SWFFillStyle>()
 	var lineStyles = ArrayList<SWFLineStyle>()
 
-	override val type = SWFShapeRecord.Companion.TYPE_STYLECHANGE
+	override val type = SWFShapeRecord.TYPE_STYLECHANGE
 
 	override fun parse(data: SWFData, level: Int): Unit {
 		if (stateMoveTo) {
-			val moveBits: Int = data.readUB(5)
+			val moveBits = data.readUB(5)
 			moveDeltaX = data.readSB(moveBits)
 			moveDeltaY = data.readSB(moveBits)
 		}
@@ -2354,7 +2249,7 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 
 	override fun publish(data: SWFData, level: Int): Unit {
 		if (stateMoveTo) {
-			val moveBits: Int = data.calculateMaxBits(true, moveDeltaX, moveDeltaY)
+			val moveBits = data.calculateMaxBits(true, moveDeltaX, moveDeltaY)
 			data.writeUB(5, moveBits)
 			data.writeSB(moveBits, moveDeltaX)
 			data.writeSB(moveBits, moveDeltaY)
@@ -2364,10 +2259,10 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		if (stateLineStyle) data.writeUB(numLineBits, lineStyle)
 		if (stateNewStyles) {
 			data.resetBitsPending()
-			val fillStylesLen: Int = fillStyles.size
+			val fillStylesLen = fillStyles.size
 			writeStyleArrayLength(data, fillStylesLen, level)
 			for (i in 0 until fillStylesLen) fillStyles[i].publish(data, level)
-			val lineStylesLen: Int = lineStyles.size
+			val lineStylesLen = lineStyles.size
 			writeStyleArrayLength(data, lineStylesLen, level)
 			for (i in 0 until lineStylesLen) lineStyles[i].publish(data, level)
 			numFillBits = data.calculateMaxBits(false, fillStylesLen)
@@ -2396,7 +2291,7 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 	}
 
 	override fun clone(): SWFShapeRecord {
-		val record: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = com.codeazur.as3swf.data.SWFShapeRecordStyleChange()
+		val record = SWFShapeRecordStyleChange()
 		record.stateNewStyles = stateNewStyles
 		record.stateLineStyle = stateLineStyle
 		record.stateFillStyle1 = stateFillStyle1
@@ -2409,12 +2304,8 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		record.lineStyle = lineStyle
 		record.numFillBits = numFillBits
 		record.numLineBits = numLineBits
-		for (i in 0 until fillStyles.size) {
-			record.fillStyles.add(fillStyles[i].clone())
-		}
-		for (i in 0 until lineStyles.size) {
-			record.lineStyles.add(lineStyles[i].clone())
-		}
+		for (i in 0 until fillStyles.size) record.fillStyles.add(fillStyles[i].clone())
+		for (i in 0 until lineStyles.size) record.lineStyles.add(lineStyles[i].clone())
 		return record
 	}
 
@@ -2425,9 +2316,7 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		if (stateFillStyle0) cmds.add("FillStyle0: $fillStyle0")
 		if (stateFillStyle1) cmds.add("FillStyle1: $fillStyle1")
 		if (stateLineStyle) cmds.add("LineStyle: $lineStyle")
-		if (cmds.size > 0) {
-			str += cmds.joinToString(", ")
-		}
+		if (cmds.size > 0) str += cmds.joinToString(", ")
 		if (stateNewStyles) {
 			if (fillStyles.size > 0) {
 				str += "\n" + " ".repeat(indent + 2) + "New FillStyles:"
@@ -2453,13 +2342,9 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 	override fun parse(data: SWFData, level: Int): Unit {
 		data.resetBitsPending()
 		val fillStylesLen: Int = readStyleArrayLength(data, level)
-		for (i in 0 until fillStylesLen) {
-			initialFillStyles.add(data.readFILLSTYLE(level))
-		}
+		for (i in 0 until fillStylesLen) initialFillStyles.add(data.readFILLSTYLE(level))
 		val lineStylesLen: Int = readStyleArrayLength(data, level)
-		for (i in 0 until lineStylesLen) {
-			initialLineStyles.add(if (level <= 3) data.readLINESTYLE(level) else data.readLINESTYLE2(level))
-		}
+		for (i in 0 until lineStylesLen) initialLineStyles.add(if (level <= 3) data.readLINESTYLE(level) else data.readLINESTYLE2(level))
 		data.resetBitsPending()
 		val numFillBits: Int = data.readUB(4)
 		val numLineBits: Int = data.readUB(4)
@@ -2470,14 +2355,10 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 		data.resetBitsPending()
 		val fillStylesLen: Int = initialFillStyles.size
 		writeStyleArrayLength(data, fillStylesLen, level)
-		for (i in 0 until fillStylesLen) {
-			initialFillStyles[i].publish(data, level)
-		}
+		for (i in 0 until fillStylesLen) initialFillStyles[i].publish(data, level)
 		val lineStylesLen: Int = initialLineStyles.size
 		writeStyleArrayLength(data, lineStylesLen, level)
-		for (i in 0 until lineStylesLen) {
-			initialLineStyles[i].publish(data, level)
-		}
+		for (i in 0 until lineStylesLen) initialLineStyles[i].publish(data, level)
 		val fillBits: Int = data.calculateMaxBits(false, getMaxFillStyleIndex())
 		val lineBits: Int = data.calculateMaxBits(false, getMaxLineStyleIndex())
 		data.resetBitsPending()
@@ -2572,71 +2453,43 @@ class SWFSoundInfo {
 	var envelopeRecords = ArrayList<com.codeazur.as3swf.data.SWFSoundEnvelope>()
 
 	fun parse(data: SWFData): Unit {
-		val flags: Int = data.readUI8()
+		val flags = data.readUI8()
 		syncStop = ((flags and 0x20) != 0)
 		syncNoMultiple = ((flags and 0x10) != 0)
 		hasEnvelope = ((flags and 0x08) != 0)
 		hasLoops = ((flags and 0x04) != 0)
 		hasOutPoint = ((flags and 0x02) != 0)
 		hasInPoint = ((flags and 0x01) != 0)
-		if (hasInPoint) {
-			inPoint = data.readUI32()
-		}
-		if (hasOutPoint) {
-			outPoint = data.readUI32()
-		}
-		if (hasLoops) {
-			loopCount = data.readUI16()
-		}
+		if (hasInPoint) inPoint = data.readUI32()
+		if (hasOutPoint) outPoint = data.readUI32()
+		if (hasLoops) loopCount = data.readUI16()
 		if (hasEnvelope) {
 			val envPoints: Int = data.readUI8()
-			for (i in 0 until envPoints) {
-				envelopeRecords.add(data.readSOUNDENVELOPE())
-			}
+			for (i in 0 until envPoints) envelopeRecords.add(data.readSOUNDENVELOPE())
 		}
 	}
 
 	fun publish(data: SWFData): Unit {
 		var flags: Int = 0
-		if (syncStop) {
-			flags = flags or 0x20
-		}
-		if (syncNoMultiple) {
-			flags = flags or 0x10
-		}
-		if (hasEnvelope) {
-			flags = flags or 0x08
-		}
-		if (hasLoops) {
-			flags = flags or 0x04
-		}
-		if (hasOutPoint) {
-			flags = flags or 0x02
-		}
-		if (hasInPoint) {
-			flags = flags or 0x01
-		}
+		if (syncStop) flags = flags or 0x20
+		if (syncNoMultiple) flags = flags or 0x10
+		if (hasEnvelope) flags = flags or 0x08
+		if (hasLoops) flags = flags or 0x04
+		if (hasOutPoint) flags = flags or 0x02
+		if (hasInPoint) flags = flags or 0x01
 		data.writeUI8(flags)
-		if (hasInPoint) {
-			data.writeUI32(inPoint)
-		}
-		if (hasOutPoint) {
-			data.writeUI32(outPoint)
-		}
-		if (hasLoops) {
-			data.writeUI16(loopCount)
-		}
+		if (hasInPoint) data.writeUI32(inPoint)
+		if (hasOutPoint) data.writeUI32(outPoint)
+		if (hasLoops) data.writeUI16(loopCount)
 		if (hasEnvelope) {
-			val envPoints: Int = envelopeRecords.size
+			val envPoints = envelopeRecords.size
 			data.writeUI8(envPoints)
-			for (i in 0 until envPoints) {
-				data.writeSOUNDENVELOPE(envelopeRecords[i])
-			}
+			for (i in 0 until envPoints) data.writeSOUNDENVELOPE(envelopeRecords[i])
 		}
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFSoundInfo {
-		val soundInfo: com.codeazur.as3swf.data.SWFSoundInfo = com.codeazur.as3swf.data.SWFSoundInfo()
+	fun clone(): SWFSoundInfo {
+		val soundInfo = SWFSoundInfo()
 		soundInfo.syncStop = syncStop
 		soundInfo.syncNoMultiple = syncNoMultiple
 		soundInfo.hasEnvelope = hasEnvelope
@@ -2646,29 +2499,16 @@ class SWFSoundInfo {
 		soundInfo.outPoint = outPoint
 		soundInfo.inPoint = inPoint
 		soundInfo.loopCount = loopCount
-		for (i in 0 until envelopeRecords.size) {
-			soundInfo.envelopeRecords.add(envelopeRecords[i].clone())
-		}
+		for (i in 0 until envelopeRecords.size) soundInfo.envelopeRecords.add(envelopeRecords[i].clone())
 		return soundInfo
 	}
 
-	override fun toString(): String {
-		return "[SWFSoundInfo]"
-	}
+	override fun toString(): String = "[SWFSoundInfo]"
 }
 
 class SWFSymbol {
 	var tagId: Int = 0
 	var name: String? = null
-
-	companion object {
-		fun create(aTagID: Int, aName: String): com.codeazur.as3swf.data.SWFSymbol {
-			val swfSymbol = com.codeazur.as3swf.data.SWFSymbol()
-			swfSymbol.tagId = aTagID
-			swfSymbol.name = aName
-			return swfSymbol
-		}
-	}
 
 	fun parse(data: SWFData): Unit {
 		tagId = data.readUI16()
@@ -2680,9 +2520,7 @@ class SWFSymbol {
 		data.writeString(name)
 	}
 
-	override fun toString(): String {
-		return "TagID: $tagId, Name: $name"
-	}
+	override fun toString(): String = "TagID: $tagId, Name: $name"
 }
 
 class SWFTextRecord {
@@ -2743,9 +2581,7 @@ class SWFTextRecord {
 
 	fun publish(data: SWFData, glyphBits: Int, advanceBits: Int, previousRecord: SWFTextRecord? = null, level: Int = 1): Unit {
 		var flags: Int = (type shl 7)
-		hasFont = (previousRecord == null
-			|| (previousRecord.fontId != fontId)
-			|| (previousRecord.textHeight != textHeight))
+		hasFont = (previousRecord == null || (previousRecord.fontId != fontId) || (previousRecord.textHeight != textHeight))
 		hasColor = (previousRecord == null || (previousRecord.textColor != textColor))
 		hasXOffset = (previousRecord == null || (previousRecord.xOffset != xOffset))
 		hasYOffset = (previousRecord == null || (previousRecord.yOffset != yOffset))
@@ -2762,24 +2598,16 @@ class SWFTextRecord {
 				data.writeRGB(textColor)
 			}
 		}
-		if (hasXOffset) {
-			data.writeSI16(xOffset)
-		}
-		if (hasYOffset) {
-			data.writeSI16(yOffset)
-		}
-		if (hasFont) {
-			data.writeUI16(textHeight)
-		}
-		val glyphCount: Int = glyphEntries.size
+		if (hasXOffset) data.writeSI16(xOffset)
+		if (hasYOffset) data.writeSI16(yOffset)
+		if (hasFont) data.writeUI16(textHeight)
+		val glyphCount = glyphEntries.size
 		data.writeUI8(glyphCount)
-		for (i in 0 until glyphCount) {
-			data.writeGLYPHENTRY(glyphEntries[i], glyphBits, advanceBits)
-		}
+		for (i in 0 until glyphCount) data.writeGLYPHENTRY(glyphEntries[i], glyphBits, advanceBits)
 	}
 
 	fun clone(): SWFTextRecord {
-		val record: SWFTextRecord = SWFTextRecord()
+		val record = SWFTextRecord()
 		record.type = type
 		record.hasFont = hasFont
 		record.hasColor = hasColor
@@ -2790,24 +2618,18 @@ class SWFTextRecord {
 		record.textHeight = textHeight
 		record.xOffset = xOffset
 		record.yOffset = yOffset
-		for (i in 0 until glyphEntries.size) {
-			record.glyphEntries.add(glyphEntries[i].clone())
-		}
+		for (i in 0 until glyphEntries.size) record.glyphEntries.add(glyphEntries[i].clone())
 		return record
 	}
 
 	fun toString(indent: Int = 0): String {
 		val params = arrayListOf("Glyphs: " + glyphEntries.size.toString())
-		if (hasFont) {
-			params.add("FontID: " + fontId); params.add("Height: " + textHeight)
-		}
+		if (hasFont) params.add("FontID: " + fontId); params.add("Height: " + textHeight)
 		if (hasColor) params.add("Color: " + (if (_level <= 2) ColorUtils.rgbToString(textColor) else ColorUtils.rgbaToString(textColor)))
 		if (hasXOffset) params.add("XOffset: " + xOffset)
 		if (hasYOffset) params.add("YOffset: " + yOffset)
 		var str: String = params.joinToString(", ")
-		for (i in 0 until glyphEntries.size) {
-			str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + glyphEntries[i].toString()
-		}
+		for (i in 0 until glyphEntries.size) str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + glyphEntries[i].toString()
 		return str
 	}
 }
@@ -2826,9 +2648,7 @@ class SWFZoneData {
 		data.writeFLOAT16(range)
 	}
 
-	override fun toString(): String {
-		return "($alignmentCoordinate,$range)"
-	}
+	override fun toString(): String = "($alignmentCoordinate,$range)"
 }
 
 class SWFZoneRecord {
@@ -2839,9 +2659,7 @@ class SWFZoneRecord {
 
 	fun parse(data: SWFData): Unit {
 		val numZoneData: Int = data.readUI8()
-		for (i in 0 until numZoneData) {
-			zoneData.add(data.readZONEDATA())
-		}
+		for (i in 0 until numZoneData) zoneData.add(data.readZONEDATA())
 		val mask: Int = data.readUI8()
 		maskX = ((mask and 0x01) != 0)
 		maskY = ((mask and 0x02) != 0)
@@ -2850,24 +2668,16 @@ class SWFZoneRecord {
 	fun publish(data: SWFData): Unit {
 		val numZoneData: Int = zoneData.size
 		data.writeUI8(numZoneData)
-		for (i in 0 until numZoneData) {
-			data.writeZONEDATA(zoneData[i])
-		}
+		for (i in 0 until numZoneData) data.writeZONEDATA(zoneData[i])
 		var mask: Int = 0
-		if (maskX) {
-			mask = mask or 0x01
-		}
-		if (maskY) {
-			mask = mask or 0x02
-		}
+		if (maskX) mask = mask or 0x01
+		if (maskY) mask = mask or 0x02
 		data.writeUI8(mask)
 	}
 
 	fun toString(indent: Int = 0): String {
 		var str: String = "MaskY: $maskY, MaskX: $maskX"
-		for (i in 0 until zoneData.size) {
-			str += ", " + i + ": " + zoneData[i].toString()
-		}
+		for (i in 0 until zoneData.size) str += ", $i: ${zoneData[i]}"
 		return str
 	}
 }

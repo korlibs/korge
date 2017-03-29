@@ -4,62 +4,62 @@ import com.soywiz.korge.component.Component
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.hasAncestor
-import com.soywiz.korim.geom.Point2d
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.util.extraProperty
+import com.soywiz.korma.geom.Point2d
 
 class MouseComponent(view: View) : Component(view) {
-    val input = views.input
-    val frame = input.frame
-    val onClick = Signal<MouseComponent>()
-    val onOver = Signal<MouseComponent>()
-    val onOut = Signal<MouseComponent>()
-    val onDown = Signal<MouseComponent>()
-    val onUp = Signal<MouseComponent>()
-    val onMove = Signal<MouseComponent>()
+	val input = views.input
+	val frame = input.frame
+	val onClick = Signal<MouseComponent>()
+	val onOver = Signal<MouseComponent>()
+	val onOut = Signal<MouseComponent>()
+	val onDown = Signal<MouseComponent>()
+	val onUp = Signal<MouseComponent>()
+	val onMove = Signal<MouseComponent>()
 
-    val startedPos = Point2d()
-    val lastPos = Point2d()
-    val currentPos = Point2d()
-    var hitTest: View? = null; private set
-    private var lastOver = false
-    private var lastPressing = false
+	val startedPos = Point2d()
+	val lastPos = Point2d()
+	val currentPos = Point2d()
+	var hitTest: View? = null; private set
+	private var lastOver = false
+	private var lastPressing = false
 
-    val CLICK_THRESHOLD = 10
+	val CLICK_THRESHOLD = 10
 
-    var Input.Frame.mouseHitSearch by extraProperty("mouseHitSearch", false)
-    var Input.Frame.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
+	var Input.Frame.mouseHitSearch by extraProperty("mouseHitSearch", false)
+	var Input.Frame.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
 
-    override fun update(dtMs: Int) {
-        if (!frame.mouseHitSearch) {
-            frame.mouseHitSearch = true
-            frame.mouseHitResult = views.root.hitTest(input.mouse)
-        }
-        hitTest = input.frame.mouseHitResult
-        val over = hitTest?.hasAncestor(view) ?: false
-        val pressing = input.mouseButtons != 0
-        val overChanged = (lastOver != over)
-        val pressingChanged = pressing != lastPressing
-        view.globalToLocal(input.mouse, currentPos)
+	override fun update(dtMs: Int) {
+		if (!frame.mouseHitSearch) {
+			frame.mouseHitSearch = true
+			frame.mouseHitResult = views.root.hitTest(input.mouse)
+		}
+		hitTest = input.frame.mouseHitResult
+		val over = hitTest?.hasAncestor(view) ?: false
+		val pressing = input.mouseButtons != 0
+		val overChanged = (lastOver != over)
+		val pressingChanged = pressing != lastPressing
+		view.globalToLocal(input.mouse, currentPos)
 
-        //println("MouseComponent: $hitTest, $over")
+		//println("MouseComponent: $hitTest, $over")
 
-        if (!overChanged && over && currentPos != lastPos) onMove(this)
-        if (overChanged && over) onOver(this)
-        if (overChanged && !over) onOut(this)
-        if (over && pressingChanged && pressing) {
-            startedPos.copyFrom(currentPos)
-            onDown(this)
-        }
-        if (over && pressingChanged && !pressing) {
-            onUp(this)
-            if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
-        };
+		if (!overChanged && over && currentPos != lastPos) onMove(this)
+		if (overChanged && over) onOver(this)
+		if (overChanged && !over) onOut(this)
+		if (over && pressingChanged && pressing) {
+			startedPos.copyFrom(currentPos)
+			onDown(this)
+		}
+		if (over && pressingChanged && !pressing) {
+			onUp(this)
+			if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
+		};
 
-        lastOver = over
-        lastPressing = pressing
-        lastPos.copyFrom(currentPos)
-    }
+		lastOver = over
+		lastPressing = pressing
+		lastPos.copyFrom(currentPos)
+	}
 }
 
 //var Input.Frame.mouseHitResult by Extra.Property<View?>("mouseHitResult") {

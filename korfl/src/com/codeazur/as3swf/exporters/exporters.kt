@@ -2,7 +2,7 @@ package com.codeazur.as3swf.exporters
 
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.utils.NumberUtils
-import com.soywiz.korim.geom.Matrix2d
+import com.soywiz.korma.math.Matrix2d
 
 open class ShapeExporter(val swf: SWF) {
 	open fun beginShape() = Unit

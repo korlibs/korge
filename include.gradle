@@ -46,6 +46,8 @@ dependencies {
     compile "com.soywiz:korau-core:$korVersion"
     compile "com.soywiz:korui-core:$korVersion"
 
+	compile "com.soywiz:korma:$korVersion"
+
     testCompile "com.soywiz:korio:$korVersion"
     //testCompile "com.soywiz:korim:$korVersion"
     testCompile "com.soywiz:korag:$korVersion"
