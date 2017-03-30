@@ -9,9 +9,12 @@ mainClassName = "com.soywiz.korge.sample.Sample1"
 
 dependencies {
     compile "com.soywiz:korui:$korVersion"
-	compile project(":korfl")
     compile project(":korge")
     compile project(":korge-core")
+	compile project(":korge-ext-swf")
+	compile project(":korge-ext-spriter")
+	compile project(":korge-ext-particle")
+	compile project(":korge-ext-tiled")
 }
 
 jtransc {

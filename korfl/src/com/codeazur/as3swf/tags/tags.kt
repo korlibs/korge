@@ -2241,7 +2241,7 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	protected var soundData: FlashByteArray = FlashByteArray()
+	val soundData: FlashByteArray = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()

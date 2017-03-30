@@ -1,4 +1,4 @@
-package com.soywiz.korfl
+package com.soywiz.korge.ext.swf
 
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.data.GradientType
@@ -9,7 +9,9 @@ import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.exporters.LoggerShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.tags.*
+import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
@@ -26,6 +28,7 @@ import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
@@ -34,11 +37,7 @@ import com.soywiz.korma.math.Matrix2d
 import kotlin.collections.set
 
 @AsyncFactoryClass(SwfLibraryFactory::class)
-class SwfLibrary(
-	val an: AnLibrary
-) {
-
-}
+class SwfLibrary(val an: AnLibrary)
 
 class SwfLibraryFactory(
 	val path: Path,
@@ -51,6 +50,8 @@ inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
+
+val AnSymbolMovieClip.actionsBuilder by Extra.Property { arrayListOf<Pair<Int, AnAction>>() }
 
 private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	lateinit var swf: SWF
@@ -65,10 +66,22 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
 		processAs3Stops()
 		generateTextures()
+		finalizeActions()
 		return lib
 	}
 
 	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt()
+
+	suspend private fun finalizeActions() {
+		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
+			val rawActions = symbol.actionsBuilder
+			if (rawActions.isNotEmpty()) {
+				for ((frame0, actions) in rawActions.groupBy { it.first }.map { it.key to AnActions(it.value.map { it.second }) }) {
+					symbol.actions.add(getFrameTime(frame0), actions)
+				}
+			}
+		}
+	}
 
 	suspend private fun processAs3Stops() {
 		for ((className, tagId) in classNameToTagId) {
@@ -87,7 +100,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					val traitMethod = (trait as ABC.TraitMethod?) ?: continue
 					val methodDesc = abc.methodsDesc[traitMethod.methodIndex]
 					val body = methodDesc.body ?: continue
-					val actions = hashMapOf<Int, AnFlowAction>()
 					//println("FRAME: $frame0")
 					//println(body.ops)
 
@@ -109,11 +121,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 											is Int -> getFrameTime(lastValue - 1)
 											else -> 0
 										}
+										symbol.actionsBuilder += frame0 to AnFlowAction(time, callMethodName == "gotoAndStop")
 										//println("$callMethodName: $lastValue : $labels")
-										actions[frame0] = AnFlowAction(time, callMethodName == "gotoAndStop")
 									}
 									"play", "stop" -> {
-										actions[frame0] = AnFlowAction(getFrameTime(frame0), callMethodName == "stop")
+										symbol.actionsBuilder += frame0 to AnFlowAction(getFrameTime(frame0), callMethodName == "stop")
 									}
 									else -> {
 										//println("method: $callMethodName")
@@ -122,10 +134,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 								lastValue = null
 							}
 						}
-					}
-
-					for ((frame0, action) in actions.entries.sortedBy { it.key }) {
-						symbol.actions.add(getFrameTime(frame0), action)
 					}
 				}
 			}
@@ -210,6 +218,22 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				}
 				is TagFrameLabel -> {
 					mc.labelsToTime[it.frameName] = currentTime
+				}
+				is TagSoundStreamHead -> {
+				}
+				is TagDefineSound -> {
+					val soundBytes = it.soundData.cloneToNewByteArray()
+					val audioData = try {
+						AudioFormats.decode(soundBytes.openAsync())
+					} catch (e: Throwable) {
+						e.printStackTrace()
+						null
+					}
+					lib.addSymbol(AnSymbolSound(it.characterId, it.name, audioData))
+					//LocalVfs("c:/temp/temp.mp3").write()
+				}
+				is TagStartSound -> {
+					mc.actionsBuilder += currentFrame to AnPlaySoundAction(it.soundId)
 				}
 				is TagDefineBitsJPEG2 -> {
 					val bitsData = it.bitmapData.cloneToNewByteArray()

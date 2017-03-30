@@ -1,4 +1,4 @@
-package com.soywiz.korfl
+package com.soywiz.korge.animate
 
 import org.junit.Assert
 import org.junit.Test

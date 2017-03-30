@@ -1,5 +1,7 @@
-package com.soywiz.korfl
+package com.soywiz.korge.animate
 
+import com.soywiz.korau.format.AudioData
+import com.soywiz.korau.format.play
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.Container
@@ -8,7 +10,9 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.replaceWith
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.vector.GraphicsPath
+import com.soywiz.korio.async.spawn
 import com.soywiz.korio.error.invalidOp
+import com.soywiz.korio.util.Extra
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.math.Matrix2d
 
@@ -18,11 +22,13 @@ open class AnElement(val library: AnLibrary, val symbol: AnSymbol) : Container(l
 open class AnSymbol(
 	val id: Int = 0,
 	val name: String? = null
-) {
+) : Extra by Extra.Mixin() {
 	open fun create(library: AnLibrary): AnElement = TODO()
 }
 
 object AnSymbolEmpty : AnSymbol(0, "")
+
+class AnSymbolSound(id: Int, name: String?, val data: AudioData?) : AnSymbol(id, name)
 
 class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: Texture?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
@@ -38,7 +44,11 @@ class AnSymbolTimelineFrame(
 	val name: String?
 )
 
-data class AnFlowAction(val gotoTime: Int, val stop: Boolean)
+interface AnAction
+data class AnFlowAction(val gotoTime: Int, val stop: Boolean) : AnAction
+data class AnPlaySoundAction(val soundId: Int) : AnAction
+
+data class AnActions(val actions: List<AnAction>)
 
 class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
@@ -49,7 +59,7 @@ class AnSymbolUidDef(val characterId: Int)
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	val labelsToTime = hashMapOf<String, Int>()
 	val timelines = Array<AnDepthTimeline>(limits.totalDepths) { AnDepthTimeline(it) }
-	val actions = Timed<AnFlowAction>()
+	val actions = Timed<AnActions>()
 	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
@@ -79,7 +89,6 @@ class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnElement(li
 class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnElement(library, mcSymbol) {
 	val totalDepths = mcSymbol.limits.totalDepths
 	val totalUids = mcSymbol.limits.totalUids
-	var nextFrame = 0
 	val singleFrame = mcSymbol.limits.totalFrames <= 1
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
 	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidInfo[it].characterId) }
@@ -96,7 +105,6 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 		super.reset()
 		for (view in viewUids) view.reset()
 		for (n in children.indices) children[n].replaceWith(dummyDepths[n])
-		nextFrame = 0
 	}
 
 	private fun update() {
@@ -126,6 +134,7 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 		eval(time - 1, time)
 		running = keepRunning
 	}
+
 	fun _gotoAndPlayStop(name: String, keepRunning: Boolean) = _gotoAndPlayStop(mcSymbol.labelsToTime[name] ?: currentTime, keepRunning)
 
 	fun gotoAndPlay(name: String) = _gotoAndPlayStop(name, keepRunning = true)
@@ -136,13 +145,34 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 
 	// Goto to a step between this label and next/end of the clip
 	fun gotoAndPlay(name: String, ratio: Double): Unit = TODO()
+
 	fun gotoAndStop(name: String, ratio: Double): Unit = TODO()
 
 	private fun eval(prev: Int, current: Int) {
-		this.mcSymbol.actions.forEachInRange(prev, current, maxCalls = 1) { n, time, action ->
-			currentTime = action.gotoTime
-			running = !action.stop
-			//println("Exec: $time, $action")
+		val actionsTimeline = this.mcSymbol.actions
+		var startIndex = 0
+		var endIndex = 0
+		actionsTimeline.getRangeIndices(prev, current - 1) { start, end -> startIndex = start; endIndex = end }
+		execution@ for (n in startIndex..endIndex) {
+			val actions = actionsTimeline.objects[n]
+			for (action in actions.actions) {
+				when (action) {
+					is AnFlowAction -> {
+						currentTime = action.gotoTime
+						running = !action.stop
+						//println("time: $n -> $action :: $mcSymbol")
+						break@execution
+					}
+					is AnPlaySoundAction -> {
+						spawn {
+							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.data
+							data?.play()
+						}
+						//println("play sound!")
+					}
+
+				}
+			}
 		}
 	}
 

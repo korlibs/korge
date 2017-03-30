@@ -1,10 +1,10 @@
 package com.soywiz.korge.sample
 
-import com.soywiz.korfl.SwfLibrary
 import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.ext.swf.SwfLibrary
 import com.soywiz.korge.input.component.onOut
 import com.soywiz.korge.input.component.onOver
 import com.soywiz.korge.render.Texture
@@ -52,6 +52,7 @@ class Sample1Scene(
 	@Path("test1.swf") val test1Library: SwfLibrary,
 	@Path("test4.swf") val test4Library: SwfLibrary,
 	@Path("as3test.swf") val as3testLibrary: SwfLibrary,
+	@Path("soundtest.swf") val soundtestLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
@@ -115,6 +116,16 @@ class Sample1Scene(
 
 		root.container {
 			val mc = as3testLibrary.an.createMainTimeLine().apply {
+				//x = 320.0
+				//y = 320.0
+				//speed = 0.1
+			}
+			this += mc
+			//mc.addUpdatable { println(mc.dumpToString()) }
+		}
+
+		root.container {
+			val mc = soundtestLibrary.an.createMainTimeLine().apply {
 				//x = 320.0
 				//y = 320.0
 				//speed = 0.1

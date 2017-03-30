@@ -1,0 +1,9 @@
+apply from: "../include.gradle"
+
+apply plugin: 'kotlin'
+
+dependencies {
+	compile project(":korfl")
+    compile project(":korge-core")
+    testCompile project(":korge")
+}

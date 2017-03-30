@@ -1,15 +1,15 @@
-package com.soywiz.korfl
+package com.soywiz.korge.animate
 
 import com.soywiz.korio.ds.IntArrayList
 import com.soywiz.korio.ds.binarySearch
 import com.soywiz.korio.util.clamp
 
-
-// @TODO: Move to Korio?
 open class Timed<T> {
 	val times = IntArrayList()
 	val objects = arrayListOf<T>()
 	val size: Int get() = times.size
+
+	val entries: List<Pair<Int, T>> get() = times.zip(objects)
 
 	fun add(time: Int, obj: T) {
 		times.add(time)
@@ -19,6 +19,22 @@ open class Timed<T> {
 	fun findNearIndex(time: Int): Int {
 		val res = times.binarySearch(time)
 		return if (res < 0) -res - 1 else res
+	}
+
+	inline fun getRangeIndices(startTime: Int, endTime: Int, handler: (startIndex: Int, endIndex: Int) -> Unit): Unit {
+		val startIndex = (findNearIndex(startTime) - 1).clamp(0, size - 1)
+		val endIndex = (findNearIndex(endTime) + 1).clamp(0, size - 1)
+		var min = Int.MAX_VALUE
+		var max = Int.MIN_VALUE
+		for (n in startIndex..endIndex) {
+			val time = times[n]
+			//if (time in (startTime + 1)..endTime) {
+			if (time in startTime..endTime) {
+				min = Math.min(min, n)
+				max = Math.max(max, n)
+			}
+		}
+		handler(min, max)
 	}
 
 	inline fun forEachInRange(startTime: Int, endTime: Int, maxCalls: Int = Int.MAX_VALUE, callback: (index: Int, time: Int, left: T) -> Unit) {
