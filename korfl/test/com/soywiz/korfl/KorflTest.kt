@@ -30,4 +30,10 @@ class KorflTest {
 		val lib = ResourcesVfs["test4.swf"].readSWF(views, debug = true)
 		println(lib)
 	}
+
+	@Test
+	fun name6() = syncTest {
+		val lib = ResourcesVfs["as3test.swf"].readSWF(views, debug = true)
+		println(lib)
+	}
 }
