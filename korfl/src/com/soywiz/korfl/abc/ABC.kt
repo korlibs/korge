@@ -29,7 +29,7 @@ class ABC {
 		override val simpleName: String = ""
 	}
 	data class ABCQName(val namespace: Namespace, val name: String) : AbstractMultiname {
-		override fun toString(): String = "$namespace::$name"
+		override fun toString(): String = "$namespace.$name"
 		override val simpleName: String = name
 	}
 
@@ -116,7 +116,7 @@ class ABC {
 			readClass(s)
 		}
 
-		typesInfo = instancesInfo.zip(classesInfo).map { TypeInfo(it.first, it.second) }
+		typesInfo = instancesInfo.zip(classesInfo).map { TypeInfo(this, it.first, it.second) }
 
 		//println("Classes: $classesInfo")
 
@@ -180,6 +180,10 @@ class ABC {
 				mapWhile(cond = { !this.eof }, gen = { AbcOperation.read(cpool, this) })
 			}
 		}
+
+		init {
+			method.body = this
+		}
 	}
 
 	data class ExceptionInfo(val from: Int, val to: Int, val target: Int, val type: AbstractMultiname, val variableName: AbstractMultiname)
@@ -195,7 +199,7 @@ class ABC {
 	data class InstanceInfo(val name: ABCQName, val base: AbstractMultiname, val interfaces: List<AbstractMultiname>, val instanceInitializer: MethodDesc, val traits: List<Trait>)
 	data class ClassInfo(val initializer: MethodDesc, val traits: List<Trait>)
 
-	data class TypeInfo(val instanceInfo: InstanceInfo, val classInfo: ClassInfo) {
+	class TypeInfo(val abc: ABC, val instanceInfo: InstanceInfo, val classInfo: ClassInfo) {
 		val name get() = instanceInfo.name
 		val instanceTraits get() = instanceInfo.traits
 		val classTraits get() = classInfo.traits
@@ -295,7 +299,9 @@ class ABC {
 		}
 	}
 
-	data class MethodDesc(val name: String)
+	data class MethodDesc(val name: String) {
+		var body: MethodBody? = null
+	}
 
 	fun readMethod(s: SyncStream): MethodDesc {
 		val parameterCount = s.readU30()

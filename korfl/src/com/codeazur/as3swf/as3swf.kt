@@ -21,6 +21,7 @@ import com.codeazur.as3swf.utils.FlashByteArray
 import com.codeazur.as3swf.utils.toFlash
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.lang.Float16
+import com.soywiz.korio.stream.readStringz
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.substr
 import java.util.*
@@ -332,17 +333,15 @@ class SWFData : BitArray() {
 	/////////////////////////////////////////////////////////
 
 	fun readString(): String {
-		var index = position
-		while (this[index++] != 0) {
-		}
+		//var index = position
+		//while (this[index++] != 0) Unit
 		resetBitsPending()
-		return readUTFBytes(index - position)
+		return this.data.readStringz()
+		//return readUTFBytes(index - position)
 	}
 
 	fun writeString(value: String?) {
-		if (value != null && value.isNotEmpty()) {
-			writeUTFBytes(value)
-		}
+		if (value != null && value.isNotEmpty()) writeUTFBytes(value)
 		writeByte(0)
 	}
 

@@ -49,8 +49,9 @@ fun View.mouseSampleController() = this.apply { MouseSampleController(this).atta
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
 	@Path("simple.swf") val swfLibrary: SwfLibrary,
-	@Path("test1.swf") val swfLibraryTest1: SwfLibrary,
-	@Path("test4.swf") val swfLibraryTest4: SwfLibrary,
+	@Path("test1.swf") val test1Library: SwfLibrary,
+	@Path("test4.swf") val test4Library: SwfLibrary,
+	@Path("as3test.swf") val as3testLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
@@ -95,7 +96,7 @@ class Sample1Scene(
 
 
 		root.container {
-			val mc = swfLibraryTest1.an.createMainTimeLine().apply {
+			val mc = test1Library.an.createMainTimeLine().apply {
 				//speed = 0.1
 			}
 			this += mc
@@ -103,9 +104,19 @@ class Sample1Scene(
 		}
 
 		root.container {
-			val mc = swfLibraryTest4.an.createMainTimeLine().apply {
+			val mc = test4Library.an.createMainTimeLine().apply {
 				x = 320.0
 				y = 320.0
+				//speed = 0.1
+			}
+			this += mc
+			//mc.addUpdatable { println(mc.dumpToString()) }
+		}
+
+		root.container {
+			val mc = as3testLibrary.an.createMainTimeLine().apply {
+				//x = 320.0
+				//y = 320.0
 				//speed = 0.1
 			}
 			this += mc

@@ -38,6 +38,8 @@ class AnSymbolTimelineFrame(
 	val name: String?
 )
 
+data class AnFlowAction(val gotoTime: Int, val stop: Boolean)
+
 class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
 class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int)
@@ -45,8 +47,9 @@ class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: 
 class AnSymbolUidDef(val characterId: Int)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
-	val labels = hashMapOf<String, Int>()
+	val labelsToTime = hashMapOf<String, Int>()
 	val timelines = Array<AnDepthTimeline>(limits.totalDepths) { AnDepthTimeline(it) }
+	val actions = Timed<AnFlowAction>()
 	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
@@ -67,9 +70,10 @@ class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnElement(li
 		val sTop = dy.toDouble()
 		val sRight = sLeft + tex.width
 		val sBottom = sTop + tex.height
-
 		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) && (shapeSymbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) ?: true)) this else null
 	}
+
+	override fun updateInternal(dtMs: Int) = Unit
 }
 
 class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnElement(library, mcSymbol) {
@@ -79,7 +83,9 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 	val singleFrame = mcSymbol.limits.totalFrames <= 1
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
 	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidInfo[it].characterId) }
+	var running = true
 	var firstUpdate = true
+	private var currentTime = 0
 
 	init {
 		for (d in dummyDepths) this += d
@@ -88,40 +94,65 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 
 	override fun reset() {
 		super.reset()
-		println("reset")
 		for (view in viewUids) view.reset()
 		for (n in children.indices) children[n].replaceWith(dummyDepths[n])
 		nextFrame = 0
 	}
 
-	private var currentTime = 0
-
-	override fun updateInternal(dtMs: Int) {
-		if (firstUpdate || !singleFrame) {
-			firstUpdate = false
-			currentTime += dtMs
-			for (depth in 0 until totalDepths) {
-				val timeline = mcSymbol.timelines[depth]
-				timeline.findAndHandle(currentTime) { index, left, right, ratio ->
-					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
-					if ((left != null) && (right != null) && (left.uid == right.uid)) {
-						//println("$currentTime: $index")
-						children[depth].replaceWith(view)
-						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
-						view.name = left.name
-						//view.setComputedTransform(left.transform)
-					} else {
-						//println("$currentTime: $index")
-						children[depth].replaceWith(view)
-						if (left != null) {
-							view.setComputedTransform(left.transform)
-						}
+	private fun update() {
+		for (depth in 0 until totalDepths) {
+			val timeline = mcSymbol.timelines[depth]
+			timeline.findAndHandle(currentTime) { index, left, right, ratio ->
+				val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+				if ((left != null) && (right != null) && (left.uid == right.uid)) {
+					//println("$currentTime: $index")
+					children[depth].replaceWith(view)
+					view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+					view.name = left.name
+					//view.setComputedTransform(left.transform)
+				} else {
+					//println("$currentTime: $index")
+					children[depth].replaceWith(view)
+					if (left != null) {
+						view.setComputedTransform(left.transform)
 					}
 				}
 			}
-			if (currentTime >= mcSymbol.limits.totalTime) {
-				currentTime -= mcSymbol.limits.totalTime
-			}
+		}
+	}
+
+	fun _gotoAndPlayStop(time: Int, keepRunning: Boolean) {
+		currentTime = time
+		eval(time - 1, time)
+		running = keepRunning
+	}
+	fun _gotoAndPlayStop(name: String, keepRunning: Boolean) = _gotoAndPlayStop(mcSymbol.labelsToTime[name] ?: currentTime, keepRunning)
+
+	fun gotoAndPlay(name: String) = _gotoAndPlayStop(name, keepRunning = true)
+	fun gotoAndPlay(time: Int) = _gotoAndPlayStop(time, keepRunning = true)
+
+	fun gotoAndStop(name: String) = _gotoAndPlayStop(name, keepRunning = false)
+	fun gotoAndStop(time: Int) = _gotoAndPlayStop(time, keepRunning = false)
+
+	// Goto to a step between this label and next/end of the clip
+	fun gotoAndPlay(name: String, ratio: Double): Unit = TODO()
+	fun gotoAndStop(name: String, ratio: Double): Unit = TODO()
+
+	private fun eval(prev: Int, current: Int) {
+		this.mcSymbol.actions.forEachInRange(prev, current, maxCalls = 1) { n, time, action ->
+			currentTime = action.gotoTime
+			running = !action.stop
+			//println("Exec: $time, $action")
+		}
+	}
+
+	override fun updateInternal(dtMs: Int) {
+		if (running && (firstUpdate || !singleFrame)) {
+			firstUpdate = false
+			val previousTime = currentTime
+			currentTime = (currentTime + dtMs) % mcSymbol.limits.totalTime
+			eval(previousTime, currentTime)
+			update()
 		}
 
 		super.updateInternal(dtMs)

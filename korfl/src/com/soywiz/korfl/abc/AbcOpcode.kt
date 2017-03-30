@@ -238,7 +238,7 @@ enum class AbcOpcode(val id: Int, val type: AbcOpcode.Kind) {
 }
 
 interface AbcOperation {
-	val op: AbcOpcode
+	val opcode: AbcOpcode
 
 	companion object {
 		fun read(cpool: AbcConstantPool, s: SyncStream): AbcOperation {
@@ -249,16 +249,16 @@ interface AbcOperation {
 	}
 }
 
-data class AbcBasicOperation(override val op: AbcOpcode) : AbcOperation
-data class AbcLabelOperation(override val op: AbcOpcode, val position: Long) : AbcOperation
-data class AbcLookupSwitchOperation(override val op: AbcOpcode, val defaultMarker: Long, val markers: LongArray) : AbcOperation
-data class AbcIntStringIntIntOperation(override val op: AbcOpcode, val int1: Int, val string: String, val int2: Int, val int3: Int) : AbcOperation
-data class AbcIntOperation(override val op: AbcOpcode, val value: Int) : AbcOperation
-data class AbcJumpOperation(override val op: AbcOpcode, val position: Long) : AbcOperation
-data class AbcStringOperation(override val op: AbcOpcode, val value: String) : AbcOperation
-data class AbcIntIntOperation(override val op: AbcOpcode, val value1: Int, val value2: Int) : AbcOperation
-data class AbcDoubleOperation(override val op: AbcOpcode, val value: Double) : AbcOperation
-data class AbcNewClassOperation(override val op: AbcOpcode, val value: Int) : AbcOperation
-data class AbcMultinameOperation(override val op: AbcOpcode, val multiname: ABC.AbstractMultiname) : AbcOperation
-data class AbcMultinameIntOperation(override val op: AbcOpcode, val multiname: ABC.AbstractMultiname, val value: Int) : AbcOperation
-data class AbcNamespaceOperation(override val op: AbcOpcode, val namespace: ABC.Namespace) : AbcOperation
+data class AbcBasicOperation(override val opcode: AbcOpcode) : AbcOperation
+data class AbcLabelOperation(override val opcode: AbcOpcode, val position: Long) : AbcOperation
+data class AbcLookupSwitchOperation(override val opcode: AbcOpcode, val defaultMarker: Long, val markers: LongArray) : AbcOperation
+data class AbcIntStringIntIntOperation(override val opcode: AbcOpcode, val int1: Int, val string: String, val int2: Int, val int3: Int) : AbcOperation
+data class AbcIntOperation(override val opcode: AbcOpcode, val value: Int) : AbcOperation
+data class AbcJumpOperation(override val opcode: AbcOpcode, val position: Long) : AbcOperation
+data class AbcStringOperation(override val opcode: AbcOpcode, val value: String) : AbcOperation
+data class AbcIntIntOperation(override val opcode: AbcOpcode, val value1: Int, val value2: Int) : AbcOperation
+data class AbcDoubleOperation(override val opcode: AbcOpcode, val value: Double) : AbcOperation
+data class AbcNewClassOperation(override val opcode: AbcOpcode, val value: Int) : AbcOperation
+data class AbcMultinameOperation(override val opcode: AbcOpcode, val multiname: ABC.AbstractMultiname) : AbcOperation
+data class AbcMultinameIntOperation(override val opcode: AbcOpcode, val multiname: ABC.AbstractMultiname, val value: Int) : AbcOperation
+data class AbcNamespaceOperation(override val opcode: AbcOpcode, val namespace: ABC.Namespace) : AbcOperation

@@ -9,6 +9,7 @@ import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.exporters.LoggerShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.tags.*
+import com.soywiz.korfl.abc.*
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
@@ -21,15 +22,11 @@ import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.nativeImageFormatProvider
-import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.extract8
-import com.soywiz.korio.util.getu
-import com.soywiz.korio.util.toIntCeil
+import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Rectangle
@@ -58,20 +55,89 @@ val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
+	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
+	val classNameToTagId = hashMapOf<String, Int>()
 	val shapesToPopulate = arrayListOf<Pair<AnSymbolShape, SWFShapeRasterizer>>()
 
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
 		lib = AnLibrary(views, swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
+		processAs3Stops()
+		generateTextures()
+		return lib
+	}
 
+	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt()
+
+	suspend private fun processAs3Stops() {
+		for ((className, tagId) in classNameToTagId) {
+			val type = classNameToTypes[className] ?: continue
+			val symbol = (lib.symbolsById[tagId] as AnSymbolMovieClip?) ?: continue
+			val abc = type.abc
+			val labelsToTime = symbol.labelsToTime
+
+			//println("$tagId :: $className :: $symbol :: $type")
+			for (trait in type.instanceTraits) {
+				val simpleName = trait.name.simpleName
+				//println(" - " + trait.name.simpleName)
+				if (simpleName.startsWith("frame")) {
+					val frame = simpleName.substr(5).toIntOrNull() ?: continue
+					val frame0 = frame - 1
+					val traitMethod = (trait as ABC.TraitMethod?) ?: continue
+					val methodDesc = abc.methodsDesc[traitMethod.methodIndex]
+					val body = methodDesc.body ?: continue
+					val actions = hashMapOf<Int, AnFlowAction>()
+					//println("FRAME: $frame0")
+					//println(body.ops)
+
+					var lastValue: Any? = null
+					for (op in body.ops) {
+						when (op.opcode) {
+							AbcOpcode.PushByte -> lastValue = (op as AbcIntOperation).value
+							AbcOpcode.PushShort -> lastValue = (op as AbcIntOperation).value
+							AbcOpcode.PushInt -> lastValue = (op as AbcIntOperation).value
+							AbcOpcode.PushUInt -> lastValue = (op as AbcIntOperation).value
+							AbcOpcode.PushString -> lastValue = (op as AbcStringOperation).value
+							AbcOpcode.CallPropVoid -> {
+								val call = (op as AbcMultinameIntOperation)
+								val callMethodName = call.multiname.simpleName
+								when (callMethodName) {
+									"gotoAndPlay", "gotoAndStop" -> {
+										val time = when (lastValue) {
+											is String -> labelsToTime[lastValue] ?: 0
+											is Int -> getFrameTime(lastValue - 1)
+											else -> 0
+										}
+										//println("$callMethodName: $lastValue : $labels")
+										actions[frame0] = AnFlowAction(time, callMethodName == "gotoAndStop")
+									}
+									"play", "stop" -> {
+										actions[frame0] = AnFlowAction(getFrameTime(frame0), callMethodName == "stop")
+									}
+									else -> {
+										//println("method: $callMethodName")
+									}
+								}
+								lastValue = null
+							}
+						}
+					}
+
+					for ((frame0, action) in actions.entries.sortedBy { it.key }) {
+						symbol.actions.add(getFrameTime(frame0), action)
+					}
+				}
+			}
+		}
+	}
+
+	suspend private fun generateTextures() {
 		// @TODO: Generate an atalas using BinPacker!
 		for ((shape, rasterizer) in shapesToPopulate) {
-			if (debug) showImageAndWait(rasterizer.image)
+			//if (debug) showImageAndWait(rasterizer.image)
 			shape.texture = views.texture(rasterizer.image)
 		}
-
-		return lib
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -131,7 +197,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 		for (it in tags) {
 			//println("Tag: $it")
-			val currentTime = (currentFrame * lib.msPerFrameDouble).toInt()
+			val currentTime = getFrameTime(currentFrame)
 			when (it) {
 				is TagFileAttributes -> {
 
@@ -140,7 +206,10 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					lib.bgcolor = decodeSWFColor(it.color)
 				}
 				is TagDefineSceneAndFrameLabelData -> {
-					for (fl in it.frameLabels) mc.labels[fl.name] = fl.frameNumber
+					mc.labelsToTime += it.frameLabels.map { it.name to getFrameTime(it.frameNumber - 1) }
+				}
+				is TagFrameLabel -> {
+					mc.labelsToTime[it.frameName] = currentTime
 				}
 				is TagDefineBitsJPEG2 -> {
 					val bitsData = it.bitmapData.cloneToNewByteArray()
@@ -203,7 +272,12 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					shapesToPopulate += symbol to rasterizer
 				}
 				is TagDoABC -> {
-					println(it.abc)
+					//println(it.abc)
+					classNameToTypes += it.abc.typesInfo.map { it.name.toString() to it }.toMap()
+					//for (type in it.abc.typesInfo) println(type.name)
+				}
+				is TagSymbolClass -> {
+					classNameToTagId += it.symbols.filter { it.name != null }.map { it.name!! to it.tagId }.toMap()
 				}
 				is TagDefineSprite -> {
 					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, it.name, findLimits(it.tags)))
