@@ -202,6 +202,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					lib.addSymbol(symbol)
 					shapesToPopulate += symbol to rasterizer
 				}
+				is TagDoABC -> {
+					println(it.abc)
+				}
 				is TagDefineSprite -> {
 					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, it.name, findLimits(it.tags)))
 				}

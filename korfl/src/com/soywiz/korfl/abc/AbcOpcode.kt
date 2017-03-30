@@ -1,8 +1,6 @@
 package com.soywiz.korfl.abc
 
-import com.soywiz.korio.stream.SyncStream
-import com.soywiz.korio.stream.readS8
-import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.*
 
 enum class AbcOpcode(val id: Int, val type: AbcOpcode.Kind) {
 	Breakpoint(0x01, Kind.BasicOperation),
@@ -182,11 +180,24 @@ enum class AbcOpcode(val id: Int, val type: AbcOpcode.Kind) {
 	Sign8(0x51, Kind.BasicOperation),
 	Sign16(0x52, Kind.BasicOperation);
 
-	enum class Kind(val read: (op: AbcOpcode, s: SyncStream) -> AbcOperation = { op, _ -> AbcBasicOperation(op) }) {
-		BasicOperation({ op, s -> AbcBasicOperation(op) }),
-		ConditionalJumpOperation({ op, s -> TODO() }),
-		LabelOperation({ op, s -> TODO() }),
-		IntOperation({ op, s ->
+	class KindContext(
+		val op: AbcOpcode,
+		val cpool: AbcConstantPool,
+		val s: SyncStream
+	) {
+		val ints get() = cpool.ints
+		val uints get() = cpool.uints
+		val doubles get() = cpool.doubles
+		val strings get() = cpool.strings
+		val namespaces get() = cpool.namespaces
+		val namespaceSets get() = cpool.namespaceSets
+		val multinames get() = cpool.multinames
+	}
+
+	enum class Kind(val read: KindContext.() -> AbcOperation = { AbcBasicOperation(op) }) {
+		BasicOperation({ AbcBasicOperation(op) }),
+		LabelOperation({ AbcLabelOperation(op, s.position) }),
+		IntOperation({
 			AbcIntOperation(op, when (op) {
 				AbcOpcode.GetScopeObject -> s.readU8()
 				AbcOpcode.PushByte -> s.readS8()
@@ -194,20 +205,31 @@ enum class AbcOpcode(val id: Int, val type: AbcOpcode.Kind) {
 				else -> s.readU30()
 			})
 		}),
-		UIntOperation({ op, s -> TODO() }),
-		NumberOperation({ op, s -> TODO() }),
-		IntIntOperation({ op, s -> TODO() }),
-		IntStringIntIntOperation({ op, s -> TODO() }),
-		StringOperation({ op, s -> TODO() }),
-		MultinameOperation({ op, s -> TODO() }),
-		MultinameIntOperation({ op, s -> TODO() }),
-		JumpOperation({ op, s -> TODO() }),
-		NewClassOperation({ op, s -> TODO() }),
-		LookupSwitchOperation({ op, s -> TODO() }),
-		NamespaceOperation({ op, s -> TODO() }),
-		NewFunctionOperation({ op, s -> TODO() }),
-		MethodOperation({ op, s -> TODO() }),
-		NewCatchOperation({ op, s -> TODO() }),
+		UIntOperation({ AbcIntOperation(op, uints[s.readU30()]) }),
+		NumberOperation({ AbcDoubleOperation(op, doubles[s.readU30()]) }),
+		IntIntOperation({
+			if (op == AbcOpcode.HasNext2) {
+				AbcIntIntOperation(op, s.readS32_le(), s.readS32_le())
+			} else {
+				AbcIntIntOperation(op, s.readU30(), s.readU30())
+			}
+		}),
+		IntStringIntIntOperation({ AbcIntStringIntIntOperation(op, s.readU8(), strings[s.readU30()], s.readU8(), s.readU30()) }),
+		StringOperation({ AbcStringOperation(op, strings[s.readU30()]) }),
+		MultinameOperation({ AbcMultinameOperation(op, multinames[s.readU30()]) }),
+		MultinameIntOperation({ AbcMultinameIntOperation(op, multinames[s.readU30()], s.readU30()) }),
+		ConditionalJumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24_le()) }),
+		JumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24_le()) }),
+		NewClassOperation({ AbcNewClassOperation(op, s.readU30()) }),
+		LookupSwitchOperation({
+			val defaultMarker = s.position + s.readS24_le()
+			val markers = (0 until (s.readU30() + 1)).map { s.position + s.readS24_le() }.toLongArray()
+			AbcLookupSwitchOperation(op, defaultMarker, markers)
+		}),
+		NamespaceOperation({ AbcNamespaceOperation(op, namespaces[s.readU30()]) }),
+		NewFunctionOperation({ AbcIntOperation(op, s.readU30()) }),
+		MethodOperation({ AbcIntIntOperation(op, s.readU30(), s.readU30()) }),
+		NewCatchOperation({ AbcIntOperation(op, s.readU30()) }),
 	}
 
 	companion object {
@@ -217,14 +239,26 @@ enum class AbcOpcode(val id: Int, val type: AbcOpcode.Kind) {
 
 interface AbcOperation {
 	val op: AbcOpcode
+
 	companion object {
-		fun read(s: SyncStream): AbcOperation {
+		fun read(cpool: AbcConstantPool, s: SyncStream): AbcOperation {
 			val iop = s.readU8()
 			val op = AbcOpcode.BY_ID[iop]
-			return op!!.type.read(op, s)
+			return op!!.type.read(AbcOpcode.KindContext(op, cpool, s))
 		}
 	}
 }
 
 data class AbcBasicOperation(override val op: AbcOpcode) : AbcOperation
+data class AbcLabelOperation(override val op: AbcOpcode, val position: Long) : AbcOperation
+data class AbcLookupSwitchOperation(override val op: AbcOpcode, val defaultMarker: Long, val markers: LongArray) : AbcOperation
+data class AbcIntStringIntIntOperation(override val op: AbcOpcode, val int1: Int, val string: String, val int2: Int, val int3: Int) : AbcOperation
 data class AbcIntOperation(override val op: AbcOpcode, val value: Int) : AbcOperation
+data class AbcJumpOperation(override val op: AbcOpcode, val position: Long) : AbcOperation
+data class AbcStringOperation(override val op: AbcOpcode, val value: String) : AbcOperation
+data class AbcIntIntOperation(override val op: AbcOpcode, val value1: Int, val value2: Int) : AbcOperation
+data class AbcDoubleOperation(override val op: AbcOpcode, val value: Double) : AbcOperation
+data class AbcNewClassOperation(override val op: AbcOpcode, val value: Int) : AbcOperation
+data class AbcMultinameOperation(override val op: AbcOpcode, val multiname: ABC.AbstractMultiname) : AbcOperation
+data class AbcMultinameIntOperation(override val op: AbcOpcode, val multiname: ABC.AbstractMultiname, val value: Int) : AbcOperation
+data class AbcNamespaceOperation(override val op: AbcOpcode, val namespace: ABC.Namespace) : AbcOperation

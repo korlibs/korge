@@ -5,6 +5,8 @@ import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
 import com.codeazur.as3swf.utils.FlashByteArray
+import com.soywiz.korfl.abc.ABC
+import com.soywiz.korio.stream.openSync
 
 
 interface ITag {
@@ -2606,8 +2608,8 @@ class TagDoABC : _BaseTag(), ITag {
 	companion object {
 		const val TYPE = 82
 
-		fun create(abcData: FlashByteArray? = null, aName: String = "", aLazyInitializeFlag: Boolean = true): com.codeazur.as3swf.tags.TagDoABC {
-			val doABC: com.codeazur.as3swf.tags.TagDoABC = com.codeazur.as3swf.tags.TagDoABC()
+		fun create(abcData: FlashByteArray? = null, aName: String = "", aLazyInitializeFlag: Boolean = true): TagDoABC {
+			val doABC = TagDoABC()
 			if (abcData != null && abcData.length > 0) {
 				doABC.bytes.writeBytes(abcData)
 			}
@@ -2621,6 +2623,12 @@ class TagDoABC : _BaseTag(), ITag {
 	var abcName: String = ""
 
 	val bytes: FlashByteArray = FlashByteArray()
+	private var _abc: ABC? = null
+
+	val abc: ABC get() {
+		if (_abc == null) _abc = ABC().readFile(bytes.cloneToNewByteArray().openSync())
+		return _abc!!
+	}
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		val pos: Int = data.position
@@ -2628,6 +2636,7 @@ class TagDoABC : _BaseTag(), ITag {
 		lazyInitializeFlag = ((flags and 0x01) != 0)
 		abcName = data.readString()
 		data.readBytes(bytes, 0, length - (data.position - pos))
+		_abc = null
 	}
 
 	suspend override fun publish(data: SWFData, version: Int): Unit {
@@ -2641,7 +2650,7 @@ class TagDoABC : _BaseTag(), ITag {
 		data.writeBytes(body)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDoABC.Companion.TYPE
+	override val type = TagDoABC.Companion.TYPE
 	override val name = "DoABC"
 	override val version = 9
 	override val level = 1

@@ -38,6 +38,11 @@ class ABCTest {
 			"68 01 47 00 00 		                        "       //  h*G** |
 		).fromHexChunks()
 
-		ABC().readFile(data.openSync())
+		val abc = ABC().readFile(data.openSync())
+		for (type in abc.typesInfo) {
+			for (trait in type.instanceTraits) {
+				println(trait.name)
+			}
+		}
 	}
 }

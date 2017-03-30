@@ -2,6 +2,7 @@ package com.soywiz.korfl.abc
 
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.stream.*
+import com.soywiz.korio.util.mapWhile
 
 // http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/actionscript/articles/avm2overview.pdf
 // https://github.com/imcj/as3abc/blob/master/src/com/codeazur/as3abc/ABC.as
@@ -21,46 +22,78 @@ class ABC {
 		override fun toString(): String = "$name"
 	}
 
-	interface AbstractMultiname
-	object EmptyMultiname : AbstractMultiname
+	interface AbstractMultiname {
+		val simpleName: String
+	}
+	object EmptyMultiname : AbstractMultiname {
+		override val simpleName: String = ""
+	}
 	data class ABCQName(val namespace: Namespace, val name: String) : AbstractMultiname {
 		override fun toString(): String = "$namespace::$name"
+		override val simpleName: String = name
 	}
-	data class QNameA(val namespace: Namespace, val name: String) : AbstractMultiname
-	data class RTQName(val name: String) : AbstractMultiname
-	data class RTQNameA(val name: String) : AbstractMultiname
-	object RTQNameL : AbstractMultiname
-	object RTQNameLA : AbstractMultiname
-	data class Multiname(val name: String, val namespaceSet: List<Namespace>) : AbstractMultiname
-	data class MultinameA(val name: String, val namespaceSet: List<Namespace>) : AbstractMultiname
-	data class MultinameL(val namespaceSet: List<Namespace>) : AbstractMultiname
-	data class MultinameLA(val namespaceSet: List<Namespace>) : AbstractMultiname
-	data class TypeName(val qname: Int, val parameters: List<Int>) : AbstractMultiname
 
-	var ints = listOf<Int>()
-	var uints = listOf<Int>()
-	var doubles = listOf<Double>()
-	var strings = listOf<String>()
-	var namespaces = listOf<Namespace>()
-	var namespaceSets = listOf<List<Namespace>>()
-	var multinames = listOf<AbstractMultiname>()
-	var methods = listOf<MethodDesc>()
+	data class QNameA(val namespace: Namespace, val name: String) : AbstractMultiname {
+		override val simpleName: String = name
+	}
+	data class RTQName(val name: String) : AbstractMultiname {
+		override val simpleName: String = name
+	}
+	data class RTQNameA(val name: String) : AbstractMultiname {
+		override val simpleName: String = name
+	}
+	object RTQNameL : AbstractMultiname {
+		override val simpleName: String = ""
+	}
+	object RTQNameLA : AbstractMultiname {
+		override val simpleName: String = ""
+	}
+	data class Multiname(val name: String, val namespaceSet: List<Namespace>) : AbstractMultiname {
+		override val simpleName: String = name
+	}
+	data class MultinameA(val name: String, val namespaceSet: List<Namespace>) : AbstractMultiname {
+		override val simpleName: String = name
+	}
+	data class MultinameL(val namespaceSet: List<Namespace>) : AbstractMultiname {
+		override val simpleName: String = ""
+	}
+	data class MultinameLA(val namespaceSet: List<Namespace>) : AbstractMultiname {
+		override val simpleName: String = ""
+	}
+	data class TypeName(val qname: Int, val parameters: List<Int>) : AbstractMultiname {
+		override val simpleName: String = "TypeName($qname)"
+	}
+
+	var methodsDesc = listOf<MethodDesc>()
+	var instancesInfo = listOf<InstanceInfo>()
+	var classesInfo = listOf<ClassInfo>()
+	var typesInfo = listOf<TypeInfo>()
+	var scriptsInfo = listOf<ScriptInfo>()
+	var methodsBodies = listOf<MethodBody>()
 	var metadatas = listOf<Metadata>()
+	val cpool = AbcConstantPool()
+	val ints: List<Int> get() = cpool.ints
+	val uints: List<Int> get() = cpool.uints
+	val doubles: List<Double> get() = cpool.doubles
+	val strings: List<String> get() = cpool.strings
+	val namespaces: List<ABC.Namespace> get() = cpool.namespaces
+	val namespaceSets: List<List<ABC.Namespace>> get() = cpool.namespaceSets
+	val multinames: List<ABC.AbstractMultiname> get() = cpool.multinames
 
 	data class Metadata(val name: String, val values: Map<String, String>)
 
-	fun readFile(s: SyncStream) {
+	fun readFile(s: SyncStream) = this.apply {
 		val minor = s.readU16_le()
 		val major = s.readU16_le()
-		println("version: major=$major, minor=$minor")
-		readConstantPool(s)
+		//println("version: major=$major, minor=$minor")
+		cpool.readConstantPool(s)
 
 		// readMethods
-		methods = (0 until s.readU30()).map {
+		methodsDesc = (0 until s.readU30()).map {
 			readMethod(s)
 		}
 
-		println("Methods: $methods")
+		//println("Methods: $methodsDesc")
 
 		// readMetadata
 		metadatas = (0 until s.readU30()).map {
@@ -69,34 +102,34 @@ class ABC {
 			Metadata(name, items.toMap())
 		}
 
-		println("Metadatas: $metadatas")
+		//println("Metadatas: $metadatas")
 
 		val typeCount = s.readU30()
 
 		// readInstances
-		val instances = (0 until typeCount).map {
+		instancesInfo = (0 until typeCount).map {
 			readInstance(s)
 		}
 
-		println("Instances: $instances")
-
 		// readClasses
-		val classes = (0 until typeCount).map {
+		classesInfo = (0 until typeCount).map {
 			readClass(s)
 		}
 
-		println("Classes: $classes")
+		typesInfo = instancesInfo.zip(classesInfo).map { TypeInfo(it.first, it.second) }
+
+		//println("Classes: $classesInfo")
 
 		// readScripts
-		val scripts = (0 until s.readU30()).map {
-			ScriptInfo(methods[s.readU30()], readTraits(s))
+		scriptsInfo = (0 until s.readU30()).map {
+			ScriptInfo(methodsDesc[s.readU30()], readTraits(s))
 		}
 
-		println("Scripts: $scripts")
+		//println("Scripts: $scripts")
 
 		// readScripts
-		val methodBodies = (0 until s.readU30()).map {
-			val method = methods[s.readU30()]
+		methodsBodies = (0 until s.readU30()).map {
+			val method = methodsDesc[s.readU30()]
 			val maxStack = s.readU30()
 			val localCount = s.readU30()
 			val initScopeDepth = s.readU30()
@@ -113,14 +146,6 @@ class ABC {
 			}
 			val traits = readTraits(s)
 
-			val sops = opcodes.openSync()
-
-			println("------------------------- $method")
-			while (!sops.eof) {
-				val op = AbcOperation.read(sops)
-				println(op)
-			}
-
 			MethodBody(
 				method = method,
 				maxStack = maxStack,
@@ -128,41 +153,58 @@ class ABC {
 				initScopeDepth = initScopeDepth,
 				maxScopeDepth = maxScopeDepth,
 				opcodes = opcodes,
+				cpool = cpool,
 				exceptions = exceptions,
 				traits = traits
 			)
 		}
 
-		println("MethodBodies: $methodBodies")
+		//println("MethodBodies: $methodBodies")
 
-		println("Available: ${s.available}")
+		//println("Available: ${s.available}")
 	}
 
-	data class MethodBody(
+	class MethodBody(
 		val method: MethodDesc,
 		val maxStack: Int,
 		val localCount: Int,
 		val initScopeDepth: Int,
 		val maxScopeDepth: Int,
 		val opcodes: ByteArray,
+		val cpool: AbcConstantPool,
 		val exceptions: List<ExceptionInfo>,
 		val traits: List<Trait>
-	)
+	) {
+		val ops by lazy {
+			opcodes.openSync().run {
+				mapWhile(cond = { !this.eof }, gen = { AbcOperation.read(cpool, this) })
+			}
+		}
+	}
 
 	data class ExceptionInfo(val from: Int, val to: Int, val target: Int, val type: AbstractMultiname, val variableName: AbstractMultiname)
 
-	interface Trait
-	data class TraitSlot(val slotIndex: Int, val type: AbstractMultiname, val value: Any?) : Trait
-	data class TraitMethod(val name: AbstractMultiname, val dispIndex: Int, val methodIndex: Int) : Trait
-	data class TraitClass(val slotIndex: Int, val classIndex: Int) : Trait
-	data class TraitFunction(val slotIndex: Int, val functionIndex: Int) : Trait
+	interface Trait {
+		val name: AbstractMultiname
+	}
+	data class TraitSlot(override val name: AbstractMultiname, val slotIndex: Int, val type: AbstractMultiname, val value: Any?) : Trait
+	data class TraitMethod(override val name: AbstractMultiname, val dispIndex: Int, val methodIndex: Int) : Trait
+	data class TraitClass(override val name: AbstractMultiname, val slotIndex: Int, val classIndex: Int) : Trait
+	data class TraitFunction(override val name: AbstractMultiname, val slotIndex: Int, val functionIndex: Int) : Trait
 
-	data class InstanceInfo(val traits: List<Trait>)
+	data class InstanceInfo(val name: ABCQName, val base: AbstractMultiname, val interfaces: List<AbstractMultiname>, val instanceInitializer: MethodDesc, val traits: List<Trait>)
 	data class ClassInfo(val initializer: MethodDesc, val traits: List<Trait>)
+
+	data class TypeInfo(val instanceInfo: InstanceInfo, val classInfo: ClassInfo) {
+		val name get() = instanceInfo.name
+		val instanceTraits get() = instanceInfo.traits
+		val classTraits get() = classInfo.traits
+	}
+
 	data class ScriptInfo(val initializer: MethodDesc, val traits: List<Trait>)
 
 	fun readClass(s: SyncStream): ClassInfo {
-		return ClassInfo(methods[s.readU30()], readTraits(s))
+		return ClassInfo(methodsDesc[s.readU30()], readTraits(s))
 	}
 
 	fun readInstance(s: SyncStream): InstanceInfo {
@@ -182,7 +224,13 @@ class ABC {
 		}
 		val instanceInitializerIndex = s.readU30()
 		val traits = readTraits(s)
-		return InstanceInfo(traits)
+		return InstanceInfo(
+			name = name,
+			base = base,
+			interfaces = interfaces,
+			instanceInitializer = methodsDesc[instanceInitializerIndex],
+			traits = traits
+		)
 	}
 
 	fun getConstantValue(type: Int, index: Int): Any? = when (type) {
@@ -227,7 +275,7 @@ class ABC {
 					} else {
 						null
 					}
-					TraitSlot(slotIndex, type, value)
+					TraitSlot(name, slotIndex, type, value)
 				}
 				0x01, 0x02, 0x03 -> { // TraitMethod, TraitGetter, TraitSetter
 					val dispIndex = s.readU30()
@@ -236,8 +284,8 @@ class ABC {
 					val isOverride = (info and 0x02) != 0
 					TraitMethod(name, dispIndex, methodIndex)
 				}
-				0x04 -> TraitClass(s.readU30(), s.readU30())
-				0x05 -> TraitFunction(s.readU30(), s.readU30())
+				0x04 -> TraitClass(name, s.readU30(), s.readU30())
+				0x05 -> TraitFunction(name, s.readU30(), s.readU30())
 				else -> invalidOp("Unknown trait kind $traitKind")
 			}
 			if (hasMetadata) {
@@ -245,47 +293,6 @@ class ABC {
 			}
 			trait
 		}
-	}
-
-
-	fun readConstantPool(s: SyncStream) {
-		ints = listOf(0) + (1 until s.readU30()).map { s.readS32_le() }
-		uints = listOf(0) + (1 until s.readU30()).map { s.readS32_le() }
-		doubles = listOf(0.0) + (1 until s.readU30()).map { s.readF64_le() }
-		strings = listOf("") + (1 until s.readU30()).map { s.readStringz(s.readU30()) }
-		namespaces = listOf(Namespace.EMPTY) + (1 until s.readU30()).map {
-			val kind = s.readU8()
-			val name = strings[s.readU30()]
-			Namespace(kind, name)
-		}
-		namespaceSets = listOf(listOf<Namespace>()) + (1 until s.readU30()).map {
-			(0 until s.readU30()).map { namespaces[s.readU30()] }
-		}
-		multinames = listOf(EmptyMultiname) + (1 until s.readU30()).map {
-			val kind = s.readU8()
-
-			when (kind) {
-				0x07 -> ABCQName(namespaces[s.readU30()], strings[s.readU30()])
-				0x0D -> QNameA(namespaces[s.readU30()], strings[s.readU30()])
-				0x0F -> RTQName(strings[s.readU30()])
-				0x10 -> RTQNameA(strings[s.readU30()])
-				0x11 -> RTQNameL
-				0x12 -> RTQNameLA
-				0x09 -> Multiname(strings[s.readU30()], namespaceSets[s.readU30()])
-				0x0E -> MultinameA(strings[s.readU30()], namespaceSets[s.readU30()])
-				0x1B -> MultinameL(namespaceSets[s.readU30()])
-				0x1C -> MultinameLA(namespaceSets[s.readU30()])
-				0x1D -> TypeName(s.readU30(), (0 until s.readU30()).map { s.readU30() })
-				else -> invalidOp("Unsupported $kind")
-			}
-		}
-		println(ints)
-		println(uints)
-		println(doubles)
-		println(strings)
-		println(namespaces)
-		println(namespaceSets)
-		println(multinames)
 	}
 
 	data class MethodDesc(val name: String)
@@ -316,7 +323,7 @@ class ABC {
 			val parameterNames = (0 until parameterCount).map { strings[s.readU30()] }
 		}
 
-		println("$name($parameters):$returnType")
+		//println("$name($parameters):$returnType")
 		//TODO()
 
 		return MethodDesc(name)
@@ -325,18 +332,14 @@ class ABC {
 
 fun SyncStream.readU30(): Int {
 	var result = readU8()
-	if ((result and 0x80) != 0) {
-		result = (result and 0x7f) or (readU8() shl 7)
-		if ((result and 0x4000) != 0) {
-			result = (result and 0x3fff) or (readU8() shl 14)
-			if ((result and 0x200000) != 0) {
-				result = (result and 0x1fffff) or (readU8() shl 21)
-				if ((result and 0x10000000) != 0) {
-					result = (result and 0xfffffff) or (readU8() shl 28)
-				}
-			}
-		}
-	}
+	if ((result and 0x80) == 0) return result
+	result = (result and 0x7f) or (readU8() shl 7)
+	if ((result and 0x4000) == 0) return result
+	result = (result and 0x3fff) or (readU8() shl 14)
+	if ((result and 0x200000) == 0) return result
+	result = (result and 0x1fffff) or (readU8() shl 21)
+	if ((result and 0x10000000) == 0) return result
+	result = (result and 0xfffffff) or (readU8() shl 28)
 	return result
 }
 
