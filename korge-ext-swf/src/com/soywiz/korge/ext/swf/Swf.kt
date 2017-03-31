@@ -2,6 +2,9 @@ package com.soywiz.korge.ext.swf
 
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.data.GradientType
+import com.codeazur.as3swf.data.actions.swf3.ActionGotoFrame
+import com.codeazur.as3swf.data.actions.swf3.ActionPlay
+import com.codeazur.as3swf.data.actions.swf3.ActionStop
 import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.data.consts.GradientInterpolationMode
 import com.codeazur.as3swf.data.consts.GradientSpreadMode
@@ -32,8 +35,8 @@ import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.geom.Rectangle
 import kotlin.collections.set
 
 @AsyncFactoryClass(SwfLibraryFactory::class)
@@ -51,7 +54,46 @@ inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 
-val AnSymbolMovieClip.actionsBuilder by Extra.Property { arrayListOf<Pair<Int, AnAction>>() }
+class MySwfFrameElement(
+	val depth: Int,
+	val uid: Int,
+	val name: String?,
+	val transform: Matrix2d.Computed
+) {
+	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name)
+}
+
+class MySwfFrame(val index: Int, maxDepths: Int) {
+	var name: String? = null
+	val depths = arrayListOf<MySwfFrameElement>()
+	val actions = arrayListOf<Action>()
+
+	interface Action {
+		object Stop : Action
+		object Play : Action
+		class Goto(val frame0: Int) : Action
+		class PlaySound(val soundId: Int) : Action
+	}
+
+	val isFirst: Boolean get() = index == 0
+	val hasName: Boolean get() = name != null
+	val hasStop: Boolean get() = Action.Stop in actions
+	val hasGoto: Boolean get() = actions.any { it is Action.Goto }
+
+	fun stop() = run { actions += Action.Stop }
+	fun play() = run { actions += Action.Play }
+	fun goto(frame: Int) = run { actions += Action.Goto(frame) }
+	fun gotoAndStop(frame: Int) = run { goto(frame); stop() }
+	fun gotoAndPlay(frame: Int) = run { goto(frame); play() }
+	fun playSound(soundId: Int) = run { actions += Action.PlaySound(soundId) }
+}
+
+class MySwfTimeline {
+	val frames = arrayListOf<MySwfFrame>()
+}
+
+internal val AnSymbolMovieClip.swfTimeline by Extra.Property { MySwfTimeline() }
+internal val AnSymbolMovieClip.labelsToFrame0 by Extra.Property { hashMapOf<String, Int>() }
 
 private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	lateinit var swf: SWF
@@ -64,31 +106,75 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		swf = SWF().loadBytes(data)
 		lib = AnLibrary(views, swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
-		processAs3Stops()
+		processAs3Actions()
 		generateTextures()
-		finalizeActions()
+		generateActualTimelines()
 		return lib
 	}
 
 	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt()
 
-	suspend private fun finalizeActions() {
+	suspend private fun generateActualTimelines() {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
-			val rawActions = symbol.actionsBuilder
-			if (rawActions.isNotEmpty()) {
-				for ((frame0, actions) in rawActions.groupBy { it.first }.map { it.key to AnActions(it.value.map { it.second }) }) {
-					symbol.actions.add(getFrameTime(frame0), actions)
+			val swfTimeline = symbol.swfTimeline
+			var currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
+			var justAfterStop = true
+			var stateStartFrame = 0
+			for (frame in swfTimeline.frames) {
+				val currentTime = getFrameTime(frame.index)
+				// Create State
+				if (justAfterStop) {
+					justAfterStop = false
+					stateStartFrame = frame.index
+					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
+				}
+
+				val isLast = frame.index >= swfTimeline.frames.size - 1
+
+				// Register State
+				if (frame.isFirst) symbol.states["default"] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+				if (frame.hasName) symbol.states[frame.name!!] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+
+				// Compute frame
+				for (depth in frame.depths) {
+					currentState.timelines[depth.depth].add(currentTime, depth.toAnSymbolTimelineFrame())
+				}
+
+				// Compute actions
+				val anActions = arrayListOf<AnAction>()
+				for (it in frame.actions) {
+					when (it) {
+						is MySwfFrame.Action.PlaySound -> {
+							anActions += AnPlaySoundAction(it.soundId)
+						}
+					}
+				}
+				if (anActions.isNotEmpty()) currentState.actions.add(currentTime, AnActions(anActions))
+
+				if (isLast || frame.hasStop || frame.hasGoto) {
+					justAfterStop = true
+
+					if (frame.hasStop) {
+						currentState.loopStartTime = currentTime
+					}
+					if (frame.hasGoto) {
+						val goto = frame.actions.filterIsInstance<MySwfFrame.Action.Goto>().first()
+
+						currentState.loopStartTime = getFrameTime(goto.frame0)
+					}
+					val stateEndFrame = frame.index
+					currentState.totalTime = getFrameTime(stateEndFrame - stateStartFrame)
 				}
 			}
 		}
 	}
 
-	suspend private fun processAs3Stops() {
+	suspend private fun processAs3Actions() {
 		for ((className, tagId) in classNameToTagId) {
 			val type = classNameToTypes[className] ?: continue
 			val symbol = (lib.symbolsById[tagId] as AnSymbolMovieClip?) ?: continue
 			val abc = type.abc
-			val labelsToTime = symbol.labelsToTime
+			val labelsToFrame0 = symbol.labelsToFrame0
 
 			//println("$tagId :: $className :: $symbol :: $type")
 			for (trait in type.instanceTraits) {
@@ -114,19 +200,23 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 							AbcOpcode.CallPropVoid -> {
 								val call = (op as AbcMultinameIntOperation)
 								val callMethodName = call.multiname.simpleName
+								val frameData = symbol.swfTimeline.frames[frame0]
 								when (callMethodName) {
 									"gotoAndPlay", "gotoAndStop" -> {
-										val time = when (lastValue) {
-											is String -> labelsToTime[lastValue] ?: 0
-											is Int -> getFrameTime(lastValue - 1)
+										val gotoFrame0 = when (lastValue) {
+											is String -> labelsToFrame0[lastValue] ?: 0
+											is Int -> lastValue - 1
 											else -> 0
 										}
-										symbol.actionsBuilder += frame0 to AnFlowAction(time, callMethodName == "gotoAndStop")
-										//println("$callMethodName: $lastValue : $labels")
+										if (callMethodName == "gotoAndStop") {
+											frameData.gotoAndStop(gotoFrame0)
+										} else {
+											frameData.gotoAndPlay(gotoFrame0)
+										}
 									}
-									"play", "stop" -> {
-										symbol.actionsBuilder += frame0 to AnFlowAction(getFrameTime(frame0), callMethodName == "stop")
-									}
+									"play" -> frameData.play()
+									"stop" -> frameData.stop()
+
 									else -> {
 										//println("method: $callMethodName")
 									}
@@ -179,20 +269,32 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 		lib.addSymbol(mc)
 
-		var currentFrame = 0
+		val swfTimeline = mc.swfTimeline
+		val labelsToFrame0 = mc.labelsToFrame0
 		val uniqueIds = hashMapOf<Pair<Int, Int>, Int>()
 
-		class DepthInfo {
+		class DepthInfo(val depth: Int) {
+			var uid: Int = -1
 			var charId: Int = -1
 			var name: String? = null
+			var matrix: Matrix2d = Matrix2d()
 
 			fun reset() {
+				uid = -1
 				charId = -1
 				name = null
+				matrix = Matrix2d()
 			}
+
+			fun toFrameElement(): MySwfFrameElement = MySwfFrameElement(
+				depth = depth,
+				uid = uid,
+				name = name,
+				transform = Matrix2d.Computed(matrix)
+			)
 		}
 
-		val depths = Array(mc.limits.totalDepths) { DepthInfo() }
+		val depths = Array(mc.limits.totalDepths) { DepthInfo(it) }
 
 		fun getUid(depth: Int): Int {
 			val charId = depths[depth].charId
@@ -203,21 +305,46 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 			}
 		}
 
+		// Add frames and read labels information
+		for (it in tags) {
+			val currentFrame = swfTimeline.frames.size
+			when (it) {
+				is TagDefineSceneAndFrameLabelData -> {
+					mc.labelsToFrame0 += it.frameLabels.map { it.name to it.frameNumber - 1 }
+				}
+				is TagFrameLabel -> {
+					mc.labelsToFrame0[it.frameName] = currentFrame
+				}
+				is TagShowFrame -> {
+					swfTimeline.frames += MySwfFrame(currentFrame, mc.limits.totalDepths)
+				}
+			}
+		}
+
+		// Populate frame names
+		for ((name, index) in mc.labelsToFrame0) swfTimeline.frames[index].name = name
+
+
+		var currentFrame = 0
 		for (it in tags) {
 			//println("Tag: $it")
 			val currentTime = getFrameTime(currentFrame)
+			val swfCurrentFrame by lazy { mc.swfTimeline.frames[currentFrame] }
 			when (it) {
-				is TagFileAttributes -> {
-
-				}
+				is TagDefineSceneAndFrameLabelData -> Unit
+				is TagFrameLabel -> Unit
+				is TagFileAttributes -> Unit
 				is TagSetBackgroundColor -> {
 					lib.bgcolor = decodeSWFColor(it.color)
 				}
-				is TagDefineSceneAndFrameLabelData -> {
-					mc.labelsToTime += it.frameLabels.map { it.name to getFrameTime(it.frameNumber - 1) }
-				}
-				is TagFrameLabel -> {
-					mc.labelsToTime[it.frameName] = currentTime
+				is TagDoAction -> {
+					for (action in it.actions) {
+						when (action) {
+							is ActionStop -> swfCurrentFrame.stop()
+							is ActionPlay -> swfCurrentFrame.play()
+							is ActionGotoFrame -> swfCurrentFrame.goto(action.frame)
+						}
+					}
 				}
 				is TagSoundStreamHead -> {
 				}
@@ -229,109 +356,89 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 						e.printStackTrace()
 						null
 					}
-					lib.addSymbol(AnSymbolSound(it.characterId, it.name, audioData))
+					lib.addSymbol(AnSymbolSound(it.characterId, "unknown", audioData))
 					//LocalVfs("c:/temp/temp.mp3").write()
 				}
 				is TagStartSound -> {
-					mc.actionsBuilder += currentFrame to AnPlaySoundAction(it.soundId)
+					swfCurrentFrame.playSound(it.soundId)
 				}
-				is TagDefineBitsJPEG2 -> {
-					val bitsData = it.bitmapData.cloneToNewByteArray()
-					val bmp = nativeImageFormatProvider.decode(bitsData).toBmp32()
-
-					if (it is TagDefineBitsJPEG3) {
-						val fmaskinfo = it.bitmapAlphaData.cloneToNewFlashByteArray()
-						fmaskinfo.uncompress("zlib")
-						val maskinfo = fmaskinfo.cloneToNewByteArray()
-						//val bmpAlpha = nativeImageFormatProvider.decode(maskinfo)
-						//showImageAndWait(bmpAlpha)
-						for (n in 0 until bmp.area) {
-							bmp.data[n] = (bmp.data[n] and 0xFFFFFF) or (maskinfo.getu(n) shl 24)
-						}
-						//println(maskinfo)
-					}
-
-					//val bmp = ImageFormats.read(bitsData)
-					//bitsData
-					//println(it)
-					registerBitmap(it.characterId, bmp, it.name)
-
-
-					//LocalVfs("c:\\temp\\test.png").write(ImageFormats.encode(bmp, "test.png"))
-
-					//showImageAndWait(bmp)
-
-				}
-				is TagDefineBitsLossless -> {
-					val isRgba = it.hasAlpha
-					val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
-					funcompressedData.uncompress("zlib")
-					val uncompressedData = funcompressedData.cloneToNewByteArray()
+				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
-					when (it.bitmapFormat) {
-						BitmapFormat.BIT_8 -> {
-							val bmp = Bitmap8(it.bitmapWidth, it.bitmapHeight)
+					it as IDefinitionTag
+
+					when (it) {
+						is TagDefineBitsJPEG2 -> {
+							val bitsData = it.bitmapData.cloneToNewByteArray()
+							val bmp = nativeImageFormatProvider.decode(bitsData).toBmp32()
 							fbmp = bmp
+
+							if (it is TagDefineBitsJPEG3) {
+								val fmaskinfo = it.bitmapAlphaData.cloneToNewFlashByteArray()
+								fmaskinfo.uncompress("zlib")
+								val maskinfo = fmaskinfo.cloneToNewByteArray()
+								//val bmpAlpha = nativeImageFormatProvider.decode(maskinfo)
+								//showImageAndWait(bmpAlpha)
+								for (n in 0 until bmp.area) {
+									bmp.data[n] = (bmp.data[n] and 0xFFFFFF) or (maskinfo.getu(n) shl 24)
+								}
+								//println(maskinfo)
+							}
 						}
-						BitmapFormat.BIT_15 -> {
-							fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, BGRA_5551.decode(uncompressedData))
-						}
-						BitmapFormat.BIT_24_32 -> {
-							val colorFormat = if (isRgba) BGRA else RGB
-							fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
+						is TagDefineBitsLossless -> {
+							val isRgba = it.hasAlpha
+							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
+							funcompressedData.uncompress("zlib")
+							val uncompressedData = funcompressedData.cloneToNewByteArray()
+							when (it.bitmapFormat) {
+								BitmapFormat.BIT_8 -> {
+									val bmp = Bitmap8(it.bitmapWidth, it.bitmapHeight)
+									fbmp = bmp
+								}
+								BitmapFormat.BIT_15 -> {
+									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, BGRA_5551.decode(uncompressedData))
+								}
+								BitmapFormat.BIT_24_32 -> {
+									val colorFormat = if (isRgba) BGRA else RGB
+									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
+								}
+								else -> Unit
+							}
+
 						}
 					}
 
-					//showImageAndWait(fbmp)
-
-					registerBitmap(it.characterId, fbmp, it.name)
-					//println(it)
-					//println(uncompressedData)
+					registerBitmap(it.characterId, fbmp, "unknown")
 				}
 				is TagDefineShape -> {
 					val rasterizer = SWFShapeRasterizer(swf, it.shapeBounds.rect)
 					it.export(if (debug) LoggerShapeExporter(rasterizer) else rasterizer)
-					val symbol = AnSymbolShape(it.characterId, it.name, rasterizer.bounds, null, rasterizer.path)
+					val symbol = AnSymbolShape(it.characterId, "unknown", rasterizer.bounds, null, rasterizer.path)
 					lib.addSymbol(symbol)
 					shapesToPopulate += symbol to rasterizer
 				}
 				is TagDoABC -> {
-					//println(it.abc)
 					classNameToTypes += it.abc.typesInfo.map { it.name.toString() to it }.toMap()
-					//for (type in it.abc.typesInfo) println(type.name)
 				}
 				is TagSymbolClass -> {
 					classNameToTagId += it.symbols.filter { it.name != null }.map { it.name!! to it.tagId }.toMap()
 				}
 				is TagDefineSprite -> {
-					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, it.name, findLimits(it.tags)))
+					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, "unknown", findLimits(it.tags)))
 				}
 				is TagPlaceObject -> {
-					val matrix = if (it.hasMatrix) it.matrix!!.matrix else Matrix2d()
 					val depth = depths[it.depth0]
 					if (it.hasCharacter) depth.charId = it.characterId
 					if (it.hasName) depth.name = it.name
-					//if (it.hasColorTransform) depth.colorTransform = it.colorTransform
-					mc.timelines[it.depth0].add(currentTime, AnSymbolTimelineFrame(
-						uid = getUid(it.depth0),
-						transform = Matrix2d.Computed(matrix),
-						name = depth.name
-					))
-
-					//val frame = mc.frames[currentFrame]
-					//if (it.hasCharacter) frame.places += AnSymbolPlace(it.depth0, it.characterId)
-					//frame.updates += AnSymbolUpdate(it.depth0, Matrix2d.Computed(matrix))
+					if (it.hasMatrix) depth.matrix = it.matrix!!.matrix
+					depth.uid = getUid(it.depth0)
 				}
 				is TagRemoveObject -> {
 					depths[it.depth0].reset()
-					mc.timelines[it.depth0].add(currentTime, AnSymbolTimelineFrame(
-						uid = -1,
-						transform = Matrix2d.Computed(Matrix2d()),
-						name = null
-					))
-					//mc.frames[currentFrame].removes += AnSymbolRemove(it.depth0)
 				}
 				is TagShowFrame -> {
+					for (depth in depths) {
+						swfCurrentFrame.depths += depth.toFrameElement()
+					}
 					currentFrame++
 				}
 				is TagEnd -> {
