@@ -33,7 +33,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 import kotlin.collections.set
 
 @AsyncFactoryClass(SwfLibraryFactory::class)
