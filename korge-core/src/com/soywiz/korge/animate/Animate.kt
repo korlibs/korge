@@ -14,7 +14,7 @@ import com.soywiz.korio.async.spawn
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.util.Extra
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 
 open class AnElement(val library: AnLibrary, val symbol: AnSymbol) : Container(library.views) {
 }

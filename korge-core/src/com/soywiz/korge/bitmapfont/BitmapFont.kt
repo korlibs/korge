@@ -13,7 +13,7 @@ import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 
 @AsyncFactoryClass(BitmapFontAsyncFactory::class)
 class BitmapFont(

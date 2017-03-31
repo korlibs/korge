@@ -7,7 +7,7 @@ import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
 import com.soywiz.korma.geom.Point2d
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 
 open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var index: Int = 0

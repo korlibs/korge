@@ -5,7 +5,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 
 class BatchBuilder2D(val ag: AG) {
 	private val maxQuads = 10

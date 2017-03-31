@@ -5,11 +5,12 @@ import com.codeazur.as3swf.data.actions.IAction
 import com.codeazur.as3swf.data.consts.*
 import com.codeazur.as3swf.data.etc.CurvedEdge
 import com.codeazur.as3swf.data.etc.IEdge
+import com.codeazur.as3swf.data.etc.StraightEdge
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.*
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.math.Matrix2d
 import java.util.HashMap
 import kotlin.collections.ArrayList
 import kotlin.collections.set
@@ -1770,7 +1771,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							}
 						}
 						to = Point2d(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
-						subPath.add(com.codeazur.as3swf.data.etc.StraightEdge(from, to, currentLineStyleIdx, currentFillStyleIdx1))
+						subPath.add(StraightEdge(from, to, currentLineStyleIdx, currentFillStyleIdx1))
 					}
 					SWFShapeRecord.TYPE_CURVEDEDGE -> {
 						val curvedEdgeRecord: SWFShapeRecordCurvedEdge = shapeRecord as SWFShapeRecordCurvedEdge

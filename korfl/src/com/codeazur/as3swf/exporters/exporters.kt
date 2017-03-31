@@ -5,7 +5,7 @@ import com.codeazur.as3swf.data.consts.GradientInterpolationMode
 import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.utils.NumberUtils
-import com.soywiz.korma.math.Matrix2d
+import com.soywiz.korma.Matrix2d
 
 open class ShapeExporter {
 	open fun beginShape() = Unit
