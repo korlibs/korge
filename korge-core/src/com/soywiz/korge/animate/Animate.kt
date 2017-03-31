@@ -94,6 +94,7 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 	val viewUids = Array<View>(totalUids) { library.create(mcSymbol.uidInfo[it].characterId) }
 	var running = true
 	var firstUpdate = true
+	var smoothing = library.defaultSmoothing
 	private var currentTime = 0
 
 	init {
@@ -110,20 +111,29 @@ class AnMovieClip(library: AnLibrary, val mcSymbol: AnSymbolMovieClip) : AnEleme
 	private fun update() {
 		for (depth in 0 until totalDepths) {
 			val timeline = mcSymbol.timelines[depth]
-			timeline.findAndHandle(currentTime) { index, left, right, ratio ->
-				val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
-				if ((left != null) && (right != null) && (left.uid == right.uid)) {
-					//println("$currentTime: $index")
-					children[depth].replaceWith(view)
-					view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
-					view.name = left.name
-					//view.setComputedTransform(left.transform)
-				} else {
-					//println("$currentTime: $index")
-					children[depth].replaceWith(view)
-					if (left != null) {
-						view.setComputedTransform(left.transform)
+			if (smoothing) {
+				timeline.findAndHandle(currentTime) { index, left, right, ratio ->
+					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+					if ((left != null) && (right != null) && (left.uid == right.uid)) {
+						//println("$currentTime: $index")
+						children[depth].replaceWith(view)
+						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+						view.name = left.name
+						//view.setComputedTransform(left.transform)
+					} else {
+						//println("$currentTime: $index")
+						children[depth].replaceWith(view)
+						if (left != null) {
+							view.setComputedTransform(left.transform)
+						}
 					}
+				}
+			} else {
+				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
+					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+					//println("$currentTime: $index")
+					children[depth].replaceWith(view)
+					if (left != null) view.setComputedTransform(left.transform)
 				}
 			}
 		}
@@ -195,6 +205,8 @@ class AnLibrary(val views: Views, val fps: Double) {
 	var bgcolor: Int = 0xFFFFFFFF.toInt()
 	val symbolsById = arrayListOf<AnSymbol>()
 	val symbolsByName = hashMapOf<String, AnSymbol>()
+	//var defaultSmoothing = true
+	var defaultSmoothing = false
 
 	fun addSymbol(symbol: AnSymbol) {
 		while (symbolsById.size <= symbol.id) symbolsById += AnSymbolEmpty
