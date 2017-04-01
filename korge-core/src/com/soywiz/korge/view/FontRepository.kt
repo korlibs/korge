@@ -14,22 +14,24 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 		fonts[name.toLowerCase()] = bmp
 	}
 
-	fun getBitmapFont(name: String): BitmapFont {
+	fun getBitmapFont(name: String, size: Int): BitmapFont {
 		val nameLC = name.toLowerCase()
 		if (nameLC !in fonts) {
-			registerFont(name, BitmapFontGenerator.generate(name, 32, BitmapFontGenerator.LATIN_ALL).convert(views.ag))
+			registerFont(name, BitmapFontGenerator.generate(name, Math.min(size, 32), BitmapFontGenerator.LATIN_ALL).convert(views.ag))
 		}
 		return fonts[nameLC] ?: views.defaultFont
 	}
 
-	fun getBitmapFont(face: Html.FontFace): BitmapFont = when (face) {
-		is Html.FontFace.Named -> getBitmapFont(face.name)
+	fun getBitmapFont(face: Html.FontFace, size: Int): BitmapFont = when (face) {
+		is Html.FontFace.Named -> getBitmapFont(face.name, size)
 		is Html.FontFace.Bitmap -> face.font
 		else -> invalidOp("Unsupported font face: $face")
 	}
 
+	fun getBitmapFont(format: Html.Format): BitmapFont = getBitmapFont(format.face, format.size)
+
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) {
-		val font = getBitmapFont(format.face)
+		val font = getBitmapFont(format.face, format.size)
 		val ratio = font.fontSize.toDouble() / format.size.toDouble()
 		var width = 0.0
 		for (c in text) {

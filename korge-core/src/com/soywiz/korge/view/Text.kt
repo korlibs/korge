@@ -41,11 +41,11 @@ class Text(views: Views) : View(views), IText, IHtml {
     override fun render(ctx: RenderContext) {
 		if (document != null) {
 			for (span in document!!.allSpans) {
-				val font = views.fontRepository.getBitmapFont(span.format.face)
+				val font = views.fontRepository.getBitmapFont(span.format)
 				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), globalMatrix)
 			}
 		} else {
-			val font = views.fontRepository.getBitmapFont(format.face)
+			val font = views.fontRepository.getBitmapFont(format)
 			font.drawText(ctx.batch, format.size.toDouble(), text, 0, 0, globalMatrix)
 		}
     }
