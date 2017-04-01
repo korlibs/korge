@@ -8,11 +8,12 @@ import com.soywiz.korio.serialization.xml.isComment
 import com.soywiz.korio.serialization.xml.isNode
 import com.soywiz.korio.serialization.xml.isText
 import com.soywiz.korio.util.Extra
+import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bounds
 
 object Html {
-	enum class Alignment { LEFT, CENTER, RIGHT, JUSTIFIED }
+	enum class Alignment(val anchor: Anchor) { LEFT(Anchor.MIDDLE_LEFT), CENTER(Anchor.MIDDLE_CENTER), RIGHT(Anchor.MIDDLE_RIGHT), JUSTIFIED(Anchor.MIDDLE_LEFT) }
 
 	interface FontFace {
 		data class Named(val name: String) : FontFace
@@ -57,6 +58,7 @@ object Html {
 	}
 
 	data class Line(val spans: ArrayList<Span> = arrayListOf()) : Extra by Extra.Mixin() {
+		var format: Format = Format()
 		val firstNonEmptySpan get() = spans.firstOrNull { it.text.isNotEmpty() }
 		val bounds = Rectangle()
 
@@ -68,6 +70,18 @@ object Html {
 			}
 
 			spans.map { it.bounds }.bounds(bounds) // calculate bounds
+
+			// Alignment
+			//println(bounds)
+			val restoreY = bounds.y
+			bounds.setToAnchoredRectangle(bounds, format.align.anchor, ctx.bounds)
+			bounds.y = restoreY
+			//println(bounds)
+			var sx = bounds.x
+			for (v in spans) {
+				v.bounds.x = sx
+				sx += v.bounds.width
+			}
 
 			ctx.x = ctx.bounds.x
 			ctx.y += bounds.height
@@ -112,12 +126,16 @@ object Html {
 		fun emitText(format: Format, text: String) {
 			//println(format)
 			//println(text)
+			if (currentLine.spans.isEmpty()) {
+				currentLine.format = format.copy()
+			}
 			currentLine.spans += Span(format.copy(), text)
 		}
 
-		fun emitEndOfLine() {
+		fun emitEndOfLine(format: Format) {
 			//println("endOfLine")
 			if (currentLine.spans.isNotEmpty()) {
+				//currentLine.format = format
 				currentParagraph.lines += currentLine
 				document.paragraphs += currentParagraph
 				currentParagraph = Paragraph()
@@ -125,7 +143,7 @@ object Html {
 			}
 		}
 
-		fun parse(xml: Xml, format: Format) {
+		fun parse(xml: Xml, format: Format): Format {
 			when {
 				xml.isText -> {
 					emitText(format, xml.text)
@@ -151,18 +169,19 @@ object Html {
 						parse(child, format.copy())
 					}
 					if (block) {
-						emitEndOfLine()
+						emitEndOfLine(format)
 					}
 				}
 			}
+			return format
 		}
 
 		fun parse(html: String) {
 			val xml = Xml(html)
 			document.xml = xml
 			//println(html)
-			parse(xml, Format().copy())
-			emitEndOfLine()
+			val format = parse(xml, Format())
+			emitEndOfLine(format)
 			//println(document.firstFormat)
 		}
 	}

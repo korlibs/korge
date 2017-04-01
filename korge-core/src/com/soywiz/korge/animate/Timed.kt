@@ -1,8 +1,8 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.korio.ds.IntArrayList
-import com.soywiz.korio.ds.binarySearch
 import com.soywiz.korio.util.clamp
+import com.soywiz.korma.ds.IntArrayList
+import com.soywiz.korma.ds.binarySearch
 
 open class Timed<T> {
 	val times = IntArrayList()

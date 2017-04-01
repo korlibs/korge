@@ -11,8 +11,8 @@ class HtmlTest {
 		val doc = Html.parse("""<p align="center"><font face="Times New Roman" size="33" color="#ffffff" letterSpacing="0.00" kerning="1">50%</font></p>""")
 		Assert.assertEquals("50%", doc.text)
 		doc.doPositioning(Html.MetricsProvider.Identity, Rectangle(0, 0, 100, 100))
-		Assert.assertEquals(Rectangle(0, 0, 3, 1), doc.bounds)
-		Assert.assertEquals(listOf(Rectangle(0, 0, 3, 1)), doc.allSpans.map { it.bounds })
+		Assert.assertEquals(Rectangle(48.5, 0, 3, 1), doc.bounds)
+		Assert.assertEquals(listOf(Rectangle(48.5, 0, 3, 1)), doc.allSpans.map { it.bounds })
 		val format = doc.firstFormat
 		Assert.assertEquals(Html.FontFace.Named("Times New Roman"), format.face)
 		Assert.assertEquals(33, format.size)
