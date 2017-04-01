@@ -79,7 +79,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	private var _localMatrix = Matrix2d()
-	private var _globalMatrix = Matrix2d()
+	var _globalMatrix = Matrix2d()
 	private var _globalMatrixVersion = 0
 	private var _globalMatrixInvVersion = 0
 	private var _globalMatrixInv = Matrix2d()
@@ -147,12 +147,12 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		_globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
 	}
 
-	protected val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
+	val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
 
 	protected val globalAlpha: Double get() = run { globalMatrix; _globalAlpha }
 	protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
 
-	protected val globalMatrixInv: Matrix2d get() {
+	val globalMatrixInv: Matrix2d get() {
 		_ensureGlobal()
 		if (_globalMatrixVersion != _globalMatrixInvVersion) {
 			_globalMatrixInvVersion = _globalMatrixVersion

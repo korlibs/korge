@@ -58,9 +58,10 @@ class MySwfFrameElement(
 	val depth: Int,
 	val uid: Int,
 	val name: String?,
-	val transform: Matrix2d.Computed
+	val transform: Matrix2d.Computed,
+	val alpha: Double
 ) {
-	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name)
+	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name, alpha)
 }
 
 class MySwfFrame(val index: Int, maxDepths: Int) {
@@ -112,7 +113,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		return lib
 	}
 
-	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt()
+	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
 
 	suspend private fun generateActualTimelines() {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
@@ -120,14 +121,18 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 			var currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
 			var justAfterStop = true
 			var stateStartFrame = 0
+			//println(swfTimeline.frames)
 			for (frame in swfTimeline.frames) {
-				val currentTime = getFrameTime(frame.index)
+				//println("Frame:(${frame.index})")
 				// Create State
 				if (justAfterStop) {
 					justAfterStop = false
 					stateStartFrame = frame.index
 					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
 				}
+
+				val frameInState = frame.index - stateStartFrame
+				val currentTime = getFrameTime(frameInState)
 
 				val isLast = frame.index >= swfTimeline.frames.size - 1
 
@@ -152,6 +157,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				if (anActions.isNotEmpty()) currentState.actions.add(currentTime, AnActions(anActions))
 
 				if (isLast || frame.hasStop || frame.hasGoto) {
+					//println(" - $isLast,${frame.hasStop},${frame.hasGoto}")
 					justAfterStop = true
 
 					if (frame.hasStop) {
@@ -160,9 +166,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					if (frame.hasGoto) {
 						val goto = frame.actions.filterIsInstance<MySwfFrame.Action.Goto>().first()
 
-						currentState.loopStartTime = getFrameTime(goto.frame0)
+						currentState.loopStartTime = getFrameTime(goto.frame0 - stateStartFrame)
 					}
-					val stateEndFrame = frame.index
+					val stateEndFrame = frameInState
 					currentState.totalTime = getFrameTime(stateEndFrame - stateStartFrame)
 				}
 			}
@@ -277,6 +283,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 			var uid: Int = -1
 			var charId: Int = -1
 			var name: String? = null
+			var alpha: Double = 1.0
 			var matrix: Matrix2d = Matrix2d()
 
 			fun reset() {
@@ -290,7 +297,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				depth = depth,
 				uid = uid,
 				name = name,
-				transform = Matrix2d.Computed(matrix)
+				transform = Matrix2d.Computed(matrix),
+				alpha = alpha
 			)
 		}
 
@@ -324,7 +332,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		// Populate frame names
 		for ((name, index) in mc.labelsToFrame0) swfTimeline.frames[index].name = name
 
-
 		var currentFrame = 0
 		for (it in tags) {
 			//println("Tag: $it")
@@ -336,6 +343,21 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagFileAttributes -> Unit
 				is TagSetBackgroundColor -> {
 					lib.bgcolor = decodeSWFColor(it.color)
+				}
+				is TagDefineFont -> {
+				}
+				is TagDefineFontName -> {
+				}
+				is TagDefineFontAlignZones -> {
+				}
+				is TagDefineEditText -> {
+					println(it)
+					println(it.bounds.rect)
+					lib.addSymbol(AnTextFieldSymbol(it.characterId, "unknown", it.initialText ?: ""))
+				}
+				is TagCSMTextSettings -> {
+				}
+				is TagCSMTextSettings -> {
 				}
 				is TagDoAction -> {
 					for (action in it.actions) {
@@ -428,7 +450,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagPlaceObject -> {
 					val depth = depths[it.depth0]
 					if (it.hasCharacter) depth.charId = it.characterId
-					if (it.hasName) depth.name = it.name
+					if (it.hasName) depth.name = it.instanceName
+					//if (it.hasBlendMode) depth.blendMode = it.blendMode
+					if (it.hasColorTransform) {
+						depth.alpha = it.colorTransform!!.aMult
+					}
 					if (it.hasMatrix) depth.matrix = it.matrix!!.matrix
 					depth.uid = getUid(it.depth0)
 				}

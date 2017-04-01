@@ -566,10 +566,12 @@ open class SWFColorTransform {
 	var rMult: Double get() = (_rMult.toDouble() / 256); set(value) = run { _rMult = clamp((value * 256).toInt()); updateHasMultTerms() }
 	var gMult: Double get() = (_gMult.toDouble() / 256); set(value) = run { _gMult = clamp((value * 256).toInt()); updateHasMultTerms() }
 	var bMult: Double get() = (_bMult.toDouble() / 256); set(value) = run { _bMult = clamp((value * 256).toInt()); updateHasMultTerms() }
+	open var aMult: Double get() = (_aMult.toDouble() / 256); set(value) = run { _aMult = clamp((value * 256).toInt()); updateHasMultTerms() }
 
 	var rAdd: Int get() = _rAdd; set(value) = run { _rAdd = clamp(value); updateHasAddTerms() }
 	var gAdd: Int get() = _gAdd; set(value) = run { _gAdd = clamp(value); updateHasAddTerms() }
 	var bAdd: Int get() = _bAdd; set(value) = run { _bAdd = clamp(value); updateHasAddTerms() }
+	open var aAdd: Int get() = _aAdd; set(value) = run { _aAdd = clamp(value); updateHasAddTerms() }
 
 	open fun parse(data: SWFData): Unit {
 		data.resetBitsPending()
@@ -643,8 +645,8 @@ open class SWFColorTransform {
 }
 
 class SWFColorTransformWithAlpha : SWFColorTransform() {
-	var aMult: Double get() = _aMult.toDouble() / 256; set(value) = run { _aMult = clamp((value * 256).toInt()); updateHasMultTerms() }
-	var aAdd: Int get() = _aAdd; set(value) = run { _aAdd = clamp(value); updateHasAddTerms() }
+	//override var aMult: Double get() = _aMult.toDouble() / 256; set(value) = run { _aMult = clamp((value * 256).toInt()); updateHasMultTerms() }
+	//override var aAdd: Int get() = _aAdd; set(value) = run { _aAdd = clamp(value); updateHasAddTerms() }
 
 	//override val colorTransform: flash.geom.ColorTransform get() = flash.geom.ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd)
 

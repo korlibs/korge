@@ -60,4 +60,18 @@ class SwfTest {
 		val lib = ResourcesVfs["soundtest.swf"].readSWF(views, debug = false)
 		println(lib)
 	}
+
+	@Test
+	fun name8() = syncTest {
+		val lib = ResourcesVfs["progressbar.swf"].readSWF(views, debug = false)
+		val mc = lib.symbolsById[0] as AnSymbolMovieClip
+		Assert.assertEquals("[default, progressbar]", mc.states.keys.toList().toString())
+		val progressbarState = mc.states["progressbar"]!!
+		Assert.assertEquals(0, progressbarState.startTime)
+		Assert.assertEquals("default", progressbarState.state.name)
+		Assert.assertEquals(41000, progressbarState.state.loopStartTime)
+		Assert.assertEquals(41000, progressbarState.state.totalTime)
+
+		println(lib)
+	}
 }

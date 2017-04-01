@@ -14,15 +14,13 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.rangeTo
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
 import com.soywiz.korma.geom.Point2d
+import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 object Sample1 {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)
@@ -53,6 +51,7 @@ class Sample1Scene(
 	@Path("test4.swf") val test4Library: SwfLibrary,
 	@Path("as3test.swf") val as3testLibrary: SwfLibrary,
 	@Path("soundtest.swf") val soundtestLibrary: SwfLibrary,
+	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
@@ -132,6 +131,16 @@ class Sample1Scene(
 			}
 			this += mc
 			//mc.addUpdatable { println(mc.dumpToString()) }
+		}
+
+		root += progressbarLibrary.an.createMainTimeLine().apply {
+			go {
+				root.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) {
+					this.seekStill("progressbar", it)
+					//println(this.findFirstWithName("percent"))
+					this["percent"]?.setText("%d%%".format((it * 100).toInt()))
+				}
+			}
 		}
 
 		root.text(font, "Hello world! F,", textSize = 72.0).apply {

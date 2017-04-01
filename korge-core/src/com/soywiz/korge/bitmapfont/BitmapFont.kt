@@ -5,6 +5,7 @@ import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
+import com.soywiz.korge.view.Views
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
@@ -17,6 +18,7 @@ import com.soywiz.korma.Matrix2d
 
 @AsyncFactoryClass(BitmapFontAsyncFactory::class)
 class BitmapFont(
+	val ag: AG,
 	val fontSize: Int,
 	val glyphs: Map<Int, Glyph>,
 	val kernings: Map<Pair<Int, Int>, Kerning>
@@ -35,7 +37,9 @@ class BitmapFont(
 		val xadvance: Int
 	)
 
-	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.first()
+	val dummyGlyph by lazy { Glyph(-1, Texture(ag.dummyTexture, 1, 1), 0, 0, 0) }
+
+	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.firstOrNull() ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
 	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d()) {
@@ -94,6 +98,7 @@ suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {
 	}
 
 	return BitmapFont(
+		ag = ag,
 		fontSize = fontSize,
 		glyphs = glyphs.map { it.id to it }.toMap(),
 		kernings = kernings.map { (it.first to it.second) to it }.toMap()
@@ -116,7 +121,7 @@ class BitmapFontAsyncFactory(
 	}
 }
 
-private fun com.soywiz.korim.font.BitmapFont.convert(ag: AG): BitmapFont {
+fun com.soywiz.korim.font.BitmapFont.convert(ag: AG): BitmapFont {
 	val font = this
 	val tex = Texture(ag.createTexture().upload(font.atlas), font.atlas.width, font.atlas.height)
 	val glyphs = arrayListOf<BitmapFont.Glyph>()
@@ -125,5 +130,5 @@ private fun com.soywiz.korim.font.BitmapFont.convert(ag: AG): BitmapFont {
 		val texSlice = tex.slice(bounds.x, bounds.y, bounds.width, bounds.height)
 		glyphs += BitmapFont.Glyph(info.id, texSlice, 0, 0, info.advance)
 	}
-	return BitmapFont(font.size, glyphs.map { it.id to it }.toMap(), mapOf())
+	return BitmapFont(ag, font.size, glyphs.map { it.id to it }.toMap(), mapOf())
 }

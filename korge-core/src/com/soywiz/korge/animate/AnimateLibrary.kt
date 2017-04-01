@@ -21,6 +21,10 @@ object AnSymbolEmpty : AnSymbol(0, "")
 
 class AnSymbolSound(id: Int, name: String?, val data: AudioData?) : AnSymbol(id, name)
 
+class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String) : AnSymbol(id, name) {
+	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
+}
+
 class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: Texture?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
@@ -32,7 +36,8 @@ class AnSymbolBitmap(id: Int, name: String?, val bmp: Bitmap) : AnSymbol(id, nam
 class AnSymbolTimelineFrame(
 	val uid: Int,
 	val transform: Matrix2d.Computed,
-	val name: String?
+	val name: String?,
+	val alpha: Double
 )
 
 interface AnAction
