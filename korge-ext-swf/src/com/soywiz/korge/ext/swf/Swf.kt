@@ -129,6 +129,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					justAfterStop = false
 					stateStartFrame = frame.index
 					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
+					symbol.states["frame${frame.index}"] = AnSymbolMovieClipStateWithStartTime(currentState, 0)
 				}
 
 				val frameInState = frame.index - stateStartFrame
@@ -351,9 +352,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagDefineFontAlignZones -> {
 				}
 				is TagDefineEditText -> {
-					println(it)
-					println(it.bounds.rect)
-					lib.addSymbol(AnTextFieldSymbol(it.characterId, "unknown", it.initialText ?: ""))
+					lib.addSymbol(AnTextFieldSymbol(it.characterId, "unknown", it.initialText ?: "", it.bounds.rect))
 				}
 				is TagCSMTextSettings -> {
 				}

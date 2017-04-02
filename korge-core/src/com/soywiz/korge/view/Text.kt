@@ -27,18 +27,23 @@ class Text(views: Views) : View(views), IText, IHtml {
 	var document: Html.Document? = null
 	var format: Html.Format = Html.Format()
 	val textBounds = Rectangle(0, 0, 1024, 1024)
+	private val tempRect = Rectangle()
 
 	override var html: String
 		get() = if (document != null) _html else _text
 		set(value) {
 			document = Html.parse(value)
-			document!!.doPositioning(views.fontRepository, textBounds)
+			relayout()
 			format = document!!.firstFormat.copy()
 			_text = ""
 			_html = value
 		}
 
-    override fun render(ctx: RenderContext) {
+	fun relayout() {
+		document?.doPositioning(views.fontRepository, textBounds)
+	}
+
+	override fun render(ctx: RenderContext) {
 		if (document != null) {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
@@ -46,9 +51,11 @@ class Text(views: Views) : View(views), IText, IHtml {
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
-			font.drawText(ctx.batch, format.size.toDouble(), text, 0, 0, globalMatrix)
+			views.fontRepository.getBounds(text, format, tempRect)
+			tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
+			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), globalMatrix)
 		}
-    }
+	}
 }
 
 fun Views.text(font: BitmapFont, text: String, textSize: Double = 16.0) = Text(this).apply {
@@ -60,10 +67,10 @@ fun Views.text(font: BitmapFont, text: String, textSize: Double = 16.0) = Text(t
 fun Container.text(font: BitmapFont, text: String, textSize: Double = 16.0): Text = text(font, text, textSize) { }
 
 inline fun Container.text(font: BitmapFont, text: String, textSize: Double = 16.0, callback: Text.() -> Unit): Text {
-    val child = views.text(font, text, textSize)
-    this += child
-    callback(child)
-    return child
+	val child = views.text(font, text, textSize)
+	this += child
+	callback(child)
+	return child
 }
 
 fun View.setText(text: String) {

@@ -21,7 +21,7 @@ object AnSymbolEmpty : AnSymbol(0, "")
 
 class AnSymbolSound(id: Int, name: String?, val data: AudioData?) : AnSymbol(id, name)
 
-class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String) : AnSymbol(id, name) {
+class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bounds: Rectangle) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
 }
 
