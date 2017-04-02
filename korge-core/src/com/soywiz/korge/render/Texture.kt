@@ -9,6 +9,7 @@ import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
+import com.soywiz.korma.geom.Rectangle
 
 @AsyncFactoryClass(TextureAsyncFactory::class)
 class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: Int = base.width, val bottom: Int = base.height) {
@@ -23,6 +24,8 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
     val y1: Float = (bottom).toFloat() / base.height.toFloat()
 
     fun slice(x: Int, y: Int, width: Int, height: Int) = sliceBounds(x, y, x + width, y + height)
+
+	fun slice(rect: Rectangle) = slice(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
 
     fun sliceBounds(left: Int, top: Int, right: Int, bottom: Int): Texture {
         val tleft = (this.x + left).clamp(this.left, this.right)

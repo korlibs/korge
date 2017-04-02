@@ -26,7 +26,7 @@ import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.format.nativeImageFormatProvider
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
@@ -238,11 +238,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	}
 
 	suspend private fun generateTextures() {
-		// @TODO: Generate an atalas using BinPacker!
-		for ((shape, rasterizer) in shapesToPopulate) {
-			//if (debug) showImageAndWait(rasterizer.image)
-			shape.texture = views.texture(rasterizer.image)
-		}
+		val atlas = shapesToPopulate.map { it.second.image }.toAtlas(views)
+
+		for ((shape, texture) in shapesToPopulate.map { it.first }.zip(atlas)) shape.texture = texture
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -390,7 +388,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					when (it) {
 						is TagDefineBitsJPEG2 -> {
 							val bitsData = it.bitmapData.cloneToNewByteArray()
-							val bmp = nativeImageFormatProvider.decode(bitsData).toBmp32()
+							val bmp = bitsData.openAsync().readBitmap().toBMP32()
 							fbmp = bmp
 
 							if (it is TagDefineBitsJPEG3) {
