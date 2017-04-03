@@ -4,11 +4,18 @@ import com.codeazur.as3swf.utils.FlashByteArray
 import com.soywiz.korma.geom.Point2d
 
 class CurvedEdge(aFrom: Point2d, var control: Point2d, aTo: Point2d, aLineStyleIdx: Int = 0, aFillStyleIdx: Int = 0) : com.codeazur.as3swf.data.etc.StraightEdge(aFrom, aTo, aLineStyleIdx, aFillStyleIdx), com.codeazur.as3swf.data.etc.IEdge {
-	override fun reverseWithNewFillStyle(newFillStyleIdx: Int): com.codeazur.as3swf.data.etc.IEdge {
-		return com.codeazur.as3swf.data.etc.CurvedEdge(to, control, from, lineStyleIdx, newFillStyleIdx)
-	}
-
+	override fun reverseWithNewFillStyle(newFillStyleIdx: Int) = CurvedEdge(to, control, from, lineStyleIdx, newFillStyleIdx)
 	override fun toString(): String = "stroke:$lineStyleIdx, fill:$fillStyleIdx, start:$from, control:$control, end:$to"
+}
+
+open class StraightEdge(
+	override var from: Point2d,
+	override var to: Point2d,
+	override var lineStyleIdx: Int = 0,
+	override var fillStyleIdx: Int = 0
+) : IEdge {
+	override fun reverseWithNewFillStyle(newFillStyleIdx: Int): IEdge = StraightEdge(to, from, lineStyleIdx, newFillStyleIdx)
+	override fun toString() = "stroke:$lineStyleIdx, fill:$fillStyleIdx, start:$from, end:$to"
 }
 
 interface IEdge {
@@ -16,7 +23,6 @@ interface IEdge {
 	val to: Point2d
 	val lineStyleIdx: Int
 	val fillStyleIdx: Int
-
 	fun reverseWithNewFillStyle(newFillStyleIdx: Int): com.codeazur.as3swf.data.etc.IEdge
 }
 
@@ -85,7 +91,7 @@ open class MPEGFrame(
 
 	val size: Int get() {
 		var ret: Int
-		if (layer == com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_LAYER_I) {
+		if (layer == MPEGFrame.Companion.MPEG_LAYER_I) {
 			ret = Math.floor((12000.0 * bitrate) / samplingrate).toInt()
 			if (padding) {
 				ret++
@@ -93,7 +99,7 @@ open class MPEGFrame(
 			// one slot is 4 bytes long
 			ret = ret shl 2
 		} else {
-			ret = Math.floor((if (version == com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_1_0) 144000.0 else 72000.0) * bitrate / samplingrate).toInt()
+			ret = Math.floor((if (version == MPEGFrame.Companion.MPEG_VERSION_1_0) 144000.0 else 72000.0) * bitrate / samplingrate).toInt()
 			if (padding) {
 				ret++
 			}
@@ -105,22 +111,22 @@ open class MPEGFrame(
 	fun setHeaderByteAt(index: Int, value: Int): Unit {
 		when (index) {
 			0 -> {
-				if (value != 0xff) throw(Error("Not a MPEG header."))
+				if (value != 0xff) throw Error("Not a MPEG header.")
 			}
 			1 -> {
-				if ((value and 0xe0) != 0xe0) throw(Error("Not a MPEG header."))
+				if ((value and 0xe0) != 0xe0) throw Error("Not a MPEG header.")
 				// get the mpeg version (we only support mpeg 1.0 and 2.0)
 				val mpegVersionBits = (value and 0x18) ushr 3
 				when (mpegVersionBits) {
-					3 -> version = com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_1_0
-					2 -> version = com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_2_0
-					else -> throw(Error("Unsupported MPEG version."))
+					3 -> version = MPEGFrame.Companion.MPEG_VERSION_1_0
+					2 -> version = MPEGFrame.Companion.MPEG_VERSION_2_0
+					else -> throw Error("Unsupported MPEG version.")
 				}
 				// get the mpeg layer version (we only support layer III)
 				val mpegLayerBits = (value and 0x06) ushr 1
 				when (mpegLayerBits) {
-					1 -> layer = com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_LAYER_III
-					else -> throw(Error("Unsupported MPEG layer."))
+					1 -> layer = MPEGFrame.Companion.MPEG_LAYER_III
+					else -> throw Error("Unsupported MPEG layer.")
 				}
 				// is the frame secured by crc?
 				hasCRC = (value and 0x01) == 0
@@ -129,15 +135,15 @@ open class MPEGFrame(
 				val bitrateIndex = ((value and 0xf0) ushr 4)
 				// get the frame's bitrate
 				if (bitrateIndex == 0 || bitrateIndex == 0x0f) {
-					throw(Error("Unsupported bitrate index."))
+					throw Error("Unsupported bitrate index.")
 				}
-				bitrate = com.codeazur.as3swf.data.etc.MPEGFrame.Companion.mpegBitrates[version][layer][bitrateIndex]
+				bitrate = MPEGFrame.Companion.mpegBitrates[version][layer][bitrateIndex]
 				// get the frame's samplingrate
 				val samplingrateIndex = ((value and 0x0c) ushr 2)
 				if (samplingrateIndex == 3) {
-					throw(Error("Unsupported samplingrate index."))
+					throw Error("Unsupported samplingrate index.")
 				}
-				samplingrate = com.codeazur.as3swf.data.etc.MPEGFrame.Companion.mpegSamplingRates[version][samplingrateIndex]
+				samplingrate = MPEGFrame.Companion.mpegSamplingRates[version][samplingrateIndex]
 				// is the frame padded?
 				padding = ((value and 0x02) == 0x02)
 			}
@@ -161,7 +167,7 @@ open class MPEGFrame(
 				// 3: ccit j.17
 				emphasis = (value and 0x02)
 			}
-			else -> throw(Error("Index out of bounds."))
+			else -> throw Error("Index out of bounds.")
 		}
 		// store the raw header byte for easy access
 		_header[index] = value
@@ -169,7 +175,7 @@ open class MPEGFrame(
 
 	fun setCRCByteAt(index: Int, value: Int): Unit {
 		if (index > 1) {
-			throw(Error("Index out of bounds."))
+			throw Error("Index out of bounds.")
 		}
 		_crc[index] = value
 	}
@@ -195,18 +201,18 @@ open class MPEGFrame(
 	}
 
 	override fun toString(): String {
-		var encoding: String = "MPEG "
-		when (version) {
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_1_0 -> encoding += "1.0 "
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_2_0 -> encoding += "2.0 "
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_VERSION_2_5 -> encoding += "2.5 "
-			else -> encoding += "?.? "
+		var str: String = "MPEG "
+		str += when (version) {
+			MPEGFrame.MPEG_VERSION_1_0 -> "1.0 "
+			MPEGFrame.MPEG_VERSION_2_0 -> "2.0 "
+			MPEGFrame.MPEG_VERSION_2_5 -> "2.5 "
+			else -> "?.? "
 		}
-		when (layer) {
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_LAYER_I -> encoding += "Layer I"
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_LAYER_II -> encoding += "Layer II"
-			com.codeazur.as3swf.data.etc.MPEGFrame.Companion.MPEG_LAYER_III -> encoding += "Layer III"
-			else -> encoding += "Layer ?"
+		str += when (layer) {
+			MPEGFrame.MPEG_LAYER_I -> "Layer I"
+			MPEGFrame.MPEG_LAYER_II -> "Layer II"
+			MPEGFrame.MPEG_LAYER_III -> "Layer III"
+			else -> "Layer ?"
 		}
 		val channel = when (channelMode) {
 			0 -> "Stereo"
@@ -215,19 +221,6 @@ open class MPEGFrame(
 			3 -> "Mono"
 			else -> "unknown"
 		}
-		return "$encoding, $bitrate kbit/s, $samplingrate Hz, $channel, $size bytes"
+		return "$str, $bitrate kbit/s, $samplingrate Hz, $channel, $size bytes"
 	}
-}
-
-open class StraightEdge(
-	override var from: Point2d,
-	override var to: Point2d,
-	override var lineStyleIdx: Int = 0,
-	override var fillStyleIdx: Int = 0
-) : com.codeazur.as3swf.data.etc.IEdge {
-	override fun reverseWithNewFillStyle(newFillStyleIdx: Int): com.codeazur.as3swf.data.etc.IEdge {
-		return com.codeazur.as3swf.data.etc.StraightEdge(to, from, lineStyleIdx, newFillStyleIdx)
-	}
-
-	override fun toString() = "stroke:$lineStyleIdx, fill:$fillStyleIdx, start:$from, end:$to"
 }

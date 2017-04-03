@@ -2,9 +2,9 @@ package com.soywiz.korge.ext.swf
 
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.data.GradientType
-import com.codeazur.as3swf.data.actions.swf3.ActionGotoFrame
-import com.codeazur.as3swf.data.actions.swf3.ActionPlay
-import com.codeazur.as3swf.data.actions.swf3.ActionStop
+import com.codeazur.as3swf.data.actions.ActionGotoFrame
+import com.codeazur.as3swf.data.actions.ActionPlay
+import com.codeazur.as3swf.data.actions.ActionStop
 import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.data.consts.GradientInterpolationMode
 import com.codeazur.as3swf.data.consts.GradientSpreadMode
@@ -17,7 +17,6 @@ import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
