@@ -1028,13 +1028,13 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		var fillBits: Int = _fillBits
 		var lineBits: Int = _lineBits
 		var shapeRecord: SWFShapeRecord? = null
-		while (!(shapeRecord is com.codeazur.as3swf.data.SWFShapeRecordEnd)) {
+		while (!(shapeRecord is SWFShapeRecordEnd)) {
 			// The SWF10 spec says that shape records are byte aligned.
 			// In reality they seem not to be?
 			// bitsPending = 0;
-			val edgeRecord: Boolean = (data.readUB(1) == 1)
+			val edgeRecord = (data.readUB(1) == 1)
 			if (edgeRecord) {
-				val straightFlag: Boolean = (data.readUB(1) == 1)
+				val straightFlag = (data.readUB(1) == 1)
 				val numBits: Int = data.readUB(4) + 2
 				if (straightFlag) {
 					shapeRecord = data.readSTRAIGHTEDGERECORD(numBits)
@@ -1044,9 +1044,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			} else {
 				val states: Int = data.readUB(5)
 				if (states == 0) {
-					shapeRecord = com.codeazur.as3swf.data.SWFShapeRecordEnd()
+					shapeRecord = SWFShapeRecordEnd()
 				} else {
-					val styleChangeRecord: SWFShapeRecordStyleChange = data.readSTYLECHANGERECORD(states, fillBits, lineBits, level)
+					val styleChangeRecord = data.readSTYLECHANGERECORD(states, fillBits, lineBits, level)
 					if (styleChangeRecord.stateNewStyles) {
 						fillBits = styleChangeRecord.numFillBits
 						lineBits = styleChangeRecord.numLineBits
@@ -1054,6 +1054,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 					shapeRecord = styleChangeRecord
 				}
 			}
+			//println(shapeRecord)
 			records.add(shapeRecord)
 		}
 	}
@@ -1291,9 +1292,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 						handler.beginFill(0)
 					}
 				}
-				if (pos != e.from) {
-					handler.moveTo(e.from.x, e.from.y)
-				}
+				if (pos != e.from) handler.moveTo(e.from.x, e.from.y)
 				if (e is CurvedEdge) {
 					val c = e
 					handler.curveTo(c.control.x, c.control.y, c.to.x, c.to.y)
@@ -1476,7 +1475,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	open fun toString(indent: Int = 0): String {
 		var str: String = "\n" + " ".repeat(indent) + "ShapeRecords:"
 		for (i in 0 until records.size) {
-			str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + records[i].toString(indent + 2)
+			str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + records[i].toString()
 		}
 		return str
 	}
@@ -1494,7 +1493,7 @@ open class SWFShapeRecord {
 	open val type = SWFShapeRecord.TYPE_UNKNOWN
 	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.TYPE_CURVEDEDGE)
 	open fun parse(data: SWFData, level: Int = 1): Unit = Unit
-	open fun toString(indent: Int = 0): String = "[SWFShapeRecord]"
+	override fun toString(): String = "[SWFShapeRecord]"
 }
 
 class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
@@ -1511,12 +1510,12 @@ class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
 	}
 
 	override val type = SWFShapeRecord.TYPE_CURVEDEDGE
-	override fun toString(indent: Int): String = "[SWFShapeRecordCurvedEdge] ControlDelta: $controlDeltaX,$controlDeltaY, AnchorDelta: $anchorDeltaX,$anchorDeltaY"
+	override fun toString(): String = "[SWFShapeRecordCurvedEdge] ControlDelta: $controlDeltaX,$controlDeltaY, AnchorDelta: $anchorDeltaX,$anchorDeltaY"
 }
 
 class SWFShapeRecordEnd : SWFShapeRecord() {
 	override val type = SWFShapeRecord.TYPE_END
-	override fun toString(indent: Int) = "[SWFShapeRecordEnd]"
+	override fun toString() = "[SWFShapeRecordEnd]"
 }
 
 class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
@@ -1534,7 +1533,7 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 
 	override val type = SWFShapeRecord.TYPE_STRAIGHTEDGE
 
-	override fun toString(indent: Int): String {
+	override fun toString(): String {
 		var str: String = "[SWFShapeRecordStraightEdge] "
 		if (generalLineFlag) {
 			str += "General: $deltaX,$deltaY"
@@ -1603,7 +1602,8 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		return len
 	}
 
-	override fun toString(indent: Int): String {
+	override fun toString(): String {
+		val indent = 0
 		var str: String = "[SWFShapeRecordStyleChange] "
 		val cmds = arrayListOf<String>()
 		if (stateMoveTo) cmds.add("MoveTo: $moveDeltaX,$moveDeltaY")
@@ -1635,10 +1635,8 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 
 	override fun parse(data: SWFData, level: Int): Unit {
 		data.resetBitsPending()
-		val fillStylesLen: Int = readStyleArrayLength(data, level)
-		for (i in 0 until fillStylesLen) initialFillStyles.add(data.readFILLSTYLE(level))
-		val lineStylesLen: Int = readStyleArrayLength(data, level)
-		for (i in 0 until lineStylesLen) initialLineStyles.add(if (level <= 3) data.readLINESTYLE(level) else data.readLINESTYLE2(level))
+		for (i in 0 until readStyleArrayLength(data, level)) initialFillStyles.add(data.readFILLSTYLE(level))
+		for (i in 0 until readStyleArrayLength(data, level)) initialLineStyles.add(if (level <= 3) data.readLINESTYLE(level) else data.readLINESTYLE2(level))
 		data.resetBitsPending()
 		val numFillBits: Int = data.readUB(4)
 		val numLineBits: Int = data.readUB(4)
@@ -1670,9 +1668,7 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 
 	protected fun readStyleArrayLength(data: SWFData, level: Int = 1): Int {
 		var len: Int = data.readUI8()
-		if (level >= 2 && len == 0xff) {
-			len = data.readUI16()
-		}
+		if (level >= 2 && len == 0xff) len = data.readUI16()
 		return len
 	}
 }

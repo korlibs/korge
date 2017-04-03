@@ -1,6 +1,7 @@
 package com.codeazur.as3swf.utils
 
 import com.codeazur.as3swf.data.SWFMatrix
+import com.jtransc.JTranscSystem
 import com.soywiz.korio.stream.*
 import java.io.ByteArrayOutputStream
 import java.lang.Float

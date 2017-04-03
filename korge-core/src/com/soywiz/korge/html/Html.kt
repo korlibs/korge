@@ -13,7 +13,12 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bounds
 
 object Html {
-	enum class Alignment(val anchor: Anchor) { LEFT(Anchor.MIDDLE_LEFT), CENTER(Anchor.MIDDLE_CENTER), RIGHT(Anchor.MIDDLE_RIGHT), JUSTIFIED(Anchor.MIDDLE_LEFT) }
+	enum class Alignment(val anchor: Anchor) {
+		LEFT(Anchor.TOP_LEFT),
+		CENTER(Anchor.TOP_CENTER),
+		RIGHT(Anchor.TOP_RIGHT),
+		JUSTIFIED(Anchor.TOP_LEFT)
+	}
 
 	interface FontFace {
 		data class Named(val name: String) : FontFace

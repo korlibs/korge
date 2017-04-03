@@ -1,15 +1,14 @@
 package com.codeazur.as3swf.tags
 
 import com.codeazur.as3swf.SWFData
-import com.codeazur.as3swf.data.SWFRectangle
-import com.codeazur.as3swf.data.SWFShapeWithStyle
-import com.codeazur.as3swf.data.consts.BitmapFormat
+import com.codeazur.as3swf.data.*
+import com.codeazur.as3swf.data.actions.IAction
+import com.codeazur.as3swf.data.consts.*
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
 import com.codeazur.as3swf.utils.FlashByteArray
 import com.soywiz.korfl.abc.ABC
 import com.soywiz.korio.stream.openSync
-
 
 interface ITag {
 	val type: Int
@@ -32,12 +31,9 @@ interface IDefinitionTag : ITag {
 
 interface IDisplayListTag : ITag
 
-
 class Tag {
 	companion object {
-		fun toStringCommon(type: Int, name: String, indent: Int = 0): String {
-			return " ".repeat(indent) + "[" + "%02d".format(type) + ":" + name + "] "
-		}
+		fun toStringCommon(type: Int, name: String, indent: Int = 0): String = " ".repeat(indent) + "[" + "%02d".format(type) + ":" + name + "] "
 	}
 }
 
@@ -85,9 +81,7 @@ class TagDebugID : _BaseTag() {
 	protected var uuid = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
-		if (length > 0) {
-			data.readBytes(uuid, 0, length)
-		}
+		if (length > 0) data.readBytes(uuid, 0, length)
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDebugID.TYPE
@@ -122,9 +116,7 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
 		data.readUI32() // reserved, always 0
-		if (length > 6) {
-			data.readBytes(binaryData, 0, length - 6)
-		}
+		if (length > 6) data.readBytes(binaryData, 0, length - 6)
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineBinaryData.TYPE
@@ -132,11 +124,7 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 	override val version = 9
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Length: " + binaryData.length
-	}
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Length: " + binaryData.length
 }
 
 open class TagDefineBits : _BaseTag(), IDefinitionTag {
@@ -334,10 +322,10 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	protected var characters = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-	protected var actions = java.util.ArrayList<com.codeazur.as3swf.data.actions.IAction>()
+	protected var characters = ArrayList<SWFButtonRecord>()
+	protected var actions = ArrayList<IAction>()
 
-	protected var frames = hashMapOf<String, java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>>()
+	protected var frames = hashMapOf<String, ArrayList<SWFButtonRecord>>()
 
 	protected var labelCount: Int = 0
 
@@ -359,8 +347,8 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 		processRecords()
 	}
 
-	fun getRecordsByState(state: String): java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> {
-		return frames[state] as java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>
+	fun getRecordsByState(state: String): ArrayList<SWFButtonRecord> {
+		return frames[state] as ArrayList<SWFButtonRecord>
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineButton.TYPE
@@ -369,10 +357,10 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 	override val level = 1
 
 	protected fun processRecords(): Unit {
-		val upState = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val overState = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val downState = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val hitState = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
+		val upState = ArrayList<SWFButtonRecord>()
+		val overState = ArrayList<SWFButtonRecord>()
+		val downState = ArrayList<SWFButtonRecord>()
+		val hitState = ArrayList<SWFButtonRecord>()
 		for (i in 0 until characters.size) {
 			val record = characters[i]
 			if (record.stateUp) upState.add(record)
@@ -380,10 +368,10 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
@@ -424,10 +412,10 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	var characters = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-	protected var condActions = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonCondAction>()
+	var characters = ArrayList<SWFButtonRecord>()
+	protected var condActions = ArrayList<SWFButtonCondAction>()
 
-	protected var frames = hashMapOf<String, java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>>()
+	protected var frames = hashMapOf<String, ArrayList<SWFButtonRecord>>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -449,7 +437,7 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 		processRecords()
 	}
 
-	fun getRecordsByState(state: String): java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> {
+	fun getRecordsByState(state: String): ArrayList<SWFButtonRecord> {
 		return frames[state]!!
 	}
 
@@ -459,10 +447,10 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 	override val level = 2
 
 	protected fun processRecords(): Unit {
-		val upState: java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val overState: java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val downState: java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
-		val hitState: java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> = java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>()
+		val upState: ArrayList<SWFButtonRecord> = ArrayList<SWFButtonRecord>()
+		val overState: ArrayList<SWFButtonRecord> = ArrayList<SWFButtonRecord>()
+		val downState: ArrayList<SWFButtonRecord> = ArrayList<SWFButtonRecord>()
+		val hitState: ArrayList<SWFButtonRecord> = ArrayList<SWFButtonRecord>()
 		for (i in 0 until characters.size) {
 			val record: com.codeazur.as3swf.data.SWFButtonRecord = characters[i]
 			if (record.stateUp) upState.add(record)
@@ -470,10 +458,10 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
@@ -662,7 +650,7 @@ open class TagDefineFont : _BaseTag(), IDefinitionTag {
 	}
 
 	override var characterId = 0
-	var glyphShapeTable = java.util.ArrayList<com.codeazur.as3swf.data.SWFShape>()
+	var glyphShapeTable = ArrayList<SWFShape>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -725,10 +713,10 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitio
 	var descent: Int = 0
 	var leading: Int = 0
 
-	val codeTable = java.util.ArrayList<Int>()
-	val fontAdvanceTable = java.util.ArrayList<Int>()
-	val fontBoundsTable = java.util.ArrayList<SWFRectangle>()
-	val fontKerningTable = java.util.ArrayList<com.codeazur.as3swf.data.SWFKerningRecord>()
+	val codeTable = ArrayList<Int>()
+	val fontAdvanceTable = ArrayList<Int>()
+	val fontBoundsTable = ArrayList<SWFRectangle>()
+	val fontKerningTable = ArrayList<SWFKerningRecord>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -918,7 +906,7 @@ class TagDefineFontAlignZones : _BaseTag(), ITag {
 	var fontId: Int = 0
 	var csmTableHint: Int = 0
 
-	protected var _zoneTable = java.util.ArrayList<com.codeazur.as3swf.data.SWFZoneRecord>()
+	protected var _zoneTable = ArrayList<SWFZoneRecord>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		fontId = data.readUI16()
@@ -961,7 +949,7 @@ open class TagDefineFontInfo : _BaseTag(), ITag {
 	var wideCodes: Boolean = false
 	var langCode: Int = 0
 
-	protected var _codeTable = java.util.ArrayList<Int>()
+	protected var _codeTable = ArrayList<Int>()
 
 	protected var langCodeLength: Int = 0
 
@@ -1077,8 +1065,8 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	protected var morphFillStyles = java.util.ArrayList<com.codeazur.as3swf.data.SWFMorphFillStyle>()
-	protected var morphLineStyles = java.util.ArrayList<com.codeazur.as3swf.data.SWFMorphLineStyle>()
+	protected var morphFillStyles = ArrayList<SWFMorphFillStyle>()
+	protected var morphLineStyles = ArrayList<SWFMorphLineStyle>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -1316,8 +1304,8 @@ class TagDefineSceneAndFrameLabelData : _BaseTag(), ITag {
 		const val TYPE = 86
 	}
 
-	var scenes = java.util.ArrayList<com.codeazur.as3swf.data.SWFScene>()
-	var frameLabels = java.util.ArrayList<com.codeazur.as3swf.data.SWFFrameLabel>()
+	var scenes = ArrayList<SWFScene>()
+	var frameLabels = ArrayList<SWFFrameLabel>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		val sceneCount: Int = data.readEncodedU32()
@@ -1343,15 +1331,11 @@ class TagDefineSceneAndFrameLabelData : _BaseTag(), ITag {
 		var str: String = Tag.toStringCommon(type, name, indent)
 		if (scenes.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Scenes:"
-			for (i in 0 until scenes.size) {
-				str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + scenes[i].toString()
-			}
+			for (i in 0 until scenes.size) str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + scenes[i].toString()
 		}
 		if (frameLabels.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "FrameLabels:"
-			for (i in 0 until frameLabels.size) {
-				str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + frameLabels[i].toString()
-			}
+			for (i in 0 until frameLabels.size) str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + frameLabels[i].toString()
 		}
 		return str
 	}
@@ -1383,9 +1367,7 @@ open class TagDefineShape : _BaseTag(), IDefinitionTag {
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Bounds: " + shapeBounds
+		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
 		return str
 	}
@@ -1402,9 +1384,7 @@ open class TagDefineShape2 : com.codeazur.as3swf.tags.TagDefineShape(), IDefinit
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Bounds: " + shapeBounds
+		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
 		return str
 	}
@@ -1421,9 +1401,7 @@ open class TagDefineShape3 : com.codeazur.as3swf.tags.TagDefineShape2(), IDefini
 	override val level = 3
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"Bounds: " + shapeBounds
+		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
 		return str
 	}
@@ -1457,16 +1435,10 @@ class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), IDefinitionT
 
 	override fun toString(indent: Int, flags: Int): String {
 		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", "
-		if (usesFillWindingRule) {
-			str += "UsesFillWindingRule, "
-		}
-		if (usesNonScalingStrokes) {
-			str += "UsesNonScalingStrokes, "
-		}
-		if (usesScalingStrokes) {
-			str += "UsesScalingStrokes, "
-		}
-		str += "ShapeBounds: " + shapeBounds + ", EdgeBounds: " + edgeBounds
+		if (usesFillWindingRule) str += "UsesFillWindingRule, "
+		if (usesNonScalingStrokes) str += "UsesNonScalingStrokes, "
+		if (usesScalingStrokes) str += "UsesScalingStrokes, "
+		str += "ShapeBounds: $shapeBounds, EdgeBounds: $edgeBounds"
 		str += shapes.toString(indent + 2)
 		return str
 	}
@@ -1475,31 +1447,6 @@ class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), IDefinitionT
 class TagDefineSound : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 14
-
-		fun create(id: Int, format: Int = com.codeazur.as3swf.data.consts.SoundCompression.MP3, rate: Int = com.codeazur.as3swf.data.consts.SoundRate.KHZ_44, size: Int = com.codeazur.as3swf.data.consts.SoundSize.BIT_16, type: Int = com.codeazur.as3swf.data.consts.SoundType.STEREO, sampleCount: Int = 0, aSoundData: FlashByteArray? = null): com.codeazur.as3swf.tags.TagDefineSound {
-			val defineSound: com.codeazur.as3swf.tags.TagDefineSound = com.codeazur.as3swf.tags.TagDefineSound()
-			defineSound.characterId = id
-			defineSound.soundFormat = format
-			defineSound.soundRate = rate
-			defineSound.soundSize = size
-			defineSound.soundType = type
-			defineSound.soundSampleCount = sampleCount
-			if (aSoundData != null && aSoundData.length > 0) {
-				defineSound.soundData.writeBytes(aSoundData)
-			}
-			return defineSound
-		}
-
-		fun createWithMP3(id: Int, mp3: FlashByteArray): com.codeazur.as3swf.tags.TagDefineSound {
-			if (mp3 != null && mp3.length > 0) {
-				val defineSound: com.codeazur.as3swf.tags.TagDefineSound = com.codeazur.as3swf.tags.TagDefineSound()
-				defineSound.characterId = id
-				defineSound.processMP3(mp3)
-				return defineSound
-			} else {
-				throw(Error("No MP3 data."))
-			}
-		}
 	}
 
 	var soundFormat: Int = 0
@@ -1654,7 +1601,7 @@ open class TagDefineText : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	var records = java.util.ArrayList<com.codeazur.as3swf.data.SWFTextRecord>()
+	var records = ArrayList<SWFTextRecord>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -1843,7 +1790,7 @@ open class TagDoAction : _BaseTag(), ITag {
 		const val TYPE = 12
 	}
 
-	var actions = java.util.ArrayList<com.codeazur.as3swf.data.actions.IAction>()
+	var actions = ArrayList<IAction>()
 
 	protected var labelCount: Int = 0
 
@@ -1890,12 +1837,7 @@ class TagDoInitAction : com.codeazur.as3swf.tags.TagDoAction(), ITag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		spriteId = data.readUI16()
-		var action: com.codeazur.as3swf.data.actions.IAction?
-		while (true) {
-			action = data.readACTIONRECORD()
-			if (action == null) continue
-			actions.add(action)
-		}
+		while (true) actions.add(data.readACTIONRECORD() ?:  break)
 		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
@@ -2023,7 +1965,7 @@ class TagExportAssets : _BaseTag(), ITag {
 		const val TYPE = 56
 	}
 
-	val symbols = java.util.ArrayList<com.codeazur.as3swf.data.SWFSymbol>()
+	val symbols = ArrayList<SWFSymbol>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		val numSymbols: Int = data.readUI16()
@@ -2125,7 +2067,7 @@ open class TagImportAssets : _BaseTag(), ITag {
 
 	lateinit var url: String
 
-	protected var symbols = java.util.ArrayList<com.codeazur.as3swf.data.SWFSymbol>()
+	protected var symbols = ArrayList<SWFSymbol>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		url = data.readString()
@@ -2666,11 +2608,7 @@ class TagSetTabIndex : _BaseTag(), ITag {
 	override val version = 7
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
-			"Depth: " + depth + ", " +
-			"TabIndex: " + tabIndex
-	}
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "Depth: " + depth + ", " + "TabIndex: " + tabIndex
 }
 
 class TagShowFrame : _BaseTag(), IDisplayListTag {
@@ -2687,9 +2625,7 @@ class TagShowFrame : _BaseTag(), IDisplayListTag {
 	override val version = 1
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent)
-	}
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent)
 }
 
 class TagSoundStreamBlock : _BaseTag(), ITag {
@@ -2699,18 +2635,14 @@ class TagSoundStreamBlock : _BaseTag(), ITag {
 
 	var soundData = FlashByteArray()
 
-	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
-		data.readBytes(soundData, 0, length)
-	}
+	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit = data.readBytes(soundData, 0, length)
 
 	override val type = com.codeazur.as3swf.tags.TagSoundStreamBlock.TYPE
 	override val name = "SoundStreamBlock"
 	override val version = 1
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) + "Length: " + soundData.length
-	}
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "Length: " + soundData.length
 }
 
 open class TagSoundStreamHead : _BaseTag(), ITag {
@@ -2738,9 +2670,7 @@ open class TagSoundStreamHead : _BaseTag(), ITag {
 		streamSoundSize = data.readUB(1)
 		streamSoundType = data.readUB(1)
 		streamSoundSampleCount = data.readUI16()
-		if (streamSoundCompression == com.codeazur.as3swf.data.consts.SoundCompression.MP3) {
-			latencySeek = data.readSI16()
-		}
+		if (streamSoundCompression == SoundCompression.MP3) latencySeek = data.readSI16()
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagSoundStreamHead.TYPE
@@ -2756,7 +2686,7 @@ open class TagSoundStreamHead : _BaseTag(), ITag {
 				"Size: " + com.codeazur.as3swf.data.consts.SoundSize.toString(streamSoundSize) + ", " +
 				"Type: " + com.codeazur.as3swf.data.consts.SoundType.toString(streamSoundType) + ", "
 		}
-		str += "Samples: " + streamSoundSampleCount + ", "
+		str += "Samples: $streamSoundSampleCount, "
 		str += "LatencySeek: " + latencySeek
 		return str
 	}
@@ -2775,10 +2705,10 @@ class TagSoundStreamHead2 : com.codeazur.as3swf.tags.TagSoundStreamHead(), ITag 
 	override fun toString(indent: Int, flags: Int): String {
 		var str: String = Tag.toStringCommon(type, name, indent)
 		if (streamSoundSampleCount > 0) {
-			str += "Format: " + com.codeazur.as3swf.data.consts.SoundCompression.toString(streamSoundCompression) + ", " +
-				"Rate: " + com.codeazur.as3swf.data.consts.SoundRate.toString(streamSoundRate) + ", " +
-				"Size: " + com.codeazur.as3swf.data.consts.SoundSize.toString(streamSoundSize) + ", " +
-				"Type: " + com.codeazur.as3swf.data.consts.SoundType.toString(streamSoundType) + ", "
+			str += "Format: " + SoundCompression.toString(streamSoundCompression) + ", " +
+				"Rate: " + SoundRate.toString(streamSoundRate) + ", " +
+				"Size: " + SoundSize.toString(streamSoundSize) + ", " +
+				"Type: " + SoundType.toString(streamSoundType) + ", "
 		}
 		str += "Samples: " + streamSoundSampleCount
 		return str
@@ -2804,9 +2734,7 @@ class TagStartSound : _BaseTag(), ITag {
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
-			"SoundID: " + soundId + ", " +
-			"SoundInfo: " + soundInfo
+		val str: String = Tag.toStringCommon(type, name, indent) + "SoundID: " + soundId + ", " + "SoundInfo: " + soundInfo
 		return str
 	}
 }
@@ -2829,12 +2757,7 @@ class TagStartSound2 : _BaseTag(), ITag {
 	override val version = 9
 	override val level = 2
 
-	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
-			"SoundClassName: " + soundClassName + ", " +
-			"SoundInfo: " + soundInfo
-		return str
-	}
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "SoundClassName: " + soundClassName + ", " + "SoundInfo: " + soundInfo
 }
 
 class TagSymbolClass : _BaseTag(), ITag {
@@ -2842,16 +2765,13 @@ class TagSymbolClass : _BaseTag(), ITag {
 		const val TYPE = 76
 	}
 
-	val symbols = java.util.ArrayList<com.codeazur.as3swf.data.SWFSymbol>()
+	val symbols = ArrayList<SWFSymbol>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
-		val numSymbols: Int = data.readUI16()
-		for (i in 0 until numSymbols) {
-			symbols.add(data.readSYMBOL())
-		}
+		for (i in 0 until data.readUI16()) symbols.add(data.readSYMBOL())
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSymbolClass.TYPE
+	override val type = TagSymbolClass.TYPE
 	override val name = "SymbolClass"
 	override val version = 9 // educated guess (not specified in SWF10 spec)
 	override val level = 1
@@ -2860,18 +2780,14 @@ class TagSymbolClass : _BaseTag(), ITag {
 		var str: String = Tag.toStringCommon(type, name, indent)
 		if (symbols.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Symbols:"
-			for (i in 0 until symbols.size) {
-				str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + symbols[i].toString()
-			}
+			for (i in 0 until symbols.size) str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + symbols[i].toString()
 		}
 		return str
 	}
 }
 
 open class TagUnknown(override val type: Int = 0) : _BaseTag(), ITag {
-	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
-		data.skipBytes(length)
-	}
+	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean) = data.skipBytes(length)
 
 	override val name = "????"
 	override val version = 0
@@ -2902,9 +2818,7 @@ class TagVideoFrame : _BaseTag(), ITag {
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
-			"StreamID: " + streamId + ", " +
-			"Frame: " + frameNum
+		return Tag.toStringCommon(type, name, indent) + "StreamID: " + streamId + ", " + "Frame: " + frameNum
 	}
 }
 
@@ -2925,4 +2839,3 @@ class TagSWFEncryptSignature(type: Int = 0) : com.codeazur.as3swf.tags.TagUnknow
 	override val type = TYPE
 	override val name = "SWFEncryptSignature"
 }
-
