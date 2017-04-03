@@ -101,14 +101,6 @@ class ActionConstantPool(code: Int, length: Int, pos: Int) : Action(code, length
 		}
 	}
 
-	override fun clone(): IAction {
-		val action = ActionConstantPool(code, length, pos)
-		for (i in 0 until constants.size) {
-			action.constants.add(constants[i])
-		}
-		return action
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[ActionConstantPool] Values: " + constants.size
 		for (i in 0 until constants.size) {
@@ -160,18 +152,6 @@ open class ActionDefineFunction(code: Int, length: Int, pos: Int) : Action(code,
 			functionBody.add(data.readACTIONRECORD()!!)
 		}
 		labelCount = resolveOffsets(functionBody)
-	}
-
-	override fun clone(): IAction {
-		val action = ActionDefineFunction(code, length, pos)
-		action.functionName = functionName
-		for (i in 0 until functionParams.size) {
-			action.functionParams.add(functionParams[i])
-		}
-		for (i in 0 until functionBody.size) {
-			action.functionBody.add(functionBody[i].clone())
-		}
-		return action
 	}
 
 	override fun toString(indent: Int): String {
@@ -376,12 +356,6 @@ class ActionStoreRegister(code: Int, length: Int, pos: Int) : Action(code, lengt
 		registerNumber = data.readUI8()
 	}
 
-	override fun clone(): IAction {
-		val action = ActionStoreRegister(code, length, pos)
-		action.registerNumber = registerNumber
-		return action
-	}
-
 	override fun toString(indent: Int): String = "[ActionStoreRegister] RegisterNumber: " + registerNumber
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String = toBytecodeLabel(indent) + "store $" + registerNumber
 }
@@ -438,12 +412,6 @@ open class ActionWith(code: Int, length: Int, pos: Int) : Action(code, length, p
 			withBody.add(data.readACTIONRECORD()!!)
 		}
 		labelCount = resolveOffsets(withBody)
-	}
-
-	override fun clone(): IAction {
-		val action = ActionWith(code, length, pos)
-		for (i in 0 until withBody.size) action.withBody.add(withBody[i].clone())
-		return action
 	}
 
 	override fun toString(indent: Int): String {

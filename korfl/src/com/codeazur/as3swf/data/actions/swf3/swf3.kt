@@ -18,13 +18,6 @@ class ActionGetURL(code: Int, length: Int, pos: Int) : Action(code, length, pos)
 		targetString = data.readString()
 	}
 
-	override fun clone(): IAction {
-		val action = ActionGetURL(code, length, pos)
-		action.urlString = urlString
-		action.targetString = targetString
-		return action
-	}
-
 	override fun toString(indent: Int): String = "[ActionGetURL] URL: $urlString, Target: $targetString"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String = "${toBytecodeLabel(indent)}getURL \"$urlString\", \"$targetString\""
 }
@@ -40,12 +33,6 @@ class ActionGotoFrame(code: Int, length: Int, pos: Int) : Action(code, length, p
 		frame = data.readUI16()
 	}
 
-	override fun clone(): IAction {
-		val action = ActionGotoFrame(code, length, pos)
-		action.frame = frame
-		return action
-	}
-
 	override fun toString(indent: Int): String = "[ActionGotoFrame] Frame: " + frame
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String = toBytecodeLabel(indent) + "gotoFrame " + frame
 }
@@ -59,12 +46,6 @@ class ActionGotoLabel(code: Int, length: Int, pos: Int) : Action(code, length, p
 
 	override fun parse(data: SWFData): Unit {
 		label = data.readString()
-	}
-
-	override fun clone(): IAction {
-		val action = ActionGotoLabel(code, length, pos)
-		action.label = label
-		return action
 	}
 
 	override fun toString(indent: Int): String = "[ActionGotoLabel] Label: $label"
@@ -110,12 +91,6 @@ class ActionSetTarget(code: Int, length: Int, pos: Int) : Action(code, length, p
 		targetName = data.readString()
 	}
 
-	override fun clone(): IAction {
-		val action = ActionSetTarget(code, length, pos)
-		action.targetName = targetName
-		return action
-	}
-
 	override fun toString(indent: Int): String = "[ActionSetTarget] TargetName: $targetName"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String = "${toBytecodeLabel(indent)}setTarget \"$targetName\""
 }
@@ -158,13 +133,6 @@ class ActionWaitForFrame(code: Int, length: Int, pos: Int) : Action(code, length
 	override fun parse(data: SWFData): Unit {
 		frame = data.readUI16()
 		skipCount = data.readUI8()
-	}
-
-	override fun clone(): IAction {
-		val action = ActionWaitForFrame(code, length, pos)
-		action.frame = frame
-		action.skipCount = skipCount
-		return action
 	}
 
 	override fun toString(indent: Int): String = "[ActionWaitForFrame] Frame: $frame, SkipCount: $skipCount"

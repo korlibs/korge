@@ -8,13 +8,11 @@ interface IFilter {
 	val id: Int
 
 	fun parse(data: SWFData): Unit
-	fun clone(): IFilter
 	fun toString(indent: Int = 0): String
 }
 
 open class Filter(override val id: Int) : IFilter {
 	override fun parse(data: SWFData): Unit = throw Error("Implement in subclasses!")
-	override fun clone(): IFilter = throw Error("Implement in subclasses!")
 	override fun toString(indent: Int): String = "[Filter]"
 	override fun toString(): String = toString(0)
 }
@@ -77,23 +75,6 @@ class FilterBevel(id: Int) : Filter(id) {
 		passes = flags and 0x0f
 	}
 
-	override fun clone(): IFilter {
-		val filter = FilterBevel(id)
-		filter.shadowColor = shadowColor
-		filter.highlightColor = highlightColor
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.angle = angle
-		filter.distance = distance
-		filter.strength = strength
-		filter.passes = passes
-		filter.innerShadow = innerShadow
-		filter.knockout = knockout
-		filter.compositeSource = compositeSource
-		filter.onTop = onTop
-		return filter
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[BevelFilter] " +
 			"ShadowColor: " + ColorUtils.rgbToString(shadowColor) + ", " +
@@ -134,17 +115,7 @@ class FilterBlur(id: Int) : Filter(id) {
 		passes = data.readUI8() ushr 3
 	}
 
-	override fun clone(): IFilter {
-		val filter = FilterBlur(id)
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.passes = passes
-		return filter
-	}
-
-	override fun toString(indent: Int): String {
-		return "[BlurFilter] BlurX: $blurX, BlurY: $blurY, Passes: $passes"
-	}
+	override fun toString(indent: Int): String = "[BlurFilter] BlurX: $blurX, BlurY: $blurY, Passes: $passes"
 }
 
 class FilterColorMatrix(id: Int) : Filter(id) {
@@ -163,14 +134,6 @@ class FilterColorMatrix(id: Int) : Filter(id) {
 		for (i in 0 until 20) {
 			colorMatrix.add(data.readFLOAT())
 		}
-	}
-
-	override fun clone(): IFilter {
-		val filter = FilterColorMatrix(id)
-		for (i in 0 until 20) {
-			filter.colorMatrix.add(colorMatrix[i])
-		}
-		return filter
 	}
 
 	override fun toString(indent: Int): String {
@@ -225,20 +188,6 @@ class FilterConvolution(id: Int) : Filter(id), IFilter {
 		val flags = data.readUI8()
 		clamp = ((flags and 0x02) != 0)
 		preserveAlpha = ((flags and 0x01) != 0)
-	}
-
-	override fun clone(): IFilter {
-		val filter = FilterConvolution(id)
-		filter.matrixX = matrixX
-		filter.matrixY = matrixY
-		filter.divisor = divisor
-		filter.bias = bias
-		val len = matrixX * matrixY
-		for (i in 0 until len) filter.matrix.add(matrix[i])
-		filter.defaultColor = defaultColor
-		filter.clamp = clamp
-		filter.preserveAlpha = preserveAlpha
-		return filter
 	}
 
 	override fun toString(indent: Int): String {
@@ -302,21 +251,6 @@ class FilterDropShadow(id: Int) : Filter(id), IFilter {
 		passes = flags and 0x1f
 	}
 
-	override fun clone(): IFilter {
-		val filter = FilterDropShadow(id)
-		filter.dropShadowColor = dropShadowColor
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.angle = angle
-		filter.distance = distance
-		filter.strength = strength
-		filter.passes = passes
-		filter.innerShadow = innerShadow
-		filter.knockout = knockout
-		filter.compositeSource = compositeSource
-		return filter
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[DropShadowFilter] " +
 			"DropShadowColor: " + ColorUtils.rgbToString(dropShadowColor) + ", " +
@@ -366,19 +300,6 @@ class FilterGlow(id: Int) : Filter(id), IFilter {
 		passes = flags and 0x1f
 	}
 
-	override fun clone(): IFilter {
-		val filter = FilterGlow(id)
-		filter.glowColor = glowColor
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.strength = strength
-		filter.passes = passes
-		filter.innerGlow = innerGlow
-		filter.knockout = knockout
-		filter.compositeSource = compositeSource
-		return filter
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[GlowFilter] " +
 			"GlowColor: " + ColorUtils.rgbToString(glowColor) + ", " +
@@ -425,28 +346,6 @@ class FilterGradientBevel(id: Int) : FilterGradientGlow(id), IFilter {
 	//		knockout
 	//	)
 	//}
-
-	override fun clone(): IFilter {
-		val filter = FilterGradientBevel(id)
-		filter.numColors = numColors
-		for (i in 0 until numColors) {
-			filter.gradientColors.add(gradientColors[i])
-		}
-		for (i in 0 until numColors) {
-			filter.gradientRatios.add(gradientRatios[i])
-		}
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.angle = angle
-		filter.distance = distance
-		filter.strength = strength
-		filter.passes = passes
-		filter.innerShadow = innerShadow
-		filter.knockout = knockout
-		filter.compositeSource = compositeSource
-		filter.onTop = onTop
-		return filter
-	}
 
 	override val filterName: String = "GradientBevelFilter"
 }
@@ -516,24 +415,6 @@ open class FilterGradientGlow(id: Int) : Filter(id), IFilter {
 		compositeSource = ((flags and 0x20) != 0)
 		onTop = ((flags and 0x10) != 0)
 		passes = flags and 0x0f
-	}
-
-	override fun clone(): IFilter {
-		val filter = FilterGradientGlow(id)
-		filter.numColors = numColors
-		for (i in 0 until numColors) filter.gradientColors.add(gradientColors[i])
-		for (i in 0 until numColors) filter.gradientRatios.add(gradientRatios[i])
-		filter.blurX = blurX
-		filter.blurY = blurY
-		filter.angle = angle
-		filter.distance = distance
-		filter.strength = strength
-		filter.passes = passes
-		filter.innerShadow = innerShadow
-		filter.knockout = knockout
-		filter.compositeSource = compositeSource
-		filter.onTop = onTop
-		return filter
 	}
 
 	override fun toString(indent: Int): String {

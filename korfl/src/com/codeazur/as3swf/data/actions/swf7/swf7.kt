@@ -59,24 +59,6 @@ class ActionDefineFunction2(code: Int, length: Int, pos: Int) : Action(code, len
 		labelCount = resolveOffsets(functionBody)
 	}
 
-	override fun clone(): IAction {
-		val action = ActionDefineFunction2(code, length, pos)
-		action.functionName = functionName
-		for (i in 0 until functionParams.size) action.functionParams.add(functionParams[i])
-		for (i in 0 until functionBody.size) action.functionBody.add(functionBody[i].clone())
-		action.registerCount = registerCount
-		action.preloadParent = preloadParent
-		action.preloadRoot = preloadRoot
-		action.preloadSuper = preloadSuper
-		action.preloadArguments = preloadArguments
-		action.preloadThis = preloadThis
-		action.preloadGlobal = preloadGlobal
-		action.suppressSuper = suppressSuper
-		action.suppressArguments = suppressArguments
-		action.suppressThis = suppressThis
-		return action
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[ActionDefineFunction2] " +
 			(if (functionName == null || functionName!!.isEmpty()) "<anonymous>" else functionName) +
@@ -193,19 +175,6 @@ open class ActionTry(code: Int, length: Int, pos: Int) : Action(code, length, po
 		labelCountTry = resolveOffsets(tryBody)
 		labelCountCatch = resolveOffsets(catchBody)
 		labelCountFinally = resolveOffsets(finallyBody)
-	}
-
-	override fun clone(): IAction {
-		val action = ActionTry(code, length, pos)
-		action.catchInRegisterFlag = catchInRegisterFlag
-		action.finallyBlockFlag = finallyBlockFlag
-		action.catchBlockFlag = catchBlockFlag
-		action.catchName = catchName
-		action.catchRegister = catchRegister
-		for (i in 0 until tryBody.size) action.tryBody.add(tryBody[i].clone())
-		for (i in 0 until catchBody.size) action.catchBody.add(catchBody[i].clone())
-		for (i in 0 until finallyBody.size) action.finallyBody.add(finallyBody[i].clone())
-		return action
 	}
 
 	override fun toString(indent: Int): String {

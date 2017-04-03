@@ -64,22 +64,6 @@ class SWFActionValue {
 		}
 	}
 
-	fun clone(): SWFActionValue {
-		val value = SWFActionValue()
-		when (type) {
-			ActionValueType.FLOAT, ActionValueType.DOUBLE -> value.number = number
-			ActionValueType.CONSTANT_8, ActionValueType.CONSTANT_16 -> value.constant = constant
-			ActionValueType.NULL -> Unit
-			ActionValueType.UNDEFINED -> Unit
-			ActionValueType.STRING -> value.string = string
-			ActionValueType.REGISTER -> value.register = register
-			ActionValueType.BOOLEAN -> value.boolean = boolean
-			ActionValueType.INTEGER -> value.integer = integer
-			else -> throw(Error("Unknown ActionValueType: " + type))
-		}
-		return value
-	}
-
 	override fun toString(): String {
 		return when (type) {
 			ActionValueType.STRING -> "$string (string)"
@@ -156,25 +140,6 @@ class SWFButtonCondAction {
 		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFButtonCondAction {
-		val condAction = com.codeazur.as3swf.data.SWFButtonCondAction()
-		condAction.condActionSize = condActionSize
-		condAction.condIdleToOverDown = condIdleToOverDown
-		condAction.condOutDownToIdle = condOutDownToIdle
-		condAction.condOutDownToOverDown = condOutDownToOverDown
-		condAction.condOverDownToOutDown = condOverDownToOutDown
-		condAction.condOverDownToOverUp = condOverDownToOverUp
-		condAction.condOverUpToOverDown = condOverUpToOverDown
-		condAction.condOverUpToIdle = condOverUpToIdle
-		condAction.condIdleToOverUp = condIdleToOverUp
-		condAction.condOverDownToIdle = condOverDownToIdle
-		condAction.condKeyPress = condKeyPress
-		for (i in 0 until actions.size) {
-			condAction.actions.add(actions[i].clone())
-		}
-		return condAction
-	}
-
 	fun toString(indent: Int = 0, flags: Int = 0): String {
 		val a = arrayListOf<String>()
 		if (condIdleToOverDown) a.add("idleToOverDown")
@@ -244,23 +209,6 @@ class SWFButtonRecord {
 				blendMode = data.readUI8()
 			}
 		}
-	}
-
-	fun clone(): com.codeazur.as3swf.data.SWFButtonRecord {
-		val data: com.codeazur.as3swf.data.SWFButtonRecord = com.codeazur.as3swf.data.SWFButtonRecord()
-		data.hasBlendMode = hasBlendMode
-		data.hasFilterList = hasFilterList
-		data.stateHitTest = stateHitTest
-		data.stateDown = stateDown
-		data.stateOver = stateOver
-		data.stateUp = stateUp
-		data.characterId = characterId
-		data.placeDepth = placeDepth
-		data.placeMatrix = placeMatrix!!.clone()
-		if (colorTransform != null) data.colorTransform = colorTransform!!.clone() as SWFColorTransformWithAlpha
-		for (i in 0 until filterList.size) data.filterList.add(filterList[i].clone())
-		data.blendMode = blendMode
-		return data
 	}
 
 	fun toString(indent: Int = 0): String {
@@ -469,19 +417,6 @@ open class SWFColorTransform {
 		}
 	}
 
-	open fun clone(): SWFColorTransform {
-		val colorTransform = SWFColorTransform()
-		colorTransform.hasAddTerms = hasAddTerms
-		colorTransform.hasMultTerms = hasMultTerms
-		colorTransform.rMult = rMult
-		colorTransform.gMult = gMult
-		colorTransform.bMult = bMult
-		colorTransform.rAdd = rAdd
-		colorTransform.gAdd = gAdd
-		colorTransform.bAdd = bAdd
-		return colorTransform
-	}
-
 	protected open fun updateHasMultTerms(): Unit = run { hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) }
 	protected open fun updateHasAddTerms(): Unit = run { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
 
@@ -525,28 +460,8 @@ class SWFColorTransformWithAlpha : SWFColorTransform() {
 		}
 	}
 
-	override fun clone(): SWFColorTransform {
-		val colorTransform = SWFColorTransformWithAlpha()
-		colorTransform.hasAddTerms = hasAddTerms
-		colorTransform.hasMultTerms = hasMultTerms
-		colorTransform.rMult = rMult
-		colorTransform.gMult = gMult
-		colorTransform.bMult = bMult
-		colorTransform.aMult = aMult
-		colorTransform.rAdd = rAdd
-		colorTransform.gAdd = gAdd
-		colorTransform.bAdd = bAdd
-		colorTransform.aAdd = aAdd
-		return colorTransform
-	}
-
-	override fun updateHasMultTerms(): Unit {
-		hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) || (_aMult != 256)
-	}
-
-	override fun updateHasAddTerms(): Unit {
-		hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) || (_aAdd != 0)
-	}
+	override fun updateHasMultTerms(): Unit = run { hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) || (_aMult != 256) }
+	override fun updateHasAddTerms(): Unit = run { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) || (_aAdd != 0) }
 
 	override fun toString(): String = "($rMult,$gMult,$bMult,$aMult,$rAdd,$gAdd,$bAdd,$aAdd)"
 }
@@ -577,17 +492,6 @@ class SWFFillStyle {
 			}
 			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
 		}
-	}
-
-	fun clone(): SWFFillStyle {
-		val fillStyle: SWFFillStyle = SWFFillStyle()
-		fillStyle.type = type
-		fillStyle.rgb = rgb
-		fillStyle.gradient = gradient!!.clone()
-		fillStyle.gradientMatrix = gradientMatrix!!.clone()
-		fillStyle.bitmapId = bitmapId
-		fillStyle.bitmapMatrix = bitmapMatrix!!.clone()
-		return fillStyle
 	}
 
 	override fun toString(): String {
@@ -629,13 +533,6 @@ class SWFGlyphEntry {
 		advance = data.readSB(advanceBits)
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFGlyphEntry {
-		val entry: com.codeazur.as3swf.data.SWFGlyphEntry = com.codeazur.as3swf.data.SWFGlyphEntry()
-		entry.index = index
-		entry.advance = advance
-		return entry
-	}
-
 	override fun toString(): String {
 		return "[SWFGlyphEntry] Index: " + index.toString() + ", Advance: " + advance.toString()
 	}
@@ -658,17 +555,6 @@ open class SWFGradient {
 		for (i in 0 until numGradients) records.add(data.readGRADIENTRECORD(level))
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFGradient {
-		val gradient: com.codeazur.as3swf.data.SWFGradient = com.codeazur.as3swf.data.SWFGradient()
-		gradient.spreadMode = spreadMode
-		gradient.interpolationMode = interpolationMode
-		gradient.focalPoint = focalPoint
-		for (i in 0 until records.size) {
-			gradient.records.add(records[i].clone())
-		}
-		return gradient
-	}
-
 	override fun toString(): String = "(${records.joinToString(",")}), SpreadMode: $spreadMode, InterpolationMode: $interpolationMode"
 }
 
@@ -684,16 +570,7 @@ class SWFGradientRecord {
 		color = if (level <= 2) data.readRGB() else data.readRGBA()
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFGradientRecord {
-		val gradientRecord: com.codeazur.as3swf.data.SWFGradientRecord = com.codeazur.as3swf.data.SWFGradientRecord()
-		gradientRecord.ratio = ratio
-		gradientRecord.color = color
-		return gradientRecord
-	}
-
-	override fun toString(): String {
-		return "[" + ratio + "," + (if (_level <= 2) ColorUtils.rgbToString(color) else ColorUtils.rgbaToString(color)) + "]"
-	}
+	override fun toString(): String = "[" + ratio + "," + (if (_level <= 2) ColorUtils.rgbToString(color) else ColorUtils.rgbaToString(color)) + "]"
 }
 
 class SWFKerningRecord {
@@ -734,26 +611,7 @@ open class SWFLineStyle {
 		color = if (level <= 2) data.readRGB() else data.readRGBA()
 	}
 
-	fun clone(): SWFLineStyle {
-		val lineStyle: SWFLineStyle = SWFLineStyle()
-		lineStyle.width = width
-		lineStyle.color = color
-		lineStyle.startCapsStyle = startCapsStyle
-		lineStyle.endCapsStyle = endCapsStyle
-		lineStyle.jointStyle = jointStyle
-		lineStyle.hasFillFlag = hasFillFlag
-		lineStyle.noHScaleFlag = noHScaleFlag
-		lineStyle.noVScaleFlag = noVScaleFlag
-		lineStyle.pixelHintingFlag = pixelHintingFlag
-		lineStyle.noClose = noClose
-		lineStyle.miterLimitFactor = miterLimitFactor
-		lineStyle.fillType = fillType!!.clone()
-		return lineStyle
-	}
-
-	override fun toString(): String {
-		return "[SWFLineStyle] Width: " + width + " Color: " + (if (_level <= 2) ColorUtils.rgbToString(color) else ColorUtils.rgbaToString(color))
-	}
+	override fun toString(): String = "[SWFLineStyle] Width: " + width + " Color: " + (if (_level <= 2) ColorUtils.rgbToString(color) else ColorUtils.rgbaToString(color))
 }
 
 class SWFLineStyle2 : SWFLineStyle() {
@@ -833,17 +691,6 @@ class SWFMatrix {
 		if (rotation < 0) rotation += 360
 		xscale = Math.sqrt(scaleX * scaleX + rotateSkew0 * rotateSkew0)
 		yscale = Math.sqrt(rotateSkew1 * rotateSkew1 + scaleY * scaleY)
-	}
-
-	fun clone(): SWFMatrix {
-		val matrix = SWFMatrix()
-		matrix.scaleX = scaleX
-		matrix.scaleY = scaleY
-		matrix.rotateSkew0 = rotateSkew0
-		matrix.rotateSkew1 = rotateSkew1
-		matrix.translateX = translateX
-		matrix.translateY = translateY
-		return matrix
 	}
 
 	fun isIdentity(): Boolean = (scaleX == 1.0 && scaleY == 1.0 && rotateSkew0 == 0.0 && rotateSkew1 == 0.0 && translateX == 0 && translateY == 0)
@@ -1123,15 +970,6 @@ class SWFRectangle(
 		xmax = data.readSB(bits)
 		ymin = data.readSB(bits)
 		ymax = data.readSB(bits)
-	}
-
-	fun clone(): SWFRectangle {
-		val rect = SWFRectangle()
-		rect.xmin = xmin
-		rect.xmax = xmax
-		rect.ymin = ymin
-		rect.ymax = ymax
-		return rect
 	}
 
 	val rect: Rectangle get() {
@@ -1687,7 +1525,6 @@ open class SWFShapeRecord {
 	open val type = SWFShapeRecord.TYPE_UNKNOWN
 	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.TYPE_CURVEDEDGE)
 	open fun parse(data: SWFData, level: Int = 1): Unit = Unit
-	open fun clone(): SWFShapeRecord = SWFShapeRecord()
 	open fun toString(indent: Int = 0): String = "[SWFShapeRecord]"
 }
 
@@ -1704,23 +1541,11 @@ class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		anchorDeltaY = data.readSB(numBits)
 	}
 
-	override fun clone(): SWFShapeRecord {
-		val record: SWFShapeRecordCurvedEdge = SWFShapeRecordCurvedEdge()
-		record.anchorDeltaX = anchorDeltaX
-		record.anchorDeltaY = anchorDeltaY
-		record.controlDeltaX = controlDeltaX
-		record.controlDeltaY = controlDeltaY
-		record.numBits = numBits
-		return record
-	}
-
 	override val type = SWFShapeRecord.TYPE_CURVEDEDGE
-
 	override fun toString(indent: Int): String = "[SWFShapeRecordCurvedEdge] ControlDelta: $controlDeltaX,$controlDeltaY, AnchorDelta: $anchorDeltaX,$anchorDeltaY"
 }
 
 class SWFShapeRecordEnd : SWFShapeRecord() {
-	override fun clone() = com.codeazur.as3swf.data.SWFShapeRecordEnd()
 	override val type = SWFShapeRecord.TYPE_END
 	override fun toString(indent: Int) = "[SWFShapeRecordEnd]"
 }
@@ -1736,16 +1561,6 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		vertLineFlag = if (!generalLineFlag) (data.readUB(1) == 1) else false
 		deltaX = if (generalLineFlag || !vertLineFlag) data.readSB(numBits) else 0
 		deltaY = if (generalLineFlag || vertLineFlag) data.readSB(numBits) else 0
-	}
-
-	override fun clone(): SWFShapeRecord {
-		val record = SWFShapeRecordStraightEdge()
-		record.deltaX = deltaX
-		record.deltaY = deltaY
-		record.generalLineFlag = generalLineFlag
-		record.vertLineFlag = vertLineFlag
-		record.numBits = numBits
-		return record
 	}
 
 	override val type = SWFShapeRecord.TYPE_STRAIGHTEDGE
@@ -1826,25 +1641,6 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		} else {
 			data.writeUI8(length)
 		}
-	}
-
-	override fun clone(): SWFShapeRecord {
-		val record = SWFShapeRecordStyleChange()
-		record.stateNewStyles = stateNewStyles
-		record.stateLineStyle = stateLineStyle
-		record.stateFillStyle1 = stateFillStyle1
-		record.stateFillStyle0 = stateFillStyle0
-		record.stateMoveTo = stateMoveTo
-		record.moveDeltaX = moveDeltaX
-		record.moveDeltaY = moveDeltaY
-		record.fillStyle0 = fillStyle0
-		record.fillStyle1 = fillStyle1
-		record.lineStyle = lineStyle
-		record.numFillBits = numFillBits
-		record.numLineBits = numLineBits
-		for (i in 0 until fillStyles.size) record.fillStyles.add(fillStyles[i].clone())
-		for (i in 0 until lineStyles.size) record.lineStyles.add(lineStyles[i].clone())
-		return record
 	}
 
 	override fun toString(indent: Int): String {
@@ -1941,14 +1737,6 @@ class SWFSoundEnvelope {
 		rightLevel = data.readUI16()
 	}
 
-	fun clone(): com.codeazur.as3swf.data.SWFSoundEnvelope {
-		val soundEnvelope: com.codeazur.as3swf.data.SWFSoundEnvelope = com.codeazur.as3swf.data.SWFSoundEnvelope()
-		soundEnvelope.pos44 = pos44
-		soundEnvelope.leftLevel = leftLevel
-		soundEnvelope.rightLevel = rightLevel
-		return soundEnvelope
-	}
-
 	override fun toString(): String {
 		return "[SWFSoundEnvelope]"
 	}
@@ -1983,21 +1771,6 @@ class SWFSoundInfo {
 			val envPoints: Int = data.readUI8()
 			for (i in 0 until envPoints) envelopeRecords.add(data.readSOUNDENVELOPE())
 		}
-	}
-
-	fun clone(): SWFSoundInfo {
-		val soundInfo = SWFSoundInfo()
-		soundInfo.syncStop = syncStop
-		soundInfo.syncNoMultiple = syncNoMultiple
-		soundInfo.hasEnvelope = hasEnvelope
-		soundInfo.hasLoops = hasLoops
-		soundInfo.hasOutPoint = hasOutPoint
-		soundInfo.hasInPoint = hasInPoint
-		soundInfo.outPoint = outPoint
-		soundInfo.inPoint = inPoint
-		soundInfo.loopCount = loopCount
-		for (i in 0 until envelopeRecords.size) soundInfo.envelopeRecords.add(envelopeRecords[i].clone())
-		return soundInfo
 	}
 
 	override fun toString(): String = "[SWFSoundInfo]"
@@ -2069,22 +1842,6 @@ class SWFTextRecord {
 		for (i in 0 until glyphCount) {
 			glyphEntries.add(data.readGLYPHENTRY(glyphBits, advanceBits))
 		}
-	}
-
-	fun clone(): SWFTextRecord {
-		val record = SWFTextRecord()
-		record.type = type
-		record.hasFont = hasFont
-		record.hasColor = hasColor
-		record.hasXOffset = hasXOffset
-		record.hasYOffset = hasYOffset
-		record.fontId = fontId
-		record.textColor = textColor
-		record.textHeight = textHeight
-		record.xOffset = xOffset
-		record.yOffset = yOffset
-		for (i in 0 until glyphEntries.size) record.glyphEntries.add(glyphEntries[i].clone())
-		return record
 	}
 
 	fun toString(indent: Int = 0): String {

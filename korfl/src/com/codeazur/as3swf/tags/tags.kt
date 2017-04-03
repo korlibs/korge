@@ -26,7 +26,6 @@ abstract class _BaseTag : ITag {
 
 interface IDefinitionTag : ITag {
 	var characterId: Int
-	fun clone(): IDefinitionTag
 }
 
 interface IDisplayListTag : ITag
@@ -126,15 +125,6 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 		}
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBinaryData = com.codeazur.as3swf.tags.TagDefineBinaryData()
-		tag.characterId = characterId
-		if (binaryData.length > 0) {
-			tag.binaryData.writeBytes(binaryData)
-		}
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineBinaryData.TYPE
 	override val name = "DefineBinaryData"
 	override val version = 9
@@ -160,39 +150,8 @@ open class TagDefineBits : _BaseTag(), IDefinitionTag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
-		if (length > 2) {
-			data.readBytes(bitmapData, 0, length - 2)
-		}
+		if (length > 2) data.readBytes(bitmapData, 0, length - 2)
 	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: TagDefineBits = TagDefineBits()
-		tag.characterId = characterId
-		tag.bitmapType = bitmapType
-		if (bitmapData.length > 0) {
-			tag.bitmapData.writeBytes(bitmapData)
-		}
-		return tag
-	}
-
-	/*
-	protected var loader: Loader;
-	protected var onCompleteCallback: Function;
-
-	fun exportBitmapData(onComplete: Function): Unit {
-		onCompleteCallback = onComplete;
-		loader = Loader();
-		loader.contentLoaderInfo.addEventListener(Event.COMPLETE, exportCompleteHandler);
-		loader.loadBytes(bitmapData);
-	}
-
-	protected fun exportCompleteHandler(event: Event): Unit {
-		var loader: Loader = event.target.loader as Loader;
-		var bitmapData: BitmapData = BitmapData(loader.content.width, loader.content.height);
-		bitmapData.draw(loader);
-		onCompleteCallback(bitmapData);
-	}
-	*/
 
 	override val type = TagDefineBits.TYPE
 	override val name = "DefineBits"
@@ -200,9 +159,7 @@ open class TagDefineBits : _BaseTag(), IDefinitionTag {
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
-			"ID: " + characterId + ", " +
-			"BitmapLength: " + bitmapData.length
+		return Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "BitmapLength: " + bitmapData.length
 	}
 }
 
@@ -220,16 +177,6 @@ open class TagDefineBitsJPEG2 : TagDefineBits(), IDefinitionTag {
 		} else if (bitmapData[0] == 0x47 && bitmapData[1] == 0x49 && bitmapData[2] == 0x46 && bitmapData[3] == 0x38 && bitmapData[4] == 0x39 && bitmapData[5] == 0x61) {
 			bitmapType = com.codeazur.as3swf.data.consts.BitmapType.GIF89A
 		}
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG2 = com.codeazur.as3swf.tags.TagDefineBitsJPEG2()
-		tag.characterId = characterId
-		tag.bitmapType = bitmapType
-		if (bitmapData.length > 0) {
-			tag.bitmapData.writeBytes(bitmapData)
-		}
-		return tag
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG2.TYPE
@@ -268,19 +215,6 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), I
 		if (alphaDataSize > 0) {
 			data.readBytes(bitmapAlphaData, 0, alphaDataSize)
 		}
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG3 = com.codeazur.as3swf.tags.TagDefineBitsJPEG3()
-		tag.characterId = characterId
-		tag.bitmapType = bitmapType
-		if (bitmapData.length > 0) {
-			tag.bitmapData.writeBytes(bitmapData)
-		}
-		if (bitmapAlphaData.length > 0) {
-			tag.bitmapAlphaData.writeBytes(bitmapAlphaData)
-		}
-		return tag
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG3.TYPE
@@ -324,20 +258,6 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefin
 		}
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG4 = com.codeazur.as3swf.tags.TagDefineBitsJPEG4()
-		tag.characterId = characterId
-		tag.bitmapType = bitmapType
-		tag.deblockParam = deblockParam
-		if (bitmapData.length > 0) {
-			tag.bitmapData.writeBytes(bitmapData)
-		}
-		if (bitmapAlphaData.length > 0) {
-			tag.bitmapAlphaData.writeBytes(bitmapAlphaData)
-		}
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG4.TYPE
 	override val name = "DefineBitsJPEG4"
 	override val version = 10
@@ -379,16 +299,6 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 		data.readBytes(zlibBitmapData, 0, length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7))
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag = TagDefineBitsLossless()
-		tag.characterId = characterId
-		tag.bitmapFormat = bitmapFormat
-		tag.bitmapWidth = bitmapWidth
-		tag.bitmapHeight = bitmapHeight
-		if (zlibBitmapData.length > 0) tag.zlibBitmapData.writeBytes(zlibBitmapData)
-		return tag
-	}
-
 	override val type = TagDefineBitsLossless.TYPE
 	override val name = "DefineBitsLossless"
 	override val version = 2
@@ -400,16 +310,6 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 class TagDefineBitsLossless2 : TagDefineBitsLossless(), IDefinitionTag {
 	companion object {
 		const val TYPE = 36
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag = TagDefineBitsLossless2()
-		tag.characterId = characterId
-		tag.bitmapFormat = bitmapFormat
-		tag.bitmapWidth = bitmapWidth
-		tag.bitmapHeight = bitmapHeight
-		if (zlibBitmapData.length > 0) tag.zlibBitmapData.writeBytes(zlibBitmapData)
-		return tag
 	}
 
 	override val hasAlpha = true
@@ -455,18 +355,6 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 		}
 		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 		processRecords()
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag = com.codeazur.as3swf.tags.TagDefineButton()
-		tag.characterId = characterId
-		for (i in 0 until characters.size) {
-			tag.characters.add(characters[i].clone())
-		}
-		for (i in 0 until actions.size) {
-			tag.actions.add(actions[i].clone())
-		}
-		return tag
 	}
 
 	fun getRecordsByState(state: String): java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> {
@@ -559,17 +447,6 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 		processRecords()
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineButton2 = com.codeazur.as3swf.tags.TagDefineButton2()
-		tag.characterId = characterId
-		tag.trackAsMenu = trackAsMenu
-		for (i in 0 until characters.size) tag.characters.add(characters[i].clone())
-		for (i in 0 until condActions.size) {
-			tag.condActions.add(condActions[i].clone())
-		}
-		return tag
-	}
-
 	fun getRecordsByState(state: String): java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord> {
 		return frames[state]!!
 	}
@@ -630,13 +507,6 @@ class TagDefineButtonCxform : _BaseTag(), IDefinitionTag {
 		buttonColorTransform = data.readCXFORM()
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag = com.codeazur.as3swf.tags.TagDefineButtonCxform()
-		tag.characterId = characterId
-		tag.buttonColorTransform = buttonColorTransform.clone()
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineButtonCxform.TYPE
 	override val name = "DefineButtonCxform"
 	override val version = 2
@@ -669,35 +539,13 @@ class TagDefineButtonSound : _BaseTag(), IDefinitionTag {
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
 		buttonSoundChar0 = data.readUI16()
-		if (buttonSoundChar0 != 0) {
-			buttonSoundInfo0 = data.readSOUNDINFO()
-		}
+		if (buttonSoundChar0 != 0) buttonSoundInfo0 = data.readSOUNDINFO()
 		buttonSoundChar1 = data.readUI16()
-		if (buttonSoundChar1 != 0) {
-			buttonSoundInfo1 = data.readSOUNDINFO()
-		}
+		if (buttonSoundChar1 != 0) buttonSoundInfo1 = data.readSOUNDINFO()
 		buttonSoundChar2 = data.readUI16()
-		if (buttonSoundChar2 != 0) {
-			buttonSoundInfo2 = data.readSOUNDINFO()
-		}
+		if (buttonSoundChar2 != 0) buttonSoundInfo2 = data.readSOUNDINFO()
 		buttonSoundChar3 = data.readUI16()
-		if (buttonSoundChar3 != 0) {
-			buttonSoundInfo3 = data.readSOUNDINFO()
-		}
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag = com.codeazur.as3swf.tags.TagDefineButtonSound()
-		tag.characterId = characterId
-		tag.buttonSoundChar0 = buttonSoundChar0
-		tag.buttonSoundChar1 = buttonSoundChar1
-		tag.buttonSoundChar2 = buttonSoundChar2
-		tag.buttonSoundChar3 = buttonSoundChar3
-		tag.buttonSoundInfo0 = buttonSoundInfo0.clone()
-		tag.buttonSoundInfo1 = buttonSoundInfo1.clone()
-		tag.buttonSoundInfo2 = buttonSoundInfo2.clone()
-		tag.buttonSoundInfo3 = buttonSoundInfo3.clone()
-		return tag
+		if (buttonSoundChar3 != 0) buttonSoundInfo3 = data.readSOUNDINFO()
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineButtonSound.TYPE
@@ -791,41 +639,6 @@ class TagDefineEditText : _BaseTag(), IDefinitionTag {
 		}
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag = com.codeazur.as3swf.tags.TagDefineEditText()
-		tag.characterId = characterId
-		tag.bounds = bounds.clone()
-		tag.variableName = variableName
-		tag.hasText = hasText
-		tag.wordWrap = wordWrap
-		tag.multiline = multiline
-		tag.password = password
-		tag.readOnly = readOnly
-		tag.hasTextColor = hasTextColor
-		tag.hasMaxLength = hasMaxLength
-		tag.hasFont = hasFont
-		tag.hasFontClass = hasFontClass
-		tag.autoSize = autoSize
-		tag.hasLayout = hasLayout
-		tag.noSelect = noSelect
-		tag.border = border
-		tag.wasStatic = wasStatic
-		tag.html = html
-		tag.useOutlines = useOutlines
-		tag.fontId = fontId
-		tag.fontClass = fontClass
-		tag.fontHeight = fontHeight
-		tag.textColor = textColor
-		tag.maxLength = maxLength
-		tag.align = align
-		tag.leftMargin = leftMargin
-		tag.rightMargin = rightMargin
-		tag.indent = indent
-		tag.leading = leading
-		tag.initialText = initialText
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineEditText.TYPE
 	override val name = "DefineEditText"
 	override val version = 4
@@ -862,8 +675,6 @@ open class TagDefineFont : _BaseTag(), IDefinitionTag {
 			glyphShapeTable.add(data.readSHAPE(unitDivisor))
 		}
 	}
-
-	override fun clone(): IDefinitionTag = throw(Error("Not implemented yet."))
 
 	fun export(handler: ShapeExporter, glyphIndex: Int): Unit {
 		glyphShapeTable[glyphIndex].export(handler)
@@ -1081,19 +892,6 @@ class TagDefineFont4 : _BaseTag(), IDefinitionTag {
 		}
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineFont4 = com.codeazur.as3swf.tags.TagDefineFont4()
-		tag.characterId = characterId
-		tag.hasFontData = hasFontData
-		tag.italic = italic
-		tag.bold = bold
-		tag.fontName = fontName
-		if (fontData.length > 0) {
-			tag.fontData.writeBytes(fontData)
-		}
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineFont4.TYPE
 	override val name = "DefineFont4"
 	override val version = 10
@@ -1305,79 +1103,74 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		endEdges = data.readSHAPE()
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: TagDefineMorphShape = TagDefineMorphShape()
-		throw(Error("Not implemented yet."))
-	}
-
-	fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
-		var j: Int = 0
-		val exportShape: com.codeazur.as3swf.data.SWFShape = com.codeazur.as3swf.data.SWFShape()
-		val numEdges: Int = startEdges.records.size
-		for (i in 0 until numEdges) {
-			var startRecord: com.codeazur.as3swf.data.SWFShapeRecord = startEdges.records[i]
-			// Ignore start records that are style change records and don't have moveTo
-			// The end record index is not incremented, because end records do not have
-			// style change records without moveTo's.
-			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
-				exportShape.records.add(startRecord.clone())
-				continue
-			}
-			var endRecord: com.codeazur.as3swf.data.SWFShapeRecord = endEdges.records[j++]
-			var exportRecord: com.codeazur.as3swf.data.SWFShapeRecord? = null
-			// It is possible for an edge to change type over the course of a morph sequence.
-			// A straight edge can become a curved edge and vice versa
-			// Convert straight edge to curved edge, if needed:
-			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE) {
-				endRecord = convertToCurvedEdge(endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
-			} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE) {
-				startRecord = convertToCurvedEdge(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
-			}
-			when (startRecord.type) {
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE -> {
-					val startStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
-					val endStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
-					startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
-					startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
-					exportRecord = startStyleChange
-				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
-					val startStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
-					val endStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
-					startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
-					startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
-					if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
-						startStraightEdge.generalLineFlag = true
-						startStraightEdge.vertLineFlag = false
-					} else {
-						startStraightEdge.generalLineFlag = false
-						startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
-					}
-					exportRecord = startStraightEdge
-				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE -> {
-					val startCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
-					val endCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
-					startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
-					startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
-					startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
-					startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
-					exportRecord = startCurvedEdge
-				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_END -> {
-					exportRecord = startRecord.clone()
-				}
-			}
-			exportShape.records.add(exportRecord!!)
-		}
-		for (i in 0 until morphFillStyles.size) {
-			exportShape.fillStyles.add(morphFillStyles[i].getMorphedFillStyle(ratio))
-		}
-		for (i in 0 until morphLineStyles.size) {
-			exportShape.lineStyles.add(morphLineStyles[i].getMorphedLineStyle(ratio))
-		}
-		exportShape.export(handler)
-	}
+	//fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
+	//	var j: Int = 0
+	//	val exportShape: com.codeazur.as3swf.data.SWFShape = com.codeazur.as3swf.data.SWFShape()
+	//	val numEdges: Int = startEdges.records.size
+	//	for (i in 0 until numEdges) {
+	//		var startRecord: com.codeazur.as3swf.data.SWFShapeRecord = startEdges.records[i]
+	//		// Ignore start records that are style change records and don't have moveTo
+	//		// The end record index is not incremented, because end records do not have
+	//		// style change records without moveTo's.
+	//		if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
+	//			exportShape.records.add(startRecord.clone())
+	//			continue
+	//		}
+	//		var endRecord: com.codeazur.as3swf.data.SWFShapeRecord = endEdges.records[j++]
+	//		var exportRecord: com.codeazur.as3swf.data.SWFShapeRecord? = null
+	//		// It is possible for an edge to change type over the course of a morph sequence.
+	//		// A straight edge can become a curved edge and vice versa
+	//		// Convert straight edge to curved edge, if needed:
+	//		if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE) {
+	//			endRecord = convertToCurvedEdge(endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
+	//		} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE) {
+	//			startRecord = convertToCurvedEdge(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
+	//		}
+	//		when (startRecord.type) {
+	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE -> {
+	//				val startStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+	//				val endStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+	//				startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
+	//				startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
+	//				exportRecord = startStyleChange
+	//			}
+	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
+	//				val startStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
+	//				val endStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
+	//				startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
+	//				startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
+	//				if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
+	//					startStraightEdge.generalLineFlag = true
+	//					startStraightEdge.vertLineFlag = false
+	//				} else {
+	//					startStraightEdge.generalLineFlag = false
+	//					startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
+	//				}
+	//				exportRecord = startStraightEdge
+	//			}
+	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE -> {
+	//				val startCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
+	//				val endCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
+	//				startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
+	//				startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
+	//				startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
+	//				startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
+	//				exportRecord = startCurvedEdge
+	//			}
+	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_END -> {
+	//				exportRecord = startRecord.clone()
+	//			}
+	//		}
+	//		exportShape.records.add(exportRecord!!)
+	//	}
+	//	for (i in 0 until morphFillStyles.size) {
+	//		exportShape.fillStyles.add(morphFillStyles[i].getMorphedFillStyle(ratio))
+	//	}
+	//	for (i in 0 until morphLineStyles.size) {
+	//		exportShape.lineStyles.add(morphLineStyles[i].getMorphedLineStyle(ratio))
+	//	}
+	//	exportShape.export(handler)
+	//}
 
 	protected fun convertToCurvedEdge(straightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge): com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge {
 		val curvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge()
@@ -1504,13 +1297,6 @@ class TagDefineScalingGrid : _BaseTag(), IDefinitionTag {
 		splitter = data.readRECT()
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineScalingGrid = com.codeazur.as3swf.tags.TagDefineScalingGrid()
-		tag.characterId = characterId
-		tag.splitter = splitter.clone()
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineScalingGrid.TYPE
 	override val name = "DefineScalingGrid"
 	override val version = 8
@@ -1583,12 +1369,6 @@ open class TagDefineShape : _BaseTag(), IDefinitionTag {
 		characterId = data.readUI16()
 		shapeBounds = data.readRECT()
 		shapes = data.readSHAPEWITHSTYLE(level)
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineShape = com.codeazur.as3swf.tags.TagDefineShape()
-		throw(Error("Not implemented yet."))
-		return tag
 	}
 
 	fun export(handler: ShapeExporter): Unit {
@@ -1740,20 +1520,6 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 		data.readBytes(soundData, 0, length - 7)
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag = com.codeazur.as3swf.tags.TagDefineSound()
-		tag.characterId = characterId
-		tag.soundFormat = soundFormat
-		tag.soundRate = soundRate
-		tag.soundSize = soundSize
-		tag.soundType = soundType
-		tag.soundSampleCount = soundSampleCount
-		if (soundData.length > 0) {
-			tag.soundData.writeBytes(soundData)
-		}
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineSound.TYPE
 	override val name = "DefineSound"
 	override val version = 1
@@ -1863,12 +1629,6 @@ class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), IDefinitionT
 		parseTags(data, version)
 	}
 
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineSprite = com.codeazur.as3swf.tags.TagDefineSprite()
-		throw(Error("Not implemented yet."))
-		return tag
-	}
-
 	override val type = com.codeazur.as3swf.tags.TagDefineSprite.TYPE
 	override val name = "DefineSprite"
 	override val version = 3
@@ -1906,17 +1666,6 @@ open class TagDefineText : _BaseTag(), IDefinitionTag {
 			if (record == null) break
 			records.add(record)
 		}
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineText = com.codeazur.as3swf.tags.TagDefineText()
-		tag.characterId = characterId
-		tag.textBounds = textBounds.clone()
-		tag.textMatrix = textMatrix.clone()
-		for (i in 0 until records.size) {
-			tag.records.add(records[i].clone())
-		}
-		return tag
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineText.TYPE
@@ -1990,18 +1739,6 @@ class TagDefineVideoStream : _BaseTag(), IDefinitionTag {
 		deblocking = data.readUB(3)
 		smoothing = (data.readUB(1) == 1)
 		codecId = data.readUI8()
-	}
-
-	override fun clone(): IDefinitionTag {
-		val tag: com.codeazur.as3swf.tags.TagDefineVideoStream = com.codeazur.as3swf.tags.TagDefineVideoStream()
-		tag.characterId = characterId
-		tag.numFrames = numFrames
-		tag.width = width
-		tag.height = height
-		tag.deblocking = deblocking
-		tag.smoothing = smoothing
-		tag.codecId = codecId
-		return tag
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineVideoStream.TYPE
@@ -2494,15 +2231,6 @@ class TagNameCharacter : _BaseTag(), ITag {
 		if (length > 2) {
 			data.readBytes(binaryData, 0, length - 2)
 		}
-	}
-
-	fun clone(): ITag {
-		val tag: com.codeazur.as3swf.tags.TagNameCharacter = com.codeazur.as3swf.tags.TagNameCharacter()
-		tag.characterId = characterId
-		if (binaryData.length > 0) {
-			tag.binaryData.writeBytes(binaryData)
-		}
-		return tag
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagNameCharacter.TYPE

@@ -123,15 +123,6 @@ class ActionGetURL2(code: Int, length: Int, pos: Int) : Action(code, length, pos
 		loadVariablesFlag = (data.readUB(1) == 1)
 	}
 
-	override fun clone(): IAction {
-		val action = ActionGetURL2(code, length, pos)
-		action.sendVarsMethod = sendVarsMethod
-		action.reserved = reserved
-		action.loadTargetFlag = loadTargetFlag
-		action.loadVariablesFlag = loadVariablesFlag
-		return action
-	}
-
 	override fun toString(indent: Int): String {
 		return "[ActionGetURL2] " +
 			"SendVarsMethod: " + sendVarsMethod + " (" + sendVarsMethodToString() + "), " +
@@ -187,14 +178,6 @@ class ActionGotoFrame2(code: Int, length: Int, pos: Int) : Action(code, length, 
 		}
 	}
 
-	override fun clone(): IAction {
-		val action = ActionGotoFrame2(code, length, pos)
-		action.sceneBiasFlag = sceneBiasFlag
-		action.playFlag = playFlag
-		action.sceneBias = sceneBias
-		return action
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[ActionGotoFrame2] PlayFlag: $playFlag, SceneBiasFlag: $sceneBiasFlag"
 		if (sceneBiasFlag) str += ", " + sceneBias
@@ -221,12 +204,6 @@ class ActionIf(code: Int, length: Int, pos: Int) : Action(code, length, pos), IA
 
 	override fun parse(data: SWFData): Unit {
 		branchOffset = data.readSI16()
-	}
-
-	override fun clone(): IAction {
-		val action = ActionIf(code, length, pos)
-		action.branchOffset = branchOffset
-		return action
 	}
 
 	override fun toString(indent: Int): String {
@@ -267,12 +244,6 @@ class ActionJump(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 
 	override fun parse(data: SWFData): Unit {
 		branchOffset = data.readSI16()
-	}
-
-	override fun clone(): IAction {
-		val action = ActionJump(code, length, pos)
-		action.branchOffset = branchOffset
-		return action
 	}
 
 	override fun toString(indent: Int): String {
@@ -394,14 +365,6 @@ class ActionPush(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 		while (data.position != endPosition) {
 			values.add(data.readACTIONVALUE())
 		}
-	}
-
-	override fun clone(): IAction {
-		val action = ActionPush(code, length, pos)
-		for (i in 0 until values.size) {
-			action.values.add(values[i].clone())
-		}
-		return action
 	}
 
 	override fun toString(indent: Int): String = "[ActionPush] " + values.joinToString(", ")
@@ -551,12 +514,6 @@ class ActionWaitForFrame2(code: Int, length: Int, pos: Int) : Action(code, lengt
 
 	override fun parse(data: SWFData): Unit {
 		skipCount = data.readUI8()
-	}
-
-	override fun clone(): IAction {
-		val action = ActionWaitForFrame2(code, length, pos)
-		action.skipCount = skipCount
-		return action
 	}
 
 	override fun toString(indent: Int): String = "[ActionWaitForFrame2] SkipCount: " + skipCount
