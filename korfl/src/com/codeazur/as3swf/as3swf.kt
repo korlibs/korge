@@ -402,8 +402,8 @@ class SWFData : BitArray() {
 	}
 
 	fun readGLYPHENTRY(glyphBits: Int, advanceBits: Int): SWFGlyphEntry = SWFGlyphEntry().apply { parse(this@SWFData, glyphBits, advanceBits) }
-	fun readZONERECORD(): SWFZoneRecord = SWFZoneRecord().apply { parse(this@SWFData) }
-	fun readZONEDATA(): SWFZoneData = SWFZoneData().apply { parse(this@SWFData) }
+	fun readZONERECORD(): SWFZoneRecord = SWFZoneRecord(this@SWFData)
+	fun readZONEDATA(): SWFZoneData = SWFZoneData(this@SWFData)
 	fun readKERNINGRECORD(wideCodes: Boolean): SWFKerningRecord = SWFKerningRecord().apply { parse(this@SWFData, wideCodes) }
 	fun readGRADIENT(level: Int = 1): SWFGradient = SWFGradient().apply { parse(this@SWFData, level) }
 	fun readFOCALGRADIENT(level: Int = 1): SWFFocalGradient = SWFFocalGradient().apply { parse(this@SWFData, level) }
@@ -427,9 +427,9 @@ class SWFData : BitArray() {
 	}
 	fun readACTIONVALUE(): SWFActionValue = SWFActionValue().apply { parse(this@SWFData) }
 	fun readREGISTERPARAM(): SWFRegisterParam = SWFRegisterParam().apply { parse(this@SWFData) }
-	fun readSYMBOL(): SWFSymbol = SWFSymbol().apply { parse(this@SWFData) }
+	fun readSYMBOL(): SWFSymbol = SWFSymbol(this@SWFData)
 	fun readSOUNDINFO(): SWFSoundInfo = SWFSoundInfo().apply { parse(this@SWFData) }
-	fun readSOUNDENVELOPE(): SWFSoundEnvelope = SWFSoundEnvelope().apply { parse(this@SWFData) }
+	fun readSOUNDENVELOPE(): SWFSoundEnvelope = SWFSoundEnvelope(this@SWFData)
 	fun readCLIPACTIONS(version: Int): SWFClipActions = SWFClipActions().apply { parse(this@SWFData, version) }
 	fun readCLIPACTIONRECORD(version: Int): SWFClipActionRecord? {
 		val pos = position

@@ -1,6 +1,8 @@
 package com.codeazur.as3swf.tags
 
 import com.codeazur.as3swf.SWFData
+import com.codeazur.as3swf.data.SWFRectangle
+import com.codeazur.as3swf.data.SWFShapeWithStyle
 import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
@@ -566,7 +568,7 @@ class TagDefineEditText : _BaseTag(), IDefinitionTag {
 		const val TYPE = 37
 	}
 
-	lateinit var bounds: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var bounds: SWFRectangle
 	var variableName: String? = null
 
 	var hasText: Boolean = false
@@ -725,7 +727,7 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitio
 
 	val codeTable = java.util.ArrayList<Int>()
 	val fontAdvanceTable = java.util.ArrayList<Int>()
-	val fontBoundsTable = java.util.ArrayList<com.codeazur.as3swf.data.SWFRectangle>()
+	val fontBoundsTable = java.util.ArrayList<SWFRectangle>()
 	val fontKerningTable = java.util.ArrayList<com.codeazur.as3swf.data.SWFKerningRecord>()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
@@ -819,7 +821,7 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitio
 		if (fontBoundsTable.size > 0) {
 			var hasNonNullBounds: Boolean = false
 			for (i in 0 until fontBoundsTable.size) {
-				val rect: com.codeazur.as3swf.data.SWFRectangle = fontBoundsTable[i]
+				val rect: SWFRectangle = fontBoundsTable[i]
 				if (rect.xmin != 0 || rect.xmax != 0 || rect.ymin != 0 || rect.ymax != 0) {
 					hasNonNullBounds = true
 					break
@@ -938,7 +940,7 @@ class TagDefineFontAlignZones : _BaseTag(), ITag {
 			"CSMTableHint: " + com.codeazur.as3swf.data.consts.CSMTableHint.toString(csmTableHint) + ", " +
 			"Records: " + _zoneTable.size
 		for (i in 0 until _zoneTable.size) {
-			str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + _zoneTable[i].toString(indent + 2)
+			str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + _zoneTable[i].toString()
 		}
 		return str
 	}
@@ -1068,8 +1070,8 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		const val TYPE = 46
 	}
 
-	lateinit var startBounds: com.codeazur.as3swf.data.SWFRectangle
-	lateinit var endBounds: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var startBounds: SWFRectangle
+	lateinit var endBounds: SWFRectangle
 	lateinit var startEdges: com.codeazur.as3swf.data.SWFShape
 	lateinit var endEdges: com.codeazur.as3swf.data.SWFShape
 
@@ -1216,8 +1218,8 @@ class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 		const val TYPE = 84
 	}
 
-	lateinit var startEdgeBounds: com.codeazur.as3swf.data.SWFRectangle
-	lateinit var endEdgeBounds: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var startEdgeBounds: SWFRectangle
+	lateinit var endEdgeBounds: SWFRectangle
 	var usesNonScalingStrokes: Boolean = false
 	var usesScalingStrokes: Boolean = false
 
@@ -1288,7 +1290,7 @@ class TagDefineScalingGrid : _BaseTag(), IDefinitionTag {
 		const val TYPE = 78
 	}
 
-	lateinit var splitter: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var splitter: SWFRectangle
 
 	override var characterId: Int = 0
 
@@ -1360,8 +1362,8 @@ open class TagDefineShape : _BaseTag(), IDefinitionTag {
 		const val TYPE = 2
 	}
 
-	lateinit var shapeBounds: com.codeazur.as3swf.data.SWFRectangle
-	lateinit var shapes: com.codeazur.as3swf.data.SWFShapeWithStyle
+	lateinit var shapeBounds: SWFRectangle
+	lateinit var shapes: SWFShapeWithStyle
 
 	override var characterId: Int = 0
 
@@ -1432,7 +1434,7 @@ class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), IDefinitionT
 		const val TYPE = 83
 	}
 
-	lateinit var edgeBounds: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var edgeBounds: SWFRectangle
 	var usesFillWindingRule: Boolean = false
 	var usesNonScalingStrokes: Boolean = false
 	var usesScalingStrokes: Boolean = false
@@ -1647,7 +1649,7 @@ open class TagDefineText : _BaseTag(), IDefinitionTag {
 		const val TYPE = 11
 	}
 
-	lateinit var textBounds: com.codeazur.as3swf.data.SWFRectangle
+	lateinit var textBounds: SWFRectangle
 	lateinit var textMatrix: com.codeazur.as3swf.data.SWFMatrix
 
 	override var characterId: Int = 0

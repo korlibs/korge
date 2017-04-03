@@ -19,8 +19,8 @@ dependencies {
 
 jtransc {
     assets = ["korge-sample/resources"]
-    minimizeNames = true
-    //minimizeNames = false
+    //minimizeNames = true
+    minimizeNames = false
     treeshaking = true
     //treeshaking = false
 }

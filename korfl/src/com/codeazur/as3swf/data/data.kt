@@ -1016,37 +1016,6 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 
 	protected var edgeMapsCreated: Boolean = false
 
-	fun getMaxFillStyleIndex(): Int {
-		var ret: Int = 0
-		for (i in 0 until records.size) {
-			val shapeRecord: SWFShapeRecord = records[i]
-			if (shapeRecord.type == SWFShapeRecord.TYPE_STYLECHANGE) {
-				val shapeRecordStyleChange: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
-				if (shapeRecordStyleChange.fillStyle0 > ret) ret = shapeRecordStyleChange.fillStyle0
-				if (shapeRecordStyleChange.fillStyle1 > ret) ret = shapeRecordStyleChange.fillStyle1
-				if (shapeRecordStyleChange.stateNewStyles) break
-			}
-		}
-		return ret
-	}
-
-	fun getMaxLineStyleIndex(): Int {
-		var ret: Int = 0
-		for (i in 0 until records.size) {
-			val shapeRecord: SWFShapeRecord = records[i]
-			if (shapeRecord.type == SWFShapeRecord.TYPE_STYLECHANGE) {
-				val shapeRecordStyleChange: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
-				if (shapeRecordStyleChange.lineStyle > ret) {
-					ret = shapeRecordStyleChange.lineStyle
-				}
-				if (shapeRecordStyleChange.stateNewStyles) {
-					break
-				}
-			}
-		}
-		return ret
-	}
-
 	open fun parse(data: SWFData, level: Int = 1): Unit {
 		data.resetBitsPending()
 		val numFillBits: Int = data.readUB(4)
@@ -1634,15 +1603,6 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		return len
 	}
 
-	protected fun writeStyleArrayLength(data: SWFData, length: Int, level: Int = 1): Unit {
-		if (level >= 2 && length > 0xfe) {
-			data.writeUI8(0xff)
-			data.writeUI16(length)
-		} else {
-			data.writeUI8(length)
-		}
-	}
-
 	override fun toString(indent: Int): String {
 		var str: String = "[SWFShapeRecordStyleChange] "
 		val cmds = arrayListOf<String>()
@@ -1715,31 +1675,14 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 		}
 		return len
 	}
-
-	protected fun writeStyleArrayLength(data: SWFData, length: Int, level: Int = 1): Unit {
-		if (level >= 2 && length > 0xfe) {
-			data.writeUI8(0xff)
-			data.writeUI16(length)
-		} else {
-			data.writeUI8(length)
-		}
-	}
 }
 
-class SWFSoundEnvelope {
-	var pos44: Int = 0
-	var leftLevel: Int = 0
+data class SWFSoundEnvelope(
+	var pos44: Int = 0,
+	var leftLevel: Int = 0,
 	var rightLevel: Int = 0
-
-	fun parse(data: SWFData): Unit {
-		pos44 = data.readUI32()
-		leftLevel = data.readUI16()
-		rightLevel = data.readUI16()
-	}
-
-	override fun toString(): String {
-		return "[SWFSoundEnvelope]"
-	}
+) {
+	constructor(data: SWFData) : this(data.readUI32(), data.readUI16(), data.readUI16())
 }
 
 class SWFSoundInfo {
@@ -1776,16 +1719,8 @@ class SWFSoundInfo {
 	override fun toString(): String = "[SWFSoundInfo]"
 }
 
-class SWFSymbol {
-	var tagId: Int = 0
-	var name: String? = null
-
-	fun parse(data: SWFData): Unit {
-		tagId = data.readUI16()
-		name = data.readString()
-	}
-
-	override fun toString(): String = "TagID: $tagId, Name: $name"
+data class SWFSymbol(var tagId: Int = 0, var name: String? = null) {
+	constructor(data: SWFData) : this(data.readUI16(), data.readString())
 }
 
 class SWFTextRecord {
@@ -1813,35 +1748,12 @@ class SWFTextRecord {
 		hasColor = ((styles and 0x04) != 0)
 		hasYOffset = ((styles and 0x02) != 0)
 		hasXOffset = ((styles and 0x01) != 0)
-		if (hasFont) {
-			fontId = data.readUI16()
-		} else if (previousRecord != null) {
-			fontId = previousRecord.fontId
-		}
-		if (hasColor) {
-			textColor = if (level < 2) data.readRGB() else data.readRGBA()
-		} else if (previousRecord != null) {
-			textColor = previousRecord.textColor
-		}
-		if (hasXOffset) {
-			xOffset = data.readSI16()
-		} else if (previousRecord != null) {
-			xOffset = previousRecord.xOffset
-		}
-		if (hasYOffset) {
-			yOffset = data.readSI16()
-		} else if (previousRecord != null) {
-			yOffset = previousRecord.yOffset
-		}
-		if (hasFont) {
-			textHeight = data.readUI16()
-		} else if (previousRecord != null) {
-			textHeight = previousRecord.textHeight
-		}
-		val glyphCount: Int = data.readUI8()
-		for (i in 0 until glyphCount) {
-			glyphEntries.add(data.readGLYPHENTRY(glyphBits, advanceBits))
-		}
+		fontId = if (hasFont) data.readUI16() else previousRecord?.fontId ?: fontId
+		textColor = if (hasColor) (if (level < 2) data.readRGB() else data.readRGBA()) else previousRecord?.textColor ?: textColor
+		xOffset = if (hasXOffset) data.readSI16() else previousRecord?.xOffset ?: xOffset
+		yOffset = if (hasYOffset) data.readSI16() else previousRecord?.yOffset ?: yOffset
+		textHeight = if (hasFont) data.readUI16() else previousRecord?.textHeight ?: textHeight
+		for (i in 0 until data.readUI8()) glyphEntries.add(data.readGLYPHENTRY(glyphBits, advanceBits))
 	}
 
 	fun toString(indent: Int = 0): String {
@@ -1856,37 +1768,18 @@ class SWFTextRecord {
 	}
 }
 
-class SWFZoneData {
-	var alignmentCoordinate: Double = 0.0
-	var range = 0.0
-
-	fun parse(data: SWFData): Unit {
-		alignmentCoordinate = data.readFLOAT16()
-		range = data.readFLOAT16()
-	}
-
-	override fun toString(): String = "($alignmentCoordinate,$range)"
+data class SWFZoneData(var alignmentCoordinate: Double, var range: Double) {
+	constructor(data: SWFData) : this(data.readFLOAT16(), data.readFLOAT16())
 }
 
-class SWFZoneRecord {
-	var maskX: Boolean = false
-	var maskY: Boolean = false
+class SWFZoneRecord(var zoneData: List<SWFZoneData>, var mask: Int) {
+	val maskX: Boolean get() = ((mask and 0x01) != 0)
+	val maskY: Boolean get() = ((mask and 0x02) != 0)
 
-	var zoneData = ArrayList<com.codeazur.as3swf.data.SWFZoneData>()
-
-	fun parse(data: SWFData): Unit {
-		val numZoneData: Int = data.readUI8()
-		for (i in 0 until numZoneData) zoneData.add(data.readZONEDATA())
-		val mask: Int = data.readUI8()
-		maskX = ((mask and 0x01) != 0)
-		maskY = ((mask and 0x02) != 0)
-	}
-
-	fun toString(indent: Int = 0): String {
-		var str: String = "MaskY: $maskY, MaskX: $maskX"
-		for (i in 0 until zoneData.size) str += ", $i: ${zoneData[i]}"
-		return str
-	}
+	constructor(data: SWFData) : this(
+		(0 until data.readUI8()).map { data.readZONEDATA() },
+		data.readUI8()
+	)
 }
 
 enum class GradientType { LINEAR, RADIAL }

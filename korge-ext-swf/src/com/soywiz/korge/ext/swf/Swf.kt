@@ -481,7 +481,7 @@ fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(1
 
 class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() {
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-	val image = NativeImage(bounds.width.toIntCeil(), bounds.height.toIntCeil())
+	val image = NativeImage(Math.max(1, bounds.width.toIntCeil()), Math.max(1, bounds.height.toIntCeil()))
 	val path = GraphicsPath()
 	var processingFills = false
 
