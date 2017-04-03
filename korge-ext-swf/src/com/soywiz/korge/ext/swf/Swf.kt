@@ -17,15 +17,13 @@ import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
-import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
@@ -106,9 +104,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		swf = SWF().loadBytes(data)
 		lib = AnLibrary(views, swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
+		for (symbol in symbols) lib.addSymbol(symbol)
 		processAs3Actions()
 		generateTextures()
 		generateActualTimelines()
+		lib.processSymbolNames()
 		return lib
 	}
 
@@ -177,6 +177,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 	suspend private fun processAs3Actions() {
 		for ((className, tagId) in classNameToTagId) {
+			lib.symbolsById[tagId].name = className
 			val type = classNameToTypes[className] ?: continue
 			val symbol = (lib.symbolsById[tagId] as AnSymbolMovieClip?) ?: continue
 			val abc = type.abc
@@ -263,15 +264,18 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt())
 	}
 
+	val symbols = arrayListOf<AnSymbol>()
+
 	fun registerBitmap(charId: Int, bmp: Bitmap, name: String? = null) {
 		swf.bitmaps[charId] = bmp
-		lib.addSymbol(AnSymbolBitmap(charId, name, bmp))
+		symbols += AnSymbolBitmap(charId, name, bmp)
+
 
 		//showImageAndWait(bmp)
 	}
 
 	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
-		lib.addSymbol(mc)
+		symbols += mc
 
 		val swfTimeline = mc.swfTimeline
 		val labelsToFrame0 = mc.labelsToFrame0
@@ -349,7 +353,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagDefineFontAlignZones -> {
 				}
 				is TagDefineEditText -> {
-					lib.addSymbol(AnTextFieldSymbol(it.characterId, "unknown", it.initialText ?: "", it.bounds.rect))
+					symbols += AnTextFieldSymbol(it.characterId, null, it.initialText ?: "", it.bounds.rect)
 				}
 				is TagCSMTextSettings -> {
 				}
@@ -374,7 +378,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 						e.printStackTrace()
 						null
 					}
-					lib.addSymbol(AnSymbolSound(it.characterId, "unknown", audioData))
+					symbols += AnSymbolSound(it.characterId, null, audioData)
 					//LocalVfs("c:/temp/temp.mp3").write()
 				}
 				is TagStartSound -> {
@@ -387,7 +391,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					when (it) {
 						is TagDefineBitsJPEG2 -> {
 							val bitsData = it.bitmapData.cloneToNewByteArray()
-							val bmp = bitsData.openAsync().readBitmap().toBMP32()
+							val nativeBitmap = bitsData.openAsync().readBitmap()
+							//println(nativeBitmap)
+							val bmp = nativeBitmap.toBMP32()
 							fbmp = bmp
 
 							if (it is TagDefineBitsJPEG3) {
@@ -396,11 +402,16 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 								val maskinfo = fmaskinfo.cloneToNewByteArray()
 								//val bmpAlpha = nativeImageFormatProvider.decode(maskinfo)
 								//showImageAndWait(bmpAlpha)
-								for (n in 0 until bmp.area) {
-									bmp.data[n] = (bmp.data[n] and 0xFFFFFF) or (maskinfo.getu(n) shl 24)
-								}
-								//println(maskinfo)
+								bmp.writeChannel(BitmapChannel.ALPHA, Bitmap8(bmp.width, bmp.height, maskinfo))
 							}
+
+							//showImageAndWait(bmp)
+
+							//println(bmp)
+							//for (y in 0 until bmp.height) {
+							//	for (x in 0 until bmp.width) System.out.printf("%08X,", bmp[x, y])
+							//	println()
+							//}
 						}
 						is TagDefineBitsLossless -> {
 							val isRgba = it.hasAlpha
@@ -425,13 +436,13 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 						}
 					}
 
-					registerBitmap(it.characterId, fbmp, "unknown")
+					registerBitmap(it.characterId, fbmp, null)
 				}
 				is TagDefineShape -> {
 					val rasterizer = SWFShapeRasterizer(swf, it.shapeBounds.rect)
 					it.export(if (debug) LoggerShapeExporter(rasterizer) else rasterizer)
-					val symbol = AnSymbolShape(it.characterId, "unknown", rasterizer.bounds, null, rasterizer.path)
-					lib.addSymbol(symbol)
+					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
+					symbols += symbol
 					shapesToPopulate += symbol to rasterizer
 				}
 				is TagDoABC -> {
@@ -441,7 +452,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					classNameToTagId += it.symbols.filter { it.name != null }.map { it.name!! to it.tagId }.toMap()
 				}
 				is TagDefineSprite -> {
-					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, "unknown", findLimits(it.tags)))
+					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, null, findLimits(it.tags)))
 				}
 				is TagPlaceObject -> {
 					val depth = depths[it.depth0]
@@ -562,6 +573,7 @@ class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() 
 	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
 		ctx.fillStyle = Context2d.BitmapPaint(bmp, matrix, repeat, smooth)
+		//println(matrix)
 		//ctx.fillStyle = Context2d.Bitmap()
 		//super.beginBitmapFill(bitmapId, matrix, repeat, smooth)
 	}

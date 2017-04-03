@@ -12,7 +12,7 @@ import com.soywiz.korma.geom.Rectangle
 
 open class AnSymbol(
 	val id: Int = 0,
-	val name: String? = null
+	var name: String? = null
 ) : Extra by Extra.Mixin() {
 	open fun create(library: AnLibrary): AnElement = TODO()
 }
@@ -91,7 +91,10 @@ class AnLibrary(val views: Views, val fps: Double) {
 	fun addSymbol(symbol: AnSymbol) {
 		while (symbolsById.size <= symbol.id) symbolsById += AnSymbolEmpty
 		symbolsById[symbol.id] = symbol
-		if (symbol.name != null) symbolsByName[symbol.name] = symbol
+	}
+
+	fun processSymbolNames() {
+		for (symbol in symbolsById) if (symbol.name != null) symbolsByName[symbol.name!!] = symbol
 	}
 
 	fun create(id: Int) = symbolsById[id].create(this)

@@ -30,6 +30,8 @@ object Sample1Module : Module() {
 	override val title = "Sample1"
 	override val icon = "kotlin8.png"
 	override var mainScene = Sample1Scene::class.java
+	//override var mainScene = Sample2Scene::class.java
+
 }
 
 class MouseSampleController(view: View) : Component(view) {
@@ -43,6 +45,16 @@ class MouseSampleController(view: View) : Component(view) {
 }
 
 fun View.mouseSampleController() = this.apply { MouseSampleController(this).attach() }
+
+class Sample2Scene(
+	@Path("test4.swf") val test4Library: SwfLibrary
+) : Scene() {
+	suspend override fun init() {
+		super.init()
+
+		this.root += test4Library.an.createMainTimeLine()
+	}
+}
 
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
