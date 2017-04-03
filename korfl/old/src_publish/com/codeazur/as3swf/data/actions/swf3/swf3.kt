@@ -18,6 +18,13 @@ class ActionGetURL(code: Int, length: Int, pos: Int) : Action(code, length, pos)
 		targetString = data.readString()
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeString(urlString)
+		body.writeString(targetString)
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionGetURL(code, length, pos)
 		action.urlString = urlString
@@ -40,6 +47,12 @@ class ActionGotoFrame(code: Int, length: Int, pos: Int) : Action(code, length, p
 		frame = data.readUI16()
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUI16(frame)
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionGotoFrame(code, length, pos)
 		action.frame = frame
@@ -59,6 +72,12 @@ class ActionGotoLabel(code: Int, length: Int, pos: Int) : Action(code, length, p
 
 	override fun parse(data: SWFData): Unit {
 		label = data.readString()
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeString(label)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {
@@ -110,6 +129,12 @@ class ActionSetTarget(code: Int, length: Int, pos: Int) : Action(code, length, p
 		targetName = data.readString()
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeString(targetName)
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionSetTarget(code, length, pos)
 		action.targetName = targetName
@@ -158,6 +183,13 @@ class ActionWaitForFrame(code: Int, length: Int, pos: Int) : Action(code, length
 	override fun parse(data: SWFData): Unit {
 		frame = data.readUI16()
 		skipCount = data.readUI8()
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUI16(frame)
+		body.writeUI8(skipCount)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {

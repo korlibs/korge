@@ -16,6 +16,7 @@ interface ITag {
 	val level: Int
 
 	suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean = false)
+	suspend fun publish(data: SWFData, version: Int)
 	fun toString(indent: Int = 0, flags: Int = 0): String
 }
 
@@ -61,13 +62,24 @@ class TagCSMTextSettings : _BaseTag() {
 		data.readUI8() // reserved, always 0
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagCSMTextSettings.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 12)
+		data.writeUI16(textId)
+		data.writeUB(2, useFlashType)
+		data.writeUB(3, gridFit)
+		data.writeUB(3, 0) // reserved, always 0
+		data.writeFIXED(thickness)
+		data.writeFIXED(sharpness)
+		data.writeUI8(0) // reserved, always 0
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagCSMTextSettings.Companion.TYPE
 	override val name = "CSMTextSettings"
 	override val version = 8
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"TextID: " + textId + ", " +
 			"UseFlashType: " + useFlashType + ", " +
 			"GridFit: " + gridFit + ", " +
@@ -89,13 +101,20 @@ class TagDebugID : _BaseTag() {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDebugID.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, uuid.length)
+		if (uuid.length > 0) {
+			data.writeBytes(uuid)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDebugID.Companion.TYPE
 	override val name = "DebugID"
 	override val version = 6
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) + "UUID: "
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "UUID: "
 		if (uuid.length == 16) {
 			str += "%02x%02x%02x%02x-".format(uuid[0], uuid[1], uuid[2], uuid[3])
 			str += "%02x%02x-".format(uuid[4], uuid[5])
@@ -126,6 +145,17 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI32(0) // reserved, always 0
+		if (binaryData.length > 0) {
+			body.writeBytes(binaryData)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBinaryData = com.codeazur.as3swf.tags.TagDefineBinaryData()
 		tag.characterId = characterId
@@ -135,13 +165,13 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBinaryData.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineBinaryData.Companion.TYPE
 	override val name = "DefineBinaryData"
 	override val version = 9
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Length: " + binaryData.length
 	}
@@ -162,6 +192,14 @@ open class TagDefineBits : _BaseTag(), IDefinitionTag {
 		characterId = data.readUI16()
 		if (length > 2) {
 			data.readBytes(bitmapData, 0, length - 2)
+		}
+	}
+
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, bitmapData.length + 2, true)
+		data.writeUI16(characterId)
+		if (bitmapData.length > 0) {
+			data.writeBytes(bitmapData)
 		}
 	}
 
@@ -194,13 +232,13 @@ open class TagDefineBits : _BaseTag(), IDefinitionTag {
 	}
 	*/
 
-	override val type = TagDefineBits.TYPE
+	override val type = TagDefineBits.Companion.TYPE
 	override val name = "DefineBits"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"BitmapLength: " + bitmapData.length
 	}
@@ -232,13 +270,13 @@ open class TagDefineBitsJPEG2 : TagDefineBits(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG2.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG2.Companion.TYPE
 	override val name = "DefineBitsJPEG2"
 	override val version = if (bitmapType == com.codeazur.as3swf.data.consts.BitmapType.JPEG) 2 else 8
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Type: " + com.codeazur.as3swf.data.consts.BitmapType.toString(bitmapType) + ", " +
 			"BitmapLength: " + bitmapData.length
@@ -270,6 +308,18 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), I
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, bitmapData.length + bitmapAlphaData.length + 6, true)
+		data.writeUI16(characterId)
+		data.writeUI32(bitmapData.length)
+		if (bitmapData.length > 0) {
+			data.writeBytes(bitmapData)
+		}
+		if (bitmapAlphaData.length > 0) {
+			data.writeBytes(bitmapAlphaData)
+		}
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG3 = com.codeazur.as3swf.tags.TagDefineBitsJPEG3()
 		tag.characterId = characterId
@@ -283,7 +333,7 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), I
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG3.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG3.Companion.TYPE
 	override val name = "DefineBitsJPEG3"
 	override val version = if (bitmapType == com.codeazur.as3swf.data.consts.BitmapType.JPEG) 3 else 8
 	override val level = 3
@@ -324,6 +374,19 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefin
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, bitmapData.length + bitmapAlphaData.length + 6, true)
+		data.writeUI16(characterId)
+		data.writeUI32(bitmapData.length)
+		data.writeFIXED8(deblockParam)
+		if (bitmapData.length > 0) {
+			data.writeBytes(bitmapData)
+		}
+		if (bitmapAlphaData.length > 0) {
+			data.writeBytes(bitmapAlphaData)
+		}
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineBitsJPEG4 = com.codeazur.as3swf.tags.TagDefineBitsJPEG4()
 		tag.characterId = characterId
@@ -338,13 +401,13 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefin
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG4.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineBitsJPEG4.Companion.TYPE
 	override val name = "DefineBitsJPEG4"
 	override val version = 10
 	override val level = 4
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Type: " + com.codeazur.as3swf.data.consts.BitmapType.toString(bitmapType) + ", " +
 			"DeblockParam: " + deblockParam + ", " +
@@ -379,6 +442,18 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 		data.readBytes(zlibBitmapData, 0, length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7))
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI8(bitmapFormat.id)
+		body.writeUI16(bitmapWidth)
+		body.writeUI16(bitmapHeight)
+		if (bitmapFormat == BitmapFormat.BIT_8) body.writeUI8(bitmapColorTableSize)
+		if (zlibBitmapData.length > 0) body.writeBytes(zlibBitmapData)
+		data.writeTagHeader(type, body.length, true)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag = TagDefineBitsLossless()
 		tag.characterId = characterId
@@ -389,7 +464,7 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = TagDefineBitsLossless.TYPE
+	override val type = TagDefineBitsLossless.Companion.TYPE
 	override val name = "DefineBitsLossless"
 	override val version = 2
 	override val level = 1
@@ -453,8 +528,23 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 			if (action == null) break
 			actions.add(action)
 		}
-		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
+		labelCount = com.codeazur.as3swf.data.actions.Action.Companion.resolveOffsets(actions)
 		processRecords()
+	}
+
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body = SWFData()
+		body.writeUI16(characterId)
+		for (i in 0 until characters.size) {
+			data.writeBUTTONRECORD(characters[i])
+		}
+		data.writeUI8(0)
+		for (i in 0 until actions.size) {
+			data.writeACTIONRECORD(actions[i])
+		}
+		data.writeUI8(0)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
 	}
 
 	override fun clone(): IDefinitionTag {
@@ -473,7 +563,7 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 		return frames[state] as java.util.ArrayList<com.codeazur.as3swf.data.SWFButtonRecord>
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineButton.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineButton.Companion.TYPE
 	override val name = "DefineButton"
 	override val version = 1
 	override val level = 1
@@ -490,14 +580,14 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId
 		if (characters.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Characters:"
@@ -507,7 +597,7 @@ class TagDefineButton : _BaseTag(), IDefinitionTag {
 		}
 		if (actions.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Actions:"
-			if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+			if ((flags and com.codeazur.as3swf.SWF.Companion.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 				for (i in 0 until actions.size) {
 					str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + actions[i].toString(indent + 4)
 				}
@@ -559,6 +649,30 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 		processRecords()
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI8(trackAsMenu)
+		val hasCondActions: Boolean = (condActions.size > 0)
+		val buttonRecordsBytes: SWFData = SWFData()
+		for (i in 0 until characters.size) {
+			buttonRecordsBytes.writeBUTTONRECORD(characters[i], 2)
+		}
+		buttonRecordsBytes.writeUI8(0)
+		body.writeUI16(if (hasCondActions) buttonRecordsBytes.length + 2 else 0)
+		body.writeBytes(buttonRecordsBytes)
+		if (hasCondActions) {
+			for (i in 0 until condActions.size) {
+				val condActionBytes: SWFData = SWFData()
+				condActionBytes.writeBUTTONCONDACTION(condActions[i])
+				body.writeUI16(if (i < condActions.size - 1) condActionBytes.length + 2 else 0)
+				body.writeBytes(condActionBytes)
+			}
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineButton2 = com.codeazur.as3swf.tags.TagDefineButton2()
 		tag.characterId = characterId
@@ -574,7 +688,7 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 		return frames[state]!!
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineButton2.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineButton2.Companion.TYPE
 	override val name = "DefineButton2"
 	override val version = 3
 	override val level = 2
@@ -591,14 +705,14 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
-		frames[com.codeazur.as3swf.tags.TagDefineButton.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_UP] = java.util.ArrayList(upState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_OVER] = java.util.ArrayList(overState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_DOWN] = java.util.ArrayList(downState.sortedBy { it.placeDepth })
+		frames[com.codeazur.as3swf.tags.TagDefineButton.Companion.STATE_HIT] = java.util.ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", TrackAsMenu: " + trackAsMenu
 		if (characters.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Characters:"
@@ -630,6 +744,14 @@ class TagDefineButtonCxform : _BaseTag(), IDefinitionTag {
 		buttonColorTransform = data.readCXFORM()
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeCXFORM(buttonColorTransform)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineButtonCxform()
 		tag.characterId = characterId
@@ -637,13 +759,13 @@ class TagDefineButtonCxform : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineButtonCxform.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineButtonCxform.Companion.TYPE
 	override val name = "DefineButtonCxform"
 	override val version = 2
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"ColorTransform: " + buttonColorTransform
 		return str
@@ -686,6 +808,21 @@ class TagDefineButtonSound : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI16(buttonSoundChar0)
+		if (buttonSoundChar0 != 0) body.writeSOUNDINFO(buttonSoundInfo0)
+		body.writeUI16(buttonSoundChar1)
+		if (buttonSoundChar1 != 0) body.writeSOUNDINFO(buttonSoundInfo1)
+		body.writeUI16(buttonSoundChar2)
+		if (buttonSoundChar2 != 0) body.writeSOUNDINFO(buttonSoundInfo2)
+		body.writeUI16(buttonSoundChar3)
+		if (buttonSoundChar3 != 0) body.writeSOUNDINFO(buttonSoundInfo3)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineButtonSound()
 		tag.characterId = characterId
@@ -700,13 +837,13 @@ class TagDefineButtonSound : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineButtonSound.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineButtonSound.Companion.TYPE
 	override val name = "DefineButtonSound"
 	override val version = 2
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ButtonID: " + characterId + ", " +
 			"ButtonSoundChars: " + buttonSoundChar0 + "," + buttonSoundChar1 + "," + buttonSoundChar2 + "," + buttonSoundChar3
 		return str
@@ -791,6 +928,48 @@ class TagDefineEditText : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(bounds)
+		var flags1: Int = 0
+		if (hasText) flags1 = flags1 or 0x80
+		if (wordWrap) flags1 = flags1 or 0x40
+		if (multiline) flags1 = flags1 or 0x20
+		if (password) flags1 = flags1 or 0x10
+		if (readOnly) flags1 = flags1 or 0x08
+		if (hasTextColor) flags1 = flags1 or 0x04
+		if (hasMaxLength) flags1 = flags1 or 0x02
+		if (hasFont) flags1 = flags1 or 0x01
+		body.writeUI8(flags1)
+		var flags2: Int = 0
+		if (hasFontClass) flags2 = flags2 or 0x80
+		if (autoSize) flags2 = flags2 or 0x40
+		if (hasLayout) flags2 = flags2 or 0x20
+		if (noSelect) flags2 = flags2 or 0x10
+		if (border) flags2 = flags2 or 0x08
+		if (wasStatic) flags2 = flags2 or 0x04
+		if (html) flags2 = flags2 or 0x02
+		if (useOutlines) flags2 = flags2 or 0x01
+		body.writeUI8(flags2)
+		if (hasFont) body.writeUI16(fontId)
+		if (hasFontClass) body.writeString(fontClass)
+		if (hasFont) body.writeUI16(fontHeight)
+		if (hasTextColor) body.writeRGBA(textColor)
+		if (hasMaxLength) body.writeUI16(maxLength)
+		if (hasLayout) {
+			body.writeUI8(align)
+			body.writeUI16(leftMargin)
+			body.writeUI16(rightMargin)
+			body.writeUI16(indent)
+			body.writeSI16(leading)
+		}
+		body.writeString(variableName)
+		if (hasText) body.writeString(initialText)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineEditText()
 		tag.characterId = characterId
@@ -826,13 +1005,13 @@ class TagDefineEditText : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineEditText.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineEditText.Companion.TYPE
 	override val name = "DefineEditText"
 	override val version = 4
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			(if (hasText && initialText!!.isNotEmpty()) "Text: " + initialText + ", " else "") +
 			(if (variableName!!.isNotEmpty()) "VariableName: " + variableName + ", " else "") +
@@ -863,13 +1042,36 @@ open class TagDefineFont : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		var prevPtr: Int = 0
+		val len: Int = glyphShapeTable.size
+		val shapeTable: SWFData = SWFData()
+		body.writeUI16(characterId)
+		val offsetTableLength: Int = (len shl 1)
+		for (i in 0 until len) {
+			// Write out the offset table for the current glyph
+			body.writeUI16(shapeTable.position + offsetTableLength)
+			// Serialize the glyph's shape to a separate bytearray
+			shapeTable.writeSHAPE(glyphShapeTable[i])
+		}
+		// Now concatenate the glyph shape table to the end (after
+		// the offset table that we were previously writing inside
+		// the for loop above).
+		body.writeBytes(shapeTable)
+		// Now write the tag with the known body length, and the
+		// actual contents out to the provided SWFData instance.
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag = throw(Error("Not implemented yet."))
 
 	fun export(handler: ShapeExporter, glyphIndex: Int): Unit {
 		glyphShapeTable[glyphIndex].export(handler)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFont.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineFont.Companion.TYPE
 	override val name = "DefineFont"
 	override val version = 1
 	override val level = 1
@@ -877,7 +1079,7 @@ open class TagDefineFont : _BaseTag(), IDefinitionTag {
 	protected open val unitDivisor = 1.0
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Glyphs: " + glyphShapeTable.size
 		return str + toStringCommon(indent)
@@ -963,13 +1165,90 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitio
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFont2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		val numGlyphs: Int = glyphShapeTable.size
+		body.writeUI16(characterId)
+		var flags: Int = 0
+		if (hasLayout) flags = flags or 0x80
+		if (shiftJIS) flags = flags or 0x40
+		if (smallText) flags = flags or 0x20
+		if (ansi) flags = flags or 0x10
+		if (wideOffsets) flags = flags or 0x08
+		if (wideCodes) flags = flags or 0x04
+		if (italic) flags = flags or 0x02
+		if (bold) flags = flags or 0x01
+		body.writeUI8(flags)
+		body.writeLANGCODE(languageCode)
+		val fontNameRaw: FlashByteArray = FlashByteArray()
+		fontNameRaw.writeUTFBytes(fontName)
+		body.writeUI8(fontNameRaw.length)
+		body.writeBytes(fontNameRaw)
+		body.writeUI16(numGlyphs)
+		if (numGlyphs > 0) {
+			val offsetTableLength: Int = (numGlyphs shl (if (wideOffsets) 2 else 1))
+			val codeTableOffsetLength: Int = (if (wideOffsets) 4 else 2)
+			var codeTableLength: Int = (if (wideOffsets) (numGlyphs shl 1) else numGlyphs)
+			val offset: Int = offsetTableLength + codeTableOffsetLength
+			val shapeTable: SWFData = SWFData()
+			for (i in 0 until numGlyphs) {
+				// Write out the offset table for the current glyph
+				if (wideOffsets) {
+					body.writeUI32(offset + shapeTable.position)
+				} else {
+					body.writeUI16(offset + shapeTable.position)
+				}
+				// Serialize the glyph's shape to a separate bytearray
+				shapeTable.writeSHAPE(glyphShapeTable[i])
+			}
+			// Code table offset
+			if (wideOffsets) {
+				body.writeUI32(offset + shapeTable.length)
+			} else {
+				body.writeUI16(offset + shapeTable.length)
+			}
+			// Now concatenate the glyph shape table to the end (after
+			// the offset table that we were previously writing inside
+			// the for loop above).
+			body.writeBytes(shapeTable)
+			// Write the code table
+			for (i in 0 until numGlyphs) {
+				if (wideCodes) {
+					body.writeUI16(codeTable[i])
+				} else {
+					body.writeUI8(codeTable[i])
+				}
+			}
+		}
+		if (hasLayout) {
+			body.writeUI16(ascent)
+			body.writeUI16(descent)
+			body.writeSI16(leading)
+			for (i in 0 until numGlyphs) {
+				body.writeSI16(fontAdvanceTable[i])
+			}
+			for (i in 0 until numGlyphs) {
+				body.writeRECT(fontBoundsTable[i])
+			}
+			val kerningCount: Int = fontKerningTable.size
+			body.writeUI16(kerningCount)
+			for (i in 0 until kerningCount) {
+				body.writeKERNINGRECORD(fontKerningTable[i], wideCodes)
+			}
+		}
+		// Now write the tag with the known body length, and the
+		// actual contents out to the provided SWFData instance.
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineFont2.Companion.TYPE
 	override val name = "DefineFont2"
 	override val version = 3
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"FontName: " + fontName + ", " +
 			"Italic: " + italic + ", " +
@@ -1036,7 +1315,7 @@ class TagDefineFont3 : com.codeazur.as3swf.tags.TagDefineFont2(), IDefinitionTag
 		const val TYPE = 75
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFont3.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineFont3.Companion.TYPE
 	override val name = "DefineFont3"
 	override val version = 8
 	override val level = 2
@@ -1044,7 +1323,7 @@ class TagDefineFont3 : com.codeazur.as3swf.tags.TagDefineFont2(), IDefinitionTag
 	override val unitDivisor = 20.0
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"FontName: " + fontName + ", " +
 			"Italic: " + italic + ", " +
@@ -1081,6 +1360,28 @@ class TagDefineFont4 : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		var flags: Int = 0
+		if (hasFontData) {
+			flags = flags or 0x04
+		}
+		if (italic) {
+			flags = flags or 0x02
+		}
+		if (bold) {
+			flags = flags or 0x01
+		}
+		body.writeUI8(flags)
+		body.writeString(fontName)
+		if (hasFontData && fontData.length > 0) {
+			body.writeBytes(fontData)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineFont4 = com.codeazur.as3swf.tags.TagDefineFont4()
 		tag.characterId = characterId
@@ -1094,13 +1395,13 @@ class TagDefineFont4 : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFont4.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineFont4.Companion.TYPE
 	override val name = "DefineFont4"
 	override val version = 10
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"FontName: " + fontName + ", " +
 			"HasFontData: " + hasFontData + ", " +
@@ -1129,13 +1430,24 @@ class TagDefineFontAlignZones : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFontAlignZones.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(fontId)
+		body.writeUI8(csmTableHint shl 6)
+		for (i in 0 until _zoneTable.size) {
+			body.writeZONERECORD(_zoneTable[i])
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineFontAlignZones.Companion.TYPE
 	override val name = "DefineFontAlignZones"
 	override val version = 8
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"FontID: " + fontId + ", " +
 			"CSMTableHint: " + com.codeazur.as3swf.data.consts.CSMTableHint.toString(csmTableHint) + ", " +
 			"Records: " + _zoneTable.size
@@ -1189,6 +1501,51 @@ open class TagDefineFontInfo : _BaseTag(), ITag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(fontId)
+
+		val fontNameRaw: FlashByteArray = FlashByteArray()
+		fontNameRaw.writeUTFBytes(fontName)
+		body.writeUI8(fontNameRaw.length)
+		body.writeBytes(fontNameRaw)
+
+		var flags: Int = 0
+		if (smallText) {
+			flags = flags or 0x20
+		}
+		if (shiftJIS) {
+			flags = flags or 0x10
+		}
+		if (ansi) {
+			flags = flags or 0x08
+		}
+		if (italic) {
+			flags = flags or 0x04
+		}
+		if (bold) {
+			flags = flags or 0x02
+		}
+		if (wideCodes) {
+			flags = flags or 0x01
+		}
+		body.writeUI8(flags)
+
+		publishLangCode(body)
+
+		val numGlyphs: Int = _codeTable.size
+		for (i in 0 until numGlyphs) {
+			if (wideCodes) {
+				body.writeUI16(_codeTable[i])
+			} else {
+				body.writeUI8(_codeTable[i])
+			}
+		}
+
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	protected open fun parseLangCode(data: SWFData): Unit {
 		// Does nothing here.
 		// Overridden in TagDefineFontInfo2, where it:
@@ -1196,13 +1553,18 @@ open class TagDefineFontInfo : _BaseTag(), ITag {
 		// - sets langCodeLength to 1
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFontInfo.TYPE
+	protected open fun publishLangCode(data: SWFData): Unit {
+		// Does nothing here.
+		// Overridden in TagDefineFontInfo2
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineFontInfo.Companion.TYPE
 	override val name = "DefineFontInfo"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"FontID: " + fontId + ", " +
 			"FontName: " + fontName + ", " +
 			"Italic: " + italic + ", " +
@@ -1221,13 +1583,17 @@ class TagDefineFontInfo2 : com.codeazur.as3swf.tags.TagDefineFontInfo(), ITag {
 		langCodeLength = 1
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFontInfo2.TYPE
+	override fun publishLangCode(data: SWFData): Unit {
+		data.writeUI8(langCode)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineFontInfo2.Companion.TYPE
 	override val name = "DefineFontInfo2"
 	override val version = 6
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"FontID: " + fontId + ", " +
 			"FontName: " + fontName + ", " +
 			"Italic: " + italic + ", " +
@@ -1252,13 +1618,22 @@ class TagDefineFontName : _BaseTag(), ITag {
 		fontCopyright = data.readString()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineFontName.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(fontId)
+		body.writeString(fontName)
+		body.writeString(fontCopyright)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineFontName.Companion.TYPE
 	override val name = "DefineFontName"
 	override val version = 9
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"FontID: " + fontId + ", " +
 			"Name: " + fontName + ", " +
 			"Copyright: " + fontCopyright
@@ -1305,6 +1680,42 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		endEdges = data.readSHAPE()
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(startBounds)
+		body.writeRECT(endBounds)
+		val startBytes: SWFData = SWFData()
+		// MorphFillStyleArray
+		val fillStyleCount: Int = morphFillStyles.size
+		if (fillStyleCount > 0xfe) {
+			startBytes.writeUI8(0xff)
+			startBytes.writeUI16(fillStyleCount)
+		} else {
+			startBytes.writeUI8(fillStyleCount)
+		}
+		for (i in 0 until fillStyleCount) {
+			startBytes.writeMORPHFILLSTYLE(morphFillStyles[i])
+		}
+		// MorphLineStyleArray
+		val lineStyleCount: Int = morphLineStyles.size
+		if (lineStyleCount > 0xfe) {
+			startBytes.writeUI8(0xff)
+			startBytes.writeUI16(lineStyleCount)
+		} else {
+			startBytes.writeUI8(lineStyleCount)
+		}
+		for (i in 0 until lineStyleCount) {
+			startBytes.writeMORPHLINESTYLE(morphLineStyles[i])
+		}
+		startBytes.writeSHAPE(startEdges)
+		body.writeUI32(startBytes.length)
+		body.writeBytes(startBytes)
+		body.writeSHAPE(endEdges)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: TagDefineMorphShape = TagDefineMorphShape()
 		throw(Error("Not implemented yet."))
@@ -1319,7 +1730,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 			// Ignore start records that are style change records and don't have moveTo
 			// The end record index is not incremented, because end records do not have
 			// style change records without moveTo's.
-			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
+			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
 				exportShape.records.add(startRecord.clone())
 				continue
 			}
@@ -1328,20 +1739,20 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 			// It is possible for an edge to change type over the course of a morph sequence.
 			// A straight edge can become a curved edge and vice versa
 			// Convert straight edge to curved edge, if needed:
-			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE) {
+			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE) {
 				endRecord = convertToCurvedEdge(endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
-			} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE) {
+			} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_CURVEDEDGE) {
 				startRecord = convertToCurvedEdge(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
 			}
 			when (startRecord.type) {
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE -> {
+				com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_STYLECHANGE -> {
 					val startStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
 					val endStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
 					startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
 					startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
 					exportRecord = startStyleChange
 				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
+				com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_STRAIGHTEDGE -> {
 					val startStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
 					val endStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
 					startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
@@ -1355,7 +1766,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 					}
 					exportRecord = startStraightEdge
 				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE -> {
+				com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_CURVEDEDGE -> {
 					val startCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
 					val endCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
 					startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
@@ -1364,7 +1775,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 					startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
 					exportRecord = startCurvedEdge
 				}
-				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_END -> {
+				com.codeazur.as3swf.data.SWFShapeRecord.Companion.TYPE_END -> {
 					exportRecord = startRecord.clone()
 				}
 			}
@@ -1388,7 +1799,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		return curvedEdge
 	}
 
-	override val type = TagDefineMorphShape.TYPE
+	override val type = TagDefineMorphShape.Companion.TYPE
 	override val name = "DefineMorphShape"
 	override val version = 3
 	override val level = 1
@@ -1396,7 +1807,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 	override fun toString(indent: Int, flags: Int): String {
 		val indent2: String = " ".repeat(indent + 2)
 		val indent4: String = " ".repeat(indent + 4)
-		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "ID: " + characterId
 		str += "\n" + indent2 + "Bounds:"
 		str += "\n" + indent4 + "StartBounds: " + startBounds.toString()
 		str += "\n" + indent4 + "EndBounds: " + endBounds.toString()
@@ -1458,7 +1869,53 @@ class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 		endEdges = data.readSHAPE()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineMorphShape2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(startBounds)
+		body.writeRECT(endBounds)
+		body.writeRECT(startEdgeBounds)
+		body.writeRECT(endEdgeBounds)
+		var flags: Int = 0
+		if (usesNonScalingStrokes) {
+			flags = flags or 0x02
+		}
+		if (usesScalingStrokes) {
+			flags = flags or 0x01
+		}
+		body.writeUI8(flags)
+		val startBytes: SWFData = SWFData()
+		// MorphFillStyleArray
+		val fillStyleCount: Int = morphFillStyles.size
+		if (fillStyleCount > 0xfe) {
+			startBytes.writeUI8(0xff)
+			startBytes.writeUI16(fillStyleCount)
+		} else {
+			startBytes.writeUI8(fillStyleCount)
+		}
+		for (i in 0 until fillStyleCount) {
+			startBytes.writeMORPHFILLSTYLE(morphFillStyles[i])
+		}
+		// MorphLineStyleArray
+		val lineStyleCount: Int = morphLineStyles.size
+		if (lineStyleCount > 0xfe) {
+			startBytes.writeUI8(0xff)
+			startBytes.writeUI16(lineStyleCount)
+		} else {
+			startBytes.writeUI8(lineStyleCount)
+		}
+		for (i in 0 until lineStyleCount) {
+			startBytes.writeMORPHLINESTYLE2(morphLineStyles[i] as com.codeazur.as3swf.data.SWFMorphLineStyle2)
+		}
+		startBytes.writeSHAPE(startEdges)
+		body.writeUI32(startBytes.length)
+		body.writeBytes(startBytes)
+		body.writeSHAPE(endEdges)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineMorphShape2.Companion.TYPE
 	override val name = "DefineMorphShape2"
 	override val version = 8
 	override val level = 2
@@ -1466,7 +1923,7 @@ class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 	override fun toString(indent: Int, flags: Int): String {
 		val indent2: String = " ".repeat(indent + 2)
 		val indent4: String = " ".repeat(indent + 4)
-		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "ID: " + characterId
 		str += "\n" + indent2 + "Bounds:"
 		str += "\n" + indent4 + "StartBounds: " + startBounds.toString()
 		str += "\n" + indent4 + "EndBounds: " + endBounds.toString()
@@ -1504,6 +1961,14 @@ class TagDefineScalingGrid : _BaseTag(), IDefinitionTag {
 		splitter = data.readRECT()
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(splitter)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineScalingGrid = com.codeazur.as3swf.tags.TagDefineScalingGrid()
 		tag.characterId = characterId
@@ -1511,13 +1976,13 @@ class TagDefineScalingGrid : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineScalingGrid.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineScalingGrid.Companion.TYPE
 	override val name = "DefineScalingGrid"
 	override val version = 8
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"CharacterID: " + characterId + ", " +
 			"Splitter: " + splitter
 	}
@@ -1546,13 +2011,31 @@ class TagDefineSceneAndFrameLabelData : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeEncodedU32(this.scenes.size)
+		for (i in 0 until this.scenes.size) {
+			val scene: com.codeazur.as3swf.data.SWFScene = this.scenes[i]
+			body.writeEncodedU32(scene.offset)
+			body.writeString(scene.name)
+		}
+		body.writeEncodedU32(this.frameLabels.size)
+		for (i in 0 until this.frameLabels.size) {
+			val label: com.codeazur.as3swf.data.SWFFrameLabel = this.frameLabels[i]
+			body.writeEncodedU32(label.frameNumber)
+			body.writeString(label.name)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData.Companion.TYPE
 	override val name = "DefineSceneAndFrameLabelData"
 	override val version = 9
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (scenes.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Scenes:"
 			for (i in 0 until scenes.size) {
@@ -1585,6 +2068,15 @@ open class TagDefineShape : _BaseTag(), IDefinitionTag {
 		shapes = data.readSHAPEWITHSTYLE(level)
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(shapeBounds)
+		body.writeSHAPEWITHSTYLE(shapes, level)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineShape = com.codeazur.as3swf.tags.TagDefineShape()
 		throw(Error("Not implemented yet."))
@@ -1595,13 +2087,13 @@ open class TagDefineShape : _BaseTag(), IDefinitionTag {
 		shapes.export(handler)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineShape.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineShape.Companion.TYPE
 	override val name = "DefineShape"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
@@ -1614,13 +2106,13 @@ open class TagDefineShape2 : com.codeazur.as3swf.tags.TagDefineShape(), IDefinit
 		const val TYPE = 22
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineShape2.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineShape2.Companion.TYPE
 	override val name = "DefineShape2"
 	override val version = 2
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
@@ -1633,13 +2125,13 @@ open class TagDefineShape3 : com.codeazur.as3swf.tags.TagDefineShape2(), IDefini
 		const val TYPE = 32
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineShape3.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineShape3.Companion.TYPE
 	override val name = "DefineShape3"
 	override val version = 3
 	override val level = 3
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Bounds: " + shapeBounds
 		str += shapes.toString(indent + 2)
@@ -1668,13 +2160,34 @@ class TagDefineShape4 : com.codeazur.as3swf.tags.TagDefineShape3(), IDefinitionT
 		shapes = data.readSHAPEWITHSTYLE(level)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineShape4.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeRECT(shapeBounds)
+		body.writeRECT(edgeBounds)
+		var flags: Int = 0
+		if (usesFillWindingRule) {
+			flags = flags or 0x04
+		}
+		if (usesNonScalingStrokes) {
+			flags = flags or 0x02
+		}
+		if (usesScalingStrokes) {
+			flags = flags or 0x01
+		}
+		body.writeUI8(flags)
+		body.writeSHAPEWITHSTYLE(shapes, level)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDefineShape4.Companion.TYPE
 	override val name = "DefineShape4"
 	override val version = 8
 	override val level = 4
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", "
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "ID: " + characterId + ", "
 		if (usesFillWindingRule) {
 			str += "UsesFillWindingRule, "
 		}
@@ -1740,6 +2253,21 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 		data.readBytes(soundData, 0, length - 7)
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUB(4, soundFormat)
+		body.writeUB(2, soundRate)
+		body.writeUB(1, soundSize)
+		body.writeUB(1, soundType)
+		body.writeUI32(soundSampleCount)
+		if (soundData.length > 0) {
+			body.writeBytes(soundData)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag = com.codeazur.as3swf.tags.TagDefineSound()
 		tag.characterId = characterId
@@ -1754,13 +2282,13 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineSound.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineSound.Companion.TYPE
 	override val name = "DefineSound"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"SoundID: " + characterId + ", " +
 			"Format: " + com.codeazur.as3swf.data.consts.SoundCompression.toString(soundFormat) + ", " +
 			"Rate: " + com.codeazur.as3swf.data.consts.SoundRate.toString(soundRate) + ", " +
@@ -1825,7 +2353,7 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 		soundSampleCount = samples
 		soundFormat = com.codeazur.as3swf.data.consts.SoundCompression.MP3
 		soundSize = com.codeazur.as3swf.data.consts.SoundSize.BIT_16
-		soundType = if (channelmode == com.codeazur.as3swf.data.etc.MPEGFrame.CHANNEL_MODE_MONO) com.codeazur.as3swf.data.consts.SoundType.MONO else com.codeazur.as3swf.data.consts.SoundType.STEREO
+		soundType = if (channelmode == com.codeazur.as3swf.data.etc.MPEGFrame.Companion.CHANNEL_MODE_MONO) com.codeazur.as3swf.data.consts.SoundType.MONO else com.codeazur.as3swf.data.consts.SoundType.STEREO
 		when (samplingrate) {
 			44100 -> soundRate = com.codeazur.as3swf.data.consts.SoundRate.KHZ_44
 			22050 -> soundRate = com.codeazur.as3swf.data.consts.SoundRate.KHZ_22
@@ -1863,19 +2391,28 @@ class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), IDefinitionT
 		parseTags(data, version)
 	}
 
+	override suspend fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI16(frameCount) // TODO: get the real number of frames from controlTags
+		publishTags(body, version)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineSprite = com.codeazur.as3swf.tags.TagDefineSprite()
 		throw(Error("Not implemented yet."))
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineSprite.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineSprite.Companion.TYPE
 	override val name = "DefineSprite"
 	override val version = 3
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"FrameCount: " + frameCount +
 			super.toString(indent, flags)
@@ -1908,6 +2445,40 @@ open class TagDefineText : _BaseTag(), IDefinitionTag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		var record: com.codeazur.as3swf.data.SWFTextRecord? = null
+		body.writeUI16(characterId)
+		body.writeRECT(textBounds)
+		body.writeMATRIX(textMatrix)
+		// Calculate glyphBits and advanceBits values
+		val glyphBitsValues = arrayListOf<Int>()
+		val advanceBitsValues = arrayListOf<Int>()
+		val recordsLen: Int = records.size
+		for (i in 0 until recordsLen) {
+			record = records[i]
+			val glyphCount: Int = record.glyphEntries.size
+			for (j in 0 until glyphCount) {
+				val glyphEntry: com.codeazur.as3swf.data.SWFGlyphEntry = record.glyphEntries[j]
+				glyphBitsValues.add(glyphEntry.index)
+				advanceBitsValues.add(glyphEntry.advance)
+			}
+		}
+		val glyphBits: Int = body.calculateMaxBits(false, glyphBitsValues)
+		val advanceBits: Int = body.calculateMaxBits(true, advanceBitsValues)
+		body.writeUI8(glyphBits)
+		body.writeUI8(advanceBits)
+		// Write text records
+		record = null
+		for (i in 0 until recordsLen) {
+			body.writeTEXTRECORD(records[i], glyphBits, advanceBits, record, level)
+			record = records[i]
+		}
+		body.writeUI8(0)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineText = com.codeazur.as3swf.tags.TagDefineText()
 		tag.characterId = characterId
@@ -1919,13 +2490,13 @@ open class TagDefineText : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineText.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineText.Companion.TYPE
 	override val name = "DefineText"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Bounds: " + textBounds + ", " +
 			"Matrix: " + textMatrix
@@ -1947,13 +2518,13 @@ class TagDefineText2 : com.codeazur.as3swf.tags.TagDefineText(), IDefinitionTag 
 		const val TYPE = 33
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineText2.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineText2.Companion.TYPE
 	override val name = "DefineText2"
 	override val version = 3
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Bounds: " + textBounds + ", " +
 			"Matrix: " + textMatrix
@@ -1992,6 +2563,18 @@ class TagDefineVideoStream : _BaseTag(), IDefinitionTag {
 		codecId = data.readUI8()
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 10)
+		data.writeUI16(characterId)
+		data.writeUI16(numFrames)
+		data.writeUI16(width)
+		data.writeUI16(height)
+		data.writeUB(4, 0) // Reserved
+		data.writeUB(3, deblocking)
+		data.writeUB(1, smoothing)
+		data.writeUI8(codecId)
+	}
+
 	override fun clone(): IDefinitionTag {
 		val tag: com.codeazur.as3swf.tags.TagDefineVideoStream = com.codeazur.as3swf.tags.TagDefineVideoStream()
 		tag.characterId = characterId
@@ -2004,13 +2587,13 @@ class TagDefineVideoStream : _BaseTag(), IDefinitionTag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDefineVideoStream.TYPE
+	override val type = com.codeazur.as3swf.tags.TagDefineVideoStream.Companion.TYPE
 	override val name = "DefineVideoStream"
 	override val version = 6
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId + ", " +
 			"Frames: " + numFrames + ", " +
 			"Width: " + width + ", " +
@@ -2056,15 +2639,26 @@ class TagDoABC : _BaseTag(), ITag {
 		_abc = null
 	}
 
-	override val type = TagDoABC.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI32(if (lazyInitializeFlag) 1 else 0)
+		body.writeString(abcName)
+		if (bytes.length > 0) {
+			body.writeBytes(bytes)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = TagDoABC.Companion.TYPE
 	override val name = "DoABC"
 	override val version = 9
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Lazy: " + lazyInitializeFlag + ", " +
-			(if (abcName.isNotEmpty()) "Name: $abcName, " else "") +
+			(if (abcName.length > 0) "Name: " + abcName + ", " else "") +
 			"Length: " + bytes.length
 	}
 }
@@ -2088,13 +2682,22 @@ class TagDoABCDeprecated : _BaseTag(), ITag {
 		data.readBytes(bytes, 0, length - (data.position - pos))
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDoABCDeprecated.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		if (bytes.length > 0) {
+			body.writeBytes(bytes)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDoABCDeprecated.Companion.TYPE
 	override val name = "DoABCDeprecated"
 	override val version = 9
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Length: " + bytes.length
 	}
 }
@@ -2115,17 +2718,27 @@ open class TagDoAction : _BaseTag(), ITag {
 			if (action == null) break
 			actions.add(action)
 		}
-		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
+		labelCount = com.codeazur.as3swf.data.actions.Action.Companion.resolveOffsets(actions)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDoAction.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		for (i in 0 until actions.size) {
+			body.writeACTIONRECORD(actions[i])
+		}
+		body.writeUI8(0)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDoAction.Companion.TYPE
 	override val name = "DoAction"
 	override val version = 3
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) + "Records: " + actions.size
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "Records: " + actions.size
+		if ((flags and com.codeazur.as3swf.SWF.Companion.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -2157,19 +2770,30 @@ class TagDoInitAction : com.codeazur.as3swf.tags.TagDoAction(), ITag {
 			if (action == null) continue
 			actions.add(action)
 		}
-		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
+		labelCount = com.codeazur.as3swf.data.actions.Action.Companion.resolveOffsets(actions)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagDoInitAction.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(spriteId)
+		for (i in 0 until actions.size) {
+			body.writeACTIONRECORD(actions[i])
+		}
+		body.writeUI8(0)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagDoInitAction.Companion.TYPE
 	override val name = "DoInitAction"
 	override val version = 6
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"SpriteID: " + spriteId + ", " +
 			"Records: " + actions.size
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.codeazur.as3swf.SWF.Companion.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -2199,13 +2823,20 @@ open class TagEnableDebugger : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagEnableDebugger.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, password.length)
+		if (password.length > 0) {
+			data.writeBytes(password)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagEnableDebugger.Companion.TYPE
 	override val name = "EnableDebugger"
 	override val version = 5
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent)
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 	}
 }
 
@@ -2225,13 +2856,21 @@ class TagEnableDebugger2 : com.codeazur.as3swf.tags.TagEnableDebugger(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagEnableDebugger2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, password.length + 2)
+		data.writeUI16(reserved)
+		if (password.length > 0) {
+			data.writeBytes(password)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagEnableDebugger2.Companion.TYPE
 	override val name = "EnableDebugger2"
 	override val version = 6
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Password: " + (if (password.length == 0) "null" else password.readUTF()) + ", " +
 			"Reserved: 0x" + reserved.toString(16)
 	}
@@ -2252,13 +2891,22 @@ class TagEnableTelemetry : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagEnableTelemetry.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, password.length + 2)
+		data.writeByte(0)
+		data.writeByte(0)
+		if (password.length > 0) {
+			data.writeBytes(password)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagEnableTelemetry.Companion.TYPE
 	override val name = "EnableTelemetry"
 	override val version = 19
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent)
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 	}
 }
 
@@ -2271,12 +2919,16 @@ class TagEnd : _BaseTag(), ITag {
 		// Do nothing. The End tag has no body.
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagEnd.TYPE
+	suspend override fun publish(data: SWFData, version: Int) {
+		data.writeTagHeader(type, 0)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagEnd.Companion.TYPE
 	override val name = "End"
 	override val version = 1
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int) = Tag.toStringCommon(type, name, indent)
+	override fun toString(indent: Int, flags: Int) = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 }
 
 class TagExportAssets : _BaseTag(), ITag {
@@ -2293,13 +2945,24 @@ class TagExportAssets : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagExportAssets.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		val numSymbols: Int = symbols.size
+		body.writeUI16(numSymbols)
+		for (i in 0 until numSymbols) {
+			body.writeSYMBOL(symbols[i])
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagExportAssets.Companion.TYPE
 	override val name = "ExportAssets"
 	override val version = 5
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (symbols.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Assets:"
 			for (i in 0 until symbols.size) {
@@ -2331,13 +2994,27 @@ class TagFileAttributes : _BaseTag(), ITag {
 		data.skipBytes(3)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagFileAttributes.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 4)
+		var flags: Int = 0
+		if (useNetwork) flags = flags or 0x01
+		if (actionscript3) flags = flags or 0x08
+		if (hasMetadata) flags = flags or 0x10
+		if (useGPU) flags = flags or 0x20
+		if (useDirectBlit) flags = flags or 0x40
+		data.writeUI8(flags)
+		data.writeUI8(0)
+		data.writeUI8(0)
+		data.writeUI8(0)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagFileAttributes.Companion.TYPE
 	override val name = "FileAttributes"
 	override val version = 8
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"AS3: " + actionscript3 + ", " +
 			"HasMetadata: " + hasMetadata + ", " +
 			"UseDirectBlit: " + useDirectBlit + ", " +
@@ -2365,7 +3042,19 @@ class TagFrameLabel : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagFrameLabel.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeString(frameName)
+
+		if (namedAnchorFlag) {
+			data.writeUI8(1)
+		}
+
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagFrameLabel.Companion.TYPE
 	override val name = "FrameLabel"
 	override val version = 3
 	override val level = 1
@@ -2375,7 +3064,7 @@ class TagFrameLabel : _BaseTag(), ITag {
 		if (namedAnchorFlag) {
 			str += ", NamedAnchor = true"
 		}
-		return Tag.toStringCommon(type, name, indent) + str
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + str
 	}
 }
 
@@ -2396,13 +3085,25 @@ open class TagImportAssets : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagImportAssets.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeString(url)
+		val numSymbols: Int = symbols.size
+		body.writeUI16(numSymbols)
+		for (i in 0 until numSymbols) {
+			body.writeSYMBOL(symbols[i])
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagImportAssets.Companion.TYPE
 	override val name = "ImportAssets"
 	override val version = 5
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (symbols.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Assets:"
 			for (i in 0 until symbols.size) {
@@ -2428,7 +3129,21 @@ class TagImportAssets2 : com.codeazur.as3swf.tags.TagImportAssets(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagImportAssets2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeString(url)
+		body.writeUI8(1)
+		body.writeUI8(0)
+		val numSymbols: Int = symbols.size
+		body.writeUI16(numSymbols)
+		for (i in 0 until numSymbols) {
+			body.writeSYMBOL(symbols[i])
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagImportAssets2.Companion.TYPE
 	override val name = "ImportAssets2"
 	override val version = 8
 	override val level = 2
@@ -2447,13 +3162,20 @@ class TagJPEGTables : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagJPEGTables.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, jpegTables.length)
+		if (jpegTables.length > 0) {
+			data.writeBytes(jpegTables)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagJPEGTables.Companion.TYPE
 	override val name = "JPEGTables"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) + "Length: " + jpegTables.length
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "Length: " + jpegTables.length
 	}
 }
 
@@ -2468,13 +3190,20 @@ class TagMetadata : _BaseTag(), ITag {
 		xmlString = data.readString()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagMetadata.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeString(xmlString)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagMetadata.Companion.TYPE
 	override val name = "Metadata"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		str += " " + xmlString
 		return str
 	}
@@ -2496,6 +3225,16 @@ class TagNameCharacter : _BaseTag(), ITag {
 		}
 	}
 
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		if (binaryData.length > 0) {
+			body.writeBytes(binaryData)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
 	fun clone(): ITag {
 		val tag: com.codeazur.as3swf.tags.TagNameCharacter = com.codeazur.as3swf.tags.TagNameCharacter()
 		tag.characterId = characterId
@@ -2505,13 +3244,13 @@ class TagNameCharacter : _BaseTag(), ITag {
 		return tag
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagNameCharacter.TYPE
+	override val type = com.codeazur.as3swf.tags.TagNameCharacter.Companion.TYPE
 	override val name = "NameCharacter"
 	override val version = 3
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ID: " + characterId
 		if (binaryData.length > 0) {
 			binaryData.position = 0
@@ -2579,13 +3318,25 @@ open class TagPlaceObject : _BaseTag(), IDisplayListTag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagPlaceObject.TYPE
+	suspend override fun publish(data: SWFData, version: Int) {
+		val body: SWFData = SWFData()
+		body.writeUI16(characterId)
+		body.writeUI16(depth)
+		body.writeMATRIX(matrix!!)
+		if (hasColorTransform) {
+			body.writeCXFORM(colorTransform!!)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagPlaceObject.Companion.TYPE
 	override val name = "PlaceObject"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) +
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Depth: " + depth
 		if (hasCharacter) {
 			str += ", CharacterID: " + characterId
@@ -2639,25 +3390,64 @@ open class TagPlaceObject2 : com.codeazur.as3swf.tags.TagPlaceObject(), IDisplay
 		}
 	}
 
-	override val type = TagPlaceObject2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		var flags: Int = 0
+		val body: SWFData = SWFData()
+		if (hasMove) flags = flags or 0x01
+		if (hasCharacter) flags = flags or 0x02
+		if (hasMatrix) flags = flags or 0x04
+		if (hasColorTransform) flags = flags or 0x08
+		if (hasRatio) flags = flags or 0x10
+		if (hasName) flags = flags or 0x20
+		if (hasClipDepth) flags = flags or 0x40
+		if (hasClipActions) flags = flags or 0x80
+		body.writeUI8(flags)
+		body.writeUI16(depth)
+		if (hasCharacter) body.writeUI16(characterId)
+		if (hasMatrix) body.writeMATRIX(matrix!!)
+		if (hasColorTransform) body.writeCXFORM(colorTransform!!)
+		if (hasRatio) body.writeUI16(ratio)
+		if (hasName) body.writeString(instanceName)
+		if (hasClipDepth) body.writeUI16(clipDepth)
+		if (hasClipActions) body.writeCLIPACTIONS(clipActions!!, version)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagPlaceObject2.Companion.TYPE
 	override val name = "PlaceObject2"
 	override val version = 3
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) + "Depth: " + depth
-		if (hasCharacter) str += ", CharacterID: " + characterId
-		if (hasMatrix) str += ", Matrix: " + matrix.toString()
-		if (hasColorTransform) str += ", ColorTransform: " + colorTransform
-		if (hasRatio) str += ", Ratio: " + ratio
-		if (hasName) str += ", Name: " + instanceName
-		if (hasClipDepth) str += ", ClipDepth: " + clipDepth
-		if (hasClipActions && clipActions != null) str += "\n" + " ".repeat(indent + 2) + clipActions!!.toString(indent + 2, flags)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
+			"Depth: " + depth
+		if (hasCharacter) {
+			str += ", CharacterID: " + characterId
+		}
+		if (hasMatrix) {
+			str += ", Matrix: " + matrix.toString()
+		}
+		if (hasColorTransform) {
+			str += ", ColorTransform: " + colorTransform
+		}
+		if (hasRatio) {
+			str += ", Ratio: " + ratio
+		}
+		if (hasName) {
+			str += ", Name: " + instanceName
+		}
+		if (hasClipDepth) {
+			str += ", ClipDepth: " + clipDepth
+		}
+		if (hasClipActions && clipActions != null) {
+			str += "\n" + " ".repeat(indent + 2) + clipActions!!.toString(indent + 2, flags)
+		}
 		return str
 	}
 }
 
-open class TagPlaceObject3 : TagPlaceObject2(), IDisplayListTag {
+open class TagPlaceObject3 : com.codeazur.as3swf.tags.TagPlaceObject2(), IDisplayListTag {
 	companion object {
 		const val TYPE = 70
 	}
@@ -2681,39 +3471,197 @@ open class TagPlaceObject3 : TagPlaceObject2(), IDisplayListTag {
 		hasBlendMode = (flags2 and 0x02) != 0
 		hasFilterList = (flags2 and 0x01) != 0
 		depth = data.readUI16()
-		if (hasClassName) className = data.readString()
-		if (hasCharacter) characterId = data.readUI16()
-		if (hasMatrix) matrix = data.readMATRIX()
-		if (hasColorTransform) colorTransform = data.readCXFORMWITHALPHA()
-		if (hasRatio) ratio = data.readUI16()
-		if (hasName) instanceName = data.readString()
-		if (hasClipDepth) clipDepth = data.readUI16()
-		if (hasFilterList) for (i in 0 until data.readUI8()) surfaceFilterList.add(data.readFILTER())
-		if (hasBlendMode) blendMode = data.readUI8()
-		if (hasCacheAsBitmap) bitmapCache = data.readUI8()
-		if (hasVisible) visible = data.readUI8()
-		if (hasOpaqueBackground) bitmapBackgroundColor = data.readRGBA()
-		if (hasClipActions) clipActions = data.readCLIPACTIONS(version)
+		if (hasClassName) {
+			className = data.readString()
+		}
+		if (hasCharacter) {
+			characterId = data.readUI16()
+		}
+		if (hasMatrix) {
+			matrix = data.readMATRIX()
+		}
+		if (hasColorTransform) {
+			colorTransform = data.readCXFORMWITHALPHA()
+		}
+		if (hasRatio) {
+			ratio = data.readUI16()
+		}
+		if (hasName) {
+			instanceName = data.readString()
+		}
+		if (hasClipDepth) {
+			clipDepth = data.readUI16()
+		}
+		if (hasFilterList) {
+			val numberOfFilters: Int = data.readUI8()
+			for (i in 0 until numberOfFilters) {
+				surfaceFilterList.add(data.readFILTER())
+			}
+		}
+		if (hasBlendMode) {
+			blendMode = data.readUI8()
+		}
+		if (hasCacheAsBitmap) {
+			bitmapCache = data.readUI8()
+		}
+		if (hasVisible) {
+			visible = data.readUI8()
+		}
+		if (hasOpaqueBackground) {
+			bitmapBackgroundColor = data.readRGBA()
+		}
+		if (hasClipActions) {
+			clipActions = data.readCLIPACTIONS(version)
+		}
 	}
 
-	override val type = TagPlaceObject3.TYPE
+	protected fun prepareBody(): SWFData {
+		val body: SWFData = SWFData()
+		var flags1: Int = 0
+		if (hasClipActions) {
+			flags1 = flags1 or 0x80
+		}
+		if (hasClipDepth) {
+			flags1 = flags1 or 0x40
+		}
+		if (hasName) {
+			flags1 = flags1 or 0x20
+		}
+		if (hasRatio) {
+			flags1 = flags1 or 0x10
+		}
+		if (hasColorTransform) {
+			flags1 = flags1 or 0x08
+		}
+		if (hasMatrix) {
+			flags1 = flags1 or 0x04
+		}
+		if (hasCharacter) {
+			flags1 = flags1 or 0x02
+		}
+		if (hasMove) {
+			flags1 = flags1 or 0x01
+		}
+		body.writeUI8(flags1)
+		var flags2: Int = 0
+		if (hasOpaqueBackground) {
+			flags2 = flags2 or 0x40
+		}
+		if (hasVisible) {
+			flags2 = flags2 or 0x20
+		}
+		if (hasImage) {
+			flags2 = flags2 or 0x10
+		}
+		if (hasClassName) {
+			flags2 = flags2 or 0x08
+		}
+		if (hasCacheAsBitmap) {
+			flags2 = flags2 or 0x04
+		}
+		if (hasBlendMode) {
+			flags2 = flags2 or 0x02
+		}
+		if (hasFilterList) {
+			flags2 = flags2 or 0x01
+		}
+		body.writeUI8(flags2)
+		body.writeUI16(depth)
+		if (hasClassName) {
+			body.writeString(className)
+		}
+		if (hasCharacter) {
+			body.writeUI16(characterId)
+		}
+		if (hasMatrix) {
+			body.writeMATRIX(matrix!!)
+		}
+		if (hasColorTransform) {
+			body.writeCXFORM(colorTransform!!)
+		}
+		if (hasRatio) {
+			body.writeUI16(ratio)
+		}
+		if (hasName) {
+			body.writeString(instanceName)
+		}
+		if (hasClipDepth) {
+			body.writeUI16(clipDepth)
+		}
+		if (hasFilterList) {
+			val numberOfFilters: Int = surfaceFilterList.size
+			body.writeUI8(numberOfFilters)
+			for (i in 0 until numberOfFilters) {
+				body.writeFILTER(surfaceFilterList[i])
+			}
+		}
+		if (hasBlendMode) {
+			body.writeUI8(blendMode)
+		}
+		if (hasCacheAsBitmap) {
+			body.writeUI8(bitmapCache)
+		}
+		if (hasVisible) {
+			body.writeUI8(visible)
+		}
+		if (hasOpaqueBackground) {
+			body.writeRGBA(bitmapBackgroundColor)
+		}
+		if (hasClipActions) {
+			body.writeCLIPACTIONS(clipActions!!, version)
+		}
+
+		return body
+	}
+
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = prepareBody()
+
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagPlaceObject3.Companion.TYPE
 	override val name = "PlaceObject3"
 	override val version = 8
 	override val level = 3
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent) + "Depth: " + depth
-		if (hasClassName) str += ", ClassName: " + className
-		if (hasCharacter) str += ", CharacterID: " + characterId
-		if (hasMatrix) str += ", Matrix: " + matrix.toString()
-		if (hasColorTransform) str += ", ColorTransform: " + colorTransform
-		if (hasRatio) str += ", Ratio: " + ratio
-		if (hasName) str += ", Name: " + instanceName
-		if (hasClipDepth) str += ", ClipDepth: " + clipDepth
-		if (hasBlendMode) str += ", BlendMode: " + com.codeazur.as3swf.data.consts.BlendMode.toString(blendMode)
-		if (hasCacheAsBitmap) str += ", CacheAsBitmap: " + bitmapCache
-		if (hasVisible) str += ", Visible: " + visible
-		if (hasOpaqueBackground) str += ", BackgroundColor: " + ColorUtils.rgbaToString(bitmapBackgroundColor)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
+			"Depth: " + depth
+		if (hasClassName /*|| (hasImage && hasCharacter)*/) {
+			str += ", ClassName: " + className
+		}
+		if (hasCharacter) {
+			str += ", CharacterID: " + characterId
+		}
+		if (hasMatrix) {
+			str += ", Matrix: " + matrix.toString()
+		}
+		if (hasColorTransform) {
+			str += ", ColorTransform: " + colorTransform
+		}
+		if (hasRatio) {
+			str += ", Ratio: " + ratio
+		}
+		if (hasName) {
+			str += ", Name: " + instanceName
+		}
+		if (hasClipDepth) {
+			str += ", ClipDepth: " + clipDepth
+		}
+		if (hasBlendMode) {
+			str += ", BlendMode: " + com.codeazur.as3swf.data.consts.BlendMode.toString(blendMode)
+		}
+		if (hasCacheAsBitmap) {
+			str += ", CacheAsBitmap: " + bitmapCache
+		}
+		if (hasVisible) {
+			str += ", Visible: " + visible
+		}
+		if (hasOpaqueBackground) {
+			str += ", BackgroundColor: " + ColorUtils.rgbaToString(bitmapBackgroundColor)
+		}
 		if (hasFilterList) {
 			str += "\n" + " ".repeat(indent + 2) + "Filters:"
 			for (i in 0 until surfaceFilterList.size) {
@@ -2747,7 +3695,18 @@ class TagPlaceObject4 : com.codeazur.as3swf.tags.TagPlaceObject3(), IDisplayList
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagPlaceObject4.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = prepareBody()
+
+		if (metaData != null) {
+			body.writeObject(metaData)
+		}
+
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagPlaceObject4.Companion.TYPE
 	override val name = "PlaceObject4"
 	override val version = 19
 	override val level = 4
@@ -2784,13 +3743,27 @@ class TagProductInfo : _BaseTag(), ITag {
 		compileDate = java.util.Date(sec)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagProductInfo.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI32(productId)
+		body.writeUI32(edition)
+		body.writeUI8(majorVersion)
+		body.writeUI8(minorVersion)
+		body.writeUI32((build.toLong() ushr 0).toInt())
+		body.writeUI32((build.toLong() ushr 32).toInt())
+		body.writeUI32((compileDate.time ushr 0).toInt())
+		body.writeUI32((compileDate.time ushr 32).toInt())
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagProductInfo.Companion.TYPE
 	override val name = "ProductInfo"
 	override val version = 3
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"ProductID: " + productId + ", " +
 			"Edition: " + edition + ", " +
 			"Version: " + majorVersion + "." + minorVersion + " r" + build + ", " +
@@ -2811,13 +3784,20 @@ class TagProtect : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagProtect.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, password.length)
+		if (password.length > 0) {
+			data.writeBytes(password)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagProtect.Companion.TYPE
 	override val name = "Protect"
 	override val version = 2
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent)
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 	}
 }
 
@@ -2834,13 +3814,19 @@ open class TagRemoveObject : _BaseTag(), IDisplayListTag {
 		depth = data.readUI16()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagRemoveObject.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 4)
+		data.writeUI16(characterId)
+		data.writeUI16(depth)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagRemoveObject.Companion.TYPE
 	override val name = "RemoveObject"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"CharacterID: " + characterId + ", " +
 			"Depth: " + depth
 	}
@@ -2855,13 +3841,18 @@ class TagRemoveObject2 : com.codeazur.as3swf.tags.TagRemoveObject(), IDisplayLis
 		depth = data.readUI16()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagRemoveObject2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 2)
+		data.writeUI16(depth)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagRemoveObject2.Companion.TYPE
 	override val name = "RemoveObject2"
 	override val version = 3
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Depth: " + depth
 	}
 }
@@ -2879,13 +3870,19 @@ class TagScriptLimits : _BaseTag(), ITag {
 		scriptTimeoutSeconds = data.readUI16()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagScriptLimits.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 4)
+		data.writeUI16(maxRecursionDepth)
+		data.writeUI16(scriptTimeoutSeconds)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagScriptLimits.Companion.TYPE
 	override val name = "ScriptLimits"
 	override val version = 7
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"MaxRecursionDepth: " + maxRecursionDepth + ", " +
 			"ScriptTimeoutSeconds: " + scriptTimeoutSeconds
 	}
@@ -2908,13 +3905,18 @@ class TagSetBackgroundColor : _BaseTag(), ITag {
 		color = data.readRGB()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSetBackgroundColor.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 3)
+		data.writeRGB(color)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagSetBackgroundColor.Companion.TYPE
 	override val name = "SetBackgroundColor"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) + "Color: " + ColorUtils.rgbToString(color)
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "Color: " + ColorUtils.rgbToString(color)
 	}
 }
 
@@ -2931,13 +3933,19 @@ class TagSetTabIndex : _BaseTag(), ITag {
 		tabIndex = data.readUI16()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSetTabIndex.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 4)
+		data.writeUI16(depth)
+		data.writeUI16(tabIndex)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagSetTabIndex.Companion.TYPE
 	override val name = "SetTabIndex"
 	override val version = 7
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"Depth: " + depth + ", " +
 			"TabIndex: " + tabIndex
 	}
@@ -2952,13 +3960,17 @@ class TagShowFrame : _BaseTag(), IDisplayListTag {
 		// Do nothing. The End tag has no body.
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagShowFrame.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, 0)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagShowFrame.Companion.TYPE
 	override val name = "ShowFrame"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent)
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 	}
 }
 
@@ -2973,13 +3985,20 @@ class TagSoundStreamBlock : _BaseTag(), ITag {
 		data.readBytes(soundData, 0, length)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSoundStreamBlock.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, soundData.length, true)
+		if (soundData.length > 0) {
+			data.writeBytes(soundData)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagSoundStreamBlock.Companion.TYPE
 	override val name = "SoundStreamBlock"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) + "Length: " + soundData.length
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) + "Length: " + soundData.length
 	}
 }
 
@@ -3013,13 +4032,31 @@ open class TagSoundStreamHead : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSoundStreamHead.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUB(4, 0)
+		body.writeUB(2, playbackSoundRate)
+		body.writeUB(1, playbackSoundSize)
+		body.writeUB(1, playbackSoundType)
+		body.writeUB(4, streamSoundCompression)
+		body.writeUB(2, streamSoundRate)
+		body.writeUB(1, streamSoundSize)
+		body.writeUB(1, streamSoundType)
+		body.writeUI16(streamSoundSampleCount)
+		if (streamSoundCompression == com.codeazur.as3swf.data.consts.SoundCompression.MP3) {
+			body.writeSI16(latencySeek)
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagSoundStreamHead.Companion.TYPE
 	override val name = "SoundStreamHead"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (streamSoundSampleCount > 0) {
 			str += "Format: " + com.codeazur.as3swf.data.consts.SoundCompression.toString(streamSoundCompression) + ", " +
 				"Rate: " + com.codeazur.as3swf.data.consts.SoundRate.toString(streamSoundRate) + ", " +
@@ -3037,13 +4074,13 @@ class TagSoundStreamHead2 : com.codeazur.as3swf.tags.TagSoundStreamHead(), ITag 
 		const val TYPE = 45
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSoundStreamHead2.TYPE
+	override val type = com.codeazur.as3swf.tags.TagSoundStreamHead2.Companion.TYPE
 	override val name = "SoundStreamHead2"
 	override val version = 3
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (streamSoundSampleCount > 0) {
 			str += "Format: " + com.codeazur.as3swf.data.consts.SoundCompression.toString(streamSoundCompression) + ", " +
 				"Rate: " + com.codeazur.as3swf.data.consts.SoundRate.toString(streamSoundRate) + ", " +
@@ -3068,13 +4105,21 @@ class TagStartSound : _BaseTag(), ITag {
 		soundInfo = data.readSOUNDINFO()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagStartSound.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeUI16(soundId)
+		body.writeSOUNDINFO(soundInfo)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagStartSound.Companion.TYPE
 	override val name = "StartSound"
 	override val version = 1
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"SoundID: " + soundId + ", " +
 			"SoundInfo: " + soundInfo
 		return str
@@ -3094,13 +4139,21 @@ class TagStartSound2 : _BaseTag(), ITag {
 		soundInfo = data.readSOUNDINFO()
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagStartSound2.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		body.writeString(soundClassName)
+		body.writeSOUNDINFO(soundInfo)
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagStartSound2.Companion.TYPE
 	override val name = "StartSound2"
 	override val version = 9
 	override val level = 2
 
 	override fun toString(indent: Int, flags: Int): String {
-		val str: String = Tag.toStringCommon(type, name, indent) +
+		val str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"SoundClassName: " + soundClassName + ", " +
 			"SoundInfo: " + soundInfo
 		return str
@@ -3121,13 +4174,24 @@ class TagSymbolClass : _BaseTag(), ITag {
 		}
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagSymbolClass.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		val body: SWFData = SWFData()
+		val numSymbols: Int = symbols.size
+		body.writeUI16(numSymbols)
+		for (i in 0 until numSymbols) {
+			body.writeSYMBOL(symbols[i])
+		}
+		data.writeTagHeader(type, body.length)
+		data.writeBytes(body)
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagSymbolClass.Companion.TYPE
 	override val name = "SymbolClass"
 	override val version = 9 // educated guess (not specified in SWF10 spec)
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		var str: String = Tag.toStringCommon(type, name, indent)
+		var str: String = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 		if (symbols.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Symbols:"
 			for (i in 0 until symbols.size) {
@@ -3143,11 +4207,15 @@ open class TagUnknown(override val type: Int = 0) : _BaseTag(), ITag {
 		data.skipBytes(length)
 	}
 
+	suspend override fun publish(data: SWFData, version: Int) {
+		throw Error("No raw tag data available.")
+	}
+
 	override val name = "????"
 	override val version = 0
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int) = Tag.toStringCommon(type, name, indent)
+	override fun toString(indent: Int, flags: Int) = com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent)
 }
 
 class TagVideoFrame : _BaseTag(), ITag {
@@ -3166,13 +4234,22 @@ class TagVideoFrame : _BaseTag(), ITag {
 		data.readBytes(_videoData, 0, length - 4)
 	}
 
-	override val type = com.codeazur.as3swf.tags.TagVideoFrame.TYPE
+	suspend override fun publish(data: SWFData, version: Int): Unit {
+		data.writeTagHeader(type, _videoData.length + 4)
+		data.writeUI16(streamId)
+		data.writeUI16(frameNum)
+		if (_videoData.length > 0) {
+			data.writeBytes(_videoData)
+		}
+	}
+
+	override val type = com.codeazur.as3swf.tags.TagVideoFrame.Companion.TYPE
 	override val name = "VideoFrame"
 	override val version = 6
 	override val level = 1
 
 	override fun toString(indent: Int, flags: Int): String {
-		return Tag.toStringCommon(type, name, indent) +
+		return com.codeazur.as3swf.tags.Tag.Companion.toStringCommon(type, name, indent) +
 			"StreamID: " + streamId + ", " +
 			"Frame: " + frameNum
 	}

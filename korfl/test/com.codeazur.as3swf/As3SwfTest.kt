@@ -19,9 +19,6 @@ class As3SwfTest {
 
 		val swf = SWF()
 		swf.tags += TagFileAttributes()
-		val emptyData = swf.publish()
-		println(emptyData.toHexString())
-		println(emptyData.toUtf8String())
 	}
 
 	@Test
@@ -34,9 +31,6 @@ class As3SwfTest {
 
 		val swf = SWF()
 		swf.tags += TagFileAttributes()
-		val emptyData = swf.publish()
-		println(emptyData.hexString)
-		println(emptyData.toUtf8String())
 	}
 
 
@@ -50,8 +44,5 @@ class As3SwfTest {
 
 		val swf = SWF()
 		swf.tags += TagFileAttributes()
-		val emptyData = swf.publish()
-		println(emptyData.hexString)
-		println(emptyData.toUtf8String())
 	}
 }

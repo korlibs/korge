@@ -8,12 +8,14 @@ interface IFilter {
 	val id: Int
 
 	fun parse(data: SWFData): Unit
+	fun publish(data: SWFData): Unit
 	fun clone(): IFilter
 	fun toString(indent: Int = 0): String
 }
 
 open class Filter(override val id: Int) : IFilter {
 	override fun parse(data: SWFData): Unit = throw Error("Implement in subclasses!")
+	override fun publish(data: SWFData): Unit = throw Error("Implement in subclasses!")
 	override fun clone(): IFilter = throw Error("Implement in subclasses!")
 	override fun toString(indent: Int): String = "[Filter]"
 	override fun toString(): String = toString(0)
@@ -77,6 +79,22 @@ class FilterBevel(id: Int) : Filter(id) {
 		passes = flags and 0x0f
 	}
 
+	override fun publish(data: SWFData) {
+		data.writeRGBA(shadowColor)
+		data.writeRGBA(highlightColor)
+		data.writeFIXED(blurX)
+		data.writeFIXED(blurY)
+		data.writeFIXED(angle)
+		data.writeFIXED(distance)
+		data.writeFIXED8(strength)
+		var flags = (passes and 0x0f)
+		if (innerShadow) flags = flags or 0x80
+		if (knockout) flags = flags or 0x40
+		if (compositeSource) flags = flags or 0x20
+		if (onTop) flags = flags or 0x10
+		data.writeUI8(flags)
+	}
+
 	override fun clone(): IFilter {
 		val filter = FilterBevel(id)
 		filter.shadowColor = shadowColor
@@ -134,6 +152,12 @@ class FilterBlur(id: Int) : Filter(id) {
 		passes = data.readUI8() ushr 3
 	}
 
+	override fun publish(data: SWFData) {
+		data.writeFIXED(blurX)
+		data.writeFIXED(blurY)
+		data.writeUI8(passes shl 3)
+	}
+
 	override fun clone(): IFilter {
 		val filter = FilterBlur(id)
 		filter.blurX = blurX
@@ -162,6 +186,12 @@ class FilterColorMatrix(id: Int) : Filter(id) {
 	override fun parse(data: SWFData): Unit {
 		for (i in 0 until 20) {
 			colorMatrix.add(data.readFLOAT())
+		}
+	}
+
+	override fun publish(data: SWFData): Unit {
+		for (i in 0 until 20) {
+			data.writeFLOAT(colorMatrix[i])
 		}
 	}
 
@@ -225,6 +255,22 @@ class FilterConvolution(id: Int) : Filter(id), IFilter {
 		val flags = data.readUI8()
 		clamp = ((flags and 0x02) != 0)
 		preserveAlpha = ((flags and 0x01) != 0)
+	}
+
+	override fun publish(data: SWFData): Unit {
+		data.writeUI8(matrixX)
+		data.writeUI8(matrixY)
+		data.writeFLOAT(divisor)
+		data.writeFLOAT(bias)
+		val len = matrixX * matrixY
+		for (i in 0 until len) {
+			data.writeFLOAT(matrix[i])
+		}
+		data.writeRGBA(defaultColor)
+		var flags = 0
+		if (clamp) flags = flags or 0x02
+		if (preserveAlpha) flags = flags or 0x01
+		data.writeUI8(flags)
 	}
 
 	override fun clone(): IFilter {
@@ -302,6 +348,20 @@ class FilterDropShadow(id: Int) : Filter(id), IFilter {
 		passes = flags and 0x1f
 	}
 
+	override fun publish(data: SWFData): Unit {
+		data.writeRGBA(dropShadowColor)
+		data.writeFIXED(blurX)
+		data.writeFIXED(blurY)
+		data.writeFIXED(angle)
+		data.writeFIXED(distance)
+		data.writeFIXED8(strength)
+		var flags = (passes and 0x1f)
+		if (innerShadow) flags = flags or 0x80
+		if (knockout) flags = flags or 0x40
+		if (compositeSource) flags = flags or 0x20
+		data.writeUI8(flags)
+	}
+
 	override fun clone(): IFilter {
 		val filter = FilterDropShadow(id)
 		filter.dropShadowColor = dropShadowColor
@@ -364,6 +424,18 @@ class FilterGlow(id: Int) : Filter(id), IFilter {
 		knockout = ((flags and 0x40) != 0)
 		compositeSource = ((flags and 0x20) != 0)
 		passes = flags and 0x1f
+	}
+
+	override fun publish(data: SWFData): Unit {
+		data.writeRGBA(glowColor)
+		data.writeFIXED(blurX)
+		data.writeFIXED(blurY)
+		data.writeFIXED8(strength)
+		var flags = (passes and 0x1f)
+		if (innerGlow) flags = flags or 0x80
+		if (knockout) flags = flags or 0x40
+		if (compositeSource) flags = flags or 0x20
+		data.writeUI8(flags)
 	}
 
 	override fun clone(): IFilter {
@@ -516,6 +588,27 @@ open class FilterGradientGlow(id: Int) : Filter(id), IFilter {
 		compositeSource = ((flags and 0x20) != 0)
 		onTop = ((flags and 0x10) != 0)
 		passes = flags and 0x0f
+	}
+
+	override fun publish(data: SWFData): Unit {
+		data.writeUI8(numColors)
+		for (i in 0 until numColors) {
+			data.writeRGBA(gradientColors[i])
+		}
+		for (i in 0 until numColors) {
+			data.writeUI8(gradientRatios[i])
+		}
+		data.writeFIXED(blurX)
+		data.writeFIXED(blurY)
+		data.writeFIXED(angle)
+		data.writeFIXED(distance)
+		data.writeFIXED8(strength)
+		var flags = (passes and 0x0f)
+		if (innerShadow) flags = flags or 0x80
+		if (knockout) flags = flags or 0x40
+		if (compositeSource) flags = flags or 0x20
+		if (onTop) flags = flags or 0x10
+		data.writeUI8(flags)
 	}
 
 	override fun clone(): IFilter {

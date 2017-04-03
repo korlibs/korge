@@ -59,6 +59,32 @@ class ActionDefineFunction2(code: Int, length: Int, pos: Int) : Action(code, len
 		labelCount = resolveOffsets(functionBody)
 	}
 
+	override fun publish(data: SWFData) {
+		val body = SWFData()
+		body.writeString(functionName)
+		body.writeUI16(functionParams.size)
+		body.writeUI8(registerCount)
+		var flags1 = 0
+		if (preloadParent) flags1 = flags1 or 0x80
+		if (preloadRoot) flags1 = flags1 or 0x40
+		if (suppressSuper) flags1 = flags1 or 0x20
+		if (preloadSuper) flags1 = flags1 or 0x10
+		if (suppressArguments) flags1 = flags1 or 0x08
+		if (preloadArguments) flags1 = flags1 or 0x04
+		if (suppressThis) flags1 = flags1 or 0x02
+		if (preloadThis) flags1 = flags1 or 0x01
+		body.writeUI8(flags1)
+		var flags2 = 0
+		if (preloadGlobal) flags2 = flags2 or 0x01
+		body.writeUI8(flags2)
+		for (i in 0 until functionParams.size) body.writeREGISTERPARAM(functionParams[i])
+		val bodyActions = SWFData()
+		for (i in 0 until functionBody.size) bodyActions.writeACTIONRECORD(functionBody[i])
+		body.writeUI16(bodyActions.length)
+		write(data, body)
+		data.writeBytes(bodyActions)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionDefineFunction2(code, length, pos)
 		action.functionName = functionName
@@ -193,6 +219,33 @@ open class ActionTry(code: Int, length: Int, pos: Int) : Action(code, length, po
 		labelCountTry = resolveOffsets(tryBody)
 		labelCountCatch = resolveOffsets(catchBody)
 		labelCountFinally = resolveOffsets(finallyBody)
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		var flags: Int = 0
+		if (catchInRegisterFlag) flags = flags or 0x04
+		if (finallyBlockFlag) flags = flags or 0x02
+		if (catchBlockFlag) flags = flags or 0x01
+		body.writeUI8(flags)
+		val bodyTryActions: SWFData = SWFData()
+		for (i in 0 until tryBody.size) bodyTryActions.writeACTIONRECORD(tryBody[i])
+		val bodyCatchActions: SWFData = SWFData()
+		for (i in 0 until catchBody.size) bodyCatchActions.writeACTIONRECORD(catchBody[i])
+		val bodyFinallyActions: SWFData = SWFData()
+		for (i in 0 until finallyBody.size) bodyFinallyActions.writeACTIONRECORD(finallyBody[i])
+		body.writeUI16(bodyTryActions.length)
+		body.writeUI16(bodyCatchActions.length)
+		body.writeUI16(bodyFinallyActions.length)
+		if (catchInRegisterFlag) {
+			body.writeUI8(catchRegister)
+		} else {
+			body.writeString(catchName)
+		}
+		body.writeBytes(bodyTryActions)
+		body.writeBytes(bodyCatchActions)
+		body.writeBytes(bodyFinallyActions)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {

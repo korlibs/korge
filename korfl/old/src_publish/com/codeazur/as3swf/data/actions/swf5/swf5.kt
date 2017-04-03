@@ -101,6 +101,15 @@ class ActionConstantPool(code: Int, length: Int, pos: Int) : Action(code, length
 		}
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUI16(constants.size)
+		for (i in 0 until constants.size) {
+			body.writeString(constants[i])
+		}
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionConstantPool(code, length, pos)
 		for (i in 0 until constants.size) {
@@ -160,6 +169,22 @@ open class ActionDefineFunction(code: Int, length: Int, pos: Int) : Action(code,
 			functionBody.add(data.readACTIONRECORD()!!)
 		}
 		labelCount = resolveOffsets(functionBody)
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeString(functionName)
+		body.writeUI16(functionParams.size)
+		for (i in 0 until functionParams.size) {
+			body.writeString(functionParams[i])
+		}
+		val bodyActions = SWFData()
+		for (i in 0 until functionBody.size) {
+			bodyActions.writeACTIONRECORD(functionBody[i])
+		}
+		body.writeUI16(bodyActions.length)
+		write(data, body)
+		data.writeBytes(bodyActions)
 	}
 
 	override fun clone(): IAction {
@@ -376,6 +401,12 @@ class ActionStoreRegister(code: Int, length: Int, pos: Int) : Action(code, lengt
 		registerNumber = data.readUI8()
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUI8(registerNumber)
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionStoreRegister(code, length, pos)
 		action.registerNumber = registerNumber
@@ -438,6 +469,15 @@ open class ActionWith(code: Int, length: Int, pos: Int) : Action(code, length, p
 			withBody.add(data.readACTIONRECORD()!!)
 		}
 		labelCount = resolveOffsets(withBody)
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		val bodyActions = SWFData()
+		for (i in 0 until withBody.size) bodyActions.writeACTIONRECORD(withBody[i])
+		body.writeUI16(bodyActions.length)
+		body.writeBytes(bodyActions)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {

@@ -17,6 +17,10 @@ open class Action(
 		// For the ones that have one we override this method.
 	}
 
+	override fun publish(data: SWFData) {
+		write(data)
+	}
+
 	override fun clone(): IAction {
 		return Action(code, length, pos)
 	}
@@ -147,6 +151,7 @@ interface IAction {
 	var lbl: String?
 
 	fun parse(data: SWFData): Unit
+	fun publish(data: SWFData): Unit
 	fun clone(): IAction
 	fun toString(indent: Int = 0): String
 	fun toBytecode(indent: Int, context: ActionExecutionContext): String

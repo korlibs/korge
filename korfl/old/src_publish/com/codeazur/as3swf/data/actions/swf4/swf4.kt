@@ -123,6 +123,15 @@ class ActionGetURL2(code: Int, length: Int, pos: Int) : Action(code, length, pos
 		loadVariablesFlag = (data.readUB(1) == 1)
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUB(2, sendVarsMethod)
+		body.writeUB(4, reserved) // reserved, always 0
+		body.writeUB(1, loadTargetFlag)
+		body.writeUB(1, loadVariablesFlag)
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionGetURL2(code, length, pos)
 		action.sendVarsMethod = sendVarsMethod
@@ -187,6 +196,22 @@ class ActionGotoFrame2(code: Int, length: Int, pos: Int) : Action(code, length, 
 		}
 	}
 
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		var flags: Int = 0
+		if (sceneBiasFlag) {
+			flags = flags or 0x02
+		}
+		if (playFlag) {
+			flags = flags or 0x01
+		}
+		body.writeUI8(flags)
+		if (sceneBiasFlag) {
+			body.writeUI16(sceneBias)
+		}
+		write(data, body)
+	}
+
 	override fun clone(): IAction {
 		val action = ActionGotoFrame2(code, length, pos)
 		action.sceneBiasFlag = sceneBiasFlag
@@ -221,6 +246,12 @@ class ActionIf(code: Int, length: Int, pos: Int) : Action(code, length, pos), IA
 
 	override fun parse(data: SWFData): Unit {
 		branchOffset = data.readSI16()
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeSI16(branchOffset)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {
@@ -267,6 +298,12 @@ class ActionJump(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 
 	override fun parse(data: SWFData): Unit {
 		branchOffset = data.readSI16()
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeSI16(branchOffset)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {
@@ -394,6 +431,14 @@ class ActionPush(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 		while (data.position != endPosition) {
 			values.add(data.readACTIONVALUE())
 		}
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		for (i in 0 until values.size) {
+			body.writeACTIONVALUE(values[i])
+		}
+		write(data, body)
 	}
 
 	override fun clone(): IAction {
@@ -551,6 +596,12 @@ class ActionWaitForFrame2(code: Int, length: Int, pos: Int) : Action(code, lengt
 
 	override fun parse(data: SWFData): Unit {
 		skipCount = data.readUI8()
+	}
+
+	override fun publish(data: SWFData): Unit {
+		val body = SWFData()
+		body.writeUI8(skipCount)
+		write(data, body)
 	}
 
 	override fun clone(): IAction {

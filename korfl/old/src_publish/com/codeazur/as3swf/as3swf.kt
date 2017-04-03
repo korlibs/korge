@@ -77,6 +77,14 @@ open class SWF : SWFTimelineContainer(), Extra by Extra.Mixin() {
 		parseTags(data, version)
 	}
 
+	suspend fun publish(): ByteArray {
+		val data = SWFData()
+		publishHeader(data)
+		publishTags(data, version)
+		publishFinalize(data)
+		return data.cloneToNewByteArray()
+	}
+
 	protected fun parseHeader() {
 		signature = ""
 		compressed = false
@@ -118,6 +126,40 @@ open class SWF : SWFTimelineContainer(), Extra by Extra.Mixin() {
 		frameSize = bytes.readRECT()
 		frameRate = bytes.readFIXED8()
 		frameCount = bytes.readUI16()
+	}
+
+	protected fun publishHeader(data: SWFData) {
+		var firstHeaderByte = 0x46
+		if (compressed) {
+			if (compressionMethod == COMPRESSION_METHOD_ZLIB) {
+				firstHeaderByte = 0x43
+			} else if (compressionMethod == COMPRESSION_METHOD_LZMA) {
+				firstHeaderByte = 0x5A
+			}
+		}
+		data.writeUI8(firstHeaderByte)
+		data.writeUI8(0x57)
+		data.writeUI8(0x53)
+		data.writeUI8(version)
+		data.writeUI32(0)
+		data.writeRECT(frameSize)
+		data.writeFIXED8(frameRate)
+		data.writeUI16(frameCount) // TODO: get the real number of frames from the tags
+	}
+
+	protected fun publishFinalize(data: SWFData) {
+		fileLength = data.length
+		fileLengthCompressed = data.length
+		if (compressed) {
+			compressionMethod = SWF.COMPRESSION_METHOD_ZLIB // Force ZLIB compression. LZMA doesn't seem to work when publishing.
+			data.position = COMPRESSION_START_POS
+			data.swfCompress(compressionMethod)
+			fileLengthCompressed = data.length
+		}
+		var endPos = data.position
+		data.position = FILE_LENGTH_POS
+		data.writeUI32(fileLength)
+		data.position = 0
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
@@ -362,18 +404,97 @@ class SWFData : BitArray() {
 		writeRGB(value)
 	}
 
+	/////////////////////////////////////////////////////////
+	// Rectangle record
+	/////////////////////////////////////////////////////////
+
 	fun readRECT(): SWFRectangle = SWFRectangle().apply { parse(this@SWFData) }
+	fun writeRECT(value: SWFRectangle) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Matrix record
+	/////////////////////////////////////////////////////////
+
 	fun readMATRIX(): SWFMatrix = SWFMatrix().apply { parse(this@SWFData) }
+
+	fun writeMATRIX(value: SWFMatrix) {
+		this.resetBitsPending()
+
+		val hasScale: Boolean = (value.scaleX != 1.0) || (value.scaleY != 1.0)
+		val hasRotate: Boolean = (value.rotateSkew0 != 0.0) || (value.rotateSkew1 != 0.0)
+
+		writeSingleBit(hasScale)
+		if (hasScale) {
+			val scaleBits: Int
+			if (value.scaleX == 0.0 && value.scaleY == 0.0) {
+				scaleBits = 1
+			} else {
+				scaleBits = calculateMaxBits(true, (value.scaleX * 65536).toInt(), (value.scaleY * 65536).toInt())
+			}
+			writeUB(5, scaleBits)
+			writeFB(scaleBits, value.scaleX)
+			writeFB(scaleBits, value.scaleY)
+		}
+
+		writeSingleBit(hasRotate)
+		if (hasRotate) {
+			val rotateBits = calculateMaxBits(true, (value.rotateSkew0 * 65536).toInt(), (value.rotateSkew1 * 65536).toInt())
+			writeUB(5, rotateBits)
+			writeFB(rotateBits, value.rotateSkew0)
+			writeFB(rotateBits, value.rotateSkew1)
+		}
+
+		val translateBits = calculateMaxBits(true, value.translateX, value.translateY)
+		writeUB(5, translateBits)
+		writeSB(translateBits, value.translateX)
+		writeSB(translateBits, value.translateY)
+	}
+
+	/////////////////////////////////////////////////////////
+	// Color transform records
+	/////////////////////////////////////////////////////////
+
 	fun readCXFORM(): SWFColorTransform = SWFColorTransform().apply { parse(this@SWFData) }
+	fun writeCXFORM(value: SWFColorTransform) = value.publish(this)
 	fun readCXFORMWITHALPHA(): SWFColorTransformWithAlpha = SWFColorTransformWithAlpha().apply { parse(this@SWFData) }
+	fun writeCXFORMWITHALPHA(value: SWFColorTransformWithAlpha) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Shape and shape records
+	/////////////////////////////////////////////////////////
+
 	fun readSHAPE(unitDivisor: Double = 20.0): SWFShape = SWFShape(unitDivisor).apply { parse(this@SWFData) }
+	fun writeSHAPE(value: SWFShape) = value.publish(this)
 	fun readSHAPEWITHSTYLE(level: Int = 1, unitDivisor: Double = 20.0): SWFShapeWithStyle = SWFShapeWithStyle(unitDivisor).apply { parse(this@SWFData, level) }
+	fun writeSHAPEWITHSTYLE(value: SWFShapeWithStyle, level: Int = 1) = value.publish(this, level)
 	fun readSTRAIGHTEDGERECORD(numBits: Int) = SWFShapeRecordStraightEdge(numBits).apply { parse(this@SWFData) }
+	fun writeSTRAIGHTEDGERECORD(value: SWFShapeRecordStraightEdge) = value.publish(this)
 	fun readCURVEDEDGERECORD(numBits: Int): SWFShapeRecordCurvedEdge = SWFShapeRecordCurvedEdge(numBits).apply { parse(this@SWFData) }
+
+	fun writeCURVEDEDGERECORD(value: SWFShapeRecordCurvedEdge) = value.publish(this)
 	fun readSTYLECHANGERECORD(states: Int, fillBits: Int, lineBits: Int, level: Int = 1): SWFShapeRecordStyleChange = SWFShapeRecordStyleChange(states, fillBits, lineBits).apply { parse(this@SWFData, level) }
+
+	fun writeSTYLECHANGERECORD(value: SWFShapeRecordStyleChange, fillBits: Int, lineBits: Int, level: Int = 1) {
+		value.numFillBits = fillBits
+		value.numLineBits = lineBits
+		value.publish(this, level)
+	}
+
+
+	/////////////////////////////////////////////////////////
+	// Fill- and Linestyles
+	/////////////////////////////////////////////////////////
+
 	fun readFILLSTYLE(level: Int = 1): SWFFillStyle = SWFFillStyle().apply { parse(this@SWFData, level) }
+	fun writeFILLSTYLE(value: SWFFillStyle, level: Int = 1) = value.publish(this, level)
 	fun readLINESTYLE(level: Int = 1): SWFLineStyle = SWFLineStyle().apply { parse(this@SWFData, level) }
+	fun writeLINESTYLE(value: SWFLineStyle, level: Int = 1) = value.publish(this, level)
 	fun readLINESTYLE2(level: Int = 1): SWFLineStyle2 = SWFLineStyle2().apply { parse(this@SWFData, level) }
+	fun writeLINESTYLE2(value: SWFLineStyle2, level: Int = 1) = value.publish(this, level)
+
+	/////////////////////////////////////////////////////////
+	// Button record
+	/////////////////////////////////////////////////////////
 
 	fun readBUTTONRECORD(level: Int = 1): SWFButtonRecord? {
 		if (readUI8() == 0) {
@@ -384,13 +505,29 @@ class SWFData : BitArray() {
 		}
 	}
 
+	fun writeBUTTONRECORD(value: SWFButtonRecord, level: Int = 1) = value.publish(this, level)
 	fun readBUTTONCONDACTION(): SWFButtonCondAction = SWFButtonCondAction().apply { parse(this@SWFData) }
+	fun writeBUTTONCONDACTION(value: SWFButtonCondAction) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Filter
+	/////////////////////////////////////////////////////////
+
 	fun readFILTER(): IFilter {
 		val filterId = readUI8()
 		val filter = SWFFilterFactory.create(filterId)
 		filter.parse(this)
 		return filter
 	}
+
+	fun writeFILTER(value: IFilter) {
+		writeUI8(value.id)
+		value.publish(this)
+	}
+
+	/////////////////////////////////////////////////////////
+	// Text record
+	/////////////////////////////////////////////////////////
 
 	fun readTEXTRECORD(glyphBits: Int, advanceBits: Int, previousRecord: SWFTextRecord? = null, level: Int = 1): SWFTextRecord? {
 		if (readUI8() == 0) {
@@ -401,19 +538,58 @@ class SWFData : BitArray() {
 		}
 	}
 
+	fun writeTEXTRECORD(value: SWFTextRecord, glyphBits: Int, advanceBits: Int, previousRecord: SWFTextRecord? = null, level: Int = 1) = value.publish(this, glyphBits, advanceBits, previousRecord, level)
 	fun readGLYPHENTRY(glyphBits: Int, advanceBits: Int): SWFGlyphEntry = SWFGlyphEntry().apply { parse(this@SWFData, glyphBits, advanceBits) }
+	fun writeGLYPHENTRY(value: SWFGlyphEntry, glyphBits: Int, advanceBits: Int) = value.publish(this, glyphBits, advanceBits)
+
+	/////////////////////////////////////////////////////////
+	// Zone record
+	/////////////////////////////////////////////////////////
+
 	fun readZONERECORD(): SWFZoneRecord = SWFZoneRecord().apply { parse(this@SWFData) }
+	fun writeZONERECORD(value: SWFZoneRecord) = value.publish(this)
 	fun readZONEDATA(): SWFZoneData = SWFZoneData().apply { parse(this@SWFData) }
+	fun writeZONEDATA(value: SWFZoneData) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Kerning record
+	/////////////////////////////////////////////////////////
+
 	fun readKERNINGRECORD(wideCodes: Boolean): SWFKerningRecord = SWFKerningRecord().apply { parse(this@SWFData, wideCodes) }
+	fun writeKERNINGRECORD(value: SWFKerningRecord, wideCodes: Boolean) = value.publish(this, wideCodes)
+
+	/////////////////////////////////////////////////////////
+	// Gradients
+	/////////////////////////////////////////////////////////
+
 	fun readGRADIENT(level: Int = 1): SWFGradient = SWFGradient().apply { parse(this@SWFData, level) }
+	fun writeGRADIENT(value: SWFGradient, level: Int = 1) = value.publish(this, level)
 	fun readFOCALGRADIENT(level: Int = 1): SWFFocalGradient = SWFFocalGradient().apply { parse(this@SWFData, level) }
+	fun writeFOCALGRADIENT(value: SWFFocalGradient, level: Int = 1) = value.publish(this, level)
 	fun readGRADIENTRECORD(level: Int = 1): SWFGradientRecord = SWFGradientRecord().apply { parse(this@SWFData, level) }
+	fun writeGRADIENTRECORD(value: SWFGradientRecord, level: Int = 1) = value.publish(this, level)
+
+	/////////////////////////////////////////////////////////
+	// Morphs
+	/////////////////////////////////////////////////////////
+
 	fun readMORPHFILLSTYLE(level: Int = 1) = SWFMorphFillStyle().apply { parse(this@SWFData, level) }
+	fun writeMORPHFILLSTYLE(value: SWFMorphFillStyle, level: Int = 1) = value.publish(this, level)
 	fun readMORPHLINESTYLE(level: Int = 1) = SWFMorphLineStyle().apply { parse(this@SWFData, level) }
+	fun writeMORPHLINESTYLE(value: SWFMorphLineStyle, level: Int = 1) = value.publish(this, level)
 	fun readMORPHLINESTYLE2(level: Int = 1): SWFMorphLineStyle2 = SWFMorphLineStyle2().apply { parse(this@SWFData, level) }
+	fun writeMORPHLINESTYLE2(value: SWFMorphLineStyle2, level: Int = 1) = value.publish(this, level)
 	fun readMORPHGRADIENT(level: Int = 1) = SWFMorphGradient().apply { parse(this@SWFData, level) }
+	fun writeMORPHGRADIENT(value: SWFMorphGradient, level: Int = 1) = value.publish(this, level)
 	fun readMORPHFOCALGRADIENT(level: Int = 1) = SWFMorphFocalGradient().apply { parse(this@SWFData, level) }
+	fun writeMORPHFOCALGRADIENT(value: SWFMorphFocalGradient, level: Int = 1) = value.publish(this, level)
 	fun readMORPHGRADIENTRECORD(): SWFMorphGradientRecord = SWFMorphGradientRecord().apply { parse(this@SWFData) }
+	fun writeMORPHGRADIENTRECORD(value: SWFMorphGradientRecord) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Action records
+	/////////////////////////////////////////////////////////
+
 	fun readACTIONRECORD(): IAction? {
 		val pos: Int = position
 		var action: IAction? = null
@@ -427,10 +603,33 @@ class SWFData : BitArray() {
 	}
 	fun readACTIONVALUE(): SWFActionValue = SWFActionValue().apply { parse(this@SWFData) }
 	fun readREGISTERPARAM(): SWFRegisterParam = SWFRegisterParam().apply { parse(this@SWFData) }
+
+	fun writeACTIONRECORD(action: IAction) = action.publish(this)
+	fun writeACTIONVALUE(value: SWFActionValue) = value.publish(this)
+	fun writeREGISTERPARAM(value: SWFRegisterParam) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Symbols
+	/////////////////////////////////////////////////////////
+
 	fun readSYMBOL(): SWFSymbol = SWFSymbol().apply { parse(this@SWFData) }
+	fun writeSYMBOL(value: SWFSymbol) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// Sound records
+	/////////////////////////////////////////////////////////
+
 	fun readSOUNDINFO(): SWFSoundInfo = SWFSoundInfo().apply { parse(this@SWFData) }
+	fun writeSOUNDINFO(value: SWFSoundInfo) = value.publish(this)
 	fun readSOUNDENVELOPE(): SWFSoundEnvelope = SWFSoundEnvelope().apply { parse(this@SWFData) }
+	fun writeSOUNDENVELOPE(value: SWFSoundEnvelope) = value.publish(this)
+
+	/////////////////////////////////////////////////////////
+	// ClipEvents
+	/////////////////////////////////////////////////////////
+
 	fun readCLIPACTIONS(version: Int): SWFClipActions = SWFClipActions().apply { parse(this@SWFData, version) }
+	fun writeCLIPACTIONS(value: SWFClipActions, version: Int) = value.publish(this, version)
 	fun readCLIPACTIONRECORD(version: Int): SWFClipActionRecord? {
 		val pos = position
 		val flags = if (version >= 6) readUI32() else readUI16()
@@ -441,7 +640,16 @@ class SWFData : BitArray() {
 			return SWFClipActionRecord().apply { parse(this@SWFData, version) }
 		}
 	}
+
+	fun writeCLIPACTIONRECORD(value: SWFClipActionRecord, version: Int) = value.publish(this, version)
 	fun readCLIPEVENTFLAGS(version: Int): SWFClipEventFlags = SWFClipEventFlags().apply { parse(this@SWFData, version) }
+	fun writeCLIPEVENTFLAGS(value: SWFClipEventFlags, version: Int) = value.publish(this, version)
+
+
+	/////////////////////////////////////////////////////////
+	// Tag header
+	/////////////////////////////////////////////////////////
+
 	fun readTagHeader(): SWFRecordHeader {
 		val pos = position
 		val tagTypeAndLength = readUI16()
@@ -454,6 +662,20 @@ class SWFData : BitArray() {
 		return SWFRecordHeader(tagTypeAndLength ushr 6, tagLength, position - pos)
 	}
 
+	fun writeTagHeader(type: Int, length: Int, forceLongHeader: Boolean = false) {
+		if (length < 0x3f && !forceLongHeader) {
+			writeUI16((type shl 6) or length)
+		} else {
+			writeUI16((type shl 6) or 0x3f)
+			// The SWF10 spec sez that this is a signed int.
+			// Shouldn't it be an unsigned int?
+			writeSI32(length)
+		}
+	}
+
+	/////////////////////////////////////////////////////////
+	// SWF Compression
+	/////////////////////////////////////////////////////////
 
 	fun swfUncompress(compressionMethod: String, uncompressedLength: Int = 0) {
 		val pos = position
@@ -685,6 +907,27 @@ open class SWFTimelineContainer {
 		if (AUTOBUILD_LAYERS) {
 			// TODO: This needs to go into processTags()
 			buildLayers()
+		}
+	}
+
+	suspend fun publishTags(data: SWFData, version: Int): Unit {
+		_tmpData = data
+		_tmpVersion = version
+		for (n in 0 until Math.max(tags.size, tagsRaw.size)) {
+			val tag = tags.getOrNull(n)
+			val tagRaw = tagsRaw.getOrNull(n)
+			publishTag(_tmpData!!, tag, tagRaw, _tmpVersion)
+			if (tag != null && tag.type == TagEnd.TYPE) break
+		}
+	}
+
+	suspend fun publishTag(data: SWFData, tag: ITag?, rawTag: SWFRawTag?, version: Int): Unit {
+		if (tag != null) {
+			tag.publish(data, version)
+		} else if (rawTag != null) {
+			rawTag.publish(data)
+		} else {
+			println("FATAL: publish error: No raw tag fallback")
 		}
 	}
 

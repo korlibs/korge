@@ -64,6 +64,34 @@ class SWFActionValue {
 		}
 	}
 
+	fun publish(data: SWFData): Unit {
+		data.writeUI8(type)
+		when (type) {
+			ActionValueType.STRING -> data.writeString(string)
+			ActionValueType.FLOAT -> data.writeFLOAT(number)
+			ActionValueType.NULL -> Unit
+			ActionValueType.UNDEFINED -> Unit
+			ActionValueType.REGISTER -> data.writeUI8(register)
+			ActionValueType.BOOLEAN -> data.writeUI8(boolean)
+			ActionValueType.DOUBLE -> {
+				SWFActionValue.ba.position = 0
+				SWFActionValue.ba.writeDouble(number)
+				data.writeUI8(SWFActionValue.ba[4])
+				data.writeUI8(SWFActionValue.ba[5])
+				data.writeUI8(SWFActionValue.ba[6])
+				data.writeUI8(SWFActionValue.ba[7])
+				data.writeUI8(SWFActionValue.ba[0])
+				data.writeUI8(SWFActionValue.ba[1])
+				data.writeUI8(SWFActionValue.ba[2])
+				data.writeUI8(SWFActionValue.ba[3])
+			}
+			ActionValueType.INTEGER -> data.writeUI32(integer)
+			ActionValueType.CONSTANT_8 -> data.writeUI8(constant)
+			ActionValueType.CONSTANT_16 -> data.writeUI16(constant)
+			else -> throw(Error("Unknown ActionValueType: " + type))
+		}
+	}
+
 	fun clone(): SWFActionValue {
 		val value = SWFActionValue()
 		when (type) {
@@ -156,6 +184,28 @@ class SWFButtonCondAction {
 		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
+	fun publish(data: SWFData): Unit {
+		var flags1: Int = 0
+		if (condIdleToOverDown) flags1 = flags1 or 0x80
+		if (condOutDownToIdle) flags1 = flags1 or 0x40
+		if (condOutDownToOverDown) flags1 = flags1 or 0x20
+		if (condOverDownToOutDown) flags1 = flags1 or 0x10
+		if (condOverDownToOverUp) flags1 = flags1 or 0x08
+		if (condOverUpToOverDown) flags1 = flags1 or 0x04
+		if (condOverUpToIdle) flags1 = flags1 or 0x02
+		if (condIdleToOverUp) flags1 = flags1 or 0x01
+		data.writeUI8(flags1)
+		var flags2: Int = condKeyPress shl 1
+		if (condOverDownToIdle) {
+			flags2 = flags2 or 0x01
+		}
+		data.writeUI8(flags2)
+		for (i in 0 until actions.size) {
+			data.writeACTIONRECORD(actions[i])
+		}
+		data.writeUI8(0)
+	}
+
 	fun clone(): com.codeazur.as3swf.data.SWFButtonCondAction {
 		val condAction = com.codeazur.as3swf.data.SWFButtonCondAction()
 		condAction.condActionSize = condActionSize
@@ -246,6 +296,33 @@ class SWFButtonRecord {
 		}
 	}
 
+	fun publish(data: SWFData, level: Int = 1): Unit {
+		var flags: Int = 0
+		if (level >= 2 && hasBlendMode) flags = flags or 0x20
+		if (level >= 2 && hasFilterList) flags = flags or 0x10
+		if (stateHitTest) flags = flags or 0x08
+		if (stateDown) flags = flags or 0x04
+		if (stateOver) flags = flags or 0x02
+		if (stateUp) flags = flags or 0x01
+		data.writeUI8(flags)
+		data.writeUI16(characterId)
+		data.writeUI16(placeDepth)
+		data.writeMATRIX(placeMatrix!!)
+		if (level >= 2) {
+			data.writeCXFORMWITHALPHA(colorTransform!!)
+			if (hasFilterList) {
+				val numberOfFilters: Int = filterList.size
+				data.writeUI8(numberOfFilters)
+				for (i in 0 until numberOfFilters) {
+					data.writeFILTER(filterList[i])
+				}
+			}
+			if (hasBlendMode) {
+				data.writeUI8(blendMode)
+			}
+		}
+	}
+
 	fun clone(): com.codeazur.as3swf.data.SWFButtonRecord {
 		val data: com.codeazur.as3swf.data.SWFButtonRecord = com.codeazur.as3swf.data.SWFButtonRecord()
 		data.hasBlendMode = hasBlendMode
@@ -304,6 +381,20 @@ class SWFClipActionRecord {
 		labelCount = com.codeazur.as3swf.data.actions.Action.resolveOffsets(actions)
 	}
 
+	fun publish(data: SWFData, version: Int): Unit {
+		data.writeCLIPEVENTFLAGS(eventFlags, version)
+		val actionBlock: SWFData = SWFData()
+		if (eventFlags.keyPressEvent) {
+			actionBlock.writeUI8(keyCode)
+		}
+		for (i in 0 until actions.size) {
+			actionBlock.writeACTIONRECORD(actions[i])
+		}
+		actionBlock.writeUI8(0)
+		data.writeUI32(actionBlock.length) // actionRecordSize
+		data.writeBytes(actionBlock)
+	}
+
 	fun toString(indent: Int = 0, flags: Int = 0): String {
 		var str: String = "ClipActionRecord (" + eventFlags.toString() + ")"
 		if (keyCode > 0) {
@@ -335,6 +426,13 @@ class SWFClipActions {
 		data.readUI16() // reserved, always 0
 		eventFlags = data.readCLIPEVENTFLAGS(version)
 		while (true) records.add(data.readCLIPACTIONRECORD(version) ?: break)
+	}
+
+	fun publish(data: SWFData, version: Int): Unit {
+		data.writeUI16(0) // reserved, always 0
+		data.writeCLIPEVENTFLAGS(eventFlags, version)
+		for (i in 0 until records.size) data.writeCLIPACTIONRECORD(records[i], version)
+		if (version >= 6) data.writeUI32(0) else data.writeUI16(0)
 	}
 
 	fun toString(indent: Int = 0, flags: Int = 0): String {
@@ -392,6 +490,37 @@ class SWFClipEventFlags {
 			keyPressEvent = ((flags3 and 0x02) != 0)
 			dragOutEvent = ((flags3 and 0x01) != 0)
 			data.readUI8() // reserved, always 0
+		}
+	}
+
+	fun publish(data: SWFData, version: Int): Unit {
+		var flags1: Int = 0
+		if (keyUpEvent) flags1 = flags1 or 0x80
+		if (keyDownEvent) flags1 = flags1 or 0x40
+		if (mouseUpEvent) flags1 = flags1 or 0x20
+		if (mouseDownEvent) flags1 = flags1 or 0x10
+		if (mouseMoveEvent) flags1 = flags1 or 0x08
+		if (unloadEvent) flags1 = flags1 or 0x04
+		if (enterFrameEvent) flags1 = flags1 or 0x02
+		if (loadEvent) flags1 = flags1 or 0x01
+		data.writeUI8(flags1)
+		var flags2: Int = 0
+		if (dragOverEvent) flags2 = flags2 or 0x80
+		if (rollOutEvent) flags2 = flags2 or 0x40
+		if (rollOverEvent) flags2 = flags2 or 0x20
+		if (releaseOutsideEvent) flags2 = flags2 or 0x10
+		if (releaseEvent) flags2 = flags2 or 0x08
+		if (pressEvent) flags2 = flags2 or 0x04
+		if (initializeEvent) flags2 = flags2 or 0x02
+		if (dataEvent) flags2 = flags2 or 0x01
+		data.writeUI8(flags2)
+		if (version >= 6) {
+			var flags3: Int = 0
+			if (constructEvent) flags3 = flags3 or 0x04
+			if (keyPressEvent) flags3 = flags3 or 0x02
+			if (dragOutEvent) flags3 = flags3 or 0x01
+			data.writeUI8(flags3)
+			data.writeUI8(0) // reserved, always 0
 		}
 	}
 
@@ -469,6 +598,31 @@ open class SWFColorTransform {
 		}
 	}
 
+	open fun publish(data: SWFData) {
+		data.resetBitsPending()
+		data.writeUB(1, hasAddTerms)
+		data.writeUB(1, hasMultTerms)
+		val values = arrayListOf<Int>()
+		if (hasMultTerms) {
+			values.add(_rMult); values.add(_gMult); values.add(_bMult)
+		}
+		if (hasAddTerms) {
+			values.add(_rAdd); values.add(_gAdd); values.add(_bAdd)
+		}
+		val bits = data.calculateMaxBits(true, values)
+		data.writeUB(4, bits)
+		if (hasMultTerms) {
+			data.writeSB(bits, _rMult)
+			data.writeSB(bits, _gMult)
+			data.writeSB(bits, _bMult)
+		}
+		if (hasAddTerms) {
+			data.writeSB(bits, _rAdd)
+			data.writeSB(bits, _gAdd)
+			data.writeSB(bits, _bAdd)
+		}
+	}
+
 	open fun clone(): SWFColorTransform {
 		val colorTransform = SWFColorTransform()
 		colorTransform.hasAddTerms = hasAddTerms
@@ -522,6 +676,33 @@ class SWFColorTransformWithAlpha : SWFColorTransform() {
 			_gAdd = 0
 			_bAdd = 0
 			_aAdd = 0
+		}
+	}
+
+	override fun publish(data: SWFData): Unit {
+		data.resetBitsPending()
+		data.writeUB(1, hasAddTerms)
+		data.writeUB(1, hasMultTerms)
+		val values = arrayListOf<Int>()
+		if (hasMultTerms) {
+			values.add(_rMult); values.add(_gMult); values.add(_bMult); values.add(_aMult)
+		}
+		if (hasAddTerms) {
+			values.add(_rAdd); values.add(_gAdd); values.add(_bAdd); values.add(_aAdd)
+		}
+		val bits: Int = if (hasMultTerms || hasAddTerms) data.calculateMaxBits(true, values) else 1
+		data.writeUB(4, bits)
+		if (hasMultTerms) {
+			data.writeSB(bits, _rMult)
+			data.writeSB(bits, _gMult)
+			data.writeSB(bits, _bMult)
+			data.writeSB(bits, _aMult)
+		}
+		if (hasAddTerms) {
+			data.writeSB(bits, _rAdd)
+			data.writeSB(bits, _gAdd)
+			data.writeSB(bits, _bAdd)
+			data.writeSB(bits, _aAdd)
 		}
 	}
 
@@ -579,6 +760,25 @@ class SWFFillStyle {
 		}
 	}
 
+	fun publish(data: SWFData, level: Int = 1): Unit {
+		data.writeUI8(type)
+		when (type) {
+			0x00 -> {
+				if (level <= 2) data.writeRGB(rgb) else data.writeRGBA(rgb)
+			}
+			0x10, 0x12 -> {
+				data.writeMATRIX(gradientMatrix!!); data.writeGRADIENT(gradient!!, level)
+			}
+			0x13 -> {
+				data.writeMATRIX(gradientMatrix!!); data.writeFOCALGRADIENT(gradient!! as SWFFocalGradient, level)
+			}
+			0x40, 0x41, 0x42, 0x43 -> {
+				data.writeUI16(bitmapId); data.writeMATRIX(bitmapMatrix!!)
+			}
+			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
+		}
+	}
+
 	fun clone(): SWFFillStyle {
 		val fillStyle: SWFFillStyle = SWFFillStyle()
 		fillStyle.type = type
@@ -612,6 +812,11 @@ class SWFFocalGradient : SWFGradient() {
 		focalPoint = data.readFIXED8()
 	}
 
+	override fun publish(data: SWFData, level: Int): Unit {
+		super.publish(data, level)
+		data.writeFIXED8(focalPoint)
+	}
+
 	override fun toString(): String = "(" + records.joinToString(",") + ")"
 }
 
@@ -627,6 +832,12 @@ class SWFGlyphEntry {
 		// GLYPHENTRYs are not byte aligned
 		index = data.readUB(glyphBits)
 		advance = data.readSB(advanceBits)
+	}
+
+	fun publish(data: SWFData, glyphBits: Int, advanceBits: Int): Unit {
+		// GLYPHENTRYs are not byte aligned
+		data.writeUB(glyphBits, index)
+		data.writeSB(advanceBits, advance)
 	}
 
 	fun clone(): com.codeazur.as3swf.data.SWFGlyphEntry {
@@ -658,6 +869,17 @@ open class SWFGradient {
 		for (i in 0 until numGradients) records.add(data.readGRADIENTRECORD(level))
 	}
 
+	open fun publish(data: SWFData, level: Int = 1): Unit {
+		val numRecords: Int = records.size
+		data.resetBitsPending()
+		data.writeUB(2, spreadMode.id)
+		data.writeUB(2, interpolationMode.id)
+		data.writeUB(4, numRecords)
+		for (i in 0 until numRecords) {
+			data.writeGRADIENTRECORD(records[i], level)
+		}
+	}
+
 	fun clone(): com.codeazur.as3swf.data.SWFGradient {
 		val gradient: com.codeazur.as3swf.data.SWFGradient = com.codeazur.as3swf.data.SWFGradient()
 		gradient.spreadMode = spreadMode
@@ -684,6 +906,11 @@ class SWFGradientRecord {
 		color = if (level <= 2) data.readRGB() else data.readRGBA()
 	}
 
+	fun publish(data: SWFData, level: Int): Unit {
+		data.writeUI8(ratio)
+		if (level <= 2) data.writeRGB(color) else data.writeRGBA(color)
+	}
+
 	fun clone(): com.codeazur.as3swf.data.SWFGradientRecord {
 		val gradientRecord: com.codeazur.as3swf.data.SWFGradientRecord = com.codeazur.as3swf.data.SWFGradientRecord()
 		gradientRecord.ratio = ratio
@@ -705,6 +932,12 @@ class SWFKerningRecord {
 		code1 = if (wideCodes) data.readUI16() else data.readUI8()
 		code2 = if (wideCodes) data.readUI16() else data.readUI8()
 		adjustment = data.readSI16()
+	}
+
+	fun publish(data: SWFData, wideCodes: Boolean): Unit {
+		if (wideCodes) data.writeUI16(code1) else data.writeUI8(code1)
+		if (wideCodes) data.writeUI16(code2) else data.writeUI8(code2)
+		data.writeSI16(adjustment)
 	}
 
 	fun toString(indent: Int = 0): String = "Code1: $code1, Code2: $code2, Adjustment: $adjustment"
@@ -732,6 +965,15 @@ open class SWFLineStyle {
 		_level = level
 		width = data.readUI16()
 		color = if (level <= 2) data.readRGB() else data.readRGBA()
+	}
+
+	open fun publish(data: SWFData, level: Int = 1): Unit {
+		data.writeUI16(width)
+		if (level <= 2) {
+			data.writeRGB(color)
+		} else {
+			data.writeRGBA(color)
+		}
 	}
 
 	fun clone(): SWFLineStyle {
@@ -773,6 +1015,25 @@ class SWFLineStyle2 : SWFLineStyle() {
 			fillType = data.readFILLSTYLE(level)
 		} else {
 			color = data.readRGBA()
+		}
+	}
+
+	override fun publish(data: SWFData, level: Int): Unit {
+		data.writeUI16(width)
+		data.writeUB(2, startCapsStyle.id)
+		data.writeUB(2, jointStyle)
+		data.writeUB(1, hasFillFlag)
+		data.writeUB(1, noHScaleFlag)
+		data.writeUB(1, noVScaleFlag)
+		data.writeUB(1, pixelHintingFlag)
+		data.writeUB(5, 0)
+		data.writeUB(1, noClose)
+		data.writeUB(2, endCapsStyle.id)
+		if (jointStyle == com.codeazur.as3swf.data.consts.LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
+		if (hasFillFlag) {
+			data.writeFILLSTYLE(fillType!!, level)
+		} else {
+			data.writeRGBA(color)
 		}
 	}
 
@@ -885,6 +1146,31 @@ class SWFMorphFillStyle {
 		}
 	}
 
+	fun publish(data: SWFData, level: Int = 1): Unit {
+		data.writeUI8(type)
+		when (type) {
+			0x00 -> {
+				data.writeRGBA(startColor)
+				data.writeRGBA(endColor)
+			}
+			0x10, 0x12, 0x13 -> {
+				data.writeMATRIX(startGradientMatrix)
+				data.writeMATRIX(endGradientMatrix)
+				if (type == 0x13) {
+					data.writeMORPHFOCALGRADIENT(gradient as com.codeazur.as3swf.data.SWFMorphFocalGradient, level)
+				} else {
+					data.writeMORPHGRADIENT(gradient as SWFMorphGradient, level)
+				}
+			}
+			0x40, 0x41, 0x42, 0x43 -> {
+				data.writeUI16(bitmapId)
+				data.writeMATRIX(startBitmapMatrix)
+				data.writeMATRIX(endBitmapMatrix)
+			}
+			else -> throw Error("Unknown fill style type: 0x${type.toString(16)}")
+		}
+	}
+
 	fun getMorphedFillStyle(ratio: Double): SWFFillStyle {
 		val fillStyle: SWFFillStyle = SWFFillStyle()
 		fillStyle.type = type
@@ -924,6 +1210,12 @@ class SWFMorphFocalGradient : SWFMorphGradient() {
 		endFocalPoint = data.readFIXED8()
 	}
 
+	override fun publish(data: SWFData, level: Int): Unit {
+		super.publish(data, level)
+		data.writeFIXED8(startFocalPoint)
+		data.writeFIXED8(endFocalPoint)
+	}
+
 	override fun getMorphedGradient(ratio: Double): com.codeazur.as3swf.data.SWFGradient {
 		val gradient: com.codeazur.as3swf.data.SWFGradient = com.codeazur.as3swf.data.SWFGradient()
 		// TODO: focalPoint
@@ -958,6 +1250,17 @@ open class SWFMorphGradient {
 		}
 	}
 
+	open fun publish(data: SWFData, level: Int): Unit {
+		val numGradients: Int = records.size
+		data.resetBitsPending()
+		data.writeUB(2, spreadMode)
+		data.writeUB(2, interpolationMode)
+		data.writeUB(4, numGradients)
+		for (i in 0 until numGradients) {
+			data.writeMORPHGRADIENTRECORD(records[i])
+		}
+	}
+
 	open fun getMorphedGradient(ratio: Double = 0.0): com.codeazur.as3swf.data.SWFGradient {
 		val gradient: com.codeazur.as3swf.data.SWFGradient = com.codeazur.as3swf.data.SWFGradient()
 		for (i in 0 until records.size) {
@@ -982,6 +1285,13 @@ class SWFMorphGradientRecord {
 		startColor = data.readRGBA()
 		endRatio = data.readUI8()
 		endColor = data.readRGBA()
+	}
+
+	fun publish(data: SWFData): Unit {
+		data.writeUI8(startRatio)
+		data.writeRGBA(startColor)
+		data.writeUI8(endRatio)
+		data.writeRGBA(endColor)
 	}
 
 	fun getMorphedGradientRecord(ratio: Double = 0.0): com.codeazur.as3swf.data.SWFGradientRecord {
@@ -1017,6 +1327,13 @@ open class SWFMorphLineStyle {
 		endWidth = data.readUI16()
 		startColor = data.readRGBA()
 		endColor = data.readRGBA()
+	}
+
+	open fun publish(data: SWFData, level: Int = 1): Unit {
+		data.writeUI16(startWidth)
+		data.writeUI16(endWidth)
+		data.writeRGBA(startColor)
+		data.writeRGBA(endColor)
 	}
 
 	fun getMorphedLineStyle(ratio: Double = 0.0): SWFLineStyle {
@@ -1066,6 +1383,27 @@ class SWFMorphLineStyle2 : SWFMorphLineStyle() {
 		}
 	}
 
+	override fun publish(data: SWFData, level: Int): Unit {
+		data.writeUI16(startWidth)
+		data.writeUI16(endWidth)
+		data.writeUB(2, startCapsStyle.id)
+		data.writeUB(2, jointStyle)
+		data.writeUB(1, hasFillFlag)
+		data.writeUB(1, noHScaleFlag)
+		data.writeUB(1, noVScaleFlag)
+		data.writeUB(1, pixelHintingFlag)
+		data.writeUB(5, 0) // Reserved
+		data.writeUB(1, noClose)
+		data.writeUB(2, endCapsStyle.id)
+		if (jointStyle == LineJointStyle.MITER) data.writeFIXED8(miterLimitFactor)
+		if (hasFillFlag) {
+			data.writeMORPHFILLSTYLE(fillType!!, level)
+		} else {
+			data.writeRGBA(startColor)
+			data.writeRGBA(endColor)
+		}
+	}
+
 	override fun toString(): String {
 		var str: String = "[SWFMorphLineStyle2] " +
 			"StartWidth: " + startWidth + ", " +
@@ -1096,6 +1434,11 @@ class SWFRawTag {
 		data.readBytes(bytes, 0, header.tagLength)
 		data.position = posContent
 	}
+
+	fun publish(data: SWFData): Unit {
+		// Header is part of the byte array
+		data.writeBytes(bytes)
+	}
 }
 
 class SWFRecordHeader(
@@ -1123,6 +1466,16 @@ class SWFRectangle(
 		xmax = data.readSB(bits)
 		ymin = data.readSB(bits)
 		ymax = data.readSB(bits)
+	}
+
+	fun publish(data: SWFData) {
+		val numBits = data.calculateMaxBits(true, xmin, xmax, ymin, ymax)
+		data.resetBitsPending()
+		data.writeUB(5, numBits)
+		data.writeSB(numBits, xmin)
+		data.writeSB(numBits, xmax)
+		data.writeSB(numBits, ymin)
+		data.writeSB(numBits, ymax)
 	}
 
 	fun clone(): SWFRectangle {
@@ -1153,6 +1506,11 @@ class SWFRegisterParam {
 	fun parse(data: SWFData): Unit {
 		register = data.readUI8()
 		name = data.readString()
+	}
+
+	fun publish(data: SWFData): Unit {
+		data.writeUI8(register)
+		data.writeString(name)
 	}
 
 	override fun toString(): String = "$$register:$name"
@@ -1217,6 +1575,15 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		determineReferencePoint()
 	}
 
+	open fun publish(data: SWFData, level: Int = 1): Unit {
+		val numFillBits: Int = data.calculateMaxBits(false, getMaxFillStyleIndex())
+		val numLineBits: Int = data.calculateMaxBits(false, getMaxLineStyleIndex())
+		data.resetBitsPending()
+		data.writeUB(4, numFillBits)
+		data.writeUB(4, numLineBits)
+		writeShapeRecords(data, numFillBits, numLineBits, level)
+	}
+
 	protected fun readShapeRecords(data: SWFData, _fillBits: Int, _lineBits: Int, level: Int = 1): Unit {
 		var fillBits: Int = _fillBits
 		var lineBits: Int = _lineBits
@@ -1248,6 +1615,50 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 				}
 			}
 			records.add(shapeRecord)
+		}
+	}
+
+	protected fun writeShapeRecords(data: SWFData, _fillBits: Int, _lineBits: Int, level: Int = 1): Unit {
+		var fillBits = _fillBits
+		var lineBits = _lineBits
+		if (records.size == 0 || !(records[records.size - 1] is com.codeazur.as3swf.data.SWFShapeRecordEnd)) {
+			records.add(com.codeazur.as3swf.data.SWFShapeRecordEnd())
+		}
+		for (i in 0 until records.size) {
+			val shapeRecord: SWFShapeRecord = records[i]
+			if (shapeRecord.isEdgeRecord) {
+				// EdgeRecordFlag (set)
+				data.writeUB(1, 1)
+				if (shapeRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE) {
+					// StraightFlag (set)
+					data.writeUB(1, 1)
+					data.writeSTRAIGHTEDGERECORD(shapeRecord as SWFShapeRecordStraightEdge)
+				} else {
+					// StraightFlag (not set)
+					data.writeUB(1, 0)
+					data.writeCURVEDEDGERECORD(shapeRecord as SWFShapeRecordCurvedEdge)
+				}
+			} else {
+				// EdgeRecordFlag (not set)
+				data.writeUB(1, 0)
+				if (shapeRecord.type == SWFShapeRecord.TYPE_END) {
+					data.writeUB(5, 0)
+				} else {
+					var states: Int = 0
+					val styleChangeRecord = shapeRecord as SWFShapeRecordStyleChange
+					if (styleChangeRecord.stateNewStyles) states = states or 0x10
+					if (styleChangeRecord.stateLineStyle) states = states or 0x08
+					if (styleChangeRecord.stateFillStyle1) states = states or 0x04
+					if (styleChangeRecord.stateFillStyle0) states = states or 0x02
+					if (styleChangeRecord.stateMoveTo) states = states or 0x01
+					data.writeUB(5, states)
+					data.writeSTYLECHANGERECORD(styleChangeRecord, fillBits, lineBits, level)
+					if (styleChangeRecord.stateNewStyles) {
+						fillBits = styleChangeRecord.numFillBits
+						lineBits = styleChangeRecord.numLineBits
+					}
+				}
+			}
 		}
 	}
 
@@ -1687,6 +2098,7 @@ open class SWFShapeRecord {
 	open val type = SWFShapeRecord.TYPE_UNKNOWN
 	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.TYPE_CURVEDEDGE)
 	open fun parse(data: SWFData, level: Int = 1): Unit = Unit
+	open fun publish(data: SWFData, level: Int = 1): Unit = Unit
 	open fun clone(): SWFShapeRecord = SWFShapeRecord()
 	open fun toString(indent: Int = 0): String = "[SWFShapeRecord]"
 }
@@ -1702,6 +2114,16 @@ class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		controlDeltaY = data.readSB(numBits)
 		anchorDeltaX = data.readSB(numBits)
 		anchorDeltaY = data.readSB(numBits)
+	}
+
+	override fun publish(data: SWFData, level: Int): Unit {
+		numBits = data.calculateMaxBits(true, controlDeltaX, controlDeltaY, anchorDeltaX, anchorDeltaY)
+		if (numBits < 2) numBits = 2
+		data.writeUB(4, numBits - 2)
+		data.writeSB(numBits, controlDeltaX)
+		data.writeSB(numBits, controlDeltaY)
+		data.writeSB(numBits, anchorDeltaX)
+		data.writeSB(numBits, anchorDeltaY)
 	}
 
 	override fun clone(): SWFShapeRecord {
@@ -1736,6 +2158,18 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		vertLineFlag = if (!generalLineFlag) (data.readUB(1) == 1) else false
 		deltaX = if (generalLineFlag || !vertLineFlag) data.readSB(numBits) else 0
 		deltaY = if (generalLineFlag || vertLineFlag) data.readSB(numBits) else 0
+	}
+
+	override fun publish(data: SWFData, level: Int): Unit {
+		val deltas = arrayListOf<Int>()
+		if (generalLineFlag || !vertLineFlag) deltas.add(deltaX)
+		if (generalLineFlag || vertLineFlag) deltas.add(deltaY)
+		numBits = data.calculateMaxBits(true, deltas)
+		if (numBits < 2) numBits = 2
+		data.writeUB(4, numBits - 2)
+		data.writeUB(1, generalLineFlag)
+		if (!generalLineFlag) data.writeUB(1, vertLineFlag)
+		for (i in 0 until deltas.size) data.writeSB(numBits, deltas[i])
 	}
 
 	override fun clone(): SWFShapeRecord {
@@ -1808,6 +2242,32 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 			data.resetBitsPending()
 			numFillBits = data.readUB(4)
 			numLineBits = data.readUB(4)
+		}
+	}
+
+	override fun publish(data: SWFData, level: Int): Unit {
+		if (stateMoveTo) {
+			val moveBits = data.calculateMaxBits(true, moveDeltaX, moveDeltaY)
+			data.writeUB(5, moveBits)
+			data.writeSB(moveBits, moveDeltaX)
+			data.writeSB(moveBits, moveDeltaY)
+		}
+		if (stateFillStyle0) data.writeUB(numFillBits, fillStyle0)
+		if (stateFillStyle1) data.writeUB(numFillBits, fillStyle1)
+		if (stateLineStyle) data.writeUB(numLineBits, lineStyle)
+		if (stateNewStyles) {
+			data.resetBitsPending()
+			val fillStylesLen = fillStyles.size
+			writeStyleArrayLength(data, fillStylesLen, level)
+			for (i in 0 until fillStylesLen) fillStyles[i].publish(data, level)
+			val lineStylesLen = lineStyles.size
+			writeStyleArrayLength(data, lineStylesLen, level)
+			for (i in 0 until lineStylesLen) lineStyles[i].publish(data, level)
+			numFillBits = data.calculateMaxBits(false, fillStylesLen)
+			numLineBits = data.calculateMaxBits(false, lineStylesLen)
+			data.resetBitsPending()
+			data.writeUB(4, numFillBits)
+			data.writeUB(4, numLineBits)
 		}
 	}
 
@@ -1889,6 +2349,22 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 		readShapeRecords(data, numFillBits, numLineBits, level)
 	}
 
+	override fun publish(data: SWFData, level: Int): Unit {
+		data.resetBitsPending()
+		val fillStylesLen: Int = initialFillStyles.size
+		writeStyleArrayLength(data, fillStylesLen, level)
+		for (i in 0 until fillStylesLen) initialFillStyles[i].publish(data, level)
+		val lineStylesLen: Int = initialLineStyles.size
+		writeStyleArrayLength(data, lineStylesLen, level)
+		for (i in 0 until lineStylesLen) initialLineStyles[i].publish(data, level)
+		val fillBits: Int = data.calculateMaxBits(false, getMaxFillStyleIndex())
+		val lineBits: Int = data.calculateMaxBits(false, getMaxLineStyleIndex())
+		data.resetBitsPending()
+		data.writeUB(4, fillBits)
+		data.writeUB(4, lineBits)
+		writeShapeRecords(data, fillBits, lineBits, level)
+	}
+
 	override fun export(_handler: ShapeExporter): Unit {
 		fillStyles = ArrayList(initialFillStyles)
 		lineStyles = ArrayList(initialLineStyles)
@@ -1941,6 +2417,12 @@ class SWFSoundEnvelope {
 		rightLevel = data.readUI16()
 	}
 
+	fun publish(data: SWFData): Unit {
+		data.writeUI32(pos44)
+		data.writeUI16(leftLevel)
+		data.writeUI16(rightLevel)
+	}
+
 	fun clone(): com.codeazur.as3swf.data.SWFSoundEnvelope {
 		val soundEnvelope: com.codeazur.as3swf.data.SWFSoundEnvelope = com.codeazur.as3swf.data.SWFSoundEnvelope()
 		soundEnvelope.pos44 = pos44
@@ -1985,6 +2467,25 @@ class SWFSoundInfo {
 		}
 	}
 
+	fun publish(data: SWFData): Unit {
+		var flags: Int = 0
+		if (syncStop) flags = flags or 0x20
+		if (syncNoMultiple) flags = flags or 0x10
+		if (hasEnvelope) flags = flags or 0x08
+		if (hasLoops) flags = flags or 0x04
+		if (hasOutPoint) flags = flags or 0x02
+		if (hasInPoint) flags = flags or 0x01
+		data.writeUI8(flags)
+		if (hasInPoint) data.writeUI32(inPoint)
+		if (hasOutPoint) data.writeUI32(outPoint)
+		if (hasLoops) data.writeUI16(loopCount)
+		if (hasEnvelope) {
+			val envPoints = envelopeRecords.size
+			data.writeUI8(envPoints)
+			for (i in 0 until envPoints) data.writeSOUNDENVELOPE(envelopeRecords[i])
+		}
+	}
+
 	fun clone(): SWFSoundInfo {
 		val soundInfo = SWFSoundInfo()
 		soundInfo.syncStop = syncStop
@@ -2010,6 +2511,11 @@ class SWFSymbol {
 	fun parse(data: SWFData): Unit {
 		tagId = data.readUI16()
 		name = data.readString()
+	}
+
+	fun publish(data: SWFData): Unit {
+		data.writeUI16(tagId)
+		data.writeString(name)
 	}
 
 	override fun toString(): String = "TagID: $tagId, Name: $name"
@@ -2071,6 +2577,33 @@ class SWFTextRecord {
 		}
 	}
 
+	fun publish(data: SWFData, glyphBits: Int, advanceBits: Int, previousRecord: SWFTextRecord? = null, level: Int = 1): Unit {
+		var flags: Int = (type shl 7)
+		hasFont = (previousRecord == null || (previousRecord.fontId != fontId) || (previousRecord.textHeight != textHeight))
+		hasColor = (previousRecord == null || (previousRecord.textColor != textColor))
+		hasXOffset = (previousRecord == null || (previousRecord.xOffset != xOffset))
+		hasYOffset = (previousRecord == null || (previousRecord.yOffset != yOffset))
+		if (hasFont) flags = flags or 0x08
+		if (hasColor) flags = flags or 0x04
+		if (hasYOffset) flags = flags or 0x02
+		if (hasXOffset) flags = flags or 0x01
+		data.writeUI8(flags)
+		if (hasFont) data.writeUI16(fontId)
+		if (hasColor) {
+			if (level >= 2) {
+				data.writeRGBA(textColor)
+			} else {
+				data.writeRGB(textColor)
+			}
+		}
+		if (hasXOffset) data.writeSI16(xOffset)
+		if (hasYOffset) data.writeSI16(yOffset)
+		if (hasFont) data.writeUI16(textHeight)
+		val glyphCount = glyphEntries.size
+		data.writeUI8(glyphCount)
+		for (i in 0 until glyphCount) data.writeGLYPHENTRY(glyphEntries[i], glyphBits, advanceBits)
+	}
+
 	fun clone(): SWFTextRecord {
 		val record = SWFTextRecord()
 		record.type = type
@@ -2108,6 +2641,11 @@ class SWFZoneData {
 		range = data.readFLOAT16()
 	}
 
+	fun publish(data: SWFData): Unit {
+		data.writeFLOAT16(alignmentCoordinate)
+		data.writeFLOAT16(range)
+	}
+
 	override fun toString(): String = "($alignmentCoordinate,$range)"
 }
 
@@ -2123,6 +2661,16 @@ class SWFZoneRecord {
 		val mask: Int = data.readUI8()
 		maskX = ((mask and 0x01) != 0)
 		maskY = ((mask and 0x02) != 0)
+	}
+
+	fun publish(data: SWFData): Unit {
+		val numZoneData: Int = zoneData.size
+		data.writeUI8(numZoneData)
+		for (i in 0 until numZoneData) data.writeZONEDATA(zoneData[i])
+		var mask: Int = 0
+		if (maskX) mask = mask or 0x01
+		if (maskY) mask = mask or 0x02
+		data.writeUI8(mask)
 	}
 
 	fun toString(indent: Int = 0): String {
