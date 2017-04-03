@@ -16,7 +16,7 @@ import com.soywiz.korui.CanvasApplication
 import com.soywiz.korui.ui.AgCanvas
 
 object Korge {
-    val VERSION = "0.7.1"
+    val VERSION = "0.8.0"
 
     suspend fun setupCanvas(canvas: AGContainer, module: Module, args: Array<String> = arrayOf(), injector: AsyncInjector = AsyncInjector()) {
         val ag = canvas.ag
