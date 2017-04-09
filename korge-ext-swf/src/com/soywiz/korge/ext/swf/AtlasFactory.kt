@@ -1,6 +1,5 @@
 package com.soywiz.korge.ext.swf
 
-import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
@@ -8,7 +7,6 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korma.geom.binpack.BinPacker
-import com.soywiz.korma.geom.toInt
 import com.soywiz.korma.numeric.nextPowerOfTwo
 
 // @TODO: Add borders to avoid scaling issues + align to 4 pixels to avoid compression artifacts

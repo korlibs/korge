@@ -10,9 +10,9 @@ import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Rectangle
 
 object AnimateSerializer {
-	fun gen(library: AnLibrary): ByteArray = MemorySyncStreamToByteArray { write(this, library) }
+	fun gen(library: AnLibrary, compression: Double = 1.0): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression) }
 
-	fun write(s: SyncStream, library: AnLibrary) = s.writeLibrary(library)
+	fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0) = s.writeLibrary(library, compression)
 
 	private fun SyncStream.writeRect(r: Rectangle) {
 		writeF32_le(r.x.toFloat())
@@ -28,7 +28,7 @@ object AnimateSerializer {
 		writeF32_le(r.height.toFloat())
 	}
 
-	private fun SyncStream.writeLibrary(lib: AnLibrary) {
+	private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0) {
 		writeStringz(AnimateFile.MAGIC, 8)
 		writeU_VL(AnimateFile.VERSION)
 		writeU_VL(lib.msPerFrame)
@@ -36,7 +36,7 @@ object AnimateSerializer {
 		// Allocate Strings
 		val strings = OptimizedStringAllocator()
 		for (symbol in lib.symbolsById) {
-			strings.add(symbol.name ?: "")
+			strings.add(symbol.name)
 			when (symbol) {
 				is AnSymbolMovieClip -> {
 					for (ss in symbol.states) {
@@ -44,7 +44,7 @@ object AnimateSerializer {
 						strings.add(ss.value.state.name)
 						for (timeline in ss.value.state.timelines) {
 							for (entry in timeline.entries) {
-								strings.add(entry.second.name ?: "")
+								strings.add(entry.second.name)
 							}
 						}
 					}
@@ -58,9 +58,7 @@ object AnimateSerializer {
 
 		// String pool
 		writeU_VL(strings.strings.size)
-		for (str in strings.strings) {
-			writeStringVL(str)
-		}
+		for (str in strings.strings.drop(1)) writeStringVL(str!!)
 
 		// Atlases
 		val atlasBitmaps = lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmp }.filterNotNull().distinct()
@@ -68,7 +66,7 @@ object AnimateSerializer {
 
 		writeU_VL(atlasBitmaps.size)
 		for (atlas in atlasBitmaps) {
-			val atlasBytes = ImageFormats.encode(atlas, "atlas.png", props = ImageEncodingProps(quality = 1.0))
+			val atlasBytes = ImageFormats.encode(atlas, "atlas.png", props = ImageEncodingProps(quality = compression))
 			writeU_VL(1) // 1=RGBA, 2=RGB(JPG)+ALPHA(ZLIB)
 			writeU_VL(atlas.width)
 			writeU_VL(atlas.height)
@@ -86,7 +84,7 @@ object AnimateSerializer {
 		writeU_VL(lib.symbolsById.size)
 		for (symbol in lib.symbolsById) {
 			writeU_VL(symbol.id)
-			writeU_VL(strings[symbol.name ?: ""])
+			writeU_VL(strings[symbol.name])
 			when (symbol) {
 				is AnSymbolEmpty -> {
 					writeU_VL(AnimateFile.SYMBOL_TYPE_EMPTY)
@@ -104,6 +102,16 @@ object AnimateSerializer {
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
+					val path = symbol.path
+					if (path != null) {
+						writeU_VL(1)
+						writeU_VL(path.commands.size)
+						for (cmd in path.commands) write8(cmd)
+						writeU_VL(path.data.size)
+						for (v in path.data) writeF32_le(v.toFloat())
+					} else {
+						writeU_VL(0)
+					}
 				}
 				is AnSymbolBitmap -> {
 					writeU_VL(AnimateFile.SYMBOL_TYPE_BITMAP)
@@ -132,11 +140,11 @@ object AnimateSerializer {
 						writeU_VL(ss.loopStartTime)
 						for (timeline in ss.timelines) {
 							val frames = timeline.entries
-							writeU_VL(frames.size)
 							var lastUid = -1
 							var lastName: String? = null
 							var lastAlpha: Double = 1.0
 							var lastMatrix: Matrix2d = Matrix2d()
+							writeU_VL(frames.size)
 							for ((frameTime, frame) in frames) {
 								writeU_VL(frameTime)
 
@@ -153,7 +161,7 @@ object AnimateSerializer {
 
 								writeU_VL(flags)
 								if (hasUid) writeU_VL(frame.uid)
-								if (hasName) writeU_VL(strings[frame.name ?: ""])
+								if (hasName) writeU_VL(strings[frame.name])
 								if (hasAlpha) write8((frame.alpha.clamp(0.0, 1.0) * 255.0).toInt())
 								// @TODO: Compact
 								if (hasMatrix) {
@@ -185,5 +193,7 @@ object AnimateSerializer {
 				}
 			}
 		}
+
+		// End of symbols
 	}
 }

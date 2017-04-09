@@ -39,14 +39,18 @@ open class KorgeResourcesTask() : DefaultTask() {
 				logger.info("<Sync>")
 				val folderVfs = folder.toVfs()
 				for (file in folderVfs.listRecursive()) {
-					when (file.extensionLC) {
-						"swf" -> {
-							val viewsLog = ViewsLog()
-							val lib = file.readSWF(viewsLog.views, debug = false)
-							file.withExtension("ani").write(AnimateSerializer.gen(lib))
+					try {
+						when (file.extensionLC) {
+							"swf" -> {
+								val viewsLog = ViewsLog()
+								val lib = file.readSWF(viewsLog.views, debug = false)
+								file.withExtension("ani").write(AnimateSerializer.gen(lib))
+							}
 						}
+						//logger.info(file.toString())
+					} catch (e: Throwable) {
+						e.printStackTrace()
 					}
-					//logger.info(file.toString())
 				}
 				logger.info("</Sync>")
 			}

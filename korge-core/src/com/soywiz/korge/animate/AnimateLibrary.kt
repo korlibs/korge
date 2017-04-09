@@ -1,16 +1,14 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
-import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.util.Extra
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.VectorPath
 
 open class AnSymbol(
 	val id: Int = 0,
@@ -27,7 +25,7 @@ class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bou
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
 }
 
-class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var textureWithBitmap: TextureWithBitmapSlice?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
+class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var textureWithBitmap: TextureWithBitmapSlice?, val path: VectorPath? = null) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
 
@@ -54,7 +52,7 @@ class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: 
 class AnSymbolUidDef(val characterId: Int)
 
 class AnSymbolMovieClipState(totalDepths: Int) {
-	var name: String =  "default"
+	var name: String = "default"
 	var totalTime: Int = 0
 	val timelines: Array<AnDepthTimeline> = Array<AnDepthTimeline>(totalDepths) { AnDepthTimeline(it) }
 	val actions = Timed<AnActions>()

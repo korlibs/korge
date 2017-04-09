@@ -15,6 +15,8 @@ import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.animate.serialization.AnimateDeserializer
+import com.soywiz.korge.animate.serialization.AnimateSerializer
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
@@ -25,6 +27,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
+import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.stream.openAsync
@@ -46,6 +49,7 @@ class SwfLibraryFactory(
 	val views: Views
 ) : AsyncFactory<SwfLibrary> {
 	suspend override fun create(): SwfLibrary = SwfLibrary(ResourcesVfs[path.path].readSWF(views))
+	//suspend override fun create(): SwfLibrary = SwfLibrary(AnimateDeserializer.read(AnimateSerializer.gen(ResourcesVfs[path.path].readSWF(views), compression = 0.0), views))
 }
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
@@ -190,7 +194,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				val simpleName = trait.name.simpleName
 				//println(" - " + trait.name.simpleName)
 				if (simpleName.startsWith("frame")) {
-					val frame = simpleName.substr(5).toIntOrNull() ?: continue
+					val frame = ignoreErrors { simpleName.substr(5).toInt() } ?: continue
 					val frame0 = frame - 1
 					val traitMethod = (trait as ABC.TraitMethod?) ?: continue
 					val methodDesc = abc.methodsDesc[traitMethod.methodIndex]

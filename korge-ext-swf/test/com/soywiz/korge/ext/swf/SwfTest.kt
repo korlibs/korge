@@ -2,6 +2,7 @@ package com.soywiz.korge.ext.swf
 
 import com.soywiz.korge.animate.AnSymbolMovieClip
 import com.soywiz.korge.animate.AnSymbolShape
+import com.soywiz.korge.animate.serialization.AnimateDeserializer
 import com.soywiz.korge.animate.serialization.AnimateSerializer
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.dumpToString
@@ -81,11 +82,14 @@ class SwfTest {
 
 	@Test
 	fun exports() = syncTest {
-		val lib = ResourcesVfs["exports.swf"].readSWF(views, debug = false)
+		val lib = AnimateDeserializer.read(AnimateSerializer.gen(ResourcesVfs["exports.swf"].readSWF(views, debug = false), compression = 0.0), views)
 		Assert.assertEquals(listOf("MainTimeLine", "Graphic1Export", "MC1Export"), lib.symbolsByName.keys.toList())
 		val sh = lib.createMovieClip("Graphic1Export")
 		val mc = lib.createMovieClip("MC1Export")
 
-		AnimateSerializer.gen(lib).writeToFile("c:/temp/file.ani")
+		//AnimateSerializer.gen(lib).writeToFile("c:/temp/file.ani")
+
+		//AnimateDeserializer.read(AnimateSerializer.gen(lib), views)
+
 	}
 }
