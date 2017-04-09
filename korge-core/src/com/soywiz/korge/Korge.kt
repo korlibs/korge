@@ -27,7 +27,7 @@ object Korge {
             go {
                 val sc = views.sceneContainer()
                 views.root += sc
-                sc.changeToScene(module.mainScene)
+                sc.changeTo(module.mainScene)
 
                 animationFrameLoop {
                     canvas.repaint()
@@ -62,7 +62,13 @@ object Korge {
         }
     }
 
-    operator fun invoke(module: Module, args: Array<String> = arrayOf(), canvas: AgCanvas? = null, injector: AsyncInjector = AsyncInjector()) = EventLoop {
+    operator fun invoke(
+		module: Module,
+		args: Array<String> = arrayOf(),
+		canvas: AgCanvas? = null,
+		injector: AsyncInjector = AsyncInjector(),
+		debug: Boolean = false
+	) = EventLoop {
         if (canvas != null) {
             setupCanvas(canvas, module, args, injector)
         } else {

@@ -23,13 +23,15 @@ import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.extract8
+import com.soywiz.korio.util.substr
+import com.soywiz.korio.util.toIntCeil
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
@@ -106,9 +108,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
 		for (symbol in symbols) lib.addSymbol(symbol)
 		processAs3Actions()
-		generateTextures()
 		generateActualTimelines()
 		lib.processSymbolNames()
+		generateTextures()
 		return lib
 	}
 
@@ -230,6 +232,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 								}
 								lastValue = null
 							}
+							else -> Unit
 						}
 					}
 				}
@@ -238,9 +241,10 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 	}
 
 	suspend private fun generateTextures() {
-		val atlas = shapesToPopulate.map { it.second.image }.toAtlas(views)
-
-		for ((shape, texture) in shapesToPopulate.map { it.first }.zip(atlas)) shape.texture = texture
+		val atlas = shapesToPopulate.map {
+			it.second.image
+		}.toAtlas(views)
+		for ((shape, texture) in shapesToPopulate.map { it.first }.zip(atlas)) shape.textureWithBitmap = texture
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -357,8 +361,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				}
 				is TagCSMTextSettings -> {
 				}
-				is TagCSMTextSettings -> {
-				}
 				is TagDoAction -> {
 					for (action in it.actions) {
 						when (action) {
@@ -439,8 +441,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					registerBitmap(it.characterId, fbmp, null)
 				}
 				is TagDefineShape -> {
-					val rasterizer = SWFShapeRasterizer(swf, it.shapeBounds.rect)
-					it.export(if (debug) LoggerShapeExporter(rasterizer) else rasterizer)
+					val rasterizer = SWFShapeRasterizer(swf, debug, it)
 					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
 					symbols += symbol
 					shapesToPopulate += symbol to rasterizer
@@ -490,14 +491,21 @@ object SwfLoader {
 
 fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
 
-class SWFShapeRasterizer(val swf: SWF, val bounds: Rectangle) : ShapeExporter() {
+class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineShape) : ShapeExporter() {
+	val bounds: Rectangle = shape.shapeBounds.rect
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-	val image = NativeImage(Math.max(1, bounds.width.toIntCeil()), Math.max(1, bounds.height.toIntCeil()))
+	private val _image by lazy { NativeImage(Math.max(1, bounds.width.toIntCeil()), Math.max(1, bounds.height.toIntCeil())) }
+	val image by lazy {
+		shape.export(if (debug) LoggerShapeExporter(this) else this)
+		_image
+	}
 	val path = GraphicsPath()
 	var processingFills = false
 
-	val ctx = image.getContext2d().apply {
-		translate(-bounds.x, -bounds.y)
+	val ctx by lazy {
+		_image.getContext2d().apply {
+			translate(-bounds.x, -bounds.y)
+		}
 	}
 
 	override fun beginShape() {

@@ -14,7 +14,7 @@ interface AnElement {
 class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShape) : View(library.views), AnElement {
 	val dx = symbol.bounds.x.toFloat()
 	val dy = symbol.bounds.y.toFloat()
-	val tex = symbol.texture ?: views.dummyTexture
+	val tex = symbol.textureWithBitmap?.texture ?: views.dummyTexture
 	val smoothing = true
 
 	override fun render(ctx: RenderContext) {

@@ -2,8 +2,10 @@ package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
 import com.soywiz.korge.render.Texture
+import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.util.Extra
@@ -25,7 +27,7 @@ class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bou
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
 }
 
-class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var texture: Texture?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
+class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var textureWithBitmap: TextureWithBitmapSlice?, val path: GraphicsPath? = null) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
 

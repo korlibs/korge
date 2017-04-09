@@ -1,6 +1,7 @@
 package com.soywiz.korge.input.component
 
 import com.soywiz.korge.ViewsForTesting
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.image
 import com.soywiz.korio.async.syncTest

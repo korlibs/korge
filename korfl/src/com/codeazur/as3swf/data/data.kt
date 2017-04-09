@@ -1060,7 +1060,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun determineReferencePoint(): Unit {
-		val styleChangeRecord = records[0] as SWFShapeRecordStyleChange?
+		val styleChangeRecord = records[0] as? SWFShapeRecordStyleChange?
 		if (styleChangeRecord != null && styleChangeRecord.stateMoveTo) {
 			referencePoint.x = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaX / unitDivisor)
 			referencePoint.y = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaY / unitDivisor)

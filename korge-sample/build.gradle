@@ -9,6 +9,7 @@ mainClassName = "com.soywiz.korge.sample.Sample1"
 
 dependencies {
     compile "com.soywiz:korui:$korVersion"
+	compile "com.soywiz:korui:$korVersion"
     compile project(":korge")
     compile project(":korge-core")
 	compile project(":korge-ext-swf")

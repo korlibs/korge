@@ -42,6 +42,9 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
 
+	var enabled: Boolean = true
+	var visible: Boolean = true
+
 	fun setMatrix(matrix: Matrix2d) {
 		this._localMatrix.copyFrom(matrix)
 		validLocal = true

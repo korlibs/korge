@@ -1,7 +1,7 @@
 package com.codeazur.as3swf.utils
 
 import com.codeazur.as3swf.data.SWFMatrix
-import com.jtransc.JTranscSystem
+import com.soywiz.korfl.amf.AMF3
 import com.soywiz.korio.stream.*
 import java.io.ByteArrayOutputStream
 import java.lang.Float
@@ -178,7 +178,13 @@ open class FlashByteArray() {
 
 	fun readUTF(): String = TODO()
 	val bytesAvailable: Int get() = length - position
-	fun readObject(): Any? = TODO()
+	open fun resetBitsPending(): FlashByteArray = this
+
+	fun readObject(): Any? {
+		resetBitsPending()
+		return AMF3.read(data)
+	}
+
 	fun writeObject(metaData: Any?): Unit = TODO()
 
 	fun cloneToNewFlashByteArray(): FlashByteArray = cloneToNewByteArray().toFlash()
@@ -249,7 +255,7 @@ open class BitArray : FlashByteArray() {
 		writeBits(1, if (value) 1 else 0)
 	}
 
-	fun resetBitsPending() = this.apply {
+	override fun resetBitsPending(): FlashByteArray = this.apply {
 		bitsPending = 0
 	}
 

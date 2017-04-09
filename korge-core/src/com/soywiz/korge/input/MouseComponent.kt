@@ -1,4 +1,4 @@
-package com.soywiz.korge.input.component
+package com.soywiz.korge.input
 
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.input.Input
@@ -67,7 +67,7 @@ class MouseComponent(view: View) : Component(view) {
 //}
 
 
-val View.mouse: MouseComponent get() = this.getOrCreateComponent { MouseComponent(this) }
+val View.mouse get() = this.getOrCreateComponent { MouseComponent(this) }
 
 val View.onClick get() = mouse.onClick
 val View.onOver get() = mouse.onOver

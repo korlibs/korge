@@ -93,3 +93,6 @@ fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture {
 	return Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
 }
 
+interface ViewsContainer {
+	val views: Views
+}

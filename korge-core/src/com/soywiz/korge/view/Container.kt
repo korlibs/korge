@@ -5,6 +5,16 @@ import com.soywiz.korge.render.RenderContext
 open class Container(views: Views) : View(views) {
     val children = arrayListOf<View>()
 
+	fun removeChildren() {
+		for (child in children) {
+			child.parent = null
+			child.index = -1
+		}
+		children.clear()
+	}
+
+	fun addChild(view: View) = this.plusAssign(view)
+
     override fun invalidate() {
         validGlobal = false
         for (child in children) {

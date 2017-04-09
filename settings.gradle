@@ -1,13 +1,14 @@
 rootProject.name = 'korge-root'
 
 include(
-        'korge-core',
-        'korge',
-        'korge-android',
-        'korge-ext-spriter',
-        'korge-ext-tiled',
-        'korge-ext-particle',
-		'korge-ext-swf',
-        'korge-sample',
-        'korfl',
+	'korge-core',
+	'korge',
+	'korge-android',
+	'korge-ext-spriter',
+	'korge-ext-tiled',
+	'korge-ext-particle',
+	'korge-ext-swf',
+	'korge-sample',
+	'korge-gradle-plugin',
+	'korfl',
 )

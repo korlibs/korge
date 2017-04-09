@@ -2407,7 +2407,7 @@ open class TagPlaceObject3 : TagPlaceObject2(), IDisplayListTag {
  *
  * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/display/DisplayObject.html#metaData
  */
-class TagPlaceObject4 : com.codeazur.as3swf.tags.TagPlaceObject3(), IDisplayListTag {
+class TagPlaceObject4 : TagPlaceObject3(), IDisplayListTag {
 	companion object {
 		const val TYPE = 94
 	}

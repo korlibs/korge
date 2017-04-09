@@ -5,8 +5,8 @@ import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.ext.swf.SwfLibrary
-import com.soywiz.korge.input.component.onOut
-import com.soywiz.korge.input.component.onOver
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
@@ -52,7 +52,7 @@ class Sample2Scene(
 	suspend override fun init() {
 		super.init()
 
-		this.root += test4Library.an.createMainTimeLine()
+		this.sceneView += test4Library.an.createMainTimeLine()
 	}
 }
 
@@ -73,7 +73,7 @@ class Sample1Scene(
 
 		val tileset = TileSet(tilesetTex, 32, 32)
 
-		root.container() {
+		sceneView.container() {
 			//this.text(font, "hello")
 			this.tileMap(Bitmap32(8, 8), tileset) {
 				this.x = -128.0
@@ -82,7 +82,7 @@ class Sample1Scene(
 			}
 		}.mouseSampleController()
 
-		root.container {
+		sceneView.container {
 			val mc = swfLibrary.an.createMainTimeLine().apply {
 				//speed = 0.1
 			}
@@ -91,7 +91,7 @@ class Sample1Scene(
 		}
 
 
-		val image = root.image(korgeTex, 0.5).apply {
+		val image = sceneView.image(korgeTex, 0.5).apply {
 			scale = 0.2
 			rotation = Math.toRadians(-90.0)
 			alpha = 0.7
@@ -102,12 +102,12 @@ class Sample1Scene(
 			//onUp { scale = 0.2 }
 		}
 
-		val tilemap = root.tileMap(Bitmap32(8, 8), tileset) {
+		val tilemap = sceneView.tileMap(Bitmap32(8, 8), tileset) {
 			alpha = 0.8
 		}
 
 
-		root.container {
+		sceneView.container {
 			val mc = test1Library.an.createMainTimeLine().apply {
 				//speed = 0.1
 			}
@@ -115,7 +115,7 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
-		root.container {
+		sceneView.container {
 			val mc = test4Library.an.createMainTimeLine().apply {
 				x = 320.0
 				y = 320.0
@@ -125,7 +125,7 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
-		root.container {
+		sceneView.container {
 			val mc = as3testLibrary.an.createMainTimeLine().apply {
 				//x = 320.0
 				//y = 320.0
@@ -135,7 +135,7 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
-		root.container {
+		sceneView.container {
 			val mc = soundtestLibrary.an.createMainTimeLine().apply {
 				//x = 320.0
 				//y = 320.0
@@ -145,9 +145,9 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
-		root += progressbarLibrary.an.createMainTimeLine().apply {
+		sceneView += progressbarLibrary.an.createMainTimeLine().apply {
 			go {
-				root.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) {
+				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) {
 					this.seekStill("progressbar", it)
 					//println(this.findFirstWithName("percent"))
 					this["percent"]?.setText("%d%%".format((it * 100).toInt()))
@@ -155,12 +155,12 @@ class Sample1Scene(
 			}
 		}
 
-		root.text(font, "Hello world! F,", textSize = 72.0).apply {
+		sceneView.text(font, "Hello world! F,", textSize = 72.0).apply {
 			x = 100.0
 			y = 100.0
 		}
 
-		root.text(font2, "2017", textSize = 40.0).apply {
+		sceneView.text(font2, "2017", textSize = 40.0).apply {
 			x = 0.0
 			y = 0.0
 		}

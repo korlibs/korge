@@ -1,27 +1,27 @@
 buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
-    }
+	repositories {
+		mavenLocal()
+		jcenter()
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+	}
 }
 
 configurations {
-    provided
+	provided
 }
 
 allprojects {
-    configurations {
-        provided
-    }
+	configurations {
+		provided
+	}
 
-    repositories {
-        mavenLocal()
-        jcenter()
-        mavenCentral()
-    }
+	repositories {
+		mavenLocal()
+		jcenter()
+		mavenCentral()
+	}
 }
