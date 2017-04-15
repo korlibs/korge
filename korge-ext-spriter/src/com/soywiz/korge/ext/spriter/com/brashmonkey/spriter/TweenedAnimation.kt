@@ -1,9 +1,9 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.brashmonkey.spriter.Mainline.Key.BoneRef
-import com.brashmonkey.spriter.Mainline.Key.ObjectRef
-import com.brashmonkey.spriter.Timeline.Key.Bone
-import com.brashmonkey.spriter.Timeline.Key.Object
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
 
 /**
  * A tweened animation is responsible for updating itself based on two given animations.

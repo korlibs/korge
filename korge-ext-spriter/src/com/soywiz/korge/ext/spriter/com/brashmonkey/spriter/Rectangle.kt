@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 /**
  * Represents a 2D rectangle with left, top, right and bottom bounds.

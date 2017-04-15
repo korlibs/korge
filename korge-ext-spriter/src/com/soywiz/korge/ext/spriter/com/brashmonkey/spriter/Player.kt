@@ -1,14 +1,14 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 import java.util.ArrayList
 import java.util.HashMap
 
-import com.brashmonkey.spriter.Entity.CharacterMap
-import com.brashmonkey.spriter.Entity.ObjectInfo
-import com.brashmonkey.spriter.Mainline.Key.BoneRef
-import com.brashmonkey.spriter.Mainline.Key.ObjectRef
-import com.brashmonkey.spriter.Timeline.Key.Bone
-import com.brashmonkey.spriter.Timeline.Key.Object
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.CharacterMap
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
 
 /**
  * A Player instance is responsible for updating an [Animation] properly.

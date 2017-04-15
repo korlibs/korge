@@ -1,8 +1,8 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.brashmonkey.spriter.Entity.*
-import com.brashmonkey.spriter.Mainline.Key.BoneRef
-import com.brashmonkey.spriter.Mainline.Key.ObjectRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.*
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
 import com.soywiz.korio.serialization.xml.Xml
 import java.io.InputStream
 import java.util.*
@@ -68,7 +68,7 @@ class SCMLReader {
 		val folders = root.children("folder").toList()
 		val entities = root.children("entity").toList()
 		data = Data(root.getString("scml_version") ?: "", root.getString("generator") ?: "", root.getString("generator_version") ?: "",
-			Data.PixelMode[root.getInt("pixel_mode") ?: 0],
+			Data.PixelMode.Companion[root.getInt("pixel_mode") ?: 0],
 			folders.size, entities.size)
 		loadFolders(folders)
 		loadEntities(entities)
@@ -135,7 +135,7 @@ class SCMLReader {
 		for (i in infos.indices) {
 			val info = infos[i]
 			val objInfo = ObjectInfo(info.get("name", "info" + i),
-				ObjectType.getObjectInfoFor(info.get("type", "")),
+				ObjectType.Companion.getObjectInfoFor(info.get("type", "")),
 				Dimension(info.getFloat("w", 0f), info.getFloat("h", 0f)))
 			entity.addInfo(objInfo)
 			val frames = info.getChildByName("frames") ?: continue

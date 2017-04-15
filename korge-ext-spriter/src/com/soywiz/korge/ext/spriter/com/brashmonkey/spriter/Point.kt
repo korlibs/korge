@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 /**
  * A utility class to keep the code short.

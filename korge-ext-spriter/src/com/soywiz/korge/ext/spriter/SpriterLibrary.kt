@@ -1,7 +1,7 @@
 package com.soywiz.korge.ext.spriter
 
-import com.brashmonkey.spriter.Data
-import com.brashmonkey.spriter.SCMLReader
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Data
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.SCMLReader
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
@@ -30,6 +30,7 @@ class SpriterLibrary(val views: Views, val data: Data, val atlas: Map<String, Te
 			val reader = SCMLReader(scmlContent)
 			val data = reader.data
 
+			// @TODO: Atlas reading!
 			val images = hashMapOf<String, Texture>()
 			for (folder in data.folders) {
 				for (f in folder.files) {

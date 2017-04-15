@@ -1,7 +1,7 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.brashmonkey.spriter.Entity.ObjectInfo
-import com.brashmonkey.spriter.Timeline.Key
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key
 
 /**
  * Represents a time line in a Spriter SCML file.
@@ -233,7 +233,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 	}
 
 	companion object {
-		var DUMMY = Timeline(0, "", ObjectInfo.DUMMY, 0)
+		var DUMMY = Timeline(0, "", ObjectInfo.Companion.DUMMY, 0)
 	}
 
 }

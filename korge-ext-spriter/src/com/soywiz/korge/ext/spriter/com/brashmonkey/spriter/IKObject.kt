@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 /**
  * An inverse kinematics objects which defines a constraint for a [IKResolver].
@@ -22,8 +22,7 @@ class IKObject
 	 * Returns the current set chain length.
 	 * @return the chain length
 	 */
-	var chainLength: Int = 0
-		internal set
+	var chainLength: Int = 0; internal set
 	internal var iterations: Int = 0
 
 	init {

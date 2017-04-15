@@ -1,12 +1,12 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 import java.util.HashMap
 
-import com.brashmonkey.spriter.Mainline.Key
-import com.brashmonkey.spriter.Mainline.Key.BoneRef
-import com.brashmonkey.spriter.Mainline.Key.ObjectRef
-import com.brashmonkey.spriter.Timeline.Key.Bone
-import com.brashmonkey.spriter.Timeline.Key.Object
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
 
 /**
  * Represents an animation of a Spriter SCML file.
@@ -16,7 +16,7 @@ import com.brashmonkey.spriter.Timeline.Key.Object
  */
 open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @JvmField val name: String, @JvmField val length: Int, @JvmField val looping: Boolean, timelines: Int) {
 	companion object {
-		val DUMMY = Animation(Mainline.DUMMY, 0, "", 0, false, 0)
+		val DUMMY = Animation(Mainline.Companion.DUMMY, 0, "", 0, false, 0)
 	}
 
 	private val timelines: Array<Timeline> = Array<Timeline>(timelines) { Timeline.DUMMY }

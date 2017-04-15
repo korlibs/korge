@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 import java.util.ArrayList
 import java.util.HashMap

@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 /**
  * Represents a mainline in a Spriter SCML file.
@@ -71,7 +71,7 @@ class Mainline(keys: Int) {
 		private var objectPointer = 0
 
 		init {
-			this.boneRefs = Array<BoneRef>(boneRefs) {BoneRef.DUMMY }
+			this.boneRefs = Array<BoneRef>(boneRefs) { BoneRef.DUMMY }
 			this.objectRefs = Array<ObjectRef>(objectRefs) { ObjectRef.DUMMY }
 		}
 

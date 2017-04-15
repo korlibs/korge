@@ -1,6 +1,6 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.brashmonkey.spriter.Entity.ObjectInfo
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
 
 /**
  * Represents a box, which consists of four points: top-left, top-right, bottom-left and bottom-right.

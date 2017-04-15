@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.spriter
 
-import com.brashmonkey.spriter.*
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.*
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.Easings

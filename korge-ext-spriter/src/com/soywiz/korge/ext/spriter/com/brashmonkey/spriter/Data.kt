@@ -1,4 +1,4 @@
-package com.brashmonkey.spriter
+package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 
 /**
@@ -8,7 +8,7 @@ package com.brashmonkey.spriter
  * and getFolder().
  * @author Trixt0r
  */
-class Data constructor(val scmlVersion: String, val generator: String, val generatorVersion: String, val pixelMode: Data.PixelMode, folders: Int, entities: Int) {
+class Data constructor(val scmlVersion: String, val generator: String, val generatorVersion: String, val pixelMode: PixelMode, folders: Int, entities: Int) {
 
 	/**
 	 * Represents the rendering mode stored in the spriter data root.
