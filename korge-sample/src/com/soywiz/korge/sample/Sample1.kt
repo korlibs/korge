@@ -4,6 +4,7 @@ import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.ext.spriter.SpriterView
 import com.soywiz.korge.ext.swf.SwfLibrary
 import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
@@ -19,6 +20,7 @@ import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
+import com.soywiz.korio.async.sleep
 import com.soywiz.korma.geom.Point2d
 
 object Sample1 {
@@ -178,14 +180,30 @@ class Sample1Scene(
 		}
 
 		val player = demoSpriterLibrary.create("Player", "idle").apply {
+		//val player = demoSpriterLibrary.create("Player", "hurt_idle").apply {
 			x = 200.0
 			y = 200.0
+			scale = 0.7
 		}
 		go {
 			player.tween(
 				View::rotationDegrees..360.0,
-				time = 2000, easing = Easing.EASE_IN_OUT_QUAD
+				View::scale..1.0,
+				time = 1000, easing = Easing.EASE_IN_OUT_QUAD
 			)
+			player.tween("hurt_idle", time = 300, easing = Easing.EASE_IN)
+			sleep(200)
+			player.tween("walk", time = 1000, easing = Easing.LINEAR)
+			sleep(400)
+			player.tween("sword_swing_0", time = 1000, easing = Easing.LINEAR)
+			sleep(500)
+			player.tween("throw_axe", time = 500, easing = Easing.LINEAR)
+			player.waitCompleted()
+			println("completed")
+			//player.speed = 0.1
+			player.tween(View::speed .. 0.3, time = 2000)
+
+			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}
 		sceneView += player
 	}
