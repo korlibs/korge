@@ -62,6 +62,7 @@ public class Mainline {
      *
      */
     public static class Key{
+    	static public Key DUMMY = new Key(0, 0, new Curve(), 0, 0);
     	
     	public final int id, time;
     	final BoneRef[] boneRefs;

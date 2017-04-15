@@ -9,6 +9,7 @@ import com.brashmonkey.spriter.Entity.ObjectInfo;
  *
  */
 public class Timeline {
+	static public Timeline DUMMY = new Timeline(0, "", null, 0);
 
     public final Key[] keys;
     private int keyPointer = 0;
@@ -52,7 +53,8 @@ public class Timeline {
      *
      */
     public static class Key{
-    	
+    	static public Key DUMMY = new Key(0);
+
     	public final int id, spin;
     	public int time;
     	public final Curve curve;
