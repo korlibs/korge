@@ -29,11 +29,15 @@ public class Data {
         }
     }
 
-	final Folder[] folders;
-    final Entity[] entities;
+	public final Folder[] folders;
+	public final Entity[] entities;
     private int folderPointer = 0, entityPointer = 0;
     public final String scmlVersion, generator, generatorVersion;
     public final PixelMode pixelMode;
+
+    public Entity[] getEntities() {
+    	return entities;
+	}
 
     
     Data(String scmlVersion, String generator, String generatorVersion, PixelMode pixelMode, int folders, int entities){

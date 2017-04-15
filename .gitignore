@@ -1,3 +1,5 @@
 build
 .gradle
 .idea
+Thumbs.db
+thumbs.db

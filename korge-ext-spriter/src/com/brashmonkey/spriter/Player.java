@@ -35,7 +35,7 @@ public class Player {
 	private Timeline.Key[] tempTweenedKeys, tempUnmappedTweenedKeys;
 	private List<PlayerListener> listeners;
 	public final List<Attachment> attachments = new ArrayList<Attachment>();
-	Timeline.Key.Bone root = new Timeline.Key.Bone(new Point(0,0));
+	Bone root = new Bone(new Point(0,0));
 	private final Point position = new Point(0,0), pivot = new Point(0,0);
 	private final HashMap<Object, Timeline.Key> objToTimeline = new HashMap<Object, Timeline.Key>();
 	private float angle;
@@ -565,8 +565,8 @@ public class Player {
 		for(int i = 0; i < maxAnims; i++){
 			Timeline.Key key = new Timeline.Key(i);
 			Timeline.Key keyU = new Timeline.Key(i);
-			key.setObject(new Timeline.Key.Object(new Point(0,0)));
-			keyU.setObject(new Timeline.Key.Object(new Point(0,0)));
+			key.setObject(new Object(new Point(0,0)));
+			keyU.setObject(new Object(new Point(0,0)));
 			tweenedKeys[i] = key;
 			unmappedTweenedKeys[i] = keyU;
 			this.objToTimeline.put(keyU.object(), keyU);
@@ -1066,7 +1066,7 @@ public class Player {
 	 * @author Trixt0r
 	 *
 	 */
-	public static abstract class Attachment extends Timeline.Key.Bone{
+	public static abstract class Attachment extends Bone{
 		
 		private Bone parent;
 		private final Point positionTemp, scaleTemp;

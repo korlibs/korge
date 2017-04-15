@@ -10,7 +10,7 @@ package com.brashmonkey.spriter;
  */
 public class Folder {
 
-    final File[] files;
+    public final File[] files;
     private int filePointer = 0;
     public final int id;
     public final String name;

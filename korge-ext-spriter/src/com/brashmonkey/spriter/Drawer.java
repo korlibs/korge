@@ -53,7 +53,7 @@ public abstract class Drawer<R> {
 		this.setColor(1, 0, 0, 1);
 		Iterator<Bone> it = player.boneIterator();
 		while(it.hasNext()){
-			Timeline.Key.Bone bone = it.next();
+			Bone bone = it.next();
 			Timeline.Key key = player.getKeyFor(bone);
 			if(!key.active) continue;
 			ObjectInfo info = player.getObjectInfoFor(bone);
@@ -193,9 +193,9 @@ public abstract class Drawer<R> {
 	 * @param it the iterator iterating over the objects to draw
 	 * @param map the character map to draw
 	 */
-	public void draw(Iterator<Timeline.Key.Object> it, CharacterMap[] maps){
+	public void draw(Iterator<Object> it, CharacterMap[] maps){
 		while(it.hasNext()){
-			Timeline.Key.Object object = it.next();
+			Object object = it.next();
 			if(object.ref.hasFile()){
 				if(maps != null){
 					for(CharacterMap map: maps)
@@ -261,5 +261,5 @@ public abstract class Drawer<R> {
 	 * Draws the given object with its current resource.
 	 * @param object the object to draw.
 	 */
-	public abstract void draw(Timeline.Key.Object object);
+	public abstract void draw(Object object);
 }

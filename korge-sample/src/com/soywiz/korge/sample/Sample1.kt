@@ -20,7 +20,6 @@ import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
 import com.soywiz.korma.geom.Point2d
-import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 object Sample1 {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)
@@ -66,6 +65,7 @@ class Sample1Scene(
 	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
+	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: com.soywiz.korge.ext.spriter.SpriterLibrary,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
 ) : Scene() {
 	suspend override fun init() {
@@ -73,7 +73,7 @@ class Sample1Scene(
 
 		val tileset = TileSet(tilesetTex, 32, 32)
 
-		sceneView.container() {
+		sceneView.container {
 			//this.text(font, "hello")
 			this.tileMap(Bitmap32(8, 8), tileset) {
 				this.x = -128.0
@@ -176,5 +176,17 @@ class Sample1Scene(
 			}
 			views.dump()
 		}
+
+		val player = demoSpriterLibrary.create("Player", "idle").apply {
+			x = 200.0
+			y = 200.0
+		}
+		go {
+			player.tween(
+				View::rotationDegrees..360.0,
+				time = 2000, easing = Easing.EASE_IN_OUT_QUAD
+			)
+		}
+		sceneView += player
 	}
 }

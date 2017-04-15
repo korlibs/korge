@@ -194,8 +194,8 @@ public class Animation {
 		for(int i = 0; i < this.tweenedKeys.length; i++){
 			this.tweenedKeys[i] = new Timeline.Key(i);
 			this.unmappedTweenedKeys[i] = new Timeline.Key(i);
-			this.tweenedKeys[i].setObject(new Timeline.Key.Object(new Point(0,0)));
-			this.unmappedTweenedKeys[i].setObject(new Timeline.Key.Object(new Point(0,0)));
+			this.tweenedKeys[i].setObject(new Object(new Point(0,0)));
+			this.unmappedTweenedKeys[i].setObject(new Object(new Point(0,0)));
 		}
 		if(mainline.keys.length > 0) currentKey = mainline.getKey(0);
 		this.prepared = true;
