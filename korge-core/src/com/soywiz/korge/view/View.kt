@@ -106,6 +106,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		if (componentsByClass == null) componentsByClass = hashMapOf()
 		val array = componentsByClass!!.getOrPut(c::class.java) { arrayListOf() }
 		array += c
+		c.update(0)
 	}
 
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
@@ -183,6 +184,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=($scaleX,$scaleY)"
 		if (skewX != 0.0 || skewY != 0.0) out += ":skew=($skewX,$skewY)"
 		if (rotation != 0.0) out += ":rotation=(${rotationDegrees}º)"
+		if (name != null) out += ":name=($name)"
 		return out
 	}
 

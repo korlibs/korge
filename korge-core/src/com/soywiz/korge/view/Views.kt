@@ -57,6 +57,7 @@ class Views(
     }
 
     fun update(dtMs: Int) {
+		//println("Update: $dtMs")
         input.frame.reset()
         root.update(dtMs)
     }

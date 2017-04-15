@@ -10,6 +10,7 @@ import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.Easing
@@ -21,10 +22,13 @@ import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
+import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korma.geom.Point2d
 
 object Sample1 {
-	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args)
+	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample1Scene::class.java)
+	//@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample2Scene::class.java)
 }
 
 object Sample1Module : Module() {
@@ -33,6 +37,10 @@ object Sample1Module : Module() {
 	override var mainScene = Sample1Scene::class.java
 	//override var mainScene = Sample2Scene::class.java
 
+	suspend override fun init(injector: AsyncInjector) {
+		val resourcesRoot: ResourcesRoot = injector.get()
+		resourcesRoot.mount("/", ResourcesVfs)
+	}
 }
 
 class MouseSampleController(view: View) : Component(view) {
@@ -70,10 +78,12 @@ class Sample1Scene(
 	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: SpriterLibrary,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
 ) : Scene() {
+	lateinit var tileset: TileSet
+
 	suspend override fun init() {
 		super.init()
 
-		val tileset = TileSet(tilesetTex, 32, 32)
+		tileset = TileSet(tilesetTex, 32, 32)
 
 		sceneView.container {
 			//this.text(font, "hello")

@@ -10,6 +10,7 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.vfs.VfsFile
 import kotlin.collections.set
 
 @AsyncFactoryClass(SpriterLibrary.Loader::class)
@@ -26,44 +27,43 @@ class SpriterLibrary(val views: Views, val data: Data, val atlas: Map<String, Tr
 		val path: Path,
 		val resourcesRoot: ResourcesRoot
 	) : AsyncFactory<SpriterLibrary> {
-		val ag = views.ag
+		suspend override fun create(): SpriterLibrary = resourcesRoot[path].readSpriterLibrary(views)
+	}
+}
 
-		suspend override fun create(): SpriterLibrary {
-			val file = resourcesRoot[path]
-			val scmlContent = file.readString()
-			val reader = SCMLReader(scmlContent)
-			val data = reader.data
+suspend fun VfsFile.readSpriterLibrary(views: Views): SpriterLibrary {
+	val file = this
+	val scmlContent = file.readString()
+	val reader = SCMLReader(scmlContent)
+	val data = reader.data
 
-			// @TODO: Atlas reading!
-			val images = hashMapOf<String, TransformedTexture>()
+	// @TODO: Atlas reading!
+	val images = hashMapOf<String, TransformedTexture>()
 
-			for (atlasName in data.atlases) {
-				val atlasFile = file.parent[atlasName]
-				val atlas = Atlas.loadJsonSpriter(atlasFile.readString())
-				val atlasTex = atlasFile.parent[atlas.image].readTexture(views.ag)
-				for (frame in atlas.frames.values) {
-					images[frame.name] = TransformedTexture(
-						atlasTex.slice(frame.frame),
-						frame.spriteSourceSize.x.toFloat(), frame.spriteSourceSize.y.toFloat(),
-						frame.rotated
-					)
-				}
-				//println(atlas)
-			}
+	for (atlasName in data.atlases) {
+		val atlasFile = file.parent[atlasName]
+		val atlas = Atlas.loadJsonSpriter(atlasFile.readString())
+		val atlasTex = atlasFile.parent[atlas.image].readTexture(views.ag)
+		for (frame in atlas.frames.values) {
+			images[frame.name] = TransformedTexture(
+				atlasTex.slice(frame.frame),
+				frame.spriteSourceSize.x.toFloat(), frame.spriteSourceSize.y.toFloat(),
+				frame.rotated
+			)
+		}
+		//println(atlas)
+	}
 
-			for (folder in data.folders) {
-				for (f in folder.files) {
-					if (f.name in images) continue
-					val image = file.parent[f.name]
-					val tex = image.readTexture(views.ag)
-					images[f.name] = TransformedTexture(tex)
-					//println("${f.name}: ${tex.width}x${tex.height} = ${f.size.width}x${f.size.height}")
+	for (folder in data.folders) {
+		for (f in folder.files) {
+			if (f.name in images) continue
+			val image = file.parent[f.name]
+			val tex = image.readTexture(views.ag)
+			images[f.name] = TransformedTexture(tex)
+			//println("${f.name}: ${tex.width}x${tex.height} = ${f.size.width}x${f.size.height}")
 
-				}
-			}
-
-			return SpriterLibrary(views, data, images)
 		}
 	}
 
+	return SpriterLibrary(views, data, images)
 }

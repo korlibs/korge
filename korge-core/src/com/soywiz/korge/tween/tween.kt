@@ -11,11 +11,10 @@ import kotlin.reflect.KMutableProperty1
 
 class TweenComponent(vs: List<VX<Any, *>>, val tweenObj: Any, view: View, val time: Int, val easing: Easing = Easing.LINEAR, val callback: (Double) -> Unit, val c: CancellableContinuation<Unit>) : Component(view) {
     val vs2 = vs.map { it.v2(tweenObj) }
-    val start = EventLoop.time
+    var elapsed = 0
 
     override fun update(dtMs: Int) {
-        val current = EventLoop.time
-        val elapsed = current - start
+        elapsed += dtMs
         val ratio = (elapsed.toDouble() / time.toDouble()).clamp(0.0, 1.0)
         val fratio = easing(ratio)
         for (v in vs2) {

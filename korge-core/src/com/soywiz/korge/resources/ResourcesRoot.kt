@@ -9,8 +9,8 @@ import com.soywiz.korio.vfs.VfsFile
 
 @Singleton
 class ResourcesRoot : AsyncDependency {
-	lateinit var root: VfsFile
-	lateinit var mountable: Mountable
+	lateinit private var root: VfsFile
+	lateinit private var mountable: Mountable
 
 	fun mount(path: String, file: VfsFile) {
 		mountable.mount(path, file)
