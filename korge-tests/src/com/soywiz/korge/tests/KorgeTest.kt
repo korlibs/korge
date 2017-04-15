@@ -15,6 +15,7 @@ import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
+import com.soywiz.korma.geom.Rectangle
 
 @Suppress("unused")
 open class KorgeTest {
@@ -67,6 +68,17 @@ open class KorgeTest {
 		EventLoop.sleepNextFrame()
 	}
 
+	suspend fun View.isVisibleToUser(): Boolean {
+		if (!this.visible) return false
+		if (this.alpha <= 0.0) return false
+		val bounds = this.getGlobalBounds()
+		if (bounds.area <= 0.0) return false
+		val module = injector.get<Module>()
+		val visibleBounds = Rectangle(0, 0, module.width, module.height)
+		if (!bounds.intersects(visibleBounds)) return false
+		return true
+	}
+
 	class DummyAG : AG() {
 		override val nativeComponent: Any get() = Any()
 
@@ -82,7 +94,6 @@ open class KorgeTest {
 		override val onMouseUp: Signal<Unit> = Signal()
 		override val onMouseDown: Signal<Unit> = Signal()
 
-		override fun repaint(): Unit {
-		}
+		override fun repaint(): Unit = Unit
 	}
 }

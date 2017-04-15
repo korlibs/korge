@@ -8,6 +8,8 @@ import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Rectangle
 
 open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var index: Int = 0
@@ -41,6 +43,8 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var rotationDegrees: Double; set(v) = run { rotation = Math.toRadians(v) }; get() = Math.toDegrees(rotation)
 
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
+
+	val root: View get() = parent?.root ?: this
 
 	var enabled: Boolean = true
 	var visible: Boolean = true
@@ -141,7 +145,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		validGlobal = true
 		if (parent != null) {
 			_globalMatrix.copyFrom(parent!!.globalMatrix)
-			_globalMatrix.premulitply(localMatrix)
+			_globalMatrix.premultiply(localMatrix)
 			_globalMatrixVersion++
 		} else {
 			_globalMatrix.copyFrom(localMatrix)
@@ -235,6 +239,45 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 			parent = null
 			index = -1
 		}
+	}
+
+	fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
+		var current: View? = this
+		out.setToIdentity()
+		val views = arrayListOf<View>()
+		while (current != null) {
+			views += current
+			if (current == target) break
+			current = current.parent
+		}
+		for (view in views.reversed()) out.premultiply(view.localMatrix)
+		return out
+	}
+
+	fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
+
+	fun getBounds(target: View = this, out: Rectangle = Rectangle()): Rectangle {
+		val concat = getConcatMatrix(target)
+		val bb = BoundsBuilder()
+
+		getLocalBounds(out)
+
+		val p1 = Point2d(out.left, out.top)
+		val p2 = Point2d(out.right, out.top)
+		val p3 = Point2d(out.right, out.bottom)
+		val p4 = Point2d(out.left, out.bottom)
+
+		bb.add(concat.transformX(p1.x, p1.y), concat.transformY(p1.x, p1.y))
+		bb.add(concat.transformX(p2.x, p2.y), concat.transformY(p2.x, p2.y))
+		bb.add(concat.transformX(p3.x, p3.y), concat.transformY(p3.x, p3.y))
+		bb.add(concat.transformX(p4.x, p4.y), concat.transformY(p4.x, p4.y))
+
+		bb.getBounds(out)
+		return out
+	}
+
+	open fun getLocalBounds(out: Rectangle = Rectangle()) {
+		out.setTo(0, 0, 0, 0)
 	}
 }
 

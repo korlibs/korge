@@ -56,6 +56,15 @@ class Text(views: Views) : View(views), IText, IHtml {
 			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), globalMatrix)
 		}
 	}
+
+	override fun getLocalBounds(out: Rectangle) {
+		if (document != null) {
+			out.copyFrom(document!!.bounds)
+		} else {
+			views.fontRepository.getBounds(text, format, out)
+			out.setToAnchoredRectangle(out, format.align.anchor, textBounds)
+		}
+	}
 }
 
 fun Views.text(font: BitmapFont, text: String, textSize: Double = 16.0) = Text(this).apply {

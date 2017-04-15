@@ -4,6 +4,8 @@ import com.soywiz.korge.ViewsForTesting
 import com.soywiz.korge.render.Texture
 import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.sync
+import com.soywiz.korio.async.syncTest
+import com.soywiz.korma.geom.Rectangle
 import org.junit.Assert
 import org.junit.Test
 
@@ -11,7 +13,7 @@ class ViewsTest : ViewsForTesting() {
     val tex = Texture(views.ag.createTexture(), 10, 10)
 
     @Test
-    fun name() = sync(EventLoopTest()) {
+    fun name() = syncTest {
         views.root += views.container().apply {
             this += views.image(tex)
         }
@@ -43,4 +45,13 @@ class ViewsTest : ViewsForTesting() {
                 ag.getLogAsString()
         )
     }
+
+	@Test
+	fun testBounds() = syncTest {
+		val image = views.image(tex)
+		image.x = 100.0
+		image.y = 100.0
+		views.root += image
+		Assert.assertEquals(Rectangle(100, 100, 10, 10), image.getGlobalBounds())
+	}
 }

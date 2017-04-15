@@ -4,6 +4,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.util.IntArray2
 import com.soywiz.korge.view.*
+import com.soywiz.korma.geom.Rectangle
 
 class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(views) {
     val tileWidth = tileset.width.toDouble()
@@ -40,7 +41,11 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
         ctx.flush()
     }
 
-    override fun hitTest(x: Double, y: Double): View? {
+	override fun getLocalBounds(out: Rectangle) {
+		out.setTo(0, 0, tileWidth * map.width, tileHeight * map.height)
+	}
+
+	override fun hitTest(x: Double, y: Double): View? {
         return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * map.width, tileHeight * map.height)) this else null
     }
 }

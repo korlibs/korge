@@ -5,6 +5,7 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.spawn
+import com.soywiz.korma.geom.Rectangle
 
 interface AnElement {
 	val library: AnLibrary
@@ -29,6 +30,10 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) && (symbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) ?: true)) this else null
 	}
 
+	override fun getLocalBounds(out: Rectangle) {
+		out.setTo(dx, dy,  tex.width, tex.height)
+	}
+
 	override fun updateInternal(dtMs: Int) = Unit
 }
 
@@ -43,6 +48,10 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 		//textField.setMatrix(this.localMatrix)
 		textField._globalMatrix.copyFrom(this.globalMatrix) // @TODO: A bit hacky. Check a better option while being able to still cache globalMatrix
 		textField.render(ctx)
+	}
+
+	override fun getLocalBounds(out: Rectangle) {
+		textField.getLocalBounds(out)
 	}
 
 	override var text: String get() = textField.text; set(value) = run { textField.text = value }

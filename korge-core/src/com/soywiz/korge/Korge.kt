@@ -34,6 +34,7 @@ object Korge {
 		ag.onReady.await()
 		injector.map(moduleArgs)
 		injector.map(timeProvider)
+		injector.map<Module>(module)
 		module.init(injector)
 
 		val sc = views.sceneContainer()

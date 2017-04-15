@@ -111,7 +111,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 			)
 			t2.copyFrom(globalMatrix)
 			t2.prescale(1.0, -1.0)
-			t2.premulitply(t1)
+			t2.premultiply(t1)
 			//t2.translate(+trimLeft, +trimTop)
 			if (ttex.rotated) {
 				t2.prerotate(-Math.PI / 2.0)

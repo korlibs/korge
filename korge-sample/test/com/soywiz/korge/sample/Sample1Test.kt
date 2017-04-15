@@ -4,8 +4,8 @@ import com.soywiz.korge.animate.AnMovieClip
 import com.soywiz.korge.animate.AnTextField
 import com.soywiz.korge.tests.KorgeTest
 import com.soywiz.korge.view.dump
-import com.soywiz.korge.view.findFirstWithName
 import com.soywiz.korge.view.get
+import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Size
 import org.junit.Assert
 import org.junit.Test
@@ -32,6 +32,8 @@ class Sample1Test : KorgeTest() {
 		Assert.assertEquals(1.0, sceneView["percent"]!!.alpha, 0.0)
 		sceneView["percent"]!!.simulateClick()
 		Assert.assertEquals(0.5, sceneView["percent"]!!.alpha, 0.0)
+		Assert.assertEquals(IRectangle(111, 3, 71, 32), sceneView["percent"]!!.getGlobalBounds().toInt())
+		Assert.assertTrue(sceneView["percent"]!!.isVisibleToUser())
 	}
 
 	@Test
