@@ -29,9 +29,7 @@ class Folder(val id: Int, val name: String, files: Int) {
 	 * *
 	 * @return the file with the given name
 	 */
-	fun getFile(index: Int): File {
-		return files[index]
-	}
+	fun getFile(index: Int): File = files[index]
 
 	/**
 	 * Returns a [File] instance with the given name.
@@ -41,10 +39,7 @@ class Folder(val id: Int, val name: String, files: Int) {
 	 */
 	fun getFile(name: String): File? {
 		val index = getFileIndex(name)
-		if (index >= 0)
-			return getFile(index)
-		else
-			return null
+		return if (index >= 0) getFile(index) else null
 	}
 
 	/**
@@ -53,16 +48,11 @@ class Folder(val id: Int, val name: String, files: Int) {
 	 * *
 	 * @return the file index with the given name or -1 if no file with the given name exists
 	 */
-	internal fun getFileIndex(name: String): Int {
-		for (file in this.files)
-			if (file.name == name) return file.id
-		return -1
-	}
+	internal fun getFileIndex(name: String): Int = this.files.firstOrNull { it.name == name }?.id ?: -1
 
 	override fun toString(): String {
 		var toReturn = javaClass.simpleName + "|[id: " + id + ", name: " + name
-		for (file in files)
-			toReturn += "\n" + file
+		for (file in files) toReturn += "\n" + file
 		toReturn += "]"
 		return toReturn
 	}
