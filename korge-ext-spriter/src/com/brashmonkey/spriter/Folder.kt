@@ -8,8 +8,11 @@ package com.brashmonkey.spriter
  * @author Trixt0r
  */
 class Folder(val id: Int, val name: String, files: Int) {
-	private val dummyFile = File(-1, "", Dimension(0f, 0f), Point(0f, 0f))
-	val files: Array<File> = Array<File>(files) { dummyFile }
+	companion object {
+		val DUMMY = Folder(0, "", 0)
+	}
+
+	val files: Array<File> = Array<File>(files) { File.DUMMY }
 	private var filePointer = 0
 
 	/**

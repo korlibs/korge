@@ -17,7 +17,7 @@ class SpriterLibrary(val views: Views, val data: Data, val atlas: Map<String, Te
 
 	fun create(entityName: String, animationName1: String? = null, animationName2: String? = animationName1): SpriterView {
 		val entity = data.getEntity(entityName)
-		return SpriterView(views, this, entity, animationName1 ?: entity.getAnimation(0).name, animationName2 ?: entity.getAnimation(0).name)
+		return SpriterView(views, this, entity!!, animationName1 ?: entity.getAnimation(0).name, animationName2 ?: entity.getAnimation(0).name)
 	}
 
 	class Loader(

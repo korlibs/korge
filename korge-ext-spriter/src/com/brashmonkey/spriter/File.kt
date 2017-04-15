@@ -7,6 +7,9 @@ package com.brashmonkey.spriter
  * @author Trixt0r
  */
 class File(val id: Int, val name: String, val size: Dimension?, val pivot: Point?) {
+	companion object {
+		val DUMMY = File(-1, "", Dimension(0f, 0f), Point(0f, 0f))
+	}
 
 	/**
 	 * Returns whether this file is a sprite, i.e. an image which is going to be animated, or not.

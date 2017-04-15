@@ -12,6 +12,7 @@ import java.util.List;
  *
  */
 public class Entity {
+	static public Entity DUMMY = new Entity(0, "", 0, 0, 0);
 
     public final int id;
     public final String name;

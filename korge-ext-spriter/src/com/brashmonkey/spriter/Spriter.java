@@ -113,7 +113,7 @@ public class Spriter {
 			Loader loader = loaderClass.getDeclaredConstructor(loaderTypes).newInstance(loaderDependencies);
 			loader.load(new File(scmlFile));
 			loaders.add(loader);
-			for(Entity entity: data.entities)
+			for(Entity entity: data.getEntities())
 				entityToLoader.put(entity, loader);
 		} catch (Exception e) {
 			e.printStackTrace();

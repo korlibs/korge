@@ -66,7 +66,7 @@ public abstract class Loader<R> {
 	public void load(String root){
 		this.root = root;
 		this.beginLoading();
-		for(Folder folder: data.folders){
+		for(Folder folder: data.getFolders()){
 			for(File file: folder.getFiles()){
 				//if(new java.io.File(root+"/"+file.name).exists()){
 					FileReference ref = new FileReference(folder.getId(), file.getId());

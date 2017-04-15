@@ -70,7 +70,7 @@ public class SCMLReader {
 		ArrayList<Element> folders = root.getChildrenByName("folder");
 		ArrayList<Element> entities = root.getChildrenByName("entity");
 		data = new Data(root.get("scml_version"), root.get("generator"), root.get("generator_version"),
-						Data.PixelMode.get(root.getInt("pixel_mode", 0)),
+						Data.PixelMode.Companion.get(root.getInt("pixel_mode", 0)),
 						folders.size(),	entities.size());
 		loadFolders(folders);
 		loadEntities(entities);
