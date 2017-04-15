@@ -72,7 +72,7 @@ public class Player {
 		}
 		if(dirty) this.updateRoot();
 		this.animation.update(time, root);
-		this.currentKey = this.animation.currentKey;
+		this.currentKey = this.animation.getCurrentKey();
 		if(prevKey != currentKey){
 			for (int i = 0; i < listeners.size(); i++) {
 				listeners.get(i).mainlineKeyChanged(prevKey, currentKey);

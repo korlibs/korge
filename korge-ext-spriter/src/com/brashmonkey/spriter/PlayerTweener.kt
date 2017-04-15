@@ -65,7 +65,7 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 		if (baseBoneName != null) {
 			val index = if (anim!!.onFirstMainLine()) firstPlayer!!.getBoneIndex(baseBoneName) else secondPlayer!!.getBoneIndex(baseBoneName)
 			if (index == -1) throw SpriterException("A bone with name \"$baseBoneName\" does no exist!")
-			anim!!.base = anim!!.getCurrentKey().getBoneRef(index)
+			anim!!.base = anim!!.currentKey.getBoneRef(index)
 			super.update()
 		}
 	}
@@ -131,7 +131,7 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	 * @param anim the base animation
 	 */
 	var baseAnimation: Animation
-		get() = this.anim!!.baseAnimation
+		get() = this.anim!!.baseAnimation!!
 		set(anim) {
 			this.anim!!.baseAnimation = anim
 		}

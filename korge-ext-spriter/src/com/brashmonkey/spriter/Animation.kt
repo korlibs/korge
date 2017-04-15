@@ -22,7 +22,7 @@ open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @J
 	private val timelines: Array<Timeline> = Array<Timeline>(timelines) { Timeline.DUMMY }
 	private var timelinePointer = 0
 	private val nameToTimeline: HashMap<String, Timeline> = HashMap<String, Timeline>()
-	@JvmField var currentKey: Key = Key.DUMMY
+	open var currentKey: Key = Key.DUMMY
 	@JvmField var tweenedKeys: Array<Timeline.Key> = emptyArray()
 	@JvmField var unmappedTweenedKeys: Array<Timeline.Key> = emptyArray()
 	private var prepared: Boolean = false
