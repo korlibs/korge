@@ -33,7 +33,7 @@ class SpriterLibrary(val views: Views, val data: Data, val atlas: Map<String, Te
 			val images = hashMapOf<String, Texture>()
 			for (folder in data.folders) {
 				for (f in folder.files) {
-					val image = file.parent[f.name]
+					val image = file.parent[f!!.name]
 					val tex = image.readTexture(views.ag)
 					images[f.name] = tex
 					//println("${f.name}: ${tex.width}x${tex.height} = ${f.size.width}x${f.size.height}")

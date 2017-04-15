@@ -77,22 +77,22 @@ public abstract class Drawer<R> {
 	 * @param size the size of the bone
 	 */
 	public void drawBone(Bone bone, Dimension size){
-		float halfHeight = size.height/2;
-		float xx = bone.position.x+(float)Math.cos(Math.toRadians(bone.angle))*size.height;
-		float yy = bone.position.y+(float)Math.sin(Math.toRadians(bone.angle))*size.height;
-		float x2 = (float)Math.cos(Math.toRadians(bone.angle+90))*halfHeight*bone.scale.y;
-		float y2 = (float)Math.sin(Math.toRadians(bone.angle+90))*halfHeight*bone.scale.y;
+		float halfHeight = size.getHeight() /2;
+		float xx = bone.position.getX() +(float)Math.cos(Math.toRadians(bone.angle))* size.getHeight();
+		float yy = bone.position.getY() +(float)Math.sin(Math.toRadians(bone.angle))* size.getHeight();
+		float x2 = (float)Math.cos(Math.toRadians(bone.angle+90))*halfHeight* bone.scale.getY();
+		float y2 = (float)Math.sin(Math.toRadians(bone.angle+90))*halfHeight* bone.scale.getY();
 		
-		float targetX = bone.position.x+(float)Math.cos(Math.toRadians(bone.angle))*size.width*bone.scale.x,
-				targetY = bone.position.y+(float)Math.sin(Math.toRadians(bone.angle))*size.width*bone.scale.x;
+		float targetX = bone.position.getX() +(float)Math.cos(Math.toRadians(bone.angle))* size.getWidth() * bone.scale.getX(),
+				targetY = bone.position.getY() +(float)Math.sin(Math.toRadians(bone.angle))* size.getWidth() * bone.scale.getX();
 		float upperPointX = xx+x2, upperPointY = yy+y2;
-		this.line(bone.position.x, bone.position.y, upperPointX, upperPointY);
+		this.line(bone.position.getX(), bone.position.getY(), upperPointX, upperPointY);
 		this.line(upperPointX, upperPointY, targetX, targetY);
 
 		float lowerPointX = xx-x2, lowerPointY = yy-y2;
-		this.line(bone.position.x, bone.position.y, lowerPointX, lowerPointY);
+		this.line(bone.position.getX(), bone.position.getY(), lowerPointX, lowerPointY);
 		this.line(lowerPointX, lowerPointY, targetX, targetY);
-		this.line(bone.position.x, bone.position.y, targetX, targetY);
+		this.line(bone.position.getX(), bone.position.getY(), targetX, targetY);
 	}
 	
 	/**
@@ -163,10 +163,10 @@ public abstract class Drawer<R> {
 		while(it.hasNext()){
 			Object point = it.next();
 			if(player.getObjectInfoFor(point).type == ObjectType.Point){
-				float x = point.position.x+(float)(Math.cos(Math.toRadians(point.angle))*pointRadius);
-				float y = point.position.y+(float)(Math.sin(Math.toRadians(point.angle))*pointRadius);
-				circle(point.position.x, point.position.y, pointRadius);
-				line(point.position.x, point.position.y, x,y);
+				float x = point.position.getX() +(float)(Math.cos(Math.toRadians(point.angle))*pointRadius);
+				float y = point.position.getY() +(float)(Math.sin(Math.toRadians(point.angle))*pointRadius);
+				circle(point.position.getX(), point.position.getY(), pointRadius);
+				line(point.position.getX(), point.position.getY(), x,y);
 			}
 		}
 	}
@@ -212,14 +212,14 @@ public abstract class Drawer<R> {
 	 * @param box the box to draw
 	 */
 	public void drawBox(Box box){
-		this.line(box.points[0].x, box.points[0].y, box.points[1].x, box.points[1].y);
-		this.line(box.points[1].x, box.points[1].y, box.points[3].x, box.points[3].y);
-		this.line(box.points[3].x, box.points[3].y, box.points[2].x, box.points[2].y);
-		this.line(box.points[2].x, box.points[2].y, box.points[0].x, box.points[0].y);
+		this.line(box.getPoints()[0].getX(), box.getPoints()[0].getY(), box.getPoints()[1].getX(), box.getPoints()[1].getY());
+		this.line(box.getPoints()[1].getX(), box.getPoints()[1].getY(), box.getPoints()[3].getX(), box.getPoints()[3].getY());
+		this.line(box.getPoints()[3].getX(), box.getPoints()[3].getY(), box.getPoints()[2].getX(), box.getPoints()[2].getY());
+		this.line(box.getPoints()[2].getX(), box.getPoints()[2].getY(), box.getPoints()[0].getX(), box.getPoints()[0].getY());
 	}
 	
 	public void drawRectangle(Rectangle rect){
-		this.rectangle(rect.left, rect.bottom, rect.size.width, rect.size.height);
+		this.rectangle(rect.getLeft(), rect.getBottom(), rect.getSize().getWidth(), rect.getSize().getHeight());
 	}
 	
 	/**

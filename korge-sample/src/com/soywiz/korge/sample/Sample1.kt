@@ -4,7 +4,7 @@ import com.soywiz.korge.Korge
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.ext.spriter.SpriterView
+import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.ext.swf.SwfLibrary
 import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
@@ -67,7 +67,7 @@ class Sample1Scene(
 	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
-	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: com.soywiz.korge.ext.spriter.SpriterLibrary,
+	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: SpriterLibrary,
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
 ) : Scene() {
 	suspend override fun init() {
@@ -180,7 +180,7 @@ class Sample1Scene(
 		}
 
 		val player = demoSpriterLibrary.create("Player", "idle").apply {
-		//val player = demoSpriterLibrary.create("Player", "hurt_idle").apply {
+			//val player = demoSpriterLibrary.create("Player", "hurt_idle").apply {
 			x = 200.0
 			y = 200.0
 			scale = 0.7
@@ -191,17 +191,17 @@ class Sample1Scene(
 				View::scale..1.0,
 				time = 1000, easing = Easing.EASE_IN_OUT_QUAD
 			)
-			player.tween("hurt_idle", time = 300, easing = Easing.EASE_IN)
+			player.changeTo("hurt_idle", time = 300, easing = Easing.EASE_IN)
 			sleep(200)
-			player.tween("walk", time = 1000, easing = Easing.LINEAR)
+			player.changeTo("walk", time = 1000, easing = Easing.LINEAR)
 			sleep(400)
-			player.tween("sword_swing_0", time = 1000, easing = Easing.LINEAR)
+			player.changeTo("sword_swing_0", time = 1000, easing = Easing.LINEAR)
 			sleep(500)
-			player.tween("throw_axe", time = 500, easing = Easing.LINEAR)
+			player.changeTo("throw_axe", time = 500, easing = Easing.LINEAR)
 			player.waitCompleted()
 			println("completed")
 			//player.speed = 0.1
-			player.tween(View::speed .. 0.3, time = 2000)
+			player.tween(View::speed..0.3, time = 2000)
 
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}

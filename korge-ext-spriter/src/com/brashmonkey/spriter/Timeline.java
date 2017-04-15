@@ -162,7 +162,7 @@ public class Timeline {
 			 * @param pivot the new pivot
         	 */
         	public void set(Point position, float angle, Point scale, Point pivot){
-        		this.set(position.x, position.y, angle, scale.x, scale.y, pivot.x, pivot.y);
+        		this.set(position.getX(), position.getY(), angle, scale.getX(), scale.getY(), pivot.getX(), pivot.getY());
         	}
         	
         	/**
@@ -170,7 +170,7 @@ public class Timeline {
         	 * @param parent the parent bone of this bone
         	 */
         	public void unmap(Bone parent){
-        		this.angle *= Math.signum(parent.scale.x)*Math.signum(parent.scale.y);
+        		this.angle *= Math.signum(parent.scale.getX())*Math.signum(parent.scale.getY());
         		this.angle += parent.angle;
         		this.scale.scale(parent.scale);
         		this.position.scale(parent.scale);
@@ -183,12 +183,12 @@ public class Timeline {
         	 * @param parent the parent bone of this bone
         	 */
         	public void map(Bone parent){
-        		this.position.translate(-parent.position.x, -parent.position.y);
+        		this.position.translate(-parent.position.getX(), -parent.position.getY());
         		this.position.rotate(-parent.angle);
-        		this.position.scale(1f/parent.scale.x, 1f/parent.scale.y);
-        		this.scale.scale(1f/parent.scale.x, 1f/parent.scale.y);
+        		this.position.scale(1f/ parent.scale.getX(), 1f/ parent.scale.getY());
+        		this.scale.scale(1f/ parent.scale.getX(), 1f/ parent.scale.getY());
         		this.angle -=parent.angle;
-    			this.angle *= Math.signum(parent.scale.x)*Math.signum(parent.scale.y);
+    			this.angle *= Math.signum(parent.scale.getX())*Math.signum(parent.scale.getY());
         	}
         	
         	public String toString(){
@@ -250,8 +250,8 @@ public class Timeline {
 			public void set(float x, float y, float angle, float scaleX, float scaleY, float pivotX, float pivotY, float alpha, int folder, int file){
 				super.set(x, y, angle, scaleX, scaleY, pivotX, pivotY);
 				this.alpha = alpha;
-				this.ref.folder = folder;
-				this.ref.file = file;
+				this.ref.setFolder(folder);
+				this.ref.setFile(file);
 			}
 			
 			/**
@@ -264,7 +264,7 @@ public class Timeline {
 			 * @param fileRef the new file reference
         	 */
         	public void set(Point position, float angle, Point scale, Point pivot, float alpha, FileReference fileRef){
-        		this.set(position.x, position.y, angle, scale.x, scale.y, pivot.x, pivot.y, alpha , fileRef.folder, fileRef.file);
+        		this.set(position.getX(), position.getY(), angle, scale.getX(), scale.getY(), pivot.getX(), pivot.getY(), alpha , fileRef.getFolder(), fileRef.getFile());
         	}
 			
 			public String toString(){

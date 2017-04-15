@@ -61,7 +61,7 @@ public abstract class IKResolver {
 	public void resolve(){
 		for(Entry<IKObject, BoneRef> entry: this.ikMap.entrySet()){
 			for(int j = 0; j < entry.getKey().iterations; j++)
-				this.resolve(entry.getKey().x, entry.getKey().y, entry.getKey().chainLength, entry.getValue());
+				this.resolve(entry.getKey().getX(), entry.getKey().getY(), entry.getKey().chainLength, entry.getValue());
 		}
 	}
 	

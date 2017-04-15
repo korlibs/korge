@@ -83,7 +83,7 @@ public class Data {
      */
     int getFolderIndex(String name){
     	for(Folder folder: this.folders)
-    		if(folder.name.equals(name)) return folder.id;
+    		if(folder.getName().equals(name)) return folder.getId();
     	return -1;
     }
     
@@ -155,7 +155,7 @@ public class Data {
      * @return the {@link File} instance for the given reference
      */
     public File getFile(FileReference ref){
-    	return this.getFile(ref.folder, ref.file);
+    	return this.getFile(ref.getFolder(), ref.getFile());
     }
 
     /**

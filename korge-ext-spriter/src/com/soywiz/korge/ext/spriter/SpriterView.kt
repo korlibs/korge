@@ -71,7 +71,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 
 	var time: Int; get() = player.time; set(value) = run { player.time = value }
 
-	suspend fun tween(animation: String, time: Int, easing: Easing = Easings.LINEAR) {
+	suspend fun changeTo(animation: String, time: Int, easing: Easing = Easings.LINEAR) {
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0

@@ -102,7 +102,7 @@ public class SCMLReader {
 			File file = new File(f.getInt("id"), f.get("name"),
 					new Dimension(f.getInt("width", 0), f.getInt("height", 0)),
 					new Point(f.getFloat("pivot_x", 0f), f.getFloat("pivot_y", 1f)));
-			
+
 			folder.addFile(file);
 		}
 	}
@@ -203,8 +203,8 @@ public class SCMLReader {
 			ArrayList<Element> objectRefs = k.getChildrenByName("object_ref");
 			ArrayList<Element> boneRefs = k.getChildrenByName("bone_ref");
 			Curve curve = new Curve();
-			curve.setType(Curve.getType(k.get("curve_type","linear")));
-			curve.constraints.set(k.getFloat("c1", 0f),k.getFloat("c2", 0f),k.getFloat("c3", 0f),k.getFloat("c4", 0f));
+			curve.setType(Curve.Companion.getType(k.get("curve_type","linear")));
+			curve.getConstraints().set(k.getFloat("c1", 0f),k.getFloat("c2", 0f),k.getFloat("c3", 0f),k.getFloat("c4", 0f));
 			Mainline.Key key = new Mainline.Key(k.getInt("id"), k.getInt("time", 0), curve,
 					boneRefs.size(), objectRefs.size());
 			main.addKey(key);
@@ -264,8 +264,8 @@ public class SCMLReader {
 		for(int i = 0; i< keys.size(); i++){
 			Element k = keys.get(i);
 			Curve curve = new Curve();
-			curve.setType(Curve.getType(k.get("curve_type", "linear")));
-			curve.constraints.set(k.getFloat("c1", 0f),k.getFloat("c2", 0f),k.getFloat("c3", 0f),k.getFloat("c4", 0f));
+			curve.setType(Curve.Companion.getType(k.get("curve_type", "linear")));
+			curve.getConstraints().set(k.getFloat("c1", 0f),k.getFloat("c2", 0f),k.getFloat("c3", 0f),k.getFloat("c4", 0f));
 			Timeline.Key key = new Timeline.Key(k.getInt("id"), k.getInt("time", 0), k.getInt("spin", 1), curve);
 			Element obj = k.getChildByName("bone");
 			if(obj == null) obj = k.getChildByName("object");
@@ -281,8 +281,8 @@ public class SCMLReader {
 					folder = obj.getInt("folder", -1);
 					file = obj.getInt("file", -1);
 					File f = data.getFolder(folder).getFile(file);
-					pivot = new Point(obj.getFloat("pivot_x", f.pivot.x), obj.getFloat("pivot_y", f.pivot.y));
-					timeline.objectInfo.size.set(f.size);
+					pivot = new Point(obj.getFloat("pivot_x", f.getPivot().getX()), obj.getFloat("pivot_y", f.getPivot().getY()));
+					timeline.objectInfo.size.set(f.getSize());
 				}
 			}
 			Timeline.Key.Object object;

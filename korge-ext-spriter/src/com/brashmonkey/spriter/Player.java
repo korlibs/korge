@@ -279,7 +279,7 @@ public class Player {
 	 * @throws NullPointerException if no object info for the given bone or object exists
 	 */
 	public boolean collidesFor(Bone boneOrObject, Point point){
-		return this.collidesFor(boneOrObject, point.x, point.y);
+		return this.collidesFor(boneOrObject, point.getX(), point.getY());
 	}
 	
 	/**
@@ -322,7 +322,7 @@ public class Player {
 	 * @throws SpriterException if no bone exists of the given name
 	 */
 	public void setBone(String name, Point position, float angle, Point scale){
-		this.setBone(name, position.x, position.y, angle, scale.x, scale.y);
+		this.setBone(name, position.getX(), position.getY(), angle, scale.getX(), scale.getY());
 	}
 	
 	/**
@@ -335,7 +335,7 @@ public class Player {
 	 */
 	public void setBone(String name, float x, float y, float angle){
 		Bone b = getBone(name);
-		setBone(name, x, y, angle, b.scale.x, b.scale.y);
+		setBone(name, x, y, angle, b.scale.getX(), b.scale.getY());
 	}
 	
 	/**
@@ -347,7 +347,7 @@ public class Player {
 	 */
 	public void setBone(String name, Point position, float angle){
 		Bone b = getBone(name);
-		setBone(name, position.x, position.y, angle, b.scale.x, b.scale.y);
+		setBone(name, position.getX(), position.getY(), angle, b.scale.getX(), b.scale.getY());
 	}
 	
 	/**
@@ -369,7 +369,7 @@ public class Player {
 	 * @throws SpriterException if no bone exists of the given name
 	 */
 	public void setBone(String name, Point position){
-		setBone(name, position.x, position.y);
+		setBone(name, position.getX(), position.getY());
 	}
 	
 	/**
@@ -380,7 +380,7 @@ public class Player {
 	 */
 	public void setBone(String name, float angle){
 		Bone b = getBone(name);
-		setBone(name, b.position.x, b.position.y, angle);
+		setBone(name, b.position.getX(), b.position.getY(), angle);
 	}
 	
 	/**
@@ -429,7 +429,7 @@ public class Player {
 	 * @throws SpriterException if no object exists of the given name
 	 */
 	public void setObject(String name, Point position, float angle, Point scale, Point pivot, float alpha, FileReference ref){
-		this.setObject(name, position.x, position.y, angle, scale.x, scale.y, pivot.x, pivot.y, alpha, ref.folder, ref.file);
+		this.setObject(name, position.getX(), position.getY(), angle, scale.getX(), scale.getY(), pivot.getX(), pivot.getY(), alpha, ref.getFolder(), ref.getFile());
 	}
 	
 	/**
@@ -444,7 +444,7 @@ public class Player {
 	 */
 	public void setObject(String name, float x, float y, float angle, float scaleX, float scaleY){
 		Object b = getObject(name);
-		setObject(name, x, y, angle, scaleX, scaleY, b.pivot.x, b.pivot.y, b.alpha, b.ref.folder, b.ref.file);
+		setObject(name, x, y, angle, scaleX, scaleY, b.pivot.getX(), b.pivot.getY(), b.alpha, b.ref.getFolder(), b.ref.getFile());
 	}
 	
 	/**
@@ -457,7 +457,7 @@ public class Player {
 	 */
 	public void setObject(String name, float x, float y, float angle){
 		Object b = getObject(name);
-		setObject(name, x, y, angle, b.scale.x, b.scale.y);
+		setObject(name, x, y, angle, b.scale.getX(), b.scale.getY());
 	}
 	
 	/**
@@ -469,7 +469,7 @@ public class Player {
 	 */
 	public void setObject(String name, Point position, float angle){
 		Object b = getObject(name);
-		setObject(name, position.x, position.y, angle, b.scale.x, b.scale.y);
+		setObject(name, position.getX(), position.getY(), angle, b.scale.getX(), b.scale.getY());
 	}
 	
 	/**
@@ -491,7 +491,7 @@ public class Player {
 	 * @throws SpriterException if no object exists of the given name
 	 */
 	public void setObject(String name, Point position){
-		setObject(name, position.x, position.y);
+		setObject(name, position.getX(), position.getY());
 	}
 	
 	/**
@@ -502,7 +502,7 @@ public class Player {
 	 */
 	public void setObject(String name, float angle){
 		Object b = getObject(name);
-		setObject(name, b.position.x, b.position.y, angle);
+		setObject(name, b.position.getX(), b.position.getY(), angle);
 	}
 	
 	/**
@@ -515,7 +515,7 @@ public class Player {
 	 */
 	public void setObject(String name, float alpha, int folder, int file){
 		Object b = getObject(name);
-		setObject(name, b.position.x, b.position.y, b.angle, b.scale.x, b.scale.y, b.pivot.x, b.pivot.y, alpha, folder, file);
+		setObject(name, b.position.getX(), b.position.getY(), b.angle, b.scale.getX(), b.scale.getY(), b.pivot.getX(), b.pivot.getY(), alpha, folder, file);
 	}
 	
 	/**
@@ -639,7 +639,7 @@ public class Player {
 	 */
 	public Rectangle getBoundingRectangle(BoneRef root){
 		Bone boneRoot = root == null ? this.root : this.unmappedTweenedKeys[root.timeline].object();
-		this.rect.set(boneRoot.position.x, boneRoot.position.y, boneRoot.position.x, boneRoot.position.y);
+		this.rect.set(boneRoot.position.getX(), boneRoot.position.getY(), boneRoot.position.getX(), boneRoot.position.getY());
 		this.calcBoundingRectangle(root);
 		this.rect.calculateSize();
 		return this.rect;
@@ -660,14 +660,14 @@ public class Player {
 			if(ref.parent != root && root != null) continue;
 			Bone bone = this.unmappedTweenedKeys[ref.timeline].object();
 			this.prevBBox.calcFor(bone, animation.getTimeline(ref.timeline).objectInfo);
-			Rectangle.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
+			Rectangle.Companion.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
 			this.calcBoundingRectangle(ref);
 		}
 		for(ObjectRef ref: getCurrentKey().objectRefs){
 			if(ref.parent != root) continue;
 			Bone bone = this.unmappedTweenedKeys[ref.timeline].object();
 			this.prevBBox.calcFor(bone, animation.getTimeline(ref.timeline).objectInfo);
-			Rectangle.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
+			Rectangle.Companion.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
 		}
 	}
 	
@@ -729,7 +729,7 @@ public class Player {
 	 * @return the current scale
 	 */
 	public float getScale(){
-		return root.scale.x;
+		return root.scale.getX();
 	}
 	
 	/**
@@ -749,7 +749,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player flipX(){
-		this.root.scale.x *= -1;
+		this.root.scale.setX(this.root.scale.getX() * -1);
 		return this;
 	}
 	
@@ -758,7 +758,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player flipY(){
-		this.root.scale.y *= -1;
+		this.root.scale.setY(this.root.scale.getY() * -1);
 		return this;
 	}
 	
@@ -767,7 +767,7 @@ public class Player {
 	 * @return 1 if this player is not flipped, -1 if it is flipped
 	 */
 	public int flippedX(){
-		return (int) Math.signum(root.scale.x);
+		return (int) Math.signum(root.scale.getX());
 	}
 	
 	/**
@@ -775,7 +775,7 @@ public class Player {
 	 * @return 1 if this player is not flipped, -1 if it is flipped
 	 */
 	public int flippedY(){
-		return (int) Math.signum(root.scale.y);
+		return (int) Math.signum(root.scale.getY());
 	}
 	
 	/**
@@ -796,7 +796,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player setPosition(Point position){
-		return this.setPosition(position.x, position.y);
+		return this.setPosition(position.getX(), position.getY());
 	}
 	
 	/**
@@ -806,7 +806,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player translatePosition(float x, float y){
-		return this.setPosition(position.x+x, position.y+y);
+		return this.setPosition(position.getX() +x, position.getY() +y);
 	}
 	
 	/**
@@ -815,7 +815,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player translate(Point amount){
-		return this.translatePosition(amount.x, amount.y);
+		return this.translatePosition(amount.getX(), amount.getY());
 	}
 	
 	/**
@@ -823,7 +823,7 @@ public class Player {
 	 * @return the current position in x direction
 	 */
 	public float getX(){
-		return position.x;
+		return position.getX();
 	}
 	
 	/**
@@ -831,7 +831,7 @@ public class Player {
 	 * @return the current position in y direction
 	 */
 	public float getY(){
-		return position.y;
+		return position.getY();
 	}
 	
 	/**
@@ -882,7 +882,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player setPivot(Point pivot){
-		return this.setPivot(pivot.x, pivot.y);
+		return this.setPivot(pivot.getX(), pivot.getY());
 	}
 	
 	/**
@@ -892,7 +892,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player translatePivot(float x, float y){
-		return this.setPivot(pivot.x+x, pivot.y+y);
+		return this.setPivot(pivot.getX() +x, pivot.getY() +y);
 	}
 	
 	/**
@@ -901,7 +901,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player translatePivot(Point amount){
-		return this.translatePivot(amount.x, amount.y);
+		return this.translatePivot(amount.getX(), amount.getY());
 	}
 	
 	/**
@@ -909,7 +909,7 @@ public class Player {
 	 * @return the pivot in x direction
 	 */
 	public float getPivotX(){
-		return pivot.x;
+		return pivot.getX();
 	}
 	
 	/**
@@ -917,7 +917,7 @@ public class Player {
 	 * @return the pivot in y direction
 	 */
 	public float getPivotY(){
-		return pivot.y;
+		return pivot.getY();
 	}
 	
 	/**
@@ -1107,8 +1107,8 @@ public class Player {
 			this.angleTemp = super.angle;
 			
 			super.unmap(parent);
-			this.setPosition(super.position.x, super.position.y);
-			this.setScale(super.scale.x, super.scale.y);
+			this.setPosition(super.position.getX(), super.position.getY());
+			this.setScale(super.scale.getX(), super.scale.getY());
 			this.setAngle(super.angle);
 			
 			//Load realtive positions

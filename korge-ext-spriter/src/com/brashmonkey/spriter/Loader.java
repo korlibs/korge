@@ -67,9 +67,9 @@ public abstract class Loader<R> {
 		this.root = root;
 		this.beginLoading();
 		for(Folder folder: data.folders){
-			for(File file: folder.files){
+			for(File file: folder.getFiles()){
 				//if(new java.io.File(root+"/"+file.name).exists()){
-					FileReference ref = new FileReference(folder.id, file.id);
+					FileReference ref = new FileReference(folder.getId(), file.getId());
 					this.resources.put(ref, this.loadResource(ref));
 				//}
 			}
