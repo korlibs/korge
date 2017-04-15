@@ -118,7 +118,7 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	 * @param name the name of the base animation
 	 */
 	fun setBaseAnimation(name: String) {
-		this.baseAnimation = entity.getAnimation(name)
+		this.baseAnimation = entity.getAnimation(name)!!
 	}
 
 	/**

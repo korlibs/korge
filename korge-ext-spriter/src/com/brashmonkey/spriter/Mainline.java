@@ -9,6 +9,7 @@ package com.brashmonkey.spriter;
  *
  */
 public class Mainline {
+	static public Mainline DUMMY = new Mainline(0);
 
     final Key[] keys;
     private int keyPointer = 0;

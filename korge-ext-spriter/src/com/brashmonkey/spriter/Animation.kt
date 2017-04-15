@@ -15,6 +15,10 @@ import com.brashmonkey.spriter.Timeline.Key.Object
  * @author Trixt0r
  */
 open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @JvmField val name: String, @JvmField val length: Int, @JvmField val looping: Boolean, timelines: Int) {
+	companion object {
+		val DUMMY = Animation(Mainline.DUMMY, 0, "", 0, false, 0)
+	}
+
 	private val timelines: Array<Timeline> = Array<Timeline>(timelines) { Timeline.DUMMY }
 	private var timelinePointer = 0
 	private val nameToTimeline: HashMap<String, Timeline> = HashMap<String, Timeline>()
