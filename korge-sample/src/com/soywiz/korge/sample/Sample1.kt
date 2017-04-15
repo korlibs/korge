@@ -1,6 +1,7 @@
 package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
+import com.soywiz.korge.animate.AnTextField
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
@@ -80,6 +81,7 @@ class Sample1Scene(
 ) : Scene() {
 	lateinit var tileset: TileSet
 	lateinit var image: Image
+	lateinit var percent: AnTextField
 
 	suspend override fun init() {
 		super.init()
@@ -160,14 +162,15 @@ class Sample1Scene(
 
 		sceneView += progressbarLibrary.an.createMainTimeLine().apply {
 			go {
-				this["percent"]!!.onClick {
-					this["percent"]!!.alpha = 0.5
+				percent = (this["percent"] as AnTextField?)!!
+				percent.onClick {
+					percent.alpha = 0.5
 					println(this["percent"]!!.alpha)
 				}
 				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
 					this.seekStill("progressbar", ratio)
 					//println(this.findFirstWithName("percent"))
-					this["percent"]?.setText("%d%%".format((ratio * 100).toInt()))
+					percent.setText("%d%%".format((ratio * 100).toInt()))
 				}
 			}
 		}

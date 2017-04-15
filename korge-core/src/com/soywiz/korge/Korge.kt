@@ -16,7 +16,7 @@ import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korui.CanvasApplication
 
 object Korge {
-	val VERSION = "0.8.0"
+	val VERSION = "0.8.1"
 
 	suspend fun setupCanvas(
 		canvas: AGContainer,

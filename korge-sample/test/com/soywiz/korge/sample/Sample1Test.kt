@@ -1,10 +1,8 @@
 package com.soywiz.korge.sample
 
 import com.soywiz.korge.animate.AnMovieClip
-import com.soywiz.korge.animate.AnTextField
 import com.soywiz.korge.tests.KorgeTest
 import com.soywiz.korge.view.dump
-import com.soywiz.korge.view.get
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Size
 import org.junit.Assert
@@ -14,7 +12,7 @@ class Sample1Test : KorgeTest() {
 	@Test
 	fun scene1() = testScene(Sample1Module, Sample1Scene::class.java) {
 		Assert.assertEquals(Size(32, 32), Size(tileset.width, tileset.height))
-		val textField = sceneView["percent"] as AnTextField
+		val textField = percent
 		Assert.assertEquals("0%", textField.text)
 		updateTime(100)
 		Assert.assertEquals("0%", textField.text)
@@ -35,11 +33,11 @@ class Sample1Test : KorgeTest() {
 		image.simulateOut()
 		Assert.assertEquals(0.7, image.alpha, 0.0)
 
-		Assert.assertEquals(1.0, sceneView["percent"]!!.alpha, 0.0)
-		sceneView["percent"]!!.simulateClick()
-		Assert.assertEquals(0.5, sceneView["percent"]!!.alpha, 0.0)
-		Assert.assertEquals(IRectangle(111, 3, 71, 32), sceneView["percent"]!!.getGlobalBounds().toInt())
-		Assert.assertTrue(sceneView["percent"]!!.isVisibleToUser())
+		Assert.assertEquals(1.0, percent.alpha, 0.0)
+		percent.simulateClick()
+		Assert.assertEquals(0.5, percent.alpha, 0.0)
+		Assert.assertEquals(IRectangle(111, 3, 71, 32), percent.getGlobalBounds().toInt())
+		Assert.assertTrue(percent.isVisibleToUser())
 	}
 
 	@Test
