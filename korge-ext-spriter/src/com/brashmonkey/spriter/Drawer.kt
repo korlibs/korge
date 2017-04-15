@@ -23,7 +23,7 @@ abstract class Drawer<R>
  * Creates a new drawer based on the given loader.
  * @param loader the loader containing resources
  */
-(@JvmField var loader: Loader<R>) {
+(@JvmField var loader: Loader<*>) {
 
 	/**
 	 * The radius of a point for debug drawing purposes.
