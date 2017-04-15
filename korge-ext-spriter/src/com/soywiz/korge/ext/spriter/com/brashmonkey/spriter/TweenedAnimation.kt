@@ -41,19 +41,9 @@ class TweenedAnimation
 	 * The curve which will tween the animations.
 	 * The default type of the curve is [Curve.Type.Linear].
 	 */
-	val curve: Curve
-	/**
-	 * Returns the first animation.
-	 * @return the first animation
-	 */
-	var firstAnimation: Animation? = null
-		private set
-	/**
-	 * Returns the second animation.
-	 * @return the second animation
-	 */
-	var secondAnimation: Animation? = null
-		private set
+	val curve: Curve = Curve()
+	var firstAnimation: Animation? = null; private set
+	var secondAnimation: Animation? = null; private set
 
 	/**
 	 * The base animation an object or bone will get if it will not be tweened.
@@ -69,7 +59,6 @@ class TweenedAnimation
 	var tweenSprites = false
 
 	init {
-		this.curve = Curve()
 		this.setUpTimelines()
 	}
 

@@ -68,6 +68,18 @@ open class KorgeTest {
 		EventLoop.sleepNextFrame()
 	}
 
+	suspend fun View.simulateOver() {
+		this.mouse.onOver(this.mouse)
+		ag.onRender(ag)
+		EventLoop.sleepNextFrame()
+	}
+
+	suspend fun View.simulateOut() {
+		this.mouse.onOut(this.mouse)
+		ag.onRender(ag)
+		EventLoop.sleepNextFrame()
+	}
+
 	suspend fun View.isVisibleToUser(): Boolean {
 		if (!this.visible) return false
 		if (this.alpha <= 0.0) return false

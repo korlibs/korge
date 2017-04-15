@@ -29,6 +29,12 @@ class Sample1Test : KorgeTest() {
 		Assert.assertEquals(1.0, image.alpha, 0.0)
 		updateMousePosition(1000, 1000)
 		Assert.assertEquals(0.7, image.alpha, 0.0)
+
+		image.simulateOver()
+		Assert.assertEquals(1.0, image.alpha, 0.0)
+		image.simulateOut()
+		Assert.assertEquals(0.7, image.alpha, 0.0)
+
 		Assert.assertEquals(1.0, sceneView["percent"]!!.alpha, 0.0)
 		sceneView["percent"]!!.simulateClick()
 		Assert.assertEquals(0.5, sceneView["percent"]!!.alpha, 0.0)

@@ -45,7 +45,6 @@ object Sample1Module : Module() {
 }
 
 class MouseSampleController(view: View) : Component(view) {
-	val temp = Point2d()
 	override fun update(dtMs: Int) {
 		//view.globalToLocal(views.input.mouse, temp)
 		view.x = views.input.mouse.x
@@ -163,11 +162,12 @@ class Sample1Scene(
 			go {
 				this["percent"]!!.onClick {
 					this["percent"]!!.alpha = 0.5
+					println(this["percent"]!!.alpha)
 				}
-				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) {
-					this.seekStill("progressbar", it)
+				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
+					this.seekStill("progressbar", ratio)
 					//println(this.findFirstWithName("percent"))
-					this["percent"]?.setText("%d%%".format((it * 100).toInt()))
+					this["percent"]?.setText("%d%%".format((ratio * 100).toInt()))
 				}
 			}
 		}
@@ -196,7 +196,7 @@ class Sample1Scene(
 
 		val player = demoSpriterLibrary.create("Player", "idle").apply {
 			//val player = demoSpriterLibrary.create("Player", "hurt_idle").apply {
-			x = 200.0
+			x = 400.0
 			y = 200.0
 			scale = 0.7
 		}
