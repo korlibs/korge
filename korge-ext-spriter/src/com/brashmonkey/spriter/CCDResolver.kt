@@ -18,8 +18,8 @@ class CCDResolver(player: Player) : IKResolver(player) {
 		val timeline = player.animation.getTimeline(effectorRef.timeline)
 		val key = player.tweenedKeys[effectorRef.timeline]
 		val unmappedKey = player.unmappedTweenedKeys[effectorRef.timeline]
-		val effector = key.`object`()
-		val unmappedffector = unmappedKey.`object`()
+		val effector = key.`object`()!!
+		val unmappedffector = unmappedKey.`object`()!!
 		var width = if (timeline.objectInfo != null) timeline.objectInfo.size.width else 200f
 		width *= unmappedffector.scale.x
 		var xx = unmappedffector.position.x + Math.cos(Math.toRadians(unmappedffector.angle.toDouble())).toFloat() * width

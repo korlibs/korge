@@ -124,10 +124,10 @@ open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @J
 		if (isObject)
 			this.tweenObject(bone1 as Object, bone2 as Object, tweenTarget as Object, t, key.curve, key.spin)
 		else
-			this.tweenBone(bone1, bone2, tweenTarget, t, key.curve, key.spin)
+			this.tweenBone(bone1 as Bone, bone2 as Bone, tweenTarget as Bone, t, key.curve, key.spin)
 		this.unmappedTweenedKeys[ref.timeline].active = true
 		this.unmapTimelineObject(ref.timeline, isObject, if (ref.parent != null)
-			this.unmappedTweenedKeys[ref.parent.timeline].`object`()
+			this.unmappedTweenedKeys[ref.parent.timeline].`object`() as Bone
 		else
 			root)
 	}
@@ -138,7 +138,7 @@ open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @J
 		if (isObject)
 			(mapTarget as Object).set(tweenTarget as Object)
 		else
-			mapTarget.set(tweenTarget)
+			(mapTarget as Bone).set(tweenTarget as Bone)
 		mapTarget.unmap(root)
 	}
 
