@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
-
 package com.soywiz.korge
 
 import com.soywiz.korag.AGContainer
@@ -13,13 +11,21 @@ import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
 import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korui.CanvasApplication
 
 object Korge {
 	val VERSION = "0.8.0"
 
-	suspend fun setupCanvas(canvas: AGContainer, module: Module, args: Array<String> = arrayOf(), sceneClass: Class<out Scene> = module.mainScene, injector: AsyncInjector = AsyncInjector()): SceneContainer {
+	suspend fun setupCanvas(
+		canvas: AGContainer,
+		module: Module,
+		args: Array<String> = arrayOf(),
+		sceneClass: Class<out Scene> = module.mainScene,
+		timeProvider: TimeProvider = TimeProvider(),
+		injector: AsyncInjector = AsyncInjector()
+	): SceneContainer {
 		val ag = canvas.ag
 		injector.map(ag)
 		val views = injector.get<Views>()
@@ -27,17 +33,23 @@ object Korge {
 
 		ag.onReady.await()
 		injector.map(moduleArgs)
+		injector.map(timeProvider)
 		module.init(injector)
 
 		val sc = views.sceneContainer()
 		views.root += sc
 		sc.changeTo(sceneClass)
 
-		var lastTime = System.currentTimeMillis()
+		var lastTime = timeProvider.currentTimeMillis()
+		//println("lastTime: $lastTime")
 		ag.onRender {
+			//println("Render")
 			ag.clear(module.bgcolor)
-			val currentTime = System.currentTimeMillis()
+			val currentTime = timeProvider.currentTimeMillis()
+			//println("currentTime: $currentTime")
 			val delta = (currentTime - lastTime).toInt()
+			//println("delta: $delta")
+			//println("Render($lastTime -> $currentTime): $delta")
 			lastTime = currentTime
 			views.update(delta)
 			views.render()
@@ -71,10 +83,11 @@ object Korge {
 		args: Array<String> = arrayOf(),
 		canvas: AGContainer? = null,
 		sceneClass: Class<out Scene> = module.mainScene,
+		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false
 	) = EventLoop {
-		test(module, args, canvas, sceneClass, injector, debug)
+		test(module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector, timeProvider = timeProvider, debug = debug)
 	}
 
 	suspend fun test(
@@ -83,11 +96,12 @@ object Korge {
 		canvas: AGContainer? = null,
 		sceneClass: Class<out Scene> = module.mainScene,
 		injector: AsyncInjector = AsyncInjector(),
+		timeProvider: TimeProvider = TimeProvider(),
 		debug: Boolean = false
 	): SceneContainer {
 		val done = Promise.Deferred<SceneContainer>()
 		if (canvas != null) {
-			done.resolve(setupCanvas(canvas, module, args, sceneClass, injector))
+			done.resolve(setupCanvas(canvas = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
 		} else {
 			val icon = if (module.icon != null) {
 				try {
@@ -102,7 +116,7 @@ object Korge {
 
 			CanvasApplication(module.title, module.width, module.height, icon) {
 				go {
-					done.resolve(setupCanvas(it, module, args, sceneClass, injector))
+					done.resolve(setupCanvas(canvas = it, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
 				}
 			}
 		}

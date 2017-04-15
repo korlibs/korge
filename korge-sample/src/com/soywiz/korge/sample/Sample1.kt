@@ -6,6 +6,7 @@ import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.ext.swf.SwfLibrary
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.render.Texture
@@ -79,6 +80,7 @@ class Sample1Scene(
 	@FontDescriptor(face = "Arial", size = 40) val font2: BitmapFont
 ) : Scene() {
 	lateinit var tileset: TileSet
+	lateinit var image: Image
 
 	suspend override fun init() {
 		super.init()
@@ -103,7 +105,7 @@ class Sample1Scene(
 		}
 
 
-		val image = sceneView.image(korgeTex, 0.5).apply {
+		image = sceneView.image(korgeTex, 0.5).apply {
 			scale = 0.2
 			rotation = Math.toRadians(-90.0)
 			alpha = 0.7
@@ -159,6 +161,9 @@ class Sample1Scene(
 
 		sceneView += progressbarLibrary.an.createMainTimeLine().apply {
 			go {
+				this["percent"]!!.onClick {
+					this["percent"]!!.alpha = 0.5
+				}
 				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) {
 					this.seekStill("progressbar", it)
 					//println(this.findFirstWithName("percent"))
@@ -186,7 +191,7 @@ class Sample1Scene(
 			for (delta in listOf(+200.0, -200.0, +100.0)) {
 				image.tween(View::x..image.x + delta, time = 1000, easing = Easing.EASE_IN_OUT_QUAD)
 			}
-			views.dump()
+			//views.dump()
 		}
 
 		val player = demoSpriterLibrary.create("Player", "idle").apply {

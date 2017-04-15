@@ -17,13 +17,13 @@ import com.soywiz.korio.util.Extra
 
 @Singleton
 class Views(
-        val ag: AG,
-        val injector: AsyncInjector,
-        val input: Input
+	val ag: AG,
+	val injector: AsyncInjector,
+	val input: Input
 ) : Extra by Extra.Mixin() {
-    var lastId = 0
-    val renderContext = RenderContext(ag)
-    fun container() = Container(this)
+	var lastId = 0
+	val renderContext = RenderContext(ag)
+	fun container() = Container(this)
 	val dummyTexture by lazy {
 		texture(Bitmap32(1, 1))
 	}
@@ -39,28 +39,29 @@ class Views(
 	}
 	val fontRepository = FontRepository(this)
 
-    val root: Container = container()
-    fun render() {
-        root.render(renderContext)
-        renderContext.flush()
-    }
+	val root: Container = container()
+	fun render() {
+		root.render(renderContext)
+		renderContext.flush()
+	}
 
-    fun dump(emit: (String) -> Unit = ::println) = dumpView(root, emit)
+	fun dump(emit: (String) -> Unit = ::println) = dumpView(root, emit)
 
-    fun dumpView(view: View, emit: (String) -> Unit = ::println, indent: String = "") {
-        emit("$indent$view")
-        if (view is Container) {
-            for (child in view.children) {
-                dumpView(child, emit, "$indent ")
-            }
-        }
-    }
+	fun dumpView(view: View, emit: (String) -> Unit = ::println, indent: String = "") {
+		emit("$indent$view")
+		if (view is Container) {
+			for (child in view.children) {
+				dumpView(child, emit, "$indent ")
+			}
+		}
+	}
 
-    fun update(dtMs: Int) {
+	fun update(dtMs: Int) {
+		//println(this)
 		//println("Update: $dtMs")
-        input.frame.reset()
-        root.update(dtMs)
-    }
+		input.frame.reset()
+		root.update(dtMs)
+	}
 }
 
 class ViewsLog(
@@ -88,10 +89,10 @@ inline fun viewFactory(callback: ViewFactory.() -> Unit) {
 inline fun Container.container(): Container = container { }
 
 inline fun Container.container(callback: Container.() -> Unit): Container {
-    val child = views.container()
-    this += child
-    callback(child)
-    return child
+	val child = views.container()
+	this += child
+	callback(child)
+	return child
 }
 
 fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture {

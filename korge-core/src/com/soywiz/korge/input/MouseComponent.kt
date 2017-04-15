@@ -31,6 +31,7 @@ class MouseComponent(view: View) : Component(view) {
 	var Input.Frame.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
 
 	override fun update(dtMs: Int) {
+		//println("${frame.mouseHitResult}")
 		if (!frame.mouseHitSearch) {
 			frame.mouseHitSearch = true
 			frame.mouseHitResult = views.root.hitTest(input.mouse)
@@ -41,6 +42,8 @@ class MouseComponent(view: View) : Component(view) {
 		val overChanged = (lastOver != over)
 		val pressingChanged = pressing != lastPressing
 		view.globalToLocal(input.mouse, currentPos)
+
+		//println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 
 		//println("MouseComponent: $hitTest, $over")
 
