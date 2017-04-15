@@ -3,7 +3,7 @@ package com.brashmonkey.spriter
 import com.brashmonkey.spriter.Entity.*
 import com.brashmonkey.spriter.Mainline.Key.BoneRef
 import com.brashmonkey.spriter.Mainline.Key.ObjectRef
-import com.brashmonkey.spriter.XmlReader.Element
+import com.soywiz.korio.serialization.xml.Xml
 import java.io.InputStream
 import java.util.*
 
@@ -45,8 +45,7 @@ class SCMLReader {
 	 * @return the built data
 	 */
 	protected fun load(xml: String): Data {
-		val reader = XmlReader()
-		return load(reader.parse(xml))
+		return load(Xml(xml))
 	}
 
 	/**
@@ -56,8 +55,7 @@ class SCMLReader {
 	 * @return the built data
 	 */
 	protected fun load(stream: InputStream): Data {
-		val reader = XmlReader()
-		return load(reader.parse(stream))
+		return load(Xml(stream.readBytes().toString(Charsets.UTF_8)))
 	}
 
 	/**
@@ -66,11 +64,11 @@ class SCMLReader {
 	 * *
 	 * @return
 	 */
-	protected fun load(root: Element): Data {
-		val folders = root.getChildrenByName("folder")
-		val entities = root.getChildrenByName("entity")
-		data = Data(root.get("scml_version"), root.get("generator"), root.get("generator_version"),
-			Data.PixelMode[root.getInt("pixel_mode", 0)],
+	protected fun load(root: Xml): Data {
+		val folders = root.children("folder").toList()
+		val entities = root.children("entity").toList()
+		data = Data(root.getString("scml_version") ?: "", root.getString("generator") ?: "", root.getString("generator_version") ?: "",
+			Data.PixelMode[root.getInt("pixel_mode") ?: 0],
 			folders.size, entities.size)
 		loadFolders(folders)
 		loadEntities(entities)
@@ -81,11 +79,11 @@ class SCMLReader {
 	 * Iterates through the given folders and adds them to the current [Data] object.
 	 * @param folders a list of folders to load
 	 */
-	protected fun loadFolders(folders: ArrayList<Element>) {
+	protected fun loadFolders(folders: List<Xml>) {
 		for (i in folders.indices) {
 			val repo = folders[i]
-			val files = repo.getChildrenByName("file")
-			val folder = Folder(repo.getInt("id"), repo.get("name", "no_name_" + i), files.size)
+			val files = repo.children("file").toList()
+			val folder = Folder(repo.getInt("id") ?: 0, repo.getString("name") ?: ("no_name_$i"), files.size)
 			loadFiles(files, folder)
 			data.addFolder(folder)
 		}
@@ -97,12 +95,12 @@ class SCMLReader {
 	 * *
 	 * @param folder the folder containing the files
 	 */
-	protected fun loadFiles(files: ArrayList<Element>, folder: Folder) {
+	protected fun loadFiles(files: List<Xml>, folder: Folder) {
 		for (j in files.indices) {
 			val f = files[j]
-			val file = File(f.getInt("id"), f.get("name"),
-				Dimension(f.getInt("width", 0).toFloat(), f.getInt("height", 0).toFloat()),
-				Point(f.getFloat("pivot_x", 0f), f.getFloat("pivot_y", 1f)))
+			val file = File(f.getInt("id") ?: 0, f.getString("name") ?: "",
+				Dimension((f.getInt("width") ?: 0).toFloat(), (f.getInt("height") ?: 0).toFloat()),
+				Point((f.getDouble("pivot_x") ?: 0.0).toFloat(), (f.getDouble("pivot_y") ?: 1.0).toFloat()))
 
 			folder.addFile(file)
 		}
@@ -112,13 +110,13 @@ class SCMLReader {
 	 * Iterates through the given entities and adds them to the current [Data] object.
 	 * @param entities a list of entities to load
 	 */
-	protected fun loadEntities(entities: ArrayList<Element>) {
+	protected fun loadEntities(entities: List<Xml>) {
 		for (i in entities.indices) {
 			val e = entities[i]
-			val infos = e.getChildrenByName("obj_info")
-			val charMaps = e.getChildrenByName("character_map")
-			val animations = e.getChildrenByName("animation")
-			val entity = Entity(e.getInt("id"), e.get("name"),
+			val infos = e.children("obj_info").toList()
+			val charMaps = e.children("character_map").toList()
+			val animations = e.children("animation").toList()
+			val entity = Entity(e.getInt("id") ?: 0, e.getString("name") ?: "",
 				animations.size, charMaps.size, infos.size)
 			data.addEntity(entity)
 			loadObjectInfos(infos, entity)
@@ -133,7 +131,7 @@ class SCMLReader {
 	 * *
 	 * @param entity the entity containing the infos
 	 */
-	protected fun loadObjectInfos(infos: ArrayList<Element>, entity: Entity) {
+	protected fun loadObjectInfos(infos: List<Xml>, entity: Entity) {
 		for (i in infos.indices) {
 			val info = infos[i]
 			val objInfo = ObjectInfo(info.get("name", "info" + i),
@@ -157,16 +155,16 @@ class SCMLReader {
 	 * *
 	 * @param entity the entity containing the character maps
 	 */
-	protected fun loadCharacterMaps(maps: ArrayList<Element>, entity: Entity) {
+	protected fun loadCharacterMaps(maps: List<Xml>, entity: Entity) {
 		for (i in maps.indices) {
 			val map = maps[i]
-			val charMap = CharacterMap(map.getInt("id"), map.getAttribute("name", "charMap" + i))
+			val charMap = CharacterMap(map.getInt("id", 0), map.getAttribute("name", "charMap" + i))
 			entity.addCharacterMap(charMap)
 			val mappings = map.getChildrenByName("map")
 			for (i1 in mappings.indices) {
 				val mapping = mappings[i1]
-				val folder = mapping.getInt("folder")
-				val file = mapping.getInt("file")
+				val folder = mapping.getInt("folder", 0)
+				val file = mapping.getInt("file", 0)
 				charMap.put(FileReference(folder, file),
 					FileReference(mapping.getInt("target_folder", folder), mapping.getInt("target_file", file)))
 			}
@@ -179,14 +177,14 @@ class SCMLReader {
 	 * *
 	 * @param entity the entity containing the animations maps
 	 */
-	protected fun loadAnimations(animations: ArrayList<Element>, entity: Entity) {
+	protected fun loadAnimations(animations: List<Xml>, entity: Entity) {
 		for (i in animations.indices) {
 			val a = animations[i]
 			val timelines = a.getChildrenByName("timeline")
 			val mainline = a.getChildByName("mainline")
-			val mainlineKeys = mainline.getChildrenByName("key")
+			val mainlineKeys = mainline!!.getChildrenByName("key")!!
 			val animation = Animation(Mainline(mainlineKeys.size),
-				a.getInt("id"), a.get("name"), a.getInt("length"),
+				a.getInt("id", 0), a.get("name", ""), a.getInt("length", 0),
 				a.getBoolean("looping", true), timelines.size)
 			entity.addAnimation(animation)
 			loadMainlineKeys(mainlineKeys, animation.mainline)
@@ -201,7 +199,7 @@ class SCMLReader {
 	 * *
 	 * @param main the mainline
 	 */
-	protected fun loadMainlineKeys(keys: ArrayList<Element>, main: Mainline) {
+	protected fun loadMainlineKeys(keys: List<Xml>, main: Mainline) {
 		for (i in main.keys.indices) {
 			val k = keys[i]
 			val objectRefs = k.getChildrenByName("object_ref")
@@ -209,7 +207,7 @@ class SCMLReader {
 			val curve = Curve()
 			curve.type = Curve.getType(k.get("curve_type", "linear"))
 			curve.constraints[k.getFloat("c1", 0f), k.getFloat("c2", 0f), k.getFloat("c3", 0f)] = k.getFloat("c4", 0f)
-			val key = Mainline.Key(k.getInt("id"), k.getInt("time", 0), curve,
+			val key = Mainline.Key(k.getInt("id", 0), k.getInt("time", 0), curve,
 				boneRefs.size, objectRefs.size)
 			main.addKey(key)
 			loadRefs(objectRefs, boneRefs, key)
@@ -224,18 +222,18 @@ class SCMLReader {
 	 * *
 	 * @param key the mainline key
 	 */
-	protected fun loadRefs(objectRefs: ArrayList<Element>, boneRefs: ArrayList<Element>, key: Mainline.Key) {
+	protected fun loadRefs(objectRefs: List<Xml>, boneRefs: List<Xml>, key: Mainline.Key) {
 		for (i in boneRefs.indices) {
 			val e = boneRefs[i]
-			val boneRef = BoneRef(e.getInt("id"), e.getInt("timeline"),
-				e.getInt("key"), key.getBoneRef(e.getInt("parent", -1)))
+			val boneRef = BoneRef(e.getInt("id", 0), e.getInt("timeline", 0),
+				e.getInt("key", 0), key.getBoneRef(e.getInt("parent", -1)))
 			key.addBoneRef(boneRef)
 		}
 
 		for (i in objectRefs.indices) {
 			val o = objectRefs[i]
-			val objectRef = ObjectRef(o.getInt("id"), o.getInt("timeline"),
-				o.getInt("key"), key.getBoneRef(o.getInt("parent", -1)), o.getInt("z_index", 0))
+			val objectRef = ObjectRef(o.getInt("id", 0), o.getInt("timeline", 0),
+				o.getInt("key", 0), key.getBoneRef(o.getInt("parent", -1)), o.getInt("z_index", 0))
 			key.addObjectRef(objectRef)
 		}
 		Arrays.sort(key.objectRefs)
@@ -249,15 +247,15 @@ class SCMLReader {
 	 * *
 	 * @param entity entity for assigning the timeline an object info
 	 */
-	protected fun loadTimelines(timelines: ArrayList<Element>, animation: Animation, entity: Entity) {
+	protected fun loadTimelines(timelines: List<Xml>, animation: Animation, entity: Entity) {
 		for (i in timelines.indices) {
 			val t = timelines[i]
 			val keys = timelines[i].getChildrenByName("key")
-			val name = t.get("name")
+			val name = t.get("name", "")
 			val type = ObjectType.getObjectInfoFor(t.get("object_type", "sprite"))
 			var info: ObjectInfo? = entity.getInfo(name)
 			if (info == null) info = ObjectInfo(name, type, Dimension(0f, 0f))
-			val timeline = Timeline(t.getInt("id"), name, info, keys.size)
+			val timeline = Timeline(t.getInt("id", 0), name, info, keys.size)
 			animation.addTimeline(timeline)
 			loadTimelineKeys(keys, timeline)
 		}
@@ -269,14 +267,14 @@ class SCMLReader {
 	 * *
 	 * @param timeline the timeline containing the keys
 	 */
-	protected fun loadTimelineKeys(keys: ArrayList<Element>, timeline: Timeline) {
+	protected fun loadTimelineKeys(keys: List<Xml>, timeline: Timeline) {
 		for (i in keys.indices) {
 			val k = keys[i]
 			val curve = Curve()
 			curve.type = Curve.getType(k.get("curve_type", "linear"))
 			curve.constraints[k.getFloat("c1", 0f), k.getFloat("c2", 0f), k.getFloat("c3", 0f)] = k.getFloat("c4", 0f)
-			val key = Timeline.Key(k.getInt("id"), k.getInt("time", 0), k.getInt("spin", 1), curve)
-			var obj: Element? = k.getChildByName("bone")
+			val key = Timeline.Key(k.getInt("id", 0), k.getInt("time", 0), k.getInt("spin", 1), curve)
+			var obj: Xml? = k.getChildByName("bone")
 			if (obj == null) obj = k.getChildByName("object")
 
 			val position = Point(obj!!.getFloat("x", 0f), obj.getFloat("y", 0f))
@@ -304,6 +302,18 @@ class SCMLReader {
 			key.setObject(`object`)
 			timeline.addKey(key)
 		}
+	}
+
+	fun Xml.getChildrenByName(name: String) = this.children(name).toList()
+	fun Xml.getChildByName(name: String) = this.child(name)
+	fun Xml.get(name: String, default: String = "") = this.getString(name) ?: default
+	fun Xml.getAttribute(name: String, default: String = "") = this.getString(name) ?: default
+	fun Xml.getInt(name: String, default: Int) = this.getInt(name) ?: default
+	fun Xml.getFloat(name: String, default: Float) = this.getDouble(name)?.toFloat() ?: default
+	fun Xml.getBoolean(name: String, default: Boolean) = when (this.getString(name)) {
+		null -> default
+		"true", "TRUE", "1" -> true
+		else -> false
 	}
 
 }
