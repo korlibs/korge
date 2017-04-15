@@ -4,6 +4,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -17,7 +18,6 @@ import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.util.readIntArray_le
-import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Point2d
@@ -205,7 +205,8 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 
 class TiledMapFactory(
 	val ag: AG,
+	val resourcesRoot: ResourcesRoot,
 	val path: Path
 ) : AsyncFactory<TiledMap> {
-	suspend override fun create(): TiledMap = ResourcesVfs[path.path].readTiledMap(ag)
+	suspend override fun create(): TiledMap = resourcesRoot[path].readTiledMap(ag)
 }

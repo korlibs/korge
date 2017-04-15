@@ -7,6 +7,7 @@ import com.soywiz.korge.bitmapfont.convert
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
+import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.font.BitmapFontGenerator
@@ -25,6 +26,9 @@ class Views(
     fun container() = Container(this)
 	val dummyTexture by lazy {
 		texture(Bitmap32(1, 1))
+	}
+	val transformedDummyTexture by lazy {
+		TransformedTexture(dummyTexture)
 	}
 	val dummyFont by lazy {
 		BitmapFont(ag, 16, mapOf(), mapOf())

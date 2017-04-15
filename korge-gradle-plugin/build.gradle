@@ -18,6 +18,7 @@ apply plugin: "com.gradle.plugin-publish"
 
 dependencies {
 	compile project(":korge-core")
+	compile project(":korge-build")
 	compile project(":korge-ext-swf")
 	compile "com.jtransc:jtransc-gradle-plugin:${jtranscVersion}"
 	compile "com.soywiz:korio:${korVersion}"

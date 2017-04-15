@@ -15,7 +15,7 @@ package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
  * *
  * @param bottom bottom bounding
  */
-class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float = 0f, var bottom: Float = 0f) {
+data class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float = 0f, var bottom: Float = 0f) {
 
 	/**
 	 * Belongs to the bounds of this rectangle.
@@ -24,11 +24,9 @@ class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float = 0f
 	/**
 	 * The size of this rectangle.
 	 */
-	val size: Dimension
+	val size: Dimension = Dimension(0f, 0f)
 
 	init {
-		this.set(left, top, right, bottom)
-		this.size = Dimension(0f, 0f)
 		this.calculateSize()
 	}
 
@@ -65,7 +63,7 @@ class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float = 0f
 	 * Calculates the size of this rectangle.
 	 */
 	fun calculateSize() {
-		this.size[right - left] = top - bottom
+		this.size.set(right - left, top - bottom)
 	}
 
 	/**
@@ -99,6 +97,7 @@ class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float = 0f
 	}
 
 	companion object {
+		@JvmStatic fun fromSize(x: Float, y: Float, width: Float, height: Float) = Rectangle(x, y, x + width, y + height)
 
 		/**
 		 * Returns whether the given two rectangles are intersecting.

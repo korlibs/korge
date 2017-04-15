@@ -5,14 +5,13 @@ import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.inject.Optional
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 
@@ -110,10 +109,11 @@ annotation class FontDescriptor(val face: String, val size: Int, val chars: Stri
 class BitmapFontAsyncFactory(
 	@Optional private val path: Path?,
 	@Optional private val descriptor: FontDescriptor?,
+	private val resourcesRoot: ResourcesRoot,
 	private val ag: AG
 ) : AsyncFactory<BitmapFont> {
 	override suspend fun create() = if (path != null) {
-		ResourcesVfs[path.path].readBitmapFont(ag)
+		resourcesRoot[path].readBitmapFont(ag)
 	} else if (descriptor != null) {
 		com.soywiz.korim.font.BitmapFontGenerator.generate(descriptor.face, descriptor.size, descriptor.chars).convert(ag)
 	} else {

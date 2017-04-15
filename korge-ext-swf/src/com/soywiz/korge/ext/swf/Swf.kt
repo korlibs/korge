@@ -15,9 +15,8 @@ import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.animate.serialization.AnimateDeserializer
-import com.soywiz.korge.animate.serialization.AnimateSerializer
 import com.soywiz.korge.resources.Path
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.BGRA
@@ -35,7 +34,6 @@ import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extract8
 import com.soywiz.korio.util.substr
 import com.soywiz.korio.util.toIntCeil
-import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
@@ -46,9 +44,10 @@ class SwfLibrary(val an: AnLibrary)
 
 class SwfLibraryFactory(
 	val path: Path,
+	val resourcesRoot: ResourcesRoot,
 	val views: Views
 ) : AsyncFactory<SwfLibrary> {
-	suspend override fun create(): SwfLibrary = SwfLibrary(ResourcesVfs[path.path].readSWF(views))
+	suspend override fun create(): SwfLibrary = SwfLibrary(resourcesRoot[path].readSWF(views))
 	//suspend override fun create(): SwfLibrary = SwfLibrary(AnimateDeserializer.read(AnimateSerializer.gen(ResourcesVfs[path.path].readSWF(views), compression = 0.0), views))
 }
 

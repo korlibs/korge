@@ -4,6 +4,7 @@ package com.soywiz.korge
 
 import com.soywiz.korag.AGContainer
 import com.soywiz.korge.scene.Module
+import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.format.readBitmap
@@ -18,7 +19,7 @@ import com.soywiz.korui.ui.AgCanvas
 object Korge {
     val VERSION = "0.8.0"
 
-    suspend fun setupCanvas(canvas: AGContainer, module: Module, args: Array<String> = arrayOf(), injector: AsyncInjector = AsyncInjector()) {
+    suspend fun setupCanvas(canvas: AGContainer, module: Module, args: Array<String> = arrayOf(), sceneClass: Class<out Scene> = module.mainScene, injector: AsyncInjector = AsyncInjector()) {
         val ag = canvas.ag
         injector.map(ag)
         val views = injector.get<Views>()
@@ -27,7 +28,7 @@ object Korge {
             go {
                 val sc = views.sceneContainer()
                 views.root += sc
-                sc.changeTo(module.mainScene)
+                sc.changeTo(sceneClass)
 
                 animationFrameLoop {
                     canvas.repaint()
@@ -65,29 +66,41 @@ object Korge {
     operator fun invoke(
 		module: Module,
 		args: Array<String> = arrayOf(),
-		canvas: AgCanvas? = null,
+		canvas: AGContainer? = null,
+		sceneClass: Class<out Scene> = module.mainScene,
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false
 	) = EventLoop {
-        if (canvas != null) {
-            setupCanvas(canvas, module, args, injector)
-        } else {
-            val icon = if (module.icon != null) {
-                try {
-                    ResourcesVfs[module.icon!!].readBitmap()
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    null
-                }
-            } else {
-                null
-            }
-
-            CanvasApplication(module.title, module.width, module.height, icon) {
-                setupCanvas(it, module, args, injector)
-            }
-        }
+		test(module, args, canvas, sceneClass, injector, debug)
     }
+
+	suspend fun test(
+		module: Module,
+		args: Array<String> = arrayOf(),
+		canvas: AGContainer? = null,
+		sceneClass: Class<out Scene> = module.mainScene,
+		injector: AsyncInjector = AsyncInjector(),
+		debug: Boolean = false
+	) {
+		if (canvas != null) {
+			setupCanvas(canvas, module, args, sceneClass, injector)
+		} else {
+			val icon = if (module.icon != null) {
+				try {
+					ResourcesVfs[module.icon!!].readBitmap()
+				} catch (e: Throwable) {
+					e.printStackTrace()
+					null
+				}
+			} else {
+				null
+			}
+
+			CanvasApplication(module.title, module.width, module.height, icon) {
+				setupCanvas(it, module, args, sceneClass, injector)
+			}
+		}
+	}
 
     fun animationFrameLoop(callback: () -> Unit) {
         var step: (() -> Unit)? = null
@@ -97,8 +110,4 @@ object Korge {
         }
         step()
     }
-}
-
-@Singleton
-class ResourcesRoot {
 }

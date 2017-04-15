@@ -1,9 +1,7 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.Korge
-import com.soywiz.korge.animate.serialization.AnimateSerializer
-import com.soywiz.korge.ext.swf.readSWF
-import com.soywiz.korge.view.ViewsLog
+import com.soywiz.korge.build.ResourceProcessor
 import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.vfs.toVfs
 import groovy.lang.Closure
@@ -14,6 +12,7 @@ import org.gradle.api.Task
 import org.gradle.api.internal.AbstractTask
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.util.*
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
@@ -32,6 +31,10 @@ open class KorgeResourcesTask() : DefaultTask() {
 	@Suppress("unused")
 	@TaskAction open fun task() {
 		logger.info("KorgeResourcesTask")
+		val processorsByExtension = ServiceLoader.load(com.soywiz.korge.build.ResourceProcessor::class.java).toList().flatMap { processor -> processor.extensionLCs.map { it to processor } }.toMap()
+		for (processor in processorsByExtension.values) {
+			logger.info("${processor.extensionLCs} -> $processor")
+		}
 		for (p in project.allprojects) {
 			val folder = File(p.buildFile.parentFile, "build/resources/main")
 			logger.info("KorgeResourcesTask! project: $p : $folder")
@@ -39,14 +42,9 @@ open class KorgeResourcesTask() : DefaultTask() {
 				logger.info("<Sync>")
 				val folderVfs = folder.toVfs()
 				for (file in folderVfs.listRecursive()) {
+					val processor = processorsByExtension[file.extensionLC] ?: continue
 					try {
-						when (file.extensionLC) {
-							"swf" -> {
-								val viewsLog = ViewsLog()
-								val lib = file.readSWF(viewsLog.views, debug = false)
-								file.withExtension("ani").write(AnimateSerializer.gen(lib))
-							}
-						}
+						processor.process(file, file.parent)
 						//logger.info(file.toString())
 					} catch (e: Throwable) {
 						e.printStackTrace()

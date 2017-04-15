@@ -67,9 +67,16 @@ class SCMLReader {
 	protected fun load(root: Xml): Data {
 		val folders = root.children("folder").toList()
 		val entities = root.children("entity").toList()
-		data = Data(root.getString("scml_version") ?: "", root.getString("generator") ?: "", root.getString("generator_version") ?: "",
-			Data.PixelMode.Companion[root.getInt("pixel_mode") ?: 0],
-			folders.size, entities.size)
+		val atlases = root.children("atlas")
+			.flatMap { it.children("i") }
+			.map { it.getString("name") ?: "" }
+
+		data = Data(
+			root.getString("scml_version") ?: "", root.getString("generator") ?: "", root.getString("generator_version") ?: "",
+			Data.PixelMode[root.getInt("pixel_mode") ?: 0],
+			folders.size, entities.size,
+			atlases
+		)
 		loadFolders(folders)
 		loadEntities(entities)
 		return data
@@ -116,8 +123,7 @@ class SCMLReader {
 			val infos = e.children("obj_info").toList()
 			val charMaps = e.children("character_map").toList()
 			val animations = e.children("animation").toList()
-			val entity = Entity(e.getInt("id") ?: 0, e.getString("name") ?: "",
-				animations.size, charMaps.size, infos.size)
+			val entity = Entity(e.getInt("id") ?: 0, e.getString("name") ?: "", animations.size, charMaps.size, infos.size)
 			data.addEntity(entity)
 			loadObjectInfos(infos, entity)
 			loadCharacterMaps(charMaps, entity)

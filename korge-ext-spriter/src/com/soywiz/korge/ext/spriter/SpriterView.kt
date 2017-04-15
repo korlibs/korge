@@ -98,25 +98,26 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 		val batch = ctx.batch
 		for (obj in player.objectIterator()) {
 			val file = library.data.getFile(obj.ref)
-			val tex = library.atlas[file.name] ?: views.dummyTexture
+			val ttex = library.atlas[file.name] ?: views.transformedDummyTexture
+			val trimLeft = ttex.trimLeft.toDouble()
+			val trimTop = ttex.trimTop.toDouble()
+			val tex = ttex.texture
 
 			t1.setTransform(
-				obj.position.x.toDouble(), obj.position.y.toDouble(),
+				(obj.position.x - 0.0), (obj.position.y - 0.0),
 				obj.scale.x.toDouble(), -obj.scale.y.toDouble(),
 				-Math.toRadians(obj._angle.toDouble()),
 				0.0, 0.0
 			)
-			//t2.setToIdentity()
 			t2.copyFrom(globalMatrix)
-			//t2.premulitply(globalMatrix)
 			t2.prescale(1.0, -1.0)
 			t2.premulitply(t1)
+			if (ttex.rotated) {
+				t2.prerotate(-Math.PI / 2.0)
+			}
 			val px = obj.pivot.x.toDouble() * tex.width
 			val py = (1.0 - obj.pivot.y) * tex.height
-			//file
-			//println("$sw, $sh")
-			//println("${file.pivot} : ${obj.pivot}")
-			batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2)
+			batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, rotated = ttex.rotated)
 		}
 	}
 

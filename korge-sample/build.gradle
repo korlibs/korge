@@ -16,12 +16,13 @@ dependencies {
 	compile project(":korge-ext-spriter")
 	compile project(":korge-ext-particle")
 	compile project(":korge-ext-tiled")
+	testCompile project(":korge-tests")
 }
 
 jtransc {
     assets = ["korge-sample/resources"]
-    //minimizeNames = true
-    minimizeNames = false
+    minimizeNames = true
+    //minimizeNames = false
     treeshaking = true
     //treeshaking = false
 }

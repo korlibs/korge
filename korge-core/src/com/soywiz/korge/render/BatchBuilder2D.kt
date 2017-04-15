@@ -34,7 +34,7 @@ class BatchBuilder2D(val ag: AG) {
 	// 0..1
 	// |  |
 	// 3..2
-	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, col1: Int) {
+	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, col1: Int, rotated: Boolean = false) {
 		addIndex(vertexCount + 0)
 		addIndex(vertexCount + 1)
 		addIndex(vertexCount + 2)
@@ -43,10 +43,19 @@ class BatchBuilder2D(val ag: AG) {
 		addIndex(vertexCount + 0)
 		addIndex(vertexCount + 2)
 
-		addVertex(x0, y0, tex.x0, tex.y0, col1)
-		addVertex(x1, y1, tex.x1, tex.y0, col1)
-		addVertex(x2, y2, tex.x1, tex.y1, col1)
-		addVertex(x3, y3, tex.x0, tex.y1, col1)
+		if (rotated) {
+
+			// @TODO:
+			addVertex(x0, y0, tex.x0, tex.y0, col1)
+			addVertex(x1, y1, tex.x1, tex.y0, col1)
+			addVertex(x2, y2, tex.x1, tex.y1, col1)
+			addVertex(x3, y3, tex.x0, tex.y1, col1)
+		} else {
+			addVertex(x0, y0, tex.x0, tex.y0, col1)
+			addVertex(x1, y1, tex.x1, tex.y0, col1)
+			addVertex(x2, y2, tex.x1, tex.y1, col1)
+			addVertex(x3, y3, tex.x0, tex.y1, col1)
+		}
 
 		quadCount++
 
@@ -63,7 +72,7 @@ class BatchBuilder2D(val ag: AG) {
 
 	private val identity = Matrix2d()
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0) {
+	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
@@ -76,7 +85,7 @@ class BatchBuilder2D(val ag: AG) {
 			m.transformXf(x1, y0), m.transformYf(x1, y0),
 			m.transformXf(x1, y1), m.transformYf(x1, y1),
 			m.transformXf(x0, y1), m.transformYf(x0, y1),
-			tex, col1
+			tex, col1, rotated
 		)
 	}
 

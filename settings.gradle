@@ -2,6 +2,8 @@ rootProject.name = 'korge-root'
 
 include(
 	'korge-core',
+	'korge-build',
+	'korge-tests',
 	'korge',
 	'korge-android',
 	'korge-ext-spriter',
