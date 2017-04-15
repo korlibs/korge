@@ -71,8 +71,8 @@ public class Player {
 			listeners.get(i).preProcess(this);
 		}
 		if(dirty) this.updateRoot();
-		this.animation.update(time, root);
-		this.currentKey = this.animation.currentKey;
+		this._animation.update(_time, root);
+		this.currentKey = this._animation.currentKey;
 		if(prevKey != currentKey){
 			for (int i = 0; i < listeners.size(); i++) {
 				listeners.get(i).mainlineKeyChanged(prevKey, currentKey);
@@ -85,8 +85,8 @@ public class Player {
 			this.copyObjects();
 		}
 		else{
-			tweenedKeys = animation.tweenedKeys;
-			unmappedTweenedKeys = animation.unmappedTweenedKeys;
+			tweenedKeys = _animation.tweenedKeys;
+			unmappedTweenedKeys = _animation.unmappedTweenedKeys;
 		}
 
 		for (int i = 0; i < attachments.size(); i++) {
@@ -100,27 +100,27 @@ public class Player {
 	}
 	
 	private void copyObjects(){
-		for(int i = 0; i < animation.tweenedKeys.length; i++){
-			this.tweenedKeys[i].active = animation.tweenedKeys[i].active;
-			this.unmappedTweenedKeys[i].active = animation.unmappedTweenedKeys[i].active;
-			this.tweenedKeys[i].object().set(animation.tweenedKeys[i].object());
-			this.unmappedTweenedKeys[i].object().set(animation.unmappedTweenedKeys[i].object());
+		for(int i = 0; i < _animation.tweenedKeys.length; i++){
+			this.tweenedKeys[i].active = _animation.tweenedKeys[i].active;
+			this.unmappedTweenedKeys[i].active = _animation.unmappedTweenedKeys[i].active;
+			this.tweenedKeys[i].object().set(_animation.tweenedKeys[i].object());
+			this.unmappedTweenedKeys[i].object().set(_animation.unmappedTweenedKeys[i].object());
 		}
 	}
 	
 	private void increaseTime(){
-		time += speed;
-		if(time > animation.length){
-			time = time-animation.length;
+		_time += speed;
+		if(_time > _animation.length){
+			_time = _time - _animation.length;
 			for (int i = 0; i < listeners.size(); i++) {
-				listeners.get(i).animationFinished(animation);
+				listeners.get(i).animationFinished(_animation);
 			}
 		}
-		if(time < 0){
+		if(_time < 0){
 			for (int i = 0; i < listeners.size(); i++) {
-				listeners.get(i).animationFinished(animation);
+				listeners.get(i).animationFinished(_animation);
 			}
-			time += animation.length;
+			_time += _animation.length;
 		}
 	}
 	
@@ -157,7 +157,7 @@ public class Player {
 	 */
 	public int getBoneIndex(String name){
 		for(BoneRef ref: getCurrentKey().boneRefs)
-			if(animation.getTimeline(ref.timeline).name.equals(name))
+			if(_animation.getTimeline(ref.timeline).name.equals(name))
 				return ref.id;
 		return -1;
 	}
@@ -170,7 +170,7 @@ public class Player {
 	 * @throws NullPointerException if no bone exists with the given name
 	 */
 	public Bone getBone(String name){
-		return this.unmappedTweenedKeys[animation.getTimeline(name).id].object();
+		return this.unmappedTweenedKeys[_animation.getTimeline(name).id].object();
 	}
 	
 	/**
@@ -190,7 +190,7 @@ public class Player {
 	 */
 	public int getObjectIndex(String name){
 		for(ObjectRef ref: getCurrentKey().objectRefs)
-			if(animation.getTimeline(ref.timeline).name.equals(name))
+			if(_animation.getTimeline(ref.timeline).name.equals(name))
 				return ref.id;
 		return -1;
 	}
@@ -203,7 +203,7 @@ public class Player {
 	 * @throws NullPointerException if no object exists with the given name
 	 */
 	public Object getObject(String name){
-		return (Object)this.unmappedTweenedKeys[animation.getTimeline(name).id].object();
+		return (Object)this.unmappedTweenedKeys[_animation.getTimeline(name).id].object();
 	}
 	
 	/**
@@ -223,7 +223,7 @@ public class Player {
 	 * @throws NullPointerException if no name for the given bone or bject was found
 	 */
 	public String getNameFor(Bone boneOrObject){
-		return this.animation.getTimeline(objToTimeline.get(boneOrObject).id).name;
+		return this._animation.getTimeline(objToTimeline.get(boneOrObject).id).name;
 	}
 	
 	/**
@@ -233,7 +233,7 @@ public class Player {
 	 * @throws NullPointerException if no object info for the given bone or bject was found
 	 */
 	public ObjectInfo getObjectInfoFor(Bone boneOrObject){
-		return this.animation.getTimeline(objToTimeline.get(boneOrObject).id).objectInfo;
+		return this._animation.getTimeline(objToTimeline.get(boneOrObject).id).objectInfo;
 	}
 	
 	/**
@@ -558,7 +558,7 @@ public class Player {
 	 */
 	public void setEntity(Entity entity){
 		if(entity == null) throw new SpriterException("entity can not be null!");
-		this.entity = entity;
+		this._entity = entity;
 		int maxAnims = entity.getAnimationWithMostTimelines().timelines();
 		tweenedKeys = new Timeline.Key[maxAnims];
 		unmappedTweenedKeys = new Timeline.Key[maxAnims];
@@ -581,7 +581,7 @@ public class Player {
 	 * @return the current entity
 	 */
 	public Entity getEntity(){
-		return this.entity;
+		return this._entity;
 	}
 	
 	/**
@@ -590,16 +590,16 @@ public class Player {
 	 * @throws SpriterException if the animation is <code>null</code> or the current animation is not a member of the current set entity
 	 */
 	public void setAnimation(Animation animation){
-		Animation prevAnim = this.animation;
-		if(animation == this.animation) return;
+		Animation prevAnim = this._animation;
+		if(animation == this._animation) return;
 		if(animation == null) throw new SpriterException("animation can not be null!");
-		if(!this.entity.containsAnimation(animation) && animation.id != -1) throw new SpriterException("animation has to be in the same entity as the current set one!");
-		if(animation != this.animation) time = 0;
-		this.animation = animation;
-		int tempTime = this.time;
-		this.time = 0;
+		if(!this._entity.containsAnimation(animation) && animation.id != -1) throw new SpriterException("animation has to be in the same entity as the current set one!");
+		if(animation != this._animation) _time = 0;
+		this._animation = animation;
+		int tempTime = this._time;
+		this._time = 0;
 		this.update();
-		this.time = tempTime;
+		this._time = tempTime;
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).animationChanged(prevAnim, animation);
 		}
@@ -611,7 +611,7 @@ public class Player {
 	 * @throws SpriterException if no animation exists with the given name
 	 */
 	public void setAnimation(String name){
-		this.setAnimation(entity.getAnimation(name));
+		this.setAnimation(_entity.getAnimation(name));
 	}
 	
 	/**
@@ -620,7 +620,7 @@ public class Player {
 	 * @throws IndexOutOfBoundsException if the index is out of range
 	 */
 	public void setAnimation(int index){
-		this.setAnimation(entity.getAnimation(index));
+		this.setAnimation(_entity.getAnimation(index));
 	}
 	
 	/**
@@ -628,7 +628,7 @@ public class Player {
 	 * @return the current animation
 	 */
 	public Animation getAnimation(){
-		return this.animation;
+		return this._animation;
 	}
 	
 	/**
@@ -659,20 +659,20 @@ public class Player {
 		for(BoneRef ref: getCurrentKey().boneRefs){
 			if(ref.parent != root && root != null) continue;
 			Bone bone = this.unmappedTweenedKeys[ref.timeline].object();
-			this.prevBBox.calcFor(bone, animation.getTimeline(ref.timeline).objectInfo);
+			this.prevBBox.calcFor(bone, _animation.getTimeline(ref.timeline).objectInfo);
 			Rectangle.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
 			this.calcBoundingRectangle(ref);
 		}
 		for(ObjectRef ref: getCurrentKey().objectRefs){
 			if(ref.parent != root) continue;
 			Bone bone = this.unmappedTweenedKeys[ref.timeline].object();
-			this.prevBBox.calcFor(bone, animation.getTimeline(ref.timeline).objectInfo);
+			this.prevBBox.calcFor(bone, _animation.getTimeline(ref.timeline).objectInfo);
 			Rectangle.setBiggerRectangle(rect, this.prevBBox.getBoundingRect(), rect);
 		}
 	}
 	
 	/**
-	 * Returns the current main line key based on the current {@link #time}.
+	 * Returns the current main line key based on the current {@link #_time}.
 	 * @return the current main line key
 	 */
 	public Mainline.Key getCurrentKey(){
@@ -685,7 +685,7 @@ public class Player {
 	 * @return the current time
 	 */
 	public int getTime() {
-		return time;
+		return _time;
 	}
 	
 	/**
@@ -695,7 +695,7 @@ public class Player {
 	 * @return this player to enable chained operations
 	 */
 	public Player setTime(int time){
-		this.time = time;
+		this._time = time;
 		int prevSpeed = this.speed;
 		this.speed = 0;
 		this.increaseTime();

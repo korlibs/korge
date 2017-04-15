@@ -35,7 +35,7 @@ class Box {
 		this.points[3].set(width - pivotX, height - pivotY)
 
 		for (i in 0..3)
-			this.points[i].rotate(boneOrObject.angle)
+			this.points[i].rotate(boneOrObject._angle)
 		for (i in 0..3)
 			this.points[i].translate(boneOrObject.position)
 	}
@@ -62,7 +62,7 @@ class Box {
 		val pivotY = height * boneOrObject.pivot.y
 
 		val point = Point(x - boneOrObject.position.x, y - boneOrObject.position.y)
-		point.rotate(-boneOrObject.angle)
+		point.rotate(-boneOrObject._angle)
 
 		return point.x >= -pivotX && point.x <= width - pivotX && point.y >= -pivotY && point.y <= height - pivotY
 	}

@@ -143,7 +143,7 @@ open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @J
 	}
 
 	protected fun tweenBone(bone1: Bone, bone2: Bone, target: Bone, t: Float, curve: Curve, spin: Int) {
-		target.angle = curve.tweenAngle(bone1.angle, bone2.angle, t, spin)
+		target._angle = curve.tweenAngle(bone1._angle, bone2._angle, t, spin)
 		curve.tweenPoint(bone1.position, bone2.position, t, target.position)
 		curve.tweenPoint(bone1.scale, bone2.scale, t, target.scale)
 		curve.tweenPoint(bone1.pivot, bone2.pivot, t, target.pivot)

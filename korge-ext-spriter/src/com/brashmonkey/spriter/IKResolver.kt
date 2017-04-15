@@ -72,7 +72,7 @@ abstract class IKResolver
 	 * @param bone the bone which gets affected
 	 */
 	fun mapIKObject(ikObject: IKObject, bone: Bone) {
-		this.ikMap.put(ikObject, player.getBoneRef(bone))
+		this.ikMap.put(ikObject, player.getBoneRef(bone)!!)
 	}
 
 	/**

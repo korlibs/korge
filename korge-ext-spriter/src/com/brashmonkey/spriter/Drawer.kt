@@ -75,13 +75,13 @@ abstract class Drawer<R>
 	 */
 	fun drawBone(bone: Bone, size: Dimension) {
 		val halfHeight = size.height / 2
-		val xx = bone.position.x + Math.cos(Math.toRadians(bone.angle.toDouble())).toFloat() * size.height
-		val yy = bone.position.y + Math.sin(Math.toRadians(bone.angle.toDouble())).toFloat() * size.height
-		val x2 = Math.cos(Math.toRadians((bone.angle + 90).toDouble())).toFloat() * halfHeight * bone.scale.y
-		val y2 = Math.sin(Math.toRadians((bone.angle + 90).toDouble())).toFloat() * halfHeight * bone.scale.y
+		val xx = bone.position.x + Math.cos(Math.toRadians(bone._angle.toDouble())).toFloat() * size.height
+		val yy = bone.position.y + Math.sin(Math.toRadians(bone._angle.toDouble())).toFloat() * size.height
+		val x2 = Math.cos(Math.toRadians((bone._angle + 90).toDouble())).toFloat() * halfHeight * bone.scale.y
+		val y2 = Math.sin(Math.toRadians((bone._angle + 90).toDouble())).toFloat() * halfHeight * bone.scale.y
 
-		val targetX = bone.position.x + Math.cos(Math.toRadians(bone.angle.toDouble())).toFloat() * size.width * bone.scale.x
-		val targetY = bone.position.y + Math.sin(Math.toRadians(bone.angle.toDouble())).toFloat() * size.width * bone.scale.x
+		val targetX = bone.position.x + Math.cos(Math.toRadians(bone._angle.toDouble())).toFloat() * size.width * bone.scale.x
+		val targetY = bone.position.y + Math.sin(Math.toRadians(bone._angle.toDouble())).toFloat() * size.width * bone.scale.x
 		val upperPointX = xx + x2
 		val upperPointY = yy + y2
 		this.line(bone.position.x, bone.position.y, upperPointX, upperPointY)
@@ -141,8 +141,8 @@ abstract class Drawer<R>
 		while (it.hasNext()) {
 			val point = it.next()
 			if (player.getObjectInfoFor(point).type == ObjectType.Point) {
-				val x = point.position.x + (Math.cos(Math.toRadians(point.angle.toDouble())) * pointRadius).toFloat()
-				val y = point.position.y + (Math.sin(Math.toRadians(point.angle.toDouble())) * pointRadius).toFloat()
+				val x = point.position.x + (Math.cos(Math.toRadians(point._angle.toDouble())) * pointRadius).toFloat()
+				val y = point.position.y + (Math.sin(Math.toRadians(point._angle.toDouble())) * pointRadius).toFloat()
 				circle(point.position.x, point.position.y, pointRadius)
 				line(point.position.x, point.position.y, x, y)
 			}

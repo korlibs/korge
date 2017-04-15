@@ -11,7 +11,7 @@ package com.brashmonkey.spriter
  * *
  * @param player2 the second player
  */
-class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.getEntity()) {
+class PlayerTweener(@JvmField var player1: Player, @JvmField var player2: Player) : Player(player1.getEntity()) {
 
 	private var anim: TweenedAnimation? = null
 	/**
@@ -60,10 +60,10 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 			firstPlayer!!.update()
 			secondPlayer!!.update()
 		}
-		anim!!.setAnimations(firstPlayer!!.animation, secondPlayer!!.animation)
+		anim!!.setAnimations(firstPlayer!!._animation, secondPlayer!!._animation)
 		super.update()
 		if (baseBoneName != null) {
-			val index = if (anim!!.onFirstMainLine()) firstPlayer!!.getBoneIndex(baseBoneName) else secondPlayer!!.getBoneIndex(baseBoneName)
+			val index = if (anim!!.onFirstMainLine()) firstPlayer!!.getBoneIndex(baseBoneName!!) else secondPlayer!!.getBoneIndex(baseBoneName!!)
 			if (index == -1) throw SpriterException("A bone with name \"$baseBoneName\" does no exist!")
 			anim!!.base = anim!!.currentKey.getBoneRef(index)
 			super.update()
@@ -78,13 +78,13 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	 * @param player2 the second player
 	 */
 	fun setPlayers(player1: Player, player2: Player) {
-		if (player1.entity !== player2.entity)
+		if (player1._entity !== player2._entity)
 			throw SpriterException("player1 and player2 have to hold the same entity!")
 		this.firstPlayer = player1
 		this.secondPlayer = player2
-		if (player1.entity === entity) return
+		if (player1._entity === _entity) return
 		this.anim = TweenedAnimation(player1.getEntity())
-		anim!!.setAnimations(player1.animation, player2.animation)
+		anim!!.setAnimations(player1._animation, player2._animation)
 		super.setEntity(player1.getEntity())
 		super.setAnimation(anim)
 	}
@@ -109,7 +109,7 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	 * @param index the index of the base animation
 	 */
 	fun setBaseAnimation(index: Int) {
-		this.baseAnimation = entity.getAnimation(index)
+		this.baseAnimation = _entity.getAnimation(index)
 	}
 
 	/**
@@ -118,7 +118,7 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	 * @param name the name of the base animation
 	 */
 	fun setBaseAnimation(name: String) {
-		this.baseAnimation = entity.getAnimation(name)!!
+		this.baseAnimation = _entity.getAnimation(name)!!
 	}
 
 	/**
@@ -139,12 +139,12 @@ class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.g
 	/**
 	 * Not supported by this class.
 	 */
-	override fun setAnimation(anim: Animation) {
+	override fun setAnimation(animation: Animation?) {
 	}
 
 	/**
 	 * Not supported by this class.
 	 */
-	override fun setEntity(entity: Entity) {
+	override fun setEntity(entity: Entity?) {
 	}
 }

@@ -53,8 +53,8 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 			this.`object` = `object`
 		}
 
-		fun `object`(): Object? {
-			return this.`object`
+		fun `object`(): Object {
+			return this.`object`!!
 		}
 
 		override fun toString(): String {
@@ -67,12 +67,12 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 		 * Bones are the only objects which can be used as a parent for other tweenable objects.
 		 * @author Trixt0r
 		 */
-		open class Bone @JvmOverloads constructor(position: Point = Point(), scale: Point = Point(1f, 1f), pivot: Point = Point(0f, 1f), @JvmField var angle: Float = 0f) {
+		open class Bone @JvmOverloads constructor(position: Point = Point(), scale: Point = Point(1f, 1f), pivot: Point = Point(0f, 1f), @JvmField var _angle: Float = 0f) {
 			@JvmField val position: Point = Point(position)
 			@JvmField val scale: Point = Point(scale)
 			@JvmField val pivot: Point = Point(pivot)
 
-			constructor(bone: Bone) : this(bone.position, bone.scale, bone.pivot, bone.angle) {}
+			constructor(bone: Bone) : this(bone.position, bone.scale, bone.pivot, bone._angle)
 
 			/**
 			 * Returns whether this instance is a Spriter object or a bone.
@@ -85,7 +85,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 			 * @param bone the bone
 			 */
 			fun set(bone: Bone) {
-				this[bone.position, bone.angle, bone.scale] = bone.pivot
+				this[bone.position, bone._angle, bone.scale] = bone.pivot
 			}
 
 			/**
@@ -105,7 +105,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 			 * @param pivotY the new pivot in y direction
 			 */
 			operator fun set(x: Float, y: Float, angle: Float, scaleX: Float, scaleY: Float, pivotX: Float, pivotY: Float) {
-				this.angle = angle
+				this._angle = angle
 				this.position.set(x, y)
 				this.scale.set(scaleX, scaleY)
 				this.pivot.set(pivotX, pivotY)
@@ -130,11 +130,11 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 			 * @param parent the parent bone of this bone
 			 */
 			fun unmap(parent: Bone) {
-				this.angle *= Math.signum(parent.scale.x) * Math.signum(parent.scale.y)
-				this.angle += parent.angle
+				this._angle *= Math.signum(parent.scale.x) * Math.signum(parent.scale.y)
+				this._angle += parent._angle
 				this.scale.scale(parent.scale)
 				this.position.scale(parent.scale)
-				this.position.rotate(parent.angle)
+				this.position.rotate(parent._angle)
 				this.position.translate(parent.position)
 			}
 
@@ -144,15 +144,15 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 			 */
 			fun map(parent: Bone) {
 				this.position.translate(-parent.position.x, -parent.position.y)
-				this.position.rotate(-parent.angle)
+				this.position.rotate(-parent._angle)
 				this.position.scale(1f / parent.scale.x, 1f / parent.scale.y)
 				this.scale.scale(1f / parent.scale.x, 1f / parent.scale.y)
-				this.angle -= parent.angle
-				this.angle *= Math.signum(parent.scale.x) * Math.signum(parent.scale.y)
+				this._angle -= parent._angle
+				this._angle *= Math.signum(parent.scale.x) * Math.signum(parent.scale.y)
 			}
 
 			override fun toString(): String {
-				return javaClass.simpleName + "|position: " + position + ", scale: " + scale + ", angle: " + angle
+				return javaClass.simpleName + "|position: " + position + ", scale: " + scale + ", angle: " + _angle
 			}
 		}
 
@@ -164,14 +164,14 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 		 */
 		class Object @JvmOverloads constructor(position: Point = Point(), scale: Point = Point(1f, 1f), pivot: Point = Point(0f, 1f), angle: Float = 0f, @JvmField var alpha: Float = 1f, @JvmField val ref: FileReference = FileReference(-1, -1)) : Bone(position, scale, pivot, angle) {
 
-			constructor(`object`: Object) : this(`object`.position.copy(), `object`.scale.copy(), `object`.pivot.copy(), `object`.angle, `object`.alpha, `object`.ref) {}
+			constructor(`object`: Object) : this(`object`.position.copy(), `object`.scale.copy(), `object`.pivot.copy(), `object`._angle, `object`.alpha, `object`.ref) {}
 
 			/**
 			 * Sets the values of this object to the values of the given object.
 			 * @param object the object
 			 */
 			fun set(`object`: Object) {
-				this[`object`.position, `object`.angle, `object`.scale, `object`.pivot, `object`.alpha] = `object`.ref
+				this[`object`.position, `object`._angle, `object`.scale, `object`.pivot, `object`.alpha] = `object`.ref
 			}
 
 			/**

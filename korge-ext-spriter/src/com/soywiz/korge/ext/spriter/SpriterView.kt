@@ -19,17 +19,17 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 		weight = 0f
 
 		addListener(object : Player.PlayerListener {
-			override fun animationFinished(animation: Animation?) {
+			override fun animationFinished(animation: Animation) {
 				animationFinished(Unit)
 			}
 
-			override fun animationChanged(oldAnim: Animation?, newAnim: Animation?) {
+			override fun animationChanged(oldAnim: Animation, newAnim: Animation) {
 			}
 
-			override fun preProcess(player: Player?) {
+			override fun preProcess(player: Player) {
 			}
 
-			override fun postProcess(player: Player?) {
+			override fun postProcess(player: Player) {
 			}
 
 			override fun mainlineKeyChanged(prevKey: Mainline.Key?, newKey: Mainline.Key?) {
@@ -48,13 +48,13 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 	var animationWeight: Double; get () = player.weight.toDouble(); set(value) = run { player.weight = value.toFloat() }
 
 	var animation1: String
-		get() = player.firstPlayer.animation.name
+		get() = player.firstPlayer._animation.name
 		set(value) {
 			player.firstPlayer.setAnimation(value)
 		}
 
 	var animation2: String
-		get() = player.secondPlayer.animation.name
+		get() = player.secondPlayer._animation.name
 		set(value) {
 			player.secondPlayer.setAnimation(value)
 		}
@@ -69,7 +69,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 
 	val prominentAnimation: String get() = if (animationWeight <= 0.5) animation1 else animation2
 
-	var time: Int; get() = player.time; set(value) = run { player.time = value }
+	var time: Int; get() = player._time; set(value) = run { player._time = value }
 
 	suspend fun changeTo(animation: String, time: Int, easing: Easing = Easings.LINEAR) {
 		animation1 = prominentAnimation
@@ -103,7 +103,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 			t1.setTransform(
 				obj.position.x.toDouble(), obj.position.y.toDouble(),
 				obj.scale.x.toDouble(), -obj.scale.y.toDouble(),
-				-Math.toRadians(obj.angle.toDouble()),
+				-Math.toRadians(obj._angle.toDouble()),
 				0.0, 0.0
 			)
 			//t2.setToIdentity()
