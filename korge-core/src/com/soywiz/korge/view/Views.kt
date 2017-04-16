@@ -33,6 +33,9 @@ class Views(
 	var virtualWidth = 640; internal set
 	var virtualHeight = 480; internal set
 
+	var actualVirtualLeft = 0; private set
+	var actualVirtualTop = 0; private set
+
 	var actualVirtualWidth = 640; private set
 	var actualVirtualHeight = 480; private set
 
@@ -112,8 +115,11 @@ class Views(
 		stage.scaleX = ratioX
 		stage.scaleY = ratioY
 
-		stage.x = ((actualVirtualWidth - virtualWidth) * anchor.sx) * ratioX
-		stage.y = ((actualVirtualHeight - virtualHeight) * anchor.sy) * ratioY
+		stage.x = (((actualVirtualWidth - virtualWidth) * anchor.sx) * ratioX).toInt().toDouble()
+		stage.y = (((actualVirtualHeight - virtualHeight) * anchor.sy) * ratioY).toInt().toDouble()
+
+		actualVirtualLeft = -(stage.x / ratioX).toInt()
+		actualVirtualTop = -(stage.y / ratioY).toInt()
 
 		stage.handleEvent(resizedEvent.setSize(width, height))
 	}

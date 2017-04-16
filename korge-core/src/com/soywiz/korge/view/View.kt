@@ -6,9 +6,10 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
-import com.soywiz.korma.geom.Point2d
+import com.soywiz.korio.util.isSubtypeOf
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
 open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
@@ -103,24 +104,30 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	private var _globalAlpha: Double = 1.0
 	private var _globalCol1: Int = -1
 
-	private var componentsByClass: HashMap<Class<out Component>, ArrayList<Component>>? = null
+	private var components: ArrayList<Component>? = null
+	private var _componentsIt: ArrayList<Component>? = null
+	private val componentsIt: ArrayList<Component>? get() {
+		if (components != null) {
+			if (_componentsIt == null) _componentsIt = ArrayList()
+			_componentsIt!!.clear()
+			_componentsIt!!.addAll(components!!)
+		}
+		return _componentsIt
+	}
 
 	inline fun <reified T : Component> getOrCreateComponent(noinline gen: (View) -> T): T = getOrCreateComponent(T::class.java, gen)
 
 	fun removeComponent(c: Component) {
-		val cc = componentsByClass?.get(c::class.java)
-		cc?.remove(c)
+		components?.remove(c)
 	}
 
 	fun removeComponents(c: Class<out Component>) {
-		val cc = componentsByClass?.get(c)
-		cc?.clear()
+		components?.removeIf { it.javaClass.isSubtypeOf(c) }
 	}
 
 	fun addComponent(c: Component) {
-		if (componentsByClass == null) componentsByClass = hashMapOf()
-		val array = componentsByClass!!.getOrPut(c::class.java) { arrayListOf() }
-		array += c
+		if (components == null) components = arrayListOf()
+		components!! += c
 		c.update(0)
 	}
 
@@ -137,10 +144,13 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	fun <T : Component> getOrCreateComponent(clazz: Class<T>, gen: (View) -> T): T {
-		if (componentsByClass == null) componentsByClass = hashMapOf()
-		val array = componentsByClass!!.getOrPut(clazz) { arrayListOf() }
-		if (array.isEmpty()) array += gen(this)
-		return componentsByClass!![clazz]!!.first() as T
+		if (components == null) components = arrayListOf()
+		var component = components!!.firstOrNull { it.javaClass.isSubtypeOf(clazz) }
+		if (component == null) {
+			component = gen(this)
+			components!! += component
+		}
+		return component!! as T
 	}
 
 	val localMatrix: Matrix2d get() {
@@ -240,8 +250,8 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	open protected fun updateInternal(dtMs: Int) {
-		if (componentsByClass != null) for (c in componentsByClass!!.values.flatMap { it }) {
-			c.update(dtMs)
+		if (componentsIt != null) {
+			for (c in componentsIt!!) c.update(dtMs)
 		}
 	}
 
@@ -306,6 +316,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	open fun handleEvent(e: Event) {
+		if (componentsIt != null) for (c in componentsIt!!) c.handleEvent(e)
 	}
 }
 

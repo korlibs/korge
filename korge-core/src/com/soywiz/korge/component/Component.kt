@@ -8,4 +8,5 @@ open class Component(val view: View) {
     fun attach() = view.addComponent(this)
     fun dettach() = view.removeComponent(this)
     open fun update(dtMs: Int): Unit = Unit
+	open fun handleEvent(event: View.Event): Unit = Unit
 }

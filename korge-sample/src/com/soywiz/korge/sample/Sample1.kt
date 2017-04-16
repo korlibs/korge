@@ -5,6 +5,7 @@ import com.soywiz.korge.animate.AnTextField
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.ext.swf.SwfLibrary
 import com.soywiz.korge.input.onClick
@@ -28,6 +29,7 @@ import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.vfs.ResourcesVfs
+import com.soywiz.korma.geom.Anchor
 
 object Sample1 {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample1Scene::class.java)
@@ -115,11 +117,7 @@ class Sample1Scene(
 		}.mouseSampleController()
 
 		sceneView.container {
-			val mc = swfLibrary.an.createMainTimeLine().apply {
-				//speed = 0.1
-			}
-			this += mc
-			//mc.addUpdatable { println(mc.dumpToString()) }
+			this += swfLibrary.an.createMainTimeLine()
 		}
 
 
@@ -179,6 +177,7 @@ class Sample1Scene(
 		}
 
 		sceneView += progressbarLibrary.an.createMainTimeLine().apply {
+			this.dockedTo(Anchor.TOP_LEFT)
 			go {
 				percent = (this["percent"] as AnTextField?)!!
 				percent.onClick {

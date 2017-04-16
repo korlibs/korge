@@ -68,6 +68,7 @@ open class Container(views: Views) : View(views) {
 	}
 
 	override fun handleEvent(e: Event) {
+		super.handleEvent(e)
 		for (child in children) child.handleEvent(e)
 	}
 }
