@@ -171,6 +171,9 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	protected val globalAlpha: Double get() = run { globalMatrix; _globalAlpha }
 	protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
 
+	val localMouseX: Double get() = globalMatrixInv.transformX(views.input.mouse)
+	val localMouseY: Double get() = globalMatrixInv.transformY(views.input.mouse)
+
 	val globalMatrixInv: Matrix2d get() {
 		_ensureGlobal()
 		if (_globalMatrixVersion != _globalMatrixInvVersion) {

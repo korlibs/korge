@@ -49,8 +49,8 @@ object Sample1Module : Module() {
 class MouseSampleController(view: View) : Component(view) {
 	override fun update(dtMs: Int) {
 		//view.globalToLocal(views.input.mouse, temp)
-		view.x = views.input.mouse.x
-		view.y = views.input.mouse.y
+		view.x = views.mouseX
+		view.y = views.mouseY
 		view.rotationDegrees = (view.rotationDegrees + 1) % 360
 	}
 }

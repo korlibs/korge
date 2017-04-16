@@ -36,6 +36,9 @@ class Views(
 	var actualVirtualWidth = 640; private set
 	var actualVirtualHeight = 480; private set
 
+	val mouseX: Double get() = stage.localMouseX
+	val mouseY: Double get() = stage.localMouseY
+
 	//var actualVirtualWidth = ag.backWidth
 	//var actualVirtualHeight = ag.backHeight
 
