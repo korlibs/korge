@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
 interface IText {
@@ -43,17 +44,17 @@ class Text(views: Views) : View(views), IText, IHtml {
 		document?.doPositioning(views.fontRepository, textBounds)
 	}
 
-	override fun render(ctx: RenderContext) {
+	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (document != null) {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
-				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), globalMatrix)
+				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m)
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
 			views.fontRepository.getBounds(text, format, tempRect)
 			tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
-			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), globalMatrix)
+			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), m)
 		}
 	}
 

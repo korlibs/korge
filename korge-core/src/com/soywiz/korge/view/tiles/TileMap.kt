@@ -4,6 +4,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.util.IntArray2
 import com.soywiz.korge.view.*
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
 class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(views) {
@@ -11,8 +12,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
     val tileHeight = tileset.height.toDouble()
     var smoothing = true
 
-    override fun render(ctx: RenderContext) {
-        val m = globalMatrix
+    override fun render(ctx: RenderContext, m: Matrix2d) {
         val batch = ctx.batch
 
         val pos = m.transform(0.0, 0.0)

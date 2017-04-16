@@ -37,6 +37,7 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 
 	companion object {
 		operator fun invoke(agBase: AG.Texture, width: Int, height: Int): Texture = Texture(Base(agBase, width, height), 0, 0, width, height)
+		operator fun invoke(rtex: AG.RenderTexture): Texture = Texture(Base(rtex.tex, rtex.width, rtex.height), 0, 0, rtex.width, rtex.height)
 	}
 
 	class Base(val base: AG.Texture, val width: Int, val height: Int)

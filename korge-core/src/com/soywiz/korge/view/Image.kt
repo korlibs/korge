@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
 
@@ -12,9 +13,9 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
 	private val sLeft get() = -tex.width * anchorX
 	private val sTop get() = -tex.height * anchorY
 
-	override fun render(ctx: RenderContext) {
+	override fun render(ctx: RenderContext, m: Matrix2d) {
         // Precalculate points to avoid matrix multiplication per vertex on each frame
-        ctx.batch.addQuad(tex, x = -(tex.width * anchorX).toFloat(), y = -(tex.height * anchorY).toFloat(), m = globalMatrix, filtering = smoothing, col1 = globalCol1)
+        ctx.batch.addQuad(tex, x = -(tex.width * anchorX).toFloat(), y = -(tex.height * anchorY).toFloat(), m = m, filtering = smoothing, col1 = globalCol1)
     }
 
 	override fun getLocalBounds(out: Rectangle) {

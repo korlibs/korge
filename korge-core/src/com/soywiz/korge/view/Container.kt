@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
 
@@ -33,12 +34,20 @@ open class Container(views: Views) : View(views) {
 		view.parent = this
 	}
 
-	override fun render(ctx: RenderContext) {
-		for (child in children) child.render(ctx)
+	private val tempMatrix = Matrix2d()
+	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (m === globalMatrix) {
+			for (child in children) child.render(ctx, child.globalMatrix)
+		} else {
+			for (child in children) {
+				tempMatrix.multiply(child.localMatrix, m)
+				child.render(ctx, tempMatrix)
+			}
+		}
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
-		for (child in children.reversed()) return child.hitTest(x, y) ?: continue
+		for (child in children.reversed().filter(View::visible)) return child.hitTest(x, y) ?: continue
 		return null
 	}
 

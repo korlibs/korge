@@ -94,7 +94,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 	private val t1: Matrix2d = Matrix2d()
 	private val t2: Matrix2d = Matrix2d()
 
-	override fun render(ctx: RenderContext) {
+	override fun render(ctx: RenderContext, m: Matrix2d) {
 		val batch = ctx.batch
 		for (obj in player.objectIterator()) {
 			val file = library.data.getFile(obj.ref)
@@ -109,7 +109,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 				-Math.toRadians(obj._angle.toDouble()),
 				0.0, 0.0
 			)
-			t2.copyFrom(globalMatrix)
+			t2.copyFrom(m)
 			t2.prescale(1.0, -1.0)
 			t2.premultiply(t1)
 			//t2.translate(+trimLeft, +trimTop)

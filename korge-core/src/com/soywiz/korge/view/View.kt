@@ -143,7 +143,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		return componentsByClass!![clazz]!!.first() as T
 	}
 
-	protected val localMatrix: Matrix2d get() {
+	val localMatrix: Matrix2d get() {
 		if (!validLocal) {
 			validLocal = true
 			_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
@@ -189,7 +189,9 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		validGlobal = false
 	}
 
-	override fun render(ctx: RenderContext) {
+	fun render(ctx: RenderContext) = render(ctx, globalMatrix)
+
+	override fun render(ctx: RenderContext, m: Matrix2d) {
 	}
 
 	@Suppress("RemoveCurlyBracesFromTemplate")

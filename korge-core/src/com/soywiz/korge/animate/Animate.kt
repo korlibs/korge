@@ -5,6 +5,7 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.spawn
+import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
 interface AnElement {
@@ -18,8 +19,8 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	val tex = symbol.textureWithBitmap?.texture ?: views.dummyTexture
 	val smoothing = true
 
-	override fun render(ctx: RenderContext) {
-		ctx.batch.addQuad(tex, x = dx, y = dy, m = globalMatrix, filtering = smoothing, col1 = globalCol1)
+	override fun render(ctx: RenderContext, m: Matrix2d) {
+		ctx.batch.addQuad(tex, x = dx, y = dy, m = m, filtering = smoothing, col1 = globalCol1)
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
@@ -44,10 +45,8 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 		relayout()
 	}
 
-	override fun render(ctx: RenderContext) {
-		//textField.setMatrix(this.localMatrix)
-		textField._globalMatrix.copyFrom(this.globalMatrix) // @TODO: A bit hacky. Check a better option while being able to still cache globalMatrix
-		textField.render(ctx)
+	override fun render(ctx: RenderContext, m: Matrix2d) {
+		textField.render(ctx, m)
 	}
 
 	override fun getLocalBounds(out: Rectangle) {

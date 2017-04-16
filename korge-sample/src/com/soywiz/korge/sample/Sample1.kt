@@ -241,6 +241,7 @@ class Sample1Scene(
 
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}
+		//sceneView += ShaderView(views).apply { this += player }
 		sceneView += player
 
 		sceneView.container {
