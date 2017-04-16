@@ -108,7 +108,11 @@ class BatchBuilder2D(val ag: AG) {
 
 	fun flush() {
 		if (vertexCount > 0) {
-			val mat = projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
+			val mat = if (ag.renderingToTexture) {
+				projMat.setToOrtho(0f, ag.backHeight.toFloat(), ag.backWidth.toFloat(), 0f, -1f, 1f)
+			} else {
+				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
+			}
 
 			ag.createVertexBuffer(vertices, 0, vertexPos * 4).use { vertexBuffer ->
 				ag.createIndexBuffer(indices, 0, indexPos).use { indexBuffer ->

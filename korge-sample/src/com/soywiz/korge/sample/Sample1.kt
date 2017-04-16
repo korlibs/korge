@@ -248,6 +248,7 @@ class Sample1Scene(
 			val mc = buttonsLibrary.an.createMainTimeLine()
 			mc.scale = 0.3
 			mc.setXY(400, 300)
+			//this += ShaderView(views).apply { this += mc }
 			this += mc
 			for (n in 1..4) {
 				for (m in 1..4) {
