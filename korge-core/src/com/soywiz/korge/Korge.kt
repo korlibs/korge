@@ -19,17 +19,20 @@ object Korge {
 	val VERSION = "0.8.1"
 
 	suspend fun setupCanvas(
-		canvas: AGContainer,
+		container: AGContainer,
 		module: Module,
 		args: Array<String> = arrayOf(),
 		sceneClass: Class<out Scene> = module.mainScene,
 		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector()
 	): SceneContainer {
-		val ag = canvas.ag
+		val ag = container.ag
 		injector.map(ag)
 		val views = injector.get<Views>()
 		val moduleArgs = ModuleArgs(args)
+
+		views.virtualWidth = module.width
+		views.virtualHeight = module.height
 
 		ag.onReady.await()
 		injector.map(moduleArgs)
@@ -38,7 +41,7 @@ object Korge {
 		module.init(injector)
 
 		val sc = views.sceneContainer()
-		views.root += sc
+		views.stage += sc
 		sc.changeTo(sceneClass)
 
 		var lastTime = timeProvider.currentTimeMillis()
@@ -57,23 +60,27 @@ object Korge {
 		}
 
 		fun updateMousePos() {
-			views.input.mouse.setTo(canvas.mouseX.toDouble(), canvas.mouseY.toDouble())
+			views.input.mouse.setTo(container.mouseX.toDouble(), container.mouseY.toDouble())
 		}
 
-		canvas.onMouseOver {
+		container.onMouseOver {
 			updateMousePos()
 		}
-		canvas.onMouseUp {
+		container.onMouseUp {
 			views.input.mouseButtons = 0
 			updateMousePos()
 		}
-		canvas.onMouseDown {
+		container.onMouseDown {
 			views.input.mouseButtons = 1
 			updateMousePos()
 		}
+		container.ag.onResized {
+			views.resized(container.ag.backWidth, container.ag.backHeight)
+		}
+		container.ag.onResized(Unit)
 
 		animationFrameLoop {
-			canvas.repaint()
+			container.repaint()
 		}
 
 		return sc
@@ -102,7 +109,7 @@ object Korge {
 	): SceneContainer {
 		val done = Promise.Deferred<SceneContainer>()
 		if (canvas != null) {
-			done.resolve(setupCanvas(canvas = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
+			done.resolve(setupCanvas(container = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
 		} else {
 			val icon = if (module.icon != null) {
 				try {
@@ -117,7 +124,7 @@ object Korge {
 
 			CanvasApplication(module.title, module.width, module.height, icon) {
 				go {
-					done.resolve(setupCanvas(canvas = it, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
+					done.resolve(setupCanvas(container = it, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
 				}
 			}
 		}

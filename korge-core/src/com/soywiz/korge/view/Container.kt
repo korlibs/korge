@@ -66,4 +66,8 @@ open class Container(views: Views) : View(views) {
 		super.updateInternal(dtMs)
 		for (child in children) child.update(dtMs)
 	}
+
+	override fun handleEvent(e: Event) {
+		for (child in children) child.handleEvent(e)
+	}
 }

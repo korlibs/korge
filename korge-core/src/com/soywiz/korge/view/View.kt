@@ -292,6 +292,18 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	open fun getLocalBounds(out: Rectangle = Rectangle()) {
 		out.setTo(0, 0, 0, 0)
 	}
+
+
+	interface Event
+	data class StageResizedEvent(var width: Int, var height: Int) : Event {
+		fun setSize(width: Int, height: Int) = this.apply {
+			this.width = width
+			this.height = height
+		}
+	}
+
+	open fun handleEvent(e: Event) {
+	}
 }
 
 fun View.hasAncestor(ancestor: View): Boolean {
