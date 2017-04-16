@@ -31,11 +31,13 @@ class TweenComponent(vs: List<VX<Any, *>>, val tweenObj: Any, view: View, val ti
 
 suspend fun <T : View> T.tween(vararg vs: VX<T, *>, time: Int, easing: Easing = Easing.LINEAR, callback: (Double) -> Unit = { }) = suspendCancellableCoroutine<Unit> { c ->
     val view = this@tween
+	view.removeComponents(TweenComponent::class.java)
     view.addComponent(TweenComponent(vs.toList() as List<VX<Any, *>>, view, view, time, easing, callback, c))
 }
 
 suspend fun <T : Any> View.tween(item: T, vararg vs: VX<T, *>, time: Int, easing: Easing = Easing.LINEAR, callback: (Double) -> Unit = { }) = suspendCancellableCoroutine<Unit> { c ->
     val view = this@tween
+	view.removeComponents(TweenComponent::class.java)
     view.addComponent(TweenComponent(vs.toList() as List<VX<Any, *>>, item, view, time, easing, callback, c))
 }
 

@@ -4,7 +4,11 @@ import com.soywiz.korio.serialization.json.Json
 import kotlin.reflect.KProperty
 
 class StorageItem<T>(val storage: Storage, val clazz: Class<T>, val key: String, val gen: () -> T) {
-	var value: T; set(value) = run { storage[key] = Json.encode(value) }; get () = Json.decodeToType(storage[key], clazz)
+	var value: T; set(value) = run { storage[key] = Json.encode(value) }; get () {
+		if (key !in storage) storage[key] = Json.encode(gen())
+		return Json.decodeToType(storage[key], clazz)
+	}
+
 	fun remove() = storage.remove(key)
 
 	inline operator fun getValue(thisRef: Any, property: KProperty<*>): T = value

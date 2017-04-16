@@ -1,23 +1,29 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
+import com.soywiz.korge.animate.serialization.AnimateDeserializer
 import com.soywiz.korge.render.TextureWithBitmapSlice
+import com.soywiz.korge.resources.Path
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.error.invalidOp
+import com.soywiz.korio.inject.AsyncFactory
+import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.Extra
+import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
 
 open class AnSymbol(
-	val id: Int = 0,
+	val id: Int = -1,
 	var name: String? = null
 ) : Extra by Extra.Mixin() {
-	open fun create(library: AnLibrary): AnElement = TODO()
+	open fun create(library: AnLibrary): AnElement = TODO("$this")
 }
 
-object AnSymbolEmpty : AnSymbol(0, "")
+object AnSymbolEmpty : AnSymbol(-1, "")
 
 class AnSymbolSound(id: Int, name: String?, val data: AudioData?) : AnSymbol(id, name)
 
@@ -79,6 +85,7 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
 
+@AsyncFactoryClass(AnLibrary.Factory::class)
 class AnLibrary(val views: Views, val fps: Double) {
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
@@ -90,7 +97,7 @@ class AnLibrary(val views: Views, val fps: Double) {
 
 	fun addSymbol(symbol: AnSymbol) {
 		while (symbolsById.size <= symbol.id) symbolsById += AnSymbolEmpty
-		symbolsById[symbol.id] = symbol
+		if (symbol.id >= 0) symbolsById[symbol.id] = symbol
 	}
 
 	fun processSymbolNames() {
@@ -109,4 +116,14 @@ class AnLibrary(val views: Views, val fps: Double) {
 	fun getBitmap(name: String) = (symbolsByName[name] as AnSymbolBitmap).bmp
 
 	fun createMainTimeLine() = createMovieClip(0)
+
+	class Factory(
+		val path: Path,
+		val views: Views,
+		val resourcesRoot: ResourcesRoot
+	) : AsyncFactory<AnLibrary> {
+		suspend override fun create(): AnLibrary = resourcesRoot[path].withExtension("ani").readAni(views)
+	}
 }
+
+suspend fun VfsFile.readAni(views: Views) = AnimateDeserializer.read(this.read(), views)

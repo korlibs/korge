@@ -44,6 +44,12 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
 
+	@Suppress("NOTHING_TO_INLINE")
+	inline fun setXY(x: Number, y: Number) {
+		this.x = x.toDouble()
+		this.y = y.toDouble()
+	}
+
 	val root: View get() = parent?.root ?: this
 
 	var enabled: Boolean = true
@@ -104,6 +110,11 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	fun removeComponent(c: Component) {
 		val cc = componentsByClass?.get(c::class.java)
 		cc?.remove(c)
+	}
+
+	fun removeComponents(c: Class<out Component>) {
+		val cc = componentsByClass?.get(c)
+		cc?.clear()
 	}
 
 	fun addComponent(c: Component) {

@@ -16,17 +16,18 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.Easing
+import com.soywiz.korge.tween.Easings
 import com.soywiz.korge.tween.rangeTo
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korio.async.async
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.vfs.ResourcesVfs
-import com.soywiz.korma.geom.Point2d
 
 object Sample1 {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample1Scene::class.java)
@@ -66,6 +67,21 @@ class Sample2Scene(
 	}
 }
 
+class JellyButton(val view: View) {
+	val initialScale = view.scale
+
+	//val thread = AsyncThread()
+
+	init {
+		view.onOver { async { view.tween(View::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOut { async { view.tween(View::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
+	}
+
+	fun onClick(callback: suspend () -> Unit) {
+		view.onClick { async { callback() } }
+	}
+}
+
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
 	@Path("simple.swf") val swfLibrary: SwfLibrary,
@@ -74,6 +90,7 @@ class Sample1Scene(
 	@Path("as3test.swf") val as3testLibrary: SwfLibrary,
 	@Path("soundtest.swf") val soundtestLibrary: SwfLibrary,
 	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
+	@Path("buttons.swf") val buttonsLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: SpriterLibrary,
@@ -131,6 +148,7 @@ class Sample1Scene(
 		}
 
 		sceneView.container {
+			//JekllyButton()
 			val mc = test4Library.an.createMainTimeLine().apply {
 				x = 320.0
 				y = 320.0
@@ -210,7 +228,7 @@ class Sample1Scene(
 				time = 1000, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			player.changeTo("hurt_idle", time = 300, easing = Easing.EASE_IN)
-			sleep(200)
+			sleep(400)
 			player.changeTo("walk", time = 1000, easing = Easing.LINEAR)
 			sleep(400)
 			player.changeTo("sword_swing_0", time = 1000, easing = Easing.LINEAR)
@@ -224,5 +242,20 @@ class Sample1Scene(
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}
 		sceneView += player
+
+		sceneView.container {
+			val mc = buttonsLibrary.an.createMainTimeLine()
+			mc.scale = 0.3
+			mc.setXY(400, 300)
+			this += mc
+			for (n in 1..4) {
+				for (m in 1..4) {
+					val buttonView = mc["buttonsRow$n"]?.get("button$m")
+					if (buttonView != null) {
+						JellyButton(buttonView)
+					}
+				}
+			}
+		}
 	}
 }

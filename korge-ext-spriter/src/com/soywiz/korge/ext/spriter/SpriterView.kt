@@ -115,11 +115,14 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 			//t2.translate(+trimLeft, +trimTop)
 			if (ttex.rotated) {
 				t2.prerotate(-Math.PI / 2.0)
-				//t2.translate(trimLeft, trimTop)
 			}
 			val px = obj.pivot.x.toDouble() * tex.width //- trimLeft
 			val py = (1.0 - obj.pivot.y) * tex.height //- trimTop
-			batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, rotated = ttex.rotated)
+			//if (ttex.rotated) {
+			//	batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.height.toFloat(), tex.width.toFloat(), t2, rotated = true)
+			//} else {
+				batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, rotated = false)
+			//}
 		}
 	}
 

@@ -22,7 +22,8 @@ object AnimateDeserializer {
 
 	private fun SyncStream.readLibrary(views: Views): AnLibrary {
 		//AnLibrary(views)
-		if (readStringz(8) != AnimateFile.MAGIC) invalidOp("Not a ${AnimateFile.MAGIC} file")
+		val magic = readStringz(8)
+		if (magic != AnimateFile.MAGIC) invalidOp("Not a ${AnimateFile.MAGIC} file")
 		if (readU_VL() > AnimateFile.VERSION) invalidOp("Just supported ${AnimateFile.MAGIC} version ${AnimateFile.VERSION} or lower")
 		val msPerFrame = readU_VL()
 		val library = AnLibrary(views, 1000.0 / msPerFrame)
