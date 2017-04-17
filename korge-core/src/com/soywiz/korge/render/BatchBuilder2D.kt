@@ -5,6 +5,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korma.Matrix2d
 
 class BatchBuilder2D(val ag: AG) {
@@ -17,6 +18,7 @@ class BatchBuilder2D(val ag: AG) {
 	private var quadCount = 0
 	private var currentTex: Texture.Base? = null
 	private var currentSmoothing: Boolean = false
+	private var currentBlendMode: BlendMode = BlendMode.INHERIT
 
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
@@ -62,23 +64,24 @@ class BatchBuilder2D(val ag: AG) {
 		if (quadCount >= maxQuads) flush()
 	}
 
-	fun setStateFast(tex: Texture.Base, smoothing: Boolean) {
-		if (tex != currentTex || currentSmoothing != smoothing) {
+	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendMode: BlendMode) {
+		if (tex != currentTex || currentSmoothing != smoothing || currentBlendMode != blendMode) {
 			flush()
 			currentTex = tex
 			currentSmoothing = smoothing
+			currentBlendMode = blendMode
 		}
 	}
 
 	private val identity = Matrix2d()
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, rotated: Boolean = false) {
+	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendMode: BlendMode = BlendMode.INHERIT, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
 		val y1 = (y + height).toDouble()
 
-		setStateFast(tex.base, filtering)
+		setStateFast(tex.base, filtering, blendMode)
 
 		addQuadFast(
 			m.transformXf(x0, y0), m.transformYf(x0, y0),
@@ -114,6 +117,14 @@ class BatchBuilder2D(val ag: AG) {
 				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
 			}
 
+			// http://www.learnopengles.com/tag/additive-blending/
+			val factors = when (currentBlendMode) {
+				BlendMode.INHERIT, BlendMode.NORMAL -> AG.BlendFactors.NORMAL
+				BlendMode.ADD -> AG.BlendFactors.ADD
+			}
+
+			//println(currentBlendMode)
+
 			ag.createVertexBuffer(vertices, 0, vertexPos * 4).use { vertexBuffer ->
 				ag.createIndexBuffer(indices, 0, indexPos).use { indexBuffer ->
 					ag.draw(
@@ -123,6 +134,7 @@ class BatchBuilder2D(val ag: AG) {
 						type = AG.DrawType.TRIANGLES,
 						vertexLayout = LAYOUT,
 						vertexCount = indexPos,
+						blending = factors,
 						uniforms = mapOf<Uniform, Any>(
 							DefaultShaders.u_ProjMat to mat,
 							DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)

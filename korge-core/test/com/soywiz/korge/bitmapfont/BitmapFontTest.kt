@@ -35,7 +35,7 @@ class BitmapFontTest {
                     Buffer[0].afterSetMem(mem[320])
                     createBuffer(INDEX):1
                     Buffer[1].afterSetMem(mem[48])
-                    draw(vertices=Buffer[0], indices=Buffer[1], program=Program(name=BatchBuilder2D.Tinted, attributes=[a_Tex, a_Col, a_Pos], uniforms=[u_ProjMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col], vertexCount=24, offset=0, blending=OVERLAY, uniforms={Uniform(u_ProjMat)=Matrix4([0.003125, 0.0, 0.0, 0.0, 0.0, -0.004166667, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, -1.0, 1.0, -0.0, 1.0]), Uniform(u_Tex)=TextureUnit(texture=Texture[0], linear=true)})
+                    draw(vertices=Buffer[0], indices=Buffer[1], program=Program(name=BatchBuilder2D.Tinted, attributes=[a_Tex, a_Col, a_Pos], uniforms=[u_ProjMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col], vertexCount=24, offset=0, blending=BlendFactors(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA), uniforms={Uniform(u_ProjMat)=Matrix4([0.003125, 0.0, 0.0, 0.0, 0.0, -0.004166667, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, -1.0, 1.0, -0.0, 1.0]), Uniform(u_Tex)=TextureUnit(texture=Texture[0], linear=true)})
                     ::draw.indices=[0, 1, 2, 3, 0, 2, 4, 5, 6, 7, 4, 6, 8, 9, 10, 11, 8, 10, 12, 13, 14, 15, 12, 14]
                     ::draw.vertex[0]: a_Pos[vec2(0.0,1.25)], a_Tex[vec2(0.21052632,0.19726562)], a_Col[byte4(-1)]
                     ::draw.vertex[1]: a_Pos[vec2(12.75,1.25)], a_Tex[vec2(0.35180056,0.19726562)], a_Col[byte4(-1)]

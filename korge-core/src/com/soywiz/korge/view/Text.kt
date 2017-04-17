@@ -48,13 +48,13 @@ class Text(views: Views) : View(views), IText, IHtml {
 		if (document != null) {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
-				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m)
+				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, blendMode = blendMode)
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
 			views.fontRepository.getBounds(text, format, tempRect)
 			tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
-			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), m)
+			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), m, blendMode = blendMode)
 		}
 	}
 

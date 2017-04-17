@@ -3,7 +3,6 @@ package com.soywiz.korge.component.docking
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.view.View
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
 
 class DockingComponent(view: View, var anchor: Anchor) : Component(view) {
 	//private val bounds = Rectangle()

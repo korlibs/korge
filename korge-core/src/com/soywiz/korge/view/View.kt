@@ -18,6 +18,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	var parent: Container? = null
 	var name: String? = null
 	val id = views.lastId++
+	var blendMode: BlendMode = BlendMode.INHERIT
 	var alpha: Double = 1.0; set(v) = run {
 		if (field != v) {
 			val vv = v.clamp(0.0, 1.0)
@@ -26,13 +27,13 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 			}
 		}
 	}
-	var _x: Double = 0.0
-	var _y: Double = 0.0
-	var _scaleX: Double = 1.0
-	var _scaleY: Double = 1.0
-	var _skewX: Double = 0.0
-	var _skewY: Double = 0.0
-	var _rotation: Double = 0.0
+	private var _x: Double = 0.0
+	private var _y: Double = 0.0
+	private var _scaleX: Double = 1.0
+	private var _scaleY: Double = 1.0
+	private var _skewX: Double = 0.0
+	private var _skewY: Double = 0.0
+	private var _rotation: Double = 0.0
 
 	var x: Double; set(v) = run { if (_x != v) run { _x = v; invalidateMatrix() } }; get() = _x
 	var y: Double; set(v) = run { if (_y != v) run { _y = v; invalidateMatrix() } }; get() = _y

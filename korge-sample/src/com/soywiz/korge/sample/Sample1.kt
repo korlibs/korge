@@ -110,6 +110,7 @@ class Sample1Scene(
 		sceneView.container {
 			//this.text(font, "hello")
 			this.tileMap(Bitmap32(8, 8), tileset) {
+				//blendMode = BlendMode.ADD
 				this.x = -128.0
 				this.y = -128.0
 				alpha = 0.8
@@ -193,6 +194,7 @@ class Sample1Scene(
 		}
 
 		sceneView.text(font, "Hello world! F,", textSize = 72.0).apply {
+			blendMode = BlendMode.ADD
 			x = 100.0
 			y = 100.0
 		}
