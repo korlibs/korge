@@ -6,6 +6,7 @@ import com.soywiz.korge.animate.serialization.AnimateDeserializer
 import com.soywiz.korge.animate.serialization.AnimateSerializer
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.dumpToString
+import com.soywiz.korge.view.findDescendantsWithProp
 import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfs
@@ -79,7 +80,6 @@ class SwfTest {
 		println(lib)
 	}
 
-
 	@Test
 	fun exports() = syncTest {
 		val lib = AnimateDeserializer.read(AnimateSerializer.gen(ResourcesVfs["exports.swf"].readSWF(views, debug = false), compression = 0.0), views)
@@ -90,6 +90,17 @@ class SwfTest {
 		//AnimateSerializer.gen(lib).writeToFile("c:/temp/file.ani")
 
 		//AnimateDeserializer.read(AnimateSerializer.gen(lib), views)
+	}
 
+	@Test
+	fun props() = syncTest {
+		//val lib = AnimateDeserializer.read(AnimateSerializer.gen(ResourcesVfs["props.swf"].readSWF(views, debug = false), compression = 0.0), views)
+		val lib = ResourcesVfs["props.swf"].readSWF(views, debug = false)
+		val mt = lib.createMainTimeLine()
+		views.stage += mt
+		Assert.assertEquals(mapOf("gravity" to "9.8"), mt.children.first().props)
+		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity").count())
+		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity", "9.8").count())
+		Assert.assertEquals(0, views.stage.findDescendantsWithProp("gravity", "9.0").count())
 	}
 }

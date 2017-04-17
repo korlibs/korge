@@ -15,6 +15,8 @@ and will work with pure Kotlin targets as they support reflection and multi-targ
 
 It provides a flash-like optimized Views 2d scene tree. (3d will be supported in future versions)
 
+It has a ResourceRoot, that is a mountable virtualfilesystem for accessing resources. You can asynchronously load resources at any time.
+
 Along Korio also allows to develop websockets applications (doing fullstack using kotlin and sharing code).
 And Korge allows you to run server/client in the same run and debug. Check [korge-kingdom](https://github.com/soywiz/korge-kingdom).
 
@@ -26,8 +28,6 @@ It allows to load Adobe Flash/Adobe Animate SWF files directly (including instan
 Or preprocess at compilation them generating ANI files (simpler + atlas-based) animations that will load quickly on low-end devices.
 
 It allows to render vector graphics using platform-specific libraries transparently.
-
-
 
 It features tweens with easings.
 

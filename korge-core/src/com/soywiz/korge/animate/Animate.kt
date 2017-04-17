@@ -61,7 +61,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val totalDepths = symbol.limits.totalDepths
 	val totalUids = symbol.limits.totalUids
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
-	val viewUids = Array<View>(totalUids) { library.create(symbol.uidInfo[it].characterId) as View }
+	val viewUids = Array<View>(totalUids) {
+		val info = symbol.uidInfo[it]
+		val view = library.create(info.characterId) as View
+		view.props += info.extraProps
+		view
+	}
 	var running = true
 	var firstUpdate = true
 	var smoothing = library.defaultSmoothing

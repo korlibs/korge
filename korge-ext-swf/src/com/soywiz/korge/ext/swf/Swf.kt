@@ -15,10 +15,9 @@ import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.animate.serialization.AnimateDeserializer
-import com.soywiz.korge.animate.serialization.AnimateSerializer
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.BGRA
@@ -31,6 +30,7 @@ import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extract8
@@ -61,6 +61,8 @@ class SwfLibraryFactory(
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
+private typealias SwfBlendMode = com.codeazur.as3swf.data.consts.BlendMode
+
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 
 class MySwfFrameElement(
@@ -68,9 +70,10 @@ class MySwfFrameElement(
 	val uid: Int,
 	val name: String?,
 	val transform: Matrix2d.Computed,
-	val alpha: Double
+	val alpha: Double,
+	val blendMode: BlendMode
 ) {
-	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name, alpha)
+	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name, alpha, blendMode)
 }
 
 class MySwfFrame(val index: Int, maxDepths: Int) {
@@ -301,12 +304,14 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 			var name: String? = null
 			var alpha: Double = 1.0
 			var matrix: Matrix2d = Matrix2d()
+			var blendMode: BlendMode = BlendMode.INHERIT
 
 			fun reset() {
 				uid = -1
 				charId = -1
 				name = null
 				matrix = Matrix2d()
+				blendMode = BlendMode.INHERIT
 			}
 
 			fun toFrameElement(): MySwfFrameElement = MySwfFrameElement(
@@ -314,7 +319,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				uid = uid,
 				name = name,
 				transform = Matrix2d.Computed(matrix),
-				alpha = alpha
+				alpha = alpha,
+				blendMode = blendMode
 			)
 		}
 
@@ -474,7 +480,20 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 						depth.alpha = it.colorTransform!!.aMult
 					}
 					if (it.hasMatrix) depth.matrix = it.matrix!!.matrix
-					depth.uid = getUid(it.depth0)
+					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
+						SwfBlendMode.NORMAL_0, SwfBlendMode.NORMAL_1 -> BlendMode.NORMAL
+						SwfBlendMode.ADD -> BlendMode.ADD
+						else -> BlendMode.NORMAL
+					}
+					val uid = getUid(it.depth0)
+					val metaData = it.metaData
+					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {
+						val uidInfo = mc.uidInfo[uid]
+						val eprops = ignoreErrors { Json.decode(metaData["props"].toString()) as Map<String, String> }
+						if (eprops != null) uidInfo.extraProps += eprops
+						//println(depth.extraProps)
+					}
+					depth.uid = uid
 				}
 				is TagRemoveObject -> {
 					depths[it.depth0].reset()

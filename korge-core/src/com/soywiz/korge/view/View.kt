@@ -35,6 +35,8 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	private var _skewY: Double = 0.0
 	private var _rotation: Double = 0.0
 
+	val props = linkedMapOf<String, String>()
+
 	var x: Double; set(v) = run { if (_x != v) run { _x = v; invalidateMatrix() } }; get() = _x
 	var y: Double; set(v) = run { if (_y != v) run { _y = v; invalidateMatrix() } }; get() = _y
 	var scaleX: Double; set(v) = run { if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = _scaleX
@@ -229,6 +231,11 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	fun localToGlobal(p: Point2d, out: Point2d = Point2d()): Point2d = globalMatrix.run { transform(p.x, p.y, out) }
 	fun hitTest(pos: Point2d): View? = hitTest(pos.x, pos.y)
 	open fun hitTest(x: Double, y: Double): View? = null
+
+	open fun hitTestBounding(x: Double, y: Double): View? {
+		val bounds = getGlobalBounds()
+		return if (bounds.contains(x, y)) this else null
+	}
 
 	protected fun checkGlobalBounds(x: Double, y: Double, sLeft: Double, sTop: Double, sRight: Double, sBottom: Double): Boolean {
 		val lx = globalToLocalX(x, y)

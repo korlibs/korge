@@ -1,7 +1,6 @@
 package com.soywiz.korge.input
 
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.input.Input
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.hasAncestor
 import com.soywiz.korio.async.Signal
@@ -17,6 +16,12 @@ class MouseComponent(view: View) : Component(view) {
 	val onDown = Signal<MouseComponent>()
 	val onUp = Signal<MouseComponent>()
 	val onMove = Signal<MouseComponent>()
+
+	enum class HitTestType {
+		BOUNDING, SHAPE
+	}
+
+	var hitTestType = HitTestType.BOUNDING
 
 	val startedPos = Point2d()
 	val lastPos = Point2d()
@@ -34,7 +39,10 @@ class MouseComponent(view: View) : Component(view) {
 		//println("${frame.mouseHitResult}")
 		if (!frame.mouseHitSearch) {
 			frame.mouseHitSearch = true
-			frame.mouseHitResult = views.root.hitTest(input.mouse)
+			frame.mouseHitResult = when (hitTestType) {
+				HitTestType.BOUNDING -> views.stage.hitTestBounding(views.mouseX, views.mouseY)
+				HitTestType.SHAPE -> views.stage.hitTest(views.mouseX, views.mouseY)
+			}
 		}
 		hitTest = input.frame.mouseHitResult
 		val over = hitTest?.hasAncestor(view) ?: false

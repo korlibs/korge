@@ -83,13 +83,13 @@ inline fun Container.text(font: BitmapFont, text: String, textSize: Double = 16.
 	return child
 }
 
-fun View.setText(text: String) {
+fun View?.setText(text: String) {
 	this.descendants {
 		if (it is IText) it.text = text
 	}
 }
 
-fun View.setHtml(html: String) {
+fun View?.setHtml(html: String) {
 	this.descendants {
 		if (it is IHtml) it.html = html
 	}

@@ -8,14 +8,14 @@ import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.ext.swf.SwfLibrary
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onOut
-import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.time.milliseconds
+import com.soywiz.korge.time.timers
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.Easings
 import com.soywiz.korge.tween.rangeTo
@@ -93,6 +93,7 @@ class Sample1Scene(
 	@Path("soundtest.swf") val soundtestLibrary: SwfLibrary,
 	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
 	@Path("buttons.swf") val buttonsLibrary: SwfLibrary,
+	@Path("props.swf") val propsLibrary: SwfLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: SpriterLibrary,
@@ -127,6 +128,7 @@ class Sample1Scene(
 			rotation = Math.toRadians(-90.0)
 			alpha = 0.7
 			//smoothing = false
+			mouse.hitTestType = MouseComponent.HitTestType.SHAPE
 			onOver { alpha = 1.0 }
 			onOut { alpha = 0.7 }
 			//onDown { scale = 0.3 }
@@ -259,6 +261,24 @@ class Sample1Scene(
 					}
 				}
 			}
+		}
+
+		sceneView.container {
+			this += propsLibrary.an.createMainTimeLine()
+		}
+
+		for (child in sceneView.findDescendantsWithProp("gravity")) {
+			val gravity = child.props["gravity"]!!.toDouble()
+			go {
+				var speed = 0.0
+				val stepMs = 16
+				while (true) {
+					speed += (gravity / 1000.0) * stepMs
+					child.y += speed
+					child.timers.waitMilliseconds(stepMs)
+				}
+			}
+			//println(child)
 		}
 	}
 }

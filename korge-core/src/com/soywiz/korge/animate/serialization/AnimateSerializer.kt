@@ -3,6 +3,7 @@ package com.soywiz.korge.animate.serialization
 import com.soywiz.korge.animate.*
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.ImageFormats
+import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
 import com.soywiz.korma.Matrix2d
@@ -127,7 +128,10 @@ object AnimateSerializer {
 
 					// uids
 					writeU_VL(limits.totalUids)
-					for (uidInfo in symbol.uidInfo) writeU_VL(uidInfo.characterId)
+					for (uidInfo in symbol.uidInfo) {
+						writeU_VL(uidInfo.characterId)
+						//writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.encode(uidInfo.extraProps) else "")
+					}
 
 					val symbolStates = symbol.states.map { it.value.state }.toList().distinct()
 					val symbolStateToIndex = symbolStates.withIndex().map { it.value to it.index }.toMap()

@@ -2,12 +2,14 @@ package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.ImageFormats
 import com.soywiz.korio.error.invalidOp
+import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.ds.DoubleArrayList
@@ -89,7 +91,13 @@ object AnimateDeserializer {
 					val totalFrames = readU_VL()
 					val totalTime = readU_VL()
 					val totalUids = readU_VL()
-					val uidsToCharacterIds = (0 until totalUids).map { AnSymbolUidDef(readU_VL()) }.toTypedArray()
+					val uidsToCharacterIds = (0 until totalUids).map {
+						val charId = readU_VL()
+						//val extraPropsString = readStringVL()
+						//val extraProps = if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
+						val extraProps = LinkedHashMap<String, String>()
+						AnSymbolUidDef(charId, extraProps)
+					}.toTypedArray()
 					val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))
 
 					val symbolStates = (0 until readU_VL()).map {
@@ -115,7 +123,7 @@ object AnimateDeserializer {
 								if (hasName) lastName = strings[readU_VL()]
 								if (hasAlpha) lastAlpha = readU8().toDouble() / 255.0
 								if (hasMatrix) lastMatrix = Matrix2d.Computed(Matrix2d(a = readF32_le(), b = readF32_le(), c = readF32_le(), d = readF32_le(), tx = readF32_le(), ty = readF32_le()))
-								timeline.add(frameTime, AnSymbolTimelineFrame(lastUid, lastMatrix, lastName, lastAlpha))
+								timeline.add(frameTime, AnSymbolTimelineFrame(lastUid, lastMatrix, lastName, lastAlpha, BlendMode.INHERIT))
 							}
 						}
 						ss

@@ -47,13 +47,13 @@ class As3SwfTest {
 		swf.tags += TagFileAttributes()
 	}
 
-	@Test
-	fun name4() = syncTest {
-		val swf2 = SWF().loadBytes(File("c:/temp/sample1.swf").readBytes())
-		println(swf2.frameSize.rect)
-		for (tag in swf2.tags) {
-			println(tag)
-		}
+	//@Test
+	//fun name4() = syncTest {
+	//	//val swf2 = SWF().loadBytes(File("c:/temp/sample1.swf").readBytes())
+	//	println(swf2.frameSize.rect)
+	//	for (tag in swf2.tags) {
+	//		println(tag)
+	//	}
 
-	}
+	//}
 }

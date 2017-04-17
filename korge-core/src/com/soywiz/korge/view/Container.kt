@@ -51,6 +51,11 @@ open class Container(views: Views) : View(views) {
 		return null
 	}
 
+	override fun hitTestBounding(x: Double, y: Double): View? {
+		for (child in children.reversed().filter(View::visible)) return child.hitTestBounding(x, y) ?: continue
+		return null
+	}
+
 	private val bb = BoundsBuilder()
 	private val tempRect = Rectangle()
 	override fun getLocalBounds(out: Rectangle) {
