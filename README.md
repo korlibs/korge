@@ -6,6 +6,8 @@
 
 ### Modern, portable, testable and enjoyable Game Engine for Kotlin
 
+![](docs/screenshot1.png)
+
 Check [korge-sample](https://github.com/soywiz/korge/tree/master/korge-sample) folder for looking actual code.
 
 Korge works with Korio, Korim, Korma, Korag, Korau and Korui and it is really portable. It is designed to work with JTransc
