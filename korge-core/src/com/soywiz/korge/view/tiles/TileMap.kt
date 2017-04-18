@@ -45,7 +45,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
 		out.setTo(0, 0, tileWidth * map.width, tileHeight * map.height)
 	}
 
-	override fun hitTest(x: Double, y: Double): View? {
+	override fun hitTestInternal(x: Double, y: Double): View? {
         return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * map.width, tileHeight * map.height)) this else null
     }
 }

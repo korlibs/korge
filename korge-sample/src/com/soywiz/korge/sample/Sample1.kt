@@ -127,7 +127,7 @@ class Sample1Scene(
 			rotation = Math.toRadians(-90.0)
 			alpha = 0.7
 			//smoothing = false
-			mouse.hitTestType = MouseComponent.HitTestType.SHAPE
+			mouse.hitTestType = View.HitTestType.SHAPE
 			onOver { alpha = 1.0 }
 			onOut { alpha = 0.7 }
 			//onDown { scale = 0.3 }

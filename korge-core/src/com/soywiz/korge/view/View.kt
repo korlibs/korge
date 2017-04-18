@@ -48,6 +48,20 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
 
+	var globalX: Double get() {
+		return parent?.localToGlobalX(x, y) ?: x
+	}
+		set(value) {
+			x = parent?.globalToLocalX(value, globalY) ?: value
+		}
+
+	var globalY: Double get() {
+		return parent?.localToGlobalY(x, y) ?: y
+	}
+		set(value) {
+			y = parent?.globalToLocalY(globalX, value) ?: value
+		}
+
 	@Suppress("NOTHING_TO_INLINE")
 	inline fun setXY(x: Number, y: Number) {
 		this.x = x.toDouble()
@@ -56,6 +70,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	val root: View get() = parent?.root ?: this
 
+	var mouseEnabled: Boolean = true
 	var enabled: Boolean = true
 	var visible: Boolean = true
 
@@ -229,10 +244,32 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	fun globalToLocal(p: Point2d, out: Point2d = Point2d()): Point2d = globalMatrixInv.run { transform(p.x, p.y, out) }
 	fun localToGlobal(p: Point2d, out: Point2d = Point2d()): Point2d = globalMatrix.run { transform(p.x, p.y, out) }
-	fun hitTest(pos: Point2d): View? = hitTest(pos.x, pos.y)
-	open fun hitTest(x: Double, y: Double): View? = null
 
-	open fun hitTestBounding(x: Double, y: Double): View? {
+	enum class HitTestType {
+		BOUNDING, SHAPE
+	}
+
+	fun hitTest(x: Double, y: Double, type: HitTestType): View? = when (type) {
+		HitTestType.SHAPE -> hitTest(x, y)
+		HitTestType.BOUNDING -> hitTestBounding(x, y)
+	}
+
+	fun hitTest(pos: Point2d): View? = hitTest(pos.x, pos.y)
+
+	fun hitTest(x: Double, y: Double): View? {
+		if (!mouseEnabled) return null
+		return hitTestInternal(x, y)
+	}
+
+	fun hitTestBounding(x: Double, y: Double): View? {
+		if (!mouseEnabled) return null
+		return hitTestBoundingInternal(x, y)
+	}
+
+
+	open fun hitTestInternal(x: Double, y: Double): View? = null
+
+	open fun hitTestBoundingInternal(x: Double, y: Double): View? {
 		val bounds = getGlobalBounds()
 		return if (bounds.contains(x, y)) this else null
 	}

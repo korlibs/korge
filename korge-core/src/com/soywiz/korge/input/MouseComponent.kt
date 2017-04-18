@@ -4,6 +4,7 @@ import com.soywiz.korge.component.Component
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.hasAncestor
 import com.soywiz.korio.async.Signal
+import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extraProperty
 import com.soywiz.korma.geom.Point2d
 
@@ -17,11 +18,7 @@ class MouseComponent(view: View) : Component(view) {
 	val onUp = Signal<MouseComponent>()
 	val onMove = Signal<MouseComponent>()
 
-	enum class HitTestType {
-		BOUNDING, SHAPE
-	}
-
-	var hitTestType = HitTestType.BOUNDING
+	var hitTestType = View.HitTestType.BOUNDING
 
 	val startedPos = Point2d()
 	val lastPos = Point2d()
@@ -39,10 +36,7 @@ class MouseComponent(view: View) : Component(view) {
 		//println("${frame.mouseHitResult}")
 		if (!frame.mouseHitSearch) {
 			frame.mouseHitSearch = true
-			frame.mouseHitResult = when (hitTestType) {
-				HitTestType.BOUNDING -> views.stage.hitTestBounding(views.nativeMouseX, views.nativeMouseY)
-				HitTestType.SHAPE -> views.stage.hitTest(views.nativeMouseX, views.nativeMouseY)
-			}
+			frame.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
 		}
 		hitTest = input.frame.mouseHitResult
 		val over = hitTest?.hasAncestor(view) ?: false
@@ -77,6 +71,8 @@ class MouseComponent(view: View) : Component(view) {
 //    views.root.hitTest(input.mouse)
 //}
 
+
+//var View.mouseEnabled by Extra.Property { true }
 
 val View.mouse get() = this.getOrCreateComponent { MouseComponent(this) }
 

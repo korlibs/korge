@@ -145,12 +145,12 @@ class Stage(views: Views) : Container(views) {
 		out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
 	}
 
-	override fun hitTest(x: Double, y: Double): View? {
-		return super.hitTest(x, y) ?: this
+	override fun hitTestInternal(x: Double, y: Double): View? {
+		return super.hitTestInternal(x, y) ?: this
 	}
 
-	override fun hitTestBounding(x: Double, y: Double): View? {
-		return super.hitTestBounding(x, y) ?: this
+	override fun hitTestBoundingInternal(x: Double, y: Double): View? {
+		return super.hitTestBoundingInternal(x, y) ?: this
 	}
 }
 

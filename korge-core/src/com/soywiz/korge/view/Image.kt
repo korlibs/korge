@@ -22,7 +22,7 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
 		out.setTo(sLeft, sTop,  tex.width, tex.height)
 	}
 
-    override fun hitTest(x: Double, y: Double): View? {
+    override fun hitTestInternal(x: Double, y: Double): View? {
         val sRight = sLeft + tex.width
         val sBottom = sTop + tex.height
 		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) && (hitShape?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) ?: true)) this else null

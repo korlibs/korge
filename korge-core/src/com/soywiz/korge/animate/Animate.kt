@@ -23,7 +23,7 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 		ctx.batch.addQuad(tex, x = dx, y = dy, m = m, filtering = smoothing, col1 = globalCol1)
 	}
 
-	override fun hitTest(x: Double, y: Double): View? {
+	override fun hitTestInternal(x: Double, y: Double): View? {
 		val sLeft = dx.toDouble()
 		val sTop = dy.toDouble()
 		val sRight = sLeft + tex.width
@@ -77,6 +77,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val currentStateLoopTime: Int get() = currentState?.state?.loopStartTime ?: 0
 	val currentStateTotalTime: Int get() = currentState?.state?.totalTime ?: 0
 	val currentStateTotalTimeMinusStart: Int get() = currentStateTotalTime - currentStateStartTime
+	val unsortedChildren = dummyDepths.toList()
 
 	fun currentStateCalcEffectiveTime(time: Int) = currentState?.state?.calcEffectiveTime(time) ?: time
 
@@ -88,7 +89,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	override fun reset() {
 		super.reset()
 		for (view in viewUids) view.reset()
-		for (n in children.indices) children[n].replaceWith(dummyDepths[n])
+		for (n in unsortedChildren.indices) {
+			unsortedChildren[n].replaceWith(dummyDepths[n])
+		}
 	}
 
 	private fun update() {
@@ -100,12 +103,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
 					if ((left != null) && (right != null) && (left.uid == right.uid)) {
 						//println("$currentTime: $index")
-						children[depth].replaceWith(view)
+						unsortedChildren[depth].replaceWith(view)
 						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
 						//view.setComputedTransform(left.transform)
 					} else {
 						//println("$currentTime: $index")
-						children[depth].replaceWith(view)
+						unsortedChildren[depth].replaceWith(view)
 						if (left != null) {
 							view.setComputedTransform(left.transform)
 						}
@@ -119,7 +122,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
 					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 					//println("$currentTime: $index")
-					children[depth].replaceWith(view)
+					unsortedChildren[depth].replaceWith(view)
 					if (left != null) {
 						view.setComputedTransform(left.transform)
 						view.name = left.name
