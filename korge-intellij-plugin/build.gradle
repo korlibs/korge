@@ -1,0 +1,12 @@
+apply from: '../include.gradle'
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+dependencies {
+	compile project(":korge-core")
+	compile project(":korge-build")
+	compile project(":korge-ext-swf")
+}

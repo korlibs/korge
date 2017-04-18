@@ -12,5 +12,6 @@ include(
 	'korge-ext-swf',
 	'korge-sample',
 	'korge-gradle-plugin',
+	'korge-intellij-plugin',
 	'korfl',
 )

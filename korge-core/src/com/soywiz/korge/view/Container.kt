@@ -32,6 +32,7 @@ open class Container(views: Views) : View(views) {
 		view.index = children.size
 		children += view
 		view.parent = this
+		view.invalidate()
 	}
 
 	private val tempMatrix = Matrix2d()

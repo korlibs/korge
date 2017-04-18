@@ -189,10 +189,9 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	val localMatrix: Matrix2d get() {
-		if (!validLocal) {
-			validLocal = true
-			_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
-		}
+		if (validLocal) return _localMatrix
+		validLocal = true
+		_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
 		return _localMatrix
 	}
 
@@ -202,13 +201,12 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		if (parent != null) {
 			_globalMatrix.copyFrom(parent!!.globalMatrix)
 			_globalMatrix.premultiply(localMatrix)
-			_globalMatrixVersion++
 		} else {
 			_globalMatrix.copyFrom(localMatrix)
-			_globalMatrixVersion++
 		}
 		_globalAlpha = if (parent != null) parent!!.globalAlpha * alpha else alpha
 		_globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
+		_globalMatrixVersion++
 	}
 
 	val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
@@ -221,7 +219,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 
 	val globalMatrixInv: Matrix2d get() {
 		_ensureGlobal()
-		if (_globalMatrixVersion != _globalMatrixInvVersion) {
+		if (_globalMatrixInvVersion != _globalMatrixVersion) {
 			_globalMatrixInvVersion = _globalMatrixVersion
 			_globalMatrixInv.setToInverse(_globalMatrix)
 		}
@@ -303,7 +301,8 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		_scaleX = 1.0; _scaleY = 1.0
 		_skewX = 0.0; _skewY = 0.0
 		_rotation = 0.0
-		validLocal = true
+		validLocal = false
+		validGlobal = false
 		invalidate()
 	}
 
@@ -394,5 +393,6 @@ fun View.replaceWith(view: View) {
 	view.index = this.index
 	view.parent = parent
 	parent = null
+	view.invalidate()
 	this.index = -1
 }

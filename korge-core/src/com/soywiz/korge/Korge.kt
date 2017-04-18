@@ -10,7 +10,9 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
+import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korui.CanvasApplication
@@ -39,10 +41,6 @@ object Korge {
 		injector.map(timeProvider)
 		injector.map<Module>(module)
 		module.init(injector)
-
-		val sc = views.sceneContainer()
-		views.stage += sc
-		sc.changeTo(sceneClass)
 
 		var lastTime = timeProvider.currentTimeMillis()
 		//println("lastTime: $lastTime")
@@ -78,12 +76,18 @@ object Korge {
 			views.input.mouseButtons = 1
 			updateMousePos()
 		}
-		container.ag.onResized {
-			views.resized(container.ag.backWidth, container.ag.backHeight)
+		ag.onResized {
+			views.resized(ag.backWidth, ag.backHeight)
 		}
-		container.ag.onResized(Unit)
+		ag.resized()
+
+
+		val sc = views.sceneContainer()
+		views.stage += sc
+		sc.changeTo(sceneClass)
 
 		animationFrameLoop {
+			//ag.resized()
 			container.repaint()
 		}
 
