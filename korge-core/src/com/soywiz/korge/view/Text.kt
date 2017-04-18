@@ -52,9 +52,16 @@ class Text(views: Views) : View(views), IText, IHtml {
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
-			views.fontRepository.getBounds(text, format, tempRect)
-			tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
-			font.drawText(ctx.batch, format.size.toDouble(), text, tempRect.x.toInt(), tempRect.y.toInt(), m, blendMode = blendMode)
+			val anchor = format.align.anchor
+			views.fontRepository.getBounds(text, format, out = tempRect)
+			//println("tempRect=$tempRect, textBounds=$textBounds")
+			//tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
+			//val x = (textBounds.width) * anchor.sx - tempRect.width
+			val x = textBounds.x + (textBounds.width - tempRect.width) * anchor.sx
+			//val x = textBounds.x + (textBounds.width) * anchor.sx
+			val y = textBounds.y + (textBounds.height) * anchor.sy
+			//println(" -> ($x, $y)")
+			font.drawText(ctx.batch, format.size.toDouble(), text, x.toInt(), y.toInt(), m, blendMode = blendMode)
 		}
 	}
 

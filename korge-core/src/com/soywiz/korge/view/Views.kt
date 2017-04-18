@@ -4,6 +4,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
+import com.soywiz.korge.component.Component
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
@@ -31,6 +32,12 @@ class Views(
 ) : AsyncDependency, Extra by Extra.Mixin() {
 	var lastId = 0
 	val renderContext = RenderContext(ag)
+
+	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
+
+	fun registerPropertyTrigger(propName: String, gen: (View, String, String) -> Unit) {
+		propsTriggers[propName] = gen
+	}
 
 	val nativeWidth get() = ag.backWidth
 	val nativeHeight get() = ag.backHeight
@@ -200,3 +207,5 @@ interface ViewsContainer {
 data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Views) -> T) {
 	override fun toString(): String = "KorgeFileLoader(\"$name\")"
 }
+
+//suspend val AsyncInjector.views: Views get() = this.get<Views>()

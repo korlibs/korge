@@ -32,13 +32,8 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) {
 		val font = getBitmapFont(format.face, format.size)
-		val ratio = font.fontSize.toDouble() / format.size.toDouble()
-		var width = 0.0
-		for (c in text) {
-			val glyph = font[c]
-			val xadvance = glyph.xadvance * ratio
-			width += xadvance
-		}
+		val scale = font.fontSize.toDouble() / format.size.toDouble()
+		val width = text.sumByDouble { font[it].xadvance * scale }
 		out.setTo(0.0, 0.0, width, font.fontSize.toDouble())
 	}
 }

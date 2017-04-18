@@ -64,7 +64,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val viewUids = Array<View>(totalUids) {
 		val info = symbol.uidInfo[it]
 		val view = library.create(info.characterId) as View
-		view.props += info.extraProps
+		view.addProps(info.extraProps)
 		view
 	}
 	var running = true

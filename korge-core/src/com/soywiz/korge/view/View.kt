@@ -35,7 +35,24 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	private var _skewY: Double = 0.0
 	private var _rotation: Double = 0.0
 
-	val props = linkedMapOf<String, String>()
+	private val _props = linkedMapOf<String, String>()
+	val props: Map<String, String> = _props
+
+	fun hasProp(key: String) = key in props
+	fun getPropInt(key: String, default: Int = 0) = props[key]?.toIntOrNull() ?: default
+	fun getPropDouble(key: String, default: Double = 0.0) = props[key]?.toDoubleOrNull() ?: default
+
+	fun addProp(key: String, value: String) {
+		_props[key] = value
+		val componentGen = views.propsTriggers[key]
+		if (componentGen != null) {
+			componentGen(this, key, value)
+		}
+	}
+
+	fun addProps(values: Map<String, String>) {
+		for (pair in values) addProp(pair.key, pair.value)
+	}
 
 	var x: Double; set(v) = run { if (_x != v) run { _x = v; invalidateMatrix() } }; get() = _x
 	var y: Double; set(v) = run { if (_y != v) run { _y = v; invalidateMatrix() } }; get() = _y

@@ -402,6 +402,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				is TagStartSound -> {
 					swfCurrentFrame.playSound(it.soundId)
 				}
+				is TagJPEGTables -> {
+					println("Unhandled tag: $it")
+				}
 				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
 					it as IDefinitionTag
