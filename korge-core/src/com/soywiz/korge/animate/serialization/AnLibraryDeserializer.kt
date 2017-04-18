@@ -18,15 +18,15 @@ import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
 
-object AnimateDeserializer {
+object AnLibraryDeserializer {
 	fun read(s: ByteArray, views: Views): AnLibrary = s.openSync().readLibrary(views)
 	fun read(s: SyncStream, views: Views): AnLibrary = s.readLibrary(views)
 
 	private fun SyncStream.readLibrary(views: Views): AnLibrary {
 		//AnLibrary(views)
 		val magic = readStringz(8)
-		if (magic != AnimateFile.MAGIC) invalidOp("Not a ${AnimateFile.MAGIC} file")
-		if (readU_VL() > AnimateFile.VERSION) invalidOp("Just supported ${AnimateFile.MAGIC} version ${AnimateFile.VERSION} or lower")
+		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
+		if (readU_VL() > AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION} or lower")
 		val msPerFrame = readU_VL()
 		val library = AnLibrary(views, 1000.0 / msPerFrame)
 
@@ -55,16 +55,16 @@ object AnimateDeserializer {
 			val symbolName = strings[readU_VL()]
 			val type = readU_VL()
 			val symbol: AnSymbol = when (type) {
-				AnimateFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
-				AnimateFile.SYMBOL_TYPE_SOUND -> {
+				AnLibraryFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
+				AnLibraryFile.SYMBOL_TYPE_SOUND -> {
 					AnSymbolSound(symbolId, symbolName, null)
 				}
-				AnimateFile.SYMBOL_TYPE_TEXT -> {
+				AnLibraryFile.SYMBOL_TYPE_TEXT -> {
 					val initialText = strings[readU_VL()]
 					val bounds = readRect()
 					AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
 				}
-				AnimateFile.SYMBOL_TYPE_SHAPE -> {
+				AnLibraryFile.SYMBOL_TYPE_SHAPE -> {
 					val bitmapId = readU_VL()
 					val atlas = atlases[bitmapId]
 					val textureBounds = readIRect()
@@ -83,19 +83,19 @@ object AnimateDeserializer {
 					}
 					AnSymbolShape(symbolId, symbolName, bounds, textureWithBitmap = TextureWithBitmapSlice(texture.slice(textureBounds.toDouble()), bitmap.slice(textureBounds)), path = path)
 				}
-				AnimateFile.SYMBOL_TYPE_BITMAP -> {
+				AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
 					AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))
 				}
-				AnimateFile.SYMBOL_TYPE_MOVIE_CLIP -> {
+				AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP -> {
 					val totalDepths = readU_VL()
 					val totalFrames = readU_VL()
 					val totalTime = readU_VL()
 					val totalUids = readU_VL()
 					val uidsToCharacterIds = (0 until totalUids).map {
 						val charId = readU_VL()
-						//val extraPropsString = readStringVL()
-						//val extraProps = if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
-						val extraProps = LinkedHashMap<String, String>()
+						val extraPropsString = readStringVL()
+						val extraProps = if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
+						//val extraProps = LinkedHashMap<String, String>()
 						AnSymbolUidDef(charId, extraProps)
 					}.toTypedArray()
 					val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))

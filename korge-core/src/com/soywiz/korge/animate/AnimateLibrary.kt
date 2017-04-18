@@ -1,8 +1,8 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
-import com.soywiz.korge.animate.serialization.AnimateDeserializer
-import com.soywiz.korge.animate.serialization.AnimateFile
+import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
+import com.soywiz.korge.animate.serialization.AnLibraryFile
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -97,7 +97,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 	arrayListOf<(s: SyncStream) -> KorgeFileLoader<AnLibrary>?>(
 		{
 			when {
-				(it.readString(8) == AnimateFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views) }
+				(it.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views) }
 				else -> null
 			}
 		}
@@ -156,4 +156,4 @@ class AnLibrary(val views: Views, val fps: Double) {
 	}
 }
 
-suspend fun VfsFile.readAni(views: Views) = AnimateDeserializer.read(this.read(), views)
+suspend fun VfsFile.readAni(views: Views) = AnLibraryDeserializer.read(this.read(), views)

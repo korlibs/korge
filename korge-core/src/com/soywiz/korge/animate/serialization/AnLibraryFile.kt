@@ -1,6 +1,6 @@
 package com.soywiz.korge.animate.serialization
 
-object AnimateFile {
+object AnLibraryFile {
 	const val MAGIC = "KORGEANI"
 	const val VERSION = 1
 

@@ -10,7 +10,7 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Rectangle
 
-object AnimateSerializer {
+object AnLibrarySerializer {
 	fun gen(library: AnLibrary, compression: Double = 1.0): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression) }
 
 	fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0) = s.writeLibrary(library, compression)
@@ -30,8 +30,8 @@ object AnimateSerializer {
 	}
 
 	private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0) {
-		writeStringz(AnimateFile.MAGIC, 8)
-		writeU_VL(AnimateFile.VERSION)
+		writeStringz(AnLibraryFile.MAGIC, 8)
+		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
 
 		// Allocate Strings
@@ -88,18 +88,18 @@ object AnimateSerializer {
 			writeU_VL(strings[symbol.name])
 			when (symbol) {
 				is AnSymbolEmpty -> {
-					writeU_VL(AnimateFile.SYMBOL_TYPE_EMPTY)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_EMPTY)
 				}
 				is AnSymbolSound -> {
-					writeU_VL(AnimateFile.SYMBOL_TYPE_SOUND)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SOUND)
 				}
 				is AnTextFieldSymbol -> {
-					writeU_VL(AnimateFile.SYMBOL_TYPE_TEXT)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_TEXT)
 					writeU_VL(strings[symbol.initialHtml])
 					writeRect(symbol.bounds)
 				}
 				is AnSymbolShape -> {
-					writeU_VL(AnimateFile.SYMBOL_TYPE_SHAPE)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SHAPE)
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
@@ -115,11 +115,11 @@ object AnimateSerializer {
 					}
 				}
 				is AnSymbolBitmap -> {
-					writeU_VL(AnimateFile.SYMBOL_TYPE_BITMAP)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_BITMAP)
 				}
 				is AnSymbolMovieClip -> {
 					// val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int
-					writeU_VL(AnimateFile.SYMBOL_TYPE_MOVIE_CLIP)
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP)
 
 					val limits = symbol.limits
 					writeU_VL(limits.totalDepths)
@@ -130,7 +130,7 @@ object AnimateSerializer {
 					writeU_VL(limits.totalUids)
 					for (uidInfo in symbol.uidInfo) {
 						writeU_VL(uidInfo.characterId)
-						//writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.encode(uidInfo.extraProps) else "")
+						writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.encode(uidInfo.extraProps) else "")
 					}
 
 					val symbolStates = symbol.states.map { it.value.state }.toList().distinct()
