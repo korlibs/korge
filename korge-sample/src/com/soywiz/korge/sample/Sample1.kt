@@ -8,7 +8,10 @@ import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.ext.spriter.SpriterLibrary
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -42,8 +45,20 @@ object Sample1Module : Module() {
 	//override var mainScene = Sample2Scene::class.java
 
 	suspend override fun init(injector: AsyncInjector) {
-		val resourcesRoot: ResourcesRoot = injector.get()
-		resourcesRoot.mount("/", ResourcesVfs)
+		injector.get<ResourcesRoot>().mount("/", ResourcesVfs)
+		injector.get<Views>().registerPropertyTrigger("gravity") { view, key, value ->
+			val gravity = value.toDouble()
+			go {
+				var speed = 0.0
+				val stepMs = 16
+				while (true) {
+					speed += (gravity / 1000.0) * stepMs
+					view.y += speed
+					view.timers.waitMilliseconds(stepMs)
+				}
+			}
+			//println(child)
+		}
 	}
 }
 
@@ -262,22 +277,6 @@ class Sample1Scene(
 			}
 		}
 
-		sceneView.container {
-			this += propsLibrary.createMainTimeLine()
-		}
-
-		for (child in sceneView.findDescendantsWithProp("gravity")) {
-			val gravity = child.props["gravity"]!!.toDouble()
-			go {
-				var speed = 0.0
-				val stepMs = 16
-				while (true) {
-					speed += (gravity / 1000.0) * stepMs
-					child.y += speed
-					child.timers.waitMilliseconds(stepMs)
-				}
-			}
-			//println(child)
-		}
+		sceneView += propsLibrary.createMainTimeLine()
 	}
 }
