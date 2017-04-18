@@ -4,7 +4,6 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
-import com.soywiz.korge.component.Component
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
@@ -38,6 +37,8 @@ class Views(
 	fun registerPropertyTrigger(propName: String, gen: (View, String, String) -> Unit) {
 		propsTriggers[propName] = gen
 	}
+
+	var clampElapsedTimeTo = 100
 
 	val nativeWidth get() = ag.backWidth
 	val nativeHeight get() = ag.backHeight

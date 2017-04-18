@@ -89,7 +89,6 @@ class MySwfFrame(val index: Int, maxDepths: Int) {
 	}
 
 	val isFirst: Boolean get() = index == 0
-	val hasName: Boolean get() = name != null
 	val hasStop: Boolean get() = Action.Stop in actions
 	val hasGoto: Boolean get() = actions.any { it is Action.Goto }
 
@@ -133,14 +132,17 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
 			val swfTimeline = symbol.swfTimeline
 			var currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
-			var justAfterStop = true
+			var justAfterStopOrStart = true
 			var stateStartFrame = 0
 			//println(swfTimeline.frames)
+			//println("## Symbol: ${symbol.name} : $symbol : ${swfTimeline.frames.size})")
 			for (frame in swfTimeline.frames) {
+				val frameName = frame.name
 				//println("Frame:(${frame.index})")
 				// Create State
-				if (justAfterStop) {
-					justAfterStop = false
+				if (justAfterStopOrStart) {
+					//println(" Just after stop: ")
+					justAfterStopOrStart = false
 					stateStartFrame = frame.index
 					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
 					symbol.states["frame${frame.index}"] = AnSymbolMovieClipStateWithStartTime(currentState, 0)
@@ -153,7 +155,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 				// Register State
 				if (frame.isFirst) symbol.states["default"] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
-				if (frame.hasName) symbol.states[frame.name!!] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+				if (frameName != null) {
+					//if (frameInState == 0) currentState.name = frameName
+					//println("State: $frameName, $currentState, $currentTime")
+					symbol.states[frameName] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+				}
 
 				// Compute frame
 				for (depth in frame.depths) {
@@ -173,7 +179,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 				if (isLast || frame.hasStop || frame.hasGoto) {
 					//println(" - $isLast,${frame.hasStop},${frame.hasGoto}")
-					justAfterStop = true
+					justAfterStopOrStart = true
 
 					if (frame.hasStop) {
 						currentState.loopStartTime = currentTime
@@ -183,8 +189,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 						currentState.loopStartTime = getFrameTime(goto.frame0 - stateStartFrame)
 					}
-					val stateEndFrame = frameInState
-					currentState.totalTime = getFrameTime(stateEndFrame - stateStartFrame)
+					currentState.totalTime = getFrameTime(frameInState)
+					//println(" $currentState : totalTime=${currentState.totalTime}, loopStartTime=${currentState.loopStartTime}")
 				}
 			}
 		}
@@ -419,7 +425,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 							if (it is TagDefineBitsJPEG3) {
 								val fmaskinfo = it.bitmapAlphaData.cloneToNewFlashByteArray()
-								fmaskinfo.uncompress("zlib")
+								fmaskinfo.uncompressInWorker("zlib")
 								val maskinfo = fmaskinfo.cloneToNewByteArray()
 								//val bmpAlpha = nativeImageFormatProvider.decode(maskinfo)
 								//showImageAndWait(bmpAlpha)
@@ -437,7 +443,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 						is TagDefineBitsLossless -> {
 							val isRgba = it.hasAlpha
 							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
-							funcompressedData.uncompress("zlib")
+							funcompressedData.uncompressInWorker("zlib")
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
 							when (it.bitmapFormat) {
 								BitmapFormat.BIT_8 -> {

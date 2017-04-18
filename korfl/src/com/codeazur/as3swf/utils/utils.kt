@@ -2,6 +2,8 @@ package com.codeazur.as3swf.utils
 
 import com.codeazur.as3swf.data.SWFMatrix
 import com.soywiz.korfl.amf.AMF3
+import com.soywiz.korio.async.executeInWorker
+import com.soywiz.korio.async.executeInWorkerSync
 import com.soywiz.korio.stream.*
 import java.io.ByteArrayOutputStream
 import java.lang.Float
@@ -167,6 +169,9 @@ open class FlashByteArray() {
 
 	fun uncompress(method: String = "zlib") = replaceBytes(_uncompress(cloneToNewByteArray(), method))
 	fun compress(method: String = "zlib"): Unit = replaceBytes(_compress(cloneToNewByteArray(), method))
+
+	suspend fun uncompressInWorker(method: String = "zlib") = replaceBytes(executeInWorkerSync { _uncompress(cloneToNewByteArray(), method) })
+	suspend fun compressInWorker(method: String = "zlib"): Unit = replaceBytes(executeInWorkerSync { _compress(cloneToNewByteArray(), method) })
 
 	fun readBytes(bytes: FlashByteArray) = readBytes(bytes, bytes.position, bytesAvailable)
 

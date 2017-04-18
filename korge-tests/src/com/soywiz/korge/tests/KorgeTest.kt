@@ -45,6 +45,7 @@ open class KorgeTest {
 
 	suspend fun Scene.updateTime(dtMs: Int = 20) {
 		testTime += dtMs
+		views.clampElapsedTimeTo = Int.MAX_VALUE
 		//println("updateTime: $dtMs :: $testTime")
 		//println("updateTime: $dtMs")
 		ag.onRender(ag)

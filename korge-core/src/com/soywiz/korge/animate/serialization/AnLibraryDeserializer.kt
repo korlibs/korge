@@ -102,7 +102,7 @@ object AnLibraryDeserializer {
 
 					val symbolStates = (0 until readU_VL()).map {
 						val ss = AnSymbolMovieClipState(totalDepths)
-						ss.name = strings[readU_VL()] ?: ""
+						//ss.name = strings[readU_VL()] ?: ""
 						ss.totalTime = readU_VL()
 						ss.loopStartTime = readU_VL()
 						for (depth in 0 until totalDepths) {

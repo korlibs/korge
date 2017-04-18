@@ -66,7 +66,7 @@ class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: 
 class AnSymbolUidDef(val characterId: Int, val extraProps: MutableMap<String, String> = LinkedHashMap())
 
 class AnSymbolMovieClipState(totalDepths: Int) {
-	var name: String = "default"
+	//var name: String = "default"
 	var totalTime: Int = 0
 	val timelines: Array<AnDepthTimeline> = Array<AnDepthTimeline>(totalDepths) { AnDepthTimeline(it) }
 	val actions = Timed<AnActions>()

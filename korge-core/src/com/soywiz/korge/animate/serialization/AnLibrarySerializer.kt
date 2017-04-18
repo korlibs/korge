@@ -42,7 +42,7 @@ object AnLibrarySerializer {
 				is AnSymbolMovieClip -> {
 					for (ss in symbol.states) {
 						strings.add(ss.key)
-						strings.add(ss.value.state.name)
+						//strings.add(ss.value.state.name)
 						for (timeline in ss.value.state.timelines) {
 							for (entry in timeline.entries) {
 								strings.add(entry.second.name)
@@ -139,7 +139,7 @@ object AnLibrarySerializer {
 					// states
 					writeU_VL(symbolStates.size)
 					for (ss in symbolStates) {
-						writeU_VL(strings[ss.name])
+						//writeU_VL(strings[ss.name])
 						writeU_VL(ss.totalTime)
 						writeU_VL(ss.loopStartTime)
 						for (timeline in ss.timelines) {

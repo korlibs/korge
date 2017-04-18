@@ -77,7 +77,7 @@ open class SWF : SWFTimelineContainer(), Extra by Extra.Mixin() {
 		parseTags(data, version)
 	}
 
-	protected fun parseHeader() {
+	suspend protected fun parseHeader() {
 		signature = ""
 		compressed = false
 		compressionMethod = COMPRESSION_METHOD_ZLIB
@@ -455,14 +455,14 @@ class SWFData : BitArray() {
 	}
 
 
-	fun swfUncompress(compressionMethod: String, uncompressedLength: Int = 0) {
+	suspend fun swfUncompress(compressionMethod: String, uncompressedLength: Int = 0) {
 		val pos = position
 		val ba: FlashByteArray = FlashByteArray()
 
 		if (compressionMethod == SWF.COMPRESSION_METHOD_ZLIB) {
 			readBytes(ba)
 			ba.position = 0
-			ba.uncompress()
+			ba.uncompressInWorker()
 		} else if (compressionMethod == SWF.COMPRESSION_METHOD_LZMA) {
 
 			// LZMA compressed SWF:
@@ -491,7 +491,7 @@ class SWFData : BitArray() {
 
 			// Uncompress
 			ba.position = 0
-			ba.uncompress(compressionMethod)
+			ba.uncompressInWorker(compressionMethod)
 		} else {
 			throw Error("Unknown compression method: " + compressionMethod)
 		}

@@ -77,7 +77,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val currentStateLoopTime: Int get() = currentState?.state?.loopStartTime ?: 0
 	val currentStateTotalTime: Int get() = currentState?.state?.totalTime ?: 0
 	val currentStateTotalTimeMinusStart: Int get() = currentStateTotalTime - currentStateStartTime
-	val unsortedChildren = dummyDepths.toList()
+	val unsortedChildren = ArrayList(dummyDepths.toList())
 
 	fun currentStateCalcEffectiveTime(time: Int) = currentState?.state?.calcEffectiveTime(time) ?: time
 
@@ -86,11 +86,16 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		updateInternal(0)
 	}
 
+	private fun replaceDepth(depth: Int, view: View) {
+		unsortedChildren[depth].replaceWith(view)
+		unsortedChildren[depth] = view
+	}
+
 	override fun reset() {
 		super.reset()
 		for (view in viewUids) view.reset()
 		for (n in unsortedChildren.indices) {
-			unsortedChildren[n].replaceWith(dummyDepths[n])
+			replaceDepth(n, dummyDepths[n])
 		}
 	}
 
@@ -103,12 +108,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
 					if ((left != null) && (right != null) && (left.uid == right.uid)) {
 						//println("$currentTime: $index")
-						unsortedChildren[depth].replaceWith(view)
+						replaceDepth(depth, view)
 						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
 						//view.setComputedTransform(left.transform)
 					} else {
 						//println("$currentTime: $index")
-						unsortedChildren[depth].replaceWith(view)
+						replaceDepth(depth, view)
 						if (left != null) {
 							view.setComputedTransform(left.transform)
 						}
@@ -122,7 +127,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
 					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 					//println("$currentTime: $index")
-					unsortedChildren[depth].replaceWith(view)
+					replaceDepth(depth, view)
 					if (left != null) {
 						view.setComputedTransform(left.transform)
 						view.name = left.name
@@ -140,6 +145,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		currentState = symbol.states[name]
 		currentTime = currentStateStartTime
 		running = true
+		update()
 	}
 
 	/**

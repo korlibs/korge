@@ -1,19 +1,15 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.korge.animate.AnLibrary
+import com.soywiz.korge.animate.AnMovieClip
 import com.soywiz.korge.animate.AnSymbolMovieClip
 import com.soywiz.korge.animate.AnSymbolShape
 import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
 import com.soywiz.korge.animate.serialization.AnLibrarySerializer
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.ViewsLog
-import com.soywiz.korge.view.dumpToString
-import com.soywiz.korge.view.findDescendantsWithProp
+import com.soywiz.korge.view.*
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korio.vfs.writeToFile
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -84,7 +80,7 @@ class SwfTest {
 		Assert.assertEquals("[frame0, default, progressbar]", mc.states.keys.toList().toString())
 		val progressbarState = mc.states["progressbar"]!!
 		Assert.assertEquals(0, progressbarState.startTime)
-		Assert.assertEquals("default", progressbarState.state.name)
+		//Assert.assertEquals("default", progressbarState.state.name)
 		Assert.assertEquals(41000, progressbarState.state.loopStartTime)
 		Assert.assertEquals(41000, progressbarState.state.totalTime)
 
@@ -113,5 +109,25 @@ class SwfTest {
 		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity").count())
 		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity", "9.8").count())
 		Assert.assertEquals(0, views.stage.findDescendantsWithProp("gravity", "9.0").count())
+	}
+
+	@Test
+	fun shapes() = syncTest {
+		val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		//val lib = ResourcesVfs["shapes.swf"].readSWF(views, debug = false)
+		val mt = lib.createMainTimeLine()
+		views.stage += mt
+		val shape = mt["shape"]
+		Assert.assertNotNull(shape)
+
+		Assert.assertNotNull(shape["circle"])
+		Assert.assertNull(shape["square"])
+
+		(shape as AnMovieClip).play("square")
+		//(shape as AnMovieClip).seekStill("square")
+		//shape.update(10)
+
+		Assert.assertNull(shape["circle"])
+		Assert.assertNotNull(shape["square"])
 	}
 }

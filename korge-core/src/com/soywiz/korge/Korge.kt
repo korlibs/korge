@@ -10,9 +10,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korui.CanvasApplication
@@ -42,21 +40,6 @@ object Korge {
 		injector.map<Module>(module)
 		module.init(injector)
 
-		var lastTime = timeProvider.currentTimeMillis()
-		//println("lastTime: $lastTime")
-		ag.onRender {
-			//println("Render")
-			ag.clear(module.bgcolor)
-			val currentTime = timeProvider.currentTimeMillis()
-			//println("currentTime: $currentTime")
-			val delta = (currentTime - lastTime).toInt()
-			//println("delta: $delta")
-			//println("Render($lastTime -> $currentTime): $delta")
-			lastTime = currentTime
-			views.update(delta)
-			views.render()
-		}
-
 		fun updateMousePos() {
 			val mouseX = container.mouseX.toDouble()
 			val mouseY = container.mouseY.toDouble()
@@ -85,6 +68,24 @@ object Korge {
 		val sc = views.sceneContainer()
 		views.stage += sc
 		sc.changeTo(sceneClass)
+
+		var lastTime = timeProvider.currentTimeMillis()
+		//println("lastTime: $lastTime")
+		ag.onRender {
+			//println("Render")
+			ag.clear(module.bgcolor)
+			val currentTime = timeProvider.currentTimeMillis()
+			//println("currentTime: $currentTime")
+			val delta = (currentTime - lastTime).toInt()
+			val adelta = Math.min(delta, views.clampElapsedTimeTo)
+			//println("delta: $delta")
+			//println("Render($lastTime -> $currentTime): $delta")
+			lastTime = currentTime
+			views.update(adelta)
+			views.render()
+			//println("render:$delta,$adelta")
+		}
+
 
 		animationFrameLoop {
 			//ag.resized()
