@@ -5,25 +5,30 @@ import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
 import com.soywiz.korge.input.Input
+import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.font.BitmapFontGenerator
+import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.util.Extra
+import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISize
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.ScaleMode
+import java.util.*
 
 @Singleton
 class Views(
 	val ag: AG,
 	val injector: AsyncInjector,
 	val input: Input
-) : Extra by Extra.Mixin() {
+) : AsyncDependency, Extra by Extra.Mixin() {
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 
@@ -39,8 +44,8 @@ class Views(
 	var actualVirtualWidth = 640; private set
 	var actualVirtualHeight = 480; private set
 
-	val mouseX: Double get() = stage.localMouseX
-	val mouseY: Double get() = stage.localMouseY
+	val nativeMouseX: Double get() = input.mouse.x
+	val nativeMouseY: Double get() = input.mouse.y
 
 	//var actualVirtualWidth = ag.backWidth
 	//var actualVirtualHeight = ag.backHeight
@@ -49,6 +54,12 @@ class Views(
 	//var scaleMode: ScaleMode = ScaleMode.NO_SCALE
 	var scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	var scaleAnchor = Anchor.MIDDLE_CENTER
+
+	suspend override fun init() {
+		for (plugin in ServiceLoader.load(KorgePlugin::class.java)) {
+			plugin.register(this)
+		}
+	}
 
 	private val resizedEvent = View.StageResizedEvent(0, 0)
 
@@ -93,6 +104,10 @@ class Views(
 	private val actualSize = ISize()
 	private val targetSize = ISize()
 
+	fun mouseUpdated() {
+		//println("localMouse: (${stage.localMouseX}, ${stage.localMouseY}), inputMouse: (${input.mouse.x}, ${input.mouse.y})")
+	}
+
 	fun resized(width: Int, height: Int) {
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
 		val actualWidth = width
@@ -126,14 +141,29 @@ class Views(
 }
 
 class Stage(views: Views) : Container(views) {
+	override fun getLocalBounds(out: Rectangle) {
+		out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
+	}
+
+	override fun hitTest(x: Double, y: Double): View? {
+		return super.hitTest(x, y) ?: this
+	}
+
+	override fun hitTestBounding(x: Double, y: Double): View? {
+		return super.hitTestBounding(x, y) ?: this
+	}
 }
 
 class ViewsLog(
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: LogAG = LogAG(),
 	val input: Input = Input()
-) {
+) : AsyncDependency {
 	val views = Views(ag, injector, input)
+
+	suspend override fun init() {
+		views.init()
+	}
 }
 
 /*
@@ -165,4 +195,8 @@ fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture {
 
 interface ViewsContainer {
 	val views: Views
+}
+
+data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Views) -> T) {
+	override fun toString(): String = "KorgeFileLoader(\"$name\")"
 }

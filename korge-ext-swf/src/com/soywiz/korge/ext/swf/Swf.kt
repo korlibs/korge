@@ -41,22 +41,22 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import kotlin.collections.set
 
-@AsyncFactoryClass(SwfLibraryFactory::class)
-class SwfLibrary(val an: AnLibrary)
-
-class SwfLibraryFactory(
-	val path: Path,
-	val resourcesRoot: ResourcesRoot,
-	val views: Views
-) : AsyncFactory<SwfLibrary> {
-	suspend override fun create(): SwfLibrary = SwfLibrary(resourcesRoot[path].readSWF(views))
-	//suspend override fun create(): SwfLibrary {
-	//	val lib1 = resourcesRoot[path].readSWF(views)
-	//	val c1 = AnimateSerializer.gen(lib1, compression = 0.0)
-	//	val lib2 = AnimateDeserializer.read(c1, views)
-	//	return SwfLibrary(lib2)
-	//}
-}
+//@AsyncFactoryClass(SwfLibraryFactory::class)
+//class SwfLibrary(val an: AnLibrary)
+//
+//class SwfLibraryFactory(
+//	val path: Path,
+//	val resourcesRoot: ResourcesRoot,
+//	val views: Views
+//) : AsyncFactory<SwfLibrary> {
+//	suspend override fun create(): SwfLibrary = SwfLibrary(resourcesRoot[path].readSWF(views))
+//	//suspend override fun create(): SwfLibrary {
+//	//	val lib1 = resourcesRoot[path].readSWF(views)
+//	//	val c1 = AnimateSerializer.gen(lib1, compression = 0.0)
+//	//	val lib2 = AnimateDeserializer.read(c1, views)
+//	//	return SwfLibrary(lib2)
+//	//}
+//}
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1

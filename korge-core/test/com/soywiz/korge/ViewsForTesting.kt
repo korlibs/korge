@@ -1,6 +1,8 @@
 package com.soywiz.korge
 
 import com.soywiz.korge.view.ViewsLog
+import com.soywiz.korio.async.syncTest
+import org.junit.Before
 
 open class ViewsForTesting {
 	val viewsLog = ViewsLog()
@@ -8,4 +10,10 @@ open class ViewsForTesting {
 	val ag = viewsLog.ag
 	val input = viewsLog.input
 	val views = viewsLog.views
+
+	@Before
+	fun initViews() = syncTest {
+		viewsLog.init()
+	}
+
 }

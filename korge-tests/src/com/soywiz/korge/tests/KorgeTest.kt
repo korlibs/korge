@@ -16,6 +16,7 @@ import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korma.geom.Rectangle
+import org.junit.Before
 
 @Suppress("unused")
 open class KorgeTest {
@@ -25,6 +26,11 @@ open class KorgeTest {
 	val views = Views(ag, injector, input)
 	var testTime = 0L
 	val canvas = DummyAGContainer(ag)
+
+	@Before
+	fun init() = syncTest {
+		views.init()
+	}
 
 	@Suppress("UNCHECKED_CAST")
 	fun <T : Scene> testScene(module: Module, sceneClass: Class<T>, callback: suspend T.() -> Unit) = syncTest {

@@ -2,15 +2,21 @@ package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
 import com.soywiz.korge.animate.serialization.AnimateDeserializer
+import com.soywiz.korge.animate.serialization.AnimateFile
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.KorgeFileLoader
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readString
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
@@ -87,6 +93,17 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
 
+val Views.animateLibraryLoaders by Extra.Property {
+	arrayListOf<(s: SyncStream) -> KorgeFileLoader<AnLibrary>?>(
+		{
+			when {
+				(it.readString(8) == AnimateFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views) }
+				else -> null
+			}
+		}
+	)
+}
+
 @AsyncFactoryClass(AnLibrary.Factory::class)
 class AnLibrary(val views: Views, val fps: Double) {
 	val msPerFrameDouble: Double = (1000 / fps)
@@ -122,9 +139,20 @@ class AnLibrary(val views: Views, val fps: Double) {
 	class Factory(
 		val path: Path,
 		val views: Views,
+		val injector: AsyncInjector,
 		val resourcesRoot: ResourcesRoot
 	) : AsyncFactory<AnLibrary> {
-		suspend override fun create(): AnLibrary = resourcesRoot[path].withExtension("ani").readAni(views)
+		suspend override fun create(): AnLibrary {
+			val file = resourcesRoot[path]
+			val head = file.readRangeBytes(0 until 0x40)
+
+			for (loader in views.animateLibraryLoaders) {
+				val aloader = loader(head.openSync()) ?: continue
+				return aloader.loader(file, views)
+			}
+
+			throw IllegalArgumentException("Don't know how to load an AnLibrary for file $file using loaders: ${views.animateLibraryLoaders}")
+		}
 	}
 }
 

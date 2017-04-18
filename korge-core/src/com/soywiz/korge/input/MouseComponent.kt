@@ -40,8 +40,8 @@ class MouseComponent(view: View) : Component(view) {
 		if (!frame.mouseHitSearch) {
 			frame.mouseHitSearch = true
 			frame.mouseHitResult = when (hitTestType) {
-				HitTestType.BOUNDING -> views.stage.hitTestBounding(views.mouseX, views.mouseY)
-				HitTestType.SHAPE -> views.stage.hitTest(views.mouseX, views.mouseY)
+				HitTestType.BOUNDING -> views.stage.hitTestBounding(views.nativeMouseX, views.nativeMouseY)
+				HitTestType.SHAPE -> views.stage.hitTest(views.nativeMouseX, views.nativeMouseY)
 			}
 		}
 		hitTest = input.frame.mouseHitResult

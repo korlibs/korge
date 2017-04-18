@@ -1,20 +1,19 @@
 package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
+import com.soywiz.korge.animate.AnLibrary
 import com.soywiz.korge.animate.AnTextField
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.ext.spriter.SpriterLibrary
-import com.soywiz.korge.ext.swf.SwfLibrary
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.time.timers
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.Easings
@@ -51,8 +50,8 @@ object Sample1Module : Module() {
 class MouseSampleController(view: View) : Component(view) {
 	override fun update(dtMs: Int) {
 		//view.globalToLocal(views.input.mouse, temp)
-		view.x = views.mouseX
-		view.y = views.mouseY
+		view.x = view.parent?.localMouseX ?: 0.0
+		view.y = view.parent?.localMouseY ?: 0.0
 		view.rotationDegrees = (view.rotationDegrees + 1) % 360
 	}
 }
@@ -60,12 +59,12 @@ class MouseSampleController(view: View) : Component(view) {
 fun View.mouseSampleController() = this.apply { MouseSampleController(this).attach() }
 
 class Sample2Scene(
-	@Path("test4.swf") val test4Library: SwfLibrary
+	@Path("test4.swf") val test4Library: AnLibrary
 ) : Scene() {
 	suspend override fun init() {
 		super.init()
 
-		this.sceneView += test4Library.an.createMainTimeLine()
+		this.sceneView += test4Library.createMainTimeLine()
 	}
 }
 
@@ -86,14 +85,14 @@ class JellyButton(val view: View) {
 
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
-	@Path("simple.swf") val swfLibrary: SwfLibrary,
-	@Path("test1.swf") val test1Library: SwfLibrary,
-	@Path("test4.swf") val test4Library: SwfLibrary,
-	@Path("as3test.swf") val as3testLibrary: SwfLibrary,
-	@Path("soundtest.swf") val soundtestLibrary: SwfLibrary,
-	@Path("progressbar.swf") val progressbarLibrary: SwfLibrary,
-	@Path("buttons.swf") val buttonsLibrary: SwfLibrary,
-	@Path("props.swf") val propsLibrary: SwfLibrary,
+	@Path("simple.swf") val swfLibrary: AnLibrary,
+	@Path("test1.swf") val test1Library: AnLibrary,
+	@Path("test4.swf") val test4Library: AnLibrary,
+	@Path("as3test.swf") val as3testLibrary: AnLibrary,
+	@Path("soundtest.swf") val soundtestLibrary: AnLibrary,
+	@Path("progressbar.swf") val progressbarLibrary: AnLibrary,
+	@Path("buttons.swf") val buttonsLibrary: AnLibrary,
+	@Path("props.swf") val propsLibrary: AnLibrary,
 	@Path("tiles.png") val tilesetTex: Texture,
 	@Path("font/font.fnt") val font: BitmapFont,
 	@Path("spriter-sample1/demo.scml") val demoSpriterLibrary: SpriterLibrary,
@@ -119,7 +118,7 @@ class Sample1Scene(
 		}.mouseSampleController()
 
 		sceneView.container {
-			this += swfLibrary.an.createMainTimeLine()
+			this += swfLibrary.createMainTimeLine()
 		}
 
 
@@ -141,7 +140,7 @@ class Sample1Scene(
 
 
 		sceneView.container {
-			val mc = test1Library.an.createMainTimeLine().apply {
+			val mc = test1Library.createMainTimeLine().apply {
 				//speed = 0.1
 			}
 			this += mc
@@ -150,7 +149,7 @@ class Sample1Scene(
 
 		sceneView.container {
 			//JekllyButton()
-			val mc = test4Library.an.createMainTimeLine().apply {
+			val mc = test4Library.createMainTimeLine().apply {
 				x = 320.0
 				y = 320.0
 				//speed = 0.1
@@ -160,7 +159,7 @@ class Sample1Scene(
 		}
 
 		sceneView.container {
-			val mc = as3testLibrary.an.createMainTimeLine().apply {
+			val mc = as3testLibrary.createMainTimeLine().apply {
 				//x = 320.0
 				//y = 320.0
 				//speed = 0.1
@@ -170,7 +169,7 @@ class Sample1Scene(
 		}
 
 		sceneView.container {
-			val mc = soundtestLibrary.an.createMainTimeLine().apply {
+			val mc = soundtestLibrary.createMainTimeLine().apply {
 				//x = 320.0
 				//y = 320.0
 				//speed = 0.1
@@ -179,13 +178,13 @@ class Sample1Scene(
 			//mc.addUpdatable { println(mc.dumpToString()) }
 		}
 
-		sceneView += progressbarLibrary.an.createMainTimeLine().apply {
+		sceneView += progressbarLibrary.createMainTimeLine().apply {
 			this.dockedTo(Anchor.TOP_LEFT)
 			go {
 				percent = (this["percent"] as AnTextField?)!!
 				percent.onClick {
 					percent.alpha = 0.5
-					println(this["percent"]!!.alpha)
+					println(percent.alpha)
 				}
 				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
 					this.seekStill("progressbar", ratio)
@@ -248,7 +247,7 @@ class Sample1Scene(
 		sceneView += player
 
 		sceneView.container {
-			val mc = buttonsLibrary.an.createMainTimeLine()
+			val mc = buttonsLibrary.createMainTimeLine()
 			mc.scale = 0.3
 			mc.setXY(400, 300)
 			//this += ShaderView(views).apply { this += mc }
@@ -264,7 +263,7 @@ class Sample1Scene(
 		}
 
 		sceneView.container {
-			this += propsLibrary.an.createMainTimeLine()
+			this += propsLibrary.createMainTimeLine()
 		}
 
 		for (child in sceneView.findDescendantsWithProp("gravity")) {

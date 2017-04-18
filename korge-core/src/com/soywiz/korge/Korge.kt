@@ -60,7 +60,11 @@ object Korge {
 		}
 
 		fun updateMousePos() {
-			views.input.mouse.setTo(container.mouseX.toDouble(), container.mouseY.toDouble())
+			val mouseX = container.mouseX.toDouble()
+			val mouseY = container.mouseY.toDouble()
+			//println("updateMousePos: $mouseX, $mouseY")
+			views.input.mouse.setTo(mouseX, mouseY)
+			views.mouseUpdated()
 		}
 
 		container.onMouseOver {

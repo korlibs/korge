@@ -12,11 +12,17 @@ import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.writeToFile
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
 class SwfTest {
 	val viewsLog = ViewsLog()
 	val views = viewsLog.views
+
+	@Before
+	fun init() = syncTest {
+		viewsLog.init()
+	}
 
 	@Test
 	fun name3() = syncTest {

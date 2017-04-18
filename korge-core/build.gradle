@@ -3,6 +3,7 @@ apply from: "../include.gradle"
 apply plugin: 'kotlin'
 
 dependencies {
+	compile "com.soywiz:korio-core:$korVersion"
 	compile "com.soywiz:korau-core:$korVersion"
     testCompile "com.soywiz:korio:$korVersion"
 }

@@ -125,7 +125,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	}
 
 	fun removeComponents(c: Class<out Component>) {
-		components?.removeIf { it.javaClass.isSubtypeOf(c) }
+		components?.removeAll { it.javaClass.isSubtypeOf(c) }
 	}
 
 	fun addComponent(c: Component) {
