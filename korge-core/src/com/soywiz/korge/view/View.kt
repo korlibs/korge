@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.EventLoop
@@ -15,7 +16,7 @@ import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
-open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin() {
+open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	var index: Int = 0
 	var speed: Double = 1.0
 	var parent: Container? = null
@@ -323,15 +324,12 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	}
 
 	fun removeFromParent() {
-		if (parent != null) {
-			val p = parent!!
-			for (i in index until p.children.size) {
-				p.children[i].index--
-			}
-			p.children.removeAt(index)
-			parent = null
-			index = -1
-		}
+		if (parent == null) return
+		val p = parent!!
+		for (i in index + 1 until p.children.size) p.children[i].index--
+		p.children.removeAt(index)
+		parent = null
+		index = -1
 	}
 
 	fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
@@ -371,19 +369,6 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	open fun getLocalBounds(out: Rectangle = Rectangle()) {
 		out.setTo(0, 0, 0, 0)
-	}
-
-
-	interface Event
-	data class StageResizedEvent(var width: Int, var height: Int) : Event {
-		fun setSize(width: Int, height: Int) = this.apply {
-			this.width = width
-			this.height = height
-		}
-	}
-
-	open fun handleEvent(e: Event) {
-		if (componentsIt != null) for (c in componentsIt!!) c.handleEvent(e)
 	}
 }
 

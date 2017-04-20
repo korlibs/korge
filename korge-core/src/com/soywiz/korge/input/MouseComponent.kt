@@ -1,8 +1,8 @@
 package com.soywiz.korge.input
 
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.hasAncestor
+import com.soywiz.korge.event.addEventListener
+import com.soywiz.korge.view.*
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extraProperty
@@ -32,6 +32,25 @@ class MouseComponent(view: View) : Component(view) {
 	var Input.Frame.mouseHitSearch by extraProperty("mouseHitSearch", false)
 	var Input.Frame.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
 
+	var downPos = Point2d()
+	var upPos = Point2d()
+	var clickedCount = 0
+
+	init {
+		detatchCancellables += view.addEventListener<MouseUpEvent> { e ->
+			upPos.copyFrom(input.mouse)
+			if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
+				clickedCount++
+			}
+		}
+		detatchCancellables += view.addEventListener<MouseDownEvent> { e ->
+			downPos.copyFrom(input.mouse)
+		}
+		detatchCancellables += view.addEventListener<MouseMovedEvent> { e ->
+			//println(e)
+		}
+	}
+
 	override fun update(dtMs: Int) {
 		//println("${frame.mouseHitResult}")
 		if (!frame.mouseHitSearch) {
@@ -58,12 +77,16 @@ class MouseComponent(view: View) : Component(view) {
 		}
 		if (over && pressingChanged && !pressing) {
 			onUp(this)
-			if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
-		};
+			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
+		}
+		if (over && clickedCount > 0) {
+			onClick(this)
+		}
 
 		lastOver = over
 		lastPressing = pressing
 		lastPos.copyFrom(currentPos)
+		clickedCount = 0
 	}
 }
 

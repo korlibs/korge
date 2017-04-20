@@ -38,20 +38,15 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	override fun updateInternal(dtMs: Int) = Unit
 }
 
-class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : View(library.views), AnElement, IText, IHtml {
+class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(library.views), AnElement, IText, IHtml {
 	private val textField = views.text("", 16.0).apply {
 		textBounds.copyFrom(symbol.bounds)
 		html = symbol.initialHtml
 		relayout()
 	}
 
-	override fun render(ctx: RenderContext, m: Matrix2d) {
-		textField.color = this.globalColor
-		textField.render(ctx, m)
-	}
-
-	override fun getLocalBounds(out: Rectangle) {
-		textField.getLocalBounds(out)
+	init {
+		this += textField
 	}
 
 	override var text: String get() = textField.text; set(value) = run { textField.text = value }

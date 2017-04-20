@@ -54,4 +54,20 @@ class ViewsTest : ViewsForTesting() {
 		views.stage += image
 		Assert.assertEquals(Rectangle(100, 100, 10, 10), image.getGlobalBounds())
 	}
+
+	@Test
+	fun removeFromParent() = viewsTest {
+		val s1 = views.container().apply { name = "s1" }
+		val s2 = views.container().apply { name = "s2" }
+		val s3 = views.container().apply { name = "s3" }
+		views.stage += s1
+		s1 += s2
+		s1 += s3
+		Assert.assertNotNull(s1["s2"])
+		Assert.assertNotNull(s1["s3"])
+
+		s1 -= s3
+		Assert.assertNotNull(s1["s2"])
+		Assert.assertNull(s1["s3"])
+	}
 }

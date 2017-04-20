@@ -6,6 +6,9 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.view.MouseDownEvent
+import com.soywiz.korge.view.MouseMovedEvent
+import com.soywiz.korge.view.MouseUpEvent
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
@@ -14,6 +17,8 @@ import com.soywiz.korio.async.go
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
+import com.soywiz.korma.Vector2
+import com.soywiz.korma.geom.Point2d
 import com.soywiz.korui.CanvasApplication
 
 object Korge {
@@ -41,6 +46,9 @@ object Korge {
 		injector.mapTyped<Module>(module)
 		module.init(injector)
 
+		val downPos = Point2d()
+		val upPos = Point2d()
+
 		fun updateMousePos() {
 			val mouseX = container.mouseX.toDouble()
 			val mouseY = container.mouseY.toDouble()
@@ -51,14 +59,22 @@ object Korge {
 
 		container.onMouseOver {
 			updateMousePos()
+			views.dispatch(MouseMovedEvent)
 		}
 		container.onMouseUp {
 			views.input.mouseButtons = 0
 			updateMousePos()
+			upPos.copyFrom(views.input.mouse)
+			//if (upPos.distanceTo(downPos) < 10) {
+			//	views.input.frame.clicked = true
+			//}
+			views.dispatch(MouseUpEvent)
 		}
 		container.onMouseDown {
 			views.input.mouseButtons = 1
 			updateMousePos()
+			downPos.copyFrom(views.input.mouse)
+			views.dispatch(MouseDownEvent)
 		}
 		ag.onResized {
 			views.resized(ag.backWidth, ag.backHeight)

@@ -4,6 +4,8 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
+import com.soywiz.korge.event.Event
+import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
@@ -30,7 +32,7 @@ class Views(
 	val ag: AG,
 	val injector: AsyncInjector,
 	val input: Input
-) : AsyncDependency, Updatable, Extra by Extra.Mixin() {
+) : AsyncDependency, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 
@@ -75,7 +77,11 @@ class Views(
 		}
 	}
 
-	private val resizedEvent = View.StageResizedEvent(0, 0)
+	override fun <T : Any> dispatch(event: T, clazz: Class<T>) {
+		this.stage.dispatch(event, clazz)
+	}
+
+	private val resizedEvent = StageResizedEvent(0, 0)
 
 	fun container() = Container(this)
 	inline fun solidRect(width: Number, height: Number, color: Int): SolidRect = SolidRect(this, width.toDouble(), height.toDouble(), color)
@@ -154,7 +160,7 @@ class Views(
 		actualVirtualLeft = -(stage.x / ratioX).toInt()
 		actualVirtualTop = -(stage.y / ratioY).toInt()
 
-		stage.handleEvent(resizedEvent.setSize(width, height))
+		stage.dispatch(resizedEvent.setSize(width, height))
 	}
 }
 
@@ -225,3 +231,15 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Vie
 }
 
 //suspend val AsyncInjector.views: Views get() = this.get<Views>()
+
+data class StageResizedEvent(var width: Int, var height: Int) : Event {
+	fun setSize(width: Int, height: Int) = this.apply {
+		this.width = width
+		this.height = height
+	}
+}
+
+interface MouseEvent : Event
+object MouseUpEvent : MouseEvent
+object MouseDownEvent : MouseEvent
+object MouseMovedEvent : MouseEvent

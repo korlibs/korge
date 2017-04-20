@@ -1,6 +1,7 @@
 package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.Easings
@@ -38,6 +39,11 @@ object Sample2 : Module() {
 				val textHolder = TextHolder(text)
 				text.tween(textHolder, TextHolder::value..1000, time = 1000)
 			}
+
+			rect.onClick {
+				println("click!")
+			}
+
 			go {
 				//rect.tween((SolidRect::color..Colors.BLUE).color(), time = 1000)
 				rect.tween(

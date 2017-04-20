@@ -35,12 +35,16 @@ open class Container(views: Views) : View(views) {
 		view.invalidate()
 	}
 
+	operator fun minusAssign(view: View) {
+		if (view.parent == this) view.removeFromParent()
+	}
+
 	private val tempMatrix = Matrix2d()
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (m === globalMatrix) {
-			for (child in children) child.render(ctx, child.globalMatrix)
+			for (child in children.toList()) child.render(ctx, child.globalMatrix)
 		} else {
-			for (child in children) {
+			for (child in children.toList()) {
 				tempMatrix.multiply(child.localMatrix, m)
 				child.render(ctx, tempMatrix)
 			}
@@ -61,7 +65,7 @@ open class Container(views: Views) : View(views) {
 	private val tempRect = Rectangle()
 	override fun getLocalBounds(out: Rectangle) {
 		bb.reset()
-		for (child in children) {
+		for (child in children.toList()) {
 			child.getBounds(this, tempRect)
 			bb.add(tempRect)
 		}
@@ -70,11 +74,13 @@ open class Container(views: Views) : View(views) {
 
 	override fun updateInternal(dtMs: Int) {
 		super.updateInternal(dtMs)
-		for (child in children) child.update(dtMs)
+		for (child in children.toList()) child.update(dtMs)
 	}
 
-	override fun handleEvent(e: Event) {
-		super.handleEvent(e)
-		for (child in children) child.handleEvent(e)
+	override fun <T : Any> dispatch(event: T, clazz: Class<T>) {
+		super.dispatch(event, clazz)
+		for (child in children.toList()) {
+			child.dispatch(event, clazz)
+		}
 	}
 }
