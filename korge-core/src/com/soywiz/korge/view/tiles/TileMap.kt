@@ -19,7 +19,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
         val dU = m.transform(tileWidth, 0.0) - pos
         val dV = m.transform(0.0, tileHeight) - pos
 
-        val col1 = globalCol1
+        val col1 = globalColor
 
         batch.setStateFast(tileset.base, blendMode = blendMode, smoothing = smoothing)
 

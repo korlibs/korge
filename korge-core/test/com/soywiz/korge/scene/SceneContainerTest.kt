@@ -5,14 +5,19 @@ import com.soywiz.korge.log.Logger
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.get
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.syncTest
+import com.soywiz.korio.async.sleep
 import org.junit.Assert
 import org.junit.Test
 
 class SceneContainerTest : ViewsForTesting() {
-	class Scene1 : LogScene() {
+	data class SceneInfo(val name: String)
+
+	class Scene1(
+		val info: SceneInfo
+	) : LogScene() {
 		override suspend fun sceneAfterInit() {
 			super.sceneAfterInit()
+			logger.info("$info")
 			sceneContainer.changeTo<Scene2>()
 		}
 	}
@@ -27,19 +32,20 @@ class SceneContainerTest : ViewsForTesting() {
 	}
 
 	@Test
-	fun name() = syncTest {
+	fun name() = viewsTest {
 		val out = arrayListOf<String>()
-		injector.map<Logger>(Logger { msg -> out += msg })
-
-
+		injector.mapTyped<Logger>(Logger { msg -> out += msg })
 		val sc = SceneContainer(views)
-		sc.changeTo<Scene1>()
+		views.stage += sc
+		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10)
+		//sc.changeTo<Scene1>(time = 10)
+
+		sleep(10)
 
 		Assert.assertNotNull(sc["box"])
 		Assert.assertEquals(
-			"Scene1.sceneInit, Scene1.sceneAfterDestroy, Scene1.sceneAfterInit, Scene2.sceneInit, Scene1.sceneDestroy, Scene2.sceneAfterDestroy, Scene2.sceneAfterInit",
+			"Scene1.sceneInit, Scene1.sceneAfterDestroy, Scene1.sceneAfterInit, SceneInfo(name=hello), Scene2.sceneInit, Scene1.sceneDestroy, Scene2.sceneAfterDestroy, Scene2.sceneAfterInit",
 			out.joinToString(", ")
 		)
-
 	}
 }

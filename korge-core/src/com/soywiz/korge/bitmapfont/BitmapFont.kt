@@ -7,6 +7,7 @@ import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korim.color.Colors
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
@@ -42,7 +43,7 @@ class BitmapFont(
 	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.firstOrNull() ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
-	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), blendMode: BlendMode = BlendMode.INHERIT) {
+	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), col1: Int = Colors.WHITE, blendMode: BlendMode = BlendMode.INHERIT) {
 		val m2 = m.clone()
 		val scale = textSize / fontSize.toDouble()
 		m2.pretranslate(x.toDouble(), y.toDouble())
@@ -54,7 +55,7 @@ class BitmapFont(
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
-			batch.addQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, blendMode = blendMode)
+			batch.addQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, col1 = col1, blendMode = blendMode)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}

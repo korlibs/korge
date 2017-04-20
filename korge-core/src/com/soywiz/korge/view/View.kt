@@ -3,6 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.async.EventLoop
+import com.soywiz.korio.async.go
+import com.soywiz.korio.async.sleep
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
@@ -12,21 +15,25 @@ import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
-open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
+open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin() {
 	var index: Int = 0
 	var speed: Double = 1.0
 	var parent: Container? = null
 	var name: String? = null
 	val id = views.lastId++
 	var blendMode: BlendMode = BlendMode.INHERIT
-	var alpha: Double = 1.0; set(v) = run {
-		if (field != v) {
-			val vv = v.clamp(0.0, 1.0)
-			if (field != vv) {
-				field = vv; invalidateMatrix()
+	var color: Int = -1
+	var alpha: Double
+		get() = RGBA.getAd(color)
+		set(v) {
+			if (alpha != v) {
+				val vv = v.clamp(0.0, 1.0)
+				if (alpha != vv) {
+					color = RGBA.packRGB_A(RGBA.getRGB(color), (v * 255).toInt())
+					invalidateMatrix()
+				}
 			}
 		}
-	}
 	private var _x: Double = 0.0
 	private var _y: Double = 0.0
 	private var _scaleX: Double = 1.0
@@ -137,8 +144,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	internal var validLocal = false
 	internal var validGlobal = false
 
-	private var _globalAlpha: Double = 1.0
-	private var _globalCol1: Int = -1
+	private var _globalColor: Int = -1
 
 	private var components: ArrayList<Component>? = null
 	private var _componentsIt: ArrayList<Component>? = null
@@ -205,15 +211,14 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		} else {
 			_globalMatrix.copyFrom(localMatrix)
 		}
-		_globalAlpha = if (parent != null) parent!!.globalAlpha * alpha else alpha
-		_globalCol1 = RGBA.packf(1f, 1f, 1f, _globalAlpha.toFloat())
+		_globalColor = if (parent != null) RGBA.multiply(parent!!.globalColor, color) else color
 		_globalMatrixVersion++
 	}
 
 	val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
 
-	protected val globalAlpha: Double get() = run { globalMatrix; _globalAlpha }
-	protected val globalCol1: Int get() = run { globalMatrix; _globalCol1 }
+	val globalColor: Int get() = run { globalMatrix; _globalColor }
+	val globalAlpha: Double get() = RGBA.getAd(globalColor)
 
 	val localMouseX: Double get() = globalMatrixInv.transformX(views.input.mouse)
 	val localMouseY: Double get() = globalMatrixInv.transformY(views.input.mouse)
@@ -307,7 +312,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 		invalidate()
 	}
 
-	fun update(dtMs: Int) {
+	override fun update(dtMs: Int) {
 		updateInternal((dtMs * speed).toInt())
 	}
 
@@ -396,4 +401,25 @@ fun View.replaceWith(view: View) {
 	parent = null
 	view.invalidate()
 	this.index = -1
+}
+
+suspend fun Updatable.updateLoop(step: Int = 10, callback: suspend () -> Unit) {
+
+	val view = this
+	var done = false
+	go {
+		while (!done) {
+			view.update(step)
+			EventLoop.impl.step(step)
+			sleep(1)
+		}
+	}
+	val p = go {
+		callback()
+	}
+	try {
+		p.await()
+	} finally {
+		done = true
+	}
 }

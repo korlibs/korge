@@ -207,13 +207,13 @@ class Sample1Scene(
 			}
 		}
 
-		sceneView.text(font, "Hello world! F,", textSize = 72.0).apply {
+		sceneView.text("Hello world! F,", textSize = 72.0, font = font).apply {
 			blendMode = BlendMode.ADD
 			x = 100.0
 			y = 100.0
 		}
 
-		sceneView.text(font2, "2017", textSize = 40.0).apply {
+		sceneView.text("2017", textSize = 40.0, font = font2).apply {
 			x = 0.0
 			y = 0.0
 		}

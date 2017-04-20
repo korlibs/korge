@@ -1,6 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.korge.view.ViewsLog
+import com.soywiz.korge.view.updateLoop
 import com.soywiz.korio.async.syncTest
 import org.junit.Before
 
@@ -14,6 +15,12 @@ open class ViewsForTesting {
 	@Before
 	fun initViews() = syncTest {
 		viewsLog.init()
+	}
+
+	fun viewsTest(callback: suspend () -> Unit) = syncTest {
+		views.updateLoop {
+			callback()
+		}
 	}
 
 }

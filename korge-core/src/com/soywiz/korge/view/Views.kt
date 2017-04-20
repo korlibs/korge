@@ -30,12 +30,12 @@ class Views(
 	val ag: AG,
 	val injector: AsyncInjector,
 	val input: Input
-) : AsyncDependency, Extra by Extra.Mixin() {
+) : AsyncDependency, Updatable, Extra by Extra.Mixin() {
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 
 	init {
-		injector.map<AG>(ag)
+		injector.mapTyped<AG>(ag)
 	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -80,7 +80,7 @@ class Views(
 	fun container() = Container(this)
 	inline fun solidRect(width: Number, height: Number, color: Int): SolidRect = SolidRect(this, width.toDouble(), height.toDouble(), color)
 
-	val dummyView = View(this)
+	val dummyView by lazy { View(this) }
 	val transparentTexture by lazy { texture(Bitmap32(1, 1)) }
 	val whiteTexture by lazy { texture(Bitmap32(1, 1, intArrayOf(Colors.WHITE))) }
 	val transformedDummyTexture by lazy { TransformedTexture(transparentTexture) }
@@ -111,7 +111,7 @@ class Views(
 		}
 	}
 
-	fun update(dtMs: Int) {
+	override fun update(dtMs: Int) {
 		//println(this)
 		//println("Update: $dtMs")
 		input.frame.reset()

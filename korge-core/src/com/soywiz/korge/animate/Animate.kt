@@ -20,7 +20,7 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	val smoothing = true
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
-		ctx.batch.addQuad(tex, x = dx, y = dy, m = m, filtering = smoothing, col1 = globalCol1)
+		ctx.batch.addQuad(tex, x = dx, y = dy, m = m, filtering = smoothing, col1 = globalColor)
 	}
 
 	override fun hitTestInternal(x: Double, y: Double): View? {
@@ -39,13 +39,14 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 }
 
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : View(library.views), AnElement, IText, IHtml {
-	private val textField = views.text(views.defaultFont, "", 16.0).apply {
+	private val textField = views.text("", 16.0).apply {
 		textBounds.copyFrom(symbol.bounds)
 		html = symbol.initialHtml
 		relayout()
 	}
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		textField.color = this.globalColor
 		textField.render(ctx, m)
 	}
 

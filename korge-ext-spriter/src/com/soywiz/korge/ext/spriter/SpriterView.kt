@@ -96,6 +96,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		val batch = ctx.batch
+		val color = globalColor
 		for (obj in player.objectIterator()) {
 			val file = library.data.getFile(obj.ref)
 			val ttex = library.atlas[file.name] ?: views.transformedDummyTexture
@@ -121,7 +122,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 			//if (ttex.rotated) {
 			//	batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.height.toFloat(), tex.width.toFloat(), t2, rotated = true)
 			//} else {
-				batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, rotated = false)
+				batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, col1 = color, rotated = false)
 			//}
 		}
 	}

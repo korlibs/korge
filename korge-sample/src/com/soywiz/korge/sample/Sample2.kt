@@ -22,7 +22,7 @@ object Sample2 : Module() {
 	class MainScene : Scene() {
 		suspend override fun sceneInit(sceneView: Container) {
 			val rect = views.solidRect(100, 100, Colors.RED)
-			val text = views.text(views.defaultFont, "HELLO")
+			val text = views.text("HELLO", color = Colors.RED)
 			sceneView += rect
 			sceneView += text
 

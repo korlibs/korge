@@ -1,5 +1,6 @@
 package com.soywiz.korge
 
+import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -27,7 +28,7 @@ object Korge {
 		injector: AsyncInjector = AsyncInjector()
 	): SceneContainer {
 		val ag = container.ag
-		injector.map(ag)
+		injector.mapTyped<AG>(ag)
 		val views = injector.get<Views>()
 		val moduleArgs = ModuleArgs(args)
 
@@ -35,9 +36,9 @@ object Korge {
 		views.virtualHeight = module.height
 
 		ag.onReady.await()
-		injector.map(moduleArgs)
-		injector.map(timeProvider)
-		injector.map<Module>(module)
+		injector.mapTyped(moduleArgs)
+		injector.mapTyped(timeProvider)
+		injector.mapTyped<Module>(module)
 		module.init(injector)
 
 		fun updateMousePos() {
@@ -64,11 +65,6 @@ object Korge {
 		}
 		ag.resized()
 
-
-		val sc = views.sceneContainer()
-		views.stage += sc
-		sc.changeTo(sceneClass)
-
 		var lastTime = timeProvider.currentTimeMillis()
 		//println("lastTime: $lastTime")
 		ag.onRender {
@@ -86,11 +82,14 @@ object Korge {
 			//println("render:$delta,$adelta")
 		}
 
-
 		animationFrameLoop {
 			//ag.resized()
 			container.repaint()
 		}
+
+		val sc = views.sceneContainer()
+		views.stage += sc
+		sc.changeTo(sceneClass, time = 0)
 
 		return sc
 	}

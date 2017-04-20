@@ -3,6 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
@@ -45,10 +47,12 @@ class Text(views: Views) : View(views), IText, IHtml {
 	}
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		val color = globalColor
 		if (document != null) {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
-				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, blendMode = blendMode)
+				val format = span.format
+				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, col1 = RGBA.multiply(color, format.color), blendMode = blendMode)
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
@@ -61,7 +65,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			//val x = textBounds.x + (textBounds.width) * anchor.sx
 			val y = textBounds.y + (textBounds.height) * anchor.sy
 			//println(" -> ($x, $y)")
-			font.drawText(ctx.batch, format.size.toDouble(), text, x.toInt(), y.toInt(), m, blendMode = blendMode)
+			font.drawText(ctx.batch, format.size.toDouble(), text, x.toInt(), y.toInt(), m, col1 = RGBA.multiply(color, format.color), blendMode = blendMode)
 		}
 	}
 
@@ -75,16 +79,18 @@ class Text(views: Views) : View(views), IText, IHtml {
 	}
 }
 
-fun Views.text(font: BitmapFont, text: String, textSize: Double = 16.0) = Text(this).apply {
+fun Views.text(text: String, textSize: Double = 16.0, color: Int = Colors.WHITE, font: BitmapFont = this.defaultFont) = Text(this).apply {
+	this.format.color = color
 	this.format.face = Html.FontFace.Bitmap(font)
 	this.format.size = textSize.toInt()
 	this.text = text
 }
 
-fun Container.text(font: BitmapFont, text: String, textSize: Double = 16.0): Text = text(font, text, textSize) { }
+fun Container.text(text: String, textSize: Double = 16.0, font: BitmapFont = this.views.defaultFont): Text = text(text, textSize, font) {
+}
 
-inline fun Container.text(font: BitmapFont, text: String, textSize: Double = 16.0, callback: Text.() -> Unit): Text {
-	val child = views.text(font, text, textSize)
+inline fun Container.text(text: String, textSize: Double = 16.0, font: BitmapFont = this.views.defaultFont, callback: Text.() -> Unit): Text {
+	val child = views.text(text, textSize = textSize, font = font)
 	this += child
 	callback(child)
 	return child
