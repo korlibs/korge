@@ -8,13 +8,13 @@ import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.KorgeFileLoader
+import com.soywiz.korge.view.KorgeFileLoaderTester
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.stream.readString
 import com.soywiz.korio.util.Extra
@@ -94,8 +94,8 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 }
 
 val Views.animateLibraryLoaders by Extra.Property {
-	arrayListOf<(s: SyncStream) -> KorgeFileLoader<AnLibrary>?>(
-		{
+	arrayListOf<KorgeFileLoaderTester<AnLibrary>>(
+		KorgeFileLoaderTester("core/ani") {
 			when {
 				(it.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views) }
 				else -> null

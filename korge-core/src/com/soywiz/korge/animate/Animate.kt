@@ -16,7 +16,7 @@ interface AnElement {
 class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShape) : View(library.views), AnElement {
 	val dx = symbol.bounds.x.toFloat()
 	val dy = symbol.bounds.y.toFloat()
-	val tex = symbol.textureWithBitmap?.texture ?: views.dummyTexture
+	val tex = symbol.textureWithBitmap?.texture ?: views.transparentTexture
 	val smoothing = true
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
@@ -191,4 +191,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 		super.updateInternal(dtMs)
 	}
+}
+
+fun View?.play(name: String) {
+	(this as? AnMovieClip?)?.play(name)
+}
+
+fun View?.seekStill(name: String, ratio: Double = 0.0) {
+	(this as? AnMovieClip?)?.seekStill(name, ratio)
 }

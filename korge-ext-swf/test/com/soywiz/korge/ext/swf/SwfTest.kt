@@ -106,9 +106,9 @@ class SwfTest {
 		val mt = lib.createMainTimeLine()
 		views.stage += mt
 		Assert.assertEquals(mapOf("gravity" to "9.8"), mt.children.first().props)
-		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity").count())
-		Assert.assertEquals(1, views.stage.findDescendantsWithProp("gravity", "9.8").count())
-		Assert.assertEquals(0, views.stage.findDescendantsWithProp("gravity", "9.0").count())
+		Assert.assertEquals(1, views.stage.descendantsWithProp("gravity").count())
+		Assert.assertEquals(1, views.stage.descendantsWithProp("gravity", "9.8").count())
+		Assert.assertEquals(0, views.stage.descendantsWithProp("gravity", "9.0").count())
 	}
 
 	@Test

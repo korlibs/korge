@@ -76,7 +76,7 @@ fun View.mouseSampleController() = this.apply { MouseSampleController(this).atta
 class Sample2Scene(
 	@Path("test4.swf") val test4Library: AnLibrary
 ) : Scene() {
-	suspend override fun init() {
+	suspend override fun sceneInit(sceneView: Container) {
 		super.init()
 
 		this.sceneView += test4Library.createMainTimeLine()
@@ -117,9 +117,7 @@ class Sample1Scene(
 	lateinit var image: Image
 	lateinit var percent: AnTextField
 
-	suspend override fun init() {
-		super.init()
-
+	suspend override fun sceneInit(sceneView: Container) {
 		tileset = TileSet(tilesetTex, 32, 32)
 
 		sceneView.container {

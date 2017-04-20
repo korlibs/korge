@@ -74,11 +74,11 @@ class MouseComponent(view: View) : Component(view) {
 
 //var View.mouseEnabled by Extra.Property { true }
 
-val View.mouse get() = this.getOrCreateComponent { MouseComponent(this) }
+val View.mouse by Extra.PropertyThis<View, MouseComponent> { this.getOrCreateComponent { MouseComponent(this) } }
 
-val View.onClick get() = mouse.onClick
-val View.onOver get() = mouse.onOver
-val View.onOut get() = mouse.onOut
-val View.onDown get() = mouse.onDown
-val View.onUp get() = mouse.onUp
-val View.onMove get() = mouse.onMove
+inline fun <T : View?> T?.onClick(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onClick?.invoke(handler) }
+inline fun <T : View?> T?.onOver(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOver?.invoke(handler) }
+inline fun <T : View?> T?.onOut(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOut?.invoke(handler) }
+inline fun <T : View?> T?.onDown(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onDown?.invoke(handler) }
+inline fun <T : View?> T?.onUp(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUp?.invoke(handler) }
+inline fun <T : View?> T?.onMove(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.invoke(handler) }

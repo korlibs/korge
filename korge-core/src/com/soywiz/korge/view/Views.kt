@@ -11,10 +11,12 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
+import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Anchor
@@ -31,6 +33,10 @@ class Views(
 ) : AsyncDependency, Extra by Extra.Mixin() {
 	var lastId = 0
 	val renderContext = RenderContext(ag)
+
+	init {
+		injector.map<AG>(ag)
+	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 
@@ -72,8 +78,12 @@ class Views(
 	private val resizedEvent = View.StageResizedEvent(0, 0)
 
 	fun container() = Container(this)
-	val dummyTexture by lazy { texture(Bitmap32(1, 1)) }
-	val transformedDummyTexture by lazy { TransformedTexture(dummyTexture) }
+	inline fun solidRect(width: Number, height: Number, color: Int): SolidRect = SolidRect(this, width.toDouble(), height.toDouble(), color)
+
+	val dummyView = View(this)
+	val transparentTexture by lazy { texture(Bitmap32(1, 1)) }
+	val whiteTexture by lazy { texture(Bitmap32(1, 1, intArrayOf(Colors.WHITE))) }
+	val transformedDummyTexture by lazy { TransformedTexture(transparentTexture) }
 	val dummyFont by lazy { BitmapFont(ag, 16, mapOf(), mapOf()) }
 	val defaultFont by lazy {
 		com.soywiz.korim.font.BitmapFontGenerator.generate("Arial", 16, BitmapFontGenerator.LATIN_ALL).convert(ag)
@@ -203,6 +213,11 @@ fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture {
 
 interface ViewsContainer {
 	val views: Views
+}
+
+data class KorgeFileLoaderTester<T>(val name: String, val tester: (s: SyncStream) -> KorgeFileLoader<T>?) {
+	operator fun invoke(s: SyncStream) = tester(s)
+	override fun toString(): String = "KorgeFileTester(\"$name\")"
 }
 
 data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Views) -> T) {

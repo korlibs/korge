@@ -21,7 +21,7 @@ fun View?.descendants(handler: (View) -> Unit) {
 	}
 }
 
-fun View?.findDescendantsWithProp(prop: String, value: String? = null): List<View> {
+fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
 	if (this == null) return listOf()
 	return this.findAllDescendant {
 		if (value != null) {
@@ -32,7 +32,8 @@ fun View?.findDescendantsWithProp(prop: String, value: String? = null): List<Vie
 	}
 }
 
-fun View?.findDescendantsWithPropPair(prop: String, value: String? = null): List<Pair<View, String>> = this.findDescendantsWithProp(prop, value).map { it to it.props[prop]!! }
+fun View?.descendantsWithPropString(prop: String, value: String? = null): List<Pair<View, String>> = this.descendantsWithProp(prop, value).map { it to it.getPropString(prop) }
+fun View?.descendantsWithPropInt(prop: String, value: String? = null): List<Pair<View, Int>> = this.descendantsWithProp(prop, value).map { it to it.getPropInt(prop) }
 
 operator fun View?.get(name: String): View? = findFirstDescendant { it.name == name }
 fun View?.descendant(name: String): View? =  findFirstDescendant { it.name == name }

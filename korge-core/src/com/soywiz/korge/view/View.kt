@@ -39,6 +39,7 @@ open class View(val views: Views) : Renderable, Extra by Extra.Mixin() {
 	val props: Map<String, String> = _props
 
 	fun hasProp(key: String) = key in props
+	fun getPropString(key: String, default: String = "") = props[key] ?: default
 	fun getPropInt(key: String, default: Int = 0) = props[key]?.toIntOrNull() ?: default
 	fun getPropDouble(key: String, default: Double = 0.0) = props[key]?.toDoubleOrNull() ?: default
 
