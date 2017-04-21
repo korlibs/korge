@@ -77,5 +77,8 @@ operator fun <T, V> KMutableProperty1<T, V>.rangeTo(that: V) = V1(this, that, ::
 operator fun <T, V : Comparable<V>> KMutableProperty1<T, V>.rangeTo(that: ClosedRange<V>) = V2(this, that.start, that.endInclusive, ::interpolate)
 operator fun <T, V> KMutableProperty1<T, V>.rangeTo(that: Pair<V, V>) = V2(this, that.first, that.second, ::interpolate)
 
+fun <T, V> V1<T, V>.withEasing(easing: Easing): V1<T, V> = V1(this.key, this.value) { a, b, ratio -> this.interpolator(a, b, easing(ratio)) }
+fun <T, V> V2<T, V>.withEasing(easing: Easing): V2<T, V> = V2(this.key, this.initial, this.end) { a, b, ratio -> this.interpolator(a, b, easing(ratio)) }
+
 fun <T> V1<T, Int>.color(): V1<T, Int> = V1(this.key, this.value, RGBA::blendRGBA)
 fun <T> V2<T, Int>.color(): V2<T, Int> = V2(this.key, this.initial, this.end, RGBA::blendRGBA)
