@@ -29,6 +29,13 @@ class Text(views: Views) : View(views), IText, IHtml {
 		}
 	var document: Html.Document? = null
 	var format: Html.Format = Html.Format()
+		get() = field
+		set(value) {
+			field = value
+			if (value != document?.defaultFormat) {
+				document?.defaultFormat?.parent = value
+			}
+		}
 	val textBounds = Rectangle(0, 0, 1024, 1024)
 	private val tempRect = Rectangle()
 
@@ -37,7 +44,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 		set(value) {
 			document = Html.parse(value)
 			relayout()
-			format = document!!.firstFormat.copy()
+			document?.defaultFormat?.parent = format
 			_text = ""
 			_html = value
 		}
@@ -52,11 +59,11 @@ class Text(views: Views) : View(views), IText, IHtml {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
 				val format = span.format
-				font.drawText(ctx.batch, format.size.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, col1 = RGBA.multiply(color, format.color), blendMode = blendMode)
+				font.drawText(ctx.batch, format.computedSize.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, col1 = RGBA.multiply(color, format.computedColor), blendMode = blendMode)
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
-			val anchor = format.align.anchor
+			val anchor = format.computedAlign.anchor
 			views.fontRepository.getBounds(text, format, out = tempRect)
 			//println("tempRect=$tempRect, textBounds=$textBounds")
 			//tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
@@ -65,7 +72,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			//val x = textBounds.x + (textBounds.width) * anchor.sx
 			val y = textBounds.y + (textBounds.height) * anchor.sy
 			//println(" -> ($x, $y)")
-			font.drawText(ctx.batch, format.size.toDouble(), text, x.toInt(), y.toInt(), m, col1 = RGBA.multiply(color, format.color), blendMode = blendMode)
+			font.drawText(ctx.batch, format.computedSize.toDouble(), text, x.toInt(), y.toInt(), m, col1 = RGBA.multiply(color, format.computedColor), blendMode = blendMode)
 		}
 	}
 
@@ -74,7 +81,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			out.copyFrom(document!!.bounds)
 		} else {
 			views.fontRepository.getBounds(text, format, out)
-			out.setToAnchoredRectangle(out, format.align.anchor, textBounds)
+			out.setToAnchoredRectangle(out, format.computedAlign.anchor, textBounds)
 		}
 	}
 }

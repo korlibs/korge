@@ -5,6 +5,8 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.spawn
+import com.soywiz.korio.util.redirect
+import com.soywiz.korio.util.redirectField
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
@@ -32,7 +34,7 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	}
 
 	override fun getLocalBounds(out: Rectangle) {
-		out.setTo(dx, dy,  tex.width, tex.height)
+		out.setTo(dx, dy, tex.width, tex.height)
 	}
 
 	override fun updateInternal(dtMs: Int) = Unit
@@ -49,9 +51,11 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 		this += textField
 	}
 
+	var format: Html.Format by textField::format.redirect()
 	override var text: String get() = textField.text; set(value) = run { textField.text = value }
 	override var html: String get() = textField.html; set(value) = run { textField.html = value }
 }
+
 
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement {
 	val totalDepths = symbol.limits.totalDepths

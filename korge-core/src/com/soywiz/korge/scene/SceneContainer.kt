@@ -26,7 +26,7 @@ class SceneContainer(views: Views) : Container(views) {
 
 		transitionView.transition = transition
 		transitionView.startNewTransition(instance.sceneView)
-		transitionView.tween(TransitionView::ratio..1.0, time = time)
+		transitionView.tween(transitionView::ratio..1.0, time = time)
 
 		oldScene?.sceneDestroy()
 

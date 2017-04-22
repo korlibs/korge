@@ -75,7 +75,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0
-		tween(SpriterView::animationWeight..1.0, time = time, easing = easing)
+		tween(this::animationWeight..1.0, time = time, easing = easing)
 	}
 
 	suspend fun waitCompleted() {

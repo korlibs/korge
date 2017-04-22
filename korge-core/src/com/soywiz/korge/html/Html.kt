@@ -7,6 +7,7 @@ import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.isComment
 import com.soywiz.korio.serialization.xml.isNode
 import com.soywiz.korio.serialization.xml.isText
+import com.soywiz.korio.util.Computed
 import com.soywiz.korio.util.Extra
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
@@ -25,16 +26,21 @@ object Html {
 		data class Bitmap(val font: BitmapFont) : FontFace
 	}
 
-	data class Format(
-		var color: Int = Colors.WHITE,
-		var face: FontFace = FontFace.Named("Arial"),
-		var size: Int = 16,
-		var letterSpacing: Double = 0.0,
-		var kerning: Int = 0,
-		var align: Alignment = Alignment.LEFT
-	) {
-		// @TODO: Change .copy for an inline format.keep { parse(xml, format) } that doesn't allocate at all
-		inline fun <T> keep(callback: () -> T): T = TODO()
+	class Format(
+		override var parent: Format? = null,
+		var color: Int? = null,
+		var face: FontFace? = null,
+		var size: Int? = null,
+		var letterSpacing: Double? = null,
+		var kerning: Int? = null,
+		var align: Alignment? = null
+	) : Computed.WithParent<Format> {
+		val computedColor by Computed(Format::color) { Colors.WHITE }
+		val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
+		val computedSize by Computed(Format::size) { 16 }
+		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
+		val computedKerning by Computed(Format::kerning) { 0 }
+		val computedAlign by Computed(Format::align) { Alignment.LEFT }
 	}
 
 	interface MetricsProvider {
@@ -79,7 +85,7 @@ object Html {
 			// Alignment
 			//println(bounds)
 			val restoreY = bounds.y
-			bounds.setToAnchoredRectangle(bounds, format.align.anchor, ctx.bounds)
+			bounds.setToAnchoredRectangle(bounds, format.computedAlign.anchor, ctx.bounds)
 			bounds.y = restoreY
 			//println(bounds)
 			var sx = bounds.x
@@ -106,6 +112,7 @@ object Html {
 	}
 
 	data class Document(val paragraphs: ArrayList<Paragraph> = arrayListOf()) : Extra by Extra.Mixin() {
+		val defaultFormat = Html.Format()
 		var xml = Xml("")
 		val text: String get() = xml.text.trim()
 		val bounds = Rectangle()
@@ -132,9 +139,9 @@ object Html {
 			//println(format)
 			//println(text)
 			if (currentLine.spans.isEmpty()) {
-				currentLine.format = format.copy()
+				currentLine.format = Format(format)
 			}
-			currentLine.spans += Span(format.copy(), text)
+			currentLine.spans += Span(Format(format), text)
 		}
 
 		fun emitEndOfLine(format: Format) {
@@ -171,7 +178,7 @@ object Html {
 					format.color = NamedColors[xml.strNull("color") ?: "white"]
 					for (child in xml.allChildrenNoComments) {
 						// @TODO: Change .copy for an inline format.keep { parse(xml, format) } that doesn't allocate at all
-						parse(child, format.copy())
+						parse(child, Format(format))
 					}
 					if (block) {
 						emitEndOfLine(format)
@@ -185,7 +192,7 @@ object Html {
 			val xml = Xml(html)
 			document.xml = xml
 			//println(html)
-			val format = parse(xml, Format())
+			val format = parse(xml, document.defaultFormat)
 			emitEndOfLine(format)
 			//println(document.firstFormat)
 		}

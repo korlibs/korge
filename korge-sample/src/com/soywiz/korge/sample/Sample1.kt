@@ -89,8 +89,8 @@ class JellyButton(val view: View) {
 	//val thread = AsyncThread()
 
 	init {
-		view.onOver { async { view.tween(View::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
-		view.onOut { async { view.tween(View::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOver { async { view.tween(view::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOut { async { view.tween(view::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
 	}
 
 	fun onClick(callback: suspend () -> Unit) {
@@ -220,12 +220,12 @@ class Sample1Scene(
 
 		go {
 			image.tween(
-				View::x..200.0, View::y..200.0,
-				View::rotation..Math.toRadians(0.0), View::scale..2.0,
+				image::x..200.0, image::y..200.0,
+				image::rotation..Math.toRadians(0.0), image::scale..2.0,
 				time = 2000, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			for (delta in listOf(+200.0, -200.0, +100.0)) {
-				image.tween(View::x..image.x + delta, time = 1000, easing = Easing.EASE_IN_OUT_QUAD)
+				image.tween(image::x..image.x + delta, time = 1000, easing = Easing.EASE_IN_OUT_QUAD)
 			}
 			//views.dump()
 		}
@@ -238,8 +238,8 @@ class Sample1Scene(
 		}
 		go {
 			player.tween(
-				View::rotationDegrees..360.0,
-				View::scale..1.0,
+				player::rotationDegrees..360.0,
+				player::scale..1.0,
 				time = 1000, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			player.changeTo("hurt_idle", time = 300, easing = Easing.EASE_IN)
@@ -252,7 +252,7 @@ class Sample1Scene(
 			player.waitCompleted()
 			println("completed")
 			//player.speed = 0.1
-			player.tween(View::speed..0.3, time = 2000)
+			player.tween(player::speed..0.3, time = 2000)
 
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}

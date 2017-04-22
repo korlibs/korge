@@ -28,11 +28,11 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 		else -> invalidOp("Unsupported font face: $face")
 	}
 
-	fun getBitmapFont(format: Html.Format): BitmapFont = getBitmapFont(format.face, format.size)
+	fun getBitmapFont(format: Html.Format): BitmapFont = getBitmapFont(format.computedFace, format.computedSize)
 
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) {
-		val font = getBitmapFont(format.face, format.size)
-		val scale = font.fontSize.toDouble() / format.size.toDouble()
+		val font = getBitmapFont(format.computedFace, format.computedSize)
+		val scale = font.fontSize.toDouble() / format.computedSize.toDouble()
 		val width = text.sumByDouble { font[it].xadvance * scale }
 		out.setTo(0.0, 0.0, width, font.fontSize.toDouble())
 	}
