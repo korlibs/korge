@@ -17,8 +17,8 @@ open class ViewsForTesting {
 		viewsLog.init()
 	}
 
-	fun viewsTest(callback: suspend () -> Unit) = syncTest {
-		views.updateLoop {
+	fun viewsTest(step: Int = 10, callback: suspend () -> Unit) = syncTest {
+		views.updateLoop(step) {
 			callback()
 		}
 	}

@@ -34,7 +34,6 @@ class TweenComponent(private val vs: List<V2<*>>, view: View, val time: Int? = n
 
 suspend fun View?.tween(vararg vs: V2<*>, time: Int, easing: Easing = Easing.LINEAR, callback: (Double) -> Unit = { }) = suspendCancellableCoroutine<Unit> { c ->
 	val view = this@tween
-	view?.removeComponents(TweenComponent::class.java)
 	view?.addComponent(TweenComponent(vs.toList(), view, time, easing, callback, c))
 }
 
@@ -64,6 +63,9 @@ data class V2<V>(
 
 	fun set(ratio: Double) = key.set(interpolator(initial, end, ratio))
 }
+
+operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::interpolate)
+operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::interpolate)
 
 operator fun <V> V2<V>.rangeTo(that: V) = this.copy(initial = this.end, end = that)
 

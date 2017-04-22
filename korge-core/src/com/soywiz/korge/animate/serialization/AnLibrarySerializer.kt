@@ -7,7 +7,7 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
 import com.soywiz.korma.Matrix2d
-import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
 
 object AnLibrarySerializer {
@@ -22,7 +22,7 @@ object AnLibrarySerializer {
 		writeF32_le(r.height.toFloat())
 	}
 
-	private fun SyncStream.writeIRect(r: IRectangle) {
+	private fun SyncStream.writeIRect(r: IRectangleInt) {
 		writeF32_le(r.x.toFloat())
 		writeF32_le(r.y.toFloat())
 		writeF32_le(r.width.toFloat())

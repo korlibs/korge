@@ -19,7 +19,7 @@ import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.util.readIntArray_le
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Point2d
 
 @AsyncFactoryClass(TiledMapFactory::class)
@@ -49,12 +49,12 @@ class TiledMap {
 		}
 
 		class Objects : Layer() {
-			open class Object(val bounds: IRectangle)
-			open class Poly(bounds: IRectangle, val points: List<Point2d>) : Object(bounds)
-			class Rect(bounds: IRectangle) : Object(bounds)
-			class Ellipse(bounds: IRectangle) : Object(bounds)
-			class Polyline(bounds: IRectangle, points: List<Point2d>) : Poly(bounds, points)
-			class Polygon(bounds: IRectangle, points: List<Point2d>) : Poly(bounds, points)
+			open class Object(val bounds: IRectangleInt)
+			open class Poly(bounds: IRectangleInt, val points: List<Point2d>) : Object(bounds)
+			class Rect(bounds: IRectangleInt) : Object(bounds)
+			class Ellipse(bounds: IRectangleInt) : Object(bounds)
+			class Polyline(bounds: IRectangleInt, points: List<Point2d>) : Poly(bounds, points)
+			class Polygon(bounds: IRectangleInt, points: List<Point2d>) : Poly(bounds, points)
 
 			val objects = arrayListOf<Object>()
 		}
@@ -180,7 +180,7 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 							val y = obj.int("y")
 							val width = obj.int("width")
 							val height = obj.int("height")
-							val bounds = IRectangle(x, y, width, height)
+							val bounds = IRectangleInt(x, y, width, height)
 							val kind = obj.allNodeChildren.firstOrNull()
 							val kindType = kind?.nameLC ?: ""
 							layer.objects += when (kindType) {

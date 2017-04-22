@@ -21,10 +21,7 @@ import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.*
 import java.util.*
 
 @Singleton
@@ -124,9 +121,9 @@ class Views(
 		stage.update(dtMs)
 	}
 
-	private val virtualSize = ISize()
-	private val actualSize = ISize()
-	private val targetSize = ISize()
+	private val virtualSize = SizeInt()
+	private val actualSize = SizeInt()
+	private val targetSize = SizeInt()
 
 	fun mouseUpdated() {
 		//println("localMouse: (${stage.localMouseX}, ${stage.localMouseY}), inputMouse: (${input.mouse.x}, ${input.mouse.y})")

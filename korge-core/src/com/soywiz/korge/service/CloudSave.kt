@@ -1,10 +1,10 @@
 package com.soywiz.korge.service
 
-import com.soywiz.korio.error.unsupported
-import java.util.*
+import com.soywiz.korio.inject.Singleton
 
-open class CloudSave protected constructor() {
-    companion object {
-        operator fun invoke() = ServiceLoader.load(CloudSave::class.java).firstOrNull() ?: unsupported("Not ${CloudSave::class.java.name} implementation found")
-    }
+@Singleton
+open class CloudSave {
+	//companion object {
+	//	operator fun invoke() = ServiceLoader.load(CloudSave::class.java).firstOrNull() ?: unsupported("Not ${CloudSave::class.java.name} implementation found")
+	//}
 }

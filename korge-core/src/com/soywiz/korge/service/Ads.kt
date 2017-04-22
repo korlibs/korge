@@ -1,20 +1,16 @@
 package com.soywiz.korge.service
 
-import com.soywiz.korio.error.unsupported
-import com.soywiz.korio.inject.AsyncDependency
-import java.util.*
+import com.soywiz.korio.inject.Singleton
 
-open class Ads protected constructor() : AsyncDependency {
-	suspend override fun init() {
+@Singleton
+open class Ads() {
+	suspend fun preload() {
 	}
 
-	suspend open fun preload() {
+	suspend fun showInterstial() {
 	}
 
-	suspend open fun showInterstial() {
-	}
-
-	companion object {
-        operator fun invoke() = ServiceLoader.load(Ads::class.java).firstOrNull() ?: unsupported("Not ${Ads::class.java.name} implementation found")
-    }
+	//companion object {
+	//    operator fun invoke() = ServiceLoader.load(Ads::class.java).firstOrNull() ?: unsupported("Not ${Ads::class.java.name} implementation found")
+	//}
 }

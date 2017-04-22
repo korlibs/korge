@@ -167,6 +167,10 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		components?.removeAll { it.javaClass.isSubtypeOf(c) }
 	}
 
+	fun removeAllComponents() {
+		components?.clear()
+	}
+
 	fun addComponent(c: Component) {
 		if (components == null) components = arrayListOf()
 		components!! += c
@@ -195,11 +199,14 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return component!! as T
 	}
 
-	val localMatrix: Matrix2d get() {
+	var localMatrix: Matrix2d get() {
 		if (validLocal) return _localMatrix
 		validLocal = true
 		_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
 		return _localMatrix
+	}
+	set(value) {
+		setMatrix(value)
 	}
 
 	private fun _ensureGlobal() = this.apply {
@@ -215,7 +222,12 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		_globalMatrixVersion++
 	}
 
-	val globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
+	var globalMatrix: Matrix2d get() {
+		return _ensureGlobal()._globalMatrix
+	}
+	set(value) {
+		this.localMatrix = this.localMatrix.multiply(value, parent?.globalMatrixInv ?: Matrix2d.Immutable.IDENTITY)
+	}
 
 	val globalColor: Int get() = run { globalMatrix; _globalColor }
 	val globalAlpha: Double get() = RGBA.getAd(globalColor)

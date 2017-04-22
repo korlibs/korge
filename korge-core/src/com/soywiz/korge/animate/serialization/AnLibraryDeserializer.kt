@@ -14,8 +14,8 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.ds.DoubleArrayList
 import com.soywiz.korma.ds.IntArrayList
-import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
 object AnLibraryDeserializer {
@@ -151,5 +151,5 @@ object AnLibraryDeserializer {
 	}
 
 	fun SyncStream.readRect() = Rectangle(x = readF32_le(), y = readF32_le(), width = readF32_le(), height = readF32_le())
-	fun SyncStream.readIRect() = IRectangle(x = readF32_le().toInt(), y = readF32_le().toInt(), width = readF32_le().toInt(), height = readF32_le().toInt())
+	fun SyncStream.readIRect() = RectangleInt(x = readF32_le().toInt(), y = readF32_le().toInt(), width = readF32_le().toInt(), height = readF32_le().toInt())
 }
