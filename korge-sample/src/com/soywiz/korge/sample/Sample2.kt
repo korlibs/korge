@@ -10,10 +10,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.sleep
 import com.soywiz.korge.time.waitFrame
-import com.soywiz.korge.tween.Easings
-import com.soywiz.korge.tween.color
-import com.soywiz.korge.tween.rangeTo
-import com.soywiz.korge.tween.tween
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.text
@@ -100,7 +97,7 @@ object Sample2 : Module() {
 				//rect.tween((SolidRect::color..Colors.BLUE).color(), time = 1000)
 				rect.tween(
 					(rect::color..Colors.BLUE).color(),
-					rect::x..200.0,
+					(rect::x..200.0).delay(200).duration(600),
 					rect::y..100.0,
 					rect::width..200.0,
 					rect::height..90.0,

@@ -9,17 +9,21 @@ import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.util.clamp
 import kotlin.reflect.KMutableProperty0
 
-class TweenComponent(private val vs: List<V2<*>>, view: View, val time: Int, val easing: Easing = Easing.LINEAR, val callback: (Double) -> Unit, val c: CancellableContinuation<Unit>) : Component(view) {
+class TweenComponent(private val vs: List<V2<*>>, view: View, val time: Int? = null, val easing: Easing = Easing.LINEAR, val callback: (Double) -> Unit, val c: CancellableContinuation<Unit>) : Component(view) {
 	var elapsed = 0
+	val ctime = time ?: vs.map { it.endTime }.max() ?: 1000
 
 	override fun update(dtMs: Int) {
 		elapsed += dtMs
-		val ratio = (elapsed.toDouble() / time.toDouble()).clamp(0.0, 1.0)
-		val fratio = easing(ratio)
+
+		val ratio = (elapsed.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
 		for (v in vs) {
-			v.set(fratio)
+			val durationInTween = (v.duration ?: (ctime - v.startTime))
+			val elapsedInTween = (elapsed - v.startTime).clamp(0, durationInTween)
+			val ratioInTween = if (durationInTween <= 0.0) 1.0 else elapsedInTween.toDouble() / durationInTween.toDouble()
+			v.set(easing(ratioInTween))
 		}
-		callback(fratio)
+		callback(easing(ratio))
 
 		if (ratio >= 1.0) {
 			dettach()
@@ -46,24 +50,35 @@ fun <T> interpolate(min: T, max: T, ratio: Double): T = when (min) {
 }
 
 @Suppress("UNCHECKED_CAST")
-class V2<V>(val key: KMutableProperty0<V>, val initial: V, val end: V, val interpolator: (V, V, Double) -> V) {
+data class V2<V>(
+	internal val key: KMutableProperty0<V>,
+	internal val initial: V,
+	internal val end: V,
+	internal val interpolator: (V, V, Double) -> V,
+	internal val startTime: Int = 0,
+	internal val duration: Int? = null
+) {
+	val endTime = startTime + (duration ?: 0)
 	@Deprecated("", replaceWith = ReplaceWith("key .. (initial...end)", "com.soywiz.korge.tween.rangeTo"))
 	constructor(key: KMutableProperty0<V>, initial: V, end: V) : this(key, initial, end, ::interpolate)
 
 	fun set(ratio: Double) = key.set(interpolator(initial, end, ratio))
 }
 
-operator fun <V> V2<V>.rangeTo(that: V) = V2(this.key, this.end, that, this.interpolator)
+operator fun <V> V2<V>.rangeTo(that: V) = this.copy(initial = this.end, end = that)
 
 operator fun <V> KMutableProperty0<V>.rangeTo(that: V) = V2(this, this.get(), that, ::interpolate)
 operator fun <V : Comparable<V>> KMutableProperty0<V>.rangeTo(that: ClosedRange<V>) = V2(this, that.start, that.endInclusive, ::interpolate)
 operator fun <V> KMutableProperty0<V>.rangeTo(that: Pair<V, V>) = V2(this, that.first, that.second, ::interpolate)
 
-fun <V> V2<V>.withEasing(easing: Easing): V2<V> = V2(this.key, this.initial, this.end) { a, b, ratio -> this.interpolator(a, b, easing(ratio)) }
+fun <V> V2<V>.withEasing(easing: Easing): V2<V> = this.copy(interpolator = { a, b, ratio -> this.interpolator(a, b, easing(ratio)) })
 
-fun V2<Int>.color(): V2<Int> = V2(this.key, this.initial, this.end, RGBA::blendRGBA)
+fun V2<Int>.color(): V2<Int> = this.copy(interpolator = RGBA::blendRGBA)
 
-fun <V> V2<V>.easing(easing: Easing): V2<V> = V2(this.key, this.initial, this.end) { a, b, ratio -> this.interpolator(a, b, easing(ratio)) }
+fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { a, b, ratio -> this.interpolator(a, b, easing(ratio)) })
+
+inline fun <V> V2<V>.delay(startTime: Int) = this.copy(startTime = startTime)
+inline fun <V> V2<V>.duration(duration: Int) = this.copy(duration = duration)
 
 inline fun <V> V2<V>.linear() = this
 inline fun <V> V2<V>.easeIn() = this.withEasing(Easings.EASE_IN)
