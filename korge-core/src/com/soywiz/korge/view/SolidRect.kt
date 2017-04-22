@@ -14,7 +14,7 @@ class SolidRect(views: Views, var width: Double, var height: Double, color: Int)
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		//println("%08X".format(color))
-		ctx.batch.addQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, col1 = RGBA.multiply(color, globalColor), blendMode = blendMode)
+		ctx.batch.addQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, col1 = RGBA.multiply(color, globalColor), blendFactors = blendMode.factors)
 	}
 
 	override fun getLocalBounds(out: Rectangle) {

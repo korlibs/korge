@@ -2,12 +2,11 @@ package com.soywiz.korge.time
 
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.view.View
-import com.soywiz.korio.async.Signal
 import com.soywiz.korio.coroutine.korioSuspendCoroutine
 
 class TimerComponents(view: View) : Component(view) {
-	private val timers = arrayListOf<Signal<Int>>()
-	private val timersIt = arrayListOf<Signal<Int>>()
+	private val timers = arrayListOf<(Int) -> Unit>()
+	private val timersIt = arrayListOf<(Int) -> Unit>()
 
 	override fun update(dtMs: Int) {
 		timersIt.clear()
@@ -17,13 +16,15 @@ class TimerComponents(view: View) : Component(view) {
 
 	suspend fun wait(time: TimeSpan) = waitMilliseconds(time.ms)
 
+	suspend fun waitFrame() = waitMilliseconds(0)
+
 	suspend fun waitMilliseconds(time: Int): Unit = korioSuspendCoroutine<Unit> { c ->
-		val timer = Signal<Int>()
+		var timer: ((Int) -> Unit)? = null
 		var elapsedTime = 0
-		timer {
+		timer = {
 			elapsedTime += it
 			if (elapsedTime >= time) {
-				timers -= timer
+				timers -= timer!!
 				c.resume(Unit)
 			}
 		}
@@ -34,6 +35,8 @@ class TimerComponents(view: View) : Component(view) {
 val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
 suspend fun View.wait(time: Int) = this.timers.waitMilliseconds(time)
 suspend fun View.wait(time: TimeSpan) = this.timers.wait(time)
+suspend fun View.waitFrame() = this.timers.waitFrame()
 
 suspend fun View.sleep(time: Int) = this.timers.waitMilliseconds(time)
 suspend fun View.sleep(time: TimeSpan) = this.timers.wait(time)
+suspend fun View.sleepFrame() = this.timers.waitFrame()

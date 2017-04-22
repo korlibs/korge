@@ -35,8 +35,6 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 				}
 			}
 		}
-	private var _x: Double = 0.0
-	private var _y: Double = 0.0
 	private var _scaleX: Double = 1.0
 	private var _scaleY: Double = 1.0
 	private var _skewX: Double = 0.0
@@ -63,8 +61,9 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		for (pair in values) addProp(pair.key, pair.value)
 	}
 
-	var x: Double; set(v) = run { if (_x != v) run { _x = v; invalidateMatrix() } }; get() = _x
-	var y: Double; set(v) = run { if (_y != v) run { _y = v; invalidateMatrix() } }; get() = _y
+	val pos = Point2d()
+	var x: Double; set(v) = run { if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = pos.x
+	var y: Double; set(v) = run { if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = pos.y
 	var scaleX: Double; set(v) = run { if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = _scaleX
 	var scaleY: Double; set(v) = run { if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = _scaleY
 	var skewX: Double; set(v) = run { if (_skewX != v) run { _skewX = v; invalidateMatrix() } }; get() = _skewX
@@ -113,8 +112,8 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	fun setMatrixInterpolated(ratio: Double, l: Matrix2d, r: Matrix2d) {
 		this._localMatrix.setToInterpolated(ratio, l, r)
 		tempTransform.setMatrix(this._localMatrix)
-		this._x = tempTransform.x
-		this._y = tempTransform.y
+		this.pos.x = tempTransform.x
+		this.pos.y = tempTransform.y
 		this._scaleX = tempTransform.scaleX
 		this._scaleY = tempTransform.scaleY
 		this._skewX = tempTransform.skewX
@@ -128,7 +127,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		val m = transform.matrix
 		val t = transform.transform
 		_localMatrix.copyFrom(m)
-		_x = t.x; _y = t.y
+		pos.x = t.x; pos.y = t.y
 		_scaleX = t.scaleX; _scaleY = t.scaleY
 		_skewX = t.skewY; _skewY = t.skewY
 		_rotation = t.rotation
@@ -304,7 +303,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	open fun reset() {
 		_localMatrix.setToIdentity()
-		_x = 0.0; _y = 0.0
+		pos.setTo(0.0, 0.0)
 		_scaleX = 1.0; _scaleY = 1.0
 		_skewX = 0.0; _skewY = 0.0
 		_rotation = 0.0
@@ -313,14 +312,15 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		invalidate()
 	}
 
-	override fun update(dtMs: Int) {
-		updateInternal((dtMs * speed).toInt())
+	final override fun update(dtMs: Int) {
+		val actualDtMs = (dtMs * speed).toInt()
+		if (componentsIt != null) {
+			for (c in componentsIt!!) c.update(actualDtMs)
+		}
+		updateInternal(actualDtMs)
 	}
 
 	open protected fun updateInternal(dtMs: Int) {
-		if (componentsIt != null) {
-			for (c in componentsIt!!) c.update(dtMs)
-		}
 	}
 
 	fun removeFromParent() {

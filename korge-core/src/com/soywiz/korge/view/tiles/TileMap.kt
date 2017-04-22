@@ -21,7 +21,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
 
         val col1 = globalColor
 
-        batch.setStateFast(tileset.base, blendMode = blendMode, smoothing = smoothing)
+        batch.setStateFast(tileset.base, blendFactors = blendMode.factors, smoothing = smoothing)
 
         map.forEach { v, x, y ->
             val tex = tileset[0]

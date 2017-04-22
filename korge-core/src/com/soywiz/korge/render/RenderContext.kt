@@ -6,6 +6,7 @@ class RenderContext(
 	val ag: AG
 ) {
 	val batch = BatchBuilder2D(ag)
+	val ctx2d = RenderContext2D(batch)
 
 	fun flush() {
 		batch.flush()

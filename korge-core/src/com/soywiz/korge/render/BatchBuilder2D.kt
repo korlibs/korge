@@ -5,20 +5,18 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.view.BlendMode
 import com.soywiz.korma.Matrix2d
 
-class BatchBuilder2D(val ag: AG) {
-	private val maxQuads = 10
-	private val vertices = FastMemory.alloc(16 * 1024)
-	private val indices = ShortArray(1024)
+class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
+	private val vertices = FastMemory.alloc(16 * 4 * maxQuads * 4)
+	private val indices = FastMemory.alloc(2 * maxQuads * 6)
 	private var vertexCount = 0
 	private var vertexPos = 0
 	private var indexPos = 0
 	private var quadCount = 0
 	private var currentTex: Texture.Base? = null
 	private var currentSmoothing: Boolean = false
-	private var currentBlendMode: BlendMode = BlendMode.INHERIT
+	private var currentBlendFactors: AG.BlendFactors = AG.BlendFactors.NORMAL
 
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
@@ -30,7 +28,7 @@ class BatchBuilder2D(val ag: AG) {
 	}
 
 	private fun addIndex(idx: Int) {
-		indices[indexPos++] = idx.toShort()
+		indices.setAlignedInt16(indexPos++, idx)
 	}
 
 	// 0..1
@@ -46,7 +44,6 @@ class BatchBuilder2D(val ag: AG) {
 		addIndex(vertexCount + 2)
 
 		if (rotated) {
-
 			// @TODO:
 			addVertex(x0, y0, tex.x0, tex.y0, col1)
 			addVertex(x1, y1, tex.x1, tex.y0, col1)
@@ -64,24 +61,24 @@ class BatchBuilder2D(val ag: AG) {
 		if (quadCount >= maxQuads) flush()
 	}
 
-	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendMode: BlendMode) {
-		if (tex != currentTex || currentSmoothing != smoothing || currentBlendMode != blendMode) {
+	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.BlendFactors) {
+		if (tex != currentTex || currentSmoothing != smoothing || currentBlendFactors != blendFactors) {
 			flush()
 			currentTex = tex
 			currentSmoothing = smoothing
-			currentBlendMode = blendMode
+			currentBlendFactors = blendFactors
 		}
 	}
 
 	private val identity = Matrix2d()
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendMode: BlendMode = BlendMode.INHERIT, rotated: Boolean = false) {
+	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendFactors: AG.BlendFactors = AG.BlendFactors.NORMAL, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
 		val y1 = (y + height).toDouble()
 
-		setStateFast(tex.base, filtering, blendMode)
+		setStateFast(tex.base, filtering, blendFactors)
 
 		addQuadFast(
 			m.transformXf(x0, y0), m.transformYf(x0, y0),
@@ -117,16 +114,10 @@ class BatchBuilder2D(val ag: AG) {
 				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
 			}
 
-			// http://www.learnopengles.com/tag/additive-blending/
-			val factors = when (currentBlendMode) {
-				BlendMode.INHERIT, BlendMode.NORMAL -> AG.BlendFactors.NORMAL
-				BlendMode.ADD -> AG.BlendFactors.ADD
-			}
-
-			//println(currentBlendMode)
+			val factors = currentBlendFactors
 
 			ag.createVertexBuffer(vertices, 0, vertexPos * 4).use { vertexBuffer ->
-				ag.createIndexBuffer(indices, 0, indexPos).use { indexBuffer ->
+				ag.createIndexBuffer(indices, 0, indexPos * 2).use { indexBuffer ->
 					ag.draw(
 						vertices = vertexBuffer,
 						indices = indexBuffer,
