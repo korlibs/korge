@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.soywiz.korge.tween
 
 import com.soywiz.korge.component.Component
@@ -12,8 +14,20 @@ import kotlin.reflect.KMutableProperty0
 class TweenComponent(private val vs: List<V2<*>>, view: View, val time: Int? = null, val easing: Easing = Easing.LINEAR, val callback: (Double) -> Unit, val c: CancellableContinuation<Unit>) : Component(view) {
 	var elapsed = 0
 	val ctime = time ?: vs.map { it.endTime }.max() ?: 1000
+	var cancelled = false
+
+	init {
+		c.onCancel {
+			//cancelled = true
+		}
+	}
 
 	override fun update(dtMs: Int) {
+		if (cancelled) {
+			dettach()
+			c.resume(Unit)
+			return
+		}
 		elapsed += dtMs
 
 		val ratio = (elapsed.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)

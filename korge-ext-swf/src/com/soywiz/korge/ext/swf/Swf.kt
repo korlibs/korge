@@ -468,6 +468,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				}
 				is TagDefineShape -> {
 					val rasterizer = SWFShapeRasterizer(swf, debug, it)
+					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
 					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
 					symbols += symbol
 					shapesToPopulate += symbol to rasterizer
@@ -535,7 +536,9 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
 	private val _image by lazy { NativeImage(Math.max(1, bounds.width.toIntCeil()), Math.max(1, bounds.height.toIntCeil())) }
 	val image by lazy {
+		//println("export")
 		shape.export(if (debug) LoggerShapeExporter(this) else this)
+		//shape.export(LoggerShapeExporter(this))
 		_image
 	}
 	val path = GraphicsPath()
@@ -557,7 +560,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 
 	override fun beginFills() {
 		processingFills = true
-		ctx.beginPath()
+		flushFill()
 	}
 
 	override fun endFills() {
@@ -574,11 +577,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 	}
 
 	override fun endLines() {
-		ctx.stroke()
-	}
-
-	override fun beginFill(color: Int, alpha: Double) {
-		ctx.fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		flushLine()
 	}
 
 	fun GradientSpreadMode.toCtx() = when (this) {
@@ -587,7 +586,13 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 		GradientSpreadMode.REPEAT -> Context2d.CycleMethod.REPEAT
 	}
 
+	override fun beginFill(color: Int, alpha: Double) {
+		flushFill()
+		ctx.fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
+	}
+
 	override fun beginGradientFill(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
+		flushFill()
 		//matrix.scale(100.0, 100.0)
 		//this.createBox(width / 1638.4, height / 1638.4, rotation, tx + width / 2, ty + height / 2);
 		val transform = Matrix2d.Transform().setMatrix(matrix)
@@ -618,6 +623,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 	}
 
 	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
+		flushFill()
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
 		ctx.fillStyle = Context2d.BitmapPaint(bmp, matrix, repeat, smooth)
 		//println(matrix)
@@ -626,10 +632,21 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 	}
 
 	override fun endFill() {
+		flushFill()
+	}
+
+	private fun flushFill() {
 		ctx.fill()
+		ctx.beginPath()
+	}
+
+	private fun flushLine() {
+		ctx.stroke()
+		ctx.beginPath()
 	}
 
 	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
+		flushLine()
 		ctx.lineWidth = thickness
 		ctx.strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
 		ctx.lineCap = when (startCaps) {

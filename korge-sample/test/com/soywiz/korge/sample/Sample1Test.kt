@@ -3,7 +3,7 @@ package com.soywiz.korge.sample
 import com.soywiz.korge.animate.AnMovieClip
 import com.soywiz.korge.tests.KorgeTest
 import com.soywiz.korge.view.dump
-import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.Size
 import org.junit.Assert
 import org.junit.Test
@@ -36,7 +36,7 @@ class Sample1Test : KorgeTest() {
 		Assert.assertEquals(1.0, percent.alpha, 0.0)
 		percent.simulateClick()
 		Assert.assertEquals(0.5, percent.alpha, 0.0)
-		Assert.assertEquals(IRectangle(111, 3, 71, 32), percent.getGlobalBounds().toInt())
+		Assert.assertEquals(RectangleInt(111, 3, 71, 32), percent.getGlobalBounds().toInt())
 		Assert.assertTrue(percent.isVisibleToUser())
 	}
 
