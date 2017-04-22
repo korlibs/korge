@@ -7,9 +7,12 @@ import com.soywiz.korio.coroutine.korioSuspendCoroutine
 
 class TimerComponents(view: View) : Component(view) {
 	private val timers = arrayListOf<Signal<Int>>()
+	private val timersIt = arrayListOf<Signal<Int>>()
 
 	override fun update(dtMs: Int) {
-		for (timer in timers) timer(dtMs)
+		timersIt.clear()
+		timersIt.addAll(timers)
+		for (timer in timersIt) timer(dtMs)
 	}
 
 	suspend fun wait(time: TimeSpan) = waitMilliseconds(time.ms)
@@ -29,3 +32,8 @@ class TimerComponents(view: View) : Component(view) {
 }
 
 val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
+suspend fun View.wait(time: Int) = this.timers.waitMilliseconds(time)
+suspend fun View.wait(time: TimeSpan) = this.timers.wait(time)
+
+suspend fun View.sleep(time: Int) = this.timers.waitMilliseconds(time)
+suspend fun View.sleep(time: TimeSpan) = this.timers.wait(time)

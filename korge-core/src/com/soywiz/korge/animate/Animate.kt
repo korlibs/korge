@@ -197,6 +197,10 @@ fun View?.play(name: String) {
 	(this as? AnMovieClip?)?.play(name)
 }
 
+val View?.playingName: String get() {
+	return (this as? AnMovieClip?)?.currentState?.name ?: ""
+}
+
 fun View?.seekStill(name: String, ratio: Double = 0.0) {
 	(this as? AnMovieClip?)?.seekStill(name, ratio)
 }

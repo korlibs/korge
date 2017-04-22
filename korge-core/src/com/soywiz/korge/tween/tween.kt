@@ -63,6 +63,8 @@ fun <V> V2<V>.withEasing(easing: Easing): V2<V> = V2(this.key, this.initial, thi
 
 fun V2<Int>.color(): V2<Int> = V2(this.key, this.initial, this.end, RGBA::blendRGBA)
 
+fun <V> V2<V>.easing(easing: Easing): V2<V> = V2(this.key, this.initial, this.end) { a, b, ratio -> this.interpolator(a, b, easing(ratio)) }
+
 inline fun <V> V2<V>.linear() = this
 inline fun <V> V2<V>.easeIn() = this.withEasing(Easings.EASE_IN)
 inline fun <V> V2<V>.easeOut() = this.withEasing(Easings.EASE_OUT)

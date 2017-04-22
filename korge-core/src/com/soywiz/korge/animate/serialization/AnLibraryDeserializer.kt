@@ -134,7 +134,7 @@ object AnLibraryDeserializer {
 						val name = strings[readU_VL()] ?: ""
 						val startTime = readU_VL()
 						val stateIndex = readU_VL()
-						name to AnSymbolMovieClipStateWithStartTime(symbolStates[stateIndex], startTime = startTime)
+						name to AnSymbolMovieClipStateWithStartTime(name, symbolStates[stateIndex], startTime = startTime)
 					}.toMap()
 
 					mc

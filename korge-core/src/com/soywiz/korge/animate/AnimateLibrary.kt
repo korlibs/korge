@@ -84,7 +84,7 @@ class AnSymbolMovieClipState(totalDepths: Int) {
 	}
 }
 
-class AnSymbolMovieClipStateWithStartTime(val state: AnSymbolMovieClipState, val startTime: Int)
+class AnSymbolMovieClipStateWithStartTime(val name: String, val state: AnSymbolMovieClipState, val startTime: Int)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	val states = hashMapOf<String, AnSymbolMovieClipStateWithStartTime>()

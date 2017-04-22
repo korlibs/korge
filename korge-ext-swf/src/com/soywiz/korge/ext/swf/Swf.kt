@@ -145,7 +145,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					justAfterStopOrStart = false
 					stateStartFrame = frame.index
 					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
-					symbol.states["frame${frame.index}"] = AnSymbolMovieClipStateWithStartTime(currentState, 0)
+					val fname = "frame${frame.index}"
+					symbol.states[fname] = AnSymbolMovieClipStateWithStartTime(fname, currentState, 0)
 				}
 
 				val frameInState = frame.index - stateStartFrame
@@ -154,11 +155,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 				val isLast = frame.index >= swfTimeline.frames.size - 1
 
 				// Register State
-				if (frame.isFirst) symbol.states["default"] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+				if (frame.isFirst) symbol.states["default"] = AnSymbolMovieClipStateWithStartTime("default", currentState, currentTime)
 				if (frameName != null) {
 					//if (frameInState == 0) currentState.name = frameName
 					//println("State: $frameName, $currentState, $currentTime")
-					symbol.states[frameName] = AnSymbolMovieClipStateWithStartTime(currentState, currentTime)
+					symbol.states[frameName] = AnSymbolMovieClipStateWithStartTime(frameName, currentState, currentTime)
 				}
 
 				// Compute frame
