@@ -1,6 +1,7 @@
 package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
+import com.soywiz.korge.atlas.Atlas
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.ext.particle.ParticleEmitter
 import com.soywiz.korge.ext.particle.attachParticleAndWait
@@ -8,11 +9,11 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.sleep
 import com.soywiz.korge.time.waitFrame
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Text
+import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.go
@@ -27,6 +28,7 @@ object Sample2 : Module() {
 
 	class MainScene(
 		@Path("font/font.fnt") val font: BitmapFont,
+		@Path("spriter-sample1/demo.json") val atlas1: Atlas,
 		@Path("particle/particle.pex") val emitter: ParticleEmitter
 	) : Scene() {
 		val random = Random()
@@ -41,6 +43,11 @@ object Sample2 : Module() {
 			val particles = emitter.create(200.0, 200.0)
 			sceneView += particles
 			particles.speed = 2.0
+
+			sceneView += views.image(atlas1.textures["arms/forearm_jump_0.png"]!!.texture).apply {
+				x = 100.0
+				y = 100.0
+			}
 
 			for (n in 0 until 10) {
 				go {

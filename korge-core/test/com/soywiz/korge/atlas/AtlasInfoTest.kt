@@ -7,10 +7,10 @@ import com.soywiz.korma.geom.Size
 import org.junit.Assert
 import org.junit.Test
 
-class AtlasTest {
+class AtlasInfoTest {
 	@Test
 	fun name() = syncTest {
-		val atlas = Atlas.loadJsonSpriter(ResourcesVfs["demo.json"].readString())
+		val atlas = AtlasInfo.loadJsonSpriter(ResourcesVfs["demo.json"].readString())
 		Assert.assertEquals("Spriter", atlas.app)
 		Assert.assertEquals("r10", atlas.version)
 		Assert.assertEquals("demo.png", atlas.image)

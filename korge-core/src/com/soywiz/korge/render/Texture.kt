@@ -4,6 +4,7 @@ import com.jtransc.annotation.JTranscKeep
 import com.soywiz.korag.AG
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.view.Views
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
@@ -42,6 +43,8 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 
 	class Base(val base: AG.Texture, val width: Int, val height: Int)
 }
+
+suspend fun VfsFile.readTexture(views: Views, mipmaps: Boolean = true): Texture = readTexture(views.ag, mipmaps)
 
 suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
 	val tex = ag.createTexture()

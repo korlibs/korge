@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.spriter
 
-import com.soywiz.korge.atlas.Atlas
+import com.soywiz.korge.atlas.readAtlas
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Data
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.SCMLReader
 import com.soywiz.korge.render.TransformedTexture
@@ -37,33 +37,21 @@ suspend fun VfsFile.readSpriterLibrary(views: Views): SpriterLibrary {
 	val reader = SCMLReader(scmlContent)
 	val data = reader.data
 
-	// @TODO: Atlas reading!
-	val images = hashMapOf<String, TransformedTexture>()
+	val textures = hashMapOf<String, TransformedTexture>()
 
 	for (atlasName in data.atlases) {
-		val atlasFile = file.parent[atlasName]
-		val atlas = Atlas.loadJsonSpriter(atlasFile.readString())
-		val atlasTex = atlasFile.parent[atlas.image].readTexture(views.ag)
-		for (frame in atlas.frames.values) {
-			images[frame.name] = TransformedTexture(
-				atlasTex.slice(frame.frame),
-				frame.spriteSourceSize.x.toFloat(), frame.spriteSourceSize.y.toFloat(),
-				frame.rotated
-			)
-		}
-		//println(atlas)
+		val atlas = file.parent[atlasName].readAtlas(views)
+		textures += atlas.textures
 	}
 
 	for (folder in data.folders) {
 		for (f in folder.files) {
-			if (f.name in images) continue
+			if (f.name in textures) continue
 			val image = file.parent[f.name]
 			val tex = image.readTexture(views.ag)
-			images[f.name] = TransformedTexture(tex)
-			//println("${f.name}: ${tex.width}x${tex.height} = ${f.size.width}x${f.size.height}")
-
+			textures[f.name] = TransformedTexture(tex)
 		}
 	}
 
-	return SpriterLibrary(views, data, images)
+	return SpriterLibrary(views, data, textures)
 }
