@@ -593,33 +593,29 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 
 	override fun beginGradientFill(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
 		flushFill()
-		//matrix.scale(100.0, 100.0)
-		//this.createBox(width / 1638.4, height / 1638.4, rotation, tx + width / 2, ty + height / 2);
-		val transform = Matrix2d.Transform().setMatrix(matrix)
 
-		val width = transform.scaleX * 1638.4
-		val height = transform.scaleY * 1638.4
-		val rotation = transform.rotation
-		val x = transform.x - width / 2.0
-		val y = transform.y - height / 2.0
-		val x0 = x
-		val y0 = y
-		val x1 = x + width * Math.cos(rotation)
-		val y1 = y + height * Math.sin(rotation)
 		val aratios = ArrayList(ratios.map { it.toDouble() / 255.0 })
 		val acolors = ArrayList(colors.zip(alphas).map { decodeSWFColor(it.first, it.second) })
+
+		val m2 = Matrix2d()
+		m2.copyFrom(matrix)
+
+		m2.pretranslate(-0.5, -0.5)
+		m2.prescale(1638.4 / 2.0, 1638.4 / 2.0)
+
+		val imethod = when (interpolationMethod) {
+			GradientInterpolationMode.NORMAL -> Context2d.Gradient.InterpolationMethod.NORMAL
+			GradientInterpolationMode.LINEAR -> Context2d.Gradient.InterpolationMethod.LINEAR
+		}
+
 		when (type) {
 			GradientType.LINEAR -> {
-				ctx.fillStyle = Context2d.LinearGradient(x0, y0, x1, y1, aratios, acolors, spreadMethod.toCtx())
+				ctx.fillStyle = Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 			}
 			GradientType.RADIAL -> {
-				val r0 = 0.0
-				val r1 = Math.max(width, height)
-				ctx.fillStyle = Context2d.RadialGradient(x0, y0, r0, x1, y1, r1, aratios, acolors, spreadMethod.toCtx())
+				ctx.fillStyle = Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 			}
 		}
-		//ctx.fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
-		//super.beginGradientFill(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
 	}
 
 	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
