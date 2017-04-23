@@ -586,6 +586,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 
 	override fun beginFills() {
 		flush()
+		drawingFill = true
 	}
 
 	override fun endFills() {
@@ -594,6 +595,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 
 	override fun beginLines() {
 		flush()
+		drawingFill = false
 	}
 
 	override fun endLines() {
@@ -614,9 +616,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 		fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
 	}
 
-	override fun beginGradientFill(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
-		flush()
-		drawingFill = true
+	private fun createGradientPaint(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double): Context2d.Gradient {
 		val aratios = ArrayList(ratios.map { it.toDouble() / 255.0 })
 		val acolors = ArrayList(colors.zip(alphas).map { decodeSWFColor(it.first, it.second) })
 
@@ -631,14 +631,16 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 			GradientInterpolationMode.LINEAR -> Context2d.Gradient.InterpolationMethod.LINEAR
 		}
 
-		when (type) {
-			GradientType.LINEAR -> {
-				fillStyle = Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
-			}
-			GradientType.RADIAL -> {
-				fillStyle = Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
-			}
+		return when (type) {
+			GradientType.LINEAR -> Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
+			GradientType.RADIAL -> Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 		}
+	}
+
+	override fun beginGradientFill(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
+		flush()
+		drawingFill = true
+		fillStyle = createGradientPaint(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
 	}
 
 	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
@@ -652,28 +654,27 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	}
 
 	override fun endFill() {
-		//flush()
-		_flushFill()
+		flush()
 	}
 
-	private fun _flushFill() {
+	private fun __flushFill() {
 		if (apath.isEmpty()) return
 		shapes += FillShape(apath, null, fillStyle, Matrix2d())
 		apath = GraphicsPath()
 	}
 
-	private fun _flushStroke() {
+	private fun __flushStroke() {
 		if (apath.isEmpty()) return
 		shapes += PolylineShape(apath, null, strokeStyle, Matrix2d(), lineWidth, true, "normal", lineCap, lineCap, "joints", 10.0)
 		apath = GraphicsPath()
 	}
 
 	private fun flush() {
-		//if (drawingFill) {
-		//	_flushFill()
-		//} else {
-		//	_flushStroke()
-		//}
+		if (drawingFill) {
+			__flushFill()
+		} else {
+			__flushStroke()
+		}
 	}
 
 	private var lineWidth: Double = 1.0
@@ -681,7 +682,6 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	private var strokeStyle: Context2d.Paint = Context2d.Color(Colors.BLACK)
 
 	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
-		_flushStroke()
 		flush()
 		drawingFill = false
 		//println("pixelHinting: $pixelHinting, scaleMode: $scaleMode, miterLimit=$miterLimit")
@@ -695,10 +695,9 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	}
 
 	override fun lineGradientStyle(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
-		_flushStroke()
 		flush()
 		drawingFill = false
-		super.lineGradientStyle(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
+		strokeStyle = createGradientPaint(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
 	}
 
 	override fun moveTo(x: Double, y: Double) {
