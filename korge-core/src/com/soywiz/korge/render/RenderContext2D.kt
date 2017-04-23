@@ -8,7 +8,7 @@ import com.soywiz.korma.Matrix2d
 class RenderContext2D(val batch: BatchBuilder2D) {
 	val mpool = Pool<Matrix2d> { Matrix2d() }
 	val m = Matrix2d()
-	var blendFactors = AG.BlendFactors.NORMAL
+	var blendFactors = MyBlendFactors.NORMAL
 	var multiplyColor = Colors.WHITE
 
 	inline fun <T> keepMatrix(crossinline callback: () -> T) = mpool.alloc { matrix ->

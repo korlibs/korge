@@ -7,6 +7,13 @@ import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
 import com.soywiz.korma.Matrix2d
 
+object MyBlendFactors{
+	val NORMAL = AG.BlendFactors.NORMAL
+	val ADD = AG.BlendFactors.ADD
+	//val NORMAL = AG.BlendFactors.NORMAL_PREMULT
+	//val ADD = AG.BlendFactors.ADD_PREMULT
+}
+
 class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	private val vertices = FastMemory.alloc(16 * 4 * maxQuads * 4)
 	private val indices = FastMemory.alloc(2 * maxQuads * 6)
@@ -16,7 +23,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	private var quadCount = 0
 	private var currentTex: Texture.Base? = null
 	private var currentSmoothing: Boolean = false
-	private var currentBlendFactors: AG.BlendFactors = AG.BlendFactors.NORMAL
+	private var currentBlendFactors: AG.BlendFactors = MyBlendFactors.NORMAL
 
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
@@ -72,7 +79,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 
 	private val identity = Matrix2d()
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendFactors: AG.BlendFactors = AG.BlendFactors.NORMAL, rotated: Boolean = false) {
+	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
@@ -91,14 +98,28 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 
 	companion object {
 		val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, DefaultShaders.a_Col)
-		val PROGRAM = Program(
-			vertex = VertexShader {
-				SET(DefaultShaders.v_Tex, DefaultShaders.a_Tex)
-				SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-				SET(out, DefaultShaders.u_ProjMat * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
-			},
+		val VERTEX = VertexShader {
+			SET(DefaultShaders.v_Tex, DefaultShaders.a_Tex)
+			SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
+			SET(out, DefaultShaders.u_ProjMat * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+		}
+
+		val PROGRAM_NORMAL = Program(
+			vertex = VERTEX,
 			fragment = FragmentShader {
 				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["rgba"])
+			},
+			name = "BatchBuilder2D.Tinted"
+		)
+
+		val PROGRAM_PRE = Program(
+			vertex = VERTEX,
+			fragment = FragmentShader {
+				DefaultShaders.apply {
+					SET(t_Temp1, texture2D(u_Tex, v_Tex["xy"]))
+					SET(t_Temp1["rgb"], t_Temp1["rgb"] / t_Temp1["a"])
+					SET(out, t_Temp1["rgba"] * v_Col["rgba"])
+				}
 			},
 			name = "BatchBuilder2D.Tinted"
 		)
@@ -121,7 +142,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 					ag.draw(
 						vertices = vertexBuffer,
 						indices = indexBuffer,
-						program = PROGRAM,
+						program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NORMAL,
 						type = AG.DrawType.TRIANGLES,
 						vertexLayout = LAYOUT,
 						vertexCount = indexPos,
