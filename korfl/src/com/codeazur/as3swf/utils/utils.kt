@@ -179,6 +179,7 @@ open class FlashByteArray() {
 		val len = if (length >= 0) length else bytesAvailable
 		bytes.position = position
 		for (n in 0 until len) bytes.writeByte(this.readByte())
+		bytes.position = position
 	}
 
 	fun readUTF(): String = TODO()

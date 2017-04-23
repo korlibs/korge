@@ -27,7 +27,7 @@ open class AnSymbol(
 	val id: Int = -1,
 	var name: String? = null
 ) : Extra by Extra.Mixin() {
-	open fun create(library: AnLibrary): AnElement = TODO("$this")
+	open fun create(library: AnLibrary): AnElement = AnEmptyView(library)
 }
 
 object AnSymbolEmpty : AnSymbol(-1, "")

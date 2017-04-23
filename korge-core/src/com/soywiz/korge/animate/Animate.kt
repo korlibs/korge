@@ -40,6 +40,10 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	override fun updateInternal(dtMs: Int) = Unit
 }
 
+class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbolEmpty = AnSymbolEmpty) : View(library.views), AnElement {
+
+}
+
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(library.views), AnElement, IText, IHtml {
 	private val textField = views.text("", 16.0).apply {
 		textBounds.copyFrom(symbol.bounds)

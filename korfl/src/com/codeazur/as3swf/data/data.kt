@@ -1044,7 +1044,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 			} else {
 				val states: Int = data.readUB(5)
 				if (states == 0) {
-					shapeRecord = SWFShapeRecordEnd()
+					shapeRecord = SWFShapeRecordEnd
 				} else {
 					val styleChangeRecord = data.readSTYLECHANGERECORD(states, fillBits, lineBits, level)
 					if (styleChangeRecord.stateNewStyles) {
@@ -1494,14 +1494,17 @@ open class SWFShapeRecord {
 	val isEdgeRecord: Boolean get() = (type == SWFShapeRecord.TYPE_STRAIGHTEDGE || type == SWFShapeRecord.TYPE_CURVEDEDGE)
 	open fun parse(data: SWFData, level: Int = 1): Unit = Unit
 	override fun toString(): String = "[SWFShapeRecord]"
+
+	open fun clone(): SWFShapeRecord = SWFShapeRecord()
 }
 
-class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
-	var controlDeltaX: Int = 0
-	var controlDeltaY: Int = 0
-	var anchorDeltaX: Int = 0
+data class SWFShapeRecordCurvedEdge(
+	var numBits: Int = 0,
+	var controlDeltaX: Int = 0,
+	var controlDeltaY: Int = 0,
+	var anchorDeltaX: Int = 0,
 	var anchorDeltaY: Int = 0
-
+) : SWFShapeRecord() {
 	override fun parse(data: SWFData, level: Int): Unit {
 		controlDeltaX = data.readSB(numBits)
 		controlDeltaY = data.readSB(numBits)
@@ -1511,18 +1514,25 @@ class SWFShapeRecordCurvedEdge(var numBits: Int = 0) : SWFShapeRecord() {
 
 	override val type = SWFShapeRecord.TYPE_CURVEDEDGE
 	override fun toString(): String = "[SWFShapeRecordCurvedEdge] ControlDelta: $controlDeltaX,$controlDeltaY, AnchorDelta: $anchorDeltaX,$anchorDeltaY"
+
+	override fun clone(): SWFShapeRecord = this.copy()
+
 }
 
-class SWFShapeRecordEnd : SWFShapeRecord() {
+object SWFShapeRecordEnd : SWFShapeRecord() {
 	override val type = SWFShapeRecord.TYPE_END
 	override fun toString() = "[SWFShapeRecordEnd]"
+
+	override fun clone(): SWFShapeRecord = this
 }
 
-class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
-	var generalLineFlag: Boolean = false
-	var vertLineFlag: Boolean = false
-	var deltaY: Int = 0
+data class SWFShapeRecordStraightEdge(
+	var numBits: Int = 0,
+	var generalLineFlag: Boolean = false,
+	var vertLineFlag: Boolean = false,
+	var deltaY: Int = 0,
 	var deltaX: Int = 0
+) : SWFShapeRecord() {
 
 	override fun parse(data: SWFData, level: Int): Unit {
 		generalLineFlag = (data.readUB(1) == 1)
@@ -1546,26 +1556,27 @@ class SWFShapeRecordStraightEdge(var numBits: Int = 0) : SWFShapeRecord() {
 		}
 		return str
 	}
+
+	override fun clone(): SWFShapeRecord = this.copy()
 }
 
-class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: Int = 0) : SWFShapeRecord() {
-	var stateNewStyles: Boolean = ((states and 0x10) != 0)
-	var stateLineStyle: Boolean = ((states and 0x08) != 0)
-	var stateFillStyle1: Boolean = ((states and 0x04) != 0)
-	var stateFillStyle0: Boolean = ((states and 0x02) != 0)
-	var stateMoveTo: Boolean = ((states and 0x01) != 0)
-
-	var moveDeltaX: Int = 0
-	var moveDeltaY: Int = 0
-	var fillStyle0: Int = 0
-	var fillStyle1: Int = 0
-	var lineStyle: Int = 0
-
-	var numFillBits: Int = fillBits
-	var numLineBits: Int = lineBits
-
-	var fillStyles = ArrayList<SWFFillStyle>()
-	var lineStyles = ArrayList<SWFLineStyle>()
+data class SWFShapeRecordStyleChange(
+	val states: Int = 0,
+	var numFillBits: Int = 0,
+	var numLineBits: Int = 0,
+	var moveDeltaX: Int = 0,
+	var moveDeltaY: Int = 0,
+	var fillStyle0: Int = 0,
+	var fillStyle1: Int = 0,
+	var lineStyle: Int = 0,
+	var fillStyles: ArrayList<SWFFillStyle> = ArrayList<SWFFillStyle>(),
+	var lineStyles: ArrayList<SWFLineStyle> = ArrayList<SWFLineStyle>()
+) : SWFShapeRecord() {
+	val stateNewStyles: Boolean get() = ((states and 0x10) != 0)
+	val stateLineStyle: Boolean get() = ((states and 0x08) != 0)
+	val stateFillStyle1: Boolean get() = ((states and 0x04) != 0)
+	val stateFillStyle0: Boolean get() = ((states and 0x02) != 0)
+	val stateMoveTo: Boolean get() = ((states and 0x01) != 0)
 
 	override val type = SWFShapeRecord.TYPE_STYLECHANGE
 
@@ -1627,6 +1638,8 @@ class SWFShapeRecordStyleChange(states: Int = 0, fillBits: Int = 0, lineBits: In
 		}
 		return str
 	}
+
+	override fun clone(): SWFShapeRecord = this.copy()
 }
 
 class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {

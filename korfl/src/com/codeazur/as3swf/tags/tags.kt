@@ -1093,74 +1093,74 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		endEdges = data.readSHAPE()
 	}
 
-	//fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
-	//	var j: Int = 0
-	//	val exportShape: com.codeazur.as3swf.data.SWFShape = com.codeazur.as3swf.data.SWFShape()
-	//	val numEdges: Int = startEdges.records.size
-	//	for (i in 0 until numEdges) {
-	//		var startRecord: com.codeazur.as3swf.data.SWFShapeRecord = startEdges.records[i]
-	//		// Ignore start records that are style change records and don't have moveTo
-	//		// The end record index is not incremented, because end records do not have
-	//		// style change records without moveTo's.
-	//		if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
-	//			exportShape.records.add(startRecord.clone())
-	//			continue
-	//		}
-	//		var endRecord: com.codeazur.as3swf.data.SWFShapeRecord = endEdges.records[j++]
-	//		var exportRecord: com.codeazur.as3swf.data.SWFShapeRecord? = null
-	//		// It is possible for an edge to change type over the course of a morph sequence.
-	//		// A straight edge can become a curved edge and vice versa
-	//		// Convert straight edge to curved edge, if needed:
-	//		if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE) {
-	//			endRecord = convertToCurvedEdge(endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
-	//		} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE) {
-	//			startRecord = convertToCurvedEdge(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
-	//		}
-	//		when (startRecord.type) {
-	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE -> {
-	//				val startStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
-	//				val endStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
-	//				startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
-	//				startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
-	//				exportRecord = startStyleChange
-	//			}
-	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
-	//				val startStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
-	//				val endStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
-	//				startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
-	//				startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
-	//				if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
-	//					startStraightEdge.generalLineFlag = true
-	//					startStraightEdge.vertLineFlag = false
-	//				} else {
-	//					startStraightEdge.generalLineFlag = false
-	//					startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
-	//				}
-	//				exportRecord = startStraightEdge
-	//			}
-	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE -> {
-	//				val startCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
-	//				val endCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
-	//				startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
-	//				startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
-	//				startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
-	//				startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
-	//				exportRecord = startCurvedEdge
-	//			}
-	//			com.codeazur.as3swf.data.SWFShapeRecord.TYPE_END -> {
-	//				exportRecord = startRecord.clone()
-	//			}
-	//		}
-	//		exportShape.records.add(exportRecord!!)
-	//	}
-	//	for (i in 0 until morphFillStyles.size) {
-	//		exportShape.fillStyles.add(morphFillStyles[i].getMorphedFillStyle(ratio))
-	//	}
-	//	for (i in 0 until morphLineStyles.size) {
-	//		exportShape.lineStyles.add(morphLineStyles[i].getMorphedLineStyle(ratio))
-	//	}
-	//	exportShape.export(handler)
-	//}
+	fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
+		var j: Int = 0
+		val exportShape: com.codeazur.as3swf.data.SWFShape = com.codeazur.as3swf.data.SWFShape()
+		val numEdges: Int = startEdges.records.size
+		for (i in 0 until numEdges) {
+			var startRecord: com.codeazur.as3swf.data.SWFShapeRecord = startEdges.records[i]
+			// Ignore start records that are style change records and don't have moveTo
+			// The end record index is not incremented, because end records do not have
+			// style change records without moveTo's.
+			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange).stateMoveTo) {
+				exportShape.records.add(startRecord.clone())
+				continue
+			}
+			var endRecord: com.codeazur.as3swf.data.SWFShapeRecord = endEdges.records[j++]
+			var exportRecord: com.codeazur.as3swf.data.SWFShapeRecord? = null
+			// It is possible for an edge to change type over the course of a morph sequence.
+			// A straight edge can become a curved edge and vice versa
+			// Convert straight edge to curved edge, if needed:
+			if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE) {
+				endRecord = convertToCurvedEdge(endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
+			} else if (startRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE) {
+				startRecord = convertToCurvedEdge(startRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge)
+			}
+			when (startRecord.type) {
+				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STYLECHANGE -> {
+					val startStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+					val endStyleChange: com.codeazur.as3swf.data.SWFShapeRecordStyleChange = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStyleChange
+					startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
+					startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
+					exportRecord = startStyleChange
+				}
+				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
+					val startStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
+					val endStraightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordStraightEdge
+					startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
+					startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
+					if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
+						startStraightEdge.generalLineFlag = true
+						startStraightEdge.vertLineFlag = false
+					} else {
+						startStraightEdge.generalLineFlag = false
+						startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
+					}
+					exportRecord = startStraightEdge
+				}
+				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_CURVEDEDGE -> {
+					val startCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = startRecord.clone() as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
+					val endCurvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = endRecord as com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge
+					startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
+					startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
+					startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
+					startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
+					exportRecord = startCurvedEdge
+				}
+				com.codeazur.as3swf.data.SWFShapeRecord.TYPE_END -> {
+					exportRecord = startRecord.clone()
+				}
+			}
+			exportShape.records.add(exportRecord!!)
+		}
+		for (i in 0 until morphFillStyles.size) {
+			exportShape.fillStyles.add(morphFillStyles[i].getMorphedFillStyle(ratio))
+		}
+		for (i in 0 until morphLineStyles.size) {
+			exportShape.lineStyles.add(morphLineStyles[i].getMorphedLineStyle(ratio))
+		}
+		exportShape.export(handler)
+	}
 
 	protected fun convertToCurvedEdge(straightEdge: com.codeazur.as3swf.data.SWFShapeRecordStraightEdge): com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge {
 		val curvedEdge: com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge = com.codeazur.as3swf.data.SWFShapeRecordCurvedEdge()
