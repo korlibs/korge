@@ -218,8 +218,8 @@ interface ViewsContainer {
 	val views: Views
 }
 
-data class KorgeFileLoaderTester<T>(val name: String, val tester: (s: SyncStream) -> KorgeFileLoader<T>?) {
-	operator fun invoke(s: SyncStream) = tester(s)
+data class KorgeFileLoaderTester<T>(val name: String, val tester: suspend (s: SyncStream, injector: AsyncInjector) -> KorgeFileLoader<T>?) {
+	suspend operator fun invoke(s: SyncStream, injector: AsyncInjector) = tester(s, injector)
 	override fun toString(): String = "KorgeFileTester(\"$name\")"
 }
 

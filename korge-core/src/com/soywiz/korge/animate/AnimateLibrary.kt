@@ -4,6 +4,7 @@ import com.soywiz.korau.format.AudioData
 import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
 import com.soywiz.korge.animate.serialization.AnLibraryFile
 import com.soywiz.korge.render.TextureWithBitmapSlice
+import com.soywiz.korge.resources.Mipmaps
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.BlendMode
@@ -95,9 +96,10 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 
 val Views.animateLibraryLoaders by Extra.Property {
 	arrayListOf<KorgeFileLoaderTester<AnLibrary>>(
-		KorgeFileLoaderTester("core/ani") {
+		KorgeFileLoaderTester("core/ani") { s, injector ->
+			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			when {
-				(it.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views) }
+				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views, mipmaps) }
 				else -> null
 			}
 		}
@@ -147,7 +149,7 @@ class AnLibrary(val views: Views, val fps: Double) {
 			val head = file.readRangeBytes(0 until 0x40)
 
 			for (loader in views.animateLibraryLoaders) {
-				val aloader = loader(head.openSync()) ?: continue
+				val aloader = loader(head.openSync(), injector) ?: continue
 				return aloader.loader(file, views)
 			}
 
@@ -156,4 +158,4 @@ class AnLibrary(val views: Views, val fps: Double) {
 	}
 }
 
-suspend fun VfsFile.readAni(views: Views) = AnLibraryDeserializer.read(this.read(), views)
+suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false) = AnLibraryDeserializer.read(this.read(), views, mipmaps)

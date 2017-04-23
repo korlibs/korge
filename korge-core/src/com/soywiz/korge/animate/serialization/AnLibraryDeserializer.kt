@@ -19,10 +19,10 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
 object AnLibraryDeserializer {
-	fun read(s: ByteArray, views: Views): AnLibrary = s.openSync().readLibrary(views)
-	fun read(s: SyncStream, views: Views): AnLibrary = s.readLibrary(views)
+	fun read(s: ByteArray, views: Views, mipmaps: Boolean = false): AnLibrary = s.openSync().readLibrary(views, mipmaps)
+	fun read(s: SyncStream, views: Views, mipmaps: Boolean = false): AnLibrary = s.readLibrary(views, mipmaps)
 
-	private fun SyncStream.readLibrary(views: Views): AnLibrary {
+	private fun SyncStream.readLibrary(views: Views, mipmaps: Boolean): AnLibrary {
 		//AnLibrary(views)
 		val magic = readStringz(8)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
@@ -39,7 +39,7 @@ object AnLibraryDeserializer {
 			val size = readU_VL()
 			val data = readBytes(size)
 			val bmp = ImageFormats.read(data)
-			bmp to views.texture(bmp)
+			bmp to views.texture(bmp, mipmaps = mipmaps)
 		}
 
 		val sounds = (0 until readU_VL()).map {

@@ -7,6 +7,7 @@ import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
+import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.vfs.LocalVfs
 
 class SwfTestDisabled {
@@ -16,14 +17,22 @@ class SwfTestDisabled {
 
 	class MyScene : Scene() {
 		suspend override fun sceneInit(sceneView: Container) {
+			//val library = LocalVfs("c:/temp/test1.swf").readSWF(views)
+			//val library = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true)
+			//val library = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true)
+			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true)
+			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true, rasterizerMethod = Context2d.ShapeRasterizerMethod.X4)
+			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE)
 			//val library = LocalVfs("c:/temp/test2.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test5.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views)
-			//val library = LocalVfs("c:/temp/test9.swf").readSWF(views).apply { writeTo(LocalVfs("c:/temp/test9.ani")) }
+			val library = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true, rasterizerMethod = Context2d.ShapeRasterizerMethod.X4).apply { writeTo(LocalVfs("c:/temp/test9.ani")) }
 			//val library = LocalVfs("c:/temp/test10.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test10.swf").readSWF(views).apply { writeTo(LocalVfs("c:/temp/test10.ani")) }
 			//val library = LocalVfs("c:/temp/test11.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test12.swf").readSWF(views)
+
+			//val library = LocalVfs("c:/temp/test14.swf").readSWF(views)
 
 			//val library = LocalVfs("c:/temp/test17.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test18.swf").readSWF(views)
@@ -42,7 +51,7 @@ class SwfTestDisabled {
 			//val library = LocalVfs("c:/temp/test30.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test31.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test1.swf").readSWF(views)
-			val library = LocalVfs("c:/temp/test6.swf").readSWF(views)
+			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views)
 
 
 			//val library = LocalVfs("c:/temp/test7.swf").readSWF(views)
