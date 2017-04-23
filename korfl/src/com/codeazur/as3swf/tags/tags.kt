@@ -7,8 +7,11 @@ import com.codeazur.as3swf.data.consts.*
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
 import com.codeazur.as3swf.utils.FlashByteArray
+import com.codeazur.as3swf.utils.toFlash
 import com.soywiz.korfl.abc.ABC
 import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readString
 
 interface ITag {
 	val type: Int
@@ -78,10 +81,10 @@ class TagDebugID : _BaseTag() {
 		const val TYPE = 63
 	}
 
-	protected var uuid = FlashByteArray()
+	protected var uuid = ByteArray(0)
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
-		if (length > 0) data.readBytes(uuid, 0, length)
+		if (length > 0) uuid = data.data.readBytes(length)
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDebugID.TYPE
@@ -91,14 +94,14 @@ class TagDebugID : _BaseTag() {
 
 	override fun toString(indent: Int, flags: Int): String {
 		var str: String = Tag.toStringCommon(type, name, indent) + "UUID: "
-		if (uuid.length == 16) {
+		if (uuid.size == 16) {
 			str += "%02x%02x%02x%02x-".format(uuid[0], uuid[1], uuid[2], uuid[3])
 			str += "%02x%02x-".format(uuid[4], uuid[5])
 			str += "%02x%02x-".format(uuid[6], uuid[7])
 			str += "%02x%02x-".format(uuid[8], uuid[9])
 			str += "%02x%02x%02x%02x%02x%02x".format(uuid[10], uuid[11], uuid[12], uuid[13], uuid[14], uuid[15])
 		} else {
-			str += "(invalid length: " + uuid.length + ")"
+			str += "(invalid length: " + uuid.size + ")"
 		}
 		return str
 	}
@@ -111,12 +114,12 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	var binaryData = FlashByteArray()
+	var binaryData = ByteArray(0)
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
 		data.readUI32() // reserved, always 0
-		if (length > 6) data.readBytes(binaryData, 0, length - 6)
+		if (length > 6) binaryData = data.readBytes(length - 6)
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineBinaryData.TYPE
@@ -124,7 +127,7 @@ class TagDefineBinaryData : _BaseTag(), IDefinitionTag {
 	override val version = 9
 	override val level = 1
 
-	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Length: " + binaryData.length
+	override fun toString(indent: Int, flags: Int): String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Length: " + binaryData.size
 }
 
 open class TagDefineBits : _BaseTag(), IDefinitionTag {
@@ -140,7 +143,7 @@ open class TagDefineBits : _BaseTag(), IDefinitionTag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
-		if (length > 2) data.readBytes(bitmapData, 0, length - 2)
+		if (length > 2) bitmapData = FlashByteArray(data.readBytes(length - 2))
 	}
 
 	override val type = TagDefineBits.TYPE
@@ -193,7 +196,7 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), I
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
 		val alphaDataOffset: Int = data.readUI32()
-		data.readBytes(bitmapData, 0, alphaDataOffset)
+		bitmapData = data.readBytes(alphaDataOffset).toFlash()
 		if (bitmapData[0] == 0xff && (bitmapData[1] == 0xd8 || bitmapData[1] == 0xd9)) {
 			bitmapType = com.codeazur.as3swf.data.consts.BitmapType.JPEG
 		} else if (bitmapData[0] == 0x89 && bitmapData[1] == 0x50 && bitmapData[2] == 0x4e && bitmapData[3] == 0x47 && bitmapData[4] == 0x0d && bitmapData[5] == 0x0a && bitmapData[6] == 0x1a && bitmapData[7] == 0x0a) {
@@ -203,7 +206,7 @@ open class TagDefineBitsJPEG3 : com.codeazur.as3swf.tags.TagDefineBitsJPEG2(), I
 		}
 		val alphaDataSize: Int = length - alphaDataOffset - 6
 		if (alphaDataSize > 0) {
-			data.readBytes(bitmapAlphaData, 0, alphaDataSize)
+			bitmapAlphaData = data.readBytes(alphaDataSize).toFlash()
 		}
 	}
 
@@ -234,7 +237,7 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefin
 		characterId = data.readUI16()
 		val alphaDataOffset: Int = data.readUI32()
 		deblockParam = data.readFIXED8()
-		data.readBytes(bitmapData, 0, alphaDataOffset)
+		bitmapData = data.readBytes(alphaDataOffset).toFlash()
 		if (bitmapData[0] == 0xff && (bitmapData[1] == 0xd8 || bitmapData[1] == 0xd9)) {
 			bitmapType = com.codeazur.as3swf.data.consts.BitmapType.JPEG
 		} else if (bitmapData[0] == 0x89 && bitmapData[1] == 0x50 && bitmapData[2] == 0x4e && bitmapData[3] == 0x47 && bitmapData[4] == 0x0d && bitmapData[5] == 0x0a && bitmapData[6] == 0x1a && bitmapData[7] == 0x0a) {
@@ -244,7 +247,7 @@ class TagDefineBitsJPEG4 : com.codeazur.as3swf.tags.TagDefineBitsJPEG3(), IDefin
 		}
 		val alphaDataSize: Int = length - alphaDataOffset - 6
 		if (alphaDataSize > 0) {
-			data.readBytes(bitmapAlphaData, 0, alphaDataSize)
+			bitmapAlphaData = data.readBytes(alphaDataSize).toFlash()
 		}
 	}
 
@@ -286,7 +289,7 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 		bitmapWidth = data.readUI16()
 		bitmapHeight = data.readUI16()
 		if (bitmapFormat == BitmapFormat.BIT_8) bitmapColorTableSize = data.readUI8()
-		data.readBytes(zlibBitmapData, 0, length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7))
+		zlibBitmapData = data.readBytes(length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7)).toFlash()
 	}
 
 	override val type = TagDefineBitsLossless.TYPE
@@ -731,9 +734,7 @@ open class TagDefineFont2 : com.codeazur.as3swf.tags.TagDefineFont(), IDefinitio
 		bold = ((flags and 0x01) != 0)
 		languageCode = data.readLANGCODE()
 		val fontNameLen: Int = data.readUI8()
-		val fontNameRaw: FlashByteArray = FlashByteArray()
-		data.readBytes(fontNameRaw, 0, fontNameLen)
-		fontName = fontNameRaw.readUTFBytes(fontNameLen)
+		fontName = data.readUTFBytes(fontNameLen)
 		val numGlyphs: Int = data.readUI16()
 		if (numGlyphs > 0) {
 			// Skip offsets. We don't need them.
@@ -878,7 +879,7 @@ class TagDefineFont4 : _BaseTag(), IDefinitionTag {
 		bold = ((flags and 0x01) != 0)
 		fontName = data.readString()
 		if (hasFontData && length > data.position - pos) {
-			data.readBytes(fontData, 0, length - (data.position - pos))
+			fontData = data.readBytes(length - (data.position - pos)).toFlash()
 		}
 	}
 
@@ -957,9 +958,7 @@ open class TagDefineFontInfo : _BaseTag(), ITag {
 		fontId = data.readUI16()
 
 		val fontNameLen: Int = data.readUI8()
-		val fontNameRaw: FlashByteArray = FlashByteArray()
-		data.readBytes(fontNameRaw, 0, fontNameLen)
-		fontName = fontNameRaw.readUTFBytes(fontNameLen)
+		fontName = data.readUTFBytes(fontNameLen)
 
 		val flags: Int = data.readUI8()
 		smallText = ((flags and 0x20) != 0)
@@ -1457,7 +1456,7 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 
 	override var characterId: Int = 0
 
-	val soundData: FlashByteArray = FlashByteArray()
+	var soundData: FlashByteArray = FlashByteArray()
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
@@ -1466,7 +1465,7 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 		soundSize = data.readUB(1)
 		soundType = data.readUB(1)
 		soundSampleCount = data.readUI32()
-		data.readBytes(soundData, 0, length - 7)
+		soundData = data.readBytes(length - 7).toFlash()
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDefineSound.TYPE
@@ -1725,7 +1724,7 @@ class TagDoABC : _BaseTag(), ITag {
 	var lazyInitializeFlag: Boolean = false
 	var abcName: String = ""
 
-	val bytes: FlashByteArray = FlashByteArray()
+	var bytes: FlashByteArray = FlashByteArray()
 	private var _abc: ABC? = null
 
 	val abc: ABC get() {
@@ -1738,7 +1737,7 @@ class TagDoABC : _BaseTag(), ITag {
 		val flags: Int = data.readUI32()
 		lazyInitializeFlag = ((flags and 0x01) != 0)
 		abcName = data.readString()
-		data.readBytes(bytes, 0, length - (data.position - pos))
+		bytes = data.readBytes(length - (data.position - pos)).toFlash()
 		_abc = null
 	}
 
@@ -1771,7 +1770,7 @@ class TagDoABCDeprecated : _BaseTag(), ITag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		val pos: Int = data.position
-		data.readBytes(bytes, 0, length - (data.position - pos))
+		bytes = FlashByteArray(data.readBytes(length - (data.position - pos)))
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagDoABCDeprecated.TYPE
@@ -1876,7 +1875,7 @@ open class TagEnableDebugger : _BaseTag(), ITag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		if (length > 0) {
-			data.readBytes(password, 0, length)
+			password = FlashByteArray(data.readBytes(length))
 		}
 	}
 
@@ -1902,7 +1901,7 @@ class TagEnableDebugger2 : com.codeazur.as3swf.tags.TagEnableDebugger(), ITag {
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		reserved = data.readUI16()
 		if (length > 2) {
-			data.readBytes(password, 0, length - 2)
+			password = data.readBytes(length - 2).toFlash()
 		}
 	}
 
@@ -1929,7 +1928,7 @@ class TagEnableTelemetry : _BaseTag(), ITag {
 		if (length > 2) {
 			data.readByte()
 			data.readByte()
-			data.readBytes(password, 0, length - 2)
+			password = data.readBytes(length - 2).toFlash()
 		}
 	}
 
@@ -2124,7 +2123,7 @@ class TagJPEGTables : _BaseTag(), ITag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		if (length > 0) {
-			data.readBytes(jpegTables, 0, length)
+			jpegTables = data.readBytes(length).toFlash()
 		}
 	}
 
@@ -2173,7 +2172,7 @@ class TagNameCharacter : _BaseTag(), ITag {
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
 		if (length > 2) {
-			data.readBytes(binaryData, 0, length - 2)
+			binaryData = data.readBytes(length - 2).toFlash()
 		}
 	}
 
@@ -2479,7 +2478,7 @@ class TagProtect : _BaseTag(), ITag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		if (length > 0) {
-			data.readBytes(password, 0, length)
+			password = data.readBytes(length).toFlash()
 		}
 	}
 
@@ -2635,7 +2634,9 @@ class TagSoundStreamBlock : _BaseTag(), ITag {
 
 	var soundData = FlashByteArray()
 
-	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit = data.readBytes(soundData, 0, length)
+	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+		soundData = data.readBytes(length).toFlash()
+	}
 
 	override val type = com.codeazur.as3swf.tags.TagSoundStreamBlock.TYPE
 	override val name = "SoundStreamBlock"
@@ -2809,7 +2810,7 @@ class TagVideoFrame : _BaseTag(), ITag {
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		streamId = data.readUI16()
 		frameNum = data.readUI16()
-		data.readBytes(_videoData, 0, length - 4)
+		_videoData = data.readBytes(length - 4).toFlash()
 	}
 
 	override val type = com.codeazur.as3swf.tags.TagVideoFrame.TYPE

@@ -487,7 +487,10 @@ class SWFData : BitArray() {
 
 			// Write compressed data
 			position = 17
-			readBytes(ba, 13)
+
+			ba.position = 13
+			ba.writeBytes(this.readBytes(this.bytesAvailable))
+			ba.position = 13
 
 			// Uncompress
 			ba.position = 0

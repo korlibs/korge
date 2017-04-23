@@ -15,21 +15,13 @@ import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.resources.Path
-import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.BGRA
-import com.soywiz.korim.color.BGRA_5551
-import com.soywiz.korim.color.RGB
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.GraphicsPath
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.error.ignoreErrors
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.Extra
@@ -57,6 +49,8 @@ import kotlin.collections.set
 //	//	return SwfLibrary(lib2)
 //	//}
 //}
+
+suspend fun VfsFile.readSWF(views: Views, debug: Boolean = false): AnLibrary = SwfLoader.load(views, this.readAll(), debug = debug)
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1
@@ -201,7 +195,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 		for ((className, tagId) in classNameToTagId) {
 			lib.symbolsById[tagId].name = className
 			val type = classNameToTypes[className] ?: continue
-			val symbol = (lib.symbolsById[tagId] as AnSymbolMovieClip?) ?: continue
+			val symbol = (lib.symbolsById[tagId] as? AnSymbolMovieClip?) ?: continue
 			val abc = type.abc
 			val labelsToFrame0 = symbol.labelsToFrame0
 
@@ -262,7 +256,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 
 	suspend private fun generateTextures() {
 		val atlas = shapesToPopulate.map {
-			it.second.image
+			it.second.imageWithScale
 		}.toAtlas(views)
 		for ((shape, texture) in shapesToPopulate.map { it.first }.zip(atlas)) shape.textureWithBitmap = texture
 	}
@@ -419,7 +413,12 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean) {
 					when (it) {
 						is TagDefineBitsJPEG2 -> {
 							val bitsData = it.bitmapData.cloneToNewByteArray()
-							val nativeBitmap = bitsData.openAsync().readBitmap()
+							val nativeBitmap = try {
+								bitsData.openAsync().readBitmap()
+							} catch (e: Throwable) {
+								e.printStackTrace()
+								Bitmap32(1, 1)
+							}
 							//println(nativeBitmap)
 							val bmp = nativeBitmap.toBMP32()
 							fbmp = bmp
@@ -531,53 +530,74 @@ object SwfLoader {
 
 fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
 
-class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineShape) : ShapeExporter() {
-	val bounds: Rectangle = shape.shapeBounds.rect
+class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefineShape) : ShapeExporter() {
+	val bounds: Rectangle = dshape.shapeBounds.rect
+
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-	private val _image by lazy { NativeImage(Math.max(1, bounds.width.toIntCeil()), Math.max(1, bounds.height.toIntCeil())) }
+
+	val realBoundsWidth = Math.max(1, bounds.width.toIntCeil())
+	val realBoundsHeight = Math.max(1, bounds.height.toIntCeil())
+
+	val desiredBoundsWidth = realBoundsWidth * 2
+	val desiredBoundsHeight = realBoundsHeight * 2
+
+	val limitBoundsWidth = Math.min(desiredBoundsWidth, 512)
+	val limitBoundsHeight = Math.min(desiredBoundsHeight, 512)
+
+	val actualScale = Math.min(limitBoundsWidth.toDouble() / realBoundsWidth.toDouble(), limitBoundsHeight.toDouble() / realBoundsHeight.toDouble())
+
+	//val actualScale = 0.5
+
+	val actualBoundsWidth = (realBoundsWidth * actualScale).toInt()
+	val actualBoundsHeight = (realBoundsHeight * actualScale).toInt()
+
+	var cshape = CompoundShape(listOf())
+	val shapes = arrayListOf<Shape>()
+
+	val actualShape by lazy {
+		this.dshape.export(if (debug) LoggerShapeExporter(this) else this)
+		cshape
+	}
+
 	val image by lazy {
-		//println("export")
-		shape.export(if (debug) LoggerShapeExporter(this) else this)
-		//shape.export(LoggerShapeExporter(this))
-		_image
+		val image = NativeImage(actualBoundsWidth, actualBoundsHeight)
+		val ctx = image.getContext2d()
+		ctx.scale(actualScale, actualScale)
+		ctx.translate(-bounds.x, -bounds.y)
+		ctx.drawShape(actualShape)
+		image
 	}
+	val imageWithScale by lazy {
+		BitmapWithScale(image, actualScale)
+	}
+
+	var drawingFill = true
+
+	var apath = GraphicsPath()
 	val path = GraphicsPath()
-	var processingFills = false
-
-	val ctx by lazy {
-		_image.getContext2d().apply {
-			translate(-bounds.x, -bounds.y)
-		}
-	}
-
 	override fun beginShape() {
 		//ctx.beginPath()
 	}
 
 	override fun endShape() {
+		cshape = CompoundShape(shapes)
 		//ctx.closePath()
 	}
 
 	override fun beginFills() {
-		processingFills = true
-		flushFill()
+		flush()
 	}
 
 	override fun endFills() {
-		processingFills = false
+		flush()
 	}
 
 	override fun beginLines() {
-		ctx.beginPath()
-	}
-
-	override fun closePath() {
-		ctx.closePath()
-		if (processingFills) path.close()
+		flush()
 	}
 
 	override fun endLines() {
-		flushLine()
+		flush()
 	}
 
 	fun GradientSpreadMode.toCtx() = when (this) {
@@ -586,14 +606,17 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 		GradientSpreadMode.REPEAT -> Context2d.CycleMethod.REPEAT
 	}
 
+	var fillStyle: Context2d.Paint = Context2d.None
+
 	override fun beginFill(color: Int, alpha: Double) {
-		flushFill()
-		ctx.fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		flush()
+		drawingFill = true
+		fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
 	}
 
 	override fun beginGradientFill(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
-		flushFill()
-
+		flush()
+		drawingFill = true
 		val aratios = ArrayList(ratios.map { it.toDouble() / 255.0 })
 		val acolors = ArrayList(colors.zip(alphas).map { decodeSWFColor(it.first, it.second) })
 
@@ -610,42 +633,61 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 
 		when (type) {
 			GradientType.LINEAR -> {
-				ctx.fillStyle = Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
+				fillStyle = Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 			}
 			GradientType.RADIAL -> {
-				ctx.fillStyle = Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
+				fillStyle = Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 			}
 		}
 	}
 
 	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
-		flushFill()
+		flush()
+		drawingFill = true
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
-		ctx.fillStyle = Context2d.BitmapPaint(bmp, matrix, repeat, smooth)
+		fillStyle = Context2d.BitmapPaint(bmp, matrix, repeat, smooth)
 		//println(matrix)
 		//ctx.fillStyle = Context2d.Bitmap()
 		//super.beginBitmapFill(bitmapId, matrix, repeat, smooth)
 	}
 
 	override fun endFill() {
-		flushFill()
+		//flush()
+		_flushFill()
 	}
 
-	private fun flushFill() {
-		ctx.fill()
-		ctx.beginPath()
+	private fun _flushFill() {
+		if (apath.isEmpty()) return
+		shapes += FillShape(apath, null, fillStyle, Matrix2d())
+		apath = GraphicsPath()
 	}
 
-	private fun flushLine() {
-		ctx.stroke()
-		ctx.beginPath()
+	private fun _flushStroke() {
+		if (apath.isEmpty()) return
+		shapes += PolylineShape(apath, null, strokeStyle, Matrix2d(), lineWidth, true, "normal", lineCap, lineCap, "joints", 10.0)
+		apath = GraphicsPath()
 	}
+
+	private fun flush() {
+		//if (drawingFill) {
+		//	_flushFill()
+		//} else {
+		//	_flushStroke()
+		//}
+	}
+
+	private var lineWidth: Double = 1.0
+	private var lineCap: Context2d.LineCap = Context2d.LineCap.ROUND
+	private var strokeStyle: Context2d.Paint = Context2d.Color(Colors.BLACK)
 
 	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
-		flushLine()
-		ctx.lineWidth = thickness
-		ctx.strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
-		ctx.lineCap = when (startCaps) {
+		_flushStroke()
+		flush()
+		drawingFill = false
+		//println("pixelHinting: $pixelHinting, scaleMode: $scaleMode, miterLimit=$miterLimit")
+		lineWidth = thickness
+		strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		lineCap = when (startCaps) {
 			LineCapsStyle.NO -> Context2d.LineCap.BUTT
 			LineCapsStyle.ROUND -> Context2d.LineCap.ROUND
 			LineCapsStyle.SQUARE -> Context2d.LineCap.SQUARE
@@ -653,23 +695,30 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val shape: TagDefineS
 	}
 
 	override fun lineGradientStyle(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double) {
+		_flushStroke()
+		flush()
+		drawingFill = false
 		super.lineGradientStyle(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
 	}
 
 	override fun moveTo(x: Double, y: Double) {
-		ctx.moveTo(x, y)
-		if (processingFills) path.moveTo(x, y)
+		apath.moveTo(x, y)
+		if (drawingFill) path.moveTo(x, y)
 	}
 
 	override fun lineTo(x: Double, y: Double) {
-		ctx.lineTo(x, y)
-		if (processingFills) path.lineTo(x, y)
+		apath.lineTo(x, y)
+		if (drawingFill) path.lineTo(x, y)
 	}
 
 	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
-		ctx.quadraticCurveTo(controlX, controlY, anchorX, anchorY)
-		if (processingFills) path.quadTo(controlX, controlY, anchorX, anchorY)
+		apath.quadTo(controlX, controlY, anchorX, anchorY)
+		if (drawingFill) path.quadTo(controlX, controlY, anchorX, anchorY)
+	}
+
+	override fun closePath() {
+		apath.close()
+		if (drawingFill) path.close()
 	}
 }
 
-suspend fun VfsFile.readSWF(views: Views, debug: Boolean = false): AnLibrary = SwfLoader.load(views, this.readAll(), debug = debug)

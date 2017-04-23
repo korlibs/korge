@@ -10,6 +10,7 @@ include(
 	'korge-ext-tiled',
 	'korge-ext-particle',
 	'korge-ext-swf',
+	'korge-ext-lipsync',
 	'korge-sample',
 	'korge-gradle-plugin',
 	'korge-intellij-plugin',

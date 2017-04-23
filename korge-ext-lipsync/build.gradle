@@ -1,0 +1,7 @@
+apply from: "../include.gradle"
+
+dependencies {
+	compile project(":korfl")
+    compile project(":korge-core")
+    testCompile project(":korge")
+}

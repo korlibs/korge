@@ -19,10 +19,13 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	val dx = symbol.bounds.x.toFloat()
 	val dy = symbol.bounds.y.toFloat()
 	val tex = symbol.textureWithBitmap?.texture ?: views.transparentTexture
+	val texScale = symbol.textureWithBitmap?.scale ?: 1.0
+	val texWidth = (tex.width / texScale).toFloat()
+	val texHeight = (tex.height / texScale).toFloat()
 	val smoothing = true
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
-		ctx.batch.addQuad(tex, x = dx, y = dy, m = m, filtering = smoothing, col1 = globalColor)
+		ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, col1 = globalColor)
 	}
 
 	override fun hitTestInternal(x: Double, y: Double): View? {
@@ -141,6 +144,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			}
 		}
 	}
+
+	val stateNames get() = symbol.states.map { it.value.name }
 
 	/**
 	 * Changes the state and plays it

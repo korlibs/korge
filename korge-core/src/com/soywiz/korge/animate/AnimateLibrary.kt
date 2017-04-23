@@ -123,7 +123,7 @@ class AnLibrary(val views: Views, val fps: Double) {
 		for (symbol in symbolsById) if (symbol.name != null) symbolsByName[symbol.name!!] = symbol
 	}
 
-	fun create(id: Int) = if (id < 0) TODO() else symbolsById[id].create(this)
+	fun create(id: Int) = if (id < 0) TODO() else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
 	fun createShape(id: Int) = create(id) as AnShape
 	fun createMovieClip(id: Int) = create(id) as AnMovieClip
 

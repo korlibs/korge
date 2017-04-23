@@ -6,9 +6,14 @@ import com.soywiz.korim.format.ImageFormats
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
+import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
+
+suspend fun AnLibrary.writeTo(file: VfsFile, compression: Double = 1.0) {
+	file.write(AnLibrarySerializer.gen(this, compression))
+}
 
 object AnLibrarySerializer {
 	fun gen(library: AnLibrary, compression: Double = 1.0): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression) }
@@ -100,6 +105,7 @@ object AnLibrarySerializer {
 				}
 				is AnSymbolShape -> {
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SHAPE)
+					writeF32_le(symbol.textureWithBitmap!!.scale.toFloat())
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)

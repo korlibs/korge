@@ -65,6 +65,7 @@ object AnLibraryDeserializer {
 					AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
 				}
 				AnLibraryFile.SYMBOL_TYPE_SHAPE -> {
+					val scale = readF32_le().toDouble()
 					val bitmapId = readU_VL()
 					val atlas = atlases[bitmapId]
 					val textureBounds = readIRect()
@@ -81,7 +82,7 @@ object AnLibraryDeserializer {
 						}
 						else -> null
 					}
-					AnSymbolShape(symbolId, symbolName, bounds, textureWithBitmap = TextureWithBitmapSlice(texture.slice(textureBounds.toDouble()), bitmap.slice(textureBounds)), path = path)
+					AnSymbolShape(symbolId, symbolName, bounds, textureWithBitmap = TextureWithBitmapSlice(texture.slice(textureBounds.toDouble()), bitmap.slice(textureBounds), scale = scale), path = path)
 				}
 				AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
 					AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))

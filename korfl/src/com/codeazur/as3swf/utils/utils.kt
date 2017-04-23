@@ -52,6 +52,8 @@ object MatrixUtils {
 object NumberUtils {
 	fun roundPixels20(pixels: Double): Double = Math.round(pixels * 100).toDouble() / 100
 	fun roundPixels400(pixels: Double): Double = Math.round(pixels * 10000).toDouble() / 10000
+	//fun roundPixels20(pixels: Double): Double = Math.round(pixels * 1000000).toDouble() / 1000000
+	//fun roundPixels400(pixels: Double): Double = Math.round(pixels * 1000000).toDouble() / 1000000
 }
 
 fun ByteArray.toFlash(): FlashByteArray = FlashByteArray(this)
@@ -113,10 +115,14 @@ open class FlashByteArray() {
 	fun writeUTF(value: String): Unit = TODO()
 	fun writeUTFBytes(str: String, position: Int = 0, length: Int = -1): Unit = throw Error("")
 
+	fun writeBytes(bytes: ByteArray): Unit {
+		this.data.writeBytes(bytes)
+	}
+
 	fun writeBytes(bytes: FlashByteArray, offset: Int = 0, length: Int = -1): Unit {
 		val len = if (length >= 0) length else bytes.length
 		bytes.position = offset
-		for (n in 0 until len) writeByte(bytes.readByte())
+		this.data.writeBytes(bytes.data.readBytes(len))
 	}
 
 	private fun _uncompress(data: ByteArray, method: String = "zlib"): ByteArray {
@@ -173,12 +179,14 @@ open class FlashByteArray() {
 	suspend fun uncompressInWorker(method: String = "zlib") = replaceBytes(executeInWorkerSync { _uncompress(cloneToNewByteArray(), method) })
 	suspend fun compressInWorker(method: String = "zlib"): Unit = replaceBytes(executeInWorkerSync { _compress(cloneToNewByteArray(), method) })
 
+	fun readBytes(len: Int) = data.readBytes(len)
+
 	fun readBytes(bytes: FlashByteArray) = readBytes(bytes, bytes.position, bytesAvailable)
 
 	fun readBytes(bytes: FlashByteArray, position: Int, length: Int = -1) {
 		val len = if (length >= 0) length else bytesAvailable
 		bytes.position = position
-		for (n in 0 until len) bytes.writeByte(this.readByte())
+		bytes.data.writeBytes(this.data.readBytes(len))
 		bytes.position = position
 	}
 

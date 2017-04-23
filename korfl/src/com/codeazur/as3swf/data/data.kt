@@ -940,7 +940,7 @@ class SWFRawTag {
 		bytes = SWFData()
 		val posContent: Int = data.position
 		data.position = pos
-		data.readBytes(bytes, 0, header.tagLength)
+		bytes.writeBytes(data.readBytes(header.tagLength))
 		data.position = posContent
 	}
 }
@@ -1326,15 +1326,13 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 						null
 					}
 					if (lineStyle != null) {
-						val scaleMode = if (lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) {
-							"none"
-						} else if (lineStyle.noHScaleFlag) {
-							"horizontal"
-						} else if (lineStyle.noVScaleFlag) {
-							"vertical"
-						} else {
-							"normal"
+						val scaleMode = when {
+							(lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) -> "none"
+							lineStyle.noHScaleFlag -> "horizontal"
+							lineStyle.noVScaleFlag -> "vertical"
+							else -> "normal"
 						}
+
 						handler.lineStyle(
 							lineStyle.width.toDouble() / 20,
 							ColorUtils.rgb(lineStyle.color),
