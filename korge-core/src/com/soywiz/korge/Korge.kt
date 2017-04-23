@@ -22,7 +22,7 @@ import com.soywiz.korma.geom.Point2d
 import com.soywiz.korui.CanvasApplication
 
 object Korge {
-	val VERSION = "0.8.3"
+	val VERSION = "0.8.4"
 
 	suspend fun setupCanvas(
 		container: AGContainer,
