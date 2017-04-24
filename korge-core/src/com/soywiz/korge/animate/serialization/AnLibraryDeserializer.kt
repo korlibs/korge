@@ -131,8 +131,7 @@ object AnLibraryDeserializer {
 								val hasName = flags.extract(1)
 								val hasAlpha = flags.extract(2)
 								val hasMatrix = flags.extract(3)
-								val popMask = flags.extract(4)
-								val hasClipDepth = flags.extract(5)
+								val hasClipDepth = flags.extract(4)
 
 								if (hasUid) lastUid = readU_VL()
 								if (hasClipDepth) lastClipDepth = readS16_le()
@@ -152,7 +151,6 @@ object AnLibraryDeserializer {
 								timeline.add(frameTime, AnSymbolTimelineFrame(
 									depth = depth,
 									uid = lastUid,
-									popMask = popMask,
 									transform = lastMatrix,
 									name = lastName,
 									alpha = lastAlpha,

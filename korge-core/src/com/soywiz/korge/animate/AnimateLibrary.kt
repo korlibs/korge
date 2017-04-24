@@ -49,8 +49,6 @@ class AnSymbolBitmap(id: Int, name: String?, val bmp: Bitmap) : AnSymbol(id, nam
 data class AnSymbolTimelineFrame(
 	val depth: Int,
 	val uid: Int,
-	@Deprecated("")
-	val popMask: Boolean, // @TODO: Not required anymore! Remove
 	val clipDepth: Int,
 	val transform: Matrix2d.Computed,
 	val name: String?,

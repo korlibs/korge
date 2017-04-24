@@ -269,9 +269,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 						items += it.depth0 to it.characterId
 					}
 					maxDepth = Math.max(maxDepth, it.depth0)
-					if (it.hasClipDepth) {
-						maxDepth = Math.max(maxDepth, it.clipDepth0)
-					}
+					//if (it.hasClipDepth) maxDepth = Math.max(maxDepth, it.clipDepth0)
 				}
 				is TagShowFrame -> {
 					totalFrames++
@@ -301,8 +299,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		class DepthInfo(val depth: Int) {
 			var uid: Int = -1
 			var charId: Int = -1
-			@Deprecated("")
-			var popMask = false
 			var clipDepth: Int = -1
 			var name: String? = null
 			var alpha: Double = 1.0
@@ -313,7 +309,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				uid = -1
 				charId = -1
 				clipDepth = -1
-				popMask = false
 				name = null
 				matrix = Matrix2d()
 				blendMode = BlendMode.INHERIT
@@ -321,7 +316,6 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 
 			fun toFrameElement() = AnSymbolTimelineFrame(
 				depth = depth,
-				popMask = popMask,
 				clipDepth = clipDepth,
 				uid = uid,
 				name = name,
@@ -492,11 +486,10 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					//val clipDepthId = if (it.hasClipDepth) it.depth0 else -1
 
 					val depthId = it.depth0
-					val clipDepthId = if (it.hasClipDepth) it.clipDepth0 else -1
+					val clipDepthId = if (it.hasClipDepth) it.clipDepth0 - 1 else -1
 
 					val depth = depths[depthId]
-					val clipDepth = if (it.hasClipDepth) depths[clipDepthId] else null
-					clipDepth?.popMask = true
+
 					if (it.hasCharacter) depth.charId = it.characterId
 					if (it.hasClipDepth) depth.clipDepth = clipDepthId
 					if (it.hasName) depth.name = it.instanceName

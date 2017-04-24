@@ -113,7 +113,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 			fragment = FragmentShader {
 				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["rgba"])
 				// Required for shape masks:
-				IF(out["a"] le 0.lit) { DISCARD() }
+				IF(out["a"] le 0f.lit) { DISCARD() }
 			},
 			name = "BatchBuilder2D.Tinted"
 		)
@@ -126,7 +126,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 					SET(t_Temp1["rgb"], t_Temp1["rgb"] / t_Temp1["a"])
 					SET(out, t_Temp1["rgba"] * v_Col["rgba"])
 					// Required for shape masks:
-					IF(out["a"] le 0.lit) { DISCARD() }
+					IF(out["a"] le 0f.lit) { DISCARD() }
 				}
 			},
 			name = "BatchBuilder2D.Tinted"
