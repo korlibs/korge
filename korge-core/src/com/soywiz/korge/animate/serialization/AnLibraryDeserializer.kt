@@ -123,6 +123,7 @@ object AnLibraryDeserializer {
 							var lastName: String? = null
 							var lastAlpha: Double = 1.0
 							var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
+							var lastClipDepth = -1
 							for (frameIndex in 0 until readU_VL()) {
 								val frameTime = readU_VL()
 								val flags = readU_VL()
@@ -130,8 +131,11 @@ object AnLibraryDeserializer {
 								val hasName = flags.extract(1)
 								val hasAlpha = flags.extract(2)
 								val hasMatrix = flags.extract(3)
+								val popMask = flags.extract(4)
+								val hasClipDepth = flags.extract(5)
 
 								if (hasUid) lastUid = readU_VL()
+								if (hasClipDepth) lastClipDepth = readS16_le()
 								if (hasName) lastName = strings[readU_VL()]
 								if (hasAlpha) lastAlpha = readU8().toDouble() / 255.0
 								if (hasMatrix) {
@@ -145,7 +149,16 @@ object AnLibraryDeserializer {
 									if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
 									lastMatrix = Matrix2d.Computed(lm)
 								}
-								timeline.add(frameTime, AnSymbolTimelineFrame(lastUid, lastMatrix, lastName, lastAlpha, BlendMode.INHERIT))
+								timeline.add(frameTime, AnSymbolTimelineFrame(
+									depth = depth,
+									uid = lastUid,
+									popMask = popMask,
+									transform = lastMatrix,
+									name = lastName,
+									alpha = lastAlpha,
+									blendMode = BlendMode.INHERIT,
+									clipDepth = lastClipDepth
+								))
 							}
 						}
 						ss

@@ -41,10 +41,11 @@ open class Container(views: Views) : View(views) {
 
 	private val tempMatrix = Matrix2d()
 	override fun render(ctx: RenderContext, m: Matrix2d) {
-		if (m === globalMatrix) {
-			for (child in children.toList()) child.render(ctx, child.globalMatrix)
-		} else {
-			for (child in children.toList()) {
+		val isGlobal = (m === globalMatrix)
+		for (child in children.toList()) {
+			if (isGlobal) {
+				child.render(ctx, child.globalMatrix)
+			} else {
 				tempMatrix.multiply(child.localMatrix, m)
 				child.render(ctx, tempMatrix)
 			}

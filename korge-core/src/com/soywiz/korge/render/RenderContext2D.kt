@@ -1,11 +1,11 @@
 package com.soywiz.korge.render
 
-import com.soywiz.korag.AG
 import com.soywiz.korim.color.Colors
+import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.Pool
 import com.soywiz.korma.Matrix2d
 
-class RenderContext2D(val batch: BatchBuilder2D) {
+class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 	val mpool = Pool<Matrix2d> { Matrix2d() }
 	val m = Matrix2d()
 	var blendFactors = MyBlendFactors.NORMAL

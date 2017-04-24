@@ -161,6 +161,7 @@ object AnLibrarySerializer {
 							var lastName: String? = null
 							var lastAlpha: Double = 1.0
 							var lastMatrix: Matrix2d = Matrix2d()
+							var lastClipDepth = -1
 							writeU_VL(frames.size)
 							for ((frameTime, frame) in frames) {
 								writeU_VL(frameTime)
@@ -169,6 +170,7 @@ object AnLibrarySerializer {
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
 								val hasAlpha = frame.alpha != lastAlpha
+								val hasClipDepth = frame.clipDepth != lastClipDepth
 
 								val hasMatrix = m != lastMatrix
 
@@ -184,8 +186,11 @@ object AnLibrarySerializer {
 									.insert(hasName, 1)
 									.insert(hasAlpha, 2)
 									.insert(hasMatrix, 3)
+									.insert(frame.popMask, 4)
+									.insert(hasClipDepth, 5)
 								)
 								if (hasUid) writeU_VL(frame.uid)
+								if (hasClipDepth) write16_le(frame.clipDepth)
 								if (hasName) writeU_VL(strings[frame.name])
 								if (hasAlpha) write8((frame.alpha.clamp(0.0, 1.0) * 255.0).toInt())
 								if (hasMatrix) {
@@ -209,6 +214,7 @@ object AnLibrarySerializer {
 								lastName = frame.name
 								lastAlpha = frame.alpha
 								lastMatrix = m
+								lastClipDepth = frame.clipDepth
 							}
 						}
 					}

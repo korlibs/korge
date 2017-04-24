@@ -59,26 +59,16 @@ object SwfLoader {
 suspend fun VfsFile.readSWF(views: Views, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoader.load(views, this.readAll(), debug = debug, mipmaps = mipmaps, rasterizerMethod = rasterizerMethod)
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
+inline val TagPlaceObject.clipDepth0: Int get() = this.clipDepth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
 private typealias SwfBlendMode = com.codeazur.as3swf.data.consts.BlendMode
 
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 
-class MySwfFrameElement(
-	val depth: Int,
-	val uid: Int,
-	val name: String?,
-	val transform: Matrix2d.Computed,
-	val alpha: Double,
-	val blendMode: BlendMode
-) {
-	fun toAnSymbolTimelineFrame() = AnSymbolTimelineFrame(uid, transform, name, alpha, blendMode)
-}
-
 class MySwfFrame(val index: Int, maxDepths: Int) {
 	var name: String? = null
-	val depths = arrayListOf<MySwfFrameElement>()
+	val depths = arrayListOf<AnSymbolTimelineFrame>()
 	val actions = arrayListOf<Action>()
 
 	interface Action {
@@ -164,7 +154,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 
 				// Compute frame
 				for (depth in frame.depths) {
-					currentState.timelines[depth.depth].add(currentTime, depth.toAnSymbolTimelineFrame())
+					currentState.timelines[depth.depth].add(currentTime, depth)
 				}
 
 				// Compute actions
@@ -279,6 +269,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 						items += it.depth0 to it.characterId
 					}
 					maxDepth = Math.max(maxDepth, it.depth0)
+					if (it.hasClipDepth) {
+						maxDepth = Math.max(maxDepth, it.clipDepth0)
+					}
 				}
 				is TagShowFrame -> {
 					totalFrames++
@@ -308,6 +301,9 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		class DepthInfo(val depth: Int) {
 			var uid: Int = -1
 			var charId: Int = -1
+			@Deprecated("")
+			var popMask = false
+			var clipDepth: Int = -1
 			var name: String? = null
 			var alpha: Double = 1.0
 			var matrix: Matrix2d = Matrix2d()
@@ -316,13 +312,17 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 			fun reset() {
 				uid = -1
 				charId = -1
+				clipDepth = -1
+				popMask = false
 				name = null
 				matrix = Matrix2d()
 				blendMode = BlendMode.INHERIT
 			}
 
-			fun toFrameElement(): MySwfFrameElement = MySwfFrameElement(
+			fun toFrameElement() = AnSymbolTimelineFrame(
 				depth = depth,
+				popMask = popMask,
+				clipDepth = clipDepth,
 				uid = uid,
 				name = name,
 				transform = Matrix2d.Computed(matrix),
@@ -488,8 +488,17 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, null, findLimits(it.tags)))
 				}
 				is TagPlaceObject -> {
-					val depth = depths[it.depth0]
+					//val depthId = if (it.hasClipDepth) it.clipDepth0 else it.depth0
+					//val clipDepthId = if (it.hasClipDepth) it.depth0 else -1
+
+					val depthId = it.depth0
+					val clipDepthId = if (it.hasClipDepth) it.clipDepth0 else -1
+
+					val depth = depths[depthId]
+					val clipDepth = if (it.hasClipDepth) depths[clipDepthId] else null
+					clipDepth?.popMask = true
 					if (it.hasCharacter) depth.charId = it.characterId
+					if (it.hasClipDepth) depth.clipDepth = clipDepthId
 					if (it.hasName) depth.name = it.instanceName
 					//if (it.hasBlendMode) depth.blendMode = it.blendMode
 					if (it.hasColorTransform) {
@@ -501,7 +510,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 						SwfBlendMode.ADD -> BlendMode.ADD
 						else -> BlendMode.NORMAL
 					}
-					val uid = getUid(it.depth0)
+					val uid = getUid(depthId)
 					val metaData = it.metaData
 					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {
 						val uidInfo = mc.uidInfo[uid]

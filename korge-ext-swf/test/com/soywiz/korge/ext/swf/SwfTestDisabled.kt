@@ -27,7 +27,8 @@ class SwfTestDisabled {
 			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE)
 			//val library = LocalVfs("c:/temp/test2.swf").readSWF(views)
 			//val library = LocalVfs("c:/temp/test5.swf").readSWF(views)
-			val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true)
+			//val library = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true)
+			val library = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true)
 
 			//val library = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true, rasterizerMethod = Context2d.ShapeRasterizerMethod.X4)
 			//val library = LocalVfs("c:/temp/test8.swf").readSWF(views, mipmaps = true, rasterizerMethod = Context2d.ShapeRasterizerMethod.X4)

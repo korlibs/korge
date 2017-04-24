@@ -5,6 +5,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.gl.toGlSl
 import com.soywiz.korma.Matrix2d
 
 object MyBlendFactors{
@@ -24,6 +25,9 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	private var currentTex: Texture.Base? = null
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.BlendFactors = MyBlendFactors.NORMAL
+
+	var stencil = AG.StencilState()
+	var colorMask = AG.ColorMaskState()
 
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
@@ -108,6 +112,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 			vertex = VERTEX,
 			fragment = FragmentShader {
 				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["rgba"])
+				// Required for shape masks:
+				IF(out["a"] le 0.lit) { DISCARD() }
 			},
 			name = "BatchBuilder2D.Tinted"
 		)
@@ -119,10 +125,14 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 					SET(t_Temp1, texture2D(u_Tex, v_Tex["xy"]))
 					SET(t_Temp1["rgb"], t_Temp1["rgb"] / t_Temp1["a"])
 					SET(out, t_Temp1["rgba"] * v_Col["rgba"])
+					// Required for shape masks:
+					IF(out["a"] le 0.lit) { DISCARD() }
 				}
 			},
 			name = "BatchBuilder2D.Tinted"
 		)
+
+		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
 	}
 
 	private val projMat = Matrix4()
@@ -150,7 +160,9 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 						uniforms = mapOf<Uniform, Any>(
 							DefaultShaders.u_ProjMat to mat,
 							DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)
-						)
+						),
+						stencil = stencil,
+						colorMask = colorMask
 					)
 				}
 			}
