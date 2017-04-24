@@ -30,6 +30,8 @@ import com.soywiz.korio.util.substr
 import com.soywiz.korio.util.toIntCeil
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.ds.DoubleArrayList
+import com.soywiz.korma.ds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 import kotlin.collections.set
 
@@ -565,6 +567,9 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 		ctx.scale(actualScale, actualScale)
 		ctx.translate(-bounds.x, -bounds.y)
 		ctx.drawShape(actualShape, rasterizerMethod)
+
+		//println(actualShape.toSvg(scale = 1.0 / 20.0).toOuterXmlIndented())
+
 		image
 	}
 	val imageWithScale by lazy {
@@ -617,8 +622,8 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	}
 
 	private fun createGradientPaint(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d, spreadMethod: GradientSpreadMode, interpolationMethod: GradientInterpolationMode, focalPointRatio: Double): Context2d.Gradient {
-		val aratios = ArrayList(ratios.map { it.toDouble() / 255.0 })
-		val acolors = ArrayList(colors.zip(alphas).map { decodeSWFColor(it.first, it.second) })
+		val aratios = DoubleArrayList(ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
+		val acolors = IntArrayList(colors.zip(alphas).map { decodeSWFColor(it.first, it.second) }.toIntArray())
 
 		val m2 = Matrix2d()
 		m2.copyFrom(matrix)
@@ -704,48 +709,6 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 		drawingFill = false
 		strokeStyle = createGradientPaint(type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio)
 	}
-
-
-	//override fun moveTo(x: Double, y: Double) {
-	//	apath.moveTo(x.toInt(), y.toInt())
-	//	if (drawingFill) path.moveTo(x, y)
-	//}
-//
-	//override fun lineTo(x: Double, y: Double) {
-	//	apath.lineTo(x.toInt(), y.toInt())
-	//	if (drawingFill) path.lineTo(x, y)
-	//}
-//
-	//override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
-	//	apath.quadTo(controlX.toInt(), controlY.toInt(), anchorX.toInt(), anchorY.toInt())
-	//	if (drawingFill) path.quadTo(controlX, controlY, anchorX, anchorY)
-	//}
-//
-	//override fun closePath() {
-	//	apath.close()
-	//	if (drawingFill) path.close()
-	//}
-
-
-	//override fun moveTo(x: Double, y: Double) {
-	//	apath.moveTo(x, y)
-	//	if (drawingFill) path.moveTo(x, y)
-	//}
-//
-	//override fun lineTo(x: Double, y: Double) {
-	//	apath.lineTo(x, y)
-	//	if (drawingFill) path.lineTo(x, y)
-	//}
-//
-	//override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
-	//	apath.quadTo(controlX, controlY, anchorX, anchorY)
-	//	if (drawingFill) path.quadTo(controlX, controlY, anchorX, anchorY)
-	//}
-//
-	//override fun closePath() {
-	//	apath.close()
-	//	if (drawingFill) path.close()
-	//}
 
 	private fun Double.fix() = (this * 20).toInt().toDouble()
 	//private fun Double.fix() = this.toInt()
