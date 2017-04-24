@@ -129,29 +129,21 @@ object AnLibraryDeserializer {
 								val hasUid = flags.extract(0)
 								val hasName = flags.extract(1)
 								val hasAlpha = flags.extract(2)
-								val matrixType = flags.extract(3, 3)
+								val hasMatrix = flags.extract(3)
 
 								if (hasUid) lastUid = readU_VL()
 								if (hasName) lastName = strings[readU_VL()]
 								if (hasAlpha) lastAlpha = readU8().toDouble() / 255.0
-								if (matrixType != 0) {
-									when (matrixType) {
-										Matrix2d.Type.IDENTITY.id -> {
-											lastMatrix = Matrix2d.Computed(Matrix2d())
-										}
-										Matrix2d.Type.TRANSLATE.id -> {
-											lastMatrix = Matrix2d.Computed(Matrix2d(1, 0, 0, 1, readF32_le(), readF32_le()))
-										}
-										Matrix2d.Type.SCALE.id -> {
-											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), 0, 0))
-										}
-										Matrix2d.Type.SCALE_TRANSLATE.id -> {
-											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), readF32_le(), readF32_le()))
-										}
-										Matrix2d.Type.COMPLEX.id -> {
-											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), readF32_le(), readF32_le(), readF32_le(), readF32_le(), readF32_le()))
-										}
-									}
+								if (hasMatrix) {
+									val lm = lastMatrix.matrix.copy()
+									val matrixFlags = readU8()
+									if (matrixFlags.extract(0)) lm.a = readF32_le().toDouble()
+									if (matrixFlags.extract(1)) lm.b = readF32_le().toDouble()
+									if (matrixFlags.extract(2)) lm.c = readF32_le().toDouble()
+									if (matrixFlags.extract(3)) lm.d = readF32_le().toDouble()
+									if (matrixFlags.extract(4)) lm.tx = readF32_le().toDouble()
+									if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
+									lastMatrix = Matrix2d.Computed(lm)
 								}
 								timeline.add(frameTime, AnSymbolTimelineFrame(lastUid, lastMatrix, lastName, lastAlpha, BlendMode.INHERIT))
 							}

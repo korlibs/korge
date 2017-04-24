@@ -10,6 +10,7 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.util.insert
 import com.soywiz.korio.vfs.VfsFile
+import com.soywiz.korma.IMatrix2d
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
@@ -164,55 +165,50 @@ object AnLibrarySerializer {
 							for ((frameTime, frame) in frames) {
 								writeU_VL(frameTime)
 
+								val m = frame.transform.matrix
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
 								val hasAlpha = frame.alpha != lastAlpha
-								val hasMatrix = frame.transform.matrix != lastMatrix
 
-								var flags = 0
-								if (hasUid) flags = flags.insert(true, 0)
-								if (hasName) flags = flags.insert(true, 1)
-								if (hasAlpha) flags = flags.insert(true, 2)
-								if (hasMatrix) flags = flags.insert(frame.transform.matrix.getType().id, 3, 3)
+								val hasMatrix = m != lastMatrix
 
-								writeU_VL(flags)
+								val hasMatrixA = m.a != lastMatrix.a
+								val hasMatrixB = m.b != lastMatrix.b
+								val hasMatrixC = m.c != lastMatrix.c
+								val hasMatrixD = m.d != lastMatrix.d
+								val hasMatrixTX = m.tx != lastMatrix.tx
+								val hasMatrixTY = m.ty != lastMatrix.ty
+
+								write8(0
+									.insert(hasUid, 0)
+									.insert(hasName, 1)
+									.insert(hasAlpha, 2)
+									.insert(hasMatrix, 3)
+								)
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasName) writeU_VL(strings[frame.name])
 								if (hasAlpha) write8((frame.alpha.clamp(0.0, 1.0) * 255.0).toInt())
 								if (hasMatrix) {
-									val m = frame.transform.matrix
-									when (m.getType()) {
-										Matrix2d.Type.IDENTITY -> {
-										}
-										Matrix2d.Type.TRANSLATE -> {
-											writeF32_le(m.tx.toFloat())
-											writeF32_le(m.ty.toFloat())
-										}
-										Matrix2d.Type.SCALE -> {
-											writeF32_le(m.a.toFloat())
-											writeF32_le(m.d.toFloat())
-										}
-										Matrix2d.Type.SCALE_TRANSLATE -> {
-											writeF32_le(m.a.toFloat())
-											writeF32_le(m.d.toFloat())
-											writeF32_le(m.tx.toFloat())
-											writeF32_le(m.ty.toFloat())
-										}
-										Matrix2d.Type.COMPLEX -> {
-											writeF32_le(m.a.toFloat())
-											writeF32_le(m.b.toFloat())
-											writeF32_le(m.c.toFloat())
-											writeF32_le(m.d.toFloat())
-											writeF32_le(m.tx.toFloat())
-											writeF32_le(m.ty.toFloat())
-										}
-									}
+									write8(0
+										.insert(hasMatrixA, 0)
+										.insert(hasMatrixB, 1)
+										.insert(hasMatrixC, 2)
+										.insert(hasMatrixD, 3)
+										.insert(hasMatrixTX, 4)
+										.insert(hasMatrixTY, 5))
+
+									if (hasMatrixA) writeF32_le(m.a.toFloat())
+									if (hasMatrixB) writeF32_le(m.b.toFloat())
+									if (hasMatrixC) writeF32_le(m.c.toFloat())
+									if (hasMatrixD) writeF32_le(m.d.toFloat())
+									if (hasMatrixTX) writeF32_le(m.tx.toFloat())
+									if (hasMatrixTY) writeF32_le(m.ty.toFloat())
 								}
 
 								lastUid = frame.uid
 								lastName = frame.name
 								lastAlpha = frame.alpha
-								lastMatrix = frame.transform.matrix
+								lastMatrix = m
 							}
 						}
 					}
