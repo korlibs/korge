@@ -25,7 +25,7 @@ import com.soywiz.korma.geom.VectorPath
 suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
 	val file = this
 	return AnLibraryDeserializer.read(this.read(), views, mipmaps) { index ->
-		file.appendExtension("$index.png").readBitmap()
+		file.withExtension("ani.$index.png").readBitmap()
 	}
 }
 
@@ -141,11 +141,9 @@ object AnLibraryDeserializer {
 										}
 										Matrix2d.Type.TRANSLATE.id -> {
 											lastMatrix = Matrix2d.Computed(Matrix2d(1, 0, 0, 1, readF32_le(), readF32_le()))
-
 										}
 										Matrix2d.Type.SCALE.id -> {
 											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), 0, 0))
-
 										}
 										Matrix2d.Type.SCALE_TRANSLATE.id -> {
 											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), readF32_le(), readF32_le()))

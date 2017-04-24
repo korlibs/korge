@@ -16,7 +16,7 @@ import com.soywiz.korma.geom.Rectangle
 
 suspend fun AnLibrary.writeTo(file: VfsFile, compression: Double = 1.0) {
 	file.write(AnLibrarySerializer.gen(this, compression) { index, atlas ->
-		file.appendExtension("$index.png").writeBitmap(atlas, PNG(), ImageEncodingProps(compression))
+		file.withExtension("ani.$index.png").writeBitmap(atlas, PNG(), ImageEncodingProps(compression))
 	})
 }
 
@@ -190,11 +190,11 @@ object AnLibrarySerializer {
 										}
 										Matrix2d.Type.SCALE -> {
 											writeF32_le(m.a.toFloat())
-											writeF32_le(m.c.toFloat())
+											writeF32_le(m.d.toFloat())
 										}
 										Matrix2d.Type.SCALE_TRANSLATE -> {
 											writeF32_le(m.a.toFloat())
-											writeF32_le(m.c.toFloat())
+											writeF32_le(m.d.toFloat())
 											writeF32_le(m.tx.toFloat())
 											writeF32_le(m.ty.toFloat())
 										}
