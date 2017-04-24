@@ -1,8 +1,8 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korau.format.AudioData
-import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
 import com.soywiz.korge.animate.serialization.AnLibraryFile
+import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Mipmaps
 import com.soywiz.korge.resources.Path
@@ -19,7 +19,6 @@ import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.stream.readString
 import com.soywiz.korio.util.Extra
-import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
@@ -158,4 +157,3 @@ class AnLibrary(val views: Views, val fps: Double) {
 	}
 }
 
-suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false) = AnLibraryDeserializer.read(this.read(), views, mipmaps)

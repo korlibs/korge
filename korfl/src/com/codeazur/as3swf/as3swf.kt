@@ -8,10 +8,7 @@ import com.codeazur.as3swf.factories.ISWFTagFactory
 import com.codeazur.as3swf.factories.SWFActionFactory
 import com.codeazur.as3swf.factories.SWFFilterFactory
 import com.codeazur.as3swf.factories.SWFTagFactory
-import com.codeazur.as3swf.tags.IDefinitionTag
-import com.codeazur.as3swf.tags.ITag
-import com.codeazur.as3swf.tags.TagEnd
-import com.codeazur.as3swf.tags.TagJPEGTables
+import com.codeazur.as3swf.tags.*
 import com.codeazur.as3swf.timeline.Frame
 import com.codeazur.as3swf.timeline.Layer
 import com.codeazur.as3swf.timeline.Scene
@@ -425,6 +422,7 @@ class SWFData : BitArray() {
 		}
 		return action
 	}
+
 	fun readACTIONVALUE(): SWFActionValue = SWFActionValue().apply { parse(this@SWFData) }
 	fun readREGISTERPARAM(): SWFRegisterParam = SWFRegisterParam().apply { parse(this@SWFData) }
 	fun readSYMBOL(): SWFSymbol = SWFSymbol(this@SWFData)
@@ -441,6 +439,7 @@ class SWFData : BitArray() {
 			return SWFClipActionRecord().apply { parse(this@SWFData, version) }
 		}
 	}
+
 	fun readCLIPEVENTFLAGS(version: Int): SWFClipEventFlags = SWFClipEventFlags().apply { parse(this@SWFData, version) }
 	fun readTagHeader(): SWFRecordHeader {
 		val pos = position
@@ -505,43 +504,6 @@ class SWFData : BitArray() {
 		position = pos
 	}
 
-	fun swfCompress(compressionMethod: String) {
-		val pos = position
-		val ba = FlashByteArray()
-
-		if (compressionMethod == SWF.COMPRESSION_METHOD_ZLIB) {
-			readBytes(ba)
-			ba.position = 0
-			ba.compress()
-		} else if (compressionMethod == SWF.COMPRESSION_METHOD_LZMA) {
-			// Never should get here (unfortunately)
-			// We're forcing ZLIB compression on publish, see CSS.as line 145
-			throw(Error("Can't publish LZMA compressed SWFs"))
-			/*
-			// This should be correct, but doesn't seem to work:
-			var lzma = AsByteArray();
-			readBytes(lzma);
-			lzma.position = 0;
-			lzma.compress(compressionMethod);
-			// Write compressed length
-			ba.endian = Endian.LITTLE_ENDIAN;
-			ba.writeUnsignedInt(lzma.length - 13);
-			// Write LZMA properties
-			for (i in 0 until 5) {
-				ba.writeByte(lzma[i]);
-			}
-			// Write compressed data
-			ba.writeBytes(lzma, 13);
-			*/
-		} else {
-			throw(Error("Unknown compression method: " + compressionMethod))
-		}
-
-		length = pos
-		position = pos
-		writeBytes(ba)
-	}
-
 	/////////////////////////////////////////////////////////
 	// etc
 	/////////////////////////////////////////////////////////
@@ -555,7 +517,6 @@ class SWFData : BitArray() {
 open class SWFTimelineContainer {
 	// We're just being lazy here.
 	companion object {
-		var AUTOBUILD_LAYERS: Boolean = false
 		var EXTRACT_SOUND_STREAM: Boolean = true
 	}
 
@@ -682,47 +643,40 @@ open class SWFTimelineContainer {
 
 	protected fun parseTagsFinalize(): Unit {
 		val soundStream = soundStream
-		if (soundStream != null && soundStream.data.length == 0) {
-			this.soundStream = null
-		}
-		if (AUTOBUILD_LAYERS) {
-			// TODO: This needs to go into processTags()
-			buildLayers()
-		}
+		if (soundStream != null && soundStream.data.length == 0) this.soundStream = null
 	}
 
 	protected fun processTag(tag: ITag): Unit {
 		val currentTagIndex: Int = tags.size - 1
-		if (tag is com.codeazur.as3swf.tags.IDefinitionTag) {
+		if (tag is IDefinitionTag) {
 			processDefinitionTag(tag, currentTagIndex)
 			return
-		} else if (tag is com.codeazur.as3swf.tags.IDisplayListTag) {
+		} else if (tag is IDisplayListTag) {
 			processDisplayListTag(tag, currentTagIndex)
 			return
 		}
+
 		when (tag.type) {
-		// Frame labels and scenes
-			com.codeazur.as3swf.tags.TagFrameLabel.TYPE, com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData.TYPE -> {
+			TagFrameLabel.TYPE, TagDefineSceneAndFrameLabelData.TYPE -> {
+				// Frame labels and scenes
 				processFrameLabelTag(tag, currentTagIndex)
 			}
-		// Sound stream
-			com.codeazur.as3swf.tags.TagSoundStreamHead.TYPE, com.codeazur.as3swf.tags.TagSoundStreamHead2.TYPE, com.codeazur.as3swf.tags.TagSoundStreamBlock.TYPE -> {
-				if (EXTRACT_SOUND_STREAM) {
-					processSoundStreamTag(tag, currentTagIndex)
-				}
+			TagSoundStreamHead.TYPE, TagSoundStreamHead2.TYPE, TagSoundStreamBlock.TYPE -> {
+				// Sound stream
+				if (EXTRACT_SOUND_STREAM) processSoundStreamTag(tag, currentTagIndex)
 			}
-		// Background color
-			com.codeazur.as3swf.tags.TagSetBackgroundColor.TYPE -> {
-				processBackgroundColorTag(tag as com.codeazur.as3swf.tags.TagSetBackgroundColor, currentTagIndex)
+			TagSetBackgroundColor.TYPE -> {
+				// Background color
+				processBackgroundColorTag(tag as TagSetBackgroundColor, currentTagIndex)
 			}
-		// Global JPEG Table
-			com.codeazur.as3swf.tags.TagJPEGTables.TYPE -> {
+			TagJPEGTables.TYPE -> {
+				// Global JPEG Table
 				processJPEGTablesTag(tag as TagJPEGTables, currentTagIndex)
 			}
 		}
 	}
 
-	protected fun processDefinitionTag(tag: com.codeazur.as3swf.tags.IDefinitionTag, currentTagIndex: Int): Unit {
+	protected fun processDefinitionTag(tag: IDefinitionTag, currentTagIndex: Int): Unit {
 		if (tag.characterId > 0) {
 			// Register definition tag in dictionary
 			// key: character id
@@ -733,9 +687,9 @@ open class SWFTimelineContainer {
 		}
 	}
 
-	protected fun processDisplayListTag(tag: com.codeazur.as3swf.tags.IDisplayListTag, currentTagIndex: Int): Unit {
+	protected fun processDisplayListTag(tag: IDisplayListTag, currentTagIndex: Int): Unit {
 		when (tag.type) {
-			com.codeazur.as3swf.tags.TagShowFrame.TYPE -> {
+			TagShowFrame.TYPE -> {
 				currentFrame.tagIndexEnd = currentTagIndex
 				if (currentFrame.label == null && currentFrame.frameNumber in frameLabels) {
 					currentFrame.label = frameLabels[currentFrame.frameNumber]
@@ -745,19 +699,19 @@ open class SWFTimelineContainer {
 				currentFrame.frameNumber = frames.size
 				currentFrame.tagIndexStart = currentTagIndex + 1
 			}
-			com.codeazur.as3swf.tags.TagPlaceObject.TYPE, com.codeazur.as3swf.tags.TagPlaceObject2.TYPE, com.codeazur.as3swf.tags.TagPlaceObject3.TYPE -> {
-				currentFrame.placeObject(currentTagIndex, tag as com.codeazur.as3swf.tags.TagPlaceObject)
+			TagPlaceObject.TYPE, TagPlaceObject2.TYPE, TagPlaceObject3.TYPE -> {
+				currentFrame.placeObject(currentTagIndex, tag as TagPlaceObject)
 			}
-			com.codeazur.as3swf.tags.TagRemoveObject.TYPE, com.codeazur.as3swf.tags.TagRemoveObject2.TYPE -> {
-				currentFrame.removeObject(tag as com.codeazur.as3swf.tags.TagRemoveObject)
+			TagRemoveObject.TYPE, TagRemoveObject2.TYPE -> {
+				currentFrame.removeObject(tag as TagRemoveObject)
 			}
 		}
 	}
 
 	protected fun processFrameLabelTag(tag: ITag, currentTagIndex: Int): Unit {
 		when (tag.type) {
-			com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData.TYPE -> {
-				val tagSceneAndFrameLabelData: com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData = tag as com.codeazur.as3swf.tags.TagDefineSceneAndFrameLabelData
+			TagDefineSceneAndFrameLabelData.TYPE -> {
+				val tagSceneAndFrameLabelData: TagDefineSceneAndFrameLabelData = tag as TagDefineSceneAndFrameLabelData
 				for (i in 0 until tagSceneAndFrameLabelData.frameLabels.size) {
 					val frameLabel = tagSceneAndFrameLabelData.frameLabels[i]
 					frameLabels[frameLabel.frameNumber] = frameLabel.name
@@ -767,8 +721,8 @@ open class SWFTimelineContainer {
 					scenes.add(com.codeazur.as3swf.timeline.Scene(scene.offset, scene.name))
 				}
 			}
-			com.codeazur.as3swf.tags.TagFrameLabel.TYPE -> {
-				val tagFrameLabel = tag as com.codeazur.as3swf.tags.TagFrameLabel
+			TagFrameLabel.TYPE -> {
+				val tagFrameLabel = tag as TagFrameLabel
 				currentFrame.label = tagFrameLabel.frameName
 			}
 		}
@@ -776,8 +730,8 @@ open class SWFTimelineContainer {
 
 	protected fun processSoundStreamTag(tag: ITag, currentTagIndex: Int): Unit {
 		when (tag.type) {
-			com.codeazur.as3swf.tags.TagSoundStreamHead.TYPE, com.codeazur.as3swf.tags.TagSoundStreamHead2.TYPE -> {
-				val tagSoundStreamHead: com.codeazur.as3swf.tags.TagSoundStreamHead = tag as com.codeazur.as3swf.tags.TagSoundStreamHead
+			TagSoundStreamHead.TYPE, TagSoundStreamHead2.TYPE -> {
+				val tagSoundStreamHead = tag as TagSoundStreamHead
 				soundStream = com.codeazur.as3swf.timeline.SoundStream()
 				val soundStream = soundStream!!
 				soundStream.compression = tagSoundStreamHead.streamSoundCompression
@@ -787,14 +741,14 @@ open class SWFTimelineContainer {
 				soundStream.numFrames = 0
 				soundStream.numSamples = 0
 			}
-			com.codeazur.as3swf.tags.TagSoundStreamBlock.TYPE -> {
+			TagSoundStreamBlock.TYPE -> {
 				if (soundStream != null) {
 					val soundStream = soundStream!!
 					if (!hasSoundStream) {
 						hasSoundStream = true
 						soundStream.startFrame = currentFrame.frameNumber
 					}
-					val tagSoundStreamBlock: com.codeazur.as3swf.tags.TagSoundStreamBlock = tag as com.codeazur.as3swf.tags.TagSoundStreamBlock
+					val tagSoundStreamBlock = tag as TagSoundStreamBlock
 					val soundData = tagSoundStreamBlock.soundData
 					soundData.endian = Endian.LITTLE_ENDIAN
 					soundData.position = 0
@@ -819,71 +773,12 @@ open class SWFTimelineContainer {
 		}
 	}
 
-	protected fun processBackgroundColorTag(tag: com.codeazur.as3swf.tags.TagSetBackgroundColor, currentTagIndex: Int): Unit {
+	protected fun processBackgroundColorTag(tag: TagSetBackgroundColor, currentTagIndex: Int): Unit {
 		backgroundColor = tag.color
 	}
 
 	protected fun processJPEGTablesTag(tag: TagJPEGTables, currentTagIndex: Int): Unit {
 		jpegTablesTag = tag
-	}
-
-	fun buildLayers(): Unit {
-		val depths = ArrayList<ArrayList<Int>>()
-		val depthsAvailable = arrayListOf<Int>()
-
-		for (i in 0 until frames.size) {
-			val frame: com.codeazur.as3swf.timeline.Frame = frames[i]
-			for (depth in frame.objects.keys) {
-				val depthInt = depth
-				if (depthsAvailable.indexOf(depthInt) > -1) {
-					depths[depth].add(frame.frameNumber)
-				} else {
-					depths[depth] = arrayListOf(frame.frameNumber)
-					depthsAvailable.add(depthInt)
-				}
-			}
-		}
-
-		depthsAvailable.sort()
-
-		for (i in 0 until depthsAvailable.size) {
-
-			val layer: com.codeazur.as3swf.timeline.Layer = com.codeazur.as3swf.timeline.Layer(depthsAvailable[i], frames.size)
-			val frameIndices = depths[depthsAvailable[i]]
-			val frameIndicesLen: Int = frameIndices.size
-			if (frameIndicesLen > 0) {
-				var curStripType: Int = com.codeazur.as3swf.timeline.LayerStrip.TYPE_EMPTY
-				var startFrameIndex: Int = Integer.MAX_VALUE
-				var endFrameIndex: Int = Integer.MAX_VALUE
-				for (j in 0 until frameIndicesLen) {
-					val curFrameIndex = frameIndices[j]
-					val curFrameObject = frames[curFrameIndex].objects[layer.depth]!!
-					if (curFrameObject.isKeyframe) {
-						// a keyframe marks the start of a strip: save current strip
-						layer.appendStrip(curStripType, startFrameIndex, endFrameIndex)
-						// set start of strip
-						startFrameIndex = curFrameIndex
-						// evaluate type of strip (motion tween detection see below)
-						curStripType = if (getCharacter(curFrameObject.characterId) is com.codeazur.as3swf.tags.TagDefineMorphShape) com.codeazur.as3swf.timeline.LayerStrip.TYPE_SHAPETWEEN else com.codeazur.as3swf.timeline.LayerStrip.TYPE_STATIC
-					} else if (curStripType == com.codeazur.as3swf.timeline.LayerStrip.TYPE_STATIC && curFrameObject.lastModifiedAtIndex > 0) {
-						// if one of the matrices of an object in a static strip is
-						// modified at least once, we are dealing with a motion tween:
-						curStripType = com.codeazur.as3swf.timeline.LayerStrip.TYPE_MOTIONTWEEN
-					}
-					// update the end of the strip
-					endFrameIndex = curFrameIndex
-				}
-				layer.appendStrip(curStripType, startFrameIndex, endFrameIndex)
-			}
-			layers.add(layer)
-		}
-
-		for (i in 0 until frames.size) {
-			val frameObjs = frames[i].objects
-			for (depth in frameObjs.keys) {
-				frameObjs[depth]!!.layer = depthsAvailable.indexOf(depth)
-			}
-		}
 	}
 
 	open fun toString(indent: Int = 0, flags: Int = 0): String {

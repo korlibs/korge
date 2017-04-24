@@ -6,8 +6,11 @@ import com.soywiz.korge.animate.AnSymbolMovieClip
 import com.soywiz.korge.animate.AnSymbolShape
 import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
 import com.soywiz.korge.animate.serialization.AnLibrarySerializer
+import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.syncTest
+import com.soywiz.korio.vfs.MemoryVfs
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.VfsFile
 import org.junit.Assert
@@ -18,7 +21,13 @@ class SwfTest {
 	val viewsLog = ViewsLog()
 	val views = viewsLog.views
 
-	suspend fun VfsFile.readSWFDeserializing(views: Views, debug: Boolean = false): AnLibrary = AnLibraryDeserializer.read(AnLibrarySerializer.gen(this.readSWF(views, debug = debug), compression = 0.0), views)
+	suspend fun VfsFile.readSWFDeserializing(views: Views, debug: Boolean = false): AnLibrary {
+		val mem = MemoryVfs()
+
+		val ani = this.readSWF(views, debug = debug)
+		ani.writeTo(mem["file.ani"], compression = 0.0)
+		return mem["file.ani"].readAni(views)
+	}
 
 	@Before
 	fun init() = syncTest {

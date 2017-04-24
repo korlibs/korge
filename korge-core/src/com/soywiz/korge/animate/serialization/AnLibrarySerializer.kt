@@ -1,24 +1,29 @@
 package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.ImageEncodingProps
-import com.soywiz.korim.format.ImageFormats
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
+import com.soywiz.korio.util.insert
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
 
 suspend fun AnLibrary.writeTo(file: VfsFile, compression: Double = 1.0) {
-	file.write(AnLibrarySerializer.gen(this, compression))
+	file.write(AnLibrarySerializer.gen(this, compression) { index, atlas ->
+		file.appendExtension("$index.png").writeBitmap(atlas, PNG(), ImageEncodingProps(compression))
+	})
 }
 
 object AnLibrarySerializer {
-	fun gen(library: AnLibrary, compression: Double = 1.0): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression) }
+	suspend fun gen(library: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, atlasWriter) }
 
-	fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0) = s.writeLibrary(library, compression)
+	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) = s.writeLibrary(library, compression, atlasWriter)
 
 	private fun SyncStream.writeRect(r: Rectangle) {
 		writeF32_le(r.x.toFloat())
@@ -34,7 +39,7 @@ object AnLibrarySerializer {
 		writeF32_le(r.height.toFloat())
 	}
 
-	private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0) {
+	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) {
 		writeStringz(AnLibraryFile.MAGIC, 8)
 		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
@@ -71,13 +76,14 @@ object AnLibrarySerializer {
 		val atlasBitmapsToId = atlasBitmaps.withIndex().map { it.value to it.index }.toMap()
 
 		writeU_VL(atlasBitmaps.size)
-		for (atlas in atlasBitmaps) {
-			val atlasBytes = ImageFormats.encode(atlas, "atlas.png", props = ImageEncodingProps(quality = compression))
-			writeU_VL(1) // 1=RGBA, 2=RGB(JPG)+ALPHA(ZLIB)
-			writeU_VL(atlas.width)
-			writeU_VL(atlas.height)
-			writeU_VL(atlasBytes.size)
-			writeBytes(atlasBytes)
+		for ((index, atlas) in atlasBitmaps.withIndex()) {
+			atlasWriter(index, atlas)
+			//val atlasBytes = ImageFormats.encode(atlas, "atlas.png", props = ImageEncodingProps(quality = compression))
+			//writeU_VL(1) // 1=RGBA, 2=RGB(JPG)+ALPHA(ZLIB)
+			//writeU_VL(atlas.width)
+			//writeU_VL(atlas.height)
+			//writeU_VL(atlasBytes.size)
+			//writeBytes(atlasBytes)
 		}
 
 		// Sounds
@@ -164,24 +170,43 @@ object AnLibrarySerializer {
 								val hasMatrix = frame.transform.matrix != lastMatrix
 
 								var flags = 0
-								if (hasUid) flags = flags or 1
-								if (hasName) flags = flags or 2
-								if (hasAlpha) flags = flags or 4
-								if (hasMatrix) flags = flags or 8
+								if (hasUid) flags = flags.insert(true, 0)
+								if (hasName) flags = flags.insert(true, 1)
+								if (hasAlpha) flags = flags.insert(true, 2)
+								if (hasMatrix) flags = flags.insert(frame.transform.matrix.getType().id, 3, 3)
 
 								writeU_VL(flags)
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasName) writeU_VL(strings[frame.name])
 								if (hasAlpha) write8((frame.alpha.clamp(0.0, 1.0) * 255.0).toInt())
-								// @TODO: Compact
 								if (hasMatrix) {
 									val m = frame.transform.matrix
-									writeF32_le(m.a.toFloat())
-									writeF32_le(m.b.toFloat())
-									writeF32_le(m.c.toFloat())
-									writeF32_le(m.d.toFloat())
-									writeF32_le(m.tx.toFloat())
-									writeF32_le(m.ty.toFloat())
+									when (m.getType()) {
+										Matrix2d.Type.IDENTITY -> {
+										}
+										Matrix2d.Type.TRANSLATE -> {
+											writeF32_le(m.tx.toFloat())
+											writeF32_le(m.ty.toFloat())
+										}
+										Matrix2d.Type.SCALE -> {
+											writeF32_le(m.a.toFloat())
+											writeF32_le(m.c.toFloat())
+										}
+										Matrix2d.Type.SCALE_TRANSLATE -> {
+											writeF32_le(m.a.toFloat())
+											writeF32_le(m.c.toFloat())
+											writeF32_le(m.tx.toFloat())
+											writeF32_le(m.ty.toFloat())
+										}
+										Matrix2d.Type.COMPLEX -> {
+											writeF32_le(m.a.toFloat())
+											writeF32_le(m.b.toFloat())
+											writeF32_le(m.c.toFloat())
+											writeF32_le(m.d.toFloat())
+											writeF32_le(m.tx.toFloat())
+											writeF32_le(m.ty.toFloat())
+										}
+									}
 								}
 
 								lastUid = frame.uid

@@ -5,12 +5,16 @@ import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.ImageFormats
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
+import com.soywiz.korio.util.extract
+import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.ds.DoubleArrayList
 import com.soywiz.korma.ds.IntArrayList
@@ -18,13 +22,20 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
-object AnLibraryDeserializer {
-	fun read(s: ByteArray, views: Views, mipmaps: Boolean = false): AnLibrary = s.openSync().readLibrary(views, mipmaps)
-	fun read(s: SyncStream, views: Views, mipmaps: Boolean = false): AnLibrary = s.readLibrary(views, mipmaps)
+suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
+	val file = this
+	return AnLibraryDeserializer.read(this.read(), views, mipmaps) { index ->
+		file.appendExtension("$index.png").readBitmap()
+	}
+}
 
-	private fun SyncStream.readLibrary(views: Views, mipmaps: Boolean): AnLibrary {
-		//AnLibrary(views)
+object AnLibraryDeserializer {
+	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.openSync().readLibrary(views, mipmaps, atlasReader)
+	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.readLibrary(views, mipmaps, atlasReader)
+
+	suspend private fun SyncStream.readLibrary(views: Views, mipmaps: Boolean, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary {
 		val magic = readStringz(8)
+		//AnLibrary(views)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
 		if (readU_VL() > AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION} or lower")
 		val msPerFrame = readU_VL()
@@ -32,13 +43,13 @@ object AnLibraryDeserializer {
 
 		val strings = arrayOf<String?>(null) + (1 until readU_VL()).map { readStringVL() }
 
-		val atlases = (0 until readU_VL()).map {
-			val format = readU_VL()
-			val width = readU_VL()
-			val height = readU_VL()
-			val size = readU_VL()
-			val data = readBytes(size)
-			val bmp = ImageFormats.read(data)
+		val atlases = (0 until readU_VL()).map { index ->
+			//val format = readU_VL()
+			//val width = readU_VL()
+			//val height = readU_VL()
+			//val size = readU_VL()
+			//val data = readBytes(size)
+			val bmp = atlasReader(index)
 			bmp to views.texture(bmp, mipmaps = mipmaps)
 		}
 
@@ -115,15 +126,35 @@ object AnLibraryDeserializer {
 							for (frameIndex in 0 until readU_VL()) {
 								val frameTime = readU_VL()
 								val flags = readU_VL()
-								val hasUid = (flags and 1) != 0
-								val hasName = (flags and 2) != 0
-								val hasAlpha = (flags and 4) != 0
-								val hasMatrix = (flags and 8) != 0
+								val hasUid = flags.extract(0)
+								val hasName = flags.extract(1)
+								val hasAlpha = flags.extract(2)
+								val matrixType = flags.extract(3, 3)
 
 								if (hasUid) lastUid = readU_VL()
 								if (hasName) lastName = strings[readU_VL()]
 								if (hasAlpha) lastAlpha = readU8().toDouble() / 255.0
-								if (hasMatrix) lastMatrix = Matrix2d.Computed(Matrix2d(a = readF32_le(), b = readF32_le(), c = readF32_le(), d = readF32_le(), tx = readF32_le(), ty = readF32_le()))
+								if (matrixType != 0) {
+									when (matrixType) {
+										Matrix2d.Type.IDENTITY.id -> {
+											lastMatrix = Matrix2d.Computed(Matrix2d())
+										}
+										Matrix2d.Type.TRANSLATE.id -> {
+											lastMatrix = Matrix2d.Computed(Matrix2d(1, 0, 0, 1, readF32_le(), readF32_le()))
+
+										}
+										Matrix2d.Type.SCALE.id -> {
+											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), 0, 0))
+
+										}
+										Matrix2d.Type.SCALE_TRANSLATE.id -> {
+											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), 0, 0, readF32_le(), readF32_le(), readF32_le()))
+										}
+										Matrix2d.Type.COMPLEX.id -> {
+											lastMatrix = Matrix2d.Computed(Matrix2d(readF32_le(), readF32_le(), readF32_le(), readF32_le(), readF32_le(), readF32_le()))
+										}
+									}
+								}
 								timeline.add(frameTime, AnSymbolTimelineFrame(lastUid, lastMatrix, lastName, lastAlpha, BlendMode.INHERIT))
 							}
 						}

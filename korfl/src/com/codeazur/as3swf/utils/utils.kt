@@ -273,9 +273,7 @@ open class BitArray : FlashByteArray() {
 		bitsPending = 0
 	}
 
-	fun calculateMaxBits(signed: Boolean, values: List<Int>): Int {
-		return calculateMaxBits(signed, *values.toIntArray())
-	}
+	fun calculateMaxBits(signed: Boolean, values: List<Int>): Int = calculateMaxBits(signed, *values.toIntArray())
 
 	fun calculateMaxBits(signed: Boolean, vararg values: Int): Int {
 		var b: Int = 0
