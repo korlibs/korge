@@ -27,34 +27,14 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _globalColorTransform = ColorTransform()
 
 
-	var colorMul: Int
-		get() = _colorTransform.colorMul
-		set(v) {
-			_colorTransform.colorMul = v
-			invalidateMatrix()
-		}
+	var colorMul: Int get() = _colorTransform.colorMul; set(v) = run { _colorTransform.colorMul = v; invalidateColorTransform() }
+	var colorAdd: Int get() = _colorTransform.colorAdd; set(v) = run { _colorTransform.colorAdd = v;invalidateColorTransform() }
+	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v;invalidateColorTransform() }
+	var colorTransform: ColorTransform get() = _colorTransform; set(v) = run { _colorTransform.copyFrom(v); invalidateColorTransform() }
 
-	var colorAdd: Int
-		get() = _colorTransform.colorAdd
-		set(v) {
-			_colorTransform.colorAdd = v
-			invalidateMatrix()
-		}
-
-	var alpha: Double
-		get() = _colorTransform.mA
-		set(v) {
-			_colorTransform.mA = v
-			invalidateMatrix()
-		}
-
-	var colorTransform: ColorTransform
-		get() = _colorTransform
-		set(v) {
-			_colorTransform.copyFrom(v)
-			//println("CT($id): $_colorTransform")
-			invalidateMatrix()
-		}
+	private fun invalidateColorTransform() {
+		//invalidate()
+	}
 
 	private var _scaleX: Double = 1.0
 	private var _scaleY: Double = 1.0
