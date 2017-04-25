@@ -11,10 +11,12 @@ import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.exporters.LoggerShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporter
+import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
 import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
@@ -32,6 +34,7 @@ import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.ds.DoubleArrayList
 import com.soywiz.korma.ds.IntArrayList
+import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
 import kotlin.collections.set
 
@@ -97,12 +100,17 @@ class MySwfTimeline {
 internal val AnSymbolMovieClip.swfTimeline by Extra.Property { MySwfTimeline() }
 internal val AnSymbolMovieClip.labelsToFrame0 by Extra.Property { hashMapOf<String, Int>() }
 
+var AnSymbolMorphShape.tagDefineMorphShape by Extra.Property<TagDefineMorphShape?> { null }
+var AnSymbolShape.tagDefineShape by Extra.Property<TagDefineShape?> { null }
+
 private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps: Boolean, val rasterizerMethod: Context2d.ShapeRasterizerMethod) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
 	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
 	val classNameToTagId = hashMapOf<String, Int>()
-	val shapesToPopulate = arrayListOf<Pair<AnSymbolShape, SWFShapeRasterizer>>()
+	val shapesToPopulate = LinkedHashMap<AnSymbolShape, SWFShapeRasterizer>()
+	val morphShapesToPopulate = arrayListOf<AnSymbolMorphShape>()
+	val morphShapeRatios = hashMapOf<Int, HashSet<Double>>()
 
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
@@ -250,11 +258,34 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		}
 	}
 
+
 	suspend private fun generateTextures() {
-		val atlas = shapesToPopulate.map {
-			it.second.imageWithScale
-		}.toAtlas(views, mipmaps)
-		for ((shape, texture) in shapesToPopulate.map { it.first }.zip(atlas)) shape.textureWithBitmap = texture
+		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
+
+		for ((shape, rasterizer) in shapesToPopulate) {
+			itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
+		}
+
+		for (morph in morphShapesToPopulate) {
+			val tag = morph.tagDefineMorphShape!!
+			val ratios = (morphShapeRatios[tag.characterId] ?: setOf<Double>()).sorted()
+			val MAX_RATIOS = 24
+			val aratios = if (ratios.size > MAX_RATIOS) (0 until MAX_RATIOS).map { it.toDouble() / (MAX_RATIOS - 1).toDouble() } else ratios
+			for (ratio in aratios) {
+				val bb = ShapeExporterBoundsBuilder()
+				tag.export(bb, ratio)
+				val bounds = bb.bb.getBounds()
+				//bb.bb.add()
+				val rasterizer = SWFShapeRasterizer(
+					swf, debug, bounds, { tag.export(it, ratio) }, rasterizerMethod,
+					maxWidth = 128,
+					maxHeight = 128
+				)
+				itemsInAtlas.put({ texture -> morph.texturesWithBitmap.add((ratio * 1000).toInt(), texture) }, rasterizer.imageWithScale)
+			}
+		}
+
+		for ((processor, texture) in itemsInAtlas.toAtlas(views, mipmaps)) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -302,11 +333,13 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 			var clipDepth: Int = -1
 			var name: String? = null
 			var alpha: Double = 1.0
+			var ratio: Double = 0.0
 			var matrix: Matrix2d = Matrix2d()
 			var blendMode: BlendMode = BlendMode.INHERIT
 
 			fun reset() {
 				uid = -1
+				ratio = 0.0
 				charId = -1
 				clipDepth = -1
 				name = null
@@ -318,6 +351,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				depth = depth,
 				clipDepth = clipDepth,
 				uid = uid,
+				ratio = ratio,
 				name = name,
 				transform = Matrix2d.Computed(matrix),
 				alpha = alpha,
@@ -367,6 +401,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				is TagSetBackgroundColor -> {
 					lib.bgcolor = decodeSWFColor(it.color)
 				}
+				is TagProtect -> Unit // ignore
 				is TagDefineFont -> {
 				}
 				is TagDefineFontName -> {
@@ -466,11 +501,32 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					registerBitmap(it.characterId, fbmp, null)
 				}
 				is TagDefineShape -> {
-					val rasterizer = SWFShapeRasterizer(swf, debug, it, rasterizerMethod)
+					val tag = it
+					val rasterizer = SWFShapeRasterizer(swf, debug, tag.shapeBounds.rect, { tag.export(it) }, rasterizerMethod)
 					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
 					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
+					symbol.tagDefineShape = it
 					symbols += symbol
 					shapesToPopulate += symbol to rasterizer
+				}
+				is TagDefineMorphShape -> {
+					val startBounds = it.startBounds.rect
+					val endBounds = it.endBounds.rect
+					val bounds = BoundsBuilder()
+						.add(startBounds)
+						.add(endBounds)
+						.add(it.startEdgeBounds.rect)
+						.add(it.endEdgeBounds.rect)
+						.getBounds()
+
+					val bounds2 = bounds.copy(width = bounds.width + 100, height = bounds.height + 100)
+
+					//println("${startBounds.toStringBounds()}, ${endBounds.toStringBounds()} -> ${bounds.toStringBounds()}")
+
+					val symbol = AnSymbolMorphShape(it.characterId, null, bounds2)
+					symbol.tagDefineMorphShape = it
+					symbols += symbol
+					morphShapesToPopulate += symbol
 				}
 				is TagDoABC -> {
 					classNameToTypes += it.abc.typesInfo.map { it.name.toString() to it }.toMap()
@@ -511,6 +567,13 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 						if (eprops != null) uidInfo.extraProps += eprops
 						//println(depth.extraProps)
 					}
+
+					if (it.hasRatio) {
+						depth.ratio = it.ratiod
+						val ratios = morphShapeRatios.getOrPut(depth.charId) { hashSetOf() }
+						ratios += it.ratiod
+					}
+
 					depth.uid = uid
 				}
 				is TagRemoveObject -> {
@@ -534,8 +597,16 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 
 fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
 
-class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefineShape, val rasterizerMethod: Context2d.ShapeRasterizerMethod) : ShapeExporter() {
-	val bounds: Rectangle = dshape.shapeBounds.rect
+class SWFShapeRasterizer(
+	val swf: SWF,
+	val debug: Boolean,
+	val bounds: Rectangle,
+	val export: (ShapeExporter) -> Unit,
+	val rasterizerMethod: Context2d.ShapeRasterizerMethod,
+	val maxWidth: Int = 512,
+	val maxHeight: Int = 512
+) : ShapeExporter() {
+	//val bounds: Rectangle = dshape.shapeBounds.rect
 
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
 
@@ -545,8 +616,8 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	val desiredBoundsWidth = realBoundsWidth * 2
 	val desiredBoundsHeight = realBoundsHeight * 2
 
-	val limitBoundsWidth = Math.min(desiredBoundsWidth, 512)
-	val limitBoundsHeight = Math.min(desiredBoundsHeight, 512)
+	val limitBoundsWidth = Math.min(desiredBoundsWidth, maxWidth)
+	val limitBoundsHeight = Math.min(desiredBoundsHeight, maxHeight)
 
 	val actualScale = Math.min(limitBoundsWidth.toDouble() / realBoundsWidth.toDouble(), limitBoundsHeight.toDouble() / realBoundsHeight.toDouble())
 
@@ -559,7 +630,8 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 	val shapes = arrayListOf<Shape>()
 
 	val actualShape by lazy {
-		this.dshape.export(if (debug) LoggerShapeExporter(this) else this)
+		export(if (debug) LoggerShapeExporter(this) else this)
+		//this.dshape.export(if (debug) LoggerShapeExporter(this) else this)
 		cshape
 	}
 
@@ -575,7 +647,7 @@ class SWFShapeRasterizer(val swf: SWF, val debug: Boolean, val dshape: TagDefine
 		image
 	}
 	val imageWithScale by lazy {
-		BitmapWithScale(image, actualScale)
+		BitmapWithScale(image, actualScale, bounds)
 	}
 
 	var drawingFill = true

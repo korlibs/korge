@@ -1055,6 +1055,8 @@ class TagDefineFontName : _BaseTag(), ITag {
 	}
 }
 
+//interface IDefineBaseShape : IDefinitionTag
+
 open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 	companion object {
 		const val TYPE = 46
@@ -1064,6 +1066,8 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 	lateinit var endBounds: SWFRectangle
 	lateinit var startEdges: SWFShape
 	lateinit var endEdges: SWFShape
+	var startEdgeBounds: SWFRectangle = SWFRectangle()
+	var endEdgeBounds: SWFRectangle = SWFRectangle()
 
 	override var characterId: Int = 0
 
@@ -1094,7 +1098,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		val exportShape: SWFShape = SWFShape()
 		val numEdges: Int = startEdges.records.size
 		for (i in 0 until numEdges) {
-			var startRecord: SWFShapeRecord = startEdges.records[i]
+			var startRecord = startEdges.records[i]
 			// Ignore start records that are style change records and don't have moveTo
 			// The end record index is not incremented, because end records do not have
 			// style change records without moveTo's.
@@ -1102,7 +1106,7 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 				exportShape.records.add(startRecord.clone())
 				continue
 			}
-			var endRecord: SWFShapeRecord = endEdges.records[j++]
+			var endRecord = endEdges.records[j++]
 			var exportRecord: SWFShapeRecord? = null
 			// It is possible for an edge to change type over the course of a morph sequence.
 			// A straight edge can become a curved edge and vice versa
@@ -1114,15 +1118,15 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 			}
 			when (startRecord.type) {
 				SWFShapeRecord.TYPE_STYLECHANGE -> {
-					val startStyleChange: SWFShapeRecordStyleChange = startRecord.clone() as SWFShapeRecordStyleChange
-					val endStyleChange: SWFShapeRecordStyleChange = endRecord as SWFShapeRecordStyleChange
+					val startStyleChange = startRecord.clone() as SWFShapeRecordStyleChange
+					val endStyleChange = endRecord as SWFShapeRecordStyleChange
 					startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
 					startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
 					exportRecord = startStyleChange
 				}
 				SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
-					val startStraightEdge: SWFShapeRecordStraightEdge = startRecord.clone() as SWFShapeRecordStraightEdge
-					val endStraightEdge: SWFShapeRecordStraightEdge = endRecord as SWFShapeRecordStraightEdge
+					val startStraightEdge = startRecord.clone() as SWFShapeRecordStraightEdge
+					val endStraightEdge = endRecord as SWFShapeRecordStraightEdge
 					startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
 					startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
 					if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
@@ -1135,8 +1139,8 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 					exportRecord = startStraightEdge
 				}
 				SWFShapeRecord.TYPE_CURVEDEDGE -> {
-					val startCurvedEdge: SWFShapeRecordCurvedEdge = startRecord.clone() as SWFShapeRecordCurvedEdge
-					val endCurvedEdge: SWFShapeRecordCurvedEdge = endRecord as SWFShapeRecordCurvedEdge
+					val startCurvedEdge = startRecord.clone() as SWFShapeRecordCurvedEdge
+					val endCurvedEdge = endRecord as SWFShapeRecordCurvedEdge
 					startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
 					startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
 					startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
@@ -1202,8 +1206,6 @@ class TagDefineMorphShape2 : TagDefineMorphShape(), ITag {
 		const val TYPE = 84
 	}
 
-	lateinit var startEdgeBounds: SWFRectangle
-	lateinit var endEdgeBounds: SWFRectangle
 	var usesNonScalingStrokes: Boolean = false
 	var usesScalingStrokes: Boolean = false
 
@@ -2213,6 +2215,7 @@ open class TagPlaceObject : _BaseTag(), IDisplayListTag {
 
 	// Forward declarations for TagPlaceObject2
 	var ratio = 0
+	val ratiod get() = ratio.toDouble() / 65536.0
 	var instanceName: String? = null
 	var clipDepth = 0
 	var clipActions: SWFClipActions? = null

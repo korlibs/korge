@@ -2,7 +2,7 @@ package com.soywiz.korge.animate.serialization
 
 object AnLibraryFile {
 	const val MAGIC = "KORGEANI"
-	const val VERSION = 5
+	const val VERSION = 7
 
 	const val SYMBOL_TYPE_EMPTY = 0
 	const val SYMBOL_TYPE_SOUND = 1
@@ -10,4 +10,5 @@ object AnLibraryFile {
 	const val SYMBOL_TYPE_SHAPE = 3
 	const val SYMBOL_TYPE_BITMAP = 4
 	const val SYMBOL_TYPE_MOVIE_CLIP = 5
+	const val SYMBOL_TYPE_MORPH_SHAPE = 6
 }

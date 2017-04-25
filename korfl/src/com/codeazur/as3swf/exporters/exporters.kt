@@ -6,6 +6,8 @@ import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.utils.NumberUtils
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Rectangle
 
 open class ShapeExporter {
 	open fun beginShape() = Unit
@@ -61,4 +63,59 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 	override fun moveTo(x: Double, y: Double) = log("moveTo($x, $y)").parent.moveTo(x, y)
 	override fun lineTo(x: Double, y: Double) = log("lineTo($x, $y)").parent.lineTo(x, y)
 	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) = log("curveTo($controlX, $controlY, $anchorX, $anchorY)").parent.curveTo(controlX, controlY, anchorX, anchorY)
+}
+
+class ShapeExporterBoundsBuilder : ShapeExporter() {
+	val bb = BoundsBuilder()
+
+	var lineWidth = 1.0
+
+	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
+		lineWidth = thickness - 0.5
+	}
+
+	override fun beginFills() {
+		lineWidth = 0.0
+	}
+
+	override fun beginLines() {
+		lineWidth = 1.0
+	}
+
+	private fun addPoint(x: Double, y: Double) {
+		bb.add(x - lineWidth, y - lineWidth)
+		bb.add(x + lineWidth, y + lineWidth)
+	}
+
+	private fun addRect(rect: Rectangle) {
+		addPoint(rect.left, rect.top)
+		addPoint(rect.right, rect.bottom)
+	}
+
+	var lastX = 0.0
+	var lastY = 0.0
+
+	override fun moveTo(x: Double, y: Double) {
+		addPoint(x, y)
+		lastX = x
+		lastY = y
+	}
+
+	override fun lineTo(x: Double, y: Double) {
+		addPoint(x, y)
+		lastX = x
+		lastY = y
+	}
+
+	private val tempRect = Rectangle()
+	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
+		//addRect(Bezier.quadBounds(lastX, lastY, controlX, controlY, anchorX, anchorY, tempRect))
+		addPoint(controlX, controlY)
+		addPoint(anchorX, anchorY)
+		lastX = anchorX
+		lastY = anchorY
+	}
+
+	override fun closePath() {
+	}
 }

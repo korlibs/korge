@@ -24,7 +24,8 @@ object Sample3 : Module() {
 		//@Path("shape1.swf") val lib: AnLibrary
 		//@Path("shape2.swf") val lib: AnLibrary
 		//@Path("shape2.swf") val lib: AnLibrary
-		@Path("mask.swf") val lib: AnLibrary
+		//@Path("mask.swf") val lib: AnLibrary
+		@Path("morph.swf") val lib: AnLibrary
 		//@Path("eyes.swf") val eyesLibrary: AnLibrary
 		//@Path("eyes2.swf") val eyesLibrary: AnLibrary
 		//@Path("radialgradient.swf") val library: AnLibrary
@@ -37,7 +38,7 @@ object Sample3 : Module() {
 			//SwfLoader.load(views)
 
 			//sceneView += lib.createMainTimeLine().apply { scale = 4.0 }
-			sceneView += lib.createMainTimeLine().apply { scale = 2.0 }
+			sceneView += lib.createMainTimeLine().apply { scale = 1.0 }
 			//sceneView += semillaLibrary.createMainTimeLine().apply { this["semilla"].play("anim2") }
 			//sceneView += eyesLibrary.createMainTimeLine().apply { scale = 3.0 }
 			//sceneView += library.createMainTimeLine().apply { scale = 3.0 }

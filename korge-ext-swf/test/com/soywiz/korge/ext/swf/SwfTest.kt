@@ -10,12 +10,11 @@ import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.vfs.MemoryVfs
-import com.soywiz.korio.vfs.ResourcesVfs
-import com.soywiz.korio.vfs.VfsFile
+import com.soywiz.korio.vfs.*
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 class SwfTest {
 	val viewsLog = ViewsLog()
@@ -138,5 +137,12 @@ class SwfTest {
 
 		Assert.assertNull(shape["circle"])
 		Assert.assertNotNull(shape["square"])
+	}
+
+	@Test
+	fun morph() = syncTest {
+		val lib = ResourcesVfs["morph.swf"].readSWFDeserializing(views, debug = false)
+		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		//lib.writeTo(LocalVfs("c:/temp")["morph.ani"])
 	}
 }

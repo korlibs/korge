@@ -4,6 +4,7 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
@@ -16,8 +17,12 @@ import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
 
 suspend fun AnLibrary.writeTo(file: VfsFile, compression: Double = 1.0) {
+	//println("writeTo")
+	val format = PNG()
+	val props = ImageEncodingProps(compression)
 	file.write(AnLibrarySerializer.gen(this, compression) { index, atlas ->
-		file.withExtension("ani.$index.png").writeBitmap(atlas, PNG(), ImageEncodingProps(compression))
+		//showImageAndWait(atlas)
+		file.withExtension("ani.$index.png").writeBitmap(atlas, format, props)
 	})
 }
 
@@ -73,7 +78,10 @@ object AnLibrarySerializer {
 		for (str in strings.strings.drop(1)) writeStringVL(str!!)
 
 		// Atlases
-		val atlasBitmaps = lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmp }.filterNotNull().distinct()
+		val atlasBitmaps = listOf(
+			lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmp },
+			lib.symbolsById.filterIsInstance<AnSymbolMorphShape>().flatMap { it.texturesWithBitmap.entries.map { it.second.bitmapSlice.bmp } }
+		).flatMap { it }.filterNotNull().distinct()
 		val atlasBitmapsToId = atlasBitmaps.withIndex().map { it.value to it.index }.toMap()
 
 		writeU_VL(atlasBitmaps.size)
@@ -127,6 +135,18 @@ object AnLibrarySerializer {
 						writeU_VL(0)
 					}
 				}
+				is AnSymbolMorphShape -> {
+					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE)
+					val entries = symbol.texturesWithBitmap.entries
+					writeU_VL(entries.size)
+					for ((ratio1000, textureWithBitmap) in entries) {
+						writeU_VL(ratio1000)
+						writeF32_le(textureWithBitmap.scale.toFloat())
+						writeU_VL(atlasBitmapsToId[textureWithBitmap.bitmapSlice.bmp]!!)
+						writeRect(textureWithBitmap.bounds)
+						writeIRect(textureWithBitmap.bitmapSlice.bounds)
+					}
+				}
 				is AnSymbolBitmap -> {
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_BITMAP)
 				}
@@ -162,6 +182,7 @@ object AnLibrarySerializer {
 							var lastAlpha: Double = 1.0
 							var lastMatrix: Matrix2d = Matrix2d()
 							var lastClipDepth = -1
+							var lastRatio = 0.0
 							writeU_VL(frames.size)
 							for ((frameTime, frame) in frames) {
 								writeU_VL(frameTime)
@@ -171,6 +192,7 @@ object AnLibrarySerializer {
 								val hasName = frame.name != lastName
 								val hasAlpha = frame.alpha != lastAlpha
 								val hasClipDepth = frame.clipDepth != lastClipDepth
+								val hasRatio = frame.ratio != lastRatio
 
 								val hasMatrix = m != lastMatrix
 
@@ -187,6 +209,7 @@ object AnLibrarySerializer {
 									.insert(hasAlpha, 2)
 									.insert(hasMatrix, 3)
 									.insert(hasClipDepth, 4)
+									.insert(hasRatio, 5)
 								)
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasClipDepth) write16_le(frame.clipDepth)
@@ -208,12 +231,14 @@ object AnLibrarySerializer {
 									if (hasMatrixTX) writeF32_le(m.tx.toFloat())
 									if (hasMatrixTY) writeF32_le(m.ty.toFloat())
 								}
+								if (hasRatio) writeF32_le(frame.ratio.toFloat())
 
 								lastUid = frame.uid
 								lastName = frame.name
 								lastAlpha = frame.alpha
 								lastMatrix = m
 								lastClipDepth = frame.clipDepth
+								lastRatio = frame.ratio
 							}
 						}
 					}

@@ -38,8 +38,15 @@ class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bou
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
 }
 
-class AnSymbolShape(id: Int, name: String?, val bounds: Rectangle, var textureWithBitmap: TextureWithBitmapSlice?, val path: VectorPath? = null) : AnSymbol(id, name) {
+open class AnSymbolBaseShape(id: Int, name: String?, var bounds: Rectangle, val path: VectorPath? = null) : AnSymbol(id, name) {
+}
+
+class AnSymbolShape(id: Int, name: String?, bounds: Rectangle, var textureWithBitmap: TextureWithBitmapSlice?, path: VectorPath? = null) : AnSymbolBaseShape(id, name, bounds, path) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
+}
+
+class AnSymbolMorphShape(id: Int, name: String?, bounds: Rectangle, var texturesWithBitmap: Timed<TextureWithBitmapSlice> = Timed(), path: VectorPath? = null) : AnSymbolBaseShape(id, name, bounds, path) {
+	override fun create(library: AnLibrary): AnElement = AnMorphShape(library, this)
 }
 
 class AnSymbolBitmap(id: Int, name: String?, val bmp: Bitmap) : AnSymbol(id, name) {
@@ -50,6 +57,7 @@ data class AnSymbolTimelineFrame(
 	val depth: Int,
 	val uid: Int,
 	val clipDepth: Int,
+	var ratio: Double,
 	val transform: Matrix2d.Computed,
 	val name: String?,
 	val alpha: Double,

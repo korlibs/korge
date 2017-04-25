@@ -8,7 +8,6 @@ import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.format.ImageFormats
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.serialization.json.Json
@@ -93,7 +92,45 @@ object AnLibraryDeserializer {
 						}
 						else -> null
 					}
-					AnSymbolShape(symbolId, symbolName, bounds, textureWithBitmap = TextureWithBitmapSlice(texture.slice(textureBounds.toDouble()), bitmap.slice(textureBounds), scale = scale), path = path)
+					AnSymbolShape(
+						id = symbolId,
+						name = symbolName,
+						bounds = bounds,
+						textureWithBitmap = TextureWithBitmapSlice(
+							texture = texture.slice(textureBounds.toDouble()),
+							bitmapSlice = bitmap.slice(textureBounds),
+							scale = scale,
+							bounds = bounds
+						),
+						path = path
+					)
+				}
+				AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE -> {
+					val texturesWithBitmap = Timed<TextureWithBitmapSlice>()
+					for (n in 0 until readU_VL()) {
+						val ratio1000 = readU_VL()
+						val scale = readF32_le().toDouble()
+						val bitmapId = readU_VL()
+						val bounds = readRect()
+						val textureBounds = readIRect()
+						val atlas = atlases[bitmapId]
+						val bitmap = atlas.first
+						val texture = atlas.second
+
+						texturesWithBitmap.add(ratio1000, TextureWithBitmapSlice(
+							texture = texture.slice(textureBounds.toDouble()),
+							bitmapSlice = bitmap.slice(textureBounds),
+							scale = scale,
+							bounds = bounds
+						))
+					}
+					AnSymbolMorphShape(
+						id = symbolId,
+						name = symbolName,
+						bounds = Rectangle(),
+						texturesWithBitmap = texturesWithBitmap,
+						path = null
+					)
 				}
 				AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
 					AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))
@@ -124,6 +161,7 @@ object AnLibraryDeserializer {
 							var lastAlpha: Double = 1.0
 							var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
 							var lastClipDepth = -1
+							var lastRatio = 0.0
 							for (frameIndex in 0 until readU_VL()) {
 								val frameTime = readU_VL()
 								val flags = readU_VL()
@@ -132,6 +170,7 @@ object AnLibraryDeserializer {
 								val hasAlpha = flags.extract(2)
 								val hasMatrix = flags.extract(3)
 								val hasClipDepth = flags.extract(4)
+								val hasRatio = flags.extract(5)
 
 								if (hasUid) lastUid = readU_VL()
 								if (hasClipDepth) lastClipDepth = readS16_le()
@@ -148,6 +187,7 @@ object AnLibraryDeserializer {
 									if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
 									lastMatrix = Matrix2d.Computed(lm)
 								}
+								if (hasRatio) lastRatio = readF32_le().toDouble()
 								timeline.add(frameTime, AnSymbolTimelineFrame(
 									depth = depth,
 									uid = lastUid,
@@ -155,6 +195,7 @@ object AnLibraryDeserializer {
 									name = lastName,
 									alpha = lastAlpha,
 									blendMode = BlendMode.INHERIT,
+									ratio = lastRatio,
 									clipDepth = lastClipDepth
 								))
 							}

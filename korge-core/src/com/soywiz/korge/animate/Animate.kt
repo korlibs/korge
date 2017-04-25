@@ -4,28 +4,34 @@ import com.soywiz.korag.AG
 import com.soywiz.korau.format.play
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.Texture
+import com.soywiz.korge.render.TextureWithBitmapSlice
+import com.soywiz.korge.tween.interpolate
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.redirect
-import com.soywiz.korio.util.redirectField
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
+
+interface AnWithRatio {
+	var ratio: Double
+}
 
 interface AnElement {
 	val library: AnLibrary
 	val symbol: AnSymbol
 }
 
-class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShape) : View(library.views), AnElement {
-	val dx = symbol.bounds.x.toFloat()
-	val dy = symbol.bounds.y.toFloat()
-	val tex = symbol.textureWithBitmap?.texture ?: views.transparentTexture
-	val texScale = symbol.textureWithBitmap?.scale ?: 1.0
-	val texWidth = (tex.width / texScale).toFloat()
-	val texHeight = (tex.height / texScale).toFloat()
-	val smoothing = true
+abstract class AnBaseShape(override final val library: AnLibrary, override final val symbol: AnSymbolBaseShape) : View(library.views), AnElement {
+	abstract val dx: Float
+	abstract val dy: Float
+	abstract val tex: Texture
+	abstract val texScale: Double
+	abstract val texWidth: Float
+	abstract val texHeight: Float
+	abstract val smoothing: Boolean
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, col1 = globalColor)
@@ -44,6 +50,58 @@ class AnShape(override val library: AnLibrary, override val symbol: AnSymbolShap
 	}
 
 	override fun updateInternal(dtMs: Int) = Unit
+}
+
+class AnShape(library: AnLibrary, symbol: AnSymbolShape) : AnBaseShape(library, symbol), AnElement {
+	override val dx = symbol.bounds.x.toFloat()
+	override val dy = symbol.bounds.y.toFloat()
+	override val tex = symbol.textureWithBitmap?.texture ?: views.transparentTexture
+	override val texScale = symbol.textureWithBitmap?.scale ?: 1.0
+	override val texWidth = (tex.width / texScale).toFloat()
+	override val texHeight = (tex.height / texScale).toFloat()
+	override val smoothing = true
+}
+
+class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : AnBaseShape(library, morphSymbol), AnElement, AnWithRatio {
+	private val timedResult = Timed.Result<TextureWithBitmapSlice>()
+
+	var texWBS: TextureWithBitmapSlice? = null
+	override var dx: Float = 0f
+	override var dy: Float = 0f
+	override var tex: Texture = views.transparentTexture
+	override var texScale = 1.0
+	override var texWidth = 0f
+	override var texHeight = 0f
+	override var smoothing = true
+
+	private fun updatedRatio() {
+		val result = morphSymbol.texturesWithBitmap.find((ratio * 1000).toInt(), timedResult)
+		texWBS = result.left ?: result.right
+
+		dx = texWBS?.bounds?.x?.toFloat() ?: 0f
+		dy = texWBS?.bounds?.y?.toFloat() ?: 0f
+		tex = texWBS?.texture ?: views.transparentTexture
+		texScale = texWBS?.scale ?: 1.0
+		texWidth = (tex.width / texScale).toFloat()
+		texHeight = (tex.height / texScale).toFloat()
+		smoothing = true
+	}
+
+	override var ratio = 0.0
+		set(value) {
+			field = value
+			updatedRatio()
+		}
+
+	init {
+		updatedRatio()
+	}
+
+	override fun render(ctx: RenderContext, m: Matrix2d) {
+		//println("$dx, $dy")
+		//println(texWBS?.bounds)
+		super.render(ctx, m)
+	}
 }
 
 class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbolEmpty = AnSymbolEmpty) : View(library.views), AnElement {
@@ -226,31 +284,32 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 						maskPushDepths[left.depth] = left.clipDepth
 					}
 
-					//if (left != null && left.popMask) {
-					//	//println("$depth: $left")
-					//	replaceDepth(depth, popMasks[depth])
-					//} else {
-						val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
-						if ((left != null) && (right != null) && (left.uid == right.uid)) {
-							//println("$currentTime: $index")
-							replaceDepth(depth, view)
-							view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
-							//view.setComputedTransform(left.transform)
-						} else {
-							//println("$currentTime: $index")
-							replaceDepth(depth, view)
-							if (left != null) {
-								view.setComputedTransform(left.transform)
-							}
-						}
+					val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
+					if ((left != null) && (right != null) && (left.uid == right.uid)) {
+						//println("$currentTime: $index")
+						replaceDepth(depth, view)
+						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+						if (view is AnWithRatio) view.ratio = interpolate(left.ratio, right.ratio, ratio)
+						//view.setComputedTransform(left.transform)
+					} else {
+						//println("$currentTime: $index")
+						replaceDepth(depth, view)
 						if (left != null) {
-							view.name = left.name
-							view.alpha = left.alpha
+							view.setComputedTransform(left.transform)
+							if (view is AnWithRatio) view.ratio = left.ratio
 						}
-					//}
+					}
+					if (left != null) {
+						view.name = left.name
+						view.alpha = left.alpha
+					}
 				}
 			} else {
 				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
+					if (left != null) {
+						maskPushDepths[left.depth] = left.clipDepth
+					}
+
 					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 					//println("$currentTime: $index")
 					replaceDepth(depth, view)
@@ -258,6 +317,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 						view.setComputedTransform(left.transform)
 						view.name = left.name
 						view.alpha = left.alpha
+						if (view is AnWithRatio) view.ratio = left.ratio
 					}
 				}
 			}

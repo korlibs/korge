@@ -6,12 +6,13 @@ import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
+import com.soywiz.korio.util.Extra
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
 import com.soywiz.korma.numeric.nextPowerOfTwo
 
-data class BitmapWithScale(val bitmap: Bitmap, val scale: Double) {
+data class BitmapWithScale(val bitmap: Bitmap, val scale: Double, val bounds: Rectangle) : Extra by Extra.Mixin() {
 	val width: Int = bitmap.width
 	val height: Int = bitmap.height
 }
@@ -25,9 +26,10 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 */
 
 
-suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<TextureWithBitmapSlice> {
+suspend fun <T> Map<T, BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): Map<T, TextureWithBitmapSlice> {
 	//val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
-	val packs = BinPacker.packSeveral(4096.0, 4096.0, this) { Size(it.width + 4, it.height + 4) }
+	val values = this.values.toList()
+	val packs = BinPacker.packSeveral(4096.0, 4096.0, values) { Size(it.width + 4, it.height + 4) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
 	for (pack in packs) {
 		val width = pack.width.toInt().nextPowerOfTwo
@@ -53,9 +55,14 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 
 		for ((ibmp, rect) in pack.items) {
 			val rect2 = Rectangle(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4)
-			bitmapsToTextures[ibmp] = TextureWithBitmapSlice(texture.slice(rect2), bmp.slice(rect2.toInt()), scale = ibmp.scale)
+			bitmapsToTextures[ibmp] = TextureWithBitmapSlice(
+				texture = texture.slice(rect2),
+				bitmapSlice = bmp.slice(rect2.toInt()),
+				scale = ibmp.scale,
+				bounds = ibmp.bounds
+			)
 		}
 	}
-	return this.map { bitmapsToTextures[it]!! }
+	return this.mapValues { bitmapsToTextures[it.value]!! }
 }
 

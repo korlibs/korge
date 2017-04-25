@@ -4,9 +4,10 @@ import org.junit.Assert
 import org.junit.Test
 
 class TimedTest {
+	val tostr = fun(index: Int, left: String?, right: String?, ratio: Double) = "$index,$left,$right,$ratio"
+
 	@Test
 	fun name() {
-		val tostr = fun(index: Int, left: String?, right: String?, ratio: Double) = "$index,$left,$right,$ratio"
 		val timed = Timed<String>()
 		timed.add(2, "a")
 		timed.add(4, "b")
@@ -18,5 +19,30 @@ class TimedTest {
 		Assert.assertEquals("1,b,c,0.5", timed.findAndHandle(5, tostr))
 		Assert.assertEquals("2,c,null,0.0", timed.findAndHandle(6, tostr))
 		Assert.assertEquals("3,c,null,1.0", timed.findAndHandle(10, tostr))
+	}
+
+	@Test
+	fun unsorted() {
+		Timed<String>().apply {
+			add(6, "c")
+			add(4, "b")
+			add(8, "d")
+			add(2, "a")
+			Assert.assertEquals(
+				"[(2, a), (4, b), (6, c), (8, d)]",
+				entries.toString()
+			)
+		}
+
+		Timed<String>().apply {
+			add(2, "a")
+			add(4, "b")
+			add(6, "c")
+			add(8, "d")
+			Assert.assertEquals(
+				"[(2, a), (4, b), (6, c), (8, d)]",
+				entries.toString()
+			)
+		}
 	}
 }
