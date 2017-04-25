@@ -167,6 +167,8 @@ object AnLibraryDeserializer {
 	}
 
 	private fun FastByteArrayInputStream.readMovieClip(symbolId: Int, symbolName: String?, strings: Array<String?>): AnSymbolMovieClip {
+		val flags = readU8()
+
 		val totalDepths = readU_VL()
 		val totalFrames = readU_VL()
 		val totalTime = readU_VL()
@@ -179,6 +181,10 @@ object AnLibraryDeserializer {
 			AnSymbolUidDef(charId, extraProps)
 		}.toTypedArray()
 		val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))
+
+		if (flags.extract(0)) {
+			mc.ninePatch = readRect()
+		}
 
 		val symbolStates = (0 until readU_VL()).map {
 			val ss = AnSymbolMovieClipState(totalDepths)

@@ -7,6 +7,8 @@ import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.toGlSl
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.Vector2
+import com.soywiz.korma.geom.Point2d
 
 object MyBlendFactors{
 	val NORMAL = AG.BlendFactors.NORMAL
@@ -15,13 +17,15 @@ object MyBlendFactors{
 	//val ADD = AG.BlendFactors.ADD_PREMULT
 }
 
-class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
-	private val vertices = FastMemory.alloc(6 * 4 * maxQuads * 4)
-	private val indices = FastMemory.alloc(2 * maxQuads * 6)
+class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
+	val maxQuadsMargin = maxQuads + 9
+	val maxVertices = maxQuads * 4
+	val maxIndices = maxQuads * 6
+	private val vertices = FastMemory.alloc(6 * 4 * maxVertices)
+	private val indices = FastMemory.alloc(2 * maxIndices)
 	private var vertexCount = 0
 	private var vertexPos = 0
 	private var indexPos = 0
-	private var quadCount = 0
 	private var currentTex: Texture.Base? = null
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.BlendFactors = MyBlendFactors.NORMAL
@@ -47,6 +51,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	// |  |
 	// 3..2
 	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colMul: Int, colAdd: Int, rotated: Boolean = false) {
+		ensure(6, 4)
+
 		addIndex(vertexCount + 0)
 		addIndex(vertexCount + 1)
 		addIndex(vertexCount + 2)
@@ -67,10 +73,12 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 			addVertex(x2, y2, tex.x1, tex.y1, colMul, colAdd)
 			addVertex(x3, y3, tex.x0, tex.y1, colMul, colAdd)
 		}
+	}
 
-		quadCount++
-
-		if (quadCount >= maxQuads) flush()
+	private fun ensure(indices: Int, vertices: Int) {
+		if ((this.indexPos + indices >= maxIndices) || (this.vertexPos + vertices >= maxQuads)) {
+			flush()
+		}
 	}
 
 	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.BlendFactors) {
@@ -83,6 +91,79 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	}
 
 	private val identity = Matrix2d()
+
+	fun addNinePatch(
+		tex: Texture,
+		x: Float = 0f, y: Float = 0f,
+		width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(),
+		xcuts: DoubleArray, ycuts: DoubleArray,
+		xcuts2: DoubleArray, ycuts2: DoubleArray,
+		m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL
+	) {
+		ensure(indices = 6 * 9, vertices = 4 * 4)
+
+		val start = vertexCount
+
+		setStateFast(tex.base, filtering, blendFactors)
+
+		// @TODO: Just calculate origin + director vectors and interpolate
+
+		val o = m.transform(Point2d(x, y))
+		val u = m.transform(Point2d(x + width, y))
+		val v = m.transform(Point2d(x, y + height))
+		val dU = u - o
+		val dV = v - o
+
+
+		val t_o = Point2d(tex.x0, tex.y0)
+		val t_u = Point2d(tex.x1, tex.y0)
+		val t_v = Point2d(tex.x0, tex.y1)
+		val t_dU = t_u - t_o
+		val t_dV = t_v - t_o
+
+		//val x0 = x.toDouble()
+		//val y0 = y.toDouble()
+		//val x1 = (x + width).toDouble()
+		//val y1 = (y + height).toDouble()
+		//
+		//val tx0 = m.transformX(x0, y0)
+		//val ty0 = m.transformY(x0, y0)
+
+		for (cy in 0 until 4) {
+			val ycut = ycuts[cy]
+			val ycut2 = ycuts2[cy]
+			for (cx in 0 until 4) {
+				val xcut = xcuts[cx]
+				val xcut2 = xcuts2[cx]
+				val p = o + dU * xcut + dV * ycut
+				val t = t_o + t_dU * xcut2 + t_dV * ycut2
+
+				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colMul, colAdd)
+
+				//println("$p, $t")
+			}
+		}
+
+		for (cy in 0 until 3) {
+			for (cx in 0 until 3) {
+				// v0...v1
+				// .    .
+				// v2...v3
+
+				val v0 = start + cy * 4 + cx
+				val v1 = v0 + 1
+				val v2 = v0 + 4
+				val v3 = v0 + 5
+
+				addIndex(v0)
+				addIndex(v1)
+				addIndex(v2)
+				addIndex(v2)
+				addIndex(v1)
+				addIndex(v3)
+			}
+		}
+	}
 
 	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL, rotated: Boolean = false) {
 		val x0 = x.toDouble()
@@ -182,7 +263,6 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 		vertexCount = 0
 		vertexPos = 0
 		indexPos = 0
-		quadCount = 0
 		currentTex = null
 	}
 }

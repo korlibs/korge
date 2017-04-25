@@ -346,6 +346,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 	var totalPlaceObject = 0
 	var totalShowFrame = 0
 
+	var spritesById = hashMapOf<Int, AnSymbolMovieClip>()
+
 	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 		symbols += mc
 
@@ -563,7 +565,15 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					classNameToTagId += it.symbols.filter { it.name != null }.map { it.name!! to it.tagId }.toMap()
 				}
 				is TagDefineSprite -> {
-					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, null, findLimits(it.tags)))
+					val childMc = AnSymbolMovieClip(it.characterId, null, findLimits(it.tags))
+					spritesById[it.characterId] = childMc
+					parseMovieClip(it.tags, childMc)
+				}
+				is TagDefineScalingGrid -> {
+					val childMc = spritesById[it.characterId]
+					if (childMc != null) {
+						childMc.ninePatch = it.splitter.rect
+					}
 				}
 				is TagPlaceObject -> {
 					totalPlaceObject++

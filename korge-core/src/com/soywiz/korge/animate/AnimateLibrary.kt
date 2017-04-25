@@ -247,6 +247,7 @@ class AnSymbolMovieClipState(totalDepths: Int) {
 class AnSymbolMovieClipStateWithStartTime(val name: String, val state: AnSymbolMovieClipState, val startTime: Int)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
+	var ninePatch: Rectangle? = null
 	val states = hashMapOf<String, AnSymbolMovieClipStateWithStartTime>()
 	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, hashMapOf()) }
 

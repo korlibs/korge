@@ -162,6 +162,12 @@ object AnLibrarySerializer {
 					// val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP)
 
+					val hasNinePatchRect = (symbol.ninePatch != null)
+
+					write8(0
+						.insert(hasNinePatchRect, 0)
+					)
+
 					val limits = symbol.limits
 					writeU_VL(limits.totalDepths)
 					writeU_VL(limits.totalFrames)
@@ -176,6 +182,10 @@ object AnLibrarySerializer {
 
 					val symbolStates = symbol.states.map { it.value.state }.toList().distinct()
 					val symbolStateToIndex = symbolStates.withIndex().map { it.value to it.index }.toMap()
+
+					if (hasNinePatchRect) {
+						writeRect(symbol.ninePatch!!)
+					}
 
 					// states
 					writeU_VL(symbolStates.size)

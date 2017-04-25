@@ -6,7 +6,6 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
-import com.soywiz.korge.tween.interpolate
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
@@ -21,6 +20,8 @@ interface AnElement {
 }
 
 abstract class AnBaseShape(override final val library: AnLibrary, override final val symbol: AnSymbolBaseShape) : View(library.views), AnElement {
+	var ninePatch: Rectangle? = null
+
 	abstract val dx: Float
 	abstract val dy: Float
 	abstract val tex: Texture
@@ -32,7 +33,30 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		//println("%08X".format(globalColor))
 		//println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
-		ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
+		//println(ninePatch)
+
+		if (ninePatch != null) {
+			val np = ninePatch!!
+			val lm = parent!!.localMatrix
+
+			val npLeft = np.left - dx
+			val npTop = np.top - dy
+
+			val npRight = np.right - dx
+			val npBottom = np.bottom - dy
+
+			val ascaleX = lm.a
+			val ascaleY = lm.d
+
+			val xcuts = doubleArrayOf(0.0, ((npLeft) / texWidth) / ascaleX, 1.0 - ((texWidth - npRight) / texWidth) / ascaleX, 1.0)
+			val ycuts = doubleArrayOf(0.0, ((npTop) / texHeight) / ascaleY, 1.0 - ((texHeight - npBottom) / texHeight) / ascaleY, 1.0)
+
+			val xcuts2 = doubleArrayOf(0.0, (npLeft / texWidth), (npRight / texWidth), 1.0)
+			val ycuts2 = doubleArrayOf(0.0, (npTop / texHeight), (npBottom / texWidth), 1.0)
+			ctx.batch.addNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, xcuts = xcuts, ycuts = ycuts, xcuts2 = xcuts2, ycuts2 = ycuts2, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
+		} else {
+			ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
+		}
 	}
 
 	override fun hitTestInternal(x: Double, y: Double): View? {
@@ -292,6 +316,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 						left?.setToView(view)
 						//println(left.colorTransform)
 					}
+					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
 				}
 			} else {
 				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
@@ -300,6 +325,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					//println("$currentTime: $index")
 					replaceDepth(depth, view)
 					left?.setToView(view)
+					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
 				}
 			}
 		}

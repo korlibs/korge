@@ -149,6 +149,13 @@ class SwfTest {
 	}
 
 	@Test
+	fun ninepatch() = syncTest {
+		val lib = ResourcesVfs["ninepatch.swf"].readSWFDeserializing(views, debug = false)
+		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
+	}
+
+	@Test
 	@Ignore
 	fun bigexternal1() = syncTest {
 		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, debug = false)

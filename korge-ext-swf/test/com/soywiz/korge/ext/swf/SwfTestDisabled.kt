@@ -41,7 +41,8 @@ class SwfTestDisabled {
 			//val ani = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true).createMainTimeLine().apply { play("frame172") }
 			//val ani = LocalVfs("c:/temp/test3.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test27.swf").readSWFDeserializing(views).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views).createMainTimeLine()
+			val ani = LocalVfs("c:/temp/ninepatch.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/morph.ani").readAni(views, mipmaps = true).createMainTimeLine()

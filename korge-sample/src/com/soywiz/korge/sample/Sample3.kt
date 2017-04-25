@@ -3,6 +3,7 @@ package com.soywiz.korge.sample
 import com.soywiz.korge.Korge
 import com.soywiz.korge.animate.AnLibrary
 import com.soywiz.korge.animate.play
+import com.soywiz.korge.resources.Mipmaps
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -26,7 +27,8 @@ object Sample3 : Module() {
 		//@Path("shape2.swf") val lib: AnLibrary
 		//@Path("mask.swf") val lib: AnLibrary
 		//@Path("morph.swf") val lib: AnLibrary
-		@Path("color.swf") val lib: AnLibrary
+		//@Path("color.swf") val lib: AnLibrary
+		@Mipmaps @Path("ninepatch.swf") val lib: AnLibrary
 		//@Path("eyes.swf") val eyesLibrary: AnLibrary
 		//@Path("eyes2.swf") val eyesLibrary: AnLibrary
 		//@Path("radialgradient.swf") val library: AnLibrary
