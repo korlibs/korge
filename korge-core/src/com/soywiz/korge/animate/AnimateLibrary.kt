@@ -7,10 +7,7 @@ import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Mipmaps
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.KorgeFileLoader
-import com.soywiz.korge.view.KorgeFileLoaderTester
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
@@ -60,7 +57,7 @@ data class AnSymbolTimelineFrame(
 	var ratio: Double,
 	val transform: Matrix2d.Computed,
 	val name: String?,
-	val alpha: Double,
+	val colorTransform: ColorTransform,
 	val blendMode: BlendMode
 )
 

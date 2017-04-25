@@ -7,14 +7,14 @@ import com.soywiz.korma.geom.Rectangle
 
 class SolidRect(views: Views, var width: Double, var height: Double, color: Int) : View(views) {
 	init {
-		this.color = color
+		this.colorMul = color
 	}
 	private var sLeft = 0.0
 	private var sTop = 0.0
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		//println("%08X".format(color))
-		ctx.batch.addQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, col1 = RGBA.multiply(color, globalColor), blendFactors = blendMode.factors)
+		ctx.batch.addQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, colMul = RGBA.multiply(colorMul, globalColorMul), colAdd = globalColorAdd, blendFactors = blendMode.factors)
 	}
 
 	override fun getLocalBounds(out: Rectangle) {

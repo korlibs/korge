@@ -1,17 +1,16 @@
 package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.util.insert
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.IMatrix2d
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
@@ -179,7 +178,7 @@ object AnLibrarySerializer {
 							val frames = timeline.entries
 							var lastUid = -1
 							var lastName: String? = null
-							var lastAlpha: Double = 1.0
+							var lastColorTransform: ColorTransform = ColorTransform()
 							var lastMatrix: Matrix2d = Matrix2d()
 							var lastClipDepth = -1
 							var lastRatio = 0.0
@@ -187,26 +186,20 @@ object AnLibrarySerializer {
 							for ((frameTime, frame) in frames) {
 								writeU_VL(frameTime)
 
+								val ct = frame.colorTransform
 								val m = frame.transform.matrix
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
-								val hasAlpha = frame.alpha != lastAlpha
+								val hasColorTransform = frame.colorTransform != lastColorTransform
 								val hasClipDepth = frame.clipDepth != lastClipDepth
 								val hasRatio = frame.ratio != lastRatio
 
 								val hasMatrix = m != lastMatrix
 
-								val hasMatrixA = m.a != lastMatrix.a
-								val hasMatrixB = m.b != lastMatrix.b
-								val hasMatrixC = m.c != lastMatrix.c
-								val hasMatrixD = m.d != lastMatrix.d
-								val hasMatrixTX = m.tx != lastMatrix.tx
-								val hasMatrixTY = m.ty != lastMatrix.ty
-
 								write8(0
 									.insert(hasUid, 0)
 									.insert(hasName, 1)
-									.insert(hasAlpha, 2)
+									.insert(hasColorTransform, 2)
 									.insert(hasMatrix, 3)
 									.insert(hasClipDepth, 4)
 									.insert(hasRatio, 5)
@@ -214,8 +207,46 @@ object AnLibrarySerializer {
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasClipDepth) write16_le(frame.clipDepth)
 								if (hasName) writeU_VL(strings[frame.name])
-								if (hasAlpha) write8((frame.alpha.clamp(0.0, 1.0) * 255.0).toInt())
+								if (hasColorTransform) {
+									val hasMR = ct.mR != lastColorTransform.mR
+									val hasMG = ct.mG != lastColorTransform.mG
+									val hasMB = ct.mB != lastColorTransform.mB
+									val hasMA = ct.mA != lastColorTransform.mA
+
+									val hasAR = ct.aR != lastColorTransform.aR
+									val hasAG = ct.aG != lastColorTransform.aG
+									val hasAB = ct.aB != lastColorTransform.aB
+									val hasAA = ct.aA != lastColorTransform.aA
+
+									write8(0
+										.insert(hasMR, 0)
+										.insert(hasMG, 1)
+										.insert(hasMB, 2)
+										.insert(hasMA, 3)
+										.insert(hasAR, 4)
+										.insert(hasAG, 5)
+										.insert(hasAB, 6)
+										.insert(hasAA, 7)
+									)
+
+									if (hasMR) writeF32_le(ct.mR.toFloat())
+									if (hasMG) writeF32_le(ct.mG.toFloat())
+									if (hasMB) writeF32_le(ct.mB.toFloat())
+									if (hasMA) writeF32_le(ct.mA.toFloat())
+
+									if (hasAR) write16_le(ct.aR)
+									if (hasAG) write16_le(ct.aG)
+									if (hasAB) write16_le(ct.aB)
+									if (hasAA) write16_le(ct.aA)
+								}
 								if (hasMatrix) {
+									val hasMatrixA = m.a != lastMatrix.a
+									val hasMatrixB = m.b != lastMatrix.b
+									val hasMatrixC = m.c != lastMatrix.c
+									val hasMatrixD = m.d != lastMatrix.d
+									val hasMatrixTX = m.tx != lastMatrix.tx
+									val hasMatrixTY = m.ty != lastMatrix.ty
+
 									write8(0
 										.insert(hasMatrixA, 0)
 										.insert(hasMatrixB, 1)
@@ -235,7 +266,7 @@ object AnLibrarySerializer {
 
 								lastUid = frame.uid
 								lastName = frame.name
-								lastAlpha = frame.alpha
+								lastColorTransform = frame.colorTransform
 								lastMatrix = m
 								lastClipDepth = frame.clipDepth
 								lastRatio = frame.ratio

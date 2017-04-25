@@ -25,7 +25,8 @@ object Sample3 : Module() {
 		//@Path("shape2.swf") val lib: AnLibrary
 		//@Path("shape2.swf") val lib: AnLibrary
 		//@Path("mask.swf") val lib: AnLibrary
-		@Path("morph.swf") val lib: AnLibrary
+		//@Path("morph.swf") val lib: AnLibrary
+		@Path("color.swf") val lib: AnLibrary
 		//@Path("eyes.swf") val eyesLibrary: AnLibrary
 		//@Path("eyes2.swf") val eyesLibrary: AnLibrary
 		//@Path("radialgradient.swf") val library: AnLibrary

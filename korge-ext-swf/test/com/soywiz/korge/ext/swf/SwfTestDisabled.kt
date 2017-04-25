@@ -14,7 +14,12 @@ import com.soywiz.korio.vfs.LocalVfs
 
 class SwfTestDisabled {
 	companion object {
-		@JvmStatic fun main(args: Array<String>) = Korge(Module(), sceneClass = MyScene::class.java)
+		@JvmStatic fun main(args: Array<String>) = Korge(object : Module() {
+			override val width: Int = (550 * 1.5).toInt()
+			override val height: Int = (400 * 1.5).toInt()
+			override val virtualWidth: Int = 550
+			override val virtualHeight: Int = 400
+		}, sceneClass = MyScene::class.java)
 	}
 
 	class MyScene : Scene() {
@@ -22,9 +27,11 @@ class SwfTestDisabled {
 			//sleep(12000)
 			//val ani = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true).createMainTimeLine().apply { play("frame172") }
 			//val ani = LocalVfs("c:/temp/test3.swf").readSWF(views, mipmaps = true).createMainTimeLine()
-			//val ani = LocalVfs("c:/temp/test27.swf").readSWF(views, mipmaps = true).createMainTimeLine()
+			val ani = LocalVfs("c:/temp/test27.swf").readSWF(views, mipmaps = true).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/morph.ani").readAni(views, mipmaps = true).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 
 

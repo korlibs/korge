@@ -3,6 +3,7 @@ package com.soywiz.korge.animate.serialization
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
@@ -36,7 +37,7 @@ object AnLibraryDeserializer {
 		val magic = readStringz(8)
 		//AnLibrary(views)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
-		if (readU_VL() > AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION} or lower")
+		if (readU_VL() != AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION}")
 		val msPerFrame = readU_VL()
 		val library = AnLibrary(views, 1000.0 / msPerFrame)
 
@@ -158,7 +159,7 @@ object AnLibraryDeserializer {
 							val timeline = ss.timelines[depth]
 							var lastUid = -1
 							var lastName: String? = null
-							var lastAlpha: Double = 1.0
+							var lastColorTransform: ColorTransform = ColorTransform()
 							var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
 							var lastClipDepth = -1
 							var lastRatio = 0.0
@@ -167,7 +168,7 @@ object AnLibraryDeserializer {
 								val flags = readU_VL()
 								val hasUid = flags.extract(0)
 								val hasName = flags.extract(1)
-								val hasAlpha = flags.extract(2)
+								val hasColorTransform = flags.extract(2)
 								val hasMatrix = flags.extract(3)
 								val hasClipDepth = flags.extract(4)
 								val hasRatio = flags.extract(5)
@@ -175,7 +176,19 @@ object AnLibraryDeserializer {
 								if (hasUid) lastUid = readU_VL()
 								if (hasClipDepth) lastClipDepth = readS16_le()
 								if (hasName) lastName = strings[readU_VL()]
-								if (hasAlpha) lastAlpha = readU8().toDouble() / 255.0
+								if (hasColorTransform) {
+									val ct = lastColorTransform.copy()
+									val ctFlags = readU8()
+									if (ctFlags.extract(0)) ct.mR = readF32_le().toDouble()
+									if (ctFlags.extract(1)) ct.mG = readF32_le().toDouble()
+									if (ctFlags.extract(2)) ct.mB = readF32_le().toDouble()
+									if (ctFlags.extract(3)) ct.mA = readF32_le().toDouble()
+									if (ctFlags.extract(4)) ct.aR = readS16_le()
+									if (ctFlags.extract(5)) ct.aG = readS16_le()
+									if (ctFlags.extract(6)) ct.aB = readS16_le()
+									if (ctFlags.extract(7)) ct.aR = readS16_le()
+									lastColorTransform = ct
+								}
 								if (hasMatrix) {
 									val lm = lastMatrix.matrix.copy()
 									val matrixFlags = readU8()
@@ -193,7 +206,7 @@ object AnLibraryDeserializer {
 									uid = lastUid,
 									transform = lastMatrix,
 									name = lastName,
-									alpha = lastAlpha,
+									colorTransform = lastColorTransform,
 									blendMode = BlendMode.INHERIT,
 									ratio = lastRatio,
 									clipDepth = lastClipDepth

@@ -16,7 +16,7 @@ object MyBlendFactors{
 }
 
 class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
-	private val vertices = FastMemory.alloc(16 * 4 * maxQuads * 4)
+	private val vertices = FastMemory.alloc(6 * 4 * maxQuads * 4)
 	private val indices = FastMemory.alloc(2 * maxQuads * 6)
 	private var vertexCount = 0
 	private var vertexPos = 0
@@ -29,12 +29,13 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	var stencil = AG.StencilState()
 	var colorMask = AG.ColorMaskState()
 
-	private fun addVertex(x: Float, y: Float, u: Float, v: Float, col1: Int) {
+	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
 		vertices.setAlignedFloat32(vertexPos++, y)
 		vertices.setAlignedFloat32(vertexPos++, u)
 		vertices.setAlignedFloat32(vertexPos++, v)
-		vertices.setAlignedInt32(vertexPos++, col1)
+		vertices.setAlignedInt32(vertexPos++, colMul)
+		vertices.setAlignedInt32(vertexPos++, colAdd)
 		vertexCount++
 	}
 
@@ -45,7 +46,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 	// 0..1
 	// |  |
 	// 3..2
-	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, col1: Int, rotated: Boolean = false) {
+	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colMul: Int, colAdd: Int, rotated: Boolean = false) {
 		addIndex(vertexCount + 0)
 		addIndex(vertexCount + 1)
 		addIndex(vertexCount + 2)
@@ -56,15 +57,15 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 
 		if (rotated) {
 			// @TODO:
-			addVertex(x0, y0, tex.x0, tex.y0, col1)
-			addVertex(x1, y1, tex.x1, tex.y0, col1)
-			addVertex(x2, y2, tex.x1, tex.y1, col1)
-			addVertex(x3, y3, tex.x0, tex.y1, col1)
+			addVertex(x0, y0, tex.x0, tex.y0, colMul, colAdd)
+			addVertex(x1, y1, tex.x1, tex.y0, colMul, colAdd)
+			addVertex(x2, y2, tex.x1, tex.y1, colMul, colAdd)
+			addVertex(x3, y3, tex.x0, tex.y1, colMul, colAdd)
 		} else {
-			addVertex(x0, y0, tex.x0, tex.y0, col1)
-			addVertex(x1, y1, tex.x1, tex.y0, col1)
-			addVertex(x2, y2, tex.x1, tex.y1, col1)
-			addVertex(x3, y3, tex.x0, tex.y1, col1)
+			addVertex(x0, y0, tex.x0, tex.y0, colMul, colAdd)
+			addVertex(x1, y1, tex.x1, tex.y0, colMul, colAdd)
+			addVertex(x2, y2, tex.x1, tex.y1, colMul, colAdd)
+			addVertex(x3, y3, tex.x0, tex.y1, colMul, colAdd)
 		}
 
 		quadCount++
@@ -83,7 +84,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 
 	private val identity = Matrix2d()
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, col1: Int = -1, col2: Int = 0, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL, rotated: Boolean = false) {
+	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
@@ -96,27 +97,35 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 			m.transformXf(x1, y0), m.transformYf(x1, y0),
 			m.transformXf(x1, y1), m.transformYf(x1, y1),
 			m.transformXf(x0, y1), m.transformYf(x0, y1),
-			tex, col1, rotated
+			tex, colMul, colAdd, rotated
 		)
 	}
 
 	companion object {
-		val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, DefaultShaders.a_Col)
+		val a_ColMul = DefaultShaders.a_Col
+		val a_ColAdd = Attribute("a_Col2", VarType.Byte4, normalized = true)
+
+		val v_ColMul = DefaultShaders.v_Col
+		val v_ColAdd = Varying("v_Col2", VarType.Byte4)
+
+		val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, a_ColMul, a_ColAdd)
 		val VERTEX = VertexShader {
 			SET(DefaultShaders.v_Tex, DefaultShaders.a_Tex)
-			SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
+			SET(v_ColMul, a_ColMul)
+			SET(v_ColAdd, a_ColAdd)
 			SET(out, DefaultShaders.u_ProjMat * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
 		}
 
-		val PROGRAM_NORMAL = Program(
-			vertex = VERTEX,
-			fragment = FragmentShader {
-				SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col["rgba"])
-				// Required for shape masks:
-				IF(out["a"] le 0f.lit) { DISCARD() }
-			},
-			name = "BatchBuilder2D.Tinted"
-		)
+		//val PROGRAM_NORMAL = Program(
+		//	vertex = VERTEX,
+		//	fragment = FragmentShader {
+		//		SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * v_Col2["rgba"])
+		//		SET(out, out + v_Col2)
+		//		// Required for shape masks:
+		//		IF(out["a"] le 0f.lit) { DISCARD() }
+		//	},
+		//	name = "BatchBuilder2D.Tinted"
+		//)
 
 		val PROGRAM_PRE = Program(
 			vertex = VERTEX,
@@ -124,7 +133,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 				DefaultShaders.apply {
 					SET(t_Temp1, texture2D(u_Tex, v_Tex["xy"]))
 					SET(t_Temp1["rgb"], t_Temp1["rgb"] / t_Temp1["a"])
-					SET(out, t_Temp1["rgba"] * v_Col["rgba"])
+					SET(t_Temp1, (t_Temp1["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(0.5f.lit, 0.5f.lit, 0.5f.lit, 0.5f.lit)) * 2f.lit))
+					SET(out, t_Temp1)
 					// Required for shape masks:
 					IF(out["a"] le 0f.lit) { DISCARD() }
 				}
@@ -152,7 +162,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4000) {
 					ag.draw(
 						vertices = vertexBuffer,
 						indices = indexBuffer,
-						program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NORMAL,
+						//program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NORMAL,
+						program = PROGRAM_PRE,
 						type = AG.DrawType.TRIANGLES,
 						vertexLayout = LAYOUT,
 						vertexCount = indexPos,

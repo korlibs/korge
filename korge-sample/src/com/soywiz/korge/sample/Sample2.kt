@@ -103,7 +103,7 @@ object Sample2 : Module() {
 			go {
 				//rect.tween((SolidRect::color..Colors.BLUE).color(), time = 1000)
 				rect.tween(
-					(rect::color..Colors.BLUE).color(),
+					(rect::colorMul..Colors.BLUE).color(),
 					(rect::x..200.0).delay(200).duration(600),
 					rect::y..100.0,
 					rect::width..200.0,

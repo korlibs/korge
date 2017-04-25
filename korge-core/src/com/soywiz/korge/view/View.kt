@@ -23,18 +23,39 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var name: String? = null
 	val id = views.lastId++
 	var blendMode: BlendMode = BlendMode.INHERIT
-	var color: Int = -1
-	var alpha: Double
-		get() = RGBA.getAd(color)
+	private val _colorTransform = ColorTransform()
+	private var _globalColorTransform = ColorTransform()
+
+
+	var colorMul: Int
+		get() = _colorTransform.colorMul
 		set(v) {
-			if (alpha != v) {
-				val vv = v.clamp(0.0, 1.0)
-				if (alpha != vv) {
-					color = RGBA.packRGB_A(RGBA.getRGB(color), (v * 255).toInt())
-					invalidateMatrix()
-				}
-			}
+			_colorTransform.colorMul = v
+			invalidateMatrix()
 		}
+
+	var colorAdd: Int
+		get() = _colorTransform.colorAdd
+		set(v) {
+			_colorTransform.colorAdd = v
+			invalidateMatrix()
+		}
+
+	var alpha: Double
+		get() = _colorTransform.mA
+		set(v) {
+			_colorTransform.mA = v
+			invalidateMatrix()
+		}
+
+	var colorTransform: ColorTransform
+		get() = _colorTransform
+		set(v) {
+			_colorTransform.copyFrom(v)
+			//println("CT($id): $_colorTransform")
+			invalidateMatrix()
+		}
+
 	private var _scaleX: Double = 1.0
 	private var _scaleY: Double = 1.0
 	private var _skewX: Double = 0.0
@@ -144,8 +165,6 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	internal var validLocal = false
 	internal var validGlobal = false
 
-	private var _globalColor: Int = -1
-
 	private var components: ArrayList<Component>? = null
 	private var _componentsIt: ArrayList<Component>? = null
 	private val componentsIt: ArrayList<Component>? get() {
@@ -218,19 +237,23 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		} else {
 			_globalMatrix.copyFrom(localMatrix)
 		}
-		_globalColor = if (parent != null) RGBA.multiply(parent!!.globalColor, color) else color
+		if (parent != null) {
+			_globalColorTransform.setToConcat(_colorTransform, parent!!.globalColorTransform)
+		} else {
+			_globalColorTransform.copyFrom(_colorTransform)
+		}
 		_globalMatrixVersion++
 	}
 
-	var globalMatrix: Matrix2d get() {
-		return _ensureGlobal()._globalMatrix
-	}
+	var globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
 	set(value) {
 		this.localMatrix = this.localMatrix.multiply(value, parent?.globalMatrixInv ?: Matrix2d.Immutable.IDENTITY)
 	}
 
-	val globalColor: Int get() = run { globalMatrix; _globalColor }
-	val globalAlpha: Double get() = RGBA.getAd(globalColor)
+	val globalColorTransform: ColorTransform get() = run { _ensureGlobal(); _globalColorTransform }
+	val globalColorMul: Int get() = globalColorTransform.colorMul
+	val globalColorAdd: Int get() = globalColorTransform.colorAdd
+	val globalAlpha: Double get() = globalColorTransform.mA
 
 	val localMouseX: Double get() = globalMatrixInv.transformX(views.input.mouse)
 	val localMouseY: Double get() = globalMatrixInv.transformY(views.input.mouse)
@@ -244,7 +267,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return _globalMatrixInv
 	}
 
-	private fun invalidateMatrix() {
+	fun invalidateMatrix() {
 		validLocal = false
 		invalidate()
 	}

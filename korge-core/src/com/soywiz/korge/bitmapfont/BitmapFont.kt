@@ -43,7 +43,7 @@ class BitmapFont(
 	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.firstOrNull() ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
-	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), col1: Int = Colors.WHITE, blendMode: BlendMode = BlendMode.INHERIT) {
+	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), colMul: Int = Colors.WHITE, colAdd: Int = 0x7f7f7f7f, blendMode: BlendMode = BlendMode.INHERIT) {
 		val m2 = m.clone()
 		val scale = textSize / fontSize.toDouble()
 		m2.pretranslate(x.toDouble(), y.toDouble())
@@ -55,7 +55,7 @@ class BitmapFont(
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
-			batch.addQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, col1 = col1, blendFactors = blendMode.factors)
+			batch.addQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colMul = colMul, colAdd = colAdd, blendFactors = blendMode.factors)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}

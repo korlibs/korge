@@ -34,7 +34,9 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	abstract val smoothing: Boolean
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
-		ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, col1 = globalColor)
+		//println("%08X".format(globalColor))
+		//println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
+		ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
 	}
 
 	override fun hitTestInternal(x: Double, y: Double): View? {
@@ -289,6 +291,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 						//println("$currentTime: $index")
 						replaceDepth(depth, view)
 						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
+						view.colorTransform = view.colorTransform.setToInterpolated(left.colorTransform, right.colorTransform, ratio)
 						if (view is AnWithRatio) view.ratio = interpolate(left.ratio, right.ratio, ratio)
 						//view.setComputedTransform(left.transform)
 					} else {
@@ -297,11 +300,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 						if (left != null) {
 							view.setComputedTransform(left.transform)
 							if (view is AnWithRatio) view.ratio = left.ratio
+							//println(left.colorTransform)
+							view.colorTransform = left.colorTransform
 						}
 					}
 					if (left != null) {
 						view.name = left.name
-						view.alpha = left.alpha
 					}
 				}
 			} else {
@@ -316,7 +320,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					if (left != null) {
 						view.setComputedTransform(left.transform)
 						view.name = left.name
-						view.alpha = left.alpha
+						view.colorTransform = left.colorTransform
 						if (view is AnWithRatio) view.ratio = left.ratio
 					}
 				}

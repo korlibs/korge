@@ -70,6 +70,6 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 
 	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double) {
 		//println(m)
-		batch.addQuad(texture, x.toFloat(), y.toFloat(), (texture.width * scale).toFloat(), (texture.height * scale).toFloat(), m = m, col1 = multiplyColor, blendFactors = blendFactors)
+		batch.addQuad(texture, x.toFloat(), y.toFloat(), (texture.width * scale).toFloat(), (texture.height * scale).toFloat(), m = m, colMul = multiplyColor, blendFactors = blendFactors)
 	}
 }

@@ -2,6 +2,7 @@ package com.soywiz.korge.ext.swf
 
 import com.codeazur.as3swf.SWF
 import com.codeazur.as3swf.data.GradientType
+import com.codeazur.as3swf.data.SWFColorTransform
 import com.codeazur.as3swf.data.actions.ActionGotoFrame
 import com.codeazur.as3swf.data.actions.ActionPlay
 import com.codeazur.as3swf.data.actions.ActionStop
@@ -18,6 +19,7 @@ import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -332,7 +334,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 			var charId: Int = -1
 			var clipDepth: Int = -1
 			var name: String? = null
-			var alpha: Double = 1.0
+			var colorTransform: ColorTransform = ColorTransform.identity
 			var ratio: Double = 0.0
 			var matrix: Matrix2d = Matrix2d()
 			var blendMode: BlendMode = BlendMode.INHERIT
@@ -342,6 +344,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				ratio = 0.0
 				charId = -1
 				clipDepth = -1
+				colorTransform = ColorTransform.identity
 				name = null
 				matrix = Matrix2d()
 				blendMode = BlendMode.INHERIT
@@ -354,7 +357,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				ratio = ratio,
 				name = name,
 				transform = Matrix2d.Computed(matrix),
-				alpha = alpha,
+				colorTransform = colorTransform,
 				blendMode = blendMode
 			)
 		}
@@ -551,7 +554,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					if (it.hasName) depth.name = it.instanceName
 					//if (it.hasBlendMode) depth.blendMode = it.blendMode
 					if (it.hasColorTransform) {
-						depth.alpha = it.colorTransform!!.aMult
+						depth.colorTransform = it.colorTransform!!.toColorTransform()
+						//println(depth.colorTransform)
 					}
 					if (it.hasMatrix) depth.matrix = it.matrix!!.matrix
 					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
@@ -594,6 +598,8 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		}
 	}
 }
+
+fun SWFColorTransform.toColorTransform() = ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd)
 
 fun decodeSWFColor(color: Int, alpha: Double = 1.0) = RGBA.pack(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
 

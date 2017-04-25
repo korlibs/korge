@@ -37,8 +37,8 @@ object Korge {
 		val views = injector.get<Views>()
 		val moduleArgs = ModuleArgs(args)
 
-		views.virtualWidth = module.width
-		views.virtualHeight = module.height
+		views.virtualWidth = module.virtualWidth
+		views.virtualHeight = module.virtualHeight
 
 		ag.onReady.await()
 		injector.mapTyped(moduleArgs)
