@@ -27,12 +27,10 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.serialization.yaml.Yaml
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.extract8
-import com.soywiz.korio.util.substr
-import com.soywiz.korio.util.toIntCeil
+import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.ds.DoubleArrayList
@@ -59,12 +57,43 @@ import kotlin.collections.set
 //	//}
 //}
 
+data class SWFExportConfig(
+	val debug: Boolean = false,
+	val mipmaps: Boolean = true,
+	val antialiasing: Boolean = true,
+	val rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4,
+	val exportScale: Double = 2.0,
+	val minShapeSide: Int = 64,
+	val maxShapeSide: Int = 512,
+	val minMorphShapeSide: Int = 16,
+	val maxMorphShapeSide: Int = 128,
+	val exportPaths: Boolean = false
+)
+
 object SwfLoader {
-	suspend fun load(views: Views, data: ByteArray, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoaderMethod(views, debug, mipmaps, rasterizerMethod).load(data)
+	suspend fun load(views: Views, data: ByteArray, config: SWFExportConfig = SWFExportConfig()): AnLibrary = SwfLoaderMethod(views, config).load(data)
 }
 
-suspend fun VfsFile.readSWF(views: Views, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoader.load(views, this.readAll(), debug = debug, mipmaps = mipmaps, rasterizerMethod = rasterizerMethod)
-suspend fun FastByteArrayInputStream.readSWF(views: Views, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoader.load(views, ba, debug = debug, mipmaps = mipmaps, rasterizerMethod = rasterizerMethod)
+suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig?): AnLibrary {
+	return if (config != null) this.readSWF(views, config) else this.readSWF(views)
+}
+
+suspend fun VfsFile.readSWF(views: Views, content: ByteArray? = null): AnLibrary {
+	val configFile = this.appendExtension("config")
+	val config = try {
+		if (configFile.exists()) {
+			Yaml.decodeToType<SWFExportConfig>(configFile.readString())
+		} else {
+			SWFExportConfig()
+		}
+	} catch (e: Throwable) {
+		e.printStackTrace()
+		SWFExportConfig()
+	}
+	return readSWF(views, config, content)
+}
+
+suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig, content: ByteArray? = null): AnLibrary = SwfLoaderMethod(views, config).load(content ?: this.readAll())
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagPlaceObject.clipDepth0: Int get() = this.clipDepth - 1
@@ -108,7 +137,7 @@ internal val AnSymbolMovieClip.labelsToFrame0 by Extra.Property { hashMapOf<Stri
 var AnSymbolMorphShape.tagDefineMorphShape by Extra.Property<TagDefineMorphShape?> { null }
 var AnSymbolShape.tagDefineShape by Extra.Property<TagDefineShape?> { null }
 
-private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps: Boolean, val rasterizerMethod: Context2d.ShapeRasterizerMethod) {
+private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
 	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
@@ -302,23 +331,25 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				val bounds = bb.bb.getBounds()
 				//bb.bb.add()
 				val rasterizer = SWFShapeRasterizer(
-					swf, debug, bounds,
+					swf, config.debug, bounds,
 					{
 						try {
 							tag.export(it, ratio)
 						} catch (e: Throwable) {
 							e.printStackTrace()
 						}
-					}
-					, rasterizerMethod,
-					maxWidth = 128,
-					maxHeight = 128
+					},
+					config.rasterizerMethod,
+					antialiasing = config.antialiasing,
+					requestScale = config.exportScale,
+					minSide = config.minMorphShapeSide,
+					maxSide = config.maxMorphShapeSide
 				)
 				itemsInAtlas.put({ texture -> morph.texturesWithBitmap.add((ratio * 1000).toInt(), texture) }, rasterizer.imageWithScale)
 			}
 		}
 
-		for ((processor, texture) in itemsInAtlas.toAtlas(views, mipmaps)) processor(texture)
+		for ((processor, texture) in itemsInAtlas.toAtlas(views, config.mipmaps)) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -544,7 +575,17 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				}
 				is TagDefineShape -> {
 					val tag = it
-					val rasterizer = SWFShapeRasterizer(swf, debug, tag.shapeBounds.rect, { tag.export(it) }, rasterizerMethod)
+					val rasterizer = SWFShapeRasterizer(
+						swf,
+						config.debug,
+						tag.shapeBounds.rect,
+						{ tag.export(it) },
+						config.rasterizerMethod,
+						antialiasing = config.antialiasing,
+						requestScale = config.exportScale,
+						minSide = config.minShapeSide,
+						maxSide = config.maxShapeSide
+					)
 					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
 					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
 					symbol.tagDefineShape = it
@@ -667,8 +708,10 @@ class SWFShapeRasterizer(
 	val bounds: Rectangle,
 	val export: (ShapeExporter) -> Unit,
 	val rasterizerMethod: Context2d.ShapeRasterizerMethod,
-	val maxWidth: Int = 512,
-	val maxHeight: Int = 512
+	val antialiasing: Boolean,
+	val requestScale: Double = 2.0,
+	val minSide: Int = 16,
+	val maxSide: Int = 512
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
@@ -677,11 +720,11 @@ class SWFShapeRasterizer(
 	val realBoundsWidth = Math.max(1, bounds.width.toIntCeil())
 	val realBoundsHeight = Math.max(1, bounds.height.toIntCeil())
 
-	val desiredBoundsWidth = realBoundsWidth * 2
-	val desiredBoundsHeight = realBoundsHeight * 2
+	val desiredBoundsWidth = (realBoundsWidth * requestScale).toInt()
+	val desiredBoundsHeight = (realBoundsHeight * requestScale).toInt()
 
-	val limitBoundsWidth = Math.min(desiredBoundsWidth, maxWidth)
-	val limitBoundsHeight = Math.min(desiredBoundsHeight, maxHeight)
+	val limitBoundsWidth = desiredBoundsWidth.clamp(minSide, maxSide)
+	val limitBoundsHeight = desiredBoundsHeight.clamp(minSide, maxSide)
 
 	val actualScale = Math.min(limitBoundsWidth.toDouble() / realBoundsWidth.toDouble(), limitBoundsHeight.toDouble() / realBoundsHeight.toDouble())
 
@@ -701,7 +744,7 @@ class SWFShapeRasterizer(
 
 	val image by lazy {
 		val image = NativeImage(actualBoundsWidth, actualBoundsHeight)
-		val ctx = image.getContext2d()
+		val ctx = image.getContext2d(antialiasing = antialiasing)
 		ctx.scale(actualScale, actualScale)
 		ctx.translate(-bounds.x, -bounds.y)
 		ctx.drawShape(actualShape, rasterizerMethod)

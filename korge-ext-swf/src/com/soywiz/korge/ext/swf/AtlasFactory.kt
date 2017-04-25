@@ -7,6 +7,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.nextAlignedTo
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
@@ -29,7 +30,7 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 suspend fun <T> Map<T, BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): Map<T, TextureWithBitmapSlice> {
 	//val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
 	val values = this.values.toList()
-	val packs = BinPacker.packSeveral(4096.0, 4096.0, values) { Size(it.width + 4, it.height + 4) }
+	val packs = BinPacker.packSeveral(4096.0, 4096.0, values) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
 	for (pack in packs) {
 		val width = pack.width.toInt().nextPowerOfTwo

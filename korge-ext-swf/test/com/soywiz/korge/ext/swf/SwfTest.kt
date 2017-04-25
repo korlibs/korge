@@ -21,10 +21,10 @@ class SwfTest {
 	val viewsLog = ViewsLog()
 	val views = viewsLog.views
 
-	suspend fun VfsFile.readSWFDeserializing(views: Views, debug: Boolean = false): AnLibrary {
+	suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
 		val mem = MemoryVfs()
 
-		val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.NONE)
+		val ani = if (config != null) this.readSWF(views, config) else this.readSWF(views)
 		ani.writeTo(mem["file.ani"], compression = 0.0)
 		println("ANI size:" + mem["file.ani"].size())
 		return mem["file.ani"].readAni(views)
@@ -51,13 +51,13 @@ class SwfTest {
 	fun name5() = syncTest {
 		//val lib = ResourcesVfs["test1.swf"].readSWF(views)
 		//val lib = ResourcesVfs["test2.swf"].readSWF(views)
-		val lib = ResourcesVfs["test4.swf"].readSWFDeserializing(views, debug = true)
+		val lib = ResourcesVfs["test4.swf"].readSWFDeserializing(views, SWFExportConfig(debug = true))
 		println(lib)
 	}
 
 	@Test
 	fun name6() = syncTest {
-		val lib = ResourcesVfs["as3test.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["as3test.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		Assert.assertEquals(6, lib.symbolsById.size)
 		println(lib.symbolsById)
 
@@ -79,13 +79,13 @@ class SwfTest {
 
 	@Test
 	fun name7() = syncTest {
-		val lib = ResourcesVfs["soundtest.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["soundtest.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		println(lib)
 	}
 
 	@Test
 	fun name8() = syncTest {
-		val lib = ResourcesVfs["progressbar.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["progressbar.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		val mc = lib.symbolsById[0] as AnSymbolMovieClip
 		Assert.assertEquals("[frame0, default, progressbar]", mc.states.keys.toList().toString())
 		val progressbarState = mc.states["progressbar"]!!
@@ -99,7 +99,7 @@ class SwfTest {
 
 	@Test
 	fun exports() = syncTest {
-		val lib = ResourcesVfs["exports.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["exports.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		Assert.assertEquals(listOf("MainTimeLine", "Graphic1Export", "MC1Export"), lib.symbolsByName.keys.toList())
 		val sh = lib.createMovieClip("Graphic1Export")
 		val mc = lib.createMovieClip("MC1Export")
@@ -111,7 +111,7 @@ class SwfTest {
 
 	@Test
 	fun props() = syncTest {
-		val lib = ResourcesVfs["props.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["props.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["props.swf"].readSWF(views, debug = false)
 		val mt = lib.createMainTimeLine()
 		views.stage += mt
@@ -123,7 +123,7 @@ class SwfTest {
 
 	@Test
 	fun shapes() = syncTest {
-		val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWF(views, debug = false)
 		val mt = lib.createMainTimeLine()
 		views.stage += mt
@@ -143,14 +143,14 @@ class SwfTest {
 
 	@Test
 	fun morph() = syncTest {
-		val lib = ResourcesVfs["morph.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["morph.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["morph.ani"])
 	}
 
 	@Test
 	fun ninepatch() = syncTest {
-		val lib = ResourcesVfs["ninepatch.swf"].readSWFDeserializing(views, debug = false)
+		val lib = ResourcesVfs["ninepatch.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
 	}
@@ -158,7 +158,7 @@ class SwfTest {
 	@Test
 	@Ignore
 	fun bigexternal1() = syncTest {
-		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, debug = false)
+		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		lib.writeTo(LocalVfs("c:/temp")["test6.new.ani"])
 	}

@@ -25,14 +25,13 @@ class SwfTestDisabled {
 			override val virtualHeight: Int = 400
 		}, sceneClass = MyScene::class.java)
 
-		suspend fun VfsFile.readSWFDeserializing(views: Views, debug: Boolean = false): AnLibrary {
-			val mem = MemoryVfs()
-
+		suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
 			//val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.X4)
-			val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.NONE)
-			ani.writeTo(mem["file.ani"], compression = 0.0)
-			println("ANI size:" + mem["file.ani"].size())
-			return mem["file.ani"].readAni(views, mipmaps = true)
+			val ani = this.readSWF(views, config)
+			val aniFile = this.withExtension("ani")
+			ani.writeTo(aniFile, compression = 0.0)
+			println("ANI size:" + aniFile.size())
+			return aniFile.readAni(views, mipmaps = true)
 		}
 	}
 
@@ -46,7 +45,7 @@ class SwfTestDisabled {
 			//val ani = LocalVfs("c:/temp/tt2.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt3.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt5.swf").readSWF(views).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/tt6.swf").readSWF(views).createMainTimeLine()
+			val ani = LocalVfs("c:/temp/tt6.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test27.swf").readSWF(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/ninepatch.swf").readSWFDeserializing(views).createMainTimeLine()

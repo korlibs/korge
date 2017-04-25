@@ -11,10 +11,11 @@ import com.soywiz.korio.stream.readString
 class SwfPlugin : KorgePlugin() {
 	override suspend fun register(views: Views) {
 		views.animateLibraryLoaders += KorgeFileLoaderTester("swf") { s, injector ->
-			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			val MAGIC = s.readString(3)
 			when (MAGIC) {
-				"FWS", "CWS", "ZWS" -> KorgeFileLoader("swf") { content, views -> content.readSWF(views, mipmaps = mipmaps) }
+				"FWS", "CWS", "ZWS" -> KorgeFileLoader("swf") { content, views ->
+					this.readSWF(views, content.ba)
+				}
 				else -> null
 			}
 		}
