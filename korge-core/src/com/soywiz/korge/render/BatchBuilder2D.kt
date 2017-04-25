@@ -92,12 +92,25 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 	private val identity = Matrix2d()
 
+	private val ptt1 = Point2d()
+	private val ptt2 = Point2d()
+
+	private val pt1 = Point2d()
+	private val pt2 = Point2d()
+	private val pt3 = Point2d()
+	private val pt4 = Point2d()
+	private val pt5 = Point2d()
+
+	private val pt6 = Point2d()
+	private val pt7 = Point2d()
+	private val pt8 = Point2d()
+
 	fun addNinePatch(
 		tex: Texture,
 		x: Float = 0f, y: Float = 0f,
 		width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(),
-		xcuts: DoubleArray, ycuts: DoubleArray,
-		xcuts2: DoubleArray, ycuts2: DoubleArray,
+		posCuts: Array<Point2d>,
+		texCuts: Array<Point2d>,
 		m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.BlendFactors = MyBlendFactors.NORMAL
 	) {
 		ensure(indices = 6 * 9, vertices = 4 * 4)
@@ -106,41 +119,38 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 		setStateFast(tex.base, filtering, blendFactors)
 
-		// @TODO: Just calculate origin + director vectors and interpolate
+		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
+		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
+		val p_dV = pt3.setToSub(ptt1.setToTransform(m, ptt1.setTo(x, y + height)), p_o)
 
-		val o = m.transform(Point2d(x, y))
-		val u = m.transform(Point2d(x + width, y))
-		val v = m.transform(Point2d(x, y + height))
-		val dU = u - o
-		val dV = v - o
-
-
-		val t_o = Point2d(tex.x0, tex.y0)
-		val t_u = Point2d(tex.x1, tex.y0)
-		val t_v = Point2d(tex.x0, tex.y1)
-		val t_dU = t_u - t_o
-		val t_dV = t_v - t_o
-
-		//val x0 = x.toDouble()
-		//val y0 = y.toDouble()
-		//val x1 = (x + width).toDouble()
-		//val y1 = (y + height).toDouble()
-		//
-		//val tx0 = m.transformX(x0, y0)
-		//val ty0 = m.transformY(x0, y0)
+		val t_o = pt4.setTo(tex.x0, tex.y0)
+		val t_dU = pt5.setToSub(ptt1.setTo(tex.x1, tex.y0), t_o)
+		val t_dV = pt6.setToSub(ptt1.setTo(tex.x0, tex.y1), t_o)
 
 		for (cy in 0 until 4) {
-			val ycut = ycuts[cy]
-			val ycut2 = ycuts2[cy]
+			val posCutY = posCuts[cy].y
+			val texCutY = texCuts[cy].y
 			for (cx in 0 until 4) {
-				val xcut = xcuts[cx]
-				val xcut2 = xcuts2[cx]
-				val p = o + dU * xcut + dV * ycut
-				val t = t_o + t_dU * xcut2 + t_dV * ycut2
+				val posCutX = posCuts[cx].x
+				val texCutX = texCuts[cx].x
+
+				val p = pt7.setToAdd(
+					p_o,
+					ptt1.setToAdd(
+						ptt1.setToMul(p_dU, posCutX),
+						ptt2.setToMul(p_dV, posCutY)
+					)
+				)
+
+				val t = pt8.setToAdd(
+					t_o,
+					ptt1.setToAdd(
+						ptt1.setToMul(t_dU, texCutX),
+						ptt2.setToMul(t_dV, texCutY)
+					)
+				)
 
 				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colMul, colAdd)
-
-				//println("$p, $t")
 			}
 		}
 

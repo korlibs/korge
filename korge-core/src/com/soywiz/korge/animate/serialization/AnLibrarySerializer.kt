@@ -212,15 +212,18 @@ object AnLibrarySerializer {
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
 								val hasColorTransform = ct != lastColorTransform
-								val hasAlpha =
-									(ct.mR != lastColorTransform.mR) ||
-										(ct.mG != lastColorTransform.mG) ||
-										(ct.mB != lastColorTransform.mB) ||
-										//(ct.mA != lastColorTransform.mR) ||
-										(ct.aR != lastColorTransform.aR) ||
-										(ct.aG != lastColorTransform.aG) ||
-										(ct.aB != lastColorTransform.aB) ||
-										(ct.aA != lastColorTransform.aA)
+								val hasAlpha = (
+									(ct.mR == lastColorTransform.mR) &&
+										(ct.mG == lastColorTransform.mG) &&
+										(ct.mB == lastColorTransform.mB) &&
+										(ct.mA != lastColorTransform.mA) &&
+										(ct.aR == lastColorTransform.aR) &&
+										(ct.aG == lastColorTransform.aG) &&
+										(ct.aB == lastColorTransform.aB) &&
+										(ct.aA == lastColorTransform.aA)
+									)
+
+
 								val hasClipDepth = frame.clipDepth != lastClipDepth
 								val hasRatio = frame.ratio != lastRatio
 
@@ -263,15 +266,14 @@ object AnLibrarySerializer {
 										.insert(hasAA, 7)
 									)
 
-									if (hasMR) write8((ct.mR * 255.0).toInt())
-									if (hasMG) write8((ct.mG * 255.0).toInt())
-									if (hasMB) write8((ct.mB * 255.0).toInt())
-									if (hasMA) write8((ct.mA * 255.0).toInt())
-
-									if (hasAR) write8(ct.aR / 2)
-									if (hasAG) write8(ct.aG / 2)
-									if (hasAB) write8(ct.aB / 2)
-									if (hasAA) write8(ct.aA / 2)
+									if (hasMR) write8((ct.mR.clamp(0.0, 1.0) * 255.0).toInt())
+									if (hasMG) write8((ct.mG.clamp(0.0, 1.0) * 255.0).toInt())
+									if (hasMB) write8((ct.mB.clamp(0.0, 1.0) * 255.0).toInt())
+									if (hasMA) write8((ct.mA.clamp(0.0, 1.0) * 255.0).toInt())
+									if (hasAR) write8(ct.aR.clamp(-255, +255) / 2)
+									if (hasAG) write8(ct.aG.clamp(-255, +255) / 2)
+									if (hasAB) write8(ct.aB.clamp(-255, +255) / 2)
+									if (hasAA) write8(ct.aA.clamp(-255, +255) / 2)
 								}
 								if (hasMatrix) {
 									val hasMatrixA = m.a != lastMatrix.a

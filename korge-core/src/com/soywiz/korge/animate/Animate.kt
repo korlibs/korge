@@ -11,6 +11,8 @@ import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.redirect
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.Vector2
+import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
 
@@ -30,6 +32,9 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
 
+	val posCuts = arrayOf(Point2d(0.0, 0.0), Point2d(0.25, 0.25), Point2d(0.75, 0.75), Point2d(1.0, 1.0))
+	val texCuts = arrayOf(Point2d(0.0, 0.0), Point2d(0.25, 0.25), Point2d(0.75, 0.75), Point2d(1.0, 1.0))
+
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		//println("%08X".format(globalColor))
 		//println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
@@ -48,12 +53,12 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 			val ascaleX = lm.a
 			val ascaleY = lm.d
 
-			val xcuts = doubleArrayOf(0.0, ((npLeft) / texWidth) / ascaleX, 1.0 - ((texWidth - npRight) / texWidth) / ascaleX, 1.0)
-			val ycuts = doubleArrayOf(0.0, ((npTop) / texHeight) / ascaleY, 1.0 - ((texHeight - npBottom) / texHeight) / ascaleY, 1.0)
+			posCuts[1].setTo(((npLeft) / texWidth) / ascaleX, ((npTop) / texHeight) / ascaleY)
+			posCuts[2].setTo(1.0 - ((texWidth - npRight) / texWidth) / ascaleX, 1.0 - ((texHeight - npBottom) / texHeight) / ascaleY)
+			texCuts[1].setTo((npLeft / texWidth), (npTop / texHeight))
+			texCuts[2].setTo((npRight / texWidth), (npBottom / texWidth))
 
-			val xcuts2 = doubleArrayOf(0.0, (npLeft / texWidth), (npRight / texWidth), 1.0)
-			val ycuts2 = doubleArrayOf(0.0, (npTop / texHeight), (npBottom / texWidth), 1.0)
-			ctx.batch.addNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, xcuts = xcuts, ycuts = ycuts, xcuts2 = xcuts2, ycuts2 = ycuts2, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
+			ctx.batch.addNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, posCuts = posCuts, texCuts = texCuts, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
 		} else {
 			ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd)
 		}

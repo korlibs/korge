@@ -167,7 +167,7 @@ object AnLibraryDeserializer {
 	}
 
 	private fun FastByteArrayInputStream.readMovieClip(symbolId: Int, symbolName: String?, strings: Array<String?>): AnSymbolMovieClip {
-		val flags = readU8()
+		val mcFlags = readU8()
 
 		val totalDepths = readU_VL()
 		val totalFrames = readU_VL()
@@ -182,7 +182,7 @@ object AnLibraryDeserializer {
 		}.toTypedArray()
 		val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))
 
-		if (flags.extract(0)) {
+		if (mcFlags.extract(0)) {
 			mc.ninePatch = readRect()
 		}
 
@@ -195,8 +195,8 @@ object AnLibraryDeserializer {
 				val timeline = ss.timelines[depth]
 				var lastUid = -1
 				var lastName: String? = null
-				var lastColorTransform: ColorTransform = ColorTransform()
-				var lastMatrix: Matrix2d = Matrix2d()
+				var lastColorTransform = ColorTransform()
+				var lastMatrix = Matrix2d()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
 				for (frameIndex in 0 until readU_VL()) {
@@ -208,6 +208,7 @@ object AnLibraryDeserializer {
 					val hasMatrix = flags.extract(3)
 					val hasClipDepth = flags.extract(4)
 					val hasRatio = flags.extract(5)
+					//val hasAlpha = flags.extract(6)
 					val hasAlpha = flags.extract(6)
 
 					if (hasUid) lastUid = readU_VL()
@@ -228,6 +229,7 @@ object AnLibraryDeserializer {
 						if (ctFlags.extract(5)) ct.aG = readS8() * 2
 						if (ctFlags.extract(6)) ct.aB = readS8() * 2
 						if (ctFlags.extract(7)) ct.aR = readS8() * 2
+						//println(ct)
 						lastColorTransform = ct
 					}
 					if (hasMatrix) {
