@@ -258,7 +258,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 		KorgeFileLoaderTester("core/ani") { s, injector ->
 			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			when {
-				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { views -> this.readAni(views, mipmaps) }
+				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(content, views, mipmaps) }
 				else -> null
 			}
 		}
@@ -305,11 +305,12 @@ class AnLibrary(val views: Views, val fps: Double) {
 	) : AsyncFactory<AnLibrary> {
 		suspend override fun create(): AnLibrary {
 			val file = resourcesRoot[path]
-			val head = file.readRangeBytes(0 until 0x40)
+			val content = file.readAll()
 
 			for (loader in views.animateLibraryLoaders) {
-				val aloader = loader(head.openSync(), injector) ?: continue
-				return aloader.loader(file, views)
+				val aloader = loader(FastByteArrayInputStream(content), injector) ?: continue
+
+				return aloader.loader(file, FastByteArrayInputStream(content), views)
 			}
 
 			throw IllegalArgumentException("Don't know how to load an AnLibrary for file $file using loaders: ${views.animateLibraryLoaders}")

@@ -27,6 +27,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extract8
@@ -62,6 +63,7 @@ object SwfLoader {
 }
 
 suspend fun VfsFile.readSWF(views: Views, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoader.load(views, this.readAll(), debug = debug, mipmaps = mipmaps, rasterizerMethod = rasterizerMethod)
+suspend fun FastByteArrayInputStream.readSWF(views: Views, debug: Boolean = false, mipmaps: Boolean = false, rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4): AnLibrary = SwfLoader.load(views, ba, debug = debug, mipmaps = mipmaps, rasterizerMethod = rasterizerMethod)
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagPlaceObject.clipDepth0: Int get() = this.clipDepth - 1

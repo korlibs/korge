@@ -18,6 +18,7 @@ import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
+import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
@@ -218,12 +219,12 @@ interface ViewsContainer {
 	val views: Views
 }
 
-data class KorgeFileLoaderTester<T>(val name: String, val tester: suspend (s: SyncStream, injector: AsyncInjector) -> KorgeFileLoader<T>?) {
-	suspend operator fun invoke(s: SyncStream, injector: AsyncInjector) = tester(s, injector)
+data class KorgeFileLoaderTester<T>(val name: String, val tester: suspend (s: FastByteArrayInputStream, injector: AsyncInjector) -> KorgeFileLoader<T>?) {
+	suspend operator fun invoke(s: FastByteArrayInputStream, injector: AsyncInjector) = tester(s, injector)
 	override fun toString(): String = "KorgeFileTester(\"$name\")"
 }
 
-data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Views) -> T) {
+data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(FastByteArrayInputStream, Views) -> T) {
 	override fun toString(): String = "KorgeFileLoader(\"$name\")"
 }
 

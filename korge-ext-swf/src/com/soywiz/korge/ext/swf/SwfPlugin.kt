@@ -14,7 +14,7 @@ class SwfPlugin : KorgePlugin() {
 			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			val MAGIC = s.readString(3)
 			when (MAGIC) {
-				"FWS", "CWS", "ZWS" -> KorgeFileLoader("swf") { views -> this.readSWF(views, mipmaps = mipmaps) }
+				"FWS", "CWS", "ZWS" -> KorgeFileLoader("swf") { content, views -> content.readSWF(views, mipmaps = mipmaps) }
 				else -> null
 			}
 		}

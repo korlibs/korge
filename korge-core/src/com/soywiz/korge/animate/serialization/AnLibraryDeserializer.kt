@@ -26,8 +26,12 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
 suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
+	return this.readAni(FastByteArrayInputStream(this.readBytes()), views, mipmaps)
+}
+
+suspend fun VfsFile.readAni(content: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(this.read(), views, mipmaps) { index ->
+	return AnLibraryDeserializer.read(content, views, mipmaps) { index ->
 		file.withExtension("ani.$index.png").readBitmapOptimized()
 	}
 }
