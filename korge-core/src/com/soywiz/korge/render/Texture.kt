@@ -5,7 +5,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
-import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.clamp
@@ -48,7 +48,7 @@ suspend fun VfsFile.readTexture(views: Views, mipmaps: Boolean = true): Texture 
 
 suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
 	val tex = ag.createTexture()
-	val bmp = this.readBitmap()
+	val bmp = this.readBitmapOptimized()
 	tex.upload(bmp, mipmaps = mipmaps)
 	return Texture(tex, bmp.width, bmp.height)
 }

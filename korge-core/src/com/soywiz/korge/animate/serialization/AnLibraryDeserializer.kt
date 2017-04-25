@@ -10,10 +10,12 @@ import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.FastByteArrayInputStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.util.extract
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
@@ -26,7 +28,7 @@ import com.soywiz.korma.geom.VectorPath
 suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
 	val file = this
 	return AnLibraryDeserializer.read(this.read(), views, mipmaps) { index ->
-		file.withExtension("ani.$index.png").readBitmap()
+		file.withExtension("ani.$index.png").readBitmapOptimized()
 	}
 }
 

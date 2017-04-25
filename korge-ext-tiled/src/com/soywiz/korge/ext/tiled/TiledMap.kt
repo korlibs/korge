@@ -9,7 +9,7 @@ import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.NamedColors
-import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.compression.uncompressGzip
 import com.soywiz.korio.compression.uncompressZlib
 import com.soywiz.korio.crypto.Base64
@@ -171,7 +171,7 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 							val source = image.str("source")
 							val width = image.int("width")
 							val height = image.int("height")
-							layer.image = folder[source].readBitmap()
+							layer.image = folder[source].readBitmapOptimized()
 						}
 					}
 					is TiledMap.Layer.Objects -> {
