@@ -136,13 +136,13 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 			//println("totalShowFrame: $totalShowFrame")
 		}
 //
-	//	println("++++++++++++++++++++++++++++++++++++++")
+		//	println("++++++++++++++++++++++++++++++++++++++")
 //
-	//	println("allColorTransforms: " + allColorTransforms.size)
-	//	println("allMatrices: " + allMatrices.size)
+		//	println("allColorTransforms: " + allColorTransforms.size)
+		//	println("allMatrices: " + allMatrices.size)
 //
-	//	println("allColorTransformsUnique: " + allColorTransforms.toSet().size)
-	//	println("allMatricesUnique: " + allMatrices.toSet().size)
+		//	println("allColorTransformsUnique: " + allColorTransforms.toSet().size)
+		//	println("allMatricesUnique: " + allMatrices.toSet().size)
 	}
 
 	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
@@ -294,11 +294,23 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 			val aratios = if (ratios.size > MAX_RATIOS) (0 until MAX_RATIOS).map { it.toDouble() / (MAX_RATIOS - 1).toDouble() } else ratios
 			for (ratio in aratios) {
 				val bb = ShapeExporterBoundsBuilder()
-				tag.export(bb, ratio)
+				try {
+					tag.export(bb, ratio)
+				} catch (e: Throwable) {
+					e.printStackTrace()
+				}
 				val bounds = bb.bb.getBounds()
 				//bb.bb.add()
 				val rasterizer = SWFShapeRasterizer(
-					swf, debug, bounds, { tag.export(it, ratio) }, rasterizerMethod,
+					swf, debug, bounds,
+					{
+						try {
+							tag.export(it, ratio)
+						} catch (e: Throwable) {
+							e.printStackTrace()
+						}
+					}
+					, rasterizerMethod,
 					maxWidth = 128,
 					maxHeight = 128
 				)
