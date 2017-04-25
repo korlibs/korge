@@ -13,6 +13,7 @@ import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.vfs.*
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 
@@ -23,8 +24,9 @@ class SwfTest {
 	suspend fun VfsFile.readSWFDeserializing(views: Views, debug: Boolean = false): AnLibrary {
 		val mem = MemoryVfs()
 
-		val ani = this.readSWF(views, debug = debug)
+		val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.NONE)
 		ani.writeTo(mem["file.ani"], compression = 0.0)
+		println("ANI size:" + mem["file.ani"].size())
 		return mem["file.ani"].readAni(views)
 	}
 
@@ -144,5 +146,13 @@ class SwfTest {
 		val lib = ResourcesVfs["morph.swf"].readSWFDeserializing(views, debug = false)
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["morph.ani"])
+	}
+
+	@Test
+	@Ignore
+	fun bigexternal1() = syncTest {
+		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, debug = false)
+		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		lib.writeTo(LocalVfs("c:/temp")["test6.new.ani"])
 	}
 }

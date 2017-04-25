@@ -39,6 +39,7 @@ import com.soywiz.korma.ds.DoubleArrayList
 import com.soywiz.korma.ds.IntArrayList
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
+import java.util.*
 import kotlin.collections.set
 
 //@AsyncFactoryClass(SwfLibraryFactory::class)
@@ -125,7 +126,23 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		generateActualTimelines()
 		lib.processSymbolNames()
 		generateTextures()
+		finalProcessing()
 		return lib
+	}
+
+	private fun finalProcessing() {
+		if (true) {
+			//println("totalPlaceObject: $totalPlaceObject")
+			//println("totalShowFrame: $totalShowFrame")
+		}
+//
+	//	println("++++++++++++++++++++++++++++++++++++++")
+//
+	//	println("allColorTransforms: " + allColorTransforms.size)
+	//	println("allMatrices: " + allMatrices.size)
+//
+	//	println("allColorTransformsUnique: " + allColorTransforms.toSet().size)
+	//	println("allMatricesUnique: " + allMatrices.toSet().size)
 	}
 
 	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
@@ -324,6 +341,11 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		//showImageAndWait(bmp)
 	}
 
+	//val allColorTransforms = hashSetOf<ColorTransform>()
+	//val allMatrices = hashSetOf<Matrix2d>()
+	var totalPlaceObject = 0
+	var totalShowFrame = 0
+
 	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 		symbols += mc
 
@@ -394,6 +416,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 		// Populate frame names
 		for ((name, index) in mc.labelsToFrame0) swfTimeline.frames[index].name = name
 
+		val depthsChanged = BitSet(depths.size)
 		var currentFrame = 0
 		for (it in tags) {
 			//println("Tag: $it")
@@ -543,6 +566,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					parseMovieClip(it.tags, AnSymbolMovieClip(it.characterId, null, findLimits(it.tags)))
 				}
 				is TagPlaceObject -> {
+					totalPlaceObject++
 					//val depthId = if (it.hasClipDepth) it.clipDepth0 else it.depth0
 					//val clipDepthId = if (it.hasClipDepth) it.depth0 else -1
 
@@ -556,10 +580,16 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					if (it.hasName) depth.name = it.instanceName
 					//if (it.hasBlendMode) depth.blendMode = it.blendMode
 					if (it.hasColorTransform) {
-						depth.colorTransform = it.colorTransform!!.toColorTransform()
+						val ct = it.colorTransform!!.toColorTransform()
+						depth.colorTransform = ct
+						//allColorTransforms += ct
 						//println(depth.colorTransform)
 					}
-					if (it.hasMatrix) depth.matrix = it.matrix!!.matrix
+					if (it.hasMatrix) {
+						val m = it.matrix!!.matrix
+						depth.matrix = m
+						//allMatrices += m
+					}
 					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
 						SwfBlendMode.NORMAL_0, SwfBlendMode.NORMAL_1 -> BlendMode.NORMAL
 						SwfBlendMode.ADD -> BlendMode.ADD
@@ -581,14 +611,18 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 					}
 
 					depth.uid = uid
+					depthsChanged[depthId] = true
 				}
 				is TagRemoveObject -> {
 					depths[it.depth0].reset()
+					depthsChanged[it.depth0] = true
 				}
 				is TagShowFrame -> {
+					totalShowFrame++
 					for (depth in depths) {
-						swfCurrentFrame.depths += depth.toFrameElement()
+						if (depthsChanged[depth.depth]) swfCurrentFrame.depths += depth.toFrameElement()
 					}
+					depthsChanged.clear()
 					currentFrame++
 				}
 				is TagEnd -> {

@@ -15,36 +15,36 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
 
-suspend fun AnLibrary.writeTo(file: VfsFile, compression: Double = 1.0) {
+suspend fun AnLibrary.writeTo(file: VfsFile, keepPaths: Boolean = false, compression: Double = 1.0) {
 	//println("writeTo")
 	val format = PNG()
 	val props = ImageEncodingProps(compression)
-	file.write(AnLibrarySerializer.gen(this, compression) { index, atlas ->
+	file.write(AnLibrarySerializer.gen(this, compression = compression, keepPaths = keepPaths) { index, atlas ->
 		//showImageAndWait(atlas)
 		file.withExtension("ani.$index.png").writeBitmap(atlas, format, props)
 	})
 }
 
 object AnLibrarySerializer {
-	suspend fun gen(library: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, atlasWriter) }
+	suspend fun gen(library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, keepPaths, atlasWriter) }
 
-	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) = s.writeLibrary(library, compression, atlasWriter)
+	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) = s.writeLibrary(library, compression, keepPaths, atlasWriter)
 
 	private fun SyncStream.writeRect(r: Rectangle) {
-		writeF32_le(r.x.toFloat())
-		writeF32_le(r.y.toFloat())
-		writeF32_le(r.width.toFloat())
-		writeF32_le(r.height.toFloat())
+		writeS_VL((r.x * 20).toInt())
+		writeS_VL((r.y * 20).toInt())
+		writeS_VL((r.width * 20).toInt())
+		writeS_VL((r.height * 20).toInt())
 	}
 
 	private fun SyncStream.writeIRect(r: IRectangleInt) {
-		writeF32_le(r.x.toFloat())
-		writeF32_le(r.y.toFloat())
-		writeF32_le(r.width.toFloat())
-		writeF32_le(r.height.toFloat())
+		writeS_VL(r.x)
+		writeS_VL(r.y)
+		writeS_VL(r.width)
+		writeS_VL(r.height)
 	}
 
-	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) {
+	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) {
 		writeStringz(AnLibraryFile.MAGIC, 8)
 		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
@@ -101,6 +101,12 @@ object AnLibrarySerializer {
 		writeU_VL(0)
 
 		// Symbols
+		var morphShapeCount = 0
+		var shapeCount = 0
+		var movieClipCount = 0
+		var totalFrameCount = 0
+		var totalTimelines = 0
+
 		writeU_VL(lib.symbolsById.size)
 		for (symbol in lib.symbolsById) {
 			writeU_VL(symbol.id)
@@ -118,13 +124,14 @@ object AnLibrarySerializer {
 					writeRect(symbol.bounds)
 				}
 				is AnSymbolShape -> {
+					shapeCount++
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SHAPE)
 					writeF32_le(symbol.textureWithBitmap!!.scale.toFloat())
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
 					val path = symbol.path
-					if (path != null) {
+					if (keepPaths && path != null) {
 						writeU_VL(1)
 						writeU_VL(path.commands.size)
 						for (cmd in path.commands) write8(cmd)
@@ -135,6 +142,7 @@ object AnLibrarySerializer {
 					}
 				}
 				is AnSymbolMorphShape -> {
+					morphShapeCount++
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE)
 					val entries = symbol.texturesWithBitmap.entries
 					writeU_VL(entries.size)
@@ -150,6 +158,7 @@ object AnLibrarySerializer {
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_BITMAP)
 				}
 				is AnSymbolMovieClip -> {
+					movieClipCount++
 					// val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP)
 
@@ -175,6 +184,7 @@ object AnLibrarySerializer {
 						writeU_VL(ss.totalTime)
 						writeU_VL(ss.loopStartTime)
 						for (timeline in ss.timelines) {
+							totalTimelines++
 							val frames = timeline.entries
 							var lastUid = -1
 							var lastName: String? = null
@@ -184,13 +194,23 @@ object AnLibrarySerializer {
 							var lastRatio = 0.0
 							writeU_VL(frames.size)
 							for ((frameTime, frame) in frames) {
+								totalFrameCount++
 								writeU_VL(frameTime)
 
 								val ct = frame.colorTransform
 								val m = frame.transform
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
-								val hasColorTransform = frame.colorTransform != lastColorTransform
+								val hasColorTransform = ct != lastColorTransform
+								val hasAlpha =
+									(ct.mR != lastColorTransform.mR) ||
+										(ct.mG != lastColorTransform.mG) ||
+										(ct.mB != lastColorTransform.mB) ||
+										//(ct.mA != lastColorTransform.mR) ||
+										(ct.aR != lastColorTransform.aR) ||
+										(ct.aG != lastColorTransform.aG) ||
+										(ct.aB != lastColorTransform.aB) ||
+										(ct.aA != lastColorTransform.aA)
 								val hasClipDepth = frame.clipDepth != lastClipDepth
 								val hasRatio = frame.ratio != lastRatio
 
@@ -203,11 +223,15 @@ object AnLibrarySerializer {
 									.insert(hasMatrix, 3)
 									.insert(hasClipDepth, 4)
 									.insert(hasRatio, 5)
+									.insert(hasAlpha, 6)
 								)
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasClipDepth) write16_le(frame.clipDepth)
 								if (hasName) writeU_VL(strings[frame.name])
-								if (hasColorTransform) {
+
+								if (hasAlpha) {
+									write8((ct.mA * 255.0).toInt().clamp(0x00, 0xFF))
+								} else if (hasColorTransform) {
 									val hasMR = ct.mR != lastColorTransform.mR
 									val hasMG = ct.mG != lastColorTransform.mG
 									val hasMB = ct.mB != lastColorTransform.mB
@@ -229,15 +253,15 @@ object AnLibrarySerializer {
 										.insert(hasAA, 7)
 									)
 
-									if (hasMR) writeF32_le(ct.mR.toFloat())
-									if (hasMG) writeF32_le(ct.mG.toFloat())
-									if (hasMB) writeF32_le(ct.mB.toFloat())
-									if (hasMA) writeF32_le(ct.mA.toFloat())
+									if (hasMR) write8((ct.mR * 255.0).toInt())
+									if (hasMG) write8((ct.mG * 255.0).toInt())
+									if (hasMB) write8((ct.mB * 255.0).toInt())
+									if (hasMA) write8((ct.mA * 255.0).toInt())
 
-									if (hasAR) write16_le(ct.aR)
-									if (hasAG) write16_le(ct.aG)
-									if (hasAB) write16_le(ct.aB)
-									if (hasAA) write16_le(ct.aA)
+									if (hasAR) write8(ct.aR / 2)
+									if (hasAG) write8(ct.aG / 2)
+									if (hasAB) write8(ct.aB / 2)
+									if (hasAA) write8(ct.aA / 2)
 								}
 								if (hasMatrix) {
 									val hasMatrixA = m.a != lastMatrix.a
@@ -253,16 +277,17 @@ object AnLibrarySerializer {
 										.insert(hasMatrixC, 2)
 										.insert(hasMatrixD, 3)
 										.insert(hasMatrixTX, 4)
-										.insert(hasMatrixTY, 5))
+										.insert(hasMatrixTY, 5)
+									)
 
-									if (hasMatrixA) writeF32_le(m.a.toFloat())
-									if (hasMatrixB) writeF32_le(m.b.toFloat())
-									if (hasMatrixC) writeF32_le(m.c.toFloat())
-									if (hasMatrixD) writeF32_le(m.d.toFloat())
-									if (hasMatrixTX) writeF32_le(m.tx.toFloat())
-									if (hasMatrixTY) writeF32_le(m.ty.toFloat())
+									if (hasMatrixA) writeS_VL((m.a * 16384).toInt())
+									if (hasMatrixB) writeS_VL((m.b * 16384).toInt())
+									if (hasMatrixC) writeS_VL((m.c * 16384).toInt())
+									if (hasMatrixD) writeS_VL((m.d * 16384).toInt())
+									if (hasMatrixTX) writeS_VL((m.tx * 20).toInt())
+									if (hasMatrixTY) writeS_VL((m.ty * 20).toInt())
 								}
-								if (hasRatio) writeF32_le(frame.ratio.toFloat())
+								if (hasRatio) write8((frame.ratio * 255).toInt().clamp(0, 255))
 
 								lastUid = frame.uid
 								lastName = frame.name
@@ -284,6 +309,14 @@ object AnLibrarySerializer {
 					}
 				}
 			}
+		}
+
+		if (true) {
+			//println("totalTimelines: $totalTimelines")
+			//println("totalFrameCount: $totalFrameCount")
+			//println("shapeCount: $shapeCount")
+			//println("morphShapeCount: $morphShapeCount")
+			//println("movieClipCount: $movieClipCount")
 		}
 
 		// End of symbols

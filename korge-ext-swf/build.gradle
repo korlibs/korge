@@ -6,4 +6,5 @@ dependencies {
 	compile project(":korfl")
     compile project(":korge-core")
     testCompile project(":korge")
+	testCompile ("com.soywiz:korim:$korVersion")
 }

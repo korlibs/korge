@@ -25,13 +25,9 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
-suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
-	return this.readAni(FastByteArrayInputStream(this.readBytes()), views, mipmaps)
-}
-
-suspend fun VfsFile.readAni(content: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false): AnLibrary {
+suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(content, views, mipmaps) { index ->
+	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()), views, mipmaps) { index ->
 		file.withExtension("ani.$index.png").readBitmapOptimized()
 	}
 }
@@ -206,35 +202,40 @@ object AnLibraryDeserializer {
 					val hasMatrix = flags.extract(3)
 					val hasClipDepth = flags.extract(4)
 					val hasRatio = flags.extract(5)
+					val hasAlpha = flags.extract(6)
 
 					if (hasUid) lastUid = readU_VL()
 					if (hasClipDepth) lastClipDepth = readS16_le()
 					if (hasName) lastName = strings[readU_VL()]
-					if (hasColorTransform) {
+					if (hasAlpha) {
+						val ct = lastColorTransform.copy()
+						ct.mA = readU8().toDouble() / 255.0
+						lastColorTransform = ct
+					} else if (hasColorTransform) {
 						val ct = lastColorTransform.copy()
 						val ctFlags = readU8()
-						if (ctFlags.extract(0)) ct.mR = readF32_le().toDouble()
-						if (ctFlags.extract(1)) ct.mG = readF32_le().toDouble()
-						if (ctFlags.extract(2)) ct.mB = readF32_le().toDouble()
-						if (ctFlags.extract(3)) ct.mA = readF32_le().toDouble()
-						if (ctFlags.extract(4)) ct.aR = readS16_le()
-						if (ctFlags.extract(5)) ct.aG = readS16_le()
-						if (ctFlags.extract(6)) ct.aB = readS16_le()
-						if (ctFlags.extract(7)) ct.aR = readS16_le()
+						if (ctFlags.extract(0)) ct.mR = readU8().toDouble() / 255.0
+						if (ctFlags.extract(1)) ct.mG = readU8().toDouble() / 255.0
+						if (ctFlags.extract(2)) ct.mB = readU8().toDouble() / 255.0
+						if (ctFlags.extract(3)) ct.mA = readU8().toDouble() / 255.0
+						if (ctFlags.extract(4)) ct.aR = readS8() * 2
+						if (ctFlags.extract(5)) ct.aG = readS8() * 2
+						if (ctFlags.extract(6)) ct.aB = readS8() * 2
+						if (ctFlags.extract(7)) ct.aR = readS8() * 2
 						lastColorTransform = ct
 					}
 					if (hasMatrix) {
 						val lm = lastMatrix.copy()
 						val matrixFlags = readU8()
-						if (matrixFlags.extract(0)) lm.a = readF32_le().toDouble()
-						if (matrixFlags.extract(1)) lm.b = readF32_le().toDouble()
-						if (matrixFlags.extract(2)) lm.c = readF32_le().toDouble()
-						if (matrixFlags.extract(3)) lm.d = readF32_le().toDouble()
-						if (matrixFlags.extract(4)) lm.tx = readF32_le().toDouble()
-						if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
+						if (matrixFlags.extract(0)) lm.a = readS_VL().toDouble() / 16384.0
+						if (matrixFlags.extract(1)) lm.b = readS_VL().toDouble() / 16384.0
+						if (matrixFlags.extract(2)) lm.c = readS_VL().toDouble() / 16384.0
+						if (matrixFlags.extract(3)) lm.d = readS_VL().toDouble() / 16384.0
+						if (matrixFlags.extract(4)) lm.tx = readS_VL().toDouble() / 20.0
+						if (matrixFlags.extract(5)) lm.ty = readS_VL().toDouble() / 20.0
 						lastMatrix = lm
 					}
-					if (hasRatio) lastRatio = readF32_le().toDouble()
+					if (hasRatio) lastRatio = readU8().toDouble() / 255.0
 					timeline.add(frameTime, AnSymbolTimelineFrame(
 						depth = depth,
 						uid = lastUid,
@@ -261,6 +262,6 @@ object AnLibraryDeserializer {
 		return mc
 	}
 
-	fun FastByteArrayInputStream.readRect() = Rectangle(x = readF32_le(), y = readF32_le(), width = readF32_le(), height = readF32_le())
-	fun FastByteArrayInputStream.readIRect() = RectangleInt(x = readF32_le().toInt(), y = readF32_le().toInt(), width = readF32_le().toInt(), height = readF32_le().toInt())
+	fun FastByteArrayInputStream.readRect() = Rectangle(x = readS_VL() / 20.0, y = readS_VL() / 20.0, width = readS_VL() / 20.0, height = readS_VL() / 20.0)
+	fun FastByteArrayInputStream.readIRect() = RectangleInt(x = readS_VL(), y = readS_VL(), width = readS_VL(), height = readS_VL())
 }

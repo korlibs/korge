@@ -258,7 +258,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 		KorgeFileLoaderTester("core/ani") { s, injector ->
 			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			when {
-				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(content, views, mipmaps) }
+				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(views, mipmaps, content = content) }
 				else -> null
 			}
 		}

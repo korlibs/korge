@@ -34,7 +34,7 @@ open class Timed<T>(initialCapacity: Int = 7) {
 
 	fun findNearIndex(time: Int): Int {
 		val res = times.binarySearch(time)
-		return if (res < 0) -res - 1 else res
+		return if (res < 0) (-res - 1).clamp(0, times.size - 1) else res
 	}
 
 	inline fun getRangeIndices(startTime: Int, endTime: Int, handler: (startIndex: Int, endIndex: Int) -> Unit): Unit {
@@ -89,6 +89,7 @@ open class Timed<T>(initialCapacity: Int = 7) {
 		if (objects.isEmpty()) return callback(0, null, null, 0.0)
 		val index = findNearIndex(time)
 		val timeAtIndex = times[index]
+
 		if (time < timeAtIndex && index <= 0) {
 			return callback(0, null, objects[0], 0.0)
 		} else {
