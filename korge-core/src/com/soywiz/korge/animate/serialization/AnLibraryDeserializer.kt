@@ -100,8 +100,14 @@ object AnLibraryDeserializer {
 				val path: VectorPath? = when (readU_VL()) {
 					0 -> null
 					1 -> {
-						val cmds = (0 until readU_VL()).map { readU8() }.toIntArray()
-						val data = (0 until readU_VL()).map { readF32_le().toDouble() }.toDoubleArray()
+						val cmds = IntArray(readU_VL())
+						for (n in 0 until cmds.size) cmds[n] = readU8()
+
+						val data = DoubleArray(readU_VL())
+						for (n in 0 until data.size) data[n] = readF32_le().toDouble()
+
+						//val cmds = (0 until readU_VL()).map { readU8() }.toIntArray()
+						//val data = (0 until readU_VL()).map { readF32_le().toDouble() }.toDoubleArray()
 						VectorPath(IntArrayList(cmds), DoubleArrayList(data))
 					}
 					else -> null
@@ -120,8 +126,9 @@ object AnLibraryDeserializer {
 				)
 			}
 			AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE -> {
-				val texturesWithBitmap = Timed<TextureWithBitmapSlice>()
-				for (n in 0 until readU_VL()) {
+				val nframes = readU_VL()
+				val texturesWithBitmap = Timed<TextureWithBitmapSlice>(nframes)
+				for (n in 0 until nframes) {
 					val ratio1000 = readU_VL()
 					val scale = readF32_le().toDouble()
 					val bitmapId = readU_VL()

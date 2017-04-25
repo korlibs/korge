@@ -4,9 +4,9 @@ import com.soywiz.korio.util.clamp
 import com.soywiz.korma.ds.IntArrayList
 import com.soywiz.korma.ds.binarySearch
 
-open class Timed<T> {
-	val times = IntArrayList()
-	val objects = arrayListOf<T>()
+open class Timed<T>(initialCapacity: Int = 7) {
+	val times = IntArrayList(initialCapacity)
+	val objects = java.util.ArrayList<T>(initialCapacity)
 	val size: Int get() = times.size
 
 	val entries: List<Pair<Int, T>> get() = times.zip(objects)
