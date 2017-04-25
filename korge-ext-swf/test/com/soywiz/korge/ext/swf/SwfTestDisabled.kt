@@ -27,12 +27,13 @@ class SwfTestDisabled {
 			//sleep(12000)
 			//val ani = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true).createMainTimeLine().apply { play("frame172") }
 			//val ani = LocalVfs("c:/temp/test3.swf").readSWF(views, mipmaps = true).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/test27.swf").readSWF(views, mipmaps = true).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test27.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/morph.ani").readAni(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true).createMainTimeLine()
+			val ani = LocalVfs("c:/temp/test8.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 
 
 			//val library = LocalVfs("c:/temp/test7.swf").readSWF(views)
