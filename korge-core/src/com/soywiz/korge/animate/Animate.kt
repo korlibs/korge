@@ -15,10 +15,6 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
 
-interface AnWithRatio {
-	var ratio: Double
-}
-
 interface AnElement {
 	val library: AnLibrary
 	val symbol: AnSymbol
@@ -64,7 +60,7 @@ class AnShape(library: AnLibrary, symbol: AnSymbolShape) : AnBaseShape(library, 
 	override val smoothing = true
 }
 
-class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : AnBaseShape(library, morphSymbol), AnElement, AnWithRatio {
+class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : AnBaseShape(library, morphSymbol), AnElement {
 	private val timedResult = Timed.Result<TextureWithBitmapSlice>()
 
 	var texWBS: TextureWithBitmapSlice? = null
@@ -287,42 +283,23 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					}
 
 					val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
+					replaceDepth(depth, view)
 					if ((left != null) && (right != null) && (left.uid == right.uid)) {
 						//println("$currentTime: $index")
-						replaceDepth(depth, view)
-						view.setMatrixInterpolated(ratio, left.transform.matrix, right.transform.matrix)
-						view.colorTransform = view.colorTransform.setToInterpolated(left.colorTransform, right.colorTransform, ratio)
-						if (view is AnWithRatio) view.ratio = interpolate(left.ratio, right.ratio, ratio)
-						//view.setComputedTransform(left.transform)
+						AnSymbolTimelineFrame.setToViewInterpolated(view, left, right, ratio)
 					} else {
 						//println("$currentTime: $index")
-						replaceDepth(depth, view)
-						if (left != null) {
-							view.setComputedTransform(left.transform)
-							if (view is AnWithRatio) view.ratio = left.ratio
-							//println(left.colorTransform)
-							view.colorTransform = left.colorTransform
-						}
-					}
-					if (left != null) {
-						view.name = left.name
+						left?.setToView(view)
+						//println(left.colorTransform)
 					}
 				}
 			} else {
 				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
-					if (left != null) {
-						maskPushDepths[left.depth] = left.clipDepth
-					}
-
+					if (left != null) maskPushDepths[left.depth] = left.clipDepth
 					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
 					//println("$currentTime: $index")
 					replaceDepth(depth, view)
-					if (left != null) {
-						view.setComputedTransform(left.transform)
-						view.name = left.name
-						view.colorTransform = left.colorTransform
-						if (view is AnWithRatio) view.ratio = left.ratio
-					}
+					left?.setToView(view)
 				}
 			}
 		}

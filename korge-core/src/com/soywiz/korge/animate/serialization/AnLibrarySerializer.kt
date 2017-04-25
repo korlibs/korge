@@ -187,7 +187,7 @@ object AnLibrarySerializer {
 								writeU_VL(frameTime)
 
 								val ct = frame.colorTransform
-								val m = frame.transform.matrix
+								val m = frame.transform
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
 								val hasColorTransform = frame.colorTransform != lastColorTransform

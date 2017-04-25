@@ -356,7 +356,7 @@ private class SwfLoaderMethod(val views: Views, val debug: Boolean, val mipmaps:
 				uid = uid,
 				ratio = ratio,
 				name = name,
-				transform = Matrix2d.Computed(matrix),
+				transform = matrix,
 				colorTransform = colorTransform,
 				blendMode = blendMode
 			)

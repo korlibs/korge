@@ -8,7 +8,6 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korma.Matrix2d
 
 class TransitionView(views: Views) : Container(views) {
-	var ratio: Double = 0.0
 	var transition: Transition = AlphaTransition
 	val dummy1 = views.container()
 	val dummy2 = views.container()

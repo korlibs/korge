@@ -31,10 +31,12 @@ suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false): AnLibrary {
 }
 
 object AnLibraryDeserializer {
-	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.openSync().readLibrary(views, mipmaps, atlasReader)
-	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.readLibrary(views, mipmaps, atlasReader)
+	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = FastByteArrayInputStream(s).readLibrary(views, mipmaps, atlasReader)
+	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = FastByteArrayInputStream(s.readAll()).readLibrary(views, mipmaps, atlasReader)
+	suspend fun read(s: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.readLibrary(views, mipmaps, atlasReader)
 
-	suspend private fun SyncStream.readLibrary(views: Views, mipmaps: Boolean, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary {
+
+	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, mipmaps: Boolean, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary {
 		val magic = readStringz(8)
 		//AnLibrary(views)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
@@ -72,7 +74,7 @@ object AnLibraryDeserializer {
 		return library
 	}
 
-	private fun SyncStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>): AnSymbol {
+	private fun FastByteArrayInputStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>): AnSymbol {
 		val symbolId = readU_VL()
 		val symbolName = strings[readU_VL()]
 		val type = readU_VL()
@@ -155,7 +157,7 @@ object AnLibraryDeserializer {
 		return symbol
 	}
 
-	private fun SyncStream.readMovieClip(symbolId: Int, symbolName: String?, strings: Array<String?>): AnSymbolMovieClip {
+	private fun FastByteArrayInputStream.readMovieClip(symbolId: Int, symbolName: String?, strings: Array<String?>): AnSymbolMovieClip {
 		val totalDepths = readU_VL()
 		val totalFrames = readU_VL()
 		val totalTime = readU_VL()
@@ -179,7 +181,7 @@ object AnLibraryDeserializer {
 				var lastUid = -1
 				var lastName: String? = null
 				var lastColorTransform: ColorTransform = ColorTransform()
-				var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
+				var lastMatrix: Matrix2d = Matrix2d()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
 				for (frameIndex in 0 until readU_VL()) {
@@ -209,7 +211,7 @@ object AnLibraryDeserializer {
 						lastColorTransform = ct
 					}
 					if (hasMatrix) {
-						val lm = lastMatrix.matrix.copy()
+						val lm = lastMatrix.copy()
 						val matrixFlags = readU8()
 						if (matrixFlags.extract(0)) lm.a = readF32_le().toDouble()
 						if (matrixFlags.extract(1)) lm.b = readF32_le().toDouble()
@@ -217,7 +219,7 @@ object AnLibraryDeserializer {
 						if (matrixFlags.extract(3)) lm.d = readF32_le().toDouble()
 						if (matrixFlags.extract(4)) lm.tx = readF32_le().toDouble()
 						if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
-						lastMatrix = Matrix2d.Computed(lm)
+						lastMatrix = lm
 					}
 					if (hasRatio) lastRatio = readF32_le().toDouble()
 					timeline.add(frameTime, AnSymbolTimelineFrame(
@@ -246,6 +248,6 @@ object AnLibraryDeserializer {
 		return mc
 	}
 
-	fun SyncStream.readRect() = Rectangle(x = readF32_le(), y = readF32_le(), width = readF32_le(), height = readF32_le())
-	fun SyncStream.readIRect() = RectangleInt(x = readF32_le().toInt(), y = readF32_le().toInt(), width = readF32_le().toInt(), height = readF32_le().toInt())
+	fun FastByteArrayInputStream.readRect() = Rectangle(x = readF32_le(), y = readF32_le(), width = readF32_le(), height = readF32_le())
+	fun FastByteArrayInputStream.readIRect() = RectangleInt(x = readF32_le().toInt(), y = readF32_le().toInt(), width = readF32_le().toInt(), height = readF32_le().toInt())
 }

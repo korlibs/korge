@@ -70,6 +70,11 @@ data class ColorTransform(
 	var mB: Double get() = _mB; set(v) = run { _mB = v; dirty = true }
 	var mA: Double get() = _mA; set(v) = run { _mA = v; dirty = true }
 
+	var mRf: Float get() = _mR.toFloat(); set(v) = run { _mR = v.toDouble(); dirty = true }
+	var mGf: Float get() = _mG.toFloat(); set(v) = run { _mG = v.toDouble(); dirty = true }
+	var mBf: Float get() = _mB.toFloat(); set(v) = run { _mB = v.toDouble(); dirty = true }
+	var mAf: Float get() = _mA.toFloat(); set(v) = run { _mA = v.toDouble(); dirty = true }
+
 	var aR: Int get() = _aR; set(v) = run { _aR = v; dirty = true }
 	var aG: Int get() = _aG; set(v) = run { _aG = v; dirty = true }
 	var aB: Int get() = _aB; set(v) = run { _aB = v; dirty = true }
@@ -122,7 +127,23 @@ data class ColorTransform(
 		dirty = true
 	}
 
-	fun copyFrom(t: ColorTransform): ColorTransform = setTo(t._mR, t._mG, t._mB, t._mA, t._aR, t._aG, t._aB, t._aA)
+	fun copyFrom(t: ColorTransform): ColorTransform {
+		this._mR = t._mR
+		this._mG = t._mG
+		this._mB = t._mB
+		this._mA = t._mA
+
+		this._aR = t._aR
+		this._aG = t._aG
+		this._aB = t._aB
+		this._aA = t._aA
+
+		this.dirty = t.dirty
+		this._colorAdd = t._colorAdd
+		this._colorMul = t._colorMul
+
+		return this
+	}
 
 	companion object {
 		val identity = ColorTransform()
@@ -140,4 +161,8 @@ data class ColorTransform(
 	)
 
 	override fun toString(): String = "ColorTransform(*[${mR.niceStr}, ${mG.niceStr}, ${mB.niceStr}, ${mA.niceStr}]+[$aR, $aG, $aB, $aA])"
+
+	fun isIdentity(): Boolean = (mR == 1.0) && (mG == 1.0) && (mB == 1.0) && (mA == 1.0) && (aR == 0) && (aG == 0) && (aB == 0) && (aA == 0)
+
+	fun setToIdentity() = setTo(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
 }

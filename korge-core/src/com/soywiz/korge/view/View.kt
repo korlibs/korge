@@ -17,6 +17,7 @@ import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
 open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+	open var ratio: Double = 0.0
 	var index: Int = 0
 	var speed: Double = 1.0
 	var parent: Container? = null
@@ -100,10 +101,23 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var enabled: Boolean = true
 	var visible: Boolean = true
 
-	fun setMatrix(matrix: Matrix2d) {
-		this._localMatrix.copyFrom(matrix)
+	private fun computePropertiesFromMatrix() {
+		val t = tempTransform
+		t.setMatrix(this._localMatrix)
+		this.pos.x = t.x
+		this.pos.y = t.y
+		this._scaleX = t.scaleX
+		this._scaleY = t.scaleY
+		this._skewX = t.skewX
+		this._skewY = t.skewY
+		this._rotation = t.rotation
 		validLocal = true
 		invalidate()
+	}
+
+	fun setMatrix(matrix: Matrix2d) {
+		this._localMatrix.copyFrom(matrix)
+		computePropertiesFromMatrix()
 	}
 
 	companion object {
@@ -112,16 +126,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	fun setMatrixInterpolated(ratio: Double, l: Matrix2d, r: Matrix2d) {
 		this._localMatrix.setToInterpolated(ratio, l, r)
-		tempTransform.setMatrix(this._localMatrix)
-		this.pos.x = tempTransform.x
-		this.pos.y = tempTransform.y
-		this._scaleX = tempTransform.scaleX
-		this._scaleY = tempTransform.scaleY
-		this._skewX = tempTransform.skewX
-		this._skewY = tempTransform.skewY
-		this._rotation = tempTransform.rotation
-		validLocal = true
-		invalidate()
+		computePropertiesFromMatrix()
 	}
 
 	fun setComputedTransform(transform: Matrix2d.Computed) {
