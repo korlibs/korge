@@ -1,6 +1,7 @@
 package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.ColorTransform
@@ -62,179 +63,187 @@ object AnLibraryDeserializer {
 		}
 
 		val symbols = (0 until readU_VL()).map {
-			val symbolId = readU_VL()
-			val symbolName = strings[readU_VL()]
-			val type = readU_VL()
-			val symbol: AnSymbol = when (type) {
-				AnLibraryFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
-				AnLibraryFile.SYMBOL_TYPE_SOUND -> {
-					AnSymbolSound(symbolId, symbolName, null)
-				}
-				AnLibraryFile.SYMBOL_TYPE_TEXT -> {
-					val initialText = strings[readU_VL()]
-					val bounds = readRect()
-					AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
-				}
-				AnLibraryFile.SYMBOL_TYPE_SHAPE -> {
-					val scale = readF32_le().toDouble()
-					val bitmapId = readU_VL()
-					val atlas = atlases[bitmapId]
-					val textureBounds = readIRect()
-					val bounds = readRect()
-					val bitmap = atlas.first
-					val texture = atlas.second
-
-					val path: VectorPath? = when (readU_VL()) {
-						0 -> null
-						1 -> {
-							val cmds = (0 until readU_VL()).map { readU8() }.toIntArray()
-							val data = (0 until readU_VL()).map { readF32_le().toDouble() }.toDoubleArray()
-							VectorPath(IntArrayList(cmds), DoubleArrayList(data))
-						}
-						else -> null
-					}
-					AnSymbolShape(
-						id = symbolId,
-						name = symbolName,
-						bounds = bounds,
-						textureWithBitmap = TextureWithBitmapSlice(
-							texture = texture.slice(textureBounds.toDouble()),
-							bitmapSlice = bitmap.slice(textureBounds),
-							scale = scale,
-							bounds = bounds
-						),
-						path = path
-					)
-				}
-				AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE -> {
-					val texturesWithBitmap = Timed<TextureWithBitmapSlice>()
-					for (n in 0 until readU_VL()) {
-						val ratio1000 = readU_VL()
-						val scale = readF32_le().toDouble()
-						val bitmapId = readU_VL()
-						val bounds = readRect()
-						val textureBounds = readIRect()
-						val atlas = atlases[bitmapId]
-						val bitmap = atlas.first
-						val texture = atlas.second
-
-						texturesWithBitmap.add(ratio1000, TextureWithBitmapSlice(
-							texture = texture.slice(textureBounds.toDouble()),
-							bitmapSlice = bitmap.slice(textureBounds),
-							scale = scale,
-							bounds = bounds
-						))
-					}
-					AnSymbolMorphShape(
-						id = symbolId,
-						name = symbolName,
-						bounds = Rectangle(),
-						texturesWithBitmap = texturesWithBitmap,
-						path = null
-					)
-				}
-				AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
-					AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))
-				}
-				AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP -> {
-					val totalDepths = readU_VL()
-					val totalFrames = readU_VL()
-					val totalTime = readU_VL()
-					val totalUids = readU_VL()
-					val uidsToCharacterIds = (0 until totalUids).map {
-						val charId = readU_VL()
-						val extraPropsString = readStringVL()
-						val extraProps = if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
-						//val extraProps = LinkedHashMap<String, String>()
-						AnSymbolUidDef(charId, extraProps)
-					}.toTypedArray()
-					val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))
-
-					val symbolStates = (0 until readU_VL()).map {
-						val ss = AnSymbolMovieClipState(totalDepths)
-						//ss.name = strings[readU_VL()] ?: ""
-						ss.totalTime = readU_VL()
-						ss.loopStartTime = readU_VL()
-						for (depth in 0 until totalDepths) {
-							val timeline = ss.timelines[depth]
-							var lastUid = -1
-							var lastName: String? = null
-							var lastColorTransform: ColorTransform = ColorTransform()
-							var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
-							var lastClipDepth = -1
-							var lastRatio = 0.0
-							for (frameIndex in 0 until readU_VL()) {
-								val frameTime = readU_VL()
-								val flags = readU_VL()
-								val hasUid = flags.extract(0)
-								val hasName = flags.extract(1)
-								val hasColorTransform = flags.extract(2)
-								val hasMatrix = flags.extract(3)
-								val hasClipDepth = flags.extract(4)
-								val hasRatio = flags.extract(5)
-
-								if (hasUid) lastUid = readU_VL()
-								if (hasClipDepth) lastClipDepth = readS16_le()
-								if (hasName) lastName = strings[readU_VL()]
-								if (hasColorTransform) {
-									val ct = lastColorTransform.copy()
-									val ctFlags = readU8()
-									if (ctFlags.extract(0)) ct.mR = readF32_le().toDouble()
-									if (ctFlags.extract(1)) ct.mG = readF32_le().toDouble()
-									if (ctFlags.extract(2)) ct.mB = readF32_le().toDouble()
-									if (ctFlags.extract(3)) ct.mA = readF32_le().toDouble()
-									if (ctFlags.extract(4)) ct.aR = readS16_le()
-									if (ctFlags.extract(5)) ct.aG = readS16_le()
-									if (ctFlags.extract(6)) ct.aB = readS16_le()
-									if (ctFlags.extract(7)) ct.aR = readS16_le()
-									lastColorTransform = ct
-								}
-								if (hasMatrix) {
-									val lm = lastMatrix.matrix.copy()
-									val matrixFlags = readU8()
-									if (matrixFlags.extract(0)) lm.a = readF32_le().toDouble()
-									if (matrixFlags.extract(1)) lm.b = readF32_le().toDouble()
-									if (matrixFlags.extract(2)) lm.c = readF32_le().toDouble()
-									if (matrixFlags.extract(3)) lm.d = readF32_le().toDouble()
-									if (matrixFlags.extract(4)) lm.tx = readF32_le().toDouble()
-									if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
-									lastMatrix = Matrix2d.Computed(lm)
-								}
-								if (hasRatio) lastRatio = readF32_le().toDouble()
-								timeline.add(frameTime, AnSymbolTimelineFrame(
-									depth = depth,
-									uid = lastUid,
-									transform = lastMatrix,
-									name = lastName,
-									colorTransform = lastColorTransform,
-									blendMode = BlendMode.INHERIT,
-									ratio = lastRatio,
-									clipDepth = lastClipDepth
-								))
-							}
-						}
-						ss
-					}
-
-					for (n in 0 until uidsToCharacterIds.size) mc.uidInfo[n] = uidsToCharacterIds[n]
-					mc.states += (0 until readU_VL()).map {
-						val name = strings[readU_VL()] ?: ""
-						val startTime = readU_VL()
-						val stateIndex = readU_VL()
-						name to AnSymbolMovieClipStateWithStartTime(name, symbolStates[stateIndex], startTime = startTime)
-					}.toMap()
-
-					mc
-				}
-				else -> TODO("Type: $type")
-			}
-			symbol
+			readSymbol(strings, atlases)
 		}
 
 		for (symbol in symbols) library.addSymbol(symbol)
 		library.processSymbolNames()
 
 		return library
+	}
+
+	private fun SyncStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>): AnSymbol {
+		val symbolId = readU_VL()
+		val symbolName = strings[readU_VL()]
+		val type = readU_VL()
+		val symbol: AnSymbol = when (type) {
+			AnLibraryFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
+			AnLibraryFile.SYMBOL_TYPE_SOUND -> {
+				AnSymbolSound(symbolId, symbolName, null)
+			}
+			AnLibraryFile.SYMBOL_TYPE_TEXT -> {
+				val initialText = strings[readU_VL()]
+				val bounds = readRect()
+				AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
+			}
+			AnLibraryFile.SYMBOL_TYPE_SHAPE -> {
+				val scale = readF32_le().toDouble()
+				val bitmapId = readU_VL()
+				val atlas = atlases[bitmapId]
+				val textureBounds = readIRect()
+				val bounds = readRect()
+				val bitmap = atlas.first
+				val texture = atlas.second
+
+				val path: VectorPath? = when (readU_VL()) {
+					0 -> null
+					1 -> {
+						val cmds = (0 until readU_VL()).map { readU8() }.toIntArray()
+						val data = (0 until readU_VL()).map { readF32_le().toDouble() }.toDoubleArray()
+						VectorPath(IntArrayList(cmds), DoubleArrayList(data))
+					}
+					else -> null
+				}
+				AnSymbolShape(
+					id = symbolId,
+					name = symbolName,
+					bounds = bounds,
+					textureWithBitmap = TextureWithBitmapSlice(
+						texture = texture.slice(textureBounds.toDouble()),
+						bitmapSlice = bitmap.slice(textureBounds),
+						scale = scale,
+						bounds = bounds
+					),
+					path = path
+				)
+			}
+			AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE -> {
+				val texturesWithBitmap = Timed<TextureWithBitmapSlice>()
+				for (n in 0 until readU_VL()) {
+					val ratio1000 = readU_VL()
+					val scale = readF32_le().toDouble()
+					val bitmapId = readU_VL()
+					val bounds = readRect()
+					val textureBounds = readIRect()
+					val atlas = atlases[bitmapId]
+					val bitmap = atlas.first
+					val texture = atlas.second
+
+					texturesWithBitmap.add(ratio1000, TextureWithBitmapSlice(
+						texture = texture.slice(textureBounds.toDouble()),
+						bitmapSlice = bitmap.slice(textureBounds),
+						scale = scale,
+						bounds = bounds
+					))
+				}
+				AnSymbolMorphShape(
+					id = symbolId,
+					name = symbolName,
+					bounds = Rectangle(),
+					texturesWithBitmap = texturesWithBitmap,
+					path = null
+				)
+			}
+			AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
+				AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))
+			}
+			AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP -> {
+				readMovieClip(symbolId, symbolName, strings)
+			}
+			else -> TODO("Type: $type")
+		}
+		return symbol
+	}
+
+	private fun SyncStream.readMovieClip(symbolId: Int, symbolName: String?, strings: Array<String?>): AnSymbolMovieClip {
+		val totalDepths = readU_VL()
+		val totalFrames = readU_VL()
+		val totalTime = readU_VL()
+		val totalUids = readU_VL()
+		val uidsToCharacterIds = (0 until totalUids).map {
+			val charId = readU_VL()
+			val extraPropsString = readStringVL()
+			val extraProps = if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
+			//val extraProps = LinkedHashMap<String, String>()
+			AnSymbolUidDef(charId, extraProps)
+		}.toTypedArray()
+		val mc = AnSymbolMovieClip(symbolId, symbolName, AnSymbolLimits(totalDepths, totalFrames, totalUids, totalTime))
+
+		val symbolStates = (0 until readU_VL()).map {
+			val ss = AnSymbolMovieClipState(totalDepths)
+			//ss.name = strings[readU_VL()] ?: ""
+			ss.totalTime = readU_VL()
+			ss.loopStartTime = readU_VL()
+			for (depth in 0 until totalDepths) {
+				val timeline = ss.timelines[depth]
+				var lastUid = -1
+				var lastName: String? = null
+				var lastColorTransform: ColorTransform = ColorTransform()
+				var lastMatrix: Matrix2d.Computed = Matrix2d.Computed(Matrix2d())
+				var lastClipDepth = -1
+				var lastRatio = 0.0
+				for (frameIndex in 0 until readU_VL()) {
+					val frameTime = readU_VL()
+					val flags = readU_VL()
+					val hasUid = flags.extract(0)
+					val hasName = flags.extract(1)
+					val hasColorTransform = flags.extract(2)
+					val hasMatrix = flags.extract(3)
+					val hasClipDepth = flags.extract(4)
+					val hasRatio = flags.extract(5)
+
+					if (hasUid) lastUid = readU_VL()
+					if (hasClipDepth) lastClipDepth = readS16_le()
+					if (hasName) lastName = strings[readU_VL()]
+					if (hasColorTransform) {
+						val ct = lastColorTransform.copy()
+						val ctFlags = readU8()
+						if (ctFlags.extract(0)) ct.mR = readF32_le().toDouble()
+						if (ctFlags.extract(1)) ct.mG = readF32_le().toDouble()
+						if (ctFlags.extract(2)) ct.mB = readF32_le().toDouble()
+						if (ctFlags.extract(3)) ct.mA = readF32_le().toDouble()
+						if (ctFlags.extract(4)) ct.aR = readS16_le()
+						if (ctFlags.extract(5)) ct.aG = readS16_le()
+						if (ctFlags.extract(6)) ct.aB = readS16_le()
+						if (ctFlags.extract(7)) ct.aR = readS16_le()
+						lastColorTransform = ct
+					}
+					if (hasMatrix) {
+						val lm = lastMatrix.matrix.copy()
+						val matrixFlags = readU8()
+						if (matrixFlags.extract(0)) lm.a = readF32_le().toDouble()
+						if (matrixFlags.extract(1)) lm.b = readF32_le().toDouble()
+						if (matrixFlags.extract(2)) lm.c = readF32_le().toDouble()
+						if (matrixFlags.extract(3)) lm.d = readF32_le().toDouble()
+						if (matrixFlags.extract(4)) lm.tx = readF32_le().toDouble()
+						if (matrixFlags.extract(5)) lm.ty = readF32_le().toDouble()
+						lastMatrix = Matrix2d.Computed(lm)
+					}
+					if (hasRatio) lastRatio = readF32_le().toDouble()
+					timeline.add(frameTime, AnSymbolTimelineFrame(
+						depth = depth,
+						uid = lastUid,
+						transform = lastMatrix,
+						name = lastName,
+						colorTransform = lastColorTransform,
+						blendMode = BlendMode.INHERIT,
+						ratio = lastRatio,
+						clipDepth = lastClipDepth
+					))
+				}
+			}
+			ss
+		}
+
+		for (n in 0 until uidsToCharacterIds.size) mc.uidInfo[n] = uidsToCharacterIds[n]
+		mc.states += (0 until readU_VL()).map {
+			val name = strings[readU_VL()] ?: ""
+			val startTime = readU_VL()
+			val stateIndex = readU_VL()
+			name to AnSymbolMovieClipStateWithStartTime(name, symbolStates[stateIndex], startTime = startTime)
+		}.toMap()
+
+		return mc
 	}
 
 	fun SyncStream.readRect() = Rectangle(x = readF32_le(), y = readF32_le(), width = readF32_le(), height = readF32_le())

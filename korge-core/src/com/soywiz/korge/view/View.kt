@@ -212,14 +212,10 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		if (validGlobal) return@apply
 		validGlobal = true
 		if (parent != null) {
-			_globalMatrix.copyFrom(parent!!.globalMatrix)
-			_globalMatrix.premultiply(localMatrix)
-		} else {
-			_globalMatrix.copyFrom(localMatrix)
-		}
-		if (parent != null) {
+			_globalMatrix.multiply(localMatrix, parent!!.globalMatrix)
 			_globalColorTransform.setToConcat(_colorTransform, parent!!.globalColorTransform)
 		} else {
+			_globalMatrix.copyFrom(localMatrix)
 			_globalColorTransform.copyFrom(_colorTransform)
 		}
 		_globalMatrixVersion++
@@ -227,7 +223,11 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	var globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
 	set(value) {
-		this.localMatrix = this.localMatrix.multiply(value, parent?.globalMatrixInv ?: Matrix2d.Immutable.IDENTITY)
+		if (parent != null) {
+			this.localMatrix.multiply(value, parent!!.globalMatrixInv)
+		} else {
+			this.localMatrix.copyFrom(value)
+		}
 	}
 
 	val globalColorTransform: ColorTransform get() = run { _ensureGlobal(); _globalColorTransform }
