@@ -178,6 +178,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 		this.currentSubtimeline = substate?.subTimeline
 		this.currentTime = (substate?.startTime ?: 0) + time
 		this.running = running
+		update(0)
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
 
@@ -214,6 +215,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	private val tempRangeResult = Timed.RangeResult()
 
 	private fun eval(prev: Int, current: Int) {
+		if (prev >= current) return
 		val actionsTimeline = this.currentSubtimeline?.actions ?: return
 		val result = actionsTimeline.getRangeIndices(prev, current - 1, out = tempRangeResult)
 

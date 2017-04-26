@@ -206,8 +206,11 @@ object AnLibraryDeserializer {
 			ss.nextState = strings[readU_VL()]
 
 			val numberOfActionFrames = readU_VL()
+			var lastFrameTimeInMs = 0
 			for (n in 0 until numberOfActionFrames) {
-				val time = readU_VL()
+				val deltaTime = readU_VL()
+				val timeInMs = lastFrameTimeInMs + deltaTime
+				lastFrameTimeInMs = timeInMs
 				val actions = (0 until readU_VL()).map {
 					val action = readU8()
 					when (action) {
@@ -217,7 +220,7 @@ object AnLibraryDeserializer {
 						else -> TODO()
 					}
 				}
-				ss.actions.add(time, AnActions(actions))
+				ss.actions.add(timeInMs * 1000, AnActions(actions))
 			}
 
 			for (depth in 0 until totalDepths) {
@@ -228,8 +231,11 @@ object AnLibraryDeserializer {
 				var lastMatrix = Matrix2d()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
+				var lastFrameTime = 0
 				for (frameIndex in 0 until readU_VL()) {
-					val frameTime = readU_VL()
+					val deltaFrameTime = readU_VL()
+					val frameTime = lastFrameTime + deltaFrameTime
+					lastFrameTime = frameTime
 					val flags = readU_VL()
 					val hasUid = flags.extract(0)
 					val hasName = flags.extract(1)
@@ -273,7 +279,7 @@ object AnLibraryDeserializer {
 						lastMatrix = lm
 					}
 					if (hasRatio) lastRatio = readU8().toDouble() / 255.0
-					timeline.add(frameTime, AnSymbolTimelineFrame(
+					timeline.add(frameTime * 1000, AnSymbolTimelineFrame(
 						depth = depth,
 						uid = lastUid,
 						transform = lastMatrix,

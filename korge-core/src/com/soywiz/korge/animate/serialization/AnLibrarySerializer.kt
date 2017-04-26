@@ -213,8 +213,11 @@ object AnLibrarySerializer {
 						writeU_VL(strings[ss.nextState])
 
 						writeU_VL(ss.actions.size)
-						for ((time, actions) in ss.actions.entries) {
-							writeU_VL(time) // @TODO: Use time deltas and/or frame indices
+						var lastFrameTimeMs = 0
+						for ((timeInMicro, actions) in ss.actions.entries) {
+							val timeInMs = timeInMicro / 1000
+							writeU_VL(timeInMs - lastFrameTimeMs) // @TODO: Use time deltas and/or frame indices
+							lastFrameTimeMs = timeInMs
 							writeU_VL(actions.actions.size)
 							for (action in actions.actions) {
 								when (action) {
@@ -236,9 +239,13 @@ object AnLibrarySerializer {
 							var lastClipDepth = -1
 							var lastRatio = 0.0
 							writeU_VL(frames.size)
+							var lastFrameTime = 0
 							for ((frameTime, frame) in frames) {
+								val storeFrameTime = frameTime / 1000
 								totalFrameCount++
-								writeU_VL(frameTime) // @TODO: Use time deltas and/or frame indices
+								//println(frameTime)
+								writeU_VL(storeFrameTime - lastFrameTime) // @TODO: Use time deltas and/or frame indices
+								lastFrameTime= storeFrameTime
 
 								val ct = frame.colorTransform
 								val m = frame.transform

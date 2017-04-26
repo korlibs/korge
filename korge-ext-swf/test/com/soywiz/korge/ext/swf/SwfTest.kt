@@ -1,9 +1,6 @@
 package com.soywiz.korge.ext.swf
 
-import com.soywiz.korge.animate.AnLibrary
-import com.soywiz.korge.animate.AnMovieClip
-import com.soywiz.korge.animate.AnSymbolMovieClip
-import com.soywiz.korge.animate.AnSymbolShape
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
@@ -92,7 +89,7 @@ class SwfTest {
 		Assert.assertEquals(0, progressbarState.startTime)
 		//Assert.assertEquals("default", progressbarState.state.name)
 		//Assert.assertEquals(41000, progressbarState.state.loopStartTime)
-		Assert.assertEquals(41000, progressbarState.subTimeline.totalTime)
+		Assert.assertEquals(83000, progressbarState.subTimeline.totalTime)
 
 		println(lib)
 	}
@@ -127,18 +124,28 @@ class SwfTest {
 		//val lib = ResourcesVfs["shapes.swf"].readSWF(views, debug = false)
 		val mt = lib.createMainTimeLine()
 		views.stage += mt
-		val shape = mt["shape"]
+		val shape = mt["shape"] as AnMovieClip
 		Assert.assertNotNull(shape)
 
-		Assert.assertNotNull(shape["circle"])
-		Assert.assertNull(shape["square"])
+		val allItems = listOf("f12", "f23", "f34", "square", "circle")
 
-		(shape as AnMovieClip).play("square")
-		//(shape as AnMovieClip).seekStill("square")
-		//shape.update(10)
+		fun assertExists(vararg exists: String) {
+			val exists2 = exists.toList()
+			val notExists = allItems - exists2
 
-		Assert.assertNull(shape["circle"])
-		Assert.assertNotNull(shape["square"])
+			val availableNames = (shape as Container).children.map { it.name }.filterNotNull()
+
+			for (v in exists) Assert.assertNotNull("Missing elements: $exists2 in $availableNames", shape[v])
+			for (v in notExists) Assert.assertNull("Elements that should not exists: $notExists in $availableNames", shape[v])
+		}
+
+		assertExists("f12")
+		shape.play("circle")
+		assertExists("f12", "f23", "circle")
+		shape.play("square")
+		assertExists("f23", "f34", "square")
+		shape.play("empty2")
+		assertExists("f34")
 	}
 
 	@Test

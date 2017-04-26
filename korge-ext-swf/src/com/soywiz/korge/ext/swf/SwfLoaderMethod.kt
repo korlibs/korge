@@ -9,6 +9,7 @@ import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
 import com.codeazur.as3swf.tags.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.toNativeSound
+import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -71,7 +72,8 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			//println("## Symbol: ${symbol.name} : $symbol : ${swfTimeline.frames.size})")
 
 			data class Subtimeline(val index: Int, var totalFrames: Int = 0, var nextState: String? = null, var nextStatePlay: Boolean = true) {
-				val totalTime get() = getFrameTime(totalFrames - 1)
+				//val totalTime get() = getFrameTime(totalFrames - 1)
+				val totalTime get() = getFrameTime(totalFrames)
 			}
 
 			data class FrameInfo(val subtimeline: Subtimeline, val frameInSubTimeline: Int, val stateName: String, val startSubtimeline: Boolean, val startNamedState: Boolean) {
@@ -161,11 +163,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			val totalDepths = symbol.limits.totalDepths
 			var currentSubTimeline = AnSymbolMovieClipSubTimeline(totalDepths)
 
-			//println("-------------")
-			//for (frameInfo in frameInfos) println(frameInfo)
-
 			val lastDepths = kotlin.arrayOfNulls<AnSymbolTimelineFrame?>(totalDepths)
 
+			//println("-------------")
 			for (frame in swfTimeline.frames) {
 				val info = frameInfos[frame.index0]
 				val currentTime = info.timeInSubTimeline
@@ -174,6 +174,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				// Subtimelines
 				if (info.startSubtimeline) {
 					currentSubTimeline = AnSymbolMovieClipSubTimeline(totalDepths)
+					Arrays.fill(lastDepths, null)
 					val subtimeline = info.subtimeline
 					currentSubTimeline.totalTime = subtimeline.totalTime
 					currentSubTimeline.nextState = subtimeline.nextState
@@ -184,6 +185,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					//println("currentSubTimeline.totalTime = info.subtimeline.totalTime <- ${info.subtimeline.totalTime}")
 					if (frame.isFirst) {
 						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0)
+						symbol.states["frame0"] = AnSymbolMovieClipState("frame0", currentSubTimeline, 0)
 					}
 				}
 				// States
@@ -192,10 +194,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 
 				// Compute frame
-				for (n in 0 until frame.depths.size) {
+				//println("$info: $frame")
+				for (depth in frame.depths) {
+					val n = depth.depth
 					val lastDepth = lastDepths[n]
-					val depth = frame.depths[n]
 					if (depth != lastDepth) {
+						//println(" - [$n]: $depth")
 						currentSubTimeline.timelines[depth.depth].add(info.timeInSubTimeline, depth)
 						lastDepths[n] = depth
 					}
@@ -364,16 +368,17 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 		val labelsToFrame0 = mc.labelsToFrame0
 		val uniqueIds = hashMapOf<Pair<Int, Int>, Int>()
 
-		class DepthInfo(val depth: Int) {
-			var uid: Int = -1
-			var charId: Int = -1
-			var clipDepth: Int = -1
-			var name: String? = null
-			var colorTransform: ColorTransform = ColorTransform.identity
-			var ratio: Double = 0.0
-			var matrix: Matrix2d = Matrix2d()
+		data class DepthInfo(
+			val depth: Int,
+			var uid: Int = -1,
+			var charId: Int = -1,
+			var clipDepth: Int = -1,
+			var name: String? = null,
+			var colorTransform: ColorTransform = ColorTransform.identity,
+			var ratio: Double = 0.0,
+			var matrix: Matrix2d = Matrix2d(),
 			var blendMode: BlendMode = BlendMode.INHERIT
-
+		) {
 			fun reset() {
 				uid = -1
 				ratio = 0.0
@@ -383,6 +388,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				name = null
 				matrix = Matrix2d()
 				blendMode = BlendMode.INHERIT
+			}
+
+			//var frameElement = AnSymbolTimelineFrame(); private set
+
+			fun createFrameElement() {
+				//frameElement = toFrameElement()
 			}
 
 			fun toFrameElement() = AnSymbolTimelineFrame(
@@ -466,7 +477,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				is TagDefineSound -> {
 					val soundBytes = it.soundData.cloneToNewByteArray()
 					val audioData = try {
-						AudioFormats.decode(soundBytes.openAsync())?.toNativeSound()
+						nativeSoundProvider.createSound(soundBytes)
 					} catch (e: Throwable) {
 						e.printStackTrace()
 						null
@@ -640,15 +651,19 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 
 					depth.uid = uid
 					depthsChanged[depthId] = true
+					//depth.createFrameElement()
 				}
 				is TagRemoveObject -> {
 					depths[it.depth0].reset()
 					depthsChanged[it.depth0] = true
+					//depths[it.depth0].createFrameElement()
 				}
 				is TagShowFrame -> {
 					totalShowFrame++
 					for (depth in depths) {
-						if (depthsChanged[depth.depth]) swfCurrentFrame.depths += depth.toFrameElement()
+						//if (depthsChanged[depth.depth]) swfCurrentFrame.depths += depth.toFrameElement()
+						//swfCurrentFrame.depths += depth.frameElement
+						swfCurrentFrame.depths += depth.toFrameElement()
 					}
 					depthsChanged.clear()
 					currentFrame++

@@ -3,13 +3,11 @@ package com.soywiz.korge.view
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.clamp
 import com.soywiz.korio.util.isSubtypeOf
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
@@ -17,25 +15,17 @@ import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
 open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+	companion object {
+		private val tempTransform = Matrix2d.Transform()
+	}
+
 	open var ratio: Double = 0.0
-	var index: Int = 0
+	var index: Int = 0; internal set
 	var speed: Double = 1.0
-	var parent: Container? = null
+	var parent: Container? = null; internal set
 	var name: String? = null
 	val id = views.lastId++
 	var blendMode: BlendMode = BlendMode.INHERIT
-	private val _colorTransform = ColorTransform()
-	private var _globalColorTransform = ColorTransform()
-
-
-	var colorMul: Int get() = _colorTransform.colorMul; set(v) = run { _colorTransform.colorMul = v; invalidateColorTransform() }
-	var colorAdd: Int get() = _colorTransform.colorAdd; set(v) = run { _colorTransform.colorAdd = v;invalidateColorTransform() }
-	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v;invalidateColorTransform() }
-	var colorTransform: ColorTransform get() = _colorTransform; set(v) = run { _colorTransform.copyFrom(v); invalidateColorTransform() }
-
-	private fun invalidateColorTransform() {
-		//invalidate()
-	}
 
 	private var _scaleX: Double = 1.0
 	private var _scaleY: Double = 1.0
@@ -43,6 +33,34 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _skewY: Double = 0.0
 	private var _rotation: Double = 0.0
 
+	val pos = Point2d()
+	var x: Double; set(v) = run { if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
+	var y: Double; set(v) = run { if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = ensureTransform().pos.y
+	var scaleX: Double; set(v) = run { if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = ensureTransform()._scaleX
+	var scaleY: Double; set(v) = run { if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = ensureTransform()._scaleY
+	var skewX: Double; set(v) = run { if (_skewX != v) run { _skewX = v; invalidateMatrix() } }; get() = ensureTransform()._skewX
+	var skewY: Double; set(v) = run { if (_skewY != v) run { _skewY = v; invalidateMatrix() } }; get() = ensureTransform()._skewY
+	var rotation: Double; set(v) = run { if (_rotation != v) run { _rotation = v; invalidateMatrix() } }; get() = ensureTransform()._rotation
+	var rotationDegrees: Double; set(v) = run { rotation = Math.toRadians(v) }; get() = Math.toDegrees(rotation)
+
+	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
+
+	var globalX: Double get() = parent?.localToGlobalX(x, y) ?: x; set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
+	var globalY: Double get() = parent?.localToGlobalY(x, y) ?: y; set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
+
+	private val _colorTransform = ColorTransform()
+	private var _globalColorTransform = ColorTransform()
+
+	var colorMul: Int get() = _colorTransform.colorMul; set(v) = run { _colorTransform.colorMul = v; invalidateColorTransform() }
+	var colorAdd: Int get() = _colorTransform.colorAdd; set(v) = run { _colorTransform.colorAdd = v; invalidateColorTransform() }
+	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v;invalidateColorTransform() }
+	var colorTransform: ColorTransform get() = _colorTransform; set(v) = run { _colorTransform.copyFrom(v); invalidateColorTransform() }
+
+	private fun invalidateColorTransform() {
+		//invalidate()
+	}
+
+	// Properties
 	private val _props = linkedMapOf<String, String>()
 	val props: Map<String, String> = _props
 
@@ -63,31 +81,19 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		for (pair in values) addProp(pair.key, pair.value)
 	}
 
-	val pos = Point2d()
-	var x: Double; set(v) = run { if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = pos.x
-	var y: Double; set(v) = run { if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = pos.y
-	var scaleX: Double; set(v) = run { if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = _scaleX
-	var scaleY: Double; set(v) = run { if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = _scaleY
-	var skewX: Double; set(v) = run { if (_skewX != v) run { _skewX = v; invalidateMatrix() } }; get() = _skewX
-	var skewY: Double; set(v) = run { if (_skewY != v) run { _skewY = v; invalidateMatrix() } }; get() = _skewY
-	var rotation: Double; set(v) = run { if (_rotation != v) run { _rotation = v; invalidateMatrix() } }; get() = _rotation
-	var rotationDegrees: Double; set(v) = run { rotation = Math.toRadians(v) }; get() = Math.toDegrees(rotation)
-
-	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
-
-	var globalX: Double get() {
-		return parent?.localToGlobalX(x, y) ?: x
-	}
-		set(value) {
-			x = parent?.globalToLocalX(value, globalY) ?: value
+	private fun ensureTransform() = this.apply {
+		if (!validLocalProps) {
+			validLocalProps = true
+			val t = tempTransform.setMatrix(this._localMatrix)
+			this.pos.x = t.x
+			this.pos.y = t.y
+			this._scaleX = t.scaleX
+			this._scaleY = t.scaleY
+			this._skewX = t.skewX
+			this._skewY = t.skewY
+			this._rotation = t.rotation
 		}
-
-	var globalY: Double get() {
-		return parent?.localToGlobalY(x, y) ?: y
 	}
-		set(value) {
-			y = parent?.globalToLocalY(globalX, value) ?: value
-		}
 
 	@Suppress("NOTHING_TO_INLINE")
 	inline fun setXY(x: Number, y: Number) {
@@ -101,32 +107,14 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var enabled: Boolean = true
 	var visible: Boolean = true
 
-	private fun computePropertiesFromMatrix() {
-		val t = tempTransform
-		t.setMatrix(this._localMatrix)
-		this.pos.x = t.x
-		this.pos.y = t.y
-		this._scaleX = t.scaleX
-		this._scaleY = t.scaleY
-		this._skewX = t.skewX
-		this._skewY = t.skewY
-		this._rotation = t.rotation
-		validLocal = true
-		invalidate()
-	}
-
 	fun setMatrix(matrix: Matrix2d) {
 		this._localMatrix.copyFrom(matrix)
-		computePropertiesFromMatrix()
-	}
-
-	companion object {
-		private val tempTransform = Matrix2d.Transform()
+		this.validLocalProps = false
 	}
 
 	fun setMatrixInterpolated(ratio: Double, l: Matrix2d, r: Matrix2d) {
 		this._localMatrix.setToInterpolated(ratio, l, r)
-		computePropertiesFromMatrix()
+		this.validLocalProps = false
 	}
 
 	fun setComputedTransform(transform: Matrix2d.Computed) {
@@ -137,7 +125,8 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		_scaleX = t.scaleX; _scaleY = t.scaleY
 		_skewX = t.skewY; _skewY = t.skewY
 		_rotation = t.rotation
-		validLocal = true
+		validLocalProps = true
+		validLocalMatrix = true
 		invalidate()
 	}
 
@@ -147,7 +136,8 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _globalMatrixInvVersion = 0
 	private var _globalMatrixInv = Matrix2d()
 
-	internal var validLocal = false
+	internal var validLocalProps = true
+	internal var validLocalMatrix = true
 	internal var validGlobal = false
 
 	private var components: ArrayList<Component>? = null
@@ -163,17 +153,9 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	inline fun <reified T : Component> getOrCreateComponent(noinline gen: (View) -> T): T = getOrCreateComponent(T::class.java, gen)
 
-	fun removeComponent(c: Component) {
-		components?.remove(c)
-	}
-
-	fun removeComponents(c: Class<out Component>) {
-		components?.removeAll { it.javaClass.isSubtypeOf(c) }
-	}
-
-	fun removeAllComponents() {
-		components?.clear()
-	}
+	fun removeComponent(c: Component): Unit = run { components?.remove(c) }
+	fun removeComponents(c: Class<out Component>) = run { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
+	fun removeAllComponents() = run { components?.clear() }
 
 	fun addComponent(c: Component) {
 		if (components == null) components = arrayListOf()
@@ -183,9 +165,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
 		val c = object : Component(this), Cancellable {
-			override fun update(dtMs: Int) {
-				updatable(dtMs)
-			}
+			override fun update(dtMs: Int) = run { updatable(dtMs) }
 
 			override fun cancel(e: Throwable) = removeComponent(this)
 		}
@@ -204,14 +184,14 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	}
 
 	var localMatrix: Matrix2d get() {
-		if (validLocal) return _localMatrix
-		validLocal = true
+		if (validLocalMatrix) return _localMatrix
+		validLocalMatrix = true
 		_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
 		return _localMatrix
 	}
-	set(value) {
-		setMatrix(value)
-	}
+		set(value) {
+			setMatrix(value)
+		}
 
 	private fun _ensureGlobal() = this.apply {
 		if (validGlobal) return@apply
@@ -227,13 +207,13 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	}
 
 	var globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
-	set(value) {
-		if (parent != null) {
-			this.localMatrix.multiply(value, parent!!.globalMatrixInv)
-		} else {
-			this.localMatrix.copyFrom(value)
+		set(value) {
+			if (parent != null) {
+				this.localMatrix.multiply(value, parent!!.globalMatrixInv)
+			} else {
+				this.localMatrix.copyFrom(value)
+			}
 		}
-	}
 
 	val globalColorTransform: ColorTransform get() = run { _ensureGlobal(); _globalColorTransform }
 	val globalColorMul: Int get() = globalColorTransform.colorMul
@@ -253,7 +233,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	}
 
 	fun invalidateMatrix() {
-		validLocal = false
+		validLocalMatrix = false
 		invalidate()
 	}
 
@@ -327,7 +307,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		_scaleX = 1.0; _scaleY = 1.0
 		_skewX = 0.0; _skewY = 0.0
 		_rotation = 0.0
-		validLocal = false
+		validLocalMatrix = false
 		validGlobal = false
 		invalidate()
 	}

@@ -8,6 +8,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.async.sleep
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.VfsFile
 
@@ -24,7 +25,8 @@ class SwfTestDisabled {
 			//val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.X4)
 			val ani = this.readSWF(views, config)
 			val aniFile = this.withExtension("ani")
-			ani.writeTo(aniFile, ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.0))
+			ani.writeTo(aniFile, ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.3))
+			//ani.writeTo(aniFile, ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.0))
 			println("ANI size:" + aniFile.size())
 			return aniFile.readAni(views)
 		}
@@ -32,7 +34,7 @@ class SwfTestDisabled {
 
 	class MyScene : Scene() {
 		suspend override fun sceneInit(sceneView: Container) {
-			//sleep(12000)
+			//sleep(6000)
 			//val ani = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true).createMainTimeLine().apply { play("frame172") }
 			//val ani = LocalVfs("c:/temp/test3.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test27.swf").readSWFDeserializing(views).createMainTimeLine()
@@ -48,7 +50,8 @@ class SwfTestDisabled {
 
 			//sceneView += LocalVfs("c:/temp/test24.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
-			sceneView += LocalVfs("c:/temp/test23.swf").readSWFDeserializing(views).createMainTimeLine().apply { println(this.stateNames) }
+			//sceneView += LocalVfs("c:/temp/test23.swf").readSWFDeserializing(views).createMainTimeLine().apply { println(this.stateNames) }
+			sceneView += LocalVfs("c:/temp/test23.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
