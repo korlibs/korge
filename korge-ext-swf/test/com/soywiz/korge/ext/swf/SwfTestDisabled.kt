@@ -37,7 +37,13 @@ class SwfTestDisabled {
 			//sleep(6000)
 			//val ani = LocalVfs("c:/temp/test2.swf").readSWF(views, mipmaps = true).createMainTimeLine().apply { play("frame172") }
 			//val ani = LocalVfs("c:/temp/test3.swf").readSWF(views, mipmaps = true).createMainTimeLine()
-			//val ani = LocalVfs("c:/temp/test27.swf").readSWFDeserializing(views).createMainTimeLine()
+			//sceneView += LocalVfs("c:/temp/test27.swf").readSWF(views).createMainTimeLine()
+			//sceneView += LocalVfs("c:/temp/test6.swf").readSWF(views).createMainTimeLine()
+			//sceneView += LocalVfs("c:/temp/tt6.swf").readSWF(views).createMainTimeLine()
+			sceneView += LocalVfs("c:/temp/tt7.swf").readSWF(views).createMainTimeLine().apply {
+				println("$currentState: $stateNames")
+				play("outofdate")
+			}
 			//val ani = LocalVfs("c:/temp/tt1.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt2.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt3.swf").readSWFDeserializing(views).createMainTimeLine()
@@ -51,7 +57,8 @@ class SwfTestDisabled {
 			//sceneView += LocalVfs("c:/temp/test24.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
 			//sceneView += LocalVfs("c:/temp/test23.swf").readSWFDeserializing(views).createMainTimeLine().apply { println(this.stateNames) }
-			sceneView += LocalVfs("c:/temp/test23.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
+			//sceneView += LocalVfs("c:/temp/test23.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
+			//sceneView += LocalVfs("c:/temp/test2.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 

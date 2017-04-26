@@ -169,6 +169,11 @@ class SwfTest {
 		Assert.assertEquals(listOf("box"), cmt.allDescendantNames)
 		for (n in 0 until 10) cmt.update(10)
 		Assert.assertEquals(listOf("circle"), cmt.allDescendantNames)
+		cmt["circle"]?.x = 900.0
+		Assert.assertEquals(900.0, cmt["circle"]?.x)
+		cmt.update(10)
+		cmt.update(40)
+		Assert.assertEquals(900.0, cmt["circle"]?.x)
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
 	}

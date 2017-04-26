@@ -34,17 +34,16 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _rotation: Double = 0.0
 
 	val pos = Point2d()
-	var x: Double; set(v) = run { if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
-	var y: Double; set(v) = run { if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = ensureTransform().pos.y
-	var scaleX: Double; set(v) = run { if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = ensureTransform()._scaleX
-	var scaleY: Double; set(v) = run { if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = ensureTransform()._scaleY
-	var skewX: Double; set(v) = run { if (_skewX != v) run { _skewX = v; invalidateMatrix() } }; get() = ensureTransform()._skewX
-	var skewY: Double; set(v) = run { if (_skewY != v) run { _skewY = v; invalidateMatrix() } }; get() = ensureTransform()._skewY
-	var rotation: Double; set(v) = run { if (_rotation != v) run { _rotation = v; invalidateMatrix() } }; get() = ensureTransform()._rotation
+	var x: Double; set(v) = run { ensureTransform();  if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
+	var y: Double; set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = ensureTransform().pos.y
+	var scaleX: Double; set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = ensureTransform()._scaleX
+	var scaleY: Double; set(v) = run { ensureTransform(); if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = ensureTransform()._scaleY
+	var skewX: Double; set(v) = run { ensureTransform(); if (_skewX != v) run { _skewX = v; invalidateMatrix() } }; get() = ensureTransform()._skewX
+	var skewY: Double; set(v) = run { ensureTransform(); if (_skewY != v) run { _skewY = v; invalidateMatrix() } }; get() = ensureTransform()._skewY
+	var rotation: Double; set(v) = run { ensureTransform(); if (_rotation != v) run { _rotation = v; invalidateMatrix() } }; get() = ensureTransform()._rotation
+
 	var rotationDegrees: Double; set(v) = run { rotation = Math.toRadians(v) }; get() = Math.toDegrees(rotation)
-
 	var scale: Double; get() = (scaleX + scaleY) / 2.0; set(v) = run { scaleX = v; scaleY = v }
-
 	var globalX: Double get() = parent?.localToGlobalX(x, y) ?: x; set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
 	var globalY: Double get() = parent?.localToGlobalY(x, y) ?: y; set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
 

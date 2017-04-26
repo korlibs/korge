@@ -477,6 +477,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				is TagDefineSound -> {
 					val soundBytes = it.soundData.cloneToNewByteArray()
 					val audioData = try {
+
 						nativeSoundProvider.createSound(soundBytes)
 					} catch (e: Throwable) {
 						e.printStackTrace()
