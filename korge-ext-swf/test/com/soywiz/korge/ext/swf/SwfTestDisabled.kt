@@ -2,19 +2,13 @@ package com.soywiz.korge.ext.swf
 
 import com.soywiz.korge.Korge
 import com.soywiz.korge.animate.AnLibrary
-import com.soywiz.korge.animate.AnMovieClip
-import com.soywiz.korge.animate.serialization.AnLibrarySerializer
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korio.async.go
-import com.soywiz.korio.async.sleep
 import com.soywiz.korio.vfs.LocalVfs
-import com.soywiz.korio.vfs.MemoryVfs
 import com.soywiz.korio.vfs.VfsFile
 
 class SwfTestDisabled {
@@ -30,9 +24,9 @@ class SwfTestDisabled {
 			//val ani = this.readSWF(views, debug = debug, mipmaps = false, rasterizerMethod = com.soywiz.korim.vector.Context2d.ShapeRasterizerMethod.X4)
 			val ani = this.readSWF(views, config)
 			val aniFile = this.withExtension("ani")
-			ani.writeTo(aniFile, compression = 0.0)
+			ani.writeTo(aniFile, ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.0))
 			println("ANI size:" + aniFile.size())
-			return aniFile.readAni(views, mipmaps = true)
+			return aniFile.readAni(views)
 		}
 	}
 

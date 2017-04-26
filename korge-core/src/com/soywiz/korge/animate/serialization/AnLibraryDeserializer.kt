@@ -1,7 +1,7 @@
 package com.soywiz.korge.animate.serialization
 
-import com.soywiz.korau.format.AudioData
-import com.soywiz.korau.format.readAudioData
+import com.soywiz.korau.sound.NativeSound
+import com.soywiz.korau.sound.readNativeSoundOptimized
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -27,14 +27,14 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath
 
-suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false, content: FastByteArrayInputStream? = null): AnLibrary {
+suspend fun VfsFile.readAni(views: Views, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()), views, mipmaps, externalReaders = AnLibraryDeserializer.ExternalReaders(
+	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()), views, externalReaders = AnLibraryDeserializer.ExternalReaders(
 		atlasReader = { index ->
 			file.withExtension("ani.$index.png").readBitmapOptimized()
 		},
 		readSound = { index ->
-			file.withExtension("ani.$index.mp3").readAudioData()
+			file.withExtension("ani.$index.mp3").readNativeSoundOptimized()
 		}
 	))
 }
@@ -42,19 +42,22 @@ suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false, content: Fas
 object AnLibraryDeserializer {
 	class ExternalReaders(
 		val atlasReader: suspend (index: Int) -> Bitmap,
-		val readSound: suspend (index: Int) -> AudioData
+		val readSound: suspend (index: Int) -> NativeSound
 	)
 
-	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s).readLibrary(views, mipmaps, externalReaders)
-	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s.readAll()).readLibrary(views, mipmaps, externalReaders)
-	suspend fun read(s: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = s.readLibrary(views, mipmaps, externalReaders)
+	suspend fun read(s: ByteArray, views: Views, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s).readLibrary(views, externalReaders)
+	suspend fun read(s: SyncStream, views: Views, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s.readAll()).readLibrary(views, externalReaders)
+	suspend fun read(s: FastByteArrayInputStream, views: Views, externalReaders: ExternalReaders): AnLibrary = s.readLibrary(views, externalReaders)
 
-	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, mipmaps: Boolean, externalReaders: ExternalReaders): AnLibrary {
+	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, externalReaders: ExternalReaders): AnLibrary {
 		val magic = readStringz(8)
 		//AnLibrary(views)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
 		if (readU_VL() != AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION}")
 		val msPerFrame = readU_VL()
+		val fileFlags = readU_VL()
+		val mipmaps = fileFlags.extract(0)
+
 		val library = AnLibrary(views, 1000.0 / msPerFrame)
 
 		val strings = arrayOf<String?>(null) + (1 until readU_VL()).map { readStringVL() }
@@ -83,7 +86,7 @@ object AnLibraryDeserializer {
 		return library
 	}
 
-	private fun FastByteArrayInputStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>, sounds: List<AudioData>): AnSymbol {
+	private fun FastByteArrayInputStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>, sounds: List<NativeSound>): AnSymbol {
 		val symbolId = readU_VL()
 		val symbolName = strings[readU_VL()]
 		val type = readU_VL()

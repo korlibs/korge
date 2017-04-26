@@ -8,7 +8,10 @@ import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.vfs.*
+import com.soywiz.korio.vfs.LocalVfs
+import com.soywiz.korio.vfs.MemoryVfs
+import com.soywiz.korio.vfs.ResourcesVfs
+import com.soywiz.korio.vfs.VfsFile
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -22,7 +25,7 @@ class SwfTest {
 		val mem = MemoryVfs()
 
 		val ani = if (config != null) this.readSWF(views, config) else this.readSWF(views)
-		ani.writeTo(mem["file.ani"], compression = 0.0)
+		ani.writeTo(mem["file.ani"], ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.0))
 		println("ANI size:" + mem["file.ani"].size())
 		return mem["file.ani"].readAni(views)
 	}

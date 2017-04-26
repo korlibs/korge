@@ -15,11 +15,11 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Rectangle
 
-suspend fun AnLibrary.writeTo(file: VfsFile, keepPaths: Boolean = false, compression: Double = 1.0) {
+suspend fun AnLibrary.writeTo(file: VfsFile, config: AnLibrarySerializer.Config = AnLibrarySerializer.Config()) {
 	//println("writeTo")
 	val format = PNG()
-	val props = ImageEncodingProps(compression)
-	file.write(AnLibrarySerializer.gen(this, compression = compression, keepPaths = keepPaths, externalWriters = AnLibrarySerializer.ExternalWriters(
+	val props = ImageEncodingProps(config.compression)
+	file.write(AnLibrarySerializer.gen(this, config = config, externalWriters = AnLibrarySerializer.ExternalWriters(
 		writeAtlas = { index, atlas ->
 			//showImageAndWait(atlas)
 			file.withExtension("ani.$index.png").writeBitmap(atlas, format, props)
@@ -36,9 +36,14 @@ object AnLibrarySerializer {
 		val writeSound: suspend (index: Int, soundData: ByteArray) -> Unit
 	)
 
-	suspend fun gen(library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, keepPaths, externalWriters) }
+	class Config(
+		val compression: Double = 1.0,
+		val keepPaths: Boolean = false,
+		val mipmaps: Boolean = true
+	)
 
-	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters) = s.writeLibrary(library, compression, keepPaths, externalWriters)
+	suspend fun gen(library: AnLibrary, config: Config = Config(), externalWriters: ExternalWriters): ByteArray = MemorySyncStreamToByteArray { write(this, library, config, externalWriters) }
+	suspend fun write(s: SyncStream, library: AnLibrary, config: Config = Config(), externalWriters: ExternalWriters) = s.writeLibrary(library, config, externalWriters)
 
 	private fun SyncStream.writeRect(r: Rectangle) {
 		writeS_VL((r.x * 20).toInt())
@@ -54,11 +59,13 @@ object AnLibrarySerializer {
 		writeS_VL(r.height)
 	}
 
-	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters) {
+	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, config: Config, externalWriters: ExternalWriters) {
 		writeStringz(AnLibraryFile.MAGIC, 8)
 		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
-
+		writeU_VL(0
+			.insert(config.mipmaps, 0)
+		)
 		// Allocate Strings
 		val strings = OptimizedStringAllocator()
 		for (symbol in lib.symbolsById) {
@@ -139,7 +146,7 @@ object AnLibrarySerializer {
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
 					val path = symbol.path
-					if (keepPaths && path != null) {
+					if (config.keepPaths && path != null) {
 						writeU_VL(1)
 						writeU_VL(path.commands.size)
 						for (cmd in path.commands) write8(cmd)

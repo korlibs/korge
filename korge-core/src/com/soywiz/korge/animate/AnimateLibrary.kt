@@ -1,10 +1,9 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.korau.format.AudioData
+import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korge.animate.serialization.AnLibraryFile
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.render.TextureWithBitmapSlice
-import com.soywiz.korge.resources.Mipmaps
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.tween.interpolate
@@ -33,7 +32,7 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(-1, "")
 
-class AnSymbolSound(id: Int, name: String?, val data: AudioData?, val dataBytes: ByteArray?) : AnSymbol(id, name)
+class AnSymbolSound(id: Int, name: String?, val data: NativeSound?, val dataBytes: ByteArray?) : AnSymbol(id, name)
 
 class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bounds: Rectangle) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)
@@ -245,9 +244,8 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 val Views.animateLibraryLoaders by Extra.Property {
 	arrayListOf<KorgeFileLoaderTester<AnLibrary>>(
 		KorgeFileLoaderTester("core/ani") { s, injector ->
-			val mipmaps = injector.getOrNull(Mipmaps::class.java)?.mipmaps ?: false
 			when {
-				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(views, mipmaps, content = content) }
+				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(views, content = content) }
 				else -> null
 			}
 		}
@@ -255,7 +253,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 }
 
 @AsyncFactoryClass(AnLibrary.Factory::class)
-class AnLibrary(val views: Views, val fps: Double) {
+class AnLibrary(val views: Views, val fps: Double) : Extra by Extra.Mixin() {
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: Int = 0xFFFFFFFF.toInt()
