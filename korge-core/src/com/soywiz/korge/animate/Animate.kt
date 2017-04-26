@@ -174,11 +174,13 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 
 	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
 		val substate = symbol.states[name]
-		this.currentStateName = substate?.name
-		this.currentSubtimeline = substate?.subTimeline
-		this.currentTime = (substate?.startTime ?: 0) + time
-		this.running = running
-		update(0)
+		if (substate != null) {
+			this.currentStateName = substate.name
+			this.currentSubtimeline = substate.subTimeline
+			this.currentTime = substate.startTime + time
+			this.running = running
+			update(0)
+		}
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
 
@@ -257,6 +259,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val singleFrame = symbol.limits.totalFrames <= 1
 	val unsortedChildren = ArrayList(dummyDepths.toList())
 	val timelineRunner = TimelineRunner(this, symbol)
+
+	val currentState: String? get() = timelineRunner.currentStateName
 
 	init {
 		for (d in dummyDepths) this += d

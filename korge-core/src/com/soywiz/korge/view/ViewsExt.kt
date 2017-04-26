@@ -39,6 +39,15 @@ operator fun View?.get(name: String): View? = findFirstDescendant { it.name == n
 fun View?.descendant(name: String): View? =  findFirstDescendant { it.name == name }
 fun View?.findFirstWithName(name: String): View? =  findFirstDescendant { it.name == name }
 
+val View?.allDescendantNames get(): List<String> {
+	val out = arrayListOf<String>()
+	findAllDescendant {
+		if (it.name != null) out += it.name!!
+		true
+	}
+	return out
+}
+
 fun View?.findFirstDescendant(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this

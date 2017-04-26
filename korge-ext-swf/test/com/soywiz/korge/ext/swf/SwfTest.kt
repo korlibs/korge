@@ -163,6 +163,17 @@ class SwfTest {
 	}
 
 	@Test
+	fun stopattheend() = syncTest {
+		val lib = ResourcesVfs["stop_at_the_end.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val cmt = lib.createMainTimeLine()
+		Assert.assertEquals(listOf("box"), cmt.allDescendantNames)
+		for (n in 0 until 10) cmt.update(10)
+		Assert.assertEquals(listOf("circle"), cmt.allDescendantNames)
+		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
+	}
+
+	@Test
 	@Ignore
 	fun bigexternal1() = syncTest {
 		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))

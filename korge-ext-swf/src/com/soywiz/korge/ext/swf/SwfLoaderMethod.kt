@@ -138,11 +138,6 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				val info = frameInfos[frame.index0]
 				val isLast = frame.index0 == swfTimeline.frames.last().index0
 
-				if (isLast) {
-					info.subtimeline.nextState = "default"
-					info.subtimeline.nextStatePlay = true
-				}
-
 				if (frame.hasFlow) {
 					for (action in frame.actions) {
 						when (action) {
@@ -156,6 +151,11 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 								info.subtimeline.nextStatePlay = true
 							}
 						}
+					}
+				} else {
+					if (isLast) {
+						info.subtimeline.nextState = "default"
+						info.subtimeline.nextStatePlay = true
 					}
 				}
 			}
