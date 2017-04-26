@@ -37,7 +37,9 @@ open class Timed<T>(initialCapacity: Int = 7) {
 		return if (res < 0) (-res - 1).clamp(0, times.size - 1) else res
 	}
 
-	inline fun getRangeIndices(startTime: Int, endTime: Int, handler: (startIndex: Int, endIndex: Int) -> Unit): Unit {
+	data class RangeResult(var startIndex: Int = 0, var endIndex: Int = 0)
+
+	fun getRangeIndices(startTime: Int, endTime: Int, out: RangeResult = RangeResult()): RangeResult {
 		val startIndex = (findNearIndex(startTime) - 1).clamp(0, size - 1)
 		val endIndex = (findNearIndex(endTime) + 1).clamp(0, size - 1)
 		var min = Int.MAX_VALUE
@@ -50,7 +52,9 @@ open class Timed<T>(initialCapacity: Int = 7) {
 				max = Math.max(max, n)
 			}
 		}
-		handler(min, max)
+		out.startIndex = min
+		out.endIndex = max
+		return out
 	}
 
 	inline fun forEachInRange(startTime: Int, endTime: Int, maxCalls: Int = Int.MAX_VALUE, callback: (index: Int, time: Int, left: T) -> Unit) {
@@ -110,6 +114,16 @@ open class Timed<T>(initialCapacity: Int = 7) {
 		}
 	}
 
+	fun findWithoutInterpolation(time: Int, out: Result<T> = Result()): Result<T> {
+		return findAndHandleWithoutInterpolation(time) { index, left ->
+			out.index = index
+			out.left = left
+			out.right = null
+			out.ratio = 0.0
+			out
+		}
+	}
+
 	inline fun <TR> findAndHandleWithoutInterpolation(time: Int, callback: (index: Int, left: T?) -> TR): TR {
 		if (objects.isEmpty()) return callback(0, null)
 		val index = findNearIndex(time)
@@ -130,4 +144,6 @@ open class Timed<T>(initialCapacity: Int = 7) {
 			}
 		}
 	}
+
+	override fun toString(): String = "Timed($entries)"
 }

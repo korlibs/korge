@@ -22,13 +22,6 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
 import com.soywiz.korma.interpolation.interpolate
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.List
-import kotlin.collections.MutableMap
-import kotlin.collections.arrayListOf
-import kotlin.collections.getOrElse
-import kotlin.collections.hashMapOf
-import kotlin.collections.plusAssign
 import kotlin.collections.set
 
 open class AnSymbol(
@@ -225,30 +218,25 @@ class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: 
 
 class AnSymbolUidDef(val characterId: Int, val extraProps: MutableMap<String, String> = LinkedHashMap())
 
-class AnSymbolMovieClipState(totalDepths: Int) {
+class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	//var name: String = "default"
 	var totalTime: Int = 0
+
+	//val totalTimeSeconds: Double get() = totalTime / 1_000_000.0
+	//val totalTimeSeconds: Double get() = 100.0
+
 	val timelines: Array<AnDepthTimeline> = Array<AnDepthTimeline>(totalDepths) { AnDepthTimeline(it) }
 	val actions = Timed<AnActions>()
-	var loopStartTime: Int = 0
 
-	fun calcEffectiveTime(time: Int): Int = if (time > totalTime) {
-		val loopTime = (totalTime - loopStartTime)
-		if (loopTime > 0) {
-			loopStartTime + (time - totalTime) % loopTime
-		} else {
-			totalTime
-		}
-	} else {
-		time
-	}
+	var nextState: String? = null
+	var nextStatePlay: Boolean = false
 }
 
-class AnSymbolMovieClipStateWithStartTime(val name: String, val state: AnSymbolMovieClipState, val startTime: Int)
+class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieClipSubTimeline, val startTime: Int)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	var ninePatch: Rectangle? = null
-	val states = hashMapOf<String, AnSymbolMovieClipStateWithStartTime>()
+	val states = hashMapOf<String, AnSymbolMovieClipState>()
 	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, hashMapOf()) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)

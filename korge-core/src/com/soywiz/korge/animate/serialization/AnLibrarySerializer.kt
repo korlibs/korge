@@ -58,7 +58,8 @@ object AnLibrarySerializer {
 					for (ss in symbol.states) {
 						strings.add(ss.key)
 						//strings.add(ss.value.state.name)
-						for (timeline in ss.value.state.timelines) {
+						strings.add(ss.value.subTimeline.nextState)
+						for (timeline in ss.value.subTimeline.timelines) {
 							for (entry in timeline.entries) {
 								strings.add(entry.second.name)
 							}
@@ -180,7 +181,7 @@ object AnLibrarySerializer {
 						writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.encode(uidInfo.extraProps) else "")
 					}
 
-					val symbolStates = symbol.states.map { it.value.state }.toList().distinct()
+					val symbolStates = symbol.states.map { it.value.subTimeline }.toList().distinct()
 					val symbolStateToIndex = symbolStates.withIndex().map { it.value to it.index }.toMap()
 
 					if (hasNinePatchRect) {
@@ -192,7 +193,10 @@ object AnLibrarySerializer {
 					for (ss in symbolStates) {
 						//writeU_VL(strings[ss.name])
 						writeU_VL(ss.totalTime)
-						writeU_VL(ss.loopStartTime)
+						write8(0
+							.insert(ss.nextStatePlay, 0)
+						)
+						writeU_VL(strings[ss.nextState])
 						for (timeline in ss.timelines) {
 							totalTimelines++
 							val frames = timeline.entries
@@ -314,7 +318,7 @@ object AnLibrarySerializer {
 					// namedStates
 					writeU_VL(symbol.states.size)
 					for ((name, ssi) in symbol.states) {
-						val stateIndex = symbolStateToIndex[ssi.state] ?: 0
+						val stateIndex = symbolStateToIndex[ssi.subTimeline] ?: 0
 						writeU_VL(strings[name])
 						writeU_VL(ssi.startTime)
 						writeU_VL(stateIndex)

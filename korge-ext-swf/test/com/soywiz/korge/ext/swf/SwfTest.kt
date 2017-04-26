@@ -4,8 +4,6 @@ import com.soywiz.korge.animate.AnLibrary
 import com.soywiz.korge.animate.AnMovieClip
 import com.soywiz.korge.animate.AnSymbolMovieClip
 import com.soywiz.korge.animate.AnSymbolShape
-import com.soywiz.korge.animate.serialization.AnLibraryDeserializer
-import com.soywiz.korge.animate.serialization.AnLibrarySerializer
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
@@ -15,7 +13,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
-import java.io.File
 
 class SwfTest {
 	val viewsLog = ViewsLog()
@@ -91,8 +88,8 @@ class SwfTest {
 		val progressbarState = mc.states["progressbar"]!!
 		Assert.assertEquals(0, progressbarState.startTime)
 		//Assert.assertEquals("default", progressbarState.state.name)
-		Assert.assertEquals(41000, progressbarState.state.loopStartTime)
-		Assert.assertEquals(41000, progressbarState.state.totalTime)
+		//Assert.assertEquals(41000, progressbarState.state.loopStartTime)
+		Assert.assertEquals(41000, progressbarState.subTimeline.totalTime)
 
 		println(lib)
 	}

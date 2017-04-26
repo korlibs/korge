@@ -11,7 +11,6 @@ import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.redirect
 import com.soywiz.korma.Matrix2d
-import com.soywiz.korma.Vector2
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
@@ -155,32 +154,107 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 
 var RenderContext.stencilIndex by Extra.Property { 0 }
 
+
+class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
+	val library: AnLibrary = view.library
+	var running = true
+	var currentTime = 0
+	var currentStateName: String? = null
+	var currentSubtimeline: AnSymbolMovieClipSubTimeline? = null
+	val currentStateTotalTime: Int get() = currentSubtimeline?.totalTime ?: 0
+
+	init {
+		gotoAndPlay("default")
+	}
+
+	fun getStateTime(name: String): Int {
+		val substate = symbol.states[name] ?: return 0
+		return substate.subTimeline.totalTime - substate.startTime
+	}
+
+	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
+		val substate = symbol.states[name]
+		this.currentStateName = substate?.name
+		this.currentSubtimeline = substate?.subTimeline
+		this.currentTime = (substate?.startTime ?: 0) + time
+		this.running = running
+		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
+	}
+
+	fun gotoAndPlay(name: String, time: Int = 0) = gotoAndRunning(true, name, time)
+	fun gotoAndStop(name: String, time: Int = 0) = gotoAndRunning(false, name, time)
+
+	fun update(time: Int) {
+		//println("Update[1]: $currentTime")
+		if (!running) return
+		//println("Update[2]: $currentTime")
+		if (currentSubtimeline == null) return
+		//println("Update[3]: $currentTime")
+		val cs = currentSubtimeline!!
+		eval(currentTime, Math.min(currentStateTotalTime, currentTime + time))
+		currentTime += time
+		//println("Update[4]: $currentTime : delta=$time")
+		if (currentTime >= currentStateTotalTime) {
+			//println("currentTime >= currentStateTotalTime :: ${currentTime} >= ${currentStateTotalTime}")
+			val accumulatedTime = currentTime - currentStateTotalTime
+			val nextState = cs.nextState
+
+			if (nextState == null) {
+				running = false
+			} else {
+				//gotoAndRunning(cs.nextStatePlay, nextState, accumulatedTime)
+				gotoAndRunning(cs.nextStatePlay, nextState, 0)
+				eval(currentTime, currentTime + accumulatedTime)
+				currentTime += accumulatedTime
+			}
+
+		}
+	}
+
+	private val tempRangeResult = Timed.RangeResult()
+
+	private fun eval(prev: Int, current: Int) {
+		val actionsTimeline = this.currentSubtimeline?.actions ?: return
+		val result = actionsTimeline.getRangeIndices(prev, current - 1, out = tempRangeResult)
+
+		val startIndex = result.startIndex
+		val endIndex = result.endIndex
+
+		execution@ for (n in startIndex..endIndex) {
+			val actions = actionsTimeline.objects[n]
+			for (action in actions.actions) {
+				when (action) {
+					is AnPlaySoundAction -> {
+						spawn {
+							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.data
+							data?.play()
+						}
+						//println("play sound!")
+					}
+				}
+			}
+		}
+	}
+}
+
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement {
+	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
 	val totalDepths = symbol.limits.totalDepths
 	val totalUids = symbol.limits.totalUids
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
 	val maskPushDepths = IntArray(totalDepths) { -1 }
 	val maskPopDepths = BooleanArray(totalDepths) { false }
-	//val popMasks = Array<View>(totalDepths) { PopMaskView(views) } // @TODO: Just create what required
 	val viewUids = Array<View>(totalUids) {
 		val info = symbol.uidInfo[it]
 		val view = library.create(info.characterId) as View
 		view.addProps(info.extraProps)
 		view
 	}
-	var running = true
 	var firstUpdate = true
 	var smoothing = library.defaultSmoothing
-	var currentState: AnSymbolMovieClipStateWithStartTime? = symbol.states["default"]
-	private var currentTime = 0
 	val singleFrame = symbol.limits.totalFrames <= 1
-	val currentStateStartTime: Int get() = currentState?.startTime ?: 0
-	val currentStateLoopTime: Int get() = currentState?.state?.loopStartTime ?: 0
-	val currentStateTotalTime: Int get() = currentState?.state?.totalTime ?: 0
-	val currentStateTotalTimeMinusStart: Int get() = currentStateTotalTime - currentStateStartTime
 	val unsortedChildren = ArrayList(dummyDepths.toList())
-
-	fun currentStateCalcEffectiveTime(time: Int) = currentState?.state?.calcEffectiveTime(time) ?: time
+	val timelineRunner = TimelineRunner(this, symbol)
 
 	init {
 		for (d in dummyDepths) this += d
@@ -303,35 +377,31 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 	private fun update() {
 		for (depth in 0 until totalDepths) {
-			val timelines = currentState?.state?.timelines ?: continue
+			val timelines = timelineRunner.currentSubtimeline?.timelines ?: continue
 			val timeline = timelines[depth]
 			if (smoothing) {
-				timeline.findAndHandle(currentTime) { index, left, right, ratio ->
-					if (left != null) {
-						maskPushDepths[left.depth] = left.clipDepth
-					}
+				val (index, left, right, ratio) = timeline.find(timelineRunner.currentTime, out = tempTimedResult)
+				if (left != null) maskPushDepths[left.depth] = left.clipDepth
 
-					val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
-					replaceDepth(depth, view)
-					if ((left != null) && (right != null) && (left.uid == right.uid)) {
-						//println("$currentTime: $index")
-						AnSymbolTimelineFrame.setToViewInterpolated(view, left, right, ratio)
-					} else {
-						//println("$currentTime: $index")
-						left?.setToView(view)
-						//println(left.colorTransform)
-					}
-					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
-				}
-			} else {
-				timeline.findAndHandleWithoutInterpolation(currentTime) { index, left ->
-					if (left != null) maskPushDepths[left.depth] = left.clipDepth
-					val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+				val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
+				replaceDepth(depth, view)
+				if ((left != null) && (right != null) && (left.uid == right.uid)) {
 					//println("$currentTime: $index")
-					replaceDepth(depth, view)
+					AnSymbolTimelineFrame.setToViewInterpolated(view, left, right, ratio)
+				} else {
+					//println("$currentTime: $index")
 					left?.setToView(view)
-					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
+					//println(left.colorTransform)
 				}
+				if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
+			} else {
+				val (index, left) = timeline.findWithoutInterpolation(timelineRunner.currentTime, out = tempTimedResult)
+				if (left != null) maskPushDepths[left.depth] = left.clipDepth
+				val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+				//println("$currentTime: $index")
+				replaceDepth(depth, view)
+				left?.setToView(view)
+				if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
 			}
 		}
 	}
@@ -342,9 +412,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	 * Changes the state and plays it
 	 */
 	fun play(name: String) {
-		currentState = symbol.states[name]
-		currentTime = currentStateStartTime
-		running = true
+		timelineRunner.gotoAndPlay(name)
 		update()
 	}
 
@@ -352,40 +420,16 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	 * Changes the state, seeks a point in between the state and pauses it. Useful for interpolate between points, eg. progressBars.
 	 */
 	fun seekStill(name: String, ratio: Double = 0.0) {
-		currentState = symbol.states[name]
-		currentTime = currentStateStartTime + (currentStateTotalTimeMinusStart * ratio).toInt()
-		running = false
+		val totalTime = timelineRunner.getStateTime(name)
+		timelineRunner.gotoAndStop(name, (totalTime * ratio).toInt())
 		//println("seekStill($name,$ratio) : $currentTime,$running,$currentState")
 		update()
 	}
 
-	private fun eval(prev: Int, current: Int) {
-		val actionsTimeline = this.currentState?.state?.actions ?: return
-		var startIndex = 0
-		var endIndex = 0
-		actionsTimeline.getRangeIndices(prev, current - 1) { start, end -> startIndex = start; endIndex = end }
-		execution@ for (n in startIndex..endIndex) {
-			val actions = actionsTimeline.objects[n]
-			for (action in actions.actions) {
-				when (action) {
-					is AnPlaySoundAction -> {
-						spawn {
-							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.data
-							data?.play()
-						}
-						//println("play sound!")
-					}
-				}
-			}
-		}
-	}
-
 	override fun updateInternal(dtMs: Int) {
-		if (running && (firstUpdate || !singleFrame)) {
+		if (timelineRunner.running && (firstUpdate || !singleFrame)) {
 			firstUpdate = false
-			val previousTime = currentTime
-			currentTime = currentStateCalcEffectiveTime(currentTime + dtMs * 1000)
-			eval(Math.min(currentTime, previousTime), currentTime)
+			timelineRunner.update(dtMs * 1000)
 			update()
 		}
 
@@ -393,14 +437,6 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	}
 }
 
-fun View?.play(name: String) {
-	(this as? AnMovieClip?)?.play(name)
-}
-
-val View?.playingName: String get() {
-	return (this as? AnMovieClip?)?.currentState?.name ?: ""
-}
-
-fun View?.seekStill(name: String, ratio: Double = 0.0) {
-	(this as? AnMovieClip?)?.seekStill(name, ratio)
-}
+fun View?.play(name: String) = run { (this as? AnMovieClip?)?.play(name) }
+val View?.playingName: String? get() = (this as? AnMovieClip?)?.timelineRunner?.currentStateName
+fun View?.seekStill(name: String, ratio: Double = 0.0) = run { (this as? AnMovieClip?)?.seekStill(name, ratio) }

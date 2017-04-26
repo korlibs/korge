@@ -3,6 +3,7 @@ package com.soywiz.korge.component
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.util.Cancellable
+import com.soywiz.korio.util.isSubtypeOf
 
 open class Component(val view: View) {
 	val detatchCancellables = arrayListOf<Cancellable>()

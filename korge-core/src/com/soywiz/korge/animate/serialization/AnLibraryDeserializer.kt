@@ -187,10 +187,12 @@ object AnLibraryDeserializer {
 		}
 
 		val symbolStates = (0 until readU_VL()).map {
-			val ss = AnSymbolMovieClipState(totalDepths)
+			val ss = AnSymbolMovieClipSubTimeline(totalDepths)
 			//ss.name = strings[readU_VL()] ?: ""
 			ss.totalTime = readU_VL()
-			ss.loopStartTime = readU_VL()
+			val flags = readU8()
+			ss.nextStatePlay = flags.extract(0)
+			ss.nextState = strings[readU_VL()]
 			for (depth in 0 until totalDepths) {
 				val timeline = ss.timelines[depth]
 				var lastUid = -1
@@ -264,7 +266,7 @@ object AnLibraryDeserializer {
 			val name = strings[readU_VL()] ?: ""
 			val startTime = readU_VL()
 			val stateIndex = readU_VL()
-			name to AnSymbolMovieClipStateWithStartTime(name, symbolStates[stateIndex], startTime = startTime)
+			name to AnSymbolMovieClipState(name, symbolStates[stateIndex], startTime = startTime)
 		}.toMap()
 
 		return mc

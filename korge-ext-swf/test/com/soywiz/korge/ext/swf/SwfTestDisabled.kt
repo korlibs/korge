@@ -11,6 +11,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.MemoryVfs
@@ -45,9 +46,14 @@ class SwfTestDisabled {
 			//val ani = LocalVfs("c:/temp/tt2.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt3.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/tt5.swf").readSWF(views).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/tt6.swf").readSWFDeserializing(views).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/tt6.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test27.swf").readSWF(views).createMainTimeLine()
+
 			//val ani = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test29.swf").readSWFDeserializing(views).createMainTimeLine()
+			val ani = LocalVfs("c:/temp/test25.swf").readSWF(views).createMainTimeLine()
+			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
+
 			//val ani = LocalVfs("c:/temp/ninepatch.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views, mipmaps = false, rasterizerMethod = Context2d.ShapeRasterizerMethod.NONE).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWFDeserializing(views).createMainTimeLine()

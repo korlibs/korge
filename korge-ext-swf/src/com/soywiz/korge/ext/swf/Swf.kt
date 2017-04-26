@@ -28,7 +28,6 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.yaml.Yaml
-import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.*
 import com.soywiz.korio.vfs.VfsFile
@@ -39,23 +38,6 @@ import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
 import kotlin.collections.set
-
-//@AsyncFactoryClass(SwfLibraryFactory::class)
-//class SwfLibrary(val an: AnLibrary)
-//
-//class SwfLibraryFactory(
-//	val path: Path,
-//	val resourcesRoot: ResourcesRoot,
-//	val views: Views
-//) : AsyncFactory<SwfLibrary> {
-//	suspend override fun create(): SwfLibrary = SwfLibrary(resourcesRoot[path].readSWF(views))
-//	//suspend override fun create(): SwfLibrary {
-//	//	val lib1 = resourcesRoot[path].readSWF(views)
-//	//	val c1 = AnimateSerializer.gen(lib1, compression = 0.0)
-//	//	val lib2 = AnimateDeserializer.read(c1, views)
-//	//	return SwfLibrary(lib2)
-//	//}
-//}
 
 data class SWFExportConfig(
 	val debug: Boolean = false,
@@ -69,10 +51,6 @@ data class SWFExportConfig(
 	val maxMorphShapeSide: Int = 128,
 	val exportPaths: Boolean = false
 )
-
-object SwfLoader {
-	suspend fun load(views: Views, data: ByteArray, config: SWFExportConfig = SWFExportConfig()): AnLibrary = SwfLoaderMethod(views, config).load(data)
-}
 
 suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig?): AnLibrary {
 	return if (config != null) this.readSWF(views, config) else this.readSWF(views)
@@ -103,7 +81,7 @@ private typealias SwfBlendMode = com.codeazur.as3swf.data.consts.BlendMode
 
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 
-class MySwfFrame(val index: Int, maxDepths: Int) {
+class MySwfFrame(val index0: Int, maxDepths: Int) {
 	var name: String? = null
 	val depths = arrayListOf<AnSymbolTimelineFrame>()
 	val actions = arrayListOf<Action>()
@@ -115,9 +93,10 @@ class MySwfFrame(val index: Int, maxDepths: Int) {
 		class PlaySound(val soundId: Int) : Action
 	}
 
-	val isFirst: Boolean get() = index == 0
+	val isFirst: Boolean get() = index0 == 0
 	val hasStop: Boolean get() = Action.Stop in actions
 	val hasGoto: Boolean get() = actions.any { it is Action.Goto }
+	val hasFlow: Boolean get() = hasStop || hasGoto
 
 	fun stop() = run { actions += Action.Stop }
 	fun play() = run { actions += Action.Play }
@@ -164,14 +143,6 @@ private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			//println("totalPlaceObject: $totalPlaceObject")
 			//println("totalShowFrame: $totalShowFrame")
 		}
-//
-		//	println("++++++++++++++++++++++++++++++++++++++")
-//
-		//	println("allColorTransforms: " + allColorTransforms.size)
-		//	println("allMatrices: " + allMatrices.size)
-//
-		//	println("allColorTransformsUnique: " + allColorTransforms.toSet().size)
-		//	println("allMatricesUnique: " + allMatrices.toSet().size)
 	}
 
 	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
@@ -179,40 +150,140 @@ private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	suspend private fun generateActualTimelines() {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
 			val swfTimeline = symbol.swfTimeline
-			var currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
 			var justAfterStopOrStart = true
 			var stateStartFrame = 0
 			//println(swfTimeline.frames)
 			//println("## Symbol: ${symbol.name} : $symbol : ${swfTimeline.frames.size})")
+
+			data class Subtimeline(val index: Int, var totalFrames: Int = 0, var nextState: String? = null, var nextStatePlay: Boolean = true) {
+				val totalTime get() = getFrameTime(totalFrames - 1)
+			}
+
+			data class FrameInfo(val subtimeline: Subtimeline, val frameInSubTimeline: Int, val stateName: String, val startSubtimeline: Boolean, val startNamedState: Boolean) {
+				val timeInSubTimeline = getFrameTime(frameInSubTimeline)
+			}
+
+			val frameInfos = java.util.ArrayList<FrameInfo>(swfTimeline.frames.size)
+
+			// Identify referenced frames
+			val referencedFrames = hashSetOf<Int>()
 			for (frame in swfTimeline.frames) {
-				val frameName = frame.name
-				//println("Frame:(${frame.index})")
-				// Create State
-				if (justAfterStopOrStart) {
-					//println(" Just after stop: ")
-					justAfterStopOrStart = false
-					stateStartFrame = frame.index
-					currentState = AnSymbolMovieClipState(symbol.limits.totalDepths)
-					val fname = "frame${frame.index}"
-					symbol.states[fname] = AnSymbolMovieClipStateWithStartTime(fname, currentState, 0)
+				if (frame.hasGoto) {
+					val goto = frame.actions.filterIsInstance<MySwfFrame.Action.Goto>().first()
+					referencedFrames += goto.frame0
+				}
+			}
+
+			// Create FrameInfo
+			var flow = true
+			var stateName = "default"
+			var frameIndex = 0
+			var subtimelineIndex = -1
+
+
+			val subtimelines = arrayListOf<Subtimeline>()
+
+			for (frame in swfTimeline.frames) {
+				var startNamedState = false
+				var startSubtimeline = false
+				if (flow) {
+					stateName = when {
+						frame.isFirst -> "default"
+						frame.name != null -> frame.name!!
+						else -> "frame${frame.index0}"
+					}
+					frameIndex = 0
+					subtimelineIndex++
+					subtimelines += Subtimeline(subtimelineIndex)
+					startNamedState = true
+					startSubtimeline = true
 				}
 
-				val frameInState = frame.index - stateStartFrame
-				val currentTime = getFrameTime(frameInState)
+				if (frame.name != null) {
+					stateName = frame.name!!
+					startNamedState = true
+				} else if (frame.index0 in referencedFrames) {
+					stateName = "frame${frame.index0}"
+					startNamedState = true
+				}
 
-				val isLast = frame.index >= swfTimeline.frames.size - 1
+				val subtimeline = subtimelines[subtimelineIndex]
+				subtimeline.totalFrames++
+				flow = frame.hasFlow
 
-				// Register State
-				if (frame.isFirst) symbol.states["default"] = AnSymbolMovieClipStateWithStartTime("default", currentState, currentTime)
-				if (frameName != null) {
-					//if (frameInState == 0) currentState.name = frameName
-					//println("State: $frameName, $currentState, $currentTime")
-					symbol.states[frameName] = AnSymbolMovieClipStateWithStartTime(frameName, currentState, currentTime)
+				frameInfos += FrameInfo(subtimeline, frameIndex, stateName, startSubtimeline, startNamedState)
+
+				frameIndex++
+			}
+
+			// Compute flow
+			for (frame in swfTimeline.frames) {
+				val info = frameInfos[frame.index0]
+				val isLast = frame.index0 == swfTimeline.frames.last().index0
+
+				if (isLast) {
+					info.subtimeline.nextState = "default"
+					info.subtimeline.nextStatePlay = true
+				}
+
+				if (frame.hasFlow) {
+					for (action in frame.actions) {
+						when (action) {
+							is MySwfFrame.Action.Goto -> {
+								info.subtimeline.nextState = frameInfos[action.frame0].stateName
+							}
+							is MySwfFrame.Action.Stop -> {
+								info.subtimeline.nextStatePlay = false
+							}
+							is MySwfFrame.Action.Play -> {
+								info.subtimeline.nextStatePlay = true
+							}
+						}
+					}
+				}
+			}
+
+			val totalDepths = symbol.limits.totalDepths
+			var currentSubTimeline = AnSymbolMovieClipSubTimeline(totalDepths)
+
+			//println("-------------")
+			//for (frameInfo in frameInfos) println(frameInfo)
+
+			val lastDepths = kotlin.arrayOfNulls<AnSymbolTimelineFrame?>(totalDepths)
+
+			for (frame in swfTimeline.frames) {
+				val info = frameInfos[frame.index0]
+				val currentTime = info.timeInSubTimeline
+				//val isLast = frame.index0 == swfTimeline.frames.last().index0
+
+				// Subtimelines
+				if (info.startSubtimeline) {
+					currentSubTimeline = AnSymbolMovieClipSubTimeline(totalDepths)
+					val subtimeline = info.subtimeline
+					currentSubTimeline.totalTime = subtimeline.totalTime
+					currentSubTimeline.nextState = subtimeline.nextState
+					currentSubTimeline.nextStatePlay = subtimeline.nextStatePlay
+
+					//println("$currentSubTimeline : $subtimeline")
+
+					//println("currentSubTimeline.totalTime = info.subtimeline.totalTime <- ${info.subtimeline.totalTime}")
+					if (frame.isFirst) {
+						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0)
+					}
+				}
+				// States
+				if (info.startNamedState) {
+					symbol.states[info.stateName] = AnSymbolMovieClipState(info.stateName, currentSubTimeline, info.timeInSubTimeline)
 				}
 
 				// Compute frame
-				for (depth in frame.depths) {
-					currentState.timelines[depth.depth].add(currentTime, depth)
+				for (n in 0 until frame.depths.size) {
+					val lastDepth = lastDepths[n]
+					val depth = frame.depths[n]
+					if (depth != lastDepth) {
+						currentSubTimeline.timelines[depth.depth].add(info.timeInSubTimeline, depth)
+						lastDepths[n] = depth
+					}
 				}
 
 				// Compute actions
@@ -224,23 +295,7 @@ private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						}
 					}
 				}
-				if (anActions.isNotEmpty()) currentState.actions.add(currentTime, AnActions(anActions))
-
-				if (isLast || frame.hasStop || frame.hasGoto) {
-					//println(" - $isLast,${frame.hasStop},${frame.hasGoto}")
-					justAfterStopOrStart = true
-
-					if (frame.hasStop) {
-						currentState.loopStartTime = currentTime
-					}
-					if (frame.hasGoto) {
-						val goto = frame.actions.filterIsInstance<MySwfFrame.Action.Goto>().first()
-
-						currentState.loopStartTime = getFrameTime(goto.frame0 - stateStartFrame)
-					}
-					currentState.totalTime = getFrameTime(frameInState)
-					//println(" $currentState : totalTime=${currentState.totalTime}, loopStartTime=${currentState.loopStartTime}")
-				}
+				if (anActions.isNotEmpty()) currentSubTimeline.actions.add(currentTime, AnActions(anActions))
 			}
 		}
 	}
@@ -379,13 +434,9 @@ private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	fun registerBitmap(charId: Int, bmp: Bitmap, name: String? = null) {
 		swf.bitmaps[charId] = bmp
 		symbols += AnSymbolBitmap(charId, name, bmp)
-
-
 		//showImageAndWait(bmp)
 	}
 
-	//val allColorTransforms = hashSetOf<ColorTransform>()
-	//val allMatrices = hashSetOf<Matrix2d>()
 	var totalPlaceObject = 0
 	var totalShowFrame = 0
 
@@ -914,4 +965,3 @@ class SWFShapeRasterizer(
 		if (drawingFill) path.close()
 	}
 }
-
