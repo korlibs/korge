@@ -17,7 +17,7 @@ class SolidRect(views: Views, var width: Double, var height: Double, color: Int)
 		ctx.batch.addQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, colMul = RGBA.multiply(colorMul, globalColorMul), colAdd = globalColorAdd, blendFactors = blendMode.factors)
 	}
 
-	override fun getLocalBounds(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(sLeft, sTop, width, height)
 	}
 

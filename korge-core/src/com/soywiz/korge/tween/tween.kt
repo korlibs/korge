@@ -18,7 +18,7 @@ class TweenComponent(private val vs: List<V2<*>>, view: View, val time: Int? = n
 
 	init {
 		c.onCancel {
-			//cancelled = true
+			cancelled = true
 		}
 	}
 

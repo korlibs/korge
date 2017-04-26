@@ -163,7 +163,7 @@ class Views(
 }
 
 class Stage(views: Views) : Container(views) {
-	override fun getLocalBounds(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
 	}
 

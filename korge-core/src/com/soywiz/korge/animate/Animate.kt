@@ -1,7 +1,6 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korag.AG
-import com.soywiz.korau.format.play
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -66,13 +65,13 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	override fun hitTestInternal(x: Double, y: Double): View? {
 		val sLeft = dx.toDouble()
 		val sTop = dy.toDouble()
-		val sRight = sLeft + tex.width
-		val sBottom = sTop + tex.height
+		val sRight = sLeft + texWidth
+		val sBottom = sTop + texHeight
 		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) && (symbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) ?: true)) this else null
 	}
 
-	override fun getLocalBounds(out: Rectangle) {
-		out.setTo(dx, dy, tex.width, tex.height)
+	override fun getLocalBoundsInternal(out: Rectangle) {
+		out.setTo(dx, dy, texWidth, texHeight)
 	}
 
 	override fun updateInternal(dtMs: Int) = Unit

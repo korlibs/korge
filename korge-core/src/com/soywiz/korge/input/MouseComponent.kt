@@ -56,6 +56,11 @@ class MouseComponent(view: View) : Component(view) {
 		if (!frame.mouseHitSearch) {
 			frame.mouseHitSearch = true
 			frame.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
+			//if (frame.mouseHitResult != null) {
+				//val hitResult = frame.mouseHitResult!!
+				//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
+				//hitResult.dump()
+			//}
 		}
 		hitTest = input.frame.mouseHitResult
 		val over = hitTest?.hasAncestor(view) ?: false

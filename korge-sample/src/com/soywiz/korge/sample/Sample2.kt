@@ -6,6 +6,8 @@ import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.ext.particle.ParticleEmitter
 import com.soywiz.korge.ext.particle.attachParticleAndWait
 import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -44,10 +46,21 @@ object Sample2 : Module() {
 			sceneView += particles
 			particles.speed = 2.0
 
-			sceneView += views.image(atlas1.textures["arms/forearm_jump_0.png"]!!.texture).apply {
+			val image = views.image(atlas1.textures["arms/forearm_jump_0.png"]!!.texture).apply {
 				x = 100.0
 				y = 100.0
+				alpha = 0.7
 			}
+
+			image.onOver {
+				image.alpha = 1.0
+			}
+
+			image.onOut {
+				image.alpha = 0.7
+			}
+
+			sceneView += image
 
 			for (n in 0 until 10) {
 				go {

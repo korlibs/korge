@@ -2,7 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
-import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
@@ -19,7 +18,7 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
         ctx.batch.addQuad(tex, x = -(tex.width * anchorX).toFloat(), y = -(tex.height * anchorY).toFloat(), m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = blendMode.factors)
     }
 
-	override fun getLocalBounds(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(sLeft, sTop,  tex.width, tex.height)
 	}
 

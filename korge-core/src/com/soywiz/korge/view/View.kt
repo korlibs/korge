@@ -350,7 +350,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		val concat = getConcatMatrix(target)
 		val bb = BoundsBuilder()
 
-		getLocalBounds(out)
+		getLocalBoundsInternal(out)
 
 		val p1 = Point2d(out.left, out.top)
 		val p2 = Point2d(out.right, out.top)
@@ -366,7 +366,9 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return out
 	}
 
-	open fun getLocalBounds(out: Rectangle = Rectangle()) {
+	fun getLocalBounds(out: Rectangle = Rectangle()) = out.apply { getLocalBoundsInternal(out) }
+
+	open fun getLocalBoundsInternal(out: Rectangle = Rectangle()) {
 		out.setTo(0, 0, 0, 0)
 	}
 }

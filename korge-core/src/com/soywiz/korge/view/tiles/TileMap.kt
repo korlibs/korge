@@ -1,7 +1,6 @@
 package com.soywiz.korge.view.tiles
 
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
 import com.soywiz.korge.util.IntArray2
 import com.soywiz.korge.view.*
 import com.soywiz.korma.Matrix2d
@@ -42,7 +41,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
         ctx.flush()
     }
 
-	override fun getLocalBounds(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, tileWidth * map.width, tileHeight * map.height)
 	}
 

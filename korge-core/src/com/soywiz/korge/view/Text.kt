@@ -76,7 +76,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 		}
 	}
 
-	override fun getLocalBounds(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
 		if (document != null) {
 			out.copyFrom(document!!.bounds)
 		} else {
