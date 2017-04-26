@@ -33,7 +33,7 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(-1, "")
 
-class AnSymbolSound(id: Int, name: String?, val data: AudioData?) : AnSymbol(id, name)
+class AnSymbolSound(id: Int, name: String?, val data: AudioData?, val dataBytes: ByteArray?) : AnSymbol(id, name)
 
 class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bounds: Rectangle) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)

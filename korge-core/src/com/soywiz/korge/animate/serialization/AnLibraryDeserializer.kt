@@ -1,5 +1,7 @@
 package com.soywiz.korge.animate.serialization
 
+import com.soywiz.korau.format.AudioData
+import com.soywiz.korau.format.readAudioData
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -27,18 +29,27 @@ import com.soywiz.korma.geom.VectorPath
 
 suspend fun VfsFile.readAni(views: Views, mipmaps: Boolean = false, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()), views, mipmaps) { index ->
-		file.withExtension("ani.$index.png").readBitmapOptimized()
-	}
+	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()), views, mipmaps, externalReaders = AnLibraryDeserializer.ExternalReaders(
+		atlasReader = { index ->
+			file.withExtension("ani.$index.png").readBitmapOptimized()
+		},
+		readSound = { index ->
+			file.withExtension("ani.$index.mp3").readAudioData()
+		}
+	))
 }
 
 object AnLibraryDeserializer {
-	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = FastByteArrayInputStream(s).readLibrary(views, mipmaps, atlasReader)
-	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = FastByteArrayInputStream(s.readAll()).readLibrary(views, mipmaps, atlasReader)
-	suspend fun read(s: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary = s.readLibrary(views, mipmaps, atlasReader)
+	class ExternalReaders(
+		val atlasReader: suspend (index: Int) -> Bitmap,
+		val readSound: suspend (index: Int) -> AudioData
+	)
 
+	suspend fun read(s: ByteArray, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s).readLibrary(views, mipmaps, externalReaders)
+	suspend fun read(s: SyncStream, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = FastByteArrayInputStream(s.readAll()).readLibrary(views, mipmaps, externalReaders)
+	suspend fun read(s: FastByteArrayInputStream, views: Views, mipmaps: Boolean = false, externalReaders: ExternalReaders): AnLibrary = s.readLibrary(views, mipmaps, externalReaders)
 
-	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, mipmaps: Boolean, atlasReader: suspend (index: Int) -> Bitmap): AnLibrary {
+	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, mipmaps: Boolean, externalReaders: ExternalReaders): AnLibrary {
 		val magic = readStringz(8)
 		//AnLibrary(views)
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
@@ -54,20 +65,16 @@ object AnLibraryDeserializer {
 			//val height = readU_VL()
 			//val size = readU_VL()
 			//val data = readBytes(size)
-			val bmp = atlasReader(index)
+			val bmp = externalReaders.atlasReader(index)
 			bmp to views.texture(bmp, mipmaps = mipmaps)
 		}
 
-		val sounds = (0 until readU_VL()).map {
-			Unit
-		}
-
-		val fonts = (0 until readU_VL()).map {
-			Unit
+		val sounds = (0 until readU_VL()).map { index ->
+			externalReaders.readSound(index)
 		}
 
 		val symbols = (0 until readU_VL()).map {
-			readSymbol(strings, atlases)
+			readSymbol(strings, atlases, sounds)
 		}
 
 		for (symbol in symbols) library.addSymbol(symbol)
@@ -76,14 +83,15 @@ object AnLibraryDeserializer {
 		return library
 	}
 
-	private fun FastByteArrayInputStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>): AnSymbol {
+	private fun FastByteArrayInputStream.readSymbol(strings: Array<String?>, atlases: List<Pair<Bitmap, Texture>>, sounds: List<AudioData>): AnSymbol {
 		val symbolId = readU_VL()
 		val symbolName = strings[readU_VL()]
 		val type = readU_VL()
 		val symbol: AnSymbol = when (type) {
 			AnLibraryFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
 			AnLibraryFile.SYMBOL_TYPE_SOUND -> {
-				AnSymbolSound(symbolId, symbolName, null)
+				val soundId = readU_VL()
+				AnSymbolSound(symbolId, symbolName, sounds[soundId], null)
 			}
 			AnLibraryFile.SYMBOL_TYPE_TEXT -> {
 				val initialText = strings[readU_VL()]
@@ -190,9 +198,25 @@ object AnLibraryDeserializer {
 			val ss = AnSymbolMovieClipSubTimeline(totalDepths)
 			//ss.name = strings[readU_VL()] ?: ""
 			ss.totalTime = readU_VL()
-			val flags = readU8()
-			ss.nextStatePlay = flags.extract(0)
+			val stateFlags = readU8()
+			ss.nextStatePlay = stateFlags.extract(0)
 			ss.nextState = strings[readU_VL()]
+
+			val numberOfActionFrames = readU_VL()
+			for (n in 0 until numberOfActionFrames) {
+				val time = readU_VL()
+				val actions = (0 until readU_VL()).map {
+					val action = readU8()
+					when (action) {
+						0 -> {
+							AnPlaySoundAction(readU_VL())
+						}
+						else -> TODO()
+					}
+				}
+				ss.actions.add(time, AnActions(actions))
+			}
+
 			for (depth in 0 until totalDepths) {
 				val timeline = ss.timelines[depth]
 				var lastUid = -1

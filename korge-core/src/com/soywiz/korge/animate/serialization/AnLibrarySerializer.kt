@@ -19,16 +19,26 @@ suspend fun AnLibrary.writeTo(file: VfsFile, keepPaths: Boolean = false, compres
 	//println("writeTo")
 	val format = PNG()
 	val props = ImageEncodingProps(compression)
-	file.write(AnLibrarySerializer.gen(this, compression = compression, keepPaths = keepPaths) { index, atlas ->
-		//showImageAndWait(atlas)
-		file.withExtension("ani.$index.png").writeBitmap(atlas, format, props)
-	})
+	file.write(AnLibrarySerializer.gen(this, compression = compression, keepPaths = keepPaths, externalWriters = AnLibrarySerializer.ExternalWriters(
+		writeAtlas = { index, atlas ->
+			//showImageAndWait(atlas)
+			file.withExtension("ani.$index.png").writeBitmap(atlas, format, props)
+		},
+		writeSound = { index, soundData ->
+			file.withExtension("ani.$index.mp3").write(soundData)
+		}
+	)))
 }
 
 object AnLibrarySerializer {
-	suspend fun gen(library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, keepPaths, atlasWriter) }
+	class ExternalWriters(
+		val writeAtlas: suspend (index: Int, bitmap: Bitmap) -> Unit,
+		val writeSound: suspend (index: Int, soundData: ByteArray) -> Unit
+	)
 
-	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) = s.writeLibrary(library, compression, keepPaths, atlasWriter)
+	suspend fun gen(library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters): ByteArray = MemorySyncStreamToByteArray { write(this, library, compression, keepPaths, externalWriters) }
+
+	suspend fun write(s: SyncStream, library: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters) = s.writeLibrary(library, compression, keepPaths, externalWriters)
 
 	private fun SyncStream.writeRect(r: Rectangle) {
 		writeS_VL((r.x * 20).toInt())
@@ -44,7 +54,7 @@ object AnLibrarySerializer {
 		writeS_VL(r.height)
 	}
 
-	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, atlasWriter: suspend (index: Int, bitmap: Bitmap) -> Unit) {
+	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, compression: Double = 1.0, keepPaths: Boolean = false, externalWriters: ExternalWriters) {
 		writeStringz(AnLibraryFile.MAGIC, 8)
 		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
@@ -82,24 +92,20 @@ object AnLibrarySerializer {
 			lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmp },
 			lib.symbolsById.filterIsInstance<AnSymbolMorphShape>().flatMap { it.texturesWithBitmap.entries.map { it.second.bitmapSlice.bmp } }
 		).flatMap { it }.filterNotNull().distinct()
+
 		val atlasBitmapsToId = atlasBitmaps.withIndex().map { it.value to it.index }.toMap()
 
 		writeU_VL(atlasBitmaps.size)
-		for ((index, atlas) in atlasBitmaps.withIndex()) {
-			atlasWriter(index, atlas)
-			//val atlasBytes = ImageFormats.encode(atlas, "atlas.png", props = ImageEncodingProps(quality = compression))
-			//writeU_VL(1) // 1=RGBA, 2=RGB(JPG)+ALPHA(ZLIB)
-			//writeU_VL(atlas.width)
-			//writeU_VL(atlas.height)
-			//writeU_VL(atlasBytes.size)
-			//writeBytes(atlasBytes)
+		for ((atlas, index) in atlasBitmapsToId) {
+			externalWriters.writeAtlas(index, atlas)
 		}
 
-		// Sounds
-		writeU_VL(0)
+		val soundsToId = lib.symbolsById.filterIsInstance<AnSymbolSound>().withIndex().map { it.value to it.index }.toMap()
 
-		// Fonts
-		writeU_VL(0)
+		writeU_VL(soundsToId.size)
+		for ((sound, index) in soundsToId) {
+			externalWriters.writeSound(index, sound.dataBytes ?: byteArrayOf())
+		}
 
 		// Symbols
 		var morphShapeCount = 0
@@ -118,6 +124,7 @@ object AnLibrarySerializer {
 				}
 				is AnSymbolSound -> {
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SOUND)
+					writeU_VL(soundsToId[symbol]!!)
 				}
 				is AnTextFieldSymbol -> {
 					writeU_VL(AnLibraryFile.SYMBOL_TYPE_TEXT)
@@ -197,6 +204,21 @@ object AnLibrarySerializer {
 							.insert(ss.nextStatePlay, 0)
 						)
 						writeU_VL(strings[ss.nextState])
+
+						writeU_VL(ss.actions.size)
+						for ((time, actions) in ss.actions.entries) {
+							writeU_VL(time) // @TODO: Use time deltas and/or frame indices
+							writeU_VL(actions.actions.size)
+							for (action in actions.actions) {
+								when (action) {
+									is AnPlaySoundAction -> {
+										write8(0)
+										writeU_VL(action.soundId)
+									}
+								}
+							}
+						}
+
 						for (timeline in ss.timelines) {
 							totalTimelines++
 							val frames = timeline.entries
@@ -209,7 +231,7 @@ object AnLibrarySerializer {
 							writeU_VL(frames.size)
 							for ((frameTime, frame) in frames) {
 								totalFrameCount++
-								writeU_VL(frameTime)
+								writeU_VL(frameTime) // @TODO: Use time deltas and/or frame indices
 
 								val ct = frame.colorTransform
 								val m = frame.transform

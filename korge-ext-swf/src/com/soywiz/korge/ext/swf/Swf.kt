@@ -556,8 +556,7 @@ private class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						e.printStackTrace()
 						null
 					}
-					symbols += AnSymbolSound(it.characterId, null, audioData)
-					//LocalVfs("c:/temp/temp.mp3").write()
+					symbols += AnSymbolSound(it.characterId, null, audioData, soundBytes)
 				}
 				is TagStartSound -> {
 					swfCurrentFrame.playSound(it.soundId)

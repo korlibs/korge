@@ -51,7 +51,11 @@ class SwfTestDisabled {
 
 			//val ani = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWFDeserializing(views).createMainTimeLine()
-			val ani = LocalVfs("c:/temp/test25.swf").readSWF(views).createMainTimeLine()
+
+			//sceneView += LocalVfs("c:/temp/test24.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
+
+			sceneView += LocalVfs("c:/temp/test23.swf").readSWFDeserializing(views).createMainTimeLine().apply { println(this.stateNames) }
+
 			//val ani = LocalVfs("c:/temp/test29.swf").readSWF(views).createMainTimeLine().apply { println(this.stateNames) }
 
 			//val ani = LocalVfs("c:/temp/ninepatch.swf").readSWFDeserializing(views).createMainTimeLine()
@@ -61,15 +65,6 @@ class SwfTestDisabled {
 			//val ani = LocalVfs("c:/temp/test6.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test9.swf").readSWF(views, mipmaps = true).createMainTimeLine()
 			//val ani = LocalVfs("c:/temp/test8.swf").readSWF(views, mipmaps = true).createMainTimeLine()
-
-
-			//val library = LocalVfs("c:/temp/test7.swf").readSWF(views)
-			//val library = LocalVfs("c:/temp/test1.swf").readSWF(views)
-			//library.writeTo(LocalVfs("c:/temp/test6.ani"))
-			//library.writeTo(LocalVfs("c:/temp/test2.ani"))
-			//println(ani.stateNames)
-			//ani.play("frame172")
-			sceneView += ani
 		}
 	}
 }
