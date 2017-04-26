@@ -57,7 +57,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var colorTransform: ColorTransform get() = _colorTransform; set(v) = run { _colorTransform.copyFrom(v); invalidateColorTransform() }
 
 	private fun invalidateColorTransform() {
-		//invalidate()
+		invalidate()
 	}
 
 	// Properties
