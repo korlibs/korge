@@ -5,7 +5,10 @@ import com.soywiz.korge.animate.AnLibrary
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.dump
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import java.util.*
 
@@ -26,7 +29,8 @@ object Sample3 : Module() {
 		//@Path("color.swf") val lib: AnLibrary
 		//@Path("ninepatch.swf") val lib: AnLibrary
 		//@Path("complexflow.swf") val lib: AnLibrary
-		@Path("loop.swf") val lib: AnLibrary
+		//@Path("loop.swf") val lib: AnLibrary
+		@Path("blendmode.swf") val lib: AnLibrary
 		//@Path("eyes.swf") val eyesLibrary: AnLibrary
 		//@Path("eyes2.swf") val eyesLibrary: AnLibrary
 		//@Path("radialgradient.swf") val library: AnLibrary
@@ -50,6 +54,12 @@ object Sample3 : Module() {
 			//sceneView += semillaLibrary.createMainTimeLine().apply { this["semilla"].play("anim2") }
 			//sceneView += eyesLibrary.createMainTimeLine().apply { scale = 3.0 }
 			//sceneView += library.createMainTimeLine().apply { scale = 3.0 }
+
+			val c = views.container().apply { blendMode = BlendMode.ADD }
+			c += views.solidRect(80, 80, Colors.RED)
+			sceneView += c
+
+			sceneView.dump()
 		}
 	}
 }

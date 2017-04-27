@@ -8,6 +8,7 @@ import com.codeazur.as3swf.data.etc.IEdge
 import com.codeazur.as3swf.data.etc.StraightEdge
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.*
+import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
@@ -1327,10 +1328,10 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 					}
 					if (lineStyle != null) {
 						val scaleMode = when {
-							(lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) -> "none"
-							lineStyle.noHScaleFlag -> "horizontal"
-							lineStyle.noVScaleFlag -> "vertical"
-							else -> "normal"
+							(lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) -> Context2d.ScaleMode.NONE
+							lineStyle.noHScaleFlag -> Context2d.ScaleMode.HORIZONTAL
+							lineStyle.noVScaleFlag -> Context2d.ScaleMode.VERTICAL
+							else -> Context2d.ScaleMode.NORMAL
 						}
 
 						handler.lineStyle(

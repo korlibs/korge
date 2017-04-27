@@ -232,6 +232,7 @@ object AnLibraryDeserializer {
 				var lastClipDepth = -1
 				var lastRatio = 0.0
 				var lastFrameTime = 0
+				var lastBlendMode = BlendMode.INHERIT
 				for (frameIndex in 0 until readU_VL()) {
 					val deltaFrameTime = readU_VL()
 					val frameTime = lastFrameTime + deltaFrameTime
@@ -243,8 +244,8 @@ object AnLibraryDeserializer {
 					val hasMatrix = flags.extract(3)
 					val hasClipDepth = flags.extract(4)
 					val hasRatio = flags.extract(5)
-					//val hasAlpha = flags.extract(6)
 					val hasAlpha = flags.extract(6)
+					val hasBlendMode = flags.extract(7)
 
 					if (hasUid) lastUid = readU_VL()
 					if (hasClipDepth) lastClipDepth = readS16_le()
@@ -279,13 +280,16 @@ object AnLibraryDeserializer {
 						lastMatrix = lm
 					}
 					if (hasRatio) lastRatio = readU8().toDouble() / 255.0
+					if (hasBlendMode) {
+						lastBlendMode = BlendMode.BY_ORDINAL[readU8()] ?: BlendMode.INHERIT
+					}
 					timeline.add(frameTime * 1000, AnSymbolTimelineFrame(
 						depth = depth,
 						uid = lastUid,
 						transform = lastMatrix,
 						name = lastName,
 						colorTransform = lastColorTransform,
-						blendMode = BlendMode.INHERIT,
+						blendMode = lastBlendMode,
 						ratio = lastRatio,
 						clipDepth = lastClipDepth
 					))

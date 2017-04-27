@@ -1,6 +1,7 @@
 package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.ImageEncodingProps
@@ -238,6 +239,7 @@ object AnLibrarySerializer {
 							var lastMatrix: Matrix2d = Matrix2d()
 							var lastClipDepth = -1
 							var lastRatio = 0.0
+							var lastBlendMode = BlendMode.INHERIT
 							writeU_VL(frames.size)
 							var lastFrameTime = 0
 							for ((frameTime, frame) in frames) {
@@ -252,6 +254,7 @@ object AnLibrarySerializer {
 								val hasUid = frame.uid != lastUid
 								val hasName = frame.name != lastName
 								val hasColorTransform = ct != lastColorTransform
+								val hasBlendMode = frame.blendMode != lastBlendMode
 								val hasAlpha = (
 									(ct.mR == lastColorTransform.mR) &&
 										(ct.mG == lastColorTransform.mG) &&
@@ -277,6 +280,7 @@ object AnLibrarySerializer {
 									.insert(hasClipDepth, 4)
 									.insert(hasRatio, 5)
 									.insert(hasAlpha, 6)
+									.insert(hasBlendMode, 7)
 								)
 								if (hasUid) writeU_VL(frame.uid)
 								if (hasClipDepth) write16_le(frame.clipDepth)
@@ -315,6 +319,7 @@ object AnLibrarySerializer {
 									if (hasAB) write8(ct.aB.clamp(-255, +255) / 2)
 									if (hasAA) write8(ct.aA.clamp(-255, +255) / 2)
 								}
+
 								if (hasMatrix) {
 									val hasMatrixA = m.a != lastMatrix.a
 									val hasMatrixB = m.b != lastMatrix.b
@@ -341,12 +346,17 @@ object AnLibrarySerializer {
 								}
 								if (hasRatio) write8((frame.ratio * 255).toInt().clamp(0, 255))
 
+								if (hasBlendMode) {
+									write8(frame.blendMode.ordinal)
+								}
+
 								lastUid = frame.uid
 								lastName = frame.name
 								lastColorTransform = frame.colorTransform
 								lastMatrix = m
 								lastClipDepth = frame.clipDepth
 								lastRatio = frame.ratio
+								lastBlendMode = frame.blendMode
 							}
 						}
 					}

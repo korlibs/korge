@@ -631,9 +631,23 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						//allMatrices += m
 					}
 					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
-						SwfBlendMode.NORMAL_0, SwfBlendMode.NORMAL_1 -> BlendMode.NORMAL
-						SwfBlendMode.ADD -> BlendMode.ADD
-						else -> BlendMode.NORMAL
+						SwfBlendMode.NORMAL_0 ->  BlendMode.NORMAL
+						SwfBlendMode.NORMAL_1 ->  BlendMode.NORMAL
+						SwfBlendMode.LAYER ->  BlendMode.INHERIT
+						SwfBlendMode.MULTIPLY ->  BlendMode.MULTIPLY
+						SwfBlendMode.SCREEN ->  BlendMode.SCREEN
+						SwfBlendMode.LIGHTEN ->  BlendMode.LIGHTEN
+						SwfBlendMode.DARKEN ->  BlendMode.DARKEN
+						SwfBlendMode.DIFFERENCE ->  BlendMode.DIFFERENCE
+						SwfBlendMode.ADD ->  BlendMode.ADD
+						SwfBlendMode.SUBTRACT ->  BlendMode.SUBTRACT
+						SwfBlendMode.INVERT ->  BlendMode.INVERT
+						SwfBlendMode.ALPHA ->  BlendMode.ALPHA
+						SwfBlendMode.ERASE ->  BlendMode.ERASE
+						//SwfBlendMode.OVERLAY ->  BlendMode.OVERLAY
+						SwfBlendMode.OVERLAY ->  BlendMode.INHERIT
+						SwfBlendMode.HARDLIGHT ->  BlendMode.HARDLIGHT
+						else -> BlendMode.INHERIT
 					}
 					val uid = getUid(depthId)
 					val metaData = it.metaData

@@ -22,6 +22,14 @@ import com.soywiz.korma.ds.DoubleArrayList
 import com.soywiz.korma.ds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 
+/**
+ * @TODO: Line ScaleMode not supported right now.
+ * @TODO: Default behaviour for strokes:
+ * @TODO: - smaller keeps at least 1 pixel
+ * @TODO: - bigger: ScaleMode.NONE - keeps the size, ScaleMode.NORMAL - scales the stroke
+ * @TODO: It would be possible to emulate using another texture with distances + colors
+ * @TODO: But probably no worth
+ */
 class SWFShapeRasterizer(
 	val swf: SWF,
 	val debug: Boolean,
@@ -67,6 +75,10 @@ class SWFShapeRasterizer(
 		val ctx = image.getContext2d(antialiasing = antialiasing)
 		ctx.scale(actualScale, actualScale)
 		ctx.translate(-bounds.x, -bounds.y)
+		//ctx.lineScaleHack *= 20.0
+		//ctx.lineScaleHack *= requestScale
+		//ctx.lineScaleHack *= 1.0
+		//ctx.lineScaleHack *= 2.0
 		ctx.drawShape(actualShape, rasterizerMethod)
 
 		//println(actualShape.toSvg(scale = 1.0 / 20.0).toOuterXmlIndented())
@@ -176,7 +188,7 @@ class SWFShapeRasterizer(
 
 	private fun __flushStroke() {
 		if (apath.isEmpty()) return
-		shapes += PolylineShape(apath, null, strokeStyle, Matrix2d().prescale(1.0 / 20.0, 1.0 / 20.0), lineWidth, true, "normal", lineCap, lineCap, "joints", 10.0)
+		shapes += PolylineShape(apath, null, strokeStyle, Matrix2d().prescale(1.0 / 20.0, 1.0 / 20.0), lineWidth, true, Context2d.ScaleMode.NORMAL, lineCap, lineCap, "joints", miterLimit)
 		apath = GraphicsPath()
 	}
 
@@ -189,16 +201,20 @@ class SWFShapeRasterizer(
 	}
 
 	private var lineWidth: Double = 1.0
+	private var lineScaleMode = Context2d.ScaleMode.NORMAL
+	private var miterLimit = 1.0
 	private var lineCap: Context2d.LineCap = Context2d.LineCap.ROUND
 	private var strokeStyle: Context2d.Paint = Context2d.Color(Colors.BLACK)
 
-	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
+	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: Context2d.ScaleMode, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
 		flush()
-		drawingFill = false
+		this.drawingFill = false
 		//println("pixelHinting: $pixelHinting, scaleMode: $scaleMode, miterLimit=$miterLimit")
-		lineWidth = thickness * 20.0
-		strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
-		lineCap = when (startCaps) {
+		this.lineWidth = thickness * 20.0
+		this.lineScaleMode = scaleMode
+		this.miterLimit = miterLimit
+		this.strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		this.lineCap = when (startCaps) {
 			LineCapsStyle.NO -> Context2d.LineCap.BUTT
 			LineCapsStyle.ROUND -> Context2d.LineCap.ROUND
 			LineCapsStyle.SQUARE -> Context2d.LineCap.SQUARE

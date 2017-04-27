@@ -4,7 +4,7 @@ import com.codeazur.as3swf.data.GradientType
 import com.codeazur.as3swf.data.consts.GradientInterpolationMode
 import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
-import com.codeazur.as3swf.utils.NumberUtils
+import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
@@ -21,7 +21,7 @@ open class ShapeExporter {
 	open fun endFills() = Unit
 
 	open fun beginLines() = Unit
-	open fun lineStyle(thickness: Double = Double.NaN, color: Int = 0, alpha: Double = 1.0, pixelHinting: Boolean = false, scaleMode: String = "normal", startCaps: LineCapsStyle = LineCapsStyle.ROUND, endCaps: LineCapsStyle = LineCapsStyle.ROUND, joints: String? = null, miterLimit: Double = 3.0) = Unit
+	open fun lineStyle(thickness: Double = Double.NaN, color: Int = 0, alpha: Double = 1.0, pixelHinting: Boolean = false, scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL, startCaps: LineCapsStyle = LineCapsStyle.ROUND, endCaps: LineCapsStyle = LineCapsStyle.ROUND, joints: String? = null, miterLimit: Double = 3.0) = Unit
 	open fun lineGradientStyle(type: GradientType, colors: List<Int>, alphas: List<Double>, ratios: List<Int>, matrix: Matrix2d = Matrix2d(), spreadMethod: GradientSpreadMode = GradientSpreadMode.PAD, interpolationMethod: GradientInterpolationMode = GradientInterpolationMode.NORMAL, focalPointRatio: Double = 0.0) = Unit
 	open fun endLines() = Unit
 
@@ -52,7 +52,7 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 	}
 
 	override fun endFill() = log("endFill()").parent.endFill()
-	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
+	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: Context2d.ScaleMode, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
 		log("lineStyle($thickness, $color, $alpha, $pixelHinting, $scaleMode, $startCaps, $endCaps, $joints, $miterLimit)").parent.lineStyle(thickness, color, alpha, pixelHinting, scaleMode, startCaps, endCaps, joints, miterLimit)
 	}
 
@@ -70,8 +70,8 @@ class ShapeExporterBoundsBuilder : ShapeExporter() {
 
 	var lineWidth = 1.0
 
-	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: String, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
-		lineWidth = thickness - 0.5
+	override fun lineStyle(thickness: Double, color: Int, alpha: Double, pixelHinting: Boolean, scaleMode: Context2d.ScaleMode, startCaps: LineCapsStyle, endCaps: LineCapsStyle, joints: String?, miterLimit: Double) {
+		lineWidth = thickness
 	}
 
 	override fun beginFills() {

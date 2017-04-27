@@ -1,35 +1,18 @@
 package com.soywiz.korge.ext.swf
 
 import com.codeazur.as3swf.SWF
-import com.codeazur.as3swf.data.actions.ActionGotoFrame
-import com.codeazur.as3swf.data.actions.ActionPlay
-import com.codeazur.as3swf.data.actions.ActionStop
-import com.codeazur.as3swf.data.consts.BitmapFormat
-import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
-import com.codeazur.as3swf.tags.*
-import com.soywiz.korau.format.AudioFormats
-import com.soywiz.korau.format.toNativeSound
-import com.soywiz.korfl.abc.*
+import com.codeazur.as3swf.tags.TagDefineMorphShape
+import com.codeazur.as3swf.tags.TagDefineShape
+import com.codeazur.as3swf.tags.TagPlaceObject
+import com.codeazur.as3swf.tags.TagRemoveObject
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.AnLibrarySerializer
-import com.soywiz.korge.render.TextureWithBitmapSlice
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korge.view.Views
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.error.ignoreErrors
-import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.serialization.yaml.Yaml
-import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.Matrix2d
-import com.soywiz.korma.geom.BoundsBuilder
-import java.util.*
-import kotlin.collections.set
 
 data class SWFExportConfig(
 	val debug: Boolean = false,

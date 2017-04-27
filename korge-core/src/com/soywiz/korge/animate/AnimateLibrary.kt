@@ -97,113 +97,113 @@ data class AnSymbolTimelineFrame(
 		this.blendMode = other.blendMode
 	}
 
-	fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
-		this.depth = l.depth
-		this.uid = l.uid
-		this.clipDepth = l.clipDepth
-		this.ratio = ratio.interpolate(l.ratio, r.ratio)
-		this.transform.setToInterpolated(l.transform, r.transform, ratio)
-		this.name = l.name
-		this.colorTransform.setToInterpolated(l.colorTransform, r.colorTransform, ratio)
-		this.blendMode = l.blendMode
-	}
-
-	fun writeCompressedPack(s: SyncStream, cp: AnConstantPool) {
-		val hasUid = uid >= 0
-		val hasClipDepth = clipDepth >= 0
-		val hasRatio = clipDepth >= 0
-		val hasTransform = transform.getType() != Matrix2d.Type.IDENTITY
-		val hasName = name != null
-		val hasColorTransform = !colorTransform.isIdentity()
-		val hasBlendMode = blendMode != BlendMode.INHERIT
-		s.writeU_VL(0
-			.insert(hasUid, 0)
-			.insert(hasClipDepth, 1)
-			.insert(hasRatio, 2)
-			.insert(hasTransform, 3)
-			.insert(hasName, 4)
-			.insert(hasColorTransform, 5)
-			.insert(hasBlendMode, 6)
-		)
-
-		if (hasUid) s.writeU_VL(uid)
-		if (hasClipDepth) s.writeU_VL(clipDepth)
-		if (hasRatio) s.write8((ratio * 255).toInt())
-		// @TODO: optimized
-		if (hasTransform) {
-			val t = transform
-			s.writeF32_le(t.a.toFloat())
-			s.writeF32_le(t.b.toFloat())
-			s.writeF32_le(t.c.toFloat())
-			s.writeF32_le(t.d.toFloat())
-			s.writeF32_le(t.tx.toFloat())
-			s.writeF32_le(t.ty.toFloat())
-		}
-		// @TODO: Use constantpool to store just integer
-		if (hasName) {
-			s.writeStringVL(name!!)
-		}
-		// @TODO: optimized
-		if (hasColorTransform) {
-			val ct = colorTransform
-			s.writeF32_le(ct.mRf)
-			s.writeF32_le(ct.mGf)
-			s.writeF32_le(ct.mBf)
-			s.writeF32_le(ct.mAf)
-			s.write32_le(ct.aR)
-			s.write32_le(ct.aG)
-			s.write32_le(ct.aB)
-			s.write32_le(ct.aA)
-		}
-		if (hasBlendMode) {
-			s.write8(blendMode.ordinal)
-		}
-	}
-
-	fun readCompressedPack(s: FastByteArrayInputStream, cp: AnConstantPool) {
-		val flags = s.readU_VL()
-		val t = transform
-		val ct = colorTransform
-		uid = if (flags.extract(0)) s.readU_VL() else -1
-		clipDepth = if (flags.extract(1)) s.readU_VL() else -1
-		ratio = if (flags.extract(2)) s.readU8().toDouble() / 255.0 else 0.0
-		if (flags.extract(3)) {
-			t.setTo(
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble()
-			)
-		} else {
-			t.setToIdentity()
-		}
-		if (flags.extract(4)) {
-			name = s.readStringVL()
-		} else {
-			name = null
-		}
-		if (flags.extract(5)) {
-			name = s.readStringVL()
-		} else {
-			name = null
-		}
-		if (flags.extract(6)) {
-			ct.setTo(
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readF32_le().toDouble(),
-				s.readS32_le(),
-				s.readS32_le(),
-				s.readS32_le(),
-				s.readS32_le()
-			)
-		} else {
-			ct.setToIdentity()
-		}
-	}
+	//fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
+	//	this.depth = l.depth
+	//	this.uid = l.uid
+	//	this.clipDepth = l.clipDepth
+	//	this.ratio = ratio.interpolate(l.ratio, r.ratio)
+	//	this.transform.setToInterpolated(l.transform, r.transform, ratio)
+	//	this.name = l.name
+	//	this.colorTransform.setToInterpolated(l.colorTransform, r.colorTransform, ratio)
+	//	this.blendMode = l.blendMode
+	//}
+//
+	//fun writeCompressedPack(s: SyncStream, cp: AnConstantPool) {
+	//	val hasUid = uid >= 0
+	//	val hasClipDepth = clipDepth >= 0
+	//	val hasRatio = clipDepth >= 0
+	//	val hasTransform = transform.getType() != Matrix2d.Type.IDENTITY
+	//	val hasName = name != null
+	//	val hasColorTransform = !colorTransform.isIdentity()
+	//	val hasBlendMode = blendMode != BlendMode.INHERIT
+	//	s.writeU_VL(0
+	//		.insert(hasUid, 0)
+	//		.insert(hasClipDepth, 1)
+	//		.insert(hasRatio, 2)
+	//		.insert(hasTransform, 3)
+	//		.insert(hasName, 4)
+	//		.insert(hasColorTransform, 5)
+	//		.insert(hasBlendMode, 6)
+	//	)
+//
+	//	if (hasUid) s.writeU_VL(uid)
+	//	if (hasClipDepth) s.writeU_VL(clipDepth)
+	//	if (hasRatio) s.write8((ratio * 255).toInt())
+	//	// @TODO: optimized
+	//	if (hasTransform) {
+	//		val t = transform
+	//		s.writeF32_le(t.a.toFloat())
+	//		s.writeF32_le(t.b.toFloat())
+	//		s.writeF32_le(t.c.toFloat())
+	//		s.writeF32_le(t.d.toFloat())
+	//		s.writeF32_le(t.tx.toFloat())
+	//		s.writeF32_le(t.ty.toFloat())
+	//	}
+	//	// @TODO: Use constantpool to store just integer
+	//	if (hasName) {
+	//		s.writeStringVL(name!!)
+	//	}
+	//	// @TODO: optimized
+	//	if (hasColorTransform) {
+	//		val ct = colorTransform
+	//		s.writeF32_le(ct.mRf)
+	//		s.writeF32_le(ct.mGf)
+	//		s.writeF32_le(ct.mBf)
+	//		s.writeF32_le(ct.mAf)
+	//		s.write32_le(ct.aR)
+	//		s.write32_le(ct.aG)
+	//		s.write32_le(ct.aB)
+	//		s.write32_le(ct.aA)
+	//	}
+	//	if (hasBlendMode) {
+	//		s.write8(blendMode.ordinal)
+	//	}
+	//}
+//
+	//fun readCompressedPack(s: FastByteArrayInputStream, cp: AnConstantPool) {
+	//	val flags = s.readU_VL()
+	//	val t = transform
+	//	val ct = colorTransform
+	//	uid = if (flags.extract(0)) s.readU_VL() else -1
+	//	clipDepth = if (flags.extract(1)) s.readU_VL() else -1
+	//	ratio = if (flags.extract(2)) s.readU8().toDouble() / 255.0 else 0.0
+	//	if (flags.extract(3)) {
+	//		t.setTo(
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble()
+	//		)
+	//	} else {
+	//		t.setToIdentity()
+	//	}
+	//	if (flags.extract(4)) {
+	//		name = s.readStringVL()
+	//	} else {
+	//		name = null
+	//	}
+	//	if (flags.extract(5)) {
+	//		name = s.readStringVL()
+	//	} else {
+	//		name = null
+	//	}
+	//	if (flags.extract(6)) {
+	//		ct.setTo(
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readF32_le().toDouble(),
+	//			s.readS32_le(),
+	//			s.readS32_le(),
+	//			s.readS32_le(),
+	//			s.readS32_le()
+	//		)
+	//	} else {
+	//		ct.setToIdentity()
+	//	}
+	//}
 }
 
 interface AnAction

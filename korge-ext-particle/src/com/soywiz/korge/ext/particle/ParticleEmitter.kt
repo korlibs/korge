@@ -1,11 +1,11 @@
 package com.soywiz.korge.ext.particle
 
 import com.soywiz.korag.AG
-import com.soywiz.korge.render.MyBlendFactors
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.RGBA
@@ -52,7 +52,7 @@ class ParticleEmitter(val views: Views) {
 	var minRadiusVariance = 0.0
 	var rotatePerSecond = 0.0
 	var rotatePerSecondVariance = 0.0
-	var blendFactors = MyBlendFactors.NORMAL
+	var blendFactors = BlendMode.NORMAL.factors
 	var rotationStart = 0.0
 	var rotationStartVariance = 0.0
 	var rotationEnd = 0.0
@@ -129,7 +129,7 @@ class ParticleEmitter(val views: Views) {
 			}
 		}
 
-		blendFactors = AG.BlendFactors(blendFuncSource, blendFuncDestination)
+		blendFactors = AG.Blending(blendFuncSource, blendFuncDestination)
 	}
 
 	data class Particle(

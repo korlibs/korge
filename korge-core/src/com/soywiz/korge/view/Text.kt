@@ -59,7 +59,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			for (span in document!!.allSpans) {
 				val font = views.fontRepository.getBitmapFont(span.format)
 				val format = span.format
-				font.drawText(ctx.batch, format.computedSize.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, colMul = RGBA.multiply(color, format.computedColor), blendMode = blendMode)
+				font.drawText(ctx.batch, format.computedSize.toDouble(), text, span.bounds.x.toInt(), span.bounds.y.toInt(), m, colMul = RGBA.multiply(color, format.computedColor), blendMode = computedBlendMode)
 			}
 		} else {
 			val font = views.fontRepository.getBitmapFont(format)
@@ -72,7 +72,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			//val x = textBounds.x + (textBounds.width) * anchor.sx
 			val y = textBounds.y + (textBounds.height) * anchor.sy
 			//println(" -> ($x, $y)")
-			font.drawText(ctx.batch, format.computedSize.toDouble(), text, x.toInt(), y.toInt(), m, colMul = RGBA.multiply(color, format.computedColor), blendMode = blendMode)
+			font.drawText(ctx.batch, format.computedSize.toDouble(), text, x.toInt(), y.toInt(), m, colMul = RGBA.multiply(color, format.computedColor), blendMode = computedBlendMode)
 		}
 	}
 

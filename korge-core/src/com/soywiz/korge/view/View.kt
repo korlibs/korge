@@ -26,6 +26,20 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var name: String? = null
 	val id = views.lastId++
 	var blendMode: BlendMode = BlendMode.INHERIT
+		set(value) {
+			if (field != value) {
+				field = value
+				invalidate()
+			}
+		}
+
+	var _computedBlendMode: BlendMode = BlendMode.INHERIT
+
+	// @TODO: Cache results
+	val computedBlendMode: BlendMode get() {
+		_ensureGlobal()
+		return _computedBlendMode
+	}
 
 	private var _scaleX: Double = 1.0
 	private var _scaleY: Double = 1.0
@@ -131,7 +145,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	private var _localMatrix = Matrix2d()
 	var _globalMatrix = Matrix2d()
-	private var _globalMatrixVersion = 0
+	private var _globalVersion = 0
 	private var _globalMatrixInvVersion = 0
 	private var _globalMatrixInv = Matrix2d()
 
@@ -198,11 +212,13 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		if (parent != null) {
 			_globalMatrix.multiply(localMatrix, parent!!.globalMatrix)
 			_globalColorTransform.setToConcat(_colorTransform, parent!!.globalColorTransform)
+			_computedBlendMode = if (blendMode == BlendMode.INHERIT) parent!!.computedBlendMode else blendMode
 		} else {
 			_globalMatrix.copyFrom(localMatrix)
 			_globalColorTransform.copyFrom(_colorTransform)
+			_computedBlendMode = if (blendMode == BlendMode.INHERIT) BlendMode.NORMAL else blendMode
 		}
-		_globalMatrixVersion++
+		_globalVersion++
 	}
 
 	var globalMatrix: Matrix2d get() = _ensureGlobal()._globalMatrix
@@ -224,8 +240,8 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	val globalMatrixInv: Matrix2d get() {
 		_ensureGlobal()
-		if (_globalMatrixInvVersion != _globalMatrixVersion) {
-			_globalMatrixInvVersion = _globalMatrixVersion
+		if (_globalMatrixInvVersion != _globalVersion) {
+			_globalMatrixInvVersion = _globalVersion
 			_globalMatrixInv.setToInverse(_globalMatrix)
 		}
 		return _globalMatrixInv
@@ -253,6 +269,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		if (skewX != 0.0 || skewY != 0.0) out += ":skew=($skewX,$skewY)"
 		if (rotation != 0.0) out += ":rotation=(${rotationDegrees}º)"
 		if (name != null) out += ":name=($name)"
+		if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
 		return out
 	}
 
