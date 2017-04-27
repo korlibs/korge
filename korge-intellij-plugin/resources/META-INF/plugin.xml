@@ -1,0 +1,36 @@
+<idea-plugin>
+  <id>com.soywiz.korge.korge-intellij-plugin</id>
+  <name>Korge IntelliJ Plugin</name>
+  <version>0.1</version>
+  <vendor email="soywiz@gmail.com" url="http://korge.soywiz.com/">Korge</vendor>
+
+  <description><![CDATA[
+  	Intelli-J Plugin for Korge game engine, that builds resources, and provides jtransc integration.
+	]]></description>
+
+  <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="145.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+	  <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
+  </extensions>
+
+  <actions>
+	  <action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" id="KorgeBuildResourcesAction"  ></action>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>

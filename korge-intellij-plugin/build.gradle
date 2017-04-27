@@ -1,12 +1,41 @@
 apply from: '../include.gradle'
 
+apply plugin: "org.jetbrains.intellij"
+
 repositories {
 	mavenLocal()
 	mavenCentral()
 }
 
 dependencies {
+	//compile "org.jetbrains.plugins:gradle:$ideaVersion"
 	compile project(":korge-core")
 	compile project(":korge-build")
 	compile project(":korge-ext-swf")
 }
+
+intellij {
+	version "IC-$ideaVersion"
+	//plugins = ['coverage', 'org.intellij.plugins.markdown:8.5.0.20160208']
+	pluginName 'KorgePlugin'
+	plugins 'coverage'
+	downloadSources true
+
+	publish {
+		//username 'zolotov'
+		//password 'password'
+		//channel 'nightly'
+	}
+}
+
+//apply plugin: 'idea'
+//idea {
+//	project {
+//		//jdkName = '1.8'
+//		//languageLevel = javaVersion
+//		//vcs = 'Git'
+//	}
+//	module {
+//		//generatedSourceDirs += file('gen')
+//	}
+//}

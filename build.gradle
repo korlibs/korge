@@ -10,6 +10,10 @@ buildscript {
 	}
 }
 
+plugins {
+	id "org.jetbrains.intellij" version "0.2.8"
+}
+
 configurations {
 	provided
 }
