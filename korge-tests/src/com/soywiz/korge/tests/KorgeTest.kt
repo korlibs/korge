@@ -34,13 +34,13 @@ open class KorgeTest {
 
 	@Suppress("UNCHECKED_CAST")
 	fun <T : Scene> testScene(module: Module, sceneClass: Class<T>, callback: suspend T.() -> Unit) = syncTest {
-		disableNativeImageLoading {
+		//disableNativeImageLoading {
 			val sc = Korge.test(module, sceneClass = sceneClass, canvas = canvas, timeProvider = TimeProvider {
 				//println("Requested Time: $testTime")
 				testTime
 			})
 			callback(sc.currentScene as T)
-		}
+		//}
 	}
 
 	suspend fun Scene.updateTime(dtMs: Int = 20) {
@@ -113,6 +113,8 @@ open class KorgeTest {
 		override val onMouseUp: Signal<Unit> = Signal()
 		override val onMouseDown: Signal<Unit> = Signal()
 
-		override fun repaint(): Unit = Unit
+		override fun repaint(): Unit {
+			ag.onRender(ag)
+		}
 	}
 }

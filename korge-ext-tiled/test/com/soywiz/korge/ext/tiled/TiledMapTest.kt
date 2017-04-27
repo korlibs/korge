@@ -12,7 +12,7 @@ import org.junit.Test
 class TiledMapTest {
 	val ag = LogAG()
 	val injector = AsyncInjector()
-			.map<AG>(ag)
+		.mapTyped<AG>(ag)
 
 	@Test
 	fun name() = syncTest {
