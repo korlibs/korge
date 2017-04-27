@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle
 
 import com.jtransc.error.ignoreErrors
+import com.jtransc.gradle.JTranscGradlePlugin
 import com.jtransc.gradle.get
 import com.soywiz.korge.Korge
 import com.soywiz.korge.build.ResourceProcessor
@@ -20,8 +21,9 @@ import java.util.*
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
-		project.dependencies.add("compile", "com.soywiz:korge-core:${Korge.VERSION}")
+		JTranscGradlePlugin().apply(project)
 
+		project.dependencies.add("compile", "com.soywiz:korge-core:${Korge.VERSION}")
 
 		project.addTask<KorgeResourcesTask>(
 			"genResources", group = "korge", description = "process resources",
