@@ -18,6 +18,7 @@ import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
+import com.soywiz.korio.service.Services
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.util.Extra
@@ -70,7 +71,7 @@ class Views(
 	var scaleAnchor = Anchor.MIDDLE_CENTER
 
 	suspend override fun init() {
-		for (plugin in ServiceLoader.load(KorgePlugin::class.java)) {
+		for (plugin in Services.loadList(KorgePlugin::class.java)) {
 			plugin.register(this)
 		}
 	}

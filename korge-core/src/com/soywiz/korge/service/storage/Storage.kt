@@ -2,11 +2,12 @@ package com.soywiz.korge.service.storage
 
 import com.soywiz.korio.error.KeyNotFoundException
 import com.soywiz.korio.error.unsupported
+import com.soywiz.korio.service.Services
 import java.util.*
 
-open class Storage protected constructor() {
+open class Storage protected constructor() : Services.Impl() {
 	companion object {
-		operator fun invoke() = ServiceLoader.load(Storage::class.java).firstOrNull() ?: unsupported("Not ${Storage::class.java.name} implementation found")
+		operator fun invoke() = Services.load(Storage::class.java)
 	}
 
 	val data = hashMapOf<String, String>()

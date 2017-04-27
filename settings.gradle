@@ -13,6 +13,6 @@ include(
 	'korge-ext-lipsync',
 	'korge-sample',
 	'korge-gradle-plugin',
-	'korge-intellij-plugin',
+	'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 	'korfl',
 )

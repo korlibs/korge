@@ -11,6 +11,6 @@ open class Ads() {
 	}
 
 	//companion object {
-	//    operator fun invoke() = ServiceLoader.load(Ads::class.java).firstOrNull() ?: unsupported("Not ${Ads::class.java.name} implementation found")
+	//    operator fun invoke() = Services.load(Ads::class.java).firstOrNull() ?: unsupported("Not ${Ads::class.java.name} implementation found")
 	//}
 }

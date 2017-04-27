@@ -17,7 +17,6 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.language.jvm.tasks.ProcessResources
 import java.io.File
-import java.util.*
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
@@ -49,26 +48,8 @@ abstract class KorgeBaseResourcesTask() : DefaultTask() {
 	var debug = false
 
 	suspend fun compile(inputFiles: List<File>, output: File) {
-		logger.info("Processing: $inputFiles to $output")
 		ignoreErrors { output.mkdirs() }
-		val outputVfs = output.toVfs().jail()
-		for (inputFile in inputFiles) {
-			val inputVfs = inputFile.toVfs().jail()
-			for (file in inputVfs.listRecursive()) {
-				val processor = processorsByExtension[file.extensionLC] ?: continue
-				val fileInput = file
-				val folderOutput = outputVfs[file.path].parent
-				ignoreErrors { folderOutput.ensureParents() }
-				ignoreErrors { folderOutput.mkdir() }
-				logger.info("Processing: $fileInput with $processor with output to $folderOutput")
-				try {
-					processor.process(fileInput, folderOutput)
-					//logger.info(file.toString())
-				} catch (e: Throwable) {
-					e.printStackTrace()
-				}
-			}
-		}
+		ResourceProcessor.process(inputFiles.map { it.toVfs() }, output.toVfs())
 	}
 
 	class GeneratePair() {
@@ -82,20 +63,10 @@ abstract class KorgeBaseResourcesTask() : DefaultTask() {
 	abstract var generatedSourceSet: String
 	abstract var processResources: String
 
-
-	val processorsByExtension: Map<String, ResourceProcessor> by lazy {
-		try {
-			ServiceLoader.load(ResourceProcessor::class.java).toList().flatMap { processor -> processor.extensionLCs.map { it to processor } }.toMap()
-		} catch (e: Throwable) {
-			e.printStackTrace()
-			mapOf<String, ResourceProcessor>()
-		}
-	}
-
 	@Suppress("unused")
 	@TaskAction open fun task() {
 		logger.info("KorgeResourcesTask ($this)")
-		for (processor in processorsByExtension.values) {
+		for (processor in ResourceProcessor.processorsByExtension.values) {
 			logger.info("${processor.extensionLCs} -> $processor")
 		}
 		for (p in project.allprojects) {

@@ -10,6 +10,6 @@ open class Share {
 	}
 
 	//companion object {
-	//	operator fun invoke() = ServiceLoader.load(Share::class.java).firstOrNull() ?: unsupported("Not ${Share::class.java.name} implementation found")
+	//	operator fun invoke() = Services.load(Share::class.java).firstOrNull() ?: unsupported("Not ${Share::class.java.name} implementation found")
 	//}
 }

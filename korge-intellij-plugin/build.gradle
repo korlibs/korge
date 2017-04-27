@@ -11,6 +11,7 @@ dependencies {
 	//compile "org.jetbrains.plugins:gradle:$ideaVersion"
 	compile project(":korge-core")
 	compile project(":korge-build")
+	compile project(":korge")
 	compile project(":korge-ext-swf")
 }
 
