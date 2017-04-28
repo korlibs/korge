@@ -4,9 +4,11 @@
 
 [All Soywiz's KORLIBS](https://github.com/soywiz/korlibs)
 
-### Modern, portable, testable and enjoyable Game Engine for Kotlin
+## Documentation:
 
-![](docs/screenshot1.png)
+[![](docs/documentation.png)](http://docs.korge.soywiz.com/)
+
+### Modern, portable, testable and enjoyable Game Engine for Kotlin
 
 Check [korge-sample](https://github.com/soywiz/korge/tree/master/korge-sample) folder for looking actual code.
 
