@@ -56,6 +56,7 @@ class Views(
 	fun setVirtualSize(width: Int, height: Int) {
 		this.virtualWidth = width
 		this.virtualHeight = height
+		resized()
 	}
 
 	var actualVirtualLeft = 0; private set
@@ -137,14 +138,18 @@ class Views(
 	}
 
 	fun resized(width: Int, height: Int) {
-		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
 		val actualWidth = width
 		val actualHeight = height
+		actualSize.setTo(actualWidth, actualHeight)
+		resized()
+	}
+
+	fun resized() {
+		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
 		val virtualWidth = virtualWidth
 		val virtualHeight = virtualHeight
 		val anchor = scaleAnchor
 
-		actualSize.setTo(actualWidth, actualHeight)
 		virtualSize.setTo(virtualWidth, virtualHeight)
 
 		scaleMode(virtualSize, actualSize, targetSize)
@@ -164,7 +169,7 @@ class Views(
 		actualVirtualLeft = -(stage.x / ratioX).toInt()
 		actualVirtualTop = -(stage.y / ratioY).toInt()
 
-		stage.dispatch(resizedEvent.setSize(width, height))
+		stage.dispatch(resizedEvent.setSize(actualSize.width, actualSize.height))
 	}
 }
 
