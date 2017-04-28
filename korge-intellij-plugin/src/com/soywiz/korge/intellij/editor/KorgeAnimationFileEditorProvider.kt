@@ -6,6 +6,7 @@ import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.text
 
 
 class KorgeAnimationFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider {
@@ -32,14 +33,20 @@ class KorgeAnimationFileEditorProvider : com.intellij.openapi.fileEditor.FileEdi
 			suspend override fun sceneInit(sceneView: Container) {
 				super.sceneInit(sceneView)
 
+				val file = fileToEdit.file
 				val animationLibrary = when (fileToEdit.file.extensionLC) {
-					"swf" -> fileToEdit.file.readSWF(views)
-					"ani" -> fileToEdit.file.readAni(views)
+					"swf" -> file.readSWF(views)
+					"ani" -> file.readAni(views)
 					else -> null
 				}
 
 				if (animationLibrary != null) {
+					views.setVirtualSize(animationLibrary.width, animationLibrary.height)
 					sceneView += animationLibrary.createMainTimeLine()
+					sceneView += views.text("${file.basename} : ${animationLibrary.width}x${animationLibrary.height}").apply {
+						x = 16.0
+						y = 16.0
+					}
 				}
 			}
 		}

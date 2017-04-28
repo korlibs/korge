@@ -23,10 +23,11 @@ import javax.swing.JPanel
 data class KorgeFileToEdit(val file: VfsFile)
 
 open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: VirtualFile, val module: Module, name: String) : FileEditor {
+	val ag by lazy { AGAwt() }
+
 	val component by lazy {
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
-		val ag = AGAwt()
 		println("KorgeParticleFileEditor[1]")
 		ag.glcanvas.minimumSize = Dimension(64, 64)
 		//ag.glcanvas.size = Dimension(64, 64)
@@ -101,6 +102,6 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 	}
 
 	override fun dispose() {
+		ag.dispose()
 	}
-
 }

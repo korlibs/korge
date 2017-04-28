@@ -267,7 +267,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 }
 
 @AsyncFactoryClass(AnLibrary.Factory::class)
-class AnLibrary(val views: Views, val fps: Double) : Extra by Extra.Mixin() {
+class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: Int = 0xFFFFFFFF.toInt()

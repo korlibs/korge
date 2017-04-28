@@ -43,7 +43,8 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
-		lib = AnLibrary(views, swf.frameRate)
+		val bounds = swf.frameSize.rect
+		lib = AnLibrary(views, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
 		for (symbol in symbols) lib.addSymbol(symbol)
 		processAs3Actions()

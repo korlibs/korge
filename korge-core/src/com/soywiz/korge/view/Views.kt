@@ -53,6 +53,11 @@ class Views(
 	var virtualWidth = 640; internal set
 	var virtualHeight = 480; internal set
 
+	fun setVirtualSize(width: Int, height: Int) {
+		this.virtualWidth = width
+		this.virtualHeight = height
+	}
+
 	var actualVirtualLeft = 0; private set
 	var actualVirtualTop = 0; private set
 

@@ -64,6 +64,8 @@ object AnLibrarySerializer {
 		writeStringz(AnLibraryFile.MAGIC, 8)
 		writeU_VL(AnLibraryFile.VERSION)
 		writeU_VL(lib.msPerFrame)
+		writeU_VL(lib.width)
+		writeU_VL(lib.height)
 		writeU_VL(0
 			.insert(config.mipmaps, 0)
 		)

@@ -10,9 +10,13 @@ import java.io.File
 import java.io.FileNotFoundException
 
 fun VirtualFile.toVfs(): VfsFile {
-	val url = this.canonicalPath ?: ""
-	println(url)
+	val file = this
+	val url = file.canonicalPath ?: ""
+	println("VirtualFile.toVfs: path=${file.path}, canonicalPath=${file.url}")
+	val root = this.root
+	println("VirtualFile.toVfs.root: path=${root.path}, canonicalPath=${root.canonicalPath}")
 	//return File(URI(url)).toVfs()
+
 	return File(url).toVfs()
 }
 
