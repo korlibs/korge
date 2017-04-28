@@ -3,5 +3,6 @@ apply from: '../include.gradle'
 dependencies {
 	compile project(":korge-core")
 	compile project(":korge-ext-swf")
+	compile project(":korge-ext-particle")
 	compile project(":korge-ext-spriter")
 }

@@ -1,63 +1,28 @@
-package com.soywiz.korge.intellij
+package com.soywiz.korge.intellij.editor
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
-import com.intellij.openapi.fileEditor.*
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorLocation
+import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGContainer
 import com.soywiz.korag.awt.AGAwt
 import com.soywiz.korge.Korge
+import com.soywiz.korge.intellij.toVfs
 import com.soywiz.korge.scene.Module
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.text
 import com.soywiz.korio.async.EventLoop
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.executeInNewThread
-import java.awt.BorderLayout
+import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.vfs.VfsFile
 import java.awt.Dimension
-import java.awt.LayoutManager
+import java.awt.GridLayout
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JPanel
-import java.awt.GridLayout
 
+data class KorgeFileToEdit(val file: VfsFile)
 
-
-class KorgeParticleFileEditorProvider : FileEditorProvider {
-	override fun accept(project: Project, virtualFile: VirtualFile): Boolean {
-		return (virtualFile.extension?.toLowerCase() ?: "") == "pex"
-	}
-
-	override fun createEditor(project: Project, virtualFile: VirtualFile): FileEditor {
-		return KorgeParticleFileEditor(project, virtualFile)
-	}
-
-	override fun getEditorTypeId(): String {
-		return "KorgeFileEditor"
-	}
-
-	override fun getPolicy(): FileEditorPolicy {
-		return FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
-	}
-}
-
-object KorgeParticleEditorKorgeModule : Module() {
-	override val mainScene: Class<out Scene> = KorgeParticleEditorKorgeScene::class.java
-}
-
-class KorgeParticleEditorKorgeScene : Scene() {
-	suspend override fun sceneInit(sceneView: Container) {
-		super.sceneInit(sceneView)
-
-		sceneView += views.text("HELLO WORLD!")
-	}
-}
-
-class KorgeParticleFileEditor(val project: Project, val virtualFile: VirtualFile) : FileEditor {
+open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: VirtualFile, val module: Module, name: String) : FileEditor {
 	val component by lazy {
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
@@ -68,10 +33,14 @@ class KorgeParticleFileEditor(val project: Project, val virtualFile: VirtualFile
 		//panel.add(JLabel("HELLO"))
 		panel.add(ag.glcanvas)
 
+		val injector = AsyncInjector()
+
+		injector.map(KorgeFileToEdit(virtualFile.toVfs()))
+
 		ag.onReady.then {
 			EventLoop {
 				println("KorgeParticleFileEditor[3]")
-				Korge.test(KorgeParticleEditorKorgeModule, canvas = ag, trace = true)
+				Korge.test(module, canvas = ag, injector = injector, trace = true)
 				println("KorgeParticleFileEditor[4]")
 			}
 		}
@@ -90,7 +59,7 @@ class KorgeParticleFileEditor(val project: Project, val virtualFile: VirtualFile
 	}
 
 	override fun getName(): String {
-		return "KorgeParticleEditor"
+		return name
 	}
 
 	override fun setState(p0: FileEditorState) {
