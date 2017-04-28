@@ -229,7 +229,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 				when (action) {
 					is AnPlaySoundAction -> {
 						spawn {
-							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.data
+							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
 							data?.play()
 						}
 						//println("play sound!")

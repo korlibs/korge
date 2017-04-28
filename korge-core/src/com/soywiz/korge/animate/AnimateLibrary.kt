@@ -1,6 +1,8 @@
 package com.soywiz.korge.animate
 
+import com.soywiz.korau.format.AudioData
 import com.soywiz.korau.sound.NativeSound
+import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korge.animate.serialization.AnLibraryFile
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -13,14 +15,13 @@ import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.FastByteArrayInputStream
+import com.soywiz.korio.util.AsyncCache
+import com.soywiz.korio.util.AsyncCacheItem
 import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.extract
-import com.soywiz.korio.util.insert
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
-import com.soywiz.korma.interpolation.interpolate
 import kotlin.collections.set
 
 open class AnSymbol(
@@ -32,7 +33,20 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(-1, "")
 
-class AnSymbolSound(id: Int, name: String?, val data: NativeSound?, val dataBytes: ByteArray?) : AnSymbol(id, name)
+class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) : AnSymbol(id, name) {
+	private val nativeSoundCache = AsyncCacheItem<NativeSound>()
+	suspend fun getNativeSound(): NativeSound = nativeSoundCache {
+		if (inputSound == null) {
+			try {
+				inputSound = nativeSoundProvider.createSound(dataBytes ?: byteArrayOf())
+			} catch (e: Throwable) {
+				inputSound = nativeSoundProvider.createSound(AudioData(44100, 2, shortArrayOf()))
+			}
+		}
+		inputSound!!
+	}
+}
+
 
 class AnTextFieldSymbol(id: Int, name: String?, val initialHtml: String, val bounds: Rectangle) : AnSymbol(id, name) {
 	override fun create(library: AnLibrary): AnElement = AnTextField(library, this)

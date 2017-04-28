@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij
 
+import com.intellij.facet.FacetManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.PerformInBackgroundOption
@@ -18,8 +19,10 @@ fun <T> runReadAction(callback: () -> T): T {
 }
 
 val Project.rootManager get() = ProjectRootManager.getInstance(this)
-val Module.rootManager get() = com.intellij.openapi.roots.ModuleRootManager.getInstance(this)
 val Project.moduleManager get() = com.intellij.openapi.module.ModuleManager.getInstance(this)
+
+val Module.rootManager get() = com.intellij.openapi.roots.ModuleRootManager.getInstance(this)
+val Module.facetManager get() = FacetManager.getInstance(this)
 
 fun Project.runBackgroundTaskWithProgress(callback: (ProgressIndicator) -> Unit) {
 	var error: Throwable? = null

@@ -476,14 +476,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				is TagDefineSound -> {
 					val soundBytes = it.soundData.cloneToNewByteArray()
-					val audioData = try {
-
-						nativeSoundProvider.createSound(soundBytes)
-					} catch (e: Throwable) {
-						e.printStackTrace()
-						null
-					}
-					symbols += AnSymbolSound(it.characterId, null, audioData, soundBytes)
+					symbols += AnSymbolSound(it.characterId, null, null, soundBytes)
 				}
 				is TagStartSound -> {
 					swfCurrentFrame.playSound(it.soundId)

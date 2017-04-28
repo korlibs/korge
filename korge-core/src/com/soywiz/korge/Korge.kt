@@ -30,21 +30,29 @@ object Korge {
 		args: Array<String> = arrayOf(),
 		sceneClass: Class<out Scene> = module.mainScene,
 		timeProvider: TimeProvider = TimeProvider(),
-		injector: AsyncInjector = AsyncInjector()
+		injector: AsyncInjector = AsyncInjector(),
+		trace: Boolean = false
 	): SceneContainer {
+		if (trace) println("Korge.setupCanvas[1]")
 		val ag = container.ag
 		injector.mapTyped<AG>(ag)
 		val views = injector.get<Views>()
 		val moduleArgs = ModuleArgs(args)
+		if (trace) println("Korge.setupCanvas[2]")
 
 		views.virtualWidth = module.virtualWidth
 		views.virtualHeight = module.virtualHeight
 
+		if (trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()
+
+		if (trace) println("Korge.setupCanvas[4]")
 		injector.mapTyped(moduleArgs)
 		injector.mapTyped(timeProvider)
 		injector.mapTyped<Module>(module)
 		module.init(injector)
+
+		if (trace) println("Korge.setupCanvas[5]")
 
 		val downPos = Point2d()
 		val upPos = Point2d()
@@ -56,6 +64,8 @@ object Korge {
 			views.input.mouse.setTo(mouseX, mouseY)
 			views.mouseUpdated()
 		}
+
+		if (trace) println("Korge.setupCanvas[6]")
 
 		container.onMouseOver {
 			updateMousePos()
@@ -98,6 +108,8 @@ object Korge {
 			//println("render:$delta,$adelta")
 		}
 
+		if (trace) println("Korge.setupCanvas[7]")
+
 		animationFrameLoop {
 			//ag.resized()
 			container.repaint()
@@ -106,6 +118,8 @@ object Korge {
 		val sc = views.sceneContainer()
 		views.stage += sc
 		sc.changeTo(sceneClass, time = 0)
+
+		if (trace) println("Korge.setupCanvas[8]")
 
 		return sc
 	}
@@ -117,9 +131,10 @@ object Korge {
 		sceneClass: Class<out Scene> = module.mainScene,
 		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector(),
-		debug: Boolean = false
+		debug: Boolean = false,
+		trace: Boolean = false
 	) = EventLoop {
-		test(module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector, timeProvider = timeProvider, debug = debug)
+		test(module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector, timeProvider = timeProvider, debug = debug, trace = trace)
 	}
 
 	suspend fun test(
@@ -129,11 +144,12 @@ object Korge {
 		sceneClass: Class<out Scene> = module.mainScene,
 		injector: AsyncInjector = AsyncInjector(),
 		timeProvider: TimeProvider = TimeProvider(),
-		debug: Boolean = false
+		debug: Boolean = false,
+		trace: Boolean = false
 	): SceneContainer {
 		val done = Promise.Deferred<SceneContainer>()
 		if (canvas != null) {
-			done.resolve(setupCanvas(container = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
+			done.resolve(setupCanvas(container = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector, trace = trace))
 		} else {
 			val icon = if (module.icon != null) {
 				try {
@@ -158,6 +174,7 @@ object Korge {
 	fun animationFrameLoop(callback: () -> Unit) {
 		var step: (() -> Unit)? = null
 		step = {
+			//println("animationFrameLoop.step")
 			callback()
 			EventLoop.requestAnimationFrame(step!!)
 		}

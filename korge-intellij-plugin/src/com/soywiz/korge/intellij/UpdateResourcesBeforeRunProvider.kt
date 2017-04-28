@@ -6,26 +6,25 @@ import com.intellij.execution.CommonJavaRunConfigurationParameters
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import com.soywiz.korge.build.KorgeManualServiceRegistration
 import com.soywiz.korge.build.ResourceProcessor
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.vfs.toVfs
 import org.jdom.Element
 import org.jetbrains.jps.model.java.JavaResourceRootType
-import org.jetbrains.jps.model.module.JpsModuleSourceRootType
-import java.io.File
-import java.net.URI
 
 open class KorgeUpdateResourceBeforeRunProvider : BeforeRunTaskProvider<UpdateResourceBeforeRunTask>() {
 	override fun getDescription(p0: UpdateResourceBeforeRunTask?): String = "KorgeUpdateResourceBeforeRunProvider"
 
 	override fun getName(): String = "KorgeUpdateResourceBeforeRunProvider"
 
-	override fun createTask(p0: RunConfiguration?): UpdateResourceBeforeRunTask? {
-		if (p0 is CommonJavaRunConfigurationParameters) {
-			return UpdateResourceBeforeRunTask(p0)
+	override fun createTask(runConfiguration: RunConfiguration): UpdateResourceBeforeRunTask? {
+		val project = runConfiguration.project
+		if (runConfiguration is CommonJavaRunConfigurationParameters) {
+			for (module in project.moduleManager.modules) {
+				println(module)
+			}
+			return UpdateResourceBeforeRunTask(runConfiguration)
 		}
 		return null
 	}
@@ -34,41 +33,7 @@ open class KorgeUpdateResourceBeforeRunProvider : BeforeRunTaskProvider<UpdateRe
 
 	override fun executeTask(p0: DataContext?, runConfiguration: RunConfiguration, executionEnvironment: ExecutionEnvironment, p3: UpdateResourceBeforeRunTask?): Boolean {
 		val project = executionEnvironment.project
-		project.runBackgroundTaskWithProgress { progress ->
-			KorgeManualServiceRegistration.register()
-
-			val resources = project.moduleManager.modules.flatMap { it.rootManager.getSourceRoots(JavaResourceRootType.RESOURCE) }
-
-			val resourcesVfs = resources.map { it.toVfs() }
-
-			val genresourcesVirtual = resourcesVfs.firstOrNull { it.basename == "genresources" }
-			val resourcesVirtual = resourcesVfs.firstOrNull { it.basename == "resources" }
-
-			println(resources)
-			println(resourcesVfs)
-			println("Regenerating resources")
-			println("genresourcesVirtual=$genresourcesVirtual : resourcesVirtual=$resourcesVirtual")
-
-			progress.text = "Regenerating resources"
-			if (genresourcesVirtual != null && resourcesVirtual != null) {
-				syncTest {
-					try {
-						// @TODO: Proper discovery of that folder
-						val extraOutputVirtual = genresourcesVirtual["../build/resources/main"]
-						println("Regenerating resources [1]")
-						ResourceProcessor.process(listOf(resourcesVirtual), genresourcesVirtual, extraOutputVirtual) { pi ->
-							progress.fraction = pi.fraction
-							progress.text = "Processing... ${pi.file}"
-						}
-						println("Regenerating resources [2]")
-					} catch (e: Throwable) {
-						e.printStackTrace()
-					}
-				}
-			}
-			progress.text = "Done"
-			println("/Regenerating resources")
-		}
+		KorgeBuildResourcesAction.build(project)
 		return true
 	}
 
