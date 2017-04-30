@@ -4,9 +4,13 @@ import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.readNativeSound
 import com.soywiz.korge.animate.play
 import com.soywiz.korge.component.Component
+import com.soywiz.korge.resources.Path
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.spawn
+import com.soywiz.korio.inject.AsyncFactory
+import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
@@ -25,17 +29,26 @@ class LipSync(val lipsync: String) {
 	}
 }
 
+@AsyncFactoryClass(Voice.Factory::class)
 class Voice(val views: Views, val voice: NativeSound, val lipsync: LipSync) {
 	val timeMs: Int get() = lipsync.timeMs
 	operator fun get(timeMs: Int): Char = lipsync[timeMs]
 	fun getAF(timeMs: Int): Char = lipsync.getAF(timeMs)
+
+	suspend fun play(name: String) {
+		views.lipSync.play(this, name)
+	}
+
+	class Factory(
+		val path: Path,
+		val resourcesRoot: ResourcesRoot,
+		val views: Views
+	) : AsyncFactory<Voice> {
+		suspend override fun create(): Voice = resourcesRoot[path].readVoice(views)
+	}
 }
 
-data class LipSyncEvent(
-	var name: String = "",
-	var timeMs: Int = 0,
-	var lip: Char = 'X'
-)
+data class LipSyncEvent(var name: String = "", var timeMs: Int = 0, var lip: Char = 'X')
 
 class LipSyncHandler(val views: Views) {
 	val event = LipSyncEvent()
