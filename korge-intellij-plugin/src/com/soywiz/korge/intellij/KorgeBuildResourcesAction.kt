@@ -39,7 +39,7 @@ class KorgeBuildResourcesAction : AnAction() {
 							val extraOutputVirtual = genresourcesVirtual["../build/resources/main"]
 							println("Regenerating resources [1]")
 							ResourceProcessor.process(listOf(resourcesVirtual), genresourcesVirtual, extraOutputVirtual) { pi ->
-								progress.fraction = pi.fraction
+								progress.fraction = if (pi.fraction <= 0.0) 0.0001 else pi.fraction
 								progress.text = "Processing... ${pi.file}"
 							}
 							println("Regenerating resources [2]")

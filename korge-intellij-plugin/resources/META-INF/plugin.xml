@@ -32,9 +32,6 @@
 		<fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
 		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeParticleFileEditorProvider"/>
 		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeAnimationFileEditorProvider"/>
-		<!--
-		<fileType.fileViewProviderFactory implementationClass="com.soywiz.korge.intellij.editor.KorgeAnimationFileViewerProviderFactory"/>
-		-->
 	</extensions>
 
 	<actions>

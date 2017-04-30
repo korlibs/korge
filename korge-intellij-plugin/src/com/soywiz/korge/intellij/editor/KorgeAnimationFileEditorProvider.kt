@@ -2,11 +2,13 @@ package com.soywiz.korge.intellij.editor
 
 import com.intellij.openapi.fileEditor.FileEditorPolicy
 import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.text
+import com.soywiz.korim.vector.Context2d
 
 
 class KorgeAnimationFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider {
@@ -35,7 +37,13 @@ class KorgeAnimationFileEditorProvider : com.intellij.openapi.fileEditor.FileEdi
 
 				val file = fileToEdit.file
 				val animationLibrary = when (fileToEdit.file.extensionLC) {
-					"swf" -> file.readSWF(views)
+					"swf" -> file.readSWF(views, defaultConfig = SWFExportConfig(
+						mipmaps = false,
+						antialiasing = true,
+						rasterizerMethod = Context2d.ShapeRasterizerMethod.X4,
+						exportScale = 2.0,
+						exportPaths = false
+					))
 					"ani" -> file.readAni(views)
 					else -> null
 				}

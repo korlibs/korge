@@ -22,7 +22,6 @@ import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.service.Services
 import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Anchor
@@ -189,31 +188,12 @@ class Views(
 		stage.dispatch(resizedEvent.setSize(actualSize.width, actualSize.height))
 	}
 
-	val frameLoops = arrayListOf<Cancellable>()
-
-	companion object {
-		var animationFrameLoopCount = 0
-	}
-
-	fun animationFrameLoop(callback: () -> Unit): Cancellable {
-		println("animationFrameLoop created")
-		animationFrameLoopCount++
-		val cancellable = eventLoop.animationFrameLoop(callback)
-		val cc = Cancellable {
-			animationFrameLoopCount--
-			println("animationFrameLoop cancelled: $animationFrameLoopCount")
-			if (animationFrameLoopCount != 0) {
-				println("  !!! animationFrameLoopCount != 0")
-			}
-			cancellable.cancel()
-		}
-		frameLoops += cc
-		return cc
+	fun animationFrameLoop(callback: () -> Unit): Closeable {
+		return eventLoop.animationFrameLoop(callback)
 	}
 
 	fun dispose() {
-		for (frameLoop in frameLoops) frameLoop.cancel()
-		frameLoops.clear()
+		eventLoop.close()
 	}
 }
 

@@ -39,13 +39,13 @@ suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig?): AnLibrary {
 
 var AnLibrary.swfExportConfig by Extra.Property { SWFExportConfig() }
 
-suspend fun VfsFile.readSWF(views: Views, content: ByteArray? = null): AnLibrary {
+suspend fun VfsFile.readSWF(views: Views, content: ByteArray? = null, defaultConfig: SWFExportConfig = SWFExportConfig()): AnLibrary {
 	val configFile = this.appendExtension("config")
 	val config = try {
 		if (configFile.exists()) {
 			Yaml.decodeToType<SWFExportConfig>(configFile.readString())
 		} else {
-			SWFExportConfig()
+			defaultConfig
 		}
 	} catch (e: Throwable) {
 		e.printStackTrace()

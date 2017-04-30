@@ -6,6 +6,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.redirect
@@ -228,7 +229,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			for (action in actions.actions) {
 				when (action) {
 					is AnPlaySoundAction -> {
-						spawn(library.views.coroutineContext) {
+						library.views.coroutineContext.go {
 							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
 							data?.play()
 						}

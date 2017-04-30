@@ -19,6 +19,11 @@ dependencies {
 
 apply plugin: 'org.jetbrains.intellij'
 
+//test {
+//	minHeapSize = "256m"
+//	maxHeapSize = "2048m"
+//}
+
 intellij {
 	version "IC-$ideaVersion"
 	//plugins = ['coverage', 'org.intellij.plugins.markdown:8.5.0.20160208']
@@ -31,6 +36,10 @@ intellij {
 		//password 'password'
 		//channel 'nightly'
 	}
+}
+
+runIde {
+	maxHeapSize = "2g"
 }
 
 //apply plugin: 'idea'

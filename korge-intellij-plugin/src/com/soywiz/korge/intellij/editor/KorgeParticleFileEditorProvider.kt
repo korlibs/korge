@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.editor
 
 import com.intellij.openapi.fileEditor.FileEditorPolicy
+import com.soywiz.korge.ext.particle.readParticle
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.text
@@ -30,8 +31,8 @@ class KorgeParticleFileEditorProvider : com.intellij.openapi.fileEditor.FileEdit
 			suspend override fun sceneInit(sceneView: com.soywiz.korge.view.Container) {
 				super.sceneInit(sceneView)
 
-				fileToEdit
-				sceneView += views.text("HELLO WORLD!")
+				//sceneView += views.text("HELLO WORLD!")
+				sceneView += fileToEdit.file.readParticle(views).create(views.virtualWidth / 2.0, views.virtualHeight / 2.0)
 			}
 		}
 	}

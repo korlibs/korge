@@ -23,7 +23,7 @@ import javax.swing.JPanel
 
 data class KorgeFileToEdit(val file: VfsFile)
 
-open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: VirtualFile, val module: Module, name: String) : FileEditor {
+open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: VirtualFile, val module: Module, val _name: String) : FileEditor {
 	companion object {
 		var componentsCreated = 0
 	}
@@ -61,8 +61,30 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 		panel
 	}
 
+	override fun getComponent(): JComponent {
+		return component
+	}
+
+	override fun dispose() {
+		componentsCreated--
+		println("KorgeBaseKorgeFileEditor.componentsCreated: $componentsCreated")
+		if (componentsCreated != 0) {
+			println("   !!!! componentsCreated != 0")
+		}
+		views?.dispose()
+		views = null
+		if (ag?.glcanvas != null) component.remove(ag?.glcanvas)
+		ag?.dispose()
+		ag = null
+		disposed = true
+	}
+
 	override fun isModified(): Boolean {
 		return false
+	}
+
+	override fun getName(): String {
+		return _name
 	}
 
 	override fun addPropertyChangeListener(p0: PropertyChangeListener) {
@@ -71,15 +93,7 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 	override fun removePropertyChangeListener(p0: PropertyChangeListener) {
 	}
 
-	override fun getName(): String {
-		return name
-	}
-
 	override fun setState(p0: FileEditorState) {
-	}
-
-	override fun getComponent(): JComponent {
-		return component
 	}
 
 	override fun getPreferredFocusedComponent(): JComponent? {
@@ -111,19 +125,5 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 
 	override fun isValid(): Boolean {
 		return true
-	}
-
-	override fun dispose() {
-		componentsCreated--
-		println("KorgeBaseKorgeFileEditor.componentsCreated: $componentsCreated")
-		if (componentsCreated != 0) {
-			println("   !!!! componentsCreated != 0")
-		}
-		views?.dispose()
-		views = null
-		if (ag?.glcanvas != null) component.remove(ag?.glcanvas)
-		ag?.dispose()
-		ag = null
-		disposed = true
 	}
 }
