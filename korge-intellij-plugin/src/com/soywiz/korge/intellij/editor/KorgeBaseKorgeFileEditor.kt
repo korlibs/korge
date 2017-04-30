@@ -11,6 +11,7 @@ import com.soywiz.korag.awt.AGAwt
 import com.soywiz.korge.Korge
 import com.soywiz.korge.intellij.toVfs
 import com.soywiz.korge.scene.Module
+import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.vfs.VfsFile
@@ -23,12 +24,21 @@ import javax.swing.JPanel
 data class KorgeFileToEdit(val file: VfsFile)
 
 open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: VirtualFile, val module: Module, name: String) : FileEditor {
-	val ag by lazy { AGAwt() }
+	companion object {
+		var componentsCreated = 0
+	}
+
+	var disposed = false
+	var ag: AGAwt? = null
+	var views: Views? = null
 
 	val component by lazy {
+		componentsCreated++
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
 		println("KorgeParticleFileEditor[1]")
+		val ag = AGAwt()
+		this.ag = ag
 		ag.glcanvas.minimumSize = Dimension(64, 64)
 		//ag.glcanvas.size = Dimension(64, 64)
 		//panel.add(JLabel("HELLO"))
@@ -40,9 +50,11 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 
 		ag.onReady.then {
 			EventLoop {
-				println("KorgeParticleFileEditor[3]")
-				Korge.test(module, canvas = ag, injector = injector, trace = true)
-				println("KorgeParticleFileEditor[4]")
+				try {
+					Korge.test(module, canvas = ag, injector = injector, trace = true, constructedViews = { views = it })
+				} finally {
+					if (disposed) dispose()
+				}
 			}
 		}
 
@@ -102,6 +114,16 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 	}
 
 	override fun dispose() {
-		ag.dispose()
+		componentsCreated--
+		println("KorgeBaseKorgeFileEditor.componentsCreated: $componentsCreated")
+		if (componentsCreated != 0) {
+			println("   !!!! componentsCreated != 0")
+		}
+		views?.dispose()
+		views = null
+		if (ag?.glcanvas != null) component.remove(ag?.glcanvas)
+		ag?.dispose()
+		ag = null
+		disposed = true
 	}
 }

@@ -11,13 +11,11 @@ import com.soywiz.korge.view.MouseMovedEvent
 import com.soywiz.korge.view.MouseUpEvent
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.async.EventLoop
-import com.soywiz.korio.async.Promise
-import com.soywiz.korio.async.go
+import com.soywiz.korio.async.*
+import com.soywiz.korio.coroutine.withCoroutineContext
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
-import com.soywiz.korma.Vector2
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korui.CanvasApplication
 
@@ -27,16 +25,20 @@ object Korge {
 	suspend fun setupCanvas(
 		container: AGContainer,
 		module: Module,
+		eventLoop: EventLoop,
 		args: Array<String> = arrayOf(),
 		sceneClass: Class<out Scene> = module.mainScene,
 		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector(),
+		constructedViews: (Views) -> Unit = {},
 		trace: Boolean = false
 	): SceneContainer {
 		if (trace) println("Korge.setupCanvas[1]")
 		val ag = container.ag
 		injector.mapTyped<AG>(ag)
+		injector.mapTyped<EventLoop>(eventLoop)
 		val views = injector.get<Views>()
+		constructedViews(views)
 		val moduleArgs = ModuleArgs(args)
 		if (trace) println("Korge.setupCanvas[2]")
 
@@ -110,7 +112,7 @@ object Korge {
 
 		if (trace) println("Korge.setupCanvas[7]")
 
-		animationFrameLoop {
+		views.animationFrameLoop {
 			//ag.resized()
 			container.repaint()
 		}
@@ -132,9 +134,14 @@ object Korge {
 		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false,
-		trace: Boolean = false
-	) = EventLoop {
-		test(module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector, timeProvider = timeProvider, debug = debug, trace = trace)
+		trace: Boolean = false,
+		constructedViews: (Views) -> Unit = {},
+		eventLoop: EventLoop = eventLoopFactoryDefaultImpl.createEventLoop()
+	) = EventLoop.main(eventLoop) {
+		test(
+			module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector,
+			timeProvider = timeProvider, debug = debug, trace = trace, constructedViews = constructedViews
+		)
 	}
 
 	suspend fun test(
@@ -145,11 +152,18 @@ object Korge {
 		injector: AsyncInjector = AsyncInjector(),
 		timeProvider: TimeProvider = TimeProvider(),
 		debug: Boolean = false,
+		constructedViews: (Views) -> Unit = {},
 		trace: Boolean = false
-	): SceneContainer {
+	): SceneContainer = withCoroutineContext {
 		val done = Promise.Deferred<SceneContainer>()
 		if (canvas != null) {
-			done.resolve(setupCanvas(container = canvas, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector, trace = trace))
+			done.resolve(setupCanvas(
+				container = canvas, module = module, args = args,
+				sceneClass = sceneClass, timeProvider = timeProvider,
+				injector = injector, trace = trace, eventLoop = eventLoop,
+				constructedViews = constructedViews
+			))
+
 		} else {
 			val icon = if (module.icon != null) {
 				try {
@@ -164,21 +178,15 @@ object Korge {
 
 			CanvasApplication(module.title, module.width, module.height, icon) {
 				go {
-					done.resolve(setupCanvas(container = it, module = module, args = args, sceneClass = sceneClass, timeProvider = timeProvider, injector = injector))
+					done.resolve(setupCanvas(
+						container = it, module = module, args = args, sceneClass = sceneClass,
+						timeProvider = timeProvider, injector = injector, eventLoop = eventLoop,
+						constructedViews = constructedViews
+					))
 				}
 			}
 		}
-		return done.promise.await()
-	}
-
-	fun animationFrameLoop(callback: () -> Unit) {
-		var step: (() -> Unit)? = null
-		step = {
-			//println("animationFrameLoop.step")
-			callback()
-			EventLoop.requestAnimationFrame(step!!)
-		}
-		step()
+		return@withCoroutineContext done.promise.await()
 	}
 
 	data class ModuleArgs(val args: Array<String>)

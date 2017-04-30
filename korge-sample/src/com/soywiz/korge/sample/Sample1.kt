@@ -46,7 +46,7 @@ object Sample1Module : Module() {
 
 	suspend override fun init(injector: AsyncInjector) {
 		injector.get<ResourcesRoot>().mount("/", ResourcesVfs)
-		injector.get<Views>().registerPropertyTrigger("gravity") { view, key, value ->
+		injector.get<Views>().registerPropertyTriggerSuspend("gravity") { view, key, value ->
 			val gravity = value.toDouble()
 			go {
 				var speed = 0.0
@@ -89,12 +89,12 @@ class JellyButton(val view: View) {
 	//val thread = AsyncThread()
 
 	init {
-		view.onOver { async { view.tween(view::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
-		view.onOut { async { view.tween(view::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOver { view.views.eventLoop.async { view.tween(view::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOut { view.views.eventLoop.async { view.tween(view::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
 	}
 
 	fun onClick(callback: suspend () -> Unit) {
-		view.onClick { async { callback() } }
+		view.onClick { view.views.eventLoop.async { callback() } }
 	}
 }
 
@@ -192,19 +192,20 @@ class Sample1Scene(
 		}
 
 		sceneView += progressbarLibrary.createMainTimeLine().apply {
-			this.dockedTo(Anchor.TOP_LEFT)
+			this@apply.dockedTo(Anchor.TOP_LEFT)
 			go {
-				percent = (this["percent"] as AnTextField?)!!
+				percent = (this@apply["percent"] as AnTextField?)!!
 				percent.onClick {
 					percent.alpha = 0.5
 					println(percent.alpha)
 				}
 				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
-					this.seekStill("progressbar", ratio)
+					this@apply.seekStill("progressbar", ratio)
 					//println(this.findFirstWithName("percent"))
 					percent.setText("%d%%".format((ratio * 100).toInt()))
 				}
 			}
+			Unit
 		}
 
 		sceneView.text("Hello world! F,", textSize = 72.0, font = font).apply {

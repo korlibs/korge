@@ -9,10 +9,9 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
-import com.soywiz.korim.format.disableNativeImageLoading
-import com.soywiz.korio.async.EventLoop
+import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.syncTest
+import com.soywiz.korio.async.sync
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korma.geom.Rectangle
@@ -20,12 +19,17 @@ import org.junit.Before
 
 @Suppress("unused")
 open class KorgeTest {
+	val eventLoop = EventLoopTest()
 	val injector: AsyncInjector = AsyncInjector()
 	val ag: AG = DummyAG()
 	val input: Input = Input()
-	val views = Views(ag, injector, input)
+	val views = Views(eventLoop, ag, injector, input)
 	var testTime = 0L
 	val canvas = DummyAGContainer(ag)
+
+	fun syncTest(block: suspend EventLoopTest.() -> Unit): Unit {
+		sync(el = eventLoop, step = 10, block = block)
+	}
 
 	@Before
 	fun init() = syncTest {
@@ -35,11 +39,11 @@ open class KorgeTest {
 	@Suppress("UNCHECKED_CAST")
 	fun <T : Scene> testScene(module: Module, sceneClass: Class<T>, callback: suspend T.() -> Unit) = syncTest {
 		//disableNativeImageLoading {
-			val sc = Korge.test(module, sceneClass = sceneClass, canvas = canvas, timeProvider = TimeProvider {
-				//println("Requested Time: $testTime")
-				testTime
-			})
-			callback(sc.currentScene as T)
+		val sc = Korge.test(module, sceneClass = sceneClass, canvas = canvas, timeProvider = TimeProvider {
+			//println("Requested Time: $testTime")
+			testTime
+		})
+		callback(sc.currentScene as T)
 		//}
 	}
 
@@ -49,7 +53,7 @@ open class KorgeTest {
 		//println("updateTime: $dtMs :: $testTime")
 		//println("updateTime: $dtMs")
 		ag.onRender(ag)
-		EventLoop.sleepNextFrame()
+		eventLoop.sleepNextFrame()
 		//views.update(dtMs)
 	}
 
@@ -72,19 +76,19 @@ open class KorgeTest {
 	suspend fun View.simulateClick() {
 		this.mouse.onClick(this.mouse)
 		ag.onRender(ag)
-		EventLoop.sleepNextFrame()
+		eventLoop.sleepNextFrame()
 	}
 
 	suspend fun View.simulateOver() {
 		this.mouse.onOver(this.mouse)
 		ag.onRender(ag)
-		EventLoop.sleepNextFrame()
+		eventLoop.sleepNextFrame()
 	}
 
 	suspend fun View.simulateOut() {
 		this.mouse.onOut(this.mouse)
 		ag.onRender(ag)
-		EventLoop.sleepNextFrame()
+		eventLoop.sleepNextFrame()
 	}
 
 	suspend fun View.isVisibleToUser(): Boolean {

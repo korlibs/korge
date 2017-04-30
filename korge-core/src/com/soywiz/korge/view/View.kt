@@ -406,15 +406,14 @@ fun View.replaceWith(view: View) {
 	this.index = -1
 }
 
-suspend fun Updatable.updateLoop(step: Int = 10, callback: suspend () -> Unit) {
-
+suspend fun Updatable.updateLoop(eventLoop: EventLoop, step: Int = 10, callback: suspend () -> Unit) {
 	val view = this
 	var done = false
 	go {
 		while (!done) {
 			view.update(step)
-			EventLoop.impl.step(step)
-			sleep(1)
+			eventLoop.step(step)
+			eventLoop.sleep(1)
 		}
 	}
 	val p = go {

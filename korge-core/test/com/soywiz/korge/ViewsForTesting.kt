@@ -2,24 +2,31 @@ package com.soywiz.korge
 
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.updateLoop
+import com.soywiz.korio.async.EventLoopTest
+import com.soywiz.korio.async.sync
 import com.soywiz.korio.async.syncTest
 import org.junit.Before
 
 open class ViewsForTesting {
-	val viewsLog = ViewsLog()
+	val elt = EventLoopTest()
+	val viewsLog = ViewsLog(elt)
 	val injector = viewsLog.injector
 	val ag = viewsLog.ag
 	val input = viewsLog.input
 	val views = viewsLog.views
+
+	fun syncTest(block: suspend EventLoopTest.() -> Unit): Unit {
+		sync(el = elt, step = 10, block = block)
+	}
 
 	@Before
 	fun initViews() = syncTest {
 		viewsLog.init()
 	}
 
-	fun viewsTest(step: Int = 10, callback: suspend () -> Unit) = syncTest {
-		views.updateLoop(step) {
-			callback()
+	fun viewsTest(step: Int = 10, callback: suspend EventLoopTest.() -> Unit) = syncTest {
+		views.updateLoop(this@syncTest, step) {
+			callback(this@syncTest)
 		}
 	}
 

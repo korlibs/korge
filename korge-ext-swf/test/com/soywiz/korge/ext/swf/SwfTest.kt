@@ -4,6 +4,8 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.EventLoopTest
+import com.soywiz.korio.async.sync
 import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.MemoryVfs
@@ -15,8 +17,13 @@ import org.junit.Ignore
 import org.junit.Test
 
 class SwfTest {
-	val viewsLog = ViewsLog()
+	val eventLoopTest = EventLoopTest()
+	val viewsLog = ViewsLog(eventLoopTest)
 	val views = viewsLog.views
+
+	fun syncTest(block: suspend EventLoopTest.() -> Unit): Unit {
+		sync(el = eventLoopTest, step = 10, block = block)
+	}
 
 	suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
 		val mem = MemoryVfs()

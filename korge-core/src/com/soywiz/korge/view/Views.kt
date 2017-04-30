@@ -15,34 +15,51 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.BitmapFontGenerator
+import com.soywiz.korio.async.EventLoop
+import com.soywiz.korio.async.go
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.service.Services
 import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.geom.*
-import java.util.*
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.SizeInt
+import java.io.Closeable
 
 @Singleton
 class Views(
+	val eventLoop: EventLoop,
 	val ag: AG,
 	val injector: AsyncInjector,
 	val input: Input
 ) : AsyncDependency, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+	val coroutineContext = eventLoop.coroutineContext
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 
 	init {
+		injector.mapTyped<EventLoop>(eventLoop)
 		injector.mapTyped<AG>(ag)
+		injector.mapTyped<Views>(this)
 	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 
 	fun registerPropertyTrigger(propName: String, gen: (View, String, String) -> Unit) {
 		propsTriggers[propName] = gen
+	}
+
+	fun registerPropertyTriggerSuspend(propName: String, gen: suspend (View, String, String) -> Unit) {
+		propsTriggers[propName] = { view, key, value ->
+			eventLoop.go {
+				gen(view, key, value)
+			}
+		}
 	}
 
 	var clampElapsedTimeTo = 100
@@ -171,6 +188,33 @@ class Views(
 
 		stage.dispatch(resizedEvent.setSize(actualSize.width, actualSize.height))
 	}
+
+	val frameLoops = arrayListOf<Cancellable>()
+
+	companion object {
+		var animationFrameLoopCount = 0
+	}
+
+	fun animationFrameLoop(callback: () -> Unit): Cancellable {
+		println("animationFrameLoop created")
+		animationFrameLoopCount++
+		val cancellable = eventLoop.animationFrameLoop(callback)
+		val cc = Cancellable {
+			animationFrameLoopCount--
+			println("animationFrameLoop cancelled: $animationFrameLoopCount")
+			if (animationFrameLoopCount != 0) {
+				println("  !!! animationFrameLoopCount != 0")
+			}
+			cancellable.cancel()
+		}
+		frameLoops += cc
+		return cc
+	}
+
+	fun dispose() {
+		for (frameLoop in frameLoops) frameLoop.cancel()
+		frameLoops.clear()
+	}
 }
 
 class Stage(views: Views) : Container(views) {
@@ -188,11 +232,12 @@ class Stage(views: Views) : Container(views) {
 }
 
 class ViewsLog(
+	val eventLoop: EventLoop,
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: LogAG = LogAG(),
 	val input: Input = Input()
 ) : AsyncDependency {
-	val views = Views(ag, injector, input)
+	val views = Views(eventLoop, ag, injector, input)
 
 	suspend override fun init() {
 		views.init()
