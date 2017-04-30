@@ -4,6 +4,7 @@ import com.soywiz.korge.component.Component
 import com.soywiz.korge.event.addEventListener
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.addSuspend
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.extraProperty
 import com.soywiz.korma.geom.Point2d
@@ -57,9 +58,9 @@ class MouseComponent(view: View) : Component(view) {
 			frame.mouseHitSearch = true
 			frame.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
 			//if (frame.mouseHitResult != null) {
-				//val hitResult = frame.mouseHitResult!!
-				//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
-				//hitResult.dump()
+			//val hitResult = frame.mouseHitResult!!
+			//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
+			//hitResult.dump()
 			//}
 		}
 		hitTest = input.frame.mouseHitResult
@@ -104,9 +105,9 @@ class MouseComponent(view: View) : Component(view) {
 
 val View.mouse by Extra.PropertyThis<View, MouseComponent> { this.getOrCreateComponent { MouseComponent(this) } }
 
-inline fun <T : View?> T?.onClick(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onClick?.invoke(handler) }
-inline fun <T : View?> T?.onOver(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOver?.invoke(handler) }
-inline fun <T : View?> T?.onOut(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOut?.invoke(handler) }
-inline fun <T : View?> T?.onDown(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onDown?.invoke(handler) }
-inline fun <T : View?> T?.onUp(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUp?.invoke(handler) }
-inline fun <T : View?> T?.onMove(noinline handler: (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.invoke(handler) }
+inline fun <T : View?> T?.onClick(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onClick?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onOver(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOver?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onOut(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOut?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onDown(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onDown?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onUp(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUp?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.addSuspend(this.views.coroutineContext, handler) }

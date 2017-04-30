@@ -7,18 +7,23 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 
-@AsyncFactoryClass(SoundRefFactory::class)
-class SoundFile(val audio: NativeSound) {
+@AsyncFactoryClass(SoundFile.Factory::class)
+class SoundFile(
+	val nativeSound: NativeSound,
+	val soundSystem: SoundSystem
+) {
 	suspend fun play() {
-		audio.play()
+		soundSystem.play(this.nativeSound)
+	}
+
+	class Factory(
+		val path: Path,
+		val resourcesRoot: ResourcesRoot,
+		val soundSystem: SoundSystem
+	) : AsyncFactory<SoundFile> {
+		suspend override fun create(): SoundFile {
+			return SoundFile(resourcesRoot[path].readNativeSoundOptimized(), soundSystem)
+		}
 	}
 }
 
-class SoundRefFactory(
-	val path: Path,
-	val resourcesRoot: ResourcesRoot
-) : AsyncFactory<SoundFile> {
-	suspend override fun create(): SoundFile {
-		return SoundFile(resourcesRoot[path].readNativeSoundOptimized())
-	}
-}

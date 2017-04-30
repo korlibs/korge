@@ -77,6 +77,7 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 		ag?.dispose()
 		ag = null
 		disposed = true
+		System.gc()
 	}
 
 	override fun isModified(): Boolean {

@@ -157,6 +157,7 @@ var RenderContext.stencilIndex by Extra.Property { 0 }
 
 class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	val library: AnLibrary = view.library
+	val views = library.views
 	var running = true
 	var currentTime = 0
 	var currentStateName: String? = null
@@ -231,7 +232,9 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 					is AnPlaySoundAction -> {
 						library.views.coroutineContext.go {
 							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
-							data?.play()
+							if (data != null) {
+								views.soundSystem.play(data)
+							}
 						}
 						//println("play sound!")
 					}

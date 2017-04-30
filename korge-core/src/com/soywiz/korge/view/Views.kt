@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.log.LogAG
+import com.soywiz.korge.audio.SoundSystem
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
 import com.soywiz.korge.event.Event
@@ -40,11 +41,13 @@ class Views(
 	val coroutineContext = eventLoop.coroutineContext
 	var lastId = 0
 	val renderContext = RenderContext(ag)
+	val soundSystem = SoundSystem()
 
 	init {
 		injector.mapTyped<EventLoop>(eventLoop)
 		injector.mapTyped<AG>(ag)
 		injector.mapTyped<Views>(this)
+		injector.mapTyped<SoundSystem>(soundSystem)
 	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -194,6 +197,7 @@ class Views(
 
 	fun dispose() {
 		eventLoop.close()
+		soundSystem.close()
 	}
 }
 
