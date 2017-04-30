@@ -24,6 +24,10 @@ apply plugin: 'org.jetbrains.intellij'
 //	maxHeapSize = "2048m"
 //}
 
+//println("jetbrainsUsername: " + properties.jetbrainsUsername)
+
+def globalProps = properties
+
 intellij {
 	version "IC-$ideaVersion"
 	//plugins = ['coverage', 'org.intellij.plugins.markdown:8.5.0.20160208']
@@ -31,11 +35,19 @@ intellij {
 	plugins 'coverage'
 	downloadSources true
 
-	publish {
-		//username 'zolotov'
-		//password 'password'
+	//println("jetbrainsUsername: " + globalProps.jetbrainsUsername)
+}
+
+publishPlugin  {
+	//println("jetbrainsUsername: " + globalProps.jetbrainsUsername)
+	if (globalProps.jetbrainsUsername != null) {
+		username globalProps.jetbrainsUsername
+		password globalProps.jetbrainsPassword
 		//channel 'nightly'
 	}
+	//username 'zolotov'
+	//password 'password'
+	//channel 'nightly'
 }
 
 runIde {
