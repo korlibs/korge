@@ -288,7 +288,8 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		characterId = data.readUI16()
-		bitmapFormat = BitmapFormat[data.readUI8()]
+		val rawFormat = data.readUI8()
+		bitmapFormat = BitmapFormat[rawFormat]
 		bitmapWidth = data.readUI16()
 		bitmapHeight = data.readUI16()
 		if (bitmapFormat == BitmapFormat.BIT_8) bitmapColorTableSize = data.readUI8()

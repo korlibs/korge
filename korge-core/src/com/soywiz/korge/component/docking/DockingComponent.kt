@@ -10,7 +10,7 @@ class DockingComponent(view: View, var anchor: Anchor) : Component(view) {
 	//private val bounds = Rectangle()
 
 	init {
-		detatchCancellables += view.addEventListener<StageResizedEvent> { e ->
+		addEventListener<StageResizedEvent> { e ->
 			view.x = views.actualVirtualLeft.toDouble() + (views.actualVirtualWidth) * anchor.sx
 			view.y = views.actualVirtualTop.toDouble() + (views.actualVirtualHeight) * anchor.sy
 			view.invalidate()

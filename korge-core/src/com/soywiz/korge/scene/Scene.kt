@@ -1,6 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.korge.log.Logger
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
@@ -11,6 +12,7 @@ import com.soywiz.korio.util.Cancellable
 abstract class Scene : AsyncDependency, ViewsContainer {
 	@Inject override lateinit var views: Views
 	@Inject lateinit var sceneContainer: SceneContainer
+	@Inject lateinit var resourcesRoot: ResourcesRoot
 	lateinit var sceneView: Container; private set
 	val root get() = sceneView
 	protected val destroyCancellables = arrayListOf<Cancellable>()
@@ -19,8 +21,7 @@ abstract class Scene : AsyncDependency, ViewsContainer {
 		sceneView = views.container()
 	}
 
-	suspend open fun sceneInit(sceneView: Container) {
-	}
+	suspend abstract fun sceneInit(sceneView: Container): Unit
 
 	suspend open fun sceneAfterInit() {
 	}

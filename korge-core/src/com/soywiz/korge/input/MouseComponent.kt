@@ -38,16 +38,16 @@ class MouseComponent(view: View) : Component(view) {
 	var clickedCount = 0
 
 	init {
-		detatchCancellables += view.addEventListener<MouseUpEvent> { e ->
+		addEventListener<MouseUpEvent> { e ->
 			upPos.copyFrom(input.mouse)
 			if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
 				clickedCount++
 			}
 		}
-		detatchCancellables += view.addEventListener<MouseDownEvent> { e ->
+		addEventListener<MouseDownEvent> { e ->
 			downPos.copyFrom(input.mouse)
 		}
-		detatchCancellables += view.addEventListener<MouseMovedEvent> { e ->
+		addEventListener<MouseMovedEvent> { e ->
 			//println(e)
 		}
 	}

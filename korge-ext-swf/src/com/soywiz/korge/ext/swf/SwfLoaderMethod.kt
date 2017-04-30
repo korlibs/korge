@@ -520,7 +520,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 							//}
 						}
 						is TagDefineBitsLossless -> {
-							val isRgba = it.hasAlpha
+							//val isRgba = it.hasAlpha
 							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
 							funcompressedData.uncompressInWorker("zlib")
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
@@ -533,7 +533,10 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, BGRA_5551.decode(uncompressedData))
 								}
 								BitmapFormat.BIT_24_32 -> {
-									val colorFormat = if (isRgba) BGRA else RGB
+									val components = uncompressedData.size / (it.bitmapWidth * it.bitmapHeight)
+									val hasAlpha = components >= 4
+									val colorFormat = if (hasAlpha) BGRA else RGB
+									//fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
 									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
 								}
 								else -> Unit
