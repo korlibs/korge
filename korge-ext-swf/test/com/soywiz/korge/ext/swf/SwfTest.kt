@@ -35,7 +35,9 @@ class SwfTest {
 	@Test
 	fun name3() = syncTest {
 		val lib = ResourcesVfs["simple.swf"].readSWFDeserializing(views)
+		Assert.assertEquals("550x400", "${lib.width}x${lib.height}")
 		val mc = lib.createMainTimeLine()
+
 		println(lib.fps)
 		println(lib.msPerFrame)
 		for (n in 0 until 10) {

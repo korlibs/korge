@@ -55,9 +55,9 @@ object AnLibraryDeserializer {
 		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
 		if (readU_VL() != AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION}")
 		val msPerFrame = readU_VL()
-		val fileFlags = readU_VL()
 		val width = readU_VL()
 		val height = readU_VL()
+		val fileFlags = readU_VL()
 		val mipmaps = fileFlags.extract(0)
 
 		val library = AnLibrary(views, width, height, 1000.0 / msPerFrame)

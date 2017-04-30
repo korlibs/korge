@@ -3,15 +3,15 @@ buildscript {
 		mavenLocal()
 		jcenter()
 		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+		classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.9"
 	}
-}
-
-plugins {
-	id "org.jetbrains.intellij" version "0.2.8"
 }
 
 configurations {
