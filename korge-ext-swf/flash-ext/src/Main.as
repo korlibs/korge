@@ -67,7 +67,7 @@ package {
 				"fl.addEventListener('selectionChanged', function() {" +
 				//"	fl.trace('SELECTION_CHANGED JS');" +
 				"	var doc = fl.getDocumentDOM();" +
-				"	var item = doc ? doc.selection[0] : null;" +
+				"	var item = (doc && (doc.selection.length == 1)) ? doc.selection[0] : null;" +
 				"	var data = item ? (item.hasPersistentData('props') ? item.getPersistentData('props') : '{}') : null;" +
 				"	var data2 = data ? (data.split('').map(function(s) { return s.charCodeAt(0); }).join(',')) : null;" +
 				"	fl.getSwfPanel('KorgeEXT', false).call('selectionChanged', data2);" +
