@@ -111,7 +111,7 @@ class Views(
 	inline fun solidRect(width: Number, height: Number, color: Int): SolidRect = SolidRect(this, width.toDouble(), height.toDouble(), color)
 
 	val dummyView by lazy { View(this) }
-	val transparentTexture by lazy { texture(Bitmap32(1, 1)) }
+	val transparentTexture by lazy { texture(Bitmap32(0, 0)) }
 	val whiteTexture by lazy { texture(Bitmap32(1, 1, intArrayOf(Colors.WHITE))) }
 	val transformedDummyTexture by lazy { TransformedTexture(transparentTexture) }
 	val dummyFont by lazy { BitmapFont(ag, 16, mapOf(), mapOf()) }

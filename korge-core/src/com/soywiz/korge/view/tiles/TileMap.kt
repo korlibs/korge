@@ -24,7 +24,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
         batch.setStateFast(tileset.base, blendFactors = computedBlendMode.factors, smoothing = smoothing)
 
         map.forEach { v, x, y ->
-            val tex = tileset[map[x, y]]
+            val tex = tileset[map[x, y]] ?: return@forEach
             val p0 = pos + (dU * x.toDouble()) + (dV * y.toDouble())
             val p1 = p0 + dU
             val p2 = p0 + dU + dV

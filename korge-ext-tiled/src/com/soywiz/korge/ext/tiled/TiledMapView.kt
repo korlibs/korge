@@ -10,9 +10,7 @@ class TiledMapView(views: Views, val tiledMap: TiledMap) : Container(views) {
 	init {
 		for ((index, layer) in tiledMap.allLayers.withIndex()) {
 			if (layer is TiledMap.Layer.Patterns) {
-				val tileset = tiledMap.tilesets.first().tileset
-				if (index == 1) continue
-				this += TileMap(layer.map, tileset, views)
+				this += TileMap(layer.map, tiledMap.tileset, views)
 			}
 		}
 	}

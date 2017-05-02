@@ -1,15 +1,16 @@
 package com.soywiz.korge.ext.tiled
 
-import com.soywiz.korag.AG
 import com.soywiz.korge.render.Texture
-import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.texture
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.NamedColors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.compression.uncompressGzip
 import com.soywiz.korio.compression.uncompressZlib
@@ -33,6 +34,7 @@ class TiledMap {
 	val pixelHeight: Int get() = height * tileheight
 	val tilesets = arrayListOf<TiledTileset>()
 	val allLayers = arrayListOf<Layer>()
+	lateinit var tileset: TileSet
 	inline val patternLayers get() = allLayers.patterns
 	inline val imageLayers get() = allLayers.images
 	inline val objectLayers get() = allLayers.objects
@@ -88,6 +90,8 @@ suspend fun VfsFile.readTiledMap(views: Views): TiledMap {
 	tiledMap.tilewidth = mapXml.getInt("tilewidth") ?: 32
 	tiledMap.tileheight = mapXml.getInt("tileheight") ?: 32
 
+	var maxGid = 1
+	//var lastBaseTexture = views.transparentTexture.base
 
 	for (element in mapXml.allChildrenNoComments) {
 		when (element.nameLC) {
@@ -102,11 +106,20 @@ suspend fun VfsFile.readTiledMap(views: Views): TiledMap {
 				val source = image?.str("source") ?: ""
 				val width = image?.int("width", 0) ?: 0
 				val height = image?.int("height", 0) ?: 0
-				val tex = folder[source].readTexture(views)
-				tiledMap.tilesets += TiledMap.TiledTileset(
+				val bmp = folder[source].readBitmapOptimized().toBMP32()
+				// @TODO: Preprocess this, so in JS we don't have to do anything!
+				val FUCSIA = RGBA(0xFF, 0x00, 0xFF, 0xFF)
+				for (n in 0 until bmp.area) {
+					if (bmp.data[n] == FUCSIA) bmp.data[n] = Colors.TRANSPARENT_BLACK
+				}
+				val tex = views.texture(bmp, mipmaps = true)
+				val tiledTileset = TiledMap.TiledTileset(
 					tileset = TileSet(views, Texture(tex.base), tilewidth, tileheight, columns, tilecount),
 					firstgid = firstgid
 				)
+				//lastBaseTexture = tex.base
+				tiledMap.tilesets += tiledTileset
+				maxGid = Math.max(maxGid, firstgid + tiledTileset.tileset.textures.size)
 			}
 			"layer", "objectgroup", "imagelayer" -> {
 				val layer = when (element.nameLC) {
@@ -213,6 +226,21 @@ suspend fun VfsFile.readTiledMap(views: Views): TiledMap {
 			}
 		}
 	}
+
+	val combinedTileset = kotlin.arrayOfNulls<Texture>(maxGid + 1)
+
+	for (tileset in tiledMap.tilesets) {
+		for (n in 0 until tileset.tileset.textures.size) {
+			combinedTileset[tileset.firstgid + n] = tileset.tileset.textures[n]
+		}
+	}
+
+	for (cts in combinedTileset) {
+		println(cts)
+	}
+
+	tiledMap.tileset = TileSet(views, combinedTileset.toList(), tiledMap.tilewidth, tiledMap.tileheight)
+
 	return tiledMap
 }
 

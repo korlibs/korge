@@ -24,6 +24,8 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 	@JvmField val y0: Float = (top).toFloat() / base.height.toFloat()
 	@JvmField val y1: Float = (bottom).toFloat() / base.height.toFloat()
 
+	override fun toString(): String = "Texture($base, (x=$x, y=$y, width=$width, height=$height))"
+
 	fun slice(x: Int, y: Int, width: Int, height: Int) = sliceBounds(x, y, x + width, y + height)
 
 	fun slice(rect: Rectangle) = slice(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
