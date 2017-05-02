@@ -9,6 +9,8 @@ package {
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
+	import adobe.utils.MMExecute;
+	import flash.external.ExternalInterface;
 
 	[SWF(frameRate=60, width=300, height=320, backgroundColor="#454545")]
 	public class Main extends Sprite {
@@ -50,9 +52,8 @@ package {
 				propertiesTextField.width = stage.stageWidth;
 				propertiesTextField.height = stage.stageHeight - propertiesTextField.y;	
 			});
-
+			
 			propertiesTextField.addEventListener(Event.CHANGE, function (e:*):void {
-				Logger.log('CHANGE');
 				if (selectedItem) {
 					var props:* = Props.parse(propertiesTextField.text);
 					setPropertiesToSelectedJson(JSON.stringify(props))
@@ -61,46 +62,35 @@ package {
 
 			setSelectedItem(false);
 
-			JSFLExt.exec(
-				<js><![CDATA[
-					fl.addEventListener("selectionChanged", callback);
-				]]></js>.toString(),
-				{
-					callback: function (args:Array):void {
-						var json: String = getPropertiesFromSelectedItemJson();
-						Logger.log('SELECTION_CHANGED: ' + json);
-						setProperties((json != null) ? JSON.parse(json) : null);
-					}
-				}
+			ExternalInterface.addCallback("selectionChanged", selectionChanged);
+			MMExecute(
+				"fl.addEventListener('selectionChanged', function() {" +
+				//"	fl.trace('SELECTION_CHANGED JS');" +
+				"	var doc = fl.getDocumentDOM();" +
+				"	var item = doc ? doc.selection[0] : null;" +
+				"	var data = item ? (item.hasPersistentData('props') ? item.getPersistentData('props') : '{}') : null;" +
+				"	var data2 = data ? (data.split('').map(function(s) { return s.charCodeAt(0); }).join(',')) : null;" +
+				"	fl.getSwfPanel('KorgeEXT', false).call('selectionChanged', data2);" +
+				"});"
 			);
 		}
 		
-		static private function getPropertiesFromSelectedItemJson(): * {
-			return JSFLExt.exec(
-				<js><![CDATA[
-					var doc = fl.getDocumentDOM(); if (!doc) return null;
-					var item = doc.selection[0]; if (!item) return null;
-					if (doc.selection.length != 1) return null;
-
-					return item.hasPersistentData('props') ? item.getPersistentData('props') : "{}";
-				]]></js>.toString()
-			);
+		public function selectionChanged(json: String): void {
+			setProperties((json != null) ? JSON.parse(json.split(/,/).map(function(e:String, index:int, arr:Array) { return String.fromCharCode(parseInt(e)); }).join('')) : null);
+			
 		}
 		
-		static private function setPropertiesToSelectedJson(propsAsJson: String): void {
-			var result:String = JSFLExt.exec(
-				<js><![CDATA[
-					var doc = fl.getDocumentDOM(); if (!doc) return;
-					var item = doc.selection[0]; if (!item) return;
-					if (doc.selection.length != 1) return null;
-
-					item.setPersistentData('props', 'string', propsAsJson);
-					item.setPublishPersistentData('props', "_EMBED_SWF_", true);
-					doc.setPublishDocumentData("_EMBED_SWF_", true);
-
-					return 'success';
-				]]></js>.toString(),
-				{ propsAsJson: propsAsJson }
+		private function setPropertiesToSelectedJson(propsAsJson: String): void {
+			MMExecute(
+				"(function() {" +
+				"	var doc = fl.getDocumentDOM(); if (!doc) return;" +
+				"	var item = doc.selection[0]; if (!item) return;" +
+				"	if (doc.selection.length != 1) return null;" +
+				"	item.setPersistentData('props', 'string', " + JSON.stringify(propsAsJson) + ");" +
+				"	item.setPublishPersistentData('props', '_EMBED_SWF_', true);" +
+				"	doc.setPublishDocumentData('_EMBED_SWF_', true);" +
+				"	return 'success';" +
+				"})()"
 			);
 		}
 
@@ -125,204 +115,6 @@ package {
 				setSelectedItem(false);
 			}
 		}
-	}
-}
-
-import adobe.utils.MMExecute;
-import flash.utils.ByteArray;
-
-import flash.external.ExternalInterface;
-import flash.utils.Dictionary;
-import flash.utils.setTimeout;
-
-class JSFLExt {
-	static private var initialized:Boolean = false;
-
-	static public const panelName:String = 'KorgeEXT';
-
-	static private function initOnce():void {
-		if (initialized) return;
-		initialized = true;
-		if (ExternalInterface.available) ExternalInterface.addCallback("JSFLCallback", JSFLCallback);
-		MMExecute("var panelName = " + JSON.stringify(panelName) + ";" + <js><![CDATA[
-			JSON = {
-				stringify: function(obj) {
-					if (obj === null) return 'null';
-					if (typeof obj === 'undefined') return 'undefined';
-					if ((typeof obj === 'number') || (typeof obj === 'boolean')) return '' + obj;
-					if (typeof obj === 'string') {
-						var str = obj;
-						return '"' + str.replace(/["\\\x00-\x1f\x7f-\x9f]/g, function(a) {
-							switch (a) {
-								case '\b': return '\\b';
-								case '\t': return '\\t';
-								case '\n': return '\\n';
-								case '\f': return '\\f';
-								case '\r': return '\\r';
-								case '"': return '\\"';
-								case '\\': return '\\\\';
-							}
-							var c = a.charCodeAt();
-							return '\\u00' + Math.floor(c / 16).toString(16) + (c % 16).toString(16);
-						}) + '"';
-					}
-					if (obj instanceof Array) {
-						return '[' + obj.map(function(item) { return JSON.stringify(item); }).join(',') + ']';
-					} else {
-						var items = [];
-						for (var key in obj) {
-							if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-							items.push(JSON.stringify(key) + ':' + JSON.stringify(obj[key]));
-						}
-						return '{' + items.join(',') + '}';
-					}
-					return obj;
-				},
-				parse: function parse(str) {
-					var pos = 0;
-
-					function hasMore() { return pos < str.length; }
-					function eof() { return pos >= str.length; }
-					function peek() { return str.charAt(pos); }
-					function skip() { pos++; }
-					function read() { var out = str.charAt(pos); pos++; return out; }
-					function tryRead(s) { if (str.substr(pos, s.length) == s) { pos += s.length; return true; } else { return false; } }
-					function skipSpaces() { while (hasMore() && peek() == ' ' || peek() == '\t' || peek() == '\n' || peek() == '\r') skip(); }
-					function expect(s) { if (!tryRead(s)) throw 'invalid json, expecting: ' + s + ' but found ' + peek(); }
-					function isNumber(s) { var scode = s.charCodeAt(0); return (scode >= '0'.charCodeAt(0) && scode <= '9'.charCodeAt(0)) || s == '-' || s == '+' || s == '.' || s == 'e' || s == 'E'; }
-
-					function sparse() {
-						skipSpaces();
-						if (tryRead('"')) {
-							var out = '';
-							while (hasMore()) {
-								var c = read();
-								if (c == '"') break;
-								if (c == '\\') {
-									var c2 = read();
-									out += c2;
-								} else {
-									out += c;
-								}
-							}
-							skipSpaces();
-							return out;
-						} else if (tryRead('{')) {
-							// Object
-							var out = {};
-							while (hasMore()) {
-								skipSpaces();
-								if (tryRead('}')) break;
-								var key = sparse();
-								skipSpaces();
-								expect(':');
-								skipSpaces();
-								var value = sparse();
-								out[key] = value;
-								skipSpaces();
-								if (tryRead('}')) break;
-								expect(',');
-							}
-							skipSpaces();
-							return out;
-						} else if (tryRead('[')) {
-							// Object
-							var out = [];
-							while (hasMore()) {
-								skipSpaces();
-								if (tryRead(']')) break;
-								var value = sparse();
-								skipSpaces();
-								out.push(value);
-								if (tryRead(']')) break;
-								expect(',');
-							}
-							skipSpaces();
-							return out;
-						} else if (tryRead('true')) {
-							return true;
-						} else if (tryRead('false')) {
-							return false;
-						} else if (tryRead('null')) {
-							return null;
-						} else {
-							if (isNumber(peek())) {
-								var out = '';
-								while (hasMore()) {
-									if (!isNumber(peek())) break;
-									out += read();
-								}
-								return parseFloat(out);
-							}
-							throw "Invalid json. Don't know how to handle: " + peek();
-						}
-					}
-					return sparse();
-				}
-			};
-
-			function stringtostr2(str) {
-				var items = [];
-				for (var n = 0; n < str.length; n++) items.push(str.charCodeAt(n));
-				return items.join(',')
-			}
-
-			function executeCallback(id, args) {
-				fl.getSwfPanel(panelName, false).call('JSFLCallback', stringtostr2(JSON.stringify({ id: id, args: args })));
-			}
-		]]></js>.toString());
-	}
-
-	static private var callbacks:Dictionary = new Dictionary();
-	static private var callbacksId:int = 0;
-
-	static public function exec(code:String, args:Object = null):* {
-		if (!ExternalInterface.available) return undefined;
-
-		initOnce();
-		if (!args) args = {};
-		var realCode:String = '';
-		for (var key:String in args) {
-			var item:* = args[key];
-			if (item is Function) {
-				var callbackId:String = 'callback_' + callbacksId++;
-				callbacks[callbackId] = item;
-				realCode += 'var ' + key + ' = function() { executeCallback(' + JSON.stringify(callbackId) + ', Array.prototype.slice.call(arguments, 0)); };';
-			} else {
-				realCode += 'var ' + key + ' = ' + JSON.stringify(item) + ';';
-			}
-		}
-		realCode += code;
-		var result:* = MMExecute('JSON.stringify((function() { ' + realCode + ' })())');
-		try {
-			return JSON.parse(result);
-		} catch (e:*) {
-			trace('ERROR: ' + e);
-			return undefined;
-		}
-	}
-
-
-	static public function log(text:String):void {
-		exec('fl.trace(value);', { value: text });
-	}
-
-	static public function JSFLCallback(infos2:String):void {
-		try {
-			var infos:String = infos2.split(',').map(function (s:String, ...args):String { return String.fromCharCode(parseInt(s)); }).join('');
-			var info:* = JSON.parse(infos);
-			var func:Function = (callbacks[info.id] as Function)
-			setTimeout(function ():void { func(info.args); }, 0);
-		} catch (e:*) {
-			log('ERROR:' + e);
-		}
-	}
-}
-
-class Logger {
-	static public function log(msg: String):void {
-		//trace(msg);
-		//JSFLExt.log(msg);
 	}
 }
 

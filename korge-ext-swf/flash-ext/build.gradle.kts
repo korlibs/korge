@@ -78,13 +78,15 @@ task("build") {
 		File("build").mkdirs()
 		println("hello")
 		passthru("echo", "hello")
+		File("build/KorgeEXT.swf").delete()
+		File("build/KorgeEXT.zxp").delete()
 		passthru(
 			"$airsdk/bin/mxmlc",
 			//"-debug=true",
 			"-debug=false",
 			"+configname=air",
-			//"-swf-version=34",
-			"-swf-version=12",
+			"-swf-version=34",
+			//"-swf-version=12",
 			//"-player-version=11",
 			"-library-path=lib/minimalcomps-1.0.0.swc",
 			"-source-path=src",
