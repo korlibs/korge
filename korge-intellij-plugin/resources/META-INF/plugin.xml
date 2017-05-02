@@ -37,6 +37,8 @@
 		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
 		-->
 		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"></fileTypeFactory>
+
+		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
 	</extensions>
 
 	<actions>
