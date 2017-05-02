@@ -116,7 +116,7 @@ class Sample1Scene(
 	lateinit var percent: AnTextField
 
 	suspend override fun sceneInit(sceneView: Container) {
-		tileset = TileSet(tilesetTex, 32, 32)
+		tileset = TileSet(views, tilesetTex, 32, 32)
 
 		sceneView.container {
 			//this.text(font, "hello")

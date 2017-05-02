@@ -5,6 +5,7 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -24,6 +25,12 @@ import com.soywiz.korma.geom.Point2d
 
 @AsyncFactoryClass(TiledMapFactory::class)
 class TiledMap {
+	var width = 0
+	var height = 0
+	var tilewidth = 0
+	var tileheight = 0
+	val pixelWidth: Int get() = width * tilewidth
+	val pixelHeight: Int get() = height * tileheight
 	val tilesets = arrayListOf<TiledTileset>()
 	val allLayers = arrayListOf<Layer>()
 	inline val patternLayers get() = allLayers.patterns
@@ -71,11 +78,17 @@ inline val Iterable<TiledMap.Layer>.objects get() = this.filterIsInstance<TiledM
 
 private val spaces = Regex("\\s+")
 
-suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
+suspend fun VfsFile.readTiledMap(views: Views): TiledMap {
 	val file = this
 	val folder = this.parent.jail()
 	val tiledMap = TiledMap()
 	val mapXml = file.readXml()
+	tiledMap.width = mapXml.getInt("width") ?: 0
+	tiledMap.height = mapXml.getInt("height") ?: 0
+	tiledMap.tilewidth = mapXml.getInt("tilewidth") ?: 32
+	tiledMap.tileheight = mapXml.getInt("tileheight") ?: 32
+
+
 	for (element in mapXml.allChildrenNoComments) {
 		when (element.nameLC) {
 			"tileset" -> {
@@ -89,9 +102,9 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 				val source = image?.str("source") ?: ""
 				val width = image?.int("width", 0) ?: 0
 				val height = image?.int("height", 0) ?: 0
-				val tex = folder[source].readTexture(ag)
+				val tex = folder[source].readTexture(views)
 				tiledMap.tilesets += TiledMap.TiledTileset(
-					tileset = TileSet(Texture(tex.base), tilewidth, tileheight, columns, tilecount),
+					tileset = TileSet(views, Texture(tex.base), tilewidth, tileheight, columns, tilecount),
 					firstgid = firstgid
 				)
 			}
@@ -204,9 +217,9 @@ suspend fun VfsFile.readTiledMap(ag: AG): TiledMap {
 }
 
 class TiledMapFactory(
-	val ag: AG,
+	val views: Views,
 	val resourcesRoot: ResourcesRoot,
 	val path: Path
 ) : AsyncFactory<TiledMap> {
-	suspend override fun create(): TiledMap = resourcesRoot[path].readTiledMap(ag)
+	suspend override fun create(): TiledMap = resourcesRoot[path].readTiledMap(views)
 }

@@ -20,9 +20,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapChannel
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
-import com.soywiz.korim.color.RGB
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
@@ -173,6 +171,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 
 			data class Subtimeline(val index: Int, var totalFrames: Int = 0, var nextState: String? = null, var nextStatePlay: Boolean = true) {
 				//val totalTime get() = getFrameTime(totalFrames - 1)
+				//val totalTime get() = getFrameTime(totalFrames)
 				val totalTime get() = getFrameTime(totalFrames)
 			}
 
@@ -316,6 +315,36 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				if (anActions.isNotEmpty()) currentSubTimeline.actions.add(currentTime, AnActions(anActions))
 			}
+
+			// Append first frame of next animation to the end of each animation for smooth transition
+			//val frameTime = lib.msPerFrame * 1000
+//
+			//for (currSubtimeline in symbol.states.map { it.value.subTimeline }.distinct()) {
+			//	val nextStateName = currSubtimeline.nextState
+			//	if (nextStateName != null) {
+			//		val nextState = symbol.states[nextStateName]!!
+			//		for ((index, nextTimeline) in nextState.subTimeline.timelines.withIndex()) {
+			//			val newFrame = AnSymbolTimelineFrame()
+			//			val result = nextTimeline.find(nextState.startTime)
+			//			val l = result.left
+			//			val r = result.right
+			//			val ratio = result.ratio
+			//			if (l != null && r != null) {
+			//				newFrame.setToInterpolated(l, r, ratio)
+			//			} else if (l != null) {
+			//				newFrame.copyFrom(l)
+			//			} else if (r != null) {
+			//				newFrame.copyFrom(r)
+			//			}
+//
+			//			val currPropTimeline = currSubtimeline.timelines[index]
+			//			//currSubtimeline.totalTime += frameTime
+			//			currPropTimeline.add(currSubtimeline.totalTime, newFrame)
+			//			//println(newFrame)
+			//		}
+//
+			//	}
+			//}
 		}
 	}
 
@@ -459,7 +488,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	}
 
 	var totalPlaceObject = 0
-	var totalShowFrame = 0
+	var globalTotalShowFrame = 0
 
 	var spritesById = hashMapOf<Int, AnSymbolMovieClip>()
 
@@ -522,6 +551,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 		}
 
 		// Add frames and read labels information
+		var totalShowFramesInMc = 0
 		for (it in tags) {
 			val currentFrame = swfTimeline.frames.size
 			when (it) {
@@ -533,9 +563,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				is TagShowFrame -> {
 					swfTimeline.frames += MySwfFrame(currentFrame, mc.limits.totalDepths)
+					totalShowFramesInMc++
 				}
 			}
 		}
+
+		//if (totalShowFramesInMc > 0) swfTimeline.frames += MySwfFrame(swfTimeline.frames.size, mc.limits.totalDepths)
 
 		// Populate frame names
 		for ((name, index) in mc.labelsToFrame0) swfTimeline.frames[index].name = name
@@ -777,7 +810,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					//depths[it.depth0].createFrameElement()
 				}
 				is TagShowFrame -> {
-					totalShowFrame++
+					globalTotalShowFrame++
 					for (depth in depths) {
 						//if (depthsChanged[depth.depth]) swfCurrentFrame.depths += depth.toFrameElement()
 						//swfCurrentFrame.depths += depth.frameElement
@@ -793,6 +826,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 			}
 		}
+
+		//if (totalShowFramesInMc > 0) {
+		//	val lastFrame = mc.swfTimeline.frames.last()
+		//	for (depth in depths) lastFrame.depths += depth.toFrameElement()
+		//}
+
 	}
 }
 

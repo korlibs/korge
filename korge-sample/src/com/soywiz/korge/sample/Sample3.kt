@@ -2,6 +2,8 @@ package com.soywiz.korge.sample
 
 import com.soywiz.korge.Korge
 import com.soywiz.korge.animate.AnLibrary
+import com.soywiz.korge.ext.tiled.TiledMap
+import com.soywiz.korge.ext.tiled.createView
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -33,7 +35,8 @@ object Sample3 : Module() {
 		//@Path("ninepatch.swf") val lib: AnLibrary
 		//@Path("complexflow.swf") val lib: AnLibrary
 		//@Path("loop.swf") val lib: AnLibrary
-		@Path("blendmode.swf") val lib: AnLibrary
+		@Path("blendmode.swf") val lib: AnLibrary,
+		@Path("tiled/sewers.tmx") val map: TiledMap
 		//@Path("eyes.swf") val eyesLibrary: AnLibrary
 		//@Path("eyes2.swf") val eyesLibrary: AnLibrary
 		//@Path("radialgradient.swf") val library: AnLibrary
@@ -62,7 +65,9 @@ object Sample3 : Module() {
 			c += views.solidRect(80, 80, Colors.RED)
 			sceneView += c
 
-			sceneView.dump()
+			sceneView += map.createView(views)
+
+			//sceneView.dump()
 		}
 	}
 }

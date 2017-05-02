@@ -8,6 +8,7 @@ class KorgeBothFileEditorProvider : KorgeBaseFileEditorProvider() {
 		return when {
 			name.endsWith(".svg", ignoreCase = true) -> true
 			name.endsWith(".pex", ignoreCase = true) -> true
+			name.endsWith(".tmx", ignoreCase = true) -> true
 			name.endsWith(".scml", ignoreCase = true) -> true
 			else -> false
 		}

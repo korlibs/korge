@@ -81,6 +81,14 @@ data class AnSymbolTimelineFrame(
 	var colorTransform: ColorTransform = ColorTransform(),
 	var blendMode: BlendMode = BlendMode.INHERIT
 ) {
+	fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
+		this.transform.setToInterpolated(ratio, l.transform, r.transform)
+		this.colorTransform.setToInterpolated(l.colorTransform, r.colorTransform, ratio)
+		this.ratio = interpolate(l.ratio, r.ratio, ratio)
+		this.name = l.name
+		this.blendMode = l.blendMode
+	}
+
 	companion object {
 		fun setToViewInterpolated(view: View, l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
 			view.setMatrixInterpolated(ratio, l.transform, r.transform)

@@ -7,6 +7,9 @@ import com.soywiz.korge.ext.particle.readParticle
 import com.soywiz.korge.ext.spriter.readSpriterLibrary
 import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
+import com.soywiz.korge.ext.tiled.TiledMapFactory
+import com.soywiz.korge.ext.tiled.createView
+import com.soywiz.korge.ext.tiled.readTiledMap
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
@@ -59,6 +62,11 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					val file = fileToEdit.file
 
 					when (file.extensionLC) {
+						"tmx" -> {
+							val tiled = file.readTiledMap(views)
+							sceneView += tiled.createView(views)
+							views.setVirtualSize(tiled.pixelWidth, tiled.pixelHeight)
+						}
 						"svg" -> {
 							sceneView += views.image(file.readTexture(views))
 						}
