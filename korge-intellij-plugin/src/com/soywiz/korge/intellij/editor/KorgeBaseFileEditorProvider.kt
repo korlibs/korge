@@ -130,7 +130,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 									mipmaps = false,
 									antialiasing = true,
 									rasterizerMethod = Context2d.ShapeRasterizerMethod.X4,
-									exportScale = 2.0,
+									exportScale = 1.0,
 									exportPaths = false
 								))
 								"ani" -> file.readAni(views)

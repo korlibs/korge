@@ -191,8 +191,8 @@ class SwfTest {
 	@Test
 	@Ignore
 	fun bigexternal1() = syncTest {
-		val lib = LocalVfs("c:/temp/test6.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = LocalVfs("c:/temp/test29.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
-		lib.writeTo(LocalVfs("c:/temp")["test6.new.ani"])
+		lib.writeTo(LocalVfs("c:/temp")["test29.ani"])
 	}
 }

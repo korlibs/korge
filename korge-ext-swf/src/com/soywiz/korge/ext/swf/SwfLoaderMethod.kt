@@ -5,11 +5,9 @@ import com.codeazur.as3swf.data.actions.ActionGotoFrame
 import com.codeazur.as3swf.data.actions.ActionPlay
 import com.codeazur.as3swf.data.actions.ActionStop
 import com.codeazur.as3swf.data.consts.BitmapFormat
+import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
 import com.codeazur.as3swf.tags.*
-import com.soywiz.korau.format.AudioFormats
-import com.soywiz.korau.format.toNativeSound
-import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -24,22 +22,121 @@ import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.substr
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Rectangle
 import java.util.*
+
+data class MinMaxDouble(
+	var count: Int = 0,
+	var min: Double = 0.0,
+	var max: Double = 0.0
+) {
+	val isEmpty: Boolean get() = count == 0
+	val isNotEmpty: Boolean get() = count > 0
+
+	fun register(value: Double) {
+		if (isEmpty) {
+			min = value
+			max = value
+		} else {
+			min = Math.min(min, value)
+			max = Math.max(max, value)
+		}
+		count++
+	}
+
+	fun register(value: MinMaxDouble) {
+		if (value.isNotEmpty) {
+			register(value.min)
+			register(value.max)
+		}
+	}
+}
+
+class SymbolAnalyzeInfo(val characterId: Int) {
+	var hasNinePatch = false
+	val parents = LinkedHashSet<SymbolAnalyzeInfo>()
+	val scaleBounds = MinMaxDouble()
+
+	val globalScaleBounds: MinMaxDouble by lazy {
+		val out = MinMaxDouble()
+		if (parents.isEmpty()) {
+			if (scaleBounds.isNotEmpty) {
+				out.register(scaleBounds)
+			} else {
+				out.register(1.0)
+			}
+		} else {
+			for (parent in parents) {
+				if (parent.hasNinePatch) continue // Do not count ninePatches
+				out.register(scaleBounds.min * parent.globalScaleBounds.min)
+				out.register(scaleBounds.max * parent.globalScaleBounds.max)
+			}
+		}
+		out
+	}
+
+	fun registerParent(characterId: SymbolAnalyzeInfo) {
+		parents += characterId
+	}
+
+	fun registerScale(scaleX: Double, scaleY: Double) {
+		scaleBounds.register(Math.max(scaleX, scaleY))
+	}
+
+	fun registerMatrix(matrix: Matrix2d) {
+		registerScale(Math.abs(matrix.a), Math.abs(matrix.d))
+	}
+}
+
+class SWFShapeRasterizerRequest(
+	val swf: SWF,
+	val charId: Int,
+	val shapeBounds: Rectangle,
+	val export: (ShapeExporter) -> Unit,
+	val config: SWFExportConfig
+) {
+	val path = GraphicsPath()
+	fun getRasterizer(maxScale: Double): SWFShapeRasterizer {
+		val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
+		//val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
+		//println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
+		return SWFShapeRasterizer(
+			swf,
+			config.debug,
+			shapeBounds,
+			export,
+			rasterizerMethod = config.rasterizerMethod,
+			antialiasing = config.antialiasing,
+			//requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
+			requestScale = config.exportScale * adaptiveScaling,
+			minSide = config.minShapeSide,
+			maxSide = config.maxShapeSide,
+			path = path
+		)
+	}
+}
 
 class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
 	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
 	val classNameToTagId = hashMapOf<String, Int>()
-	val shapesToPopulate = LinkedHashMap<AnSymbolShape, SWFShapeRasterizer>()
+	val shapesToPopulate = LinkedHashMap<AnSymbolShape, SWFShapeRasterizerRequest>()
 	val morphShapesToPopulate = arrayListOf<AnSymbolMorphShape>()
 	val morphShapeRatios = hashMapOf<Int, HashSet<Double>>()
+
+	private val analyzerInfos = hashMapOf<Int, SymbolAnalyzeInfo>()
+
+	fun analyzerInfo(id: Int): SymbolAnalyzeInfo {
+		return analyzerInfos.getOrPut(id) { SymbolAnalyzeInfo(id) }
+	}
 
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
@@ -287,7 +384,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	suspend private fun generateTextures() {
 		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
 
-		for ((shape, rasterizer) in shapesToPopulate) {
+		for ((shape, rasterizerRequest) in shapesToPopulate) {
+			val info = analyzerInfo(rasterizerRequest.charId)
+			val rasterizer = rasterizerRequest.getRasterizer(info.globalScaleBounds.max)
 			itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
 		}
 
@@ -549,22 +648,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				is TagDefineShape -> {
 					val tag = it
-					val rasterizer = SWFShapeRasterizer(
-						swf,
-						config.debug,
-						tag.shapeBounds.rect,
-						{ tag.export(it) },
-						config.rasterizerMethod,
-						antialiasing = config.antialiasing,
-						requestScale = config.exportScale,
-						minSide = config.minShapeSide,
-						maxSide = config.maxShapeSide
-					)
+					val rasterizerRequest = SWFShapeRasterizerRequest(swf, tag.characterId, tag.shapeBounds.rect, { tag.export(it) }, config)
 					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
-					val symbol = AnSymbolShape(it.characterId, null, rasterizer.bounds, null, rasterizer.path)
+					val symbol = AnSymbolShape(it.characterId, null, rasterizerRequest.shapeBounds, null, rasterizerRequest.path)
 					symbol.tagDefineShape = it
 					symbols += symbol
-					shapesToPopulate += symbol to rasterizer
+					shapesToPopulate += symbol to rasterizerRequest
 				}
 				is TagDefineMorphShape -> {
 					val startBounds = it.startBounds.rect
@@ -601,6 +690,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					if (childMc != null) {
 						childMc.ninePatch = it.splitter.rect
 					}
+					analyzerInfo(it.characterId).hasNinePatch = true
 				}
 				is TagPlaceObject -> {
 					totalPlaceObject++
@@ -628,22 +718,22 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						//allMatrices += m
 					}
 					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
-						SwfBlendMode.NORMAL_0 ->  BlendMode.NORMAL
-						SwfBlendMode.NORMAL_1 ->  BlendMode.NORMAL
-						SwfBlendMode.LAYER ->  BlendMode.INHERIT
-						SwfBlendMode.MULTIPLY ->  BlendMode.MULTIPLY
-						SwfBlendMode.SCREEN ->  BlendMode.SCREEN
-						SwfBlendMode.LIGHTEN ->  BlendMode.LIGHTEN
-						SwfBlendMode.DARKEN ->  BlendMode.DARKEN
-						SwfBlendMode.DIFFERENCE ->  BlendMode.DIFFERENCE
-						SwfBlendMode.ADD ->  BlendMode.ADD
-						SwfBlendMode.SUBTRACT ->  BlendMode.SUBTRACT
-						SwfBlendMode.INVERT ->  BlendMode.INVERT
-						SwfBlendMode.ALPHA ->  BlendMode.ALPHA
-						SwfBlendMode.ERASE ->  BlendMode.ERASE
-						//SwfBlendMode.OVERLAY ->  BlendMode.OVERLAY
-						SwfBlendMode.OVERLAY ->  BlendMode.INHERIT
-						SwfBlendMode.HARDLIGHT ->  BlendMode.HARDLIGHT
+						SwfBlendMode.NORMAL_0 -> BlendMode.NORMAL
+						SwfBlendMode.NORMAL_1 -> BlendMode.NORMAL
+						SwfBlendMode.LAYER -> BlendMode.INHERIT
+						SwfBlendMode.MULTIPLY -> BlendMode.MULTIPLY
+						SwfBlendMode.SCREEN -> BlendMode.SCREEN
+						SwfBlendMode.LIGHTEN -> BlendMode.LIGHTEN
+						SwfBlendMode.DARKEN -> BlendMode.DARKEN
+						SwfBlendMode.DIFFERENCE -> BlendMode.DIFFERENCE
+						SwfBlendMode.ADD -> BlendMode.ADD
+						SwfBlendMode.SUBTRACT -> BlendMode.SUBTRACT
+						SwfBlendMode.INVERT -> BlendMode.INVERT
+						SwfBlendMode.ALPHA -> BlendMode.ALPHA
+						SwfBlendMode.ERASE -> BlendMode.ERASE
+					//SwfBlendMode.OVERLAY ->  BlendMode.OVERLAY
+						SwfBlendMode.OVERLAY -> BlendMode.INHERIT
+						SwfBlendMode.HARDLIGHT -> BlendMode.HARDLIGHT
 						else -> BlendMode.INHERIT
 					}
 					val uid = getUid(depthId)
@@ -660,6 +750,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						val ratios = morphShapeRatios.getOrPut(depth.charId) { hashSetOf() }
 						ratios += it.ratiod
 					}
+
+					analyzerInfo(depth.charId).registerParent(analyzerInfo(mc.id))
+					analyzerInfo(depth.charId).registerMatrix(depth.matrix)
 
 					depth.uid = uid
 					depthsChanged[depthId] = true

@@ -39,7 +39,8 @@ class SWFShapeRasterizer(
 	val antialiasing: Boolean,
 	val requestScale: Double = 2.0,
 	val minSide: Int = 16,
-	val maxSide: Int = 512
+	val maxSide: Int = 512,
+	val path: GraphicsPath = GraphicsPath()
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
@@ -92,7 +93,6 @@ class SWFShapeRasterizer(
 	var drawingFill = true
 
 	var apath = GraphicsPath()
-	val path = GraphicsPath()
 	override fun beginShape() {
 		//ctx.beginPath()
 	}

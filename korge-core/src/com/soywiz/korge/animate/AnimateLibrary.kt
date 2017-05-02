@@ -3,7 +3,7 @@ package com.soywiz.korge.animate
 import com.soywiz.korau.format.AudioData
 import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.nativeSoundProvider
-import com.soywiz.korge.animate.serialization.AnLibraryFile
+import com.soywiz.korge.animate.serialization.AniFile
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
@@ -16,7 +16,6 @@ import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.util.AsyncCache
 import com.soywiz.korio.util.AsyncCacheItem
 import com.soywiz.korio.util.Extra
 import com.soywiz.korma.Matrix2d
@@ -259,7 +258,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 	arrayListOf<KorgeFileLoaderTester<AnLibrary>>(
 		KorgeFileLoaderTester("core/ani") { s, injector ->
 			when {
-				(s.readString(8) == AnLibraryFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(views, content = content) }
+				(s.readString(8) == AniFile.MAGIC) -> KorgeFileLoader("ani") { content, views -> this.readAni(views, content = content) }
 				else -> null
 			}
 		}

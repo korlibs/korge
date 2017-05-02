@@ -19,12 +19,14 @@ data class SWFExportConfig(
 	val mipmaps: Boolean = true,
 	val antialiasing: Boolean = true,
 	val rasterizerMethod: Context2d.ShapeRasterizerMethod = Context2d.ShapeRasterizerMethod.X4,
-	val exportScale: Double = 2.0,
+	val exportScale: Double = 1.0,
+	//val exportScale: Double = 1.1,
 	val minShapeSide: Int = 64,
 	val maxShapeSide: Int = 512,
 	val minMorphShapeSide: Int = 16,
 	val maxMorphShapeSide: Int = 128,
-	val exportPaths: Boolean = false
+	val exportPaths: Boolean = false,
+	val adaptiveScaling: Boolean = true
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config = AnLibrarySerializer.Config(

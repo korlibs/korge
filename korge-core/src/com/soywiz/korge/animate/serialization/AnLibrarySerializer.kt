@@ -61,8 +61,8 @@ object AnLibrarySerializer {
 	}
 
 	suspend private fun SyncStream.writeLibrary(lib: AnLibrary, config: Config, externalWriters: ExternalWriters) {
-		writeStringz(AnLibraryFile.MAGIC, 8)
-		writeU_VL(AnLibraryFile.VERSION)
+		writeStringz(AniFile.MAGIC, 8)
+		writeU_VL(AniFile.VERSION)
 		writeU_VL(lib.msPerFrame)
 		writeU_VL(lib.width)
 		writeU_VL(lib.height)
@@ -130,20 +130,20 @@ object AnLibrarySerializer {
 			writeU_VL(strings[symbol.name])
 			when (symbol) {
 				is AnSymbolEmpty -> {
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_EMPTY)
+					writeU_VL(AniFile.SYMBOL_TYPE_EMPTY)
 				}
 				is AnSymbolSound -> {
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SOUND)
+					writeU_VL(AniFile.SYMBOL_TYPE_SOUND)
 					writeU_VL(soundsToId[symbol]!!)
 				}
 				is AnTextFieldSymbol -> {
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_TEXT)
+					writeU_VL(AniFile.SYMBOL_TYPE_TEXT)
 					writeU_VL(strings[symbol.initialHtml])
 					writeRect(symbol.bounds)
 				}
 				is AnSymbolShape -> {
 					shapeCount++
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_SHAPE)
+					writeU_VL(AniFile.SYMBOL_TYPE_SHAPE)
 					writeF32_le(symbol.textureWithBitmap!!.scale.toFloat())
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
@@ -161,7 +161,7 @@ object AnLibrarySerializer {
 				}
 				is AnSymbolMorphShape -> {
 					morphShapeCount++
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE)
+					writeU_VL(AniFile.SYMBOL_TYPE_MORPH_SHAPE)
 					val entries = symbol.texturesWithBitmap.entries
 					writeU_VL(entries.size)
 					for ((ratio1000, textureWithBitmap) in entries) {
@@ -173,12 +173,12 @@ object AnLibrarySerializer {
 					}
 				}
 				is AnSymbolBitmap -> {
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_BITMAP)
+					writeU_VL(AniFile.SYMBOL_TYPE_BITMAP)
 				}
 				is AnSymbolMovieClip -> {
 					movieClipCount++
 					// val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int
-					writeU_VL(AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP)
+					writeU_VL(AniFile.SYMBOL_TYPE_MOVIE_CLIP)
 
 					val hasNinePatchRect = (symbol.ninePatch != null)
 

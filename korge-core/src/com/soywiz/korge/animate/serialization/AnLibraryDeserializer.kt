@@ -52,8 +52,8 @@ object AnLibraryDeserializer {
 	suspend private fun FastByteArrayInputStream.readLibrary(views: Views, externalReaders: ExternalReaders): AnLibrary {
 		val magic = readStringz(8)
 		//AnLibrary(views)
-		if (magic != AnLibraryFile.MAGIC) invalidOp("Not a ${AnLibraryFile.MAGIC} file")
-		if (readU_VL() != AnLibraryFile.VERSION) invalidOp("Just supported ${AnLibraryFile.MAGIC} version ${AnLibraryFile.VERSION}")
+		if (magic != AniFile.MAGIC) invalidOp("Not a ${AniFile.MAGIC} file")
+		if (readU_VL() != AniFile.VERSION) invalidOp("Just supported ${AniFile.MAGIC} version ${AniFile.VERSION}")
 		val msPerFrame = readU_VL()
 		val width = readU_VL()
 		val height = readU_VL()
@@ -93,17 +93,17 @@ object AnLibraryDeserializer {
 		val symbolName = strings[readU_VL()]
 		val type = readU_VL()
 		val symbol: AnSymbol = when (type) {
-			AnLibraryFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
-			AnLibraryFile.SYMBOL_TYPE_SOUND -> {
+			AniFile.SYMBOL_TYPE_EMPTY -> AnSymbolEmpty
+			AniFile.SYMBOL_TYPE_SOUND -> {
 				val soundId = readU_VL()
 				AnSymbolSound(symbolId, symbolName, sounds[soundId], null)
 			}
-			AnLibraryFile.SYMBOL_TYPE_TEXT -> {
+			AniFile.SYMBOL_TYPE_TEXT -> {
 				val initialText = strings[readU_VL()]
 				val bounds = readRect()
 				AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
 			}
-			AnLibraryFile.SYMBOL_TYPE_SHAPE -> {
+			AniFile.SYMBOL_TYPE_SHAPE -> {
 				val scale = readF32_le().toDouble()
 				val bitmapId = readU_VL()
 				val atlas = atlases[bitmapId]
@@ -140,7 +140,7 @@ object AnLibraryDeserializer {
 					path = path
 				)
 			}
-			AnLibraryFile.SYMBOL_TYPE_MORPH_SHAPE -> {
+			AniFile.SYMBOL_TYPE_MORPH_SHAPE -> {
 				val nframes = readU_VL()
 				val texturesWithBitmap = Timed<TextureWithBitmapSlice>(nframes)
 				for (n in 0 until nframes) {
@@ -168,10 +168,10 @@ object AnLibraryDeserializer {
 					path = null
 				)
 			}
-			AnLibraryFile.SYMBOL_TYPE_BITMAP -> {
+			AniFile.SYMBOL_TYPE_BITMAP -> {
 				AnSymbolBitmap(symbolId, symbolName, Bitmap32(1, 1))
 			}
-			AnLibraryFile.SYMBOL_TYPE_MOVIE_CLIP -> {
+			AniFile.SYMBOL_TYPE_MOVIE_CLIP -> {
 				readMovieClip(symbolId, symbolName, strings)
 			}
 			else -> TODO("Type: $type")
