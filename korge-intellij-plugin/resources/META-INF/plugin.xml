@@ -30,8 +30,8 @@
         <iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />
         -->
 		<fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
-		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeParticleFileEditorProvider"/>
-		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeAnimationFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeBothFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeHiddenFileEditorProvider"/>
 		<!--
 		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
 		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>

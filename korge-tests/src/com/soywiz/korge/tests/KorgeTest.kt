@@ -2,6 +2,7 @@ package com.soywiz.korge.tests
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
+import com.soywiz.korag.AGInput
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.mouse
@@ -67,9 +68,9 @@ open class KorgeTest {
 	}
 
 	suspend fun Scene.updateMousePosition(x: Int, y: Int) {
-		canvas.mouseX = x
-		canvas.mouseY = y
-		canvas.onMouseOver(Unit)
+		canvas.agInput.mouseEvent.x = x
+		canvas.agInput.mouseEvent.y = y
+		canvas.agInput.onMouseOver(canvas.agInput.mouseEvent)
 		updateTime(0)
 	}
 
@@ -111,11 +112,7 @@ open class KorgeTest {
 	}
 
 	class DummyAGContainer(override val ag: AG) : AGContainer {
-		override var mouseX: Int = 0
-		override var mouseY: Int = 0
-		override val onMouseOver: Signal<Unit> = Signal()
-		override val onMouseUp: Signal<Unit> = Signal()
-		override val onMouseDown: Signal<Unit> = Signal()
+		override val agInput: AGInput = AGInput()
 
 		override fun repaint(): Unit {
 			ag.onRender(ag)

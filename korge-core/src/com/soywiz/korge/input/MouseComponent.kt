@@ -11,7 +11,6 @@ import com.soywiz.korma.geom.Point2d
 
 class MouseComponent(view: View) : Component(view) {
 	val input = views.input
-	val frame = input.frame
 	val onClick = Signal<MouseComponent>()
 	val onOver = Signal<MouseComponent>()
 	val onOut = Signal<MouseComponent>()
@@ -30,8 +29,8 @@ class MouseComponent(view: View) : Component(view) {
 
 	val CLICK_THRESHOLD = 10
 
-	var Input.Frame.mouseHitSearch by extraProperty("mouseHitSearch", false)
-	var Input.Frame.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
+	var Input.mouseHitSearch by extraProperty("mouseHitSearch", false)
+	var Input.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
 
 	var downPos = Point2d()
 	var upPos = Point2d()
@@ -54,16 +53,16 @@ class MouseComponent(view: View) : Component(view) {
 
 	override fun update(dtMs: Int) {
 		//println("${frame.mouseHitResult}")
-		if (!frame.mouseHitSearch) {
-			frame.mouseHitSearch = true
-			frame.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
+		if (!input.mouseHitSearch) {
+			input.mouseHitSearch = true
+			input.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
 			//if (frame.mouseHitResult != null) {
 			//val hitResult = frame.mouseHitResult!!
 			//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
 			//hitResult.dump()
 			//}
 		}
-		hitTest = input.frame.mouseHitResult
+		hitTest = input.mouseHitResult
 		val over = hitTest?.hasAncestor(view) ?: false
 		val pressing = input.mouseButtons != 0
 		val overChanged = (lastOver != over)

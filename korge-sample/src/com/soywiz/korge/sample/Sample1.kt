@@ -8,10 +8,7 @@ import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.ext.spriter.SpriterLibrary
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onOut
-import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -30,6 +27,7 @@ import com.soywiz.korio.async.async
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korma.geom.Anchor
 
@@ -236,7 +234,8 @@ class Sample1Scene(
 			x = 400.0
 			y = 200.0
 			scale = 0.7
-		}
+		}.moveWithKeys()
+
 		go {
 			player.tween(
 				player::rotationDegrees..360.0,
@@ -276,6 +275,28 @@ class Sample1Scene(
 			}
 		}
 
+		sceneView.addUpdatable {
+			if (views.input.keysJustPressed[Keys.UP]) println("Just pressed UP!")
+			if (views.input.keysJustReleased[Keys.UP]) println("Just released UP!")
+			if (views.input.keys[Keys.UP]) println("Pressing UP!")
+			//if (views.input.keysJustPressed[Keys.UP]) println("Just pressed UP!")
+		}
+
 		sceneView += propsLibrary.createMainTimeLine()
 	}
 }
+
+class MoveWithKeysComponent(view: View) : Component(view) {
+	override fun update(dtMs: Int) {
+		val upTime = (views.input.keysPressingTime[Keys.UP] / 20).clamp(0, 5)
+		val downTime = (views.input.keysPressingTime[Keys.DOWN] / 20).clamp(0, 5)
+		val leftTime = (views.input.keysPressingTime[Keys.LEFT] / 20).clamp(0, 5)
+		val rightTime = (views.input.keysPressingTime[Keys.RIGHT] / 20).clamp(0, 5)
+		view.y -= upTime
+		view.y += downTime
+		view.x -= leftTime
+		view.x += rightTime
+	}
+}
+
+fun <T : View> T.moveWithKeys(): T = this.apply { addComponent(MoveWithKeysComponent(this)) }

@@ -144,8 +144,9 @@ class Views(
 	override fun update(dtMs: Int) {
 		//println(this)
 		//println("Update: $dtMs")
-		input.frame.reset()
+		input.startFrame(dtMs)
 		stage.update(dtMs)
+		input.endFrame(dtMs)
 	}
 
 	private val virtualSize = SizeInt()
@@ -278,6 +279,12 @@ data class StageResizedEvent(var width: Int, var height: Int) : Event {
 }
 
 interface MouseEvent : Event
-object MouseUpEvent : MouseEvent
-object MouseDownEvent : MouseEvent
-object MouseMovedEvent : MouseEvent
+class MouseUpEvent : MouseEvent
+class MouseDownEvent : MouseEvent
+class MouseMovedEvent : MouseEvent
+interface KeyEvent : Event {
+	var keyCode: Int
+}
+class KeyDownEvent(override var keyCode: Int = 0) : KeyEvent
+class KeyUpEvent(override var keyCode: Int = 0) : KeyEvent
+class KeyTypedEvent(override var keyCode: Int = 0) : KeyEvent

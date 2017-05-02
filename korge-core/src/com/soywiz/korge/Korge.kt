@@ -2,14 +2,12 @@ package com.soywiz.korge
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
+import com.soywiz.korag.AGInput
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
-import com.soywiz.korge.view.MouseDownEvent
-import com.soywiz.korge.view.MouseMovedEvent
-import com.soywiz.korge.view.MouseUpEvent
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.*
 import com.soywiz.korio.coroutine.withCoroutineContext
@@ -60,8 +58,8 @@ object Korge {
 		val upPos = Point2d()
 
 		fun updateMousePos() {
-			val mouseX = container.mouseX.toDouble()
-			val mouseY = container.mouseY.toDouble()
+			val mouseX = container.agInput.mouseX.toDouble()
+			val mouseY = container.agInput.mouseY.toDouble()
 			//println("updateMousePos: $mouseX, $mouseY")
 			views.input.mouse.setTo(mouseX, mouseY)
 			views.mouseUpdated()
@@ -69,24 +67,53 @@ object Korge {
 
 		if (trace) println("Korge.setupCanvas[6]")
 
-		container.onMouseOver {
-			updateMousePos()
-			views.dispatch(MouseMovedEvent)
+		val mouseMovedEvent = MouseMovedEvent()
+		val mouseUpEvent = MouseUpEvent()
+		val mouseDownEvent = MouseDownEvent()
+
+		val keyDownEvent = KeyDownEvent()
+		val keyUpEvent = KeyUpEvent()
+		val keyTypedEvent = KeyTypedEvent()
+
+		fun AGInput.KeyEvent.copyTo(e: KeyEvent) {
+			e.keyCode = this.keyCode
 		}
-		container.onMouseUp {
+
+		container.agInput.onMouseOver {
+			updateMousePos()
+			views.dispatch(mouseMovedEvent)
+		}
+		container.agInput.onMouseUp {
 			views.input.mouseButtons = 0
 			updateMousePos()
 			upPos.copyFrom(views.input.mouse)
 			//if (upPos.distanceTo(downPos) < 10) {
 			//	views.input.frame.clicked = true
 			//}
-			views.dispatch(MouseUpEvent)
+			views.dispatch(mouseUpEvent)
 		}
-		container.onMouseDown {
+		container.agInput.onMouseDown {
 			views.input.mouseButtons = 1
 			updateMousePos()
 			downPos.copyFrom(views.input.mouse)
-			views.dispatch(MouseDownEvent)
+			views.dispatch(mouseDownEvent)
+		}
+		container.agInput.onKeyDown {
+			views.input.setKey(it.keyCode, true)
+			//println("onKeyDown: $it")
+			it.copyTo(keyDownEvent)
+			views.dispatch(keyDownEvent)
+		}
+		container.agInput.onKeyUp {
+			views.input.setKey(it.keyCode, false)
+			//println("onKeyUp: $it")
+			it.copyTo(keyUpEvent)
+			views.dispatch(keyUpEvent)
+		}
+		container.agInput.onKeyTyped {
+			//println("onKeyTyped: $it")
+			it.copyTo(keyTypedEvent)
+			views.dispatch(keyTypedEvent)
 		}
 		ag.onResized {
 			views.resized(ag.backWidth, ag.backHeight)
