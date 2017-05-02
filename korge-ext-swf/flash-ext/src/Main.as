@@ -178,8 +178,86 @@ class JSFLExt {
 					}
 					return obj;
 				},
-				parse: function(str) {
-					return eval('(' + str + ')');
+				parse: function parse(str) {
+					var pos = 0;
+
+					function hasMore() { return pos < str.length; }
+					function eof() { return pos >= str.length; }
+					function peek() { return str.charAt(pos); }
+					function skip() { pos++; }
+					function read() { var out = str.charAt(pos); pos++; return out; }
+					function tryRead(s) { if (str.substr(pos, s.length) == s) { pos += s.length; return true; } else { return false; } }
+					function skipSpaces() { while (hasMore() && peek() == ' ' || peek() == '\t' || peek() == '\n' || peek() == '\r') skip(); }
+					function expect(s) { if (!tryRead(s)) throw 'invalid json, expecting: ' + s + ' but found ' + peek(); }
+					function isNumber(s) { var scode = s.charCodeAt(0); return (scode >= '0'.charCodeAt(0) && scode <= '9'.charCodeAt(0)) || s == '-' || s == '+' || s == '.' || s == 'e' || s == 'E'; }
+
+					function sparse() {
+						skipSpaces();
+						if (tryRead('"')) {
+							var out = '';
+							while (hasMore()) {
+								var c = read();
+								if (c == '"') break;
+								if (c == '\\') {
+									var c2 = read();
+									out += c2;
+								} else {
+									out += c;
+								}
+							}
+							skipSpaces();
+							return out;
+						} else if (tryRead('{')) {
+							// Object
+							var out = {};
+							while (hasMore()) {
+								skipSpaces();
+								if (tryRead('}')) break;
+								var key = sparse();
+								skipSpaces();
+								expect(':');
+								skipSpaces();
+								var value = sparse();
+								out[key] = value;
+								skipSpaces();
+								if (tryRead('}')) break;
+								expect(',');
+							}
+							skipSpaces();
+							return out;
+						} else if (tryRead('[')) {
+							// Object
+							var out = [];
+							while (hasMore()) {
+								skipSpaces();
+								if (tryRead(']')) break;
+								var value = sparse();
+								skipSpaces();
+								out.push(value);
+								if (tryRead(']')) break;
+								expect(',');
+							}
+							skipSpaces();
+							return out;
+						} else if (tryRead('true')) {
+							return true;
+						} else if (tryRead('false')) {
+							return false;
+						} else if (tryRead('null')) {
+							return null;
+						} else {
+							if (isNumber(peek())) {
+								var out = '';
+								while (hasMore()) {
+									if (!isNumber(peek())) break;
+									out += read();
+								}
+								return parseFloat(out);
+							}
+							throw "Invalid json. Don't know how to handle: " + peek();
+						}
+					}
+					return sparse();
 				}
 			};
 
