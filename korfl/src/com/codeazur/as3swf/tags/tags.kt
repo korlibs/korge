@@ -15,6 +15,7 @@ import com.codeazur.as3swf.utils.toFlash
 import com.soywiz.korfl.abc.ABC
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.util.nextAlignedTo
 
 interface ITag {
 	val type: Int
@@ -280,7 +281,25 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 	var bitmapFormat: BitmapFormat = BitmapFormat.UNKNOWN
 	var bitmapWidth: Int = 0
 	var bitmapHeight: Int = 0
-	var bitmapColorTableSize: Int = 0
+	var bitmapColorTableSizeM1: Int = 0
+	val bitmapColorTableSize: Int get() = bitmapColorTableSizeM1 + 1
+
+	val bytesPerPixel: Int get() = when (bitmapFormat) {
+		BitmapFormat.BIT_8 -> 1
+		BitmapFormat.BIT_15 -> 2
+		BitmapFormat.BIT_24_32 -> 4
+		BitmapFormat.UNKNOWN -> 1
+	}
+
+	val alignment: Int get() = when (bitmapFormat) {
+		BitmapFormat.BIT_8 -> 4
+		BitmapFormat.BIT_15 -> 2
+		BitmapFormat.BIT_24_32 -> 1
+		BitmapFormat.UNKNOWN -> 1
+	}
+
+	val actualWidth: Int get() = bitmapWidth.nextAlignedTo(alignment)
+	val actualHeight: Int get() = bitmapHeight.nextAlignedTo(alignment)
 
 	override var characterId: Int = 0
 
@@ -292,8 +311,9 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 		bitmapFormat = BitmapFormat[rawFormat]
 		bitmapWidth = data.readUI16()
 		bitmapHeight = data.readUI16()
-		if (bitmapFormat == BitmapFormat.BIT_8) bitmapColorTableSize = data.readUI8()
+		if (bitmapFormat == BitmapFormat.BIT_8) bitmapColorTableSizeM1 = data.readUI8()
 		zlibBitmapData = data.readBytes(length - (if (bitmapFormat == BitmapFormat.BIT_8) 8 else 7)).toFlash()
+		//zlibBitmapData = data.readBytes(data.bytesAvailable).toFlash()
 	}
 
 	override val type = TagDefineBitsLossless.TYPE
@@ -2465,6 +2485,25 @@ class TagProductInfo : _BaseTag(), ITag {
 			"Edition: " + edition + ", " +
 			"Version: " + majorVersion + "." + minorVersion + " r" + build + ", " +
 			"CompileDate: " + compileDate.toString()
+	}
+}
+
+
+class TagPathsArePostScript : _BaseTag(), ITag {
+	companion object {
+		const val TYPE = 25
+	}
+
+	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	}
+
+	override val type = TagPathsArePostScript.TYPE
+	override val name = "PathsArePostScript"
+	override val version = 2
+	override val level = 1
+
+	override fun toString(indent: Int, flags: Int): String {
+		return Tag.toStringCommon(type, name, indent)
 	}
 }
 

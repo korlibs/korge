@@ -152,6 +152,7 @@ open class SWFTagFactory : ISWFTagFactory {
 		22  -> TagDefineShape2()
 		23  -> TagDefineButtonCxform()
 		24  -> TagProtect()
+		25  -> TagPathsArePostScript()
 		26  -> TagPlaceObject2()
 		28  -> TagRemoveObject2()
 		32  -> TagDefineShape3()

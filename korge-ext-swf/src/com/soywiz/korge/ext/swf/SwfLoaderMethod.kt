@@ -22,9 +22,11 @@ import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.showImageAndWait
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.util.substr
 import com.soywiz.korma.Matrix2d
@@ -625,18 +627,29 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
 							when (it.bitmapFormat) {
 								BitmapFormat.BIT_8 -> {
-									val bmp = Bitmap8(it.bitmapWidth, it.bitmapHeight)
+									val ncolors = it.bitmapColorTableSize
+									val s = FastByteArrayInputStream(uncompressedData)
+									val clut = if (it.hasAlpha) {
+										(0 until ncolors).map { s.readS32_le() }.toIntArray()
+									} else {
+										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24_le() }.toIntArray()
+									}
+									val pixels = s.readBytes(it.actualWidth * it.actualHeight)
+
+									val bmp = Bitmap8(it.actualWidth, it.actualHeight, pixels, clut)
 									fbmp = bmp
 								}
 								BitmapFormat.BIT_15 -> {
-									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, BGRA_5551.decode(uncompressedData))
+									fbmp = Bitmap32(it.actualWidth, it.actualHeight, BGRA_5551.decode(uncompressedData))
 								}
 								BitmapFormat.BIT_24_32 -> {
 									val components = uncompressedData.size / (it.bitmapWidth * it.bitmapHeight)
-									val hasAlpha = components >= 4
-									val colorFormat = if (hasAlpha) BGRA else RGB
+									val colorFormat = BGRA
 									//fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
 									fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
+									if (!it.hasAlpha) {
+										for (n in 0 until fbmp.data.size) fbmp.data[n] = 0x00FFFFFF.inv() or (fbmp.data[n] and 0x00FFFFFF)
+									}
 								}
 								else -> Unit
 							}
