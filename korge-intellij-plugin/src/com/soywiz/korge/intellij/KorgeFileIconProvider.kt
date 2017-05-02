@@ -13,6 +13,10 @@ class KorgeFileIconProvider : FileIconProvider {
 			file.name.endsWith(".swf", ignoreCase = true) -> KorgePluginIcons.SWF_ICON
 			file.name.endsWith(".tmx", ignoreCase = true) -> KorgePluginIcons.TILED_ICON
 			file.name.endsWith(".ani", ignoreCase = true) -> KorgePluginIcons.KORGE_ICON
+			file.name.endsWith(".voice.lipsync", ignoreCase = true) -> KorgePluginIcons.VOICE
+			file.name.endsWith(".voice.wav", ignoreCase = true) -> KorgePluginIcons.VOICE
+			file.name.endsWith(".voice.mp3", ignoreCase = true) -> KorgePluginIcons.VOICE
+			file.name.endsWith(".voice.ogg", ignoreCase = true) -> KorgePluginIcons.VOICE
 			else -> null
 		}
 	}

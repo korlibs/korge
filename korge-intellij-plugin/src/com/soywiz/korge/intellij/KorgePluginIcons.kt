@@ -8,4 +8,5 @@ object KorgePluginIcons {
 	val SWF_ICON by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/swf.png") }
 	val TILED_ICON by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/tiled.png") }
 	val KORGE_ICON by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
+	val VOICE by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/lips.png") }
 }

@@ -7,10 +7,10 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.spawn
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.redirect
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 import java.util.*
@@ -244,7 +244,47 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	}
 }
 
-class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement {
+interface AnPlayable {
+	fun play(name: String): Unit
+}
+
+class AnSimpleAnimation(
+	views: Views,
+	val frameTime: Int,
+	val animations: Map<String, List<Texture?>>,
+	val anchor: Anchor = Anchor.TOP_LEFT
+) : Container(views), AnPlayable {
+	val image = views.image(views.transparentTexture)
+	val defaultAnimation = animations.values.firstOrNull() ?: listOf()
+	var animation = defaultAnimation
+	val numberOfFrames get() = animation.size
+	private var elapsedTime = 0
+
+	init {
+		image.anchorX = anchor.sx
+		image.anchorY = anchor.sy
+		myupdate()
+		this += image
+	}
+
+	override fun play(name: String) {
+		animation = animations[name] ?: defaultAnimation
+	}
+
+	override fun updateInternal(dtMs: Int) {
+		super.updateInternal(dtMs)
+		elapsedTime = (elapsedTime + dtMs) % (numberOfFrames * frameTime)
+		myupdate()
+	}
+
+	private fun myupdate() {
+		val frameNum = elapsedTime / frameTime
+		val texture = animation.getOrNull(frameNum % numberOfFrames) ?: views.transparentTexture
+		image.tex = texture
+	}
+}
+
+class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement, AnPlayable {
 	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
 	val totalDepths = symbol.limits.totalDepths
 	val totalUids = symbol.limits.totalUids
@@ -420,7 +460,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	/**
 	 * Changes the state and plays it
 	 */
-	fun play(name: String) {
+	override fun play(name: String) {
 		timelineRunner.gotoAndPlay(name)
 		update()
 	}
@@ -446,6 +486,6 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	}
 }
 
-fun View?.play(name: String) = run { (this as? AnMovieClip?)?.play(name) }
+fun View?.play(name: String) = run { (this as? AnPlayable?)?.play(name) }
 val View?.playingName: String? get() = (this as? AnMovieClip?)?.timelineRunner?.currentStateName
 fun View?.seekStill(name: String, ratio: Double = 0.0) = run { (this as? AnMovieClip?)?.seekStill(name, ratio) }

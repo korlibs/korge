@@ -87,6 +87,10 @@ class LipSyncComponent(view: View) : Component(view) {
 val Views.lipSync by Extra.PropertyThis<Views, LipSyncHandler> { LipSyncHandler(this) }
 
 suspend fun VfsFile.readVoice(views: Views): Voice {
-	val lipsyncFile = this.appendExtension("lipsync")
-	return Voice(views, this.readNativeSound(), LipSync(lipsyncFile.readString().trim()))
+	val lipsyncFile = this.withExtension("lipsync")
+	return Voice(
+		views,
+		this.readNativeSound(),
+		LipSync(if (lipsyncFile.exists()) lipsyncFile.readString().trim() else "")
+	)
 }

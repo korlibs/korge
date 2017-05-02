@@ -15,6 +15,9 @@ import java.util.*
 object Sample3 : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample3)
 
+	override val width: Int = 560
+	override val height: Int = 380
+
 	//override val bgcolor: Int = Colors.WHITE
 	override val bgcolor: Int = RGBA(0x70, 0x70, 0x70, 0xFF)
 	override val mainScene: Class<out Scene> = MainScene::class.java

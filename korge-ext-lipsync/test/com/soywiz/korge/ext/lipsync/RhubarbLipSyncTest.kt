@@ -9,6 +9,7 @@ import org.junit.Ignore
 import org.junit.Test
 
 class RhubarbLipSyncTest {
+	/*
 	@Ignore
 	@Test
 	fun test1() = syncTest {
@@ -60,4 +61,5 @@ class RhubarbLipSyncTest {
 			file.toLipString()
 		)
 	}
+	*/
 }

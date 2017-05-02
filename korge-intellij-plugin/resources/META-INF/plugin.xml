@@ -39,8 +39,10 @@
 			<add-to-group group-id="MainMenu" anchor="last"/>
 			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Build Resources Now"
 					icon="/com/soywiz/korge/intellij/icon/korge.png" id="KorgeBuildResourcesAction"/>
+			<!--
 			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Particle Designer"
 					icon="/com/soywiz/korge/intellij/icon/particle.png" id="ParticleDesignerAction"/>
+					-->
 			<separator/>
 			<action class="com.soywiz.korge.intellij.KorgeDocumentationAction" text="_Documentation"
 					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction"/>

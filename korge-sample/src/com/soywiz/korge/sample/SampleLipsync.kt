@@ -10,7 +10,11 @@ import com.soywiz.korge.ext.lipsync.readVoice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.tween.color
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
+import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.go
 
 object SampleLipsync : Module() {
@@ -30,6 +34,10 @@ object SampleLipsync : Module() {
 			}
 
 			sceneView += lipsynctest.createMainTimeLine()
+
+			go {
+				sceneView.tween(sceneView::colorMul[Colors.WHITE, Colors.RED].color(), time = 1000)
+			}
 		}
 	}
 }

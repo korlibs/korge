@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korio.async.AsyncSequence
 import com.soywiz.korio.async.asyncGenerate
+import com.soywiz.korio.stream.AsyncInputStream
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.vfs.*
 import java.io.Closeable
@@ -75,8 +76,8 @@ class IdeaAdaptorVfs(val file: VirtualFile) : Vfs() {
 		return super.open(path, mode)
 	}
 
-	suspend override fun put(path: String, content: AsyncStream, attributes: List<Attribute>) {
-		super.put(path, content, attributes)
+	suspend override fun put(path: String, content: AsyncInputStream, attributes: List<Attribute>): Long {
+		return super.put(path, content, attributes)
 	}
 
 	suspend override fun readRange(path: String, range: LongRange): ByteArray {
