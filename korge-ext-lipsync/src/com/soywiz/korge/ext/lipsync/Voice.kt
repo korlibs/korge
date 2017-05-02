@@ -69,7 +69,7 @@ class LipSyncHandler(val views: Views) {
 				})
 			}
 		}
-		voice.voice.play()
+		views.soundSystem.play(voice.voice)
 	}
 }
 
