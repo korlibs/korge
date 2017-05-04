@@ -39,6 +39,10 @@
 		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"></fileTypeFactory>
 
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
+
+		<moduleBuilder builderClass="com.soywiz.korge.intellij.KorgeModuleWizardStep" order="first"/>
+
+		<framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
 	</extensions>
 
 	<actions>
@@ -56,6 +60,8 @@
 		</group>
 		<!-- Add your actions here -->
 	</actions>
+
+
 
 	<application-components>
 		<component>

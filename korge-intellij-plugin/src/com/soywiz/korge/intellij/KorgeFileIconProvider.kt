@@ -18,6 +18,12 @@ class KorgeFileIconProvider : FileIconProvider {
 			file.name.endsWith(".voice.wav", ignoreCase = true) -> KorgePluginIcons.VOICE
 			file.name.endsWith(".voice.mp3", ignoreCase = true) -> KorgePluginIcons.VOICE
 			file.name.endsWith(".voice.ogg", ignoreCase = true) -> KorgePluginIcons.VOICE
+
+			file.name.endsWith(".wav", ignoreCase = true) -> KorgePluginIcons.SOUND
+			file.name.endsWith(".mp3", ignoreCase = true) -> KorgePluginIcons.SOUND
+			file.name.endsWith(".ogg", ignoreCase = true) -> KorgePluginIcons.SOUND
+
+			file.name.endsWith(".atlas", ignoreCase = true) -> KorgePluginIcons.ATLAS
 			else -> null
 		}
 	}

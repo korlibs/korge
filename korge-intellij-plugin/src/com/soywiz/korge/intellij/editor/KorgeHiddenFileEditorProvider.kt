@@ -12,6 +12,9 @@ class KorgeHiddenFileEditorProvider : KorgeBaseFileEditorProvider() {
 			name.endsWith(".voice.mp3", ignoreCase = true) -> true
 			name.endsWith(".voice.ogg", ignoreCase = true) -> true
 			name.endsWith(".voice.lipsync", ignoreCase = true) -> true
+			name.endsWith(".wav", ignoreCase = true) -> true
+			name.endsWith(".mp3", ignoreCase = true) -> true
+			name.endsWith(".ogg", ignoreCase = true) -> true
 			else -> false
 		}
 	}

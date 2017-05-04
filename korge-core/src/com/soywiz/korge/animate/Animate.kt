@@ -1,6 +1,7 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korag.AG
+import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture

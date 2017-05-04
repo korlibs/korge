@@ -3,6 +3,7 @@ package com.soywiz.korge.ext.lipsync
 import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.readNativeSound
 import com.soywiz.korge.animate.play
+import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot

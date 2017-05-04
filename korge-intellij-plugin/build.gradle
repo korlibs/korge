@@ -31,6 +31,7 @@ def globalProps = properties
 intellij {
 	version "IC-$ideaVersion"
 	//plugins = ['coverage', 'org.intellij.plugins.markdown:8.5.0.20160208']
+	plugins = ['kotlin']
 	pluginName 'KorgePlugin'
 	plugins 'coverage'
 	downloadSources true

@@ -1,13 +1,14 @@
 package com.soywiz.korge.intellij.editor
 
+import com.soywiz.korau.sound.readNativeSound
 import com.soywiz.korge.animate.AnSimpleAnimation
 import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.ext.lipsync.readVoice
 import com.soywiz.korge.ext.particle.readParticle
 import com.soywiz.korge.ext.spriter.readSpriterLibrary
 import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
-import com.soywiz.korge.ext.tiled.TiledMapFactory
 import com.soywiz.korge.ext.tiled.createView
 import com.soywiz.korge.ext.tiled.readTiledMap
 import com.soywiz.korge.render.readTexture
@@ -17,8 +18,6 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawnAndForget
@@ -82,53 +81,50 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 							sceneView += fileToEdit.file.readParticle(views).create(views.virtualWidth / 2.0, views.virtualHeight / 2.0)
 						}
 						"wav", "mp3", "ogg", "lipsync" -> {
-							//val lipsync = file.withExtension("lipsync")
-							//if (lipsync.exists()) {
-							//	file.readVoice()
-							//} else {
-//
-							//}
+							if (file.basename.contains("voice") || file.basename.contains("lipsync")) {
+								val wav = file.withExtension("wav")
+								val mp3 = file.withExtension("mp3")
+								val ogg = file.withExtension("ogg")
+								val audios = listOf(wav, mp3, ogg)
+								val audio = audios.firstOrNull { it.exists() }
+								val voice = audio?.readVoice(views)
+								//audio?.readAudioData()?.play()
 
-							val wav = file.withExtension("wav")
-							val mp3 = file.withExtension("mp3")
-							val ogg = file.withExtension("ogg")
-							val audios = listOf(wav, mp3, ogg)
-							val audio = audios.firstOrNull { it.exists() }
-							val voice = audio?.readVoice(views)
-							//audio?.readAudioData()?.play()
-
-							//val classLoader = pluginClassLoader
+								//val classLoader = pluginClassLoader
 
 
-							val voiceName = "voice"
+								val voiceName = "voice"
 
-							views.setVirtualSize(150 * 2, 100 * 2)
+								views.setVirtualSize(150 * 2, 100 * 2)
 
-							val mouth = AnSimpleAnimation(views, 10, mapOf(
-								"A" to listOf(getLipTexture('A')),
-								"B" to listOf(getLipTexture('B')),
-								"C" to listOf(getLipTexture('C')),
-								"D" to listOf(getLipTexture('D')),
-								"E" to listOf(getLipTexture('E')),
-								"F" to listOf(getLipTexture('F')),
-								"G" to listOf(getLipTexture('G')),
-								"H" to listOf(getLipTexture('H')),
-								"X" to listOf(getLipTexture('X'))
-							), Anchor.MIDDLE_CENTER).apply {
-								x = views.virtualWidth * 0.5
-								y = views.virtualHeight * 0.5
-								addProp("lipsync", voiceName)
+								val mouth = AnSimpleAnimation(views, 10, mapOf(
+									"A" to listOf(getLipTexture('A')),
+									"B" to listOf(getLipTexture('B')),
+									"C" to listOf(getLipTexture('C')),
+									"D" to listOf(getLipTexture('D')),
+									"E" to listOf(getLipTexture('E')),
+									"F" to listOf(getLipTexture('F')),
+									"G" to listOf(getLipTexture('G')),
+									"H" to listOf(getLipTexture('H')),
+									"X" to listOf(getLipTexture('X'))
+								), Anchor.MIDDLE_CENTER).apply {
+									x = views.virtualWidth * 0.5
+									y = views.virtualHeight * 0.5
+									addProp("lipsync", voiceName)
+								}
+
+								sceneView += mouth
+
+								go {
+									voice?.play(voiceName)
+								}
+
+								//sceneView.addEventListener<LipSyncEvent> { e ->
+								//	mouth.tex = lips[e.lip] ?: views.transparentTexture
+								//}
+							} else {
+								views.soundSystem.play(file.readNativeSound())
 							}
-
-							sceneView += mouth
-
-							go {
-								voice?.play(voiceName)
-							}
-
-							//sceneView.addEventListener<LipSyncEvent> { e ->
-							//	mouth.tex = lips[e.lip] ?: views.transparentTexture
-							//}
 
 							Unit
 						}
