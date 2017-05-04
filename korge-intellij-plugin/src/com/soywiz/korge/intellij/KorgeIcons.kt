@@ -2,7 +2,7 @@ package com.soywiz.korge.intellij
 
 import com.intellij.openapi.util.IconLoader
 
-object KorgePluginIcons {
+object KorgeIcons {
 	val PARTICLE by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
 	val BITMAP_FONT by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
 	val SWF by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/swf.png") }

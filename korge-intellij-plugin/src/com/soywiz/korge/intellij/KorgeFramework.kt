@@ -43,6 +43,6 @@ class KorgeFramework : FrameworkTypeEx("korge") {
 	}
 
 	override fun getIcon(): Icon {
-		return KorgePluginIcons.KORGE
+		return KorgeIcons.KORGE
 	}
 }

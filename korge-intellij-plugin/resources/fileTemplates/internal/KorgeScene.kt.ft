@@ -1,0 +1,11 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME}
+
+#end
+import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.view.Container
+
+#parse("File Header.java")
+class ${NAME} : Scene() {
+	suspend override fun sceneInit(sceneView: Container) {
+	}
+}

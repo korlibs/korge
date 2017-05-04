@@ -14,7 +14,7 @@ import javax.swing.JLabel
 
 class KorgeModuleWizardStep : ModuleBuilder() {
 	@Throws(ConfigurationException::class)
-	override fun setupRootModel(modifiableRootModel: ModifiableRootModel) {
+	override fun setupRootModel(rootModel: ModifiableRootModel) {
 		//modifiableRootModel.
 	}
 

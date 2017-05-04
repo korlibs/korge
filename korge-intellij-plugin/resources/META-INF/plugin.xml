@@ -40,25 +40,33 @@
 
 		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
 
+		<!--
 		<moduleBuilder builderClass="com.soywiz.korge.intellij.KorgeModuleWizardStep" order="first"/>
-
 		<framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
+		<moduleType id="KORGE" implementationClass="com.soywiz.korge.intellij.KorgeModuleType" />
+		-->
+
+		<internalFileTemplate name="KorgeScene"/>
+
 	</extensions>
 
 	<actions>
-		<group id="Korge" text="_Korge" description="Korge Menu">
-			<add-to-group group-id="MainMenu" anchor="last"/>
+		<group id="Korge" popup="true" text="_Korge" icon="/com/soywiz/korge/intellij/icon/korge.png">
+			<add-to-group group-id="ToolsMenu" anchor="last"/>
 			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Build Resources Now"
-					icon="/com/soywiz/korge/intellij/icon/korge.png" id="KorgeBuildResourcesAction"/>
-			<!--
-			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Particle Designer"
-					icon="/com/soywiz/korge/intellij/icon/particle.png" id="ParticleDesignerAction"/>
-					-->
+					icon="/com/soywiz/korge/intellij/icon/korge.png" id="KorgeBuildResourcesAction">
+			</action>
+
 			<separator/>
+
 			<action class="com.soywiz.korge.intellij.KorgeDocumentationAction" text="_Documentation"
-					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction"/>
+					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction">
+			</action>
 		</group>
-		<!-- Add your actions here -->
+
+		<action id="Korge.NewFile.Atlas" class="com.soywiz.korge.intellij.createnew.NewKorgeScene">
+			<add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
+		</action>
 	</actions>
 
 
