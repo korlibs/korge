@@ -16,7 +16,7 @@ import com.soywiz.korio.util.clamp
 
 @Singleton
 class SoundSystem(val views: Views) {
-	private val promises = LinkedHashSet<Promise<Unit>>()
+	internal val promises = LinkedHashSet<Promise<*>>()
 
 	fun play(file: SoundFile) = createChannel().play(file.nativeSound)
 	fun play(nativeSound: NativeSound): SoundChannel = createChannel().play(nativeSound)
@@ -49,7 +49,7 @@ class SoundChannel(val soundSystem: SoundSystem) {
 
 	fun play(sound: NativeSound): SoundChannel {
 		if (enabled) {
-			promise?.cancel()
+			stop()
 
 			startedTime = System.currentTimeMillis()
 			length = sound.lengthInMs.toInt()
@@ -57,15 +57,19 @@ class SoundChannel(val soundSystem: SoundSystem) {
 
 			promise = go(soundSystem.views.coroutineContext) {
 				sound.play()
-				length = 0
-				playing = false
+				stop()
 			}
+
+			soundSystem.promises += promise!!
 		}
 		return this
 	}
 
 	fun stop() {
+		if (promise != null) soundSystem.promises -= promise!!
 		promise?.cancel()
+		length = 0
+		playing = false
 	}
 
 	suspend fun await() {

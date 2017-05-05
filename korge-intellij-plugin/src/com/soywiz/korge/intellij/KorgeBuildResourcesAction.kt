@@ -23,8 +23,8 @@ class KorgeBuildResourcesAction : AnAction() {
 
 				val resourcesVfs = resources.map { it.toVfs() }
 
-				val genresourcesVirtual = resourcesVfs.firstOrNull { it.basename == "genresources" }
 				val resourcesVirtual = resourcesVfs.firstOrNull { it.basename == "resources" }
+				val genresourcesVirtual = resourcesVirtual?.parent?.get("genresources")
 
 				println(resources)
 				println(resourcesVfs)
@@ -32,8 +32,10 @@ class KorgeBuildResourcesAction : AnAction() {
 				println("genresourcesVirtual=$genresourcesVirtual : resourcesVirtual=$resourcesVirtual")
 
 				progress.text = "Regenerating resources"
-				if (genresourcesVirtual != null && resourcesVirtual != null) {
+				if (resourcesVirtual != null && genresourcesVirtual != null) {
 					syncTest {
+						genresourcesVirtual.mkdirs()
+
 						try {
 							// @TODO: Proper discovery of that folder
 							val extraOutputVirtual = genresourcesVirtual["../build/resources/main"]
