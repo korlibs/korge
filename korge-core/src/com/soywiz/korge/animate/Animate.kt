@@ -328,10 +328,15 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		class RenderState(val stencil: AG.StencilState, val colorMask: AG.ColorMaskState) {
 			fun set(ctx: RenderContext, referenceValue: Int) {
 				ctx.flush()
-				//println(referenceValue)
-				stencil.referenceValue = referenceValue
-				ctx.batch.stencil = stencil
-				ctx.batch.colorMask = colorMask
+				if (ctx.masksEnabled) {
+					stencil.referenceValue = referenceValue
+					ctx.batch.stencil = stencil
+					ctx.batch.colorMask = colorMask
+				} else {
+					stencil.referenceValue = 0
+					ctx.batch.stencil = STATE_NONE.stencil
+					ctx.batch.colorMask = STATE_NONE.colorMask
+				}
 			}
 		}
 
@@ -348,7 +353,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 				actionOnDepthFail = AG.StencilOp.SET,
 				actionOnDepthPassStencilFail = AG.StencilOp.SET,
 				referenceValue = 0,
-				readMask = 0xFF,
+				readMask = 0x00,
 				writeMask = 0xFF
 			),
 			AG.ColorMaskState(false, false, false, false)
@@ -379,6 +384,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		val isGlobal = (m === globalMatrix)
 		var usedStencil = false
 
+		var state = 0
+
 		//println("::::")
 		for ((depth, child) in children.toList().withIndex()) {
 			val maskDepth = maskPushDepths[depth]
@@ -389,22 +396,34 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 				ctx.stencilIndex++
 				usedStencil = true
 				STATE_SHAPE.set(ctx, ctx.stencilIndex)
+				state = 1
 				//println(" shape")
+			}
+
+			val showChild = when {
+				ctx.masksEnabled -> true
+				else -> {
+					true
+					//(ctx.stencilIndex <= 0) || (state != 2)
+				}
 			}
 
 			//println("$depth:")
 			//println(ctx.batch.colorMask)
-			if (isGlobal) {
-				child.render(ctx, child.globalMatrix)
-			} else {
-				tempMatrix.multiply(child.localMatrix, m)
-				child.render(ctx, tempMatrix)
+			if (showChild) {
+				if (isGlobal) {
+					child.render(ctx, child.globalMatrix)
+				} else {
+					tempMatrix.multiply(child.localMatrix, m)
+					child.render(ctx, tempMatrix)
+				}
 			}
 
 			// Mask content
 			if (maskDepth >= 0) {
 				//println(" content")
 				STATE_CONTENT.set(ctx, ctx.stencilIndex)
+				state = 2
 			}
 
 			// Pop Mask
@@ -412,6 +431,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 				//println(" none")
 				STATE_NONE.set(ctx, referenceValue = 0)
 				ctx.stencilIndex--
+				state = 0
 			}
 
 			//println("  " + ctx.batch.colorMask)
@@ -420,8 +440,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 		// Reset stencil
 		if (usedStencil && ctx.stencilIndex <= 0) {
+			//println("ctx.stencilIndex: ${ctx.stencilIndex}")
 			ctx.stencilIndex = 0
-			ctx.ag.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = 0)
+			ctx.ag.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = ctx.stencilIndex)
 		}
 	}
 

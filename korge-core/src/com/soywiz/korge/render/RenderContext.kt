@@ -9,6 +9,7 @@ class RenderContext(
 	var frame = 0
 	val batch = BatchBuilder2D(ag)
 	val ctx2d = RenderContext2D(batch)
+	var masksEnabled = true
 
 	fun flush() {
 		batch.flush()

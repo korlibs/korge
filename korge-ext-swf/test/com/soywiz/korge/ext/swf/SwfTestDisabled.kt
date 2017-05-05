@@ -25,7 +25,9 @@ class SwfTestDisabled {
 			//sceneView += LocalVfs("c:/temp/tt9.swf").readSWFDeserializing(views).createMainTimeLine()
 			//sceneView += LocalVfs("c:/temp/tt20.swf").readSWFDeserializing(views).createMainTimeLine()
 			//sceneView += LocalVfs("c:/temp/tt22.swf").readSWFDeserializing(views).createMainTimeLine()
-			sceneView += LocalVfs("c:/temp/test6.swf").readSWF(views).createMainTimeLine()
+			//sceneView += LocalVfs("c:/temp/test6.swf").readSWF(views).createMainTimeLine()
+			//sceneView += LocalVfs("c:/temp/tt30.swf").readSWF(views).createMainTimeLine()
+			sceneView += LocalVfs("c:/temp/test3.swf").readSWF(views).createMainTimeLine()
 		}
 	}
 

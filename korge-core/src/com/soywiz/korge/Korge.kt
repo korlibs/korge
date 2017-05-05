@@ -124,7 +124,7 @@ object Korge {
 		//println("lastTime: $lastTime")
 		ag.onRender {
 			//println("Render")
-			ag.clear(module.bgcolor)
+			ag.clear(module.bgcolor, stencil = 0, clearStencil = true)
 			val currentTime = timeProvider.currentTimeMillis()
 			//println("currentTime: $currentTime")
 			val delta = (currentTime - lastTime).toInt()

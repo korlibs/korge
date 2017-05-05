@@ -193,10 +193,21 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 							if (animationLibrary != null) {
 								views.setVirtualSize(animationLibrary.width, animationLibrary.height)
 								sceneView += animationLibrary.createMainTimeLine()
-								sceneView += views.text("${file.basename} : ${animationLibrary.width}x${animationLibrary.height}").apply {
-									x = 16.0
-									y = 16.0
+							}
+
+							sceneView += ui.button("Masks").apply {
+								width = 80.0
+								height = 24.0
+								x = 0.0
+								y = 0.0
+								onClick {
+									views.renderContext.masksEnabled = !views.renderContext.masksEnabled
 								}
+							}
+
+							sceneView += views.text("${file.basename} : ${animationLibrary?.width}x${animationLibrary?.height}").apply {
+								x = 16.0
+								y = 30.0
 							}
 						}
 					}
