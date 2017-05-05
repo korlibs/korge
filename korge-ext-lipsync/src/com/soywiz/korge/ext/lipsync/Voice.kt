@@ -64,26 +64,30 @@ class LipSyncHandler(val views: Views) {
 	}
 
 	suspend fun play(voice: Voice, name: String) = suspendCancellableCoroutine<Unit> { c ->
-		val startTime = System.currentTimeMillis()
 		var cancel: Cancellable? = null
+
+		val channel = views.soundSystem.play(voice.voice)
+
 		cancel = views.stage.addUpdatable {
-			val currentTime = System.currentTimeMillis()
-			val elapsedTime = (currentTime - startTime).toInt()
-			if (elapsedTime >= voice.timeMs) {
+			val elapsedTime = channel.position
+			//println("elapsedTime:$elapsedTime, channel.length=${channel.length}")
+			if (elapsedTime >= channel.length) {
 				cancel?.cancel()
 				dispatch(name, 0, 'X')
 			} else {
-				dispatch(name, elapsedTime, voice[elapsedTime])
+				dispatch(name, channel.position, voice[elapsedTime])
 			}
 		}
+
 		val cancel2 = go(c.context) {
-			views.soundSystem.play(voice.voice)
+			channel.await()
 			c.resume(Unit)
 		}
 
 		c.onCancel {
 			cancel?.cancel(it)
 			cancel2.cancel(it)
+			channel.stop()
 			dispatch(name, 0, 'X')
 		}
 	}

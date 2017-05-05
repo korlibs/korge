@@ -125,6 +125,10 @@ class SwfTest {
 		Assert.assertEquals(1, views.stage.descendantsWithProp("gravity").count())
 		Assert.assertEquals(1, views.stage.descendantsWithProp("gravity", "9.8").count())
 		Assert.assertEquals(0, views.stage.descendantsWithProp("gravity", "9.0").count())
+
+		Assert.assertEquals(1, views.stage.descendantsWithPropDouble("gravity").count())
+		Assert.assertEquals(1, views.stage.descendantsWithPropDouble("gravity", 9.8).count())
+		Assert.assertEquals(0, views.stage.descendantsWithPropDouble("gravity", 9.0).count())
 	}
 
 	@Test

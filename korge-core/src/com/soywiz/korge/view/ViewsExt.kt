@@ -33,7 +33,8 @@ fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
 }
 
 fun View?.descendantsWithPropString(prop: String, value: String? = null): List<Pair<View, String>> = this.descendantsWithProp(prop, value).map { it to it.getPropString(prop) }
-fun View?.descendantsWithPropInt(prop: String, value: Int? = null): List<Pair<View, Int>> = this.descendantsWithProp(prop, "$value").map { it to it.getPropInt(prop) }
+fun View?.descendantsWithPropInt(prop: String, value: Int? = null): List<Pair<View, Int>> = this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
+fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<Pair<View, Int>> = this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
 
 operator fun View?.get(name: String): View? = firstDescendantWith { it.name == name }
 
