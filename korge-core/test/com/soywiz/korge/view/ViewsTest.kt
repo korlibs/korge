@@ -1,33 +1,30 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.ViewsForTesting
 import com.soywiz.korge.render.Texture
-import com.soywiz.korio.async.EventLoopTest
-import com.soywiz.korio.async.sync
-import com.soywiz.korio.async.syncTest
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korma.geom.Rectangle
 import org.junit.Assert
 import org.junit.Test
 
 class ViewsTest : ViewsForTesting() {
-    val tex = Texture(views.ag.createTexture(), 10, 10)
+	val tex = Texture(views.ag.createTexture(), 10, 10)
 
-    @Test
-    fun name() = syncTest {
-        views.stage += views.container().apply {
-            this += views.image(tex)
-        }
-        Assert.assertEquals(
-                """
+	@Test
+	fun name() = syncTest {
+		views.stage += views.container().apply {
+			this += views.image(tex)
+		}
+		Assert.assertEquals(
+			"""
 				|Stage(0)
 				| Container(1)
 				|  Image(2)
 			""".trimMargin(),
-                views.stage.dumpToString()
-        )
-        views.render()
-        Assert.assertEquals(
-                """
+			views.stage.dumpToString()
+		)
+		views.render()
+		Assert.assertEquals(
+			"""
 				createTexture():0
 				createBuffer(VERTEX):0
 				Buffer[0].afterSetMem(mem[96000])
@@ -42,9 +39,9 @@ class ViewsTest : ViewsForTesting() {
 				Buffer[1].close()
 				Buffer[0].close()
 			""".trimIndent(),
-                ag.getLogAsString()
-        )
-    }
+			ag.getLogAsString()
+		)
+	}
 
 	@Test
 	fun testBounds() = syncTest {

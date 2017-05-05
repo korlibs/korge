@@ -235,10 +235,6 @@ suspend fun VfsFile.readTiledMap(views: Views): TiledMap {
 		}
 	}
 
-	for (cts in combinedTileset) {
-		println(cts)
-	}
-
 	tiledMap.tileset = TileSet(views, combinedTileset.toList(), tiledMap.tilewidth, tiledMap.tileheight)
 
 	return tiledMap

@@ -1,11 +1,10 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.ViewsForTesting
 import com.soywiz.korge.log.Logger
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.get
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.sleep
 import org.junit.Assert
 import org.junit.Test
 

@@ -1,6 +1,6 @@
 package com.soywiz.korge.tween
 
-import com.soywiz.korge.ViewsForTesting
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korio.async.go
 import org.junit.Assert

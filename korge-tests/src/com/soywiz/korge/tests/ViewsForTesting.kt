@@ -1,10 +1,9 @@
-package com.soywiz.korge
+package com.soywiz.korge.tests
 
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.updateLoop
 import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.sync
-import com.soywiz.korio.async.syncTest
 import org.junit.Before
 
 open class ViewsForTesting {

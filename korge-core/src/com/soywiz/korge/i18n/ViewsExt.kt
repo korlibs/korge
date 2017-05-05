@@ -10,7 +10,7 @@ var Views.language: Language
 	get() = this.extraLanguage
 	set(value) {
 		this.extraLanguage = value
-		this.root.foreachDescendant {
+		this.stage.foreachDescendant {
 			if (it is TextContainer) it.updateText(value)
 		}
 	}

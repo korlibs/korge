@@ -187,7 +187,7 @@ class SwfTest {
 		cmt.update(10)
 		cmt.update(40)
 		Assert.assertEquals(900.0, cmt["circle"]?.x)
-		Assert.assertEquals("IRectangle(x=1799, y=193, width=162, height=162)", cmt["circle"]!!.getGlobalBounds().toInt().toString())
+		Assert.assertEquals("IRectangle(x=1799, y=193, width=164, height=164)", cmt["circle"]!!.getGlobalBounds().toInt().toString())
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
 	}

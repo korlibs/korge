@@ -122,9 +122,6 @@ class Views(
 
 	val stage = Stage(this)
 
-	@Deprecated("Use stage", ReplaceWith("stage"))
-	val root: Container get() = stage
-
 	fun render() {
 		stage.render(renderContext)
 		renderContext.flush()

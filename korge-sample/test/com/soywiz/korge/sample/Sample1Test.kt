@@ -44,6 +44,6 @@ class Sample1Test : KorgeTest() {
 	fun scene2() = testScene(Sample1Module, Sample2Scene::class.java) {
 		Assert.assertNotNull(this.test4Library)
 		Assert.assertTrue(sceneView.children.first() is AnMovieClip)
-		views.root.dump()
+		views.stage.dump()
 	}
 }

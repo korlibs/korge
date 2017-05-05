@@ -5,4 +5,5 @@ apply plugin: 'kotlin'
 dependencies {
     compile project(":korge-core")
     testCompile project(":korge")
+	testCompile project(":korge-tests")
 }
