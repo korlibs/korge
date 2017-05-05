@@ -9,10 +9,10 @@ import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 
 @AsyncFactoryClass(UISkin.Factory::class)
-class UISkin(val views: Views, val atlas: Texture) {
-	val buttonOut: Texture = atlas.slice(0, 0, 64, 64)
-	val buttonOver: Texture = atlas.slice(64, 0, 64, 64)
-	val buttonDown: Texture = atlas.slice(128, 0, 64, 64)
+class UISkin(val views: Views, val texture: Texture) {
+	val buttonOut: Texture = texture.slice(0, 0, 64, 64)
+	val buttonOver: Texture = texture.slice(64, 0, 64, 64)
+	val buttonDown: Texture = texture.slice(128, 0, 64, 64)
 
 	class Factory(
 		private val path: Path,

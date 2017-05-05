@@ -1,9 +1,10 @@
 package com.soywiz.korge.intellij.editor
 
-import com.soywiz.korau.sound.readNativeSound
+import com.soywiz.korau.sound.readNativeSoundOptimized
 import com.soywiz.korge.animate.AnSimpleAnimation
 import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.audio.soundSystem
+import com.soywiz.korge.ext.lipsync.Voice
 import com.soywiz.korge.ext.lipsync.readVoice
 import com.soywiz.korge.ext.particle.readParticle
 import com.soywiz.korge.ext.spriter.readSpriterLibrary
@@ -23,6 +24,7 @@ import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawnAndForget
 import com.soywiz.korio.error.ignoreErrors
@@ -73,6 +75,8 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					views.eventLoop.sleepNextFrame()
 					val file = fileToEdit.file
 
+					var promise: Promise<*>? = null
+
 					when (file.extensionLC) {
 						"tmx" -> {
 							val tiled = file.readTiledMap(views)
@@ -94,19 +98,19 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 							sceneView += fileToEdit.file.readParticle(views).create(views.virtualWidth / 2.0, views.virtualHeight / 2.0)
 						}
 						"wav", "mp3", "ogg", "lipsync" -> {
+							var voice: Voice? = null
+							val voiceName = "voice"
+
 							if (file.basename.contains("voice") || file.basename.contains("lipsync")) {
 								val wav = file.withExtension("wav")
 								val mp3 = file.withExtension("mp3")
 								val ogg = file.withExtension("ogg")
 								val audios = listOf(wav, mp3, ogg)
 								val audio = audios.firstOrNull { it.exists() }
-								val voice = audio?.readVoice(views)
+								voice = audio?.readVoice(views)
 								//audio?.readAudioData()?.play()
 
 								//val classLoader = pluginClassLoader
-
-
-								val voiceName = "voice"
 
 								views.setVirtualSize(150 * 2, 100 * 2)
 
@@ -127,16 +131,48 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 								}
 
 								sceneView += mouth
+							}
 
-								go {
-									voice?.play(voiceName)
+							fun stopSound() {
+								promise?.cancel()
+							}
+
+							fun playSound() {
+								promise?.cancel()
+								promise = go(views.coroutineContext) {
+									if (voice != null) {
+										voice?.play(voiceName)
+									} else {
+										views.soundSystem.play(file.readNativeSoundOptimized())
+									}
+									Unit
 								}
+							}
 
-								//sceneView.addEventListener<LipSyncEvent> { e ->
-								//	mouth.tex = lips[e.lip] ?: views.transparentTexture
-								//}
-							} else {
-								views.soundSystem.play(file.readNativeSound())
+							playSound()
+
+							//sceneView.addEventListener<LipSyncEvent> { e ->
+							//	mouth.tex = lips[e.lip] ?: views.transparentTexture
+							//}
+
+							sceneView += ui.button("Replay").apply {
+								width = 80.0
+								height = 24.0
+								x = 0.0
+								y = 0.0
+								onClick {
+									playSound()
+								}
+							}
+
+							sceneView += ui.button("Stop").apply {
+								width = 80.0
+								height = 24.0
+								x = 80.0
+								y = 0.0
+								onClick {
+									stopSound()
+								}
 							}
 
 							Unit
@@ -167,7 +203,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					sceneView -= loading
 
 					sceneView += ui.button("Open").apply {
-						width = 100.0
+						width = 80.0
 						height = 24.0
 						x = views.virtualWidth - width
 						y = 0.0

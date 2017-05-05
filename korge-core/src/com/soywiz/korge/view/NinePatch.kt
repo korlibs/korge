@@ -46,8 +46,17 @@ class NinePatch(
 		val texRighttWidth = tex.width * right
 		val texBottomHeight = tex.height * bottom
 
-		posCuts[1].setTo(texLeftWidth / width, texTopHeight / height)
-		posCuts[2].setTo(1.0 - texRighttWidth / width, 1.0 - texBottomHeight / height)
+		val ratioX = if (width < tex.width) width / tex.width else 1.0
+		val ratioY = if (height < tex.height) height / tex.height else 1.0
+
+		val actualRatioX = Math.min(ratioX, ratioY)
+		val actualRatioY = Math.min(ratioX, ratioY)
+
+		//val ratioX = 1.0
+		//val ratioY = 1.0
+
+		posCuts[1].setTo(texLeftWidth * actualRatioX / width, texTopHeight * actualRatioY / height)
+		posCuts[2].setTo(1.0 - texRighttWidth * actualRatioX / width, 1.0 - texBottomHeight * actualRatioY / height)
 
 		ctx.batch.drawNinePatch(
 			tex,

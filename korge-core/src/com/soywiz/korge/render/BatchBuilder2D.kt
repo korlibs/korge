@@ -105,8 +105,6 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		texCuts: Array<Point2d>,
 		m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors
 	) {
-		val start = vertexCount
-
 		setStateFast(tex.base, filtering, blendFactors)
 
 		ensure(indices = 6 * 9, vertices = 4 * 4)
@@ -118,6 +116,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		val t_o = pt4.setTo(tex.x0, tex.y0)
 		val t_dU = pt5.setToSub(ptt1.setTo(tex.x1, tex.y0), t_o)
 		val t_dV = pt6.setToSub(ptt1.setTo(tex.x0, tex.y1), t_o)
+
+		val start = vertexCount
 
 		for (cy in 0 until 4) {
 			val posCutY = posCuts[cy].y

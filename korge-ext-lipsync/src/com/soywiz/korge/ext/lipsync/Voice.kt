@@ -1,7 +1,7 @@
 package com.soywiz.korge.ext.lipsync
 
 import com.soywiz.korau.sound.NativeSound
-import com.soywiz.korau.sound.readNativeSound
+import com.soywiz.korau.sound.readNativeSoundOptimized
 import com.soywiz.korge.animate.play
 import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.component.Component
@@ -9,7 +9,8 @@ import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
-import com.soywiz.korio.async.spawn
+import com.soywiz.korio.async.go
+import com.soywiz.korio.async.suspendCancellableCoroutine
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.Cancellable
@@ -54,7 +55,15 @@ data class LipSyncEvent(var name: String = "", var timeMs: Int = 0, var lip: Cha
 class LipSyncHandler(val views: Views) {
 	val event = LipSyncEvent()
 
-	suspend fun play(voice: Voice, name: String) {
+	private fun dispatch(name: String, elapsedTime: Int, lip: Char) {
+		views.dispatch(event.apply {
+			this.name = name
+			this.timeMs = elapsedTime
+			this.lip = lip
+		})
+	}
+
+	suspend fun play(voice: Voice, name: String) = suspendCancellableCoroutine<Unit> { c ->
 		val startTime = System.currentTimeMillis()
 		var cancel: Cancellable? = null
 		cancel = views.stage.addUpdatable {
@@ -62,15 +71,21 @@ class LipSyncHandler(val views: Views) {
 			val elapsedTime = (currentTime - startTime).toInt()
 			if (elapsedTime >= voice.timeMs) {
 				cancel?.cancel()
+				dispatch(name, 0, 'X')
 			} else {
-				views.dispatch(event.apply {
-					this.name = name
-					this.timeMs = elapsedTime
-					this.lip = voice[elapsedTime]
-				})
+				dispatch(name, elapsedTime, voice[elapsedTime])
 			}
 		}
-		views.soundSystem.play(voice.voice)
+		val cancel2 = go(c.context) {
+			views.soundSystem.play(voice.voice)
+			c.resume(Unit)
+		}
+
+		c.onCancel {
+			cancel?.cancel(it)
+			cancel2.cancel(it)
+			dispatch(name, 0, 'X')
+		}
 	}
 }
 
@@ -91,7 +106,7 @@ suspend fun VfsFile.readVoice(views: Views): Voice {
 	val lipsyncFile = this.withExtension("lipsync")
 	return Voice(
 		views,
-		this.readNativeSound(),
+		this.readNativeSoundOptimized(),
 		LipSync(if (lipsyncFile.exists()) lipsyncFile.readString().trim() else "")
 	)
 }
