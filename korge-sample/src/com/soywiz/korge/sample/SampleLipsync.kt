@@ -24,19 +24,19 @@ object SampleLipsync : Module() {
 
 	class MainScene(
 		@Path("lipsync/lipsynctest.swf") val lipsynctest: AnLibrary,
-		@Path("lipsync/simple.voice.wav") val myvoice: Voice
+		@Path("lipsync/to-be.voice.mp3") val myvoice: Voice
 	) : Scene() {
 		suspend override fun sceneInit(sceneView: Container) {
 			go {
-				val voice = resourcesRoot["lipsync/simple.voice.wav"].readVoice(views)
-				voice.play("Carlos")
+				val voice = resourcesRoot["lipsync/to-be.voice.mp3"].readVoice(views)
+				//voice.play("Carlos")
 				myvoice.play("Tamara")
 			}
 
 			sceneView += lipsynctest.createMainTimeLine()
 
 			go {
-				sceneView.tween(sceneView::colorMul[Colors.WHITE, Colors.RED].color(), time = 1000)
+				//sceneView.tween(sceneView::colorMul[Colors.WHITE, Colors.RED].color(), time = 1000)
 			}
 		}
 	}

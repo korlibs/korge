@@ -59,7 +59,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 			val fileToEdit: KorgeFileToEdit,
 			val ui: UIFactory
 		) : Scene() {
-			suspend private fun getLipTexture(char: Char) = ignoreErrors { pluginResurcesVfs["/com/soywiz/korge/intellij/lips/ken-$char.png"].readTexture(views) } ?: views.transparentTexture
+			suspend private fun getLipTexture(char: Char) = ignoreErrors { pluginResurcesVfs["/com/soywiz/korge/intellij/lips/lisa-$char.png"].readTexture(views) } ?: views.transparentTexture
 
 			suspend override fun sceneInit(sceneView: Container) {
 				val loading = views.text("Loading...", color = Colors.WHITE).apply {
@@ -112,7 +112,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 
 								//val classLoader = pluginClassLoader
 
-								views.setVirtualSize(150 * 2, 100 * 2)
+								views.setVirtualSize(408 * 2, 334 * 2)
 
 								val mouth = AnSimpleAnimation(views, 10, mapOf(
 									"A" to listOf(getLipTexture('A')),
