@@ -19,39 +19,42 @@ class KorgeBuildResourcesAction : AnAction() {
 			project.runBackgroundTaskWithProgress { progress ->
 				KorgeManualServiceRegistration.register()
 
-				val resources = project.moduleManager.modules.flatMap { it.rootManager.getSourceRoots(JavaResourceRootType.RESOURCE) }
+				for (module in project.moduleManager.modules) {
 
-				val resourcesVfs = resources.map { it.toVfs() }
+					val resources = module.rootManager.getSourceRoots(JavaResourceRootType.RESOURCE)
 
-				val resourcesVirtual = resourcesVfs.firstOrNull { it.basename == "resources" }
-				val genresourcesVirtual = resourcesVirtual?.parent?.get("genresources")
+					val resourcesVfs = resources.map { it.toVfs() }
 
-				println(resources)
-				println(resourcesVfs)
-				println("Regenerating resources")
-				println("genresourcesVirtual=$genresourcesVirtual : resourcesVirtual=$resourcesVirtual")
+					val resourcesVirtual = resourcesVfs.firstOrNull { it.basename == "resources" }
+					val genresourcesVirtual = resourcesVirtual?.parent?.get("genresources")
 
-				progress.text = "Regenerating resources"
-				if (resourcesVirtual != null && genresourcesVirtual != null) {
-					syncTest {
-						genresourcesVirtual.mkdirs()
+					println(resources)
+					println(resourcesVfs)
+					println("Regenerating resources")
+					println("genresourcesVirtual=$genresourcesVirtual : resourcesVirtual=$resourcesVirtual")
 
-						try {
-							// @TODO: Proper discovery of that folder
-							val extraOutputVirtual = genresourcesVirtual["../build/resources/main"]
-							println("Regenerating resources [1]")
-							ResourceProcessor.process(listOf(resourcesVirtual), genresourcesVirtual, extraOutputVirtual) { pi ->
-								progress.fraction = if (pi.fraction <= 0.0) 0.0001 else pi.fraction
-								progress.text = "Processing... ${pi.file}"
+					progress.text = "Regenerating resources for $module"
+					if (resourcesVirtual != null && genresourcesVirtual != null) {
+						syncTest {
+							genresourcesVirtual.mkdirs()
+
+							try {
+								// @TODO: Proper discovery of that folder
+								val extraOutputVirtual = genresourcesVirtual["../build/resources/main"]
+								println("Regenerating resources [1]")
+								ResourceProcessor.process(listOf(resourcesVirtual), genresourcesVirtual, extraOutputVirtual) { pi ->
+									progress.fraction = if (pi.fraction <= 0.0) 0.0001 else pi.fraction
+									progress.text = "Processing... ${pi.file}"
+								}
+								println("Regenerating resources [2]")
+							} catch (e: Throwable) {
+								e.printStackTrace()
 							}
-							println("Regenerating resources [2]")
-						} catch (e: Throwable) {
-							e.printStackTrace()
 						}
 					}
+					progress.text = "Done"
+					println("/Regenerating resources")
 				}
-				progress.text = "Done"
-				println("/Regenerating resources")
 			}
 		}
 	}
