@@ -11,7 +11,7 @@ class BatchBuilderTest {
     @Test
     fun simpleBatch() {
         val tex = Texture(ag.createTexture(), 100, 100)
-        bb.addQuad(tex, 0f, 0f)
+        bb.drawQuad(tex, 0f, 0f)
         bb.flush()
 
         Assert.assertEquals(
@@ -37,8 +37,8 @@ class BatchBuilderTest {
     @Test
     fun batch2() {
         val tex = Texture(ag.createTexture(), 100, 100)
-        bb.addQuad(tex, 0f, 0f)
-        bb.addQuad(tex, 100f, 0f)
+        bb.drawQuad(tex, 0f, 0f)
+        bb.drawQuad(tex, 100f, 0f)
         bb.flush()
 
         Assert.assertEquals(

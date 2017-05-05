@@ -55,11 +55,15 @@ class BitmapFont(
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
-			batch.addQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colMul = colMul, colAdd = colAdd, blendFactors = blendMode.factors)
+			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colMul = colMul, colAdd = colAdd, blendFactors = blendMode.factors)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}
 	}
+}
+
+fun BatchBuilder2D.drawText(font: BitmapFont, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), colMul: Int = Colors.WHITE, colAdd: Int = 0x7f7f7f7f, blendMode: BlendMode = BlendMode.INHERIT) {
+	font.drawText(this, textSize, str, x, y, m, colMul, colAdd, blendMode)
 }
 
 suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {

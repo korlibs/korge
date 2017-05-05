@@ -1,4 +1,6 @@
 <idea-plugin>
+	<!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
+
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 	<name>Korge IntelliJ Plugin</name>
 	<version>0.1</version>
@@ -8,10 +10,18 @@
   	Intelli-J Plugin for Korge game engine, that builds resources, and provides jtransc integration.
 	]]></description>
 
-	<change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
-    ]]>
+	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>0.9.1</h3>
+		<ul>
+			<li>Fixed context-loss when previewing files using Korge.</li>
+			<li>Added lots more peview files</li>
+			<li>Added lots more peview files</li>
+		</ul>
+		<h3>0.8.5</h3>
+		<ul>
+			<li>First version. Buggy. Uncomplete.</li>
+		</ul>
+		]]>
 	</change-notes>
 
 	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
@@ -38,7 +48,8 @@
 		-->
 		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"></fileTypeFactory>
 
-		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
+		<completion.contributor language="XML"
+								implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
 
 		<!--
 		<moduleBuilder builderClass="com.soywiz.korge.intellij.KorgeModuleWizardStep" order="first"/>
@@ -64,11 +75,16 @@
 			</action>
 		</group>
 
-		<action id="Korge.NewFile.Atlas" class="com.soywiz.korge.intellij.createnew.NewKorgeScene">
+		<group id="KorgeNew">
 			<add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
-		</action>
-	</actions>
 
+			<separator/>
+
+			<action id="Korge.NewFile.Atlas" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+
+			<separator/>
+		</group>
+	</actions>
 
 
 	<application-components>

@@ -36,6 +36,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 				document?.defaultFormat?.parent = value
 			}
 		}
+	//var verticalAlign: Html.VerticalAlignment = Html.VerticalAlignment.TOP
 	val textBounds = Rectangle(0, 0, 1024, 1024)
 	private val tempRect = Rectangle()
 
@@ -70,7 +71,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			//val x = (textBounds.width) * anchor.sx - tempRect.width
 			val x = textBounds.x + (textBounds.width - tempRect.width) * anchor.sx
 			//val x = textBounds.x + (textBounds.width) * anchor.sx
-			val y = textBounds.y + (textBounds.height) * anchor.sy
+			val y = textBounds.y + (textBounds.height - tempRect.height) * anchor.sy
 			//println(" -> ($x, $y)")
 			font.drawText(ctx.batch, format.computedSize.toDouble(), text, x.toInt(), y.toInt(), m, colMul = RGBA.multiply(color, format.computedColor), blendMode = computedBlendMode)
 		}
@@ -104,13 +105,13 @@ inline fun Container.text(text: String, textSize: Double = 16.0, font: BitmapFon
 }
 
 fun View?.setText(text: String) {
-	this.descendants {
+	this.foreachDescendant {
 		if (it is IText) it.text = text
 	}
 }
 
 fun View?.setHtml(html: String) {
-	this.descendants {
+	this.foreachDescendant {
 		if (it is IHtml) it.html = html
 	}
 }

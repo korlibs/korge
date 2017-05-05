@@ -17,6 +17,7 @@ dependencies {
 	compile project(":korge-ext-lipsync")
 	compile project(":korge-ext-particle")
 	compile project(":korge-ext-tiled")
+	compile project(":korge-ext-ui")
 	testCompile project(":korge-tests")
 }
 

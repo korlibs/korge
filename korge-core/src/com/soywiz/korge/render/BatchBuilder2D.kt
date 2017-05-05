@@ -42,7 +42,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	// 0..1
 	// |  |
 	// 3..2
-	fun addQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colMul: Int, colAdd: Int, rotated: Boolean = false) {
+	fun drawQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colMul: Int, colAdd: Int, rotated: Boolean = false) {
 		ensure(6, 4)
 
 		addIndex(vertexCount + 0)
@@ -97,7 +97,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	private val pt7 = Point2d()
 	private val pt8 = Point2d()
 
-	fun addNinePatch(
+	fun drawNinePatch(
 		tex: Texture,
 		x: Float = 0f, y: Float = 0f,
 		width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(),
@@ -105,11 +105,11 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		texCuts: Array<Point2d>,
 		m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors
 	) {
-		ensure(indices = 6 * 9, vertices = 4 * 4)
-
 		val start = vertexCount
 
 		setStateFast(tex.base, filtering, blendFactors)
+
+		ensure(indices = 6 * 9, vertices = 4 * 4)
 
 		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
 		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
@@ -167,7 +167,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		}
 	}
 
-	fun addQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors, rotated: Boolean = false) {
+	fun drawQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
@@ -175,7 +175,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 		setStateFast(tex.base, filtering, blendFactors)
 
-		addQuadFast(
+		drawQuadFast(
 			m.transformXf(x0, y0), m.transformYf(x0, y0),
 			m.transformXf(x1, y0), m.transformYf(x1, y0),
 			m.transformXf(x1, y1), m.transformYf(x1, y1),

@@ -19,7 +19,7 @@ open class ShaderView(views: Views) : Container(views) {
 		}
 		ctx.flush()
 		//ctx.batch.addQuad(tex, out.x.toFloat(), out.y.toFloat(), tex.width.toFloat() * 2f, tex.height.toFloat() * 2f, m, filtering = false)
-		ctx.batch.addQuad(tex, 0f, 0f, tex.width.toFloat() * 2f, tex.height.toFloat() * 2f, m, filtering = false)
+		ctx.batch.drawQuad(tex, 0f, 0f, tex.width.toFloat() * 2f, tex.height.toFloat() * 2f, m, filtering = false)
 		ctx.flush()
 	}
 }

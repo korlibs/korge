@@ -58,9 +58,9 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 			texCuts[1].setTo((npLeft / texWidth), (npTop / texHeight))
 			texCuts[2].setTo((npRight / texWidth), (npBottom / texWidth))
 
-			ctx.batch.addNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, posCuts = posCuts, texCuts = texCuts, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+			ctx.batch.drawNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, posCuts = posCuts, texCuts = texCuts, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 		} else {
-			ctx.batch.addQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+			ctx.batch.drawQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 		}
 	}
 

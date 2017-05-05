@@ -11,9 +11,13 @@ import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.ext.tiled.createView
 import com.soywiz.korge.ext.tiled.readTiledMap
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.render.readTexture
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.ui.UIFactory
+import com.soywiz.korge.ui.button
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
@@ -22,8 +26,11 @@ import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawnAndForget
 import com.soywiz.korio.error.ignoreErrors
+import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.vfs.jvm.ResourcesVfsProviderJvm
 import com.soywiz.korma.geom.Anchor
+import com.soywiz.korui.light.defaultLight
+import java.io.File
 
 
 abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider {
@@ -41,8 +48,14 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 	object EditorModule : Module() {
 		override val mainScene: Class<out Scene> = EditorScene::class.java
 
+		suspend override fun init(injector: AsyncInjector) {
+			super.init(injector)
+			injector.get<ResourcesRoot>().mount("/", pluginResurcesVfs.root)
+		}
+
 		class EditorScene(
-			val fileToEdit: KorgeFileToEdit
+			val fileToEdit: KorgeFileToEdit,
+			val ui: UIFactory
 		) : Scene() {
 			suspend private fun getLipTexture(char: Char) = ignoreErrors { pluginResurcesVfs["/com/soywiz/korge/intellij/lips/ken-$char.png"].readTexture(views) } ?: views.transparentTexture
 
@@ -152,6 +165,17 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 						}
 					}
 					sceneView -= loading
+
+					sceneView += ui.button("Open").apply {
+						width = 100.0
+						height = 24.0
+						x = views.virtualWidth - width
+						y = 0.0
+						onClick {
+							defaultLight.open(File(file.absolutePath))
+						}
+					}
+
 					Unit
 				}
 			}

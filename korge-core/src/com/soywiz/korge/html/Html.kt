@@ -14,12 +14,29 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bounds
 
 object Html {
-	enum class Alignment(val anchor: Anchor) {
-		LEFT(Anchor.TOP_LEFT),
-		CENTER(Anchor.TOP_CENTER),
-		RIGHT(Anchor.TOP_RIGHT),
-		JUSTIFIED(Anchor.TOP_LEFT)
+	data class Alignment(val anchor: Anchor) {
+		companion object {
+			val LEFT = Alignment(Anchor.TOP_LEFT)
+			val CENTER = Alignment(Anchor.TOP_CENTER)
+			val RIGHT = Alignment(Anchor.TOP_RIGHT)
+			val JUSTIFIED = Alignment(Anchor.TOP_LEFT)
+
+			val MIDDLE_LEFT = Alignment(Anchor.MIDDLE_LEFT)
+			val MIDDLE_CENTER = Alignment(Anchor.MIDDLE_CENTER)
+			val MIDDLE_RIGHT = Alignment(Anchor.MIDDLE_RIGHT)
+
+			val BOTTOM_LEFT = Alignment(Anchor.BOTTOM_LEFT)
+			val BOTTOM_CENTER = Alignment(Anchor.BOTTOM_CENTER)
+			val BOTTOM_RIGHT = Alignment(Anchor.BOTTOM_RIGHT)
+		}
 	}
+
+	//enum class VerticalAlignment(val ratio: Double) {
+	//	TOP(0.0),
+	//	MIDDLE(0.5),
+	//	BOTTOM(1.0);
+	//}
+
 
 	interface FontFace {
 		data class Named(val name: String) : FontFace

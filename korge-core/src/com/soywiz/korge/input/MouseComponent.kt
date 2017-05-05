@@ -16,6 +16,7 @@ class MouseComponent(view: View) : Component(view) {
 	val onOut = Signal<MouseComponent>()
 	val onDown = Signal<MouseComponent>()
 	val onUp = Signal<MouseComponent>()
+	val onUpOutside = Signal<MouseComponent>()
 	val onMove = Signal<MouseComponent>()
 
 	var hitTestType = View.HitTestType.BOUNDING
@@ -80,8 +81,8 @@ class MouseComponent(view: View) : Component(view) {
 			startedPos.copyFrom(currentPos)
 			onDown(this)
 		}
-		if (over && pressingChanged && !pressing) {
-			onUp(this)
+		if (pressingChanged && !pressing) {
+			if (over) onUp(this) else onUpOutside(this)
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
 		}
 		if (over && clickedCount > 0) {
@@ -109,4 +110,5 @@ inline fun <T : View?> T?.onOver(noinline handler: suspend (MouseComponent) -> U
 inline fun <T : View?> T?.onOut(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onOut?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onDown(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onDown?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onUp(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUp?.addSuspend(this.views.coroutineContext, handler) }
+inline fun <T : View?> T?.onUpOutside(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpOutside?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.addSuspend(this.views.coroutineContext, handler) }

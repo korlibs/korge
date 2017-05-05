@@ -5,7 +5,9 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 
 #parse("File Header.java")
-class ${NAME} : Scene() {
+class ${NAME}(
+ : Scene() {
 	suspend override fun sceneInit(sceneView: Container) {
+		// @TODO: Scene initialization here
 	}
 }

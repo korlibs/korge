@@ -29,7 +29,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
             val p1 = p0 + dU
             val p2 = p0 + dU + dV
             val p3 = p0 + dV
-            batch.addQuadFast(
+            batch.drawQuadFast(
                     p0.x.toFloat(), p0.y.toFloat(),
                     p1.x.toFloat(), p1.y.toFloat(),
                     p2.x.toFloat(), p2.y.toFloat(),

@@ -75,12 +75,12 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	// Properties
 	private val _props = linkedMapOf<String, String>()
-	val props: Map<String, String> = _props
+	val props: Map<String, String> get() = _props
 
-	fun hasProp(key: String) = key in props
-	fun getPropString(key: String, default: String = "") = props[key] ?: default
-	fun getPropInt(key: String, default: Int = 0) = props[key]?.toIntOrNull() ?: default
-	fun getPropDouble(key: String, default: Double = 0.0) = props[key]?.toDoubleOrNull() ?: default
+	fun hasProp(key: String) = key in _props
+	fun getPropString(key: String, default: String = "") = _props[key] ?: default
+	fun getPropInt(key: String, default: Int = 0) = _props[key]?.toIntOrNull() ?: default
+	fun getPropDouble(key: String, default: Double = 0.0) = _props[key]?.toDoubleOrNull() ?: default
 
 	fun addProp(key: String, value: String) {
 		_props[key] = value
