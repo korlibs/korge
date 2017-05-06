@@ -1,4 +1,5 @@
 package {
+	import flash.events.MouseEvent;
 	import flash.events.TextEvent;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
@@ -15,6 +16,7 @@ package {
 	[SWF(frameRate=60, width=300, height=320, backgroundColor="#454545")]
 	public class Main extends Sprite {
 		private var propertiesTextField: TextField;
+		private var enabled: Boolean = true;
 
 		public function Main() {
 			initialize();
@@ -33,6 +35,16 @@ package {
 			propertiesLabel.type = TextFieldType.DYNAMIC;
 			propertiesLabel.text = 'Properties:';
 			this.addChild(propertiesLabel);
+
+			var enableLabel: TextField = new TextField();
+			enableLabel.x = 120;
+			enableLabel.y = 0;
+			enableLabel.defaultTextFormat = new TextFormat("Arial", 12);
+			enableLabel.selectable = false;
+			enableLabel.type = TextFieldType.DYNAMIC;
+			enableLabel.textColor = 0xcbcbcb;
+			enableLabel.text = '[ENABLED]';
+			this.addChild(enableLabel);
 			
 			propertiesTextField = new TextField();
 			propertiesTextField.x = 0;
@@ -48,6 +60,15 @@ package {
 			propertiesTextField.wordWrap = false;
 			this.addChild(propertiesTextField);
 			
+			enableLabel.addEventListener(MouseEvent.CLICK, function(e: MouseEvent): void {
+				enabled = !enabled;
+				enableLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
+				propertiesLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
+				propertiesTextField.backgroundColor = enabled ? 0xebebeb : 0x777777;
+				enableLabel.text = enabled ? '[ENABLED]' : '[DISABLED]';
+				selectionChanged();
+			});
+
 			stage.addEventListener(Event.RESIZE, function(e:*):void {
 				propertiesTextField.width = stage.stageWidth;
 				propertiesTextField.height = stage.stageHeight - propertiesTextField.y;	
@@ -65,21 +86,29 @@ package {
 			ExternalInterface.addCallback("selectionChanged", selectionChanged);
 			MMExecute(
 				"fl.addEventListener('selectionChanged', function() {" +
-				//"	fl.trace('SELECTION_CHANGED JS');" +
-				"	var doc = fl.getDocumentDOM();" +
-				"	var item = (doc && (doc.selection.length == 1)) ? doc.selection[0] : null;" +
-				"	var data = item ? (item.hasPersistentData('props') ? item.getPersistentData('props') : '{}') : null;" +
-				"	var data2 = data ? (data.split('').map(function(s) { return s.charCodeAt(0); }).join(',')) : null;" +
-				"	fl.getSwfPanel('KorgeEXT', false).call('selectionChanged', data2);" +
+				"	fl.getSwfPanel('KorgeEXT', false).call('selectionChanged');" +
 				"});"
 			);
 		}
 		
-		public function selectionChanged(json: String): void {
+		public function selectionChanged(): void {
+			var json:String = enabled ? getSelection() : null;
 			setProperties((json != null) ? JSON.parse(json.split(/,/).map(function(e:String, index:int, arr:Array) { return String.fromCharCode(parseInt(e)); }).join('')) : null);
 			
 		}
-		
+
+		public function getSelection(): String {
+			return MMExecute(
+				"(function() {" +
+				"  var doc = fl.getDocumentDOM();" +
+				"  var item = (doc && (doc.selection.length == 1)) ? doc.selection[0] : null;" +
+				"  var data = item ? (item.hasPersistentData('props') ? item.getPersistentData('props') : '{}') : null;" +
+				"  var data2 = data ? (data.split('').map(function(s) { return s.charCodeAt(0); }).join(',')) : null;" +
+				"  return data2;" +
+				"})()"
+			);
+		}
+
 		private function setPropertiesToSelectedJson(propsAsJson: String): void {
 			MMExecute(
 				"(function() {" +
