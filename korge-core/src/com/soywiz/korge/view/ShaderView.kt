@@ -7,6 +7,7 @@ import com.soywiz.korma.geom.Rectangle
 //class ShaderView(views: Views, val shader: Program) : Container(views) {
 open class ShaderView(views: Views) : Container(views) {
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		val out = Rectangle()
 		this.getBounds(this, out)
 		val m2 = Matrix2d()

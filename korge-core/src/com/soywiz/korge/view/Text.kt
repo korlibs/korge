@@ -55,6 +55,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 	}
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		val color = globalColorMul
 		if (document != null) {
 			for (span in document!!.allSpans) {

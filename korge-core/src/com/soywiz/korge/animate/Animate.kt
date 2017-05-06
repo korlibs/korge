@@ -36,6 +36,7 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	val texCuts = arrayOf(Point2d(0.0, 0.0), Point2d(0.25, 0.25), Point2d(0.75, 0.75), Point2d(1.0, 1.0))
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		//println("%08X".format(globalColor))
 		//println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
 		//println(ninePatch)
@@ -122,12 +123,6 @@ class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : An
 
 	init {
 		updatedRatio()
-	}
-
-	override fun render(ctx: RenderContext, m: Matrix2d) {
-		//println("$dx, $dy")
-		//println(texWBS?.bounds)
-		super.render(ctx, m)
 	}
 }
 
@@ -382,6 +377,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 	private val tempMatrix = Matrix2d()
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		Arrays.fill(maskPopDepths, false)
 
 		val isGlobal = (m === globalMatrix)

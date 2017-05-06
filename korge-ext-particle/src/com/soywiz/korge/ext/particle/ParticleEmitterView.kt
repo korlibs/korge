@@ -28,6 +28,7 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: Point2d = Po
 
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		//ctx.flush()
 
 		val context = ctx.ctx2d

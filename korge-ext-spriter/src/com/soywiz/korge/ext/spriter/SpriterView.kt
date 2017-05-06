@@ -96,6 +96,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 	private val t2: Matrix2d = Matrix2d()
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		val batch = ctx.batch
 		val colorMul = globalColorMul
 		val colorAdd = globalColorAdd

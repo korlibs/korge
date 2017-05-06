@@ -36,6 +36,7 @@ class NinePatch(
 	)
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		// Precalculate points to avoid matrix multiplication per vertex on each frame
 
 		//for (n in 0 until 4) posCuts[n].setTo(posCutsRatios[n].x * width, posCutsRatios[n].y * height)

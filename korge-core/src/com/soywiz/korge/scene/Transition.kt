@@ -32,6 +32,7 @@ class TransitionView(views: Views) : Container(views) {
 	}
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		when {
 			ratio <= 0.0 -> prev.render(ctx, m)
 			ratio >= 1.0 -> next.render(ctx, m)

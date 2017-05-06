@@ -13,6 +13,7 @@ class SolidRect(views: Views, var width: Double, var height: Double, color: Int)
 	private var sTop = 0.0
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		//println("%08X".format(color))
 		ctx.batch.drawQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, colMul = RGBA.multiply(colorMul, globalColorMul), colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 	}

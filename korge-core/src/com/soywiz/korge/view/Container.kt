@@ -41,6 +41,7 @@ open class Container(views: Views) : View(views) {
 
 	private val tempMatrix = Matrix2d()
 	override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
 		val isGlobal = (m === globalMatrix)
 		for (child in children.toList()) {
 			if (isGlobal) {

@@ -12,6 +12,7 @@ class TileMap(val map: IntArray2, val tileset: TileSet, views: Views) : View(vie
     var smoothing = true
 
     override fun render(ctx: RenderContext, m: Matrix2d) {
+		if (!visible) return
         val batch = ctx.batch
 
         val pos = m.transform(0.0, 0.0)
