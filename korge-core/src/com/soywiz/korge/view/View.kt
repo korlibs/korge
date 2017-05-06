@@ -3,9 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.sleep
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.isSubtypeOf
@@ -17,6 +17,24 @@ import com.soywiz.korma.geom.Rectangle
 open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	companion object {
 		private val tempTransform = Matrix2d.Transform()
+
+		fun commonAncestor(left: View?, right: View?): View? {
+			var l: View? = left
+			var r: View? = right
+			var lCount = l.ancestorCount
+			var rCount = r.ancestorCount
+			while (lCount != rCount) {
+				if (lCount > rCount) {
+					lCount--
+					l = l?.parent
+				} else {
+					rCount--
+					r = r?.parent
+				}
+				if (lCount < 0 && rCount < 0) break
+			}
+			return if (l == r) l else null
+		}
 	}
 
 	open var ratio: Double = 0.0
@@ -48,7 +66,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _rotation: Double = 0.0
 
 	val pos = Point2d()
-	var x: Double; set(v) = run { ensureTransform();  if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
+	var x: Double; set(v) = run { ensureTransform(); if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
 	var y: Double; set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = ensureTransform().pos.y
 	var scaleX: Double; set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = ensureTransform()._scaleX
 	var scaleY: Double; set(v) = run { ensureTransform(); if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }; get() = ensureTransform()._scaleY
@@ -361,10 +379,12 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return out
 	}
 
+	val globalBounds: Rectangle get() = getGlobalBounds()
 	fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
 
-	fun getBounds(target: View = this, out: Rectangle = Rectangle()): Rectangle {
-		val concat = getConcatMatrix(target)
+	fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
+		//val concat = (parent ?: this).getConcatMatrix(target ?: this)
+		val concat = (this).getConcatMatrix(target ?: this)
 		val bb = BoundsBuilder()
 
 		getLocalBoundsInternal(out)
@@ -394,9 +414,9 @@ fun View.hasAncestor(ancestor: View): Boolean {
 	return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
 }
 
-fun View.replaceWith(view: View) {
-	if (this == view) return
-	if (parent == null) return
+fun View.replaceWith(view: View): Boolean {
+	if (this == view) return false
+	if (parent == null) return false
 	view.parent?.children?.remove(view)
 	parent!!.children[this.index] = view
 	view.index = this.index
@@ -404,7 +424,10 @@ fun View.replaceWith(view: View) {
 	parent = null
 	view.invalidate()
 	this.index = -1
+	return true
 }
+
+val View?.ancestorCount: Int get() = this?.parent?.ancestorCount?.plus(1) ?: 0
 
 suspend fun Updatable.updateLoop(eventLoop: EventLoop, step: Int = 10, callback: suspend () -> Unit) {
 	val view = this
@@ -425,3 +448,15 @@ suspend fun Updatable.updateLoop(eventLoop: EventLoop, step: Int = 10, callback:
 		done = true
 	}
 }
+
+fun View?.ancestorsUpTo(target: View?): List<View> {
+	var current = this
+	val out = arrayListOf<View>()
+	while (current != null && current != target) {
+		out += current
+		current = current.parent
+	}
+	return out
+}
+
+val View?.ancestors: List<View> get() = ancestorsUpTo(null)

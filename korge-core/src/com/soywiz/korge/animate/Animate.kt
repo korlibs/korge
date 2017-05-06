@@ -157,6 +157,7 @@ var RenderContext.stencilIndex by Extra.Property { 0 }
 
 
 class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
+	//var firstUpdateSingleFrame = false
 	val library: AnLibrary = view.library
 	val views = library.views
 	var running = true
@@ -181,6 +182,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			this.currentSubtimeline = substate.subTimeline
 			this.currentTime = substate.startTime + time
 			this.running = running
+			//this.firstUpdateSingleFrame = true
 			update(0)
 		}
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
@@ -311,9 +313,10 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		updateInternal(0)
 	}
 
-	private fun replaceDepth(depth: Int, view: View) {
-		unsortedChildren[depth].replaceWith(view)
+	private fun replaceDepth(depth: Int, view: View): Boolean {
+		val result = unsortedChildren[depth].replaceWith(view)
 		unsortedChildren[depth] = view
+		return result
 	}
 
 	override fun reset() {
@@ -450,31 +453,44 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		for (depth in 0 until totalDepths) {
 			val timelines = timelineRunner.currentSubtimeline?.timelines ?: continue
 			val timeline = timelines[depth]
+			if (timeline.size <= 0) continue // No Frames!
+			val hasMultipleFrames = timeline.size > 1
+
 			if (smoothing) {
 				val (index, left, right, ratio) = timeline.find(timelineRunner.currentTime, out = tempTimedResult)
 				if (left != null) maskPushDepths[left.depth] = left.clipDepth
 
 				val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
-				replaceDepth(depth, view)
-				if ((left != null) && (right != null) && (left.uid == right.uid)) {
-					//println("$currentTime: $index")
-					AnSymbolTimelineFrame.setToViewInterpolated(view, left, right, ratio)
-				} else {
-					//println("$currentTime: $index")
-					left?.setToView(view)
-					//println(left.colorTransform)
+
+				//if (view.name == "action") {
+				//	println("action")
+				//}
+
+				val placed = replaceDepth(depth, view)
+				if (placed || hasMultipleFrames) {
+					if ((left != null) && (right != null) && (left.uid == right.uid)) {
+						//println("$currentTime: $index")
+						AnSymbolTimelineFrame.setToViewInterpolated(view, left, right, ratio)
+					} else {
+						//println("$currentTime: $index")
+						left?.setToView(view)
+						//println(left.colorTransform)
+					}
+					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
 				}
-				if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
 			} else {
 				val (index, left) = timeline.findWithoutInterpolation(timelineRunner.currentTime, out = tempTimedResult)
 				if (left != null) maskPushDepths[left.depth] = left.clipDepth
 				val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
 				//println("$currentTime: $index")
-				replaceDepth(depth, view)
-				left?.setToView(view)
-				if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
+				val placed = replaceDepth(depth, view)
+				if (placed || hasMultipleFrames) {
+					left?.setToView(view)
+					if (symbol.ninePatch != null && view is AnBaseShape) view.ninePatch = symbol.ninePatch
+				}
 			}
 		}
+		//timelineRunner.firstUpdateSingleFrame = false
 	}
 
 	val stateNames get() = symbol.states.map { it.value.name }

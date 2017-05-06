@@ -11,6 +11,9 @@ import com.soywiz.korge.input.onOver
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.time.milliseconds
+import com.soywiz.korge.time.seconds
+import com.soywiz.korge.time.sleep
 import com.soywiz.korge.time.waitFrame
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.Container
@@ -64,7 +67,7 @@ object Sample2 : Module() {
 
 			for (n in 0 until 10) {
 				go {
-					sleep(random[100, 400])
+					sceneView.sleep(random[100, 400].milliseconds)
 					while (true) {
 						sceneView.attachParticleAndWait(
 							emitter,
@@ -72,7 +75,7 @@ object Sample2 : Module() {
 							random[100.0, views.virtualHeight.toDouble()],
 							time = random[300, 500], speed = random[1.0, 2.0]
 						)
-						sleep(random[0, 50])
+						sceneView.sleep(random[0, 50].milliseconds)
 						//println("done!")
 					}
 				}
@@ -106,7 +109,7 @@ object Sample2 : Module() {
 				}
 
 				val textHolder = TextHolder(text)
-				text.tween(textHolder::value..1000, time = 1000)
+				text.tween(textHolder::value..1000, time = 1.seconds)
 			}
 
 			rect.onClick {
@@ -117,12 +120,12 @@ object Sample2 : Module() {
 				//rect.tween((SolidRect::color..Colors.BLUE).color(), time = 1000)
 				rect.tween(
 					(rect::colorMul..Colors.BLUE).color(),
-					(rect::x..200.0).delay(200).duration(600),
+					(rect::x..200.0).delay(200.milliseconds).duration(600.milliseconds),
 					rect::y..100.0,
 					rect::width..200.0,
 					rect::height..90.0,
 					rect::rotationDegrees..90.0,
-					time = 1000,
+					time = 1.seconds,
 					easing = Easings.EASE_IN_OUT_QUAD
 				)
 				//println(rect.color)

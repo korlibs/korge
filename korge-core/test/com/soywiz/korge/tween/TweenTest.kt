@@ -1,6 +1,7 @@
 package com.soywiz.korge.tween
 
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korio.async.go
 import org.junit.Assert
@@ -8,7 +9,7 @@ import org.junit.Test
 
 class TweenTest : ViewsForTesting() {
 	@Test
-	fun name() = viewsTest(step = 20) {
+	fun name() = viewsTest(step = 20.milliseconds) {
 		val result = arrayListOf<Any>()
 		val result2 = arrayListOf<Any>()
 
@@ -20,21 +21,21 @@ class TweenTest : ViewsForTesting() {
 		val demo = Demo()
 
 		val p1 = go {
-			views.stage.tween(demo::b[100, 200], time = 100, easing = Easing.Companion.LINEAR) {
+			views.stage.tween(demo::b[100, 200], time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 				result2 += "[b=" + demo.b + ":" + it + "]"
 			}
 		}
 		val p2 = go {
-			views.stage.tween(demo::c[100, 200], time = 100, easing = Easing.Companion.LINEAR) {
+			views.stage.tween(demo::c[100, 200], time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 				result2 += "[c=" + demo.c + ":" + it + "]"
 			}
 		}
 
-		views.stage.tween(demo::a..+10, time = 100, easing = Easing.Companion.LINEAR) {
+		views.stage.tween(demo::a..+10, time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 			result += "[" + demo.a + ":" + it + "]"
 		}
 		result += "---"
-		views.stage.tween(demo::a..-100..+100, time = 100, easing = Easing.Companion.LINEAR) {
+		views.stage.tween(demo::a..-100..+100, time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 			result += "[" + demo.a + ":" + it + "]"
 		}
 		result += "---"

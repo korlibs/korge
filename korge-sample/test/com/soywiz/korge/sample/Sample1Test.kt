@@ -36,7 +36,7 @@ class Sample1Test : KorgeTest() {
 		Assert.assertEquals(1.0, percent.alpha, 0.0)
 		percent.simulateClick()
 		Assert.assertEquals(0.5, percent.alpha, 0.0)
-		Assert.assertEquals(RectangleInt(124, 6, 38, 15), percent.getGlobalBounds().toInt())
+		Assert.assertEquals(RectangleInt(62, 3, 38, 16), percent.getGlobalBounds().toInt())
 		Assert.assertTrue(percent.isVisibleToUser())
 	}
 

@@ -8,9 +8,9 @@ import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
-import com.soywiz.korge.tween.interpolate
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
@@ -21,6 +21,7 @@ import com.soywiz.korio.util.Extra
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath
+import com.soywiz.korma.interpolation.interpolate
 import kotlin.collections.set
 
 open class AnSymbol(

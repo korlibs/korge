@@ -15,6 +15,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import kotlin.coroutines.experimental.EmptyCoroutineContext.plus
 
 class SwfTest {
 	val eventLoopTest = EventLoopTest()
@@ -187,7 +188,20 @@ class SwfTest {
 		cmt.update(10)
 		cmt.update(40)
 		Assert.assertEquals(900.0, cmt["circle"]?.x)
-		Assert.assertEquals("IRectangle(x=1799, y=193, width=164, height=164)", cmt["circle"]!!.getGlobalBounds().toInt().toString())
+		Assert.assertEquals("IRectangle(x=899, y=96, width=164, height=164)", cmt["circle"]!!.getGlobalBounds().toInt().toString())
+		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
+		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
+	}
+
+	@Test
+	fun cameraBounds() = syncTest {
+		val lib = ResourcesVfs["cameras.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val root = views.stage
+		root += lib.createMainTimeLine()
+		Assert.assertEquals("IRectangle(x=-1, y=-2, width=721, height=1282)", root["showCamera"]!!.getGlobalBounds().toInt().toString())
+		Assert.assertEquals("IRectangle(x=137, y=0, width=444, height=790)", root["menuCamera"]!!.getGlobalBounds().toInt().toString())
+		Assert.assertEquals("IRectangle(x=-359, y=0, width=1439, height=2559)", root["ingameCamera"]!!.getGlobalBounds().toInt().toString())
+
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
 	}

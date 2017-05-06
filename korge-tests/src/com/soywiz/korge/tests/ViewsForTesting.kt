@@ -1,5 +1,7 @@
 package com.soywiz.korge.tests
 
+import com.soywiz.korge.time.TimeSpan
+import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.updateLoop
 import com.soywiz.korio.async.EventLoopTest
@@ -23,8 +25,8 @@ open class ViewsForTesting {
 		viewsLog.init()
 	}
 
-	fun viewsTest(step: Int = 10, callback: suspend EventLoopTest.() -> Unit) = syncTest {
-		views.updateLoop(this@syncTest, step) {
+	fun viewsTest(step: TimeSpan = 10.milliseconds, callback: suspend EventLoopTest.() -> Unit) = syncTest {
+		views.updateLoop(this@syncTest, step.milliseconds) {
 			callback(this@syncTest)
 		}
 	}

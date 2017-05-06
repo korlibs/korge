@@ -2,8 +2,8 @@ package com.soywiz.korge.animate.serialization
 
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.writeBitmap
@@ -251,7 +251,7 @@ object AnLibrarySerializer {
 								totalFrameCount++
 								//println(frameTime)
 								writeU_VL(storeFrameTime - lastFrameTime) // @TODO: Use time deltas and/or frame indices
-								lastFrameTime= storeFrameTime
+								lastFrameTime = storeFrameTime
 
 								val ct = frame.colorTransform
 								val m = frame.transform

@@ -6,12 +6,12 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.serialization.json.Json

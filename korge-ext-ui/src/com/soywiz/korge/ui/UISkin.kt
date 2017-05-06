@@ -21,7 +21,7 @@ class UISkin(val views: Views, val texture: Texture) {
 	) : AsyncFactory<UISkin> {
 		suspend override fun create(): UISkin {
 			val texture = try {
-				val tex = resourcesRoot[path].readTexture(views)
+				val tex = resourcesRoot[path].readTexture(views, mipmaps = true)
 				println("UISkin.Factory: ${path.path}")
 				tex
 			} catch (e: Throwable) {

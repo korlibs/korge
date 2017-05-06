@@ -2,6 +2,7 @@ package com.soywiz.korge.ext.spriter
 
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.*
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.time.TimeSpan
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.Easings
 import com.soywiz.korge.tween.rangeTo
@@ -71,7 +72,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 
 	var time: Int; get() = player._time; set(value) = run { player._time = value }
 
-	suspend fun changeTo(animation: String, time: Int, easing: Easing = Easings.LINEAR) {
+	suspend fun changeTo(animation: String, time: TimeSpan, easing: Easing = Easings.LINEAR) {
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0

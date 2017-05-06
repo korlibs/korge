@@ -67,7 +67,7 @@ open class Container(views: Views) : View(views) {
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		bb.reset()
 		for (child in children.toList()) {
-			child.getBounds(this, tempRect)
+			child.getBounds(child, tempRect)
 			bb.add(tempRect)
 		}
 		bb.getBounds(out)

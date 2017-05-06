@@ -7,6 +7,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.time.seconds
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.*
@@ -146,7 +147,7 @@ object Korge {
 
 		val sc = views.sceneContainer()
 		views.stage += sc
-		sc.changeTo(sceneClass, time = 0)
+		sc.changeTo(sceneClass, time = 0.seconds)
 
 		if (trace) println("Korge.setupCanvas[8]")
 

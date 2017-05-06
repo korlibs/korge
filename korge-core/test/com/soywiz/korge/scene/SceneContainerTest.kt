@@ -2,6 +2,7 @@ package com.soywiz.korge.scene
 
 import com.soywiz.korge.log.Logger
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.get
 import com.soywiz.korim.color.Colors
@@ -36,7 +37,7 @@ class SceneContainerTest : ViewsForTesting() {
 		injector.mapTyped<Logger>(Logger { msg -> out += msg })
 		val sc = SceneContainer(views)
 		views.stage += sc
-		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10)
+		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
 		//sc.changeTo<Scene1>(time = 10)
 
 		sleep(10)

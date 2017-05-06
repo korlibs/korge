@@ -12,7 +12,6 @@ import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -20,6 +19,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapChannel
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.BGRA_5551
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.error.ignoreErrors

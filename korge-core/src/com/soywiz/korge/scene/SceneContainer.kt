@@ -1,5 +1,7 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.korge.time.TimeSpan
+import com.soywiz.korge.time.seconds
 import com.soywiz.korge.tween.rangeTo
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
@@ -14,19 +16,21 @@ class SceneContainer(views: Views) : Container(views) {
 		this += transitionView
 	}
 
-	suspend inline fun <reified T : Scene> changeTo(vararg injects: Any, time: Int = 0, transition: Transition = AlphaTransition) = changeTo(T::class.java, *injects, time = time, transition = transition)
+	suspend inline fun <reified T : Scene> changeTo(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) = changeTo(T::class.java, *injects, time = time, transition = transition)
 
-	suspend fun changeTo(clazz: Class<out Scene>, vararg injects: Any, time: Int = 0, transition: Transition = AlphaTransition) {
+	suspend fun changeTo(clazz: Class<out Scene>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
 		val oldScene = currentScene
 		val sceneInjector = views.injector.child().mapTyped(this@SceneContainer)
 		for (inject in injects) sceneInjector.map(inject)
 		val instance = sceneInjector.create(clazz)
 		currentScene = instance!!
-		instance.sceneInit(instance.sceneView)
 
 		transitionView.transition = transition
 		transitionView.startNewTransition(instance.sceneView)
-		if (time > 0) {
+
+		instance.sceneInit(instance.sceneView)
+
+		if (time > 0.seconds) {
 			transitionView.tween(transitionView::ratio..1.0, time = time)
 		} else {
 			transitionView.ratio = 1.0

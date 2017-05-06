@@ -67,4 +67,22 @@ class ViewsTest : ViewsForTesting() {
 		Assert.assertNotNull(s1["s2"])
 		Assert.assertNull(s1["s3"])
 	}
+
+	@Test
+	fun commonAncestorSimple() = viewsTest {
+		val a = views.container()
+		val b = views.container()
+		Assert.assertEquals(a, View.commonAncestor(a, a))
+		Assert.assertEquals(null, View.commonAncestor(a, null))
+		Assert.assertEquals(null, View.commonAncestor(a, b))
+	}
+
+	@Test
+	fun commonAncestor2() = viewsTest {
+		val a = views.container()
+		val b = views.container()
+		a += b
+		Assert.assertEquals(a, View.commonAncestor(a, b))
+		Assert.assertEquals(a, View.commonAncestor(b, a))
+	}
 }

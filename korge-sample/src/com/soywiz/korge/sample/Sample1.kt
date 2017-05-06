@@ -14,6 +14,8 @@ import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.time.milliseconds
+import com.soywiz.korge.time.seconds
 import com.soywiz.korge.time.timers
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.Easings
@@ -87,8 +89,8 @@ class JellyButton(val view: View) {
 	//val thread = AsyncThread()
 
 	init {
-		view.onOver { view.views.eventLoop.async { view.tween(view::scale..initialScale * 1.5, time = 200, easing = Easings.EASE_OUT_ELASTIC) } }
-		view.onOut { view.views.eventLoop.async { view.tween(view::scale..initialScale, time = 400, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOver { view.views.eventLoop.async { view.tween(view::scale..initialScale * 1.5, time = 200.milliseconds, easing = Easings.EASE_OUT_ELASTIC) } }
+		view.onOut { view.views.eventLoop.async { view.tween(view::scale..initialScale, time = 400.milliseconds, easing = Easings.EASE_OUT_ELASTIC) } }
 	}
 
 	fun onClick(callback: suspend () -> Unit) {
@@ -197,7 +199,7 @@ class Sample1Scene(
 					percent.alpha = 0.5
 					println(percent.alpha)
 				}
-				sceneView.tween(time = 2000, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
+				sceneView.tween(time = 2.seconds, easing = Easing.EASE_IN_OUT_QUAD) { ratio ->
 					this@apply.seekStill("progressbar", ratio)
 					//println(this.findFirstWithName("percent"))
 					percent.setText("%d%%".format((ratio * 100).toInt()))
@@ -221,10 +223,10 @@ class Sample1Scene(
 			image.tween(
 				image::x..200.0, image::y..200.0,
 				image::rotation..Math.toRadians(0.0), image::scale..2.0,
-				time = 2000, easing = Easing.EASE_IN_OUT_QUAD
+				time = 2.seconds, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			for (delta in listOf(+200.0, -200.0, +100.0)) {
-				image.tween(image::x..image.x + delta, time = 1000, easing = Easing.EASE_IN_OUT_QUAD)
+				image.tween(image::x..image.x + delta, time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD)
 			}
 			//views.dump()
 		}
@@ -240,19 +242,19 @@ class Sample1Scene(
 			player.tween(
 				player::rotationDegrees..360.0,
 				player::scale..1.0,
-				time = 1000, easing = Easing.EASE_IN_OUT_QUAD
+				time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD
 			)
-			player.changeTo("hurt_idle", time = 300, easing = Easing.EASE_IN)
+			player.changeTo("hurt_idle", time = 300.milliseconds, easing = Easing.EASE_IN)
 			sleep(400)
-			player.changeTo("walk", time = 1000, easing = Easing.LINEAR)
+			player.changeTo("walk", time = 1.seconds, easing = Easing.LINEAR)
 			sleep(400)
-			player.changeTo("sword_swing_0", time = 1000, easing = Easing.LINEAR)
+			player.changeTo("sword_swing_0", time = 1.seconds, easing = Easing.LINEAR)
 			sleep(500)
-			player.changeTo("throw_axe", time = 500, easing = Easing.LINEAR)
+			player.changeTo("throw_axe", time = 0.5.seconds, easing = Easing.LINEAR)
 			player.waitCompleted()
 			println("completed")
 			//player.speed = 0.1
-			player.tween(player::speed..0.3, time = 2000)
+			player.tween(player::speed..0.3, time = 2.seconds)
 
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}

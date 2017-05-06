@@ -8,9 +8,9 @@ import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.exporters.LoggerShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporter
-import com.soywiz.korge.view.ColorTransform
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.*
