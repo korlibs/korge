@@ -1,9 +1,11 @@
 package {
 	import flash.events.MouseEvent;
 	import flash.events.TextEvent;
+	import flash.net.URLRequest;
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
 	import flash.text.TextFormat;
+	import flash.text.TextFieldAutoSize;
 
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
@@ -12,6 +14,8 @@ package {
 	import flash.events.FocusEvent;
 	import adobe.utils.MMExecute;
 	import flash.external.ExternalInterface;
+	
+	import flash.net.navigateToURL;
 
 	[SWF(frameRate=60, width=300, height=320, backgroundColor="#454545")]
 	public class Main extends Sprite {
@@ -33,19 +37,43 @@ package {
 			propertiesLabel.defaultTextFormat = new TextFormat("Arial", 12);
 			propertiesLabel.selectable = false;
 			propertiesLabel.type = TextFieldType.DYNAMIC;
+			propertiesLabel.autoSize = TextFieldAutoSize.LEFT;
 			propertiesLabel.text = 'Properties:';
 			this.addChild(propertiesLabel);
 
 			var enableLabel: TextField = new TextField();
-			enableLabel.x = 120;
+			enableLabel.x = 80;
 			enableLabel.y = 0;
 			enableLabel.defaultTextFormat = new TextFormat("Arial", 12);
 			enableLabel.selectable = false;
 			enableLabel.type = TextFieldType.DYNAMIC;
+			enableLabel.autoSize = TextFieldAutoSize.LEFT;
 			enableLabel.textColor = 0xcbcbcb;
 			enableLabel.text = '[ENABLED]';
 			this.addChild(enableLabel);
-			
+
+			var helpLabel: TextField = new TextField();
+			helpLabel.x = 160;
+			helpLabel.y = 0;
+			helpLabel.defaultTextFormat = new TextFormat("Arial", 12);
+			helpLabel.selectable = false;
+			helpLabel.type = TextFieldType.DYNAMIC;
+			helpLabel.autoSize = TextFieldAutoSize.LEFT;
+			helpLabel.textColor = 0xcbcbcb;
+			helpLabel.text = '[HELP]';
+			this.addChild(helpLabel);
+
+			var versionLabel: TextField = new TextField();
+			versionLabel.x = 220;
+			versionLabel.y = 0;
+			versionLabel.defaultTextFormat = new TextFormat("Arial", 12);
+			versionLabel.selectable = false;
+			versionLabel.type = TextFieldType.DYNAMIC;
+			versionLabel.autoSize = TextFieldAutoSize.LEFT;
+			versionLabel.textColor = 0xcbcbcb;
+			versionLabel.text = 'v0.9.0';
+			this.addChild(versionLabel);
+
 			propertiesTextField = new TextField();
 			propertiesTextField.x = 0;
 			propertiesTextField.y = 20;
@@ -59,11 +87,17 @@ package {
 			propertiesTextField.multiline = true;
 			propertiesTextField.wordWrap = false;
 			this.addChild(propertiesTextField);
-			
+
+			helpLabel.addEventListener(MouseEvent.CLICK, function(e: MouseEvent): void {				
+				navigateToURL(new URLRequest('http://docs.korge.soywiz.com/animation/swf'));
+			});
+
 			enableLabel.addEventListener(MouseEvent.CLICK, function(e: MouseEvent): void {
 				enabled = !enabled;
 				enableLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
 				propertiesLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
+				helpLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
+				versionLabel.textColor = enabled ? 0xcbcbcb : 0x777777;
 				propertiesTextField.backgroundColor = enabled ? 0xebebeb : 0x777777;
 				enableLabel.text = enabled ? '[ENABLED]' : '[DISABLED]';
 				selectionChanged();
@@ -93,7 +127,7 @@ package {
 		
 		public function selectionChanged(): void {
 			var json:String = enabled ? getSelection() : null;
-			setProperties((json != null) ? JSON.parse(json.split(/,/).map(function(e:String, index:int, arr:Array) { return String.fromCharCode(parseInt(e)); }).join('')) : null);
+			setProperties((json != null) ? JSON.parse(json.split(/,/).map(function(e:String, index:int, arr:Array): String { return String.fromCharCode(parseInt(e)); }).join('')) : null);
 			
 		}
 
