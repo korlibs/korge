@@ -107,6 +107,7 @@ object Korge {
 		}
 
 		// TOUCH
+		var moveMouseOutsideInNextFrame = false
 		container.agInput.onTouchStart {
 			views.input.mouseButtons = 1
 			updateTouchPos()
@@ -118,6 +119,8 @@ object Korge {
 			updateTouchPos()
 			upPos.copyFrom(views.input.mouse)
 			views.dispatch(mouseUpEvent)
+
+			moveMouseOutsideInNextFrame = true
 		}
 		container.agInput.onTouchMove {
 			updateTouchPos()
@@ -162,6 +165,13 @@ object Korge {
 			lastTime = currentTime
 			views.update(adelta)
 			views.render()
+
+			if (moveMouseOutsideInNextFrame) {
+				moveMouseOutsideInNextFrame = false
+				views.input.mouse.setTo(-1000, -1000)
+				views.dispatch(mouseMovedEvent)
+				views.mouseUpdated()
+			}
 			//println("render:$delta,$adelta")
 		}
 

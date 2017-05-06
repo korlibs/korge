@@ -30,14 +30,14 @@ class SceneContainer(views: Views) : Container(views) {
 
 	// https://developer.mozilla.org/en/docs/Web/API/History
 
-	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
+	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
 		visitPos--
-		_changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
+		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
 
-	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
+	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
 		visitPos++
-		_changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
+		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
 
 	private fun setCurrent(entry: VisitEntry) {
@@ -45,22 +45,22 @@ class SceneContainer(views: Views) : Container(views) {
 		visitStack[visitPos] = entry
 	}
 
-	suspend fun pushTo(clazz: Class<out Scene>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
+	suspend fun <T : Scene> pushTo(clazz: Class<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): T {
 		visitPos++
 		setCurrent(VisitEntry(clazz, injects.toList()))
-		_changeTo(clazz, *injects, time = time, transition = transition)
+		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
-	suspend fun changeTo(clazz: Class<out Scene>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
+	suspend fun <T : Scene> changeTo(clazz: Class<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): T {
 		setCurrent(VisitEntry(clazz, injects.toList()))
-		_changeTo(clazz, *injects, time = time, transition = transition)
+		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
-	suspend private fun _changeTo(entry: VisitEntry, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
-		_changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition)
+	suspend private fun _changeTo(entry: VisitEntry, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
+		return _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
 	}
 
-	suspend private fun _changeTo(clazz: Class<out Scene>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition) {
+	suspend private fun <T : Scene> _changeTo(clazz: Class<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): T {
 		val oldScene = currentScene
 		val sceneInjector = views.injector.child().mapTyped(this@SceneContainer)
 		for (inject in injects) sceneInjector.map(inject)
@@ -88,6 +88,8 @@ class SceneContainer(views: Views) : Container(views) {
 		go {
 			instance.sceneAfterInit()
 		}
+
+		return instance
 	}
 }
 

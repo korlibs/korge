@@ -17,8 +17,10 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.BitmapFontGenerator
+import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
+import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
@@ -38,8 +40,8 @@ class Views(
 	val ag: AG,
 	val injector: AsyncInjector,
 	val input: Input
-) : AsyncDependency, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
-	val coroutineContext = eventLoop.coroutineContext
+) : AsyncDependency, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder {
+	override val coroutineContext = eventLoop.coroutineContext
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 	var clearEachFrame = true
