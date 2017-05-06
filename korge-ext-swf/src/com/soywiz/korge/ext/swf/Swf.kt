@@ -26,7 +26,8 @@ data class SWFExportConfig(
 	val minMorphShapeSide: Int = 16,
 	val maxMorphShapeSide: Int = 128,
 	val exportPaths: Boolean = false,
-	val adaptiveScaling: Boolean = true
+	val adaptiveScaling: Boolean = true,
+	val smoothInterpolation: Boolean = true
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config = AnLibrarySerializer.Config(

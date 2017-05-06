@@ -59,8 +59,11 @@ object AnLibraryDeserializer {
 		val height = readU_VL()
 		val fileFlags = readU_VL()
 		val mipmaps = fileFlags.extract(0)
+		val smoothInterpolation = !fileFlags.extract(1)
 
-		val library = AnLibrary(views, width, height, 1000.0 / msPerFrame)
+		val library = AnLibrary(views, width, height, 1000.0 / msPerFrame).apply {
+			this.defaultSmoothing = smoothInterpolation
+		}
 
 		val strings = arrayOf<String?>(null) + (1 until readU_VL()).map { readStringVL() }
 

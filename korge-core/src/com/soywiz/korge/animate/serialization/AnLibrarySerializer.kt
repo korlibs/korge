@@ -40,7 +40,8 @@ object AnLibrarySerializer {
 	class Config(
 		val compression: Double = 1.0,
 		val keepPaths: Boolean = false,
-		val mipmaps: Boolean = true
+		val mipmaps: Boolean = true,
+		val smoothInterpolation: Boolean = true
 	)
 
 	suspend fun gen(library: AnLibrary, config: Config = Config(), externalWriters: ExternalWriters): ByteArray = MemorySyncStreamToByteArray { write(this, library, config, externalWriters) }
@@ -68,6 +69,7 @@ object AnLibrarySerializer {
 		writeU_VL(lib.height)
 		writeU_VL(0
 			.insert(config.mipmaps, 0)
+			.insert(!config.smoothInterpolation, 1)
 		)
 		// Allocate Strings
 		val strings = OptimizedStringAllocator()

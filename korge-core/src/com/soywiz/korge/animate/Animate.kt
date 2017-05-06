@@ -468,7 +468,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			} else {
 				val (index, left) = timeline.findWithoutInterpolation(timelineRunner.currentTime, out = tempTimedResult)
 				if (left != null) maskPushDepths[left.depth] = left.clipDepth
-				val view = if (left != null) viewUids[left.uid] else dummyDepths[depth]
+				val view = if (left != null && left.uid >= 0) viewUids[left.uid] else dummyDepths[depth]
 				//println("$currentTime: $index")
 				replaceDepth(depth, view)
 				left?.setToView(view)
