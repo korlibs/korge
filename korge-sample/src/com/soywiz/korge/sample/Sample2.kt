@@ -109,7 +109,7 @@ object Sample2 : Module() {
 				}
 
 				val textHolder = TextHolder(text)
-				text.tween(textHolder::value..1000, time = 1.seconds)
+				text.tween(textHolder::value[1000], time = 1.seconds)
 			}
 
 			rect.onClick {
@@ -119,12 +119,12 @@ object Sample2 : Module() {
 			go {
 				//rect.tween((SolidRect::color..Colors.BLUE).color(), time = 1000)
 				rect.tween(
-					(rect::colorMul..Colors.BLUE).color(),
-					(rect::x..200.0).delay(200.milliseconds).duration(600.milliseconds),
-					rect::y..100.0,
-					rect::width..200.0,
-					rect::height..90.0,
-					rect::rotationDegrees..90.0,
+					(rect::colorMul[Colors.BLUE]).color(),
+					(rect::x[200]).delay(200.milliseconds).duration(600.milliseconds),
+					rect::y[100],
+					rect::width[200],
+					rect::height[90],
+					rect::rotationDegrees[90],
 					time = 1.seconds,
 					easing = Easings.EASE_IN_OUT_QUAD
 				)

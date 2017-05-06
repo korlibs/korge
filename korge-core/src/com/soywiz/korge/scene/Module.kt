@@ -11,7 +11,8 @@ open class Module {
     open val height: Int = 480
 	open val virtualWidth: Int get() = width
 	open val virtualHeight: Int get() = height
-    open val mainScene: Class<out Scene> = Scene::class.java
+    open val mainScene: Class<out Scene> = EmptyScene::class.java
+	open val clearEachFrame = true
 
 	open suspend fun init(injector: AsyncInjector) {
 	}

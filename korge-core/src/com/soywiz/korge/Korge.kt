@@ -66,6 +66,14 @@ object Korge {
 			views.mouseUpdated()
 		}
 
+		fun updateTouchPos() {
+			val mouseX = container.agInput.touchEvent.x.toDouble()
+			val mouseY = container.agInput.touchEvent.y.toDouble()
+			//println("updateMousePos: $mouseX, $mouseY")
+			views.input.mouse.setTo(mouseX, mouseY)
+			views.mouseUpdated()
+		}
+
 		if (trace) println("Korge.setupCanvas[6]")
 
 		val mouseMovedEvent = MouseMovedEvent()
@@ -80,25 +88,43 @@ object Korge {
 			e.keyCode = this.keyCode
 		}
 
-		container.agInput.onMouseOver {
-			updateMousePos()
-			views.dispatch(mouseMovedEvent)
-		}
-		container.agInput.onMouseUp {
-			views.input.mouseButtons = 0
-			updateMousePos()
-			upPos.copyFrom(views.input.mouse)
-			//if (upPos.distanceTo(downPos) < 10) {
-			//	views.input.frame.clicked = true
-			//}
-			views.dispatch(mouseUpEvent)
-		}
+		// MOUSE
 		container.agInput.onMouseDown {
 			views.input.mouseButtons = 1
 			updateMousePos()
 			downPos.copyFrom(views.input.mouse)
 			views.dispatch(mouseDownEvent)
 		}
+		container.agInput.onMouseUp {
+			views.input.mouseButtons = 0
+			updateMousePos()
+			upPos.copyFrom(views.input.mouse)
+			views.dispatch(mouseUpEvent)
+		}
+		container.agInput.onMouseOver {
+			updateMousePos()
+			views.dispatch(mouseMovedEvent)
+		}
+
+		// TOUCH
+		container.agInput.onTouchStart {
+			views.input.mouseButtons = 1
+			updateTouchPos()
+			downPos.copyFrom(views.input.mouse)
+			views.dispatch(mouseDownEvent)
+		}
+		container.agInput.onTouchEnd {
+			views.input.mouseButtons = 0
+			updateTouchPos()
+			upPos.copyFrom(views.input.mouse)
+			views.dispatch(mouseUpEvent)
+		}
+		container.agInput.onTouchMove {
+			updateTouchPos()
+			views.dispatch(mouseMovedEvent)
+		}
+
+		// KEYS
 		container.agInput.onKeyDown {
 			views.input.setKey(it.keyCode, true)
 			//println("onKeyDown: $it")
@@ -116,6 +142,7 @@ object Korge {
 			it.copyTo(keyTypedEvent)
 			views.dispatch(keyTypedEvent)
 		}
+
 		ag.onResized {
 			views.resized(ag.backWidth, ag.backHeight)
 		}
@@ -125,7 +152,7 @@ object Korge {
 		//println("lastTime: $lastTime")
 		ag.onRender {
 			//println("Render")
-			ag.clear(module.bgcolor, stencil = 0, clearStencil = true)
+			if (module.clearEachFrame && views.clearEachFrame) ag.clear(module.bgcolor, stencil = 0, clearStencil = true)
 			val currentTime = timeProvider.currentTimeMillis()
 			//println("currentTime: $currentTime")
 			val delta = (currentTime - lastTime).toInt()

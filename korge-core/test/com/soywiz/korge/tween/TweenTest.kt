@@ -31,11 +31,11 @@ class TweenTest : ViewsForTesting() {
 			}
 		}
 
-		views.stage.tween(demo::a..+10, time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
+		views.stage.tween(demo::a[+10], time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 			result += "[" + demo.a + ":" + it + "]"
 		}
 		result += "---"
-		views.stage.tween(demo::a..-100..+100, time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
+		views.stage.tween(demo::a[-100, +100], time = 100.milliseconds, easing = Easing.Companion.LINEAR) {
 			result += "[" + demo.a + ":" + it + "]"
 		}
 		result += "---"

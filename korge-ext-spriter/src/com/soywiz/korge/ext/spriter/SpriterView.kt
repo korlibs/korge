@@ -3,10 +3,7 @@ package com.soywiz.korge.ext.spriter
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.*
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.time.TimeSpan
-import com.soywiz.korge.tween.Easing
-import com.soywiz.korge.tween.Easings
-import com.soywiz.korge.tween.rangeTo
-import com.soywiz.korge.tween.tween
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Signal
@@ -76,7 +73,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0
-		tween(this::animationWeight..1.0, time = time, easing = easing)
+		tween(this::animationWeight[1.0], time = time, easing = easing)
 	}
 
 	suspend fun waitCompleted() {

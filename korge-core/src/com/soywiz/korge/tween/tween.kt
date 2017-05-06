@@ -76,11 +76,17 @@ operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial
 operator inline fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::interpolate)
 operator inline fun KMutableProperty0<Double>.get(initial: Number, end: Number) = V2(this, initial.toDouble(), end.toDouble(), ::interpolate)
 
+@Deprecated("Use get instead", level = DeprecationLevel.ERROR)
 operator fun <V> V2<V>.rangeTo(that: V) = this.copy(initial = this.end, end = that)
 
-operator fun <V> KMutableProperty0<V>.rangeTo(that: V) = V2(this, this.get(), that, ::interpolateAny)
-operator fun <V : Comparable<V>> KMutableProperty0<V>.rangeTo(that: ClosedRange<V>) = V2(this, that.start, that.endInclusive, ::interpolateAny)
-operator fun <V> KMutableProperty0<V>.rangeTo(that: Pair<V, V>) = V2(this, that.first, that.second, ::interpolateAny)
+@Deprecated("Use get instead", ReplaceWith("this[this.get()]"), DeprecationLevel.ERROR)
+operator fun <V> KMutableProperty0<V>.rangeTo(that: V) = this[this.get()]
+
+@Deprecated("Use get instead", ReplaceWith("this[that.start, that.endInclusive]"), DeprecationLevel.ERROR)
+operator fun <V : Comparable<V>> KMutableProperty0<V>.rangeTo(that: ClosedRange<V>) = this[that.start, that.endInclusive]
+
+@Deprecated("Use get instead", ReplaceWith("this[that.first, that.second]"), DeprecationLevel.ERROR)
+operator fun <V> KMutableProperty0<V>.rangeTo(that: Pair<V, V>) = this[that.first, that.second]
 
 fun <V> V2<V>.withEasing(easing: Easing): V2<V> = this.copy(interpolator = { a, b, ratio -> this.interpolator(a, b, easing(ratio)) })
 

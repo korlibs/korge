@@ -66,6 +66,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	private var _rotation: Double = 0.0
 
 	val pos = Point2d()
+
 	var x: Double; set(v) = run { ensureTransform(); if (pos.x != v) run { pos.x = v; invalidateMatrix() } }; get() = ensureTransform().pos.x
 	var y: Double; set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }; get() = ensureTransform().pos.y
 	var scaleX: Double; set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }; get() = ensureTransform()._scaleX

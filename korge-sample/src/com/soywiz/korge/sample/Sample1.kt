@@ -7,6 +7,7 @@ import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
+import com.soywiz.korge.component.docking.jekllyButton
 import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
@@ -17,10 +18,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.time.seconds
 import com.soywiz.korge.time.timers
-import com.soywiz.korge.tween.Easing
-import com.soywiz.korge.tween.Easings
-import com.soywiz.korge.tween.rangeTo
-import com.soywiz.korge.tween.tween
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
@@ -80,21 +78,6 @@ class Sample2Scene(
 		super.init()
 
 		this.sceneView += test4Library.createMainTimeLine()
-	}
-}
-
-class JellyButton(val view: View) {
-	val initialScale = view.scale
-
-	//val thread = AsyncThread()
-
-	init {
-		view.onOver { view.views.eventLoop.async { view.tween(view::scale..initialScale * 1.5, time = 200.milliseconds, easing = Easings.EASE_OUT_ELASTIC) } }
-		view.onOut { view.views.eventLoop.async { view.tween(view::scale..initialScale, time = 400.milliseconds, easing = Easings.EASE_OUT_ELASTIC) } }
-	}
-
-	fun onClick(callback: suspend () -> Unit) {
-		view.onClick { view.views.eventLoop.async { callback() } }
 	}
 }
 
@@ -221,12 +204,12 @@ class Sample1Scene(
 
 		go {
 			image.tween(
-				image::x..200.0, image::y..200.0,
-				image::rotation..Math.toRadians(0.0), image::scale..2.0,
+				image::x[200], image::y[200],
+				image::rotationDegrees[0], image::scale[2.0],
 				time = 2.seconds, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			for (delta in listOf(+200.0, -200.0, +100.0)) {
-				image.tween(image::x..image.x + delta, time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD)
+				image.tween(image::x[image.x + delta], time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD)
 			}
 			//views.dump()
 		}
@@ -240,8 +223,8 @@ class Sample1Scene(
 
 		go {
 			player.tween(
-				player::rotationDegrees..360.0,
-				player::scale..1.0,
+				player::rotationDegrees[360.0],
+				player::scale[1.0],
 				time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			player.changeTo("hurt_idle", time = 300.milliseconds, easing = Easing.EASE_IN)
@@ -254,7 +237,7 @@ class Sample1Scene(
 			player.waitCompleted()
 			println("completed")
 			//player.speed = 0.1
-			player.tween(player::speed..0.3, time = 2.seconds)
+			player.tween(player::speed[0.3], time = 2.seconds)
 
 			//println("${player.animation1}:${player.animation2}:${player.prominentAnimation}")
 		}
@@ -269,10 +252,7 @@ class Sample1Scene(
 			this += mc
 			for (n in 1..4) {
 				for (m in 1..4) {
-					val buttonView = mc["buttonsRow$n"]?.get("button$m")
-					if (buttonView != null) {
-						JellyButton(buttonView)
-					}
+					mc["buttonsRow$n"]?.get("button$m")?.jekllyButton()
 				}
 			}
 		}

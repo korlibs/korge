@@ -1,7 +1,10 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.korge.bus.Bus
 import com.soywiz.korge.log.Logger
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.time.TimeSpan
+import com.soywiz.korge.time.sleep
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
@@ -13,6 +16,7 @@ abstract class Scene : AsyncDependency, ViewsContainer {
 	@Inject override lateinit var views: Views
 	@Inject lateinit var sceneContainer: SceneContainer
 	@Inject lateinit var resourcesRoot: ResourcesRoot
+	@Inject protected lateinit var bus: Bus
 	lateinit var sceneView: Container; private set
 	val root get() = sceneView
 	protected val destroyCancellables = arrayListOf<Cancellable>()
@@ -26,11 +30,19 @@ abstract class Scene : AsyncDependency, ViewsContainer {
 	suspend open fun sceneAfterInit() {
 	}
 
+	suspend open fun sceneBeforeLeaving() {
+	}
+
 	suspend open fun sceneDestroy() {
 		for (cancellable in destroyCancellables) cancellable.cancel()
 	}
 
 	suspend open fun sceneAfterDestroy() {
+	}
+}
+
+class EmptyScene : Scene() {
+	suspend override fun sceneInit(sceneView: Container) {
 	}
 }
 
@@ -58,3 +70,5 @@ abstract class LogScene : Scene() {
 		super.sceneAfterDestroy()
 	}
 }
+
+suspend fun Scene.sleep(time: TimeSpan) = sceneView.sleep(time)

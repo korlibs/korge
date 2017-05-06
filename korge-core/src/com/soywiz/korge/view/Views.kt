@@ -42,6 +42,7 @@ class Views(
 	val coroutineContext = eventLoop.coroutineContext
 	var lastId = 0
 	val renderContext = RenderContext(ag)
+	var clearEachFrame = true
 
 	init {
 		injector.mapTyped<EventLoop>(eventLoop)
