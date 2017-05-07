@@ -120,7 +120,7 @@ class Views(
 	val transformedDummyTexture by lazy { TransformedTexture(transparentTexture) }
 	val dummyFont by lazy { BitmapFont(ag, 16, mapOf(), mapOf()) }
 	val defaultFont by lazy {
-		com.soywiz.korim.font.BitmapFontGenerator.generate("Arial", 16, BitmapFontGenerator.LATIN_ALL).convert(ag)
+		com.soywiz.korim.font.BitmapFontGenerator.generate("Arial", 16, BitmapFontGenerator.LATIN_ALL).convert(ag, mipmaps = true)
 	}
 	val fontRepository = FontRepository(this)
 

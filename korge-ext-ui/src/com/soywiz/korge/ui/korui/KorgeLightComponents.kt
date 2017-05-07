@@ -5,6 +5,7 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.ui.UIFactory
 import com.soywiz.korge.ui.button
+import com.soywiz.korge.ui.label
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.cancellable
@@ -28,7 +29,8 @@ class KorgeLightComponents(val uiFactory: UIFactory) : LightComponents() {
 			LightType.BUTTON -> uiFactory.button()
 			LightType.CONTAINER -> views.fixedSizeContainer()
 			LightType.FRAME -> views.fixedSizeContainer()
-			else -> TODO()
+			LightType.LABEL -> uiFactory.label("")
+			else -> views.fixedSizeContainer()
 		}
 		return LightComponentInfo(handle)
 	}

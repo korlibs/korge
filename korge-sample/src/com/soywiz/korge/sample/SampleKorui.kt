@@ -14,8 +14,9 @@ import com.soywiz.korui.geom.len.Padding
 import com.soywiz.korui.geom.len.pt
 import com.soywiz.korui.style.padding
 import com.soywiz.korui.ui.button
-import com.soywiz.korui.ui.click
 import com.soywiz.korui.ui.horizontal
+import com.soywiz.korui.ui.label
+import com.soywiz.korui.ui.onMouseClick
 
 object SampleKorui : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(this@SampleKorui)
@@ -35,15 +36,12 @@ object SampleKorui : Module() {
 			sceneView += ui.koruiFrame {
 				horizontal {
 					padding = Padding(5.pt)
-					button("HELLO") {
-						click {
-							println("HELLO")
-						}
+					label("HELLO")
+					button("HELLO").onMouseClick {
+						println("HELLO")
 					}
-					button("WORLD!") {
-						click {
-							println("WORLD!")
-						}
+					button("WORLD!").onMouseClick {
+						println("WORLD!")
 					}
 				}
 			}

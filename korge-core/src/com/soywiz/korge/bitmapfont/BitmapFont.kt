@@ -3,6 +3,7 @@ package com.soywiz.korge.bitmapfont
 import com.soywiz.korag.AG
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.Texture
+import com.soywiz.korge.render.ensurePowerOfTwo
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -126,9 +127,12 @@ class BitmapFontAsyncFactory(
 	}
 }
 
-fun com.soywiz.korim.font.BitmapFont.convert(ag: AG): BitmapFont {
+fun com.soywiz.korim.font.BitmapFont.convert(ag: AG, mipmaps: Boolean = true): BitmapFont {
 	val font = this
-	val tex = Texture(ag.createTexture().upload(font.atlas), font.atlas.width, font.atlas.height)
+
+	val atlasBitmap = if (mipmaps) font.atlas.ensurePowerOfTwo() else font.atlas
+
+	val tex = Texture(ag.createTexture().upload(atlasBitmap, mipmaps), atlasBitmap.width, atlasBitmap.height)
 	val glyphs = arrayListOf<BitmapFont.Glyph>()
 	for (info in font.glyphInfos) {
 		val bounds = info.bounds

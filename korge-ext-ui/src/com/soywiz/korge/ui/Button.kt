@@ -2,21 +2,14 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.IHtml
+import com.soywiz.korge.view.IText
+import com.soywiz.korge.view.ninePatch
+import com.soywiz.korge.view.text
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.util.redirectField
 
-class Button(skin: UISkin, initialText: String = "Button") : Widget(skin), IText, IHtml {
-	override var width: Double = 100.0
-		set(value) {
-			field = value
-			updateState()
-		}
-	override var height: Double = 32.0
-		set(value) {
-			field = value
-			updateState()
-		}
+class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: String = "Label") : Widget(factory, skin), IText, IHtml {
 	var over = false
 	var down = false
 	private val bgView = views.ninePatch(skin.buttonOut, width, height, 0.25, 0.25, 0.25, 0.25).apply { this@Button += this }
@@ -28,6 +21,7 @@ class Button(skin: UISkin, initialText: String = "Button") : Widget(skin), IText
 
 	init {
 		format = Html.Format(size = 16, align = Html.Alignment.MIDDLE_CENTER, color = Colors.BLACK)
+
 		onOver {
 			over = true
 			updateState()
@@ -62,6 +56,10 @@ class Button(skin: UISkin, initialText: String = "Button") : Widget(skin), IText
 		bgView.height = height
 		textView.textBounds.setTo(0, 0, width, height)
 	}
+
+	override fun updateSize() {
+		updateState()
+	}
 }
 
-fun UIFactory.button(text: String = "Button", skin: UISkin = this.skin) = Button(skin, text)
+fun UIFactory.button(text: String = "Button", skin: UISkin = this.skin) = Button(this, skin, text)

@@ -8,13 +8,13 @@ import com.soywiz.korui.Application
 import com.soywiz.korui.frame
 import com.soywiz.korui.ui.Frame
 
-class KoruiFrameView(skin: UISkin) : Widget(skin) {
+class KoruiFrameView(factory: UIFactory, skin: UISkin = factory.skin) : Widget(factory) {
 	lateinit var frame: Frame
 	lateinit var application: Application
 }
 
 suspend fun UIFactory.koruiFrame(builder: suspend Frame.() -> Unit = {}): KoruiFrameView {
-	val applicationView = KoruiFrameView(this.skin)
+	val applicationView = KoruiFrameView(this)
 	applicationView.application = Application(KorgeLightComponents(this))
 	applicationView.frame = applicationView.application.frame("Main", views.virtualWidth, views.virtualHeight)
 	applicationView += applicationView.frame.handle as View

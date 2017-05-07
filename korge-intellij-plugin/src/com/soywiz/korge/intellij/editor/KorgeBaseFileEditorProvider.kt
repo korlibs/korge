@@ -19,6 +19,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.UIFactory
 import com.soywiz.korge.ui.button
+import com.soywiz.korge.ui.korui.koruiFrame
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
@@ -70,6 +71,10 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 					y = 16.0
 				}
 				sceneView += loading
+
+				//val uiFrameView = ui.koruiFrame {}
+				//sceneView += uiFrameView
+				//val frame = uiFrameView.frame
 
 				spawnAndForget {
 					views.eventLoop.sleepNextFrame()
