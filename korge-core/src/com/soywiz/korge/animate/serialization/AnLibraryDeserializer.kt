@@ -222,10 +222,13 @@ object AnLibraryDeserializer {
 						0 -> {
 							AnPlaySoundAction(readU_VL())
 						}
+						1 -> {
+							AnEventAction(strings[readU_VL()] ?: "")
+						}
 						else -> TODO()
 					}
 				}
-				ss.actions.add(timeInMs * 1000, AnActions(actions))
+				for (action in actions) ss.actions.add(timeInMs * 1000, action)
 			}
 
 			for (depth in 0 until totalDepths) {
@@ -308,6 +311,8 @@ object AnLibraryDeserializer {
 			val name = strings[readU_VL()] ?: ""
 			val startTime = readU_VL()
 			val stateIndex = readU_VL()
+			symbolStates[stateIndex].actions.add(startTime, AnEventAction(name))
+			//println("$startTime, $name")
 			name to AnSymbolMovieClipState(name, symbolStates[stateIndex], startTime = startTime)
 		}.toMap()
 

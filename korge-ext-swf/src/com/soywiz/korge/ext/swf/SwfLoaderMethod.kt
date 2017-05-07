@@ -289,6 +289,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				// States
 				if (info.startNamedState) {
+					currentSubTimeline.actions.add(info.timeInSubTimeline, AnEventAction(info.stateName))
 					symbol.states[info.stateName] = AnSymbolMovieClipState(info.stateName, currentSubTimeline, info.timeInSubTimeline)
 				}
 
@@ -305,15 +306,13 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 
 				// Compute actions
-				val anActions = arrayListOf<AnAction>()
 				for (it in frame.actions) {
 					when (it) {
 						is MySwfFrame.Action.PlaySound -> {
-							anActions += AnPlaySoundAction(it.soundId)
+							currentSubTimeline.actions.add(currentTime, AnPlaySoundAction(it.soundId))
 						}
 					}
 				}
-				if (anActions.isNotEmpty()) currentSubTimeline.actions.add(currentTime, AnActions(anActions))
 			}
 
 			// Append first frame of next animation to the end of each animation for smooth transition

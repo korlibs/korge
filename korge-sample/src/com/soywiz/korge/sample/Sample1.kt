@@ -17,6 +17,7 @@ import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.time.seconds
+import com.soywiz.korge.time.sleep
 import com.soywiz.korge.time.timers
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -228,11 +229,11 @@ class Sample1Scene(
 				time = 1.seconds, easing = Easing.EASE_IN_OUT_QUAD
 			)
 			player.changeTo("hurt_idle", time = 300.milliseconds, easing = Easing.EASE_IN)
-			sleep(400)
+			player.sleep(400)
 			player.changeTo("walk", time = 1.seconds, easing = Easing.LINEAR)
-			sleep(400)
+			player.sleep(400)
 			player.changeTo("sword_swing_0", time = 1.seconds, easing = Easing.LINEAR)
-			sleep(500)
+			player.sleep(500)
 			player.changeTo("throw_axe", time = 0.5.seconds, easing = Easing.LINEAR)
 			player.waitCompleted()
 			println("completed")

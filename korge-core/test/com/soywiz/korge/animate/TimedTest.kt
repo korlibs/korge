@@ -22,6 +22,15 @@ class TimedTest {
 	}
 
 	@Test
+	fun repeated() {
+		val timed = Timed<String>()
+		timed.add(1, "a")
+		timed.add(1, "b")
+		timed.add(1, "c")
+		Assert.assertEquals(listOf("a", "b", "c"), timed.getRangeValues(1, 1))
+	}
+
+	@Test
 	fun unsorted() {
 		Timed<String>().apply {
 			add(6, "c")

@@ -39,6 +39,14 @@ open class Timed<T>(initialCapacity: Int = 7) {
 
 	data class RangeResult(var startIndex: Int = 0, var endIndex: Int = 0)
 
+	fun getRangeValues(startTime: Int, endTime: Int, out: ArrayList<T> = arrayListOf()): List<T> {
+		val range = getRangeIndices(startTime, endTime)
+		for (n in range.startIndex .. range.endIndex) {
+			out += objects[n]
+		}
+		return out
+	}
+
 	fun getRangeIndices(startTime: Int, endTime: Int, out: RangeResult = RangeResult()): RangeResult {
 		val startIndex = (findNearIndex(startTime) - 1).clamp(0, size - 1)
 		val endIndex = (findNearIndex(endTime) + 1).clamp(0, size - 1)

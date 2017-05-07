@@ -5,6 +5,7 @@ import com.soywiz.korge.animate.serialization.readAni
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.EventLoopTest
+import com.soywiz.korio.async.go
 import com.soywiz.korio.async.sync
 import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.vfs.LocalVfs
@@ -204,6 +205,29 @@ class SwfTest {
 
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
+	}
+
+	@Test
+	@Ignore("Fix order")
+	fun events() = syncTest {
+		//val lib = ResourcesVfs["cameras.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = ResourcesVfs["events.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val root = views.stage
+		val mtl = lib.createMainTimeLine()
+		root += mtl
+		val state = go {
+			println("a")
+			val result = mtl.playAndWaitEvent("box", "box_back")
+			println("--------------")
+			Assert.assertEquals("box_back", result)
+			Assert.assertEquals(0.5, mtl["box"]!!.alpha, 0.001)
+			println("b")
+		}
+		for (n in 0 until 200) {
+			views.update(42)
+			step(42)
+		}
+		state.await()
 	}
 
 	@Test

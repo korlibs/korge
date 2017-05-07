@@ -7,13 +7,18 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.Promise
+import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.go
+import com.soywiz.korio.async.waitOne
 import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.redirect
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
+import java.io.Closeable
 import java.util.*
 
 interface AnElement {
@@ -155,11 +160,21 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	//var firstUpdateSingleFrame = false
 	val library: AnLibrary = view.library
 	val views = library.views
-	var running = true
 	var currentTime = 0
 	var currentStateName: String? = null
 	var currentSubtimeline: AnSymbolMovieClipSubTimeline? = null
 	val currentStateTotalTime: Int get() = currentSubtimeline?.totalTime ?: 0
+	val onStop = Signal<Unit>()
+	val onChangeState = Signal<String>()
+	val onEvent = Signal<String>()
+
+	var running = true
+		private set(value) {
+			field = value
+			if (!value) {
+				onStop(Unit)
+			}
+		}
 
 	init {
 		gotoAndPlay("default")
@@ -173,12 +188,14 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
 		val substate = symbol.states[name]
 		if (substate != null) {
+			onChangeState(name)
 			this.currentStateName = substate.name
 			this.currentSubtimeline = substate.subTimeline
 			this.currentTime = substate.startTime + time
 			this.running = running
 			//this.firstUpdateSingleFrame = true
 			update(0)
+
 		}
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
@@ -188,6 +205,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 
 	fun update(time: Int) {
 		//println("Update[1]: $currentTime")
+		//println("$currentStateName: $currentTime: running=$running")
 		if (!running) return
 		//println("Update[2]: $currentTime")
 		if (currentSubtimeline == null) return
@@ -220,22 +238,22 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 		val actionsTimeline = this.currentSubtimeline?.actions ?: return
 		val result = actionsTimeline.getRangeIndices(prev, current - 1, out = tempRangeResult)
 
-		val startIndex = result.startIndex
-		val endIndex = result.endIndex
-
-		execution@ for (n in startIndex..endIndex) {
-			val actions = actionsTimeline.objects[n]
-			for (action in actions.actions) {
-				when (action) {
-					is AnPlaySoundAction -> {
-						library.views.coroutineContext.go {
-							val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
-							if (data != null) {
-								views.soundSystem.play(data)
-							}
+		execution@ for (n in result.startIndex..result.endIndex) {
+			val action = actionsTimeline.objects[n]
+			//println(" Action: $action")
+			when (action) {
+				is AnPlaySoundAction -> {
+					library.views.coroutineContext.go {
+						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
+						if (data != null) {
+							views.soundSystem.play(data)
 						}
-						//println("play sound!")
 					}
+					//println("play sound!")
+				}
+				is AnEventAction -> {
+					//println("Dispatched event(${onEvent}): ${action.event}")
+					onEvent(action.event)
 				}
 			}
 		}
@@ -300,6 +318,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val singleFrame = symbol.limits.totalFrames <= 1
 	val unsortedChildren = ArrayList(dummyDepths.toList())
 	val timelineRunner = TimelineRunner(this, symbol)
+	val onStop get() = timelineRunner.onStop
+	val onEvent get() = timelineRunner.onEvent
+	val onChangeState get() = timelineRunner.onChangeState
 
 	val currentState: String? get() = timelineRunner.currentStateName
 
@@ -499,6 +520,46 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		update()
 	}
 
+	suspend fun playAndWaitStop(name: String): Unit {
+		val p = go { onStop.waitOne() }
+		timelineRunner.gotoAndPlay(name)
+		update()
+		p.await()
+	}
+
+	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
+
+	suspend fun playAndWaitEvent(name: String, eventsSet: Set<String>): String? {
+		val once = Once()
+		val deferred = Promise.Deferred<String?>()
+		val closeables = arrayListOf<Closeable>()
+		//println("Listening($onEvent) : $eventsSet")
+		closeables += onStop {
+			//println("onStop")
+			once { deferred.resolve(null) }
+		}
+		closeables += onChangeState {
+			//println("onChangeState: $it")
+			if (it in eventsSet) {
+				//println("completed! $it")
+				once { deferred.resolve(it) }
+			}
+		}
+		closeables += onEvent {
+			//println("onEvent: $it")
+			if (it in eventsSet) {
+				//println("completed! $it")
+				once { deferred.resolve(it) }
+			}
+		}
+		try {
+			play(name)
+			return deferred.promise.await()
+		} finally {
+			for (c in closeables) c.close()
+		}
+	}
+
 	/**
 	 * Changes the state, seeks a point in between the state and pauses it. Useful for interpolate between points, eg. progressBars.
 	 */
@@ -521,5 +582,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 }
 
 fun View?.play(name: String) = run { (this as? AnPlayable?)?.play(name) }
+suspend fun View?.playAndWaitStop(name: String) = run { (this as? AnMovieClip?)?.playAndWaitStop(name) }
+suspend fun View?.playAndWaitEvent(name: String, vararg events: String) = run { (this as? AnMovieClip?)?.playAndWaitEvent(name, *events) }
 val View?.playingName: String? get() = (this as? AnMovieClip?)?.timelineRunner?.currentStateName
 fun View?.seekStill(name: String, ratio: Double = 0.0) = run { (this as? AnMovieClip?)?.seekStill(name, ratio) }

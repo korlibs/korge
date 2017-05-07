@@ -230,8 +230,7 @@ data class AnSymbolTimelineFrame(
 
 interface AnAction
 data class AnPlaySoundAction(val soundId: Int) : AnAction
-
-data class AnActions(val actions: List<AnAction>)
+data class AnEventAction(val event: String) : AnAction
 
 class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
@@ -247,7 +246,7 @@ class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	//val totalTimeSeconds: Double get() = 100.0
 
 	val timelines: Array<AnDepthTimeline> = Array<AnDepthTimeline>(totalDepths) { AnDepthTimeline(it) }
-	val actions = Timed<AnActions>()
+	val actions = Timed<AnAction>()
 
 	var nextState: String? = null
 	var nextStatePlay: Boolean = false

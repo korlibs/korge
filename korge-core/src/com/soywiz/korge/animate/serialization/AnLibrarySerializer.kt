@@ -86,6 +86,13 @@ object AnLibrarySerializer {
 								strings.add(entry.second.name)
 							}
 						}
+						for (action in ss.value.subTimeline.actions.objects) {
+							when (action) {
+								is AnEventAction -> {
+									strings.add(action.event)
+								}
+							}
+						}
 					}
 				}
 				is AnTextFieldSymbol -> {
@@ -217,19 +224,27 @@ object AnLibrarySerializer {
 						)
 						writeU_VL(strings[ss.nextState])
 
-						writeU_VL(ss.actions.size)
 						var lastFrameTimeMs = 0
-						for ((timeInMicro, actions) in ss.actions.entries) {
+						//val actionsPerTime = ss.actions.entries.filter { it.second !is AnEventAction }.groupBy { it.first }
+						val actionsPerTime = ss.actions.entries.groupBy { it.first }
+						writeU_VL(actionsPerTime.size)
+						for ((timeInMicro, actions) in actionsPerTime) {
 							val timeInMs = timeInMicro / 1000
 							writeU_VL(timeInMs - lastFrameTimeMs) // @TODO: Use time deltas and/or frame indices
 							lastFrameTimeMs = timeInMs
-							writeU_VL(actions.actions.size)
-							for (action in actions.actions) {
+							writeU_VL(actions.size)
+							for (actionInfo in actions) {
+								val action = actionInfo.second
 								when (action) {
 									is AnPlaySoundAction -> {
 										write8(0)
 										writeU_VL(action.soundId)
 									}
+									is AnEventAction -> {
+										write8(1)
+										writeU_VL(strings[action.event])
+									}
+									else -> TODO()
 								}
 							}
 						}
