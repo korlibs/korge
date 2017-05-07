@@ -83,6 +83,26 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	var globalX: Double get() = parent?.localToGlobalX(x, y) ?: x; set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
 	var globalY: Double get() = parent?.localToGlobalY(x, y) ?: y; set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
 
+	fun setSize(width: Double, height: Double) = _setSize(width, true, height, true)
+
+	private fun _setSize(width: Double, swidth: Boolean, height: Double, sheight: Boolean) {
+		val bounds = getLocalBounds()
+		if (swidth) scaleX = bounds.width / (width / scaleX)
+		if (sheight) scaleY = bounds.height / (height / scaleY)
+	}
+
+	open var width: Double
+		get() = getLocalBounds().width
+		set(value) {
+			_setSize(value, true, 0.0, false)
+		}
+
+	open var height: Double
+		get() = getLocalBounds().height
+		set(value) {
+			_setSize(0.0, false, value, true)
+		}
+
 	private val _colorTransform = ColorTransform()
 	private var _globalColorTransform = ColorTransform()
 

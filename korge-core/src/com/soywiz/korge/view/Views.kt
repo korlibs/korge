@@ -111,6 +111,7 @@ class Views(
 	private val resizedEvent = StageResizedEvent(0, 0)
 
 	fun container() = Container(this)
+	fun fixedSizeContainer(width: Double = 100.0, height: Double = 100.0) = FixedSizeContainer(this, width, height)
 	inline fun solidRect(width: Number, height: Number, color: Int): SolidRect = SolidRect(this, width.toDouble(), height.toDouble(), color)
 
 	val dummyView by lazy { View(this) }

@@ -9,8 +9,8 @@ import com.soywiz.korma.geom.Rectangle
 class NinePatch(
 	views: Views,
 	var tex: Texture,
-	var width: Double,
-	var height: Double,
+	override var width: Double,
+	override var height: Double,
 	var left: Double,
 	var top: Double,
 	var right: Double,

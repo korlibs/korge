@@ -5,7 +5,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
-class SolidRect(views: Views, var width: Double, var height: Double, color: Int) : View(views) {
+class SolidRect(views: Views, override var width: Double, override var height: Double, color: Int) : View(views) {
 	init {
 		this.colorMul = color
 	}

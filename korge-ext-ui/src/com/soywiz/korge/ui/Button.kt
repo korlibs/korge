@@ -2,19 +2,17 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.input.*
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.util.redirectField
 
-class Button(val skin: UISkin, initialText: String = "Button") : Container(skin.views) {
-	var width: Double = 100.0
+class Button(skin: UISkin, initialText: String = "Button") : Widget(skin), IText, IHtml {
+	override var width: Double = 100.0
 		set(value) {
 			field = value
 			updateState()
 		}
-	var height: Double = 32.0
+	override var height: Double = 32.0
 		set(value) {
 			field = value
 			updateState()
@@ -24,8 +22,8 @@ class Button(val skin: UISkin, initialText: String = "Button") : Container(skin.
 	private val bgView = views.ninePatch(skin.buttonOut, width, height, 0.25, 0.25, 0.25, 0.25).apply { this@Button += this }
 	private val textView = views.text(initialText).apply { this@Button += this }
 
-	var text: String by redirectField(textView::text)
-	var html: String by redirectField(textView::html)
+	override var text: String by redirectField(textView::text)
+	override var html: String by redirectField(textView::html)
 	var format: Html.Format by redirectField(textView::format)
 
 	init {

@@ -4,6 +4,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.numeric.niceStr
 
 open class Container(views: Views) : View(views) {
 	val children = arrayListOf<View>()
@@ -84,5 +85,13 @@ open class Container(views: Views) : View(views) {
 		for (child in children.toList()) {
 			child.dispatch(event, clazz)
 		}
+	}
+}
+
+open class FixedSizeContainer(views: Views, override var width: Double = 100.0, override var height: Double = 100.0) : Container(views) {
+	override fun toString(): String {
+		var out = super.toString()
+		out += ":size=(${width.niceStr}x${height.niceStr})"
+		return out
 	}
 }

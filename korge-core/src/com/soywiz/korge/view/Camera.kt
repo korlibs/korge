@@ -8,8 +8,8 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 
 class Camera(views: Views) : Container(views) {
-	var width: Double = views.virtualWidth.toDouble()
-	var height: Double = views.virtualHeight.toDouble()
+	override var width: Double = views.virtualWidth.toDouble()
+	override var height: Double = views.virtualHeight.toDouble()
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, width, height)

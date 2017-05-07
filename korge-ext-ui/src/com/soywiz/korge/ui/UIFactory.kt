@@ -7,5 +7,5 @@ import com.soywiz.korio.inject.Singleton
 class UIFactory(
 	@Path("korge-ui.png") val skin: UISkin
 ) {
-
+	val views = skin.views
 }
