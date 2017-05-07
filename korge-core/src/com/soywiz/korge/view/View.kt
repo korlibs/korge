@@ -4,8 +4,10 @@ import com.soywiz.korge.component.Component
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.ColorTransform
+import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
+import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.isSubtypeOf
@@ -14,7 +16,7 @@ import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 
-open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder {
 	companion object {
 		private val tempTransform = Matrix2d.Transform()
 
@@ -37,6 +39,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		}
 	}
 
+	override val coroutineContext: CoroutineContext get() = views.coroutineContext
 	open var ratio: Double = 0.0
 	var index: Int = 0; internal set
 	var speed: Double = 1.0

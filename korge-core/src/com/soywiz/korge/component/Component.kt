@@ -3,9 +3,12 @@ package com.soywiz.korge.component
 import com.soywiz.korge.event.addEventListener
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.async.CoroutineContextHolder
+import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korio.util.Cancellable
 
-open class Component(val view: View) {
+open class Component(val view: View) : CoroutineContextHolder {
+	override val coroutineContext: CoroutineContext get() = view.views.coroutineContext
 	val detatchCancellables = arrayListOf<Cancellable>()
 
 	val views: Views get() = view.views

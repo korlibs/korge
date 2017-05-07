@@ -1,5 +1,8 @@
 package com.soywiz.korge.event
 
+import com.soywiz.korio.async.go
+import com.soywiz.korio.coroutine.getCoroutineContext
+import com.soywiz.korio.coroutine.withCoroutineContext
 import com.soywiz.korio.util.Cancellable
 
 //interface Cancellable
@@ -33,6 +36,14 @@ interface EventDispatcher {
 interface Event
 
 inline fun <reified T : Any> EventDispatcher.addEventListener(noinline handler: (T) -> Unit): Cancellable = this.addEventListener(T::class.java, handler)
+inline suspend fun <reified T : Any> EventDispatcher.addEventListenerSuspend(noinline handler: suspend (T) -> Unit): Cancellable {
+	val context = getCoroutineContext()
+	return this.addEventListener(T::class.java) { event ->
+		context.go {
+			handler(event)
+		}
+	}
+}
 
 /*
 class ED : EventDispatcher by EventDispatcher.Mixin() {

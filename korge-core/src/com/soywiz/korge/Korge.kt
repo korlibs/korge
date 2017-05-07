@@ -10,7 +10,10 @@ import com.soywiz.korge.scene.sceneContainer
 import com.soywiz.korge.time.seconds
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.async.*
+import com.soywiz.korio.async.EventLoop
+import com.soywiz.korio.async.Promise
+import com.soywiz.korio.async.eventLoopFactoryDefaultImpl
+import com.soywiz.korio.async.go
 import com.soywiz.korio.coroutine.withCoroutineContext
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
@@ -21,39 +24,31 @@ import com.soywiz.korui.CanvasApplication
 object Korge {
 	val VERSION = "0.9.1"
 
-	suspend fun setupCanvas(
-		container: AGContainer,
-		module: Module,
-		eventLoop: EventLoop,
-		args: Array<String> = arrayOf(),
-		sceneClass: Class<out Scene> = module.mainScene,
-		timeProvider: TimeProvider = TimeProvider(),
-		injector: AsyncInjector = AsyncInjector(),
-		constructedViews: (Views) -> Unit = {},
-		trace: Boolean = false
-	): SceneContainer {
-		if (trace) println("Korge.setupCanvas[1]")
+	suspend fun setupCanvas(config: Config): SceneContainer {
+		if (config.trace) println("Korge.setupCanvas[1]")
+		val injector = config.injector
+		val container = config.container!!
 		val ag = container.ag
 		injector.mapTyped<AG>(ag)
-		injector.mapTyped<EventLoop>(eventLoop)
+		injector.mapTyped<EventLoop>(config.eventLoop)
 		val views = injector.get<Views>()
-		constructedViews(views)
-		val moduleArgs = ModuleArgs(args)
-		if (trace) println("Korge.setupCanvas[2]")
+		config.constructedViews(views)
+		val moduleArgs = ModuleArgs(config.args)
+		if (config.trace) println("Korge.setupCanvas[2]")
 
-		views.virtualWidth = module.virtualWidth
-		views.virtualHeight = module.virtualHeight
+		views.virtualWidth = config.module.virtualWidth
+		views.virtualHeight = config.module.virtualHeight
 
-		if (trace) println("Korge.setupCanvas[3]")
+		if (config.trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()
 
-		if (trace) println("Korge.setupCanvas[4]")
+		if (config.trace) println("Korge.setupCanvas[4]")
 		injector.mapTyped(moduleArgs)
-		injector.mapTyped(timeProvider)
-		injector.mapTyped<Module>(module)
-		module.init(injector)
+		injector.mapTyped(config.timeProvider)
+		injector.mapTyped<Module>(config.module)
+		config.module.init(injector)
 
-		if (trace) println("Korge.setupCanvas[5]")
+		if (config.trace) println("Korge.setupCanvas[5]")
 
 		val downPos = Point2d()
 		val upPos = Point2d()
@@ -74,7 +69,7 @@ object Korge {
 			views.mouseUpdated()
 		}
 
-		if (trace) println("Korge.setupCanvas[6]")
+		if (config.trace) println("Korge.setupCanvas[6]")
 
 		val mouseMovedEvent = MouseMovedEvent()
 		val mouseUpEvent = MouseUpEvent()
@@ -151,12 +146,12 @@ object Korge {
 		}
 		ag.resized()
 
-		var lastTime = timeProvider.currentTimeMillis()
+		var lastTime = config.timeProvider.currentTimeMillis()
 		//println("lastTime: $lastTime")
 		ag.onRender {
 			//println("Render")
-			if (module.clearEachFrame && views.clearEachFrame) ag.clear(module.bgcolor, stencil = 0, clearStencil = true)
-			val currentTime = timeProvider.currentTimeMillis()
+			if (config.module.clearEachFrame && views.clearEachFrame) ag.clear(config.module.bgcolor, stencil = 0, clearStencil = true)
+			val currentTime = config.timeProvider.currentTimeMillis()
 			//println("currentTime: $currentTime")
 			val delta = (currentTime - lastTime).toInt()
 			val adelta = Math.min(delta, views.clampElapsedTimeTo)
@@ -175,18 +170,18 @@ object Korge {
 			//println("render:$delta,$adelta")
 		}
 
-		if (trace) println("Korge.setupCanvas[7]")
+		if (config.trace) println("Korge.setupCanvas[7]")
 
 		views.animationFrameLoop {
 			//ag.resized()
-			container.repaint()
+			config.container.repaint()
 		}
 
 		val sc = views.sceneContainer()
 		views.stage += sc
-		sc.changeTo(sceneClass, time = 0.seconds)
+		sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.seconds)
 
-		if (trace) println("Korge.setupCanvas[8]")
+		if (config.trace) println("Korge.setupCanvas[8]")
 
 		return sc
 	}
@@ -194,8 +189,9 @@ object Korge {
 	operator fun invoke(
 		module: Module,
 		args: Array<String> = arrayOf(),
-		canvas: AGContainer? = null,
+		container: AGContainer? = null,
 		sceneClass: Class<out Scene> = module.mainScene,
+		sceneInjects: List<Any> = listOf(),
 		timeProvider: TimeProvider = TimeProvider(),
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false,
@@ -203,36 +199,35 @@ object Korge {
 		constructedViews: (Views) -> Unit = {},
 		eventLoop: EventLoop = eventLoopFactoryDefaultImpl.createEventLoop()
 	) = EventLoop.main(eventLoop) {
-		test(
-			module = module, args = args, canvas = canvas, sceneClass = sceneClass, injector = injector,
+		test(Config(
+			module = module, args = args, container = container, sceneClass = sceneClass, sceneInjects = sceneInjects, injector = injector,
 			timeProvider = timeProvider, debug = debug, trace = trace, constructedViews = constructedViews
-		)
+		))
 	}
 
-	suspend fun test(
-		module: Module,
-		args: Array<String> = arrayOf(),
-		canvas: AGContainer? = null,
-		sceneClass: Class<out Scene> = module.mainScene,
-		injector: AsyncInjector = AsyncInjector(),
-		timeProvider: TimeProvider = TimeProvider(),
-		debug: Boolean = false,
-		constructedViews: (Views) -> Unit = {},
-		trace: Boolean = false
-	): SceneContainer = withCoroutineContext {
+	data class Config(
+		val module: Module,
+		val args: Array<String> = arrayOf(),
+		val container: AGContainer? = null,
+		val sceneClass: Class<out Scene> = module.mainScene,
+		val sceneInjects: List<Any> = listOf(),
+		val timeProvider: TimeProvider = TimeProvider(),
+		val injector: AsyncInjector = AsyncInjector(),
+		val debug: Boolean = false,
+		val trace: Boolean = false,
+		val constructedViews: (Views) -> Unit = {},
+		val eventLoop: EventLoop = eventLoopFactoryDefaultImpl.createEventLoop()
+	)
+
+	suspend fun test(config: Config): SceneContainer = withCoroutineContext {
 		val done = Promise.Deferred<SceneContainer>()
-		if (canvas != null) {
-			done.resolve(setupCanvas(
-				container = canvas, module = module, args = args,
-				sceneClass = sceneClass, timeProvider = timeProvider,
-				injector = injector, trace = trace, eventLoop = eventLoop,
-				constructedViews = constructedViews
-			))
+		if (config.container != null) {
+			done.resolve(setupCanvas(config))
 
 		} else {
-			val icon = if (module.icon != null) {
+			val icon = if (config.module.icon != null) {
 				try {
-					ResourcesVfs[module.icon!!].readBitmap()
+					ResourcesVfs[config.module.icon!!].readBitmap()
 				} catch (e: Throwable) {
 					e.printStackTrace()
 					null
@@ -241,13 +236,9 @@ object Korge {
 				null
 			}
 
-			CanvasApplication(module.title, module.width, module.height, icon) {
+			CanvasApplication(config.module.title, config.module.width, config.module.height, icon) {
 				go {
-					done.resolve(setupCanvas(
-						container = it, module = module, args = args, sceneClass = sceneClass,
-						timeProvider = timeProvider, injector = injector, eventLoop = eventLoop,
-						constructedViews = constructedViews
-					))
+					done.resolve(setupCanvas(config.copy(container = it)))
 				}
 			}
 		}

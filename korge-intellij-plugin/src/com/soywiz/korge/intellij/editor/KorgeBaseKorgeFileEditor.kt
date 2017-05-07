@@ -51,7 +51,7 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 		ag.onReady.then {
 			EventLoop {
 				try {
-					Korge.test(module, canvas = ag, injector = injector, trace = false, constructedViews = { views = it })
+					Korge.test(Korge.Config(module, container = ag, injector = injector, trace = false, constructedViews = { views = it }))
 				} finally {
 					if (disposed) dispose()
 				}

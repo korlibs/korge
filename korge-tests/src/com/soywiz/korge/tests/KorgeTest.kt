@@ -11,7 +11,6 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.EventLoopTest
-import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.sync
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.TimeProvider
@@ -38,12 +37,12 @@ open class KorgeTest {
 	}
 
 	@Suppress("UNCHECKED_CAST")
-	fun <T : Scene> testScene(module: Module, sceneClass: Class<T>, callback: suspend T.() -> Unit) = syncTest {
+	fun <T : Scene> testScene(module: Module, sceneClass: Class<T>, vararg injects: Any, callback: suspend T.() -> Unit) = syncTest {
 		//disableNativeImageLoading {
-		val sc = Korge.test(module, sceneClass = sceneClass, canvas = canvas, timeProvider = TimeProvider {
+		val sc = Korge.test(Korge.Config(module, sceneClass = sceneClass, sceneInjects = injects.toList(), container = canvas, timeProvider = TimeProvider {
 			//println("Requested Time: $testTime")
 			testTime
-		})
+		}))
 		callback(sc.currentScene as T)
 		//}
 	}

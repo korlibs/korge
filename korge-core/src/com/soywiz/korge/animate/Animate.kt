@@ -10,7 +10,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.waitOne
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.redirect
@@ -520,12 +519,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		update()
 	}
 
-	suspend fun playAndWaitStop(name: String): Unit {
-		val p = go { onStop.waitOne() }
-		timelineRunner.gotoAndPlay(name)
-		update()
-		p.await()
-	}
+	suspend fun playAndWaitStop(name: String): Unit = run { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 
@@ -538,18 +532,20 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			//println("onStop")
 			once { deferred.resolve(null) }
 		}
-		closeables += onChangeState {
-			//println("onChangeState: $it")
-			if (it in eventsSet) {
-				//println("completed! $it")
-				once { deferred.resolve(it) }
+		if (eventsSet.isNotEmpty()) {
+			closeables += onChangeState {
+				//println("onChangeState: $it")
+				if (it in eventsSet) {
+					//println("completed! $it")
+					once { deferred.resolve(it) }
+				}
 			}
-		}
-		closeables += onEvent {
-			//println("onEvent: $it")
-			if (it in eventsSet) {
-				//println("completed! $it")
-				once { deferred.resolve(it) }
+			closeables += onEvent {
+				//println("onEvent: $it")
+				if (it in eventsSet) {
+					//println("completed! $it")
+					once { deferred.resolve(it) }
+				}
 			}
 		}
 		try {

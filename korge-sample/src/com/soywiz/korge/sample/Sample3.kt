@@ -61,11 +61,12 @@ object Sample3 : Module() {
 			//sceneView += eyesLibrary.createMainTimeLine().apply { scale = 3.0 }
 			//sceneView += library.createMainTimeLine().apply { scale = 3.0 }
 
+
+			sceneView += map.createView(views)
+
 			val c = views.container().apply { blendMode = BlendMode.ADD }
 			c += views.solidRect(80, 80, Colors.RED)
 			sceneView += c
-
-			sceneView += map.createView(views)
 
 			//sceneView.dump()
 		}
