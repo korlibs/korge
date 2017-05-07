@@ -89,6 +89,10 @@ open class Container(views: Views) : View(views) {
 }
 
 open class FixedSizeContainer(views: Views, override var width: Double = 100.0, override var height: Double = 100.0) : Container(views) {
+	override fun getLocalBoundsInternal(out: Rectangle) {
+		out.setTo(0, 0, width, height)
+	}
+
 	override fun toString(): String {
 		var out = super.toString()
 		out += ":size=(${width.niceStr}x${height.niceStr})"

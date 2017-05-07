@@ -86,19 +86,20 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	fun setSize(width: Double, height: Double) = _setSize(width, true, height, true)
 
 	private fun _setSize(width: Double, swidth: Boolean, height: Double, sheight: Boolean) {
-		val bounds = getLocalBounds()
-		if (swidth) scaleX = bounds.width / (width / scaleX)
-		if (sheight) scaleY = bounds.height / (height / scaleY)
+		//val bounds = parent?.getLocalBounds() ?: this.getLocalBounds()
+		val bounds = this.getLocalBounds()
+		if (swidth) scaleX = width / bounds.width
+		if (sheight) scaleY = height / bounds.height
 	}
 
 	open var width: Double
-		get() = getLocalBounds().width
+		get() = getLocalBounds().width * scaleX
 		set(value) {
 			_setSize(value, true, 0.0, false)
 		}
 
 	open var height: Double
-		get() = getLocalBounds().height
+		get() = getLocalBounds().height * scaleY
 		set(value) {
 			_setSize(0.0, false, value, true)
 		}

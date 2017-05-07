@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Rectangle
 import org.junit.Assert
 import org.junit.Test
@@ -84,5 +85,21 @@ class ViewsTest : ViewsForTesting() {
 		a += b
 		Assert.assertEquals(a, View.commonAncestor(a, b))
 		Assert.assertEquals(a, View.commonAncestor(b, a))
+	}
+
+	@Test
+	fun size() = viewsTest {
+		val c = views.container()
+		val s1 = views.solidRect(100, 100, Colors.RED)
+		val s2 = views.solidRect(100, 100, Colors.RED)
+		c += s1.apply { x = 0.0 }
+		c += s2.apply { x = 100.0 }
+		Assert.assertEquals(200, c.width.toInt())
+		Assert.assertEquals(100, c.height.toInt())
+		Assert.assertEquals(1.0, c.scaleX, 0.0)
+		c.width = 400.0
+		Assert.assertEquals(400, c.width.toInt())
+		Assert.assertEquals(100, c.height.toInt())
+		Assert.assertEquals(2.0, c.scaleX, 0.0)
 	}
 }
