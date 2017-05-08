@@ -1,30 +1,7 @@
 package com.soywiz.korge.service.storage
 
-import com.soywiz.korio.error.KeyNotFoundException
-import com.soywiz.korio.error.unsupported
+import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.service.Services
-import java.util.*
 
-open class Storage protected constructor() : Services.Impl() {
-	companion object {
-		operator fun invoke() = Services.load(Storage::class.java)
-	}
-
-	val data = hashMapOf<String, String>()
-
-	open operator fun set(key: String, value: String): Unit {
-		data[key] = value
-	}
-	open operator fun contains(key: String): Boolean {
-		return key in data
-	}
-	open operator fun get(key: String): String {
-		return data[key] ?: throw KeyNotFoundException(key)
-	}
-	open fun remove(key: String): Unit {
-		data.remove(key)
-	}
-	open fun removeAll(): Unit {
-		data.clear()
-	}
-}
+@Singleton
+class Storage : IStorage by Services.load(StorageBase::class.java)

@@ -1,0 +1,2 @@
+com.soywiz.korge.service.storage.awt.AwtStorage # <target=jvm>
+com.soywiz.korge.service.storage.js.JsStorage # <target=js>
