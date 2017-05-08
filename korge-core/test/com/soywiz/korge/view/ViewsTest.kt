@@ -27,6 +27,7 @@ class ViewsTest : ViewsForTesting() {
 		Assert.assertEquals(
 			"""
 				createTexture():0
+				clear(-16777216, 0.0, 0, true, true, true)
 				createBuffer(VERTEX):0
 				Buffer[0].afterSetMem(mem[96000])
 				createBuffer(INDEX):1
