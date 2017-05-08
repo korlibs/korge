@@ -122,7 +122,7 @@ class SpriterView(views: Views, private val library: SpriterLibrary, private val
 			//if (ttex.rotated) {
 			//	batch.addQuad(tex, -px.toFloat(), -py.toFloat(), tex.height.toFloat(), tex.width.toFloat(), t2, rotated = true)
 			//} else {
-				batch.drawQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, colMul = colorMul, colAdd = colorAdd, rotated = false)
+				batch.drawQuad(tex, -px.toFloat(), -py.toFloat(), tex.width.toFloat(), tex.height.toFloat(), t2, colorMul = colorMul, colorAdd = colorAdd, rotated = false)
 			//}
 		}
 	}

@@ -6,9 +6,11 @@ import com.soywiz.korge.audio.SoundSystem
 import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
+import com.soywiz.korge.bitmapfont.drawText
 import com.soywiz.korge.event.Event
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.input.Input
+import com.soywiz.korge.input.mouseHitResult
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -16,11 +18,11 @@ import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
-import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korio.inject.AsyncDependency
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.inject.Singleton
@@ -45,6 +47,7 @@ class Views(
 	var lastId = 0
 	val renderContext = RenderContext(ag)
 	var clearEachFrame = true
+	val views = this
 
 	init {
 		injector.mapTyped<EventLoop>(eventLoop)
@@ -125,9 +128,21 @@ class Views(
 	val fontRepository = FontRepository(this)
 
 	val stage = Stage(this)
+	var debugMouse = false
 
-	fun render() {
+	fun render(clearColor: Int = Colors.BLACK, clear: Boolean = true) {
+		if (clear) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
 		stage.render(renderContext)
+
+		if (debugMouse) {
+			val mouseHit = input.mouseHitResult
+			if (mouseHit != null) {
+				val bounds = mouseHit.getGlobalBounds()
+				renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F))
+				renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString(), x = 0, y = 0)
+			}
+		}
+
 		renderContext.flush()
 	}
 
@@ -286,6 +301,7 @@ class MouseMovedEvent : MouseEvent
 interface KeyEvent : Event {
 	var keyCode: Int
 }
+
 class KeyDownEvent(override var keyCode: Int = 0) : KeyEvent
 class KeyUpEvent(override var keyCode: Int = 0) : KeyEvent
 class KeyTypedEvent(override var keyCode: Int = 0) : KeyEvent

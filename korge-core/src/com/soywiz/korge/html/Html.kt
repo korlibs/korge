@@ -58,6 +58,8 @@ object Html {
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }
 		val computedAlign by Computed(Format::align) { Alignment.LEFT }
+
+		fun consolidate(): Format = Format(parent = null, color = computedColor, face = computedFace, size = computedSize, letterSpacing = computedLetterSpacing, kerning = computedKerning, align = computedAlign)
 	}
 
 	interface MetricsProvider {

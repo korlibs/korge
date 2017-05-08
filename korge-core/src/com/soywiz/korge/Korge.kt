@@ -3,6 +3,7 @@ package com.soywiz.korge
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
 import com.soywiz.korag.AGInput
+import com.soywiz.korge.input.Keys
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
@@ -134,6 +135,11 @@ object Korge {
 			//println("onKeyUp: $it")
 			it.copyTo(keyUpEvent)
 			views.dispatch(keyUpEvent)
+
+			// DEBUG!
+			if (it.keyCode == Keys.F12) {
+				views.debugMouse = !views.debugMouse
+			}
 		}
 		container.agInput.onKeyTyped {
 			//println("onKeyTyped: $it")
@@ -150,7 +156,6 @@ object Korge {
 		//println("lastTime: $lastTime")
 		ag.onRender {
 			//println("Render")
-			if (config.module.clearEachFrame && views.clearEachFrame) ag.clear(config.module.bgcolor, stencil = 0, clearStencil = true)
 			val currentTime = config.timeProvider.currentTimeMillis()
 			//println("currentTime: $currentTime")
 			val delta = (currentTime - lastTime).toInt()
@@ -159,7 +164,7 @@ object Korge {
 			//println("Render($lastTime -> $currentTime): $delta")
 			lastTime = currentTime
 			views.update(adelta)
-			views.render()
+			views.render(clear = config.module.clearEachFrame && views.clearEachFrame, clearColor = config.module.bgcolor)
 
 			if (moveMouseOutsideInNextFrame) {
 				moveMouseOutsideInNextFrame = false

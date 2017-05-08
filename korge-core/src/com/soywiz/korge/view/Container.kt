@@ -99,3 +99,8 @@ open class FixedSizeContainer(views: Views, override var width: Double = 100.0, 
 		return out
 	}
 }
+
+operator fun View?.plusAssign(view: View?) {
+	val container = this as? Container?
+	if (view != null) container?.addChild(view)
+}

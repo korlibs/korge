@@ -25,13 +25,13 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	var stencil = AG.StencilState()
 	var colorMask = AG.ColorMaskState()
 
-	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int) {
+	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
 		vertices.setAlignedFloat32(vertexPos++, y)
 		vertices.setAlignedFloat32(vertexPos++, u)
 		vertices.setAlignedFloat32(vertexPos++, v)
-		vertices.setAlignedInt32(vertexPos++, colMul)
-		vertices.setAlignedInt32(vertexPos++, colAdd)
+		vertices.setAlignedInt32(vertexPos++, colorMul)
+		vertices.setAlignedInt32(vertexPos++, colorAdd)
 		vertexCount++
 	}
 
@@ -42,7 +42,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	// 0..1
 	// |  |
 	// 3..2
-	fun drawQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colMul: Int, colAdd: Int, rotated: Boolean = false) {
+	fun drawQuadFast(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, tex: Texture, colorMul: Int, colorAdd: Int, rotated: Boolean = false) {
 		ensure(6, 4)
 
 		addIndex(vertexCount + 0)
@@ -55,15 +55,15 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 		if (rotated) {
 			// @TODO:
-			addVertex(x0, y0, tex.x0, tex.y0, colMul, colAdd)
-			addVertex(x1, y1, tex.x1, tex.y0, colMul, colAdd)
-			addVertex(x2, y2, tex.x1, tex.y1, colMul, colAdd)
-			addVertex(x3, y3, tex.x0, tex.y1, colMul, colAdd)
+			addVertex(x0, y0, tex.x0, tex.y0, colorMul, colorAdd)
+			addVertex(x1, y1, tex.x1, tex.y0, colorMul, colorAdd)
+			addVertex(x2, y2, tex.x1, tex.y1, colorMul, colorAdd)
+			addVertex(x3, y3, tex.x0, tex.y1, colorMul, colorAdd)
 		} else {
-			addVertex(x0, y0, tex.x0, tex.y0, colMul, colAdd)
-			addVertex(x1, y1, tex.x1, tex.y0, colMul, colAdd)
-			addVertex(x2, y2, tex.x1, tex.y1, colMul, colAdd)
-			addVertex(x3, y3, tex.x0, tex.y1, colMul, colAdd)
+			addVertex(x0, y0, tex.x0, tex.y0, colorMul, colorAdd)
+			addVertex(x1, y1, tex.x1, tex.y0, colorMul, colorAdd)
+			addVertex(x2, y2, tex.x1, tex.y1, colorMul, colorAdd)
+			addVertex(x3, y3, tex.x0, tex.y1, colorMul, colorAdd)
 		}
 	}
 
@@ -103,7 +103,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(),
 		posCuts: Array<Point2d>,
 		texCuts: Array<Point2d>,
-		m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors
+		m: Matrix2d = identity, filtering: Boolean = true, colorMul: Int = -1, colorAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors
 	) {
 		setStateFast(tex.base, filtering, blendFactors)
 
@@ -142,7 +142,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 					)
 				)
 
-				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colMul, colAdd)
+				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colorMul, colorAdd)
 			}
 		}
 
@@ -167,7 +167,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		}
 	}
 
-	fun drawQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colMul: Int = -1, colAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors, rotated: Boolean = false) {
+	fun drawQuad(tex: Texture, x: Float = 0f, y: Float = 0f, width: Float = tex.width.toFloat(), height: Float = tex.height.toFloat(), m: Matrix2d = identity, filtering: Boolean = true, colorMul: Int = -1, colorAdd: Int = 0x7f7f7f7f, blendFactors: AG.Blending = BlendMode.NORMAL.factors, rotated: Boolean = false) {
 		val x0 = x.toDouble()
 		val x1 = (x + width).toDouble()
 		val y0 = y.toDouble()
@@ -180,7 +180,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 			m.transformXf(x1, y0), m.transformYf(x1, y0),
 			m.transformXf(x1, y1), m.transformYf(x1, y1),
 			m.transformXf(x0, y1), m.transformYf(x0, y1),
-			tex, colMul, colAdd, rotated
+			tex, colorMul, colorAdd, rotated
 		)
 	}
 

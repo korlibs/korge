@@ -31,8 +31,7 @@ class MouseComponent(view: View) : Component(view) {
 
 	val CLICK_THRESHOLD = 10
 
-	var Input.mouseHitSearch by extraProperty("mouseHitSearch", false)
-	var Input.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
+	fun getMouseHitResult() = input.mouseHitResult
 
 	var downPos = Point2d()
 	var upPos = Point2d()
@@ -115,3 +114,6 @@ inline fun <T : View?> T?.onUp(noinline handler: suspend (MouseComponent) -> Uni
 inline fun <T : View?> T?.onUpOutside(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpOutside?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onUpAnywhere(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpAnywhere?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.addSuspend(this.views.coroutineContext, handler) }
+
+var Input.mouseHitSearch by extraProperty("mouseHitSearch", false)
+var Input.mouseHitResult by extraProperty<View?>("mouseHitResult", null)

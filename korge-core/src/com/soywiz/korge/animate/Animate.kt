@@ -10,9 +10,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.go
-import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.Once
-import com.soywiz.korio.util.redirect
+import com.soywiz.korio.util.*
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point2d
@@ -63,9 +61,9 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 			texCuts[1].setTo((npLeft / texWidth), (npTop / texHeight))
 			texCuts[2].setTo((npRight / texWidth), (npBottom / texWidth))
 
-			ctx.batch.drawNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, posCuts = posCuts, texCuts = texCuts, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+			ctx.batch.drawNinePatch(tex, x = dx, y = dy, width = texWidth, height = texHeight, posCuts = posCuts, texCuts = texCuts, m = m, filtering = smoothing, colorMul = globalColorMul, colorAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 		} else {
-			ctx.batch.drawQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+			ctx.batch.drawQuad(tex, x = dx, y = dy, width = texWidth, height = texHeight, m = m, filtering = smoothing, colorMul = globalColorMul, colorAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 		}
 	}
 
@@ -146,8 +144,8 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 	}
 
 	var format: Html.Format by textField::format.redirect()
-	override var text: String get() = textField.text; set(value) = run { textField.text = value }
-	override var html: String get() = textField.html; set(value) = run { textField.html = value }
+	override var text: String by redirectField(textField::text)
+	override var html: String by redirectField(textField::html)
 }
 
 //class PopMaskView(views: Views) : View(views)
@@ -407,7 +405,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 		//println("::::")
 		for ((depth, child) in children.toList().withIndex()) {
-			val maskDepth = maskPushDepths[depth]
+			val maskDepth = maskPushDepths.getOrElse(depth) { -1 }
 
 			// Push Mask
 			if (maskDepth >= 0) {
@@ -446,7 +444,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			}
 
 			// Pop Mask
-			if (maskPopDepths[depth]) {
+			if (maskPopDepths.getOrElse(depth) { false }) {
 				//println(" none")
 				STATE_NONE.set(ctx, referenceValue = 0)
 				ctx.stencilIndex--

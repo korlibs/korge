@@ -27,11 +27,11 @@ class Input : Extra by Extra.Mixin() {
 	}
 
 	fun startFrame(dtMs: Int) {
+		this.extra?.clear()
 	}
 
 	fun endFrame(dtMs: Int) {
 		this.clicked = false
-		this.extra?.clear()
 
 		for (n in 0 until KEYCODES) {
 			val prev = keysRawPrev[n]

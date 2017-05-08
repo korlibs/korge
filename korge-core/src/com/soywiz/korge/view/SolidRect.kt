@@ -15,7 +15,7 @@ class SolidRect(views: Views, override var width: Double, override var height: D
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (!visible) return
 		//println("%08X".format(color))
-		ctx.batch.drawQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, colMul = RGBA.multiply(colorMul, globalColorMul), colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+		ctx.batch.drawQuad(views.whiteTexture, x = 0f, y = 0f, width = width.toFloat(), height = height.toFloat(), m = m, filtering = false, colorMul = RGBA.multiply(colorMul, globalColorMul), colorAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

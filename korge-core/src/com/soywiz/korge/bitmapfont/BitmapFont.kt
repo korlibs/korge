@@ -56,7 +56,7 @@ class BitmapFont(
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
-			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colMul = colMul, colAdd = colAdd, blendFactors = blendMode.factors)
+			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colorMul = colMul, colorAdd = colAdd, blendFactors = blendMode.factors)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}

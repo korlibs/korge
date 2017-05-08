@@ -346,8 +346,14 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return hitTestBoundingInternal(x, y)
 	}
 
-
-	open fun hitTestInternal(x: Double, y: Double): View? = null
+	open fun hitTestInternal(x: Double, y: Double): View? {
+		val bounds = getLocalBounds()
+		val sLeft = bounds.left
+		val sTop = bounds.top
+		val sRight = bounds.right
+		val sBottom = bounds.bottom
+		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom)) this else null
+	}
 
 	open fun hitTestBoundingInternal(x: Double, y: Double): View? {
 		val bounds = getGlobalBounds()

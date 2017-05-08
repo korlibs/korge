@@ -16,7 +16,7 @@ class Image(var tex: Texture, var anchorX: Double = 0.0, var anchorY: Double = a
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (!visible) return
         // Precalculate points to avoid matrix multiplication per vertex on each frame
-        ctx.batch.drawQuad(tex, x = -(tex.width * anchorX).toFloat(), y = -(tex.height * anchorY).toFloat(), m = m, filtering = smoothing, colMul = globalColorMul, colAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
+        ctx.batch.drawQuad(tex, x = -(tex.width * anchorX).toFloat(), y = -(tex.height * anchorY).toFloat(), m = m, filtering = smoothing, colorMul = globalColorMul, colorAdd = globalColorAdd, blendFactors = computedBlendMode.factors)
     }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

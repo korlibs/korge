@@ -66,8 +66,8 @@ class NinePatch(
 			posCuts = posCuts,
 			texCuts = texCuts,
 			m = m,
-			colMul = colorMul,
-			colAdd = colorAdd,
+			colorMul = colorMul,
+			colorAdd = colorAdd,
 			filtering = smoothing,
 			blendFactors = blendMode.factors
 		)
