@@ -120,3 +120,5 @@ inline fun <V> V2<V>.easeOutInBounce() = this.withEasing(Easings.EASE_OUT_IN_BOU
 inline fun <V> V2<V>.easeInQuad() = this.withEasing(Easings.EASE_IN_QUAD)
 inline fun <V> V2<V>.easeOutQuad() = this.withEasing(Easings.EASE_OUT_QUAD)
 inline fun <V> V2<V>.easeInOutQuad() = this.withEasing(Easings.EASE_IN_OUT_QUAD)
+
+inline fun <V> V2<V>.easeSine() = this.withEasing(Easings.EASE_SINE)

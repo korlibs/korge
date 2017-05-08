@@ -59,4 +59,4 @@ class JellyButton(val view: View?, var targetScale: Double = 1.5) {
 	}
 }
 
-fun View?.jekllyButton(targetScale: Double = 1.5) = JellyButton(this, targetScale)
+fun View?.jellyButton(targetScale: Double = 1.5) = JellyButton(this, targetScale)

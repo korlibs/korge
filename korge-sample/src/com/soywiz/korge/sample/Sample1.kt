@@ -7,7 +7,7 @@ import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.FontDescriptor
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.docking.dockedTo
-import com.soywiz.korge.component.docking.jekllyButton
+import com.soywiz.korge.component.docking.jellyButton
 import com.soywiz.korge.ext.spriter.SpriterLibrary
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.Texture
@@ -24,9 +24,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korio.async.async
 import com.soywiz.korio.async.go
-import com.soywiz.korio.async.sleep
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.ResourcesVfs
@@ -253,7 +251,7 @@ class Sample1Scene(
 			this += mc
 			for (n in 1..4) {
 				for (m in 1..4) {
-					mc["buttonsRow$n"]?.get("button$m")?.jekllyButton()
+					mc["buttonsRow$n"]?.get("button$m")?.jellyButton()
 				}
 			}
 		}

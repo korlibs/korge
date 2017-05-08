@@ -467,7 +467,11 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					if (it.hasCharacter) {
 						items += it.depth0 to it.characterId
 					}
+
 					maxDepth = Math.max(maxDepth, it.depth0)
+					if (it.hasClipDepth) {
+						maxDepth = Math.max(maxDepth, it.clipDepth0 + 1)
+					}
 					//if (it.hasClipDepth) maxDepth = Math.max(maxDepth, it.clipDepth0)
 				}
 				is TagShowFrame -> {

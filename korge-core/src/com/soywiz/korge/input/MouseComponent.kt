@@ -99,15 +99,21 @@ class MouseComponent(view: View) : Component(view) {
 			views.debugHandlers += {
 				val mouseHit = hitTest()
 				if (mouseHit != null) {
-					val bounds = mouseHit.getGlobalBounds()
-					renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F))
+					val bounds = mouseHit.getLocalBounds()
+					renderContext.batch.drawQuad(
+						views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F),
+						m = mouseHit.globalMatrix
+					)
 					renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString(), x = 0, y = 0)
 				}
 
 				val mouseHitResultUsed = input.mouseHitResultUsed
 				if (mouseHitResultUsed != null) {
-					val bounds = mouseHitResultUsed.getGlobalBounds()
-					renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0x00, 0, 0xFF, 0x3F))
+					val bounds = mouseHitResultUsed.getLocalBounds()
+					renderContext.batch.drawQuad(
+						views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
+						m = mouseHitResultUsed.globalMatrix
+					)
 					renderContext.batch.drawText(defaultFont, 16.0, mouseHitResultUsed.toString(), x = 0, y = 16)
 				}
 			}

@@ -31,6 +31,8 @@ interface Easing {
         inline val EASE_IN_QUAD get() = Easings.EASE_IN_QUAD
         inline val EASE_OUT_QUAD get() = Easings.EASE_OUT_QUAD
         inline val EASE_IN_OUT_QUAD get() = Easings.EASE_IN_OUT_QUAD
+
+		inline val EASE_SINE get() = Easings.EASE_SINE
     }
 }
 
@@ -85,4 +87,6 @@ object Easings {
     val EASE_IN_QUAD = Easing { 1.0 * it * it }
     val EASE_OUT_QUAD = Easing { -1.0 * it * (it - 2) }
     val EASE_IN_OUT_QUAD = Easing { val t = it * 2.0; if (t < 1) (1.0 / 2 * t * t) else (-1.0 / 2 * ((t - 1) * ((t - 1) - 2) - 1)) }
+
+	val EASE_SINE = Easing { Math.sin(it) }
 }

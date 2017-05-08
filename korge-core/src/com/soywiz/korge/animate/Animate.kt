@@ -187,14 +187,13 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
 		val substate = symbol.states[name]
 		if (substate != null) {
-			onChangeState(name)
 			this.currentStateName = substate.name
 			this.currentSubtimeline = substate.subTimeline
 			this.currentTime = substate.startTime + time
 			this.running = running
 			//this.firstUpdateSingleFrame = true
 			update(0)
-
+			onChangeState(name)
 		}
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
@@ -223,8 +222,8 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			} else {
 				//gotoAndRunning(cs.nextStatePlay, nextState, accumulatedTime)
 				gotoAndRunning(cs.nextStatePlay, nextState, 0)
-				eval(currentTime, currentTime + accumulatedTime)
 				currentTime += accumulatedTime
+				eval(currentTime - accumulatedTime, currentTime)
 			}
 
 		}
@@ -304,8 +303,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val totalDepths = symbol.limits.totalDepths
 	val totalUids = symbol.limits.totalUids
 	val dummyDepths = Array<View>(totalDepths) { View(views) }
-	val maskPushDepths = IntArray(totalDepths) { -1 }
-	val maskPopDepths = BooleanArray(totalDepths) { false }
+	val maskPushDepths = IntArray(totalDepths + 10) { -1 }
+	val maskPopDepths = BooleanArray(totalDepths + 10) { false }
 	val viewUids = Array<View>(totalUids) {
 		val info = symbol.uidInfo[it]
 		val view = library.create(info.characterId) as View
@@ -398,6 +397,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	private val tempMatrix = Matrix2d()
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (!visible) return
+
 		Arrays.fill(maskPopDepths, false)
 
 		val isGlobal = (m === globalMatrix)
@@ -411,12 +411,14 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 			// Push Mask
 			if (maskDepth >= 0) {
-				maskPopDepths[maskDepth] = true
-				ctx.stencilIndex++
-				usedStencil = true
-				STATE_SHAPE.set(ctx, ctx.stencilIndex)
-				state = 1
-				//println(" shape")
+				if (maskDepth in maskPopDepths.indices) {
+					maskPopDepths[ maskDepth] = true
+					ctx.stencilIndex++
+					usedStencil = true
+					STATE_SHAPE.set(ctx, ctx.stencilIndex)
+					state = 1
+					//println(" shape")
+				}
 			}
 
 			val showChild = when {
@@ -524,6 +526,15 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 
 	suspend fun playAndWaitEvent(name: String, eventsSet: Set<String>): String? {
+		return _waitEvent(eventsSet) { play(name) }
+	}
+
+	suspend fun waitStop() = _waitEvent(setOf())
+
+	suspend fun waitEvent(vararg events: String) = _waitEvent(events.toSet())
+	suspend fun waitEvent(eventsSet: Set<String>) = _waitEvent(eventsSet)
+
+	suspend private fun _waitEvent(eventsSet: Set<String>, afterSignals: () -> Unit = {}): String? {
 		val once = Once()
 		val deferred = Promise.Deferred<String?>()
 		val closeables = arrayListOf<Closeable>()
@@ -549,7 +560,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			}
 		}
 		try {
-			play(name)
+			afterSignals()
 			return deferred.promise.await()
 		} finally {
 			for (c in closeables) c.close()
@@ -582,5 +593,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 fun View?.play(name: String) = run { (this as? AnPlayable?)?.play(name) }
 suspend fun View?.playAndWaitStop(name: String) = run { (this as? AnMovieClip?)?.playAndWaitStop(name) }
 suspend fun View?.playAndWaitEvent(name: String, vararg events: String) = run { (this as? AnMovieClip?)?.playAndWaitEvent(name, *events) }
+
+suspend fun View?.waitStop() = run { (this as? AnMovieClip?)?.waitStop() }
+suspend fun View?.waitEvent(vararg events: String) = run { (this as? AnMovieClip?)?.waitEvent(*events) }
+
 val View?.playingName: String? get() = (this as? AnMovieClip?)?.timelineRunner?.currentStateName
 fun View?.seekStill(name: String, ratio: Double = 0.0) = run { (this as? AnMovieClip?)?.seekStill(name, ratio) }
