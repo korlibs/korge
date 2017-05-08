@@ -80,6 +80,8 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	}
 
 	override fun updateInternal(dtMs: Int) = Unit
+
+	override fun toString(): String = super.toString() + ":symbol=" + symbol
 }
 
 class AnShape(library: AnLibrary, symbol: AnSymbolShape) : AnBaseShape(library, symbol), AnElement {
@@ -573,6 +575,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 		super.updateInternal(dtMs)
 	}
+
+	override fun toString(): String = super.toString() + ":symbol=" + symbol
 }
 
 fun View?.play(name: String) = run { (this as? AnPlayable?)?.play(name) }

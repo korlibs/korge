@@ -160,6 +160,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	val root: View get() = parent?.root ?: this
 
 	var mouseEnabled: Boolean = true
+	//var mouseChildren: Boolean = false
 	var enabled: Boolean = true
 	var visible: Boolean = true
 
@@ -239,14 +240,16 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		return component!! as T
 	}
 
-	var localMatrix: Matrix2d get() {
-		if (validLocalMatrix) return _localMatrix
-		validLocalMatrix = true
-		_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
-		return _localMatrix
-	}
+	var localMatrix: Matrix2d
+		get() {
+			if (validLocalMatrix) return _localMatrix
+			validLocalMatrix = true
+			_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
+			return _localMatrix
+		}
 		set(value) {
 			setMatrix(value)
+			invalidate()
 		}
 
 	private fun _ensureGlobal() = this.apply {

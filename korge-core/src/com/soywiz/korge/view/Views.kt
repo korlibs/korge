@@ -128,18 +128,16 @@ class Views(
 	val fontRepository = FontRepository(this)
 
 	val stage = Stage(this)
-	var debugMouse = false
+	var debugViews = false
+	val debugHandlers = arrayListOf<Views.() -> Unit>()
 
 	fun render(clearColor: Int = Colors.BLACK, clear: Boolean = true) {
 		if (clear) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
 		stage.render(renderContext)
 
-		if (debugMouse) {
-			val mouseHit = input.mouseHitResult
-			if (mouseHit != null) {
-				val bounds = mouseHit.getGlobalBounds()
-				renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F))
-				renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString(), x = 0, y = 0)
+		if (debugViews) {
+			for (debugHandler in debugHandlers) {
+				this.debugHandler()
 			}
 		}
 

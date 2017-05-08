@@ -12,7 +12,7 @@ import com.soywiz.korge.view.setText
 import com.soywiz.korim.color.RGBA
 
 object Sample4 : Module() {
-	@JvmStatic fun main(args: Array<String>) = Korge(this@Sample4)
+	@JvmStatic fun main(args: Array<String>) = Korge(this@Sample4, debug = true)
 
 	override val width: Int = 560
 	override val height: Int = 380

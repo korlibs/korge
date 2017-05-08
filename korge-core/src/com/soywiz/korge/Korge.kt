@@ -33,6 +33,7 @@ object Korge {
 		injector.mapTyped<AG>(ag)
 		injector.mapTyped<EventLoop>(config.eventLoop)
 		val views = injector.get<Views>()
+		views.debugViews = config.debug
 		config.constructedViews(views)
 		val moduleArgs = ModuleArgs(config.args)
 		if (config.trace) println("Korge.setupCanvas[2]")
@@ -138,7 +139,7 @@ object Korge {
 
 			// DEBUG!
 			if (it.keyCode == Keys.F12) {
-				views.debugMouse = !views.debugMouse
+				views.debugViews = !views.debugViews
 			}
 		}
 		container.agInput.onKeyTyped {

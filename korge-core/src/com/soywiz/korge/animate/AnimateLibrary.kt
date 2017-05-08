@@ -29,6 +29,8 @@ open class AnSymbol(
 	var name: String? = null
 ) : Extra by Extra.Mixin() {
 	open fun create(library: AnLibrary): AnElement = AnEmptyView(library)
+
+	override fun toString(): String = "Symbol(id=$id, name=$name)"
 }
 
 object AnSymbolEmpty : AnSymbol(-1, "")

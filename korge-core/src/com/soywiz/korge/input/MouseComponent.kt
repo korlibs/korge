@@ -1,11 +1,14 @@
 package com.soywiz.korge.input
 
+import com.soywiz.korge.bitmapfont.drawText
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.event.addEventListener
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.addSuspend
 import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.extraProperty
 import com.soywiz.korma.geom.Point2d
 
@@ -38,6 +41,8 @@ class MouseComponent(view: View) : Component(view) {
 	var clickedCount = 0
 
 	init {
+		//view.mouseChildren = true
+
 		addEventListener<MouseUpEvent> { e ->
 			upPos.copyFrom(input.mouse)
 			if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
@@ -53,6 +58,24 @@ class MouseComponent(view: View) : Component(view) {
 	}
 
 	override fun update(dtMs: Int) {
+		views.mouseDebugHandlerOnce {
+			views.debugHandlers += {
+				val mouseHit = input.mouseHitResult
+				if (mouseHit != null) {
+					val bounds = mouseHit.getGlobalBounds()
+					renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F))
+					renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString(), x = 0, y = 0)
+				}
+
+				val mouseHitResultUsed = input.mouseHitResultUsed
+				if (mouseHitResultUsed != null) {
+					val bounds = mouseHitResultUsed.getGlobalBounds()
+					renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0x00, 0, 0xFF, 0x3F))
+					renderContext.batch.drawText(defaultFont, 16.0, mouseHitResultUsed.toString(), x = 0, y = 16)
+				}
+			}
+		}
+
 		//println("${frame.mouseHitResult}")
 		if (!input.mouseHitSearch) {
 			input.mouseHitSearch = true
@@ -65,6 +88,7 @@ class MouseComponent(view: View) : Component(view) {
 		}
 		hitTest = input.mouseHitResult
 		val over = hitTest?.hasAncestor(view) ?: false
+		if (over) input.mouseHitResultUsed = view
 		val pressing = input.mouseButtons != 0
 		val overChanged = (lastOver != over)
 		val pressingChanged = pressing != lastPressing
@@ -115,5 +139,7 @@ inline fun <T : View?> T?.onUpOutside(noinline handler: suspend (MouseComponent)
 inline fun <T : View?> T?.onUpAnywhere(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpAnywhere?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.addSuspend(this.views.coroutineContext, handler) }
 
-var Input.mouseHitSearch by extraProperty("mouseHitSearch", false)
-var Input.mouseHitResult by extraProperty<View?>("mouseHitResult", null)
+var Input.mouseHitSearch by Extra.Property { false}
+var Input.mouseHitResult by Extra.Property<View?> { null }
+var Input.mouseHitResultUsed by Extra.Property<View?> { null }
+var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
