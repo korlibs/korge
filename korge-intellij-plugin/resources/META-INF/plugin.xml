@@ -11,10 +11,15 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>0.10.0</h3>
+		<ul>
+			<li>Updated Korge to 0.10.0.</li>
+			<li>Fixed lip images</li>
+			<li>Allow generating resources even when genresources folder doesn't exists</li>
+		</ul>
 		<h3>0.9.1</h3>
 		<ul>
 			<li>Fixed context-loss when previewing files using Korge.</li>
-			<li>Added lots more peview files</li>
 			<li>Added lots more peview files</li>
 		</ul>
 		<h3>0.8.5</h3>
