@@ -34,19 +34,56 @@ class MouseComponent(view: View) : Component(view) {
 
 	val CLICK_THRESHOLD = 10
 
+	var Input.mouseHitSearch by Extra.Property { false}
+	var Input.mouseHitResult by Extra.Property<View?> { null }
+	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
+	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
+
 	fun getMouseHitResult() = input.mouseHitResult
 
 	var downPos = Point2d()
 	var upPos = Point2d()
 	var clickedCount = 0
 
-	init {
-		//view.mouseChildren = true
+	private fun hitTest(): View? {
+		if (!input.mouseHitSearch) {
+			input.mouseHitSearch = true
+			input.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
+			//if (frame.mouseHitResult != null) {
+			//val hitResult = frame.mouseHitResult!!
+			//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
+			//hitResult.dump()
+			//}
+		}
+		return input.mouseHitResult
+	}
 
+	val isOver: Boolean get() {
+		return hitTest?.hasAncestor(view) ?: false
+	}
+
+	init {
+		addEventListener<MouseClickEvent> { e ->
+			if (isOver) {
+				onClick(this)
+			}
+			/*
+			upPos.copyFrom(input.mouse)
+			if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
+				clickedCount++
+				if (isOver) {
+					onClick(this)
+				}
+			}
+			*/
+		}
 		addEventListener<MouseUpEvent> { e ->
 			upPos.copyFrom(input.mouse)
 			if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
 				clickedCount++
+				//if (isOver) {
+				//	onClick(this)
+				//}
 			}
 		}
 		addEventListener<MouseDownEvent> { e ->
@@ -60,7 +97,7 @@ class MouseComponent(view: View) : Component(view) {
 	override fun update(dtMs: Int) {
 		views.mouseDebugHandlerOnce {
 			views.debugHandlers += {
-				val mouseHit = input.mouseHitResult
+				val mouseHit = hitTest()
 				if (mouseHit != null) {
 					val bounds = mouseHit.getGlobalBounds()
 					renderContext.batch.drawQuad(views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F))
@@ -77,17 +114,9 @@ class MouseComponent(view: View) : Component(view) {
 		}
 
 		//println("${frame.mouseHitResult}")
-		if (!input.mouseHitSearch) {
-			input.mouseHitSearch = true
-			input.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY, hitTestType)
-			//if (frame.mouseHitResult != null) {
-			//val hitResult = frame.mouseHitResult!!
-			//println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
-			//hitResult.dump()
-			//}
-		}
-		hitTest = input.mouseHitResult
-		val over = hitTest?.hasAncestor(view) ?: false
+
+		hitTest = hitTest()
+		val over = isOver
 		if (over) input.mouseHitResultUsed = view
 		val pressing = input.mouseButtons != 0
 		val overChanged = (lastOver != over)
@@ -111,7 +140,7 @@ class MouseComponent(view: View) : Component(view) {
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
 		}
 		if (over && clickedCount > 0) {
-			onClick(this)
+			//onClick(this)
 		}
 
 		lastOver = over
@@ -138,8 +167,3 @@ inline fun <T : View?> T?.onUp(noinline handler: suspend (MouseComponent) -> Uni
 inline fun <T : View?> T?.onUpOutside(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpOutside?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onUpAnywhere(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onUpAnywhere?.addSuspend(this.views.coroutineContext, handler) }
 inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseComponent) -> Unit) = this.apply { this?.mouse?.onMove?.addSuspend(this.views.coroutineContext, handler) }
-
-var Input.mouseHitSearch by Extra.Property { false}
-var Input.mouseHitResult by Extra.Property<View?> { null }
-var Input.mouseHitResultUsed by Extra.Property<View?> { null }
-var Views.mouseDebugHandlerOnce by Extra.Property { Once() }

@@ -6,11 +6,9 @@ import com.soywiz.korge.audio.SoundSystem
 import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
-import com.soywiz.korge.bitmapfont.drawText
 import com.soywiz.korge.event.Event
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.input.Input
-import com.soywiz.korge.input.mouseHitResult
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -18,7 +16,6 @@ import com.soywiz.korge.render.TransformedTexture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
@@ -293,6 +290,7 @@ data class StageResizedEvent(var width: Int, var height: Int) : Event {
 }
 
 interface MouseEvent : Event
+class MouseClickEvent : MouseEvent
 class MouseUpEvent : MouseEvent
 class MouseDownEvent : MouseEvent
 class MouseMovedEvent : MouseEvent

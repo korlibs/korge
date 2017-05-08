@@ -75,6 +75,7 @@ object Korge {
 
 		val mouseMovedEvent = MouseMovedEvent()
 		val mouseUpEvent = MouseUpEvent()
+		val mouseClickEvent = MouseClickEvent()
 		val mouseDownEvent = MouseDownEvent()
 
 		val keyDownEvent = KeyDownEvent()
@@ -101,6 +102,10 @@ object Korge {
 		container.agInput.onMouseOver {
 			updateMousePos()
 			views.dispatch(mouseMovedEvent)
+		}
+		container.agInput.onMouseClick {
+			updateMousePos()
+			views.dispatch(mouseClickEvent)
 		}
 
 		// TOUCH
