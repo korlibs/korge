@@ -8,6 +8,23 @@
 
 [![](docs/documentation.png)](http://docs.korge.soywiz.com/)
 
+### Compiling:
+
+Add to `$HOME/.gradle/gradle.properties` this line (since this project includes intellij plugin + gradle plugin requires a lot of memory to work):
+```
+org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
+``
+
+Building:
+```
+./gradlew build
+```
+
+Run intelliJ IDE with the plugin installed:
+```
+./gradlew runIde
+```
+
 ### Modern, portable, testable and enjoyable Game Engine for Kotlin
 
 Check [korge-sample](https://github.com/soywiz/korge/tree/master/korge-sample) folder for looking actual code.
