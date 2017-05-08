@@ -43,7 +43,7 @@ object Html {
 		data class Bitmap(val font: BitmapFont) : FontFace
 	}
 
-	class Format(
+	data class Format(
 		override var parent: Format? = null,
 		var color: Int? = null,
 		var face: FontFace? = null,
