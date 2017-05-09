@@ -25,6 +25,7 @@ data class SWFExportConfig(
 	val maxShapeSide: Int = 512,
 	val minMorphShapeSide: Int = 16,
 	val maxMorphShapeSide: Int = 128,
+	val maxTextureSide: Int = 4096,
 	val exportPaths: Boolean = false,
 	val adaptiveScaling: Boolean = true,
 	val smoothInterpolation: Boolean = true

@@ -27,10 +27,10 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 */
 
 
-suspend fun <T> Map<T, BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): Map<T, TextureWithBitmapSlice> {
+suspend fun <T> Map<T, BitmapWithScale>.toAtlas(views: Views, maxTextureSide:Int, mipmaps: Boolean): Map<T, TextureWithBitmapSlice> {
 	//val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
 	val values = this.values.toList()
-	val packs = BinPacker.packSeveral(4096.0, 4096.0, values) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
+	val packs = BinPacker.packSeveral(maxTextureSide.toDouble(), maxTextureSide.toDouble(), values) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
 	val premultiplied = this.values.firstOrNull()?.bitmap?.premultiplied ?: true
 	for (pack in packs) {
