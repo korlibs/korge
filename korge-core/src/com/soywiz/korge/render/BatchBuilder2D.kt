@@ -22,6 +22,9 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
 
+	private val vertexBuffer = ag.createVertexBuffer()
+	private val indexBuffer = ag.createIndexBuffer()
+
 	var stencil = AG.StencilState()
 	var colorMask = AG.ColorMaskState()
 
@@ -252,26 +255,25 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 			val factors = currentBlendFactors
 
-			ag.createVertexBuffer(vertices, 0, vertexPos * 4).use { vertexBuffer ->
-				ag.createIndexBuffer(indices, 0, indexPos * 2).use { indexBuffer ->
-					ag.draw(
-						vertices = vertexBuffer,
-						indices = indexBuffer,
-						program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NOPRE,
-						//program = PROGRAM_PRE,
-						type = AG.DrawType.TRIANGLES,
-						vertexLayout = LAYOUT,
-						vertexCount = indexPos,
-						blending = factors,
-						uniforms = mapOf<Uniform, Any>(
-							DefaultShaders.u_ProjMat to mat,
-							DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)
-						),
-						stencil = stencil,
-						colorMask = colorMask
-					)
-				}
-			}
+			vertexBuffer.upload(vertices, 0, vertexPos * 4)
+			indexBuffer.upload(indices, 0, indexPos * 2)
+
+			ag.draw(
+				vertices = vertexBuffer,
+				indices = indexBuffer,
+				program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NOPRE,
+				//program = PROGRAM_PRE,
+				type = AG.DrawType.TRIANGLES,
+				vertexLayout = LAYOUT,
+				vertexCount = indexPos,
+				blending = factors,
+				uniforms = mapOf<Uniform, Any>(
+					DefaultShaders.u_ProjMat to mat,
+					DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)
+				),
+				stencil = stencil,
+				colorMask = colorMask
+			)
 		}
 
 		vertexCount = 0
