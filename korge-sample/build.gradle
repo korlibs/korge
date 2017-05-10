@@ -5,7 +5,8 @@ apply plugin: 'jtransc'
 
 apply plugin: 'kotlin'
 
-mainClassName = "com.soywiz.korge.sample.Sample1"
+//mainClassName = "com.soywiz.korge.sample.Sample1"
+mainClassName = "com.soywiz.korge.sample.SampleRetro"
 
 dependencies {
     compile "com.soywiz:korui:$korVersion"
@@ -27,4 +28,17 @@ jtransc {
     //minimizeNames = false
     treeshaking = true
     //treeshaking = false
+
+	//if (true) {
+	if (false) {
+		mainClassName = "com.soywiz.korge.sample.Sample1"
+	} else {
+		mainClassName = "com.soywiz.korge.sample.SampleRetro"
+		skipServiceLoader("com.soywiz.korim.format.JPEG")
+		skipServiceLoader("com.soywiz.korim.format.PNG")
+		skipServiceLoader("com.soywiz.korau.format.MP3")
+		skipServiceLoader("com.soywiz.korau.format.OGG")
+		skipServiceLoader("com.soywiz.korge.ext.swf.SwfPlugin")
+	}
+
 }

@@ -11,6 +11,7 @@ import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.numeric.isPowerOfTwo
 
 @AsyncFactoryClass(TextureAsyncFactory::class)
 class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: Int = base.width, val bottom: Int = base.height) {
@@ -51,7 +52,8 @@ suspend fun VfsFile.readTexture(views: Views, mipmaps: Boolean = true): Texture 
 suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
 	val tex = ag.createTexture()
 	val bmp = this.readBitmapOptimized()
-	tex.upload(bmp, mipmaps = mipmaps)
+	val canHasMipmaps = bmp.width.isPowerOfTwo && bmp.height.isPowerOfTwo
+	tex.upload(bmp, mipmaps = canHasMipmaps && mipmaps)
 	return Texture(tex, bmp.width, bmp.height)
 }
 

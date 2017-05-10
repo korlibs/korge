@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korag.AG
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.util.Extra
 
 class RenderContext(
@@ -21,5 +22,14 @@ class RenderContext(
 			callback()
 			flush()
 		})
+	}
+
+	fun renderToBitmap(bmp: Bitmap32, callback: () -> Unit): Bitmap32 {
+		flush()
+		ag.renderToBitmap(bmp) {
+			callback()
+			flush()
+		}
+		return bmp
 	}
 }

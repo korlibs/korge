@@ -210,19 +210,31 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		//	name = "BatchBuilder2D.Tinted"
 		//)
 
-		val PROGRAM_PRE = Program(
-			vertex = VERTEX,
-			fragment = FragmentShader {
-				DefaultShaders.apply {
-					SET(t_Temp1, texture2D(u_Tex, v_Tex["xy"]))
+		private fun buildFragment(premultiplied: Boolean) = FragmentShader {
+			DefaultShaders.apply {
+				SET(t_Temp1, texture2D(u_Tex, v_Tex["xy"]))
+				if (premultiplied) {
 					SET(t_Temp1["rgb"], t_Temp1["rgb"] / t_Temp1["a"])
-					SET(t_Temp1, (t_Temp1["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(0.5f.lit, 0.5f.lit, 0.5f.lit, 0.5f.lit)) * 2f.lit))
-					SET(out, t_Temp1)
-					// Required for shape masks:
+				}
+				SET(out, (t_Temp1["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(0.5f.lit, 0.5f.lit, 0.5f.lit, 0.5f.lit)) * 2f.lit))
+				//SET(out, t_Temp1)
+				// Required for shape masks:
+				if (premultiplied) {
 					IF(out["a"] le 0f.lit) { DISCARD() }
 				}
-			},
-			name = "BatchBuilder2D.Tinted"
+			}
+		}
+
+		val PROGRAM_PRE = Program(
+			vertex = VERTEX,
+			fragment = buildFragment(premultiplied = true),
+			name = "BatchBuilder2D.Premultiplied.Tinted"
+		)
+
+		val PROGRAM_NOPRE = Program(
+			vertex = VERTEX,
+			fragment = buildFragment(premultiplied = false),
+			name = "BatchBuilder2D.NoPremultiplied.Tinted"
 		)
 
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
@@ -245,8 +257,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 					ag.draw(
 						vertices = vertexBuffer,
 						indices = indexBuffer,
-						//program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NORMAL,
-						program = PROGRAM_PRE,
+						program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NOPRE,
+						//program = PROGRAM_PRE,
 						type = AG.DrawType.TRIANGLES,
 						vertexLayout = LAYOUT,
 						vertexCount = indexPos,
