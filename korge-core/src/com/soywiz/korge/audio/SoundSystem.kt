@@ -1,22 +1,24 @@
 package com.soywiz.korge.audio
 
 import com.soywiz.korau.sound.NativeSound
+import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korau.sound.readNativeSoundOptimized
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.inject.Prototype
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korio.inject.*
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
 
 @Singleton
-class SoundSystem(val views: Views) {
+class SoundSystem(val views: Views) : AsyncDependency {
+	suspend override fun init() {
+		nativeSoundProvider.init()
+	}
+
 	internal val promises = LinkedHashSet<Promise<*>>()
 
 	fun play(file: SoundFile) = createChannel().play(file.nativeSound)
