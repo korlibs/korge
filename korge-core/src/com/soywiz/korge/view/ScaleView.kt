@@ -25,23 +25,24 @@ class ScaleView(views: Views, width: Int, height: Int, scale: Double = 2.0, var 
 		//	}
 		//}
 
-		val renderTexture = ctx.renderToTexture(iwidth, iheight) {
+		ctx.renderToTexture(iwidth, iheight, renderToTexture = {
 			//ctx.ag.clear(Colors.BLUE)
 			//super.render(ctx, Matrix2d())
 			//super.render(ctx, Matrix2d())
 			super.render(ctx, Matrix2d())
-		}
-		ctx.batch.drawQuad(
-			tex = renderTexture,
-			x = 0f, y = 0f,
-			width = iwidth.toFloat(),
-			height = iheight.toFloat(),
-			m = m,
-			colorMul = colorMul,
-			colorAdd = colorAdd,
-			filtering = filtering
-		)
-		ctx.flush()
+		}, use = { renderTexture ->
+			ctx.batch.drawQuad(
+				tex = renderTexture,
+				x = 0f, y = 0f,
+				width = iwidth.toFloat(),
+				height = iheight.toFloat(),
+				m = m,
+				colorMul = colorMul,
+				colorAdd = colorAdd,
+				filtering = filtering
+			)
+			ctx.flush()
+		})
 	}
 }
 

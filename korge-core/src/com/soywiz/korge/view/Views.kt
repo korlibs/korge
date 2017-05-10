@@ -139,6 +139,7 @@ class Views(
 		}
 
 		renderContext.flush()
+		renderContext.finish()
 	}
 
 	fun dump(emit: (String) -> Unit = ::println) = dumpView(stage, emit)

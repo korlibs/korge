@@ -16,12 +16,14 @@ class RenderContext(
 		batch.flush()
 	}
 
-	fun renderToTexture(width: Int, height: Int, callback: () -> Unit): Texture {
+	fun renderToTexture(width: Int, height: Int, renderToTexture: () -> Unit, use: (Texture) -> Unit): Unit {
 		flush()
-		return Texture(ag.renderToTexture(width, height) {
-			callback()
+		ag.renderToTexture(width, height) {
+			renderToTexture()
 			flush()
-		})
+		}.use { rt ->
+			use(Texture(rt))
+		}
 	}
 
 	fun renderToBitmap(bmp: Bitmap32, callback: () -> Unit): Bitmap32 {
@@ -31,5 +33,9 @@ class RenderContext(
 			flush()
 		}
 		return bmp
+	}
+
+	fun finish() {
+		ag.flip()
 	}
 }
