@@ -68,7 +68,7 @@ class SceneContainer(views: Views) : Container(views) {
 		currentScene = instance!!
 
 		transitionView.transition = transition
-		transitionView.startNewTransition(instance.sceneView)
+		transitionView.startNewTransition(instance._sceneViewContainer)
 
 		instance.sceneInit(instance.sceneView)
 

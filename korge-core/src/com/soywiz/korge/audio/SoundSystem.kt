@@ -13,6 +13,7 @@ import com.soywiz.korio.inject.Prototype
 import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
+import com.soywiz.korio.vfs.VfsFile
 
 @Singleton
 class SoundSystem(val views: Views) {
@@ -57,7 +58,7 @@ class SoundChannel(val soundSystem: SoundSystem) {
 
 			promise = go(soundSystem.views.coroutineContext) {
 				sound.play()
-				stop()
+				_end()
 			}
 
 			soundSystem.promises += promise!!
@@ -66,11 +67,16 @@ class SoundChannel(val soundSystem: SoundSystem) {
 	}
 
 	fun stop() {
-		if (promise != null) soundSystem.promises -= promise!!
+		_end()
 		promise?.cancel()
+	}
+
+	private fun _end() {
+		if (promise != null) soundSystem.promises -= promise!!
 		length = 0
 		playing = false
 	}
+
 
 	suspend fun await() {
 		promise?.await()
@@ -99,3 +105,5 @@ class SoundFile(
 val Views.soundSystem by Extra.PropertyThis<Views, SoundSystem> {
 	SoundSystem(this).apply { injector.mapTyped<SoundSystem>(this) }
 }
+
+suspend fun VfsFile.readSoundFile(soundSystem: SoundSystem) = SoundFile(this.readNativeSoundOptimized(), soundSystem)
