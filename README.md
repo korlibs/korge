@@ -1,5 +1,7 @@
 # KorGE: Kotlin cORoutines Game Engine
 
+[![gitter](https://img.shields.io/gitter/room/soywiz/korge.svg)](https://gitter.im/korge-game-engine/Lobby)
+
 ![](https://raw.githubusercontent.com/soywiz/kor/master/logos/128/korge.png)
 
 [All Soywiz's KORLIBS](https://github.com/soywiz/korlibs)
