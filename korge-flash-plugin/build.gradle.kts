@@ -1,6 +1,4 @@
 import org.apache.tools.ant.taskdefs.condition.Os
-import org.gradle.internal.impldep.org.apache.commons.io.output.ByteArrayOutputStream
-import org.gradle.script.lang.kotlin.support.zipTo
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
@@ -88,15 +86,15 @@ task("build") {
 			"-swf-version=34",
 			//"-swf-version=12",
 			//"-player-version=11",
-			"-library-path=lib/minimalcomps-1.0.0.swc",
-			"-source-path=src",
-			"src/Main.as",
-			"-output=build/KorgeEXT.swf"
+			"-library-path=" + File(project.projectDir, "lib/minimalcomps-1.0.0.swc").absolutePath,
+			"-source-path=" + File(project.projectDir, "src").absolutePath,
+			File(project.projectDir, "src/Main.as").absolutePath,
+			"-output=" + File(project.buildDir, "KorgeEXT.swf").absolutePath
 		)
 
 		buildZip(File("build/KorgeEXT.zxp"), mapOf(
-			"KorgeEXT.mxi" to File("resources/KorgeEXT.mxi").readBytes(),
-			"KorgeEXT.swf" to File("build/KorgeEXT.swf").readBytes()
+			"KorgeEXT.mxi" to File(project.projectDir, "resources/KorgeEXT.mxi").readBytes(),
+			"KorgeEXT.swf" to File(project.buildDir, "KorgeEXT.swf").readBytes()
 		))
 	}
 }

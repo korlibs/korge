@@ -18,12 +18,9 @@ import com.soywiz.korim.awt.AwtNativeImageFormatProvider
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.EventLoopFactory
 import com.soywiz.korio.service.Services
-import com.soywiz.korio.vfs.LocalVfsProvider
-import com.soywiz.korio.vfs.ResourcesVfsProvider
-import com.soywiz.korio.vfs.VfsSpecialReader
+import com.soywiz.korio.vfs.*
 import com.soywiz.korio.vfs.jvm.LocalVfsProviderJvm
 import com.soywiz.korio.vfs.jvm.ResourcesVfsProviderJvm
-import com.soywiz.korui.light.LightComponents
 import com.soywiz.korui.light.LightComponentsFactory
 import com.soywiz.korui.light.awt.AwtLightComponentsFactory
 import com.soywiz.korui.light.awt.EventLoopFactoryAwt
@@ -34,8 +31,12 @@ object KorgeManualServiceRegistration {
 		println("KorgeManualServiceRegistration.register")
 
 		// Providers
+
+		//Services.register(LocalVfsProvider::class.java, LocalVfsProviderJTransc::class.java)
+		//Services.register(ResourcesVfsProvider::class.java, ResourcesVfsProviderJTransc::class.java)
 		Services.register(LocalVfsProvider::class.java, LocalVfsProviderJvm::class.java)
 		Services.register(ResourcesVfsProvider::class.java, ResourcesVfsProviderJvm::class.java)
+
 		Services.register(NativeImageFormatProvider::class.java, AwtNativeImageFormatProvider::class.java)
 		Services.register(NativeSoundProvider::class.java, AwtNativeSoundProvider::class.java)
 		Services.register(LightComponentsFactory::class.java, AwtLightComponentsFactory::class.java)
