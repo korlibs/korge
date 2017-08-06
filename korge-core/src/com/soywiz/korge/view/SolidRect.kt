@@ -25,4 +25,6 @@ class SolidRect(views: Views, override var width: Double, override var height: D
 	override fun hitTestInternal(x: Double, y: Double): View? {
 		return if (checkGlobalBounds(x, y, 0.0, 0.0, width, height)) this else null
 	}
+
+	override fun createInstance(): View = SolidRect(views, width, height, colorMul)
 }

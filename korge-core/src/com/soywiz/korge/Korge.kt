@@ -38,8 +38,8 @@ object Korge {
 		val moduleArgs = ModuleArgs(config.args)
 		if (config.trace) println("Korge.setupCanvas[2]")
 
-		views.virtualWidth = config.module.virtualWidth
-		views.virtualHeight = config.module.virtualHeight
+		views.virtualWidth = config.module.virtualSize.width
+		views.virtualHeight = config.module.virtualSize.height
 
 		if (config.trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()
@@ -247,7 +247,7 @@ object Korge {
 				null
 			}
 
-			CanvasApplication(config.module.title, config.module.width, config.module.height, icon) {
+			CanvasApplication(config.module.title, config.module.windowSize.width, config.module.windowSize.height, icon) {
 				go {
 					done.resolve(setupCanvas(config.copy(container = it)))
 				}

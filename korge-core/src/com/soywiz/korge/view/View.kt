@@ -8,6 +8,7 @@ import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
 import com.soywiz.korio.coroutine.CoroutineContext
+import com.soywiz.korio.error.MustOverrideException
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.isSubtypeOf
@@ -442,6 +443,22 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	open fun getLocalBoundsInternal(out: Rectangle = Rectangle()) {
 		out.setTo(0, 0, 0, 0)
 	}
+
+	open protected fun createInstance(): View = throw MustOverrideException("Must Override ${this.javaClass}.createInstance()")
+
+	open fun copyPropsFrom(source: View) {
+		this.colorAdd = source.colorAdd
+		this.colorMul = source.colorMul
+		this.setMatrix(source.localMatrix)
+	}
+
+	fun clone(): View = createInstance().apply {
+		this@apply.copyPropsFrom(this@View)
+	}
+}
+
+class DummyView(views: Views) : View(views) {
+	override fun createInstance(): View = DummyView(views)
 }
 
 fun View.hasAncestor(ancestor: View): Boolean {

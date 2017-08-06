@@ -97,7 +97,7 @@ open class KorgeTest {
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<Module>()
-		val visibleBounds = Rectangle(0, 0, module.width, module.height)
+		val visibleBounds = Rectangle(0, 0, module.windowSize.width, module.windowSize.height)
 		if (!bounds.intersects(visibleBounds)) return false
 		return true
 	}

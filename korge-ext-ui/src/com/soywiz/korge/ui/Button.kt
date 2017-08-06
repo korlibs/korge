@@ -2,14 +2,13 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.input.*
-import com.soywiz.korge.view.IHtml
-import com.soywiz.korge.view.IText
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.util.redirectField
 
 class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: String = "Label") : Widget(factory, skin), IText, IHtml {
+	override fun createInstance(): View = Button(factory, skin, text)
+
 	var over = false
 	var down = false
 	private val bgView = views.ninePatch(skin.buttonOut, width, height, 0.25, 0.25, 0.25, 0.25).apply { this@Button += this }

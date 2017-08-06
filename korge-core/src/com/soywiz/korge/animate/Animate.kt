@@ -23,6 +23,9 @@ interface AnElement {
 	val symbol: AnSymbol
 }
 
+fun AnElement.createDuplicated() = symbol.create(library)
+fun AnElement.createDuplicatedView() = symbol.create(library) as View
+
 abstract class AnBaseShape(override final val library: AnLibrary, override final val symbol: AnSymbolBaseShape) : View(library.views), AnElement {
 	var ninePatch: Rectangle? = null
 
@@ -82,13 +85,15 @@ abstract class AnBaseShape(override final val library: AnLibrary, override final
 	override fun updateInternal(dtMs: Int) = Unit
 
 	override fun toString(): String = super.toString() + ":symbol=" + symbol
+
+	override fun createInstance(): View = symbol.create(library) as View
 }
 
-class AnShape(library: AnLibrary, symbol: AnSymbolShape) : AnBaseShape(library, symbol), AnElement {
-	override val dx = symbol.bounds.x.toFloat()
-	override val dy = symbol.bounds.y.toFloat()
-	override val tex = symbol.textureWithBitmap?.texture ?: views.transparentTexture
-	override val texScale = symbol.textureWithBitmap?.scale ?: 1.0
+class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnBaseShape(library, shapeSymbol), AnElement {
+	override val dx = shapeSymbol.bounds.x.toFloat()
+	override val dy = shapeSymbol.bounds.y.toFloat()
+	override val tex = shapeSymbol.textureWithBitmap?.texture ?: views.transparentTexture
+	override val texScale = shapeSymbol.textureWithBitmap?.scale ?: 1.0
 	override val texWidth = (tex.width / texScale).toFloat()
 	override val texHeight = (tex.height / texScale).toFloat()
 	override val smoothing = true
@@ -128,10 +133,23 @@ class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : An
 	init {
 		updatedRatio()
 	}
+
+	override fun createInstance(): View = AnMorphShape(library, morphSymbol)
+
+	override fun copyPropsFrom(source: View) {
+		val src = (source as AnMorphShape)
+		this.dx = src.dx
+		this.dy = src.dy
+		this.tex = src.tex
+		this.texScale = src.texScale
+		this.texWidth = src.texWidth
+		this.texHeight = src.texHeight
+		this.smoothing = src.smoothing
+	}
 }
 
 class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbolEmpty = AnSymbolEmpty) : View(library.views), AnElement {
-
+	override fun createInstance(): View = symbol.create(library) as View
 }
 
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(library.views), AnElement, IText, IHtml {
@@ -148,6 +166,8 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 	var format: Html.Format by textField::format.redirect()
 	override var text: String by redirectField(textField::text)
 	override var html: String by redirectField(textField::html)
+
+	override fun createInstance(): View = symbol.create(library) as View
 }
 
 //class PopMaskView(views: Views) : View(views)
@@ -268,6 +288,8 @@ class AnSimpleAnimation(
 	val animations: Map<String, List<Texture?>>,
 	val anchor: Anchor = Anchor.TOP_LEFT
 ) : Container(views), AnPlayable {
+	override fun createInstance(): View = AnSimpleAnimation(views, frameTime, animations, anchor)
+
 	val image = views.image(views.transparentTexture)
 	val defaultAnimation = animations.values.firstOrNull() ?: listOf()
 	var animation = defaultAnimation
@@ -299,13 +321,15 @@ class AnSimpleAnimation(
 }
 
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement, AnPlayable {
+	override fun createInstance(): View = symbol.create(library) as View
+
 	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
 	val totalDepths = symbol.limits.totalDepths
 	val totalUids = symbol.limits.totalUids
-	val dummyDepths = Array<View>(totalDepths) { View(views) }
+	val dummyDepths = Array(totalDepths) { DummyView(views) }
 	val maskPushDepths = IntArray(totalDepths + 10) { -1 }
 	val maskPopDepths = BooleanArray(totalDepths + 10) { false }
-	val viewUids = Array<View>(totalUids) {
+	val viewUids = Array(totalUids) {
 		val info = symbol.uidInfo[it]
 		val view = library.create(info.characterId) as View
 		view.addProps(info.extraProps)
@@ -314,7 +338,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	var firstUpdate = true
 	var smoothing = library.defaultSmoothing
 	val singleFrame = symbol.limits.totalFrames <= 1
-	val unsortedChildren = ArrayList(dummyDepths.toList())
+	val unsortedChildren = ArrayList<View>(dummyDepths.toList())
 	val timelineRunner = TimelineRunner(this, symbol)
 	val onStop get() = timelineRunner.onStop
 	val onEvent get() = timelineRunner.onEvent
