@@ -1,0 +1,10 @@
+apply from: "../include.gradle"
+
+apply plugin: 'kotlin'
+
+dependencies {
+    compile project(":korge-core")
+    testCompile project(":korge")
+	testCompile project(":korge-tests")
+	testCompile "com.soywiz:korim:$korVersion"
+}

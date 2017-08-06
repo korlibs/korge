@@ -5,6 +5,7 @@ import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korge.animate.serialization.AniFile
 import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -294,13 +295,36 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 		for (symbol in symbolsById) if (symbol.name != null) symbolsByName[symbol.name!!] = symbol
 	}
 
+	fun AnSymbol.findFirstTexture(): Texture? {
+		when (this) {
+			is AnSymbolEmpty -> return null
+			is AnSymbolSound -> return null
+			is AnTextFieldSymbol -> return null
+			is AnSymbolShape -> return this.textureWithBitmap?.texture
+			is AnSymbolMorphShape -> return this.texturesWithBitmap.objects.firstOrNull()?.texture
+			is AnSymbolBitmap -> return null
+			is AnSymbolMovieClip -> {
+				for (uid in this.uidInfo) {
+					val res = create(uid.characterId).findFirstTexture()
+					if (res != null) return res
+				}
+				return null
+			}
+			else -> throw RuntimeException("Don't know how to handle ${this.javaClass}")
+		}
+	}
+
+	fun AnElement.findFirstTexture(): Texture? = this.symbol.findFirstTexture()
+
 	fun create(id: Int) = if (id < 0) TODO() else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
 	fun createShape(id: Int) = create(id) as AnShape
 	fun createMovieClip(id: Int) = create(id) as AnMovieClip
+	fun getTexture(id: Int) = create(id).findFirstTexture()
 
 	fun create(name: String) = symbolsByName[name]?.create(this) ?: invalidOp("Can't find symbol with name '$name'")
 	fun createShape(name: String) = create(name) as AnShape
 	fun createMovieClip(name: String) = create(name) as AnMovieClip
+	fun getTexture(name: String) = create(name).findFirstTexture()
 
 	fun getBitmap(id: Int) = (symbolsById[id] as AnSymbolBitmap).bmp
 	fun getBitmap(name: String) = (symbolsByName[name] as AnSymbolBitmap).bmp

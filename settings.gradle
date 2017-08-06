@@ -11,6 +11,7 @@ include(
 	'korge-ext-tiled',
 	'korge-ext-particle',
 	'korge-ext-swf',
+	'korge-ext-fla',
 	'korge-ext-lipsync',
 	'korge-ext-ui',
 	'korge-sample',

@@ -44,19 +44,8 @@ open class KorgeModuleType : JavaModuleType("korge") {
 		}
 	}
 
-	override fun getName(): String {
-		return "Korge"
-	}
-
-	override fun getDescription(): String {
-		return "KorGE Game Engine"
-	}
-
-	override fun getBigIcon(): Icon? {
-		return KorgeIcons.KORGE
-	}
-
-	override fun getNodeIcon(isOpened: Boolean): Icon {
-		return KorgeIcons.KORGE
-	}
+	override fun getName(): String = "Korge"
+	override fun getDescription(): String = "KorGE Game Engine"
+	//override fun getBigIcon(): Icon? = KorgeIcons.KORGE
+	override fun getNodeIcon(isOpened: Boolean): Icon = KorgeIcons.KORGE
 }

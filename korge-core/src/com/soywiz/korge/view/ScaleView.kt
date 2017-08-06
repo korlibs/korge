@@ -11,25 +11,18 @@ class ScaleView(views: Views, width: Int, height: Int, scale: Double = 2.0, var 
 	}
 
 	//val once = Once()
+
+	private fun super_render(ctx: RenderContext, m: Matrix2d) {
+		super.render(ctx, m);
+	}
+
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		val iwidth = width.toInt()
 		val iheight = height.toInt()
 
-		//once {
-		//	val bmp = ctx.renderToBitmap(Bitmap32(iwidth, iheight)) {
-		//		//ctx.ag.clear(Colors.BLUE)
-		//		super.render(ctx, Matrix2d())
-		//	}
-		//	go {
-		//		showImageAndWait(bmp)
-		//	}
-		//}
-
 		ctx.renderToTexture(iwidth, iheight, renderToTexture = {
-			//ctx.ag.clear(Colors.BLUE)
-			//super.render(ctx, Matrix2d())
-			//super.render(ctx, Matrix2d())
-			super.render(ctx, Matrix2d())
+			//super.render(ctx, Matrix2d()) // @TODO: Bug with JTransc 0.6.6
+			super_render(ctx, Matrix2d())
 		}, use = { renderTexture ->
 			ctx.batch.drawQuad(
 				tex = renderTexture,

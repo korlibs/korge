@@ -30,3 +30,15 @@ class TileSet(val views: Views, val textures: List<Texture?>, val width: Int, va
 		}
 	}
 }
+
+fun Views.tileSet(textures: List<Texture?>, width: Int, height: Int, base: Texture.Base = textures.filterNotNull().first().base): TileSet {
+	return TileSet(this, textures, width, height, base)
+}
+
+fun Views.tileSet(textureMap: Map<Int, Texture?>): TileSet {
+	val views = this
+	val maxKey = textureMap.keys.max() ?: 0
+	val textures = (0 .. maxKey).map { textureMap[it] }
+	val firstTexture = textures.first() ?: views.transparentTexture
+	return TileSet(this, textures, firstTexture.width, firstTexture.height, firstTexture.base)
+}

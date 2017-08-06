@@ -11,6 +11,10 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>0.11.0</h3>
+		<ul>
+			<li>Updated Korge to 0.11.0.</li>
+		</ul>
 		<h3>0.10.0</h3>
 		<ul>
 			<li>Updated Korge to 0.10.0.</li>
