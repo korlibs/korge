@@ -447,12 +447,17 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 	open protected fun createInstance(): View = throw MustOverrideException("Must Override ${this.javaClass}.createInstance()")
 
 	open fun copyPropsFrom(source: View) {
+		this.name = source.name
 		this.colorAdd = source.colorAdd
 		this.colorMul = source.colorMul
 		this.setMatrix(source.localMatrix)
+		this.visible = source.visible
+		this.ratio = source.ratio
+		this.speed = source.speed
+		this.blendMode = source.blendMode
 	}
 
-	fun clone(): View = createInstance().apply {
+	open fun clone(): View = createInstance().apply {
 		this@apply.copyPropsFrom(this@View)
 	}
 }

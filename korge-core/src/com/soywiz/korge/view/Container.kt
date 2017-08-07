@@ -86,6 +86,15 @@ open class Container(views: Views) : View(views) {
 			child.dispatch(event, clazz)
 		}
 	}
+
+
+	override fun createInstance(): View = Container(views)
+
+	override fun clone(): View {
+		val out = super.clone()
+		for (child in children) out += child.clone()
+		return out
+	}
 }
 
 open class FixedSizeContainer(views: Views, override var width: Double = 100.0, override var height: Double = 100.0) : Container(views) {
