@@ -1746,7 +1746,14 @@ class TagDoABC : _BaseTag(), ITag {
 	private var _abc: ABC? = null
 
 	val abc: ABC get() {
-		if (_abc == null) _abc = ABC().readFile(bytes.cloneToNewByteArray().openSync())
+		if (_abc == null) {
+			_abc = ABC()
+			//try {
+				_abc?.readFile(bytes.cloneToNewByteArray().openSync())
+			//} catch (e: Throwable) {
+			//	e.printStackTrace()
+			//}
+		}
 		return _abc!!
 	}
 

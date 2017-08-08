@@ -10,7 +10,10 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.go
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.Extra
+import com.soywiz.korio.util.Once
+import com.soywiz.korio.util.redirect
+import com.soywiz.korio.util.redirectField
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point2d
@@ -321,6 +324,10 @@ class AnSimpleAnimation(
 }
 
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(library.views), AnElement, AnPlayable {
+	override fun clone(): View = createInstance().apply {
+		this@apply.copyPropsFrom(this)
+	}
+
 	override fun createInstance(): View = symbol.create(library) as View
 
 	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
@@ -436,7 +443,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			// Push Mask
 			if (maskDepth >= 0) {
 				if (maskDepth in maskPopDepths.indices) {
-					maskPopDepths[ maskDepth] = true
+					maskPopDepths[maskDepth] = true
 					ctx.stencilIndex++
 					usedStencil = true
 					STATE_SHAPE.set(ctx, ctx.stencilIndex)

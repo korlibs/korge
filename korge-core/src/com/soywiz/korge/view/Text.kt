@@ -102,6 +102,18 @@ class Text(views: Views) : View(views), IText, IHtml {
 			out.setToAnchoredRectangle(out, format.computedAlign.anchor, textBounds)
 		}
 	}
+
+	override fun createInstance(): View = Text(views)
+	override fun copyPropsFrom(source: View) {
+		super.copyPropsFrom(source)
+		source as Text
+		this.textBounds.copyFrom(source.textBounds)
+		if (source._html.isNotEmpty()) {
+			this.html = source.html
+		} else {
+			this.text = source.text
+		}
+	}
 }
 
 fun Views.text(text: String, textSize: Double = 16.0, color: Int = Colors.WHITE, font: BitmapFont = this.defaultFont) = Text(this).apply {

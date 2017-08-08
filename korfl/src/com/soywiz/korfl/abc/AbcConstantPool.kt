@@ -13,10 +13,14 @@ class AbcConstantPool {
 	var multinames = listOf<ABC.AbstractMultiname>()
 
 	fun readConstantPool(s: SyncStream) {
-		ints = listOf(0) + (1 until s.readU30()).map { s.readS32_le() }
-		uints = listOf(0) + (1 until s.readU30()).map { s.readS32_le() }
-		doubles = listOf(0.0) + (1 until s.readU30()).map { s.readF64_le() }
-		strings = listOf("") + (1 until s.readU30()).map { s.readStringz(s.readU30()) }
+		val intCount = s.readU30()
+		ints = listOf(0) + (1 until intCount).map { s.readU30() }
+		val uintCount = s.readU30()
+		uints = listOf(0) + (1 until uintCount).map { s.readU30() }
+		val doubleCount = s.readU30()
+		doubles = listOf(0.0) + (1 until doubleCount).map { s.readF64_le() }
+		val stringCount = s.readU30()
+		strings = listOf("") + (1 until stringCount).map { s.readStringz(s.readU30()) }
 		namespaces = listOf(ABC.Namespace.EMPTY) + (1 until s.readU30()).map {
 			val kind = s.readU8()
 			val name = strings[s.readU30()]

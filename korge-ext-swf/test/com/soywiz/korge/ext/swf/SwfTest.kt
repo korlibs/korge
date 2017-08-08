@@ -237,4 +237,18 @@ class SwfTest {
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		lib.writeTo(LocalVfs("c:/temp")["test29.ani"])
 	}
+
+	@Test
+	@Ignore
+	fun bigexternal2() = syncTest {
+		val lib = ResourcesVfs["c:/temp/ui.swf"].readSWFDeserializing(views)
+		val mc = lib.createMainTimeLine()
+
+		println(lib.fps)
+		println(lib.msPerFrame)
+		for (n in 0 until 10) {
+			println(mc.dumpToString())
+			mc.update(41)
+		}
+	}
 }

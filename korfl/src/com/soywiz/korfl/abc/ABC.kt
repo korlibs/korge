@@ -1,8 +1,11 @@
 package com.soywiz.korfl.abc
 
+import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.mapWhile
+import com.soywiz.korio.vfs.writeToFile
+import java.io.File
 
 // http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/actionscript/articles/avm2overview.pdf
 // https://github.com/imcj/as3abc/blob/master/src/com/codeazur/as3abc/ABC.as
@@ -83,6 +86,9 @@ class ABC {
 	data class Metadata(val name: String, val values: Map<String, String>)
 
 	fun readFile(s: SyncStream) = this.apply {
+		//syncTest {
+		//	s.slice().readAll().writeToFile(File("c:/temp/demo.abc"))
+		//}
 		val minor = s.readU16_le()
 		val major = s.readU16_le()
 		//println("version: major=$major, minor=$minor")

@@ -5,7 +5,9 @@ import com.soywiz.korio.async.syncTest
 import com.soywiz.korio.util.hexString
 import com.soywiz.korio.util.toHexString
 import com.soywiz.korio.util.toUtf8String
+import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfs
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 
@@ -40,6 +42,20 @@ class As3SwfTest {
 		val swf2 = SWF().loadBytes(ResourcesVfs["test1.swf"].readAll())
 		println(swf2.frameSize.rect)
 		for (tag in swf2.tags) {
+			println(tag)
+		}
+
+		val swf = SWF()
+		swf.tags += TagFileAttributes()
+	}
+
+	@Test
+	@Ignore
+	fun name4() = syncTest {
+		val swf2 = SWF().loadBytes(LocalVfs["c:/temp/ui.swf"].readAll())
+		println(swf2.frameSize.rect)
+		for (tag in swf2.tags) {
+
 			println(tag)
 		}
 
