@@ -23,7 +23,7 @@ import com.soywiz.korma.geom.Point2d
 import com.soywiz.korui.CanvasApplication
 
 object Korge {
-	val VERSION = "0.11.0"
+	val VERSION = "0.12.0"
 
 	suspend fun setupCanvas(config: Config): SceneContainer {
 		if (config.trace) println("Korge.setupCanvas[1]")
@@ -38,8 +38,8 @@ object Korge {
 		val moduleArgs = ModuleArgs(config.args)
 		if (config.trace) println("Korge.setupCanvas[2]")
 
-		views.virtualWidth = config.module.virtualSize.width
-		views.virtualHeight = config.module.virtualSize.height
+		views.virtualWidth = config.module.size.width
+		views.virtualHeight = config.module.size.height
 
 		if (config.trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()

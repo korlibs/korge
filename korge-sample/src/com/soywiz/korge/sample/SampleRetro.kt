@@ -9,13 +9,13 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ScaleView
 import com.soywiz.korge.view.scaleView
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.SizeInt
 
 object SampleRetro : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(this@SampleRetro, debug = false)
 	//@JvmStatic fun main(args: Array<String>) = Korge(this@SampleRetro, debug = true)
 
-	override val width: Int = 640
-	override val height: Int = 480
+	override val size: SizeInt = SizeInt(560, 380)
 	override val mainScene: Class<out Scene> = MainScene::class.java
 
 	class MainScene(

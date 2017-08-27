@@ -10,12 +10,12 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.get
 import com.soywiz.korge.view.setText
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.SizeInt
 
 object Sample4 : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(this@Sample4, debug = true)
 
-	override val width: Int = 560
-	override val height: Int = 380
+	override val size: SizeInt = SizeInt(560, 380)
 	override val mainScene: Class<out Scene> = MainScene::class.java
 
 	class MainScene(

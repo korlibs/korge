@@ -9,13 +9,12 @@ import com.soywiz.korge.ui.button
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.image
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.SizeInt
 
 object SampleUi : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(this@SampleUi)
 
-	override val width: Int = 560
-	override val height: Int = 380
-
+	override val size: SizeInt = SizeInt(560, 380)
 	//override val bgcolor: Int = Colors.WHITE
 	override val bgcolor: Int = RGBA(0x70, 0x70, 0x70, 0xFF)
 	override val mainScene: Class<out Scene> = MainScene::class.java

@@ -10,6 +10,7 @@ import com.soywiz.korge.ui.korui.koruiFrame
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.dump
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korui.geom.len.Padding
 import com.soywiz.korui.geom.len.pt
 import com.soywiz.korui.style.padding
@@ -21,8 +22,7 @@ import com.soywiz.korui.ui.onMouseClick
 object SampleKorui : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(this@SampleKorui)
 
-	override val width: Int = 560
-	override val height: Int = 380
+	override val size: SizeInt = SizeInt(560, 380)
 
 	//override val bgcolor: Int = Colors.WHITE
 	override val bgcolor: Int = RGBA(0x70, 0x70, 0x70, 0xFF)

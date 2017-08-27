@@ -12,13 +12,13 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.dump
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.SizeInt
 import java.util.*
 
 object Sample3 : Module() {
 	@JvmStatic fun main(args: Array<String>) = Korge(Sample3)
 
-	override val width: Int = 560
-	override val height: Int = 380
+	override val size: SizeInt = SizeInt(560, 380)
 
 	//override val bgcolor: Int = Colors.WHITE
 	override val bgcolor: Int = RGBA(0x70, 0x70, 0x70, 0xFF)
