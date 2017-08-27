@@ -1,4 +1,5 @@
-.gradle
-.idea
-build
-obj
+/build
+/.gradle
+/.idea
+/out
+/obj

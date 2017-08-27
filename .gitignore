@@ -1,6 +1,5 @@
 /build
-.gradle
-.idea
+/.gradle
+/.idea
+/out
 Thumbs.db
-thumbs.db
-RECUP_*
