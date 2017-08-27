@@ -61,7 +61,7 @@ class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		//showImageAndWait(out)
 
 		outputImageFile.write(
-			ImageFormats.encode(out, "file.png", ImageEncodingProps(quality = 1.0))
+			ImageFormats.encode(out, ImageEncodingProps(filename = "file.png", quality = 1.0))
 		)
 
 		//println(Json.stringify(atlasInfo, pretty = true))

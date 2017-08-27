@@ -19,7 +19,7 @@ import com.soywiz.korma.geom.Rectangle
 suspend fun AnLibrary.writeTo(file: VfsFile, config: AnLibrarySerializer.Config = AnLibrarySerializer.Config()) {
 	//println("writeTo")
 	val format = PNG()
-	val props = ImageEncodingProps(config.compression)
+	val props = ImageEncodingProps(quality = config.compression)
 	file.write(AnLibrarySerializer.gen(this, config = config, externalWriters = AnLibrarySerializer.ExternalWriters(
 		writeAtlas = { index, atlas ->
 			//showImageAndWait(atlas)
