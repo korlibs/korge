@@ -1,7 +1,12 @@
-apply from: "../include.gradle"
-
-apply plugin: 'kotlin'
+apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-    compile project(':korge-core')
+	implement project(":korge-common")
+	testImplementation project(":korge-common")
+
+	compile "com.soywiz:korio-android:$korVersion"
+	compile "com.soywiz:korim-android:$korVersion"
+	compile "com.soywiz:korag-android:$korVersion"
+	compile "com.soywiz:korau-android:$korVersion"
+	compile "com.soywiz:korui-android:$korVersion"
 }

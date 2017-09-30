@@ -1,3 +1,73 @@
+apply plugin: 'kotlin-platform-jvm'
+
+//apply plugin: "org.jetbrains.intellij"
+
+dependencies {
+	//compile "org.jetbrains.plugins:gradle:$ideaVersion"
+	compile project(":korge")
+	compile project(":korge-build")
+	compile project(":korge")
+	compile project(":korge-ext-swf")
+	compile project(":korge-ext-spriter")
+	compile project(":korge-ext-tiled")
+	compile project(":korge-ext-ui")
+}
+
+//plugins { id "org.jetbrains.intellij" version "0.2.9" }
+
+//apply plugin: 'org.jetbrains.intellij'
+
+apply plugin: 'org.jetbrains.intellij'
+
+//test {
+//	minHeapSize = "256m"
+//	maxHeapSize = "2048m"
+//}
+
+//println("jetbrainsUsername: " + properties.jetbrainsUsername)
+
+def globalProps = properties
+
+intellij {
+	version "IC-$ideaVersion"
+	//plugins = ['coverage', 'org.intellij.plugins.markdown:8.5.0.20160208']
+	plugins = ['kotlin']
+	pluginName 'KorgePlugin'
+	plugins 'coverage'
+	downloadSources true
+
+	//println("jetbrainsUsername: " + globalProps.jetbrainsUsername)
+}
+
+publishPlugin  {
+	//println("jetbrainsUsername: " + globalProps.jetbrainsUsername)
+	if (globalProps.jetbrainsUsername != null) {
+		username globalProps.jetbrainsUsername
+		password globalProps.jetbrainsPassword
+		//channel 'nightly'
+	}
+	//username 'zolotov'
+	//password 'password'
+	//channel 'nightly'
+}
+
+runIde {
+	maxHeapSize = "2g"
+}
+
+//apply plugin: 'idea'
+//idea {
+//	project {
+//		//jdkName = '1.8'
+//		//languageLevel = javaVersion
+//		//vcs = 'Git'
+//	}
+//	module {
+//		//generatedSourceDirs += file('gen')
+//	}
+//}
+
+/*
 apply from: '../include.gradle'
 
 //apply plugin: "org.jetbrains.intellij"
@@ -66,3 +136,4 @@ runIde {
 //		//generatedSourceDirs += file('gen')
 //	}
 //}
+*/

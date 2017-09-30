@@ -99,6 +99,7 @@ task("build") {
 	}
 }
 
+/*
 task("install") {
 	dependsOn("build")
 	doLast {
@@ -109,6 +110,7 @@ task("install") {
 		)
 	}
 }
+*/
 
 task("uninstall") {
 	doLast {

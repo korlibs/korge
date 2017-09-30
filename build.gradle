@@ -1,16 +1,39 @@
 buildscript {
+	ext.kotlinVersion = '1.2.0-beta-31'
+	ext.compilerVersion = ext.kotlinVersion
+	ext.librariesVersion = ext.kotlinVersion
+	//ext.eapChannel = 'https://dl.bintray.com/kotlin/kotlin-eap-1.1'
+	ext.eapChannel = 'http://dl.bintray.com/kotlin/kotlin-eap-1.2'
+	ext.serializationRepo = 'https://kotlin.bintray.com/kotlinx'
+	ext.serializationPluginVersion = '0.1'
+
 	repositories {
 		mavenLocal()
 		jcenter()
-		mavenCentral()
+		maven { url serializationRepo }
+		maven { url eapChannel }
 		maven {
 			url "https://plugins.gradle.org/m2/"
 		}
 	}
+
 	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$compilerVersion"
 		classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.9"
+	}
+
+	ext {
+		libraries = [
+			kotlin_stdlib_common: "org.jetbrains.kotlin:kotlin-stdlib-common:$librariesVersion",
+			kotlin_stdlib_jvm   : "org.jetbrains.kotlin:kotlin-stdlib:$librariesVersion",
+			kotlin_stdlib_js    : "org.jetbrains.kotlin:kotlin-stdlib-js:$librariesVersion",
+
+			kotlin_test_common  : "org.jetbrains.kotlin:kotlin-test-common:$librariesVersion",
+			kotlin_test_jvm     : "org.jetbrains.kotlin:kotlin-test:$librariesVersion",
+			kotlin_test_js      : "org.jetbrains.kotlin:kotlin-test-js:$librariesVersion",
+
+			kotlin_reflect      : "org.jetbrains.kotlin:kotlin-reflect:$librariesVersion",
+		]
 	}
 }
 
@@ -26,6 +49,135 @@ allprojects {
 	repositories {
 		mavenLocal()
 		jcenter()
+		maven { url eapChannel }
 		mavenCentral()
 	}
+
+	group 'com.soywiz'
+	version "$korVersion"
+
+	apply plugin: 'java'
+	//apply plugin: 'kotlin'
+	apply plugin: 'maven'
+	apply plugin: 'signing'
+	apply plugin: 'maven-publish'
+
+	compileJava.options.encoding = 'UTF-8'
+	compileTestJava.options.encoding = 'UTF-8'
+
+	sourceCompatibility = 1.7
+	targetCompatibility = 1.7
+
+	//kotlin { experimental { coroutines 'enable' } }
+
+	//sourceSets {
+	//	main.java.srcDirs = ['src']
+	//	test.java.srcDirs = ['test']
+	//	main.resources.srcDirs = ['resources']
+	//	test.resources.srcDirs = ['testresources']
+	//	main.java.srcDirs += 'src/main/kotlin'
+	//}
+
+	//dependencies {
+	//	compile "com.soywiz:korio-core:$korVersion"
+	//	compile "com.soywiz:korim-core:$korVersion"
+	//	compile "com.soywiz:korag-core:$korVersion"
+	//	compile "com.soywiz:korau-core:$korVersion"
+	//	compile "com.soywiz:korui-core:$korVersion"
+//
+	//	compile "com.soywiz:korma:$korVersion"
+//
+	//	testCompile "com.soywiz:korio:$korVersion"
+	//	//testCompile "com.soywiz:korim:$korVersion"
+	//	testCompile "com.soywiz:korag:$korVersion"
+	//	testCompile "com.soywiz:korau:$korVersion"
+	//	testCompile "com.soywiz:korui:$korVersion"
+//
+	//	//compile "com.soywiz:korte:$korVersion"
+	//	testCompile group: 'junit', name: 'junit', version: '4.11'
+	//	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+	//}
+
+	task javadoc2(type: Javadoc) {
+		failOnError = false
+	}
+
+	task javadocJar(type: Jar, dependsOn: javadoc2) {
+		classifier = 'javadoc'
+		from 'build/docs/javadoc'
+	}
+
+	task sourcesJar(type: Jar) {
+		from sourceSets.main.allSource
+		classifier = 'sources'
+	}
+
+	artifacts {
+		archives jar
+		archives javadocJar
+		archives sourcesJar
+	}
+
+// gradle uploadArchives
+	if (project.hasProperty('sonatypeUsername')) {
+		signing {
+			sign configurations.archives
+		}
+
+		uploadArchives {
+			repositories {
+				mavenDeployer {
+					beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+					repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+						authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
+					}
+
+					pom.project {
+						name "${project.name}"
+						packaging 'jar'
+						description 'korge: Kotlin cORoutines Game Engine'
+						url 'https://github.com/soywiz/korge/'
+						inceptionYear '2017'
+
+						scm {
+							url 'scm:git@github.com:soywiz/korge.git'
+							connection 'scm:git@github.com:soywiz/korge.git'
+							developerConnection 'scm:git@github.com:soywiz/korge.git'
+						}
+
+						licenses {
+							license {
+								name 'The Apache Software License, Version 2.0'
+								url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+								distribution 'repo'
+							}
+						}
+
+						developers {
+							developer {
+								id 'soywiz'
+								name 'Carlos Ballesteros Velasco'
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	publishing {
+		publications {
+			MyPublication(MavenPublication) {
+				from components.java
+				groupId project.group
+				artifactId project.name
+				version "$project.version"
+			}
+		}
+	}
+
+	task deploy(dependsOn: ['install', 'uploadArchives']) {
+	}
+
 }

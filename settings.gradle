@@ -2,21 +2,59 @@ rootProject.name = 'korge-root'
 //rootProject.buildFileName = 'build.gradle.kts'
 
 include(
-	'korge-core',
-	'korge-build',
 	'korge-tests',
+
+	'korfl-common',
+	'korfl',
+
+	'korge-common',
 	'korge',
 	'korge-android',
-	'korge-ext-spriter',
-	'korge-ext-tiled',
-	'korge-ext-particle',
-	'korge-ext-swf',
+	'korge-js',
+
+	'korge-ext-fla-common',
 	'korge-ext-fla',
+
+	'korge-ext-lipsync-common',
 	'korge-ext-lipsync',
+
+	'korge-ext-particle-common',
+	'korge-ext-particle',
+
+	'korge-ext-spriter-common',
+	'korge-ext-spriter',
+
+	'korge-ext-swf-common',
+	'korge-ext-swf',
+
+	'korge-ext-tiled-common',
+	'korge-ext-tiled',
+
+	'korge-ext-ui-common',
 	'korge-ext-ui',
-	'korge-sample',
-	'korge-flash-plugin',
-	'korge-gradle-plugin',
-	'korge-intellij-plugin', // Disable this to avoid performance issues while editing
-	'korfl',
+
+	//'korge-sample',
+
+	//'korge-build',
+	//'korge-flash-plugin',
+	//'korge-gradle-plugin',
+	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
+
+	//'korge-common',
+	//'korge',
+	//'korge-android',
+	//'korge-js',
+	//'korge-build',
+	//'korge-tests',
+	//'korge-ext-spriter',
+	//'korge-ext-tiled',
+	//'korge-ext-particle',
+	//'korge-ext-swf',
+	//'korge-ext-lipsync',
+	//'korge-ext-ui',
+	//'korge-sample',
+	//'korge-flash-plugin',
+	//'korge-gradle-plugin',
+	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
+	//'korfl',
 )

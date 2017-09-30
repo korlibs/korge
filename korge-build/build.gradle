@@ -1,7 +1,7 @@
-apply from: '../include.gradle'
+apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	compile project(":korge-core")
+	compile project(":korge")
 	compile project(":korge-ext-swf")
 	compile project(":korge-ext-tiled")
 	compile project(":korge-ext-particle")
@@ -10,4 +10,7 @@ dependencies {
 	compile project(":korge-ext-ui")
 	compile "com.soywiz:korau-mp3:$korVersion"
 	compile "com.soywiz:korau-ogg-vorbis:$korVersion"
+	testCompile "junit:junit:4.12"
+	compile libraries.kotlin_stdlib_jvm
+	testCompile libraries.kotlin_test_jvm
 }
