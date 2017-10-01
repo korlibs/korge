@@ -219,7 +219,7 @@ class Entity internal constructor(val id: Int, val name: String, animations: Int
 	}
 
 	override fun toString(): String {
-		var toReturn = this::class.simpleName + "|[id: " + id + ", name: " + name + "]"
+		var toReturn = "" + this::class + "|[id: " + id + ", name: " + name + "]"
 		toReturn += "Object infos:\n"
 		for (info in this.objectInfos)
 			toReturn += "\n" + info

@@ -51,7 +51,7 @@ class Folder(val id: Int, val name: String, files: Int) {
 	internal fun getFileIndex(name: String): Int = this.files.firstOrNull { it.name == name }?.id ?: -1
 
 	override fun toString(): String {
-		var toReturn = this::class.simpleName + "|[id: " + id + ", name: " + name
+		var toReturn = "" + this::class + "|[id: " + id + ", name: " + name
 		for (file in files) toReturn += "\n" + file
 		toReturn += "]"
 		return toReturn

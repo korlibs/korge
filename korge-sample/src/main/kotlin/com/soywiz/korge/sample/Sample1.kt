@@ -31,15 +31,15 @@ import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korma.geom.Anchor
 
 object Sample1 {
-	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample1Scene::class.java)
+	@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample1Scene::class)
 	//@JvmStatic fun main(args: Array<String>) = Korge(Sample1Module, args, sceneClass = Sample2Scene::class.java)
 }
 
 object Sample1Module : Module() {
 	override val title = "Sample1"
 	override val icon = "kotlin8.png"
-	override var mainScene = Sample1Scene::class.java
-	//override var mainScene = Sample2Scene::class.java
+	override var mainScene = Sample1Scene::class
+	//override var mainScene = Sample2Scene::class
 
 	suspend override fun init(injector: AsyncInjector) {
 		injector.get<ResourcesRoot>().mount("/", ResourcesVfs)
@@ -74,8 +74,6 @@ class Sample2Scene(
 	@Path("test4.swf") val test4Library: AnLibrary
 ) : Scene() {
 	suspend override fun sceneInit(sceneView: Container) {
-		super.init()
-
 		this.sceneView += test4Library.createMainTimeLine()
 	}
 }

@@ -160,7 +160,7 @@ constructor(type: Type = Curve.Type.Linear,
 	}
 
 	override fun toString(): String {
-		return this::class.simpleName + "|[" + this.type + ":" + constraints + ", subCurve: " + subCurve + "]"
+		return "" + this::class + "|[" + this.type + ":" + constraints + ", subCurve: " + subCurve + "]"
 	}
 
 	/**
@@ -186,7 +186,7 @@ constructor(type: Type = Curve.Type.Linear,
 		}
 
 		override fun toString(): String {
-			return this::class.simpleName + "| [c1:" + c1 + ", c2:" + c2 + ", c3:" + c3 + ", c4:" + c4 + "]"
+			return "" + this::class + "| [c1:" + c1 + ", c2:" + c2 + ", c3:" + c3 + ", c4:" + c4 + "]"
 		}
 	}
 

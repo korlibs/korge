@@ -206,6 +206,7 @@ class Views(
 	}
 
 	fun animationFrameLoop(callback: () -> Unit): Closeable {
+		println("Views.animationFrameLoop.eventLoop: $eventLoop")
 		return eventLoop.animationFrameLoop(callback)
 	}
 

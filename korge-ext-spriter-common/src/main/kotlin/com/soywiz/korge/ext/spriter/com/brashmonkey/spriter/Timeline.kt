@@ -34,7 +34,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 	}
 
 	override fun toString(): String {
-		var toReturn = this::class.simpleName + "|[id:" + id + ", name: " + name + ", object_info: " + objectInfo
+		var toReturn = "" + this::class + "|[id:" + id + ", name: " + name + ", object_info: " + objectInfo
 		for (key in keys)
 			toReturn += "\n" + key
 		toReturn += "]"
@@ -63,7 +63,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 		}
 
 		override fun toString(): String {
-			return this::class.simpleName + "|[id: " + id + ", time: " + time + ", spin: " + spin + "\ncurve: " + curve + "\nobject:" + `object` + "]"
+			return "" + this::class + "|[id: " + id + ", time: " + time + ", spin: " + spin + "\ncurve: " + curve + "\nobject:" + `object` + "]"
 		}
 
 		/**
@@ -159,9 +159,7 @@ class Timeline internal constructor(@JvmField val id: Int, @JvmField val name: S
 				this._angle *= sign(parent.scale.x) * sign(parent.scale.y)
 			}
 
-			override fun toString(): String {
-				return this::class.simpleName + "|position: " + position + ", scale: " + scale + ", angle: " + _angle
-			}
+			override fun toString(): String = "${this::class}|position: $position, scale: $scale, angle: $_angle"
 		}
 
 

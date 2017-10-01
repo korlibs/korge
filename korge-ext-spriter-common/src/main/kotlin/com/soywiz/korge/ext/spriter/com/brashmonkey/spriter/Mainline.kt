@@ -20,7 +20,7 @@ class Mainline(keys: Int) {
 	}
 
 	override fun toString(): String {
-		var toReturn = this::class.simpleName + "|"
+		var toReturn = "" + this::class + "|"
 		for (key in keys)
 			toReturn += "\n" + key
 		toReturn += "]"
@@ -165,7 +165,7 @@ class Mainline(keys: Int) {
 		}
 
 		override fun toString(): String {
-			var toReturn = this::class.simpleName + "|[id:" + id + ", time: " + time + ", curve: [" + curve + "]"
+			var toReturn = "" + this::class + "|[id:" + id + ", time: " + time + ", curve: [" + curve + "]"
 			for (ref in boneRefs)
 				toReturn += "\n" + ref
 			for (ref in objectRefs)
@@ -187,7 +187,7 @@ class Mainline(keys: Int) {
 
 			override fun toString(): String {
 				val parentId = parent?.id ?: -1
-				return this::class.simpleName + "|id: " + id + ", parent:" + parentId + ", timeline: " + timeline + ", key: " + key
+				return "" + this::class + "|id: " + id + ", parent:" + parentId + ", timeline: " + timeline + ", key: " + key
 			}
 		}
 

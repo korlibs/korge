@@ -3,13 +3,16 @@ package com.soywiz.korge
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
 import com.soywiz.korag.AGInput
+import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.Keys
-import com.soywiz.korge.scene.Module
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.SceneContainer
-import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.plugin.KorgePlugins
+import com.soywiz.korge.plugin.defaultKorgePlugins
+import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.seconds
 import com.soywiz.korge.view.*
+import com.soywiz.korim.NativeImageSpecialReader
+import com.soywiz.korim.format.NativeImageFormatProvider
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
@@ -20,8 +23,11 @@ import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.util.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
+import com.soywiz.korio.vfs.register
+import com.soywiz.korio.vfs.registerVfsSpecialReader
 import com.soywiz.korma.geom.Point2d
 import com.soywiz.korui.CanvasApplication
+import com.soywiz.korui.KoruiEventLoop
 import kotlin.math.min
 import kotlin.reflect.KClass
 
@@ -31,9 +37,24 @@ object Korge {
 	suspend fun setupCanvas(config: Config): SceneContainer {
 		if (config.trace) println("Korge.setupCanvas[1]")
 		val injector = config.injector
+
+		injector
+			.mapSingleton { Views(get(), get(), get(), get(), get()) }
+			.mapSingleton { Input() }
+			.mapInstance<KorgePlugins>(defaultKorgePlugins)
+			.mapPrototype { EmptyScene() }
+			.mapSingleton { ResourcesRoot() }
+
 		val container = config.container!!
 		val ag = container.ag
+		val size = config.module.size
+		NativeImageSpecialReader.instance.register()
 		injector.mapInstance<AG>(ag)
+		if (config.trace) println("Korge.setupCanvas[1b]. EventLoop: ${config.eventLoop}")
+		if (config.trace) println("Korge.setupCanvas[1c]. ag: $ag")
+		if (config.trace) println("Korge.setupCanvas[1d]. debug: ${config.debug}")
+		if (config.trace) println("Korge.setupCanvas[1e]. args: ${config.args.toList()}")
+		if (config.trace) println("Korge.setupCanvas[1f]. size: $size")
 		injector.mapInstance<EventLoop>(config.eventLoop)
 		val views = injector.get<Views>()
 		views.debugViews = config.debug
@@ -41,8 +62,8 @@ object Korge {
 		val moduleArgs = ModuleArgs(config.args)
 		if (config.trace) println("Korge.setupCanvas[2]")
 
-		views.virtualWidth = config.module.size.width
-		views.virtualHeight = config.module.size.height
+		views.virtualWidth = size.width
+		views.virtualHeight = size.height
 
 		if (config.trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()
@@ -164,6 +185,7 @@ object Korge {
 		var lastTime = config.timeProvider.currentTimeMillis()
 		//println("lastTime: $lastTime")
 		ag.onRender {
+			if (config.trace) println("ag.onRender")
 			//println("Render")
 			val currentTime = config.timeProvider.currentTimeMillis()
 			//println("currentTime: $currentTime")
@@ -174,6 +196,9 @@ object Korge {
 			lastTime = currentTime
 			views.update(adelta)
 			views.render(clear = config.module.clearEachFrame && views.clearEachFrame, clearColor = config.module.bgcolor)
+
+			//println("Dumping views:")
+			//views.dump()
 
 			if (moveMouseOutsideInNextFrame) {
 				moveMouseOutsideInNextFrame = false
@@ -187,6 +212,7 @@ object Korge {
 		if (config.trace) println("Korge.setupCanvas[7]")
 
 		views.animationFrameLoop {
+			if (config.trace) println("views.animationFrameLoop")
 			//ag.resized()
 			config.container.repaint()
 		}
@@ -211,7 +237,7 @@ object Korge {
 		debug: Boolean = false,
 		trace: Boolean = false,
 		constructedViews: (Views) -> Unit = {},
-		eventLoop: EventLoop = eventLoopFactoryDefaultImpl.createEventLoop()
+		eventLoop: EventLoop = KoruiEventLoop.instance
 	) = EventLoop.main(eventLoop) {
 		test(Config(
 			module = module, args = args, container = container, sceneClass = sceneClass, sceneInjects = sceneInjects, injector = injector,
@@ -230,7 +256,7 @@ object Korge {
 		val debug: Boolean = false,
 		val trace: Boolean = false,
 		val constructedViews: (Views) -> Unit = {},
-		val eventLoop: EventLoop = eventLoopFactoryDefaultImpl.createEventLoop()
+		val eventLoop: EventLoop = KoruiEventLoop.instance
 	)
 
 	suspend fun test(config: Config): SceneContainer = withCoroutineContext {

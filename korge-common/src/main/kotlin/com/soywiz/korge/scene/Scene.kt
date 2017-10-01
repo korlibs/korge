@@ -17,6 +17,7 @@ import com.soywiz.korio.util.Cancellable
 import com.soywiz.korma.geom.ISize
 
 abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContextHolder {
+	lateinit var injector: AsyncInjector
 	override lateinit var views: Views
 	lateinit var sceneContainer: SceneContainer
 	lateinit var resourcesRoot: ResourcesRoot
@@ -30,6 +31,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContext
 	open protected fun createSceneView(): Container = views.container()
 
 	suspend override fun init(injector: AsyncInjector): Unit {
+		this.injector = injector
 		this.views = injector.get()
 		this.sceneContainer = injector.get()
 		this.resourcesRoot = injector.get()
@@ -69,7 +71,7 @@ class EmptyScene : Scene() {
 }
 
 abstract class LogScene : Scene() {
-	val name: String = this::class.simpleName ?: "LogSceneUnknown"
+	val name: String = "" + this::class ?: "LogSceneUnknown"
 	lateinit var logger: Logger
 
 	suspend override fun init(injector: AsyncInjector) {

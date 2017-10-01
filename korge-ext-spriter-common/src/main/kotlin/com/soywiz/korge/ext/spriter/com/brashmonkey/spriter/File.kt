@@ -17,6 +17,6 @@ class File(val id: Int, val name: String, val size: Dimension?, val pivot: Point
 	 */
 	val isSprite: Boolean get() = pivot != null && size != null
 
-	override fun toString(): String = "${this::class.simpleName}|[id: $id, name: $name, size: $size, pivot: $pivot"
+	override fun toString(): String = "${this::class}|[id: $id, name: $name, size: $size, pivot: $pivot"
 
 }

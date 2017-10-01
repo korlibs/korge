@@ -64,7 +64,7 @@ open class Animation(@JvmField val mainline: Mainline, @JvmField val id: Int, @J
 	}
 
 	override fun toString(): String {
-		var toReturn = this::class.simpleName + "|[id: " + id + ", " + name + ", duration: " + length + ", is looping: " + looping
+		var toReturn = "" + this::class + "|[id: " + id + ", " + name + ", duration: " + length + ", is looping: " + looping
 		toReturn += "Mainline:\n"
 		toReturn += mainline
 		toReturn += "Timelines\n"

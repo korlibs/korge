@@ -74,7 +74,7 @@ class Data(val scmlVersion: String, val generator: String, val generatorVersion:
 	 * @return The string representation of this spriter data
 	 */
 	override fun toString(): String {
-		var toReturn = this::class.simpleName +
+		var toReturn = "" + this::class +
 			"|[Version: " + scmlVersion +
 			", Generator: " + generator +
 			" (" + generatorVersion + ")]"

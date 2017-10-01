@@ -319,7 +319,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	@Suppress("RemoveCurlyBracesFromTemplate")
 	override fun toString(): String {
-		var out = "${this::class.simpleName}($id)"
+		var out = "${this::class}($id)"
 		if (x != 0.0 || y != 0.0) out += ":pos=($x,$y)"
 		if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=($scaleX,$scaleY)"
 		if (skewX != 0.0 || skewY != 0.0) out += ":skew=($skewX,$skewY)"
@@ -453,7 +453,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		out.setTo(0, 0, 0, 0)
 	}
 
-	open protected fun createInstance(): View = throw MustOverrideException("Must Override ${this::class.simpleName}.createInstance()")
+	open protected fun createInstance(): View = throw MustOverrideException("Must Override ${this::class}.createInstance()")
 
 	open fun copyPropsFrom(source: View) {
 		this.name = source.name
