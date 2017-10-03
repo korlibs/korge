@@ -4,6 +4,7 @@ import com.soywiz.korge.log.Logger
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.TimeSpan
 import com.soywiz.korge.time.sleep
+import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
@@ -11,9 +12,8 @@ import com.soywiz.korge.view.scaleView
 import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.inject.Inject
 import com.soywiz.korio.inject.InjectorAsyncDependency
-import com.soywiz.korio.util.Cancellable
+import com.soywiz.korio.lang.Console
 import com.soywiz.korma.geom.ISize
 
 abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContextHolder {
@@ -25,16 +25,25 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContext
 	lateinit internal var _sceneViewContainer: Container; private set
 	lateinit var sceneView: Container; private set
 	val root get() = _sceneViewContainer
-	protected val destroyCancellables = arrayListOf<Cancellable>()
+	protected val cancellables = CancellableGroup()
 	override val coroutineContext: CoroutineContext get() = views.coroutineContext
 
 	open protected fun createSceneView(): Container = views.container()
 
 	suspend override fun init(injector: AsyncInjector): Unit {
+		//this.injector = injector
+		//this.views = injector.get() // @TODO: Bug in Kotlin.JS (no suspension point!)
+		//this.sceneContainer = injector.get() // @TODO: Bug in Kotlin.JS (no suspension point!)
+		//this.resourcesRoot = injector.get() // @TODO: Bug in Kotlin.JS (no suspension point!)
+
 		this.injector = injector
-		this.views = injector.get()
-		this.sceneContainer = injector.get()
-		this.resourcesRoot = injector.get()
+		this.views = injector.get(Views::class)
+		this.sceneContainer = injector.get(SceneContainer::class)
+		this.resourcesRoot = injector.get(ResourcesRoot::class)
+
+		//Console.log(injector)
+		//println("Scene.init:ResourcesRoot[1]:" + injector.get<ResourcesRoot>())
+		//println("Scene.init:ResourcesRoot[2]:" + injector.get(ResourcesRoot::class))
 		//this.bus = injector.get()
 		_sceneViewContainer = views.container()
 		sceneView = createSceneView()
@@ -50,7 +59,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContext
 	}
 
 	suspend open fun sceneDestroy() {
-		for (cancellable in destroyCancellables) cancellable.cancel()
+		cancellables.cancel()
 	}
 
 	suspend open fun sceneAfterDestroy() {
