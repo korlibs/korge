@@ -7,6 +7,7 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.JvmField
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
@@ -15,7 +16,7 @@ import com.soywiz.korma.numeric.isPowerOfTwo
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(TextureAsyncFactory::class)
-class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: Int = base.width, val bottom: Int = base.height) {
+class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: Int = base.width, val bottom: Int = base.height) : Closeable {
 	val x = left
 	val y = top
 	val width = right - left
@@ -49,16 +50,25 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 		operator fun invoke(rtex: AG.RenderTexture): Texture = Texture(Base(rtex.tex, rtex.width, rtex.height), 0, 0, rtex.width, rtex.height)
 	}
 
-	class Base(val base: AG.Texture, val width: Int, val height: Int)
+	class Base(val base: AG.Texture, val width: Int, val height: Int): Closeable {
+		override fun close() = base.close()
+	}
+
+	override fun close() = base.close()
 }
 
 suspend fun VfsFile.readTexture(views: Views, mipmaps: Boolean = true): Texture = readTexture(views.ag, mipmaps)
 
 suspend fun VfsFile.readTexture(ag: AG, mipmaps: Boolean = true): Texture {
+	//println("VfsFile.readTexture[1]")
 	val tex = ag.createTexture()
+	//println("VfsFile.readTexture[2]")
 	val bmp = this.readBitmapOptimized()
+	//println("VfsFile.readTexture[3]")
 	val canHasMipmaps = bmp.width.isPowerOfTwo && bmp.height.isPowerOfTwo
+	//println("VfsFile.readTexture[4]")
 	tex.upload(bmp, mipmaps = canHasMipmaps && mipmaps)
+	//println("VfsFile.readTexture[5]")
 	return Texture(tex, bmp.width, bmp.height)
 }
 
