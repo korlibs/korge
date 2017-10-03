@@ -46,4 +46,6 @@ class ResourcesRoot : AsyncDependency {
 			mapExtensions(*maps)
 		}
 	}
+
+	override fun toString(): String = "ResourcesRoot[$root]"
 }
