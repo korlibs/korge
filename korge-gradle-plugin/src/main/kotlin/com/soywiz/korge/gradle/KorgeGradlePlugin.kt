@@ -16,7 +16,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
 		//JTranscGradlePlugin().apply(project)
 
-		project.dependencies.add("compile", "com.soywiz:korge-core:${Korge.VERSION}")
+		project.dependencies.add("compile", "com.soywiz:korge-common:${Korge.VERSION}")
 
 		project.addTask<KorgeResourcesTask>(
 			"genResources", group = "korge", description = "process resources",

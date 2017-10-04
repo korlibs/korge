@@ -1,5 +1,6 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korma.geom.SizeInt
@@ -11,6 +12,7 @@ open class Module {
 	open val icon: String? = null
 	open val size: SizeInt = SizeInt(640, 480)
 	open val windowSize: SizeInt = size
+	open val plugins: List<KorgePlugin> = listOf()
 
 	open val mainScene: KClass<out Scene> = EmptyScene::class
 	open val clearEachFrame = true

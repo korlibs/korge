@@ -32,7 +32,7 @@ import kotlin.math.min
 import kotlin.reflect.KClass
 
 object Korge {
-	val VERSION = "0.12.0"
+	val VERSION = "0.14.0"
 
 	suspend fun setupCanvas(config: Config): SceneContainer {
 		if (config.trace) println("Korge.setupCanvas[1]")
@@ -48,6 +48,12 @@ object Korge {
 		val container = config.container!!
 		val ag = container.ag
 		val size = config.module.size
+
+		// Register module plugins
+		for (plugin in config.module.plugins) {
+			defaultKorgePlugins.register(plugin)
+		}
+
 		NativeImageSpecialReader.instance.register()
 		injector.mapInstance<AG>(ag)
 		if (config.trace) println("Korge.setupCanvas[1b]. EventLoop: ${config.eventLoop}")
@@ -64,6 +70,11 @@ object Korge {
 
 		views.virtualWidth = size.width
 		views.virtualHeight = size.height
+
+		// Inject all modules
+		for (plugin in defaultKorgePlugins.plugins) {
+			plugin.register(views)
+		}
 
 		if (config.trace) println("Korge.setupCanvas[3]")
 		ag.onReady.await()

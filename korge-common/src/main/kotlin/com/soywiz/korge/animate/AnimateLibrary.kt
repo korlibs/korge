@@ -5,10 +5,12 @@ import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korge.animate.serialization.AniFile
 import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.ColorTransform
@@ -276,6 +278,22 @@ val Views.animateLibraryLoaders by Extra.Property {
 	)
 }
 
+object AnLibraryPlugin : KorgePlugin() {
+	suspend override fun register(views: Views) {
+		views.injector
+			.mapFactory(AnLibrary::class) {
+				//AnLibrary.Factory(getOrNull(), getOrNull(), get(), get(), get()) // @TODO: Kotlin.js bug
+				AnLibrary.Factory(
+					getOrNull(Path::class),
+					getOrNull(VPath::class),
+					get(Views::class),
+					get(AsyncInjector::class),
+					get(ResourcesRoot::class)
+				)
+			}
+	}
+}
+
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AnLibrary.Factory::class)
 class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
@@ -333,13 +351,15 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 	fun createMainTimeLine() = createMovieClip(0)
 
 	class Factory(
-		val path: Path,
+		//val path: Path,
+		val path: Path?,
+		val vpath: VPath?,
 		val views: Views,
 		val injector: AsyncInjector,
 		val resourcesRoot: ResourcesRoot
 	) : AsyncFactory<AnLibrary> {
 		suspend override fun create(): AnLibrary {
-			val file = resourcesRoot[path]
+			val file = resourcesRoot[path?.path ?: vpath?.path ?: invalidOp("Invalid path")]
 			val content = file.readAll()
 
 			for (loader in views.animateLibraryLoaders) {
