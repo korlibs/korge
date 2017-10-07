@@ -4,6 +4,7 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
@@ -17,14 +18,16 @@ class UISkin(val views: Views, val texture: Texture) {
 	val buttonDown: Texture = texture.slice(128, 0, 64, 64)
 
 	class Factory(
-		private val path: Path,
+		private val path: Path?,
+		private val vpath: VPath?,
 		private val resourcesRoot: ResourcesRoot,
 		internal val views: Views
 	) : AsyncFactory<UISkin> {
 		suspend override fun create(): UISkin {
 			val texture = try {
-				val tex = resourcesRoot[path].readTexture(views, mipmaps = true)
-				println("UISkin.Factory: ${path.path}")
+				val rpath = path?.path ?: vpath?.path ?: ""
+				val tex = resourcesRoot[rpath].readTexture(views, mipmaps = true)
+				println("UISkin.Factory: $rpath")
 				tex
 			} catch (e: Throwable) {
 				e.printStackTrace()

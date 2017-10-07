@@ -3,16 +3,41 @@ package com.soywiz.korge.audio
 import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korau.sound.readNativeSoundOptimized
+import com.soywiz.korau.sound.registerNativeSoundSpecialReader
+import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.*
+import com.soywiz.korio.inject.AsyncDependency
+import com.soywiz.korio.inject.AsyncFactory
+import com.soywiz.korio.inject.Prototype
+import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
+
+object SoundPlugin : KorgePlugin() {
+	init {
+		registerNativeSoundSpecialReader()
+	}
+
+	suspend override fun register(views: Views) {
+		views.injector
+			.mapFactory(SoundFile::class) {
+				//AnLibrary.Factory(getOrNull(), getOrNull(), get(), get(), get()) // @TODO: Kotlin.js bug
+				SoundFile.Factory(
+					getOrNull(Path::class),
+					getOrNull(VPath::class),
+					get(ResourcesRoot::class),
+					get(SoundSystem::class)
+				)
+			}
+	}
+}
 
 @Singleton
 class SoundSystem(val views: Views) : AsyncDependency {
@@ -96,12 +121,14 @@ class SoundFile(
 	fun play() = soundSystem.play(this.nativeSound)
 
 	class Factory(
-		val path: Path,
+		val path: Path?,
+		val vpath: VPath?,
 		val resourcesRoot: ResourcesRoot,
 		val soundSystem: SoundSystem
 	) : AsyncFactory<SoundFile> {
 		suspend override fun create(): SoundFile {
-			return SoundFile(resourcesRoot[path].readNativeSoundOptimized(), soundSystem)
+			val rpath = path?.path ?: vpath?.path ?: ""
+			return SoundFile(resourcesRoot[rpath].readNativeSoundOptimized(), soundSystem)
 		}
 	}
 }
