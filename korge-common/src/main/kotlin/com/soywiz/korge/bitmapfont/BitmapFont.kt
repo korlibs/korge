@@ -25,11 +25,11 @@ object BitmapFontPlugin : KorgePlugin() {
 		views.injector
 			.mapFactory {
 				BitmapFontAsyncFactory(
-					getOrNull(),
-					getOrNull(),
-					getOrNull(),
-					get(),
-					get()
+					getOrNull(Path::class),
+					getOrNull(VPath::class),
+					getOrNull(FontDescriptor::class),
+					get(ResourcesRoot::class),
+					get(AG::class)
 				)
 			}
 	}
