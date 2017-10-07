@@ -9,7 +9,7 @@ import com.soywiz.korge.view.Views
 
 object UIPlugin : KorgePlugin() {
 	suspend override fun register(views: Views) {
-		views.injector.mapSingleton { UIFactory(getPath("korge-ui.png")) }
+		views.injector.mapSingleton { UIFactory(getPath(UISkin::class, "korge-ui.png")) }
 		views.injector.mapFactory(UISkin::class) {
 			UISkin.Factory(
 				getOrNull(Path::class),
