@@ -1,18 +1,10 @@
 apply plugin: 'kotlin-platform-common'
 
 dependencies {
-	compile libraries.kotlin_stdlib_common
-	testCompile libraries.kotlin_test_common
-	//testCompile "junit:junit:4.12"
-
 	compile "com.soywiz:korau-common:$korVersion"
 	compile "com.soywiz:korim-common:$korVersion"
 	compile "com.soywiz:korau-mp3-common:$korVersion"
 	testCompile "com.soywiz:korim-common:$korVersion" // debug
 	testCompile "com.soywiz:korio-common:$korVersion"
 	testCompile "com.soywiz:korio-common:$korVersion"
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

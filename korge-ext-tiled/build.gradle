@@ -3,16 +3,9 @@ apply plugin: 'kotlin-platform-jvm'
 dependencies {
 	implement project(":korge-ext-tiled-common")
 
-	compile libraries.kotlin_stdlib_jvm
-	testCompile libraries.kotlin_test_jvm
-
 	compile project(":korge")
 	compile project(":korfl")
 
 	testCompile "com.soywiz:korio:$korVersion"
 	testCompile project(":korge-tests")
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

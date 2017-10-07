@@ -1,16 +1,9 @@
 apply plugin: 'kotlin-platform-common'
 
 dependencies {
-	compile libraries.kotlin_stdlib_common
-	testCompile libraries.kotlin_test_common
-
 	compile project(":korge-common")
 	compile project(":korfl-common")
 
 	testCompile "com.soywiz:korio-common:$korVersion"
 	testCompile project(":korge-tests-common")
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

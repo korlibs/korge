@@ -4,7 +4,3 @@ dependencies {
 	compile libraries.kotlin_test_js
 	compile project(":korge-js")
 }
-
-kotlin {
-	experimental { coroutines 'enable' }
-}

@@ -3,18 +3,10 @@ apply plugin: 'kotlin-platform-jvm'
 dependencies {
 	implement project(":korfl-common")
 
-	compile libraries.kotlin_stdlib_jvm
-	testCompile libraries.kotlin_test_jvm
-	//testCompile "junit:junit:4.12"
-
 	compile "com.soywiz:korau:$korVersion"
 	compile "com.soywiz:korim:$korVersion"
 	compile "com.soywiz:korau-mp3:$korVersion"
 	testCompile "com.soywiz:korim:$korVersion" // debug
 	testCompile "com.soywiz:korio:$korVersion"
 	testCompile "com.soywiz:korio:$korVersion"
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

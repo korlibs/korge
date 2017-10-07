@@ -10,9 +10,3 @@ dependencies {
 	compile "com.soywiz:korau-js:$korVersion"
 	compile "com.soywiz:korui-js:$korVersion"
 }
-
-compileKotlin2Js {
-	kotlinOptions.moduleKind = "umd"
-	//kotlinOptions.sourceMap = true //
-	kotlinOptions.sourceMap = false // No sourcemaps!
-}

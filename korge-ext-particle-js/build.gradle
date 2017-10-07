@@ -2,16 +2,10 @@ apply plugin: 'kotlin-platform-js'
 
 dependencies {
 	implement project(":korge-ext-particle-common")
-	compile libraries.kotlin_stdlib_js
-	testCompile libraries.kotlin_test_js
 
 	compile project(":korge-js")
 	compile project(":korfl-js")
 
 	testCompile "com.soywiz:korio-js:$korVersion"
 	testCompile project(":korge-tests-js")
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

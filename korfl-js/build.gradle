@@ -3,18 +3,10 @@ apply plugin: 'kotlin-platform-js'
 dependencies {
 	implement project(":korfl-common")
 
-	compile libraries.kotlin_stdlib_js
-	testCompile libraries.kotlin_test_js
-	//testCompile "junit:junit:4.12"
-
 	compile "com.soywiz:korau-js:$korVersion"
 	compile "com.soywiz:korim-js:$korVersion"
 	compile "com.soywiz:korau-mp3-js:$korVersion"
 	testCompile "com.soywiz:korim-js:$korVersion" // debug
 	testCompile "com.soywiz:korio-js:$korVersion"
 	testCompile "com.soywiz:korio-js:$korVersion"
-}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

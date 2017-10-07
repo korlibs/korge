@@ -5,7 +5,3 @@ dependencies {
 	compile project(":korge")
 	compile "junit:junit:4.12"
 }
-
-kotlin {
-	experimental { coroutines 'enable' }
-}

@@ -1,22 +1,12 @@
 apply plugin: 'kotlin-platform-common'
 
 dependencies {
-	compile libraries.kotlin_stdlib_common
-	testCompile libraries.kotlin_test_common
-	//testCompile "junit:junit:4.12"
 	compile "com.soywiz:korio-common:$korVersion"
 	compile "com.soywiz:korau-common:$korVersion"
 	compile "com.soywiz:korma-common:$korVersion"
 	compile "com.soywiz:korag-common:$korVersion"
 	compile "com.soywiz:korui-common:$korVersion"
+
     testCompile "com.soywiz:korio-common:$korVersion"
 	testCompile project(":korge-tests-common")
-}
-
-//jtransc {
-//	mainClassName = "com.soywiz.korge.sample.SampleRetro"
-//}
-
-kotlin {
-	experimental { coroutines 'enable' }
 }

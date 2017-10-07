@@ -12,47 +12,13 @@ buildscript {
 apply plugin: "com.gradle.plugin-publish"
 
 dependencies {
-	compile libraries.kotlin_stdlib_jvm
-	testCompile libraries.kotlin_test_jvm
 	compile project(":korge-common")
 	compile project(":korge-build")
 	compile project(":korge-ext-swf")
-	//compile "com.jtransc:jtransc-gradle-plugin:${jtranscVersion}"
+
 	compile "com.soywiz:korio:${korVersion}"
 	compile "com.soywiz:korim:${korVersion}"
 
 	compile gradleApi()
 	compile localGroovy()
 }
-
-/*
-apply from: '../include.gradle'
-
-repositories {
-	mavenLocal()
-	mavenCentral()
-}
-
-buildscript {
-	repositories {
-		maven { url "https://plugins.gradle.org/m2/" }
-	}
-	dependencies {
-		classpath "com.gradle.publish:plugin-publish-plugin:0.9.6"
-	}
-}
-
-apply plugin: "com.gradle.plugin-publish"
-
-dependencies {
-	compile project(":korge-core")
-	compile project(":korge-build")
-	compile project(":korge-ext-swf")
-	compile "com.jtransc:jtransc-gradle-plugin:${jtranscVersion}"
-	compile "com.soywiz:korio:${korVersion}"
-	compile "com.soywiz:korim:${korVersion}"
-
-	compile gradleApi()
-	compile localGroovy()
-}
-*/

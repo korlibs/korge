@@ -10,7 +10,4 @@ dependencies {
 	compile project(":korge-ext-ui")
 	compile "com.soywiz:korau-mp3:$korVersion"
 	compile "com.soywiz:korau-ogg-vorbis:$korVersion"
-	testCompile "junit:junit:4.12"
-	compile libraries.kotlin_stdlib_jvm
-	testCompile libraries.kotlin_test_jvm
 }

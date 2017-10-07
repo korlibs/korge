@@ -16,3 +16,8 @@ dependencies {
 kotlin {
 	experimental { coroutines 'enable' }
 }
+
+compileKotlin2Js {
+	kotlinOptions.moduleKind = "umd"
+	kotlinOptions.sourceMap = true
+}
