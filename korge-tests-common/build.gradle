@@ -1,0 +1,10 @@
+apply plugin: 'kotlin-platform-common'
+
+dependencies {
+	compile libraries.kotlin_test_common
+	compile project(":korge-common")
+}
+
+kotlin {
+	experimental { coroutines 'enable' }
+}

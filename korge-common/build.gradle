@@ -10,7 +10,7 @@ dependencies {
 	compile "com.soywiz:korag-common:$korVersion"
 	compile "com.soywiz:korui-common:$korVersion"
     testCompile "com.soywiz:korio-common:$korVersion"
-	testCompile project(":korge-tests")
+	testCompile project(":korge-tests-common")
 }
 
 //jtransc {

@@ -1,0 +1,10 @@
+apply plugin: 'kotlin-platform-js'
+
+dependencies {
+	compile libraries.kotlin_test_js
+	compile project(":korge-js")
+}
+
+kotlin {
+	experimental { coroutines 'enable' }
+}

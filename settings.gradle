@@ -2,7 +2,9 @@ rootProject.name = 'korge-root'
 //rootProject.buildFileName = 'build.gradle.kts'
 
 include(
+	'korge-tests-common',
 	'korge-tests',
+	'korge-tests-js',
 
 	'korfl-common',
 	'korfl',

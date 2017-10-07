@@ -3,42 +3,14 @@ apply plugin: 'kotlin-platform-common'
 dependencies {
 	compile libraries.kotlin_stdlib_common
 	testCompile libraries.kotlin_test_common
-	//testCompile "junit:junit:4.12"
+
 	compile project(":korge-common")
 	compile project(":korfl-common")
-	testCompile "com.soywiz:korio-common:$korVersion"
-	testCompile project(":korge-tests")
-}
 
-//jtransc {
-//	mainClassName = "com.soywiz.korge.sample.SampleRetro"
-//}
+	testCompile "com.soywiz:korio-common:$korVersion"
+	testCompile project(":korge-tests-common")
+}
 
 kotlin {
 	experimental { coroutines 'enable' }
 }
-
-/*
-apply from: "../include.gradle"
-
-//apply plugin: 'application'
-//apply plugin: 'jtransc'
-
-apply plugin: 'kotlin'
-
-//mainClassName = "com.soywiz.korge.sample.Sample1"
-
-dependencies {
-    compile "com.soywiz:korui:$korVersion"
-    compile project(":korge")
-    compile project(":korge-core")
-}
-
-//jtransc {
-//    assets = ["korge-sample/resources"]
-//    minimizeNames = true
-//    //minimizeNames = false
-//    treeshaking = true
-//    //treeshaking = false
-//}
-*/
