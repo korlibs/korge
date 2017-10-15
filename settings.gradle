@@ -48,7 +48,7 @@ include(
 	'korge-build',
 	//'korge-flash-plugin',
 	'korge-gradle-plugin',
-	'korge-intellij-plugin', // Disable this to avoid performance issues while editing
+	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 
 	//'korge-common',
 	//'korge',
