@@ -1,0 +1,16 @@
+apply plugin: 'kotlin-platform-js'
+
+dependencies {
+	implement project(":korge-ext-ui-common")
+
+	compile project(":korge-js")
+	compile project(":korfl-js")
+
+	testCompile "com.soywiz:korio-js:$korVersion"
+	testCompile project(":korge-tests-js")
+}
+
+sourceSets {
+	main.resources.srcDirs += [ '../common/src/main/resources' ] // @TODO: @BUG: Hack. No common resources are copied
+	test.resources.srcDirs += [ '../common/src/test/resources' ] // @TODO: @BUG: Hack. No common resources are copied
+}

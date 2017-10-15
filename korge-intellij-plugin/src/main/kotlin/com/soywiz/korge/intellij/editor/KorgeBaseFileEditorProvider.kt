@@ -30,12 +30,12 @@ import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawnAndForget
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfsProviderJvm
-import com.soywiz.korio.vfs.jvm.ResourcesVfsProviderJvm
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korui.light.defaultLight
 import java.io.File
-
+import kotlin.reflect.KClass
 
 abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider {
 	companion object {
@@ -50,7 +50,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 	override fun getEditorTypeId(): String = this::class.java.name
 
 	object EditorModule : Module() {
-		override val mainScene: Class<out Scene> = EditorScene::class.java
+		override val mainScene: KClass<out Scene> = EditorScene::class
 
 		suspend override fun init(injector: AsyncInjector) {
 			super.init(injector)
@@ -225,8 +225,9 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 						x = views.virtualWidth - width
 						y = 0.0
 						onClick {
-							defaultLight.open(File(file.absolutePath))
+							defaultLight.open(LocalVfs(file.absolutePath))
 						}
+						Unit
 					}
 
 					Unit

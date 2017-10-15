@@ -48,7 +48,7 @@ include(
 	'korge-build',
 	//'korge-flash-plugin',
 	'korge-gradle-plugin',
-	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
+	'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 
 	//'korge-common',
 	//'korge',
@@ -68,3 +68,22 @@ include(
 	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 	//'korfl',
 )
+
+def register(String base) {
+	findProject(":$base-common")?.projectDir = file("$base/common")
+	findProject(":$base")?.projectDir = file("$base/jvm")
+	findProject(":$base-android")?.projectDir = file("$base/android")
+	findProject(":$base-js")?.projectDir = file("$base/js")
+}
+
+register("korfl")
+register("korge")
+register("korge-ext-fla")
+register("korge-ext-lipsync")
+register("korge-ext-particle")
+register("korge-ext-spriter")
+register("korge-ext-swf")
+register("korge-ext-tiled")
+register("korge-ext-ui")
+
+project(':korge-build').projectDir = file('korge-build/jvm')

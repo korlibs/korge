@@ -1,0 +1,16 @@
+apply plugin: 'kotlin-platform-jvm'
+
+dependencies {
+	implement project(":korge-ext-ui-common")
+
+	compile project(":korge")
+	compile project(":korfl")
+
+	testCompile "com.soywiz:korio:$korVersion"
+	testCompile project(":korge-tests")
+}
+
+sourceSets {
+	main.resources.srcDirs += [ '../common/src/main/resources' ] // @TODO: @BUG: Hack. No common resources are copied
+	test.resources.srcDirs += [ '../common/src/test/resources' ] // @TODO: @BUG: Hack. No common resources are copied
+}

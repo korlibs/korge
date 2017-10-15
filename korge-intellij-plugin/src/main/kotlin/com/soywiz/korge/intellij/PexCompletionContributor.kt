@@ -18,7 +18,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlTag
 import com.intellij.util.ProcessingContext
 import com.soywiz.korio.vfs.PathInfo
-
+import kotlin.math.min
 
 class PexCompletionContributor : CompletionContributor() {
 	companion object {

@@ -3,12 +3,13 @@ package com.soywiz.korge.intellij
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korio.async.AsyncSequence
 import com.soywiz.korio.async.asyncGenerate
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.AsyncInputStream
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.vfs.*
-import java.io.Closeable
 import java.io.File
 import java.io.FileNotFoundException
+import kotlin.reflect.KClass
 
 fun VirtualFile.toVfs(): VfsFile {
 	val file = this
@@ -84,7 +85,7 @@ class IdeaAdaptorVfs(val file: VirtualFile) : Vfs() {
 		return super.readRange(path, range)
 	}
 
-	suspend override fun <T> readSpecial(path: String, clazz: Class<T>): T {
+	suspend override fun <T : Any> readSpecial(path: String, clazz: KClass<T>): T {
 		return super.readSpecial(path, clazz)
 	}
 
