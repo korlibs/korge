@@ -45,7 +45,7 @@ open class Container(views: Views) : View(views) {
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 		if (!visible) return
 		val isGlobal = (m === globalMatrix)
-		for (child in children.toList()) {
+		safeForEachChildren { child ->
 			if (isGlobal) {
 				child.render(ctx, child.globalMatrix)
 			} else {
@@ -67,9 +67,10 @@ open class Container(views: Views) : View(views) {
 
 	private val bb = BoundsBuilder()
 	private val tempRect = Rectangle()
+
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		bb.reset()
-		for (child in children.toList()) {
+		safeForEachChildren { child ->
 			child.getBounds(child, tempRect)
 			bb.add(tempRect)
 		}
@@ -78,16 +79,34 @@ open class Container(views: Views) : View(views) {
 
 	override fun updateInternal(dtMs: Int) {
 		super.updateInternal(dtMs)
-		for (child in children.toList()) child.update(dtMs)
+		safeForEachChildren { child ->
+			child.update(dtMs)
+		}
+		//for (child in children.toList()) child.update(dtMs)
 	}
 
 	override fun <T : Any> dispatch(event: T, clazz: KClass<out T>) {
 		super.dispatch(event, clazz)
-		for (child in children.toList()) {
+		safeForEachChildren { child ->
 			child.dispatch(event, clazz)
 		}
 	}
 
+	inline protected fun safeForEachChildren(crossinline callback: (View) -> Unit) {
+		var n = 0
+		while (n < children.size) {
+			callback(children[n])
+			n++
+		}
+	}
+
+	inline protected fun safeForEachChildrenReversed(crossinline callback: (View) -> Unit) {
+		var n = 0
+		while (n < children.size) {
+			callback(children[children.size - n - 1])
+			n++
+		}
+	}
 
 	override fun createInstance(): View = Container(views)
 
