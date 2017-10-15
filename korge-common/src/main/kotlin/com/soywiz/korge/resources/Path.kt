@@ -1,7 +1,7 @@
 package com.soywiz.korge.resources
 
 import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.lang.Language
+import com.soywiz.korio.Language
 import kotlin.reflect.KClass
 
 annotation class Path(

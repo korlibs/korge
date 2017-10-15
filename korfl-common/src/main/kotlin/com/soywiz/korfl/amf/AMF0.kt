@@ -2,7 +2,7 @@ package com.soywiz.korfl.amf
 
 import com.soywiz.korio.lang.Undefined
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.time.UTCDate
+import com.soywiz.korio.time.DateTime
 
 object AMF0 {
 	fun decode(s: SyncStream): Any? {
@@ -49,7 +49,7 @@ object AMF0 {
 			0x0B -> {
 				val time_ms = i.readF64_be()
 				val tz_min = i.readU16_be()
-				UTCDate(time_ms.toLong() + tz_min * 60 * 1000L)
+				DateTime(time_ms.toLong() + tz_min * 60 * 1000L)
 			}
 			0x0C -> i.readString(i.readS32_be())
 			else -> throw Error("Unknown AMF " + id)

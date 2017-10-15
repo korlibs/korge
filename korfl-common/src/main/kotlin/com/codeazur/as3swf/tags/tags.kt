@@ -16,7 +16,7 @@ import com.soywiz.korfl.abc.ABC
 import com.soywiz.korio.lang.format
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.stream.readBytes
-import com.soywiz.korio.time.UTCDate
+import com.soywiz.korio.time.DateTime
 import com.soywiz.korio.util.nextAlignedTo
 import com.soywiz.korio.util.toString
 
@@ -287,19 +287,21 @@ open class TagDefineBitsLossless : _BaseTag(), IDefinitionTag {
 	var bitmapColorTableSizeM1: Int = 0
 	val bitmapColorTableSize: Int get() = bitmapColorTableSizeM1 + 1
 
-	val bytesPerPixel: Int get() = when (bitmapFormat) {
-		BitmapFormat.BIT_8 -> 1
-		BitmapFormat.BIT_15 -> 2
-		BitmapFormat.BIT_24_32 -> 4
-		BitmapFormat.UNKNOWN -> 1
-	}
+	val bytesPerPixel: Int
+		get() = when (bitmapFormat) {
+			BitmapFormat.BIT_8 -> 1
+			BitmapFormat.BIT_15 -> 2
+			BitmapFormat.BIT_24_32 -> 4
+			BitmapFormat.UNKNOWN -> 1
+		}
 
-	val alignment: Int get() = when (bitmapFormat) {
-		BitmapFormat.BIT_8 -> 4
-		BitmapFormat.BIT_15 -> 2
-		BitmapFormat.BIT_24_32 -> 1
-		BitmapFormat.UNKNOWN -> 1
-	}
+	val alignment: Int
+		get() = when (bitmapFormat) {
+			BitmapFormat.BIT_8 -> 4
+			BitmapFormat.BIT_15 -> 2
+			BitmapFormat.BIT_24_32 -> 1
+			BitmapFormat.UNKNOWN -> 1
+		}
 
 	val actualWidth: Int get() = bitmapWidth.nextAlignedTo(alignment)
 	val actualHeight: Int get() = bitmapHeight.nextAlignedTo(alignment)
@@ -1748,17 +1750,18 @@ class TagDoABC : _BaseTag(), ITag {
 	var bytes: FlashByteArray = FlashByteArray()
 	private var _abc: ABC? = null
 
-	val abc: ABC get() {
-		if (_abc == null) {
-			_abc = ABC()
-			//try {
+	val abc: ABC
+		get() {
+			if (_abc == null) {
+				_abc = ABC()
+				//try {
 				_abc?.readFile(bytes.cloneToNewByteArray().openSync())
-			//} catch (e: Throwable) {
-			//	e.printStackTrace()
-			//}
+				//} catch (e: Throwable) {
+				//	e.printStackTrace()
+				//}
+			}
+			return _abc!!
 		}
-		return _abc!!
-	}
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		val pos: Int = data.position
@@ -2471,7 +2474,7 @@ class TagProductInfo : _BaseTag(), ITag {
 	var majorVersion: Int = 0
 	var minorVersion: Int = 0
 	var build: Long = 0L
-	lateinit var compileDate: UTCDate
+	lateinit var compileDate: DateTime
 
 	suspend override fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		productId = data.readUI32()
@@ -2481,7 +2484,7 @@ class TagProductInfo : _BaseTag(), ITag {
 
 		build = data.readUI32().toLong() + data.readUI32().toLong() shl 32
 		val sec: Long = data.readUI32().toLong() + data.readUI32().toLong() shl 32
-		compileDate = UTCDate(sec)
+		compileDate = DateTime(sec)
 	}
 
 	override val type = TagProductInfo.TYPE

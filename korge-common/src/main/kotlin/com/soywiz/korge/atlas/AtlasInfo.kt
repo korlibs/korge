@@ -3,9 +3,8 @@ package com.soywiz.korge.atlas
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.Language
 import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.lang.Language
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korma.geom.Rectangle
 

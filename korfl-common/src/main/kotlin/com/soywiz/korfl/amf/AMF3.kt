@@ -3,7 +3,7 @@ package com.soywiz.korfl.amf
 import com.soywiz.korio.lang.Undefined
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.time.UTCDate
+import com.soywiz.korio.time.DateTime
 
 // http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/amf/pdf/amf-file-format-spec.pdf
 object AMF3 {
@@ -74,7 +74,7 @@ object AMF3 {
 			0x05 -> i.readF64_be()
 			0x06 -> readString()
 			0x07 -> throw Error("XMLDocument unsupported")
-			0x08 -> run { i.readU8(); UTCDate(i.readF64_be().toLong()) }
+			0x08 -> run { i.readU8(); DateTime(i.readF64_be().toLong()) }
 			0x09 -> readArray(readInt(1))
 			0x0a -> readObject()
 			0x0b -> Xml(readString())
