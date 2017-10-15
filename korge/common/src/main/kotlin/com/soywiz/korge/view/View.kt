@@ -22,6 +22,7 @@ import kotlin.reflect.KClass
 open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder {
 	companion object {
 		private val tempTransform = Matrix2d.Transform()
+		//private val tempMatrix = Matrix2d()
 
 		fun commonAncestor(left: View?, right: View?): View? {
 			var l: View? = left
@@ -410,16 +411,32 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		index = -1
 	}
 
+	//fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
+	//	var current: View? = this
+	//	out.setToIdentity()
+	//
+	//	val views = arrayListOf<View>()
+	//	while (current != null) {
+	//		views += current
+	//		if (current == target) break
+	//		current = current.parent
+	//	}
+	//	for (view in views.reversed()) out.premultiply(view.localMatrix)
+	//
+	//	return out
+	//}
+
 	fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
 		var current: View? = this
 		out.setToIdentity()
-		val views = arrayListOf<View>()
+
 		while (current != null) {
-			views += current
+			//out.premultiply(current.localMatrix)
+			out.multiply(out, current.localMatrix)
 			if (current == target) break
 			current = current.parent
 		}
-		for (view in views.reversed()) out.premultiply(view.localMatrix)
+
 		return out
 	}
 
