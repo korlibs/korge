@@ -7,6 +7,7 @@ import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.go
+import com.soywiz.korio.inject.AsyncInjector
 import kotlin.reflect.KClass
 
 class SceneContainer(views: Views) : Container(views) {
@@ -63,8 +64,8 @@ class SceneContainer(views: Views) : Container(views) {
 
 	suspend private fun <T : Scene> _changeTo(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): T {
 		val oldScene = currentScene
-		val sceneInjector = views.injector.child().mapInstance<SceneContainer>(this@SceneContainer)
-		for (inject in injects) sceneInjector.mapInstance(inject)
+		val sceneInjector: AsyncInjector = views.injector.child().mapInstance<SceneContainer>(this@SceneContainer)
+		for (inject in injects) sceneInjector.mapInstance(inject, inject::class as KClass<Any>)
 		val instance = sceneInjector.get(clazz)
 		currentScene = instance!!
 
