@@ -15,7 +15,7 @@
 Add to `$HOME/.gradle/gradle.properties` this line (since this project includes intellij plugin + gradle plugin requires a lot of memory to work):
 ```
 org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
-``
+```
 
 Building:
 ```
