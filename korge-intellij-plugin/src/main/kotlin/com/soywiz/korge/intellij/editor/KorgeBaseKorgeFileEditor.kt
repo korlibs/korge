@@ -11,9 +11,12 @@ import com.soywiz.korag.AGAwt
 import com.soywiz.korge.Korge
 import com.soywiz.korge.intellij.toVfs
 import com.soywiz.korge.scene.Module
+import com.soywiz.korge.ui.UIFactory
+import com.soywiz.korge.ui.UISkin
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korio.inject.jvmAutomapping
 import com.soywiz.korio.vfs.VfsFile
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -45,6 +48,10 @@ open class KorgeBaseKorgeFileEditor(val project: Project, val virtualFile: Virtu
 		panel.add(ag.glcanvas)
 
 		val injector = AsyncInjector()
+			//.mapSingleton { UISkin(get(), get()) }
+			//.mapSingleton { UIFactory() }
+			.mapPrototype { KorgeBaseFileEditorProvider.EditorModule.EditorScene(get(), get()) }
+			//.jvmAutomapping()
 
 		injector.mapInstance(KorgeFileToEdit(virtualFile.toVfs()))
 

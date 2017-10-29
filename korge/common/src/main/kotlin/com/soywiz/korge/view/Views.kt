@@ -50,10 +50,10 @@ class Views(
 	val views = this
 
 	init {
-		injector.mapInstance<EventLoop>(eventLoop)
-		injector.mapInstance<AG>(ag)
-		injector.mapInstance<Views>(this)
-		injector.mapInstance<SoundSystem>(soundSystem)
+		injector.mapInstance<EventLoop>(EventLoop::class, eventLoop)
+		injector.mapInstance<AG>(AG::class, ag)
+		injector.mapInstance<Views>(Views::class, this)
+		injector.mapInstance<SoundSystem>(SoundSystem::class, soundSystem)
 	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()

@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	implement project(":korge-common")
+	expectedBy project(":korge-common")
 	testImplementation project(":korge-common")
 
 	compile "com.soywiz:korio-android:$korVersion"
@@ -9,4 +9,6 @@ dependencies {
 	compile "com.soywiz:korag-android:$korVersion"
 	compile "com.soywiz:korau-android:$korVersion"
 	compile "com.soywiz:korui-android:$korVersion"
+
+	//testCompile project(":korge-tests")
 }

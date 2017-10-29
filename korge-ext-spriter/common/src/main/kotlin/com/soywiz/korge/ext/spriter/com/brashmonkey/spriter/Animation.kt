@@ -5,7 +5,7 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
-import com.soywiz.korio.lang.JvmField
+import com.soywiz.korio.JvmField
 
 /**
  * Represents an animation of a Spriter SCML file.

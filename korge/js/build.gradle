@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-js'
 
 dependencies {
-	implement project(":korge-common")
+	expectedBy project(":korge-common")
 	testImplementation project(":korge-common")
 
 	compile "com.soywiz:korio-js:$korVersion"
@@ -9,4 +9,6 @@ dependencies {
 	compile "com.soywiz:korag-js:$korVersion"
 	compile "com.soywiz:korau-js:$korVersion"
 	compile "com.soywiz:korui-js:$korVersion"
+
+	//testCompile project(":korge-tests-js")
 }

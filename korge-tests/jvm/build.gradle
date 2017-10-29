@@ -1,7 +1,0 @@
-apply plugin: 'kotlin-platform-jvm'
-
-dependencies {
-	compile libraries.kotlin_test_jvm
-	compile project(":korge")
-	compile "junit:junit:4.12"
-}

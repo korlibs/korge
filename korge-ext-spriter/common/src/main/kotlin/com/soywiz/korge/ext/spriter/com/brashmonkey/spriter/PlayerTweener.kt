@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.soywiz.korio.lang.JvmField
+import com.soywiz.korio.JvmField
 
 /**
  * A player tweener is responsible for tweening to [Player] instances.

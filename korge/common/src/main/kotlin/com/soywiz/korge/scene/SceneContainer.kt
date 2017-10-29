@@ -65,7 +65,7 @@ class SceneContainer(views: Views) : Container(views) {
 	suspend private fun <T : Scene> _changeTo(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): T {
 		val oldScene = currentScene
 		val sceneInjector: AsyncInjector = views.injector.child().mapInstance<SceneContainer>(this@SceneContainer)
-		for (inject in injects) sceneInjector.mapInstance(inject, inject::class as KClass<Any>)
+		for (inject in injects) sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
 		val instance = sceneInjector.get(clazz)
 		currentScene = instance!!
 

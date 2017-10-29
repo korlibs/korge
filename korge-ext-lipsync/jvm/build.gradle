@@ -1,11 +1,11 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	implement project(":korge-ext-lipsync-common")
+	expectedBy project(":korge-ext-lipsync-common")
 
 	compile project(":korge")
 	compile project(":korfl")
 
 	testCompile "com.soywiz:korio:$korVersion"
-	testCompile project(":korge-tests")
+	//testCompile project(":korge-tests")
 }

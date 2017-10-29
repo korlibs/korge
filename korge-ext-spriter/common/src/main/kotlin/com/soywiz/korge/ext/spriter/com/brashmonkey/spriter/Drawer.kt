@@ -5,8 +5,8 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectType
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
-import com.soywiz.korio.lang.JvmField
-import com.soywiz.korio.lang.JvmOverloads
+import com.soywiz.korio.JvmField
+import com.soywiz.korio.JvmOverloads
 import com.soywiz.korio.math.toRadians
 import kotlin.math.cos
 import kotlin.math.sin

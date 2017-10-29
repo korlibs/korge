@@ -1,7 +1,7 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.soywiz.korio.lang.FileNotFoundException
-import com.soywiz.korio.lang.JvmOverloads
+import com.soywiz.korio.FileNotFoundException
+import com.soywiz.korio.JvmOverloads
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.typedarray.copyRangeTo

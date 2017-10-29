@@ -1,13 +1,13 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	implement project(":korge-ext-ui-common")
+	expectedBy project(":korge-ext-ui-common")
 
 	compile project(":korge")
 	compile project(":korfl")
 
 	testCompile "com.soywiz:korio:$korVersion"
-	testCompile project(":korge-tests")
+	//testCompile project(":korge-tests")
 }
 
 sourceSets {

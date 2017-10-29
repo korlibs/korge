@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	implement project(":korfl-common")
+	expectedBy project(":korfl-common")
 
 	compile "com.soywiz:korau:$korVersion"
 	compile "com.soywiz:korim:$korVersion"
@@ -10,3 +10,8 @@ dependencies {
 	testCompile "com.soywiz:korio:$korVersion"
 	testCompile "com.soywiz:korio:$korVersion"
 }
+
+sourceSets {
+	main.resources.srcDirs = [ '../common/src/main/resources', '../common/src/generated/resources' ]
+}
+

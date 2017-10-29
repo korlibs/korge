@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.soywiz.korio.lang.JvmStatic
+import com.soywiz.korio.JvmStatic
 import com.soywiz.korio.math.toDegrees
 import kotlin.math.atan2
 import kotlin.math.pow

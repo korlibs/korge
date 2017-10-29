@@ -4,11 +4,11 @@ import com.soywiz.korag.AG
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korio.JvmField
 import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.JvmField
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Rectangle
@@ -50,8 +50,15 @@ class Texture(val base: Base, val left: Int = 0, val top: Int = 0, val right: In
 		operator fun invoke(rtex: AG.RenderTexture): Texture = Texture(Base(rtex.tex, rtex.width, rtex.height), 0, 0, rtex.width, rtex.height)
 	}
 
-	class Base(val base: AG.Texture, val width: Int, val height: Int): Closeable {
+	class Base(val base: AG.Texture, val width: Int, val height: Int) : Closeable {
 		override fun close() = base.close()
+		fun update(bmp: Bitmap32, mipmaps: Boolean = false) {
+			base.upload(bmp, mipmaps)
+		}
+	}
+
+	fun update(bmp: Bitmap32, mipmaps: Boolean = false) {
+		base.update(bmp, mipmaps)
 	}
 
 	override fun close() = base.close()

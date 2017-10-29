@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.soywiz.korio.lang.JvmOverloads
+import com.soywiz.korio.JvmOverloads
 
 /**
  * Represents an entity of a Spriter SCML file.

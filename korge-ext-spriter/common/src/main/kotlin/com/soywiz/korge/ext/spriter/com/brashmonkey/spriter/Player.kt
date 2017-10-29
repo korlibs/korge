@@ -7,7 +7,7 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectR
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Player.PlayerListener
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
-import com.soywiz.korio.lang.JvmField
+import com.soywiz.korio.JvmField
 import kotlin.math.sign
 
 /**

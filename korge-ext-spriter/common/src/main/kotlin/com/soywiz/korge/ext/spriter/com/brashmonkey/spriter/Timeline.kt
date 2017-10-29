@@ -2,8 +2,8 @@ package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key
-import com.soywiz.korio.lang.JvmField
-import com.soywiz.korio.lang.JvmOverloads
+import com.soywiz.korio.JvmField
+import com.soywiz.korio.JvmOverloads
 import kotlin.math.sign
 
 /**

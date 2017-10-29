@@ -4,7 +4,7 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.*
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
 import com.soywiz.korio.lang.Charsets
-import com.soywiz.korio.lang.JvmField
+import com.soywiz.korio.JvmField
 import com.soywiz.korio.lang.toString
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.stream.SyncStream

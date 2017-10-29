@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-js'
 
 dependencies {
-	implement project(":korge-ext-spriter-common")
+	expectedBy project(":korge-ext-spriter-common")
 
 	compile libraries.kotlin_stdlib_js
 	testCompile libraries.kotlin_test_js
@@ -10,7 +10,7 @@ dependencies {
 	compile project(":korfl-js")
 
 	testCompile "com.soywiz:korio-js:$korVersion"
-	testCompile project(":korge-tests-js")
+	//testCompile project(":korge-tests-js")
 }
 
 kotlin {

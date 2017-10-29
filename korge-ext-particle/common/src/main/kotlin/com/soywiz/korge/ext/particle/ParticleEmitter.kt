@@ -11,7 +11,7 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.lang.JvmField
+import com.soywiz.korio.JvmField
 import com.soywiz.korio.math.toRadians
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.vfs.VfsFile

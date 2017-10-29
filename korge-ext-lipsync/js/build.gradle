@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-js'
 
 dependencies {
-	implement project(":korge-ext-lipsync-common")
+	expectedBy project(":korge-ext-lipsync-common")
 
 	compile project(":korge-js")
 	compile project(":korfl-js")

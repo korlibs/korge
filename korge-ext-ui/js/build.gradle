@@ -1,13 +1,13 @@
 apply plugin: 'kotlin-platform-js'
 
 dependencies {
-	implement project(":korge-ext-ui-common")
+	expectedBy project(":korge-ext-ui-common")
 
 	compile project(":korge-js")
 	compile project(":korfl-js")
 
 	testCompile "com.soywiz:korio-js:$korVersion"
-	testCompile project(":korge-tests-js")
+	//testCompile project(":korge-tests-js")
 }
 
 sourceSets {

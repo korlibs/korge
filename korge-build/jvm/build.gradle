@@ -10,4 +10,13 @@ dependencies {
 	compile project(":korge-ext-ui")
 	compile "com.soywiz:korau-mp3:$korVersion"
 	compile "com.soywiz:korau-ogg-vorbis:$korVersion"
+
+	compile project(":korge-common")
+	compile project(":korge-ext-swf-common")
+	compile project(":korge-ext-swf-common")
+	compile project(":korge-ext-tiled-common")
+	compile project(":korge-ext-particle-common")
+	compile project(":korge-ext-spriter-common")
+	compile project(":korge-ext-lipsync-common")
+	compile project(":korge-ext-ui-common")
 }

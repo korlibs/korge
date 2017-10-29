@@ -2,9 +2,9 @@ rootProject.name = 'korge-root'
 //rootProject.buildFileName = 'build.gradle.kts'
 
 include(
-	'korge-tests-common',
-	'korge-tests',
-	'korge-tests-js',
+	//'korge-tests-common',
+	//'korge-tests',
+	//'korge-tests-js',
 
 	'korfl-common',
 	'korfl',
@@ -48,7 +48,7 @@ include(
 	'korge-build',
 	//'korge-flash-plugin',
 	'korge-gradle-plugin',
-	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
+	'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 
 	//'korge-common',
 	//'korge',
@@ -78,6 +78,7 @@ def register(String base) {
 
 register("korfl")
 register("korge")
+//register("korge-tests")
 register("korge-ext-fla")
 register("korge-ext-lipsync")
 register("korge-ext-particle")

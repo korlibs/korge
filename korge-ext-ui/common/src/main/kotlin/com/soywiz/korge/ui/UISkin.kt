@@ -8,6 +8,7 @@ import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -38,3 +39,5 @@ class UISkin(val views: Views, val texture: Texture) {
 		}
 	}
 }
+
+suspend fun AsyncInjector.getUISkin(path: String) = UISkin.Factory(null, VPath(path), get(), get())

@@ -5,5 +5,5 @@ dependencies {
 	compile project(":korfl-common")
 
 	testCompile "com.soywiz:korio-common:$korVersion"
-	testCompile project(":korge-tests-common")
+	//testCompile project(":korge-tests-common")
 }
