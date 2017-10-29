@@ -16,8 +16,8 @@ dependencies {
 	compile project(":korge-build")
 	compile project(":korge-ext-swf")
 
-	compile "com.soywiz:korio:${korVersion}"
-	compile "com.soywiz:korim:${korVersion}"
+	compile "com.soywiz:korio:${korioVersion}"
+	compile "com.soywiz:korim:${korimVersion}"
 
 	compile gradleApi()
 	compile localGroovy()

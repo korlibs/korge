@@ -6,6 +6,6 @@ dependencies {
 	compile project(":korge-js")
 	compile project(":korfl-js")
 
-	testCompile "com.soywiz:korio-js:$korVersion"
+	testCompile "com.soywiz:korio-js:$korioVersion"
 	//testCompile project(":korge-tests-js")
 }

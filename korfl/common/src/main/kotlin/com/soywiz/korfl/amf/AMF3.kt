@@ -1,9 +1,9 @@
 package com.soywiz.korfl.amf
 
+import com.soywiz.klock.DateTime
 import com.soywiz.korio.lang.Undefined
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.time.DateTime
 
 // http://wwwimages.adobe.com/www.adobe.com/content/dam/Adobe/en/devnet/amf/pdf/amf-file-format-spec.pdf
 object AMF3 {

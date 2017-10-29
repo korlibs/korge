@@ -12,11 +12,11 @@ import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.utils.ColorUtils
 import com.codeazur.as3swf.utils.FlashByteArray
 import com.codeazur.as3swf.utils.toFlash
+import com.soywiz.klock.DateTime
 import com.soywiz.korfl.abc.ABC
 import com.soywiz.korio.lang.format
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.stream.readBytes
-import com.soywiz.korio.time.DateTime
 import com.soywiz.korio.util.nextAlignedTo
 import com.soywiz.korio.util.toString
 

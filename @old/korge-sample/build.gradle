@@ -1,0 +1,18 @@
+apply plugin: 'kotlin-platform-jvm'
+
+apply plugin: 'application'
+
+mainClassName = "com.soywiz.korge.sample.SampleRetro"
+
+dependencies {
+	compile "com.soywiz:korui:$koruiVersion"
+
+	compile project(":korge")
+	compile project(":korge-common")
+	compile project(":korge-ext-swf")
+	compile project(":korge-ext-spriter")
+	compile project(":korge-ext-lipsync")
+	compile project(":korge-ext-particle")
+	compile project(":korge-ext-tiled")
+	compile project(":korge-ext-ui")
+}

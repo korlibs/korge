@@ -1,8 +1,8 @@
 package com.soywiz.korfl.amf
 
+import com.soywiz.klock.DateTime
 import com.soywiz.korio.lang.Undefined
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.time.DateTime
 
 object AMF0 {
 	fun decode(s: SyncStream): Any? {

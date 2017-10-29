@@ -8,8 +8,8 @@ dependencies {
 	compile project(":korge-ext-spriter")
 	compile project(":korge-ext-lipsync")
 	compile project(":korge-ext-ui")
-	compile "com.soywiz:korau-mp3:$korVersion"
-	compile "com.soywiz:korau-ogg-vorbis:$korVersion"
+	compile "com.soywiz:korau-mp3:$korauVersion"
+	compile "com.soywiz:korau-ogg-vorbis:$korauVersion"
 
 	compile project(":korge-common")
 	compile project(":korge-ext-swf-common")

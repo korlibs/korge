@@ -3,12 +3,9 @@ apply plugin: 'kotlin-platform-jvm'
 dependencies {
 	expectedBy project(":korfl-common")
 
-	compile "com.soywiz:korau:$korVersion"
-	compile "com.soywiz:korim:$korVersion"
-	compile "com.soywiz:korau-mp3:$korVersion"
-	testCompile "com.soywiz:korim:$korVersion" // debug
-	testCompile "com.soywiz:korio:$korVersion"
-	testCompile "com.soywiz:korio:$korVersion"
+	compile "com.soywiz:korim:$korimVersion"
+	compile "com.soywiz:korau:$korauVersion"
+	compile "com.soywiz:korau-mp3:$korauVersion"
 }
 
 sourceSets {

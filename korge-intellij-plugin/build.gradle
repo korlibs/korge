@@ -15,7 +15,7 @@ apply plugin: 'org.jetbrains.intellij'
 def globalProps = properties
 
 intellij {
-	version "IC-$ideaVersion"
+	version "IC-2017.2.5"
 	plugins = ['kotlin']
 	pluginName 'KorgePlugin'
 	plugins 'coverage'

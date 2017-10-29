@@ -1,4 +1,8 @@
 buildscript {
+	ext.korioVersion = '0.15.0'
+	ext.korimVersion = '0.15.1'
+	ext.korauVersion = '0.15.2'
+	ext.koruiVersion = '0.15.5'
 	ext.kotlinVersion = '1.2.0-beta-88'
 	ext.compilerVersion = ext.kotlinVersion
 	ext.librariesVersion = ext.kotlinVersion
@@ -54,7 +58,7 @@ allprojects {
 	}
 
 	group 'com.soywiz'
-	version "$korVersion"
+	version "0.15.6"
 
 	apply plugin: 'java'
 	//apply plugin: 'kotlin'
@@ -108,36 +112,6 @@ allprojects {
 			}
 		}
 	}
-
-	//kotlin { experimental { coroutines 'enable' } }
-
-	//sourceSets {
-	//	main.java.srcDirs = ['src']
-	//	test.java.srcDirs = ['test']
-	//	main.resources.srcDirs = ['resources']
-	//	test.resources.srcDirs = ['testresources']
-	//	main.java.srcDirs += 'src/main/kotlin'
-	//}
-
-	//dependencies {
-	//	compile "com.soywiz:korio-core:$korVersion"
-	//	compile "com.soywiz:korim-core:$korVersion"
-	//	compile "com.soywiz:korag-core:$korVersion"
-	//	compile "com.soywiz:korau-core:$korVersion"
-	//	compile "com.soywiz:korui-core:$korVersion"
-//
-	//	compile "com.soywiz:korma:$korVersion"
-//
-	//	testCompile "com.soywiz:korio:$korVersion"
-	//	//testCompile "com.soywiz:korim:$korVersion"
-	//	testCompile "com.soywiz:korag:$korVersion"
-	//	testCompile "com.soywiz:korau:$korVersion"
-	//	testCompile "com.soywiz:korui:$korVersion"
-//
-	//	//compile "com.soywiz:korte:$korVersion"
-	//	testCompile group: 'junit', name: 'junit', version: '4.11'
-	//	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-	//}
 
 	task javadoc2(type: Javadoc) {
 		failOnError = false

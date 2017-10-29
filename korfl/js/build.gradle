@@ -3,10 +3,7 @@ apply plugin: 'kotlin-platform-js'
 dependencies {
 	expectedBy project(":korfl-common")
 
-	compile "com.soywiz:korau-js:$korVersion"
-	compile "com.soywiz:korim-js:$korVersion"
-	compile "com.soywiz:korau-mp3-js:$korVersion"
-	testCompile "com.soywiz:korim-js:$korVersion" // debug
-	testCompile "com.soywiz:korio-js:$korVersion"
-	testCompile "com.soywiz:korio-js:$korVersion"
+	compile "com.soywiz:korim-js:$korimVersion"
+	compile "com.soywiz:korau-js:$korauVersion"
+	compile "com.soywiz:korau-mp3-js:$korauVersion"
 }

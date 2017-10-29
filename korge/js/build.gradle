@@ -4,11 +4,8 @@ dependencies {
 	expectedBy project(":korge-common")
 	testImplementation project(":korge-common")
 
-	compile "com.soywiz:korio-js:$korVersion"
-	compile "com.soywiz:korim-js:$korVersion"
-	compile "com.soywiz:korag-js:$korVersion"
-	compile "com.soywiz:korau-js:$korVersion"
-	compile "com.soywiz:korui-js:$korVersion"
+	compile "com.soywiz:korau-js:$korauVersion"
+	compile "com.soywiz:korui-js:$koruiVersion"
 
 	//testCompile project(":korge-tests-js")
 }
