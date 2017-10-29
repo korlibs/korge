@@ -1,5 +1,7 @@
 # KorGE: Kotlin cORoutines Game Engine
 
+[![Build Status](https://travis-ci.org/korlibs/korge.svg?branch=master)](https://travis-ci.org/korlibs/korge)
+
 [![gitter](https://img.shields.io/gitter/room/soywiz/korge.svg)](https://gitter.im/korge-game-engine/Lobby)
 
 ![](https://raw.githubusercontent.com/soywiz/kor/master/logos/128/korge.png)
