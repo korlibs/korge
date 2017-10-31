@@ -19,6 +19,8 @@ import com.soywiz.korma.geom.Point2d
 import com.soywiz.korma.geom.Rectangle
 import kotlin.reflect.KClass
 
+class CustomView(views: Views, override val autoFlush: Boolean = true) : View(views)
+
 open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder {
 	companion object {
 		private val tempTransform = Matrix2d.Transform()
@@ -45,6 +47,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	override val coroutineContext: CoroutineContext get() = views.coroutineContext
 	open var ratio: Double = 0.0
+	open val autoFlush: Boolean = false
 	var index: Int = 0; internal set
 	var speed: Double = 1.0
 	var parent: Container? = null; internal set
@@ -313,7 +316,10 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 		validGlobal = false
 	}
 
-	fun render(ctx: RenderContext) = render(ctx, globalMatrix)
+	fun render(ctx: RenderContext) {
+		if (autoFlush) ctx.flush()
+		render(ctx, globalMatrix)
+	}
 
 	override fun render(ctx: RenderContext, m: Matrix2d) {
 	}

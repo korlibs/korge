@@ -36,11 +36,11 @@ object Korge {
 		val injector = config.injector
 
 		injector
-			.mapSingleton { Views(get(), get(), get(), get(), get()) }
-			.mapSingleton { Input() }
-			.mapInstance<KorgePlugins>(defaultKorgePlugins)
-			.mapPrototype { EmptyScene() }
-			.mapSingleton { ResourcesRoot() }
+			.mapSingleton(Views::class) { Views(get(), get(), get(), get(), get()) }
+			.mapSingleton(Input::class) { Input() }
+			.mapInstance(KorgePlugins::class, defaultKorgePlugins)
+			.mapPrototype(EmptyScene::class) { EmptyScene() }
+			.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
 
 		val container = config.container!!
 		val ag = container.ag
@@ -52,13 +52,13 @@ object Korge {
 		}
 
 		NativeImageSpecialReader.instance.register()
-		injector.mapInstance<AG>(ag)
+		injector.mapInstance(AG::class, ag)
 		if (config.trace) println("Korge.setupCanvas[1b]. EventLoop: ${config.eventLoop}")
 		if (config.trace) println("Korge.setupCanvas[1c]. ag: $ag")
 		if (config.trace) println("Korge.setupCanvas[1d]. debug: ${config.debug}")
 		if (config.trace) println("Korge.setupCanvas[1e]. args: ${config.args.toList()}")
 		if (config.trace) println("Korge.setupCanvas[1f]. size: $size")
-		injector.mapInstance<EventLoop>(config.eventLoop)
+		injector.mapInstance(EventLoop::class, config.eventLoop)
 		val views = injector.get<Views>()
 		views.debugViews = config.debug
 		config.constructedViews(views)
