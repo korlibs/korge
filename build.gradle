@@ -58,7 +58,7 @@ allprojects {
 	}
 
 	group 'com.soywiz'
-	version "0.15.7-SNAPSHOT"
+	version "0.15.7"
 
 	apply plugin: 'java'
 	//apply plugin: 'kotlin'
