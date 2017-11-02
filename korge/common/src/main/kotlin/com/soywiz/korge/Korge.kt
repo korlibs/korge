@@ -16,15 +16,15 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.coroutine.withCoroutineContext
 import com.soywiz.korio.inject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korio.vfs.register
 import com.soywiz.korma.geom.Point2d
-import com.soywiz.korui.CanvasApplication
+import com.soywiz.korui.CanvasApplicationEx
 import com.soywiz.korui.KoruiEventLoop
+import com.soywiz.korui.ui.Frame
 import kotlin.math.min
 import kotlin.reflect.KClass
 
@@ -48,6 +48,10 @@ object Korge {
 			.mapInstance(AG::class, ag)
 			.mapPrototype(EmptyScene::class) { EmptyScene() }
 			.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+
+		if (config.frame != null) {
+			injector.mapInstance(Frame::class, config.frame)
+		}
 
 		// Register module plugins
 		for (plugin in config.module.plugins) {
@@ -260,6 +264,7 @@ object Korge {
 		val module: Module,
 		val args: Array<String> = arrayOf(),
 		val container: AGContainer? = null,
+		val frame: Frame? = null,
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
 		val timeProvider: TimeProvider = TimeProvider(),
@@ -270,7 +275,7 @@ object Korge {
 		val eventLoop: EventLoop = KoruiEventLoop.instance
 	)
 
-	suspend fun test(config: Config): SceneContainer = withCoroutineContext {
+	suspend fun test(config: Config): SceneContainer {
 		val done = Promise.Deferred<SceneContainer>()
 		if (config.container != null) {
 			done.resolve(setupCanvas(config))
@@ -287,13 +292,13 @@ object Korge {
 				null
 			}
 
-			CanvasApplication(config.module.title, config.module.windowSize.width, config.module.windowSize.height, icon) {
+			CanvasApplicationEx(config.module.title, config.module.windowSize.width, config.module.windowSize.height, icon) { container, frame ->
 				go {
-					done.resolve(setupCanvas(config.copy(container = it)))
+					done.resolve(setupCanvas(config.copy(container = container, frame = frame)))
 				}
 			}
 		}
-		return@withCoroutineContext done.promise.await()
+		return done.promise.await()
 	}
 
 	data class ModuleArgs(val args: Array<String>)
