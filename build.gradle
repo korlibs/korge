@@ -58,7 +58,7 @@ allprojects {
 	}
 
 	group 'com.soywiz'
-	version "0.15.8-SNAPSHOT"
+	version "0.15.8"
 
 	if (project == rootProject) {
 		new File(rootProject.rootDir, "korge/common/src/main/kotlin/com/soywiz/korge/KorgeVersion.kt").write(
