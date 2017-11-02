@@ -12,6 +12,7 @@ import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.inject.Optional
@@ -68,15 +69,26 @@ class BitmapFont(
 		m2.pretranslate(x.toDouble(), y.toDouble())
 		m2.prescale(scale, scale)
 		var dx = 0
-		val dy = 0
+		var dy = 0
 		for (n in str.indices) {
 			val c1 = str[n].toInt()
+			if (c1 == '\n'.toInt()) {
+				dx = 0
+				dy += fontSize
+				continue
+			}
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
 			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colorMul = colMul, colorAdd = colAdd, blendFactors = blendMode.factors)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
+		}
+	}
+
+	companion object {
+		operator fun invoke(ag: AG, fontName: String, fontSize: Int, chars: String = BitmapFontGenerator.LATIN_ALL, mipmaps: Boolean = true): BitmapFont {
+			return BitmapFontGenerator.generate(fontName, fontSize, chars).convert(ag, mipmaps = mipmaps)
 		}
 	}
 }
