@@ -29,22 +29,25 @@ import kotlin.math.min
 import kotlin.reflect.KClass
 
 object Korge {
-	val VERSION = "0.14.0"
+	val VERSION = KORGE_VERSION
 
 	suspend fun setupCanvas(config: Config): SceneContainer {
 		if (config.trace) println("Korge.setupCanvas[1]")
 		val injector = config.injector
 
+		val container = config.container!!
+		val ag = container.ag
+		val size = config.module.size
+
 		injector
 			.mapSingleton(Views::class) { Views(get(), get(), get(), get(), get()) }
 			.mapSingleton(Input::class) { Input() }
 			.mapInstance(KorgePlugins::class, defaultKorgePlugins)
+			.mapInstance(Config::class, config)
+			.mapInstance(AGContainer::class, container)
+			.mapInstance(AG::class, ag)
 			.mapPrototype(EmptyScene::class) { EmptyScene() }
 			.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
-
-		val container = config.container!!
-		val ag = container.ag
-		val size = config.module.size
 
 		// Register module plugins
 		for (plugin in config.module.plugins) {

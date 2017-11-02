@@ -60,6 +60,12 @@ allprojects {
 	group 'com.soywiz'
 	version "0.15.8-SNAPSHOT"
 
+	if (project == rootProject) {
+		new File(rootProject.rootDir, "korge/common/src/main/kotlin/com/soywiz/korge/KorgeVersion.kt").write(
+			"package com.soywiz.korge\n\nval KORGE_VERSION = \"$version\""
+		)
+	}
+
 	apply plugin: 'java'
 	//apply plugin: 'kotlin'
 	apply plugin: 'maven'
