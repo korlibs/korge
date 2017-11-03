@@ -8,10 +8,13 @@ buildscript {
 	ext.librariesVersion = ext.kotlinVersion
 	//ext.eapChannel = 'https://dl.bintray.com/kotlin/kotlin-eap-1.1'
 	ext.eapChannel = 'http://dl.bintray.com/kotlin/kotlin-eap-1.2'
+	ext.serializationRepo = 'https://kotlin.bintray.com/kotlinx'
+	ext.serializationPluginVersion = '0.1'
 
 	repositories {
 		mavenLocal()
 		jcenter()
+		maven { url serializationRepo }
 		maven { url eapChannel }
 		maven {
 			url "https://plugins.gradle.org/m2/"
@@ -55,7 +58,7 @@ allprojects {
 	}
 
 	group 'com.soywiz'
-	version "0.15.9-SNAPSHOT"
+	version "0.16.0"
 
 	if (project == rootProject) {
 		new File(rootProject.rootDir, "korge/common/src/main/kotlin/com/soywiz/korge/KorgeVersion.kt").write(
