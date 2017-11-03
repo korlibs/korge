@@ -1,20 +1,17 @@
 buildscript {
-	ext.korioVersion = '0.15.0'
-	ext.korimVersion = '0.15.1'
-	ext.korauVersion = '0.15.2'
-	ext.koruiVersion = '0.15.6'
-	ext.kotlinVersion = '1.2.0-beta-88'
+	ext.korioVersion = '0.16.0'
+	ext.korimVersion = '0.16.0'
+	ext.korauVersion = '0.16.0'
+	ext.koruiVersion = '0.16.0'
+	ext.kotlinVersion = '1.2.0-rc-39'
 	ext.compilerVersion = ext.kotlinVersion
 	ext.librariesVersion = ext.kotlinVersion
 	//ext.eapChannel = 'https://dl.bintray.com/kotlin/kotlin-eap-1.1'
 	ext.eapChannel = 'http://dl.bintray.com/kotlin/kotlin-eap-1.2'
-	ext.serializationRepo = 'https://kotlin.bintray.com/kotlinx'
-	ext.serializationPluginVersion = '0.1'
 
 	repositories {
 		mavenLocal()
 		jcenter()
-		maven { url serializationRepo }
 		maven { url eapChannel }
 		maven {
 			url "https://plugins.gradle.org/m2/"
