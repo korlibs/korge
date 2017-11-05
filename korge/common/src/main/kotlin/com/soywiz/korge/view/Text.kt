@@ -27,7 +27,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 	var autoSize = false
 		set(value) {
 			field = value
-			if (field) recalculateBounds()
+			recalculateBoundsWhenRequired()
 		}
 
 	var format: Html.Format
@@ -37,10 +37,15 @@ class Text(views: Views) : View(views), IText, IHtml {
 			if (value != document?.defaultFormat) {
 				document?.defaultFormat?.parent = value
 			}
+			recalculateBoundsWhenRequired()
 		}
 
 	private fun recalculateBounds() {
 		views.fontRepository.getBounds(text, format, out = textBounds)
+	}
+
+	private fun recalculateBoundsWhenRequired() {
+		if (autoSize) recalculateBounds()
 	}
 
 	override var text: String
@@ -49,9 +54,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 			_text = value
 			_html = ""
 			document = null
-			if (autoSize) {
-				recalculateBounds()
-			}
+			recalculateBoundsWhenRequired()
 		}
 	override var html: String
 		get() = if (document != null) _html else _text

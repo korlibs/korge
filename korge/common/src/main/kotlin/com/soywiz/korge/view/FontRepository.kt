@@ -6,6 +6,7 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korim.font.BitmapFontGenerator
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korma.geom.Rectangle
+import kotlin.math.max
 import kotlin.math.min
 
 class FontRepository(val views: Views) : Html.MetricsProvider {
@@ -34,7 +35,24 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) {
 		val font = getBitmapFont(format.computedFace, format.computedSize)
 		val scale = font.fontSize.toDouble() / format.computedSize.toDouble()
-		val width = text.sumByDouble { font[it].xadvance * scale }
-		out.setTo(0.0, 0.0, width, font.fontSize.toDouble())
+		var width = 0.0
+		var height = 0.0
+		var dy = 0.0
+		var dx = 0.0
+		for (n in 0 until text.length) {
+			val c1 = text[n].toInt()
+			if (c1 == '\n'.toInt()) {
+				dx = 0.0
+				dy += font.fontSize
+				height = max(height, dy)
+				continue
+			}
+			val c2 = text.getOrElse(n + 1) { ' ' }.toInt()
+			val kerningOffset = font.kernings[c1 to c2]?.amount ?: 0
+			val glyph = font[c1]
+			dx += glyph.xadvance + kerningOffset
+			width = max(width, dx)
+		}
+		out.setTo(0.0, 0.0, width * scale, height * scale)
 	}
 }
