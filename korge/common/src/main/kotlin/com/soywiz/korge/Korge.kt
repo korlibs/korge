@@ -84,9 +84,9 @@ object Korge {
 		ag.onReady.await()
 
 		if (config.trace) println("Korge.setupCanvas[4]")
-		injector.mapInstance(moduleArgs)
-		injector.mapInstance(config.timeProvider)
-		injector.mapInstance<Module>(config.module)
+		injector.mapInstance(ModuleArgs::class, moduleArgs)
+		injector.mapInstance(TimeProvider::class, config.timeProvider)
+		injector.mapInstance<Module>(Module::class, config.module)
 		config.module.init(injector)
 
 		if (config.trace) println("Korge.setupCanvas[5]")
