@@ -10,6 +10,7 @@ import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Point2d
 
 class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
+	var flipRenderTexture = true
 	val maxQuadsMargin = maxQuads + 9
 	val maxVertices = maxQuads * 4
 	val maxIndices = maxQuads * 6
@@ -18,7 +19,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	private var vertexCount = 0
 	private var vertexPos = 0
 	private var indexPos = 0
-	private var currentTex: Texture.Base? = null
+	private var currentTex: AG.Texture? = null
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
 
@@ -76,7 +77,9 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		}
 	}
 
-	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending) {
+	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending) = setStateFast(tex.base, smoothing, blendFactors)
+
+	fun setStateFast(tex: AG.Texture, smoothing: Boolean, blendFactors: AG.Blending) {
 		if (tex != currentTex || currentSmoothing != smoothing || currentBlendFactors != blendFactors) {
 			flush()
 			currentTex = tex
@@ -244,10 +247,15 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 	}
 
 	private val projMat = Matrix4()
+	private val textureUnit = AG.TextureUnit(null, linear = false)
+	private val uniforms = mapOf<Uniform, Any>(
+		DefaultShaders.u_ProjMat to projMat,
+		DefaultShaders.u_Tex to textureUnit
+	)
 
 	fun flush() {
 		if (vertexCount > 0) {
-			val mat = if (ag.renderingToTexture) {
+			if (flipRenderTexture && ag.renderingToTexture) {
 				projMat.setToOrtho(0f, ag.backHeight.toFloat(), ag.backWidth.toFloat(), 0f, -1f, 1f)
 			} else {
 				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
@@ -258,19 +266,19 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 			vertexBuffer.upload(vertices, 0, vertexPos * 4)
 			indexBuffer.upload(indices, 0, indexPos * 2)
 
+			textureUnit.texture = currentTex
+			textureUnit.linear = currentSmoothing
+
 			ag.draw(
 				vertices = vertexBuffer,
 				indices = indexBuffer,
-				program = if (currentTex?.base?.premultiplied ?: false) PROGRAM_PRE else PROGRAM_NOPRE,
+				program = if (currentTex?.premultiplied == true) PROGRAM_PRE else PROGRAM_NOPRE,
 				//program = PROGRAM_PRE,
 				type = AG.DrawType.TRIANGLES,
 				vertexLayout = LAYOUT,
 				vertexCount = indexPos,
 				blending = factors,
-				uniforms = mapOf<Uniform, Any>(
-					DefaultShaders.u_ProjMat to mat,
-					DefaultShaders.u_Tex to AG.TextureUnit(currentTex?.base, linear = currentSmoothing)
-				),
+				uniforms = uniforms,
 				stencil = stencil,
 				colorMask = colorMask
 			)
