@@ -24,6 +24,11 @@ class Text(views: Views) : View(views), IText, IHtml {
 	var _html: String = ""
 	var document: Html.Document? = null
 	private var _format: Html.Format = Html.Format()
+	var autoSize = false
+		set(value) {
+			field = value
+			if (field) recalculateBounds()
+		}
 
 	var format: Html.Format
 		get() = _format
@@ -34,12 +39,19 @@ class Text(views: Views) : View(views), IText, IHtml {
 			}
 		}
 
+	private fun recalculateBounds() {
+		views.fontRepository.getBounds(text, format, out = textBounds)
+	}
+
 	override var text: String
 		get() = if (document != null) document?.xml?.text ?: "" else _text
 		set(value) {
 			_text = value
 			_html = ""
 			document = null
+			if (autoSize) {
+				recalculateBounds()
+			}
 		}
 	override var html: String
 		get() = if (document != null) _html else _text
