@@ -8,6 +8,7 @@ import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korge.bitmapfont.convert
 import com.soywiz.korge.event.Event
 import com.soywiz.korge.event.EventDispatcher
+import com.soywiz.korge.event.PreventDefaultException
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.plugin.KorgePlugins
@@ -106,7 +107,11 @@ class Views(
 	}
 
 	override fun <T : Any> dispatch(event: T, clazz: KClass<out T>) {
-		this.stage.dispatch(event, clazz)
+		try {
+			this.stage.dispatch(event, clazz)
+		} catch (e: PreventDefaultException) {
+			//println("PreventDefaultException.Reason: ${e.reason}")
+		}
 	}
 
 	private val resizedEvent = StageResizedEvent(0, 0)

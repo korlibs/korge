@@ -2,8 +2,8 @@ package com.soywiz.korge.event
 
 import com.soywiz.korio.async.go
 import com.soywiz.korio.coroutine.getCoroutineContext
-import kotlin.reflect.KClass
 import com.soywiz.korio.util.Cancellable
+import kotlin.reflect.KClass
 
 //interface Cancellable
 
@@ -44,6 +44,10 @@ inline suspend fun <reified T : Any> EventDispatcher.addEventListenerSuspend(noi
 		}
 	}
 }
+
+fun preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
+
+class PreventDefaultException(val reason: Any? = null) : Exception()
 
 /*
 class ED : EventDispatcher by EventDispatcher.Mixin() {

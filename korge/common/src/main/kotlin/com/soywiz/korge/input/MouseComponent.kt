@@ -2,14 +2,13 @@ package com.soywiz.korge.input
 
 import com.soywiz.korge.bitmapfont.drawText
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.event.addEventListener
+import com.soywiz.korge.event.preventDefault
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.addSuspend
 import com.soywiz.korio.util.Extra
 import com.soywiz.korio.util.Once
-import com.soywiz.korio.util.extraProperty
 import com.soywiz.korma.geom.Point2d
 
 class MouseComponent(view: View) : Component(view) {
@@ -34,7 +33,7 @@ class MouseComponent(view: View) : Component(view) {
 
 	val CLICK_THRESHOLD = 10
 
-	var Input.mouseHitSearch by Extra.Property { false}
+	var Input.mouseHitSearch by Extra.Property { false }
 	var Input.mouseHitResult by Extra.Property<View?> { null }
 	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
 	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
@@ -58,14 +57,18 @@ class MouseComponent(view: View) : Component(view) {
 		return input.mouseHitResult
 	}
 
-	val isOver: Boolean get() {
-		return hitTest?.hasAncestor(view) ?: false
-	}
+	val isOver: Boolean
+		get() {
+			return hitTest?.hasAncestor(view) ?: false
+		}
 
 	init {
 		addEventListener<MouseClickEvent> { e ->
 			if (isOver) {
 				onClick(this)
+				if (onClick.listenerCount > 0) {
+					preventDefault(view)
+				}
 			}
 			/*
 			upPos.copyFrom(input.mouse)

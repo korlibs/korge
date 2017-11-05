@@ -86,10 +86,10 @@ open class Container(views: Views) : View(views) {
 	}
 
 	override fun <T : Any> dispatch(event: T, clazz: KClass<out T>) {
-		super.dispatch(event, clazz)
-		safeForEachChildren { child ->
+		safeForEachChildrenReversed { child ->
 			child.dispatch(event, clazz)
 		}
+		super.dispatch(event, clazz)
 	}
 
 	inline protected fun safeForEachChildren(crossinline callback: (View) -> Unit) {
