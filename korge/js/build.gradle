@@ -6,6 +6,7 @@ dependencies {
 
 	compile "com.soywiz:korau-js:$korauVersion"
 	compile "com.soywiz:korui-js:$koruiVersion"
+	compile "com.soywiz:korag-js:$koragVersion"
 
 	//testCompile project(":korge-tests-js")
 }

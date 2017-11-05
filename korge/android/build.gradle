@@ -6,6 +6,7 @@ dependencies {
 
 	compile "com.soywiz:korau-android:$korauVersion"
 	compile "com.soywiz:korui-android:$koruiVersion"
+	compile "com.soywiz:korag-android:$koragVersion"
 
 	//testCompile project(":korge-tests")
 }

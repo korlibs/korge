@@ -5,6 +5,7 @@ apply plugin: 'application'
 mainClassName = "com.soywiz.korge.sample.SampleRetro"
 
 dependencies {
+	compile "com.soywiz:korag:$koragVersion"
 	compile "com.soywiz:korui:$koruiVersion"
 
 	compile project(":korge")
