@@ -11,7 +11,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 
 object Sample7 {
 	@JvmStatic

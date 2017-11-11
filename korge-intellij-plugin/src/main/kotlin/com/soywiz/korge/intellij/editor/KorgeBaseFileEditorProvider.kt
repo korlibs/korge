@@ -29,7 +29,7 @@ import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.spawnAndForget
 import com.soywiz.korio.error.ignoreErrors
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.ResourcesVfsProviderJvm
 import com.soywiz.korma.geom.Anchor

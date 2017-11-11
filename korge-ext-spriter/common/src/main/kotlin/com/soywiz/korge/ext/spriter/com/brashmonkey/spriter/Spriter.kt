@@ -1,10 +1,10 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
+import com.soywiz.kmem.arraycopy
 import com.soywiz.korio.FileNotFoundException
 import com.soywiz.korio.JvmOverloads
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.stream.SyncStream
-import com.soywiz.korio.typedarray.copyRangeTo
 import com.soywiz.korio.vfs.LocalVfs
 import com.soywiz.korio.vfs.VfsFile
 import kotlin.reflect.KClass
@@ -42,7 +42,7 @@ object Spriter {
 	fun setLoaderDependencies(vararg loaderDependencies: Any) {
 		if (loaderDependencies == null) return
 		Spriter.loaderDependencies = arrayOfNulls<Any>(loaderDependencies.size + 1)
-		(loaderDependencies as Array<Any>).copyRangeTo(0, Spriter.loaderDependencies as Array<Any>, 1, loaderDependencies.size)
+		arraycopy((loaderDependencies as Array<Any>), 0, Spriter.loaderDependencies as Array<Any>, 1, loaderDependencies.size)
 		loaderTypes = arrayOfNulls<KClass<*>>(loaderDependencies.size + 1)
 		loaderTypes[0] = Data::class
 		for (i in loaderDependencies.indices)
@@ -57,7 +57,7 @@ object Spriter {
 		if (drawerDependencies == null) return
 		Spriter.drawerDependencies = arrayOfNulls<Any>(drawerDependencies.size + 1)
 		Spriter.drawerDependencies[0] = null
-		(drawerDependencies as Array<Any>).copyRangeTo(0, Spriter.drawerDependencies as Array<Any>, 1, drawerDependencies.size)
+		arraycopy((drawerDependencies as Array<Any>), 0, Spriter.drawerDependencies as Array<Any>, 1, drawerDependencies.size)
 		drawerTypes = arrayOfNulls<KClass<*>>(drawerDependencies.size + 1)
 		drawerTypes[0] = Loader::class
 		for (i in drawerDependencies.indices)

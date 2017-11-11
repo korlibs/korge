@@ -13,7 +13,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.EventLoopTest
 import com.soywiz.korio.async.sync
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korma.geom.Rectangle
 import kotlin.math.min

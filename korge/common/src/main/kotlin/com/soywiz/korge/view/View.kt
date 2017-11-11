@@ -12,7 +12,7 @@ import com.soywiz.korio.error.MustOverrideException
 import com.soywiz.korio.math.toDegrees
 import com.soywiz.korio.math.toRadians
 import com.soywiz.korio.util.Cancellable
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Point2d

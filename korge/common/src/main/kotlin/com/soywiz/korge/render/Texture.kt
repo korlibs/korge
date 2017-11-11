@@ -6,8 +6,8 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korinject.AsyncFactory
 import com.soywiz.korio.JvmField
-import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile

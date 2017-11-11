@@ -1,6 +1,6 @@
 package com.soywiz.korge.service
 
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.Singleton
 
 @Singleton
 open class Share {

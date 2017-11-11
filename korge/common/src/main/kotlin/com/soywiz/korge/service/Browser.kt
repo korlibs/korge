@@ -1,8 +1,8 @@
 package com.soywiz.korge.service
 
 import com.soywiz.korio.error.invalidOp
-import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korinject.Singleton
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korui.light.defaultLight
 import com.soywiz.korui.ui.Frame

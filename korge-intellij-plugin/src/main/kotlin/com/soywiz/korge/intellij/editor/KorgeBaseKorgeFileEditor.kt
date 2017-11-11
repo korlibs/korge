@@ -15,8 +15,8 @@ import com.soywiz.korge.ui.UIFactory
 import com.soywiz.korge.ui.UISkin
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.EventLoop
-import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.inject.jvmAutomapping
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korinject.jvmAutomapping
 import com.soywiz.korio.vfs.VfsFile
 import java.awt.Dimension
 import java.awt.GridLayout

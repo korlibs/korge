@@ -8,7 +8,7 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.error.invalidOp
-import com.soywiz.korio.inject.AsyncFactory
+import com.soywiz.korinject.AsyncFactory
 import com.soywiz.korio.serialization.Mapper
 import com.soywiz.korio.vfs.VfsFile
 

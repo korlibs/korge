@@ -1,12 +1,12 @@
 package com.soywiz.korge.render
 
+import com.soywiz.kmem.FastMemory
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.geom.Matrix4
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korio.mem.FastMemory
 import com.soywiz.korma.Matrix2d
+import com.soywiz.korma.Matrix4
 import com.soywiz.korma.geom.Point2d
 
 class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {

@@ -13,7 +13,7 @@ import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.serialization.Mapper
 import com.soywiz.korio.serialization.yaml.Yaml
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.vfs.VfsFile
 
 data class SWFExportConfig(

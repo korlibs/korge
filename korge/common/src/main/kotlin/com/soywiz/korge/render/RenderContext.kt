@@ -3,7 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.korag.AG
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.lang.use
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 
 class RenderContext(
 	val ag: AG

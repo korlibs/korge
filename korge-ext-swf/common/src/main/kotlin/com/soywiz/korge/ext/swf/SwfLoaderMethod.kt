@@ -8,6 +8,7 @@ import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
 import com.codeazur.as3swf.tags.*
+import com.soywiz.kmem.fill
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.TextureWithBitmapSlice
@@ -22,13 +23,12 @@ import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.GraphicsPath
-import com.soywiz.korio.ds.BitSet
+import com.soywiz.kds.BitSet
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.typedarray.fill
 import com.soywiz.korio.util.substr
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder

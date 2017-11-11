@@ -10,7 +10,6 @@ import com.soywiz.korge.event.Event
 import com.soywiz.korge.event.EventDispatcher
 import com.soywiz.korge.event.PreventDefaultException
 import com.soywiz.korge.input.Input
-import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.plugin.KorgePlugins
 import com.soywiz.korge.plugin.defaultKorgePlugins
 import com.soywiz.korge.render.RenderContext
@@ -20,15 +19,15 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.BitmapFontGenerator
+import com.soywiz.korinject.AsyncDependency
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korinject.Singleton
 import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.AsyncDependency
-import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.inject.Singleton
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle

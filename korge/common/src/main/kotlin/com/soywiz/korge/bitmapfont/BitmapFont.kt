@@ -13,9 +13,9 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.BitmapFontGenerator
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.Optional
 import com.soywiz.korio.error.invalidOp
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.Optional
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korio.vfs.VfsFile

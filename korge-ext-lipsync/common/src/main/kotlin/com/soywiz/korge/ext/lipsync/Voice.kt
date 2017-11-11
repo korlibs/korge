@@ -11,10 +11,10 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.go
 import com.soywiz.korio.async.suspendCancellableCoroutine
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.AsyncFactoryClass
 import com.soywiz.korio.util.Cancellable
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.vfs.VfsFile
 
 class LipSync(val lipsync: String) {

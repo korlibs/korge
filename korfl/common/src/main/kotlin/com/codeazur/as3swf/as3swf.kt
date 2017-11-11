@@ -20,7 +20,7 @@ import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.lang.Float16
 import com.soywiz.korio.lang.String_fromIntArray
 import com.soywiz.korio.stream.readStringz
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.util.substr
 import com.soywiz.korio.util.toString
 import kotlin.math.max

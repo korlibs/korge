@@ -4,7 +4,7 @@ import com.soywiz.korge.atlas.AtlasPlugin
 import com.soywiz.korge.audio.SoundPlugin
 import com.soywiz.korge.bitmapfont.BitmapFontPlugin
 import com.soywiz.korge.view.Views
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.Singleton
 
 abstract class KorgePlugin {
 	abstract suspend fun register(views: Views): Unit

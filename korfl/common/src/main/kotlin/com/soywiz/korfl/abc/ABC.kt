@@ -1,8 +1,8 @@
 package com.soywiz.korfl.abc
 
+import com.soywiz.kds.ext.mapWhile
 import com.soywiz.korio.error.invalidOp
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.mapWhile
 
 // http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/actionscript/articles/avm2overview.pdf
 // https://github.com/imcj/as3abc/blob/master/src/com/codeazur/as3abc/ABC.as

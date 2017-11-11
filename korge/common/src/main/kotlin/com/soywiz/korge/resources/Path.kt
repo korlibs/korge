@@ -1,6 +1,6 @@
 package com.soywiz.korge.resources
 
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.Language
 import kotlin.reflect.KClass
 

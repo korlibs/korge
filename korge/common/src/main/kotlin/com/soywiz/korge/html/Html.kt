@@ -1,5 +1,7 @@
 package com.soywiz.korge.html
 
+import com.soywiz.kds.Computed
+import com.soywiz.kds.Extra
 import com.soywiz.korge.bitmapfont.BitmapFont
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.NamedColors
@@ -7,8 +9,6 @@ import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.isComment
 import com.soywiz.korio.serialization.xml.isNode
 import com.soywiz.korio.serialization.xml.isText
-import com.soywiz.korio.util.Computed
-import com.soywiz.korio.util.Extra
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bounds

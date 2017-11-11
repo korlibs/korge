@@ -25,7 +25,7 @@ import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korma.geom.Anchor

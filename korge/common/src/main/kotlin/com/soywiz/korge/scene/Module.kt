@@ -2,7 +2,7 @@ package com.soywiz.korge.scene
 
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korma.geom.SizeInt
 import kotlin.reflect.KClass
 

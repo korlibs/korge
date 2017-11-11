@@ -16,7 +16,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs

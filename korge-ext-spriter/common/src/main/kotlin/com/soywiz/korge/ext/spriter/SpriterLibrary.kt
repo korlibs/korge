@@ -8,8 +8,8 @@ import com.soywiz.korge.render.readTexture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.view.Views
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.AsyncFactoryClass
 import com.soywiz.korio.vfs.VfsFile
 import kotlin.collections.set
 

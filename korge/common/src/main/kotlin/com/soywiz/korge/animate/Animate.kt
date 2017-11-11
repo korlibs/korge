@@ -1,5 +1,6 @@
 package com.soywiz.korge.animate
 
+import com.soywiz.kmem.fill
 import com.soywiz.korag.AG
 import com.soywiz.korge.audio.soundSystem
 import com.soywiz.korge.html.Html
@@ -11,8 +12,7 @@ import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.go
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.typedarray.fill
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.util.Once
 import com.soywiz.korio.util.redirect
 import com.soywiz.korio.util.redirectField

@@ -1,9 +1,9 @@
 package com.soywiz.korge.render
 
+import com.soywiz.kds.Extra
+import com.soywiz.kds.Pool
 import com.soywiz.korag.AG
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.util.Extra
-import com.soywiz.korio.util.Pool
 import com.soywiz.korma.Matrix2d
 
 class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {

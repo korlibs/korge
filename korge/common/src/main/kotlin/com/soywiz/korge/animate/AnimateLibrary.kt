@@ -15,12 +15,12 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korio.error.invalidOp
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.AsyncFactoryClass
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.util.AsyncCacheItem
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorPath

@@ -6,7 +6,7 @@ import com.soywiz.korge.view.texture
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.util.nextAlignedTo
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size

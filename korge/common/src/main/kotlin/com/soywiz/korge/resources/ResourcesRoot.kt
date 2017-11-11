@@ -1,7 +1,7 @@
 package com.soywiz.korge.resources
 
-import com.soywiz.korio.inject.AsyncDependency
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.AsyncDependency
+import com.soywiz.korinject.Singleton
 import com.soywiz.korio.util.OS
 import com.soywiz.korio.vfs.*
 

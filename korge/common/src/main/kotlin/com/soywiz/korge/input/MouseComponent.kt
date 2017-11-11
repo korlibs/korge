@@ -7,7 +7,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.addSuspend
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.util.Once
 import com.soywiz.korma.geom.Point2d
 

@@ -5,7 +5,7 @@ import com.soywiz.korge.event.addEventListener
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.AsyncSignal
 import com.soywiz.korio.async.go
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 
 class KeysComponent(view: View) : Component(view) {
 	val onKeyDown = AsyncSignal<KeyDownEvent>()

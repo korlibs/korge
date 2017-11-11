@@ -1,6 +1,6 @@
 package com.soywiz.korge.log
 
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.Singleton
 
 @Singleton
 open class Logger {

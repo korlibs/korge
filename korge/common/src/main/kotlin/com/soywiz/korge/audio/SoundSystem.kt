@@ -11,12 +11,12 @@ import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korio.inject.AsyncDependency
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.Prototype
-import com.soywiz.korio.inject.Singleton
+import com.soywiz.korinject.AsyncDependency
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.Prototype
+import com.soywiz.korinject.Singleton
 import com.soywiz.korio.time.TimeProvider
-import com.soywiz.korio.util.Extra
+import com.soywiz.kds.Extra
 import com.soywiz.korio.util.clamp
 import com.soywiz.korio.vfs.VfsFile
 

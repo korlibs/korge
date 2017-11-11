@@ -1,7 +1,7 @@
 package com.soywiz.korfl.abc
 
+import com.soywiz.kds.lmapOf
 import com.soywiz.korfl.amf.AMF0
-import com.soywiz.korio.ds.lmapOf
 import com.soywiz.korio.stream.openSync
 import com.soywiz.korio.util.fromHexChunks
 import org.junit.Test

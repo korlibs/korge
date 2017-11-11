@@ -1,5 +1,6 @@
 package com.soywiz.korge.ext.tiled
 
+import com.soywiz.kmem.readIntArray_le
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
@@ -12,13 +13,12 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.NamedColors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korinject.AsyncFactory
 import com.soywiz.korio.compression.uncompressGzip
 import com.soywiz.korio.compression.uncompressZlib
 import com.soywiz.korio.crypto.Base64
 import com.soywiz.korio.error.invalidOp
-import com.soywiz.korio.inject.AsyncFactory
 import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korio.util.readIntArray_le
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Point2d

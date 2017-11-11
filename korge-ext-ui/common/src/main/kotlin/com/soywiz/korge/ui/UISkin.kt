@@ -6,9 +6,9 @@ import com.soywiz.korge.resources.Path
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.resources.VPath
 import com.soywiz.korge.view.Views
-import com.soywiz.korio.inject.AsyncFactory
-import com.soywiz.korio.inject.AsyncFactoryClass
-import com.soywiz.korio.inject.AsyncInjector
+import com.soywiz.korinject.AsyncFactory
+import com.soywiz.korinject.AsyncFactoryClass
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory

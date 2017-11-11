@@ -11,8 +11,8 @@ import com.soywiz.korge.view.ViewsContainer
 import com.soywiz.korge.view.scaleView
 import com.soywiz.korio.async.CoroutineContextHolder
 import com.soywiz.korio.coroutine.CoroutineContext
-import com.soywiz.korio.inject.AsyncInjector
-import com.soywiz.korio.inject.InjectorAsyncDependency
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korinject.InjectorAsyncDependency
 import com.soywiz.korio.lang.Console
 import com.soywiz.korma.geom.ISize
 
