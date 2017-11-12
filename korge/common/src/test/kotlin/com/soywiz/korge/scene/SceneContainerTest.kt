@@ -1,6 +1,6 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.log.Logger
+import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.view.Container
@@ -13,17 +13,29 @@ import kotlin.test.assertNotNull
 class SceneContainerTest : ViewsForTesting() {
 	data class SceneInfo(val name: String)
 
-	class Scene1(
+	val mylog = arrayListOf<String>()
+
+	open inner class MyLogScene : LogScene() {
+		override fun log(msg: String) {
+			mylog += msg
+		}
+	}
+
+	inner class Scene1(
 		val info: SceneInfo
-	) : LogScene() {
+	) : MyLogScene() {
+		override val name: String = "Scene1"
+
 		override suspend fun sceneAfterInit() {
 			super.sceneAfterInit()
-			logger.info("$info")
+			log("$info")
 			sceneContainer.changeTo<Scene2>()
 		}
 	}
 
-	class Scene2 : LogScene() {
+	inner class Scene2 : MyLogScene() {
+		override val name: String = "Scene2"
+
 		suspend override fun sceneInit(sceneView: Container) {
 			super.sceneInit(sceneView)
 			sceneView += views.solidRect(100, 100, Colors.RED).apply {
@@ -34,9 +46,10 @@ class SceneContainerTest : ViewsForTesting() {
 
 	@Test
 	fun name() = viewsTest {
-		val out = arrayListOf<String>()
-		injector.mapInstance<Logger>(Logger { msg -> out += msg })
 		val sc = SceneContainer(views)
+		injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+		injector.mapPrototype(Scene1::class) { Scene1(get(SceneInfo::class)) }
+		injector.mapPrototype(Scene2::class) { Scene2() }
 		views.stage += sc
 		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
 		//sc.changeTo<Scene1>(time = 10)
@@ -46,7 +59,7 @@ class SceneContainerTest : ViewsForTesting() {
 		assertNotNull(sc["box"])
 		assertEquals(
 			"Scene1.sceneInit, Scene1.sceneAfterDestroy, Scene1.sceneAfterInit, SceneInfo(name=hello), Scene2.sceneInit, Scene1.sceneDestroy, Scene2.sceneAfterDestroy, Scene2.sceneAfterInit",
-			out.joinToString(", ")
+			mylog.joinToString(", ")
 		)
 	}
 }

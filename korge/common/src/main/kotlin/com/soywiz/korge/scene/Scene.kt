@@ -1,6 +1,5 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.log.Logger
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.TimeSpan
 import com.soywiz.korge.time.sleep
@@ -9,11 +8,10 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
 import com.soywiz.korge.view.scaleView
-import com.soywiz.korio.async.CoroutineContextHolder
-import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.InjectorAsyncDependency
-import com.soywiz.korio.lang.Console
+import com.soywiz.korio.async.CoroutineContextHolder
+import com.soywiz.korio.coroutine.CoroutineContext
 import com.soywiz.korma.geom.ISize
 
 abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContextHolder {
@@ -80,31 +78,34 @@ class EmptyScene : Scene() {
 }
 
 abstract class LogScene : Scene() {
-	val name: String = "" + this::class ?: "LogSceneUnknown"
-	lateinit var logger: Logger
+	open val name: String = "LogScene"
+	open val log = arrayListOf<String>()
+
+	open fun log(msg: String) {
+		this.log += msg
+	}
 
 	suspend override fun init(injector: AsyncInjector) {
 		super.init(injector)
-		logger = injector.get()
 	}
 
 	suspend override fun sceneInit(sceneView: Container) {
-		logger.info("$name.sceneInit")
+		log("$name.sceneInit")
 		super.sceneAfterInit()
 	}
 
 	suspend override fun sceneAfterInit() {
-		logger.info("$name.sceneAfterInit")
+		log("$name.sceneAfterInit")
 		super.sceneAfterInit()
 	}
 
 	suspend override fun sceneDestroy() {
-		logger.info("$name.sceneDestroy")
+		log("$name.sceneDestroy")
 		super.sceneDestroy()
 	}
 
 	suspend override fun sceneAfterDestroy() {
-		logger.info("$name.sceneAfterDestroy")
+		log("$name.sceneAfterDestroy")
 		super.sceneAfterDestroy()
 	}
 }

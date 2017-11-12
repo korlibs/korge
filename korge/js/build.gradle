@@ -4,6 +4,7 @@ dependencies {
 	expectedBy project(":korge-common")
 	testImplementation project(":korge-common")
 
+	compile "com.soywiz:klogger-js:$kloggerVersion"
 	compile "com.soywiz:korau-js:$korauVersion"
 	compile "com.soywiz:korui-js:$koruiVersion"
 	compile "com.soywiz:korag-js:$koragVersion"

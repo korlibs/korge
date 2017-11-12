@@ -1,6 +1,7 @@
 apply plugin: 'kotlin-platform-common'
 
 dependencies {
+	compile "com.soywiz:klogger-common:$kloggerVersion"
 	compile "com.soywiz:korau-common:$korauVersion"
 	compile "com.soywiz:korui-common:$koruiVersion"
 	compile "com.soywiz:korag-common:$koragVersion"
