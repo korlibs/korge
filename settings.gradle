@@ -1,10 +1,6 @@
 rootProject.name = 'korge-root'
 
 include(
-	'korfl-common',
-	'korfl',
-	'korfl-js',
-
 	'korge-common',
 	'korge',
 	'korge-android',
@@ -53,7 +49,6 @@ def register(String base) {
 	findProject(":$base-js")?.projectDir = file("$base/js")
 }
 
-register("korfl")
 register("korge")
 register("korge-ext-fla")
 register("korge-ext-lipsync")

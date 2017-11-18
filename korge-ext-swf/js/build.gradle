@@ -4,8 +4,8 @@ dependencies {
 	expectedBy project(":korge-ext-swf-common")
 
 	compile project(":korge-js")
-	compile project(":korfl-js")
 
 	testCompile "com.soywiz:korio-js:$korioVersion"
+	compile "com.soywiz:korfl-js:$korflVersion"
 	//testCompile project(":korge-tests-js")
 }

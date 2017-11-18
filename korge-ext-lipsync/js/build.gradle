@@ -4,5 +4,5 @@ dependencies {
 	expectedBy project(":korge-ext-lipsync-common")
 
 	compile project(":korge-js")
-	compile project(":korfl-js")
+	compile "com.soywiz:korfl-js:$korflVersion"
 }

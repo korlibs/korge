@@ -1,5 +1,6 @@
 package com.soywiz.korge
 
+import com.soywiz.klogger.Logger
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
 import com.soywiz.korag.AGInput
@@ -13,10 +14,11 @@ import com.soywiz.korge.time.seconds
 import com.soywiz.korge.view.*
 import com.soywiz.korim.NativeImageSpecialReader
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.vector.render
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
-import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
@@ -30,6 +32,8 @@ import kotlin.reflect.KClass
 
 object Korge {
 	val VERSION = KORGE_VERSION
+
+	val logger = Logger("Korge")
 
 	suspend fun setupCanvas(config: Config): SceneContainer {
 		if (config.trace) println("Korge.setupCanvas[1]")
@@ -281,17 +285,24 @@ object Korge {
 			done.resolve(setupCanvas(config))
 
 		} else {
-			val icon = if (config.module.icon != null) {
-				try {
-					ResourcesVfs[config.module.icon!!].readBitmap()
-				} catch (e: Throwable) {
-					e.printStackTrace()
-					null
+			val module = config.module
+			val icon = try {
+				when {
+					module.iconImage != null -> {
+						module.iconImage!!.render()
+					}
+					module.icon != null -> {
+						ResourcesVfs[module.icon!!].readBitmap()
+					}
+					else -> {
+						null
+					}
 				}
-			} else {
+			} catch (e: Throwable) {
+				logger.error { "Couldn't get the application icon" }
+				e.printStackTrace()
 				null
 			}
-
 			CanvasApplicationEx(config.module.title, config.module.windowSize.width, config.module.windowSize.height, icon) { container, frame ->
 				go {
 					done.resolve(setupCanvas(config.copy(container = container, frame = frame)))

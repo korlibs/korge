@@ -1,7 +1,0 @@
-apply plugin: 'kotlin-platform-common'
-
-dependencies {
-	compile "com.soywiz:korim-common:$korimVersion"
-	compile "com.soywiz:korau-common:$korauVersion"
-	compile "com.soywiz:korau-mp3-common:$korauVersion"
-}

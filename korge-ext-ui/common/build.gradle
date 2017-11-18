@@ -2,8 +2,8 @@ apply plugin: 'kotlin-platform-common'
 
 dependencies {
 	compile project(":korge-common")
-	compile project(":korfl-common")
 
 	testCompile "com.soywiz:korio-common:$korioVersion"
+	compile "com.soywiz:korfl-common:$korflVersion"
 	//testCompile project(":korge-tests-common")
 }

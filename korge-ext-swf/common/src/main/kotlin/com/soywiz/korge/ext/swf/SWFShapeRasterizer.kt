@@ -158,8 +158,8 @@ class SWFShapeRasterizer(
 		}
 
 		return when (type) {
-			GradientType.LINEAR -> Context2d.LinearGradient(-1.0, 0.0, +1.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
-			GradientType.RADIAL -> Context2d.RadialGradient(focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
+			GradientType.LINEAR -> Context2d.Gradient(Context2d.Gradient.Kind.LINEAR, -1.0, 0.0, 0.0, +1.0, 0.0, 0.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
+			GradientType.RADIAL -> Context2d.Gradient(Context2d.Gradient.Kind.RADIAL, focalPointRatio, 0.0, 0.0, 0.0, 0.0, 1.0, aratios, acolors, spreadMethod.toCtx(), m2, imethod)
 		}
 	}
 
