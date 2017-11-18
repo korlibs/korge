@@ -2,7 +2,7 @@ buildscript {
 	ext.korflVersion = '0.0.1'
 	ext.korioVersion = '0.17.1'
 	ext.korimVersion = '0.17.3'
-	ext.korauVersion = '0.17.1'
+	ext.korauVersion = '0.17.2'
 	ext.koragVersion = '0.17.1'
 	ext.koruiVersion = '0.17.1'
 	ext.kloggerVersion = '0.2.1'
@@ -57,7 +57,7 @@ allprojects {
 	}
 
 	group 'com.soywiz'
-	version "0.17.2-SNAPSHOT"
+	version "0.17.2"
 
 	if (project == rootProject) {
 		new File(rootProject.rootDir, "korge/common/src/main/kotlin/com/soywiz/korge/KorgeVersion.kt").write(
