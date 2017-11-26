@@ -11,3 +11,5 @@ dependencies {
 
 	//testCompile project(":korge-tests")
 }
+
+tasks.test.enabled = false

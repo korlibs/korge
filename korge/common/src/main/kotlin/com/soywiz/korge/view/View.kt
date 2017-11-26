@@ -13,6 +13,7 @@ import com.soywiz.korio.math.toDegrees
 import com.soywiz.korio.math.toRadians
 import com.soywiz.korio.util.Cancellable
 import com.soywiz.kds.Extra
+import com.soywiz.korge.lang.portableSimpleName
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Point2d
@@ -326,7 +327,7 @@ open class View(val views: Views) : Renderable, Updatable, Extra by Extra.Mixin(
 
 	@Suppress("RemoveCurlyBracesFromTemplate")
 	override fun toString(): String {
-		var out = "${this::class}($id)"
+		var out = "${this::class.portableSimpleName}($id)"
 		if (x != 0.0 || y != 0.0) out += ":pos=($x,$y)"
 		if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=($scaleX,$scaleY)"
 		if (skewX != 0.0 || skewY != 0.0) out += ":skew=($skewX,$skewY)"

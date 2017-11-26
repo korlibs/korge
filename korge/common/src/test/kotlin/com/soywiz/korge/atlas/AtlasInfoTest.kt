@@ -1,7 +1,7 @@
 package com.soywiz.korge.atlas
 
+import com.soywiz.korge.TestAssertVfs
 import com.soywiz.korio.async.syncTest
-import com.soywiz.korio.vfs.ResourcesVfs
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import org.junit.Test
@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 class AtlasInfoTest {
 	@Test
 	fun name() = syncTest {
-		val atlas = AtlasInfo.loadJsonSpriter(ResourcesVfs["demo.json"].readString())
+		val atlas = AtlasInfo.loadJsonSpriter(TestAssertVfs["demo.json"].readString())
 		assertEquals("Spriter", atlas.app)
 		assertEquals("r10", atlas.version)
 		assertEquals("demo.png", atlas.image)

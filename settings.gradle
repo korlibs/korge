@@ -6,33 +6,33 @@ include(
 	'korge-android',
 	'korge-js',
 
-	'korge-ext-fla-common',
-	'korge-ext-fla',
-	'korge-ext-fla-js',
-
-	'korge-ext-lipsync-common',
-	'korge-ext-lipsync',
-	'korge-ext-lipsync-js',
-
-	'korge-ext-particle-common',
-	'korge-ext-particle',
-	'korge-ext-particle-js',
-
-	'korge-ext-spriter-common',
-	'korge-ext-spriter',
-	'korge-ext-spriter-js',
-
-	'korge-ext-swf-common',
-	'korge-ext-swf',
-	'korge-ext-swf-js',
-
-	'korge-ext-tiled-common',
-	'korge-ext-tiled',
-	'korge-ext-tiled-js',
-
-	'korge-ext-ui-common',
-	'korge-ext-ui',
-	'korge-ext-ui-js',
+//	'korge-ext-fla-common',
+//	'korge-ext-fla',
+//	'korge-ext-fla-js',
+//
+//	'korge-ext-lipsync-common',
+//	'korge-ext-lipsync',
+//	'korge-ext-lipsync-js',
+//
+//	'korge-ext-particle-common',
+//	'korge-ext-particle',
+//	'korge-ext-particle-js',
+//
+//	'korge-ext-spriter-common',
+//	'korge-ext-spriter',
+//	'korge-ext-spriter-js',
+//
+//	'korge-ext-swf-common',
+//	'korge-ext-swf',
+//	'korge-ext-swf-js',
+//
+//	'korge-ext-tiled-common',
+//	'korge-ext-tiled',
+//	'korge-ext-tiled-js',
+//
+//	'korge-ext-ui-common',
+//	'korge-ext-ui',
+//	'korge-ext-ui-js',
 
 	// @TODO: Move this outside
 
