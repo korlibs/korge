@@ -31,7 +31,7 @@ class MouseComponent(view: View) : Component(view) {
 	private var lastOver = false
 	private var lastPressing = false
 
-	val CLICK_THRESHOLD = 10
+	val CLICK_THRESHOLD = 16
 
 	var Input.mouseHitSearch by Extra.Property { false }
 	var Input.mouseHitResult by Extra.Property<View?> { null }
