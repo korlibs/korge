@@ -4,9 +4,9 @@ buildscript {
 	ext.korimVersion = '0.17.3'
 	ext.korauVersion = '0.17.2'
 	ext.koragVersion = '0.17.1'
-	ext.koruiVersion = '0.17.1'
+	ext.koruiVersion = '0.17.2'
 	ext.kloggerVersion = '0.2.1'
-	ext.kotlinVersion = '1.2.0-rc-39'
+	ext.kotlinVersion = '1.2.0-rc-84'
 	ext.compilerVersion = ext.kotlinVersion
 	ext.librariesVersion = ext.kotlinVersion
 	ext.eapChannel = 'http://dl.bintray.com/kotlin/kotlin-eap-1.2'
