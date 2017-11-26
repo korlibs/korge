@@ -34,7 +34,7 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) {
 		val font = getBitmapFont(format.computedFace, format.computedSize)
-		val scale = font.fontSize.toDouble() / format.computedSize.toDouble()
+		val scale = format.computedSize.toDouble() / font.fontSize.toDouble()
 		var width = 0.0
 		var height = 0.0
 		var dy = 0.0
@@ -53,6 +53,7 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 			dx += glyph.xadvance + kerningOffset
 			width = max(width, dx)
 		}
+		height += font.fontSize
 		out.setTo(0.0, 0.0, width * scale, height * scale)
 	}
 }
