@@ -16,8 +16,17 @@ open class Browser(val injector: AsyncInjector) {
 		defaultLight.openURL(url.toString())
 	}
 
+	suspend fun frame() = injector.getOrNull(Frame::class) ?: invalidOp("Frame not available at korge")
+
 	open suspend fun openFile(filter: String = ""): VfsFile {
-		val frame = injector.getOrNull(Frame::class) ?: invalidOp("Frame not available at korge")
-		return frame.dialogOpenFile(filter)
+		return frame().dialogOpenFile(filter)
+	}
+
+	open suspend fun prompt(title: String, initialValue: String): String {
+		return frame().prompt(title, initialValue)
+	}
+
+	open suspend fun alert(message: String) {
+		frame().alert(message)
 	}
 }
