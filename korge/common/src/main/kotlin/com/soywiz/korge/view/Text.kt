@@ -24,11 +24,13 @@ class Text(views: Views) : View(views), IText, IHtml {
 	var _html: String = ""
 	var document: Html.Document? = null
 	private var _format: Html.Format = Html.Format()
+	var filtering = true
 	var autoSize = false
 		set(value) {
 			field = value
 			recalculateBoundsWhenRequired()
 		}
+	var bgcolor = Colors.TRANSPARENT_BLACK
 
 	var format: Html.Format
 		get() = _format
@@ -85,7 +87,8 @@ class Text(views: Views) : View(views), IText, IHtml {
 					m,
 					colMul = RGBA.multiply(colorMul, format.computedColor),
 					colAdd = colorAdd,
-					blendMode = computedBlendMode
+					blendMode = computedBlendMode,
+					filtering = filtering
 				)
 			}
 		} else {
@@ -98,13 +101,19 @@ class Text(views: Views) : View(views), IText, IHtml {
 			val x = textBounds.x + (textBounds.width - tempRect.width) * anchor.sx
 			//val x = textBounds.x + (textBounds.width) * anchor.sx
 			val y = textBounds.y + (textBounds.height - tempRect.height) * anchor.sy
+
+			if (RGBA.getA(bgcolor) != 0) {
+				ctx.batch.drawQuad(views.whiteTexture, x = textBounds.x.toFloat(), y = textBounds.y.toFloat(), width = textBounds.width.toFloat(), height = textBounds.height.toFloat(), m = m, filtering = false, colorMul = RGBA.multiply(bgcolor, globalColorMul), colorAdd = colorAdd, blendFactors = computedBlendMode.factors)
+			}
+
 			//println(" -> ($x, $y)")
 			font.drawText(
 				ctx.batch, format.computedSize.toDouble(), text, x.toInt(), y.toInt(),
 				m,
 				colMul = RGBA.multiply(colorMul, format.computedColor),
 				colAdd = colorAdd,
-				blendMode = computedBlendMode
+				blendMode = computedBlendMode,
+				filtering = filtering
 			)
 		}
 	}
@@ -132,9 +141,7 @@ class Text(views: Views) : View(views), IText, IHtml {
 }
 
 fun Views.text(text: String, textSize: Double = 16.0, color: Int = Colors.WHITE, font: BitmapFont = this.defaultFont) = Text(this).apply {
-	this.format.color = color
-	this.format.face = Html.FontFace.Bitmap(font)
-	this.format.size = textSize.toInt()
+	this.format = Html.Format(color = color, face = Html.FontFace.Bitmap(font), size = textSize.toInt())
 	if (text != "") this.text = text
 }
 

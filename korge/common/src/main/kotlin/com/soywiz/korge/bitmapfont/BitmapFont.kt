@@ -63,7 +63,7 @@ class BitmapFont(
 	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.firstOrNull() ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
-	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), colMul: Int = Colors.WHITE, colAdd: Int = 0x7f7f7f7f, blendMode: BlendMode = BlendMode.INHERIT) {
+	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), colMul: Int = Colors.WHITE, colAdd: Int = 0x7f7f7f7f, blendMode: BlendMode = BlendMode.INHERIT, filtering: Boolean = true) {
 		val m2 = m.clone()
 		val scale = textSize / fontSize.toDouble()
 		m2.pretranslate(x.toDouble(), y.toDouble())
@@ -80,7 +80,7 @@ class BitmapFont(
 			val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
 			val glyph = this[c1]
 			val tex = glyph.texture
-			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colorMul = colMul, colorAdd = colAdd, blendFactors = blendMode.factors)
+			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colorMul = colMul, colorAdd = colAdd, blendFactors = blendMode.factors, filtering = filtering)
 			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}
@@ -159,6 +159,8 @@ class BitmapFontAsyncFactory(
 		invalidOp("BitmapFont injection requires @Path or @FontDescriptor annotations")
 	}
 }
+
+fun com.soywiz.korim.font.BitmapFont.toKorge(views: Views, mipmaps: Boolean = true): BitmapFont = convert(views.ag, mipmaps)
 
 fun com.soywiz.korim.font.BitmapFont.convert(ag: AG, mipmaps: Boolean = true): BitmapFont {
 	val font = this
