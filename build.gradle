@@ -1,41 +1,37 @@
 buildscript {
-	ext.korflVersion = '0.0.1'
-	ext.korioVersion = '0.17.1'
-	ext.korimVersion = '0.17.3'
-	ext.korauVersion = '0.17.2'
-	ext.koragVersion = '0.17.1'
-	ext.koruiVersion = '0.17.2'
-	ext.kloggerVersion = '0.2.1'
-	ext.kotlinVersion = '1.2.0-rc-84'
-	ext.compilerVersion = ext.kotlinVersion
-	ext.librariesVersion = ext.kotlinVersion
-	ext.eapChannel = 'http://dl.bintray.com/kotlin/kotlin-eap-1.2'
+	ext.korflVersion = '0.18.0'
+	ext.korioVersion = '0.18.0'
+	ext.korimVersion = '0.18.0'
+	ext.korauVersion = '0.18.0'
+	ext.koragVersion = '0.18.0'
+	ext.koruiVersion = '0.18.0'
+	ext.kloggerVersion = '0.3.0'
+	ext.kotlinVersion = '1.2.0'
 
 	repositories {
 		mavenLocal()
 		jcenter()
-		maven { url eapChannel }
 		maven {
 			url "https://plugins.gradle.org/m2/"
 		}
 	}
 
 	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$compilerVersion"
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 		classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.17"
 	}
 
 	ext {
 		libraries = [
-			kotlin_stdlib_common: "org.jetbrains.kotlin:kotlin-stdlib-common:$librariesVersion",
-			kotlin_stdlib_jvm   : "org.jetbrains.kotlin:kotlin-stdlib:$librariesVersion",
-			kotlin_stdlib_js    : "org.jetbrains.kotlin:kotlin-stdlib-js:$librariesVersion",
+			kotlin_stdlib_common: "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
+			kotlin_stdlib_jvm   : "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+			kotlin_stdlib_js    : "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion",
 
-			kotlin_test_common  : "org.jetbrains.kotlin:kotlin-test-common:$librariesVersion",
-			kotlin_test_jvm     : "org.jetbrains.kotlin:kotlin-test:$librariesVersion",
-			kotlin_test_js      : "org.jetbrains.kotlin:kotlin-test-js:$librariesVersion",
+			kotlin_test_common  : "org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion",
+			kotlin_test_jvm     : "org.jetbrains.kotlin:kotlin-test:$kotlinVersion",
+			kotlin_test_js      : "org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion",
 
-			kotlin_reflect      : "org.jetbrains.kotlin:kotlin-reflect:$librariesVersion",
+			kotlin_reflect      : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
 		]
 	}
 }
@@ -52,7 +48,6 @@ allprojects {
 	repositories {
 		mavenLocal()
 		jcenter()
-		maven { url eapChannel }
 		mavenCentral()
 	}
 
