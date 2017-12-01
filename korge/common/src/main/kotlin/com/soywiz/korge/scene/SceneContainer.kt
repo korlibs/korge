@@ -1,7 +1,7 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.time.TimeSpan
-import com.soywiz.korge.time.seconds
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container

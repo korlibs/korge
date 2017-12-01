@@ -1,5 +1,7 @@
 package com.soywiz.korge.time
 
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
 import org.junit.Test
 import kotlin.test.assertEquals
 

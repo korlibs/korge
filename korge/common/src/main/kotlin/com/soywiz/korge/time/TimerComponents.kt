@@ -1,5 +1,6 @@
 package com.soywiz.korge.time
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.view.View
 import com.soywiz.korio.coroutine.korioSuspendCoroutine
@@ -33,10 +34,10 @@ class TimerComponents(view: View) : Component(view) {
 }
 
 val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
-suspend fun View.wait(time: Int) = this.timers.waitMilliseconds(time)
+suspend fun View.waitMs(ms: Int) = this.timers.waitMilliseconds(ms)
 suspend fun View.wait(time: TimeSpan) = this.timers.wait(time)
 suspend fun View.waitFrame() = this.timers.waitFrame()
 
-suspend fun View.sleep(time: Int) = this.timers.waitMilliseconds(time)
+suspend fun View.sleepMs(ms: Int) = this.timers.waitMilliseconds(ms)
 suspend fun View.sleep(time: TimeSpan) = this.timers.wait(time)
 suspend fun View.sleepFrame() = this.timers.waitFrame()

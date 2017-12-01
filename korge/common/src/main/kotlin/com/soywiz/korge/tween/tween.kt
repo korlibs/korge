@@ -2,8 +2,8 @@
 
 package com.soywiz.korge.tween
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.time.TimeSpan
 import com.soywiz.korge.view.View
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.CancellableContinuation

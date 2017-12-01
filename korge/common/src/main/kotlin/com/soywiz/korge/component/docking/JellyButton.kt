@@ -1,7 +1,7 @@
 package com.soywiz.korge.component.docking
 
+import com.soywiz.klock.milliseconds
 import com.soywiz.korge.input.*
-import com.soywiz.korge.time.milliseconds
 import com.soywiz.korge.tween.Easings
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween

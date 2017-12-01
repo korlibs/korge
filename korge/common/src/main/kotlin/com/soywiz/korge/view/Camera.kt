@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.time.TimeSpan
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.tween.Easing
 import com.soywiz.korge.tween.V2
 import com.soywiz.korge.tween.get

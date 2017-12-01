@@ -1,7 +1,7 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.resources.ResourcesRoot
-import com.soywiz.korge.time.TimeSpan
 import com.soywiz.korge.time.sleep
 import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container

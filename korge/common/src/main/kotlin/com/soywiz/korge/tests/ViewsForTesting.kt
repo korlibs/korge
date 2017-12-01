@@ -1,7 +1,7 @@
 package com.soywiz.korge.tests
 
-import com.soywiz.korge.time.TimeSpan
-import com.soywiz.korge.time.milliseconds
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.ViewsLog
 import com.soywiz.korge.view.updateLoop
 import com.soywiz.korio.async.EventLoopTest
