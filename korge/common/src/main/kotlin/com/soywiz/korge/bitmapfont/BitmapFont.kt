@@ -167,7 +167,8 @@ fun com.soywiz.korim.font.BitmapFont.convert(ag: AG, mipmaps: Boolean = true): B
 
 	val atlasBitmap = if (mipmaps) font.atlas.ensurePowerOfTwo() else font.atlas
 
-	val tex = Texture(ag.createTexture().upload(atlasBitmap, mipmaps), atlasBitmap.width, atlasBitmap.height)
+	val tex = Texture(ag.createTexture(premultiplied = true)
+		.upload(atlasBitmap.premultipliedIfRequired(), mipmaps), atlasBitmap.width, atlasBitmap.height)
 	val glyphs = arrayListOf<BitmapFont.Glyph>()
 	for (info in font.glyphInfos) {
 		val bounds = info.bounds
