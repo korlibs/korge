@@ -48,7 +48,7 @@ class FontRepository(val views: Views) : Html.MetricsProvider {
 				continue
 			}
 			val c2 = text.getOrElse(n + 1) { ' ' }.toInt()
-			val kerningOffset = font.kernings[c1 to c2]?.amount ?: 0
+			val kerningOffset = font.kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
 			val glyph = font[c1]
 			dx += glyph.xadvance + kerningOffset
 			width = max(width, dx)

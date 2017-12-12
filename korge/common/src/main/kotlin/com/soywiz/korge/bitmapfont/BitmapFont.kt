@@ -1,5 +1,6 @@
 package com.soywiz.korge.bitmapfont
 
+import com.soywiz.kds.IntMap
 import com.soywiz.korag.AG
 import com.soywiz.korge.plugin.KorgePlugin
 import com.soywiz.korge.render.BatchBuilder2D
@@ -41,14 +42,22 @@ object BitmapFontPlugin : KorgePlugin() {
 class BitmapFont(
 	val ag: AG,
 	val fontSize: Int,
-	val glyphs: Map<Int, Glyph>,
-	val kernings: Map<Pair<Int, Int>, Kerning>
+	val glyphs: IntMap<Glyph>,
+	val kernings: IntMap<Kerning>
 ) {
+	constructor(ag: AG, fontSize: Int, glyphs: Map<Int, Glyph>, kernings: Map<Int, Kerning>) : this(
+		ag, fontSize, glyphs.toIntMap(), kernings.toIntMap()
+	)
+
 	class Kerning(
 		val first: Int,
 		val second: Int,
 		val amount: Int
-	)
+	) {
+		companion object {
+			fun buildKey(f: Int, s: Int) = f or (s shl 16)
+		}
+	}
 
 	class Glyph(
 		val id: Int,
@@ -60,7 +69,7 @@ class BitmapFont(
 
 	val dummyGlyph by lazy { Glyph(-1, Texture(ag.dummyTexture, 1, 1), 0, 0, 0) }
 
-	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: glyphs.values.firstOrNull() ?: dummyGlyph
+	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
 	fun drawText(batch: BatchBuilder2D, textSize: Double, str: String, x: Int, y: Int, m: Matrix2d = Matrix2d(), colMul: Int = Colors.WHITE, colAdd: Int = 0x7f7f7f7f, blendMode: BlendMode = BlendMode.INHERIT, filtering: Boolean = true) {
@@ -81,7 +90,7 @@ class BitmapFont(
 			val glyph = this[c1]
 			val tex = glyph.texture
 			batch.drawQuad(tex, (dx + glyph.xoffset).toFloat(), (dy + glyph.yoffset).toFloat(), m = m2, colorMul = colMul, colorAdd = colAdd, blendFactors = blendMode.factors, filtering = filtering)
-			val kerningOffset = kernings[c1 to c2]?.amount ?: 0
+			val kerningOffset = kernings[Kerning.buildKey(c1, c2)]?.amount ?: 0
 			dx += glyph.xadvance + kerningOffset
 		}
 	}
@@ -135,9 +144,16 @@ suspend fun VfsFile.readBitmapFont(ag: AG): BitmapFont {
 	return BitmapFont(
 		ag = ag,
 		fontSize = fontSize,
-		glyphs = glyphs.map { it.id to it }.toMap(),
-		kernings = kernings.map { (it.first to it.second) to it }.toMap()
+		glyphs = glyphs.map { it.id to it }.toMap().toIntMap(),
+		kernings = kernings.map { BitmapFont.Kerning.buildKey(it.first, it.second) to it }.toMap().toIntMap()
 	)
+}
+
+// @TODO: Move to kds
+fun <T> Map<Int, T>.toIntMap(): IntMap<T> {
+	val out = IntMap<T>()
+	for ((k, v) in this) out.set(k, v)
+	return out
 }
 
 annotation class FontDescriptor(val face: String, val size: Int, val chars: String = "0123456789")
@@ -174,5 +190,5 @@ fun com.soywiz.korim.font.BitmapFont.convert(ag: AG, mipmaps: Boolean = true): B
 		val texSlice = tex.slice(bounds.x, bounds.y, bounds.width, bounds.height)
 		glyphs += BitmapFont.Glyph(info.id, texSlice, 0, 0, info.advance)
 	}
-	return BitmapFont(ag, font.size, glyphs.map { it.id to it }.toMap(), mapOf())
+	return BitmapFont(ag, font.size, glyphs.map { it.id to it }.toMap().toIntMap(), IntMap())
 }

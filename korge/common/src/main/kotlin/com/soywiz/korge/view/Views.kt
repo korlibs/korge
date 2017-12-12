@@ -28,6 +28,7 @@ import com.soywiz.korio.async.go
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.kds.Extra
+import com.soywiz.kds.IntMap
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
@@ -123,7 +124,7 @@ class Views(
 	val transparentTexture by lazy { texture(Bitmap32(0, 0)) }
 	val whiteTexture by lazy { texture(Bitmap32(1, 1, intArrayOf(Colors.WHITE))) }
 	val transformedDummyTexture by lazy { TransformedTexture(transparentTexture) }
-	val dummyFont by lazy { BitmapFont(ag, 16, mapOf(), mapOf()) }
+	val dummyFont by lazy { BitmapFont(ag, 16, IntMap(), IntMap()) }
 	val defaultFont by lazy {
 		com.soywiz.korim.font.BitmapFontGenerator.generate("Arial", 16, BitmapFontGenerator.LATIN_ALL).convert(ag, mipmaps = true)
 	}
