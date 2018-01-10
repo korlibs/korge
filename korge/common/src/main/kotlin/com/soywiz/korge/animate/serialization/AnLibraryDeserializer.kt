@@ -21,8 +21,8 @@ import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.util.extract
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
-import com.soywiz.korma.ds.DoubleArrayList
-import com.soywiz.korma.ds.IntArrayList
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath

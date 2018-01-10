@@ -3,9 +3,6 @@ apply plugin: 'kotlin-platform-js'
 dependencies {
 	expectedBy project(":korge-ext-spriter-common")
 
-	compile libraries.kotlin_stdlib_js
-	testCompile libraries.kotlin_test_js
-
 	compile project(":korge-js")
 
 	testCompile "com.soywiz:korio-js:$korioVersion"

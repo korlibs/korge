@@ -18,8 +18,8 @@ import com.soywiz.korio.util.clamp
 import com.soywiz.korio.util.extract8
 import com.soywiz.korio.util.toIntCeil
 import com.soywiz.korma.Matrix2d
-import com.soywiz.korma.ds.DoubleArrayList
-import com.soywiz.korma.ds.IntArrayList
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 import kotlin.math.max
 import kotlin.math.min

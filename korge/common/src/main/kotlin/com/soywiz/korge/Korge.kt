@@ -40,6 +40,7 @@ object Korge {
 		val injector = config.injector
 
 		val container = config.container!!
+		val agInput = container.agInput
 		val ag = container.ag
 		val size = config.module.size
 
@@ -70,7 +71,7 @@ object Korge {
 		if (config.trace) println("Korge.setupCanvas[1e]. args: ${config.args.toList()}")
 		if (config.trace) println("Korge.setupCanvas[1f]. size: $size")
 		injector.mapInstance(EventLoop::class, config.eventLoop)
-		val views = injector.get<Views>()
+		val views = injector.get(Views::class)
 		views.debugViews = config.debug
 		config.constructedViews(views)
 		val moduleArgs = ModuleArgs(config.args)
@@ -99,16 +100,18 @@ object Korge {
 		val upPos = Point2d()
 
 		fun updateMousePos() {
-			val mouseX = container.agInput.mouseX.toDouble()
-			val mouseY = container.agInput.mouseY.toDouble()
-			//println("updateMousePos: $mouseX, $mouseY")
+			// Mouse is in point coordinates, convert it to pixel coordinates
+			val mouseX = agInput.mouseX.toDouble() * ag.pixelDensity
+			val mouseY = agInput.mouseY.toDouble() * ag.pixelDensity
+
+			//println("updateMousePos: $mouseX, $mouseY (${ag.pixelDensity})")
 			views.input.mouse.setTo(mouseX, mouseY)
 			views.mouseUpdated()
 		}
 
 		fun updateTouchPos() {
-			val mouseX = container.agInput.touchEvent.x.toDouble()
-			val mouseY = container.agInput.touchEvent.y.toDouble()
+			val mouseX = agInput.touchEvent.x.toDouble()
+			val mouseY = agInput.touchEvent.y.toDouble()
 			//println("updateMousePos: $mouseX, $mouseY")
 			views.input.mouse.setTo(mouseX, mouseY)
 			views.mouseUpdated()
@@ -130,36 +133,36 @@ object Korge {
 		}
 
 		// MOUSE
-		container.agInput.onMouseDown {
+		agInput.onMouseDown {
 			views.input.mouseButtons = 1
 			updateMousePos()
 			downPos.copyFrom(views.input.mouse)
 			views.dispatch(mouseDownEvent)
 		}
-		container.agInput.onMouseUp {
+		agInput.onMouseUp {
 			views.input.mouseButtons = 0
 			updateMousePos()
 			upPos.copyFrom(views.input.mouse)
 			views.dispatch(mouseUpEvent)
 		}
-		container.agInput.onMouseOver {
+		agInput.onMouseOver {
 			updateMousePos()
 			views.dispatch(mouseMovedEvent)
 		}
-		container.agInput.onMouseClick {
+		agInput.onMouseClick {
 			updateMousePos()
 			views.dispatch(mouseClickEvent)
 		}
 
 		// TOUCH
 		var moveMouseOutsideInNextFrame = false
-		container.agInput.onTouchStart {
+		agInput.onTouchStart {
 			views.input.mouseButtons = 1
 			updateTouchPos()
 			downPos.copyFrom(views.input.mouse)
 			views.dispatch(mouseDownEvent)
 		}
-		container.agInput.onTouchEnd {
+		agInput.onTouchEnd {
 			views.input.mouseButtons = 0
 			updateTouchPos()
 			upPos.copyFrom(views.input.mouse)
@@ -167,19 +170,19 @@ object Korge {
 
 			moveMouseOutsideInNextFrame = true
 		}
-		container.agInput.onTouchMove {
+		agInput.onTouchMove {
 			updateTouchPos()
 			views.dispatch(mouseMovedEvent)
 		}
 
 		// KEYS
-		container.agInput.onKeyDown {
+		agInput.onKeyDown {
 			views.input.setKey(it.keyCode, true)
 			//println("onKeyDown: $it")
 			it.copyTo(keyDownEvent)
 			views.dispatch(keyDownEvent)
 		}
-		container.agInput.onKeyUp {
+		agInput.onKeyUp {
 			views.input.setKey(it.keyCode, false)
 			//println("onKeyUp: $it")
 			it.copyTo(keyUpEvent)
@@ -190,13 +193,14 @@ object Korge {
 				views.debugViews = !views.debugViews
 			}
 		}
-		container.agInput.onKeyTyped {
+		agInput.onKeyTyped {
 			//println("onKeyTyped: $it")
 			it.copyTo(keyTypedEvent)
 			views.dispatch(keyTypedEvent)
 		}
 
 		ag.onResized {
+			//println("ag.onResized: ${ag.backWidth},${ag.backHeight}")
 			views.resized(ag.backWidth, ag.backHeight)
 		}
 		ag.resized()

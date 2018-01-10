@@ -1,8 +1,20 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korau.format.registerMp3Decoder
+import com.soywiz.korau.format.registerOggVorbisDecoder
+import com.soywiz.korau.format.registerStandard
 import com.soywiz.korge.Korge
 import com.soywiz.korge.build.ResourceProcessor
+import com.soywiz.korge.build.atlas.AtlasResourceProcessor
+import com.soywiz.korge.build.defaultResourceProcessors
+import com.soywiz.korge.build.lipsync.LipsyncResourceProcessor
+import com.soywiz.korge.build.swf.SwfResourceProcessor
+import com.soywiz.korim.format.defaultImageFormats
+import com.soywiz.korim.format.registerStandard
 import com.soywiz.korio.async.syncTest
+import com.soywiz.korio.serialization.Mapper
+import com.soywiz.korio.util.jvmFallback
 import com.soywiz.korio.vfs.toVfs
 import groovy.lang.Closure
 import org.gradle.api.*
@@ -15,6 +27,12 @@ import java.io.File
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
 		//JTranscGradlePlugin().apply(project)
+
+		System.setProperty("java.awt.headless", "true")
+		defaultResourceProcessors.register(AtlasResourceProcessor, SwfResourceProcessor, LipsyncResourceProcessor)
+		defaultImageFormats.registerStandard()
+		Mapper.jvmFallback()
+		defaultAudioFormats.registerStandard().registerMp3Decoder().registerOggVorbisDecoder()
 
 		project.dependencies.add("compile", "com.soywiz:korge-common:${Korge.VERSION}")
 
@@ -38,7 +56,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
 	}
 }
 
-abstract class KorgeBaseResourcesTask() : DefaultTask() {
+abstract class KorgeBaseResourcesTask : DefaultTask() {
 	var debug = false
 
 	suspend fun compile(inputFiles: List<File>, output: File) {

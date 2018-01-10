@@ -57,10 +57,7 @@ class MouseComponent(view: View) : Component(view) {
 		return input.mouseHitResult
 	}
 
-	val isOver: Boolean
-		get() {
-			return hitTest?.hasAncestor(view) ?: false
-		}
+	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
 
 	init {
 		addEventListener<MouseClickEvent> { e ->
@@ -107,7 +104,7 @@ class MouseComponent(view: View) : Component(view) {
 						views.whiteTexture, x = bounds.x.toFloat(), y = bounds.y.toFloat(), width = bounds.width.toFloat(), height = bounds.height.toFloat(), colorMul = RGBA(0xFF, 0, 0, 0x3F),
 						m = mouseHit.globalMatrix
 					)
-					renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString(), x = 0, y = 0)
+					renderContext.batch.drawText(defaultFont, 16.0, mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY, x = 0, y = 0)
 				}
 
 				val mouseHitResultUsed = input.mouseHitResultUsed

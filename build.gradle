@@ -1,195 +1,34 @@
 buildscript {
-	ext.korflVersion = '0.18.0'
-	ext.korioVersion = '0.18.0'
-	ext.korimVersion = '0.18.0'
-	ext.korauVersion = '0.18.0'
-	ext.koragVersion = '0.18.0'
-	ext.koruiVersion = '0.18.0'
-	ext.kloggerVersion = '0.3.0'
-	ext.kotlinVersion = '1.2.0'
+	ext.projectVersion = '0.19.0-SNAPSHOT'
+	ext.projectName = 'korge'
+	ext.projectGroup = 'com.soywiz'
+	ext.projectDesc = 'Korge: Kotlin cORoutines Game Engine'
+	ext.projectHost = 'github'
+	ext.projectOrg = 'korlibs'
+	ext.projectLicense = 'MIT'
+	ext.projectDevelNick = 'soywiz'
+	ext.projectDevelName = 'Carlos Ballesteros Velasco'
+	ext.projectInceptionYear = 2017
+
+	ext.korflVersion = '0.19.0'
+	ext.korioVersion = '0.19.0'
+	ext.korimVersion = '0.19.0'
+	ext.korauVersion = '0.19.0'
+	ext.koragVersion = '0.19.0'
+	ext.koruiVersion = '0.19.0'
+	ext.kloggerVersion = '0.4.0'
+	ext.kotlinVersion = '1.2.10'
 
 	repositories {
 		mavenLocal()
 		jcenter()
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-		classpath "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.17"
-	}
-
-	ext {
-		libraries = [
-			kotlin_stdlib_common: "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion",
-			kotlin_stdlib_jvm   : "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
-			kotlin_stdlib_js    : "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion",
-
-			kotlin_test_common  : "org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion",
-			kotlin_test_jvm     : "org.jetbrains.kotlin:kotlin-test:$kotlinVersion",
-			kotlin_test_js      : "org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion",
-
-			kotlin_reflect      : "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
-		]
+		classpath "gradle.plugin.com.soywiz:korlibs-build-gradle-plugin:0.1.5"
 	}
 }
 
-configurations {
-	provided
-}
-
-allprojects {
-	configurations {
-		provided
-	}
-
-	repositories {
-		mavenLocal()
-		jcenter()
-		mavenCentral()
-	}
-
-	group 'com.soywiz'
-	version "0.18.1-SNAPSHOT"
-
-	if (project == rootProject) {
-		new File(rootProject.rootDir, "korge/common/src/main/kotlin/com/soywiz/korge/KorgeVersion.kt").write(
-			"package com.soywiz.korge\n\nval KORGE_VERSION = \"$version\""
-		)
-	}
-
-	apply plugin: 'java'
-	apply plugin: 'maven'
-	apply plugin: 'signing'
-	apply plugin: 'maven-publish'
-
-	compileJava.options.encoding = 'UTF-8'
-	compileTestJava.options.encoding = 'UTF-8'
-
-	sourceCompatibility = 1.7
-	targetCompatibility = 1.7
-
-	it.afterEvaluate {
-		if (it.plugins.hasPlugin("kotlin-platform-common")) {
-			dependencies {
-				compile libraries.kotlin_stdlib_common
-				testCompile libraries.kotlin_test_common
-			}
-
-			kotlin {
-				experimental { coroutines 'enable' }
-			}
-		}
-		if (it.plugins.hasPlugin("kotlin-platform-jvm") || it.plugins.hasPlugin("kotlin")) {
-			dependencies {
-				compile libraries.kotlin_stdlib_jvm
-				testCompile libraries.kotlin_test_jvm
-				testCompile "junit:junit:4.12"
-			}
-
-			kotlin {
-				experimental { coroutines 'enable' }
-			}
-		}
-		if (it.plugins.hasPlugin("kotlin-platform-js") || it.plugins.hasPlugin("kotlin2js")) {
-			dependencies {
-				compile libraries.kotlin_stdlib_js
-				testCompile libraries.kotlin_test_js
-			}
-
-			kotlin {
-				experimental { coroutines 'enable' }
-			}
-
-			compileKotlin2Js {
-				kotlinOptions.moduleKind = "umd"
-				kotlinOptions.sourceMap = true
-			}
-		}
-	}
-
-	task javadoc2(type: Javadoc) {
-		failOnError = false
-	}
-
-	task javadocJar(type: Jar, dependsOn: javadoc2) {
-		classifier = 'javadoc'
-		from 'build/docs/javadoc'
-	}
-
-	task sourcesJar(type: Jar) {
-		from sourceSets.main.allSource
-		classifier = 'sources'
-	}
-
-	artifacts {
-		archives jar
-		archives javadocJar
-		archives sourcesJar
-	}
-
-// gradle uploadArchives
-	if (project.hasProperty('sonatypeUsername')) {
-		signing {
-			sign configurations.archives
-		}
-
-		uploadArchives {
-			repositories {
-				mavenDeployer {
-					beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-					repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-						authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
-					}
-
-					pom.project {
-						name "${project.name}"
-						packaging 'jar'
-						description 'korge: Kotlin cORoutines Game Engine'
-						url 'https://github.com/soywiz/korge/'
-						inceptionYear '2017'
-
-						scm {
-							url 'scm:git@github.com:soywiz/korge.git'
-							connection 'scm:git@github.com:soywiz/korge.git'
-							developerConnection 'scm:git@github.com:soywiz/korge.git'
-						}
-
-						licenses {
-							license {
-								name 'The Apache Software License, Version 2.0'
-								url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-								distribution 'repo'
-							}
-						}
-
-						developers {
-							developer {
-								id 'soywiz'
-								name 'Carlos Ballesteros Velasco'
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	publishing {
-		publications {
-			MyPublication(MavenPublication) {
-				from components.java
-				groupId project.group
-				artifactId project.name
-				version "$project.version"
-			}
-		}
-	}
-
-	task deploy(dependsOn: ['install', 'uploadArchives']) {
-	}
-
-}
+apply plugin: 'com.soywiz.korlibs-build-gradle-plugin'

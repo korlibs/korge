@@ -1,4 +1,5 @@
-apply plugin: 'kotlin-platform-jvm'
+//apply plugin: 'kotlin-platform-jvm'
+apply plugin: 'kotlin'
 
 buildscript {
 	repositories {
@@ -12,7 +13,8 @@ buildscript {
 apply plugin: "com.gradle.plugin-publish"
 
 dependencies {
-	compile project(":korge-common")
+	//compile project(":korge-common")
+	compile project(":korge")
 	compile project(":korge-build")
 	compile project(":korge-ext-swf")
 

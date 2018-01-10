@@ -36,8 +36,8 @@ include(
 
 	// @TODO: Move this outside
 
-	//'korge-build',
-	//'korge-gradle-plugin',
+	'korge-build',
+	'korge-gradle-plugin',
 	//'korge-flash-plugin',
 	//'korge-intellij-plugin', // Disable this to avoid performance issues while editing
 )
@@ -57,5 +57,4 @@ register("korge-ext-spriter")
 register("korge-ext-swf")
 register("korge-ext-tiled")
 register("korge-ext-ui")
-
-//project(':korge-build').projectDir = file('korge-build/jvm')
+project(':korge-build').projectDir = file('korge-build/jvm')

@@ -8,6 +8,7 @@ import com.codeazur.as3swf.data.consts.BitmapFormat
 import com.codeazur.as3swf.exporters.ShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporterBoundsBuilder
 import com.codeazur.as3swf.tags.*
+import com.soywiz.kds.BitSet
 import com.soywiz.kmem.fill
 import com.soywiz.korfl.abc.*
 import com.soywiz.korge.animate.*
@@ -23,7 +24,6 @@ import com.soywiz.korim.color.BGRA_5551
 import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.GraphicsPath
-import com.soywiz.kds.BitSet
 import com.soywiz.korio.error.ignoreErrors
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.serialization.json.Json
@@ -809,7 +809,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					analyzerInfo(depth.charId).registerMatrix(depth.matrix)
 
 					depth.uid = uid
+					//println("+$depthId")
 					depthsChanged[depthId] = true
+					//println("-$depthId")
 					//depth.createFrameElement()
 				}
 				is TagRemoveObject -> {
@@ -844,4 +846,3 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 }
 
 private typealias SwfBlendMode = com.codeazur.as3swf.data.consts.BlendMode
-

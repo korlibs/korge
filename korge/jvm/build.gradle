@@ -5,6 +5,7 @@ dependencies {
 	testImplementation project(":korge-common")
 
 	compile "com.soywiz:klogger:$kloggerVersion"
+	compile "com.soywiz:korio:$korioVersion"
 	compile "com.soywiz:korau:$korauVersion"
 	compile "com.soywiz:korui:$koruiVersion"
 	compile "com.soywiz:korag:$koragVersion"

@@ -1,8 +1,8 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.korio.util.clamp
-import com.soywiz.korma.ds.IntArrayList
-import com.soywiz.korma.ds.binarySearch
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.binarySearch
 import kotlin.math.max
 import kotlin.math.min
 

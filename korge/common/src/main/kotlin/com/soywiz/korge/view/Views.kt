@@ -51,10 +51,10 @@ class Views(
 	val views = this
 
 	init {
-		injector.mapInstance<EventLoop>(EventLoop::class, eventLoop)
-		injector.mapInstance<AG>(AG::class, ag)
-		injector.mapInstance<Views>(Views::class, this)
-		injector.mapInstance<SoundSystem>(SoundSystem::class, soundSystem)
+		injector.mapInstance(EventLoop::class, eventLoop)
+		injector.mapInstance(AG::class, ag)
+		injector.mapInstance(Views::class, this)
+		injector.mapInstance(SoundSystem::class, soundSystem)
 	}
 
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -178,6 +178,7 @@ class Views(
 	fun resized(width: Int, height: Int) {
 		val actualWidth = width
 		val actualHeight = height
+		//println("RESIZED: $width, $height")
 		actualSize.setTo(actualWidth, actualHeight)
 		resized()
 	}
