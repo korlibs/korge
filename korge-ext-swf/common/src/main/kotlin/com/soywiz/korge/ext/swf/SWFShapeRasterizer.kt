@@ -8,6 +8,9 @@ import com.codeazur.as3swf.data.consts.GradientSpreadMode
 import com.codeazur.as3swf.data.consts.LineCapsStyle
 import com.codeazur.as3swf.exporters.LoggerShapeExporter
 import com.codeazur.as3swf.exporters.ShapeExporter
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kmem.extract8
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.ColorTransform
@@ -15,11 +18,8 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.util.clamp
-import com.soywiz.korio.util.extract8
 import com.soywiz.korio.util.toIntCeil
 import com.soywiz.korma.Matrix2d
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 import kotlin.math.max
 import kotlin.math.min

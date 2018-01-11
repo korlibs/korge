@@ -1,5 +1,8 @@
 package com.soywiz.korge.animate.serialization
 
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kmem.extract
 import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.readNativeSoundOptimized
 import com.soywiz.korge.animate.*
@@ -18,11 +21,8 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.readAll
-import com.soywiz.korio.util.extract
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.IntArrayList
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.VectorPath

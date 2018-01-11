@@ -1,5 +1,6 @@
 package com.soywiz.korge.animate.serialization
 
+import com.soywiz.kmem.insert
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.Bitmap
@@ -10,7 +11,6 @@ import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.clamp
-import com.soywiz.korio.util.insert
 import com.soywiz.korio.vfs.VfsFile
 import com.soywiz.korma.Matrix2d
 import com.soywiz.korma.geom.IRectangleInt

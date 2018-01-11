@@ -1,5 +1,5 @@
 buildscript {
-	ext.projectVersion = '0.19.0-SNAPSHOT'
+	ext.projectVersion = '0.19.1'
 	ext.projectName = 'korge'
 	ext.projectGroup = 'com.soywiz'
 	ext.projectDesc = 'Korge: Kotlin cORoutines Game Engine'
@@ -10,12 +10,12 @@ buildscript {
 	ext.projectDevelName = 'Carlos Ballesteros Velasco'
 	ext.projectInceptionYear = 2017
 
-	ext.korflVersion = '0.19.0'
-	ext.korioVersion = '0.19.0'
-	ext.korimVersion = '0.19.0'
-	ext.korauVersion = '0.19.0'
-	ext.koragVersion = '0.19.0'
-	ext.koruiVersion = '0.19.0'
+	ext.korflVersion = '0.19.1'
+	ext.korioVersion = '0.19.1'
+	ext.korimVersion = '0.19.1'
+	ext.korauVersion = '0.19.1'
+	ext.koragVersion = '0.19.1'
+	ext.koruiVersion = '0.19.1'
 	ext.kloggerVersion = '0.4.0'
 	ext.kotlinVersion = '1.2.10'
 
