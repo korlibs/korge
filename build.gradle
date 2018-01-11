@@ -1,5 +1,5 @@
 buildscript {
-	ext.projectVersion = '0.19.1'
+	ext.projectVersion = '0.19.2-SNAPSHOT'
 	ext.projectName = 'korge'
 	ext.projectGroup = 'com.soywiz'
 	ext.projectDesc = 'Korge: Kotlin cORoutines Game Engine'
