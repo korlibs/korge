@@ -1,5 +1,6 @@
 package com.soywiz.korge
 
+import com.soywiz.klock.Klock
 import com.soywiz.klogger.Logger
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGContainer
@@ -19,6 +20,7 @@ import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.EventLoop
 import com.soywiz.korio.async.Promise
 import com.soywiz.korio.async.go
+import com.soywiz.korio.lang.Console
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.time.TimeProvider
 import com.soywiz.korio.vfs.ResourcesVfs
@@ -98,27 +100,6 @@ object Korge {
 
 		val downPos = Point2d()
 		val upPos = Point2d()
-
-		fun updateMousePos() {
-			// Mouse is in point coordinates, convert it to pixel coordinates
-			val mouseX = agInput.mouseX.toDouble() * ag.pixelDensity
-			val mouseY = agInput.mouseY.toDouble() * ag.pixelDensity
-
-			//println("updateMousePos: $mouseX, $mouseY (${ag.pixelDensity})")
-			views.input.mouse.setTo(mouseX, mouseY)
-			views.mouseUpdated()
-		}
-
-		fun updateTouchPos() {
-			val mouseX = agInput.touchEvent.x.toDouble()
-			val mouseY = agInput.touchEvent.y.toDouble()
-			//println("updateMousePos: $mouseX, $mouseY")
-			views.input.mouse.setTo(mouseX, mouseY)
-			views.mouseUpdated()
-		}
-
-		if (config.trace) println("Korge.setupCanvas[6]")
-
 		val mouseMovedEvent = MouseMovedEvent()
 		val mouseUpEvent = MouseUpEvent()
 		val mouseClickEvent = MouseClickEvent()
@@ -127,53 +108,57 @@ object Korge {
 		val keyDownEvent = KeyDownEvent()
 		val keyUpEvent = KeyUpEvent()
 		val keyTypedEvent = KeyTypedEvent()
+		var downTime = 0.0
+		var moveTime = 0.0
+		var upTime = 0.0
+
+		fun mouseDown(name: String, x: Int, y: Int) {
+			//Console.log("mouseDown: $name")
+			views.input.mouseButtons = 1
+			views.input.mouse.setTo(x * ag.pixelDensity, y * ag.pixelDensity)
+			views.mouseUpdated()
+			downPos.copyFrom(views.input.mouse)
+			views.dispatch(mouseDownEvent)
+			downTime = Klock.currentTimeMillisDouble()
+		}
+
+		fun mouseMove(name: String, x: Int, y: Int) {
+			//Console.log("mouseMove: $name")
+			views.input.mouse.setTo(x * ag.pixelDensity, y * ag.pixelDensity)
+			views.mouseUpdated()
+			views.dispatch(mouseMovedEvent)
+			moveTime = Klock.currentTimeMillisDouble()
+		}
+
+		fun mouseUp(name: String, x: Int, y: Int) {
+			//Console.log("mouseUp: $name")
+			views.input.mouseButtons = 0
+			views.input.mouse.setTo(x * ag.pixelDensity, y * ag.pixelDensity)
+			views.mouseUpdated()
+			upPos.copyFrom(views.input.mouse)
+			views.dispatch(mouseUpEvent)
+			upTime = Klock.currentTimeMillisDouble()
+			if ((downTime - upTime) <= 40.0) {
+				//Console.log("mouseClick: $name")
+				views.dispatch(mouseClickEvent)
+			}
+		}
 
 		fun AGInput.KeyEvent.copyTo(e: KeyEvent) {
 			e.keyCode = this.keyCode
 		}
 
 		// MOUSE
-		agInput.onMouseDown {
-			views.input.mouseButtons = 1
-			updateMousePos()
-			downPos.copyFrom(views.input.mouse)
-			views.dispatch(mouseDownEvent)
-		}
-		agInput.onMouseUp {
-			views.input.mouseButtons = 0
-			updateMousePos()
-			upPos.copyFrom(views.input.mouse)
-			views.dispatch(mouseUpEvent)
-		}
-		agInput.onMouseOver {
-			updateMousePos()
-			views.dispatch(mouseMovedEvent)
-		}
-		agInput.onMouseClick {
-			updateMousePos()
-			views.dispatch(mouseClickEvent)
-		}
+		agInput.onMouseDown { e -> mouseDown("onMouseDown", e.x, e.y) }
+		agInput.onMouseUp { e -> mouseUp("onMouseUp", e.x, e.y) }
+		agInput.onMouseOver { e -> mouseMove("onMouseOver", e.x, e.y) }
+		//agInput.onMouseClick { e -> } // Triggered by mouseUp
 
 		// TOUCH
 		var moveMouseOutsideInNextFrame = false
-		agInput.onTouchStart {
-			views.input.mouseButtons = 1
-			updateTouchPos()
-			downPos.copyFrom(views.input.mouse)
-			views.dispatch(mouseDownEvent)
-		}
-		agInput.onTouchEnd {
-			views.input.mouseButtons = 0
-			updateTouchPos()
-			upPos.copyFrom(views.input.mouse)
-			views.dispatch(mouseUpEvent)
-
-			moveMouseOutsideInNextFrame = true
-		}
-		agInput.onTouchMove {
-			updateTouchPos()
-			views.dispatch(mouseMovedEvent)
-		}
+		agInput.onTouchStart { e -> mouseDown("onTouchStart", e.x, e.y) }
+		agInput.onTouchEnd { e -> mouseUp("onTouchEnd", e.x, e.y); moveMouseOutsideInNextFrame = true }
+		agInput.onTouchMove { e -> mouseMove("onTouchMove", e.x, e.y) }
 
 		// KEYS
 		agInput.onKeyDown {
