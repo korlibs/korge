@@ -4,6 +4,7 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 
 @Suppress("DataClassPrivateConstructor")
+@Deprecated("Use klock instead", ReplaceWith("com.soywiz.klock.TimeSpan"))
 data class TimeSpan private constructor(val ms: Int) : Comparable<TimeSpan>, Interpolable<TimeSpan> {
 	val milliseconds: Int get() = this.ms
 	val seconds: Double get() = this.ms.toDouble() / 1000.0
@@ -28,5 +29,8 @@ data class TimeSpan private constructor(val ms: Int) : Comparable<TimeSpan>, Int
 
 
 
+@Deprecated("Use klock instead", ReplaceWith("com.soywiz.klock.milliseconds"))
 inline val Number.milliseconds get() = TimeSpan.fromMilliseconds(this.toInt())
+
+@Deprecated("Use klock instead", ReplaceWith("com.soywiz.klock.seconds"))
 inline val Number.seconds get() = TimeSpan.fromMilliseconds((this.toDouble() * 1000.0).toInt())
