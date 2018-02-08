@@ -81,7 +81,7 @@ Planned features:
 
 Example:
 
-```
+```kt
 class Sample1Scene(
 	@Path("korge.png") val korgeTex: Texture,
 	@Path("simple.swf") val swfLibrary: AnLibrary,
