@@ -12,7 +12,6 @@ import kotlin.test.*
 class BitmapFontTest {
 	val ag = LogAG()
 	val ctx = RenderContext(ag, coroutineContext = EmptyCoroutineContext)
-	val imageFormats = defaultImageFormats
 
 	@Test
 	@Ignore//("File not found")

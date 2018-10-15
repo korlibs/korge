@@ -1,18 +1,16 @@
 package com.soywiz.korge.build.atlas
 
-import com.soywiz.korge.Korge
-import com.soywiz.korge.atlas.AtlasInfo
-import com.soywiz.korge.build.ResourceProcessor
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.format.ImageEncodingProps
-import com.soywiz.korim.format.defaultImageFormats
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.async.toList
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.nextAlignedTo
-import com.soywiz.korio.vfs.VfsFile
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.binpack.BinPacker
+import com.soywiz.korge.*
+import com.soywiz.korge.atlas.*
+import com.soywiz.korge.build.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.serialization.json.*
+import com.soywiz.korio.util.*
+import com.soywiz.korio.vfs.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.binpack.*
 
 object AtlasResourceProcessor : ResourceProcessor("atlas") {
 	override val version: Int = 0
@@ -26,7 +24,12 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 		val bitmaps = files.map { it to it.readBitmap() }
 
-		val packs = BinPacker.packSeveral(2 * 4096.0, 2 * 4096.0, bitmaps) { Size((it.second.width + 4).nextAlignedTo(4), (it.second.height + 4).nextAlignedTo(4)) }
+		val packs = BinPacker.packSeveral(2 * 4096.0, 2 * 4096.0, bitmaps) {
+			Size(
+				(it.second.width + 4).nextAlignedTo(4),
+				(it.second.height + 4).nextAlignedTo(4)
+			)
+		}
 		if (packs.size != 1) {
 			println("Atlas packer failed: ${packs.size}")
 		}
@@ -55,7 +58,14 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 					trimmed = false
 				)
 			}.toMap(),
-			meta = AtlasInfo.Meta(app = "korge", format = "RGBA8888", image = outputImageFile.basename, scale = 1.0, size = AtlasInfo.Size(out.width, out.height), version = Korge.VERSION)
+			meta = AtlasInfo.Meta(
+				app = "korge",
+				format = "RGBA8888",
+				image = outputImageFile.basename,
+				scale = 1.0,
+				size = AtlasInfo.Size(out.width, out.height),
+				version = Korge.VERSION
+			)
 		)
 
 		//showImageAndWait(out)

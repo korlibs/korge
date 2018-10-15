@@ -1,6 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
@@ -8,6 +9,8 @@ import com.soywiz.korui.light.*
 import kotlin.reflect.*
 
 open class Module {
+	open val imageFormats: List<ImageFormat> = listOf(PNG)
+
 	open val bgcolor: RGBA = Colors.BLACK
 	open val title: String = "Game"
 	open val icon: String? = null

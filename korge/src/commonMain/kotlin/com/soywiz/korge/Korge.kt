@@ -42,6 +42,8 @@ object Korge {
 		val size = config.module.size
 		val moduleArgs = ModuleArgs(config.args)
 
+		RegisteredImageFormats.register(*config.module.imageFormats.toTypedArray())
+
 		logger.trace { "pre injector" }
 		Fonts.init()
 		injector
@@ -478,7 +480,7 @@ object Korge {
 		val args: Array<String> = arrayOf(),
 		val container: AGContainer? = null,
 		val eventDispatcher: EventDispatcher = DummyEventDispatcher,
-		val imageFormats: ImageFormats = defaultImageFormats,
+		val imageFormats: ImageFormat = RegisteredImageFormats,
 		val frame: Frame? = null,
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),

@@ -54,7 +54,7 @@ class Views(
 	val koruiContext: KoruiContext
 ) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder,
 	BoundsProvider {
-	var imageFormats = defaultImageFormats
+	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true

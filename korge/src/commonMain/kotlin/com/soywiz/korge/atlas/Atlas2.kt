@@ -31,7 +31,7 @@ suspend fun VfsFile.readAtlas2(views: Views): Atlas2 {
 		val height = json["height"].toInt()
 		val file = json["file"].toString()
 
-		val imageFile = this@readAtlas2.parent[file].readBitmap(defaultImageFormats)
+		val imageFile = this@readAtlas2.parent[file].readBitmap()
 
 		Atlas2(entries, entries.associate { it.name to imageFile.sliceWithSize(it.x, it.y, it.w, it.h) })
 	}
