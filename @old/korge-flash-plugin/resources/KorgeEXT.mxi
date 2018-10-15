@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<macromedia-extension
+	name="KorgeEXT"
+	version="0.0.1"
+	requires-restart="true"
+>
+	<author name="soywiz"/>
+	<products>
+		<product name="Flash" version="11" primary="true"/>
+	</products>
+	<description><![CDATA[]]></description>
+	<ui-access><![CDATA[]]></ui-access>
+	<license-agreement><![CDATA[]]></license-agreement>
+	<files>
+		<file source="KorgeEXT.swf" destination="$flash/WindowSWF"/>
+	</files>
+</macromedia-extension>

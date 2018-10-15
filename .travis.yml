@@ -1,24 +1,44 @@
-language: java
+matrix:
+  include:
+  - os: linux
+    language: java
+    jdk: oraclejdk8
+    env: KBUILD=linux
+    install:
+    - nvm install 8
+    - nvm use 8
+    - node --version
+    - npm -g install mocha
+    - which node
+    - which mocha
+    script:
+    - ./gradlew -s -i check build
+  - os: windows
+    env: KBUILD=windows
+    language: shell # java is not supported but jdk is installed
+    script:
+    - powershell -Command "cmd /c travis_win.bat"
+  - os: osx
+    env: KBUILD=macos
+    language: java
+    jdk: oraclejdk8
+    install:
+    - nvm install 8
+    - nvm use 8
+    - node --version
+    - npm -g install mocha
+    - which node
+    - which mocha
+    script:
+    - ./gradlew -s -i check build
 
-jdk:
-  - oraclejdk8
-
-install:
-  - nvm install 8
-  - nvm use 8
-  - node --version
-  - npm -g install mocha
-  - which node
-  - which mocha
-
-script:
-  - jdk_switcher use oraclejdk8
-  - ./gradlew -s -i check install
-
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+#before_cache:
+#  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+#  - rm -f $HOME/.gradle-linux/caches/modules-2/modules-2.lock
+#  - rm -f $HOME/.gradle-win/caches/modules-2/modules-2.lock
+#
+#cache:
+#  directories:
+#    - $HOME/.gradle/caches/
+#    - $HOME/.gradle/wrapper/
+#    - $HOME/.konan

@@ -1,0 +1,18 @@
+group 'com.brashmonkey.spriter'
+version '1.0.1'
+
+apply plugin: 'java'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task spriter(type: Jar)
+
+artifacts {
+	archives spriter
+}

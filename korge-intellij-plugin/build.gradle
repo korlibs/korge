@@ -18,11 +18,10 @@ intellij {
 	version "IC-2017.2.5"
 	plugins = ['kotlin']
 	pluginName 'KorgePlugin'
-	plugins 'coverage'
 	downloadSources true
 }
 
-publishPlugin  {
+publishPlugin {
 	if (globalProps.jetbrainsUsername != null) {
 		username globalProps.jetbrainsUsername
 		password globalProps.jetbrainsPassword

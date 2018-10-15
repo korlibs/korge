@@ -3,3 +3,6 @@
 /.idea
 /out
 Thumbs.db
+*.iws
+*.ipr
+*.iml

@@ -1,34 +1,201 @@
-buildscript {
-	ext.projectVersion = '0.19.2'
-	ext.projectName = 'korge'
-	ext.projectGroup = 'com.soywiz'
-	ext.projectDesc = 'Korge: Kotlin cORoutines Game Engine'
-	ext.projectHost = 'github'
-	ext.projectOrg = 'korlibs'
-	ext.projectLicense = 'MIT'
-	ext.projectDevelNick = 'soywiz'
-	ext.projectDevelName = 'Carlos Ballesteros Velasco'
-	ext.projectInceptionYear = 2017
-
-	ext.korflVersion = '0.19.1'
-	ext.korioVersion = '0.19.1'
-	ext.korimVersion = '0.19.1'
-	ext.korauVersion = '0.19.1'
-	ext.koragVersion = '0.19.1'
-	ext.koruiVersion = '0.19.2'
-	ext.kloggerVersion = '0.4.0'
-	ext.kotlinVersion = '1.2.10'
-
-	repositories {
-		mavenLocal()
-		jcenter()
-		maven { url "https://plugins.gradle.org/m2/" }
-	}
-
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-		classpath "gradle.plugin.com.soywiz:korlibs-build-gradle-plugin:0.1.5"
-	}
+plugins {
+    id 'kotlin-multiplatform' version '1.3.0-rc-146'
+    id 'com.moowork.node' version '1.2.0'
 }
 
-apply plugin: 'com.soywiz.korlibs-build-gradle-plugin'
+allprojects {
+    repositories {
+        mavenLocal()
+        maven { url "https://dl.bintray.com/soywiz/soywiz" }
+        maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
+        jcenter()
+        mavenCentral()
+    }
+
+}
+
+subprojects {
+    apply plugin: 'kotlin-multiplatform'
+    apply plugin: 'com.moowork.node'
+
+    kotlin {
+        targets {
+            //fromPreset(presets.iosX64, 'iosX64')
+            //fromPreset(presets.iosArm32, 'iosArm32')
+            //fromPreset(presets.iosArm64, 'iosArm64')
+            fromPreset(presets.macosX64, 'macosX64')
+            //fromPreset(presets.linuxX64, 'linuxX64')
+            fromPreset(presets.mingwX64, 'mingwX64')
+            fromPreset(presets.jvm, 'jvm')
+            fromPreset(presets.js, 'js') {
+                compilations.main {
+                    compileKotlinJs.kotlinOptions {
+                        languageVersion = "1.3"
+                        sourceMap = true
+                        metaInfo = true
+                        moduleKind = "umd"
+                    }
+                    compileTestKotlinJs.kotlinOptions {
+                        languageVersion = "1.3"
+                        moduleKind = "commonjs"
+                    }
+                }
+            }
+        }
+        sourceSets {
+            nonNativeCommonMain
+            nativeCommonMain
+            nativeCommonTest
+            nativePosixMain
+            configure([jvmMain, jsMain]) {
+                dependsOn nonNativeCommonMain
+            }
+            mingwX64Main {
+                dependsOn nativeCommonMain
+            }
+            mingwX64Test {
+                dependsOn nativeCommonTest
+            }
+            //configure([iosX64Main, iosArm32Main, iosArm64Main, macosX64Main, linuxX64Main]) {
+            configure([macosX64Main]) {
+                dependsOn nativeCommonMain
+                dependsOn nativePosixMain
+            }
+            //configure([iosX64Test, iosArm32Test, iosArm64Test, macosX64Test, linuxX64Test]) {
+            configure([macosX64Test]) {
+                dependsOn nativeCommonTest
+            }
+        }
+    }
+
+    dependencies {
+        commonMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-common"
+        commonTestImplementation "org.jetbrains.kotlin:kotlin-test-annotations-common"
+        commonTestImplementation "org.jetbrains.kotlin:kotlin-test-common"
+
+        jsMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-js"
+        jsTestImplementation "org.jetbrains.kotlin:kotlin-test-js"
+
+        jvmMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        jvmTestImplementation "org.jetbrains.kotlin:kotlin-test"
+        jvmTestImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+    }
+
+    // Javascript test configuration
+    node {
+        version = '8.11.4'
+        download = true
+        nodeModulesDir = file("$buildDir/yarn")
+    }
+
+    def jsCompilations = kotlin.targets.js.compilations
+    task addYarnDeps(type: YarnTask) {
+        doFirst {
+            mkdir "$buildDir/yarn"
+        }
+        args = ["add", "mocha@5.2.0"]
+    }
+
+    task populateNodeModules {
+        doLast {
+            copy {
+                from "$buildDir/yarn/node_modules"
+                from jsCompilations.main.output.first()
+                jsCompilations.test.runtimeDependencyFiles.each {
+                    if (it.exists() && !it.isDirectory()) {
+                        from zipTree(it.absolutePath).matching { include '*.js' }
+                    }
+                }
+                into "$buildDir/node_modules"
+            }
+        }
+    }
+
+    task runMocha(type: NodeTask, dependsOn: [jsCompilations.test.compileKotlinTaskName, addYarnDeps, populateNodeModules]) {
+        script = file("$buildDir/node_modules/mocha/bin/mocha")
+        args = [relativePath("${jsCompilations.test.output.first()}/${project.name}_test.js")]
+    }
+
+    jsTest.dependsOn runMocha
+
+    // Fix for https://github.com/srs/gradle-node-plugin/issues/301
+    repositories.whenObjectAdded {
+        if (it instanceof IvyArtifactRepository) {
+            metadataSources {
+                artifact()
+            }
+        }
+    }
+
+    // Publishing
+    group 'com.soywiz'
+    version projectVersion
+    apply plugin: 'maven-publish'
+
+    def pomBaseData = {
+        licenses {
+            license {
+                name "MIT License"
+                url "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE"
+            }
+        }
+        scm {
+            url "https://github.com/korlibs/korge"
+        }
+    }
+
+    def generatePom = { pom ->
+        pom.withXml {
+            def root = it.asNode()
+            root.appendNode('name', project.name)
+            root.appendNode('description', 'Multiplatform Game Engine written in Kotlin (JVM, JS, Native and COMMON)')
+            root.appendNode('url', 'https://github.com/korlibs/korge')
+            root.children().last() + pomBaseData
+        }
+    }
+
+    ext.generatePom = generatePom
+
+    def publishUser = rootProject.findProperty('BINTRAY_USER') ?: project.findProperty('bintrayUser') ?: System.getenv('BINTRAY_USER')
+    def publishPassword = rootProject.findProperty('BINTRAY_KEY') ?: project.findProperty('bintrayApiKey') ?: System.getenv('BINTRAY_API_KEY')
+
+    if (publishUser && publishPassword) {
+        publishing {
+            repositories {
+                maven {
+                    credentials {
+                        username publishUser
+                        password publishPassword
+                    }
+                    url 'https://api.bintray.com/maven/soywiz/soywiz/korlibs/'
+                    //url "https://api.bintray.com/content/soywiz/soywiz/korlibs/$projectVersion"
+                }
+            }
+
+            configure(publications) {
+                generatePom(pom)
+            }
+        }
+    }
+}
+
+apply plugin: 'idea'
+
+//idea {
+//	module {
+//		excludeDirs = [file(".gradle")]
+//		[
+//			".idea",
+//			"@old",
+//			"docs",
+//			"korge-build",
+//			"korge-samples",
+//			"korge-intellij-plugin",
+//			"korge-gradle-plugin",
+//			"korge-flash-plugin",
+//
+//		].each {
+//			excludeDirs << file("$it")
+//		}
+//	}
+//}

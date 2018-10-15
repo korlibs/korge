@@ -56,34 +56,36 @@ interface FlashDocument {
 	addDataToSelection(name: string, type: string, data: any): void; // Stores specified data with the selected object(s).
 	addFilter(filterName: string): void; // Applies a filter to the selected objects.
 	addItem(position: FlashPoint, item: FlashItem): boolean; // Adds an item from any open document or library
-	addNewLine(startPoint: FlashPoint, endpoint: FlashPoint):void; // Adds a new path between two points.
+	addNewLine(startPoint: FlashPoint, endpoint: FlashPoint): void; // Adds a new path between two points.
 	addNewOval(boundingRectangle: FlashRectangle, bSuppressFill?: boolean, bSuppressStroke?: boolean): void; // Adds a new Oval object in the specified
 	addNewPrimitiveOval(boundingRectangle: FlashRectangle, bSpupressFill?: boolean, bSuppressStroke?: boolean): void;
+
 	addNewRectangle(boundingRectangle: FlashRectangle, roundness: number, bSuppressFill?: boolean, bSuppressStroke?: boolean); // Adds a new rectangle or rounded rectangle,
 	addNewPrimitiveRectangle(boundingRectangle: FlashRectangle, roundness: number, bSuppressFill?: boolean, bSuppressStroke?: boolean); // Adds a new rectangle or rounded rectangle,
 	addNewPublishProfile(profileName?: string): void;
+
 	addNewScene(name: string): boolean; // Adds a new scene (Timeline object) as the next
 	addNewText(boundingRectangle: FlashRectangle, text?: string): void; // Inserts a new empty text field.
 	align(alignmode: string, bUseDocumentBounds?: boolean); // Aligns the selection.
 	allowScreens(): void; // Use this method before using the
 	/** Arranges the selection on the Stage. "back", "backward", "forward", and "front" */
 	arrange(arrangeMode: string): void;
-	
+
 	/** Performs a break-apart operation on the current */
 	breakApart(): void;
-	
+
 	/** Indicates whether the Edit Symbols menu and */
 	canEditSymbol(): boolean;
-	
+
 	/** Determines whether you can use the */
 	canRevert(): boolean;
-	
+
 	///** Determines whether a version of the specified */
 	//canSaveAVersion(): boolean;
 
 	/** Determines whether you can use the */
 	canTestMovie(): boolean;
-	
+
 	/** Determines whether you can use the */
 	canTestScene(): boolean;
 
@@ -92,10 +94,10 @@ interface FlashDocument {
 
 	/** Copies the current selection from the document */
 	clipCopy(): void;
-	
+
 	/** Cuts the current selection from the document */
 	clipCut(): void;
-	
+
 	/** Pastes the contents of the Clipboard into the document. */
 	clipPaste(bInPlace?: boolean): void;
 
@@ -119,7 +121,7 @@ interface FlashDocument {
 
 	/** Deletes the currently active profile, if there is */
 	deletePublishProfile(): boolean;
-	
+
 	/** Deletes the current scene (Timeline object), and */
 	deleteScene(): boolean;
 
@@ -254,7 +256,7 @@ interface FlashDocument {
 
 	/** Performs a double mouse click from the */
 	mouseDblClk(position: FlashPoint, bAltDown: boolean, bShiftDown: boolean, bShiftSelect: boolean): void;
-	
+
 	/** If the selection contains at least one path with at */
 	moveSelectedBezierPointsBy(delta: FlashPoint): void;
 
@@ -263,7 +265,7 @@ interface FlashDocument {
 
 	/** Optimizes smoothing for the current selection, */
 	optimizeCurves(smoothing: number, bUseMultiplePasses: boolean): void;
-	
+
 	/** Publishes the document according to the active */
 	publish(): void;
 
@@ -316,7 +318,7 @@ interface FlashDocument {
 	save(bOkToSaveAs?: boolean): boolean;
 
 	/** saves and compacts the file. This method is equivalent to selecting File > Save and Compact. */
-	saveAndCompact(bOkToSaveAs?: boolean): boolean; 
+	saveAndCompact(bOkToSaveAs?: boolean): boolean;
 
 	//saveAsVersion(); // Saves a version of the specified document to the
 
@@ -334,7 +336,7 @@ interface FlashDocument {
 
 	/** Sets the blending mode for the selected objects.*/
 	setBlendMode(mode: string): void;
-	
+
 	/** Sets the fill settings for the Tools panel, Property */
 	setCustomFill(fill: FlashFill): void;
 
@@ -352,7 +354,7 @@ interface FlashDocument {
 
 	/** Sets a specified filter property for the currently */
 	setFilterProperty(property: string, filterIndex: number, value: any): void;
-	
+
 	/** Applies filters to the selected objects .*/
 	setFilters(filterArray: FlashFilter[]): void;
 
@@ -382,7 +384,7 @@ interface FlashDocument {
 
 	/** Moves and resizes the selection in a single */
 	setSelectionBounds(boundingRectangle: FlashRectangle, bContactSensitiveSelection?: boolean): void;
-	
+
 	/** Draws a rectangular selection marquee relative */
 	setSelectionRect(rect: FlashRectangle, bReplaceCurrentSelection?: boolean, bContactSensitiveSelection?: boolean): void;
 
@@ -399,49 +401,51 @@ interface FlashDocument {
 
 	/** Changes the stroke size of the selection to the*/
 	setStrokeSize(size: number): void;
-	
+
 	/** Changes the stroke style of the selection to the */
 	setStrokeStyle(strokeType: string): void;
-	
+
 	/** Changes the bounding rectangle for the selected */
 	setTextRectangle(boundingRectangle: FlashRectangle): boolean;
-	
+
 	/** Sets the text selection of the currently selected */
 	setTextSelection(startIndex: number, endIndex: number): boolean;
-	
+
 	/** Inserts a string of text. */
 	setTextString(text: string, startIndex?: number, endIndex?: number): boolean;
-	
+
 	/** Moves the transformation point of the current */
 	setTransformationPoint(transformationPoint: FlashPoint): void;
-	
+
 	/** Skews the selection by a specified amount. */
 	skewSelection(xSkew: number, ySkew: number, whichEdge?: string): void;
-	
+
 	/** Smooths the curve of each selected fill outline or */
 	smoothSelection(): void;
-	
+
 	/** Spaces the objects in the selection evenly. */
 	space(direction: string, bUseDocumentBounds?: boolean): void;
-	
+
 	/** Straightens the currently selected strokes; */
 	straightenSelection(): void;
-	
+
 	/** Swaps the current selection with the specified */
 	swapElement(name: string): void;
-	
+
 	/** Swaps the Stroke and Fill colors. */
 	swapStrokeAndFill(): void;
+
 	//synchronizeWithHeadVersion(); // Synchronizes the specified document with the
 
 	/** Executes a Test Movie operation on the */
 	testMovie(): void;
-	
+
 	/** Executes a Test Scene operation on the current */
 	testScene(): void;
-	
+
 	/** Performs a trace bitmap on the current selection; */
 	traceBitmap(threshold: number, minimumArea: number, curveFit: string, cornerThreshold: string): void;
+
 	transformSelection(a: number, b: number, c: number, d: number): void; // Performs a general transformation on the current
 	unGroup(): void; // Ungroups the current selection.
 	union(): void; // Combines all selected shapes into a drawing
@@ -461,7 +465,7 @@ interface FlashDocument {
 	description: string; // A string that is equivalent to the Description field in
 	docClass; // Specifies the top-level ActionScript 3.0 class
 	forceSimple: boolean; // A Boolean value that specifies whether the children
-    frameRate: number; // A float value that specifies the number of frames
+	frameRate: number; // A float value that specifies the number of frames
 	height: number; // An integer that specifies the height of the
 	id: number; // A unique integer (assigned automatically) that
 	library: FlashLibrary; // Read-only; the library object for a document.
@@ -469,35 +473,39 @@ interface FlashDocument {
 	name: number; // Read-only; a string that represents the name of a
 	path: number; // Read-only; a string that represents the path of the
 	publishProfiles: string[]; // Read-only; an array of the publish profile names for
-	
+
 	/** Read-only; the current ScreenOutline object for the */
 	// Not available in CS5
 	//screenOutline: FlashScreenOutline;
 
 	/** An array of the selected objects in the document. */
 	selection: FlashElement[];
-	
+
 	/** A Boolean value that specifies whether the object */
 	silent: boolean;
-	
+
 	/** Read-only; an array of Timeline objects (see */
 	timelines: FlashTimeline[];
-	
+
 	/** Read-only; a Matrix object. */
 	viewMatrix: FlashMatrix;
-	
+
 	/** An integer that specifies the width of the document */
 	width: number;
-	
+
 	/** Specifies the zoom percent of the Stage at author */
 	zoomFactor: number;
 }
 
 interface FlashText {
 	getTextAttr();
+
 	getTextString();
+
 	setTextAttr();
+
 	setTextString();
+
 	accName: string;
 	antiAliasSharpness: number;
 	antiAliasThickness: number;
@@ -529,21 +537,36 @@ interface FlashTextAttrs extends FlashText {
 }
 
 interface FlashFLfile {
-	copy(fileURI:string, copyURI:string): boolean;
-	createFolder(folderURI:string): boolean;
-	exists(fileURI:string): boolean;
-	getAttributes(fileOrFolderURI:string): string;
-	getCreationDate(fileOrFolderURI:string): string;
-	getCreationDateObj(fileOrFolderURI:string): Date;
-	getModificationDate(fileOrFolderURI:string): string;
+	copy(fileURI: string, copyURI: string): boolean;
+
+	createFolder(folderURI: string): boolean;
+
+	exists(fileURI: string): boolean;
+
+	getAttributes(fileOrFolderURI: string): string;
+
+	getCreationDate(fileOrFolderURI: string): string;
+
+	getCreationDateObj(fileOrFolderURI: string): Date;
+
+	getModificationDate(fileOrFolderURI: string): string;
+
 	getModificationDateObj(fileOrFolderURI: string): Date;
+
 	getSize(fileURI: string): number;
+
 	listFolder(folderURI: string, filesOrDirectories?: boolean): string[];
+
 	platformPathToURI(fileName: string): string;
+
 	read(fileOrFolderURI: string): string;
+
 	remove(fileOrFolderURI: string): boolean;
+
 	setAttributes(fileURI: string, strAttrs: string): boolean;
+
 	uriToPlatformPath(fileURI: string): string;
+
 	write(fileURI: string, textToWrite: string, strAppendMode?: string): boolean;
 }
 
@@ -557,13 +580,19 @@ interface FlashInstance {
 }
 
 interface _FlashBitmap {
-	width; height; depth; bits; cTab?: string[];
+	width;
+	height;
+	depth;
+	bits;
+	cTab?: string[];
 }
 
 // if FlashElement.elementType == 'instance'
 interface FlashBitmapInstance {
 	getBits(): _FlashBitmap;
+
 	setBits(bitmap: _FlashBitmap): void;
+
 	hPixels: number;
 	vPixels: number;
 
@@ -622,9 +651,13 @@ interface FlashComponentInstance {
  */
 interface FlashShape extends FlashOval {
 	getCubicSegmentPoints(cubicSegmentIndex: number): FlashPoint[];
+
 	beginEdit(): void;
+
 	deleteEdge(index: number): void;
+
 	endEdit(): void;
+
 	contours: FlashContour[];
 	edges: FlashEdge[];
 	isDrawingObject: boolean;
@@ -638,23 +671,35 @@ interface FlashShape extends FlashOval {
 
 interface FlashElement extends FlashInstance, FlashBitmapInstance, FlashCompiledClipInstance, FlashSymbolInstance, FlashComponentInstance, FlashShape {
 	getPersistentData(name: string): any;
+
 	getTransformationPoint(): FlashPoint;
-	hasPersistentData(name:string): boolean;
+
+	hasPersistentData(name: string): boolean;
+
 	removePersistentData(name: string): void;
+
 	setPersistentData(name: string, type: 'integer', value: number): void;
+
 	setPersistentData(name: string, type: 'integerArray', value: number[]): void;
+
 	setPersistentData(name: string, type: 'double', value: number): void;
+
 	setPersistentData(name: string, type: 'doubleArray', value: number[]): void;
+
 	setPersistentData(name: string, type: 'string', value: string): void;
+
 	setPersistentData(name: string, type: 'byteArray', value: any[]): void;
+
 	setPersistentData(name: string, type: string, value: any): void;
 
 	setTransformationPoint(transformationPoint: FlashPoint): void;
+
 	depth: number;
 
 	// http://help.adobe.com/es_ES/flash/cs/extend/WS1290E259-EED6-445f-B170-8B90FDFB4A98.html
 	// http://blogs.adobe.com/flashpro/2013/07/15/flashpro-cc-publish-persistent-metadata/
 	setPublishPersistentData(name: string, format: '_EMBED_SWF_', publish: boolean): void;
+
 	setPublishPersistentData(name: string, format: string, publish: boolean): void;
 
 	getPublishPersistentData(name: string, format: string): boolean;
@@ -687,7 +732,9 @@ interface FlashElement extends FlashInstance, FlashBitmapInstance, FlashCompiled
 
 interface FlashFrame {
 	getCustomEase();
+
 	setCustomEase();
+
 	actionScript;
 	duration;
 	elements: FlashElement[];
@@ -702,7 +749,7 @@ interface FlashFrame {
 	name;
 	shapeTweenBlend;
 	soundEffect;
-	soundLibraryItem:FlashSoundItem;
+	soundLibraryItem: FlashSoundItem;
 	soundLoop;
 	soundLoopMode;
 	soundName;
@@ -715,8 +762,11 @@ interface FlashFrame {
 
 interface FlashSymbolItem {
 	convertToCompiledClip(): void;
+
 	exportSWC(outputURI: string): void;
+
 	exportSWF(outputURI: string): void;
+
 	scalingGrid: boolean;
 	scalingGridRect: FlashRectangle;
 	sourceAutoUpdate: boolean;
@@ -752,6 +802,7 @@ interface FlashFontItem {
 
 interface FlashSoundItem {
 	exportToFile(fileURI: string): boolean;
+
 	bitRate: string;
 	bits: string;
 	compressionType: string;
@@ -765,6 +816,7 @@ interface FlashSoundItem {
 
 interface FlashVideoItem {
 	exportToFLV(fileURI: string): boolean;
+
 	fileLastModifiedDate: string;
 	sourceFileExists: boolean;
 	sourceFileIsCurrent: boolean;
@@ -774,6 +826,7 @@ interface FlashVideoItem {
 
 interface FlashBitmapItem {
 	exportToFile(fileURI: string): boolean;
+
 	allowSmoothing: boolean;
 	compressionType: string;
 	fileLastModifiedDate: string;
@@ -787,10 +840,13 @@ interface FlashBitmapItem {
 
 interface FlashItem extends FlashSymbolItem, FlashFolderItem, FlashFontItem, FlashSoundItem, FlashVideoItem, FlashBitmapItem, FlashBitmapItem {
 	addData(name: string, type: string, data: any): void;
+
 	getData(name: string): any;
+
 	hasData(name: string): boolean;
+
 	removeData(name: string): void;
-	
+
 	/** Read-only; a string that specifies the type of element.  "undefined", "component", "movie clip", "graphic", "button", "folder", "font", "sound", "bitmap", "compiled clip", "screen", or "video" */
 	itemType: string;
 	linkageBaseClass: string;
@@ -815,22 +871,30 @@ interface FlashLayer {
 	name: string;
 	outline: boolean;
 	parentLayer: FlashLayer;
-	visible:boolean;
+	visible: boolean;
 }
 
 interface FlashLibrary {
 	addItemToDocument(position: FlashPoint, namePath?: string): boolean;
+
 	/** "video", "movie clip", "button", "graphic", "bitmap", "screen", and "folder" */
 	addNewItem(type: string, namePath?: string): boolean;
+
 	deleteItem(namePath?: string): boolean;
+
 	/** Method; makes a copy of the currently selected or specified item. The new item has a default name (such as item copy) and is set as the currently selected item. If more than one item is selected, the command fails. */
 	duplicateItem(namePath: string): boolean;
+
 	editItem(namePath?: string): boolean;
+
 	expandFolder(bExpand: boolean, bRecurseNestedParents?: boolean, namePath?: string): boolean;
+
 	findItemIndex(namePath: string): number;
+
 	getItemProperty(property: string): string;
+
 	getItemType(namePath?: string): string;
-	
+
 	/** An array of values for all currently selected items in the library. */
 	getSelectedItems(): FlashItem[];
 
@@ -882,7 +946,7 @@ interface FlashOutputPanel {
 
 	save(fileURI: string, bAppendToFile?: boolean, bUseSystemEncoding?: boolean): void;
 
-	trace(message:string):void;
+	trace(message: string): void;
 }
 
 /**
@@ -894,10 +958,15 @@ interface FlashOutputPanel {
  */
 interface FlashHalfEdge {
 	getEdge(): FlashEdge;
+
 	getNext(): FlashHalfEdge;
+
 	getOppositeHalfEdge(): FlashHalfEdge;
+
 	getPrev(): FlashHalfEdge;
+
 	getVertex(): FlashVertex;
+
 	id: number;
 	index: number;
 }
@@ -938,6 +1007,7 @@ interface FlashFill {
 
 interface FlashContour {
 	getHalfEdge(): FlashHalfEdge;
+
 	fill: FlashFill;
 	interior: boolean;
 	orientation: number;
@@ -998,9 +1068,13 @@ interface FlashStroke {
 
 interface FlashEdge {
 	getControl(i: number): FlashPoint;
+
 	getHalfEdge(index: number): FlashHalfEdge;
-	setControl(index: number, x:number, y:number): void;
+
+	setControl(index: number, x: number, y: number): void;
+
 	splitEdge(t: number): void;
+
 	cubicSegmentIndex: number;
 	id: number;
 	isLine: boolean;
@@ -1009,174 +1083,186 @@ interface FlashEdge {
 
 interface FlashVertex {
 	getHalfEdge(): FlashHalfEdge;
+
 	setLocation(x: number, y: number);
+
 	x: number;
 	y: number;
 }
 
 
 interface FlashTimeline {
-    /** Adds a motion guide layer above the current layer and attaches the current layer to the newly added guide layer. */
-    addMotionGuide(): number;
+	/** Adds a motion guide layer above the current layer and attaches the current layer to the newly added guide layer. */
+	addMotionGuide(): number;
 
-    /**  Adds a new layer to the document and makes it the current layer. */
-    addNewLayer(name?: string, layerType?: string, bAddAbove?: boolean);
+	/**  Adds a new layer to the document and makes it the current layer. */
+	addNewLayer(name?: string, layerType?: string, bAddAbove?: boolean);
 
-    /** Deletes all the contents from a frame or range of frames on the current layer. */
-    clearFrames(startFrameIndex?: number, endFrameIndex?: number): void;
+	/** Deletes all the contents from a frame or range of frames on the current layer. */
+	clearFrames(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Converts a keyframe to a regular frame and deletes its contents on the current layer. */
-    clearKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
+	/** Converts a keyframe to a regular frame and deletes its contents on the current layer. */
+	clearKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Converts frames to blank keyframes on the current layer. */
-    convertToBlankKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Converts a range of frames to keyframes (or converts the selection if no frames are specified) on the current layer. */
-    convertToKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Copies a range of frames on the current layer to the clipboard. */
-    copyFrames(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Copies a range of Timeline layers to the clipboard. */
-    copyLayers(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Copies motion on selected frames, either from a motion tween or from frame - by - frame animation, so it can be applied to other frames. */
-    copyMotion(): void;
-    
-    /** Copies motion on selected frames, either from a motion tween or from frame - by - frame animation, to the clipboard as ActionScript 3.0 code. */
-    copyMotionAsAS3(): void;
-        
-    /** Creates a new motion object at a designated start and end frame. */
-    createMotionObject(startFrameIndex?: number, endFrameIndex?: number): void;
-    
-    /** Sets the frame.tweenType property to motion for each selected keyframe on the current layer, and converts each frame's contents to a single symbol instance if necessary. */
-    createMotionTween(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Cuts a range of frames on the current layer from the timeline and saves them to the clipboard. */
-    cutFrames(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Cuts a range of Timeline layers and saves them to the clipboard. */
-    cutLayers(startLayerIndex?: number, endLayerIndex?: number): void;
-        
-    /** Deletes a layer. */
-    deleteLayer(index: number): void;
-        
-    /** Duplicates the selected layers or specified layers. */
-    duplicateLayers(startFrameIndex?: number, endFrameIndex?: number): void;
-        
-    /** Expands or collapses the specified folder or folders. */
-    expandFolder(bExpand: boolean, bRecurseNestedParents?: boolean, index?: number): void;
-        
-    /** Finds an array of indexes for the layers with the given name. */
-    findLayerIndex(name: string): number[];
-        
-    /** Retrieves the specified property's value for the selected frames. */
-    getFrameProperty(property: string, startframeIndex?: number, endFrameIndex?: number): any;
-        
-    /** Returns an XML string that represents the current positions of the horizontal and vertical guide lines for a timeline(View > Guides > Show Guides). */
-    getGuidelines(): string;
-        
-    /** Retrieves the specified property's value for the selected layers. */
-    getLayerProperty(property: string): any;
-        
-    /** Retrieves the currently selected frames in an array. */
-    getSelectedFrames(): FlashFrame[];
-    
-    /** Retrieves the zero - based index values of the currently selected layers. */
-    getSelectedLayers(): FlashLayer[];
-    
-    /** Inserts a blank keyframe at the specified frame index; if the index is not specified, inserts the blank keyframe by using the playhead / selection. */
-    insertBlankKeyframe(frameNumIndex?: number): void;
-        
-    /** Inserts the specified number of frames at the given frame number. */
-    insertFrames(numFrames?: number, bAllLayers?: boolean, frameNumIndex?: number): void;
-    
-    /** Inserts a keyframe at the specified frame. */
-    insertKeyframe(frameNumIndex?: number): void;
-        
-    /** Pastes the range of frames from the clipboard into the specified frames. */
-    pasteFrames(startFrameIndex?: number, endFrameIndex?: number): void;
+	/** Converts frames to blank keyframes on the current layer. */
+	convertToBlankKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Pastes copied layers to the Timeline above the specified layer index. */
-    pasteLayers(layerIndex: number): number;
-        
-    /** Pastes the range of motion frames retrieved by */
-    pasteMotion(): void;
-        
-    /** Deletes the frame. */
-    removeFrames(startFrameIndex?: number, endFrameIndex?: number): void;
-    
-    /** Removes the motion object created with timeline.createMotionObject(), and converts the frame(s) to static frames. */
-    removeMotionObject(startFrame: number, endFrame: number):void
-        
-    /** Moves the first specified layer before or after the second specified layer. */
-    reorderLayer(layerToMove: number, layerToPutItBy: number, bAddBefore?: boolean): void;
-        
-    /** Reverses a range of frames. */
-    reverseFrames(startFrameIndex?: number, endFrameIndex?: number): void
-    
-    /** Selects all the frames in the current timeline. */
-    selectAllFrames(): void;
-    
-    /** Sets the property of the Frame object for the selected frames. */
-    setFrameProperty(property: string, value: any, startFrameIndex?: number, endFrameIndex?: number): void;
-    
-    /** Replaces the guide lines for the timeline with the information specified. */
-    setGuidelines(xmlString: string): boolean;
+	/** Converts a range of frames to keyframes (or converts the selection if no frames are specified) on the current layer. */
+	convertToKeyframes(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Sets the specified property on all the selected layers to a specified value. */
-    setLayerProperty(property: string, value: any, layersToChange?: string): void;
+	/** Copies a range of frames on the current layer to the clipboard. */
+	copyFrames(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Selects a range of frames in the current layer or sets the selected frames to the selection array passed into this method. */
-    setSelectedFrames(startFrameIndex: number, endFrameIndex: number, bReplaceCurrentSelection?: boolean): void;
-    setSelectedFrames(selectionList: number[], bReplaceCurrentSelection?: boolean): void;
+	/** Copies a range of Timeline layers to the clipboard. */
+	copyLayers(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Sets the layer to be selected; also makes the specified layer the current layer. */
-    setSelectedLayers(index: number, bReplaceCurrentSelection?: boolean): void;
+	/** Copies motion on selected frames, either from a motion tween or from frame - by - frame animation, so it can be applied to other frames. */
+	copyMotion(): void;
 
-    /** Shows the layer masking during authoring by locking the mask and masked layers. */
-    showLayerMasking(layer: number): void;
+	/** Copies motion on selected frames, either from a motion tween or from frame - by - frame animation, to the clipboard as ActionScript 3.0 code. */
+	copyMotionAsAS3(): void;
 
-    /** Starts automatic playback of the timeline if it is not currently playing. */
-    startPlayback(): void;
+	/** Creates a new motion object at a designated start and end frame. */
+	createMotionObject(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** Stops autoumatic playback of the timeline if it is currently playing. */
-    stopPlayback(): void;
+	/** Sets the frame.tweenType property to motion for each selected keyframe on the current layer, and converts each frame's contents to a single symbol instance if necessary. */
+	createMotionTween(startFrameIndex?: number, endFrameIndex?: number): void;
 
-    /** A zero-based index for the frame at the current */
+	/** Cuts a range of frames on the current layer from the timeline and saves them to the clipboard. */
+	cutFrames(startFrameIndex?: number, endFrameIndex?: number): void;
+
+	/** Cuts a range of Timeline layers and saves them to the clipboard. */
+	cutLayers(startLayerIndex?: number, endLayerIndex?: number): void;
+
+	/** Deletes a layer. */
+	deleteLayer(index: number): void;
+
+	/** Duplicates the selected layers or specified layers. */
+	duplicateLayers(startFrameIndex?: number, endFrameIndex?: number): void;
+
+	/** Expands or collapses the specified folder or folders. */
+	expandFolder(bExpand: boolean, bRecurseNestedParents?: boolean, index?: number): void;
+
+	/** Finds an array of indexes for the layers with the given name. */
+	findLayerIndex(name: string): number[];
+
+	/** Retrieves the specified property's value for the selected frames. */
+	getFrameProperty(property: string, startframeIndex?: number, endFrameIndex?: number): any;
+
+	/** Returns an XML string that represents the current positions of the horizontal and vertical guide lines for a timeline(View > Guides > Show Guides). */
+	getGuidelines(): string;
+
+	/** Retrieves the specified property's value for the selected layers. */
+	getLayerProperty(property: string): any;
+
+	/** Retrieves the currently selected frames in an array. */
+	getSelectedFrames(): FlashFrame[];
+
+	/** Retrieves the zero - based index values of the currently selected layers. */
+	getSelectedLayers(): FlashLayer[];
+
+	/** Inserts a blank keyframe at the specified frame index; if the index is not specified, inserts the blank keyframe by using the playhead / selection. */
+	insertBlankKeyframe(frameNumIndex?: number): void;
+
+	/** Inserts the specified number of frames at the given frame number. */
+	insertFrames(numFrames?: number, bAllLayers?: boolean, frameNumIndex?: number): void;
+
+	/** Inserts a keyframe at the specified frame. */
+	insertKeyframe(frameNumIndex?: number): void;
+
+	/** Pastes the range of frames from the clipboard into the specified frames. */
+	pasteFrames(startFrameIndex?: number, endFrameIndex?: number): void;
+
+	/** Pastes copied layers to the Timeline above the specified layer index. */
+	pasteLayers(layerIndex: number): number;
+
+	/** Pastes the range of motion frames retrieved by */
+	pasteMotion(): void;
+
+	/** Deletes the frame. */
+	removeFrames(startFrameIndex?: number, endFrameIndex?: number): void;
+
+	/** Removes the motion object created with timeline.createMotionObject(), and converts the frame(s) to static frames. */
+	removeMotionObject(startFrame: number, endFrame: number): void
+
+	/** Moves the first specified layer before or after the second specified layer. */
+	reorderLayer(layerToMove: number, layerToPutItBy: number, bAddBefore?: boolean): void;
+
+	/** Reverses a range of frames. */
+	reverseFrames(startFrameIndex?: number, endFrameIndex?: number): void
+
+	/** Selects all the frames in the current timeline. */
+	selectAllFrames(): void;
+
+	/** Sets the property of the Frame object for the selected frames. */
+	setFrameProperty(property: string, value: any, startFrameIndex?: number, endFrameIndex?: number): void;
+
+	/** Replaces the guide lines for the timeline with the information specified. */
+	setGuidelines(xmlString: string): boolean;
+
+	/** Sets the specified property on all the selected layers to a specified value. */
+	setLayerProperty(property: string, value: any, layersToChange?: string): void;
+
+	/** Selects a range of frames in the current layer or sets the selected frames to the selection array passed into this method. */
+	setSelectedFrames(startFrameIndex: number, endFrameIndex: number, bReplaceCurrentSelection?: boolean): void;
+
+	setSelectedFrames(selectionList: number[], bReplaceCurrentSelection?: boolean): void;
+
+	/** Sets the layer to be selected; also makes the specified layer the current layer. */
+	setSelectedLayers(index: number, bReplaceCurrentSelection?: boolean): void;
+
+	/** Shows the layer masking during authoring by locking the mask and masked layers. */
+	showLayerMasking(layer: number): void;
+
+	/** Starts automatic playback of the timeline if it is not currently playing. */
+	startPlayback(): void;
+
+	/** Stops autoumatic playback of the timeline if it is currently playing. */
+	stopPlayback(): void;
+
+	/** A zero-based index for the frame at the current */
 	currentFrame: number;
-    
-    /** A zero-based index for the currently active layer. */
-    currentLayer: number;
 
-    /** Read-only; an integer that represents the number of */
-    frameCount: number;
+	/** A zero-based index for the currently active layer. */
+	currentLayer: number;
 
-    /** Read-only; an integer that represents the number of */
-    layerCount: number;
+	/** Read-only; an integer that represents the number of */
+	frameCount: number;
 
-    /** Read-only; an array of layer objects. */
+	/** Read-only; an integer that represents the number of */
+	layerCount: number;
+
+	/** Read-only; an array of layer objects. */
 	layers: FlashLayer[];
-    
-    /** A string that represents the name of the current */
-    name: string;
+
+	/** A string that represents the name of the current */
+	name: string;
 }
 
 interface FlashPath {
 	/// Appends a cubic Bézier curve segment to the path.
 	addCubicCurve(xAnchor: number, yAnchor: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): void;
+
 	/// Appends a quadratic Bézier segment to the path.
 	addCurve(xAnchor: number, yAnchor: number, x2: number, y2: number, x3: number, y3: number): void;
+
 	/// Adds a point to the path.
 	addPoint(x: number, y: number): void;
+
 	/// Removes all points from the path.
 	clear(): void;
+
 	/// Appends a point at the location of the first point of the path and extends the path to that point, which closes the path.
-	close(); void;
+	close();
+
+	void;
+
 	/// Creates a shape on the Stage by using the current stroke and fill settings.
 	makeShape(bSupressFill?: boolean, bSupressStroke?: boolean): void;
+
 	/// Starts a new contour in the path.
 	newContour(): void;
+
 	/// Read-only; an integer representing the number of points in the path.
 	nPts: number;
 }
@@ -1184,88 +1270,135 @@ interface FlashPath {
 interface FlashDrawingLayer {
 	/// Puts Flash in drawing mode.
 	beginDraw(persistentDraw?: boolean): void;
+
 	/// Erases what was previously drawn using the drawingLayer and prepares for more drawing commands.
 	beginFrame(): void;
+
 	/// Draws a cubic curve from the current pen location using the parameters as the coordinates of the cubic segment.
 	cubicCurveTo(x1Ctrl: number, y1Ctrl: number, x2Ctl: number, y2Ctl: number, xEnd: number, yEnd: number): void;
+
 	/// Draws a quadratic curve segment starting at the current drawing position and ending at a specified point.
 	curveTo(xCtl: number, yCtl: number, xEnd: number, yEnd: number): void;
+
 	/// Draws the specified path.
 	drawPath(path: FlashPath): void;
+
 	/// Exits drawing mode.
 	endDraw(): void;
+
 	/// Signals the end of a group of drawing commands.
 	endFrame(): void;
+
 	/// Draws a line from the current drawing position to the point (x,y).
 	lineTo(x: number, y: number): void;
+
 	/// Sets the current drawing position.
 	moveTo(x: number, y: number): void;
+
 	/// Returns a new Path object.
 	newPath(): void;
+
 	/// Sets the color of subsequently drawn data.
 	setColor(color: any): void;
+
 	/// This method is not available.
 	setFill(): void;
+
 	/// This method is not available.
 	setStroke(): void;
 }
 
 interface FlashXMLUI {
 	accept();
+
 	cancel();
+
 	get();
+
 	getControlItemElement();
+
 	getEnabled();
+
 	getVisible();
+
 	set();
+
 	setControItemElement();
+
 	setControItemElements();
+
 	setEnabled();
+
 	setVisible();
 }
 
 interface FlashActionsPanel {
 	getClassForObject();
+
 	getScriptAssistMode();
+
 	getSelectedText();
+
 	getText();
+
 	hasSelection();
+
 	replaceSelectedText();
+
 	setScriptAssistMode();
+
 	setSelection();
+
 	setText();
 }
 
 interface FlashCompilerErrors {
 	clear();
+
 	save();
 }
 
 interface FlashComponentsPanel {
 	addItemToDocument();
+
 	reload();
 }
 
 interface FlashPresetPanel {
 	addNewItem();
+
 	applyPreset();
+
 	deleteFolder();
+
 	deleteItem();
+
 	expandFolder();
+
 	exportItem();
+
 	findItemIndex();
+
 	getSelectedItems();
+
 	importItem();
+
 	moveToFolder();
+
 	newFolder();
+
 	renameItem();
+
 	selectItem();
 }
 
 interface FlashSwfPanel {
 	call(funcName: string, ...args: any[]): any;
+
 	setFocus(): void;
+
 	reload(): void;
+
 	name: string;
 	path: string;
 	dpiScaleFactorX: number;
@@ -1274,10 +1407,15 @@ interface FlashSwfPanel {
 
 interface FlashTools {
 	constraintPoint();
+
 	getKeyDown();
+
 	setCreatingBbox();
+
 	setCursor();
+
 	snapPoint();
+
 	activeTool;
 	altIsDown;
 	ctlIsDown;
@@ -1290,13 +1428,21 @@ interface FlashTools {
 
 interface FlashFL {
 	addEventListener(eventType, callbackFunction);
+
 	browseForFileURL(browseType, title?, previewArea?);
+
 	browseForFolderURL(description: string);
+
 	clearPublishCache(): void;
+
 	clipCopyString(string: string): void;
+
 	closeAll(bPromptToSave?: boolean): void;
+
 	closeAllPlayerDocuments(): boolean;
+
 	closeDocument(documentObject: FlashDocument, bPromptToSaveChanges?: boolean);
+
 	//closeProject();
 	/** A string that specifies the type of document to create. Acceptable values are "timeline", "presentation", and "application". The default value is "timeline", which has the same effect as choosing File > New > Flash File (ActionScript 3.0). This parameter is optional. */
 	createDocument(document?: string): FlashDocument;
@@ -1308,13 +1454,18 @@ interface FlashFL {
 	//enableImmediateUpdates();
 
 	fileExists(fileURI: string): boolean;
+
 	findDocumentDOM(id: number): FlashDocument;
+
 	findDocumentIndex(name: string): number[];
+
 	findObjectInDocByName(instanceName: string, document: FlashDocument): { keyframe: FlashFrame; layer: FlashLayer; timeline: FlashTimeline; parent; }[];
+
 	/** elementType = "shape", "text", "instance", or "shapeObj". */
 	findObjectInDocByType(elementType: string, document: FlashDocument): any[];
+
 	getAppMemoryInfo(memType: number);
-	
+
 	/*
 	 * Method; retrieves the DOM (Document object) of the currently active document (FLA file).
 	 * If one or more documents are open but a document does not currently have focus (for
@@ -1347,9 +1498,13 @@ interface FlashFL {
 
 	/** documentNew", "documentOpened", "documentClosed", "mouseMove", "documentChanged", "layerChanged", and "frameChanged". */
 	removeEventListener(eventType: string): boolean;
+
 	resetAS3PackagePaths(): void;
+
 	resetPackagePaths(): void;
+
 	revertDocument(document: FlashDocument): void;
+
 	//revertDocumentToLastVersion();
 
 	runScript(fileURI: string, funcName?: Function, args?: any[]): any;
@@ -1358,6 +1513,7 @@ interface FlashFL {
 
 	//saveVersionOfDocument();
 	saveDocument(document: FlashDocument, fileURI?: string): boolean;
+
 	saveDocumentAs(document: FlashDocument): boolean;
 
 	/** Method; enables selection or editing of an element. Generally, you will use this method on objects returned by fl.findObjectInDocByName() or fl.findObjectInDocByType(). */
@@ -1374,7 +1530,7 @@ interface FlashFL {
 
 	//synchronizeDocumentWithHeadVersion();
 	trace(message: any): void;
-	
+
 	actionsPanel: FlashActionsPanel;
 	//activeEffect;
 	as3PackagePaths: string;
@@ -1416,6 +1572,9 @@ interface FlashFL {
 
 declare var fl: FlashFL;
 declare var FLfile: FlashFLfile;
+
 declare function alert(alertText: string): void;
+
 declare function confirm(strAlert: string): boolean;
+
 declare function prompt(promptMsg: string, text?: string): string;

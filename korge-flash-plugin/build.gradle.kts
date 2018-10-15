@@ -21,12 +21,17 @@ buildscript {
 val env = System.getenv()
 
 val runtime = Runtime.getRuntime()
-val airsdk by lazy { env["AIRSDK_HOME"] ?: env["AIRSDK"] ?: throw IllegalArgumentException("AIRSDK_HOME environment variable not defined!") }
+val airsdk by lazy {
+	env["AIRSDK_HOME"] ?: env["AIRSDK"]
+	?: throw IllegalArgumentException("AIRSDK_HOME environment variable not defined!")
+}
 
 // https://www.adobeexchange.com/resources/28
 // http://www.adobeexchange.com/ExManCmd_win.zip
 // http://www.adobeexchange.com/ExManCmd_mac.zip
-val exman by lazy { env["EXMAN_HOME"] ?: env["EXMAN"] ?: throw IllegalArgumentException("EXMAN_HOME environment variable not defined!") }
+val exman by lazy {
+	env["EXMAN_HOME"] ?: env["EXMAN"] ?: throw IllegalArgumentException("EXMAN_HOME environment variable not defined!")
+}
 
 val isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
 
@@ -92,10 +97,12 @@ task("build") {
 			"-output=" + File(project.buildDir, "KorgeEXT.swf").absolutePath
 		)
 
-		buildZip(File("build/KorgeEXT.zxp"), mapOf(
-			"KorgeEXT.mxi" to File(project.projectDir, "resources/KorgeEXT.mxi").readBytes(),
-			"KorgeEXT.swf" to File(project.buildDir, "KorgeEXT.swf").readBytes()
-		))
+		buildZip(
+			File("build/KorgeEXT.zxp"), mapOf(
+				"KorgeEXT.mxi" to File(project.projectDir, "resources/KorgeEXT.mxi").readBytes(),
+				"KorgeEXT.swf" to File(project.buildDir, "KorgeEXT.swf").readBytes()
+			)
+		)
 	}
 }
 

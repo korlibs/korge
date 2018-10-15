@@ -1,0 +1,164 @@
+{
+  "imagePath": "texture.png",
+  "name": "Dragon",
+  "SubTexture": [
+	{
+	  "height": 209,
+	  "y": 234,
+	  "frameHeight": 210,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 112,
+	  "width": 111,
+	  "name": "parts/tailTip",
+	  "x": 456
+	},
+	{
+	  "x": 340,
+	  "y": 234,
+	  "width": 112,
+	  "name": "parts/armUpperL",
+	  "height": 86
+	},
+	{
+	  "x": 373,
+	  "y": 859,
+	  "width": 48,
+	  "name": "parts/armL",
+	  "height": 80
+	},
+	{
+	  "x": 1,
+	  "y": 922,
+	  "width": 96,
+	  "name": "parts/handL",
+	  "height": 78
+	},
+	{
+	  "height": 180,
+	  "y": 677,
+	  "frameHeight": 180,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 204,
+	  "width": 203,
+	  "name": "parts/legL",
+	  "x": 238
+	},
+	{
+	  "height": 347,
+	  "y": 397,
+	  "frameHeight": 348,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 236,
+	  "width": 235,
+	  "name": "parts/body",
+	  "x": 1
+	},
+	{
+	  "x": 238,
+	  "y": 397,
+	  "width": 216,
+	  "name": "parts/tail",
+	  "height": 278
+	},
+	{
+	  "x": 1,
+	  "y": 746,
+	  "width": 208,
+	  "name": "parts/clothes1",
+	  "height": 174
+	},
+	{
+	  "x": 443,
+	  "y": 677,
+	  "width": 124,
+	  "name": "parts/hair",
+	  "height": 282
+	},
+	{
+	  "height": 394,
+	  "y": 1,
+	  "frameHeight": 394,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 338,
+	  "width": 337,
+	  "name": "parts/head",
+	  "x": 1
+	},
+	{
+	  "x": 459,
+	  "y": 961,
+	  "width": 28,
+	  "name": "parts/eyeL",
+	  "height": 46
+	},
+	{
+	  "height": 58,
+	  "y": 961,
+	  "frameHeight": 58,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 38,
+	  "width": 37,
+	  "name": "parts/eyeR",
+	  "x": 420
+	},
+	{
+	  "height": 231,
+	  "y": 1,
+	  "frameHeight": 232,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 180,
+	  "width": 180,
+	  "name": "parts/legR",
+	  "x": 340
+	},
+	{
+	  "x": 211,
+	  "y": 859,
+	  "width": 160,
+	  "name": "parts/armUpperR",
+	  "height": 94
+	},
+	{
+	  "height": 77,
+	  "y": 941,
+	  "frameHeight": 78,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 46,
+	  "width": 45,
+	  "name": "parts/armR",
+	  "x": 373
+	},
+	{
+	  "x": 340,
+	  "y": 322,
+	  "width": 98,
+	  "name": "parts/handR",
+	  "height": 58
+	},
+	{
+	  "height": 36,
+	  "y": 955,
+	  "frameHeight": 36,
+	  "frameY": 0,
+	  "frameX": 0,
+	  "frameWidth": 120,
+	  "width": 119,
+	  "name": "parts/beardL",
+	  "x": 237
+	},
+	{
+	  "x": 99,
+	  "y": 955,
+	  "width": 136,
+	  "name": "parts/beardR",
+	  "height": 36
+	}
+  ]
+}

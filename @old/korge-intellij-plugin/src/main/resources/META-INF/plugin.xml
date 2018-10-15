@@ -1,0 +1,105 @@
+<idea-plugin>
+	<!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
+
+	<id>com.soywiz.korge.korge-intellij-plugin</id>
+	<name>Korge IntelliJ Plugin</name>
+	<version>0.1</version>
+	<vendor email="soywiz@gmail.com" url="http://korge.soywiz.com/">Korge</vendor>
+
+	<description><![CDATA[
+  	Intelli-J Plugin for Korge game engine, that builds resources, and provides jtransc integration.
+	]]></description>
+
+	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>0.11.0</h3>
+		<ul>
+			<li>Updated Korge to 0.11.0.</li>
+		</ul>
+		<h3>0.10.0</h3>
+		<ul>
+			<li>Updated Korge to 0.10.0.</li>
+			<li>Fixed lip images</li>
+			<li>Allow generating resources even when genresources folder doesn't exists</li>
+		</ul>
+		<h3>0.9.1</h3>
+		<ul>
+			<li>Fixed context-loss when previewing files using Korge.</li>
+			<li>Added lots more peview files</li>
+		</ul>
+		<h3>0.8.5</h3>
+		<ul>
+			<li>First version. Buggy. Uncomplete.</li>
+		</ul>
+		]]>
+	</change-notes>
+
+	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+	<idea-version since-build="145.0"/>
+
+	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+	<!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+	<extensions defaultExtensionNs="com.intellij">
+		<!-- Add your extensions here -->
+		<stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
+		<!--
+        <iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />
+        -->
+		<fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeBothFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeHiddenFileEditorProvider"/>
+		<!--
+		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
+		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
+		-->
+		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"></fileTypeFactory>
+
+		<completion.contributor language="XML"
+								implementationClass="com.soywiz.korge.intellij.PexCompletionContributor"></completion.contributor>
+
+		<!--
+		<moduleBuilder builderClass="com.soywiz.korge.intellij.KorgeModuleWizardStep" order="first"/>
+		<framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
+		<moduleType id="KORGE" implementationClass="com.soywiz.korge.intellij.KorgeModuleType" />
+		-->
+
+		<internalFileTemplate name="KorgeScene"/>
+
+	</extensions>
+
+	<actions>
+		<group id="Korge" popup="true" text="_Korge" icon="/com/soywiz/korge/intellij/icon/korge.png">
+			<add-to-group group-id="ToolsMenu" anchor="last"/>
+			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Build Resources Now"
+					icon="/com/soywiz/korge/intellij/icon/korge.png" id="KorgeBuildResourcesAction">
+			</action>
+
+			<separator/>
+
+			<action class="com.soywiz.korge.intellij.KorgeDocumentationAction" text="_Documentation"
+					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction">
+			</action>
+		</group>
+
+		<group id="KorgeNew">
+			<add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
+
+			<separator/>
+
+			<action id="Korge.NewFile.Atlas" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+
+			<separator/>
+		</group>
+	</actions>
+
+
+	<application-components>
+		<component>
+			<implementation-class>com.soywiz.korge.intellij.KorgeInitializerComponent</implementation-class>
+		</component>
+	</application-components>
+
+</idea-plugin>
