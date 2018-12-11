@@ -1,3 +1,100 @@
-apply plugin: 'application'
+plugins {
+	id 'kotlin-multiplatform' version '1.3.11'
+	id 'com.moowork.node' version '1.2.0'
+}
 
-mainClassName = 'Sample1'
+//apply plugin: 'application'
+
+//mainClassName = 'Sample1'
+
+repositories {
+	mavenLocal()
+	maven { url "https://dl.bintray.com/soywiz/soywiz" }
+	jcenter()
+	mavenCentral()
+}
+
+
+kotlin {
+	targets {
+		//fromPreset(presets.iosX64, 'iosX64')
+		//fromPreset(presets.iosArm32, 'iosArm32')
+		//fromPreset(presets.iosArm64, 'iosArm64')
+		fromPreset(presets.macosX64, 'macosX64')
+		//fromPreset(presets.linuxX64, 'linuxX64')
+		fromPreset(presets.mingwX64, 'mingwX64')
+		fromPreset(presets.jvm, 'jvm') {
+			def jvmCompilations = compilations
+			def mainKotlinTaskName = compilations.main.compileKotlinTaskName
+			def mainOutputs = compilations.main.output
+			def testRuntimeClasspath = compilations.test.runtimeDependencyFiles
+			//println(mainKotlinTaskName)
+			//println(mainOutputs)
+			//println(testRuntimeClasspath)
+		}
+		fromPreset(presets.js, 'js') {
+			compilations.main {
+				compileKotlinJs.kotlinOptions {
+					languageVersion = "1.3"
+					sourceMap = true
+					metaInfo = true
+					moduleKind = "umd"
+				}
+				compileTestKotlinJs.kotlinOptions {
+					languageVersion = "1.3"
+					moduleKind = "umd"
+				}
+
+			}
+		}
+	}
+	sourceSets {
+		nonNativeCommonMain
+		nativeCommonMain
+		nativeCommonTest
+		nativePosixMain
+		configure([jvmMain, jsMain]) {
+			dependsOn nonNativeCommonMain
+		}
+		mingwX64Main {
+			dependsOn nativeCommonMain
+		}
+		mingwX64Test {
+			dependsOn nativeCommonTest
+		}
+		configure([iosX64Main, iosArm32Main, iosArm64Main, macosX64Main, linuxX64Main]) {
+			dependsOn nativeCommonMain
+			dependsOn nativePosixMain
+		}
+		configure([iosX64Test, iosArm32Test, iosArm64Test, macosX64Test, linuxX64Test]) {
+			dependsOn nativeCommonTest
+		}
+	}
+}
+
+
+dependencies {
+	commonMainImplementation "com.soywiz:korge:$korgeVersion"
+
+	commonMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-common"
+	commonTestImplementation "org.jetbrains.kotlin:kotlin-test-annotations-common"
+	commonTestImplementation "org.jetbrains.kotlin:kotlin-test-common"
+
+	jsMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-js"
+	jsTestImplementation "org.jetbrains.kotlin:kotlin-test-js"
+
+	jvmMainImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+	jvmTestImplementation "org.jetbrains.kotlin:kotlin-test"
+	jvmTestImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+}
+
+task fatJar(type: Jar) {
+	manifest {
+		attributes 'Implementation-Title': 'Gradle Jar File Example',
+				'Implementation-Version': version,
+				'Main-Class': 'Sample1'
+	}
+	baseName = project.name + '-all'
+	from { kotlin.targets.jvm.compilations.main.runtimeDependencyFiles.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jvmJar
+}

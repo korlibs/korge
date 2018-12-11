@@ -1,11 +1,11 @@
-import com.soywiz.klock.*
-import com.soywiz.korge.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.effect.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.korge.Korge
+import com.soywiz.korge.view.filter.Convolute3Filter
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import kotlin.jvm.JvmStatic
 
 object Sample1 {
 	@JvmStatic
