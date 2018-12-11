@@ -1,24 +1,26 @@
 pluginManagement {
-	resolutionStrategy {
-		eachPlugin {
-			if (requested.id.id == "kotlin-multiplatform") {
-				useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
-			}
-		}
-	}
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "kotlin-multiplatform") {
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+            }
+        }
+    }
 
-	repositories {
-		mavenLocal()
-		maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
-		maven { url 'https://plugins.gradle.org/m2/' }
-        jcenter()
+    repositories {
+        mavenLocal()
         mavenCentral()
-	}
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
 }
 
-rootProject.name = 'korge-root'
-
 enableFeaturePreview('GRADLE_METADATA')
+
+rootProject.name = (new File(rootProject.projectDir, 'gradle.properties')).withInputStream {
+    Properties properties = new Properties()
+    properties.load(it)
+    properties
+}.getProperty("project.name")
 
 include ':korge'
 include ':korge-dragonbones'

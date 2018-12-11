@@ -51,7 +51,7 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	var time: Double = 0.0
+	var time: TimeSpan = 0.seconds
 	/**
 	 * - The play speed, used to control animation speed-shift play.
 	 * [0: Stop play, (0~1): Slow play, 1: Normal play, (1~N): Fast play]
@@ -68,7 +68,7 @@ class WorldClock : IAnimatable {
 	 */
 	var timeScale: Double = 1.0
 
-	private var _systemTime: Double = 0.0
+	private var _systemTime: DateTime = DateTime.EPOCH
 	private val _animatebles: ArrayList<IAnimatable?> = arrayListOf()
 	private var _clock: WorldClock? = null
 	/**
@@ -83,9 +83,9 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	constructor(time: Double = 0.0) {
+	constructor(time: TimeSpan = 0.seconds) {
 		this.time = time
-		this._systemTime = Klock.currentTimeMillisDouble() * 0.001
+		this._systemTime = DateTime.now()
 	}
 	/**
 	 * - Advance time for all IAnimatable instances.
@@ -100,14 +100,14 @@ class WorldClock : IAnimatable {
 	 * @language zh_CN
 	 */
 	override fun advanceTime(passedTime: Double): Unit {
-		var passedTime = passedTime
+		var passedTime = passedTime.seconds
 		if (passedTime != passedTime) {
-			passedTime = 0.0
+			passedTime = 0.seconds
 		}
 
-		val currentTime = Klock.currentTimeMillisDouble() * 0.001
+		val currentTime = DateTime.now()
 
-		if (passedTime < 0.0) {
+		if (passedTime < 0.seconds) {
 			passedTime = currentTime - this._systemTime
 		}
 
@@ -117,11 +117,11 @@ class WorldClock : IAnimatable {
 			passedTime *= this.timeScale
 		}
 
-		if (passedTime == 0.0) {
+		if (passedTime == 0.seconds) {
 			return
 		}
 
-		if (passedTime < 0.0) {
+		if (passedTime < 0.seconds) {
 			this.time -= passedTime
 		}
 		else {
@@ -137,7 +137,7 @@ class WorldClock : IAnimatable {
 					this._animatebles[i] = null
 				}
 
-				animatable.advanceTime(passedTime)
+				animatable.advanceTime(passedTime.seconds)
 			}
 			else {
 				r++

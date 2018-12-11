@@ -404,10 +404,10 @@ open class TagDefineButton : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy2 { it.placeDepth })
+		frames[TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
@@ -494,10 +494,10 @@ open class TagDefineButton2 : _BaseTag(), IDefinitionTag {
 			if (record.stateDown) downState.add(record)
 			if (record.stateHitTest) hitState.add(record)
 		}
-		frames[TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy2 { it.placeDepth })
-		frames[TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy2 { it.placeDepth })
+		frames[TagDefineButton.STATE_UP] = ArrayList(upState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_OVER] = ArrayList(overState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_DOWN] = ArrayList(downState.sortedBy { it.placeDepth })
+		frames[TagDefineButton.STATE_HIT] = ArrayList(hitState.sortedBy { it.placeDepth })
 	}
 
 	override fun toString(indent: Int, flags: Int): String {
@@ -2474,7 +2474,7 @@ class TagProductInfo : _BaseTag(), ITag {
 	var majorVersion: Int = 0
 	var minorVersion: Int = 0
 	var build: Long = 0L
-	lateinit var compileDate: DateTime
+	var compileDate: DateTime = DateTime.EPOCH
 
 	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
 		productId = data.readUI32()

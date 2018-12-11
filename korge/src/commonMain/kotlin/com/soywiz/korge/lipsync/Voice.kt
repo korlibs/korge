@@ -1,6 +1,7 @@
 package com.soywiz.korge.lipsync
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.audio.*
@@ -39,14 +40,14 @@ class Voice(val views: Views, val voice: NativeSound, val lipsync: LipSync) {
 	}
 }
 
-data class LipSyncEvent(var name: String = "", var time: Double = 0.0, var lip: Char = 'X') : Event() {
-	val timeMs: Int get() = (time * 1000).toInt()
+data class LipSyncEvent(var name: String = "", var time: TimeSpan = 0.seconds, var lip: Char = 'X') : Event() {
+	val timeMs: Int get() = time.millisecondsInt
 }
 
 class LipSyncHandler(val views: Views) {
 	val event = LipSyncEvent()
 
-	private fun dispatch(name: String, elapsedTime: Double, lip: Char) {
+	private fun dispatch(name: String, elapsedTime: TimeSpan, lip: Char) {
 		views.dispatch(event.apply {
 			this.name = name
 			this.time = elapsedTime
@@ -61,11 +62,11 @@ class LipSyncHandler(val views: Views) {
 
 		cancel = views.stage.addUpdatable {
 			val elapsedTime = channel.position
-			val elapsedTimeMs = (elapsedTime * 1000).toInt()
+			val elapsedTimeMs = elapsedTime.millisecondsInt
 			//println("elapsedTime:$elapsedTime, channel.length=${channel.length}")
 			if (elapsedTime >= channel.length) {
 				cancel?.cancel()
-				dispatch(name, 0.0, 'X')
+				dispatch(name, 0.seconds, 'X')
 			} else {
 				dispatch(name, channel.position, voice[elapsedTimeMs])
 			}
@@ -81,7 +82,7 @@ class LipSyncHandler(val views: Views) {
 			cancel?.cancel(error)
 			cancel2.cancel(error)
 			channel.stop()
-			dispatch(name, 0.0, 'X')
+			dispatch(name, 0.seconds, 'X')
 		}
 	}
 }

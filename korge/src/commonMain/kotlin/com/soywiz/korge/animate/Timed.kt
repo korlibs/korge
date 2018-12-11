@@ -33,7 +33,7 @@ open class Timed<T>(initialCapacity: Int = 7) {
 	}
 
 	fun findNearIndex(time: Int): Int {
-		val res = times.binarySearch(time)
+		val res = times.binarySearch(time).raw
 		return if (res < 0) (-res - 1).clamp(0, times.size - 1) else res
 	}
 

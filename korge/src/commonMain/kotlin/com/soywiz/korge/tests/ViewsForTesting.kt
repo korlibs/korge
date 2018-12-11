@@ -10,16 +10,14 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.event.*
 import com.soywiz.korui.input.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.timeunit.*
 
-open class ViewsForTesting(val frameTime: Long = 10) {
-	var time = 0L
+open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
+	var time = DateTime(0.0)
 	//val testDispatcher = TestCoroutineDispatcher(frameTime)
 
 	val dispatcher = KorioDefaultDispatcher
-	val timeProvider: TimeProvider = object : TimeProvider() {
-		override fun currentTimeMillis(): Long = time
+	val timeProvider: TimeProvider = object : TimeProvider {
+		override fun now(): DateTime = time
 	}
 	val koruiEventDispatcher = EventDispatcher()
 	val viewsLog = ViewsLog(dispatcher)
@@ -30,7 +28,7 @@ open class ViewsForTesting(val frameTime: Long = 10) {
 	val stats get() = views.stats
 
 	init {
-		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime.toInt())
+		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime)
 	}
 
 	suspend fun mouseMoveTo(x: Number, y: Number) {
@@ -126,13 +124,13 @@ open class ViewsForTesting(val frameTime: Long = 10) {
 	// @TODO: Run a faster eventLoop where timers happen much faster
 	fun viewsTest(block: suspend () -> Unit) = suspendTest(viewsLog.coroutineContext) {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
-		val el = viewsLog.coroutineContext.animationFrameLoop {
+		val el = viewsLog.animationFrameLoop {
 			time += frameTime
 			ag.onRender(ag)
 		}
 		try {
 			val bb = asyncImmediately(viewsLog.coroutineContext) {
-				withTimeout(10, TimeUnit.SECONDS) {
+				withTimeout(10.seconds) {
 					block()
 				}
 			}

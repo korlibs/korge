@@ -31,7 +31,7 @@ class OptimizedStringAllocator {
 
 	fun finalize() {
 		this.strings = arrayOf<String?>(null) +
-				stringsCount.entries.sortedByDescending2 { it.value }.map { it.key }.toTypedArray()
+				stringsCount.entries.sortedByDescending { it.value }.map { it.key }.toTypedArray()
 		for (n in 1 until this.strings.size) {
 			stringsToIndex[this.strings[n]!!] = n
 		}

@@ -1,5 +1,5 @@
 plugins {
-    id 'kotlin-multiplatform' version '1.3.0-rc-146'
+    id 'kotlin-multiplatform' version '1.3.11'
     id 'com.moowork.node' version '1.2.0'
 }
 
@@ -7,11 +7,9 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url "https://dl.bintray.com/soywiz/soywiz" }
-        maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
         jcenter()
         mavenCentral()
     }
-
 }
 
 subprojects {
@@ -37,7 +35,7 @@ subprojects {
                     }
                     compileTestKotlinJs.kotlinOptions {
                         languageVersion = "1.3"
-                        moduleKind = "commonjs"
+                        moduleKind = "umd"
                     }
                 }
             }
@@ -56,13 +54,11 @@ subprojects {
             mingwX64Test {
                 dependsOn nativeCommonTest
             }
-            //configure([iosX64Main, iosArm32Main, iosArm64Main, macosX64Main, linuxX64Main]) {
-            configure([macosX64Main]) {
+            configure([iosX64Main, iosArm32Main, iosArm64Main, macosX64Main, linuxX64Main]) {
                 dependsOn nativeCommonMain
                 dependsOn nativePosixMain
             }
-            //configure([iosX64Test, iosArm32Test, iosArm64Test, macosX64Test, linuxX64Test]) {
-            configure([macosX64Test]) {
+            configure([iosX64Test, iosArm32Test, iosArm64Test, macosX64Test, linuxX64Test]) {
                 dependsOn nativeCommonTest
             }
         }
@@ -81,26 +77,23 @@ subprojects {
         jvmTestImplementation "org.jetbrains.kotlin:kotlin-test-junit"
     }
 
-    // Javascript test configuration
+// Javascript test configuration
     node {
         version = '8.11.4'
         download = true
-        nodeModulesDir = file("$buildDir/yarn")
+        nodeModulesDir = file("$buildDir/npm")
     }
 
     def jsCompilations = kotlin.targets.js.compilations
-    task addYarnDeps(type: YarnTask) {
-        doFirst {
-            mkdir "$buildDir/yarn"
-        }
-        args = ["add", "mocha@5.2.0"]
+    task installMocha(type: NpmTask) {
+        args = ["install", "mocha@5.2.0"]
     }
 
     task populateNodeModules {
         doLast {
             copy {
-                from "$buildDir/yarn/node_modules"
-                from jsCompilations.main.output.first()
+                from "$buildDir/npm/node_modules"
+                from jsCompilations.main.output.allOutputs
                 jsCompilations.test.runtimeDependencyFiles.each {
                     if (it.exists() && !it.isDirectory()) {
                         from zipTree(it.absolutePath).matching { include '*.js' }
@@ -111,14 +104,17 @@ subprojects {
         }
     }
 
-    task runMocha(type: NodeTask, dependsOn: [jsCompilations.test.compileKotlinTaskName, addYarnDeps, populateNodeModules]) {
+    task runMocha(type: NodeTask, dependsOn: [jsCompilations.test.compileKotlinTaskName, installMocha, populateNodeModules]) {
         script = file("$buildDir/node_modules/mocha/bin/mocha")
-        args = [relativePath("${jsCompilations.test.output.first()}/${project.name}_test.js")]
+        args = ["--timeout", "15000", relativePath("${jsCompilations.test.output.classesDirs.first()}/${project.name}_test.js")]
     }
 
-    jsTest.dependsOn runMocha
+// Only run JS tests if not in windows
+    if (!org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        jsTest.dependsOn runMocha
+    }
 
-    // Fix for https://github.com/srs/gradle-node-plugin/issues/301
+// Fix for https://github.com/srs/gradle-node-plugin/issues/301
     repositories.whenObjectAdded {
         if (it instanceof IvyArtifactRepository) {
             metadataSources {
@@ -127,7 +123,7 @@ subprojects {
         }
     }
 
-    // Publishing
+// Publishing
     group 'com.soywiz'
     version projectVersion
     apply plugin: 'maven-publish'
@@ -135,12 +131,12 @@ subprojects {
     def pomBaseData = {
         licenses {
             license {
-                name "MIT License"
-                url "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE"
+                name project.property("project.license.name")
+                url project.property("project.license.url")
             }
         }
         scm {
-            url "https://github.com/korlibs/korge"
+            url project.property("project.scm.url")
         }
     }
 
@@ -148,8 +144,8 @@ subprojects {
         pom.withXml {
             def root = it.asNode()
             root.appendNode('name', project.name)
-            root.appendNode('description', 'Multiplatform Game Engine written in Kotlin (JVM, JS, Native and COMMON)')
-            root.appendNode('url', 'https://github.com/korlibs/korge')
+            root.appendNode('description', project.property("project.description"))
+            root.appendNode('url', project.property("project.scm.url"))
             root.children().last() + pomBaseData
         }
     }
@@ -177,25 +173,8 @@ subprojects {
             }
         }
     }
-}
 
-apply plugin: 'idea'
-
-idea {
-	module {
-		excludeDirs = [file(".gradle")]
-		[
-			".idea",
-			"@old",
-			"docs",
-			"korge-build",
-			"korge-samples",
-			"korge-intellij-plugin",
-			"korge-gradle-plugin",
-			"korge-flash-plugin",
-
-		].each {
-			excludeDirs << file("$it")
-		}
-	}
+    if (project.file('build.project.gradle').exists()) {
+        apply from: project.file('build.project.gradle')
+    }
 }

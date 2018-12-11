@@ -43,23 +43,23 @@ open class SoundChannel(override val soundSystem: SoundSystem) : AudioChannel {
 	var enabled: Boolean = true
 
 	var playing: Boolean = false; private set
-	var position: Double = 0.0; private set
-	var length: Double = 0.0; private set
-	val remaining: Double get() = (length - position)
+	var position: TimeSpan = TimeSpan.ZERO; private set
+	var length: TimeSpan = TimeSpan.ZERO; private set
+	val remaining: TimeSpan get() = (length - position)
 	var volume = 1.0
 
-	private var startedTime: Long = 0L
+	private var startedTime: DateTime = DateTime.EPOCH
 	private var promise: Deferred<*>? = null
 
 	fun play(
 		sound: NativeSound,
-		progress: (current: Double, total: Double) -> Unit = { current, total -> }
+		progress: (current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }
 	): SoundChannel {
 		if (enabled) {
 			stop()
 
 			startedTime = TimeProvider.now()
-			length = sound.lengthInSeconds
+			length = sound.length
 			playing = true
 
 			promise = asyncImmediately(soundSystem.views.coroutineContext) {
@@ -103,8 +103,8 @@ open class SoundChannel(override val soundSystem: SoundSystem) : AudioChannel {
 
 	private fun _end() {
 		if (promise != null) soundSystem.promises -= promise!!
-		position = 0.0
-		length = 0.0
+		position = 0.seconds
+		length = 0.seconds
 		playing = false
 	}
 

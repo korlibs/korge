@@ -92,4 +92,3 @@ fun RenderContext.drawText(
 ) {
 	font.drawText(this, textSize, str, x, y, m, colMul, colAdd, blendMode, filtering)
 }
-

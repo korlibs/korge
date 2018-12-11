@@ -7,6 +7,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.crypto.*
 import com.soywiz.korio.util.*
+import com.soywiz.korio.util.NativeThreadLocal
 
 object DebugBitmapFont {
 	val DEBUG_FONT_BYTES = Base64.decode(

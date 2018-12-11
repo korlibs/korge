@@ -1,0 +1,20 @@
+apply plugin: 'idea'
+
+idea {
+	module {
+		excludeDirs = [file(".gradle")]
+		[
+			".idea",
+			"@old",
+			"docs",
+			"korge-build",
+			"korge-samples",
+			"korge-intellij-plugin",
+			"korge-gradle-plugin",
+			"korge-flash-plugin",
+
+		].each {
+			excludeDirs << file("$it")
+		}
+	}
+}

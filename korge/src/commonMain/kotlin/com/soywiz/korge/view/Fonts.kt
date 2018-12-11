@@ -3,13 +3,13 @@ package com.soywiz.korge.view
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.util.NativeThreadLocal
 import com.soywiz.korim.font.*
 import com.soywiz.korio.error.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class Fonts() : Html.MetricsProvider {
+class Fonts : Html.MetricsProvider {
 	val fonts = hashMapOf<String, BitmapFont>()
 
 	fun registerFont(name: String, bmp: BitmapFont) {

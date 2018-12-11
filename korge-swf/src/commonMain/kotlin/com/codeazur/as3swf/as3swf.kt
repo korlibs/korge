@@ -212,8 +212,8 @@ class SWFData : BitArray() {
 	fun writeFLOAT(value: Double) = resetBitsPending().writeFloat(value)
 	fun readDOUBLE(): Double = resetBitsPending().readDouble()
 	fun writeDOUBLE(value: Double) = resetBitsPending().writeDouble(value)
-	fun readFLOAT16(): Double = Float16.intBitsToDouble(resetBitsPending().readUnsignedShort())
-	fun writeFLOAT16(value: Double) = resetBitsPending().writeShort(Float16.doubleToIntBits(value))
+	fun readFLOAT16(): Double = Float16.intBitsToDouble(resetBitsPending().readUnsignedShort().toUShort())
+	fun writeFLOAT16(value: Double) = resetBitsPending().writeShort(Float16.doubleToIntBits(value).toInt())
 
 	/////////////////////////////////////////////////////////
 	// Encoded integer

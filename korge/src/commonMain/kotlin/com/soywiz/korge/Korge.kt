@@ -110,7 +110,7 @@ object Korge {
 
 		views.targetFps = config.module.targetFps
 
-		coroutineContext.animationFrameLoop {
+		CoroutineScope(coroutineContext).animationFrameLoop {
 			logger.trace { "views.animationFrameLoop" }
 			//ag.resized()
 			config.container.repaint()
@@ -128,14 +128,14 @@ object Korge {
 		return sc
 	}
 
-	fun prepareViews(views: Views, eventDispatcher: EventDispatcher, clearEachFrame: Boolean = true, bgcolor: RGBA = Colors.TRANSPARENT_BLACK, fixedSizeStep: Int? = null) {
+	fun prepareViews(views: Views, eventDispatcher: EventDispatcher, clearEachFrame: Boolean = true, bgcolor: RGBA = Colors.TRANSPARENT_BLACK, fixedSizeStep: TimeSpan = TimeSpan.NULL) {
 		val input = views.input
 		val ag = views.ag
 		val downPos = MPoint2d()
 		val upPos = MPoint2d()
-		var downTime = 0.0
-		var moveTime = 0.0
-		var upTime = 0.0
+		var downTime = DateTime.EPOCH
+		var moveTime = DateTime.EPOCH
+		var upTime = DateTime.EPOCH
 		var moveMouseOutsideInNextFrame = false
 		val mouseTouchId = -1
 
@@ -173,7 +173,7 @@ object Korge {
 
 		fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
 			val touch = input.getTouch(id)
-			val now = Klock.currentTimeMillisDouble()
+			val now = DateTime.now()
 
 			touch.id = id
 			touch.active = !end
@@ -194,7 +194,7 @@ object Korge {
 			views.input.mouse.setTo(x, y)
 			views.mouseUpdated()
 			downPos.copyFrom(views.input.mouse)
-			downTime = Klock.currentTimeMillisDouble()
+			downTime = DateTime.now()
 		}
 
 		fun mouseUp(type: String, x: Double, y: Double) {
@@ -205,8 +205,8 @@ object Korge {
 			upPos.copyFrom(views.input.mouse)
 
 			if (type == "onTouchEnd") {
-				upTime = Klock.currentTimeMillisDouble()
-				if ((downTime - upTime) <= 40.0) {
+				upTime = DateTime.now()
+				if ((downTime - upTime) <= 40.milliseconds) {
 					//Console.log("mouseClick: $name")
 					views.dispatch(MouseEvent(MouseEvent.Type.CLICK))
 				}
@@ -216,13 +216,13 @@ object Korge {
 		fun mouseDrag(type: String, x: Double, y: Double) {
 			views.input.mouse.setTo(x, y)
 			views.mouseUpdated()
-			moveTime = Klock.currentTimeMillisDouble()
+			moveTime = DateTime.now()
 		}
 
 		fun mouseMove(type: String, x: Double, y: Double) {
 			views.input.mouse.setTo(x, y)
 			views.mouseUpdated()
-			moveTime = Klock.currentTimeMillisDouble()
+			moveTime = DateTime.now()
 		}
 
 		eventDispatcher.addEventListener<MouseEvent> { e ->
@@ -384,7 +384,7 @@ object Korge {
 		eventDispatcher: EventDispatcher = DummyEventDispatcher,
 		sceneClass: KClass<out Scene> = module.mainScene,
 		sceneInjects: List<Any> = listOf(),
-		timeProvider: TimeProvider = TimeProvider(),
+		timeProvider: TimeProvider = TimeProvider,
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false,
 		trace: Boolean = false,
@@ -442,7 +442,7 @@ object Korge {
 				val input = Input()
 				val stats = Stats()
 				Fonts.init()
-				val views = Views(coroutineContext, canvas.ag, injector, input, TimeProvider(), stats, koruiContext)
+				val views = Views(coroutineContext, canvas.ag, injector, input, TimeProvider, stats, koruiContext)
 				injector
 					.mapInstance(views)
 					.mapInstance(input)
@@ -457,7 +457,7 @@ object Korge {
 				views.clipBorders = clipBorders
 				views.targetFps = targetFps
 				Korge.prepareViews(views, canvas, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-				coroutineContext.animationFrameLoop {
+				CoroutineScope(coroutineContext).animationFrameLoop {
 					Korge.logger.trace { "views.animationFrameLoop" }
 					//println("views.animationFrameLoop")
 					//ag.resized()
@@ -484,7 +484,7 @@ object Korge {
 		val frame: Frame? = null,
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider(),
+		val timeProvider: TimeProvider = TimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,
@@ -530,18 +530,20 @@ object Korge {
 			koruiContext = koruiContext
 		) { container, frame ->
 			logger.trace { "Korge.test [1]" }
-			launchImmediately {
-				logger.trace { "Korge.test [2]" }
-				done.complete(
-					setupCanvas(
-						config.copy(
-							container = container,
-							frame = frame,
-							eventDispatcher = container
-						),
-						koruiContext
+			coroutineScope {
+				launchImmediately {
+					logger.trace { "Korge.test [2]" }
+					done.complete(
+						setupCanvas(
+							config.copy(
+								container = container,
+								frame = frame,
+								eventDispatcher = container
+							),
+							koruiContext
+						)
 					)
-				)
+				}
 			}
 		}
 

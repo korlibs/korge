@@ -148,7 +148,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 							if (crossedFrameIndex < 0) {
 								val prevFrameIndex = floor(prevTime * this._frameRate).toInt()
 								crossedFrameIndex =
-										this._frameIndices!!.getInt(timelineData.frameIndicesOffset + prevFrameIndex)
+									this._frameIndices!![timelineData.frameIndicesOffset + prevFrameIndex]
 
 								if (this.currentPlayTimes == prevPlayTimes) { // Start.
 									if (crossedFrameIndex == frameIndex) { // Uncrossed.
@@ -189,7 +189,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 							if (crossedFrameIndex < 0) {
 								val prevFrameIndex = floor(prevTime * this._frameRate).toInt()
 								crossedFrameIndex =
-										this._frameIndices!!.getInt(timelineData.frameIndicesOffset + prevFrameIndex)
+									this._frameIndices!![timelineData.frameIndicesOffset + prevFrameIndex]
 								val frameOffset =
 									this._animationData!!.frameOffset + this._timelineArray!![timelineData.offset + BinaryOffset.TimelineFrameOffset + crossedFrameIndex].toInt()
 								// val framePosition = this._frameArray[frameOffset] * this._frameRateR; // Precision problem

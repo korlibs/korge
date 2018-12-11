@@ -9,9 +9,10 @@ import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
-abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineContextHolder {
+abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
 	lateinit var injector: AsyncInjector
 	override lateinit var views: Views
 	val ag: AG get() = views.ag

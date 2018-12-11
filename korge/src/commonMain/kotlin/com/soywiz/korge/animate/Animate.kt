@@ -289,7 +289,8 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			//println(" Action: $action")
 			when (action) {
 				is AnPlaySoundAction -> {
-					async(library.views.coroutineContext) {
+
+					library.views.async {
 						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
 						if (data != null) {
 							views.soundSystem.play(data)

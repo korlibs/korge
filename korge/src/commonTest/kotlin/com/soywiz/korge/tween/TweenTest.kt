@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.test.*
 
-class TweenTest : ViewsForTesting(20) {
+class TweenTest : ViewsForTesting(20.milliseconds) {
 	@Test
 	fun name() = viewsTest {
 		//println("BLOCK START")

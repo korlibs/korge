@@ -52,7 +52,7 @@ class Views(
 	val timeProvider: TimeProvider,
 	val stats: Stats,
 	val koruiContext: KoruiContext
-) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineContextHolder,
+) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope,
 	BoundsProvider {
 	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
@@ -96,7 +96,7 @@ class Views(
 	var debugViews = false
 	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
 
-	var lastTime = timeProvider.currentTimeMillis()
+	var lastTime = timeProvider.now()
 
 	private val tempComponents: ArrayList<Component> = arrayListOf()
 
@@ -181,19 +181,19 @@ class Views(
 		agBitmapTextureManager.afterRender()
 	}
 
-	fun frameUpdateAndRender(clear: Boolean, clearColor: RGBA, fixedSizeStep: Int? = null) {
+	fun frameUpdateAndRender(clear: Boolean, clearColor: RGBA, fixedSizeStep: TimeSpan = TimeSpan.NULL) {
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
 		//println("Render")
-		val currentTime = timeProvider.currentTimeMillis()
+		val currentTime = timeProvider.now()
 		//println("currentTime: $currentTime")
-		val delta = (currentTime - lastTime).toInt()
+		val delta = (currentTime - lastTime).millisecondsInt
 		val adelta = min(delta, views.clampElapsedTimeTo)
 		//println("delta: $delta")
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
-		if (fixedSizeStep != null) {
-			update(fixedSizeStep)
+		if (fixedSizeStep != TimeSpan.NULL) {
+			update(fixedSizeStep.millisecondsInt)
 		} else {
 			update(adelta)
 		}
@@ -288,14 +288,14 @@ class Stage(val views: Views) : Container(), View.Reference {
 }
 
 class ViewsLog(
-	val coroutineContext: CoroutineDispatcher = KorgeDispatcher,
+	override val coroutineContext: CoroutineDispatcher = KorgeDispatcher,
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: LogAG = LogAG(),
 	val input: Input = Input(),
-	val timeProvider: TimeProvider = TimeProvider(),
+	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val koruiContext: KoruiContext = KoruiContext()
-) {
+) : CoroutineScope {
 	val views = Views(coroutineContext, ag, injector, input, timeProvider, stats, koruiContext)
 }
 
