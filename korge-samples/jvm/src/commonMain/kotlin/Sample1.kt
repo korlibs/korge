@@ -1,10 +1,13 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.view.filter.Convolute3Filter
 import com.soywiz.korge.view.image
+import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.jvm.JvmStatic
 
 object Sample1 {
@@ -32,8 +35,11 @@ object Sample1 {
 
 		//val mfilter = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX, 0.0)
 		//val mfilter = WaveFilter()
-		val mfilter = Convolute3Filter(Convolute3Filter.KERNEL_GAUSSIAN_BLUR)
+		//val mfilter = Convolute3Filter(Convolute3Filter.KERNEL_GAUSSIAN_BLUR)
 		solidRect(640, 480, Colors.ALICEBLUE)
+		image(resourcesVfs["a.png"].readBitmap()) {
+			position(50, 50)
+		}
 		image(Bitmap32(100, 100) { x, y -> RGBA(156 + x, 156 + y, 0, 255) }) {
 			x = 100.0
 			y = 100.0
@@ -45,7 +51,7 @@ object Sample1 {
 			//)
 			//filter = ComposedFilter(mfilter, Convolute3Filter(Convolute3Filter.KERNEL_GAUSSIAN_BLUR))
 			alpha = 1.0
-			filter = mfilter
+			//filter = mfilter
 			//filter = WaveFilter()
 		}.apply {
 			//mfilter.amplitudeY = 6

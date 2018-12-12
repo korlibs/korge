@@ -1,3 +1,5 @@
+import groovy.text.SimpleTemplateEngine
+
 plugins {
 	id 'kotlin-multiplatform' version '1.3.11'
 	id 'com.moowork.node' version '1.2.0'
@@ -20,9 +22,13 @@ kotlin {
 		//fromPreset(presets.iosX64, 'iosX64')
 		//fromPreset(presets.iosArm32, 'iosArm32')
 		//fromPreset(presets.iosArm64, 'iosArm64')
-		fromPreset(presets.macosX64, 'macosX64')
+		fromPreset(presets.macosX64, 'macosX64') {
+			compilations.main.outputKinds 'executable' // could be 'static', 'dynamic'
+		}
 		//fromPreset(presets.linuxX64, 'linuxX64')
-		fromPreset(presets.mingwX64, 'mingwX64')
+		fromPreset(presets.mingwX64, 'mingwX64') {
+			compilations.main.outputKinds 'executable' // could be 'static', 'dynamic'
+		}
 		fromPreset(presets.jvm, 'jvm') {
 			def jvmCompilations = compilations
 			def mainKotlinTaskName = compilations.main.compileKotlinTaskName
@@ -88,13 +94,52 @@ dependencies {
 	jvmTestImplementation "org.jetbrains.kotlin:kotlin-test-junit"
 }
 
-task fatJar(type: Jar) {
+def mainClassName = 'Sample1'
+
+task jvmRun(type: JavaExec) {
+	classpath = kotlin.targets.jvm.compilations.test.runtimeDependencyFiles
+	main = mainClassName
+	//args 'appArg1'
+}
+
+task jvmFatJar(type: Jar) {
 	manifest {
-		attributes 'Implementation-Title': 'Gradle Jar File Example',
+		attributes 'Implementation-Title': mainClassName,
 				'Implementation-Version': version,
-				'Main-Class': 'Sample1'
+				'Main-Class': mainClassName
 	}
 	baseName = project.name + '-all'
 	from { kotlin.targets.jvm.compilations.main.runtimeDependencyFiles.collect { it.isDirectory() ? it : zipTree(it) } }
 	with jvmJar
+}
+
+task jsWeb(dependsOn: [jsJar]) {
+	doLast {
+		copy {
+			def jsCompilations = kotlin.targets.js.compilations
+
+			includeEmptyDirs = false
+			from "$buildDir/npm/node_modules"
+			from jsCompilations.main.output.allOutputs
+			exclude '**/*.kotlin_metadata', '**/*.kotlin_module', '**/*.MF', '**/*.kjsm'
+			jsCompilations.test.runtimeDependencyFiles.each {
+				if (it.exists() && !it.isDirectory()) {
+					from zipTree(it.absolutePath)
+				} else {
+					from it
+				}
+			}
+			[kotlin.targets.js, kotlin.targets.metadata].each { target ->
+				target.compilations.main.kotlinSourceSets.resources.collectMany { it.srcDirs }.each {
+					from it
+				}
+			}
+			into "$buildDir/web"
+		}
+
+		new File(project.buildDir, "web/index.html").text = new SimpleTemplateEngine().createTemplate(new File(project.buildDir, "web/index.template.html").text).make([
+				"OUTPUT": project.name,
+				"TITLE": project.name
+		]).toString()
+	}
 }
