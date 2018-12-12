@@ -3,3 +3,9 @@ dependencies {
 	commonMainApi "com.soywiz:korui:$koruiVersion"
 	commonMainApi "com.soywiz:korau:$korauVersion"
 }
+
+[kotlin.targets.js, kotlin.targets.metadata].each { target ->
+	target.compilations.main.kotlinSourceSets.resources.collectMany { it.srcDirs }.each {
+		tasks.jsJar.from it
+	}
+}
