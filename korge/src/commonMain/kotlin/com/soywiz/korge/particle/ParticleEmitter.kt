@@ -136,38 +136,38 @@ class ParticleEmitter(val views: Views) {
 	}
 
 	data class Particle(
-		@JvmField var x: Double = 0.0,
-		@JvmField var y: Double = 0.0,
-		@JvmField var scale: Double = 1.0,
-		@JvmField var rotation: Double = 0.0,
-		@JvmField var currentTime: Double = 0.0,
-		@JvmField var totalTime: Double = 0.0,
+		var x: Double = 0.0,
+		var y: Double = 0.0,
+		var scale: Double = 1.0,
+		var rotation: Double = 0.0,
+		var currentTime: Double = 0.0,
+		var totalTime: Double = 0.0,
 
-		//@JvmField val colorArgb: RGBAf = RGBAf(),
-		//@JvmField val colorArgbDelta: RGBAf = RGBAf(),
+		//val colorArgb: RGBAf = RGBAf(),
+		//val colorArgbDelta: RGBAf = RGBAf(),
 
-		@JvmField var colorR: Double = 1.0,
-		@JvmField var colorG: Double = 1.0,
-		@JvmField var colorB: Double = 1.0,
-		@JvmField var colorA: Double = 1.0,
+		var colorR: Double = 1.0,
+		var colorG: Double = 1.0,
+		var colorB: Double = 1.0,
+		var colorA: Double = 1.0,
 
-		@JvmField var colorRdelta: Double = 0.0,
-		@JvmField var colorGdelta: Double = 0.0,
-		@JvmField var colorBdelta: Double = 0.0,
-		@JvmField var colorAdelta: Double = 0.0,
+		var colorRdelta: Double = 0.0,
+		var colorGdelta: Double = 0.0,
+		var colorBdelta: Double = 0.0,
+		var colorAdelta: Double = 0.0,
 
-		@JvmField var startX: Double = 0.0,
-		@JvmField var startY: Double = 0.0,
-		@JvmField var velocityX: Double = 0.0,
-		@JvmField var velocityY: Double = 0.0,
-		@JvmField var radialAcceleration: Double = 0.0,
-		@JvmField var tangentialAcceleration: Double = 0.0,
-		@JvmField var emitRadius: Double = 0.0,
-		@JvmField var emitRadiusDelta: Double = 0.0,
-		@JvmField var emitRotation: Double = 0.0,
-		@JvmField var emitRotationDelta: Double = 0.0,
-		@JvmField var rotationDelta: Double = 0.0,
-		@JvmField var scaleDelta: Double = 0.0
+		var startX: Double = 0.0,
+		var startY: Double = 0.0,
+		var velocityX: Double = 0.0,
+		var velocityY: Double = 0.0,
+		var radialAcceleration: Double = 0.0,
+		var tangentialAcceleration: Double = 0.0,
+		var emitRadius: Double = 0.0,
+		var emitRadiusDelta: Double = 0.0,
+		var emitRotation: Double = 0.0,
+		var emitRotationDelta: Double = 0.0,
+		var rotationDelta: Double = 0.0,
+		var scaleDelta: Double = 0.0
 	) {
 		val colorInt: RGBA get() = RGBA(RGBA.packf(colorR.toFloat(), colorG.toFloat(), colorB.toFloat(), colorA.toFloat()))
 		val alive: Boolean get() = this.currentTime < this.totalTime

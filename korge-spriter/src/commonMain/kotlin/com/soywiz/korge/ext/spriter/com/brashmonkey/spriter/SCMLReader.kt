@@ -1,13 +1,10 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.*
-import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
-import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
-import com.soywiz.korio.JvmField
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.Xml
-import com.soywiz.korio.stream.SyncStream
-import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.stream.*
 
 /**
  * This class parses a SCML file and creates a [Data] instance.
@@ -22,7 +19,6 @@ class SCMLReader {
 	 * Returns the loaded SCML data.
 	 * @return the SCML data.
 	 */
-	@JvmField
 	var data: Data
 
 	/**

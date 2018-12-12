@@ -1,10 +1,8 @@
 package com.soywiz.korge.ext.spriter.com.brashmonkey.spriter
 
-import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.ObjectInfo
-import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key
-import com.soywiz.korio.JvmField
-import com.soywiz.korio.JvmOverloads
-import kotlin.math.sign
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.*
+import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.*
+import kotlin.math.*
 
 /**
  * Represents a time line in a Spriter SCML file.
@@ -12,10 +10,9 @@ import kotlin.math.sign
  * @author Trixt0r
  */
 class Timeline internal constructor(
-	@JvmField val id: Int, @JvmField val name: String, @JvmField val objectInfo: ObjectInfo, keys: Int
+	val id: Int, val name: String, val objectInfo: ObjectInfo, keys: Int
 ) {
 
-	@JvmField
 	val keys: Array<Key> = Array<Key>(keys) { Key.DUMMY }
 	private var keyPointer = 0
 
@@ -48,12 +45,11 @@ class Timeline internal constructor(
 	 * A key holds an [.id], a [.time], a [.spin], an [.object] and a [.curve].
 	 * @author Trixt0r
 	 */
-	class Key(@JvmField val id: Int, @JvmField var time: Int, @JvmField val spin: Int, @JvmField val curve: Curve) {
-		@JvmField
+	class Key(val id: Int, var time: Int, val spin: Int, val curve: Curve) {
 		var active: Boolean = false
 		private var `object`: Object? = null
 
-		@JvmOverloads constructor(id: Int, time: Int = 0, spin: Int = 1) : this(id, time, 1, Curve()) {}
+		constructor(id: Int, time: Int = 0, spin: Int = 1) : this(id, time, 1, Curve()) {}
 
 		fun setObject(`object`: Object?) {
 			if (`object` == null) throw IllegalArgumentException("object can not be null!")
@@ -74,16 +70,13 @@ class Timeline internal constructor(
 		 * Bones are the only objects which can be used as a parent for other tweenable objects.
 		 * @author Trixt0r
 		 */
-		open class Bone @JvmOverloads constructor(
+		open class Bone constructor(
 			position: Point = Point(),
 			scale: Point = Point(1f, 1f),
-			pivot: Point = Point(0f, 1f), @JvmField var _angle: Float = 0f
+			pivot: Point = Point(0f, 1f), var _angle: Float = 0f
 		) {
-			@JvmField
 			val position: Point = Point(position)
-			@JvmField
 			val scale: Point = Point(scale)
-			@JvmField
 			val pivot: Point = Point(pivot)
 
 			constructor(bone: Bone) : this(bone.position, bone.scale, bone.pivot, bone._angle)
@@ -182,11 +175,11 @@ class Timeline internal constructor(
 		 * A file has the same properties as a bone with an alpha and file extension.
 		 * @author Trixt0r
 		 */
-		class Object @JvmOverloads constructor(
+		class Object constructor(
 			position: Point = Point(),
 			scale: Point = Point(1f, 1f),
 			pivot: Point = Point(0f, 1f),
-			angle: Float = 0f, @JvmField var alpha: Float = 1f, @JvmField val ref: FileReference = FileReference(
+			angle: Float = 0f, var alpha: Float = 1f, val ref: FileReference = FileReference(
 				-1,
 				-1
 			)
@@ -273,7 +266,7 @@ class Timeline internal constructor(
 				fileRef: FileReference
 			) {
 				this[position.x, position.y, angle, scale.x, scale.y, pivot.x, pivot.y, alpha, fileRef.folder] =
-						fileRef.file
+					fileRef.file
 			}
 
 			override fun toString(): String {

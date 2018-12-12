@@ -7,7 +7,6 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectR
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Player.PlayerListener
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
-import com.soywiz.korio.JvmField
 import kotlin.math.sign
 
 /**
@@ -30,11 +29,8 @@ open class Player
  */
 	(entity: Entity) {
 
-	@JvmField
 	var _entity: Entity = Entity.DUMMY
-	@JvmField
 	var _animation: Animation = Animation.DUMMY
-	@JvmField
 	var _time: Int = 0
 	var speed: Int = 15
 	var tweenedKeys: Array<Timeline.Key> = emptyArray()

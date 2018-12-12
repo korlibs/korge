@@ -100,7 +100,6 @@ data class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float
 	}
 
 	companion object {
-		@JvmStatic
 		fun fromSize(x: Float, y: Float, width: Float, height: Float) = Rectangle(x, y, x + width, y + height)
 
 		/**
@@ -111,7 +110,6 @@ data class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float
 		 * *
 		 * @return `true` if the rectangles are intersecting
 		 */
-		@JvmStatic
 		fun areIntersecting(rect1: Rectangle, rect2: Rectangle): Boolean {
 			return rect1.isInside(rect2.left, rect2.top) || rect1.isInside(rect2.right, rect2.top)
 					|| rect1.isInside(rect2.left, rect2.bottom) || rect1.isInside(rect2.right, rect2.bottom)
@@ -125,7 +123,6 @@ data class Rectangle(var left: Float = 0f, var top: Float = 0f, var right: Float
 		 * *
 		 * @param target the target to save the new bounds.
 		 */
-		@JvmStatic
 		fun setBiggerRectangle(rect1: Rectangle, rect2: Rectangle, target: Rectangle) {
 			target.left = min(rect1.left, rect2.left)
 			target.bottom = min(rect1.bottom, rect2.bottom)

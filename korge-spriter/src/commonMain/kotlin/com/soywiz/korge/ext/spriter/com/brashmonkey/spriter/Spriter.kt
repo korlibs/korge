@@ -152,7 +152,6 @@ object Spriter {
 	 * *
 	 * @throws SpriterException if the given SCML file was not loaded yet
 	 */
-	@JvmOverloads
 	fun newPlayer(scmlFile: String, entityIndex: Int, playerFactory: (Entity) -> Player = { Player(it) }): Player? {
 		if (!loadedData.containsKey(scmlFile)) throw SpriterException("You have to load \"$scmlFile\" before using it!")
 		try {

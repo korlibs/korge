@@ -5,7 +5,6 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.BoneRef
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Mainline.Key.ObjectRef
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Bone
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.Object
-import com.soywiz.korio.JvmField
 
 /**
  * Represents an animation of a Spriter SCML file.
@@ -15,7 +14,7 @@ import com.soywiz.korio.JvmField
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class Animation(
-	@JvmField val mainline: Mainline, @JvmField val id: Int, @JvmField val name: String, @JvmField val length: Int, @JvmField val looping: Boolean,
+	val mainline: Mainline, val id: Int, val name: String, val length: Int, val looping: Boolean,
 	timelines: Int
 ) {
 	companion object {
@@ -26,9 +25,7 @@ open class Animation(
 	private var timelinePointer = 0
 	private val nameToTimeline: HashMap<String, Timeline> = HashMap()
 	open var currentKey: Key = Key.DUMMY
-	@JvmField
 	var tweenedKeys: Array<Timeline.Key> = emptyArray()
-	@JvmField
 	var unmappedTweenedKeys: Array<Timeline.Key> = emptyArray()
 	private var prepared: Boolean = false
 

@@ -25,7 +25,6 @@ object Calculator {
 	 * *
 	 * @return Smallest difference between a and b (between 180� and -180�).
 	 */
-	@JvmStatic
 	fun angleDifference(a: Float, b: Float): Float {
 		return ((a - b) % 360 + 540) % 360 - 180
 	}
@@ -41,7 +40,6 @@ object Calculator {
 	 * *
 	 * @return Angle between the two given points.
 	 */
-	@JvmStatic
 	fun angleBetween(x1: Float, y1: Float, x2: Float, y2: Float): Float {
 		return Angle.toDegrees(atan2((y2 - y1).toDouble(), (x2 - x1).toDouble())).toFloat()
 	}
@@ -57,7 +55,6 @@ object Calculator {
 	 * *
 	 * @return Distance between the two given points.
 	 */
-	@JvmStatic
 	fun distanceBetween(x1: Float, y1: Float, x2: Float, y2: Float): Float {
 		val xDiff = x2 - x1
 		val yDiff = y2 - y1
@@ -76,7 +73,6 @@ object Calculator {
 	 * *
 	 * @return the solution of the cubic function if it belongs [0, 1], [.NO_SOLUTION] otherwise.
 	 */
-	@JvmStatic
 	fun solveCubic(a: Float, b: Float, c: Float, d: Float): Float {
 		var b = b
 		var c = c
@@ -139,7 +135,6 @@ object Calculator {
 	 * *
 	 * @return the solution for the quadratic function if it belongs [0, 1], [.NO_SOLUTION] otherwise.
 	 */
-	@JvmStatic
 	fun solveQuadratic(a: Float, b: Float, c: Float): Float {
 		val squaredB = squared(b)
 		val twoA = 2 * a
@@ -160,7 +155,6 @@ object Calculator {
 	 * *
 	 * @return the square of the value
 	 */
-	@JvmStatic
 	fun squared(f: Float): Float {
 		return f * f
 	}
@@ -171,7 +165,6 @@ object Calculator {
 	 * *
 	 * @return the cubed value
 	 */
-	@JvmStatic
 	fun cubed(f: Float): Float {
 		return f * f * f
 	}
@@ -182,7 +175,6 @@ object Calculator {
 	 * *
 	 * @return the cubic root
 	 */
-	@JvmStatic
 	fun cubicRoot(f: Float): Float {
 		return f.toDouble().pow((1f / 3f).toDouble()).toFloat()
 	}
@@ -193,7 +185,6 @@ object Calculator {
 	 * *
 	 * @return the square root
 	 */
-	@JvmStatic
 	fun sqrt(x: Float): Float {
 		return kotlin.math.sqrt(x.toDouble()).toFloat()
 	}
@@ -204,7 +195,6 @@ object Calculator {
 	 * *
 	 * @return the arc cosine
 	 */
-	@JvmStatic
 	fun acos(x: Float): Float {
 		return kotlin.math.acos(x.toDouble()).toFloat()
 	}
@@ -239,25 +229,21 @@ object Calculator {
 	}
 
 	/** Returns the sine in radians from a lookup table.  */
-	@JvmStatic
 	fun sin(radians: Float): Float {
 		return Sin.table[(radians * radToIndex).toInt() and SIN_MASK]
 	}
 
 	/** Returns the cosine in radians from a lookup table.  */
-	@JvmStatic
 	fun cos(radians: Float): Float {
 		return Sin.table[((radians + PI / 2) * radToIndex).toInt() and SIN_MASK]
 	}
 
 	/** Returns the sine in radians from a lookup table.  */
-	@JvmStatic
 	fun sinDeg(degrees: Float): Float {
 		return Sin.table[(degrees * degToIndex).toInt() and SIN_MASK]
 	}
 
 	/** Returns the cosine in radians from a lookup table.  */
-	@JvmStatic
 	fun cosDeg(degrees: Float): Float {
 		return Sin.table[((degrees + 90) * degToIndex).toInt() and SIN_MASK]
 	}

@@ -68,9 +68,7 @@ class Mainline(keys: Int) {
 	 * @author Trixt0r
 	 */
 	class Key(val id: Int, val time: Int, val curve: Curve, boneRefs: Int, objectRefs: Int) {
-		@JvmField
 		val boneRefs: Array<BoneRef>
-		@JvmField
 		val objectRefs: Array<ObjectRef>
 		private var bonePointer = 0
 		private var objectPointer = 0
@@ -182,7 +180,7 @@ class Mainline(keys: Int) {
 		 * A bone reference may have a parent reference.
 		 * @author Trixt0r
 		 */
-		open class BoneRef(@JvmField val id: Int, @JvmField val timeline: Int, @JvmField val key: Int, @JvmField val parent: BoneRef?) {
+		open class BoneRef(val id: Int, val timeline: Int, val key: Int, val parent: BoneRef?) {
 			companion object {
 				val DUMMY = BoneRef(0, 0, 0, null)
 			}

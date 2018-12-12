@@ -13,7 +13,7 @@ import com.soywiz.korio.*
  * *
  * @param player2 the second player
  */
-class PlayerTweener(@JvmField var player1: Player, @JvmField var player2: Player) : Player(player1.getEntity()) {
+class PlayerTweener(var player1: Player, var player2: Player) : Player(player1.getEntity()) {
 
 	private var anim: TweenedAnimation? = null
 	/**

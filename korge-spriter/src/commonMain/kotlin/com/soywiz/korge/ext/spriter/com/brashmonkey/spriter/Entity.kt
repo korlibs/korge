@@ -187,7 +187,7 @@ class Entity internal constructor(
 	 * If the type is a Sprite it holds a list of frames. Otherwise it has a [.size] for debug drawing purposes.
 	 * @author Trixt0r
 	 */
-	class ObjectInfo @JvmOverloads internal constructor(
+	class ObjectInfo internal constructor(
 		val name: String,
 		val type: ObjectType,
 		val size: Dimension,

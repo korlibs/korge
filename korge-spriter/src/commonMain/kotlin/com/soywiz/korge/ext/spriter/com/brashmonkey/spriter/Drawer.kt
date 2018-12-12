@@ -4,6 +4,7 @@ import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Entity.*
 import com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Timeline.Key.*
 import com.soywiz.korio.*
 import com.soywiz.korma.geom.*
+import kotlin.jvm.JvmField
 import kotlin.math.*
 
 /**
@@ -23,23 +24,12 @@ abstract class Drawer<R>
  * Creates a new drawer based on the given loader.
  * @param loader the loader containing resources
  */
-	(@JvmField var loader: Loader<*>) {
+	(var loader: com.soywiz.korge.ext.spriter.com.brashmonkey.spriter.Loader<*>) {
 
 	/**
 	 * The radius of a point for debug drawing purposes.
 	 */
 	var pointRadius = 5f
-
-	/**
-	 * Sets the loader of this drawer.
-	 * @param loader the loader containing resources
-	 * *
-	 * @throws SpriterException if the loader is `null`
-	 */
-	fun setLoader(loader: Loader<R>?) {
-		if (loader == null) throw SpriterException("The loader instance can not be null!")
-		this.loader = loader
-	}
 
 	/**
 	 * Draws the bones of the given player composed of lines.
@@ -113,7 +103,6 @@ abstract class Drawer<R>
 	 * *
 	 * @param it the iterator iterating over the bones to draw
 	 */
-	@JvmOverloads
 	fun drawBoneBoxes(player: Player, it: Iterator<Bone> = player.boneIterator()) {
 		while (it.hasNext()) {
 			val bone = it.next()
@@ -127,7 +116,6 @@ abstract class Drawer<R>
 	 * *
 	 * @param it the iterator iterating over the object to draw
 	 */
-	@JvmOverloads
 	fun drawObjectBoxes(player: Player, it: Iterator<Object> = player.objectIterator()) {
 		while (it.hasNext()) {
 			val bone = it.next()
@@ -141,7 +129,6 @@ abstract class Drawer<R>
 	 * *
 	 * @param it the iterator iterating over the points to draw
 	 */
-	@JvmOverloads
 	fun drawPoints(player: Player, it: Iterator<Object> = player.objectIterator()) {
 		while (it.hasNext()) {
 			val point = it.next()

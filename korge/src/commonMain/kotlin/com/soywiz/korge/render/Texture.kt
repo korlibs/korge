@@ -25,13 +25,9 @@ class Texture(
 	val width = right - left
 	val height = bottom - top
 
-	@JvmField
 	val x0: Float = (left).toFloat() / base.width.toFloat()
-	@JvmField
 	val x1: Float = (right).toFloat() / base.width.toFloat()
-	@JvmField
 	val y0: Float = (top).toFloat() / base.height.toFloat()
-	@JvmField
 	val y1: Float = (bottom).toFloat() / base.height.toFloat()
 
 	override fun toString(): String = "Texture($base, (x=$x, y=$y, width=$width, height=$height))"
