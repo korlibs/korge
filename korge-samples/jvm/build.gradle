@@ -148,7 +148,7 @@ File cordovaFolder = new File(project.buildDir, 'cordova')
 
 task cordovaInstall(type: Exec) {
 	onlyIf { !cordovaFolder.exists() }
-	workingDir cordovaFolder
+	//workingDir cordovaFolder
 	commandLine 'cordova', 'create', cordovaFolder.absolutePath, 'com.soywiz.sample1', 'sample1'
 }
 
@@ -164,11 +164,32 @@ task cordovaIosInstall(type: Exec, dependsOn: [cordovaInstall]) {
 	commandLine 'cordova', 'platform', 'add', 'ios'
 }
 
-def cordovaPlugins = ['cordova-launch-review', 'cordova-plugin-camera']
+def cordovaPlugins = [
+		'cordova-launch-review': [],
+		'cordova-plugin-camera': [],
+		'cordova-plugin-admob-free': ["ADMOB_APP_ID": "ca-app-pub-xxxxxxxx~yyyyyy"]
+]
 
-task cordovaPluginsInstall(type: Exec, dependsOn: [cordovaInstall]) {
-	workingDir cordovaFolder
-	commandLine('cordova', 'plugin', 'add', *cordovaPlugins)
+//cordova plugin add cordova-plugin-admob-free --save --variable ADMOB_APP_ID="<YOUR_ADMOB_APP_ID_AS_FOUND_IN_ADMOB>"
+
+
+task cordovaPluginsInstall(dependsOn: [cordovaInstall]) {
+	doLast {
+		/*
+		*/
+		cordovaPlugins.each { plugin ->
+			//println(it.key)
+			def list = plugin.value.collectMany { pair ->
+				["--variable", pair.key + "=" + pair.value]
+			}
+			exec {
+				workingDir cordovaFolder
+				println(['cordova', 'plugin', 'add', plugin.key, '--save', *list])
+				commandLine('cordova', 'plugin', 'add', plugin.key, '--save', *list)
+			}
+			//println(list)
+		}
+	}
 }
 
 task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall]) {

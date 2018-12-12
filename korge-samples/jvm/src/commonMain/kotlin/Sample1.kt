@@ -64,7 +64,11 @@ object Sample1 {
             onClick {
                 try {
                     //LaunchReview.launch("com.google.android.apps.maps")
-                    println(Camera.getPicture(Camera.Info()))
+                    //println(Camera.getPicture(Camera.Info()))
+                    //AdMob.banner.prepare()
+                    //AdMob.banner.show()
+                    AdMob.rewardvideo.prepare()
+                    AdMob.rewardvideo.show()
                 } catch (e: Throwable) {
                     alert("$e")
                 }
@@ -155,5 +159,75 @@ object Vibrate {
     suspend fun vibrate(time: TimeSpan) {
         Dynamic { global["navigator"].dynamicInvoke("vibrate", time.milliseconds) }
         com.soywiz.korio.async.delay(time)
+    }
+}
+
+// https://www.npmjs.com/package/cordova-plugin-admob-free
+object AdMob {
+    private val admob get() = Dynamic.global["admob"]
+
+    val banner get() = Banner
+    val intestitial get() = Interstitial
+    val rewardvideo get() = RewardVideo
+
+    object Banner {
+        enum class Size {
+            BANNER, IAB_BANNER, IAB_LEADERBOARD, IAB_MRECT, LARGE_BANNER, SMART_BANNER, FLUID
+        }
+
+        private val instance = admob["banner"]
+
+        fun config(id: String, bannerAtTop: Boolean = false, overlap: Boolean = true, offsetTopBar: Boolean = false, size: Size = Size.SMART_BANNER) {
+            Dynamic { instance.dynamicInvoke("config", object {
+                @JsName("id") val id = id
+                @JsName("bannerAtTop") val bannerAtTop = bannerAtTop
+                @JsName("overlap") val overlap = overlap
+                @JsName("offsetTopBar") val offsetTopBar = offsetTopBar
+                @JsName("size") val size = size.name
+            }) }
+        }
+        suspend fun prepare(): String = Dynamic { instance.dynamicInvoke("prepare").promiseAwait()?.toString() ?: "error" }
+        suspend fun show(): String = Dynamic { instance.dynamicInvoke("show").promiseAwait()?.toString() ?: "error" }
+        suspend fun hide(): String = Dynamic { instance.dynamicInvoke("hide").promiseAwait()?.toString() ?: "error" }
+        suspend fun remove(): String = Dynamic { instance.dynamicInvoke("remove").promiseAwait()?.toString() ?: "error" }
+    }
+
+    abstract class InterstitialCommon {
+        protected abstract val instance: Any?
+        fun config(id: String, isTesting: Boolean = false, autoShow: Boolean = true, forChild: Boolean? = null, forFamily: Boolean? = null, latitude: Double? = null, longitude: Double? = null) {
+            Dynamic { instance.dynamicInvoke("config", object {
+                @JsName("id") val id = id
+                @JsName("isTesting") val isTesting = isTesting
+                @JsName("autoShow") val autoShow = autoShow
+                @JsName("forChild") val forChild = forChild
+                @JsName("forFamily") val forFamily = forFamily
+                @JsName("location") val location = if (latitude != null && longitude != null) arrayOf(latitude, longitude) else null
+            }) }
+        }
+
+        suspend fun prepare(): String = Dynamic { instance.dynamicInvoke("prepare").promiseAwait()?.toString() ?: "error" }
+        suspend fun show(): String = Dynamic { instance.dynamicInvoke("show").promiseAwait()?.toString() ?: "error" }
+    }
+
+    object Interstitial : InterstitialCommon() {
+        override val instance = admob["interstitial"]
+    }
+
+    object RewardVideo : InterstitialCommon() {
+        override val instance = admob["rewardvideo"]
+    }
+
+    private suspend fun Any?.promiseAwait(): Any? {
+        val instance = this ?: return null
+        return Dynamic {
+            val result = CompletableDeferred<Any?>()
+            if (instance["then"] != null) return instance
+            instance.dynamicInvoke("then", { value: Any? ->
+                result.complete(value)
+            }, { err: Any? ->
+                result.completeExceptionally(RuntimeException("$err"))
+            })
+            result.await()
+        }
     }
 }
