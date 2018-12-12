@@ -70,7 +70,9 @@ abstract class Filter {
 				}
 
 				// Color multiply and addition
-				out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
+				// @TODO: Kotlin.JS BUG
+				//out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
+				out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f.lit)
 
 				// Required for shape masks:
 				if (texture.premultiplied) {

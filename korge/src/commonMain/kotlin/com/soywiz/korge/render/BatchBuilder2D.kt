@@ -363,7 +363,11 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 				if (premultiplied) {
 					SET(out["rgb"], out["rgb"] / out["a"])
 				}
-				SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
+
+				// @TODO: Kotlin.JS bug?
+				//SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
+				SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f.lit))
+
 				//SET(out, t_Temp1)
 				// Required for shape masks:
 				if (premultiplied) {
