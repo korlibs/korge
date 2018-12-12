@@ -121,7 +121,7 @@ task jsWeb(dependsOn: [jsJar]) {
 			includeEmptyDirs = false
 			from "$buildDir/npm/node_modules"
 			from jsCompilations.main.output.allOutputs
-			exclude '**/*.kotlin_metadata', '**/*.kotlin_module', '**/*.MF', '**/*.kjsm'
+			exclude '**/*.kotlin_metadata', '**/*.kotlin_module', '**/*.MF', '**/*.kjsm', '**/*.map', '**/*.meta.js'
 			jsCompilations.test.runtimeDependencyFiles.each {
 				if (it.exists() && !it.isDirectory()) {
 					from zipTree(it.absolutePath)
@@ -142,4 +142,50 @@ task jsWeb(dependsOn: [jsJar]) {
 				"TITLE": project.name
 		]).toString()
 	}
+}
+
+File cordovaFolder = new File(project.buildDir, 'cordova')
+
+task cordovaInstall(type: Exec) {
+	onlyIf { !cordovaFolder.exists() }
+	workingDir cordovaFolder
+	commandLine 'cordova', 'create', cordovaFolder.absolutePath, 'com.soywiz.sample1', 'sample1'
+}
+
+task cordovaAndroidInstall(type: Exec, dependsOn: [cordovaInstall]) {
+	onlyIf { !new File(cordovaFolder, 'platforms/android').exists() }
+	workingDir cordovaFolder
+	commandLine 'cordova', 'platform', 'add', 'android'
+}
+
+task cordovaIosInstall(type: Exec, dependsOn: [cordovaInstall]) {
+	onlyIf { !new File(cordovaFolder, 'platforms/ios').exists() }
+	workingDir cordovaFolder
+	commandLine 'cordova', 'platform', 'add', 'ios'
+}
+
+def cordovaPlugins = ['cordova-launch-review', 'cordova-plugin-camera']
+
+task cordovaPluginsInstall(type: Exec, dependsOn: [cordovaInstall]) {
+	workingDir cordovaFolder
+	commandLine('cordova', 'plugin', 'add', *cordovaPlugins)
+}
+
+task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall]) {
+	from new File(project.buildDir, 'web')
+	into new File(cordovaFolder, 'www')
+	doLast {
+		def f = new File(cordovaFolder, 'www/index.html')
+		f.text = f.text.replace("</head>", "<script type=\"text/javascript\" src=\"cordova.js\"></script></head>")
+	}
+}
+
+task cordovaAndroidRun(type: Exec, dependsOn: [cordovaAndroidInstall, cordovaPluginsInstall, cordovaWww]) {
+	workingDir cordovaFolder
+	commandLine 'cordova', 'run', 'android'
+}
+
+task cordovaIosdRun(type: Exec, dependsOn: [cordovaIosInstall, cordovaPluginsInstall, cordovaWww]) {
+	workingDir cordovaFolder
+	commandLine 'cordova', 'run', 'ios', '--device'
 }
