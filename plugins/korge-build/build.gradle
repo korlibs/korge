@@ -1,0 +1,24 @@
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+dependencies {
+	//compile project(":korge-combined")
+	compile "com.soywiz:korge-combined:$korgeVersion"
+
+	compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+	compile "org.jetbrains.kotlin:kotlin-test"
+	compile "org.jetbrains.kotlin:kotlin-test-junit"
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = project.group
+			artifactId = project.name
+			version = project.version
+
+			from components.java
+		}
+	}
+}

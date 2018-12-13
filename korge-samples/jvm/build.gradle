@@ -96,23 +96,6 @@ dependencies {
 
 def mainClassName = 'Sample1'
 
-task jvmRun(type: JavaExec) {
-	classpath = kotlin.targets.jvm.compilations.test.runtimeDependencyFiles
-	main = mainClassName
-	//args 'appArg1'
-}
-
-task jvmFatJar(type: Jar) {
-	manifest {
-		attributes 'Implementation-Title': mainClassName,
-				'Implementation-Version': version,
-				'Main-Class': mainClassName
-	}
-	baseName = project.name + '-all'
-	from { kotlin.targets.jvm.compilations.main.runtimeDependencyFiles.collect { it.isDirectory() ? it : zipTree(it) } }
-	with jvmJar
-}
-
 task jsWeb(dependsOn: [jsJar]) {
 	doLast {
 		copy {
@@ -257,7 +240,18 @@ task cordovaPluginsInstall(dependsOn: [cordovaInstall]) {
 	}
 }
 
-task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall, cordovaSynchronizeConfigXml]) {
+task packageJvmFatJar(type: Jar, group: 'korge') {
+	manifest {
+		attributes 'Implementation-Title': mainClassName,
+				'Implementation-Version': version,
+				'Main-Class': mainClassName
+	}
+	baseName = project.name + '-all'
+	from { kotlin.targets.jvm.compilations.main.runtimeDependencyFiles.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jvmJar
+}
+
+task packageJsWeb(type: Copy, group: 'korge', dependsOn: [jsWeb, cordovaInstall, cordovaSynchronizeConfigXml]) {
 	from new File(project.buildDir, 'web')
 	into new File(cordovaFolder, 'www')
 	doLast {
@@ -266,12 +260,18 @@ task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall, cordovaSynchroniz
 	}
 }
 
-task cordovaAndroidRun(type: Exec, dependsOn: [cordovaAndroidInstall, cordovaPluginsInstall, cordovaWww]) {
+task runJvm(type: JavaExec, group: 'korge') {
+	classpath = kotlin.targets.jvm.compilations.test.runtimeDependencyFiles
+	main = mainClassName
+	//args 'appArg1'
+}
+
+task runAndroid(type: Exec, group: 'korge', dependsOn: [cordovaAndroidInstall, cordovaPluginsInstall, packageJsWeb]) {
 	workingDir cordovaFolder
 	commandLine 'cordova', 'run', 'android'
 }
 
-task cordovaIosdRun(type: Exec, dependsOn: [cordovaIosInstall, cordovaPluginsInstall, cordovaWww]) {
+task runIos(type: Exec, group: 'korge', dependsOn: [cordovaIosInstall, cordovaPluginsInstall, packageJsWeb]) {
 	workingDir cordovaFolder
 	commandLine 'cordova', 'run', 'ios', '--device'
 }

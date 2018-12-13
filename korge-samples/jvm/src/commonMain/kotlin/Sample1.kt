@@ -65,10 +65,10 @@ object Sample1 {
                 try {
                     //LaunchReview.launch("com.google.android.apps.maps")
                     //println(Camera.getPicture(Camera.Info()))
-                    //AdMob.banner.prepare()
-                    //AdMob.banner.show()
-                    AdMob.rewardvideo.prepare()
-                    AdMob.rewardvideo.show()
+                    AdMob.banner.prepare()
+                    AdMob.banner.show()
+                    //AdMob.rewardvideo.prepare()
+                    //AdMob.rewardvideo.show()
                 } catch (e: Throwable) {
                     alert("$e")
                 }

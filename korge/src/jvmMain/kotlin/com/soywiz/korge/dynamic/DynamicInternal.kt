@@ -3,7 +3,7 @@ package com.soywiz.korge.dynamic
 import com.soywiz.korio.util.*
 import java.lang.reflect.*
 
-actual object DynamicInternal {
+internal actual object DynamicInternal {
 	actual val global: Any? = null
 
 	private fun tryGetField(clazz: Class<*>, name: String): Field? {

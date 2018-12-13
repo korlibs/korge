@@ -78,7 +78,7 @@ class TweenedAnimation
 				key = baseAnim.tweenedKeys[timeline.id]
 				mappedKey = baseAnim.unmappedTweenedKeys[timeline.id]
 				this.tweenedKeys[ref.timeline].active = key.active
-				this.tweenedKeys[ref.timeline].`object`()!!.set(key.`object`()!!)
+				this.tweenedKeys[ref.timeline].`object`().set(key.`object`())
 				this.unmappedTweenedKeys[ref.timeline].active = mappedKey.active
 				this.unmapTimelineObject(
 					ref.timeline, false, if (ref.parent != null)
@@ -108,7 +108,7 @@ class TweenedAnimation
 		this.tweenBoneRefs(base, root!!)
 		for (ref in super.currentKey.objectRefs) {
 			//if(ref.parent == base)
-			this.update(ref, root!!, 0)
+			this.update(ref, root, 0)
 		}
 	}
 
@@ -155,7 +155,7 @@ class TweenedAnimation
 		if (this.unmappedTweenedKeys[ref.timeline].active) {
 			this.unmapTimelineObject(
 				targetTimeline.id, isObject, if (ref.parent != null)
-					this.unmappedTweenedKeys[ref.parent.timeline].`object`()!!
+					this.unmappedTweenedKeys[ref.parent.timeline].`object`()
 				else
 					root
 			)

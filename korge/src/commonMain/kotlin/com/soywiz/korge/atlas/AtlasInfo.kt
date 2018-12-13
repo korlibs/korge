@@ -26,7 +26,11 @@ data class AtlasInfo(
 		val scale: Double,
 		val size: Size,
 		val version: String
-	)
+	) {
+		companion object {
+			val VERSION = "1.0.0"
+		}
+	}
 
 	data class Entry(
 		val frame: Rect,

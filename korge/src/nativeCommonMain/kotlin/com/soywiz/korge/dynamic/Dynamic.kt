@@ -1,6 +1,6 @@
 package com.soywiz.korge.dynamic
 
-actual object DynamicInternal {
+internal actual object DynamicInternal {
 	actual val global: Any? = null
 
 	actual fun get(instance: Any?, key: String): Any? {

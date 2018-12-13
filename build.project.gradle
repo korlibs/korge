@@ -7,11 +7,8 @@ idea {
 			".idea",
 			"@old",
 			"docs",
-			"korge-build",
+			"plugins",
 			"korge-samples",
-			"korge-intellij-plugin",
-			"korge-gradle-plugin",
-			"korge-flash-plugin",
 
 		].each {
 			excludeDirs << file("$it")
