@@ -3,12 +3,29 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 dependencies {
-	//compile project(":korge-combined")
-	compile "com.soywiz:korge-combined:$korgeVersion"
+	compile project(":korge-combined")
+	//compile "com.soywiz:korge-combined:$korgeVersion"
 
 	compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 	compile "org.jetbrains.kotlin:kotlin-test"
 	compile "org.jetbrains.kotlin:kotlin-test-junit"
+
+	compileOnly "com.soywiz:korge-jvm:$korgeVersion"
+	compileOnly "com.soywiz:korge-swf-jvm:$korgeVersion"
+	compileOnly "com.soywiz:klogger-jvm:$kloggerVersion"
+	compileOnly "com.soywiz:korio-jvm:$korioVersion"
+	compileOnly "com.soywiz:korau-jvm:$korauVersion"
+	compileOnly "com.soywiz:korau-mp3-jvm:$korauVersion"
+	compileOnly "com.soywiz:korau-ogg-vorbis-jvm:$korauVersion"
+	compileOnly "com.soywiz:kds-jvm:$kdsVersion"
+	compileOnly "com.soywiz:kmem-jvm:$kmemVersion"
+	compileOnly "com.soywiz:korim-jvm:$korimVersion"
+	compileOnly "com.soywiz:korma-jvm:$kormaVersion"
+	compileOnly "com.soywiz:korinject-jvm:$korinjectVersion"
+	compileOnly "com.soywiz:kgl-jvm:$kglVersion"
+	compileOnly "com.soywiz:korag-jvm:$koragVersion"
+	compileOnly "com.soywiz:korui-jvm:$koruiVersion"
+	compileOnly "com.soywiz:klock-jvm:$klockVersion"
 }
 
 publishing {

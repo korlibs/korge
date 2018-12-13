@@ -1,29 +1,39 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korau.format.*
-import com.soywiz.korge.*
-import com.soywiz.korge.build.*
-import com.soywiz.korge.build.atlas.*
-import com.soywiz.korge.build.lipsync.*
-import com.soywiz.korge.build.swf.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.serialization.*
-import com.soywiz.korio.util.*
 import groovy.lang.*
-import kotlinx.coroutines.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.internal.*
+import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
-import org.gradle.language.jvm.tasks.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
 
+val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
+val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
+val korgeVersion get() = KorgeBuildServiceProxy.version()
+
 open class KorgeGradlePlugin : Plugin<Project> {
-	val Project.kotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
-	val korgeVersion get() = Korge.VERSION
+
+	override fun apply(project: Project) {
+		System.setProperty("java.awt.headless", "true")
+
+		KorgeBuildServiceProxy.init()
+		project.addVersionExtension()
+		project.configureRepositories()
+		project.configureKotlin()
+		project.addKorgeTasks()
+
+		//for (res in project.getResourcesFolders()) println("- $res")
+	}
+
+	private fun Project.addVersionExtension() {
+		ext.set("korgeVersion", korgeVersion)
+		ext.set("kotlinVersion", "1.3.11")
+		//ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
+	}
 
 	private fun Project.configureRepositories() {
 		repositories.apply {
@@ -37,13 +47,14 @@ open class KorgeGradlePlugin : Plugin<Project> {
 	private fun Project.configureKotlin() {
 		plugins.apply("kotlin-multiplatform")
 
-		kotlin.targets.add((kotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
-		kotlin.targets.add((kotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
+		gkotlin.targets.add((gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
+		gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
 			compilations.getAt("main").apply {
 				//this.apiConfigurationName
 				//compileKotlinTaskName
 			}
 		})
+
 
 		project.dependencies.add("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
 		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
@@ -52,28 +63,15 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		//println("com.soywiz:korge:$korgeVersion")
 		//project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
 
-		kotlin.sourceSets.maybeCreate("commonMain").dependencies {
+		gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
 			api("com.soywiz:korge:$korgeVersion")
 		}
 
 		//kotlin.sourceSets.create("")
+
 	}
 
-	override fun apply(project: Project) {
-		System.setProperty("java.awt.headless", "true")
-
-		project.configureRepositories()
-		project.configureKotlin()
-
-		defaultResourceProcessors.register(AtlasResourceProcessor, SwfResourceProcessor)
-		try {
-			defaultResourceProcessors.register(LipsyncResourceProcessor)
-		} catch (e: Throwable) {
-			e.printStackTrace()
-		}
-		Mapper.jvmFallback()
-		defaultAudioFormats.registerStandard().registerMp3Decoder().registerOggVorbisDecoder()
-
+	fun Project.addKorgeTasks() {
 		//return
 
 		try {
@@ -111,11 +109,6 @@ open class KorgeGradlePlugin : Plugin<Project> {
 abstract class KorgeBaseResourcesTask : DefaultTask() {
 	var debug = false
 
-	suspend fun compile(inputFiles: List<File>, output: File) {
-		ignoreErrors { output.mkdirs() }
-		ResourceProcessor.process(inputFiles.map { it.toVfs() }, output.toVfs())
-	}
-
 	class GeneratePair {
 		val input = ArrayList<File>()
 		val output = ArrayList<File>()
@@ -131,43 +124,46 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
 	@TaskAction
 	open fun task() {
 		logger.info("KorgeResourcesTask ($this)")
-		for (processor in ResourceProcessor.processorsByExtension.values) {
-			logger.info("${processor.extensionLCs} -> $processor")
-		}
+		//for (processor in com.soywiz.korge.build.ResourceProcessor.processorsByExtension.values) {
+		//	logger.info("${processor.extensionLCs} -> $processor")
+		//}
 		for (p in project.allprojects) {
-			val sourceSets = project.property("sourceSets") as SourceSetContainer
-			val folder = File(p.buildFile.parentFile, "build/resources/main")
-			logger.info("KorgeResourcesTask! project: $p : $folder")
-			val availableSourceSets = sourceSets.map { it.name }.toSet()
-			logger.info("sourceSets:" + sourceSets.map { it.name })
 
-			val pair = GeneratePair()
+			//val sourceSets = project.property("sourceSets") as SourceSetContainer
+			//val folder = File(p.buildFile.parentFile, "build/resources/main")
+			//logger.info("KorgeResourcesTask! project: $p : $folder")
+			//val availableSourceSets = sourceSets.map { it.name }.toSet()
+			//logger.info("sourceSets:" + sourceSets.map { it.name })
+//
+			//val pair = GeneratePair()
+//
+			//for (sourceSet in availableSourceSets) {
+			//	val resources = sourceSets[sourceSet].resources
+			//	logger.info("$sourceSet.resources: ${resources.srcDirs}")
+			//}
+//
+			//if (inputSourceSet in availableSourceSets) {
+			//	pair.input += sourceSets[inputSourceSet].resources.srcDirs
+			//}
+			//if (generatedSourceSet in availableSourceSets) {
+			//	pair.output += sourceSets[generatedSourceSet].resources.srcDirs
+			//	val processResources = project.property(processResources) as ProcessResources
+			//	for (item in pair.output) {
+			//		processResources.from(item)
+			//	}
+			//}
 
-			for (sourceSet in availableSourceSets) {
-				val resources = sourceSets[sourceSet].resources
-				logger.info("$sourceSet.resources: ${resources.srcDirs}")
-			}
-
-			if (inputSourceSet in availableSourceSets) {
-				pair.input += sourceSets[inputSourceSet].resources.srcDirs
-			}
-			if (generatedSourceSet in availableSourceSets) {
-				pair.output += sourceSets[generatedSourceSet].resources.srcDirs
-				val processResources = project.property(processResources) as ProcessResources
-				for (item in pair.output) {
-					processResources.from(item)
-				}
-			}
-			if (!pair.available) {
-				logger.info("No $inputSourceSet.resources.srcDirs + $generatedSourceSet.resources.srcDirs")
-			} else {
-				runBlocking {
-					compile(pair.input, pair.output.first())
+			for (resourceFolder in p.getResourcesFolders()) {
+				if (resourceFolder.exists()) {
+					val output = resourceFolder.parentFile["genresources"]
+					KorgeBuildServiceProxy.processResourcesFolder(resourceFolder, output)
 				}
 			}
 		}
 	}
 }
+
+operator fun File.get(name: String) = File(this, name)
 
 open class KorgeTestResourcesTask() : KorgeBaseResourcesTask() {
 	override var inputSourceSet = "test"
@@ -219,3 +215,25 @@ inline fun ignoreErrors(action: () -> Unit) {
 fun <T> Project.getIfExists(name: String): T? = if (this.hasProperty(name)) this.property(name) as T else null
 
 operator fun <T> NamedDomainObjectSet<T>.get(key: String): T = this.getByName(key)
+
+fun Project.getResourcesFolders(): List<File> {
+	val out = arrayListOf<File>()
+	try {
+		for (target in gkotlin.targets.toList()) {
+			//println("TARGET: $target")
+			for (compilation in target.compilations) {
+				//println("  - COMPILATION: $compilation")
+				for (sourceSet in compilation.allKotlinSourceSets) {
+					//println("    - SOURCE_SET: $sourceSet")
+					for (resource in sourceSet.resources.srcDirs) {
+						out += resource
+						//println("        - RESOURCE: $resource")
+					}
+				}
+			}
+		}
+	} catch (e: Throwable) {
+		e.printStackTrace()
+	}
+	return out
+}

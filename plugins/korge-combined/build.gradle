@@ -31,12 +31,19 @@ task processRtArtifacts(type: Copy) {
             from(zipTree(file))
         }
     }
-    into("src/main/resources")
+    into("build/genresources")
 }
 
-//kotlin.sourceSets.main.resources.srcDir(project.file("libs"))
+//kotlin.sourceSets.main.resources.srcDirs(project.file("build/genresources"))
 
-processResources.dependsOn(processRtArtifacts)
+jar.dependsOn(processRtArtifacts)
+jar {
+    from project.file("build/genresources")
+    //entryCompression ZipEntryCompression.STORED
+}
+
+//println()
+//processResources.dependsOn(processRtArtifacts)
 
 publishing {
     publications {
