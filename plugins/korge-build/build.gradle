@@ -26,6 +26,23 @@ dependencies {
 	compileOnly "com.soywiz:korag-jvm:$koragVersion"
 	compileOnly "com.soywiz:korui-jvm:$koruiVersion"
 	compileOnly "com.soywiz:klock-jvm:$klockVersion"
+
+	testCompileOnly "com.soywiz:korge-jvm:$korgeVersion"
+	testCompileOnly "com.soywiz:korge-swf-jvm:$korgeVersion"
+	testCompileOnly "com.soywiz:klogger-jvm:$kloggerVersion"
+	testCompileOnly "com.soywiz:korio-jvm:$korioVersion"
+	testCompileOnly "com.soywiz:korau-jvm:$korauVersion"
+	testCompileOnly "com.soywiz:korau-mp3-jvm:$korauVersion"
+	testCompileOnly "com.soywiz:korau-ogg-vorbis-jvm:$korauVersion"
+	testCompileOnly "com.soywiz:kds-jvm:$kdsVersion"
+	testCompileOnly "com.soywiz:kmem-jvm:$kmemVersion"
+	testCompileOnly "com.soywiz:korim-jvm:$korimVersion"
+	testCompileOnly "com.soywiz:korma-jvm:$kormaVersion"
+	testCompileOnly "com.soywiz:korinject-jvm:$korinjectVersion"
+	testCompileOnly "com.soywiz:kgl-jvm:$kglVersion"
+	testCompileOnly "com.soywiz:korag-jvm:$koragVersion"
+	testCompileOnly "com.soywiz:korui-jvm:$koruiVersion"
+	testCompileOnly "com.soywiz:klock-jvm:$klockVersion"
 }
 
 publishing {

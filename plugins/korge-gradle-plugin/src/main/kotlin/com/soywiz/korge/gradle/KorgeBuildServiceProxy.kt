@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import groovy.lang.*
 import java.io.*
 import java.net.*
 
@@ -22,5 +23,14 @@ object KorgeBuildServiceProxy {
 
     fun processResourcesFolder(src: File, dst: File) {
         processResourcesFolderMethod.invoke(service, src, dst)
+    }
+}
+
+
+fun <T> GroovyClosure(owner: Any?, callback: () -> T): Closure<T> {
+    return object : Closure<T>(owner) {
+        override fun call(): T {
+            return callback()
+        }
     }
 }

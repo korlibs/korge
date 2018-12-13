@@ -79,9 +79,6 @@ abstract class ResourceProcessor(vararg extensions: String) {
 		) {
 			val outputVfsJail = outputVfs.jail()
 			val extraOutVfsJail = extraOutVfs?.jail()
-			println("Processing: $inputFiles to $outputVfsJail")
-			println(" - Processors: $processorsByExtension")
-
 
 			val tasks = ArrayList<Task>()
 			val progress = ProgressReport(tasks)
@@ -89,11 +86,15 @@ abstract class ResourceProcessor(vararg extensions: String) {
 			for (inputFile in inputFiles) {
 				val inputVfs = inputFile.jail()
 				for (file in inputVfs.listRecursive()) {
+					//println(file)
 					val processor =
 						processorsByExtension[file.compoundExtensionLC] ?: processorsByExtension[file.extensionLC]
 						?: continue
 					val fileInput = file
 					val folderOutput = outputVfsJail[file.path].parent
+
+					println("  - Processing: $processor: ${fileInput.absolutePath}")
+
 					ignoreErrors { folderOutput.ensureParents() }
 					ignoreErrors { folderOutput.mkdir() }
 					if (processor.requireRegeneration(fileInput, folderOutput)) {

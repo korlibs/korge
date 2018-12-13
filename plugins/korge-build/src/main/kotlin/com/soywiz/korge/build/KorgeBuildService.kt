@@ -1,13 +1,8 @@
 package com.soywiz.korge.build
 
-import com.soywiz.korau.format.*
 import com.soywiz.korge.*
-import com.soywiz.korge.build.atlas.*
-import com.soywiz.korge.build.lipsync.*
-import com.soywiz.korge.build.swf.*
+import com.soywiz.korge.build.ResourceProcessor.Companion.processorsByExtension
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.serialization.*
-import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import java.io.*
 
@@ -15,22 +10,35 @@ import java.io.*
 @Suppress("unused")
 class KorgeBuildService {
     fun init() {
-        defaultResourceProcessors.register(AtlasResourceProcessor, SwfResourceProcessor)
-        try {
-            defaultResourceProcessors.register(LipsyncResourceProcessor)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-        Mapper.jvmFallback()
-        defaultAudioFormats.registerStandard().registerMp3Decoder().registerOggVorbisDecoder()
+        KorgeManualServiceRegistration.register()
     }
 
     fun version(): String = Korge.VERSION
 
     fun processResourcesFolder(src: File, dst: File) {
+        if (!src.exists()) return // Ignore empty folders
+
         runBlocking {
             runCatching { dst.mkdirs() }
-            ResourceProcessor.process(listOf(src.toVfs()), dst.toVfs())
+            println("PROCESSORS:")
+            for (processor in processorsByExtension) {
+                println(" - $processor")
+            }
+            println("FILES:")
+            val s = src.toVfs().jail()
+            val d = dst.toVfs().jail()
+
+            ResourceProcessor.process(listOf(s), d)
+
+            /*
+            println("$s -> $d")
+            for (file in s.listRecursive()) {
+                if (!file.isDirectory()) {
+                    println(" -- $file")
+                    ResourceProcessor.process(listOf(file), d)
+                }
+            }
+            */
         }
     }
 }

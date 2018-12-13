@@ -3,7 +3,10 @@ package com.soywiz.korge.gradle
 import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
+import org.gradle.api.file.*
 import org.gradle.api.internal.*
+import org.gradle.api.internal.artifacts.configurations.*
+import org.gradle.api.internal.file.collections.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.dsl.*
@@ -103,6 +106,28 @@ open class KorgeGradlePlugin : Plugin<Project> {
 			project.tasks["processTestResources"].dependsOn("genTestResources")
 		} catch (e: UnknownTaskException) {
 		}
+
+		project.ext.set("mainClassName", "")
+		project.addTask<org.gradle.jvm.tasks.Jar>(
+				"packageJvmFatJar", group = "korge"
+		) {
+			it.manifest { manifest ->
+				manifest.attributes(mapOf(
+						"Implementation-Title" to project.ext.get("mainClassName"),
+						"Implementation-Version" to project.version.toString(),
+						"Main-Class" to project.ext.get("mainClassName")
+				))
+			}
+			it.baseName = "${project.name}-all"
+			//it.from()
+			//fileTree()
+			val config = (GroovyDynamic { project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] } as DefaultConfiguration)
+			it.from(GroovyClosure(project) {
+				config.map { if (it.isDirectory) it else project.zipTree(it) as Any }
+				//listOf<File>()
+			})
+			it.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+		}
 	}
 }
 
@@ -124,36 +149,8 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
 	@TaskAction
 	open fun task() {
 		logger.info("KorgeResourcesTask ($this)")
-		//for (processor in com.soywiz.korge.build.ResourceProcessor.processorsByExtension.values) {
-		//	logger.info("${processor.extensionLCs} -> $processor")
-		//}
 		for (p in project.allprojects) {
-
-			//val sourceSets = project.property("sourceSets") as SourceSetContainer
-			//val folder = File(p.buildFile.parentFile, "build/resources/main")
-			//logger.info("KorgeResourcesTask! project: $p : $folder")
-			//val availableSourceSets = sourceSets.map { it.name }.toSet()
-			//logger.info("sourceSets:" + sourceSets.map { it.name })
-//
-			//val pair = GeneratePair()
-//
-			//for (sourceSet in availableSourceSets) {
-			//	val resources = sourceSets[sourceSet].resources
-			//	logger.info("$sourceSet.resources: ${resources.srcDirs}")
-			//}
-//
-			//if (inputSourceSet in availableSourceSets) {
-			//	pair.input += sourceSets[inputSourceSet].resources.srcDirs
-			//}
-			//if (generatedSourceSet in availableSourceSets) {
-			//	pair.output += sourceSets[generatedSourceSet].resources.srcDirs
-			//	val processResources = project.property(processResources) as ProcessResources
-			//	for (item in pair.output) {
-			//		processResources.from(item)
-			//	}
-			//}
-
-			for (resourceFolder in p.getResourcesFolders()) {
+			for (resourceFolder in p.getResourcesFolders(setOf(inputSourceSet))) {
 				if (resourceFolder.exists()) {
 					val output = resourceFolder.parentFile["genresources"]
 					KorgeBuildServiceProxy.processResourcesFolder(resourceFolder, output)
@@ -165,13 +162,13 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
 
 operator fun File.get(name: String) = File(this, name)
 
-open class KorgeTestResourcesTask() : KorgeBaseResourcesTask() {
+open class KorgeTestResourcesTask : KorgeBaseResourcesTask() {
 	override var inputSourceSet = "test"
 	override var generatedSourceSet = "testGenerated"
 	override var processResources = "processTestResources"
 }
 
-open class KorgeResourcesTask() : KorgeBaseResourcesTask() {
+open class KorgeResourcesTask : KorgeBaseResourcesTask() {
 	override var inputSourceSet = "main"
 	override var generatedSourceSet = "generated"
 	override var processResources = "processResources"
@@ -216,13 +213,14 @@ fun <T> Project.getIfExists(name: String): T? = if (this.hasProperty(name)) this
 
 operator fun <T> NamedDomainObjectSet<T>.get(key: String): T = this.getByName(key)
 
-fun Project.getResourcesFolders(): List<File> {
+fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
 	val out = arrayListOf<File>()
 	try {
 		for (target in gkotlin.targets.toList()) {
 			//println("TARGET: $target")
 			for (compilation in target.compilations) {
-				//println("  - COMPILATION: $compilation")
+				//println("  - COMPILATION: $compilation :: name=${compilation.name}")
+				if (sourceSets != null && compilation.name !in sourceSets) continue
 				for (sourceSet in compilation.allKotlinSourceSets) {
 					//println("    - SOURCE_SET: $sourceSet")
 					for (resource in sourceSet.resources.srcDirs) {
@@ -235,5 +233,5 @@ fun Project.getResourcesFolders(): List<File> {
 	} catch (e: Throwable) {
 		e.printStackTrace()
 	}
-	return out
+	return out.distinct()
 }
