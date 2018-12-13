@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle
 
 import groovy.lang.*
+import groovy.text.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
@@ -9,8 +10,11 @@ import org.gradle.api.internal.artifacts.configurations.*
 import org.gradle.api.internal.file.collections.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.extensions.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.net.*
 
@@ -47,14 +51,24 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		}
 	}
 
+	fun <T> Project.closure(callback: () -> T) = GroovyClosure(this, callback)
+
 	private fun Project.configureKotlin() {
 		plugins.apply("kotlin-multiplatform")
 
 		gkotlin.targets.add((gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
 		gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
 			compilations.getAt("main").apply {
-				//this.apiConfigurationName
-				//compileKotlinTaskName
+				for (task in listOf("compileKotlinJs", "compileTestKotlinJs")) {
+					(project[task] as Kotlin2JsCompile).apply {
+						kotlinOptions.apply {
+							languageVersion = "1.3"
+							sourceMap = true
+							metaInfo = true
+							moduleKind = "umd"
+						}
+					}
+				}
 			}
 		})
 
@@ -75,58 +89,101 @@ open class KorgeGradlePlugin : Plugin<Project> {
 	}
 
 	fun Project.addKorgeTasks() {
-		//return
-
-		try {
-			project.dependencies.add("compile", "com.soywiz:korge:$korgeVersion")
-		} catch (e: UnknownConfigurationException) {
-			//logger.error("KORGE: " + e.message)
-		}
-
-		project.addTask<KorgeResourcesTask>(
-			"genResources", group = "korge", description = "process resources",
-			//overwrite = true, dependsOn = listOf("build")
-			overwrite = true, dependsOn = listOf()
-		) {
-			it.debug = true
-		}
-		try {
-			project.tasks["processResources"].dependsOn("genResources")
-		} catch (e: UnknownTaskException) {
-		}
-
-		project.addTask<KorgeTestResourcesTask>(
-			"genTestResources", group = "korge", description = "process test resources",
-			//overwrite = true, dependsOn = listOf("build")
-			overwrite = true, dependsOn = listOf()
-		) {
-			it.debug = true
-		}
-		try {
-			project.tasks["processTestResources"].dependsOn("genTestResources")
-		} catch (e: UnknownTaskException) {
-		}
-
-		project.ext.set("mainClassName", "")
-		project.addTask<org.gradle.jvm.tasks.Jar>(
-				"packageJvmFatJar", group = "korge"
-		) {
-			it.manifest { manifest ->
-				manifest.attributes(mapOf(
-						"Implementation-Title" to project.ext.get("mainClassName"),
-						"Implementation-Version" to project.version.toString(),
-						"Main-Class" to project.ext.get("mainClassName")
-				))
+		run {
+			try {
+				project.dependencies.add("compile", "com.soywiz:korge:$korgeVersion")
+			} catch (e: UnknownConfigurationException) {
+				//logger.error("KORGE: " + e.message)
 			}
-			it.baseName = "${project.name}-all"
-			//it.from()
-			//fileTree()
-			val config = (GroovyDynamic { project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] } as DefaultConfiguration)
-			it.from(GroovyClosure(project) {
-				config.map { if (it.isDirectory) it else project.zipTree(it) as Any }
-				//listOf<File>()
-			})
-			it.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+		}
+
+		run {
+			project.addTask<KorgeResourcesTask>(
+					"genResources", group = "korge", description = "process resources",
+					//overwrite = true, dependsOn = listOf("build")
+					overwrite = true, dependsOn = listOf()
+			) {
+				it.debug = true
+			}
+			try {
+				project.tasks["processResources"].dependsOn("genResources")
+			} catch (e: UnknownTaskException) {
+			}
+		}
+
+		run {
+			project.addTask<KorgeTestResourcesTask>(
+					"genTestResources", group = "korge", description = "process test resources",
+					//overwrite = true, dependsOn = listOf("build")
+					overwrite = true, dependsOn = listOf()
+			) {
+				it.debug = true
+			}
+			try {
+				project.tasks["processTestResources"].dependsOn("genTestResources")
+			} catch (e: UnknownTaskException) {
+			}
+		}
+
+		run {
+			// Provide default mainClassName
+			if (!project.ext.has("mainClassName")) {
+				project.ext.set("mainClassName", "")
+			}
+
+			// packageJvmFatJar
+			project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = "korge") { task ->
+				project.afterEvaluate {
+					task.manifest { manifest ->
+						manifest.attributes(mapOf(
+								"Implementation-Title" to project.ext.get("mainClassName"),
+								"Implementation-Version" to project.version.toString(),
+								"Main-Class" to project.ext.get("mainClassName")
+						))
+					}
+					task.baseName = "${project.name}-all"
+					//it.from()
+					//fileTree()
+					task.from(GroovyClosure(project) {
+						(project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as DefaultConfiguration).map { if (it.isDirectory) it else project.zipTree(it) as Any }
+						//listOf<File>()
+					})
+					task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+				}
+			}
+		}
+
+		run {
+			project.addTask<Copy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+				project.afterEvaluate {
+					val kotlinTargets = project["kotlin"]["targets"]
+					val jsCompilations = kotlinTargets["js"]["compilations"]
+					task.includeEmptyDirs = false
+					task.from("${project.buildDir}/npm/node_modules")
+					task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs)
+					task.exclude("**/*.kotlin_metadata", "**/*.kotlin_module", "**/*.MF", "**/*.kjsm", "**/*.map", "**/*.meta.js")
+					for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as DefaultConfigurableFileCollection).toList()) {
+						if (file.exists() && !file.isDirectory) {
+							task.from(project.zipTree(file.absolutePath))
+						} else {
+							task.from(file)
+						}
+					}
+					for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
+						val main = (target["compilations"]["main"] as KotlinCompilation)
+						for (sourceSet in main.kotlinSourceSets) {
+							task.from(sourceSet.resources)
+						}
+					}
+					task.into("${project.buildDir}/web")
+				}
+				task.doLast {
+					project.buildDir["web/index.html"].writeText(SimpleTemplateEngine().createTemplate(project.buildDir["web/index.template.html"].readText()).make(mapOf(
+						"OUTPUT" to project.name,
+						"TITLE" to project.name
+					)).toString())
+				}
+			}
 		}
 	}
 }
