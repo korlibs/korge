@@ -57,6 +57,12 @@ open class KorgeGradlePlugin : Plugin<Project> {
     private fun Project.configureKotlin() {
         plugins.apply("kotlin-multiplatform")
 
+        for (preset in listOf("macosX64", "mingwX64")) {
+            gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
+                compilations["main"].outputKinds("EXECUTABLE")
+            })
+        }
+
         gkotlin.targets.add((gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
         gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
             compilations.getAt("main").apply {
