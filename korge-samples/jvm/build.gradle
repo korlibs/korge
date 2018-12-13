@@ -164,11 +164,76 @@ task cordovaIosInstall(type: Exec, dependsOn: [cordovaInstall]) {
 	commandLine 'cordova', 'platform', 'add', 'ios'
 }
 
-def cordovaPlugins = [
-		'cordova-launch-review': [],
-		'cordova-plugin-camera': [],
-		'cordova-plugin-admob-free': ["ADMOB_APP_ID": "ca-app-pub-xxxxxxxx~yyyyyy"]
-]
+Node xmlParse(String xml) {
+	return new XmlParser().parseText(xml)
+}
+
+String xmlSerialize(Node xml) {
+	def sw = new StringWriter()
+	sw.write("<?xml version='1.0' encoding='utf-8'?>\n")
+	XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
+	xnp.namespaceAware = true
+	xnp.preserveWhitespace = true
+	xnp.print(xml)
+	return sw.toString()
+}
+
+def cordovaConfigXmlFile = new File(project.buildDir, "cordova/config.xml")
+
+def korgeXml = project.file("korge.project.xml").text
+//def korge = new XmlSlurper().parseText(korgeXml)
+def korge = xmlParse(korgeXml)
+
+//println("----------------------")
+//println(korgeXml)
+//println(korge.name())
+//println(korge.plugins.name())
+//println(korge.plugins.list().size())
+//println(korge.plugins.children().list().size())
+//println(korge.plugins.children()[2].attributes())
+
+//korge.appendNode("demo", ["a": "b"]).setValue("lol")
+//println(xmlSerialize(korge))
+
+def cordovaPlugins = korge.plugins.first().children().collectEntries {
+	//println(it)
+    [(it.name()): it.attributes()]
+}
+
+def korgeName = korge.name.first()?.text() ?: "dummy-korge-sample"
+def korgeDescription = korge.description.first()?.text() ?: ""
+def korgeOrientation = korge.orientation.first()?.text() ?: "landscape"
+
+task cordovaPluginsList() {
+    doLast {
+        println(cordovaPlugins)
+    }
+}
+
+def replaceCordovaPreference(Node cordovaConfig, String name, String value) {
+	// Remove Orientation node and set a new node
+	(cordovaConfig.preference as List).findAll { it.@name == name }.each { cordovaConfig.remove(it) }
+	cordovaConfig.appendNode("preference", ["name": name, "value": value])
+}
+
+task cordovaSynchronizeConfigXml(dependsOn: [cordovaInstall]) {
+	doLast {
+		def cordovaConfigXml = cordovaConfigXmlFile.text
+		def cordovaConfig = xmlParse(cordovaConfigXml)
+
+		cordovaConfig.name.first()?.setValue(korgeName)
+		cordovaConfig.description.first()?.setValue(korgeDescription)
+
+		// https://cordova.apache.org/docs/es/latest/config_ref/
+		replaceCordovaPreference(cordovaConfig, 'Orientation', korgeOrientation)
+		replaceCordovaPreference(cordovaConfig, 'Fullscreen', "true")
+		replaceCordovaPreference(cordovaConfig, 'BackgroundColor', '0xff000000')
+
+		//println(xmlSerialize(cordovaConfig))
+		cordovaConfigXmlFile.text = xmlSerialize(cordovaConfig)
+		//project.file("korge.project.xml").text
+	}
+}
 
 //cordova plugin add cordova-plugin-admob-free --save --variable ADMOB_APP_ID="<YOUR_ADMOB_APP_ID_AS_FOUND_IN_ADMOB>"
 
@@ -192,7 +257,7 @@ task cordovaPluginsInstall(dependsOn: [cordovaInstall]) {
 	}
 }
 
-task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall]) {
+task cordovaWww(type: Copy, dependsOn: [jsWeb, cordovaInstall, cordovaSynchronizeConfigXml]) {
 	from new File(project.buildDir, 'web')
 	into new File(cordovaFolder, 'www')
 	doLast {

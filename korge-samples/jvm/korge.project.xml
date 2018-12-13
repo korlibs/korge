@@ -1,0 +1,10 @@
+<korge>
+    <name>korge-sample</name>
+    <description>A simple sample using korge</description>
+    <orientation>landscape</orientation>
+    <plugins>
+        <cordova-launch-review />
+        <cordova-plugin-camera />
+        <cordova-plugin-admob-free ADMOB_APP_ID="ca-app-pub-xxxxxxxx~yyyyyy" />
+    </plugins>
+</korge>
