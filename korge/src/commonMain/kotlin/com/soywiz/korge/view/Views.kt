@@ -43,6 +43,10 @@ interface BoundsProvider {
 	}
 }
 
+interface ViewsScope {
+	val views: Views
+}
+
 //@Singleton
 class Views(
 	override val coroutineContext: CoroutineContext,
@@ -52,13 +56,14 @@ class Views(
 	val timeProvider: TimeProvider,
 	val stats: Stats,
 	val koruiContext: KoruiContext
-) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope,
+) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
 	BoundsProvider {
+
 	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
-	val views = this
+	override val views = this
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = 100
 
@@ -261,7 +266,7 @@ class Views(
 	}
 }
 
-class Stage(val views: Views) : Container(), View.Reference {
+class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by views {
 	val ag get() = views.ag
 	override val stage: Stage = this
 

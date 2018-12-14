@@ -15,7 +15,7 @@ import kotlin.random.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(ParticleEmitter.Factory::class)
-class ParticleEmitter(val views: Views) {
+class ParticleEmitter() {
 	enum class Type { GRAVITY, RADIAL }
 
 	var texture: BmpSlice? = null
@@ -307,7 +307,7 @@ class ParticleEmitter(val views: Views) {
 	}
 }
 
-suspend fun VfsFile.readParticle(views: Views): ParticleEmitter = ParticleEmitter(views).load(this)
+suspend fun VfsFile.readParticle(): ParticleEmitter = ParticleEmitter().load(this)
 
 suspend fun Container.attachParticleAndWait(
 	particle: ParticleEmitter,

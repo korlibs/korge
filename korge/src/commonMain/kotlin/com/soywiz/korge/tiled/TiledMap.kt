@@ -345,7 +345,6 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 }
 
 suspend fun VfsFile.readTiledMap(
-	views: Views,
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
 	createBorder: Int = 1
@@ -357,13 +356,13 @@ suspend fun VfsFile.readTiledMap(
 	val combinedTileset = arrayOfNulls<BmpSlice>(data.maxGid + 1)
 
 	for (layer in data.imageLayers) {
-		layer.image = folder[layer.source].readBitmapOptimized(views.imageFormats)
+		layer.image = folder[layer.source].readBitmapOptimized()
 	}
 
 	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
 
 	for (tileset in data.tilesets) {
-		var bmp = folder[tileset.source].readBitmapOptimized(views.imageFormats)
+		var bmp = folder[tileset.source].readBitmapOptimized()
 
 		// @TODO: Preprocess this, so in JS we don't have to do anything!
 		if (hasTransparentColor) {
