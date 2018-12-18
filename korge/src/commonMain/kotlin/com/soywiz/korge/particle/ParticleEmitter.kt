@@ -178,7 +178,7 @@ class ParticleEmitter() {
 		var emitterPos: Point2d = Point2d(),
 		val seed: Long = Random.nextLong()
 	) {
-		val random = Rand(seed)
+		val random = MtRandom(seed)
 		var totalElapsedTime = 0
 		var timeUntilStop = Int.MAX_VALUE
 		var emitting = true

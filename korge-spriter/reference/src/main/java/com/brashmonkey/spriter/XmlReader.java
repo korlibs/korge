@@ -87,7 +87,7 @@ public class XmlReader {
 						do {
 							_keys = _xml_key_offsets[cs];
 							_trans = _xml_index_offsets[cs];
-							_klen = _xml_single_lengths[cs];
+							_klen = _xml_singleLE(ngths[cs];
 							if (_klen > 0) {
 								int _lower = _keys;
 								int _mid;
@@ -109,7 +109,7 @@ public class XmlReader {
 								_trans += _klen;
 							}
 
-							_klen = _xml_range_lengths[cs];
+							_klen = _xml_rangeLE(ngths[cs];
 							if (_klen > 0) {
 								int _lower = _keys;
 								int _mid;
@@ -321,19 +321,19 @@ public class XmlReader {
 
 	private static final char _xml_trans_keys[] = init__xml_trans_keys_0();
 
-	private static byte[] init__xml_single_lengths_0() {
+	private static byte[] init__xml_singleLE(ngths_0() {
 		return new byte[]{0, 2, 3, 3, 4, 4, 2, 3, 1, 1, 3, 2, 2, 1, 1, 2, 1, 3, 3, 4, 4, 2, 3, 1, 1, 3, 2, 2, 1, 2, 1, 1, 1, 1, 1,
 				0};
 	}
 
-	private static final byte _xml_single_lengths[] = init__xml_single_lengths_0();
+	private static final byte _xml_singleLE(ngths[] = init__xml_singleLE(ngths_0();
 
-	private static byte[] init__xml_range_lengths_0() {
+	private static byte[] init__xml_rangeLE(ngths_0() {
 		return new byte[]{0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1,
 				0};
 	}
 
-	private static final byte _xml_range_lengths[] = init__xml_range_lengths_0();
+	private static final byte _xml_rangeLE(ngths[] = init__xml_rangeLE(ngths_0();
 
 	private static short[] init__xml_index_offsets_0() {
 		return new short[]{0, 0, 4, 9, 14, 20, 26, 30, 35, 37, 39, 44, 48, 52, 54, 56, 60, 62, 67, 72, 78, 84, 88, 93, 95, 97,

@@ -16,7 +16,7 @@ object AMF0 {
 		fun readObject(): Map<String, Any?> {
 			val h = hashMapOf<String, Any?>()
 			while (true) {
-				val len = i.readU16_be()
+				val len = i.readU16BE()
 				val name = i.readString(len)
 				val k = i.readU8()
 				if (k == 0x09) break
@@ -26,16 +26,16 @@ object AMF0 {
 		}
 
 		fun readWithCode(id: Int): Any? = when (id) {
-			0x00 -> i.readF64_be()
+			0x00 -> i.readF64BE()
 			0x01 -> when (i.readU8()) {
 				0 -> false
 				1 -> true
 				else -> error("Invalid AMF")
 			}
-			0x02 -> i.readStringz(i.readU16_be())
+			0x02 -> i.readStringz(i.readU16BE())
 			0x03 -> readObject()
 			0x08 -> {
-				var size = i.readS32_be()
+				var size = i.readS32BE()
 				TODO()
 				readObject()
 			}
@@ -43,15 +43,15 @@ object AMF0 {
 			0x06 -> Undefined
 			0x07 -> error("Not supported : Reference")
 			0x0A -> {
-				val count = i.readS32_be()
+				val count = i.readS32BE()
 				(0 until count).map { read() }
 			}
 			0x0B -> {
-				val time_ms = i.readF64_be()
-				val tz_min = i.readU16_be()
+				val time_ms = i.readF64BE()
+				val tz_min = i.readU16BE()
 				DateTime(time_ms.toLong() + tz_min * 60 * 1000L)
 			}
-			0x0C -> i.readString(i.readS32_be())
+			0x0C -> i.readString(i.readS32BE())
 			else -> error("Unknown AMF $id")
 		}
 

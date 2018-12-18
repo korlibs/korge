@@ -6,6 +6,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 

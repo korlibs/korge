@@ -6339,7 +6339,7 @@
 									"time": 3841
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -6996,7 +6996,7 @@
 									"time": 3841
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -14308,7 +14308,7 @@
 									"time": 578
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -14536,7 +14536,7 @@
 									"time": 578
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -16988,7 +16988,7 @@
 									"time": 97
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -17099,7 +17099,7 @@
 									"time": 97
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -20984,7 +20984,7 @@
 									"spin": 0
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -21056,7 +21056,7 @@
 									"spin": 0
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -27247,7 +27247,7 @@
 									"time": 1000
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -27440,7 +27440,7 @@
 									"time": 1000
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -31272,7 +31272,7 @@
 									"time": 300
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -31502,7 +31502,7 @@
 									"time": 300
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -34185,7 +34185,7 @@
 									"time": 165
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -34362,7 +34362,7 @@
 									"time": 165
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -38041,7 +38041,7 @@
 									"time": 1000
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -38220,7 +38220,7 @@
 									"time": 1000
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -40710,7 +40710,7 @@
 									"time": 232
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -40899,7 +40899,7 @@
 									"time": 232
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -44026,7 +44026,7 @@
 									"time": 246
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -44254,7 +44254,7 @@
 									"time": 246
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -47150,7 +47150,7 @@
 									"spin": 0
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -47222,7 +47222,7 @@
 									"spin": 0
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -50341,7 +50341,7 @@
 									"time": 462
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -50543,7 +50543,7 @@
 									"time": 462
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -53154,7 +53154,7 @@
 									"time": 147
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -53278,7 +53278,7 @@
 									"time": 147
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -55618,7 +55618,7 @@
 									"time": 161
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -55781,7 +55781,7 @@
 									"time": 161
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -58310,7 +58310,7 @@
 									"time": 311
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -58486,7 +58486,7 @@
 									"time": 311
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -61279,7 +61279,7 @@
 									"time": 294
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -61481,7 +61481,7 @@
 									"time": 294
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -64599,7 +64599,7 @@
 									"time": 294
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -64801,7 +64801,7 @@
 									"time": 294
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -70806,7 +70806,7 @@
 									"time": 629
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -71190,7 +71190,7 @@
 									"time": 629
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -78584,7 +78584,7 @@
 									"time": 611
 								}
 							],
-							"name": "p_leg_a"
+							"name": "pLE(g_a"
 						},
 						{
 							"id": 9,
@@ -78916,7 +78916,7 @@
 									"time": 611
 								}
 							],
-							"name": "p_leg_idle_0"
+							"name": "pLE(g_idle_0"
 						},
 						{
 							"id": 13,
@@ -83554,7 +83554,7 @@
 					"ayoff": 10,
 					"height": 52,
 					"id": 0,
-					"name": "legs/p_leg_idle_0.png",
+					"name": "legs/pLE(g_idle_0.png",
 					"pivot_x": 0.208955,
 					"pivot_y": 0.518519,
 					"width": 65
@@ -83569,7 +83569,7 @@
 					"ayoff": 5,
 					"height": 52,
 					"id": 1,
-					"name": "legs/p_leg_walk_0.png",
+					"name": "legs/pLE(g_walk_0.png",
 					"pivot_x": 0.208955,
 					"pivot_y": 0.518519,
 					"width": 65
@@ -83599,7 +83599,7 @@
 					"ayoff": 10,
 					"height": 52,
 					"id": 3,
-					"name": "legs/p_leg_ladder_0.png",
+					"name": "legs/pLE(g_ladder_0.png",
 					"pivot_x": 0.208955,
 					"pivot_y": 0.518519,
 					"width": 65
@@ -83659,7 +83659,7 @@
 					"ayoff": 14,
 					"height": 45,
 					"id": 7,
-					"name": "legs/p_leg_a.png",
+					"name": "legs/pLE(g_a.png",
 					"pivot_x": 0.253968,
 					"pivot_y": 0.468085,
 					"width": 61

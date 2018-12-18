@@ -1860,7 +1860,7 @@
 	  },
 	  "trimmed": "true"
 	},
-	"legs/p_leg_a.png": {
+	"legs/pLE(g_a.png": {
 	  "frame": {
 		"h": 23,
 		"w": 46,
@@ -1880,7 +1880,7 @@
 	  },
 	  "trimmed": "true"
 	},
-	"legs/p_leg_idle_0.png": {
+	"legs/pLE(g_idle_0.png": {
 	  "frame": {
 		"h": 32,
 		"w": 61,
@@ -1900,7 +1900,7 @@
 	  },
 	  "trimmed": "true"
 	},
-	"legs/p_leg_ladder_0.png": {
+	"legs/pLE(g_ladder_0.png": {
 	  "frame": {
 		"h": 31,
 		"w": 53,
@@ -1920,7 +1920,7 @@
 	  },
 	  "trimmed": "true"
 	},
-	"legs/p_leg_walk_0.png": {
+	"legs/pLE(g_walk_0.png": {
 	  "frame": {
 		"h": 40,
 		"w": 59,

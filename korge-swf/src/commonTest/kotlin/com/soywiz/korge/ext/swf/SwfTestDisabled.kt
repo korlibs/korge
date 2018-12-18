@@ -15,7 +15,7 @@ import com.soywiz.korma.geom.*
 
 class SwfTestDisabled {
 	companion object {
-		@JvmStatic
+		@kotlin.jvm.JvmStatic
 		fun main(args: Array<String>) = Korge(object : Module() {
 			override val size: SizeInt by lazy { SizeInt(550, 400) }
 			override val windowSize: SizeInt by lazy { size * 1.5 }

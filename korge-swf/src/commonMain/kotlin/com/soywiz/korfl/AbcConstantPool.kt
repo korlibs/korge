@@ -18,7 +18,7 @@ class AbcConstantPool {
 		val uintCount = s.readU30()
 		uints = listOf(0) + (1 until uintCount).map { s.readU30() }
 		val doubleCount = s.readU30()
-		doubles = listOf(0.0) + (1 until doubleCount).map { s.readF64_le() }
+		doubles = listOf(0.0) + (1 until doubleCount).map { s.readF64LE() }
 		val stringCount = s.readU30()
 		strings = listOf("") + (1 until stringCount).map { s.readStringz(s.readU30()) }
 		namespaces = listOf(ABC.Namespace.EMPTY) + (1 until s.readU30()).map {

@@ -88,9 +88,9 @@ open class FlashByteArray() {
 	val little: Boolean get() = endian == Endian.LITTLE_ENDIAN
 
 	fun readByte(): Int = data.readU8()
-	fun readShort(): Int = if (little) data.readS16_le() else data.readS16_be()
-	fun readInt(): Int = if (little) data.readS32_le() else data.readS32_be()
-	fun readLong(): Long = if (little) data.readS64_le() else data.readS64_be()
+	fun readShort(): Int = if (little) data.readS16LE() else data.readS16BE()
+	fun readInt(): Int = if (little) data.readS32LE() else data.readS32BE()
+	fun readLong(): Long = if (little) data.readS64LE() else data.readS64BE()
 
 	fun readUnsignedByte(): Int = readByte() and 0xFF
 	fun readUnsignedShort(): Int = readShort() and 0xFFFF
@@ -105,9 +105,9 @@ open class FlashByteArray() {
 	}
 
 	fun writeByte(i: Int): Unit = data.write8(i)
-	fun writeShort(i: Int): Unit = if (little) data.write16_le(i) else data.write16_be(i)
-	fun writeInt(i: Int): Unit = if (little) data.write32_le(i) else data.write32_be(i)
-	fun writeLong(i: Long): Unit = run { if (little) data.write64_le(i) else data.write64_be(i) }
+	fun writeShort(i: Int): Unit = if (little) data.write16LE(i) else data.write16BE(i)
+	fun writeInt(i: Int): Unit = if (little) data.write32LE(i) else data.write32BE(i)
+	fun writeLong(i: Long): Unit = run { if (little) data.write64LE(i) else data.write64BE(i) }
 
 	fun writeUnsignedByte(i: Int): Unit = writeByte(i)
 	fun writeUnsignedShort(i: Int): Unit = writeShort(i)

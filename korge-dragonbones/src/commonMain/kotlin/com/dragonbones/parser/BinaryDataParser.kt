@@ -38,7 +38,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	private lateinit var _binary: MemBuffer
 	private lateinit var _intArrayBuffer: Int16Buffer
 	private lateinit var _frameArrayBuffer: Int16Buffer
-	private lateinit var _timelineArrayBuffer: Uint16Buffer
+	private var _timelineArrayBuffer: Uint16Buffer = Uint16Buffer(Int16BufferAlloc(0))
 
 	private fun _inRange(a: Int, min: Int, max: Int): Boolean = a in min..max
 
@@ -364,13 +364,13 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		val l6 = offsets[11]
 		val l7 = if (offsets.size > 12) offsets[13] else 0 // Color.
 		val binary = this._binary
-		val intArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[0], l1 / Int16Buffer_BYTES_PER_ELEMENT)
-		val floatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[2], l2 / Float32Buffer_BYTES_PER_ELEMENT)
-		val frameIntArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[4], l3 / Int16Buffer_BYTES_PER_ELEMENT)
-		val frameFloatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[6], l4 / Float32Buffer_BYTES_PER_ELEMENT)
-		val frameArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[8], l5 / Int16Buffer_BYTES_PER_ELEMENT)
-		val timelineArray = binary.sliceUint16Buffer(this._binaryOffset + offsets[10], l6 / Uint16Buffer_BYTES_PER_ELEMENT)
-		val colorArray = if (l7 > 0) binary.sliceInt16Buffer(this._binaryOffset + offsets[12], l7 / Int16Buffer_BYTES_PER_ELEMENT) else intArray // Color.
+		val intArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[0], l1 / 2)
+		val floatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[2], l2 / 4)
+		val frameIntArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[4], l3 / 2)
+		val frameFloatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[6], l4 / 4)
+		val frameArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[8], l5 / 2)
+		val timelineArray = binary.sliceUint16Buffer(this._binaryOffset + offsets[10], l6 / 2)
+		val colorArray = if (l7 > 0) binary.sliceInt16Buffer(this._binaryOffset + offsets[12], l7 / 2) else intArray // Color.
 
 		this._data!!.binary = this._binary
 		this._data!!.intArray = intArray

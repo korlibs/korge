@@ -75,7 +75,7 @@ class SpriterView(
 
 	var time: Int; get() = player._time; set(value) = run { player._time = value }
 
-	suspend fun changeTo(animation: String, time: TimeSpan, easing: Easing = Easings.LINEAR) {
+	suspend fun changeTo(animation: String, time: TimeSpan, easing: Easing = Easing.LINEAR) {
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0

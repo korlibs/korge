@@ -676,9 +676,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 									val ncolors = it.bitmapColorTableSize
 									val s = FastByteArrayInputStream(uncompressedData)
 									val clut = if (it.hasAlpha) {
-										(0 until ncolors).map { s.readS32_le() }.toIntArray()
+										(0 until ncolors).map { s.readS32LE() }.toIntArray()
 									} else {
-										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24_le() }.toIntArray()
+										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24LE() }.toIntArray()
 									}
 									val pixels = s.readBytes(it.actualWidth * it.actualHeight)
 

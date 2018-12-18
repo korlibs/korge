@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.event.*

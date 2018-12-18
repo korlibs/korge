@@ -215,7 +215,7 @@ enum class AbcOpcode(val id: Int, val type: Kind) {
 		NumberOperation({ AbcDoubleOperation(op, doubles[s.readU30()]) }),
 		IntIntOperation({
 			if (op == HasNext2) {
-				AbcIntIntOperation(op, s.readS32_le(), s.readS32_le())
+				AbcIntIntOperation(op, s.readS32LE(), s.readS32LE())
 			} else {
 				AbcIntIntOperation(op, s.readU30(), s.readU30())
 			}
@@ -232,12 +232,12 @@ enum class AbcOpcode(val id: Int, val type: Kind) {
 		StringOperation({ AbcStringOperation(op, strings[s.readU30()]) }),
 		MultinameOperation({ AbcMultinameOperation(op, multinames[s.readU30()]) }),
 		MultinameIntOperation({ AbcMultinameIntOperation(op, multinames[s.readU30()], s.readU30()) }),
-		ConditionalJumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24_le()) }),
-		JumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24_le()) }),
+		ConditionalJumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24LE()) }),
+		JumpOperation({ AbcJumpOperation(op, s.position + 0x04 + s.readS24LE()) }),
 		NewClassOperation({ AbcNewClassOperation(op, s.readU30()) }),
 		LookupSwitchOperation({
-			val defaultMarker = s.position + s.readS24_le()
-			val markers = (0 until (s.readU30() + 1)).map { s.position + s.readS24_le() }.toLongArray()
+			val defaultMarker = s.position + s.readS24LE()
+			val markers = (0 until (s.readU30() + 1)).map { s.position + s.readS24LE() }.toLongArray()
 			AbcLookupSwitchOperation(op, defaultMarker, markers)
 		}),
 		NamespaceOperation({ AbcNamespaceOperation(op, namespaces[s.readU30()]) }),

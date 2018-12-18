@@ -49,7 +49,7 @@ class JellyButton(val view: View?, var targetScale: Double = 1.5) {
 			over -> targetScale
 			else -> 1.0
 		}
-		content.tween(content::scale[initialScale * scale], time = 200.milliseconds, easing = Easings.EASE_OUT_ELASTIC)
+		content.tween(content::scale[initialScale * scale], time = 200.milliseconds, easing = Easing.EASE_OUT_ELASTIC)
 	}
 
 	fun onClick(callback: suspend () -> Unit) {

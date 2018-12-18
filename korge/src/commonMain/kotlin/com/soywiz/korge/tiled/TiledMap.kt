@@ -280,7 +280,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 									"zlib" -> rawContent.uncompress(ZLib)
 									else -> invalidOp
 								}
-								content.readIntArray_le(0, count)
+								content.readIntArrayLE(0, count)
 							}
 							else -> invalidOp("Unhandled encoding '$encoding'")
 						}

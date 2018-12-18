@@ -1,6 +1,7 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.kmem.*
+import com.soywiz.korio.util.*
 import kotlin.test.*
 
 class TimedTest {

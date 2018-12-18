@@ -155,7 +155,7 @@ object AnLibrarySerializer {
 				is AnSymbolShape -> {
 					shapeCount++
 					writeU_VL(AniFile.SYMBOL_TYPE_SHAPE)
-					writeF32_le(symbol.textureWithBitmap!!.scale.toFloat())
+					writeF32LE(symbol.textureWithBitmap!!.scale.toFloat())
 					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
@@ -165,7 +165,7 @@ object AnLibrarySerializer {
 						writeU_VL(path.commands.size)
 						for (cmd in path.commands) write8(cmd)
 						writeU_VL(path.data.size)
-						for (v in path.data) writeF32_le(v.toFloat())
+						for (v in path.data) writeF32LE(v.toFloat())
 					} else {
 						writeU_VL(0)
 					}
@@ -177,7 +177,7 @@ object AnLibrarySerializer {
 					writeU_VL(entries.size)
 					for ((ratio1000, textureWithBitmap) in entries) {
 						writeU_VL(ratio1000)
-						writeF32_le(textureWithBitmap.scale.toFloat())
+						writeF32LE(textureWithBitmap.scale.toFloat())
 						writeU_VL(atlasBitmapsToId[textureWithBitmap.bitmapSlice.bmp]!!)
 						writeRect(textureWithBitmap.bounds)
 						writeIRect(textureWithBitmap.bitmapSlice.bounds)
@@ -307,7 +307,7 @@ object AnLibrarySerializer {
 										.insert(hasBlendMode, 7)
 								)
 								if (hasUid) writeU_VL(frame.uid)
-								if (hasClipDepth) write16_le(frame.clipDepth)
+								if (hasClipDepth) write16LE(frame.clipDepth)
 								if (hasName) writeU_VL(strings[frame.name])
 
 								if (hasAlpha) {

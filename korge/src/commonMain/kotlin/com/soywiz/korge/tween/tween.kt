@@ -65,11 +65,13 @@ class TweenComponent(
 	override fun toString(): String = "TweenComponent($view)"
 }
 
+private val emptyCallback: (Double) -> Unit = {}
+
 suspend fun View?.tween(
 	vararg vs: V2<*>,
 	time: TimeSpan,
 	easing: Easing = Easing.LINEAR,
-	callback: (Double) -> Unit = { }
+	callback: (Double) -> Unit = emptyCallback
 ): Unit {
 	if (this != null) {
 		withTimeout(300 + time.millisecondsLong * 2) {
@@ -142,27 +144,27 @@ inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTim
 inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.millisecondsLong)
 
 inline fun <V> V2<V>.linear() = this
-inline fun <V> V2<V>.easeIn() = this.withEasing(Easings.EASE_IN)
-inline fun <V> V2<V>.easeOut() = this.withEasing(Easings.EASE_OUT)
-inline fun <V> V2<V>.easeInOut() = this.withEasing(Easings.EASE_IN_OUT)
-inline fun <V> V2<V>.easeOutIn() = this.withEasing(Easings.EASE_OUT_IN)
-inline fun <V> V2<V>.easeInBack() = this.withEasing(Easings.EASE_IN_BACK)
-inline fun <V> V2<V>.easeOutBack() = this.withEasing(Easings.EASE_OUT_BACK)
-inline fun <V> V2<V>.easeInOutBack() = this.withEasing(Easings.EASE_IN_OUT_BACK)
-inline fun <V> V2<V>.easeOutInBack() = this.withEasing(Easings.EASE_OUT_IN_BACK)
+inline fun <V> V2<V>.easeIn() = this.withEasing(Easing.EASE_IN)
+inline fun <V> V2<V>.easeOut() = this.withEasing(Easing.EASE_OUT)
+inline fun <V> V2<V>.easeInOut() = this.withEasing(Easing.EASE_IN_OUT)
+inline fun <V> V2<V>.easeOutIn() = this.withEasing(Easing.EASE_OUT_IN)
+inline fun <V> V2<V>.easeInBack() = this.withEasing(Easing.EASE_IN_BACK)
+inline fun <V> V2<V>.easeOutBack() = this.withEasing(Easing.EASE_OUT_BACK)
+inline fun <V> V2<V>.easeInOutBack() = this.withEasing(Easing.EASE_IN_OUT_BACK)
+inline fun <V> V2<V>.easeOutInBack() = this.withEasing(Easing.EASE_OUT_IN_BACK)
 
-inline fun <V> V2<V>.easeInElastic() = this.withEasing(Easings.EASE_IN_ELASTIC)
-inline fun <V> V2<V>.easeOutElastic() = this.withEasing(Easings.EASE_OUT_ELASTIC)
-inline fun <V> V2<V>.easeInOutElastic() = this.withEasing(Easings.EASE_IN_OUT_ELASTIC)
-inline fun <V> V2<V>.easeOutInElastic() = this.withEasing(Easings.EASE_OUT_IN_ELASTIC)
+inline fun <V> V2<V>.easeInElastic() = this.withEasing(Easing.EASE_IN_ELASTIC)
+inline fun <V> V2<V>.easeOutElastic() = this.withEasing(Easing.EASE_OUT_ELASTIC)
+inline fun <V> V2<V>.easeInOutElastic() = this.withEasing(Easing.EASE_IN_OUT_ELASTIC)
+inline fun <V> V2<V>.easeOutInElastic() = this.withEasing(Easing.EASE_OUT_IN_ELASTIC)
 
-inline fun <V> V2<V>.easeInBounce() = this.withEasing(Easings.EASE_IN_BOUNCE)
-inline fun <V> V2<V>.easeOutBounce() = this.withEasing(Easings.EASE_OUT_BOUNCE)
-inline fun <V> V2<V>.easeInOutBounce() = this.withEasing(Easings.EASE_IN_OUT_BOUNCE)
-inline fun <V> V2<V>.easeOutInBounce() = this.withEasing(Easings.EASE_OUT_IN_BOUNCE)
+inline fun <V> V2<V>.easeInBounce() = this.withEasing(Easing.EASE_IN_BOUNCE)
+inline fun <V> V2<V>.easeOutBounce() = this.withEasing(Easing.EASE_OUT_BOUNCE)
+inline fun <V> V2<V>.easeInOutBounce() = this.withEasing(Easing.EASE_IN_OUT_BOUNCE)
+inline fun <V> V2<V>.easeOutInBounce() = this.withEasing(Easing.EASE_OUT_IN_BOUNCE)
 
-inline fun <V> V2<V>.easeInQuad() = this.withEasing(Easings.EASE_IN_QUAD)
-inline fun <V> V2<V>.easeOutQuad() = this.withEasing(Easings.EASE_OUT_QUAD)
-inline fun <V> V2<V>.easeInOutQuad() = this.withEasing(Easings.EASE_IN_OUT_QUAD)
+inline fun <V> V2<V>.easeInQuad() = this.withEasing(Easing.EASE_IN_QUAD)
+inline fun <V> V2<V>.easeOutQuad() = this.withEasing(Easing.EASE_OUT_QUAD)
+inline fun <V> V2<V>.easeInOutQuad() = this.withEasing(Easing.EASE_IN_OUT_QUAD)
 
-inline fun <V> V2<V>.easeSine() = this.withEasing(Easings.EASE_SINE)
+inline fun <V> V2<V>.easeSine() = this.withEasing(Easing.EASE_SINE)

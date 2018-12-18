@@ -112,14 +112,14 @@
         <file id="3" name="breastplate_0/breast_plate_34_back.png" width="66" height="80" pivot_x="0.426471" pivot_y="0.54878" ax="848" ay="736" aw="40" ah="63" axoff="12" ayoff="7" arot="false"/>
     </folder>
     <folder id="9" name="legs" atlas="0">
-        <file id="0" name="legs/p_leg_idle_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="290" ay="861" aw="61" ah="32" axoff="2" ayoff="10" arot="true"/>
-        <file id="1" name="legs/p_leg_walk_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="327" ay="903" aw="59" ah="40" axoff="3" ayoff="5" arot="false"/>
+        <file id="0" name="legs/pLE(g_idle_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="290" ay="861" aw="61" ah="32" axoff="2" ayoff="10" arot="true"/>
+        <file id="1" name="legs/pLE(g_walk_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="327" ay="903" aw="59" ah="40" axoff="3" ayoff="5" arot="false"/>
         <file id="2" name="legs/p_thigh_walk_0.png" width="58" height="42" pivot_x="0.233333" pivot_y="0.431818" ax="383" ay="943" aw="56" ah="31" axoff="2" ayoff="5" arot="false"/>
-        <file id="3" name="legs/p_leg_ladder_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="578" ay="875" aw="53" ah="31" axoff="11" ayoff="10" arot="false"/>
+        <file id="3" name="legs/pLE(g_ladder_0.png" width="65" height="52" pivot_x="0.208955" pivot_y="0.518519" ax="578" ay="875" aw="53" ah="31" axoff="11" ayoff="10" arot="false"/>
         <file id="4" name="legs/p_thigh_idle_0.png" width="58" height="42" pivot_x="0.233333" pivot_y="0.431818" ax="631" ay="875" aw="53" ah="30" axoff="3" ayoff="9" arot="true"/>
         <file id="5" name="legs/p_thigh_ladder_0.png" width="58" height="42" pivot_x="0.233333" pivot_y="0.431818" ax="383" ay="974" aw="53" ah="29" axoff="2" ayoff="8" arot="false"/>
         <file id="6" name="legs/p_pelvis_idle.png" width="48" height="63" pivot_x="0.18" pivot_y="0.584615" ax="737" ay="897" aw="39" ah="46" axoff="4" ayoff="8" arot="true"/>
-        <file id="7" name="legs/p_leg_a.png" width="61" height="45" pivot_x="0.253968" pivot_y="0.468085" ax="857" ay="165" aw="46" ah="23" axoff="8" ayoff="14" arot="true"/>
+        <file id="7" name="legs/pLE(g_a.png" width="61" height="45" pivot_x="0.253968" pivot_y="0.468085" ax="857" ay="165" aw="46" ah="23" axoff="8" ayoff="14" arot="true"/>
         <file id="8" name="legs/p_pelvis_back.png" width="48" height="63" pivot_x="0.18" pivot_y="0.584615" ax="830" ay="863" aw="40" ah="45" axoff="4" ayoff="7" arot="false"/>
         <file id="9" name="legs/p_pelvis_walk.png" width="48" height="63" pivot_x="0.18" pivot_y="0.584615" ax="829" ay="908" aw="42" ah="44" axoff="3" ayoff="12" arot="false"/>
         <file id="10" name="legs/p_thigh_a.png" width="53" height="38" pivot_x="0.254545" pivot_y="0.425" ax="430" ay="558" aw="44" ah="24" axoff="4" ayoff="8" arot="true"/>
@@ -1313,7 +1313,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -1468,7 +1468,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -3171,7 +3171,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -3227,7 +3227,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -3812,7 +3812,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -3841,7 +3841,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -4562,7 +4562,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -4582,7 +4582,7 @@
                     <object folder="9" file="2" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -5841,7 +5841,7 @@
                     <object folder="2" file="5" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.01697" scale_y="-1"/>
                 </key>
@@ -5891,7 +5891,7 @@
                     <object folder="9" file="5" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -6742,7 +6742,7 @@
                     <object folder="2" file="5" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -6798,7 +6798,7 @@
                     <object folder="9" file="5" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -7416,7 +7416,7 @@
                     <object folder="2" file="24" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.01697" scale_y="-1"/>
                 </key>
@@ -7460,7 +7460,7 @@
                     <object folder="9" file="2" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -8224,7 +8224,7 @@
                     <object folder="2" file="5" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.01697" scale_y="-1"/>
                 </key>
@@ -8268,7 +8268,7 @@
                     <object folder="9" file="5" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="3" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -8796,7 +8796,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -8840,7 +8840,7 @@
                     <object folder="9" file="2" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -9534,7 +9534,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -9590,7 +9590,7 @@
                     <object folder="9" file="2" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -10242,7 +10242,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -10262,7 +10262,7 @@
                     <object folder="9" file="2" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -10882,7 +10882,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -10929,7 +10929,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -11558,7 +11558,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -11590,7 +11590,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -12086,7 +12086,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -12124,7 +12124,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="1" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -12697,7 +12697,7 @@
                     <object folder="2" file="11" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -12741,7 +12741,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -13348,7 +13348,7 @@
                     <object folder="2" file="23" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -13398,7 +13398,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -14090,7 +14090,7 @@
                     <object folder="2" file="11" x="109.042246" y="12.243072" angle="228.832404" scale_x="5.860632"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -14140,7 +14140,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -15309,7 +15309,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -15401,7 +15401,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>
@@ -16966,7 +16966,7 @@
                     <object folder="2" file="16" x="2.965076" y="-1.983369" angle="14.470294" scale_x="5.262624"/>
                 </key>
             </timeline>
-            <timeline id="8" name="p_leg_a">
+            <timeline id="8" name="pLE(g_a">
                 <key id="0" spin="0">
                     <object folder="9" file="7" x="-0.841289" y="-1.997736" angle="356.334498" scale_x="8.016966"/>
                 </key>
@@ -17046,7 +17046,7 @@
                     <object folder="9" file="4" x="66.968326" y="1.052899" angle="359.519432" scale_x="6.016568"/>
                 </key>
             </timeline>
-            <timeline id="12" name="p_leg_idle_0">
+            <timeline id="12" name="pLE(g_idle_0">
                 <key id="0" spin="0">
                     <object folder="9" file="0" x="15.555556" y="-0.316228" angle="357.342609" scale_x="7.027284"/>
                 </key>

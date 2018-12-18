@@ -111,7 +111,7 @@ object AnLibraryDeserializer {
 				AnTextFieldSymbol(symbolId, symbolName, initialText ?: "", bounds)
 			}
 			AniFile.SYMBOL_TYPE_SHAPE -> {
-				val scale = readF32_le().toDouble()
+				val scale = readF32LE().toDouble()
 				val bitmapId = readU_VL()
 				val atlas = atlases[bitmapId]
 				val textureBounds = readIRect()
@@ -126,10 +126,10 @@ object AnLibraryDeserializer {
 						for (n in 0 until cmds.size) cmds[n] = readU8()
 
 						val data = DoubleArray(readU_VL())
-						for (n in 0 until data.size) data[n] = readF32_le().toDouble()
+						for (n in 0 until data.size) data[n] = readF32LE().toDouble()
 
 						//val cmds = (0 until readU_VL()).map { readU8() }.toIntArray()
-						//val data = (0 until readU_VL()).map { readF32_le().toDouble() }.toDoubleArray()
+						//val data = (0 until readU_VL()).map { readF32LE().toDouble() }.toDoubleArray()
 						VectorPath(IntArrayList(*cmds), DoubleArrayList(*data))
 					}
 					else -> null
@@ -152,7 +152,7 @@ object AnLibraryDeserializer {
 				val texturesWithBitmap = Timed<TextureWithBitmapSlice>(nframes)
 				for (n in 0 until nframes) {
 					val ratio1000 = readU_VL()
-					val scale = readF32_le().toDouble()
+					val scale = readF32LE().toDouble()
 					val bitmapId = readU_VL()
 					val bounds = readRect()
 					val textureBounds = readIRect()
@@ -267,7 +267,7 @@ object AnLibraryDeserializer {
 					val hasBlendMode = flags.extract(7)
 
 					if (hasUid) lastUid = readU_VL()
-					if (hasClipDepth) lastClipDepth = readS16_le()
+					if (hasClipDepth) lastClipDepth = readS16LE()
 					if (hasName) lastName = strings[readU_VL()]
 					if (hasAlpha) {
 						val ct = lastColorTransform.copy()

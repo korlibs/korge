@@ -103,8 +103,8 @@ class ABC {
 		//syncTest {
 		//	s.slice().readAll().writeToFile(File("c:/temp/demo.abc"))
 		//}
-		val minor = s.readU16_le()
-		val major = s.readU16_le()
+		val minor = s.readU16LE()
+		val major = s.readU16LE()
 		//println("version: major=$major, minor=$minor")
 		cpool.readConstantPool(s)
 

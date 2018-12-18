@@ -25,8 +25,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 
 	init { logger.trace { "BatchBuilder2D[1]" } }
 
-	private val vertices = KmlNativeBuffer.alloc(6 * 4 * maxVertices)
-	private val indices = KmlNativeBuffer.alloc(2 * maxIndices)
+	private val vertices = FBuffer.alloc(6 * 4 * maxVertices)
+	private val indices = FBuffer.alloc(2 * maxIndices)
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
@@ -170,7 +170,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
 		//for (p in array.points) addVertex(p.x, p.y, p.tx, p.ty, p.colMul, p.colAdd)
 
-		KmlNativeBuffer.copy(array._data, 0, vertices, vertexPos * 4, vcount * 6 * 4)
+		FBuffer.copy(array._data, 0, vertices, vertexPos * 4, vcount * 6 * 4)
 		//vertices.setAlignedArrayInt32(vertexPos, array.data, 0, vcount * 6)
 		vertexCount += vcount
 		vertexPos += vcount * 6
@@ -474,7 +474,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int = indices.size) {
 	val initialVcount = vcount
 	//internal val data = IntArray(COMPONENTS_PER_VERTEX * vcount)
-	internal val _data = KmlNativeBuffer(COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
+	internal val _data = FBuffer(COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
 	internal val f32 = _data.f32
 	internal val i32 = _data.i32
 	//val points = (0 until vcount).map { Item(data, it) }

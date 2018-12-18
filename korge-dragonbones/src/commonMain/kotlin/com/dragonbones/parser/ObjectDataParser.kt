@@ -2280,34 +2280,34 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 	protected fun _modifyArray() {
 		// Align.
-		if ((this._intArray.length % Int16Buffer_BYTES_PER_ELEMENT) != 0) {
+		if ((this._intArray.length % 2) != 0) {
 			this._intArray.push(0)
 		}
 
-		if ((this._frameIntArray.length % Int16Buffer_BYTES_PER_ELEMENT) != 0) {
+		if ((this._frameIntArray.length % 2) != 0) {
 			this._frameIntArray.push(0)
 		}
 
-		if ((this._frameArray.length % Int16Buffer_BYTES_PER_ELEMENT) != 0) {
+		if ((this._frameArray.length % 2) != 0) {
 			this._frameArray.push(0.0)
 		}
 
-		if ((this._timelineArray.length % Int16Buffer_BYTES_PER_ELEMENT) != 0) {
+		if ((this._timelineArray.length % 2) != 0) {
 			//this._timelineArray.push(0)
 			this._timelineArray.push(0.0)
 		}
 
-		if ((this._timelineArray.length % Int16Buffer_BYTES_PER_ELEMENT) != 0) {
+		if ((this._timelineArray.length % 2) != 0) {
 			this._colorArray.push(0)
 		}
 
-		val l1 = this._intArray.length * Int16Buffer_BYTES_PER_ELEMENT
-		val l2 = this._floatArray.length * Float32Buffer_BYTES_PER_ELEMENT
-		val l3 = this._frameIntArray.length * Int16Buffer_BYTES_PER_ELEMENT
-		val l4 = this._frameFloatArray.length * Float32Buffer_BYTES_PER_ELEMENT
-		val l5 = this._frameArray.length * Int16Buffer_BYTES_PER_ELEMENT
-		val l6 = this._timelineArray.length * Int16Buffer_BYTES_PER_ELEMENT
-		val l7 = this._colorArray.length * Int16Buffer_BYTES_PER_ELEMENT
+		val l1 = this._intArray.length * 2
+		val l2 = this._floatArray.length * 4
+		val l3 = this._frameIntArray.length * 2
+		val l4 = this._frameFloatArray.length * 4
+		val l5 = this._frameArray.length * 2
+		val l6 = this._timelineArray.length * 2
+		val l7 = this._colorArray.length * 2
 		val lTotal = l1 + l2 + l3 + l4 + l5 + l6 + l7
 		//
 		val binary = MemBufferAlloc(lTotal)

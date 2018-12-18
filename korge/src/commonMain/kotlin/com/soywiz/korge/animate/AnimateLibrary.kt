@@ -161,12 +161,12 @@ data class AnSymbolTimelineFrame(
 	//	// @TODO: optimized
 	//	if (hasTransform) {
 	//		val t = transform
-	//		s.writeF32_le(t.a.toFloat())
-	//		s.writeF32_le(t.b.toFloat())
-	//		s.writeF32_le(t.c.toFloat())
-	//		s.writeF32_le(t.d.toFloat())
-	//		s.writeF32_le(t.tx.toFloat())
-	//		s.writeF32_le(t.ty.toFloat())
+	//		s.writeF32LE(t.a.toFloat())
+	//		s.writeF32LE(t.b.toFloat())
+	//		s.writeF32LE(t.c.toFloat())
+	//		s.writeF32LE(t.d.toFloat())
+	//		s.writeF32LE(t.tx.toFloat())
+	//		s.writeF32LE(t.ty.toFloat())
 	//	}
 	//	// @TODO: Use constantpool to store just integer
 	//	if (hasName) {
@@ -175,14 +175,14 @@ data class AnSymbolTimelineFrame(
 	//	// @TODO: optimized
 	//	if (hasColorTransform) {
 	//		val ct = colorTransform
-	//		s.writeF32_le(ct.mRf)
-	//		s.writeF32_le(ct.mGf)
-	//		s.writeF32_le(ct.mBf)
-	//		s.writeF32_le(ct.mAf)
-	//		s.write32_le(ct.aR)
-	//		s.write32_le(ct.aG)
-	//		s.write32_le(ct.aB)
-	//		s.write32_le(ct.aA)
+	//		s.writeF32LE(ct.mRf)
+	//		s.writeF32LE(ct.mGf)
+	//		s.writeF32LE(ct.mBf)
+	//		s.writeF32LE(ct.mAf)
+	//		s.write32LE(ct.aR)
+	//		s.write32LE(ct.aG)
+	//		s.write32LE(ct.aB)
+	//		s.write32LE(ct.aA)
 	//	}
 	//	if (hasBlendMode) {
 	//		s.write8(blendMode.ordinal)
@@ -198,12 +198,12 @@ data class AnSymbolTimelineFrame(
 	//	ratio = if (flags.extract(2)) s.readU8().toDouble() / 255.0 else 0.0
 	//	if (flags.extract(3)) {
 	//		t.setTo(
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble()
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble()
 	//		)
 	//	} else {
 	//		t.setToIdentity()
@@ -220,14 +220,14 @@ data class AnSymbolTimelineFrame(
 	//	}
 	//	if (flags.extract(6)) {
 	//		ct.setTo(
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readF32_le().toDouble(),
-	//			s.readS32_le(),
-	//			s.readS32_le(),
-	//			s.readS32_le(),
-	//			s.readS32_le()
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readF32LE().toDouble(),
+	//			s.readS32LE(),
+	//			s.readS32LE(),
+	//			s.readS32LE(),
+	//			s.readS32LE()
 	//		)
 	//	} else {
 	//		ct.setToIdentity()

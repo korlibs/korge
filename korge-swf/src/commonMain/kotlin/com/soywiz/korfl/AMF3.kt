@@ -77,10 +77,10 @@ object AMF3 {
 			0x02 -> false
 			0x03 -> true
 			0x04 -> readInt()
-			0x05 -> i.readF64_be()
+			0x05 -> i.readF64BE()
 			0x06 -> readString()
 			0x07 -> throw Error("XMLDocument unsupported")
-			0x08 -> run { i.readU8(); DateTime(i.readF64_be().toLong()) }
+			0x08 -> run { i.readU8(); DateTime(i.readF64BE().toLong()) }
 			0x09 -> readArray(readInt(1))
 			0x0a -> readObject()
 			0x0b -> Xml(readString())
