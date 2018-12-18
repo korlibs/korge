@@ -1,15 +1,10 @@
 package com.soywiz.korge.gradle
 
-import groovy.lang.*
 import groovy.text.*
 import groovy.util.*
-import groovy.xml.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
-import org.gradle.api.internal.*
-import org.gradle.api.internal.artifacts.configurations.*
-import org.gradle.api.internal.file.collections.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.dsl.*
@@ -23,6 +18,55 @@ val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 val korgeVersion get() = KorgeBuildServiceProxy.version()
 
+enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
+
+data class KorgePluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
+
+@Suppress("unused")
+class KorgeExtension(val project: Project) {
+    internal fun init() {
+        // Do nothing, but serves to be referenced to be installed
+    }
+
+    var id: String = "com.unknown.unknownapp"
+    var version: String = "0.0.1"
+
+    var name: String = "unnamed"
+    var description: String = "undescripted"
+    var orientation: Orientation = Orientation.DEFAULT
+    val plugins = arrayListOf<KorgePluginDescriptor>()
+
+    var authorName = "unknown"
+    var authorEmail = "unknown@unknown"
+    var authorHref = "http://localhost"
+
+    var fullscreen = true
+
+    @JvmOverloads
+    fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
+        plugins += KorgePluginDescriptor(name.toString(), args, version?.toString())
+        //println("cordovaPlugin($name, $args, $version)")
+    }
+
+    @JvmOverloads
+    fun author(name: String, email: String, href: String) {
+        authorName = name
+        authorEmail = email
+        authorHref = href
+    }
+}
+
+val Project.korge: KorgeExtension get() {
+    val extension = project.extensions.findByName("korge") as? KorgeExtension?
+    return if (extension == null) {
+        val newExtension = KorgeExtension(this)
+        project.extensions.add("korge", newExtension)
+        newExtension
+    } else {
+        extension
+    }
+}
+
 open class KorgeGradlePlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
@@ -33,6 +77,8 @@ open class KorgeGradlePlugin : Plugin<Project> {
         project.configureRepositories()
         project.configureKotlin()
         project.addKorgeTasks()
+
+        project.korge.init()
 
         //for (res in project.getResourcesFolders()) println("- $res")
     }
@@ -152,7 +198,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                     //it.from()
                     //fileTree()
                     task.from(GroovyClosure(project) {
-                        (project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as DefaultConfiguration).map { if (it.isDirectory) it else project.zipTree(it) as Any }
+                        (project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
                         //listOf<File>()
                     })
                     task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
@@ -169,7 +215,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                     task.from("${project.buildDir}/npm/node_modules")
                     task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs)
                     task.exclude("**/*.kotlin_metadata", "**/*.kotlin_module", "**/*.MF", "**/*.kjsm", "**/*.map", "**/*.meta.js")
-                    for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as DefaultConfigurableFileCollection).toList()) {
+                    for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
                         if (file.exists() && !file.isDirectory) {
                             task.from(project.zipTree(file.absolutePath))
                         } else {
@@ -194,9 +240,10 @@ open class KorgeGradlePlugin : Plugin<Project> {
         }
 
         val cordovaFolder = project.buildDir["cordova"]
-        val cordovaConfigXmlFile = File(project.buildDir, "cordova/config.xml")
+        val cordovaConfigXmlFile = cordovaFolder["config.xml"]
 
-        val korge = KorgeXml(project.file("korge.project.xml"))
+        //val korge = KorgeXml(project.file("korge.project.xml"))
+        val korge = project.korge
 
         run {
             project.addTask<Exec>("cordovaInstall") { task ->
@@ -240,7 +287,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                     cordovaConfig["description"].setValue(korge.description)
 
                     // https://cordova.apache.org/docs/es/latest/config_ref/
-                    replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation)
+                    replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation.lc)
                     replaceCordovaPreference(cordovaConfig, "Fullscreen", "true")
                     replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0xff000000")
 
@@ -253,12 +300,12 @@ open class KorgeGradlePlugin : Plugin<Project> {
             project.addTask<DefaultTask>("cordovaPluginsInstall", dependsOn = listOf("cordovaInstall")) { task ->
                 task.doLast {
                     println("korge.plugins: ${korge.plugins}")
-                    for ((pluginName, pluginVars) in korge.plugins) {
-                        val list = pluginVars.flatMap { listOf("--variable", "${it.key}=${it.value}") }.toTypedArray()
+                    for (plugin in korge.plugins) {
+                        val list = plugin.args.flatMap { listOf("--variable", "${it.key}=${it.value}") }.toTypedArray()
                         project.exec {
                             it.workingDir(cordovaFolder)
-                            println(listOf("cordova", "plugin", "add", pluginName, "--save", *list))
-                            it.commandLine("cordova", "plugin", "add", pluginName, "--save", *list)
+                            println(listOf("cordova", "plugin", "add", plugin.name, "--save", *list))
+                            it.commandLine("cordova", "plugin", "add", plugin.name, "--save", *list)
                         }
                     }
                 }
@@ -292,102 +339,6 @@ open class KorgeGradlePlugin : Plugin<Project> {
         }
     }
 }
-
-class QXml private constructor(val obj: Any?, dummy: Boolean) {
-    companion object {
-        operator fun invoke(obj: Any?): QXml = if (obj is QXml) obj else QXml(obj, true)
-    }
-    val name: String get() = when (obj) {
-        null -> "null"
-        is Node -> obj.name().toString()
-        else -> obj.toString()
-    }
-
-    val attributes: Map<String, String> get() = when (obj) {
-        is Node -> obj.attributes() as Map<String, String>
-        is NodeList -> obj.map { QXml(it).attributes }.reduce { acc, map -> acc + map }
-        else -> mapOf()
-    }
-
-    val text: String? get() = when (obj) {
-        null -> null
-        is Node -> obj.text()
-        is NodeList -> obj.text()
-        else -> obj.toString()
-    }
-
-    val list: List<QXml> get() = when (obj) {
-        is Node -> listOf(this)
-        is NodeList -> obj.map { QXml(it) }
-        else -> listOf()
-    }
-
-    val children: List<QXml> get() = when (obj) {
-        is Node -> obj.children().map { QXml(it) }
-        is NodeList -> obj.map { QXml(it) }
-        else -> listOf()
-    }
-
-    val parent: QXml get() = when (obj) {
-        is Node -> QXml(obj.parent())
-        is NodeList -> QXml(obj.map { QXml(it).parent })
-        else -> QXml(null)
-    }
-
-    fun remove() {
-        when (obj) {
-            is Node -> {
-                (parent.obj as? Node?)?.remove(obj)
-            }
-        }
-    }
-
-    fun setValue(value: Any?) {
-        when (obj) {
-            is Node -> obj.setValue(value)
-            is NodeList -> obj.map { QXml(it).setValue(value) }
-        }
-    }
-
-    fun appendNode(name: String, attributes: Map<Any?, Any?>) {
-        when (obj) {
-            is Node -> obj.appendNode(name, attributes)
-            is NodeList -> list.forEach { it.appendNode(name, attributes) }
-        }
-    }
-
-    operator fun get(key: String): QXml {
-        if (obj is Iterable<*>) {
-            return QXml(obj.map { QXml(it)[key].obj })
-        }
-        if (obj is Node) {
-            return QXml(obj.get(key))
-        }
-        return QXml(null)
-    }
-}
-
-fun Node?.rchildren(): List<Node> {
-    if (this == null) return listOf()
-    return this.children() as List<Node>
-}
-
-class KorgeXml(val file: File) {
-    val xmlText = file.readText()
-    val korge = QXml(xmlParse(xmlText))
-
-    val name get() = korge["name"].text ?: "untitled"
-    val description get() = korge["description"].text ?: ""
-    val orientation get() = korge["orientation"].text ?: "default"
-    val plugins
-        get() = korge["plugins"].list.first().children.associate {
-            it.name to it.attributes
-        }
-}
-
-fun Node.getFirstAt(key: String) = getAt(key).firstOrNull()
-fun Node.getAt(key: String) = this.getAt(QName(key)) as List<Node>
-operator fun Node.get(key: String) = this.getAt(QName(key))
 
 abstract class KorgeBaseResourcesTask : DefaultTask() {
     var debug = false
@@ -432,45 +383,6 @@ open class KorgeResourcesTask : KorgeBaseResourcesTask() {
     override var processResources = "processResources"
 }
 
-open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit) {
-    @Suppress("unused")
-    fun doCall(vararg arguments: T) = lambda(arguments[0])
-
-    override fun getProperty(property: String): Any = "lambda"
-}
-
-inline fun <reified T : AbstractTask> Project.addTask(
-        name: String,
-        group: String = "",
-        description: String = "",
-        overwrite: Boolean = true,
-        dependsOn: List<String> = listOf(),
-        noinline configure: (T) -> Unit = {}
-): Task {
-    return project.task(
-            mapOf(
-                    "type" to T::class.java,
-                    "group" to group,
-                    "description" to description,
-                    "overwrite" to overwrite
-            ), name, LambdaClosure({ it: T ->
-        configure(it)
-    })
-    ).dependsOn(dependsOn)
-}
-
-inline fun ignoreErrors(action: () -> Unit) {
-    try {
-        action()
-    } catch (e: Throwable) {
-        e.printStackTrace()
-    }
-}
-
-fun <T> Project.getIfExists(name: String): T? = if (this.hasProperty(name)) this.property(name) as T else null
-
-operator fun <T> NamedDomainObjectSet<T>.get(key: String): T = this.getByName(key)
-
 fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
     val out = arrayListOf<File>()
     try {
@@ -492,18 +404,4 @@ fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
         e.printStackTrace()
     }
     return out.distinct()
-}
-
-fun xmlParse(xml: String): Node {
-    return XmlParser().parseText(xml)
-}
-
-fun xmlSerialize(xml: Node): String {
-    val sw = StringWriter()
-    sw.write("<?xml version='1.0' encoding='utf-8'?>\n")
-    val xnp = XmlNodePrinter(PrintWriter(sw))
-    xnp.isNamespaceAware = true
-    xnp.isPreserveWhitespace = true
-    xnp.print(xml)
-    return sw.toString()
 }
