@@ -8,14 +8,14 @@ import java.io.*
 
 // Used at korge-gradle-plugin
 @Suppress("unused")
-class KorgeBuildService {
-    fun init() {
+class KorgeBuildService : IKorgeBuildService {
+    override fun init() {
         KorgeManualServiceRegistration.register()
     }
 
-    fun version(): String = Korge.VERSION
+    override fun version(): String = Korge.VERSION
 
-    fun processResourcesFolder(src: File, dst: File) {
+    override fun processResourcesFolder(src: File, dst: File) {
         if (!src.exists()) return // Ignore empty folders
 
         runBlocking {
@@ -41,4 +41,10 @@ class KorgeBuildService {
             */
         }
     }
+}
+
+interface IKorgeBuildService {
+    fun init()
+    fun version(): String
+    fun processResourcesFolder(src: File, dst: File)
 }

@@ -11,7 +11,7 @@ class AMFTest {
 	@Test
 	fun amf0() {
 		assertEquals(
-			lmapOf("name" to "Mike", "age" to 30.0, "alias" to "Mike"),
+			linkedMapOf("name" to "Mike", "age" to 30.0, "alias" to "Mike"),
 			AMF0.decode(
 				listOf(
 					"03 00 04 6e 61 6d 65 02 00 04 4d 69 6b 65 00 03 61 67 65 00",

@@ -2,6 +2,8 @@ dependencies {
 	commonMainApi "com.soywiz:korinject:$korinjectVersion"
 	commonMainApi "com.soywiz:korui:$koruiVersion"
 	commonMainApi "com.soywiz:korau:$korauVersion"
+	commonMainApi "com.soywiz:klogger:$kloggerVersion"
+
 }
 
 [kotlin.targets.js, kotlin.targets.metadata].each { target ->

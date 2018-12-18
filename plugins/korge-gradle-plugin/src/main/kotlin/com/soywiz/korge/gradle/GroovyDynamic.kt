@@ -53,3 +53,11 @@ private fun tryGetEmptyMethod(clazz: Class<*>, name: String): Method? {
         else -> null
     }
 }
+
+fun <T> GroovyClosure(owner: Any?, callback: () -> T): Closure<T> {
+    return object : Closure<T>(owner) {
+        override fun call(): T {
+            return callback()
+        }
+    }
+}
