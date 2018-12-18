@@ -1,6 +1,7 @@
 package com.soywiz.korge.tiled
 
 import com.soywiz.korge.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.util.*
 import com.soywiz.korge.view.tiles.*
@@ -40,8 +41,8 @@ class TiledMapTest : ViewsForTesting() {
 		val map = TileMap(IntArray2(200, 200), tileset)
 		views.stage += map
 		views.frameUpdateAndRender(false, Colors.TRANSPARENT_BLACK)
-		assertEquals(640, views.actualVirtualWidth)
-		assertEquals(480, views.actualVirtualHeight)
+		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
+		assertEquals(DefaultViewport.HEIGHT, views.actualVirtualHeight)
 		//assertEquals(300, count)
 		assertEquals(336, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
 	}

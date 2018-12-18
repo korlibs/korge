@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
@@ -413,7 +414,7 @@ object Korge {
 	// New Korge
 	operator fun invoke(
 		title: String = "Korge",
-		width: Int = 640, height: Int = 480,
+		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
 		virtualWidth: Int = width, virtualHeight: Int = height,
 		icon: Bitmap? = null,
 		quality: LightQuality = LightQuality.AUTO,

@@ -10,6 +10,7 @@ import com.soywiz.korge.async.*
 import com.soywiz.korge.audio.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korim.bitmap.*
@@ -70,14 +71,14 @@ class Views(
 	val nativeWidth get() = ag.mainRenderBuffer.width
 	val nativeHeight get() = ag.mainRenderBuffer.height
 
-	var virtualWidth = 640; internal set
-	var virtualHeight = 480; internal set
+	var virtualWidth = DefaultViewport.WIDTH; internal set
+	var virtualHeight = DefaultViewport.HEIGHT; internal set
 
 	var actualVirtualLeft = 0; private set
 	var actualVirtualTop = 0; private set
 
-	var actualVirtualWidth = 640; private set
-	var actualVirtualHeight = 480; private set
+	var actualVirtualWidth = DefaultViewport.WIDTH; private set
+	var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
 	override val virtualLeft get() = -actualVirtualLeft * views.stage.scaleX
 	override val virtualTop get() = -actualVirtualTop * views.stage.scaleY

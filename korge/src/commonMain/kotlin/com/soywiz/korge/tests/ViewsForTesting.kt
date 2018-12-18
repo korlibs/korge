@@ -1,8 +1,10 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.klock.*
+import com.soywiz.korag.log.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -20,7 +22,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 		override fun now(): DateTime = time
 	}
 	val koruiEventDispatcher = EventDispatcher()
-	val viewsLog = ViewsLog(dispatcher)
+	val viewsLog = ViewsLog(dispatcher, ag = LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT))
 	val injector get() = viewsLog.injector
 	val ag get() = viewsLog.ag
 	val input get() = viewsLog.input
