@@ -23,7 +23,7 @@ enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscap
 data class KorgePluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
 
 @Suppress("unused")
-class KorgeExtension(val project: Project) {
+class KorgeExtension {
     internal fun init() {
         // Do nothing, but serves to be referenced to be installed
     }
@@ -56,10 +56,49 @@ class KorgeExtension(val project: Project) {
     }
 }
 
+fun replaceCordovaPreference(cordovaConfig: QXml, name: String, value: String) {
+    // Remove Orientation node and set a new node
+    cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
+    cordovaConfig.appendNode("preference", mapOf("name" to name, "value" to value))
+}
+
+
+fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
+    val korge = this
+    cordovaConfig["name"].setValue(korge.name)
+    cordovaConfig["description"].setValue(korge.description)
+
+    cordovaConfig.setAttribute("id", korge.id)
+    cordovaConfig.setAttribute("version", korge.version)
+
+    cordovaConfig["author"].apply {
+        setAttribute("email", korge.authorEmail)
+        setAttribute("href", korge.authorHref)
+        setValue(korge.authorName)
+    }
+
+    // https://cordova.apache.org/docs/es/latest/config_ref/
+    replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation.lc)
+    replaceCordovaPreference(cordovaConfig, "Fullscreen", "true")
+    replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0xff000000")
+}
+
+fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
+    return updateXml(cordovaConfig) { updateCordovaXml(this) }
+}
+
+fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
+    val cordovaConfigXml = cordovaConfigXmlFile.readText()
+    val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
+    this.updateCordovaXml(cordovaConfig)
+    cordovaConfigXmlFile.writeText(xmlSerialize(cordovaConfig.obj as Node))
+
+}
+
 val Project.korge: KorgeExtension get() {
     val extension = project.extensions.findByName("korge") as? KorgeExtension?
     return if (extension == null) {
-        val newExtension = KorgeExtension(this)
+        val newExtension = KorgeExtension()
         project.extensions.add("korge", newExtension)
         newExtension
     } else {
@@ -67,8 +106,11 @@ val Project.korge: KorgeExtension get() {
     }
 }
 
-open class KorgeGradlePlugin : Plugin<Project> {
+open class JsWebCopy() : Copy() {
+    open lateinit var targetDir: File
+}
 
+open class KorgeGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         System.setProperty("java.awt.headless", "true")
 
@@ -206,9 +248,8 @@ open class KorgeGradlePlugin : Plugin<Project> {
             }
         }
 
-        val jsJar = TaskName("jsJar")
-
-        val jsWeb = project.addTask<Copy>(name = "jsWeb", dependsOn = listOf(jsJar)) { task ->
+        val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+            task.targetDir = project.buildDir["web"]
             project.afterEvaluate {
                 val kotlinTargets = project["kotlin"]["targets"]
                 val jsCompilations = kotlinTargets["js"]["compilations"]
@@ -229,10 +270,10 @@ open class KorgeGradlePlugin : Plugin<Project> {
                         task.from(sourceSet.resources)
                     }
                 }
-                task.into("${project.buildDir}/web")
+                task.into(task.targetDir)
             }
             task.doLast {
-                project.buildDir["web/index.html"].writeText(SimpleTemplateEngine().createTemplate(project.buildDir["web/index.template.html"].readText()).make(mapOf(
+                task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
                         "OUTPUT" to project.name,
                         "TITLE" to project.name
                 )).toString())
@@ -248,6 +289,9 @@ open class KorgeGradlePlugin : Plugin<Project> {
         run {
             val cordovaInstall = project.addTask<Exec>("cordovaInstall") { task ->
                 task.onlyIf { !cordovaFolder.exists() }
+                task.doFirst {
+                    buildDir.mkdirs()
+                }
                 task.commandLine("cordova", "create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
             }
 
@@ -272,28 +316,9 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            fun replaceCordovaPreference(cordovaConfig: QXml, name: String, value: String) {
-                // Remove Orientation node and set a new node
-                cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
-                cordovaConfig.appendNode("preference", mapOf("name" to name, "value" to value))
-            }
-
             val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaInstall)) { task ->
                 task.doLast {
-                    val cordovaConfigXml = cordovaConfigXmlFile.readText()
-                    val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
-
-                    cordovaConfig["name"].setValue(korge.name)
-                    cordovaConfig["description"].setValue(korge.description)
-
-                    // https://cordova.apache.org/docs/es/latest/config_ref/
-                    replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation.lc)
-                    replaceCordovaPreference(cordovaConfig, "Fullscreen", "true")
-                    replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0xff000000")
-
-                    //println(xmlSerialize(cordovaConfig))
-                    cordovaConfigXmlFile.writeText(xmlSerialize(cordovaConfig.obj as Node))
-                    //project.file("korge.project.xml").text
+                    korge.updateCordovaXmlFile(cordovaConfigXmlFile)
                 }
             }
 
@@ -312,8 +337,10 @@ open class KorgeGradlePlugin : Plugin<Project> {
             }
 
             val packageJsWeb = project.addTask<Copy>("packageJsWeb", group = "korge", dependsOn = listOf(jsWeb, cordovaInstall, cordovaSynchronizeConfigXml)) { task ->
-                task.from(project.buildDir["web"])
-                task.into(cordovaFolder["www"])
+                //afterEvaluate {
+                    task.from(project.closure { jsWeb.targetDir })
+                    task.into(cordovaFolder["www"])
+                //}
                 task.doLast {
                     val f = cordovaFolder["www/index.html"]
                     f.writeText(f.readText().replace("</head>", "<script type=\"text/javascript\" src=\"cordova.js\"></script></head>"))

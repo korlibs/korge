@@ -23,7 +23,11 @@ class KorgeXml(val file: File) {
 class QXml private constructor(val obj: Any?, dummy: Boolean) {
 	companion object {
 		operator fun invoke(obj: Any?): QXml = if (obj is QXml) obj else QXml(obj, true)
+		operator fun invoke(xml: String): QXml = QXml(xmlParse(xml))
 	}
+
+	val isEmpty get() = (obj == null) || (obj is NodeList && obj.isEmpty())
+
 	val name: String get() = when (obj) {
 		null -> "null"
 		is Node -> obj.name().toString()
@@ -34,6 +38,10 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 		is Node -> obj.attributes() as Map<String, String>
 		is NodeList -> obj.map { QXml(it).attributes }.reduce { acc, map -> acc + map }
 		else -> mapOf()
+	}
+
+	fun setAttribute(name: String, value: String) {
+		(attributes as MutableMap<String, String>)[name] = value
 	}
 
 	val text: String? get() = when (obj) {
@@ -66,6 +74,12 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 			is Node -> {
 				(parent.obj as? Node?)?.remove(obj)
 			}
+			is Iterable<*> -> {
+				for (child in children) child.remove()
+			}
+			else -> {
+				error("Can't remove $this")
+			}
 		}
 	}
 
@@ -92,6 +106,12 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 		}
 		return QXml(null)
 	}
+
+	fun serialize(): String {
+		return xmlSerialize(this.obj as Node)
+	}
+
+	override fun toString(): String = "QXml($obj)"
 }
 
 fun Node?.rchildren(): List<Node> {
@@ -116,3 +136,5 @@ fun xmlSerialize(xml: Node): String {
     xnp.print(xml)
     return sw.toString()
 }
+
+fun updateXml(xmlString: String, updater: QXml.() -> Unit): String = QXml(xmlString).apply(updater).serialize()
