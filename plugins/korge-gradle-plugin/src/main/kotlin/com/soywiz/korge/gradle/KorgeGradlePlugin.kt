@@ -40,6 +40,8 @@ class KorgeExtension {
     var authorEmail = "unknown@unknown"
     var authorHref = "http://localhost"
 
+    val icon: File? = File("icon.png")
+
     var fullscreen = true
 
     var backgroundColor: Int = 0xff000000.toInt()
@@ -58,13 +60,6 @@ class KorgeExtension {
     }
 }
 
-fun replaceCordovaPreference(cordovaConfig: QXml, name: String, value: String) {
-    // Remove Orientation node and set a new node
-    cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
-    cordovaConfig.appendNode("preference", mapOf("name" to name, "value" to value))
-}
-
-
 fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
     val korge = this
     cordovaConfig["name"].setValue(korge.name)
@@ -79,10 +74,19 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
         setValue(korge.authorName)
     }
 
+    fun replaceCordovaPreference(name: String, value: String) {
+        // Remove Orientation node and set a new node
+        cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
+        cordovaConfig.appendNode("preference", "name" to name, "value" to value)
+    }
+
     // https://cordova.apache.org/docs/es/latest/config_ref/
-    replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation.lc)
-    replaceCordovaPreference(cordovaConfig, "Fullscreen", korge.fullscreen.toString())
-    replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0x%08x".format(korge.backgroundColor))
+    replaceCordovaPreference("Orientation", korge.orientation.lc)
+    replaceCordovaPreference("Fullscreen", korge.fullscreen.toString())
+    replaceCordovaPreference("BackgroundColor", "0x%08x".format(korge.backgroundColor))
+
+    cordovaConfig["icon"].remove()
+    cordovaConfig.appendNode("icon", "src" to "icon.png")
 }
 
 fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
@@ -297,6 +301,17 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 task.commandLine("cordova", "create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
             }
 
+            val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon") { task ->
+                task.doLast {
+                    cordovaFolder.mkdirs()
+                    if (korge.icon != null && korge.icon.exists()) {
+                        cordovaFolder["icon.png"].writeBytes(korge.icon.readBytes())
+                    } else {
+                        cordovaFolder["icon.png"].writeBytes(KorgeGradlePlugin::class.java.getResource("/icons/korge.png").readBytes())
+                    }
+                }
+            }
+
             val cordovaAndroidInstall = project.addTask<Exec>("cordovaAndroidInstall", dependsOn = listOf(cordovaInstall)) { task ->
                 task.onlyIf { !cordovaFolder["platforms/android"].exists() }
                 task.workingDir = cordovaFolder
@@ -318,7 +333,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaInstall)) { task ->
+            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaInstall, cordovaUpdateIcon)) { task ->
                 task.doLast {
                     korge.updateCordovaXmlFile(cordovaConfigXmlFile)
                 }
@@ -338,7 +353,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            val packageJsWeb = project.addTask<Copy>("packageJsWeb", group = "korge", dependsOn = listOf(jsWeb, cordovaInstall, cordovaSynchronizeConfigXml)) { task ->
+            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf(jsWeb, cordovaInstall, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
                 //afterEvaluate {
                     task.from(project.closure { jsWeb.targetDir })
                     task.into(cordovaFolder["www"])
@@ -356,12 +371,17 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            val runAndroid = project.addTask<Exec>("runAndroid", group = "korge", dependsOn = listOf(cordovaAndroidInstall, cordovaPluginsInstall, packageJsWeb)) { task ->
+            val compileAndroid = project.addTask<Exec>("compileAndroid", group = "korge", dependsOn = listOf(cordovaAndroidInstall, cordovaPackageJsWeb)) { task ->
+                task.workingDir = cordovaFolder
+                task.commandLine("cordova", "build", "android") // prepare + compile
+            }
+
+            val runAndroid = project.addTask<Exec>("runAndroid", group = "korge", dependsOn = listOf(cordovaAndroidInstall, cordovaPackageJsWeb)) { task ->
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "run", "android")
             }
 
-            val runIos = project.addTask<Exec>("runIos", group = "korge", dependsOn = listOf(cordovaIosInstall, cordovaPluginsInstall, packageJsWeb)) { task ->
+            val runIos = project.addTask<Exec>("runIos", group = "korge", dependsOn = listOf(cordovaIosInstall, cordovaPackageJsWeb)) { task ->
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "run", "ios", "--device")
             }

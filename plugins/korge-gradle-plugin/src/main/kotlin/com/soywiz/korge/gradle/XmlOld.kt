@@ -90,12 +90,14 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 		}
 	}
 
-	fun appendNode(name: String, attributes: Map<Any?, Any?>) {
+	fun appendNode(name: String, attributes: Map<String, Any?>) {
 		when (obj) {
 			is Node -> obj.appendNode(name, attributes)
 			is NodeList -> list.forEach { it.appendNode(name, attributes) }
 		}
 	}
+
+    fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap())
 
 	operator fun get(key: String): QXml {
 		if (obj is Iterable<*>) {
