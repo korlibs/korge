@@ -31,14 +31,14 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 
 		fragment = FragmentShader {
 			DefaultShaders {
-				out setTo vec4(0f, 0f, 0f, 0f)
+				out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
 
 				for (y in 0 until 3) {
 					for (x in 0 until 3) {
 						out setTo out + (tex(
 							fragmentCoords + vec2(
-								(x - 1).toFloat(),
-								(y - 1).toFloat()
+								(x - 1).toFloat().lit,
+								(y - 1).toFloat().lit
 							)
 						)) * u_Weights[x][y]
 					}

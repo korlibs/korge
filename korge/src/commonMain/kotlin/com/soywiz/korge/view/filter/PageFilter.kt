@@ -39,25 +39,23 @@ class PageFilter(
 
     init {
         fragment = FragmentShader {
-            apply {
-                for (n in 0..1) {
-                    val vr = fragmentCoords01[n]
-                    val offset = u_Offset[n]
-                    val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
-                    val tmp = DefaultShaders.t_Temp0[n]
-                    IF(vr lt offset) {
-                        val ratio = (vr - 0.0) / offset
-                        tmp setTo mix(amplitudes[0], amplitudes[1], sin01(ratio))
-                    } ELSE {
-                        val ratio = (vr - offset) / (1.0 - offset)
-                        tmp setTo mix(amplitudes[2], amplitudes[1], sin01(1.0 + ratio))
-                    }
-                }
+			for (n in 0..1) {
+				val vr = fragmentCoords01[n]
+				val offset = u_Offset[n]
+				val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
+				val tmp = DefaultShaders.t_Temp0[n]
+				IF(vr lt offset) {
+					val ratio = (vr - 0.0.lit) / offset
+					tmp setTo mix(amplitudes[0], amplitudes[1], sin01(ratio))
+				} ELSE {
+					val ratio = (vr - offset) / (1.0.lit - offset)
+					tmp setTo mix(amplitudes[2], amplitudes[1], sin01(1.0.lit + ratio))
+				}
+			}
 
-                out setTo tex(fragmentCoords + DefaultShaders.t_Temp0["yx"])
-            }
+			out setTo tex(fragmentCoords + DefaultShaders.t_Temp0["yx"])
         }
     }
 
-	private fun Program.Builder.sin01(arg: Any) = sin(arg * (PI * 0.5))
+	private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))
 }

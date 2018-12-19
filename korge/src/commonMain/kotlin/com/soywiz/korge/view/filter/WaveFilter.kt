@@ -42,8 +42,8 @@ class WaveFilter(
 			apply {
 				val tmpx = t_Temp0.x
 				val tmpy = t_Temp0.y
-				tmpx setTo sin(PI * ((fragmentCoords01.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x))
-				tmpy setTo sin(PI * ((fragmentCoords01.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y))
+				tmpx setTo sin(PI.lit * ((fragmentCoords01.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x))
+				tmpy setTo sin(PI.lit * ((fragmentCoords01.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y))
 				out setTo tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y))
 				//out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
 			}
