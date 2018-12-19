@@ -10,15 +10,17 @@ open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit)
 	override fun getProperty(property: String): Any = "lambda"
 }
 
+inline class TaskName(val name: String)
+
 inline fun <reified T : Task> Project.addTask(
 	name: String,
 	group: String = "",
 	description: String = "",
 	overwrite: Boolean = true,
-	dependsOn: List<String> = listOf(),
+	dependsOn: List<TaskName> = listOf(),
 	noinline configure: (T) -> Unit = {}
-): Task {
-	return project.task(
+): TaskName {
+	return TaskName(project.task(
 		mapOf(
 			"type" to T::class.java,
 			"group" to group,
@@ -27,7 +29,7 @@ inline fun <reified T : Task> Project.addTask(
 		), name, LambdaClosure { it: T ->
 		configure(it)
 	}
-	).dependsOn(dependsOn)
+	).dependsOn(dependsOn.map { it.name }).name)
 }
 
 inline fun ignoreErrors(action: () -> Unit) {

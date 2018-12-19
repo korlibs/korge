@@ -260,6 +260,8 @@ class Views(
 		})
 
 		stage.invalidate()
+
+		//println("STAGE RESIZED: $this, virtualSize=$virtualSize, actualSize=$actualSize, targetSize=$targetSize")
 	}
 
 	fun dispose() {

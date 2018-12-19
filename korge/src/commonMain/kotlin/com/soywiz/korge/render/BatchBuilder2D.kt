@@ -387,6 +387,8 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
 			}
 
+			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
+
 			val factors = currentBlendFactors
 
 			vertexBuffer.upload(vertices, 0, vertexPos * 4)

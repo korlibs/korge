@@ -206,36 +206,36 @@ open class KorgeGradlePlugin : Plugin<Project> {
             }
         }
 
-        run {
-            project.addTask<Copy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
-                project.afterEvaluate {
-                    val kotlinTargets = project["kotlin"]["targets"]
-                    val jsCompilations = kotlinTargets["js"]["compilations"]
-                    task.includeEmptyDirs = false
-                    task.from("${project.buildDir}/npm/node_modules")
-                    task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs)
-                    task.exclude("**/*.kotlin_metadata", "**/*.kotlin_module", "**/*.MF", "**/*.kjsm", "**/*.map", "**/*.meta.js")
-                    for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
-                        if (file.exists() && !file.isDirectory) {
-                            task.from(project.zipTree(file.absolutePath))
-                        } else {
-                            task.from(file)
-                        }
+        val jsJar = TaskName("jsJar")
+
+        val jsWeb = project.addTask<Copy>(name = "jsWeb", dependsOn = listOf(jsJar)) { task ->
+            project.afterEvaluate {
+                val kotlinTargets = project["kotlin"]["targets"]
+                val jsCompilations = kotlinTargets["js"]["compilations"]
+                task.includeEmptyDirs = false
+                task.from("${project.buildDir}/npm/node_modules")
+                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs)
+                task.exclude("**/*.kotlin_metadata", "**/*.kotlin_module", "**/*.MF", "**/*.kjsm", "**/*.map", "**/*.meta.js")
+                for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
+                    if (file.exists() && !file.isDirectory) {
+                        task.from(project.zipTree(file.absolutePath))
+                    } else {
+                        task.from(file)
                     }
-                    for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
-                        val main = (target["compilations"]["main"] as KotlinCompilation)
-                        for (sourceSet in main.kotlinSourceSets) {
-                            task.from(sourceSet.resources)
-                        }
+                }
+                for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
+                    val main = (target["compilations"]["main"] as KotlinCompilation)
+                    for (sourceSet in main.kotlinSourceSets) {
+                        task.from(sourceSet.resources)
                     }
-                    task.into("${project.buildDir}/web")
                 }
-                task.doLast {
-                    project.buildDir["web/index.html"].writeText(SimpleTemplateEngine().createTemplate(project.buildDir["web/index.template.html"].readText()).make(mapOf(
-                            "OUTPUT" to project.name,
-                            "TITLE" to project.name
-                    )).toString())
-                }
+                task.into("${project.buildDir}/web")
+            }
+            task.doLast {
+                project.buildDir["web/index.html"].writeText(SimpleTemplateEngine().createTemplate(project.buildDir["web/index.template.html"].readText()).make(mapOf(
+                        "OUTPUT" to project.name,
+                        "TITLE" to project.name
+                )).toString())
             }
         }
 
@@ -246,24 +246,24 @@ open class KorgeGradlePlugin : Plugin<Project> {
         val korge = project.korge
 
         run {
-            project.addTask<Exec>("cordovaInstall") { task ->
+            val cordovaInstall = project.addTask<Exec>("cordovaInstall") { task ->
                 task.onlyIf { !cordovaFolder.exists() }
                 task.commandLine("cordova", "create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
             }
 
-            project.addTask<Exec>("cordovaAndroidInstall", dependsOn = listOf("cordovaInstall")) { task ->
+            val cordovaAndroidInstall = project.addTask<Exec>("cordovaAndroidInstall", dependsOn = listOf(cordovaInstall)) { task ->
                 task.onlyIf { !cordovaFolder["platforms/android"].exists() }
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "platform", "add", "android")
             }
 
-            project.addTask<Exec>("cordovaIosInstall", dependsOn = listOf("cordovaInstall")) { task ->
+            val cordovaIosInstall = project.addTask<Exec>("cordovaIosInstall", dependsOn = listOf(cordovaInstall)) { task ->
                 task.onlyIf { !cordovaFolder["platforms/ios"].exists() }
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "platform", "add", "ios")
             }
 
-            project.addTask<DefaultTask>("cordovaPluginsList", dependsOn = listOf("cordovaInstall")) { task ->
+            val cordovaPluginsList = project.addTask<DefaultTask>("cordovaPluginsList", dependsOn = listOf(cordovaInstall)) { task ->
                 task.doLast {
                     println("name: ${korge.name}")
                     println("description: ${korge.description}")
@@ -278,7 +278,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 cordovaConfig.appendNode("preference", mapOf("name" to name, "value" to value))
             }
 
-            project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf("cordovaInstall")) { task ->
+            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaInstall)) { task ->
                 task.doLast {
                     val cordovaConfigXml = cordovaConfigXmlFile.readText()
                     val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
@@ -297,7 +297,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            project.addTask<DefaultTask>("cordovaPluginsInstall", dependsOn = listOf("cordovaInstall")) { task ->
+            val cordovaPluginsInstall = project.addTask<DefaultTask>("cordovaPluginsInstall", dependsOn = listOf(cordovaInstall)) { task ->
                 task.doLast {
                     println("korge.plugins: ${korge.plugins}")
                     for (plugin in korge.plugins) {
@@ -311,7 +311,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            project.addTask<Copy>("packageJsWeb", group = "korge", dependsOn = listOf("jsWeb", "cordovaInstall", "cordovaSynchronizeConfigXml")) { task ->
+            val packageJsWeb = project.addTask<Copy>("packageJsWeb", group = "korge", dependsOn = listOf(jsWeb, cordovaInstall, cordovaSynchronizeConfigXml)) { task ->
                 task.from(project.buildDir["web"])
                 task.into(cordovaFolder["www"])
                 task.doLast {
@@ -320,25 +320,26 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            project.addTask<JavaExec>("runJvm", group = "korge") { task ->
+            val runJvm = project.addTask<JavaExec>("runJvm", group = "korge") { task ->
                 afterEvaluate {
                     task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
                     task.main = project.ext.get("mainClassName") as? String?
                 }
             }
 
-            project.addTask<Exec>("runAndroid", group = "korge", dependsOn = listOf("cordovaAndroidInstall", "cordovaPluginsInstall", "packageJsWeb")) { task ->
+            val runAndroid = project.addTask<Exec>("runAndroid", group = "korge", dependsOn = listOf(cordovaAndroidInstall, cordovaPluginsInstall, packageJsWeb)) { task ->
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "run", "android")
             }
 
-            project.addTask<Exec>("runIos", group = "korge", dependsOn = listOf("cordovaIosInstall", "cordovaPluginsInstall", "packageJsWeb")) { task ->
+            val runIos = project.addTask<Exec>("runIos", group = "korge", dependsOn = listOf(cordovaIosInstall, cordovaPluginsInstall, packageJsWeb)) { task ->
                 task.workingDir = cordovaFolder
                 task.commandLine("cordova", "run", "ios", "--device")
             }
         }
     }
 }
+
 
 abstract class KorgeBaseResourcesTask : DefaultTask() {
     var debug = false
