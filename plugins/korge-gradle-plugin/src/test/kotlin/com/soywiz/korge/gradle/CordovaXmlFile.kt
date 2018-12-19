@@ -22,6 +22,9 @@ class CordovaXmlFile {
 			this.id = "com.soywiz.myid"
 			this.version = "0.0.1"
 			this.author("demo", "demo@demo.com", "https://demo.com")
+			this.orientation = Orientation.PORTRAIT
+			this.fullscreen = false
+			this.backgroundColor = 0xFFFF3333.toInt()
 		}
 		assertEquals("""
 			<?xml version='1.0' encoding='utf-8'?>
@@ -30,9 +33,9 @@ class CordovaXmlFile {
 			  <description>undescripted</description>
 			  <author email="demo@demo.com" href="https://demo.com">demo</author>
 			  <content src="index.html"/>
-			  <preference name="Orientation" value="default"/>
-			  <preference name="Fullscreen" value="true"/>
-			  <preference name="BackgroundColor" value="0xff000000"/>
+			  <preference name="Orientation" value="portrait"/>
+			  <preference name="Fullscreen" value="false"/>
+			  <preference name="BackgroundColor" value="0xffff3333"/>
 			</widget>
 		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd())
 	}

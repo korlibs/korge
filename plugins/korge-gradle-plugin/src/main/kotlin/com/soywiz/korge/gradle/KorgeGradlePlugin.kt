@@ -42,6 +42,8 @@ class KorgeExtension {
 
     var fullscreen = true
 
+    var backgroundColor: Int = 0xff000000.toInt()
+
     @JvmOverloads
     fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
         plugins += KorgePluginDescriptor(name.toString(), args, version?.toString())
@@ -79,8 +81,8 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
 
     // https://cordova.apache.org/docs/es/latest/config_ref/
     replaceCordovaPreference(cordovaConfig, "Orientation", korge.orientation.lc)
-    replaceCordovaPreference(cordovaConfig, "Fullscreen", "true")
-    replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0xff000000")
+    replaceCordovaPreference(cordovaConfig, "Fullscreen", korge.fullscreen.toString())
+    replaceCordovaPreference(cordovaConfig, "BackgroundColor", "0x%08x".format(korge.backgroundColor))
 }
 
 fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
