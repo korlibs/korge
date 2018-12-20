@@ -3,14 +3,9 @@ matrix:
   - os: linux
     language: java
     jdk: oraclejdk8
-    env: KBUILD=linux
-    install:
-    - nvm install 8
-    - nvm use 8
-    - node --version
-    - npm -g install mocha
-    - which node
-    - which mocha
+    env:
+      KBUILD=linux
+      JAVA_OPTS=-Xmx2g
     script:
     - ./gradlew -s -i check build
   - os: windows
@@ -19,26 +14,13 @@ matrix:
     script:
     - powershell -Command "cmd /c travis_win.bat"
   - os: osx
-    env: KBUILD=macos
+    env:
+      KBUILD=macos
+      JAVA_OPTS=-Xmx2g
     language: java
-    jdk: oraclejdk8
-    install:
-    - nvm install 8
-    - nvm use 8
-    - node --version
-    - npm -g install mocha
-    - which node
-    - which mocha
+    jdk: openjdk10
+    before_install:
+    - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
     script:
     - ./gradlew -s -i check build
 
-#before_cache:
-#  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-#  - rm -f $HOME/.gradle-linux/caches/modules-2/modules-2.lock
-#  - rm -f $HOME/.gradle-win/caches/modules-2/modules-2.lock
-#
-#cache:
-#  directories:
-#    - $HOME/.gradle/caches/
-#    - $HOME/.gradle/wrapper/
-#    - $HOME/.konan
