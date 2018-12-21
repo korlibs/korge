@@ -11,8 +11,9 @@ inline fun Container.graphics(callback: Graphics.() -> Unit = {}): Graphics = Gr
 
 class Graphics : Image(Bitmaps.transparent) {
 	private val shapes = arrayListOf<Shape>()
-	private var currentPath = GraphicsPath()
 	private var fill: Context2d.Paint? = null
+	@PublishedApi
+	internal var currentPath = GraphicsPath()
 	@PublishedApi
 	internal var dirty = true
 
@@ -28,13 +29,8 @@ class Graphics : Image(Bitmaps.transparent) {
 	fun lineStyle(thickness: Double, color: RGBA, alpha: Double) = dirty {
 	}
 
-	fun moveTo(x: Double, y: Double) = dirty {
-		currentPath.moveTo(x, y)
-	}
-
-	fun lineTo(x: Double, y: Double) = dirty {
-		currentPath.lineTo(x, y)
-	}
+	inline fun moveTo(x: Number, y: Number) = dirty { currentPath.moveTo(x.toDouble(), y.toDouble()) }
+	inline fun lineTo(x: Number, y: Number) = dirty { currentPath.lineTo(x.toDouble(), y.toDouble()) }
 
 	// Inline Class ERROR: Platform declaration clash: The following declarations have the same JVM signature (beginFill(ID)Lcom/soywiz/korge/view/Graphics;):
 	//fun beginFill(color: Int, alpha: Double) = beginFill(RGBA(color), alpha)
@@ -53,30 +49,29 @@ class Graphics : Image(Bitmaps.transparent) {
 		currentPath = GraphicsPath()
 	}
 
-	fun drawCircle(x: Double, y: Double, r: Double) = dirty {
-		currentPath.circle(x, y, r)
+	inline fun drawCircle(x: Number, y: Number, r: Number) = dirty {
+		currentPath.circle(x.toDouble(), y.toDouble(), r.toDouble())
 	}
 
-	fun drawRect(x: Double, y: Double, width: Double, height: Double) = dirty {
-		currentPath.rect(x, y, width, height)
+	inline fun drawRect(x: Number, y: Number, width: Number, height: Number) = dirty {
+		currentPath.rect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 	}
 
-	fun drawShape(shape: VectorPath) = dirty {
-		currentPath.write(shape)
+	inline fun drawShape(shape: VectorPath) = dirty { currentPath.write(shape) }
+
+	inline fun drawRoundRect(x: Number, y: Number, width: Number, height: Number, rx: Number, ry: Number) = dirty {
+		currentPath.roundRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble())
 	}
 
-	fun drawRoundRect(x: Double, y: Double, width: Double, height: Double, rx: Double, ry: Double) = dirty {
-		currentPath.roundRect(x, y, width, height, rx, ry)
-	}
-
-	fun drawEllipse(x: Double, y: Double, rw: Double, rh: Double) = dirty {
-		currentPath.ellipse(x, y, rw, rh)
-	}
+	inline fun drawEllipse(x: Number, y: Number, rw: Number, rh: Number) = dirty { currentPath.ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble()) }
 
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix2d())
 		currentPath = GraphicsPath()
 	}
+
+	internal val _sLeft get() = sLeft
+	internal val _sTop get() = sTop
 
 	override var sLeft = 0.0
 	override var sTop = 0.0
@@ -87,6 +82,7 @@ class Graphics : Image(Bitmaps.transparent) {
 			val bounds = shapes.map { it.getBounds() }.bounds()
 			val image = NativeImage(bounds.width.toInt(), bounds.height.toInt())
 			image.context2d {
+				translate(-bounds.x, -bounds.y)
 				for (shape in shapes) {
 					shape.draw(this)
 				}
