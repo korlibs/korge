@@ -26,6 +26,7 @@ include ':korge'
 include ':korge-dragonbones'
 include ':korge-spriter'
 include ':korge-swf'
+include ':korge-box2d'
 
 // Build
 //include ':korge-build'

@@ -1,0 +1,4 @@
+dependencies {
+	commonMainApi "com.soywiz:kbox2d:$box2dVersion"
+	commonMainApi project(":korge")
+}

@@ -295,6 +295,11 @@ class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by v
 	}
 }
 
+fun viewsLog(callback: Stage.(log: ViewsLog) -> Unit) {
+	val log = ViewsLog()
+	callback(log.views.stage, log)
+}
+
 class ViewsLog(
 	override val coroutineContext: CoroutineDispatcher = KorgeDispatcher,
 	val injector: AsyncInjector = AsyncInjector(),
