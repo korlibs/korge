@@ -345,16 +345,16 @@ class KorgeGradleApply(val project: Project) {
                 webpackConfigJs.writeText("""
                     const path = require('path');
                     const webpack = require('webpack');
-                    const modules = '$webMinFolder';
+                    const modules = ${webMinFolder.absolutePath.quoted};
 
                     module.exports = {
                       context: modules,
-                      entry: '$webMinFolder/${project.name}.js',
+                      entry: ${"$webMinFolder/${project.name}.js".quoted},
                       resolve: {
                         modules: [ modules ],
                       },
                       output: {
-                        path: '$webMinWebpackFolder',
+                        path: ${webMinWebpackFolder.absolutePath.quoted},
                         filename: 'bundle.js'
                       },
                       target: 'node',
