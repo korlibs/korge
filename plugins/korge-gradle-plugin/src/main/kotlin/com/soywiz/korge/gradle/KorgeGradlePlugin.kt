@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinJsDce
 import java.io.*
 import java.net.*
 
@@ -128,6 +129,10 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
 
 open class KorgeGradlePlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        if (project.gradle.gradleVersion != "4.7") {
+            error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
+        }
+
         System.setProperty("java.awt.headless", "true")
 
         KorgeBuildServiceProxy.init()
@@ -160,6 +165,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
 
     private fun Project.configureKotlin() {
         plugins.apply("kotlin-multiplatform")
+        plugins.apply("kotlin-dce-js")
 
         for (preset in listOf("macosX64", "mingwX64")) {
             gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
@@ -264,36 +270,63 @@ open class KorgeGradlePlugin : Plugin<Project> {
             }
         }
 
-        val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
-            task.targetDir = project.buildDir["web"]
+        fun configureJsWeb(task: JsWebCopy, minimized: Boolean) {
+            val excludesNormal = arrayOf("**/*.kotlin_metadata","**/*.kotlin_module","**/*.MF","**/*.kjsm","**/*.map","**/*.meta.js")
+            val excludesJs = arrayOf("**/*.js")
+            val excludesAll = excludesNormal + excludesJs
+
+            fun CopySpec.configureWeb() {
+                if (minimized) {
+                    //include("**/require.min.js")
+                    exclude(*excludesAll)
+                } else {
+                    exclude(*excludesNormal)
+                }
+            }
+
+            task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
             project.afterEvaluate {
                 val kotlinTargets = project["kotlin"]["targets"]
                 val jsCompilations = kotlinTargets["js"]["compilations"]
                 task.includeEmptyDirs = false
-                task.from("${project.buildDir}/npm/node_modules")
-                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs)
-                task.exclude("**/*.kotlin_metadata", "**/*.kotlin_module", "**/*.MF", "**/*.kjsm", "**/*.map", "**/*.meta.js")
+                if (minimized) {
+                    task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.configureWeb() }
+                }
+                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs) { copy -> copy.configureWeb() }
+                task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
                 for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
                     if (file.exists() && !file.isDirectory) {
-                        task.from(project.zipTree(file.absolutePath))
+                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
+                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
                     } else {
-                        task.from(file)
+                        task.from(file) { copy -> copy.configureWeb() }
+                        task.from(file) { copy -> copy.include("**/*.min.js") }
                     }
                 }
+
                 for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
                     val main = (target["compilations"]["main"] as KotlinCompilation)
                     for (sourceSet in main.kotlinSourceSets) {
-                        task.from(sourceSet.resources)
+                        task.from(sourceSet.resources) { copy -> copy.configureWeb() }
                     }
                 }
+                //task.exclude(*excludesNormal)
                 task.into(task.targetDir)
             }
             task.doLast {
                 task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
-                        "OUTPUT" to project.name,
-                        "TITLE" to project.name
+                    "OUTPUT" to project.name,
+                    "TITLE" to project.name
                 )).toString())
             }
+        }
+
+        val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+            configureJsWeb(task, minimized = false)
+        }
+
+        val jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
+            configureJsWeb(task, minimized = true)
         }
 
         val cordovaFolder = project.buildDir["cordova"]
@@ -475,3 +508,31 @@ fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
     }
     return out.distinct()
 }
+
+// WEBPACK:
+/*
+const path = require('path');
+const webpack = require('webpack');
+//const< nodeExternals = require('webpack-node-externals');
+
+const modules = path.resolve(__dirname, 'build/kotlin-js-min/js/main');
+
+module.exports = {
+  context: modules,
+  entry: modules + '/my-catgirl-has-to-save-the-world.js',
+  resolve: {
+    modules: [ modules ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  target: 'node',
+  //externals: [nodeExternals()],
+  plugins: [
+    new webpack.IgnorePlugin(/^canvas$/),
+    //new webpack.IgnorePlugin(/^(fs|base64-js|browserify.*|canvas|net|builtin-status-codes|create-.*|diffie-hellman|iee754|inherits|isarray|crypto-.*|readable-stream|to-arraybuffer|xtend|ieee754|pbkdf2|public-encrypt|randombytes|crypto|randomfill|browser|buffer*|url|path-browserify.*|querystring.*|request|response|capability|stream-http.*|capability|buffer|buffer.*)$/)
+  ]
+};
+
+ */
