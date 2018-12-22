@@ -1,5 +1,9 @@
 package com.soywiz.korge.gradle
 
+import com.moowork.gradle.node.NodeExtension
+import com.moowork.gradle.node.exec.NodeExecRunner
+import com.moowork.gradle.node.npm.NpmTask
+import com.moowork.gradle.node.task.NodeTask
 import groovy.text.*
 import groovy.util.*
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -8,7 +12,11 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
+import org.gradle.plugins.ide.idea.IdeaPlugin
+import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
+import org.jetbrains.kotlin.backend.common.onlyIf
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -127,8 +135,17 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
     }
 }
 
-open class KorgeGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) {
+class KorgeGradleApply(val project: Project) {
+    val node_modules by lazy { project.file("node_modules") }
+    val webMinFolder by lazy { project.buildDir["web-min"] }
+    val webMinWebpackFolder by lazy { project.buildDir["web-min-webpack"] }
+
+    // Tasks
+    lateinit var jsWeb: JsWebCopy
+    lateinit var jsWebMin: JsWebCopy
+    lateinit var jsWebMinWebpack: DefaultTask
+
+    fun apply() {
         if (project.gradle.gradleVersion != "4.7") {
             error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
         }
@@ -140,10 +157,186 @@ open class KorgeGradlePlugin : Plugin<Project> {
         project.configureRepositories()
         project.configureKotlin()
         project.addKorgeTasks()
+        project.configureNode()
+        project.configureIdea()
+        project.addWeb()
 
         project.korge.init()
+    }
 
-        //for (res in project.getResourcesFolders()) println("- $res")
+
+    private fun Project.configureIdea() {
+        project.plugins.apply("idea")
+        (project["idea"] as IdeaModel).apply {
+            module { module ->
+                for (file in listOf(".gradle", "node_modules", "classes", "docs", "dependency-cache", "libs", "reports", "resources", "test-results", "tmp")) {
+                    module.excludeDirs.add(file(".gradle"))
+                }
+            }
+        }
+    }
+
+    private fun nodeExec(vararg args: Any): ExecResult {
+        return NodeExecRunner(project).apply {
+            arguments = args.toList()
+        }.execute()
+    }
+
+    private fun Project.configureNode() {
+        plugins.apply("com.moowork.node")
+
+        (project["node"] as NodeExtension).apply {
+            //this.version = "10.14.2"
+            //this.download = true
+            this.download = false
+            //this.nodeModulesDir = java.io.File(project.buildDir, "npm")
+        }
+
+        val jsInstallMocha = project.addTask<NpmTask>("jsInstallMocha") { task ->
+            task.onlyIf { !node_modules["/mocha"].exists() }
+            task.setArgs(listOf("install", "mocha@5.2.0"))
+        }
+
+        val jsInstallWebpack = project.addTask<NpmTask>("jsInstallWebpack") { task ->
+            task.onlyIf { !node_modules["webpack"].exists() }
+            task.setArgs(listOf("install", "webpack@4.28.2", "webpack-cli@3.1.2"))
+        }
+
+        val jsCompilations = project["kotlin"]["targets"]["js"]["compilations"]
+
+        val populateNodeModules = project.addTask<DefaultTask>("populateNodeModules") { task ->
+            task.doLast {
+                copy { copy ->
+
+                    //copy.from("$buildDir/npm/node_modules")
+                    copy.from(jsCompilations["main"]["output"]["allOutputs"])
+                    (jsCompilations["test"]["runtimeDependencyFiles"] as Iterable<File>).forEach {
+                        if (it.exists() && !it.isDirectory()) {
+                            copy.from(zipTree(it.absolutePath).matching { it.include("*.js") })
+                        }
+                    }
+                    copy.into(node_modules)
+                }
+            }
+        }
+
+        val runMocha = project.addTask<NodeTask>("runMocha", dependsOn = listOf(
+            jsCompilations["test"]["compileKotlinTaskName"],
+            jsInstallMocha,
+            populateNodeModules
+        )) { task ->
+            task.setScript(node_modules["mocha/bin/mocha"])
+            task.setArgs(listOf("--timeout", "15000", relativePath("${(jsCompilations["test"]["output"]["classesDirs"] as Iterable<File>).first()}/${project.name}_test.js")))
+        }
+
+        // Only run JS tests if not in windows
+        if (!org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+            project.tasks.getByName("jsTest")?.dependsOn(runMocha)
+        }
+    }
+
+    private fun Project.addWeb() {
+
+        fun configureJsWeb(task: JsWebCopy, minimized: Boolean) {
+            val excludesNormal = arrayOf("**/*.kotlin_metadata","**/*.kotlin_module","**/*.MF","**/*.kjsm","**/*.map","**/*.meta.js")
+            val excludesJs = arrayOf("**/*.js")
+            val excludesAll = excludesNormal + excludesJs
+
+            fun CopySpec.configureWeb() {
+                if (minimized) {
+                    //include("**/require.min.js")
+                    exclude(*excludesAll)
+                } else {
+                    exclude(*excludesNormal)
+                }
+            }
+
+            task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
+            project.afterEvaluate {
+                val kotlinTargets = project["kotlin"]["targets"]
+                val jsCompilations = kotlinTargets["js"]["compilations"]
+                task.includeEmptyDirs = false
+                if (minimized) {
+                    task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
+                }
+                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs) { copy -> copy.configureWeb() }
+                task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
+                for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
+                    if (file.exists() && !file.isDirectory) {
+                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
+                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
+                    } else {
+                        task.from(file) { copy -> copy.configureWeb() }
+                        task.from(file) { copy -> copy.include("**/*.min.js") }
+                    }
+                }
+
+                for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
+                    val main = (target["compilations"]["main"] as KotlinCompilation)
+                    for (sourceSet in main.kotlinSourceSets) {
+                        task.from(sourceSet.resources) { copy -> copy.configureWeb() }
+                    }
+                }
+                //task.exclude(*excludesNormal)
+                task.into(task.targetDir)
+            }
+            task.doLast {
+                task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
+                    "OUTPUT" to project.name,
+                    "TITLE" to project.name
+                )).toString())
+            }
+        }
+
+        jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+            configureJsWeb(task, minimized = false)
+        }
+
+        jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
+            configureJsWeb(task, minimized = true)
+        }
+
+        jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf(
+            "jsInstallWebpack",
+            "jsWebMin"
+        )) { task ->
+            task.doLast {
+                copy { copy ->
+                    copy.from(webMinFolder)
+                    copy.into(webMinWebpackFolder)
+                    copy.exclude("**/*.js", "**/index.template.html", "**/index.html")
+                }
+
+                val webpackConfigJs = buildDir["webpack.config.js"]
+
+                webpackConfigJs.writeText("""
+                    const path = require('path');
+                    const webpack = require('webpack');
+                    const modules = '$webMinFolder';
+
+                    module.exports = {
+                      context: modules,
+                      entry: '$webMinFolder/${project.name}.js',
+                      resolve: {
+                        modules: [ modules ],
+                      },
+                      output: {
+                        path: '$webMinWebpackFolder',
+                        filename: 'bundle.js'
+                      },
+                      target: 'node',
+                      plugins: [
+                        new webpack.IgnorePlugin(/^canvas${'$'}/)
+                      ]
+                    };
+                """.trimIndent())
+
+                nodeExec(node_modules["webpack/bin/webpack.js"], "--config", webpackConfigJs)
+
+                val indexHtml = webMinFolder["index.html"].readText()
+                webMinWebpackFolder["index.html"].writeText(indexHtml.replace(Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"), "<script src=\"bundle.js\" type=\"text/javascript\"></script>"))
+            }
+        }
     }
 
     private fun Project.addVersionExtension() {
@@ -194,6 +387,14 @@ open class KorgeGradlePlugin : Plugin<Project> {
         project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
         project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
 
+        project.dependencies.add("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
+        project.dependencies.add("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
+
+        project.dependencies.add("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+        project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+        project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
+
+
         //println("com.soywiz:korge:$korgeVersion")
         //project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
 
@@ -216,9 +417,9 @@ open class KorgeGradlePlugin : Plugin<Project> {
 
         run {
             project.addTask<KorgeResourcesTask>(
-                    "genResources", group = "korge", description = "process resources",
-                    //overwrite = true, dependsOn = listOf("build")
-                    overwrite = true, dependsOn = listOf()
+                "genResources", group = "korge", description = "process resources",
+                //overwrite = true, dependsOn = listOf("build")
+                overwrite = true, dependsOn = listOf()
             ) {
                 it.debug = true
             }
@@ -230,9 +431,9 @@ open class KorgeGradlePlugin : Plugin<Project> {
 
         run {
             project.addTask<KorgeTestResourcesTask>(
-                    "genTestResources", group = "korge", description = "process test resources",
-                    //overwrite = true, dependsOn = listOf("build")
-                    overwrite = true, dependsOn = listOf()
+                "genTestResources", group = "korge", description = "process test resources",
+                //overwrite = true, dependsOn = listOf("build")
+                overwrite = true, dependsOn = listOf()
             ) {
                 it.debug = true
             }
@@ -253,9 +454,9 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 project.afterEvaluate {
                     task.manifest { manifest ->
                         manifest.attributes(mapOf(
-                                "Implementation-Title" to project.ext.get("mainClassName"),
-                                "Implementation-Version" to project.version.toString(),
-                                "Main-Class" to project.ext.get("mainClassName")
+                            "Implementation-Title" to project.ext.get("mainClassName"),
+                            "Implementation-Version" to project.version.toString(),
+                            "Main-Class" to project.ext.get("mainClassName")
                         ))
                     }
                     task.baseName = "${project.name}-all"
@@ -268,65 +469,6 @@ open class KorgeGradlePlugin : Plugin<Project> {
                     task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
                 }
             }
-        }
-
-        fun configureJsWeb(task: JsWebCopy, minimized: Boolean) {
-            val excludesNormal = arrayOf("**/*.kotlin_metadata","**/*.kotlin_module","**/*.MF","**/*.kjsm","**/*.map","**/*.meta.js")
-            val excludesJs = arrayOf("**/*.js")
-            val excludesAll = excludesNormal + excludesJs
-
-            fun CopySpec.configureWeb() {
-                if (minimized) {
-                    //include("**/require.min.js")
-                    exclude(*excludesAll)
-                } else {
-                    exclude(*excludesNormal)
-                }
-            }
-
-            task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
-            project.afterEvaluate {
-                val kotlinTargets = project["kotlin"]["targets"]
-                val jsCompilations = kotlinTargets["js"]["compilations"]
-                task.includeEmptyDirs = false
-                if (minimized) {
-                    task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.configureWeb() }
-                }
-                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs) { copy -> copy.configureWeb() }
-                task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
-                for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
-                    if (file.exists() && !file.isDirectory) {
-                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
-                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
-                    } else {
-                        task.from(file) { copy -> copy.configureWeb() }
-                        task.from(file) { copy -> copy.include("**/*.min.js") }
-                    }
-                }
-
-                for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
-                    val main = (target["compilations"]["main"] as KotlinCompilation)
-                    for (sourceSet in main.kotlinSourceSets) {
-                        task.from(sourceSet.resources) { copy -> copy.configureWeb() }
-                    }
-                }
-                //task.exclude(*excludesNormal)
-                task.into(task.targetDir)
-            }
-            task.doLast {
-                task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
-                    "OUTPUT" to project.name,
-                    "TITLE" to project.name
-                )).toString())
-            }
-        }
-
-        val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
-            configureJsWeb(task, minimized = false)
-        }
-
-        val jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
-            configureJsWeb(task, minimized = true)
         }
 
         val cordovaFolder = project.buildDir["cordova"]
@@ -396,10 +538,11 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf(jsWeb, cordovaInstall, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
+            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf("jsWebMinWebpack", cordovaInstall, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
                 //afterEvaluate {
-                    task.from(project.closure { jsWeb.targetDir })
-                    task.into(cordovaFolder["www"])
+                //task.from(project.closure { jsWeb.targetDir })
+                task.from(project.closure { webMinWebpackFolder })
+                task.into(cordovaFolder["www"])
                 //}
                 task.doLast {
                     val f = cordovaFolder["www/index.html"]
@@ -439,6 +582,14 @@ open class KorgeGradlePlugin : Plugin<Project> {
                 task.commandLineCompat("cordova", "run", "ios", "--device")
             }
         }
+    }
+}
+
+open class KorgeGradlePlugin : Plugin<Project> {
+    override fun apply(project: Project) {
+        KorgeGradleApply(project).apply()
+
+        //for (res in project.getResourcesFolders()) println("- $res")
     }
 }
 
@@ -508,31 +659,3 @@ fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
     }
     return out.distinct()
 }
-
-// WEBPACK:
-/*
-const path = require('path');
-const webpack = require('webpack');
-//const< nodeExternals = require('webpack-node-externals');
-
-const modules = path.resolve(__dirname, 'build/kotlin-js-min/js/main');
-
-module.exports = {
-  context: modules,
-  entry: modules + '/my-catgirl-has-to-save-the-world.js',
-  resolve: {
-    modules: [ modules ],
-  },
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
-  },
-  target: 'node',
-  //externals: [nodeExternals()],
-  plugins: [
-    new webpack.IgnorePlugin(/^canvas$/),
-    //new webpack.IgnorePlugin(/^(fs|base64-js|browserify.*|canvas|net|builtin-status-codes|create-.*|diffie-hellman|iee754|inherits|isarray|crypto-.*|readable-stream|to-arraybuffer|xtend|ieee754|pbkdf2|public-encrypt|randombytes|crypto|randomfill|browser|buffer*|url|path-browserify.*|querystring.*|request|response|capability|stream-http.*|capability|buffer|buffer.*)$/)
-  ]
-};
-
- */

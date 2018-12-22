@@ -17,7 +17,7 @@ inline fun <reified T : Task> Project.addTask(
 	group: String = "",
 	description: String = "",
 	overwrite: Boolean = true,
-	dependsOn: List<Any> = listOf(),
+	dependsOn: List<Any?> = listOf(),
 	noinline configure: (T) -> Unit = {}
 ): T {
 	return project.task(
