@@ -197,6 +197,11 @@ class KorgeGradleApply(val project: Project) {
             task.setArgs(listOf("install", "mocha@5.2.0"))
         }
 
+        val jsInstallCanvas = project.addTask<NpmTask>("jsInstallCanvas") { task ->
+            task.onlyIf { !node_modules["/canvas"].exists() }
+            task.setArgs(listOf("install", "canvas@2.2.0"))
+        }
+
         val jsInstallWebpack = project.addTask<NpmTask>("jsInstallWebpack") { task ->
             task.onlyIf { !node_modules["webpack"].exists() }
             task.setArgs(listOf("install", "webpack@4.28.2", "webpack-cli@3.1.2"))
@@ -222,7 +227,7 @@ class KorgeGradleApply(val project: Project) {
 
         val runMocha = project.addTask<NodeTask>("runMocha", dependsOn = listOf(
             jsCompilations["test"]["compileKotlinTaskName"],
-            jsInstallMocha,
+            jsInstallMocha, jsInstallCanvas,
             populateNodeModules
         )) { task ->
             task.setScript(node_modules["mocha/bin/mocha"])
