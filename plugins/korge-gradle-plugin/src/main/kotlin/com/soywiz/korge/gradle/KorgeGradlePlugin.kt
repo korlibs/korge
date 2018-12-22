@@ -13,11 +13,9 @@ import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.file.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
-import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
-import org.jetbrains.kotlin.backend.common.onlyIf
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -180,8 +178,9 @@ class KorgeGradleApply(val project: Project) {
         }
     }
 
-    private fun nodeExec(vararg args: Any): ExecResult {
+    private fun nodeExec(vararg args: Any, workingDir: File? = null): ExecResult {
         return NodeExecRunner(project).apply {
+            this.workingDir = workingDir ?: this.workingDir
             this.environment += mapOf(
                 "NODE_PATH" to node_modules
             )
@@ -512,15 +511,24 @@ class KorgeGradleApply(val project: Project) {
         val korge = project.korge
 
         run {
-            val cordovaInstall = project.addTask<Exec>("cordovaInstall") { task ->
+            val cordova_bin = node_modules["cordova/bin/cordova"]
+
+            fun NodeTask.setCordova(vararg args: String) {
+                setWorkingDir(cordovaFolder)
+                setScript(cordova_bin)
+                setArgs(listOf(*args))
+            }
+
+            val cordovaCreate = project.addTask<NodeTask>("cordovaCreate", dependsOn = listOf("jsInstallCordova")) { task ->
                 task.onlyIf { !cordovaFolder.exists() }
                 task.doFirst {
                     buildDir.mkdirs()
                 }
-                task.commandLineCompat("cordova", "create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
+                task.setCordova("create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
+                task.setWorkingDir(project.projectDir)
             }
 
-            val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon", dependsOn = listOf(cordovaInstall)) { task ->
+            val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon", dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
                     cordovaFolder.mkdirs()
                     if (korge.icon != null && korge.icon.exists()) {
@@ -531,7 +539,7 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val cordovaPluginsList = project.addTask<DefaultTask>("cordovaPluginsList", dependsOn = listOf(cordovaInstall)) { task ->
+            val cordovaPluginsList = project.addTask<DefaultTask>("cordovaPluginsList", dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
                     println("name: ${korge.name}")
                     println("description: ${korge.description}")
@@ -540,22 +548,21 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaInstall, cordovaUpdateIcon)) { task ->
+            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaCreate, cordovaUpdateIcon)) { task ->
                 task.doLast {
                     korge.updateCordovaXmlFile(cordovaConfigXmlFile)
                 }
             }
 
-            val cordovaPluginsInstall = project.addTask<DefaultTask>("cordovaPluginsInstall", dependsOn = listOf(cordovaInstall)) { task ->
+            val cordovaPluginsInstall = project.addTask<Task>("cordovaPluginsInstall", dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
                     println("korge.plugins: ${korge.plugins}")
                     for (plugin in korge.plugins) {
                         val list = plugin.args.flatMap { listOf("--variable", "${it.key}=${it.value}") }.toTypedArray()
-                        project.exec {
-                            it.workingDir(cordovaFolder)
-                            println(listOf("cordova", "plugin", "add", plugin.name, "--save", *list))
-                            it.commandLineCompat("cordova", "plugin", "add", plugin.name, "--save", *list)
-                        }
+                        nodeExec(
+                            cordova_bin, "plugin", "add", plugin.name, "--save", *list,
+                            workingDir = cordovaFolder
+                        )
                     }
                 }
             }
@@ -567,7 +574,7 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf("jsWebMinWebpack", cordovaInstall, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
+            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf("jsWebMinWebpack", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
                 //afterEvaluate {
                 //task.from(project.closure { jsWeb.targetDir })
                 task.from(project.closure { webMinWebpackFolder })
@@ -582,30 +589,25 @@ class KorgeGradleApply(val project: Project) {
             for (target in listOf("ios", "android", "browser", "osx", "windows")) {
                 val Target = target.capitalize()
 
-                val cordovaTargetInstall = project.addTask<Exec>("cordova${Target}Install", dependsOn = listOf(cordovaInstall)) { task ->
+                val cordovaTargetInstall = project.addTask<NodeTask>("cordova${Target}Install", dependsOn = listOf(cordovaCreate)) { task ->
                     task.onlyIf { !cordovaFolder["platforms/$target"].exists() }
-                    task.workingDir = cordovaFolder
-                    task.commandLineCompat("cordova", "platform", "add", target)
+                    task.setCordova("platform", "add", target)
                 }
 
-                val compileTarget = project.addTask<Exec>("compile$Target", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.workingDir = cordovaFolder
-                    task.commandLineCompat("cordova", "build", target) // prepare + compile
+                val compileTarget = project.addTask<NodeTask>("compile$Target", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                    task.setCordova("build", target) // prepare + compile
                 }
 
-                val compileTargetRelease = project.addTask<Exec>("compile${Target}Release", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.workingDir = cordovaFolder
-                    task.commandLineCompat("cordova", "build", target, "--release") // prepare + compile
+                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                    task.setCordova("build", target, "--release") // prepare + compile
                 }
 
-                val runTarget = project.addTask<Exec>("run${Target}", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.workingDir = cordovaFolder
-                    task.commandLineCompat("cordova", "run", target, "--device")
+                val runTarget = project.addTask<NodeTask>("run${Target}", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                    task.setCordova("run", target, "--device")
                 }
 
-                val runTargetEmulator = project.addTask<Exec>("run${Target}Emulator", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.workingDir = cordovaFolder
-                    task.commandLineCompat("cordova", "run", target, "--emulator")
+                val runTargetEmulator = project.addTask<NodeTask>("run${Target}Emulator", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                    task.setCordova("run", target, "--emulator")
                 }
             }
         }
