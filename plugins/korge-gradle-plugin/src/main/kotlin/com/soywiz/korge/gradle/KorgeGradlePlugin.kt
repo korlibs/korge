@@ -283,7 +283,7 @@ class KorgeGradleApply(val project: Project) {
             task.doLast {
                 task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
                     "OUTPUT" to project.name,
-                    "TITLE" to project.name
+                    "TITLE" to korge.name
                 )).toString())
             }
         }
