@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinJsDce
+import proguard.gradle.ProGuardTask
 import java.io.*
 import java.net.*
 
@@ -162,6 +163,7 @@ class KorgeGradleApply(val project: Project) {
         project.configureNode()
         project.configureIdea()
         project.addWeb()
+        project.addProguard()
 
         project.korge.init()
     }
@@ -269,7 +271,6 @@ class KorgeGradleApply(val project: Project) {
     }
 
     private fun Project.addWeb() {
-
         fun configureJsWeb(task: JsWebCopy, minimized: Boolean) {
             val excludesNormal = arrayOf("**/*.kotlin_metadata","**/*.kotlin_module","**/*.MF","**/*.kjsm","**/*.map","**/*.meta.js")
             val excludesJs = arrayOf("**/*.js")
@@ -368,6 +369,62 @@ class KorgeGradleApply(val project: Project) {
 
                 val indexHtml = webMinFolder["index.html"].readText()
                 webMinWebpackFolder["index.html"].writeText(indexHtml.replace(Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"), "<script src=\"bundle.js\" type=\"text/javascript\"></script>"))
+            }
+        }
+    }
+
+    private fun Project.addProguard() {
+        // Provide default mainClassName
+        if (!project.ext.has("mainClassName")) {
+            project.ext.set("mainClassName", "")
+        }
+
+        // packageJvmFatJar
+        val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = "korge") { task ->
+            task.baseName = "${project.name}-all"
+            project.afterEvaluate {
+                task.manifest { manifest ->
+                    manifest.attributes(mapOf(
+                        "Implementation-Title" to project.ext.get("mainClassName"),
+                        "Implementation-Version" to project.version.toString(),
+                        "Main-Class" to project.ext.get("mainClassName")
+                    ))
+                }
+                //it.from()
+                //fileTree()
+                task.from(GroovyClosure(project) {
+                    (project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
+                    //listOf<File>()
+                })
+                task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+            }
+        }
+
+        val runJvm = tasks.getByName("runJvm") as JavaExec
+
+        project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = "korge", dependsOn = listOf(packageJvmFatJar)) { task ->
+            task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
+            task.injars(packageJvmFatJar.outputs.files.toList())
+            task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
+            task.dontwarn()
+            task.ignorewarnings()
+            //task.dontobfuscate()
+            task.assumenosideeffects("""
+                class kotlin.jvm.internal.Intrinsics {
+                    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
+                }
+            """.trimIndent())
+
+            //task.keep("class jogamp.nativetag.**")
+            //task.keep("class jogamp.**")
+
+            task.keep("class com.jogamp.** { *; }")
+            task.keep("class jogamp.** { *; }")
+
+            afterEvaluate {
+                task.keep("""public class ${runJvm.main} {
+                    public static void main(java.lang.String[]);
+                }""")
             }
         }
     }
@@ -473,34 +530,6 @@ class KorgeGradleApply(val project: Project) {
             try {
                 project.tasks["processTestResources"].dependsOn("genTestResources")
             } catch (e: UnknownTaskException) {
-            }
-        }
-
-        run {
-            // Provide default mainClassName
-            if (!project.ext.has("mainClassName")) {
-                project.ext.set("mainClassName", "")
-            }
-
-            // packageJvmFatJar
-            project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = "korge") { task ->
-                project.afterEvaluate {
-                    task.manifest { manifest ->
-                        manifest.attributes(mapOf(
-                            "Implementation-Title" to project.ext.get("mainClassName"),
-                            "Implementation-Version" to project.version.toString(),
-                            "Main-Class" to project.ext.get("mainClassName")
-                        ))
-                    }
-                    task.baseName = "${project.name}-all"
-                    //it.from()
-                    //fileTree()
-                    task.from(GroovyClosure(project) {
-                        (project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
-                        //listOf<File>()
-                    })
-                    task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
-                }
             }
         }
 
