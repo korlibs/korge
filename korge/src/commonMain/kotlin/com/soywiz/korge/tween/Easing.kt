@@ -100,7 +100,7 @@ private object Easings {
 in another module:
 
 launchImmediately {
-	//pe.simulator.emitterPos = Point2d(-10, 0)
+	//pe.simulator.emitterPos = IPoint(-10, 0)
 	//pe.tween(pe::x[400], time = 3.seconds, easing = Easing.EASE_OUT)
 	//pe.tween(pe::x[400], time = 3.seconds)
 	//pe.tween(pe::x[400], time = 3.seconds, easing = easing)

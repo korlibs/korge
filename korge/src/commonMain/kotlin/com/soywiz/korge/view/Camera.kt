@@ -2,7 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.korge.tween.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit) = Camera().addTo(this).apply(callback)
@@ -15,9 +15,9 @@ class Camera : Container() {
 		out.setTo(0, 0, width, height)
 	}
 
-	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix2d {
+	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix {
 		val destinationBounds = rect
-		val mat = this.parent?.globalMatrix?.clone() ?: Matrix2d()
+		val mat = this.parent?.globalMatrix?.clone() ?: Matrix()
 		mat.translate(-destinationBounds.x, -destinationBounds.y)
 		mat.scale(
 			width / destinationBounds.width,
@@ -28,7 +28,7 @@ class Camera : Container() {
 		return mat
 	}
 
-	fun getLocalMatrixFittingView(view: View?): Matrix2d =
+	fun getLocalMatrixFittingView(view: View?): Matrix =
 		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: Rectangle(0, 0, 100, 100))
 
 	fun setTo(view: View?) = run { this.localMatrix = getLocalMatrixFittingView(view) }

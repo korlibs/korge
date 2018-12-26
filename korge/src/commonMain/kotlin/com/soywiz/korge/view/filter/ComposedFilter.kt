@@ -2,7 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 
 class ComposedFilter(val filters: List<Filter>) : Filter() {
 	constructor(vararg filters: Filter) : this(filters.toList())
@@ -13,7 +13,7 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 
 	override fun render(
 		ctx: RenderContext,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		texture: Texture,
 		texWidth: Int,
 		texHeight: Int,
@@ -28,11 +28,11 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 		}
 	}
 
-	private val identity = Matrix2d()
+	private val identity = Matrix()
 
 	fun renderIndex(
 		ctx: RenderContext,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		texture: Texture,
 		texWidth: Int,
 		texHeight: Int,

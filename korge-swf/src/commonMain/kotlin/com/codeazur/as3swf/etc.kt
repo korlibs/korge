@@ -3,7 +3,7 @@ package com.codeazur.as3swf
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class CurvedEdge(aFrom: Point2d, var control: Point2d, aTo: Point2d, aLineStyleIdx: Int = 0, aFillStyleIdx: Int = 0) :
+class CurvedEdge(aFrom: IPoint, var control: IPoint, aTo: IPoint, aLineStyleIdx: Int = 0, aFillStyleIdx: Int = 0) :
 	StraightEdge(aFrom, aTo, aLineStyleIdx, aFillStyleIdx), IEdge {
 	override fun reverseWithNewFillStyle(newFillStyleIdx: Int) =
 		CurvedEdge(to, control, from, lineStyleIdx, newFillStyleIdx)
@@ -12,8 +12,8 @@ class CurvedEdge(aFrom: Point2d, var control: Point2d, aTo: Point2d, aLineStyleI
 }
 
 open class StraightEdge(
-	override var from: Point2d,
-	override var to: Point2d,
+	override var from: IPoint,
+	override var to: IPoint,
 	override var lineStyleIdx: Int = 0,
 	override var fillStyleIdx: Int = 0
 ) : IEdge {
@@ -24,8 +24,8 @@ open class StraightEdge(
 }
 
 interface IEdge {
-	val from: Point2d
-	val to: Point2d
+	val from: IPoint
+	val to: IPoint
 	val lineStyleIdx: Int
 	val fillStyleIdx: Int
 	fun reverseWithNewFillStyle(newFillStyleIdx: Int): IEdge

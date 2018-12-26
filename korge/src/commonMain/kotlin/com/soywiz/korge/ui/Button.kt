@@ -5,6 +5,7 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 
 class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: String = "Label") : Widget(factory, skin),
 	IText, IHtml {

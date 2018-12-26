@@ -10,7 +10,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.file.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 
 suspend fun AnLibrary.writeTo(file: VfsFile, config: AnLibrarySerializer.Config = AnLibrarySerializer.Config()) {
@@ -259,7 +259,7 @@ object AnLibrarySerializer {
 							var lastUid = -1
 							var lastName: String? = null
 							var lastColorTransform: ColorTransform = ColorTransform()
-							var lastMatrix: Matrix2d = Matrix2d()
+							var lastMatrix: Matrix = Matrix()
 							var lastClipDepth = -1
 							var lastRatio = 0.0
 							var lastBlendMode = BlendMode.INHERIT

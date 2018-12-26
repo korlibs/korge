@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 inline fun Container.image(
 	texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Image.() -> Unit = {}

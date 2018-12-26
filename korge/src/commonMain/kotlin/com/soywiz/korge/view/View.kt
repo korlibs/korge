@@ -9,10 +9,8 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.crypto.*
 import com.soywiz.korio.error.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.event.*
 import kotlin.collections.ArrayList
@@ -52,7 +50,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	}
 
 	companion object {
-		private val identity = Matrix2d()
+		private val identity = Matrix()
 
 		fun commonAncestor(left: View?, right: View?): View? {
 			var l: View? = left
@@ -97,7 +95,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	private var _skewY: Double = 0.0
 	private var _rotation: Double = 0.0
 
-	val pos = MPoint2d()
+	val pos = Point()
 
 	var x: Double
 		get() = ensureTransform().pos.x
@@ -198,7 +196,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	}
 	// endregion
 
-	private val tempTransform = Matrix2d.Transform()
+	private val tempTransform = Matrix.Transform()
 	//private val tempMatrix = Matrix2d()
 
 	private fun ensureTransform() = this.apply {
@@ -223,19 +221,19 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	var enabled: Boolean = true
 	var visible: Boolean = true
 
-	fun setMatrix(matrix: Matrix2d) {
+	fun setMatrix(matrix: Matrix) {
 		this._localMatrix.copyFrom(matrix)
 		this.validLocalProps = false
 		invalidate()
 	}
 
-	fun setMatrixInterpolated(ratio: Double, l: Matrix2d, r: Matrix2d) {
+	fun setMatrixInterpolated(ratio: Double, l: Matrix, r: Matrix) {
 		this._localMatrix.setToInterpolated(ratio, l, r)
 		this.validLocalProps = false
 		invalidate()
 	}
 
-	fun setComputedTransform(transform: Matrix2d.Computed) {
+	fun setComputedTransform(transform: Matrix.Computed) {
 		_localMatrix.copyFrom(transform.matrix)
 		_setTransform(transform.transform)
 		invalidate()
@@ -243,14 +241,14 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		validLocalMatrix = true
 	}
 
-	fun setTransform(transform: Matrix2d.Transform) {
+	fun setTransform(transform: Matrix.Transform) {
 		_setTransform(transform)
 		invalidate()
 		validLocalProps = true
 		validLocalMatrix = false
 	}
 
-	fun _setTransform(t: Matrix2d.Transform) {
+	fun _setTransform(t: Matrix.Transform) {
 		//transform.toMatrix(_localMatrix)
 		pos.x = t.x; pos.y = t.y
 		_scaleX = t.scaleX; _scaleY = t.scaleY
@@ -325,8 +323,8 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	}
 // endregion
 
-	private var _localMatrix = Matrix2d()
-	var localMatrix: Matrix2d
+	private var _localMatrix = Matrix()
+	var localMatrix: Matrix
 		get() {
 			if (!validLocalMatrix) {
 				validLocalMatrix = true
@@ -340,9 +338,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			invalidate()
 		}
 
-	private var _globalMatrix = Matrix2d()
+	private var _globalMatrix = Matrix()
 	private var _globalMatrixVersion = -1
-	var globalMatrix: Matrix2d
+	var globalMatrix: Matrix
 		get() {
 			if (_globalMatrixVersion != this._version) {
 				_globalMatrixVersion = this._version
@@ -364,14 +362,14 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			}
 		}
 
-	private val _globalMatrixInv = Matrix2d()
+	private val _globalMatrixInv = Matrix()
 	private var _globalMatrixInvVersion = -1
-	val globalMatrixInv: Matrix2d
+	val globalMatrixInv: Matrix
 		get() {
 			if (_globalMatrixInvVersion != this._version) {
 				_globalMatrixInvVersion = this._version
 				_requireInvalidate = true
-				_globalMatrixInv.setToInverse(this.globalMatrix)
+				_globalMatrixInv.invert(this.globalMatrix)
 			}
 			return _globalMatrixInv
 		}
@@ -455,9 +453,12 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		val addx = -bounds.x + borderEffect
 		val addy = -bounds.y + borderEffect
 
+		//println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
+
 		ctx.renderToTexture(texWidth, texHeight, render = {
 			tempMat2d.copyFrom(globalMatrixInv)
 			tempMat2d.translate(addx, addy)
+			//println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
 			ctx.batch.setViewMatrixTemp(tempMat2d, temp = oldViewMatrix) {
 				renderInternal(ctx)
 			}
@@ -489,26 +490,26 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	protected val Double.str get() = this.toString(2, skipTrailingZeros = true)
 
 	// Version with root-most object as reference
-	fun globalToLocal(p: Point2d, out: MPoint2d = MPoint2d()): MPoint2d = globalToLocalXY(p.x, p.y, out)
-	fun globalToLocalXY(x: Double, y: Double, out: MPoint2d = MPoint2d()): MPoint2d = this.globalMatrixInv.transform(x, y, out)
+	fun globalToLocal(p: IPoint, out: Point = Point()): Point = globalToLocalXY(p.x, p.y, out)
+	fun globalToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
 	fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
 	fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
-	fun localToGlobal(p: Point2d, out: MPoint2d = MPoint2d()): MPoint2d = localToGlobalXY(p.x, p.y, out)
-	fun localToGlobalXY(x: Double, y: Double, out: MPoint2d = MPoint2d()): MPoint2d = this.globalMatrix.transform(x, y, out)
+	fun localToGlobal(p: IPoint, out: Point = Point()): Point = localToGlobalXY(p.x, p.y, out)
+	fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
 	fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
 	fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
 	// Version with View.Reference as reference
-	fun renderToLocal(p: Point2d, out: MPoint2d = MPoint2d()): MPoint2d = renderToLocalXY(p.x, p.y, out)
-	fun renderToLocalXY(x: Double, y: Double, out: MPoint2d = MPoint2d()): MPoint2d = this.globalMatrixInv.transform(x, y, out)
+	fun renderToLocal(p: IPoint, out: Point = Point()): Point = renderToLocalXY(p.x, p.y, out)
+	fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
 	fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
 	fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
-	fun localToRender(p: Point2d, out: MPoint2d = MPoint2d()): MPoint2d = localToRenderXY(p.x, p.y, out)
-	fun localToRenderXY(x: Double, y: Double, out: MPoint2d = MPoint2d()): MPoint2d = this.globalMatrix.transform(x, y, out)
+	fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
+	fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
 	fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
 	fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
@@ -543,7 +544,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	}
 
 	open fun reset() {
-		_localMatrix.setToIdentity()
+		_localMatrix.identity()
 		pos.setTo(0.0, 0.0)
 		_scaleX = 1.0; _scaleY = 1.0
 		_skewX = 0.0; _skewY = 0.0
@@ -561,7 +562,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		index = -1
 	}
 
-	//fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
+	//fun getConcatMatrix(target: View, out: Matrix = Matrix2d()): Matrix {
 	//	var current: View? = this
 	//	out.setToIdentity()
 	//
@@ -576,9 +577,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	//	return out
 	//}
 
-	fun getConcatMatrix(target: View, out: Matrix2d = Matrix2d()): Matrix2d {
+	fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix {
 		var current: View? = this
-		out.setToIdentity()
+		out.identity()
 
 		while (current != null) {
 			//out.premultiply(current.localMatrix)
@@ -600,15 +601,22 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 		getLocalBoundsInternal(out)
 
-		val p1 = Point2d(out.left, out.top)
-		val p2 = Point2d(out.right, out.top)
-		val p3 = Point2d(out.right, out.bottom)
-		val p4 = Point2d(out.left, out.bottom)
+		val p1x = out.left
+		val p1y = out.top
 
-		bb.add(concat.transformX(p1.x, p1.y), concat.transformY(p1.x, p1.y))
-		bb.add(concat.transformX(p2.x, p2.y), concat.transformY(p2.x, p2.y))
-		bb.add(concat.transformX(p3.x, p3.y), concat.transformY(p3.x, p3.y))
-		bb.add(concat.transformX(p4.x, p4.y), concat.transformY(p4.x, p4.y))
+		val p2x = out.right
+		val p2y = out.top
+
+		val p3x = out.right
+		val p3y = out.bottom
+
+		val p4x = out.left
+		val p4y = out.bottom
+
+		bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+		bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+		bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+		bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
 
 		bb.getBounds(out)
 		return out
@@ -693,10 +701,10 @@ class ViewTransform(var view: View) {
 
 	var blendMode: BlendMode = BlendMode.INHERIT
 
-	val localMatrix: Matrix2d get() = _localMatrix
+	val localMatrix: Matrix get() = _localMatrix
 	private val _localMatrix = Matrix2d()
 
-	val globalMatrix: Matrix2d get() = _globalMatrix.value
+	val globalMatrix: Matrix get() = _globalMatrix.value
 	private val _globalMatrix = CachedMutable(Matrix2d()) {
 		if (parent != null) {
 			it.multiply(localMatrix, parent!!.globalMatrix)
@@ -705,7 +713,7 @@ class ViewTransform(var view: View) {
 		}
 	}
 
-	val renderMatrix: Matrix2d get() = _renderMatrix.value
+	val renderMatrix: Matrix get() = _renderMatrix.value
 	private val _renderMatrix = CachedMutable(Matrix2d()) {
 		if (parent != null && view !is View.Reference) {
 			it.multiply(localMatrix, parent!!.renderMatrix)
@@ -728,7 +736,7 @@ class ViewTransform(var view: View) {
 */
 
 inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
-fun View.hitTest(pos: Point2d): View? = hitTest(pos.x, pos.y)
+fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
 
 
 open class DummyView : View() {

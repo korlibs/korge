@@ -32,7 +32,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -358,7 +358,7 @@ class KorgeDbSlot(pool: BaseObjectPool) : Slot(pool) {
 		meshDisplay.updatedVertices()
 	}
 
-	private val m = Matrix2d()
+	private val m = com.soywiz.korma.geom.Matrix()
 
 	override fun _updateTransform() {
 		this.updateGlobalTransform() // Update transform.
@@ -385,7 +385,7 @@ class KorgeDbSlot(pool: BaseObjectPool) : Slot(pool) {
 	}
 
 	override fun _identityTransform() {
-		m.setToIdentity()
+		m.identity()
 		this._renderDisplay?.setMatrix(m)
 	}
 }

@@ -34,10 +34,10 @@ class TiledMapData {
 	val maxGid get() = tilesets.map { it.firstgid + it.tilecount }.max() ?: 0
 }
 
-fun TiledMap.Layer.Objects.Object.getPos(map: TiledMapData): Point2d =
-	Point2d(bounds.x / map.tilewidth, bounds.y / map.tileheight)
+fun TiledMap.Layer.Objects.Object.getPos(map: TiledMapData): IPoint =
+	IPoint(bounds.x / map.tilewidth, bounds.y / map.tileheight)
 
-fun TiledMapData?.getObjectPosByName(name: String): Point2d? {
+fun TiledMapData?.getObjectPosByName(name: String): IPoint? {
 	val obj = this?.getObjectByName(name) ?: return null
 	return obj.getPos(this)
 }
@@ -103,13 +103,13 @@ class TiledMap(
 			}
 
 			interface Poly : Object {
-				val points: List<Point2d>
+				val points: List<IPoint>
 			}
 
 			data class Rect(override val info: ObjectInfo) : Object
 			data class Ellipse(override val info: ObjectInfo) : Object
-			data class Polyline(override val info: ObjectInfo, override val points: List<Point2d>) : Poly
-			data class Polygon(override val info: ObjectInfo, override val points: List<Point2d>) : Poly
+			data class Polyline(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
+			data class Polygon(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
 
 			val objects = arrayListOf<Object>()
 			val objectsById by lazy { objects.associateBy { it.id } }
@@ -301,7 +301,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 							val type = obj.str("type")
 							val bounds = obj.run { IRectangleInt(int("x"), int("y"), int("width"), int("height")) }
 							var rkind = RKind.RECT
-							var points = listOf<Point2d>()
+							var points = listOf<IPoint>()
 							var objprops: Map<String, Any> = LinkedHashMap()
 
 							for (kind in obj.allNodeChildren) {
@@ -315,7 +315,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 										val pointsStr = kind.str("points")
 										points = pointsStr.split(spaces).map {
 											val parts = it.split(',').map { it.trim().toDoubleOrNull() ?: 0.0 }
-											Point2d(parts[0], parts[1])
+											IPoint(parts[0], parts[1])
 										}
 
 										rkind = (if (kindType == "polyline") RKind.POLYLINE else RKind.POLYGON)

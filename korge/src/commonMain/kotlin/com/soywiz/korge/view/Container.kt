@@ -3,7 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.event.*
 import kotlin.reflect.*
@@ -83,7 +83,7 @@ open class Container : View() {
 		if (view.parent == this) view.removeFromParent()
 	}
 
-	private val tempMatrix = Matrix2d()
+	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 		safeForEachChildren { child ->

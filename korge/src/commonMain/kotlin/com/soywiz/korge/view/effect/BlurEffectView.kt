@@ -4,21 +4,21 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 
 class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 	companion object {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
 
-		val KERNEL_GAUSSIAN_BLUR: Matrix3
-			get() = Matrix3(
+		val KERNEL_GAUSSIAN_BLUR: Matrix3D
+			get() = Matrix3D(
 				1f, 2f, 1f,
 				2f, 4f, 2f,
 				1f, 2f, 1f
 			) * (1f / 16f)
 	}
 
-	val weights by uniforms.storageForMatrix3(u_Weights, KERNEL_GAUSSIAN_BLUR)
+	val weights by uniforms.storageForMatrix3D(u_Weights, KERNEL_GAUSSIAN_BLUR)
 
 	var radius = initialRadius
 		set(value) {
@@ -47,9 +47,9 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 		}
 	}
 
-	private val identity = Matrix2d()
+	private val identity = Matrix()
 
-	fun renderFilterLevel(ctx: RenderContext, matrix: Matrix2d, texture: Texture, texWidth: Int, texHeight: Int, level: Int) {
+	fun renderFilterLevel(ctx: RenderContext, matrix: Matrix, texture: Texture, texWidth: Int, texHeight: Int, level: Int) {
 		// @TODO: We only need two render textures
 		ctx.renderToTexture(texWidth, texHeight, {
 			ctx.batch.setTemporalUniforms(this.uniforms) {
@@ -72,7 +72,7 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 		})
 	}
 
-	override fun renderFilter(ctx: RenderContext, matrix: Matrix2d, texture: Texture, texWidth: Int, texHeight: Int) {
+	override fun renderFilter(ctx: RenderContext, matrix: Matrix, texture: Texture, texWidth: Int, texHeight: Int) {
 		renderFilterLevel(ctx, matrix, texture, texWidth, texHeight, level = borderEffect)
 	}
 }

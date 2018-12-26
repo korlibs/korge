@@ -37,9 +37,9 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val onMoveAnywhere = moveAnywhere
 	val onMoveOutside = mouseOutside
 
-	val startedPos = MPoint2d()
-	val lastPos = MPoint2d()
-	val currentPos = MPoint2d()
+	val startedPos = Point()
+	val lastPos = Point()
+	val currentPos = Point()
 	var hitTest: View? = null; private set
 	private var lastOver = false
 	private var lastPressing = false
@@ -51,8 +51,8 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
 	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
-	var downPos = MPoint2d()
-	var upPos = MPoint2d()
+	var downPos = Point()
+	var upPos = Point()
 	var clickedCount = 0
 
 	private fun hitTest(views: Views): View? {

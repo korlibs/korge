@@ -32,7 +32,8 @@ import com.dragonbones.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 /**
  * @inheritDoc
@@ -115,7 +116,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 					boneDrawer.lineTo(endX, endY)
 					boneDrawer.lineStyle(0.0, Colors.BLACK, 0.0)
 					boneDrawer.beginFill(Colors.PURPLE, 0.7)
-					boneDrawer.drawCircle(startX.toDouble(), startY.toDouble(), 3.0)
+					boneDrawer.circle(startX.toDouble(), startY.toDouble(), 3.0)
 					boneDrawer.endFill()
 				}
 
@@ -138,7 +139,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 
 						when (boundingBoxData.type) {
 							BoundingBoxType.Rectangle -> {
-								child.drawRect(
+								child.rect(
 									-boundingBoxData.width * 0.5,
 									-boundingBoxData.height * 0.5,
 									boundingBoxData.width,
@@ -147,7 +148,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 							}
 
 							BoundingBoxType.Ellipse -> {
-								child.drawEllipse(
+								child.rect(
 									-boundingBoxData.width * 0.5,
 									-boundingBoxData.height * 0.5,
 									boundingBoxData.width,
@@ -182,7 +183,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 						slot.updateGlobalTransform()
 
 						val transform = slot.global
-						val m = Matrix2d()
+						val m = com.soywiz.korma.geom.Matrix()
 						slot.globalTransformMatrix.toMatrix2d(m)
 						//println("SET TRANSFORM: $transform")
 						child.setMatrix(m)

@@ -27,7 +27,7 @@ class Input : Extra by Extra.Mixin() {
 		for (touch in touches) if (touch.active) activeTouches.add(touch)
 	}
 
-	val mouse = MPoint2d(-1000.0, -1000.0)
+	val mouse = Point(-1000.0, -1000.0)
 	var mouseButtons = 0
 	var clicked = false
 	val keysRaw = BooleanArray(KEYCODES)

@@ -17,7 +17,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -82,7 +82,7 @@ class SymbolAnalyzeInfo(val characterId: Int) {
 		scaleBounds.register(max(scaleX, scaleY))
 	}
 
-	fun registerMatrix(matrix: Matrix2d) {
+	fun registerMatrix(matrix: Matrix) {
 		registerScale(abs(matrix.a), abs(matrix.d))
 	}
 }
@@ -520,7 +520,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			var name: String? = null,
 			var colorTransform: ColorTransform = ColorTransform.identity,
 			var ratio: Double = 0.0,
-			var matrix: Matrix2d = Matrix2d(),
+			var matrix: Matrix = Matrix(),
 			var blendMode: BlendMode = BlendMode.INHERIT
 		) {
 			fun reset() {
@@ -530,7 +530,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				clipDepth = -1
 				colorTransform = ColorTransform.identity
 				name = null
-				matrix = Matrix2d()
+				matrix = Matrix()
 				blendMode = BlendMode.INHERIT
 			}
 

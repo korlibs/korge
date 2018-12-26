@@ -4,7 +4,7 @@ import com.codeazur.as3swf.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.set
 import kotlin.math.*
@@ -687,8 +687,8 @@ class SWFMatrix {
 	var yscale: Double = 0.0
 	var rotation: Double = 0.0
 
-	val matrix: Matrix2d
-		get() = Matrix2d(
+	val matrix: Matrix
+		get() = Matrix(
 			scaleX,
 			rotateSkew0,
 			rotateSkew1,
@@ -717,7 +717,7 @@ class SWFMatrix {
 		translateX = data.readSB(translateBits)
 		translateY = data.readSB(translateBits)
 		// conversion to rotation, xscale, yscale
-		val px = matrix.deltaTransformPoint(Point2d(0.0, 1.0))
+		val px = matrix.deltaTransformPoint(IPoint(0.0, 1.0))
 		rotation = ((180 / PI) * atan2(px.y, px.x) - 90)
 		if (rotation < 0) rotation += 360
 		xscale = sqrt(scaleX * scaleX + rotateSkew0 * rotateSkew0)
@@ -1046,7 +1046,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 
 	var fillStyles = ArrayList<SWFFillStyle>()
 	var lineStyles = ArrayList<SWFLineStyle>()
-	var referencePoint = MPoint2d(0, 0)
+	var referencePoint = Point(0, 0)
 
 	private var fillEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
 	private var lineEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
@@ -1134,9 +1134,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		if (!edgeMapsCreated) {
 			var xPos = 0.0
 			var yPos = 0.0
-			var from: Point2d
-			var to: Point2d
-			var control: Point2d
+			var from: IPoint
+			var to: IPoint
+			var control: IPoint
 			var fillStyleIdxOffset = 0
 			var lineStyleIdxOffset = 0
 			var currentFillStyleIdx0 = 0
@@ -1200,7 +1200,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 					}
 					SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
 						val straightEdgeRecord: SWFShapeRecordStraightEdge = shapeRecord as SWFShapeRecordStraightEdge
-						from = Point2d(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+						from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
 						if (straightEdgeRecord.generalLineFlag) {
 							xPos += straightEdgeRecord.deltaX / unitDivisor
 							yPos += straightEdgeRecord.deltaY / unitDivisor
@@ -1211,18 +1211,18 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 								xPos += straightEdgeRecord.deltaX / unitDivisor
 							}
 						}
-						to = Point2d(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+						to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
 						subPath.add(StraightEdge(from, to, currentLineStyleIdx, currentFillStyleIdx1))
 					}
 					SWFShapeRecord.TYPE_CURVEDEDGE -> {
 						val curvedEdgeRecord: SWFShapeRecordCurvedEdge = shapeRecord as SWFShapeRecordCurvedEdge
-						from = Point2d(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+						from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
 						val xPosControl: Double = xPos + curvedEdgeRecord.controlDeltaX / unitDivisor
 						val yPosControl: Double = yPos + curvedEdgeRecord.controlDeltaY / unitDivisor
 						xPos = xPosControl + curvedEdgeRecord.anchorDeltaX / unitDivisor
 						yPos = yPosControl + curvedEdgeRecord.anchorDeltaY / unitDivisor
-						control = Point2d(xPosControl, yPosControl)
-						to = Point2d(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+						control = IPoint(xPosControl, yPosControl)
+						to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
 						subPath.add(CurvedEdge(from, control, to, currentLineStyleIdx, currentFillStyleIdx1))
 					}
 					SWFShapeRecord.TYPE_END -> {
@@ -1277,7 +1277,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 
 	protected fun exportFillPath(handler: ShapeExporter, groupIndex: Int) {
 		val path: ArrayList<IEdge> = createPathFromEdgeMap(fillEdgeMaps[groupIndex])
-		var pos = Point2d(Int.MAX_VALUE, Int.MAX_VALUE)
+		var pos = IPoint(Int.MAX_VALUE, Int.MAX_VALUE)
 		var fillStyleIdx: Int = Int.MAX_VALUE
 		if (path.size > 0) {
 			handler.beginFills()
@@ -1286,9 +1286,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 				if (fillStyleIdx != e.fillStyleIdx) {
 					if (fillStyleIdx != Int.MAX_VALUE) handler.endFill()
 					fillStyleIdx = e.fillStyleIdx
-					pos = Point2d(Int.MAX_VALUE, Int.MAX_VALUE)
+					pos = IPoint(Int.MAX_VALUE, Int.MAX_VALUE)
 					try {
-						var matrix: Matrix2d
+						var matrix: Matrix
 						val fillStyle: SWFFillStyle = fillStyles[fillStyleIdx - 1]
 						when (fillStyle.type) {
 							0x00 -> {
@@ -1323,7 +1323,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							0x43 -> {
 								// Bitmap fill
 								val m = fillStyle.bitmapMatrix!!
-								matrix = Matrix2d()
+								matrix = Matrix()
 								matrix.createBox(
 									m.xscale / 20,
 									m.yscale / 20,
@@ -1363,16 +1363,16 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 
 	protected fun exportLinePath(handler: ShapeExporter, groupIndex: Int) {
 		val path = createPathFromEdgeMap(lineEdgeMaps[groupIndex])
-		var pos = Point2d(Int.MAX_VALUE, Int.MAX_VALUE)
+		var pos = IPoint(Int.MAX_VALUE, Int.MAX_VALUE)
 		var lineStyleIdx = Int.MAX_VALUE
 		if (path.size > 0) {
 			handler.beginLines()
-			var basePoint: Point2d? = null
+			var basePoint: IPoint? = null
 			for (i in 0 until path.size) {
 				val e: IEdge = path[i]
 				if (lineStyleIdx != e.lineStyleIdx) {
 					lineStyleIdx = e.lineStyleIdx
-					pos = Point2d(Int.MAX_VALUE, Int.MAX_VALUE)
+					pos = IPoint(Int.MAX_VALUE, Int.MAX_VALUE)
 					val lineStyle = try {
 						lineStyles[lineStyleIdx - 1]
 					} catch (e: Error) {
@@ -1495,7 +1495,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	protected fun createCoordMap(path: ArrayList<IEdge>) {
 		coordMap = hashMapOf()
 		for (i in 0 until path.size) {
-			val from: Point2d = path[i].from
+			val from: IPoint = path[i].from
 			val key = "${from.x}_${from.y}"
 			val coordMapArray = coordMap[key]
 			if (coordMapArray == null) {

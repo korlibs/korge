@@ -2,7 +2,7 @@ package com.codeazur.as3swf
 
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 
 open class ShapeExporter {
@@ -16,7 +16,7 @@ open class ShapeExporter {
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d = Matrix2d(),
+		matrix: Matrix = Matrix(),
 		spreadMethod: GradientSpreadMode = GradientSpreadMode.PAD,
 		interpolationMethod: GradientInterpolationMode = GradientInterpolationMode.NORMAL,
 		focalPointRatio: Double = 0.0
@@ -24,7 +24,7 @@ open class ShapeExporter {
 
 	open fun beginBitmapFill(
 		bitmapId: Int,
-		matrix: Matrix2d = Matrix2d(),
+		matrix: Matrix = Matrix(),
 		repeat: Boolean = true,
 		smooth: Boolean = false
 	) = Unit
@@ -50,7 +50,7 @@ open class ShapeExporter {
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d = Matrix2d(),
+		matrix: Matrix = Matrix(),
 		spreadMethod: GradientSpreadMode = GradientSpreadMode.PAD,
 		interpolationMethod: GradientInterpolationMode = GradientInterpolationMode.NORMAL,
 		focalPointRatio: Double = 0.0
@@ -83,7 +83,7 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double
@@ -100,7 +100,7 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 		)
 	}
 
-	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
+	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix, repeat: Boolean, smooth: Boolean) {
 		log("beginBitmapFill($bitmapId, $matrix, $repeat, $smooth)").parent.beginBitmapFill(
 			bitmapId,
 			matrix,
@@ -139,7 +139,7 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double

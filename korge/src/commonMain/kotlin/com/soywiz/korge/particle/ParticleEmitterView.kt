@@ -7,11 +7,11 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.particleEmitter(
-	emitter: ParticleEmitter, emitterPos: Point2d = Point2d(),
+	emitter: ParticleEmitter, emitterPos: IPoint = IPoint(),
 	callback: @ViewsDslMarker ParticleEmitterView.() -> Unit = {}
 ) = ParticleEmitterView(emitter, emitterPos).addTo(this).apply(callback)
 
-class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: Point2d = Point2d()) : View() {
+class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View() {
 	val simulator = ParticleEmitter.Simulator(emitter, emitterPos)
 
 	var timeUntilStop by simulator::timeUntilStop.redirect()

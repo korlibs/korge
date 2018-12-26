@@ -4,14 +4,14 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 
 open class EffectView : Container() {
 	var filtering = true
-	private val oldViewMatrix = Matrix4()
+	private val oldViewMatrix = Matrix3D()
 	open var borderEffect = 0
-	private val tempMat2d = Matrix2d()
+	private val tempMat2d = Matrix()
 	var vertex: VertexShader = BatchBuilder2D.VERTEX
 		set(value) {
 			field = value
@@ -84,7 +84,7 @@ open class EffectView : Container() {
 		}
 	}
 
-	open fun renderFilter(ctx: RenderContext, matrix: Matrix2d, texture: Texture, texWidth: Int, texHeight: Int) {
+	open fun renderFilter(ctx: RenderContext, matrix: Matrix, texture: Texture, texWidth: Int, texHeight: Int) {
 		ctx.batch.setTemporalUniforms(this.uniforms) {
 			ctx.batch.drawQuad(
 				texture,

@@ -19,15 +19,15 @@ class ParticleEmitter() {
 	enum class Type { GRAVITY, RADIAL }
 
 	var texture: BmpSlice? = null
-	var sourcePosition = Point2d()
-	var sourcePositionVariance = Point2d()
+	var sourcePosition = IPoint()
+	var sourcePositionVariance = IPoint()
 	var speed = 0.0
 	var speedVariance = 0.0
 	var lifeSpan = 0.0
 	var lifespanVariance = 0.0
 	var angle = 0.0
 	var angleVariance = 0.0
-	var gravity = Point2d()
+	var gravity = IPoint()
 	var radialAcceleration = 0.0
 	var tangentialAcceleration = 0.0
 	var radialAccelVariance = 0.0
@@ -56,7 +56,7 @@ class ParticleEmitter() {
 	var rotationEndVariance = 0.0
 
 	fun create(x: Double = 0.0, y: Double = 0.0, time: Int = Int.MAX_VALUE): ParticleEmitterView =
-		ParticleEmitterView(this, Point2d(x, y)).apply {
+		ParticleEmitterView(this, IPoint(x, y)).apply {
 			this.timeUntilStop = time
 		}
 
@@ -67,7 +67,7 @@ class ParticleEmitter() {
 		var blendFuncDestination = AG.BlendFactor.ONE
 
 		for (item in particleXml.allChildrenNoComments) {
-			fun point() = Point2d(item.double("x"), item.double("y"))
+			fun point() = IPoint(item.double("x"), item.double("y"))
 			fun scalar() = item.double("value")
 			fun blendFactor() = when (scalar().toInt()) {
 				0 -> AG.BlendFactor.ZERO
@@ -175,10 +175,10 @@ class ParticleEmitter() {
 
 	class Simulator(
 		private val emitter: ParticleEmitter,
-		var emitterPos: Point2d = Point2d(),
+		var emitterPos: IPoint = IPoint(),
 		val seed: Long = Random.nextLong()
 	) {
-		val random = MtRandom(seed)
+		val random = Random(seed)
 		var totalElapsedTime = 0
 		var timeUntilStop = Int.MAX_VALUE
 		var emitting = true

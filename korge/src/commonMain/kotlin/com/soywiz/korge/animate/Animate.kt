@@ -11,7 +11,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.math.*
@@ -36,8 +36,8 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
 
-	val posCuts = arrayOf(MPoint2d(0.0, 0.0), MPoint2d(0.25, 0.25), MPoint2d(0.75, 0.75), MPoint2d(1.0, 1.0))
-	val texCuts = arrayOf(MPoint2d(0.0, 0.0), MPoint2d(0.25, 0.25), MPoint2d(0.75, 0.75), MPoint2d(1.0, 1.0))
+	val posCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
+	val texCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
@@ -452,7 +452,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		//val STATE_CONTENT = STATE_NONE
 	}
 
-	private val tempMatrix = Matrix2d()
+	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 

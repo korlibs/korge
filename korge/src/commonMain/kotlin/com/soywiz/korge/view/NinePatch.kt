@@ -25,17 +25,17 @@ class NinePatch(
 	private val sTop = 0.0
 
 	val posCuts = arrayOf(
-		MPoint2d(0, 0),
-		MPoint2d(left, top),
-		MPoint2d(1.0 - right, 1.0 - bottom),
-		MPoint2d(1.0, 1.0)
+		Point(0, 0),
+		Point(left, top),
+		Point(1.0 - right, 1.0 - bottom),
+		Point(1.0, 1.0)
 	)
 
 	val texCuts = arrayOf(
-		MPoint2d(0, 0),
-		MPoint2d(left, top),
-		MPoint2d(1.0 - right, 1.0 - bottom),
-		MPoint2d(1.0, 1.0)
+		Point(0, 0),
+		Point(left, top),
+		Point(1.0 - right, 1.0 - bottom),
+		Point(1.0, 1.0)
 	)
 
 	override fun renderInternal(ctx: RenderContext) {

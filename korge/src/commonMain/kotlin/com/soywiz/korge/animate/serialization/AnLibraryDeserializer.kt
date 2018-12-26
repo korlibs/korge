@@ -13,9 +13,8 @@ import com.soywiz.korio.error.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.file.*
-import com.soywiz.korma.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 suspend fun VfsFile.readAni(views: Views, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
@@ -247,7 +246,7 @@ object AnLibraryDeserializer {
 				var lastUid = -1
 				var lastName: String? = null
 				var lastColorTransform = ColorTransform()
-				var lastMatrix = Matrix2d()
+				var lastMatrix = Matrix()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
 				var lastFrameTime = 0

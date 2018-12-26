@@ -110,35 +110,51 @@ data class V2<V>(
 	internal val key: KMutableProperty0<V>,
 	internal val initial: V,
 	internal val end: V,
-	internal val interpolator: (V, V, Double) -> V,
+	internal val interpolator: (Double, V, V) -> V,
 	internal val startTime: Long = 0,
 	internal val duration: Long? = null
 ) {
 	val endTime = startTime + (duration ?: 0)
 
 	@Deprecated("", replaceWith = ReplaceWith("key .. (initial...end)", "com.soywiz.korge.tween.rangeTo"))
-	constructor(key: KMutableProperty0<V>, initial: V, end: V) : this(key, initial, end, ::interpolateAny)
+	constructor(key: KMutableProperty0<V>, initial: V, end: V) : this(key, initial, end, ::_interpolateAny)
 
-	fun set(ratio: Double) = key.set(interpolator(initial, end, ratio))
+	fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
 
 	override fun toString(): String =
 		"V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
-operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::interpolateAny)
-operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::interpolateAny)
+operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateAny)
+operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateAny)
 
-inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::interpolate)
+@PublishedApi
+internal fun _interpolate(ratio: Double, l: Double, r: Double) = ratio.interpolate(l, r)
+
+@PublishedApi
+internal fun _interpolateFloat(ratio: Double, l: Float, r: Float) = ratio.interpolate(l, r)
+
+@PublishedApi
+internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateAny(l, r)
+
+@PublishedApi
+internal fun _interpolateColor(ratio: Double, l: Int, r: Int): Int = RGBA.blendRGBAInt(l, r, ratio)
+
+//inline operator fun KMutableProperty0<Float>.get(end: Number) = V2(this, this.get(), end.toFloat(), ::_interpolateFloat)
+//inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
+//	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
+
+inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::_interpolate)
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
-	V2(this, initial.toDouble(), end.toDouble(), ::interpolate)
+	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate)
 
 fun <V> V2<V>.withEasing(easing: Easing): V2<V> =
-	this.copy(interpolator = { a, b, ratio -> this.interpolator(a, b, easing(ratio)) })
+	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
 
-fun V2<Int>.color(): V2<Int> = this.copy(interpolator = RGBA.Companion::blendRGBAInt)
+fun V2<Int>.color(): V2<Int> = this.copy(interpolator = ::_interpolateColor)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
-	this.copy(interpolator = { a, b, ratio -> this.interpolator(a, b, easing(ratio)) })
+	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
 
 inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime.millisecondsLong)
 inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.millisecondsLong)

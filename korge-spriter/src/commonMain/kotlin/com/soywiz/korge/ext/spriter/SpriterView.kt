@@ -7,7 +7,7 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -94,8 +94,8 @@ class SpriterView(
 		player.update()
 	}
 
-	private val t1: Matrix2d = Matrix2d()
-	private val t2: Matrix2d = Matrix2d()
+	private val t1: Matrix = Matrix()
+	private val t2: Matrix = Matrix()
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return

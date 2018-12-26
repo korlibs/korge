@@ -5,7 +5,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -41,7 +41,7 @@ fun BitmapFont.drawText(
 	str: String,
 	x: Int,
 	y: Int,
-	m: Matrix2d = Matrix2d(),
+	m: Matrix = Matrix(),
 	colMul: RGBA = Colors.WHITE,
 	colAdd: Int = 0x7f7f7f7f,
 	blendMode: BlendMode = BlendMode.INHERIT,
@@ -84,7 +84,7 @@ fun RenderContext.drawText(
 	str: String,
 	x: Int,
 	y: Int,
-	m: Matrix2d = com.soywiz.korma.Matrix2d(),
+	m: Matrix = com.soywiz.korma.geom.Matrix(),
 	colMul: RGBA = com.soywiz.korim.color.Colors.WHITE,
 	colAdd: Int = 0x7f7f7f7f,
 	blendMode: BlendMode = BlendMode.INHERIT,

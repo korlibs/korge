@@ -132,8 +132,8 @@ object Korge {
 	fun prepareViews(views: Views, eventDispatcher: EventDispatcher, clearEachFrame: Boolean = true, bgcolor: RGBA = Colors.TRANSPARENT_BLACK, fixedSizeStep: TimeSpan = TimeSpan.NULL) {
 		val input = views.input
 		val ag = views.ag
-		val downPos = MPoint2d()
-		val upPos = MPoint2d()
+		val downPos = Point()
+		val upPos = Point()
 		var downTime = DateTime.EPOCH
 		var moveTime = DateTime.EPOCH
 		var upTime = DateTime.EPOCH

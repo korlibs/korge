@@ -2,6 +2,7 @@ package com.soywiz.korge.box2d
 
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.vector.*
 import org.jbox2d.dynamics.*
 import kotlin.test.*
 
@@ -18,7 +19,7 @@ class Box2dTest {
 				density = 0f
 			}.setView(graphics {
 				fill(Colors.RED) {
-					drawRect(-50f, -10f, 100f, 20f)
+					rect(-50f, -10f, 100f, 20f)
 					//anchor(0.5, 0.5)
 				}
 			})

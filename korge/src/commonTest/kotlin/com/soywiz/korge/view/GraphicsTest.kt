@@ -5,6 +5,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class GraphicsTest {
@@ -13,7 +14,7 @@ class GraphicsTest {
 	fun test() = suspendTest {
 		val g = Graphics().apply {
 			fill(Colors.RED) {
-				drawRect(-50, -50, 100, 100)
+				rect(-50, -50, 100, 100)
 			}
 		}
 		val rc = TestRenderContext()

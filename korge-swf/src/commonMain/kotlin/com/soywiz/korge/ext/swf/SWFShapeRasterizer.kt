@@ -7,8 +7,9 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
 /**
@@ -131,7 +132,7 @@ class SWFShapeRasterizer(
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double
@@ -139,7 +140,7 @@ class SWFShapeRasterizer(
 		val aratios = DoubleArrayList(*ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
 		val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).rgba }.toIntArray())
 
-		val m2 = Matrix2d()
+		val m2 = Matrix()
 		m2.copyFrom(matrix)
 
 
@@ -193,7 +194,7 @@ class SWFShapeRasterizer(
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double
@@ -212,7 +213,7 @@ class SWFShapeRasterizer(
 		)
 	}
 
-	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix2d, repeat: Boolean, smooth: Boolean) {
+	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix, repeat: Boolean, smooth: Boolean) {
 		flush()
 		drawingFill = true
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
@@ -227,7 +228,7 @@ class SWFShapeRasterizer(
 
 	private fun __flushFill() {
 		if (apath.isEmpty()) return
-		shapes += FillShape(apath, null, fillStyle, Matrix2d().prescale(1.0 / 20.0, 1.0 / 20.0))
+		shapes += FillShape(apath, null, fillStyle, Matrix().prescale(1.0 / 20.0, 1.0 / 20.0))
 		apath = GraphicsPath()
 	}
 
@@ -237,7 +238,7 @@ class SWFShapeRasterizer(
 			apath,
 			null,
 			strokeStyle,
-			Matrix2d().prescale(1.0 / 20.0, 1.0 / 20.0),
+			Matrix().prescale(1.0 / 20.0, 1.0 / 20.0),
 			lineWidth,
 			true,
 			Context2d.ScaleMode.NORMAL,
@@ -293,7 +294,7 @@ class SWFShapeRasterizer(
 		colors: List<Int>,
 		alphas: List<Double>,
 		ratios: List<Int>,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double

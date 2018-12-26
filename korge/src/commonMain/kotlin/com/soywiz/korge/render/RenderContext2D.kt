@@ -4,18 +4,18 @@ import com.soywiz.kds.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 
 private val logger = Logger("RenderContext2D")
 
 class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
 
-	val mpool = Pool<Matrix2d> { Matrix2d() }
+	val mpool = Pool<Matrix> { Matrix() }
 
 	init { logger.trace { "RenderContext2D[1]" } }
 
-	val m = Matrix2d()
+	val m = Matrix()
 	var blendFactors = AG.Blending.NORMAL
 	var multiplyColor = Colors.WHITE
 
@@ -58,7 +58,7 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 		}
 	}
 
-	fun setMatrix(matrix: Matrix2d) {
+	fun setMatrix(matrix: Matrix) {
 		this.m.copyFrom(matrix)
 	}
 

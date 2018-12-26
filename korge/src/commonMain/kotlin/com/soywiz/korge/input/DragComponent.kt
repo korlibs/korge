@@ -5,7 +5,7 @@ import com.soywiz.korge.async.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.event.*
 
@@ -23,9 +23,9 @@ inline fun <T : View?> T?.onDragMove(noinline handler: suspend (DragComponent.In
 class DragComponent(override val view: View) : TouchComponent {
 	data class Info(
 		var touch: Touch = Touch.dummy,
-		var gstart: MVector2 = MVector2(),
-		var gend: MVector2 = MVector2(),
-		var delta: MVector2 = MVector2()
+		var gstart: Point = Point(),
+		var gend: Point = Point(),
+		var delta: Point = Point()
 	) {
 		val id get() = touch.id
 	}

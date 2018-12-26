@@ -1,7 +1,7 @@
 package com.dragonbones.geom
 
 import com.soywiz.kds.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -379,7 +379,7 @@ class Matrix
 		rectangle.height = ceil((if (y1 > y3) y1 else y3) - rectangle.y)
 	}
 
-	fun toMatrix2d(m: Matrix2d) {
+	fun toMatrix2d(m: com.soywiz.korma.geom.Matrix) {
 		m.a = this.a.toDouble()
 		m.b = this.b.toDouble()
 		m.c = this.c.toDouble()

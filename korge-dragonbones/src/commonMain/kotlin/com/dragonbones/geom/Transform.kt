@@ -1,6 +1,6 @@
 package com.dragonbones.geom
 
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -267,7 +267,7 @@ class Transform
 		return this
 	}
 
-	fun toMatrix2d(matrix: Matrix2d): Transform {
+	fun toMatrix2d(matrix: com.soywiz.korma.geom.Matrix): Transform {
 		if (this.rotation == 0f) {
 			matrix.a = 1.0
 			matrix.b = 0.0

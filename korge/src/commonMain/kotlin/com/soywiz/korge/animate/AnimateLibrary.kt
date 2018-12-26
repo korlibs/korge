@@ -10,8 +10,9 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.error.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import kotlin.collections.set
 
@@ -84,15 +85,15 @@ data class AnSymbolTimelineFrame(
 	var uid: Int = -1,
 	var clipDepth: Int = -1,
 	var ratio: Double = 0.0,
-	var transform: Matrix2d = Matrix2d(),
+	var transform: Matrix = Matrix(),
 	var name: String? = null,
 	var colorTransform: ColorTransform = ColorTransform(),
 	var blendMode: BlendMode = BlendMode.INHERIT
 ) {
 	fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
 		this.transform.setToInterpolated(ratio, l.transform, r.transform)
-		this.colorTransform.setToInterpolated(l.colorTransform, r.colorTransform, ratio)
-		this.ratio = interpolate(l.ratio, r.ratio, ratio)
+		this.colorTransform.setToInterpolated(ratio, l.colorTransform, r.colorTransform)
+		this.ratio = ratio.interpolate(l.ratio, r.ratio)
 		this.name = l.name
 		this.blendMode = l.blendMode
 	}
@@ -100,8 +101,8 @@ data class AnSymbolTimelineFrame(
 	companion object {
 		fun setToViewInterpolated(view: View, l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
 			view.setMatrixInterpolated(ratio, l.transform, r.transform)
-			view.colorTransform = view.colorTransform.setToInterpolated(l.colorTransform, r.colorTransform, ratio)
-			view.ratio = interpolate(l.ratio, r.ratio, ratio)
+			view.colorTransform = view.colorTransform.setToInterpolated(ratio, l.colorTransform, r.colorTransform)
+			view.ratio = ratio.interpolate(l.ratio, r.ratio)
 			view.name = l.name
 			view.blendMode = l.blendMode
 		}

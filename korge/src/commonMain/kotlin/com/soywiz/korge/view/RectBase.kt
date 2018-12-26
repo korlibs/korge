@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 open class RectBase(
 	anchorX: Double = 0.0,

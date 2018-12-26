@@ -5,7 +5,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.*
+import com.soywiz.korma.geom.*
 
 abstract class Filter {
 	companion object {
@@ -40,15 +40,15 @@ abstract class Filter {
 			program = null
 		}
 
-	internal val tempMat2d = Matrix2d()
-	internal val oldViewMatrix = Matrix4()
+	internal val tempMat2d = Matrix()
+	internal val oldViewMatrix = Matrix3D()
 
 	protected open fun updateUniforms() {
 	}
 
 	open fun render(
 		ctx: RenderContext,
-		matrix: Matrix2d,
+		matrix: Matrix,
 		texture: Texture,
 		texWidth: Int,
 		texHeight: Int,
