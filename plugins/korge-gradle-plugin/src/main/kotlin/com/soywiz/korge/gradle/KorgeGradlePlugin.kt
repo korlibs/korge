@@ -140,6 +140,7 @@ class KorgeGradleApply(val project: Project) {
     //val node_modules by lazy { project.file("node_modules") }
     val node_modules by lazy { korgeCacheDir["node_modules"] }
     val webMinFolder by lazy { project.buildDir["web-min"] }
+    val webFolder by lazy { project.buildDir["web"] }
     val webMinWebpackFolder by lazy { project.buildDir["web-min-webpack"] }
     val mocha_node_modules by lazy { project.buildDir["node_modules"] }
 
@@ -615,6 +616,16 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
+            val cordovaPackageJsWebNoMinimized = project.addTask<Copy>("cordovaPackageJsWebNoMinimized", group = "korge", dependsOn = listOf("jsWeb", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
+                task.from(project.closure { webFolder })
+                task.into(cordovaFolder["www"])
+                //}
+                task.doLast {
+                    val f = cordovaFolder["www/index.html"]
+                    f.writeText(f.readText().replace("</head>", "<script type=\"text/javascript\" src=\"cordova.js\"></script></head>"))
+                }
+            }
+
             for (target in listOf("ios", "android", "browser", "osx", "windows")) {
                 val Target = target.capitalize()
 
@@ -631,12 +642,19 @@ class KorgeGradleApply(val project: Project) {
                     task.setCordova("build", target, "--release") // prepare + compile
                 }
 
-                val runTarget = project.addTask<NodeTask>("run${Target}", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.setCordova("run", target, "--device")
-                }
+                for (noMinimized in listOf(false, true)) {
+                    val NoMinimizedText = if (noMinimized) "NoMinimized" else ""
 
-                val runTargetEmulator = project.addTask<NodeTask>("run${Target}Emulator", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
-                    task.setCordova("run", target, "--emulator")
+                    for (emulator in listOf(false, true)) {
+                        val EmulatorText = if (emulator) "Emulator" else ""
+                        val runTarget = project.addTask<NodeTask>(
+                            "run$Target$EmulatorText$NoMinimizedText",
+                            group = "korge",
+                            dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb)
+                        ) { task ->
+                            task.setCordova("run", target, if (emulator) "--emulator" else "--device")
+                        }
+                    }
                 }
             }
         }
