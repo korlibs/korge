@@ -20,13 +20,16 @@ class KorgeXml(val file: File) {
 */
 
 
-class QXml private constructor(val obj: Any?, dummy: Boolean) {
+class QXml private constructor(val obj: Any?, dummy: Boolean) : Iterable<QXml> {
+	override fun iterator(): Iterator<QXml> = list.iterator()
+
 	companion object {
 		operator fun invoke(obj: Any?): QXml = if (obj is QXml) obj else QXml(obj, true)
 		operator fun invoke(xml: String): QXml = QXml(xmlParse(xml))
 	}
 
 	val isEmpty get() = (obj == null) || (obj is NodeList && obj.isEmpty())
+	val isNotEmpty get() = !isEmpty
 
 	val name: String get() = when (obj) {
 		null -> "null"
@@ -35,13 +38,21 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 	}
 
 	val attributes: Map<String, String> get() = when (obj) {
-		is Node -> obj.attributes() as Map<String, String>
+		is Node -> obj.attributes() as MutableMap<String, String>
 		is NodeList -> obj.map { QXml(it).attributes }.reduce { acc, map -> acc + map }
 		else -> mapOf()
 	}
 
 	fun setAttribute(name: String, value: String) {
-		(attributes as MutableMap<String, String>)[name] = value
+		when (obj) {
+			is Node -> obj.attributes()[name] = value
+			is NodeList -> for (o in obj) QXml(o).setAttribute(name, value)
+			else -> Unit
+		}
+	}
+
+	fun setAttributes(vararg pairs: Pair<String, String>) {
+		for ((key, value) in pairs) setAttribute(key, value)
 	}
 
 	val text: String? get() = when (obj) {
@@ -90,14 +101,21 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) {
 		}
 	}
 
-	fun appendNode(name: String, attributes: Map<String, Any?>) {
-		when (obj) {
-			is Node -> obj.appendNode(name, attributes)
-			is NodeList -> list.forEach { it.appendNode(name, attributes) }
+	fun appendNode(name: String, attributes: Map<String, Any?>): QXml {
+		return when (obj) {
+			is Node -> QXml(obj.appendNode(name, attributes.toMutableMap()))
+			is NodeList -> QXml(list.map { it.appendNode(name, attributes.toMutableMap()) })
+			else -> QXml(null)
 		}
 	}
 
-    fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap())
+    fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap().toMutableMap())
+
+	fun getOrAppendNode(name: String, vararg attributes: Pair<String, String>): QXml {
+		return get(name).filter {
+			attributes.all { attributes[it.first] == it.second }
+		}.takeIf { it.isNotEmpty() }?.let { QXml(it) } ?: appendNode(name, *attributes)
+	}
 
 	operator fun get(key: String): QXml {
 		if (obj is Iterable<*>) {

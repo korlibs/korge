@@ -57,10 +57,35 @@ class KorgeExtension {
 
     var backgroundColor: Int = 0xff000000.toInt()
 
+    var androidMinSdk: String? = null
+    internal var _androidAppendBuildGradle: String? = null
+
     @JvmOverloads
     fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
         plugins += KorgePluginDescriptor(name.toString(), args, version?.toString())
         //println("cordovaPlugin($name, $args, $version)")
+    }
+
+    fun androidAppendBuildGradle(str: String) {
+        if (_androidAppendBuildGradle == null) {
+            _androidAppendBuildGradle = ""
+        }
+        _androidAppendBuildGradle += str
+    }
+
+    fun cordovaUseCrosswalk() {
+        // Required to have webgl on android emulator?
+        // https://crosswalk-project.org/documentation/cordova.html
+        // https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview/issues/205#issuecomment-371669478
+        if (androidMinSdk == null) androidMinSdk = "20"
+        cordovaPlugin("cordova-plugin-crosswalk-webview", version = "2.4.0")
+        androidAppendBuildGradle("""
+        	configurations.all {
+        		resolutionStrategy {
+        			force 'com.android.support:support-v4:27.1.0'
+        		}
+        	}
+        """)
     }
 
     @JvmOverloads
@@ -87,6 +112,7 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
 
     fun replaceCordovaPreference(name: String, value: String) {
         // Remove Orientation node and set a new node
+        cordovaConfig.getOrAppendNode("preference", "name" to name).setAttribute("value", value)
         cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
         cordovaConfig.appendNode("preference", "name" to name, "value" to value)
     }
@@ -95,6 +121,11 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
     replaceCordovaPreference("Orientation", korge.orientation.lc)
     replaceCordovaPreference("Fullscreen", korge.fullscreen.toString())
     replaceCordovaPreference("BackgroundColor", "0x%08x".format(korge.backgroundColor))
+
+    if (korge.androidMinSdk != null) {
+        val android = cordovaConfig.getOrAppendNode("platform", "name" to "android")
+        android.getOrAppendNode("preference", "name" to "android-minSdkVersion").setAttribute("value", korge.androidMinSdk!!)
+    }
 
     cordovaConfig["icon"].remove()
     cordovaConfig.appendNode("icon", "src" to "icon.png")
@@ -626,6 +657,18 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
+            val cordovaPrepareTargets = project.addTask<Task>("cordovaPrepareTargets", group = "korge", dependsOn = listOf(cordovaCreate)) { task ->
+                task.doLast {
+                    if (korge._androidAppendBuildGradle != null) {
+                        // https://cordova.apache.org/docs/en/8.x/guide/platforms/android/index.html
+                        val androidFolder = cordovaFolder["platforms/android"]
+                        if (androidFolder.exists()) {
+                            androidFolder["build-extras.gradle"].writeText(korge._androidAppendBuildGradle!!)
+                        }
+                    }
+                }
+            }
+
             for (target in listOf("ios", "android", "browser", "osx", "windows")) {
                 val Target = target.capitalize()
 
@@ -634,11 +677,11 @@ class KorgeGradleApply(val project: Project) {
                     task.setCordova("platform", "add", target)
                 }
 
-                val compileTarget = project.addTask<NodeTask>("compile$Target", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                val compileTarget = project.addTask<NodeTask>("compile$Target", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target) // prepare + compile
                 }
 
-                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb)) { task ->
+                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target, "--release") // prepare + compile
                 }
 
@@ -650,7 +693,7 @@ class KorgeGradleApply(val project: Project) {
                         val runTarget = project.addTask<NodeTask>(
                             "run$Target$EmulatorText$NoMinimizedText",
                             group = "korge",
-                            dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb)
+                            dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb, cordovaPrepareTargets)
                         ) { task ->
                             task.setCordova("run", target, if (emulator) "--emulator" else "--device")
                         }

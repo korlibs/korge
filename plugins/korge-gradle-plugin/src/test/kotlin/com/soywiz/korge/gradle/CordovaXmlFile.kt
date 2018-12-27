@@ -36,6 +36,30 @@ class CordovaXmlFile {
 			  <preference name="Orientation" value="portrait"/>
 			  <preference name="Fullscreen" value="false"/>
 			  <preference name="BackgroundColor" value="0xffff3333"/>
+			  <icon src="icon.png"/>
+			</widget>
+		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd())
+	}
+
+	@Test
+	fun test2() {
+		val extension = KorgeExtension().apply {
+			androidMinSdk = "19"
+		}
+		assertEquals("""
+			<?xml version='1.0' encoding='utf-8'?>
+			<widget xmlns="http://www.w3.org/ns/widgets" id="com.unknown.unknownapp" version="0.0.1">
+			  <name>unnamed</name>
+			  <description>undescripted</description>
+			  <author email="unknown@unknown" href="http://localhost">unknown</author>
+			  <content src="index.html"/>
+			  <preference name="Orientation" value="default"/>
+			  <preference name="Fullscreen" value="true"/>
+			  <preference name="BackgroundColor" value="0xff000000"/>
+			  <platform name="android">
+			    <preference name="android-minSdkVersion" value="19"/>
+			  </platform>
+			  <icon src="icon.png"/>
 			</widget>
 		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd())
 	}
