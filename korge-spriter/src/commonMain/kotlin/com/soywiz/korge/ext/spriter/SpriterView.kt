@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
 class SpriterView(
@@ -75,7 +76,7 @@ class SpriterView(
 
 	var time: Int; get() = player._time; set(value) = run { player._time = value }
 
-	suspend fun changeTo(animation: String, time: TimeSpan, easing: Easing = Easing.LINEAR) {
+	suspend fun changeTo(animation: String, time: TimeSpan, easing: com.soywiz.korma.interpolation.Easing = com.soywiz.korma.interpolation.Easing.LINEAR) {
 		animation1 = prominentAnimation
 		animation2 = animation
 		animationWeight = 0.0
@@ -112,7 +113,7 @@ class SpriterView(
 			t1.setTransform(
 				(obj.position.x - 0.0), (obj.position.y - 0.0),
 				obj.scale.x.toDouble(), -obj.scale.y.toDouble(),
-				-Angle.toRadians(obj._angle.toDouble()),
+				-obj._angle.toDouble().degrees,
 				0.0, 0.0
 			)
 			t2.copyFrom(globalMatrix)
@@ -120,7 +121,7 @@ class SpriterView(
 			t2.premultiply(t1)
 			//t2.translate(+trimLeft, +trimTop)
 			if (ttex.rotated) {
-				t2.prerotate(-PI / 2.0)
+				t2.prerotate((-PI / 2.0).radians)
 			}
 			val px = obj.pivot.x.toDouble() * tex.width //- trimLeft
 			val py = (1.0 - obj.pivot.y) * tex.height //- trimTop

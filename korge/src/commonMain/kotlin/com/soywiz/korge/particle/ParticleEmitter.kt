@@ -83,7 +83,7 @@ class ParticleEmitter() {
 				else -> AG.BlendFactor.ONE
 			}
 
-			fun angle() = Angle.toRadians(item.double("value"))
+			fun angle() = Angle.degreesToRadians(item.double("value"))
 			fun color(): RGBAf =
 				RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 

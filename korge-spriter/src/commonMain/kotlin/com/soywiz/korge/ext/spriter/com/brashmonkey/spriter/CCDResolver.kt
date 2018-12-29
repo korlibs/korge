@@ -25,8 +25,8 @@ class CCDResolver(player: Player) : IKResolver(player) {
 		val unmappedffector = unmappedKey.`object`()
 		var width = timeline.objectInfo.size.width
 		width *= unmappedffector.scale.x
-		var xx = unmappedffector.position.x + cos(Angle.toRadians(unmappedffector._angle.toDouble())).toFloat() * width
-		var yy = unmappedffector.position.y + sin(Angle.toRadians(unmappedffector._angle.toDouble())).toFloat() * width
+		var xx = unmappedffector.position.x + cos(Angle.degreesToRadians(unmappedffector._angle.toDouble())).toFloat() * width
+		var yy = unmappedffector.position.y + sin(Angle.degreesToRadians(unmappedffector._angle.toDouble())).toFloat() * width
 		if (Calculator.distanceBetween(xx, yy, x, y) <= this.tolerance)
 			return
 
@@ -57,8 +57,8 @@ class CCDResolver(player: Player) : IKResolver(player) {
 			} else
 				parent = null
 			player.unmapObjects(null)
-			xx = unmappedffector.position.x + cos(Angle.toRadians(unmappedffector._angle.toDouble())).toFloat() * width
-			yy = unmappedffector.position.y + sin(Angle.toRadians(unmappedffector._angle.toDouble())).toFloat() * width
+			xx = unmappedffector.position.x + cos(Angle.degreesToRadians(unmappedffector._angle.toDouble())).toFloat() * width
+			yy = unmappedffector.position.y + sin(Angle.degreesToRadians(unmappedffector._angle.toDouble())).toFloat() * width
 			i++
 		}
 	}

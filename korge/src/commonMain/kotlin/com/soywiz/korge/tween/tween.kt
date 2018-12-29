@@ -148,9 +148,6 @@ inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.g
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
 	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate)
 
-fun <V> V2<V>.withEasing(easing: Easing): V2<V> =
-	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
-
 fun V2<Int>.color(): V2<Int> = this.copy(interpolator = ::_interpolateColor)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
@@ -160,27 +157,28 @@ inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTim
 inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.millisecondsLong)
 
 inline fun <V> V2<V>.linear() = this
-inline fun <V> V2<V>.easeIn() = this.withEasing(Easing.EASE_IN)
-inline fun <V> V2<V>.easeOut() = this.withEasing(Easing.EASE_OUT)
-inline fun <V> V2<V>.easeInOut() = this.withEasing(Easing.EASE_IN_OUT)
-inline fun <V> V2<V>.easeOutIn() = this.withEasing(Easing.EASE_OUT_IN)
-inline fun <V> V2<V>.easeInBack() = this.withEasing(Easing.EASE_IN_BACK)
-inline fun <V> V2<V>.easeOutBack() = this.withEasing(Easing.EASE_OUT_BACK)
-inline fun <V> V2<V>.easeInOutBack() = this.withEasing(Easing.EASE_IN_OUT_BACK)
-inline fun <V> V2<V>.easeOutInBack() = this.withEasing(Easing.EASE_OUT_IN_BACK)
+inline fun <V> V2<V>.smooth() = this.easing(Easing.SMOOTH)
+inline fun <V> V2<V>.easeIn() = this.easing(Easing.EASE_IN)
+inline fun <V> V2<V>.easeOut() = this.easing(Easing.EASE_OUT)
+inline fun <V> V2<V>.easeInOut() = this.easing(Easing.EASE_IN_OUT)
+inline fun <V> V2<V>.easeOutIn() = this.easing(Easing.EASE_OUT_IN)
+inline fun <V> V2<V>.easeInBack() = this.easing(Easing.EASE_IN_BACK)
+inline fun <V> V2<V>.easeOutBack() = this.easing(Easing.EASE_OUT_BACK)
+inline fun <V> V2<V>.easeInOutBack() = this.easing(Easing.EASE_IN_OUT_BACK)
+inline fun <V> V2<V>.easeOutInBack() = this.easing(Easing.EASE_OUT_IN_BACK)
 
-inline fun <V> V2<V>.easeInElastic() = this.withEasing(Easing.EASE_IN_ELASTIC)
-inline fun <V> V2<V>.easeOutElastic() = this.withEasing(Easing.EASE_OUT_ELASTIC)
-inline fun <V> V2<V>.easeInOutElastic() = this.withEasing(Easing.EASE_IN_OUT_ELASTIC)
-inline fun <V> V2<V>.easeOutInElastic() = this.withEasing(Easing.EASE_OUT_IN_ELASTIC)
+inline fun <V> V2<V>.easeInElastic() = this.easing(Easing.EASE_IN_ELASTIC)
+inline fun <V> V2<V>.easeOutElastic() = this.easing(Easing.EASE_OUT_ELASTIC)
+inline fun <V> V2<V>.easeInOutElastic() = this.easing(Easing.EASE_IN_OUT_ELASTIC)
+inline fun <V> V2<V>.easeOutInElastic() = this.easing(Easing.EASE_OUT_IN_ELASTIC)
 
-inline fun <V> V2<V>.easeInBounce() = this.withEasing(Easing.EASE_IN_BOUNCE)
-inline fun <V> V2<V>.easeOutBounce() = this.withEasing(Easing.EASE_OUT_BOUNCE)
-inline fun <V> V2<V>.easeInOutBounce() = this.withEasing(Easing.EASE_IN_OUT_BOUNCE)
-inline fun <V> V2<V>.easeOutInBounce() = this.withEasing(Easing.EASE_OUT_IN_BOUNCE)
+inline fun <V> V2<V>.easeInBounce() = this.easing(Easing.EASE_IN_BOUNCE)
+inline fun <V> V2<V>.easeOutBounce() = this.easing(Easing.EASE_OUT_BOUNCE)
+inline fun <V> V2<V>.easeInOutBounce() = this.easing(Easing.EASE_IN_OUT_BOUNCE)
+inline fun <V> V2<V>.easeOutInBounce() = this.easing(Easing.EASE_OUT_IN_BOUNCE)
 
-inline fun <V> V2<V>.easeInQuad() = this.withEasing(Easing.EASE_IN_QUAD)
-inline fun <V> V2<V>.easeOutQuad() = this.withEasing(Easing.EASE_OUT_QUAD)
-inline fun <V> V2<V>.easeInOutQuad() = this.withEasing(Easing.EASE_IN_OUT_QUAD)
+inline fun <V> V2<V>.easeInQuad() = this.easing(Easing.EASE_IN_QUAD)
+inline fun <V> V2<V>.easeOutQuad() = this.easing(Easing.EASE_OUT_QUAD)
+inline fun <V> V2<V>.easeInOutQuad() = this.easing(Easing.EASE_IN_OUT_QUAD)
 
-inline fun <V> V2<V>.easeSine() = this.withEasing(Easing.EASE_SINE)
+inline fun <V> V2<V>.easeSine() = this.easing(Easing.EASE_SINE)

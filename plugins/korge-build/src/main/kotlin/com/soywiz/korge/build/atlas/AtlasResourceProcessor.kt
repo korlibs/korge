@@ -38,7 +38,7 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 		for (entry in pack.items) {
 			val file = entry.first.first
 			val bmp = entry.first.second
-			val rect = entry.second
+			val rect = entry.second!!
 			out.put(bmp.toBMP32(), rect.x.toInt() + 2, rect.y.toInt() + 2)
 		}
 
@@ -47,7 +47,7 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 		val atlasInfo = AtlasInfo(
 			frames = pack.items.map {
 				val file = it.first.first
-				val rect = it.second.displaced(2.0, 2.0)
+				val rect = it.second!!.displaced(2.0, 2.0)
 				val irect = rect.toInt()
 				file.path.trim('/') to AtlasInfo.Entry(
 					frame = AtlasInfo.Rect(irect.x, irect.y, irect.width, irect.height),

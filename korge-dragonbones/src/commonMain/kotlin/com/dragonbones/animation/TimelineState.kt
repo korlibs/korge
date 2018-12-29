@@ -792,7 +792,7 @@ class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
 					result.greenOffset != this._result[6].toInt() ||
 					result.blueOffset != this._result[7].toInt()
 				) {
-					val fadeProgress = pow(this._animationState!!._fadeProgress, 4.0)
+					val fadeProgress = this._animationState!!._fadeProgress.pow(4.0)
 					result.alphaMultiplier += (this._result[0] - result.alphaMultiplier) * fadeProgress
 					result.redMultiplier += (this._result[1] - result.redMultiplier) * fadeProgress
 					result.greenMultiplier += (this._result[2] - result.greenMultiplier) * fadeProgress

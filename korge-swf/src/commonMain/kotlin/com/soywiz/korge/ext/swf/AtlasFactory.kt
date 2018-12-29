@@ -42,8 +42,9 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 		val height = pack.height.toInt().nextPowerOfTwo
 		val bmp = Bitmap32(width, height, premult = premult)
 		for ((ibmp, rect) in pack.items) {
-			val dx = rect.x.toInt() + 2
-			val dy = rect.y.toInt() + 2
+			val r = rect ?: continue
+			val dx = r.x.toInt() + 2
+			val dy = r.y.toInt() + 2
 
 			bmp.put(ibmp.bitmap.toBMP32(), dx, dy)
 
@@ -59,7 +60,8 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 		val texture = bmp.slice()
 
 		for ((ibmp, rect) in pack.items) {
-			val rect2 = Rectangle(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4)
+			val r = rect ?: continue
+			val rect2 = Rectangle(r.x + 2, r.y + 2, r.width - 4, r.height - 4)
 			bitmapsToTextures[ibmp] = TextureWithBitmapSlice(
 				texture = texture.slice(rect2),
 				bitmapSlice = bmp.slice(rect2.toInt()),

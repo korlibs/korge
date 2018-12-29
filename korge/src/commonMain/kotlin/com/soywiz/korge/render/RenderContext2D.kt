@@ -74,7 +74,7 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 		m.prescale(scale, scale)
 	}
 
-	fun rotate(angle: Double) {
+	fun rotate(angle: Angle) {
 		m.prerotate(angle)
 	}
 

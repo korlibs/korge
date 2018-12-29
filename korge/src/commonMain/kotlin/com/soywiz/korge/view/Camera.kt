@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit) = Camera().addTo(this).apply(callback)
 

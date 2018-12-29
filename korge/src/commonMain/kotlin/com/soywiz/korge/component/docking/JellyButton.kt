@@ -5,6 +5,7 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
+import com.soywiz.korma.interpolation.*
 
 class JellyButton(val view: View?, var targetScale: Double = 1.5) {
 	val hitTest = view["hitTest"] ?: view

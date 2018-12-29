@@ -3,6 +3,7 @@ package com.soywiz.korge.scene
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
+import com.soywiz.korma.interpolation.*
 
 class TransitionView() : Container() {
 	var transition: Transition = AlphaTransition

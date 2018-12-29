@@ -3,6 +3,8 @@ plugins {
     id 'com.moowork.node' version '1.2.0'
 }
 
+System.setProperty("java.awt.headless", "true")
+
 allprojects {
     repositories {
         mavenLocal()

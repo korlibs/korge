@@ -41,7 +41,7 @@ object Calculator {
 	 * @return Angle between the two given points.
 	 */
 	fun angleBetween(x1: Float, y1: Float, x2: Float, y2: Float): Float {
-		return Angle.toDegrees(atan2((y2 - y1).toDouble(), (x2 - x1).toDouble())).toFloat()
+		return Angle.degreesToRadians(atan2((y2 - y1).toDouble(), (x2 - x1).toDouble())).toFloat()
 	}
 
 	/**

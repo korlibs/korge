@@ -249,8 +249,8 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 			var value = progress
 
 			when (tweenType) {
-				TweenType.QuadIn -> value = pow(progress, 2.0)
-				TweenType.QuadOut -> value = 1.0 - pow(1.0 - progress, 2.0)
+				TweenType.QuadIn -> value = progress.pow(2.0)
+				TweenType.QuadOut -> value = 1.0 - (1.0 - progress).pow(2.0)
 				TweenType.QuadInOut -> value = 0.5 * (1.0 - cos(progress * PI))
 				else -> {
 				}

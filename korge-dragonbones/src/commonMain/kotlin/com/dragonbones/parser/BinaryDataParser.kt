@@ -29,6 +29,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korma.math.*
+import kotlin.math.*
 
 /**
  * @private
@@ -91,7 +92,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 						else {
 
 						}
-						utf8_code_point = (utf8_code_point * pow(64.0, utf8_bytes_needed.toDouble())).toInt()
+						utf8_code_point = (utf8_code_point * 64.0.pow(utf8_bytes_needed.toDouble())).toInt()
 						code_point = null
 					}
 				}
@@ -106,7 +107,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 				else {
 
 					utf8_bytes_seen += 1
-					utf8_code_point += ((_byte - 0x80) * pow(64.0, (utf8_bytes_needed - utf8_bytes_seen).toDouble())).toInt()
+					utf8_code_point += ((_byte - 0x80) * 64.0.pow((utf8_bytes_needed - utf8_bytes_seen).toDouble())).toInt()
 
 					if (utf8_bytes_seen != utf8_bytes_needed) {
 						code_point = null

@@ -93,7 +93,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	private var _scaleY: Double = 1.0
 	private var _skewX: Double = 0.0
 	private var _skewY: Double = 0.0
-	private var _rotation: Double = 0.0
+	private var _rotation: Angle = 0.radians
 
 	val pos = Point()
 
@@ -122,14 +122,14 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		set(v) = run { ensureTransform(); if (_skewY != v) run { _skewY = v; invalidateMatrix() } }
 
 	var rotation: Angle
-		get() = rotationRadians.radians
-		set(v) = run { rotationRadians = v.radians }
-	var rotationRadians: Double
 		get() = ensureTransform()._rotation
 		set(v) = run { ensureTransform(); if (_rotation != v) run { _rotation = v; invalidateMatrix() } }
+	var rotationRadians: Double
+		get() = rotation.radians
+		set(v) = run { rotation = v.radians }
 	var rotationDegrees: Double
-		get() = Angle.toDegrees(rotationRadians)
-		set(v) = run { rotationRadians = Angle.toRadians(v) }
+		get() = rotation.degrees
+		set(v) = run { rotation = v.degrees }
 
 	var globalX: Double
 		get() = parent?.localToGlobalX(x, y) ?: x;
@@ -329,7 +329,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			if (!validLocalMatrix) {
 				validLocalMatrix = true
 				_requireInvalidate = true
-				_localMatrix.setTransform(x, y, scaleX, scaleY, rotationRadians, skewX, skewY)
+				_localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
 			}
 			return _localMatrix
 		}
@@ -548,7 +548,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		pos.setTo(0.0, 0.0)
 		_scaleX = 1.0; _scaleY = 1.0
 		_skewX = 0.0; _skewY = 0.0
-		_rotation = 0.0
+		_rotation = 0.radians
 		validLocalMatrix = false
 		invalidate()
 	}
