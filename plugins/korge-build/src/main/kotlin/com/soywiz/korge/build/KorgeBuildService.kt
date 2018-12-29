@@ -13,7 +13,13 @@ class KorgeBuildService : IKorgeBuildService {
         KorgeManualServiceRegistration.register()
     }
 
-    override fun version(): String = Korge.VERSION
+    //override fun version(): String = Korge.VERSION
+    override fun korgeVersion(): String = BuildVersions.KORGE
+    override fun kormaVersion(): String = BuildVersions.KORMA
+    override fun korioVersion(): String = BuildVersions.KORIO
+    override fun korimVersion(): String = BuildVersions.KORIM
+    override fun korauVersion(): String = BuildVersions.KORAU
+    override fun koruiVersion(): String = BuildVersions.KORUI
 
     override fun processResourcesFolder(src: File, dst: File) {
         if (!src.exists()) return // Ignore empty folders
@@ -45,6 +51,11 @@ class KorgeBuildService : IKorgeBuildService {
 
 interface IKorgeBuildService {
     fun init()
-    fun version(): String
+    fun korgeVersion(): String
+    fun kormaVersion(): String
+    fun korioVersion(): String
+    fun korimVersion(): String
+    fun korauVersion(): String
+    fun koruiVersion(): String
     fun processResourcesFolder(src: File, dst: File)
 }

@@ -27,7 +27,13 @@ import java.net.*
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-val korgeVersion get() = KorgeBuildServiceProxy.version()
+val kormaVersion get() = KorgeBuildServiceProxy.kormaVersion()
+val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
+val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
+val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
+val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
+val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
+
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 
@@ -462,6 +468,11 @@ class KorgeGradleApply(val project: Project) {
     }
 
     private fun Project.addVersionExtension() {
+        ext.set("korioVersion", korioVersion)
+        ext.set("kormaVersion", kormaVersion)
+        ext.set("korauVersion", korauVersion)
+        ext.set("korimVersion", korimVersion)
+        ext.set("koruiVersion", koruiVersion)
         ext.set("korgeVersion", korgeVersion)
         ext.set("kotlinVersion", "1.3.11")
         //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())

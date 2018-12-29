@@ -12,6 +12,19 @@ plugins {
 	id 'com.moowork.node' version '1.2.0'
 }
 
+new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
+package com.soywiz.korge.build
+
+object BuildVersions {
+	const val KORMA = "$kormaVersion"
+	const val KORIO = "$korioVersion"
+	const val KORIM = "$korimVersion"
+	const val KORAU = "$korauVersion"
+	const val KORUI = "$koruiVersion"
+	const val KORGE = "$korgeVersion"
+}
+""")
+
 allprojects {
 	group 'com.soywiz'
 	version projectVersion
