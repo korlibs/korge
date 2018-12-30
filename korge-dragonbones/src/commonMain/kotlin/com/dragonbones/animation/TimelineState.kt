@@ -29,8 +29,6 @@ import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kmem.*
-import com.soywiz.korio.ds.*
-import com.soywiz.korma.math.*
 import kotlin.math.*
 
 /**
@@ -290,7 +288,7 @@ class ZOrderTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 		if (this.playState >= 0) {
 			val count = this._frameArray!![this._frameOffset + 1].toInt()
 			if (count > 0) {
-				this._armature?._sortZOrder(this._frameArray!!.raw, this._frameOffset + 2)
+				this._armature?._sortZOrder(this._frameArray!!, this._frameOffset + 2)
 			} else {
 				this._armature?._sortZOrder(null, 0)
 			}
@@ -694,29 +692,29 @@ class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
 
 		if (this._timelineData != null) {
 			val dragonBonesData = this._animationData!!.parent!!.parent
-			val colorArray = dragonBonesData!!.colorArray!!.raw.asInt()
-			val frameIntArray = dragonBonesData.frameIntArray!!.raw.asInt()
+			val colorArray = dragonBonesData!!.colorArray!!
+			val frameIntArray = dragonBonesData.frameIntArray!!
 			val valueOffset = this._animationData!!.frameIntOffset + this._frameValueOffset + this._frameIndex
-			var colorOffset = frameIntArray[valueOffset]
+			var colorOffset = frameIntArray[valueOffset].toInt()
 
 			if (colorOffset < 0) {
 				colorOffset += 65536 // Fixed out of bounds bug.
 			}
 
 			if (this._isTween) {
-				this._current[0] = colorArray[colorOffset++]
-				this._current[1] = colorArray[colorOffset++]
-				this._current[2] = colorArray[colorOffset++]
-				this._current[3] = colorArray[colorOffset++]
-				this._current[4] = colorArray[colorOffset++]
-				this._current[5] = colorArray[colorOffset++]
-				this._current[6] = colorArray[colorOffset++]
-				this._current[7] = colorArray[colorOffset++]
+				this._current[0] = colorArray[colorOffset++].toInt()
+				this._current[1] = colorArray[colorOffset++].toInt()
+				this._current[2] = colorArray[colorOffset++].toInt()
+				this._current[3] = colorArray[colorOffset++].toInt()
+				this._current[4] = colorArray[colorOffset++].toInt()
+				this._current[5] = colorArray[colorOffset++].toInt()
+				this._current[6] = colorArray[colorOffset++].toInt()
+				this._current[7] = colorArray[colorOffset++].toInt()
 
 				colorOffset = if (this._frameIndex == this._frameCount - 1) {
-					frameIntArray[this._animationData!!.frameIntOffset + this._frameValueOffset]
+					frameIntArray[this._animationData!!.frameIntOffset + this._frameValueOffset].toInt()
 				} else {
-					frameIntArray[valueOffset + 1]
+					frameIntArray[valueOffset + 1].toInt()
 				}
 
 				if (colorOffset < 0) {

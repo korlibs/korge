@@ -25,14 +25,12 @@
 package com.dragonbones.armature
 
 import com.dragonbones.animation.*
-import com.dragonbones.armature.Armature.Companion._onSortSlots
 import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
-import com.soywiz.kds.*
-import com.soywiz.korio.ds.*
+import com.soywiz.kmem.*
 
 /**
  * - Armature is the core of the skeleton animation system.
@@ -182,14 +180,13 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	/**
 	 * @internal
 	 */
-	fun _sortZOrder(slotIndices: NumberRawArray?, offset: Int) {
+	fun _sortZOrder(slotIndices: Int16Buffer?, offset: Int) {
 		val slotDatas = this._armatureData!!.sortedSlots
-		val isOriginal = slotIndices == null
 
-		if (this._zOrderDirty || !isOriginal) {
+		if (this._zOrderDirty || slotIndices != null) {
 			val l = slotDatas.lengthSet
 			for (i in 0 until l) {
-				val slotIndex: Int = if (isOriginal) i else (slotIndices as  NumberRawArray).getInt(offset + i)
+				val slotIndex: Int = if (slotIndices == null) i else slotIndices[offset + i].toInt()
 				if (slotIndex < 0 || slotIndex >= l) {
 					continue
 				}
@@ -203,7 +200,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 			}
 
 			this._slotsDirty = true
-			this._zOrderDirty = !isOriginal
+			this._zOrderDirty = slotIndices != null
 		}
 	}
 

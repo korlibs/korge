@@ -31,8 +31,6 @@ import com.dragonbones.core.*
 import com.dragonbones.model.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korio.ds.*
-import com.soywiz.korma.math.*
 import kotlin.math.*
 
 abstract class TimelineState(pool: BaseObjectPool) : BaseObject(pool) {
@@ -259,7 +257,7 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 			return (value - progress) * easing + progress
 		}
 
-		private fun _getEasingCurveValue(progress: Double, samples: DoubleArrayLike, count: Int, offset: Int): Double {
+		private fun _getEasingCurveValue(progress: Double, samples: Int16Buffer, count: Int, offset: Int): Double {
 			if (progress <= 0.0) {
 				return 0.0
 			}
@@ -274,12 +272,12 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 			val toValue: Double
 
 			if (isOmited) {
-				fromValue = if (valueIndex == 0) 0.0 else samples[offset + valueIndex - 1]
-				toValue = if (valueIndex == segmentCount - 1) 10000.0 else samples[offset + valueIndex]
+				fromValue = if (valueIndex == 0) 0.0 else samples[offset + valueIndex - 1].toDouble()
+				toValue = if (valueIndex == segmentCount - 1) 10000.0 else samples[offset + valueIndex].toDouble()
 			}
 			else {
-				fromValue = samples[offset + valueIndex - 1]
-				toValue = samples[offset + valueIndex]
+				fromValue = samples[offset + valueIndex - 1].toDouble()
+				toValue = samples[offset + valueIndex].toDouble()
 			}
 
 			return (fromValue + (toValue - fromValue) * (progress * segmentCount - valueIndex)) * 0.0001
@@ -359,7 +357,7 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 			this._tweenProgress = (this._currentTime - this._framePosition) * this._frameDurationR
 
 			if (this._tweenType == TweenType.Curve) {
-				this._tweenProgress = TweenTimelineState._getEasingCurveValue(this._tweenProgress, this._frameArray!!.raw.asDouble(), this._curveCount, this._frameOffset + BinaryOffset.FrameCurveSamples)
+				this._tweenProgress = TweenTimelineState._getEasingCurveValue(this._tweenProgress, this._frameArray!!, this._curveCount, this._frameOffset + BinaryOffset.FrameCurveSamples)
 			}
 			else if (this._tweenType != TweenType.Line) {
 				this._tweenProgress = TweenTimelineState._getEasingValue(this._tweenType, this._tweenProgress, this._tweenEasing)
