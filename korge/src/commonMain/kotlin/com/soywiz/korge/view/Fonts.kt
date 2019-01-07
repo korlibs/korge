@@ -44,12 +44,13 @@ class Fonts : Html.MetricsProvider {
 
 	companion object {
 		val fonts get() = Fonts_fonts
-		lateinit var defaultFont: BitmapFont
+		val defaultFont: BitmapFont get() = Fonts_defaultFont
 
 		suspend fun init() {
-			defaultFont = getDebugBmpFontOnce()
+			Fonts_defaultFont = getDebugBmpFontOnce()
 		}
 	}
 }
 
-private val Fonts_fonts: Fonts = Fonts()
+private val Fonts_fonts: Fonts by lazy { Fonts() }
+private lateinit var Fonts_defaultFont: BitmapFont

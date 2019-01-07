@@ -5,6 +5,7 @@ import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
@@ -51,7 +52,7 @@ object Korge {
 			// Instances
 			.mapInstance(ModuleArgs::class, moduleArgs)
 			.mapInstance(TimeProvider::class, config.timeProvider)
-			.mapInstance(CoroutineContext::class, config.context)
+			.mapInstance(CoroutineContext::class, coroutineContext)
 			.mapInstance(Module::class, config.module)
 			.mapInstance(AG::class, ag)
 			.mapInstance(Config::class, config)
@@ -374,7 +375,13 @@ object Korge {
 			}
 			//println("render:$delta,$adelta")
 		}
+	}
 
+	fun KoruiWithLogger(entry: suspend (KoruiContext) -> Unit) {
+		return Korui {
+			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+			entry(it)
+		}
 	}
 
 	//@TODO: Kotlin-JVM bug? Exception in thread "main" java.lang.NoSuchMethodError: com.soywiz.korge.Korge.invoke$default(Lcom/soywiz/korge/Korge;Lcom/soywiz/korge/scene/Module;[Ljava/lang/String;Lcom/soywiz/korag/AGContainer;Lcom/soywiz/korui/event/EventDispatcher;Lkotlin/reflect/KClass;Ljava/util/List;Lcom/soywiz/klock/TimeProvider;Lcom/soywiz/korinject/AsyncInjector;ZZLkotlin/jvm/functions/Function1;Lcom/soywiz/korio/async/EventLoop;ILjava/lang/Object;)V
@@ -389,9 +396,8 @@ object Korge {
 		injector: AsyncInjector = AsyncInjector(),
 		debug: Boolean = false,
 		trace: Boolean = false,
-		constructedViews: (Views) -> Unit = {},
-		context: CoroutineDispatcher = KoruiDispatcher
-	) = Korui(context) { koruiContext ->
+		constructedViews: (Views) -> Unit = {}
+	) = KoruiWithLogger { koruiContext ->
 		logger.trace { "Korge.invoke" }
 		test(
 			Config(
@@ -428,7 +434,7 @@ object Korge {
 		entry: suspend Stage.() -> Unit
 	) {
 		val coroutineContext = KoruiDispatcher
-		Korui(coroutineContext) { koruiContext ->
+		KoruiWithLogger { koruiContext ->
 			if (OS.isNative) println("Korui[0]")
 			CanvasApplicationEx(
 				title = title,
@@ -472,7 +478,7 @@ object Korge {
 		}
 	}
 
-	operator fun invoke(config: Config) = Korui(config.context as CoroutineDispatcher) { koruiContext ->
+	operator fun invoke(config: Config) = KoruiWithLogger { koruiContext ->
 		logger.trace { "Korge.invoke(config)" }
 		test(config, koruiContext)
 	}
@@ -490,8 +496,7 @@ object Korge {
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,
-		val constructedViews: (Views) -> Unit = {},
-		val context: CoroutineContext = KoruiDispatcher
+		val constructedViews: (Views) -> Unit = {}
 	)
 
 	suspend fun test(config: Config, koruiContext: KoruiContext): SceneContainer {

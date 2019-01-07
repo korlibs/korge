@@ -3,6 +3,7 @@ package com.soywiz.korge.tests
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.*
+import com.soywiz.korge.async.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
@@ -17,7 +18,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	var time = DateTime(0.0)
 	//val testDispatcher = TestCoroutineDispatcher(frameTime)
 
-	val dispatcher = KorioDefaultDispatcher
+	val dispatcher = KorgeDispatcher
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}

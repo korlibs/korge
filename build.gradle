@@ -30,9 +30,13 @@ subprojects {
             //fromPreset(presets.iosX64, 'iosX64')
             //fromPreset(presets.iosArm32, 'iosArm32')
             //fromPreset(presets.iosArm64, 'iosArm64')
-            fromPreset(presets.macosX64, 'macosX64')
+            fromPreset(presets.macosX64, 'macosX64') {
+				//compilations.main.outputKinds 'dynamic'
+			}
             //fromPreset(presets.linuxX64, 'linuxX64')
-            fromPreset(presets.mingwX64, 'mingwX64')
+            fromPreset(presets.mingwX64, 'mingwX64') {
+				//compilations.main.outputKinds 'dynamic'
+			}
             fromPreset(presets.jvm, 'jvm')
             fromPreset(presets.js, 'js') {
                 compilations.main {
@@ -114,6 +118,7 @@ subprojects {
     task populateNodeModules {
         doLast {
             copy {
+				from node.nodeModulesDir
                 from jsCompilations.main.output.allOutputs
                 from jsCompilations.test.output.allOutputs
                 jsCompilations.test.runtimeDependencyFiles.each {
@@ -127,10 +132,10 @@ subprojects {
 
                 into "$buildDir/node_modules"
             }
-			copy {
-				from "${node.nodeModulesDir}/mocha"
-				into "$buildDir/node_modules/mocha"
-			}
+			//copy {
+			//	from "${node.nodeModulesDir}/mocha"
+			//	into "$buildDir/node_modules/mocha"
+			//}
         }
     }
 
