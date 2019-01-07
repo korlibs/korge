@@ -114,7 +114,6 @@ subprojects {
     task populateNodeModules {
         doLast {
             copy {
-                from "${node.nodeModulesDir}"
                 from jsCompilations.main.output.allOutputs
                 from jsCompilations.test.output.allOutputs
                 jsCompilations.test.runtimeDependencyFiles.each {
@@ -128,6 +127,10 @@ subprojects {
 
                 into "$buildDir/node_modules"
             }
+			copy {
+				from "${node.nodeModulesDir}/mocha"
+				into "$buildDir/node_modules/mocha"
+			}
         }
     }
 

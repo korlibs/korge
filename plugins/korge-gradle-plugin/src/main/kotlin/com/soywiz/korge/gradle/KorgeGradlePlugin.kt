@@ -283,7 +283,6 @@ class KorgeGradleApply(val project: Project) {
         val populateNodeModules = project.addTask<DefaultTask>("populateNodeModules") { task ->
             task.doLast {
                 copy { copy ->
-                    //copy.from("$buildDir/npm/node_modules")
                     copy.from(jsCompilations["main"]["output"]["allOutputs"])
                     copy.from(jsCompilations["test"]["output"]["allOutputs"])
                     (jsCompilations["test"]["runtimeDependencyFiles"] as Iterable<File>).forEach { file ->
@@ -295,6 +294,10 @@ class KorgeGradleApply(val project: Project) {
                         copy.from(sourceSet.resources)
                     }
                     copy.into(mocha_node_modules)
+                }
+                copy { copy ->
+                    copy.from("$node_modules/mocha")
+                    copy.into("$mocha_node_modules/mocha")
                 }
             }
         }
@@ -321,7 +324,7 @@ class KorgeGradleApply(val project: Project) {
                 """)
             }
             task.setScript(node_modules["mocha-headless-chrome/bin/start"])
-            task.setArgs(listOf("-f", "$buildDir/node_modules/tests.html"))
+            task.setArgs(listOf("-f", "$buildDir/node_modules/tests.html", "-a", "no-sandbox", "-a", "disable-setuid-sandbox", "-a", "allow-file-access-from-files"))
         }
 
         val runMocha = project.addTask<NodeTask>("runMocha", dependsOn = listOf(
