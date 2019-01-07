@@ -3,15 +3,20 @@ apply plugin: 'idea'
 idea {
 	module {
 		excludeDirs = [file(".gradle")]
+
 		[
 			".idea",
 			"@old",
 			"docs",
 			"plugins",
 			"korge-samples",
-
 		].each {
 			excludeDirs << file("$it")
 		}
 	}
 }
+
+project.file("korge/src/commonMain/kotlin/com/soywiz/korge/KorgeVersion.kt").text = "package com.soywiz.korge\n" +
+	"\n" +
+		"val Korge.VERSION get() = \"${rootProject.property("projectVersion")}\"\n"
+
