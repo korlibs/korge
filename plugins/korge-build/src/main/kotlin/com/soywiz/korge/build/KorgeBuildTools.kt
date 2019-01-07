@@ -8,5 +8,5 @@ object KorgeBuildTools {
 	private val binaryRootCache = AsyncCacheItem<VfsFile>()
 
 	suspend fun BINARY_ROOT() =
-		binaryRootCache { LocalVfs(System.getProperty("user.home"))[".korge"].apply { mkdir() }.jail() }
+		binaryRootCache { localVfs(System.getProperty("user.home"))[".korge"].apply { mkdir() }.jail() }
 }

@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import kotlin.test.*
 
 class TiledMapTest : ViewsForTesting() {
@@ -34,7 +35,7 @@ class TiledMapTest : ViewsForTesting() {
 	}
 
 	@Test
-	@Ignore//("File not found")
+
 	fun testRenderInBounds() = viewsTest {
 		val renderTilesCounter = views.stats.counter("renderedTiles")
 		val tileset = TileSet(Bitmap32(32, 32).slice(), 32, 32)
@@ -44,13 +45,14 @@ class TiledMapTest : ViewsForTesting() {
 		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
 		assertEquals(DefaultViewport.HEIGHT, views.actualVirtualHeight)
 		//assertEquals(300, count)
-		assertEquals(336, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
+		//assertEquals(336, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
+		assertEquals(943, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
 	}
 
 	@Test
-	@Ignore//("File not found")
+
 	fun testObjProps() = suspendTest {
-		val data = TestAssertVfs["tiled/library1.tmx"].readTiledMapData()
+		val data = resourcesVfs["tiled/library1.tmx"].readTiledMapData()
 		val librarian = data.getObjectByName("librarian")!!
 		assertEquals("hair-girl1", librarian.objprops["hair"])
 		assertTrue(librarian.objprops["script"].toString().isNotBlank())

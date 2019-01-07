@@ -8,6 +8,14 @@ matrix:
       JAVA_OPTS=-Xmx2g
     script:
     - ./gradlew -s -i check build
+  - os: linux
+    language: java
+    jdk: oraclejdk8
+    env:
+      KBUILD=chrome
+      JAVA_OPTS=-Xmx2g
+    script:
+      - ./gradlew -s -i jsTestChrome
   - os: windows
     env: KBUILD=windows
     language: shell # java is not supported but jdk is installed

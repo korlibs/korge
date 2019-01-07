@@ -17,7 +17,7 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
 		val atlasPath0 = inputFile.readString().trim()
-		val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.basename
+		val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.baseName
 		val atlasFolder = inputFile.parent[atlasPath].jail()
 		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
 
@@ -60,7 +60,7 @@ object AtlasResourceProcessor : ResourceProcessor("atlas") {
 			meta = AtlasInfo.Meta(
 				app = "korge",
 				format = "RGBA8888",
-				image = outputImageFile.basename,
+				image = outputImageFile.baseName,
 				scale = 1.0,
 				size = AtlasInfo.Size(out.width, out.height),
 				version = AtlasInfo.Meta.VERSION

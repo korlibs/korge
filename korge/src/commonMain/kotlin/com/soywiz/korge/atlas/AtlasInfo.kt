@@ -66,7 +66,7 @@ data class AtlasInfo(
 		private fun Any?.toSize() = Dynamic(this) { Size(it["w"].int, it["h"].int) }
 
 		// @TODO: kotlinx-serialization
-		fun loadJsonSpriter(@Language("json") json: String): AtlasInfo {
+		fun loadJsonSpriter(json: String): AtlasInfo {
 			val info = Dynamic(Json.decode(json)) {
 				AtlasInfo(
 					it["frames"].let { frames ->

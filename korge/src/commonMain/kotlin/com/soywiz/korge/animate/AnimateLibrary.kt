@@ -8,9 +8,8 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.error.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*

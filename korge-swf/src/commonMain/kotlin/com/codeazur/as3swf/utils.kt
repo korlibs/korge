@@ -135,10 +135,10 @@ open class FlashByteArray() {
 	}
 
 	private fun _uncompress(data: ByteArray, method: String = "zlib"): ByteArray =
-		data.syncUncompress(getCompressionMethod(method))
+		data.uncompress(getCompressionMethod(method))
 
 	private fun _compress(data: ByteArray, method: String = "zlib"): ByteArray =
-		data.syncCompress(getCompressionMethod(method))
+		data.compress(getCompressionMethod(method))
 
 	fun replaceBytes(content: ByteArray) {
 		data.position = 0L
@@ -151,10 +151,10 @@ open class FlashByteArray() {
 	fun compress(method: String = "zlib"): Unit = replaceBytes(_compress(cloneToNewByteArray(), method))
 
 	suspend fun uncompressInWorker(method: String = "zlib") =
-		replaceBytes(executeInWorker { _uncompress(cloneToNewByteArray(), method) })
+		replaceBytes(_uncompress(cloneToNewByteArray(), method))
 
 	suspend fun compressInWorker(method: String = "zlib"): Unit =
-		replaceBytes(executeInWorker { _compress(cloneToNewByteArray(), method) })
+		replaceBytes(_compress(cloneToNewByteArray(), method))
 
 	fun readBytes(len: Int) = data.readBytes(len)
 

@@ -2,7 +2,6 @@ package com.soywiz.korge.tiled
 
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -10,8 +9,8 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.crypto.*
-import com.soywiz.korio.error.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.set

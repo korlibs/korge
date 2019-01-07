@@ -38,7 +38,7 @@ class SwfTestDisabled {
 			//sceneView += LocalVfs("c:/temp/test6.swf").readSWF(views).createMainTimeLine()
 			//sceneView += LocalVfs("c:/temp/tt30.swf").readSWF(views).createMainTimeLine()
 			//sceneView += LocalVfs("c:/temp/test3.swf").readSWF(views).createMainTimeLine()
-			this += LocalVfs("c:/temp/main.swf").readSWF(views).createMainTimeLine().apply {
+			this += localVfs("c:/temp/main.swf").readSWF(views).createMainTimeLine().apply {
 				this["action"]?.colorTransform = ColorTransform.Add(-255, -255, -255, 0)
 			}
 		}

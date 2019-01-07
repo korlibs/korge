@@ -1,8 +1,8 @@
 package com.soywiz.korge.build
 
-import com.soywiz.korio.error.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.runIgnoringExceptions
 
 val defaultResourceProcessors = ResourceProcessors()
 
@@ -31,7 +31,7 @@ abstract class ResourceProcessor(vararg extensions: String) {
 
 	private suspend fun _checkAndProcess(file: VfsFile, outputFolder: VfsFile, doProcess: Boolean): Boolean {
 		val inputFile = file
-		val outputFile = outputFolder[file.fullname].withExtension(outputExtension)
+		val outputFile = outputFolder[file.fullName].withExtension(outputExtension)
 		val metaFile = outputFile.appendExtension("meta")
 		val metaInfo = ResourceVersion.fromFile(inputFile, version)
 		val newMetaInfo = if (metaFile.exists()) ResourceVersion.readMeta(metaFile) else null
@@ -95,8 +95,8 @@ abstract class ResourceProcessor(vararg extensions: String) {
 
 					println("  - Processing: $processor: ${fileInput.absolutePath}")
 
-					ignoreErrors { folderOutput.ensureParents() }
-					ignoreErrors { folderOutput.mkdir() }
+					runIgnoringExceptions { folderOutput.ensureParents() }
+					runIgnoringExceptions { folderOutput.mkdir() }
 					if (processor.requireRegeneration(fileInput, folderOutput)) {
 						tasks += Task(fileInput, folderOutput, processor)
 					}

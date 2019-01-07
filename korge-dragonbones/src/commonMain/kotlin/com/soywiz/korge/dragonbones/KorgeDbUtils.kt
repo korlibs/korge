@@ -22,7 +22,7 @@ suspend fun VfsFile.readDbSkeleton(factory: KorgeDbFactory): DragonBonesData {
 }
 
 suspend fun VfsFile.readDbSkeletonAndAtlas(factory: KorgeDbFactory): DragonBonesData {
-	val atlas = this.parent[this.basename.replace("_ske", "_tex")].readDbAtlas(factory)
+	val atlas = this.parent[this.baseName.replace("_ske", "_tex")].readDbAtlas(factory)
 	val skel = this.readDbSkeleton(factory)
 	return skel
 }

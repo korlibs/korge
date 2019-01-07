@@ -16,7 +16,7 @@ import kotlin.reflect.*
 class KorgeLightComponents(val uiFactory: UIFactory) : LightComponents() {
 	val views = uiFactory.views
 
-	override fun create(type: LightType): LightComponentInfo {
+	override fun create(type: LightType, config: Any?): LightComponentInfo {
 		val handle = when (type) {
 			LightType.BUTTON -> uiFactory.button()
 			LightType.CONTAINER -> FixedSizeContainer()

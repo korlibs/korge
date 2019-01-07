@@ -1,6 +1,6 @@
 package com.soywiz.korge.service.storage
 
-import com.soywiz.korio.error.*
+import com.soywiz.korio.lang.*
 
 interface IStorage {
 	operator fun set(key: String, value: String): Unit

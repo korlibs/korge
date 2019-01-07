@@ -12,12 +12,9 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.error.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -364,7 +361,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				val simpleName = trait.name.simpleName
 				//println(" - " + trait.name.simpleName)
 				if (simpleName.startsWith("frame")) {
-					val frame = ignoreErrors { simpleName.substr(5).toInt() } ?: continue
+					val frame = runIgnoringExceptions { simpleName.substr(5).toInt() } ?: continue
 					val frame0 = frame - 1
 					val traitMethod = (trait as ABC.TraitMethod?) ?: continue
 					val methodDesc = abc.methodsDesc[traitMethod.methodIndex]
@@ -810,7 +807,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					val metaData = it.metaData
 					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {
 						val uidInfo = mc.uidInfo[uid]
-						val eprops = ignoreErrors { Json.decode(metaData["props"].toString()) as Map<String, String> }
+						val eprops = runIgnoringExceptions { Json.decode(metaData["props"].toString()) as Map<String, String> }
 						if (eprops != null) uidInfo.extraProps += eprops
 						//println(depth.extraProps)
 					}

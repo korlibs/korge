@@ -436,7 +436,8 @@ object Korge {
 				height = height,
 				icon = icon,
 				quality = quality,
-				koruiContext = koruiContext
+				koruiContext = koruiContext,
+				agConfig = AGConfig(antialiasHint = (quality == LightQuality.QUALITY))
 			) { canvas, frame ->
 				if (OS.isNative) println("CanvasApplicationEx.IN[0]")
 				val injector = AsyncInjector()
@@ -509,7 +510,7 @@ object Korge {
 					module.iconImage!!.render()
 				}
 				module.icon != null -> {
-					ResourcesVfs[module.icon!!].readBitmapOptimized(config.imageFormats)
+					resourcesVfs[module.icon!!].readBitmapOptimized(config.imageFormats)
 				}
 				else -> {
 					null
@@ -528,7 +529,8 @@ object Korge {
 			height = module.windowSize.height,
 			icon = icon,
 			quality = module.quality,
-			koruiContext = koruiContext
+			koruiContext = koruiContext,
+			agConfig = AGConfig(antialiasHint = (module.quality == LightQuality.QUALITY))
 		) { container, frame ->
 			logger.trace { "Korge.test [1]" }
 			coroutineScope {

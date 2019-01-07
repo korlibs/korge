@@ -1,7 +1,7 @@
 package com.soywiz.korfl
 
 import com.soywiz.kds.*
-import com.soywiz.korio.error.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 
 // http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/actionscript/articles/avm2overview.pdf

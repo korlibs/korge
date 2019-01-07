@@ -21,7 +21,7 @@ class ResourcesRoot : AsyncDependency {
 		root = MountableVfs() {
 			mountable = this
 		}
-		mount("/", ResourcesVfs)
+		mount("/", resourcesVfs)
 	}
 
 	suspend fun redirected(redirector: VfsFile.(String) -> String) {

@@ -4,8 +4,8 @@ import com.soywiz.korag.log.*
 import com.soywiz.korge.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import kotlin.coroutines.*
 import kotlin.test.*
 
@@ -14,9 +14,9 @@ class BitmapFontTest {
 	val ctx = RenderContext(ag, coroutineContext = EmptyCoroutineContext)
 
 	@Test
-	@Ignore//("File not found")
+
 	fun simple() = suspendTest {
-		val font = TestAssertVfs["font/font.fnt"].readBitmapFont()
+		val font = resourcesVfs["font/font.fnt"].readBitmapFont()
 		assertEquals(81, font.glyphs.size)
 		val glyph = font[64]
 		assertEquals(69, glyph.texture.width)
@@ -60,9 +60,9 @@ class BitmapFontTest {
 	}
 
 	@Test
-	@Ignore//("File not found")
+
 	fun font2() = suspendTest {
-		val font = TestAssertVfs["font2/font1.fnt"].readBitmapFont()
+		val font = resourcesVfs["font2/font1.fnt"].readBitmapFont()
 		assertEquals(95, font.glyphs.size)
 		val glyph = font[64]
 		assertEquals(52, glyph.texture.width)

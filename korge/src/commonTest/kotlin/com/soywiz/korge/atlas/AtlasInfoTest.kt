@@ -1,15 +1,15 @@
 package com.soywiz.korge.atlas
 
-import com.soywiz.korge.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class AtlasInfoTest {
 	@Test
-	@Ignore//("File not found")
+
 	fun name() = suspendTest {
-		val atlas = AtlasInfo.loadJsonSpriter(TestAssertVfs["demo.json"].readString())
+		val atlas = AtlasInfo.loadJsonSpriter(resourcesVfs["demo.json"].readString())
 		assertEquals("Spriter", atlas.app)
 		assertEquals("r10", atlas.version)
 		assertEquals("demo.png", atlas.image)

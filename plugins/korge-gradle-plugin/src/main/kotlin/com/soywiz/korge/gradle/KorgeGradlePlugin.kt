@@ -273,23 +273,55 @@ class KorgeGradleApply(val project: Project) {
             task.setArgs(listOf("install", "webpack@4.28.2", "webpack-cli@3.1.2"))
         }
 
-        val jsCompilations = project["kotlin"]["targets"]["js"]["compilations"]
+        val jsInstallMochaHeadlessChrome = project.addTask<NpmTask>("jsInstallMochaHeadlessChrome") { task ->
+            task.onlyIf { !node_modules["mocha-headless-chrome"].exists() }
+            task.setArgs(listOf("install", "mocha-headless-chrome@2.0.1"))
+        }
 
+        val jsCompilations = project["kotlin"]["targets"]["js"]["compilations"]
 
         val populateNodeModules = project.addTask<DefaultTask>("populateNodeModules") { task ->
             task.doLast {
                 copy { copy ->
-
                     //copy.from("$buildDir/npm/node_modules")
                     copy.from(jsCompilations["main"]["output"]["allOutputs"])
-                    (jsCompilations["test"]["runtimeDependencyFiles"] as Iterable<File>).forEach {
-                        if (it.exists() && !it.isDirectory()) {
-                            copy.from(zipTree(it.absolutePath).matching { it.include("*.js") })
+                    copy.from(jsCompilations["test"]["output"]["allOutputs"])
+                    (jsCompilations["test"]["runtimeDependencyFiles"] as Iterable<File>).forEach { file ->
+                        if (file.exists() && !file.isDirectory()) {
+                            copy.from(zipTree(file.absolutePath).matching { it.include("*.js") })
                         }
+                    }
+                    for (sourceSet in project.gkotlin.sourceSets) {
+                        copy.from(sourceSet.resources)
                     }
                     copy.into(mocha_node_modules)
                 }
             }
+        }
+
+        val jsTestChrome = project.addTask<NodeTask>("jsTestChrome", dependsOn = listOf(jsCompilations["test"]["compileKotlinTaskName"], jsInstallMochaHeadlessChrome, jsInstallMocha, populateNodeModules)) { task ->
+            task.doFirst {
+                File("$buildDir/node_modules/tests.html").writeText("""<!DOCTYPE html><html>
+                    <head>
+                        <title>Mocha Tests</title>
+                        <meta charset="utf-8">
+                        <link rel="stylesheet" href="mocha/mocha.css">
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+                    </head>
+                    <body>
+                    <div id="mocha"></div>
+                    <script src="mocha/mocha.js"></script>
+                    <script>
+                        requirejs.config({'baseUrl': '.', 'paths': { 'tests': '../classes/kotlin/js/test/${project.name}_test' }});
+                        mocha.setup('bdd');
+                        require(['tests'], function() { mocha.run(); });
+                    </script>
+                    </body>
+                    </html>
+                """)
+            }
+            task.setScript(node_modules["mocha-headless-chrome/bin/start"])
+            task.setArgs(listOf("-f", "$buildDir/node_modules/tests.html"))
         }
 
         val runMocha = project.addTask<NodeTask>("runMocha", dependsOn = listOf(
@@ -299,7 +331,8 @@ class KorgeGradleApply(val project: Project) {
         )) { task ->
             task.setEnvironment(mapOf("NODE_MODULES" to "$node_modules${File.pathSeparator}$mocha_node_modules"))
             task.setScript(node_modules["mocha/bin/mocha"])
-            task.setArgs(listOf("--timeout", "15000", relativePath("${(jsCompilations["test"]["output"]["classesDirs"] as Iterable<File>).first()}/${project.name}_test.js")))
+            task.setWorkingDir(project.file("$buildDir/node_modules"))
+            task.setArgs(listOf("--timeout", "15000", "${project.name}_test.js"))
         }
 
         // Only run JS tests if not in windows
@@ -407,6 +440,20 @@ class KorgeGradleApply(val project: Project) {
 
                 val indexHtml = webMinFolder["index.html"].readText()
                 webMinWebpackFolder["index.html"].writeText(indexHtml.replace(Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"), "<script src=\"bundle.js\" type=\"text/javascript\"></script>"))
+            }
+        }
+
+        project.afterEvaluate {
+            for (target in listOf("macosX64", "mingwX64")) {
+                val taskName = "copyResourcesToExecutable_${target}"
+                val targetTestTask = tasks.getByName("${target}Test")
+                val task = project.addTask<Copy>(taskName) { task ->
+                    for (sourceSet in project.gkotlin.sourceSets) {
+                        task.from(sourceSet.resources)
+                    }
+                    task.into(File(targetTestTask.inputs.properties["executable"].toString()).parentFile)
+                }
+                targetTestTask.dependsOn(task)
             }
         }
     }

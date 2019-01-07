@@ -22,7 +22,7 @@ object LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "v
 	override val outputExtension: String = "lipsync"
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
-		inputFile.copyTo(outputFile.parent[inputFile.basename])
+		inputFile.copyTo(outputFile.parent[inputFile.baseName])
 		outputFile.writeString(processAudioData(inputFile.readAudioData()).toLipString())
 	}
 
@@ -81,10 +81,10 @@ object LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "v
 
 	suspend fun processAudioData(data: AudioData): RhubarbFile {
 		val rhubarb = getRhubarbTool().rhubarb
-		val tempFile = TempVfs()["rhubarb-file.wav"]
+		val tempFile = tempVfs["rhubarb-file.wav"]
 		try {
 			tempFile.write(data.toWav())
-			val result = TempVfs().execToString(listOf(rhubarb.absolutePath, "-f", "json", tempFile.absolutePath))
+			val result = tempVfs.execToString(listOf(rhubarb.absolutePath, "-f", "json", tempFile.absolutePath))
 			return Json.decodeToType<RhubarbFile>(result)
 		} finally {
 			tempFile.delete()

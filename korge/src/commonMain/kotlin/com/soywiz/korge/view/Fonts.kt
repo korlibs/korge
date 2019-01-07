@@ -4,9 +4,11 @@ import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.font.*
-import com.soywiz.korio.error.*
-import com.soywiz.korio.util.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import kotlin.collections.contains
+import kotlin.collections.hashMapOf
+import kotlin.collections.set
 import kotlin.math.*
 
 class Fonts : Html.MetricsProvider {
@@ -40,9 +42,8 @@ class Fonts : Html.MetricsProvider {
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) =
 		getBitmapFont(format.computedFace, format.computedSize).getBounds(text, format, out)
 
-	@NativeThreadLocal
 	companion object {
-		val fonts = Fonts()
+		val fonts get() = Fonts_fonts
 		lateinit var defaultFont: BitmapFont
 
 		suspend fun init() {
@@ -50,3 +51,5 @@ class Fonts : Html.MetricsProvider {
 		}
 	}
 }
+
+private val Fonts_fonts: Fonts = Fonts()

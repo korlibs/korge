@@ -5,6 +5,7 @@ import com.soywiz.korio.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.stream.*
 import kotlin.reflect.*
 
@@ -101,7 +102,7 @@ object Spriter {
 	 * @param scmlFile the path to the SCML file
 	 */
 	suspend fun load(scmlFile: String) {
-		load(LocalVfs(scmlFile))
+		load(com.soywiz.korio.file.std.resourcesVfs[scmlFile])
 	}
 
 	/**

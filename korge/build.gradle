@@ -5,9 +5,3 @@ dependencies {
 	commonMainApi "com.soywiz:klogger:$kloggerVersion"
 
 }
-
-[kotlin.targets.js, kotlin.targets.metadata].each { target ->
-	target.compilations.main.kotlinSourceSets.resources.collectMany { it.srcDirs }.each {
-		tasks.jsJar.from it
-	}
-}
