@@ -202,8 +202,51 @@ class KorgeGradleApply(val project: Project) {
         project.configureIdea()
         project.addWeb()
         project.addProguard()
+        project.addNativeRun()
 
         project.korge.init()
+    }
+
+    val nativeTarget = when {
+        Os.isFamily(Os.FAMILY_WINDOWS) -> "mingwX64"
+        Os.isFamily(Os.FAMILY_MAC) -> "macosX64"
+        Os.isFamily(Os.FAMILY_UNIX) -> "linuxX64"
+        else -> "unknownX64"
+    }
+    val cnativeTarget = nativeTarget.capitalize()
+    
+    val korgeGroup = "korge"
+
+    private fun Project.addNativeRun() {
+        afterEvaluate {
+            for (target in listOf("mingwX64", "macosX64")) {
+                val ctarget = target.capitalize()
+                for (kind in listOf("release", "debug")) {
+                    val ckind = kind.capitalize()
+                    val ctargetKind = "$ctarget$ckind"
+
+                    val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
+                    val executableFile = compilation.getBinary("EXECUTABLE", kind)
+
+                    val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
+                        for (sourceSet in project.gkotlin.sourceSets) {
+                            task.from(sourceSet.resources)
+                        }
+                        task.into(executableFile.parentFile)
+                    }
+
+                    addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
+                        task.executable = executableFile.absolutePath
+                        task.args = listOf<String>()
+                    }
+                }
+                addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = korgeGroup) { task ->
+                }
+            }
+        }
+
+        addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = korgeGroup)
+        addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = korgeGroup)
     }
 
 
@@ -449,7 +492,7 @@ class KorgeGradleApply(val project: Project) {
 
         project.afterEvaluate {
             for (target in listOf("macosX64", "mingwX64")) {
-                val taskName = "copyResourcesToExecutable_${target}"
+                val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
                 val targetTestTask = tasks.getByName("${target}Test")
                 val task = project.addTask<Copy>(taskName) { task ->
                     for (sourceSet in project.gkotlin.sourceSets) {
@@ -476,7 +519,7 @@ class KorgeGradleApply(val project: Project) {
         }
 
         // packageJvmFatJar
-        val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = "korge") { task ->
+        val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = korgeGroup) { task ->
             task.baseName = "${project.name}-all"
             project.afterEvaluate {
                 task.manifest { manifest ->
@@ -498,7 +541,7 @@ class KorgeGradleApply(val project: Project) {
 
         val runJvm = tasks.getByName("runJvm") as JavaExec
 
-        project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = "korge", dependsOn = listOf(packageJvmFatJar)) { task ->
+        project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = korgeGroup, dependsOn = listOf(packageJvmFatJar)) { task ->
             task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
             task.injars(packageJvmFatJar.outputs.files.toList())
             task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
@@ -608,7 +651,7 @@ class KorgeGradleApply(val project: Project) {
 
         run {
             project.addTask<KorgeResourcesTask>(
-                "genResources", group = "korge", description = "process resources",
+                "genResources", group = korgeGroup, description = "process resources",
                 //overwrite = true, dependsOn = listOf("build")
                 overwrite = true, dependsOn = listOf()
             ) {
@@ -622,7 +665,7 @@ class KorgeGradleApply(val project: Project) {
 
         run {
             project.addTask<KorgeTestResourcesTask>(
-                "genTestResources", group = "korge", description = "process test resources",
+                "genTestResources", group = korgeGroup, description = "process test resources",
                 //overwrite = true, dependsOn = listOf("build")
                 overwrite = true, dependsOn = listOf()
             ) {
@@ -697,14 +740,14 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val runJvm = project.addTask<JavaExec>("runJvm", group = "korge") { task ->
+            val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
                 afterEvaluate {
                     task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
                     task.main = project.ext.get("mainClassName") as? String?
                 }
             }
 
-            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = "korge", dependsOn = listOf("jsWebMinWebpack", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
+            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = korgeGroup, dependsOn = listOf("jsWebMinWebpack", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
                 //afterEvaluate {
                 //task.from(project.closure { jsWeb.targetDir })
                 task.from(project.closure { webMinWebpackFolder })
@@ -716,7 +759,7 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val cordovaPackageJsWebNoMinimized = project.addTask<Copy>("cordovaPackageJsWebNoMinimized", group = "korge", dependsOn = listOf("jsWeb", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
+            val cordovaPackageJsWebNoMinimized = project.addTask<Copy>("cordovaPackageJsWebNoMinimized", group = korgeGroup, dependsOn = listOf("jsWeb", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
                 task.from(project.closure { webFolder })
                 task.into(cordovaFolder["www"])
                 //}
@@ -726,7 +769,7 @@ class KorgeGradleApply(val project: Project) {
                 }
             }
 
-            val cordovaPrepareTargets = project.addTask<Task>("cordovaPrepareTargets", group = "korge", dependsOn = listOf(cordovaCreate)) { task ->
+            val cordovaPrepareTargets = project.addTask<Task>("cordovaPrepareTargets", group = korgeGroup, dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
                     if (korge._androidAppendBuildGradle != null) {
                         // https://cordova.apache.org/docs/en/8.x/guide/platforms/android/index.html
@@ -746,11 +789,11 @@ class KorgeGradleApply(val project: Project) {
                     task.setCordova("platform", "add", target)
                 }
 
-                val compileTarget = project.addTask<NodeTask>("compile$Target", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
+                val compileTarget = project.addTask<NodeTask>("compile$Target", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target) // prepare + compile
                 }
 
-                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = "korge", dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
+                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target, "--release") // prepare + compile
                 }
 
@@ -761,7 +804,7 @@ class KorgeGradleApply(val project: Project) {
                         val EmulatorText = if (emulator) "Emulator" else ""
                         val runTarget = project.addTask<NodeTask>(
                             "run$Target$EmulatorText$NoMinimizedText",
-                            group = "korge",
+                            group = korgeGroup,
                             dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb, cordovaPrepareTargets)
                         ) { task ->
                             task.setCordova("run", target, if (emulator) "--emulator" else "--device")
