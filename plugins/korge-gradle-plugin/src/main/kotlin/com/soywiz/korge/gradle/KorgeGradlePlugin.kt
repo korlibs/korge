@@ -385,6 +385,7 @@ class KorgeGradleApply(val project: Project) {
                 //task.exclude(*excludesNormal)
                 task.into(task.targetDir)
             }
+
             task.doLast {
                 task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
                     "OUTPUT" to project.name,
@@ -455,6 +456,13 @@ class KorgeGradleApply(val project: Project) {
                 }
                 targetTestTask.dependsOn(task)
             }
+
+            // @TODO: This doesn't work after migrating code to Kotlin.
+            //for (target in listOf(project.gkotlin.targets["js"], project.gkotlin.targets["metadata"])) {
+            //    for (it in (target["compilations"]["main"]["kotlinSourceSets"]["resources"] as Iterable<SourceDirectorySet>).flatMap { it.srcDirs }) {
+            //        (tasks["jsJar"] as Copy).from(it)
+            //    }
+            //}
         }
     }
 
