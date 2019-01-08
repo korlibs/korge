@@ -216,8 +216,6 @@ class KorgeGradleApply(val project: Project) {
             error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
         }
 
-        System.setProperty("java.awt.headless", "true")
-
         KorgeBuildServiceProxy.init()
         project.addVersionExtension()
         project.configureRepositories()
