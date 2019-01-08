@@ -14,7 +14,8 @@ import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
-class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
+class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4096) {
+//class BatchBuilder2D(val ag: AG, val maxQuads: Int = 512) {
 	init { logger.trace { "BatchBuilder2D[0]" } }
 
 	var flipRenderTexture = true
@@ -181,10 +182,13 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 1000) {
 		drawVertices(array, vcount, icount)
 	}
 
+	private fun checkAvailable(indices: Int, vertices: Int): Boolean {
+		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
+	}
+
 	private fun ensure(indices: Int, vertices: Int) {
-		if ((this.indexPos + indices >= maxIndices) || (this.vertexPos + vertices >= maxQuads)) {
-			flush()
-		}
+		if (!checkAvailable(indices, vertices)) flush()
+		if (!checkAvailable(indices, vertices)) error("Too much vertices")
 	}
 
 	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) =

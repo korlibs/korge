@@ -3,6 +3,7 @@ package com.soywiz.korge
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
+import com.soywiz.korge.async.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
@@ -113,9 +114,7 @@ object Korge {
 
 		views.targetFps = config.module.targetFps
 
-		CoroutineScope(coroutineContext).animationFrameLoop {
-			logger.trace { "views.animationFrameLoop" }
-			//ag.resized()
+		korgeAnimationFrameLoop {
 			config.container.repaint()
 		}
 
@@ -142,32 +141,14 @@ object Korge {
 		var moveMouseOutsideInNextFrame = false
 		val mouseTouchId = -1
 
-		/*
-
-		fun AGInput.GamepadEvent.copyTo(e: GamepadUpdatedEvent) {
-			e.gamepad.copyFrom(this.gamepad)
-		}
-
-		fun AGInput.GamepadEvent.copyTo(e: GamepadConnectionEvent) {
-			e.gamepad.copyFrom(this.gamepad)
-		}
-
-
-
-		// MOUSE
-		agInput.onMouseDown { e ->
-			mouseDown("onMouseDown", e.x, e.y)
-		}
-		agInput.onMouseUp { e ->
-			mouseUp("onMouseUp", e.x, e.y)
-		}
-		agInput.onMouseOver { e -> mouseMove("onMouseOver", e.x, e.y) }
-		agInput.onMouseDrag { e ->
-			mouseDrag("onMouseDrag", e.x, e.y)
-			updateTouch(mouseTouchId, e.x, e.y, start = false, end = false)
-		}
-		//agInput.onMouseClick { e -> } // Triggered by mouseUp
-		*/
+		//fun AGInput.GamepadEvent.copyTo(e: GamepadUpdatedEvent) { e.gamepad.copyFrom(this.gamepad) }
+		//fun AGInput.GamepadEvent.copyTo(e: GamepadConnectionEvent) {e.gamepad.copyFrom(this.gamepad) }
+		//// MOUSE
+		//agInput.onMouseDown { e -> mouseDown("onMouseDown", e.x, e.y) }
+		//agInput.onMouseUp { e -> mouseUp("onMouseUp", e.x, e.y) }
+		//agInput.onMouseOver { e -> mouseMove("onMouseOver", e.x, e.y) }
+		//agInput.onMouseDrag { e -> mouseDrag("onMouseDrag", e.x, e.y);  updateTouch(mouseTouchId, e.x, e.y, start = false, end = false) }
+		////agInput.onMouseClick { e -> } // Triggered by mouseUp
 
 		fun pixelRatio(): Double = ag.devicePixelRatio
 
@@ -466,16 +447,22 @@ object Korge {
 				views.clipBorders = clipBorders
 				views.targetFps = targetFps
 				Korge.prepareViews(views, canvas, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-				CoroutineScope(coroutineContext).animationFrameLoop {
-					Korge.logger.trace { "views.animationFrameLoop" }
-					//println("views.animationFrameLoop")
-					//ag.resized()
+				korgeAnimationFrameLoop {
 					canvas.repaint()
 				}
 				entry(views.stage)
 				if (OS.isNative) println("CanvasApplicationEx.IN[1]")
 			}
 			if (OS.isNative) println("Korui[1]")
+		}
+	}
+
+	suspend fun korgeAnimationFrameLoop(callback: () -> Unit) {
+		CoroutineScope(coroutineContext).animationFrameLoopKorge {
+			Korge.logger.trace { "views.animationFrameLoop" }
+			//println("views.animationFrameLoop")
+			//ag.resized()
+			callback()
 		}
 	}
 

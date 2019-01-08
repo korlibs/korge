@@ -9,7 +9,8 @@ import kotlin.coroutines.*
 
 @UseExperimental(InternalCoroutinesApi::class)
 class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
-	CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
+	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
+	CoroutineDispatcher(), ContinuationInterceptor, Delay {
 	var time = 0L; private set
 
 	class TimedTask(val time: Long, val callback: suspend () -> Unit) {
@@ -17,7 +18,6 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	}
 
 	val tasks = PriorityQueue<TimedTask>(Comparator { a, b -> a.time.compareTo(b.time) })
-
 
 	//override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
 	//	return object : Continuation<T> {
@@ -47,9 +47,9 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 		scheduleAfter(timeMillis.toInt()) { continuation.resume(Unit) }
 	}
 
-	override fun delayFrame(continuation: CancellableContinuation<Unit>) {
-		scheduleAfter(frameTime.millisecondsInt) { continuation.resume(Unit) }
-	}
+	//override fun delayFrame(continuation: CancellableContinuation<Unit>) {
+	//	scheduleAfter(frameTime.millisecondsInt) { continuation.resume(Unit) }
+	//}
 
 	var exception: Throwable? = null
 	fun loop() {

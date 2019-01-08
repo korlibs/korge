@@ -3,6 +3,7 @@ package com.soywiz.korge.tests
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.*
+import com.soywiz.korge.async.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
@@ -13,12 +14,13 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.async.*
 import com.soywiz.korui.event.*
 import com.soywiz.korui.input.*
+import kotlinx.coroutines.*
 
 open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	var time = DateTime(0.0)
-	val dispatcher = TestCoroutineDispatcher(frameTime)
+	//val dispatcher2 = TestCoroutineDispatcher(frameTime)
+	val dispatcher = KorgeDispatcher
 
-	//val dispatcher = KorgeDispatcher
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}
@@ -29,10 +31,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
 	val stats get() = views.stats
-
-	init {
-		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime)
-	}
+	val mouse get() = input.mouse
 
 	suspend fun mouseMoveTo(x: Number, y: Number) {
 		koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x.toInt(), y = y.toInt()))
@@ -47,8 +46,8 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 			MouseEvent(
 				type = MouseEvent.Type.DOWN,
 				id = 0,
-				x = input.mouse.x.toInt(),
-				y = input.mouse.y.toInt(),
+				x = mouse.x.toInt(),
+				y = mouse.y.toInt(),
 				button = MouseButton.LEFT,
 				buttons = 1
 			)
@@ -98,19 +97,19 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	suspend fun View.simulateClick() {
 		this.mouse.onClick(this.mouse)
 		ag.onRender(ag)
-		delayNextFrame()
+		delayFrame()
 	}
 
 	suspend fun View.simulateOver() {
 		this.mouse.onOver(this.mouse)
 		ag.onRender(ag)
-		delayNextFrame()
+		delayFrame()
 	}
 
 	suspend fun View.simulateOut() {
 		this.mouse.onOut(this.mouse)
 		ag.onRender(ag)
-		delayNextFrame()
+		delayFrame()
 	}
 
 	suspend fun View.isVisibleToUser(): Boolean {
@@ -125,15 +124,16 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-	fun viewsTest(block: suspend () -> Unit): Unit = suspendTest {
+	fun viewsTest(block: suspend CoroutineScope.() -> Unit): Unit = suspendTest {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
-		val el = viewsLog.animationFrameLoop {
+		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime)
+		val el = viewsLog.animationFrameLoopKorge {
 			time += frameTime
 			ag.onRender(ag)
 		}
 		try {
 			withTimeout(10.seconds) {
-				block()
+				block(views)
 			}
 		} finally {
 			el.close()

@@ -24,7 +24,7 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 
 		val demo = Demo()
 
-		val p1 = asyncImmediately(coroutineContext) {
+		val p1 = asyncImmediately {
 			views.stage.tween(demo::b[100, 200], time = 100.milliseconds, easing = Easing.LINEAR) {
 				result2 += "[b=" + demo.b + ":" + it.niceStr + "]"
 				//println(result2)
@@ -33,7 +33,7 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 			//println(views.stage.unsafeListRawComponents)
 
 		}
-		val p2 = asyncImmediately(coroutineContext) {
+		val p2 = asyncImmediately {
 			views.stage.tween(demo::c[100, 200], time = 100.milliseconds, easing = Easing.LINEAR) {
 				result2 += "[c=" + demo.c + ":" + it.niceStr + "]"
 			}
