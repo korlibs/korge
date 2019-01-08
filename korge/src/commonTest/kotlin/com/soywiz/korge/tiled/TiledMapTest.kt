@@ -36,7 +36,7 @@ class TiledMapTest : ViewsForTesting() {
 
 	@Test
 
-	fun testRenderInBounds() = viewsTest {
+	fun testRenderInBounds() {
 		val renderTilesCounter = views.stats.counter("renderedTiles")
 		val tileset = TileSet(Bitmap32(32, 32).slice(), 32, 32)
 		val map = TileMap(IntArray2(200, 200), tileset)
@@ -44,6 +44,7 @@ class TiledMapTest : ViewsForTesting() {
 		views.frameUpdateAndRender(false, Colors.TRANSPARENT_BLACK)
 		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
 		assertEquals(DefaultViewport.HEIGHT, views.actualVirtualHeight)
+		views.render()
 		//assertEquals(300, count)
 		//assertEquals(336, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
 		assertEquals(943, renderTilesCounter.countThisFrame) // Update if optimized when no decimal scrolling
