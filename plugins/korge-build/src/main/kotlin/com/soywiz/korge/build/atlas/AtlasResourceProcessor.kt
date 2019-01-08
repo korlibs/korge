@@ -5,11 +5,11 @@ import com.soywiz.korge.atlas.*
 import com.soywiz.korge.build.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.*
+import kotlinx.coroutines.channels.toList
 
 object AtlasResourceProcessor : ResourceProcessor("atlas") {
 	override val version: Int = 0

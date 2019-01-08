@@ -22,6 +22,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import com.soywiz.korui.async.*
 import com.soywiz.korui.event.*
 import com.soywiz.korui.input.*
 import com.soywiz.korui.light.*

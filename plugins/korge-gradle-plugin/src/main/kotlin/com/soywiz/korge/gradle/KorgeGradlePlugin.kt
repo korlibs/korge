@@ -4,6 +4,8 @@ import com.moowork.gradle.node.NodeExtension
 import com.moowork.gradle.node.exec.NodeExecRunner
 import com.moowork.gradle.node.npm.NpmTask
 import com.moowork.gradle.node.task.NodeTask
+import com.soywiz.korge.gradle.apple.IcnsBuilder
+import com.soywiz.korge.gradle.apple.InfoPlistBuilder
 import groovy.text.*
 import groovy.util.*
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -13,6 +15,7 @@ import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.file.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.testing.Test
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
@@ -39,6 +42,13 @@ enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscap
 
 data class KorgePluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
 
+enum class GameCategory {
+    ACTION, ADVENTURE, ARCADE, BOARD, CARD,
+    CASINO, DICE, EDUCATIONAL, FAMILY, KIDS,
+    MUSIC, PUZZLE, RACING, ROLE_PLAYING, SIMULATION,
+    SPORTS, STRATEGY, TRIVIA, WORD
+}
+
 @Suppress("unused")
 class KorgeExtension {
     internal fun init() {
@@ -48,16 +58,22 @@ class KorgeExtension {
     var id: String = "com.unknown.unknownapp"
     var version: String = "0.0.1"
 
+    var exeBaseName: String = "app"
+
     var name: String = "unnamed"
     var description: String = "undescripted"
     var orientation: Orientation = Orientation.DEFAULT
     val plugins = arrayListOf<KorgePluginDescriptor>()
+
+    var copyright: String = "Copyright (c) 2019 Unknown"
 
     var authorName = "unknown"
     var authorEmail = "unknown@unknown"
     var authorHref = "http://localhost"
 
     val icon: File? = File("icon.png")
+
+    var gameCategory: GameCategory? = null
 
     var fullscreen = true
 
@@ -186,6 +202,14 @@ class KorgeGradleApply(val project: Project) {
     lateinit var jsWebMin: JsWebCopy
     lateinit var jsWebMinWebpack: DefaultTask
 
+    fun KorgeExtension.getIconBytes(): ByteArray {
+        return if (icon != null && icon.exists()) {
+            icon.readBytes()
+        } else {
+            KorgeGradlePlugin::class.java.getResource("/icons/korge.png").readBytes()
+        }
+    }
+
     fun apply() {
         if (project.gradle.gradleVersion != "4.7") {
             error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
@@ -203,6 +227,7 @@ class KorgeGradleApply(val project: Project) {
         project.addWeb()
         project.addProguard()
         project.addNativeRun()
+        project.configureJvmTest()
 
         project.korge.init()
     }
@@ -216,6 +241,11 @@ class KorgeGradleApply(val project: Project) {
     val cnativeTarget = nativeTarget.capitalize()
     
     val korgeGroup = "korge"
+
+    private fun Project.configureJvmTest() {
+        val jvmTest = (tasks.findByName("jvmTest") as Test)
+        jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
+    }
 
     private fun Project.addNativeRun() {
         afterEvaluate {
@@ -247,6 +277,29 @@ class KorgeGradleApply(val project: Project) {
 
         addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = korgeGroup)
         addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = korgeGroup)
+
+        afterEvaluate {
+            addTask<Task>("packageMacosX64AppDebug", group = "korge", dependsOn = listOf("linkDebugExecutableMacosX64")) {
+                doLast {
+                    val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
+                    val executableFile = compilation.getBinary("EXECUTABLE", "debug")
+                    val appFolder = buildDir["${korge.name}.app"].apply { mkdirs() }
+                    val appFolderContents = appFolder["Contents"].apply { mkdirs() }
+                    val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
+                    val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
+                    appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
+                    resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
+                    copy { copy ->
+                        for (sourceSet in project.gkotlin.sourceSets) {
+                            copy.from(sourceSet.resources)
+                        }
+                        copy.into(resourcesFolder)
+                    }
+                    executableFile.copyTo(appMacOSFolder[korge.exeBaseName], overwrite = true)
+                    appMacOSFolder[korge.exeBaseName].setExecutable(true)
+                }
+            }
+        }
     }
 
 
@@ -704,11 +757,7 @@ class KorgeGradleApply(val project: Project) {
             val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon", dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
                     cordovaFolder.mkdirs()
-                    if (korge.icon != null && korge.icon.exists()) {
-                        cordovaFolder["icon.png"].writeBytes(korge.icon.readBytes())
-                    } else {
-                        cordovaFolder["icon.png"].writeBytes(KorgeGradlePlugin::class.java.getResource("/icons/korge.png").readBytes())
-                    }
+                    cordovaFolder["icon.png"].writeBytes(korge.getIconBytes())
                 }
             }
 

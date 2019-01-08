@@ -18,7 +18,7 @@ inline fun <reified T : Task> Project.addTask(
 	description: String = "",
 	overwrite: Boolean = true,
 	dependsOn: List<Any?> = listOf(),
-	noinline configure: (T) -> Unit = {}
+	noinline configure: T.(T) -> Unit = {}
 ): T {
 	return project.task(
 		mapOf(
@@ -27,7 +27,7 @@ inline fun <reified T : Task> Project.addTask(
 			"description" to description,
 			"overwrite" to overwrite
 		), name, LambdaClosure { it: T ->
-		configure(it)
+		configure(it, it)
 	}
 	).dependsOn(dependsOn.map { when (it) {
 		is Task -> it.name

@@ -91,7 +91,7 @@ open class SoundChannel(override val soundSystem: SoundSystem) : AudioChannel {
 		}
 
 		promise = asyncImmediately(soundSystem.views.coroutineContext) {
-			astream.play(bufferSeconds)
+			astream.playAndWait(bufferSeconds)
 		}
 	}
 

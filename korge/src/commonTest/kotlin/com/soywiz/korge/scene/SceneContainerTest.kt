@@ -5,6 +5,7 @@ import com.soywiz.korge.resources.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import kotlinx.coroutines.*
 import kotlin.test.*
 
@@ -52,7 +53,7 @@ class SceneContainerTest : ViewsForTesting() {
 		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
 		//sc.changeTo<Scene1>(time = 10)
 
-		delay(10)
+		delay(10.milliseconds)
 
 		assertNotNull(sc["box"])
 		assertEquals(

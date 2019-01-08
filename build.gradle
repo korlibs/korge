@@ -192,6 +192,10 @@ subprojects {
         }
     }
 
+	jvmTest {
+		jvmArgs += ["-Djava.awt.headless=true"]
+	}
+
 	[kotlin.targets.js, kotlin.targets.metadata].each { target ->
 		target.compilations.main.kotlinSourceSets.resources.collectMany { it.srcDirs }.each {
 			tasks.jsJar.from it

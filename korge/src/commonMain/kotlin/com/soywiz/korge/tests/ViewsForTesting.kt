@@ -3,7 +3,6 @@ package com.soywiz.korge.tests
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.*
-import com.soywiz.korge.async.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
@@ -11,14 +10,15 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.async.*
 import com.soywiz.korui.event.*
 import com.soywiz.korui.input.*
 
 open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	var time = DateTime(0.0)
-	//val testDispatcher = TestCoroutineDispatcher(frameTime)
+	val dispatcher = TestCoroutineDispatcher(frameTime)
 
-	val dispatcher = KorgeDispatcher
+	//val dispatcher = KorgeDispatcher
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}
@@ -125,19 +125,16 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-	fun viewsTest(block: suspend () -> Unit) = suspendTest(viewsLog.coroutineContext) {
+	fun viewsTest(block: suspend () -> Unit): Unit = suspendTest {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
 		val el = viewsLog.animationFrameLoop {
 			time += frameTime
 			ag.onRender(ag)
 		}
 		try {
-			val bb = asyncImmediately(viewsLog.coroutineContext) {
-				withTimeout(10.seconds) {
-					block()
-				}
+			withTimeout(10.seconds) {
+				block()
 			}
-			bb.await()
 		} finally {
 			el.close()
 		}
