@@ -20,6 +20,7 @@ class KorgeBuildService : IKorgeBuildService {
     override fun korimVersion(): String = BuildVersions.KORIM
     override fun korauVersion(): String = BuildVersions.KORAU
     override fun koruiVersion(): String = BuildVersions.KORUI
+    override fun kotlinVersion(): String = BuildVersions.KOTLIN
 
     override fun processResourcesFolder(src: File, dst: File) {
         if (!src.exists()) return // Ignore empty folders
@@ -57,5 +58,6 @@ interface IKorgeBuildService {
     fun korimVersion(): String
     fun korauVersion(): String
     fun koruiVersion(): String
+    fun kotlinVersion(): String
     fun processResourcesFolder(src: File, dst: File)
 }

@@ -22,6 +22,7 @@ object BuildVersions {
 	const val KORAU = "$korauVersion"
 	const val KORUI = "$koruiVersion"
 	const val KORGE = "$korgeVersion"
+	const val KOTLIN = "1.3.11"
 }
 """)
 

@@ -35,6 +35,7 @@ val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
 val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
 val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
 val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
+val kotlinVersion get() = KorgeBuildServiceProxy.kotlinVersion()
 val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
 
 
@@ -239,6 +240,8 @@ class KorgeGradleApply(val project: Project) {
         else -> "unknownX64"
     }
     val cnativeTarget = nativeTarget.capitalize()
+
+    val nativeTargets = listOf("mingwX64", "linuxX64", "macosX64")
     
     val korgeGroup = "korge"
 
@@ -249,7 +252,7 @@ class KorgeGradleApply(val project: Project) {
 
     private fun Project.addNativeRun() {
         afterEvaluate {
-            for (target in listOf("mingwX64", "macosX64")) {
+            for (target in nativeTargets) {
                 val ctarget = target.capitalize()
                 for (kind in listOf("release", "debug")) {
                     val ckind = kind.capitalize()
@@ -544,7 +547,7 @@ class KorgeGradleApply(val project: Project) {
         }
 
         project.afterEvaluate {
-            for (target in listOf("macosX64", "mingwX64")) {
+            for (target in nativeTargets) {
                 val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
                 val targetTestTask = tasks.getByName("${target}Test")
                 val task = project.addTask<Copy>(taskName) { task ->
@@ -628,7 +631,7 @@ class KorgeGradleApply(val project: Project) {
         ext.set("korimVersion", korimVersion)
         ext.set("koruiVersion", koruiVersion)
         ext.set("korgeVersion", korgeVersion)
-        ext.set("kotlinVersion", "1.3.11")
+        ext.set("kotlinVersion", kotlinVersion)
         //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
     }
 
@@ -647,7 +650,7 @@ class KorgeGradleApply(val project: Project) {
         plugins.apply("kotlin-multiplatform")
         plugins.apply("kotlin-dce-js")
 
-        for (preset in listOf("macosX64", "mingwX64")) {
+        for (preset in nativeTargets) {
             gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
                 compilations["main"].outputKinds("EXECUTABLE")
             })

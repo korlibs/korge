@@ -19,9 +19,9 @@ object KorgeManualServiceRegistration {
 
 		// Audio formats
 		defaultAudioFormats.register(
-			WAV,
-			MP3Decoder,
-			OGGDecoder
+			WAV
+			//,MP3Decoder
+			//,OGGDecoder
 		)
 
 		Mapper.jvmFallback()
