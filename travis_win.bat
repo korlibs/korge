@@ -42,4 +42,9 @@ CALL refreshenv
 
 SET JAVA_HOME=c:\java8
 CALL gradlew.bat --no-daemon -s -i mingwX64Test
+
+SET GRADLE_ERROR_LEVEL=%errorlevel%
+
 CALL gradlew.bat --stop
+
+exit /b %GRADLE_ERROR_LEVEL%
