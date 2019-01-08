@@ -245,6 +245,10 @@ class KorgeGradleApply(val project: Project) {
     
     val korgeGroup = "korge"
 
+    val RELEASE = "release"
+    val DEBUG = "debug"
+    val RELEASE_DEBUG = listOf(RELEASE, DEBUG)
+
     private fun Project.configureJvmTest() {
         val jvmTest = (tasks.findByName("jvmTest") as Test)
         jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
@@ -254,7 +258,7 @@ class KorgeGradleApply(val project: Project) {
         afterEvaluate {
             for (target in nativeTargets) {
                 val ctarget = target.capitalize()
-                for (kind in listOf("release", "debug")) {
+                for (kind in RELEASE_DEBUG) {
                     val ckind = kind.capitalize()
                     val ctargetKind = "$ctarget$ckind"
 
@@ -282,24 +286,26 @@ class KorgeGradleApply(val project: Project) {
         addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = korgeGroup)
 
         afterEvaluate {
-            addTask<Task>("packageMacosX64AppDebug", group = "korge", dependsOn = listOf("linkDebugExecutableMacosX64")) {
-                doLast {
-                    val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
-                    val executableFile = compilation.getBinary("EXECUTABLE", "debug")
-                    val appFolder = buildDir["${korge.name}.app"].apply { mkdirs() }
-                    val appFolderContents = appFolder["Contents"].apply { mkdirs() }
-                    val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
-                    val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
-                    appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
-                    resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
-                    copy { copy ->
-                        for (sourceSet in project.gkotlin.sourceSets) {
-                            copy.from(sourceSet.resources)
+            for (buildType in RELEASE_DEBUG) {
+                addTask<Task>("packageMacosX64App${buildType.capitalize()}", group = "korge", dependsOn = listOf("link${buildType.capitalize()}ExecutableMacosX64")) {
+                    doLast {
+                        val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
+                        val executableFile = compilation.getBinary("EXECUTABLE", buildType)
+                        val appFolder = buildDir["${korge.name}-$buildType.app"].apply { mkdirs() }
+                        val appFolderContents = appFolder["Contents"].apply { mkdirs() }
+                        val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
+                        val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
+                        appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
+                        resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
+                        copy { copy ->
+                            for (sourceSet in project.gkotlin.sourceSets) {
+                                copy.from(sourceSet.resources)
+                            }
+                            copy.into(resourcesFolder)
                         }
-                        copy.into(resourcesFolder)
+                        executableFile.copyTo(appMacOSFolder[korge.exeBaseName], overwrite = true)
+                        appMacOSFolder[korge.exeBaseName].setExecutable(true)
                     }
-                    executableFile.copyTo(appMacOSFolder[korge.exeBaseName], overwrite = true)
-                    appMacOSFolder[korge.exeBaseName].setExecutable(true)
                 }
             }
         }
