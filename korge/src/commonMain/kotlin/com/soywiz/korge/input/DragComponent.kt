@@ -6,19 +6,19 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
+import kotlin.coroutines.*
 
 val View.drag by Extra.PropertyThis<View, DragComponent> { this.getOrCreateComponent { DragComponent(this) } }
 
-inline fun <T : View?> T?.onDragStart(noinline handler: suspend (DragComponent.Info) -> Unit) =
-	this.apply { this?.drag?.onDragStart?.addSuspend(KorgeDispatcher, handler) }
+suspend inline fun <T : View?> T?.onDragStart(noinline handler: suspend (DragComponent.Info) -> Unit) =
+	this.apply { this?.drag?.onDragStart?.addSuspend(coroutineContext, handler) }
 
-inline fun <T : View?> T?.onDragEnd(noinline handler: suspend (DragComponent.Info) -> Unit) =
-	this.apply { this?.drag?.onDragEnd?.addSuspend(KorgeDispatcher, handler) }
+suspend inline fun <T : View?> T?.onDragEnd(noinline handler: suspend (DragComponent.Info) -> Unit) =
+	this.apply { this?.drag?.onDragEnd?.addSuspend(coroutineContext, handler) }
 
-inline fun <T : View?> T?.onDragMove(noinline handler: suspend (DragComponent.Info) -> Unit) =
-	this.apply { this?.drag?.onDragMove?.addSuspend(KorgeDispatcher, handler) }
+suspend inline fun <T : View?> T?.onDragMove(noinline handler: suspend (DragComponent.Info) -> Unit) =
+	this.apply { this?.drag?.onDragMove?.addSuspend(coroutineContext, handler) }
 
 class DragComponent(override val view: View) : TouchComponent {
 	data class Info(

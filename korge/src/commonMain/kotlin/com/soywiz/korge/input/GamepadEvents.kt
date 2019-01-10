@@ -4,8 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
+import com.soywiz.korev.*
 
 class GamePadEvents(override val view: View) : GamepadComponent {
 	val stick = Signal<GamePadStickEvent>()

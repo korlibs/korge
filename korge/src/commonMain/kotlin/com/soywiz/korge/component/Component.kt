@@ -1,8 +1,7 @@
 package com.soywiz.korge.component
 
 import com.soywiz.korge.view.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
+import com.soywiz.korev.*
 
 interface Component {
 	val view: View

@@ -5,9 +5,12 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.interpolation.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
-class JellyButton(val view: View?, var targetScale: Double = 1.5) {
+class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var targetScale: Double = 1.5) {
 	val hitTest = view["hitTest"] ?: view
 	val content = view["content"] ?: view
 	val initialScale = content?.scale ?: 1.0
@@ -43,19 +46,21 @@ class JellyButton(val view: View?, var targetScale: Double = 1.5) {
 		}
 	}
 
-	suspend private fun updateState() {
+	private fun updateState() {
 		if (content == null) return
 		val scale = when {
 			down -> 1.0 / targetScale
 			over -> targetScale
 			else -> 1.0
 		}
-		content.tween(content::scale[initialScale * scale], time = 200.milliseconds, easing = Easing.EASE_OUT_ELASTIC)
+		CoroutineScope(coroutineContext).launchImmediately {
+			content.tween(content::scale[initialScale * scale], time = 200.milliseconds, easing = Easing.EASE_OUT_ELASTIC)
+		}
 	}
 
-	fun onClick(callback: suspend () -> Unit) {
-		hitTest?.onClick { callback() }
+	suspend fun onClick(callback: suspend () -> Unit) {
+		hitTest?.mouse?.onClick?.addSuspend { callback() }
 	}
 }
 
-fun View?.jellyButton(targetScale: Double = 1.5) = JellyButton(this, targetScale)
+suspend fun View?.jellyButton(targetScale: Double = 1.5) = JellyButton(this, coroutineContext, targetScale)

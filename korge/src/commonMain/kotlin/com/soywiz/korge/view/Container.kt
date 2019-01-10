@@ -5,7 +5,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
 import kotlin.reflect.*
 
 inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = {}) =

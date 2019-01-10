@@ -8,7 +8,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.Map

@@ -1,10 +1,10 @@
-package com.soywiz.korge.ui
+package com.soywiz.korge.ui.korui
 
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
+import com.soywiz.korev.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korui.light.*
 import kotlin.reflect.*
 

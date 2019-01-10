@@ -3,7 +3,7 @@ package com.soywiz.korge.component.docking
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
 
 class DockingComponent(override val view: View, var anchor: Anchor) : ResizeComponent {
 	//private val bounds = Rectangle()

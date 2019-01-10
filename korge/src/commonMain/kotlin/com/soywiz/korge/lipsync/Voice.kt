@@ -10,7 +10,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

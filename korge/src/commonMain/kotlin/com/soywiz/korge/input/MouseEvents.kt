@@ -10,7 +10,8 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.event.*
+import com.soywiz.korev.*
+import kotlin.coroutines.*
 
 class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews {
 	val click = Signal<MouseEvents>()
@@ -209,29 +210,30 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponent { MouseEvents(this) } }
 inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
 
-inline fun <T : View?> T?.onClick(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onClick?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onClick(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onClick?.add(handler) }
 
-inline fun <T : View?> T?.onOver(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onOver?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onOver(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onOver?.add(handler) }
 
-inline fun <T : View?> T?.onOut(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onOut?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onOut(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onOut?.add(handler) }
 
-inline fun <T : View?> T?.onDown(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onDown?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onDown(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onDown?.add(handler) }
 
-inline fun <T : View?> T?.onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onDownFromOutside?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onDownFromOutside(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onDownFromOutside?.add(handler) }
 
-inline fun <T : View?> T?.onUp(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUp?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onUp(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onUp?.add(handler) }
 
-inline fun <T : View?> T?.onUpOutside(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUpOutside?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onUpOutside(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onUpOutside?.add(handler) }
 
-inline fun <T : View?> T?.onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUpAnywhere?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onUpAnywhere(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onUpAnywhere?.add(handler) }
 
-inline fun <T : View?> T?.onMove(noinline handler: suspend (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onMove?.addSuspend(KorgeDispatcher, handler) }
+inline fun <T : View?> T?.onMove(noinline handler: (MouseEvents) -> Unit) =
+	this.apply { this?.mouse?.onMove?.add(handler) }
+

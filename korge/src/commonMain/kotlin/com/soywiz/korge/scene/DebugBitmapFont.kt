@@ -1,17 +1,14 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.kds.*
-import com.soywiz.korge.util.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.crypto.*
 import com.soywiz.korio.util.*
-import com.soywiz.korio.util.NativeThreadLocal
 
 object DebugBitmapFont {
-	val DEBUG_FONT_BYTES = Base64.decode(
-		"" +
+	val DEBUG_FONT_BYTES: ByteArray =
+		("" +
 				"iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAGXRFWHRTb2Z0d2Fy" +
 				"ZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////////VXz1bAAAAAJ0Uk5T" +
 				"/wDltzBKAAAG40lEQVR42uybiXLjOAxEH///p7cmsUQA3SApJ5nU1q7KCW2dIIiz" +
@@ -51,8 +48,8 @@ object DebugBitmapFont {
 				"0NBgzKwLodiOiURAAc/7ggRFNqHpdUG6Lh8gBbxZLzwJGNtSa62G7xuPgmKLmRCP" +
 				"pl2xWjPD0UN572id+rDrUPIv1fRwJ7VdaJt74TClQw4UGNH3cnmgU7p8KgF7GWhr" +
 				"xquSrDVUGw6c5PHZMm6wYg7QdUytzL5RSasFYxOzvqeenQ99hhMenPSPAAMAPncv" +
-				"sT1xehsAAAAASUVORK5CYII="
-	)
+				"sT1xehsAAAAASUVORK5CYII=")
+					.fromBase64()
 
 }
 

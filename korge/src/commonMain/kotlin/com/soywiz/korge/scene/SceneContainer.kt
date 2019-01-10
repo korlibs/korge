@@ -1,11 +1,11 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
-import com.soywiz.korge.async.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
+import kotlin.coroutines.*
 import kotlin.reflect.*
 
 inline fun Container.sceneContainer(
@@ -117,10 +117,10 @@ class SceneContainer(val views: Views) : Container() {
 
 		oldScene?.sceneDestroy()
 
-		launchImmediately(KorgeDispatcher) {
+		launchImmediately(coroutineContext) {
 			instance.sceneAfterDestroy()
 		}
-		launchImmediately(KorgeDispatcher) {
+		launchImmediately(coroutineContext) {
 			instance.sceneAfterInit()
 		}
 

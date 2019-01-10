@@ -1,12 +1,12 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.korge.internal.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.light.*
 import kotlin.reflect.*
 
 open class Module {
@@ -17,7 +17,7 @@ open class Module {
 	open val icon: String? = null
 	open val iconImage: Context2d.SizedDrawable? = null
 
-	open val quality: LightQuality = LightQuality.PERFORMANCE
+	open val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE
 
 	open val size: SizeInt get() = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
 	open val windowSize: SizeInt get() = size

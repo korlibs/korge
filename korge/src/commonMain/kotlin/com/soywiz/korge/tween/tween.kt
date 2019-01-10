@@ -39,14 +39,17 @@ class TweenComponent(
 			done = true
 			detach()
 			c.resume(Unit)
-			//println("TWEEN COMPLETED[$this, $vs]: $elapsed. thread=$currentThreadId")
+			//println("TWEEN COMPLETED[$this, $vs]: $elapsed")
 		}
 	}
 
 	override fun update(ms: Double) {
 		val dtMs = ms.toInt()
 		//println("TWEEN UPDATE[$this, $vs]: $elapsed + $dtMs")
-		if (cancelled) return completeOnce()
+		if (cancelled) {
+			//println(" --> cancelled")
+			return completeOnce()
+		}
 		elapsed += dtMs
 
 		val ratio = (elapsed.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
@@ -59,7 +62,10 @@ class TweenComponent(
 		}
 		callback(easing(ratio))
 
-		if (ratio >= 1.0) return completeOnce()
+		if (ratio >= 1.0) {
+			//println(" --> completed")
+			return completeOnce()
+		}
 	}
 
 	override fun toString(): String = "TweenComponent($view)"

@@ -5,6 +5,7 @@ import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
+import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.async.*
 import com.soywiz.korge.audio.*
@@ -13,16 +14,16 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.stat.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korinject.*
+import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import com.soywiz.korui.event.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
@@ -56,9 +57,9 @@ class Views(
 	val input: Input,
 	val timeProvider: TimeProvider,
 	val stats: Stats,
-	val koruiContext: KoruiContext
+	val gameWindow: GameWindow
 ) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
-	BoundsProvider {
+	BoundsProvider, DialogInterface by gameWindow {
 
 	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
@@ -95,7 +96,7 @@ class Views(
 	var scaleAnchor = Anchor.MIDDLE_CENTER
 	var clipBorders = true
 
-	private val resizedEvent = ResizedEvent(0, 0)
+	private val resizedEvent = ReshapeEvent(0, 0)
 
 	val stage = Stage(this)
 	val root = stage
@@ -146,23 +147,34 @@ class Views(
 		try {
 			this.stage.dispatch(clazz, event)
 			stage.forEachComponent<EventComponent>(tempComponents) { it.onEvent(event) }
-			if (e is MouseEvent) {
-				stage.forEachComponent<MouseComponent>(tempComponents) { it.onMouseEvent(views, e) }
-			}
-			else if (e is ResizedEvent) {
-				stage.forEachComponent<ResizeComponent>(tempComponents) { it.resized(views, e.width, e.height) }
-			}
-			else if (e is KeyEvent) {
-				stage.forEachComponent<KeyComponent> (tempComponents){ it.onKeyEvent(views, e) }
-			}
-			else if (e is GamePadConnectionEvent) {
-				stage.forEachComponent<GamepadComponent>(tempComponents) { it.onGamepadEvent(views, e) }
-			}
-			else if (e is GamePadButtonEvent) {
-				stage.forEachComponent<GamepadComponent>(tempComponents) { it.onGamepadEvent(views, e) }
-			}
-			else if (e is GamePadStickEvent) {
-				stage.forEachComponent<GamepadComponent>(tempComponents) { it.onGamepadEvent(views, e) }
+			when (e) {
+				is MouseEvent -> stage.forEachComponent<MouseComponent>(tempComponents) { it.onMouseEvent(views, e) }
+				is ReshapeEvent -> stage.forEachComponent<ResizeComponent>(tempComponents) {
+					it.resized(
+						views,
+						e.width,
+						e.height
+					)
+				}
+				is KeyEvent -> stage.forEachComponent<KeyComponent>(tempComponents) { it.onKeyEvent(views, e) }
+				is GamePadConnectionEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
+					it.onGamepadEvent(
+						views,
+						e
+					)
+				}
+				is GamePadButtonEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
+					it.onGamepadEvent(
+						views,
+						e
+					)
+				}
+				is GamePadStickEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
+					it.onGamepadEvent(
+						views,
+						e
+					)
+				}
 			}
 		} catch (e: PreventDefaultException) {
 			//println("PreventDefaultException.Reason: ${e.reason}")
@@ -295,21 +307,24 @@ class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by v
 	}
 }
 
-fun viewsLog(callback: Stage.(log: ViewsLog) -> Unit) {
-	val log = ViewsLog()
+fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
+	val log = ViewsLog(coroutineContext)
 	callback(log.views.stage, log)
 }
 
+class GameWindowLog : GameWindow() {
+}
+
 class ViewsLog(
-	override val coroutineContext: CoroutineDispatcher = KorgeDispatcher,
+	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: LogAG = LogAG(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
-	val koruiContext: KoruiContext = KoruiContext()
+	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views = Views(coroutineContext, ag, injector, input, timeProvider, stats, koruiContext)
+	val views = Views(coroutineContext, ag, injector, input, timeProvider, stats, gameWindow)
 }
 
 fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture =
@@ -350,7 +365,10 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 /////////////////////////
 /////////////////////////
 
-inline fun <reified T : Component> View.forEachComponent(tempComponents: ArrayList<Component> = arrayListOf(), callback: (T) -> Unit) {
+inline fun <reified T : Component> View.forEachComponent(
+	tempComponents: ArrayList<Component> = arrayListOf(),
+	callback: (T) -> Unit
+) {
 	for (c in getComponents(this, tempComponents)) {
 		if (c is T) callback(c)
 	}

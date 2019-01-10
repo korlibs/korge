@@ -1,5 +1,6 @@
-package com.soywiz.korge.ui
+package com.soywiz.korge.ui.korui
 
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
 import com.soywiz.korui.ui.*

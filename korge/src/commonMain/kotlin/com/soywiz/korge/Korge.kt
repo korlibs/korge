@@ -3,7 +3,7 @@ package com.soywiz.korge
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
-import com.soywiz.korge.async.*
+import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
@@ -11,6 +11,7 @@ import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -22,12 +23,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import com.soywiz.korui.async.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
-import com.soywiz.korui.light.*
-import com.soywiz.korui.ui.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
@@ -35,14 +30,12 @@ import kotlin.reflect.*
 object Korge {
 	val logger = Logger("Korge")
 
-	suspend fun setupCanvas(config: Config, koruiContext: KoruiContext): SceneContainer {
+	suspend fun setupCanvas(config: Config): SceneContainer {
 		logger.trace { "Korge.setupCanvas[1]" }
 		val injector = config.injector
-		val frame = config.frame
 
 		val eventDispatcher = config.eventDispatcher
-		val agContainer = config.container ?: error("No agContainer defined")
-		val ag = agContainer.ag
+		val ag = config.gameWindow!!.ag
 		val size = config.module.size
 		val moduleArgs = ModuleArgs(config.args)
 
@@ -58,7 +51,6 @@ object Korge {
 			.mapInstance(Module::class, config.module)
 			.mapInstance(AG::class, ag)
 			.mapInstance(Config::class, config)
-			.mapInstance(KoruiContext::class, koruiContext)
 			// Singletons
 			.mapSingleton(Stats::class) { Stats() }
 			.mapSingleton(Input::class) { Input() }
@@ -67,10 +59,7 @@ object Korge {
 			// Prototypes
 			.mapPrototype(EmptyScene::class) { EmptyScene() }
 
-		if (config.frame != null) {
-			injector.mapInstance(Frame::class, config.frame)
-			injector.mapInstance(Application::class, config.frame.app)
-		}
+			.mapInstance(GameWindow::class, config.gameWindow)
 
 		//println("FRAME: $frame, ${config.frame}")
 
@@ -114,10 +103,6 @@ object Korge {
 
 		views.targetFps = config.module.targetFps
 
-		korgeAnimationFrameLoop {
-			config.container.repaint()
-		}
-
 		val sc = SceneContainer(views)
 		views.stage += sc
 
@@ -130,7 +115,13 @@ object Korge {
 		return sc
 	}
 
-	fun prepareViews(views: Views, eventDispatcher: EventDispatcher, clearEachFrame: Boolean = true, bgcolor: RGBA = Colors.TRANSPARENT_BLACK, fixedSizeStep: TimeSpan = TimeSpan.NULL) {
+	fun prepareViews(
+		views: Views,
+		eventDispatcher: EventDispatcher,
+		clearEachFrame: Boolean = true,
+		bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+		fixedSizeStep: TimeSpan = TimeSpan.NULL
+	) {
 		val input = views.input
 		val ag = views.ag
 		val downPos = Point()
@@ -328,7 +319,7 @@ object Korge {
 			//views.dispatch(gamepadConnectionEvent)
 		}
 
-		eventDispatcher.addEventListener<ResizedEvent> { e ->
+		eventDispatcher.addEventListener<ReshapeEvent> { e ->
 			//println("Korge:eventDispatcher.addEventListener<ResizedEvent>:$e - backSize=(${ag.backWidth}, ${ag.backHeight})")
 			views.resized(ag.backWidth, ag.backHeight)
 		}
@@ -339,7 +330,7 @@ object Korge {
 			views.resized(ag.backWidth, ag.backHeight)
 		}
 		//ag.resized(initialWidth, initialHeight)
-		eventDispatcher.dispatch(ResizedEvent(views.nativeWidth, views.nativeHeight))
+		eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
 		//println("lastTime: $lastTime")
 		ag.onRender {
@@ -359,44 +350,13 @@ object Korge {
 		}
 	}
 
-	fun KoruiWithLogger(entry: suspend (KoruiContext) -> Unit) {
-		return Korui {
-			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
-			entry(it)
+	fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
+		return Korio {
+			DefaultGameWindow.loop {
+				configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+				entry()
+			}
 		}
-	}
-
-	//@TODO: Kotlin-JVM bug? Exception in thread "main" java.lang.NoSuchMethodError: com.soywiz.korge.Korge.invoke$default(Lcom/soywiz/korge/Korge;Lcom/soywiz/korge/scene/Module;[Ljava/lang/String;Lcom/soywiz/korag/AGContainer;Lcom/soywiz/korui/event/EventDispatcher;Lkotlin/reflect/KClass;Ljava/util/List;Lcom/soywiz/klock/TimeProvider;Lcom/soywiz/korinject/AsyncInjector;ZZLkotlin/jvm/functions/Function1;Lcom/soywiz/korio/async/EventLoop;ILjava/lang/Object;)V
-	operator fun invoke(
-		module: Module,
-		args: Array<String> = arrayOf(),
-		container: AGContainer? = null,
-		eventDispatcher: EventDispatcher = DummyEventDispatcher,
-		sceneClass: KClass<out Scene> = module.mainScene,
-		sceneInjects: List<Any> = listOf(),
-		timeProvider: TimeProvider = TimeProvider,
-		injector: AsyncInjector = AsyncInjector(),
-		debug: Boolean = false,
-		trace: Boolean = false,
-		constructedViews: (Views) -> Unit = {}
-	) = KoruiWithLogger { koruiContext ->
-		logger.trace { "Korge.invoke" }
-		test(
-			Config(
-				module = module,
-				args = args,
-				container = container,
-				eventDispatcher = eventDispatcher,
-				sceneClass = sceneClass,
-				sceneInjects = sceneInjects,
-				injector = injector,
-				timeProvider = timeProvider,
-				debug = debug,
-				trace = trace,
-				constructedViews = constructedViews
-			),
-			koruiContext
-		)
 	}
 
 	// New Korge
@@ -405,7 +365,7 @@ object Korge {
 		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
 		virtualWidth: Int = width, virtualHeight: Int = height,
 		icon: Bitmap? = null,
-		quality: LightQuality = LightQuality.AUTO,
+		quality: GameWindow.Quality = GameWindow.Quality.AUTO,
 		targetFps: Double = 0.0,
 		scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
 		scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
@@ -414,80 +374,39 @@ object Korge {
 		debug: Boolean = false,
 		args: Array<String> = arrayOf(),
 		entry: suspend Stage.() -> Unit
-	) {
-		val coroutineContext = KoruiDispatcher
-		KoruiWithLogger { koruiContext ->
-			if (OS.isNative) println("Korui[0]")
-			CanvasApplicationEx(
-				title = title,
-				width = width,
-				height = height,
-				icon = icon,
-				quality = quality,
-				koruiContext = koruiContext,
-				agConfig = AGConfig(antialiasHint = (quality == LightQuality.QUALITY))
-			) { canvas, frame ->
-				if (OS.isNative) println("CanvasApplicationEx.IN[0]")
-				val injector = AsyncInjector()
-				val input = Input()
-				val stats = Stats()
-				Fonts.init()
-				val views = Views(coroutineContext, canvas.ag, injector, input, TimeProvider, stats, koruiContext)
-				injector
-					.mapInstance(views)
-					.mapInstance(input)
-					.mapInstance(stats)
-					.mapInstance(Korge.ModuleArgs(args))
-				input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
-				views.debugViews = debug
-				views.virtualWidth = virtualWidth
-				views.virtualHeight = virtualHeight
-				views.scaleAnchor = scaleAnchor
-				views.scaleMode = scaleMode
-				views.clipBorders = clipBorders
-				views.targetFps = targetFps
-				Korge.prepareViews(views, canvas, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-				korgeAnimationFrameLoop {
-					canvas.repaint()
-				}
-				entry(views.stage)
-				if (OS.isNative) println("CanvasApplicationEx.IN[1]")
-			}
-			if (OS.isNative) println("Korui[1]")
-		}
+	) = KoruiWithLogger {
+		val gameWindow = this
+		if (OS.isNative) println("Korui[0]")
+		configure(width, height, title, icon)
+		this.quality = quality
+		if (OS.isNative) println("CanvasApplicationEx.IN[0]")
+		val injector = AsyncInjector()
+		val input = Input()
+		val stats = Stats()
+		Fonts.init()
+		val views = Views(coroutineContext, ag, injector, input, TimeProvider, stats, gameWindow)
+		injector
+			.mapInstance(views)
+			.mapInstance(input)
+			.mapInstance(stats)
+			.mapInstance(Korge.ModuleArgs(args))
+		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
+		views.debugViews = debug
+		views.virtualWidth = virtualWidth
+		views.virtualHeight = virtualHeight
+		views.scaleAnchor = scaleAnchor
+		views.scaleMode = scaleMode
+		views.clipBorders = clipBorders
+		views.targetFps = targetFps
+		Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
+		entry(views.stage)
+		if (OS.isNative) println("CanvasApplicationEx.IN[1]")
+		if (OS.isNative) println("Korui[1]")
 	}
 
-	suspend fun korgeAnimationFrameLoop(callback: () -> Unit) {
-		CoroutineScope(coroutineContext).animationFrameLoopKorge {
-			Korge.logger.trace { "views.animationFrameLoop" }
-			//println("views.animationFrameLoop")
-			//ag.resized()
-			callback()
-		}
-	}
-
-	operator fun invoke(config: Config) = KoruiWithLogger { koruiContext ->
+	operator fun invoke(config: Config) = KoruiWithLogger {
+		val gameWindow = this
 		logger.trace { "Korge.invoke(config)" }
-		test(config, koruiContext)
-	}
-
-	data class Config(
-		val module: Module,
-		val args: Array<String> = arrayOf(),
-		val container: AGContainer? = null,
-		val eventDispatcher: EventDispatcher = DummyEventDispatcher,
-		val imageFormats: ImageFormat = RegisteredImageFormats,
-		val frame: Frame? = null,
-		val sceneClass: KClass<out Scene> = module.mainScene,
-		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider,
-		val injector: AsyncInjector = AsyncInjector(),
-		val debug: Boolean = false,
-		val trace: Boolean = false,
-		val constructedViews: (Views) -> Unit = {}
-	)
-
-	suspend fun test(config: Config, koruiContext: KoruiContext): SceneContainer {
 		if (OS.isJvm) {
 			logger.trace { "!!!! KORGE: if the main window doesn't appear and hangs, check that the VM option -XstartOnFirstThread is set" }
 		}
@@ -516,35 +435,35 @@ object Korge {
 		}
 
 		logger.trace { "Korge.test pre CanvasApplicationEx" }
-		CanvasApplicationEx(
-			title = module.title,
-			width = module.windowSize.width,
-			height = module.windowSize.height,
-			icon = icon,
-			quality = module.quality,
-			koruiContext = koruiContext,
-			agConfig = AGConfig(antialiasHint = (module.quality == LightQuality.QUALITY))
-		) { container, frame ->
-			logger.trace { "Korge.test [1]" }
-			coroutineScope {
-				launchImmediately {
-					logger.trace { "Korge.test [2]" }
-					done.complete(
-						setupCanvas(
-							config.copy(
-								container = container,
-								frame = frame,
-								eventDispatcher = container
-							),
-							koruiContext
-						)
-					)
-				}
+
+		configure(module.windowSize.width, module.windowSize.height, module.title, icon)
+		this.quality = module.quality
+
+		logger.trace { "Korge.test [1]" }
+		coroutineScope {
+			launchImmediately {
+				logger.trace { "Korge.test [2]" }
+				done.complete(
+					setupCanvas(config.copy(gameWindow = gameWindow, eventDispatcher = gameWindow))
+				)
 			}
 		}
-
-		return done.await()
 	}
+
+	data class Config(
+		val module: Module,
+		val args: Array<String> = arrayOf(),
+		val eventDispatcher: EventDispatcher = DummyEventDispatcher,
+		val imageFormats: ImageFormat = RegisteredImageFormats,
+		val gameWindow: GameWindow? = null,
+		val sceneClass: KClass<out Scene> = module.mainScene,
+		val sceneInjects: List<Any> = listOf(),
+		val timeProvider: TimeProvider = TimeProvider,
+		val injector: AsyncInjector = AsyncInjector(),
+		val debug: Boolean = false,
+		val trace: Boolean = false,
+		val constructedViews: (Views) -> Unit = {}
+	)
 
 	data class ModuleArgs(val args: Array<String>)
 

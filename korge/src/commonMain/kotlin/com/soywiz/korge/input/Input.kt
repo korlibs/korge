@@ -4,8 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
+import com.soywiz.korev.*
 
 //@Singleton
 class Input : Extra by Extra.Mixin() {

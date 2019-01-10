@@ -2,24 +2,22 @@ package com.soywiz.korge.tests
 
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*
+import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.async.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.async.*
-import com.soywiz.korui.event.*
-import com.soywiz.korui.input.*
 import kotlinx.coroutines.*
 
 open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	var time = DateTime(0.0)
 	//val dispatcher2 = TestCoroutineDispatcher(frameTime)
-	val dispatcher = KorgeDispatcher
+	val dispatcher = Dispatchers.Default
 
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
@@ -139,4 +137,22 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 			el.close()
 		}
 	}
+}
+
+private fun CoroutineScope.animationFrameLoopKorge(callback: suspend (Closeable) -> Unit): Closeable {
+	var job: Job? = null
+	val close = Closeable {
+		job?.cancel()
+	}
+	job = launchImmediately {
+		while (true) {
+			callback(close)
+			delayFrame()
+		}
+	}
+	return close
+}
+
+suspend private fun delayFrame() {
+	delay(16.milliseconds)
 }

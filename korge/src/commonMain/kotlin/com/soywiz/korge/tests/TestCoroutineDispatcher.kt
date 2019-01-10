@@ -3,7 +3,6 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korui.async.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

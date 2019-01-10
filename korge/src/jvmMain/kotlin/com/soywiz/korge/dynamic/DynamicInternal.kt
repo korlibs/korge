@@ -4,7 +4,7 @@ import com.soywiz.korio.util.*
 import java.lang.reflect.*
 
 internal actual object DynamicInternal {
-	actual val global: Any? = null
+	actual val global: Any? = Package.getPackage(null)
 
 	private fun tryGetField(clazz: Class<*>, name: String): Field? {
 		val field = runCatching { clazz.getDeclaredField(name) }.getOrNull()

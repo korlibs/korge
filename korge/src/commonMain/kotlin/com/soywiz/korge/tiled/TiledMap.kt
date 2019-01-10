@@ -8,10 +8,10 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.crypto.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.set
 
@@ -271,7 +271,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 							}
 							encoding == "base64" -> {
 								val base64Content = (data?.text ?: "").trim()
-								val rawContent = Base64.decode(base64Content)
+								val rawContent = base64Content.fromBase64()
 
 								val content = when (compression) {
 									"" -> rawContent
