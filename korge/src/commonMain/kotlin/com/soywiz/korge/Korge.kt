@@ -352,8 +352,8 @@ object Korge {
 
 	fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
 		return Korio {
+			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
 			DefaultGameWindow.loop {
-				configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
 				entry()
 			}
 		}
@@ -405,18 +405,20 @@ object Korge {
 	}
 
 	operator fun invoke(config: Config) = KoruiWithLogger {
+		val module = config.module
+		configure(module.windowSize.width, module.windowSize.height, module.title)
 		val gameWindow = this
 		logger.trace { "Korge.invoke(config)" }
 		if (OS.isJvm) {
 			logger.trace { "!!!! KORGE: if the main window doesn't appear and hangs, check that the VM option -XstartOnFirstThread is set" }
 		}
+
 		logger.trace { "Korge.test" }
 		logger.trace { "Korge.test.checkEnvironment" }
 		val done = CompletableDeferred<SceneContainer>(Job())
 		logger.trace { "Korge.test without container" }
-		val module = config.module
 		logger.trace { "Korge.test loading icon" }
-		val icon = try {
+		this.icon = try {
 			when {
 				module.iconImage != null -> {
 					module.iconImage!!.render()
@@ -436,7 +438,6 @@ object Korge {
 
 		logger.trace { "Korge.test pre CanvasApplicationEx" }
 
-		configure(module.windowSize.width, module.windowSize.height, module.title, icon)
 		this.quality = module.quality
 
 		logger.trace { "Korge.test [1]" }
