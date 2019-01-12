@@ -28,7 +28,6 @@ import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.serialization.json.*
-import com.soywiz.korma.math.*
 import kotlin.math.*
 
 /**
@@ -204,25 +203,25 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		}
 
 		// Offsets.
-		val offsets = rawData[DataParser.OFFSET] as  IntArrayList
+		val offsets = rawData.getDynamic(DataParser.OFFSET) as  IntArrayList
 		animation.frameIntOffset = offsets[0]
 		animation.frameFloatOffset = offsets[1]
 		animation.frameOffset = offsets[2]
 
 		this._animation = animation
 
-		if (DataParser.ACTION in rawData) {
-			animation.actionTimeline = this._parseBinaryTimeline(TimelineType.Action, rawData[DataParser.ACTION] as Int)
+		if (rawData.containsDynamic(DataParser.ACTION)) {
+			animation.actionTimeline = this._parseBinaryTimeline(TimelineType.Action, rawData.getDynamic(DataParser.ACTION) as Int)
 		}
 
-		if (DataParser.Z_ORDER in rawData) {
-			animation.zOrderTimeline = this._parseBinaryTimeline(TimelineType.ZOrder, rawData[DataParser.Z_ORDER] as Int)
+		if (rawData.containsDynamic(DataParser.Z_ORDER)) {
+			animation.zOrderTimeline = this._parseBinaryTimeline(TimelineType.ZOrder, rawData.getDynamic(DataParser.Z_ORDER) as Int)
 		}
 
-		if (DataParser.BONE in rawData) {
-			val rawTimeliness = rawData[DataParser.BONE]
+		if (rawData.containsDynamic(DataParser.BONE)) {
+			val rawTimeliness = rawData.getDynamic(DataParser.BONE)
 			for (k in rawTimeliness.dynKeys) {
-				val rawTimelines = rawTimeliness[k] as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
 				val bone = this._armature?.getBone(k) ?: continue
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -234,10 +233,10 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 			}
 		}
 
-		if (DataParser.SLOT in rawData) {
-			val rawTimeliness = rawData[DataParser.SLOT]
+		if (rawData.containsDynamic(DataParser.SLOT)) {
+			val rawTimeliness = rawData.getDynamic(DataParser.SLOT)
 			for (k in rawTimeliness.dynKeys) {
-				val rawTimelines = rawTimeliness[k] as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
 				val slot = this._armature?.getSlot(k) ?: continue
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -249,10 +248,10 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 			}
 		}
 
-		if (DataParser.CONSTRAINT in rawData) {
-			val rawTimeliness = rawData[DataParser.CONSTRAINT]
+		if (rawData.containsDynamic(DataParser.CONSTRAINT)) {
+			val rawTimeliness = rawData.getDynamic(DataParser.CONSTRAINT)
 			for (k in rawTimeliness.dynKeys) {
-				val rawTimelines = rawTimeliness[k] as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
 				val constraint = this._armature?.getConstraint(k) ?: continue
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -264,8 +263,8 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 			}
 		}
 
-		if (DataParser.TIMELINE in rawData) {
-			val rawTimelines = rawData[DataParser.TIMELINE] as ArrayList<Any?>
+		if (rawData.containsDynamic(DataParser.TIMELINE)) {
+			val rawTimelines = rawData.getDynamic(DataParser.TIMELINE) as ArrayList<Any?>
 			for (rawTimeline in rawTimelines) {
 				val timelineOffset = ObjectDataParser._getInt(rawTimeline, DataParser.OFFSET, 0)
 				if (timelineOffset >= 0) {
@@ -327,7 +326,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	}
 
 	override fun _parseGeometry(rawData: Any?, geometry: GeometryData): Unit {
-		geometry.offset = rawData[DataParser.OFFSET] as Int
+		geometry.offset = rawData.getDynamic(DataParser.OFFSET) as Int
 		geometry.data = this._data
 
 		val weightOffset = this._intArrayBuffer[geometry.offset + BinaryOffset.GeometryWeightOffset].toInt()
@@ -356,7 +355,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	}
 
 	override fun _parseArray(rawData: Any?): Unit {
-		val offsets = rawData[DataParser.OFFSET] as  IntArrayList
+		val offsets = rawData.getDynamic(DataParser.OFFSET) as  IntArrayList
 		val l1 = offsets[1]
 		val l2 = offsets[3]
 		val l3 = offsets[5]

@@ -1,15 +1,15 @@
 package com.soywiz.korge.build
 
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.serialization.Mapper
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.hex
-import com.soywiz.krypto.SHA1
+import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.serialization.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.serialization.json.*
+import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.*
 
 data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: String, val configSha1: String = "") {
     suspend fun writeMeta(metaFile: VfsFile) {
-        metaFile.writeString(Json.encode(this))
+        metaFile.writeString(Json.stringify(this))
     }
 
     companion object {
@@ -35,6 +35,6 @@ data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: S
             return ResourceVersion(file.baseName, loaderVersion, hash, configHash)
         }
 
-        suspend fun readMeta(metaFile: VfsFile): ResourceVersion = Json.decodeToType(metaFile.readString())
+        suspend fun readMeta(metaFile: VfsFile): ResourceVersion = Json.parseTyped(metaFile.readString(), Mapper)
     }
 }

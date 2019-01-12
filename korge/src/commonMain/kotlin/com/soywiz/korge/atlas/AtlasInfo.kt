@@ -1,6 +1,7 @@
 package com.soywiz.korge.atlas
 
 import com.soywiz.korio.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korma.geom.*
@@ -62,12 +63,12 @@ data class AtlasInfo(
 	val version: String get() = meta.version
 
 	companion object {
-		private fun Any?.toRect() = Dynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
-		private fun Any?.toSize() = Dynamic(this) { Size(it["w"].int, it["h"].int) }
+		private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
+		private fun Any?.toSize() = KDynamic(this) { Size(it["w"].int, it["h"].int) }
 
 		// @TODO: kotlinx-serialization
 		fun loadJsonSpriter(json: String): AtlasInfo {
-			val info = Dynamic(Json.decode(json)) {
+			val info = KDynamic(Json.parse(json)) {
 				AtlasInfo(
 					it["frames"].let { frames ->
 						frames.keys.map { key ->

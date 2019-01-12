@@ -7,7 +7,7 @@ import kotlin.test.*
 
 class TextTest {
 	@Test
-	fun testRender() = suspendTestExceptJs {
+	fun testRender() = suspendTest {
 		val text = Text()
 		val ag = LogAG()
 		text.render(RenderContext(ag))

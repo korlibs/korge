@@ -207,7 +207,7 @@ object AnLibrarySerializer {
 					writeU_VL(limits.totalUids)
 					for (uidInfo in symbol.uidInfo) {
 						writeU_VL(uidInfo.characterId)
-						writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.encode(uidInfo.extraProps) else "")
+						writeStringVL(if (uidInfo.extraProps.isNotEmpty()) Json.stringify(uidInfo.extraProps) else "")
 					}
 
 					val symbolStates = symbol.states.map { it.value.subTimeline }.toList().distinct()

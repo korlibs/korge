@@ -9,6 +9,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korio.util.encoding.*
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.Map
@@ -483,7 +484,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return out
 	}
 
-	protected val Double.str get() = this.toString(2, skipTrailingZeros = true)
+	protected val Double.str get() = this.toStringDecimal(2, skipTrailingZeros = true)
 
 	// Version with root-most object as reference
 	fun globalToLocal(p: IPoint, out: Point = Point()): Point = globalToLocalXY(p.x, p.y, out)

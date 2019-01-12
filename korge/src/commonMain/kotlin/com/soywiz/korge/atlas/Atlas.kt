@@ -3,9 +3,9 @@ package com.soywiz.korge.atlas
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set

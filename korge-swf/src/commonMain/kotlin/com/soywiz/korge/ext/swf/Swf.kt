@@ -7,6 +7,8 @@ import com.soywiz.korge.animate.serialization.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*

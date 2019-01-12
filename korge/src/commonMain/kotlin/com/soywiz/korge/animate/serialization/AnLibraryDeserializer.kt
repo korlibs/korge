@@ -202,7 +202,7 @@ object AnLibraryDeserializer {
 			val charId = readU_VL()
 			val extraPropsString = readStringVL()
 			val extraProps =
-				if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.decode(extraPropsString) as MutableMap<String, String>
+				if (extraPropsString.isEmpty()) LinkedHashMap<String, String>() else Json.parse(extraPropsString) as MutableMap<String, String>
 			//val extraProps = LinkedHashMap<String, String>()
 			AnSymbolUidDef(charId, extraProps)
 		}.toTypedArray()

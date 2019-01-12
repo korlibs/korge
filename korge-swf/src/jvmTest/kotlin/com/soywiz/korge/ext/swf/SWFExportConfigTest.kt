@@ -1,6 +1,8 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.korim.vector.*
+import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.serialization.*
 import com.soywiz.korio.serialization.yaml.*
 import kotlin.test.*

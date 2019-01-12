@@ -35,6 +35,8 @@ val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
 val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
 val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
 val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
+val korevVersion get() = KorgeBuildServiceProxy.korevVersion()
+val korgwVersion get() = KorgeBuildServiceProxy.korgwVersion()
 val kotlinVersion get() = KorgeBuildServiceProxy.kotlinVersion()
 val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
 
@@ -212,6 +214,8 @@ class KorgeGradleApply(val project: Project) {
     }
 
     fun apply() {
+        System.setProperty("java.awt.headless", "true")
+
         if (project.gradle.gradleVersion != "4.7") {
             error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
         }
@@ -634,6 +638,8 @@ class KorgeGradleApply(val project: Project) {
         ext.set("korauVersion", korauVersion)
         ext.set("korimVersion", korimVersion)
         ext.set("koruiVersion", koruiVersion)
+        ext.set("korevVersion", korevVersion)
+        ext.set("korgwVersion", korgwVersion)
         ext.set("korgeVersion", korgeVersion)
         ext.set("kotlinVersion", kotlinVersion)
         //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())

@@ -28,7 +28,7 @@ import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.dynamic.*
 import kotlin.math.*
 
 /**
@@ -47,16 +47,24 @@ enum class FrameValueType(val index: kotlin.Int) {
 open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParser(pool) {
 	companion object {
 		// dynamic tools
-		internal operator fun Any?.get(key: String): Any? {
-			return Dynamic.get(this, key)
+		internal fun Any?.getDynamic(key: String): Any? = when (this) {
+			null -> null
+			is Map<*, *> -> (this as Map<String, Any?>)[key]
+			else -> error("Can't getDynamic $this['$key'] (${this::class})")
 		}
+		internal inline fun Any?.containsDynamic(key: String): Boolean = this.getDynamic(key) != null
 
-		internal inline operator fun Any?.contains(key: String): Boolean {
-			return this.get(key) != null
+		internal val Any?.dynKeys: List<String> get() = when (this) {
+			null -> listOf()
+			is Map<*, *> -> keys.map { it.toString() }
+			else -> error("Can't get keys of $this (${this::class})")
 		}
-
-		internal val Any?.dynKeys get() = (this as Map<String, Any?>).keys
-		internal val Any?.dynList get() = Dynamic.toList(this)
+		internal val Any?.dynList: List<Any?> get() = when (this) {
+			null -> listOf()
+			is List<*> -> this
+			is Iterable<*> -> this.toList()
+			else -> error("Not a list $this (${this::class})")
+		}
 		internal val Any?.doubleArray: DoubleArray get() {
 			if (this is DoubleArray) return this
 			if (this is DoubleArrayList) return this.toDoubleArray()
@@ -77,7 +85,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 
 		fun _getBoolean(rawData: Any?, key: String, defaultValue: Boolean): Boolean {
-			val value = rawData.get(key)
+			val value = rawData.getDynamic(key)
 
 			return when (value) {
 				null -> defaultValue
@@ -92,7 +100,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 
 		fun _getNumber(rawData: Any?, key: String, defaultValue: Double): Double {
-			val value = rawData[key] as? Number?
+			val value = rawData.getDynamic(key) as? Number?
 			return if (value != null && value != Double.NaN) {
 				value.toDouble()
 			} else {
@@ -101,7 +109,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 
 		fun _getInt(rawData: Any?, key: String, defaultValue: Int): Int {
-			val value = rawData[key] as? Number?
+			val value = rawData.getDynamic(key) as? Number?
 			return if (value != null && value != Double.NaN) {
 				value.toInt()
 			} else {
@@ -110,7 +118,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 
 		fun _getString(rawData: Any?, key: String, defaultValue: String): String {
-			return rawData[key]?.toString() ?: defaultValue
+			return rawData.getDynamic(key)?.toString() ?: defaultValue
 		}
 
 		//private var _objectDataParserInstance = ObjectDataParser()
@@ -271,24 +279,24 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	}
 
 	private fun _parseActionDataInFrame(rawData: Any?, frameStart: Int, bone: BoneData?, slot: SlotData?) {
-		if (DataParser.EVENT in rawData) {
-			this._mergeActionFrame(rawData[DataParser.EVENT]!!, frameStart, ActionType.Frame, bone, slot)
+		if (rawData.containsDynamic(DataParser.EVENT)) {
+			this._mergeActionFrame(rawData.getDynamic(DataParser.EVENT)!!, frameStart, ActionType.Frame, bone, slot)
 		}
 
-		if (DataParser.SOUND in rawData) {
-			this._mergeActionFrame(rawData[DataParser.SOUND]!!, frameStart, ActionType.Sound, bone, slot)
+		if (rawData.containsDynamic(DataParser.SOUND)) {
+			this._mergeActionFrame(rawData.getDynamic(DataParser.SOUND)!!, frameStart, ActionType.Sound, bone, slot)
 		}
 
-		if (DataParser.ACTION in rawData) {
-			this._mergeActionFrame(rawData[DataParser.ACTION]!!, frameStart, ActionType.Play, bone, slot)
+		if (rawData.containsDynamic(DataParser.ACTION)) {
+			this._mergeActionFrame(rawData.getDynamic(DataParser.ACTION)!!, frameStart, ActionType.Play, bone, slot)
 		}
 
-		if (DataParser.EVENTS in rawData) {
-			this._mergeActionFrame(rawData[DataParser.EVENTS]!!, frameStart, ActionType.Frame, bone, slot)
+		if (rawData.containsDynamic(DataParser.EVENTS)) {
+			this._mergeActionFrame(rawData.getDynamic(DataParser.EVENTS)!!, frameStart, ActionType.Frame, bone, slot)
 		}
 
-		if (DataParser.ACTIONS in rawData) {
-			this._mergeActionFrame(rawData[DataParser.ACTIONS]!!, frameStart, ActionType.Play, bone, slot)
+		if (rawData.containsDynamic(DataParser.ACTIONS)) {
+			this._mergeActionFrame(rawData.getDynamic(DataParser.ACTIONS)!!, frameStart, ActionType.Play, bone, slot)
 		}
 	}
 
@@ -337,8 +345,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		armature.frameRate = ObjectDataParser._getInt(rawData, DataParser.FRAME_RATE, this._data!!.frameRate)
 		armature.scale = scale
 
-		if (DataParser.TYPE in rawData && rawData[DataParser.TYPE] is String) {
-			armature.type = DataParser._getArmatureType(rawData[DataParser.TYPE]?.toString())
+		if (rawData.containsDynamic(DataParser.TYPE) && rawData.getDynamic(DataParser.TYPE) is String) {
+			armature.type = DataParser._getArmatureType(rawData.getDynamic(DataParser.TYPE)?.toString())
 		} else {
 			armature.type = ArmatureType[ObjectDataParser._getInt(rawData, DataParser.TYPE, ArmatureType.Armature.id)]
 		}
@@ -349,11 +357,11 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 		this._armature = armature
 
-		if (DataParser.CANVAS in rawData) {
-			val rawCanvas = rawData[DataParser.CANVAS]
+		if (rawData.containsDynamic(DataParser.CANVAS)) {
+			val rawCanvas = rawData.getDynamic(DataParser.CANVAS)
 			val canvas = pool.borrowObject<CanvasData>()
 
-			canvas.hasBackground = DataParser.COLOR in rawCanvas
+			canvas.hasBackground = rawCanvas.containsDynamic(DataParser.COLOR)
 
 			canvas.color = ObjectDataParser._getInt(rawCanvas, DataParser.COLOR, 0)
 			canvas.x = (ObjectDataParser._getInt(rawCanvas, DataParser.X, 0) * armature.scale).toInt()
@@ -363,16 +371,16 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			armature.canvas = canvas
 		}
 
-		if (DataParser.AABB in rawData) {
-			val rawAABB = rawData[DataParser.AABB]
+		if (rawData.containsDynamic(DataParser.AABB)) {
+			val rawAABB = rawData.getDynamic(DataParser.AABB)
 			armature.aabb.x = ObjectDataParser._getNumber(rawAABB, DataParser.X, 0.0) * armature.scale
 			armature.aabb.y = ObjectDataParser._getNumber(rawAABB, DataParser.Y, 0.0) * armature.scale
 			armature.aabb.width = ObjectDataParser._getNumber(rawAABB, DataParser.WIDTH, 0.0) * armature.scale
 			armature.aabb.height = ObjectDataParser._getNumber(rawAABB, DataParser.HEIGHT, 0.0) * armature.scale
 		}
 
-		if (DataParser.BONE in rawData) {
-			val rawBones = rawData[DataParser.BONE]
+		if (rawData.containsDynamic(DataParser.BONE)) {
+			val rawBones = rawData.getDynamic(DataParser.BONE)
 			for (rawBone in rawBones as List<Any?>) {
 				val parentName = ObjectDataParser._getString(rawBone, DataParser.PARENT, "")
 				val bone = this._parseBone(rawBone)
@@ -382,7 +390,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					if (parent != null) {
 						bone.parent = parent
 					} else { // Cache.
-						if (!(parentName in this._cacheBones)) {
+						if (!(this._cacheBones.containsDynamic(parentName))) {
 							this._cacheBones[parentName] = arrayListOf()
 						}
 
@@ -390,7 +398,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					}
 				}
 
-				if (bone.name in this._cacheBones) {
+				if (this._cacheBones.containsDynamic(bone.name)) {
 					for (child in this._cacheBones[bone.name]!!) {
 						child.parent = bone
 					}
@@ -403,8 +411,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.IK in rawData) {
-			val rawIKS = rawData[DataParser.IK] as List<Map<String, Any?>>
+		if (rawData.containsDynamic(DataParser.IK)) {
+			val rawIKS = rawData.getDynamic(DataParser.IK) as List<Map<String, Any?>>
 			for (rawIK in rawIKS) {
 				val constraint = this._parseIKConstraint(rawIK)
 				if (constraint != null) {
@@ -415,23 +423,23 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 		armature.sortBones()
 
-		if (DataParser.SLOT in rawData) {
+		if (rawData.containsDynamic(DataParser.SLOT)) {
 			var zOrder = 0
-			val rawSlots = rawData[DataParser.SLOT] as List<Map<String, Any?>>
+			val rawSlots = rawData.getDynamic(DataParser.SLOT) as List<Map<String, Any?>>
 			for (rawSlot in rawSlots) {
 				armature.addSlot(this._parseSlot(rawSlot, zOrder++))
 			}
 		}
 
-		if (DataParser.SKIN in rawData) {
-			val rawSkins = rawData[DataParser.SKIN] as List<Any?>
+		if (rawData.containsDynamic(DataParser.SKIN)) {
+			val rawSkins = rawData.getDynamic(DataParser.SKIN) as List<Any?>
 			for (rawSkin in rawSkins) {
 				armature.addSkin(this._parseSkin(rawSkin))
 			}
 		}
 
-		if (DataParser.PATH_CONSTRAINT in rawData) {
-			val rawPaths = rawData[DataParser.PATH_CONSTRAINT] as List<Any?>
+		if (rawData.containsDynamic(DataParser.PATH_CONSTRAINT)) {
+			val rawPaths = rawData.getDynamic(DataParser.PATH_CONSTRAINT) as List<Any?>
 			for (rawPath in rawPaths) {
 				val constraint = this._parsePathConstraint(rawPath)
 				if (constraint != null) {
@@ -462,16 +470,16 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			mesh.geometry.shareFrom(shareMesh.geometry)
 		}
 
-		if (DataParser.ANIMATION in rawData) {
-			val rawAnimations = rawData[DataParser.ANIMATION] as List<Any?>
+		if (rawData.containsDynamic(DataParser.ANIMATION)) {
+			val rawAnimations = rawData.getDynamic(DataParser.ANIMATION) as List<Any?>
 			for (rawAnimation in rawAnimations) {
 				val animation = this._parseAnimation(rawAnimation)
 				armature.addAnimation(animation)
 			}
 		}
 
-		if (DataParser.DEFAULT_ACTIONS in rawData) {
-			val actions = this._parseActionData(rawData[DataParser.DEFAULT_ACTIONS], ActionType.Play, null, null)
+		if (rawData.containsDynamic(DataParser.DEFAULT_ACTIONS)) {
+			val actions = this._parseActionData(rawData.getDynamic(DataParser.DEFAULT_ACTIONS), ActionType.Play, null, null)
 			for (action in actions) {
 				armature.addAction(action, true)
 
@@ -484,8 +492,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.ACTIONS in rawData) {
-			val actions = this._parseActionData(rawData[DataParser.ACTIONS], ActionType.Play, null, null)
+		if (rawData.containsDynamic(DataParser.ACTIONS)) {
+			val actions = this._parseActionData(rawData.getDynamic(DataParser.ACTIONS), ActionType.Play, null, null)
 			for (action in actions) {
 				armature.addAction(action, false)
 			}
@@ -508,8 +516,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parseBone(rawData: Any?): BoneData {
 		val isSurface: Boolean
 
-		if (DataParser.TYPE in rawData && rawData[DataParser.TYPE] is String) {
-			isSurface = DataParser._getBoneTypeIsSurface(rawData[DataParser.TYPE]?.toString())
+		if (rawData.containsDynamic(DataParser.TYPE) && rawData.getDynamic(DataParser.TYPE) is String) {
+			isSurface = DataParser._getBoneTypeIsSurface(rawData.getDynamic(DataParser.TYPE)?.toString())
 		} else {
 			isSurface = ObjectDataParser._getInt(rawData, DataParser.TYPE, 0) == 1
 		}
@@ -525,8 +533,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			bone.alpha = ObjectDataParser._getNumber(rawData, DataParser.ALPHA, 1.0)
 			bone.name = ObjectDataParser._getString(rawData, DataParser.NAME, "")
 
-			if (DataParser.TRANSFORM in rawData) {
-				this._parseTransform(rawData[DataParser.TRANSFORM], bone.transform, scale)
+			if (rawData.containsDynamic(DataParser.TRANSFORM)) {
+				this._parseTransform(rawData.getDynamic(DataParser.TRANSFORM), bone.transform, scale)
 			}
 
 			return bone
@@ -579,7 +587,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			return null
 		}
 
-		val bones = rawData[DataParser.BONES] as? List<String>?
+		val bones = rawData.getDynamic(DataParser.BONES) as? List<String>?
 		if (bones == null || bones.isEmpty()) {
 			return null
 		}
@@ -625,22 +633,22 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		slot.name = ObjectDataParser._getString(rawData, DataParser.NAME, "")
 		slot.parent = this._armature?.getBone(ObjectDataParser._getString(rawData, DataParser.PARENT, "")) //
 
-		if (DataParser.BLEND_MODE in rawData && rawData[DataParser.BLEND_MODE] is String) {
-			slot.blendMode = DataParser._getBlendMode(rawData[DataParser.BLEND_MODE]?.toString())
+		if (rawData.containsDynamic(DataParser.BLEND_MODE) && rawData.getDynamic(DataParser.BLEND_MODE) is String) {
+			slot.blendMode = DataParser._getBlendMode(rawData.getDynamic(DataParser.BLEND_MODE)?.toString())
 		} else {
 			slot.blendMode = BlendMode[ObjectDataParser._getInt(rawData, DataParser.BLEND_MODE, BlendMode.Normal.id)]
 		}
 
-		if (DataParser.COLOR in rawData) {
+		if (rawData.containsDynamic(DataParser.COLOR)) {
 			slot.color = SlotData.createColor()
-			this._parseColorTransform(rawData[DataParser.COLOR] as Map<String, Any?>, slot.color!!)
+			this._parseColorTransform(rawData.getDynamic(DataParser.COLOR) as Map<String, Any?>, slot.color!!)
 		} else {
 			slot.color = pool.DEFAULT_COLOR
 		}
 
-		if (DataParser.ACTIONS in rawData) {
+		if (rawData.containsDynamic(DataParser.ACTIONS)) {
 			this._slotChildActions[slot.name] =
-					this._parseActionData(rawData[DataParser.ACTIONS], ActionType.Play, null, null)
+					this._parseActionData(rawData.getDynamic(DataParser.ACTIONS), ActionType.Play, null, null)
 		}
 
 		return slot
@@ -654,8 +662,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			skin.name = DataParser.DEFAULT_NAME
 		}
 
-		if (DataParser.SLOT in rawData) {
-			val rawSlots = rawData[DataParser.SLOT]
+		if (rawData.containsDynamic(DataParser.SLOT)) {
+			val rawSlots = rawData.getDynamic(DataParser.SLOT)
 			this._skin = skin
 
 			for (rawSlot in rawSlots.dynList) {
@@ -665,8 +673,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				if (slot != null) {
 					this._slot = slot
 
-					if (DataParser.DISPLAY in rawSlot) {
-						val rawDisplays = rawSlot[DataParser.DISPLAY]
+					if (rawSlot.containsDynamic(DataParser.DISPLAY)) {
+						val rawDisplays = rawSlot.getDynamic(DataParser.DISPLAY)
 						for (rawDisplay in rawDisplays.dynList) {
 							if (rawDisplay != null) {
 								skin.addDisplay(slotName, this._parseDisplay(rawDisplay))
@@ -692,8 +700,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		var type = DisplayType.Image
 		var display: DisplayData? = null
 
-		if (DataParser.TYPE in rawData && rawData[DataParser.TYPE] is String) {
-			type = DataParser._getDisplayType(rawData[DataParser.TYPE]?.toString())
+		if (rawData.containsDynamic(DataParser.TYPE) && rawData.getDynamic(DataParser.TYPE) is String) {
+			type = DataParser._getDisplayType(rawData.getDynamic(DataParser.TYPE)?.toString())
 		} else {
 			type = DisplayType[ObjectDataParser._getInt(rawData, DataParser.TYPE, type.id)]
 		}
@@ -713,8 +721,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				armatureDisplay.path = if (path.length > 0) path else name
 				armatureDisplay.inheritAnimation = true
 
-				if (DataParser.ACTIONS in rawData) {
-					val actions = this._parseActionData(rawData[DataParser.ACTIONS], ActionType.Play, null, null)
+				if (rawData.containsDynamic(DataParser.ACTIONS)) {
+					val actions = this._parseActionData(rawData.getDynamic(DataParser.ACTIONS), ActionType.Play, null, null)
 					for (action in actions) {
 						armatureDisplay.addAction(action)
 					}
@@ -737,7 +745,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				meshDisplay.name = name
 				meshDisplay.path = if (path.isNotEmpty()) path else name
 
-				if (DataParser.SHARE in rawData) {
+				if (rawData.containsDynamic(DataParser.SHARE)) {
 					meshDisplay.geometry.data = this._data
 					this._cacheRawMeshes.push(rawData!!)
 					this._cacheMeshes.push(meshDisplay)
@@ -756,7 +764,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				}
 			}
 			DisplayType.Path -> {
-				val rawCurveLengths = rawData[DataParser.LENGTHS].doubleArray
+				val rawCurveLengths = rawData.getDynamic(DataParser.LENGTHS).doubleArray
 				val pathDisplay = pool.borrowObject<PathDisplayData>()
 				display = pathDisplay
 				pathDisplay.closed = ObjectDataParser._getBoolean(rawData, DataParser.CLOSED, false)
@@ -776,8 +784,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (display != null && DataParser.TRANSFORM in rawData) {
-			this._parseTransform(rawData[DataParser.TRANSFORM], display.transform, this._armature!!.scale)
+		if (display != null && rawData.containsDynamic(DataParser.TRANSFORM)) {
+			this._parseTransform(rawData.getDynamic(DataParser.TRANSFORM), display.transform, this._armature!!.scale)
 		}
 
 		return display
@@ -788,8 +796,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	}
 
 	protected fun _parsePivot(rawData: Any?, display: ImageDisplayData) {
-		if (DataParser.PIVOT in rawData) {
-			val rawPivot = rawData[DataParser.PIVOT]
+		if (rawData.containsDynamic(DataParser.PIVOT)) {
+			val rawPivot = rawData.getDynamic(DataParser.PIVOT)
 			display.pivot.x = ObjectDataParser._getNumber(rawPivot, DataParser.X, 0.0).toFloat()
 			display.pivot.y = ObjectDataParser._getNumber(rawPivot, DataParser.Y, 0.0).toFloat()
 		} else {
@@ -801,9 +809,9 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parseMesh(rawData: Any?, mesh: MeshDisplayData) {
 		this._parseGeometry(rawData, mesh.geometry)
 
-		if (DataParser.WEIGHTS in rawData) { // Cache pose data.
-			val rawSlotPose = rawData[DataParser.SLOT_POSE].doubleArrayList
-			val rawBonePoses = rawData[DataParser.BONE_POSE].doubleArrayList
+		if (rawData.containsDynamic(DataParser.WEIGHTS)) { // Cache pose data.
+			val rawSlotPose = rawData.getDynamic(DataParser.SLOT_POSE).doubleArrayList
+			val rawBonePoses = rawData.getDynamic(DataParser.BONE_POSE).doubleArrayList
 			val meshName = "" + this._skin?.name + "_" + this._slot?.name + "_" + mesh.name
 			this._weightSlotPose[meshName] = rawSlotPose
 			this._weightBonePoses[meshName] = rawBonePoses
@@ -814,8 +822,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		var boundingBox: BoundingBoxData? = null
 		var type = BoundingBoxType.Rectangle
 
-		if (DataParser.SUB_TYPE in rawData && rawData[DataParser.SUB_TYPE] is String) {
-			type = DataParser._getBoundingBoxType(rawData[DataParser.SUB_TYPE]?.toString())
+		if (rawData.containsDynamic(DataParser.SUB_TYPE) && rawData.getDynamic(DataParser.SUB_TYPE) is String) {
+			type = DataParser._getBoundingBoxType(rawData.getDynamic(DataParser.SUB_TYPE)?.toString())
 		} else {
 			type = BoundingBoxType[ObjectDataParser._getInt(rawData, DataParser.SUB_TYPE, type.id)]
 		}
@@ -850,9 +858,9 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parsePolygonBoundingBox(rawData: Any?): PolygonBoundingBoxData {
 		val polygonBoundingBox = pool.borrowObject<PolygonBoundingBoxData>()
 
-		if (DataParser.VERTICES in rawData) {
+		if (rawData.containsDynamic(DataParser.VERTICES)) {
 			val scale = this._armature!!.scale
-			val rawVertices = rawData[DataParser.VERTICES] .doubleArray
+			val rawVertices = rawData.getDynamic(DataParser.VERTICES).doubleArray
 			polygonBoundingBox.vertices = DoubleArray(rawVertices.size)
 			val vertices = polygonBoundingBox.vertices
 
@@ -913,8 +921,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		animation.frameOffset = this._frameArray.length
 		this._animation = animation
 
-		if (DataParser.FRAME in rawData) {
-			val rawFrames = rawData[DataParser.FRAME] as List<Any?>
+		if (rawData.containsDynamic(DataParser.FRAME)) {
+			val rawFrames = rawData.getDynamic(DataParser.FRAME) as List<Any?>
 			val keyFrameCount = rawFrames.size
 
 			if (keyFrameCount > 0) {
@@ -928,30 +936,30 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.Z_ORDER in rawData) {
+		if (rawData.containsDynamic(DataParser.Z_ORDER)) {
 			this._animation!!.zOrderTimeline = this._parseTimeline(
-				rawData[DataParser.Z_ORDER], null, DataParser.FRAME, TimelineType.ZOrder,
+				rawData.getDynamic(DataParser.Z_ORDER), null, DataParser.FRAME, TimelineType.ZOrder,
 				FrameValueType.STEP, 0,
 				this::_parseZOrderFrame
 			)
 		}
 
-		if (DataParser.BONE in rawData) {
-			val rawTimelines = rawData[DataParser.BONE] as List<Any?>
+		if (rawData.containsDynamic(DataParser.BONE)) {
+			val rawTimelines = rawData.getDynamic(DataParser.BONE) as List<Any?>
 			for (rawTimeline in rawTimelines) {
 				this._parseBoneTimeline(rawTimeline)
 			}
 		}
 
-		if (DataParser.SLOT in rawData) {
-			val rawTimelines = rawData[DataParser.SLOT] as List<Any?>
+		if (rawData.containsDynamic(DataParser.SLOT)) {
+			val rawTimelines = rawData.getDynamic(DataParser.SLOT) as List<Any?>
 			for (rawTimeline in rawTimelines) {
 				this._parseSlotTimeline(rawTimeline)
 			}
 		}
 
-		if (DataParser.FFD in rawData) {
-			val rawTimelines = rawData[DataParser.FFD] as List<Any?>
+		if (rawData.containsDynamic(DataParser.FFD)) {
+			val rawTimelines = rawData.getDynamic(DataParser.FFD) as List<Any?>
 			for (rawTimeline in rawTimelines) {
 				var skinName = ObjectDataParser._getString(rawTimeline, DataParser.SKIN, DataParser.DEFAULT_NAME)
 				val slotName = ObjectDataParser._getString(rawTimeline, DataParser.SLOT, "")
@@ -982,8 +990,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.IK in rawData) {
-			val rawTimelines = rawData[DataParser.IK] as List<Any?>
+		if (rawData.containsDynamic(DataParser.IK)) {
+			val rawTimelines = rawData.getDynamic(DataParser.IK) as List<Any?>
 			for (rawTimeline in rawTimelines) {
 				val constraintName = ObjectDataParser._getString(rawTimeline, DataParser.NAME, "")
 				@Suppress("UNUSED_VARIABLE")
@@ -1010,8 +1018,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			this._actionFrames.length = 0
 		}
 
-		if (DataParser.TIMELINE in rawData) {
-			val rawTimelines = rawData[DataParser.TIMELINE]
+		if (rawData.containsDynamic(DataParser.TIMELINE)) {
+			val rawTimelines = rawData.getDynamic(DataParser.TIMELINE)
 			loop@ for (rawTimeline in rawTimelines.dynList) {
 				val timelineType =
 					TimelineType[ObjectDataParser._getInt(rawTimeline, DataParser.TYPE, TimelineType.Action.id)]
@@ -1226,8 +1234,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		var timeline = timeline
 		val frameParser = frameParser
 		var rawFrames = rawFrames
-		if (rawData != null && framesKey.isNotEmpty() && framesKey in rawData) {
-			rawFrames = rawData[framesKey] as ArrayList<Any?>?
+		if (rawData != null && framesKey.isNotEmpty() && rawData.containsDynamic(framesKey)) {
+			rawFrames = rawData.getDynamic(framesKey) as ArrayList<Any?>?
 		}
 
 		if (rawFrames == null) {
@@ -1331,7 +1339,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		this._bone = bone
 		this._slot = this._armature?.getSlot(this._bone?.name)
 
-		if (DataParser.TRANSLATE_FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.TRANSLATE_FRAME)) {
 			this._frameDefaultValue = 0.0
 			this._frameValueScale = 1.0
 			val timeline = this._parseTimeline(
@@ -1345,7 +1353,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.ROTATE_FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.ROTATE_FRAME)) {
 			this._frameDefaultValue = 0.0
 			this._frameValueScale = 1.0
 			val timeline = this._parseTimeline(
@@ -1359,7 +1367,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.SCALE_FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.SCALE_FRAME)) {
 			this._frameDefaultValue = 1.0
 			this._frameValueScale = 1.0
 			val timeline = this._parseTimeline(
@@ -1373,7 +1381,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.FRAME)) {
 			val timeline = this._parseTimeline(
 				rawData, null, DataParser.FRAME, TimelineType.BoneAll,
 				FrameValueType.FLOAT, 6,
@@ -1396,7 +1404,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val colorTimeline: TimelineData?
 		this._slot = slot
 
-		if (DataParser.DISPLAY_FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.DISPLAY_FRAME)) {
 			displayTimeline = this._parseTimeline(
 				rawData, null, DataParser.DISPLAY_FRAME, TimelineType.SlotDisplay,
 				FrameValueType.STEP, 0,
@@ -1410,7 +1418,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			)
 		}
 
-		if (DataParser.COLOR_FRAME in rawData) {
+		if (rawData.containsDynamic(DataParser.COLOR_FRAME)) {
 			colorTimeline = this._parseTimeline(
 				rawData, null, DataParser.COLOR_FRAME, TimelineType.SlotColor,
 				FrameValueType.INT, 1,
@@ -1448,10 +1456,10 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameOffset = this._parseFrame(rawData, frameStart, frameCount)
 
 		if (frameCount > 0) {
-			if (DataParser.CURVE in rawData) {
+			if (rawData.containsDynamic(DataParser.CURVE)) {
 				val sampleCount = frameCount + 1
 				this._helpArray.length = sampleCount
-				val isOmited = this._samplingEasingCurve(rawData[DataParser.CURVE].doubleArrayList, this._helpArray)
+				val isOmited = this._samplingEasingCurve(rawData.getDynamic(DataParser.CURVE).doubleArrayList, this._helpArray)
 
 				this._frameArray.length += 1 + 1 + this._helpArray.length
 				this._frameArray[frameOffset + BinaryOffset.FrameTweenType] = TweenType.Curve.id.toDouble()
@@ -1465,7 +1473,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			} else {
 				val noTween = -2.0
 				var tweenEasing = noTween
-				if (DataParser.TWEEN_EASING in rawData) {
+				if (rawData.containsDynamic(DataParser.TWEEN_EASING)) {
 					tweenEasing = ObjectDataParser._getNumber(rawData, DataParser.TWEEN_EASING, noTween)
 				}
 
@@ -1613,7 +1621,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val rawData = rawData as Map<String, Any?>
 		val frameOffset = this._parseFrame(rawData, frameStart, frameCount)
 
-		if (DataParser.Z_ORDER in rawData) {
+		if (rawData.containsDynamic(DataParser.Z_ORDER)) {
 			val rawZOrder = rawData[DataParser.Z_ORDER] .doubleArray
 			if (rawZOrder.size > 0) {
 				val slotCount = this._armature!!.sortedSlots.length
@@ -1673,8 +1681,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 	protected fun _parseBoneAllFrame(rawData: Any?, frameStart: Int, frameCount: Int): Int {
 		this._helpTransform.identity()
-		if (DataParser.TRANSFORM in rawData) {
-			this._parseTransform(rawData[DataParser.TRANSFORM], this._helpTransform, 1.0)
+		if (rawData.containsDynamic(DataParser.TRANSFORM)) {
+			this._parseTransform(rawData.getDynamic(DataParser.TRANSFORM), this._helpTransform, 1.0)
 		}
 
 		// Modify rotation.
@@ -1763,7 +1771,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameOffset = this._parseFrame(rawData, frameStart, frameCount)
 		this._frameArray.length += 1
 
-		if (DataParser.VALUE in rawData) {
+		if (rawData.containsDynamic(DataParser.VALUE)) {
 			this._frameArray[frameOffset + 1] = ObjectDataParser._getNumber(rawData, DataParser.VALUE, 0.0)
 		} else {
 			this._frameArray[frameOffset + 1] = ObjectDataParser._getNumber(rawData, DataParser.DISPLAY_INDEX, 0.0)
@@ -1778,8 +1786,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameOffset = this._parseTweenFrame(rawData, frameStart, frameCount)
 		var colorOffset = -1
 
-		if (DataParser.VALUE in rawData || DataParser.COLOR in rawData) {
-			val rawColor = rawData[DataParser.VALUE] ?: rawData[DataParser.COLOR]
+		if (rawData.containsDynamic(DataParser.VALUE) || rawData.containsDynamic(DataParser.COLOR)) {
+			val rawColor = rawData.getDynamic(DataParser.VALUE) ?: rawData.getDynamic(DataParser.COLOR)
 			// @TODO: Kotlin-JS: Caused by: java.lang.IllegalStateException: Value at LOOP_RANGE_ITERATOR_RESOLVED_CALL must not be null for BINARY_WITH_TYPE
 			//for (k in (rawColor as List<Any?>)) { // Detects the presence of color.
 			//for (let k in rawColor) { // Detects the presence of color.
@@ -1828,7 +1836,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parseSlotDeformFrame(rawData: Any?, frameStart: Int, frameCount: Int): Int {
 		val frameFloatOffset = this._frameFloatArray.length
 		val frameOffset = this._parseTweenFrame(rawData, frameStart, frameCount)
-		val rawVertices = rawData[DataParser.VERTICES]?.doubleArray
+		val rawVertices = rawData.getDynamic(DataParser.VERTICES)?.doubleArray
 		val offset = ObjectDataParser._getInt(rawData, DataParser.OFFSET, 0) // uint
 		val vertexCount = this._intArray[this._mesh!!.geometry.offset + BinaryOffset.GeometryVertexCount]
 		val meshName = "" + this._mesh?.parent?.name + "_" + this._slot?.name + "_" + this._mesh?.name
@@ -1939,11 +1947,11 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			for (rawAction in rawData as List<Map<String, Any?>>) {
 				val action = pool.borrowObject<ActionData>()
 
-				if (DataParser.GOTO_AND_PLAY in rawAction) {
+				if (rawAction.containsDynamic(DataParser.GOTO_AND_PLAY)) {
 					action.type = ActionType.Play
 					action.name = ObjectDataParser._getString(rawAction, DataParser.GOTO_AND_PLAY, "")
 				} else {
-					if (DataParser.TYPE in rawAction && rawAction[DataParser.TYPE] is String) {
+					if (rawAction.containsDynamic(DataParser.TYPE) && rawAction[DataParser.TYPE] is String) {
 						action.type = DataParser._getActionType(rawAction[DataParser.TYPE]?.toString())
 					} else {
 						action.type = ActionType[ObjectDataParser._getInt(rawAction, DataParser.TYPE, type.id)]
@@ -1952,14 +1960,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					action.name = ObjectDataParser._getString(rawAction, DataParser.NAME, "")
 				}
 
-				if (DataParser.BONE in rawAction) {
+				if (rawAction.containsDynamic(DataParser.BONE)) {
 					val boneName = ObjectDataParser._getString(rawAction, DataParser.BONE, "")
 					action.bone = this._armature?.getBone(boneName)
 				} else {
 					action.bone = bone
 				}
 
-				if (DataParser.SLOT in rawAction) {
+				if (rawAction.containsDynamic(DataParser.SLOT)) {
 					val slotName = ObjectDataParser._getString(rawAction, DataParser.SLOT, "")
 					action.slot = this._armature?.getSlot(slotName)
 				} else {
@@ -1968,7 +1976,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 				var userData: UserData? = null
 
-				if (DataParser.INTS in rawAction) {
+				if (rawAction.containsDynamic(DataParser.INTS)) {
 					if (userData == null) {
 						userData = pool.borrowObject<UserData>()
 					}
@@ -1979,7 +1987,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					}
 				}
 
-				if (DataParser.FLOATS in rawAction) {
+				if (rawAction.containsDynamic(DataParser.FLOATS)) {
 					if (userData == null) {
 						userData = pool.borrowObject<UserData>()
 					}
@@ -1990,7 +1998,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					}
 				}
 
-				if (DataParser.STRINGS in rawAction) {
+				if (rawAction.containsDynamic(DataParser.STRINGS)) {
 					if (userData == null) {
 						userData = pool.borrowObject<UserData>()
 					}
@@ -2012,9 +2020,9 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parseDeformFrame(rawData: Any?, frameStart: Int, frameCount: Int): Int {
 		val frameFloatOffset = this._frameFloatArray.length
 		val frameOffset = this._parseTweenFrame(rawData, frameStart, frameCount)
-		val rawVertices = if (DataParser.VERTICES in rawData)
-			rawData[DataParser.VERTICES]?.doubleArrayList else
-			rawData[DataParser.VALUE]?.doubleArrayList
+		val rawVertices = if (rawData.containsDynamic(DataParser.VERTICES))
+			rawData.getDynamic(DataParser.VERTICES)?.doubleArrayList else
+			rawData.getDynamic(DataParser.VALUE)?.doubleArrayList
 		val offset = ObjectDataParser._getNumber(rawData, DataParser.OFFSET, 0.0).toInt() // uint
 		val vertexCount = this._intArray[this._geometry!!.offset + BinaryOffset.GeometryVertexCount]
 		val weight = this._geometry!!.weight
@@ -2072,7 +2080,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		transform.x = (ObjectDataParser._getNumber(rawData, DataParser.X, 0.0) * scale).toFloat()
 		transform.y = (ObjectDataParser._getNumber(rawData, DataParser.Y, 0.0) * scale).toFloat()
 
-		if (DataParser.ROTATE in rawData || DataParser.SKEW in rawData) {
+		if (rawData.containsDynamic(DataParser.ROTATE) || rawData.containsDynamic(DataParser.SKEW)) {
 			transform.rotation = Transform.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
@@ -2087,7 +2095,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					0.0
 				) * Transform.DEG_RAD
 			).toFloat()
-		} else if (DataParser.SKEW_X in rawData || DataParser.SKEW_Y in rawData) {
+		} else if (rawData.containsDynamic(DataParser.SKEW_X) || rawData.containsDynamic(DataParser.SKEW_Y)) {
 			transform.rotation = Transform.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
@@ -2120,7 +2128,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	}
 
 	open protected fun _parseGeometry(rawData: Any?, geometry: GeometryData) {
-		val rawVertices = rawData[DataParser.VERTICES] .doubleArray
+		val rawVertices = rawData.getDynamic(DataParser.VERTICES).doubleArray
 		val vertexCount: Int = rawVertices.size / 2 // uint
 		var triangleCount = 0
 		val geometryOffset = this._intArray.length
@@ -2140,8 +2148,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			this._floatArray[verticesOffset + i] = rawVertices[i]
 		}
 
-		if (DataParser.TRIANGLES in rawData) {
-			val rawTriangles = rawData[DataParser.TRIANGLES] .doubleArray
+		if (rawData.containsDynamic(DataParser.TRIANGLES)) {
+			val rawTriangles = rawData.getDynamic(DataParser.TRIANGLES).doubleArray
 			triangleCount = rawTriangles.size / 3 // uint
 			//
 			this._intArray.length += triangleCount * 3
@@ -2153,8 +2161,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		// Fill triangle count.
 		this._intArray[geometryOffset + BinaryOffset.GeometryTriangleCount] = triangleCount
 
-		if (DataParser.UVS in rawData) {
-			val rawUVs = rawData[DataParser.UVS] .doubleArray
+		if (rawData.containsDynamic(DataParser.UVS)) {
+			val rawUVs = rawData.getDynamic(DataParser.UVS).doubleArray
 			val uvOffset = verticesOffset + vertexCount * 2
 			this._floatArray.length += vertexCount * 2
 			//for (var i = 0, l = vertexCount * 2; i < l; ++i) {
@@ -2163,8 +2171,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 		}
 
-		if (DataParser.WEIGHTS in rawData) {
-			val rawWeights = rawData[DataParser.WEIGHTS] .doubleArray
+		if (rawData.containsDynamic(DataParser.WEIGHTS)) {
+			val rawWeights = rawData.getDynamic(DataParser.WEIGHTS).doubleArray
 			val weightCount = (rawWeights.size - vertexCount) / 2 // uint
 			val weightOffset = this._intArray.length
 			val floatOffset = this._floatArray.length
@@ -2177,9 +2185,9 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			this._intArray.length += 1 + 1 + weightBoneCount + vertexCount + weightCount
 			this._intArray[weightOffset + BinaryOffset.WeigthFloatOffset] = floatOffset
 
-			if (DataParser.BONE_POSE in rawData) {
-				val rawSlotPose = rawData[DataParser.SLOT_POSE] .doubleArray
-				val rawBonePoses = rawData[DataParser.BONE_POSE] .doubleArray
+			if (rawData.containsDynamic(DataParser.BONE_POSE)) {
+				val rawSlotPose = rawData.getDynamic(DataParser.SLOT_POSE).doubleArray
+				val rawBonePoses = rawData.getDynamic(DataParser.BONE_POSE).doubleArray
 				val weightBoneIndices = IntArrayList()
 
 				weightBoneCount = (rawBonePoses.size / 7) // uint
@@ -2227,7 +2235,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					}
 				}
 			} else {
-				val rawBones = rawData[DataParser.BONES] .doubleArray
+				val rawBones = rawData.getDynamic(DataParser.BONES).doubleArray
 				weightBoneCount = rawBones.size
 
 				//for (var i = 0; i < weightBoneCount; i++) {
@@ -2382,11 +2390,11 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				data.frameRate = 24
 			}
 
-			if (DataParser.ARMATURE in rawData) {
+			if (rawData.containsDynamic(DataParser.ARMATURE)) {
 				this._data = data
 				this._parseArray(rawData)
 
-				val rawArmatures = rawData[DataParser.ARMATURE] as List<Any?>
+				val rawArmatures = rawData.getDynamic(DataParser.ARMATURE) as List<Any?>
 				for (rawArmature in rawArmatures) {
 					data.addArmature(this._parseArmature(rawArmature, scale))
 				}
@@ -2395,7 +2403,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					this._modifyArray()
 				}
 
-				if (DataParser.STAGE in rawData) {
+				if (rawData.containsDynamic(DataParser.STAGE)) {
 					data.stage = data.getArmature(ObjectDataParser._getString(rawData, DataParser.STAGE, ""))
 				} else if (data.armatureNames.length > 0) {
 					data.stage = data.getArmature(data.armatureNames[0])
@@ -2404,8 +2412,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				this._data = null
 			}
 
-			if (DataParser.TEXTURE_ATLAS in rawData) {
-				this._rawTextureAtlases = rawData[DataParser.TEXTURE_ATLAS] as ArrayList<Any?>?
+			if (rawData.containsDynamic(DataParser.TEXTURE_ATLAS)) {
+				this._rawTextureAtlases = rawData.getDynamic(DataParser.TEXTURE_ATLAS) as ArrayList<Any?>?
 			}
 
 			return data
@@ -2446,8 +2454,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		textureAtlasData.name = ObjectDataParser._getString(rawData, DataParser.NAME, "")
 		textureAtlasData.imagePath = ObjectDataParser._getString(rawData, DataParser.IMAGE_PATH, "")
 
-		if (DataParser.SUB_TEXTURE in rawData) {
-			val rawTextures = rawData[DataParser.SUB_TEXTURE] as ArrayList<*>
+		if (rawData.containsDynamic(DataParser.SUB_TEXTURE)) {
+			val rawTextures = rawData.getDynamic(DataParser.SUB_TEXTURE) as ArrayList<*>
 			//for (var i = 0, l = rawTextures.length; i < l; ++i) {
 			for (i in 0 until rawTextures.length) {
 				val rawTexture = rawTextures[i]

@@ -14,11 +14,11 @@ inline fun Container.particleEmitter(
 class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View() {
 	val simulator = ParticleEmitter.Simulator(emitter, emitterPos)
 
-	var timeUntilStop by simulator::timeUntilStop.redirect()
-	val emitterPos by simulator::emitterPos.redirect()
-	var emitting by simulator::emitting.redirect()
-	val aliveCount by simulator::aliveCount.redirect()
-	val anyAlive by simulator::anyAlive.redirect()
+	var timeUntilStop by simulator::timeUntilStop.redirected()
+	val emitterPos by simulator::emitterPos.redirected()
+	var emitting by simulator::emitting.redirected()
+	val aliveCount by simulator::aliveCount.redirected()
+	val anyAlive by simulator::anyAlive.redirected()
 
 	init {
 		addUpdatable { dtMs ->

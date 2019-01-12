@@ -21,6 +21,8 @@ dependencies {
     rtArtifacts "com.soywiz:kgl-jvm:$kglVersion"
     rtArtifacts "com.soywiz:korag-jvm:$koragVersion"
     rtArtifacts "com.soywiz:korui-jvm:$koruiVersion"
+    rtArtifacts "com.soywiz:korev-jvm:$korevVersion"
+    rtArtifacts "com.soywiz:korgw-jvm:$korgwVersion"
     rtArtifacts "com.soywiz:klock-jvm:$klockVersion"
 }
 

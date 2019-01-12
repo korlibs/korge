@@ -807,7 +807,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					val metaData = it.metaData
 					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {
 						val uidInfo = mc.uidInfo[uid]
-						val eprops = runIgnoringExceptions { Json.decode(metaData["props"].toString()) as Map<String, String> }
+						val eprops = runIgnoringExceptions { Json.parse(metaData["props"].toString()) as Map<String, String> }
 						if (eprops != null) uidInfo.extraProps += eprops
 						//println(depth.extraProps)
 					}

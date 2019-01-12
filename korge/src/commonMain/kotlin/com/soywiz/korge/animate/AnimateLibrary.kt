@@ -28,7 +28,7 @@ object AnSymbolEmpty : AnSymbol(-1, "")
 
 class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) :
 	AnSymbol(id, name) {
-	private val nativeSoundCache = AsyncCacheItem<NativeSound>()
+	private val nativeSoundCache = AsyncOnce<NativeSound>()
 	suspend fun getNativeSound(): NativeSound = nativeSoundCache {
 		if (inputSound == null) {
 			inputSound = try {

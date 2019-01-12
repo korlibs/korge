@@ -1,15 +1,16 @@
 package com.soywiz.korge.service.storage
 
-import com.soywiz.korio.serialization.*
+import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.serialization.json.*
 import kotlin.reflect.*
 
 class StorageItem<T : Any>(val storage: IStorage, val clazz: KClass<T>, val key: String, val gen: () -> T) {
 	var value: T
-		set(value) = run { storage[key] = Json.encodeUntyped(Mapper.toUntyped(clazz, value)) }
+		set(value) = run { storage[key] = Json.stringify(Mapper.toUntyped(clazz, value)) }
 		get () {
-			if (key !in storage) storage[key] = Json.encodeUntyped(Mapper.toUntyped(clazz, gen()))
-			return Json.decodeToType(storage[key], clazz)
+			if (key !in storage) storage[key] = Json.stringify(Mapper.toUntyped(clazz, gen()))
+			return Json.parseTyped(clazz, storage[key], Mapper)
 		}
 
 	fun remove() = storage.remove(key)

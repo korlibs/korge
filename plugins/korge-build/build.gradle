@@ -28,6 +28,8 @@ dependencies {
 	compileOnly "com.soywiz:kgl-jvm:$kglVersion"
 	compileOnly "com.soywiz:korag-jvm:$koragVersion"
 	compileOnly "com.soywiz:korui-jvm:$koruiVersion"
+	compileOnly "com.soywiz:korev-jvm:$korevVersion"
+	compileOnly "com.soywiz:korgw-jvm:$korgwVersion"
 	compileOnly "com.soywiz:klock-jvm:$klockVersion"
 
 	testCompileOnly "com.soywiz:korge-jvm:$korgeVersion"
@@ -45,6 +47,8 @@ dependencies {
 	testCompileOnly "com.soywiz:kgl-jvm:$kglVersion"
 	testCompileOnly "com.soywiz:korag-jvm:$koragVersion"
 	testCompileOnly "com.soywiz:korui-jvm:$koruiVersion"
+	testCompileOnly "com.soywiz:korev-jvm:$korevVersion"
+	testCompileOnly "com.soywiz:korgw-jvm:$korgwVersion"
 	testCompileOnly "com.soywiz:klock-jvm:$klockVersion"
 }
 

@@ -20,6 +20,8 @@ class KorgeBuildService : IKorgeBuildService {
     override fun korimVersion(): String = BuildVersions.KORIM
     override fun korauVersion(): String = BuildVersions.KORAU
     override fun koruiVersion(): String = BuildVersions.KORUI
+    override fun korevVersion(): String = BuildVersions.KOREV
+    override fun korgwVersion(): String = BuildVersions.KORGW
     override fun kotlinVersion(): String = BuildVersions.KOTLIN
 
     override fun processResourcesFolder(src: File, dst: File) {
@@ -58,6 +60,8 @@ interface IKorgeBuildService {
     fun korimVersion(): String
     fun korauVersion(): String
     fun koruiVersion(): String
+    fun korevVersion(): String
+    fun korgwVersion(): String
     fun kotlinVersion(): String
     fun processResourcesFolder(src: File, dst: File)
 }

@@ -1,18 +1,17 @@
 package com.soywiz.korge.atlas
 
-import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.file.*
 
 suspend fun VfsFile.readAtlas2(views: Views): Atlas2 {
-	val json = Json.decode(this.readString())
-	return DynamicContextInstance.run {
-		val sprites = json["sprites"].toDynamicList()
+	val json = Json.parse(this.readString())
+	return KDynamic {
+		val sprites = json["sprites"].list
 
 		val entries = sprites.map {
 			Atlas2.Entry(

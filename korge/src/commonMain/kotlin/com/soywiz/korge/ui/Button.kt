@@ -17,9 +17,9 @@ class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: Strin
 		NinePatch(skin.buttonOut, width, height, 0.25, 0.25, 0.25, 0.25).apply { this@Button += this }
 	private val textView = Text(initialText).apply { this@Button += this }
 
-	override var text: String by redirectField(textView::text)
-	override var html: String by redirectField(textView::html)
-	var format: Html.Format by redirectField(textView::format)
+	override var text: String by textView::text.redirected()
+	override var html: String by textView::html.redirected()
+	var format: Html.Format by textView::format.redirected()
 
 	init {
 		format = Html.Format(size = 16, align = Html.Alignment.MIDDLE_CENTER, color = Colors.BLACK)

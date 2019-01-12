@@ -191,9 +191,9 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 		this += textField
 	}
 
-	var format: Html.Format by textField::format.redirect()
-	override var text: String by redirectField(textField::text)
-	override var html: String by redirectField(textField::html)
+	var format: Html.Format by textField::format.redirected()
+	override var text: String by textField::text.redirected()
+	override var html: String by textField::html.redirected()
 
 	override fun createInstance(): View = symbol.create(library) as View
 }

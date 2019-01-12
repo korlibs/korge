@@ -5,6 +5,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.util.*
+import com.soywiz.korio.util.encoding.*
 
 object DebugBitmapFont {
 	val DEBUG_FONT_BYTES: ByteArray =
@@ -53,7 +54,6 @@ object DebugBitmapFont {
 
 }
 
-@NativeThreadLocal
 private var bmpFontOnce2 = AsyncOnce<BitmapFont>()
 
 suspend fun getDebugBmpFontOnce() = bmpFontOnce2 {
