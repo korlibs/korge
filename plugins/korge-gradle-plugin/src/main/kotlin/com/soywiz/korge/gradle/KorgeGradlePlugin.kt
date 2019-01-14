@@ -6,6 +6,7 @@ import com.moowork.gradle.node.npm.NpmTask
 import com.moowork.gradle.node.task.NodeTask
 import com.soywiz.korge.gradle.apple.IcnsBuilder
 import com.soywiz.korge.gradle.apple.InfoPlistBuilder
+import com.soywiz.korge.gradle.util.*
 import groovy.text.*
 import groovy.util.*
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -27,6 +28,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJsDce
 import proguard.gradle.ProGuardTask
 import java.io.*
 import java.net.*
+import javax.imageio.*
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
@@ -154,6 +156,11 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
 
     cordovaConfig["icon"].remove()
     cordovaConfig.appendNode("icon", "src" to "icon.png")
+
+    val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
+    for (iconSize in ICON_SIZES) {
+        platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize").setAttribute("src", "icon-$iconSize.png")
+    }
 }
 
 fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
@@ -191,6 +198,8 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
     }
 }
 
+val ICON_SIZES = listOf(20, 29, 40, 44, 48, 50, 55, 57, 58, 60, 72, 76, 80, 87, 88, 100, 114, 120, 144, 152, 167, 172, 180, 196, 1024)
+
 class KorgeGradleApply(val project: Project) {
     val korgeCacheDir = File(System.getProperty("user.home"), ".korge").apply { mkdirs() }
     //val node_modules by lazy { project.file("node_modules") }
@@ -211,6 +220,10 @@ class KorgeGradleApply(val project: Project) {
         } else {
             KorgeGradlePlugin::class.java.getResource("/icons/korge.png").readBytes()
         }
+    }
+
+    fun KorgeExtension.getIconBytes(size: Int): ByteArray {
+        return ImageIO.read(getIconBytes().inputStream()).getScaledInstance(size, size).toBufferedImage().encodePNG()
     }
 
     fun apply() {
@@ -771,6 +784,9 @@ class KorgeGradleApply(val project: Project) {
                 task.doLast {
                     cordovaFolder.mkdirs()
                     cordovaFolder["icon.png"].writeBytes(korge.getIconBytes())
+                    for (size in ICON_SIZES) {
+                        cordovaFolder["icon-$size.png"].writeBytes(korge.getIconBytes(size))
+                    }
                 }
             }
 

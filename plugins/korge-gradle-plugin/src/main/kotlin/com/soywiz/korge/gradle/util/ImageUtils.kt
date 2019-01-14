@@ -16,3 +16,5 @@ fun Image.toBufferedImage(): BufferedImage {
 	bGr.dispose()
 	return bimage
 }
+
+fun Image.getScaledInstance(width: Int, height: Int) = getScaledInstance(width, height, Image.SCALE_SMOOTH)
