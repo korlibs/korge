@@ -149,6 +149,8 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
     replaceCordovaPreference("Fullscreen", korge.fullscreen.toString())
     replaceCordovaPreference("BackgroundColor", "0x%08x".format(korge.backgroundColor))
 
+    replaceCordovaPreference("DisallowOverscroll", "true")
+
     if (korge.androidMinSdk != null) {
         val android = cordovaConfig.getOrAppendNode("platform", "name" to "android")
         android.getOrAppendNode("preference", "name" to "android-minSdkVersion").setAttribute("value", korge.androidMinSdk!!)
@@ -157,10 +159,13 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
     cordovaConfig["icon"].remove()
     cordovaConfig.appendNode("icon", "src" to "icon.png")
 
-    val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
-    for (iconSize in ICON_SIZES) {
-        platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize").setAttribute("src", "icon-$iconSize.png")
-    }
+    //for (n in 0 until 2) {
+        val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
+        for (iconSize in ICON_SIZES) {
+            platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize")
+                .setAttribute("src", "icon-$iconSize.png")
+        }
+    //}
 }
 
 fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {

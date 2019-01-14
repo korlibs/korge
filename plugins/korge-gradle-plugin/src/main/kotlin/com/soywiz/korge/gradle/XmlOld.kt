@@ -112,8 +112,8 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) : Iterable<QXml> {
     fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap().toMutableMap())
 
 	fun getOrAppendNode(name: String, vararg attributes: Pair<String, String>): QXml {
-		return get(name).filter {
-			attributes.all { attributes[it.first] == it.second }
+		return get(name).filter { node ->
+			attributes.all { node.attributes[it.first] == it.second }
 		}.takeIf { it.isNotEmpty() }?.let { QXml(it) } ?: appendNode(name, *attributes)
 	}
 
