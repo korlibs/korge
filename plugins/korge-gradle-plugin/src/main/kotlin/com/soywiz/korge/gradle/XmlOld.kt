@@ -113,18 +113,16 @@ class QXml private constructor(val obj: Any?, dummy: Boolean) : Iterable<QXml> {
 
 	fun getOrAppendNode(name: String, vararg attributes: Pair<String, String>): QXml {
 		return get(name).filter { node ->
-			attributes.all { node.attributes[it.first] == it.second }
-		}.takeIf { it.isNotEmpty() }?.let { QXml(it) } ?: appendNode(name, *attributes)
+			attributes.all { node.attributes[it.first].toString() == it.second.toString() }
+		}.takeIf { it.isNotEmpty() }?.let {
+			QXml(NodeList(it))
+		} ?: appendNode(name, *attributes)
 	}
 
-	operator fun get(key: String): QXml {
-		if (obj is Iterable<*>) {
-			return QXml(obj.map { QXml(it)[key].obj })
-		}
-		if (obj is Node) {
-			return QXml(obj.get(key))
-		}
-		return QXml(null)
+	operator fun get(key: String): QXml = when (obj) {
+		is Iterable<*> -> QXml(obj.map { QXml(it)[key].obj })
+		is Node -> QXml(obj.get(key))
+		else -> QXml(null)
 	}
 
 	fun serialize(): String {

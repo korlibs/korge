@@ -159,13 +159,11 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
     cordovaConfig["icon"].remove()
     cordovaConfig.appendNode("icon", "src" to "icon.png")
 
-    //for (n in 0 until 2) {
-        val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
-        for (iconSize in ICON_SIZES) {
-            platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize")
-                .setAttribute("src", "icon-$iconSize.png")
-        }
-    //}
+    val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
+    for (iconSize in ICON_SIZES) {
+        platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize")
+            .setAttribute("src", "icon-$iconSize.png")
+    }
 }
 
 fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
@@ -869,6 +867,9 @@ class KorgeGradleApply(val project: Project) {
 
                 val cordovaTargetInstall = project.addTask<NodeTask>("cordova${Target}Install", dependsOn = listOf(cordovaCreate)) { task ->
                     task.onlyIf { !cordovaFolder["platforms/$target"].exists() }
+                    doFirst {
+                        korge.updateCordovaXmlFile(cordovaConfigXmlFile)
+                    }
                     task.setCordova("platform", "add", target)
                 }
 

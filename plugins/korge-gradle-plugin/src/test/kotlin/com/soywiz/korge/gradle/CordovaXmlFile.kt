@@ -4,7 +4,7 @@ import org.junit.Test
 import kotlin.test.*
 
 class CordovaXmlFile {
-	val sampleXml = """
+    val sampleXml = """
 		<?xml version='1.0' encoding='utf-8'?>
 		<widget id="com.soywiz.sample1" version="1.0.0" xmlns="http://www.w3.org/ns/widgets">
 			<name>sample</name>
@@ -16,17 +16,18 @@ class CordovaXmlFile {
 		</widget>
 	""".trimIndent()
 
-	@Test
-	fun test() {
-		val extension = KorgeExtension().apply {
-			this.id = "com.soywiz.myid"
-			this.version = "0.0.1"
-			this.author("demo", "demo@demo.com", "https://demo.com")
-			this.orientation = Orientation.PORTRAIT
-			this.fullscreen = false
-			this.backgroundColor = 0xFFFF3333.toInt()
-		}
-		assertEquals("""
+    @Test
+    fun test() {
+        val extension = KorgeExtension().apply {
+            this.id = "com.soywiz.myid"
+            this.version = "0.0.1"
+            this.author("demo", "demo@demo.com", "https://demo.com")
+            this.orientation = Orientation.PORTRAIT
+            this.fullscreen = false
+            this.backgroundColor = 0xFFFF3333.toInt()
+        }
+        assertEquals(
+            """
 			<?xml version='1.0' encoding='utf-8'?>
 			<widget xmlns="http://www.w3.org/ns/widgets" id="com.soywiz.myid" version="0.0.1">
 			  <name>unnamed</name>
@@ -38,15 +39,17 @@ class CordovaXmlFile {
 			  <preference name="BackgroundColor" value="0xffff3333"/>
 			  <icon src="icon.png"/>
 			</widget>
-		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd())
-	}
+		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd()
+        )
+    }
 
-	@Test
-	fun test2() {
-		val extension = KorgeExtension().apply {
-			androidMinSdk = "19"
-		}
-		assertEquals("""
+    @Test
+    fun test2() {
+        val extension = KorgeExtension().apply {
+            androidMinSdk = "19"
+        }
+        assertEquals(
+            """
 			<?xml version='1.0' encoding='utf-8'?>
 			<widget xmlns="http://www.w3.org/ns/widgets" id="com.unknown.unknownapp" version="0.0.1">
 			  <name>unnamed</name>
@@ -61,7 +64,8 @@ class CordovaXmlFile {
 			  </platform>
 			  <icon src="icon.png"/>
 			</widget>
-		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd())
-	}
+		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd()
+        )
+    }
 }
 
