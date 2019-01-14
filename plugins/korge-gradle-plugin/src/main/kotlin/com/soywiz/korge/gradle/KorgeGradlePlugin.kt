@@ -8,7 +8,6 @@ import com.soywiz.korge.gradle.apple.IcnsBuilder
 import com.soywiz.korge.gradle.apple.InfoPlistBuilder
 import com.soywiz.korge.gradle.util.*
 import groovy.text.*
-import groovy.util.*
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
@@ -272,6 +271,29 @@ class KorgeGradleApply(val project: Project) {
         val jvmTest = (tasks.findByName("jvmTest") as Test)
         jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
     }
+
+    val cordovaFolder by lazy { project.buildDir["cordova"] }
+    val cordovaConfigXmlFile by lazy { cordovaFolder["config.xml"] }
+
+    private fun Project.synchronizeCordovaXmlAndIcons() {
+        cordovaFolder.mkdirs()
+        val md5File = cordovaFolder["icon.png.md5"]
+        val bytes = korge.getIconBytes()
+        val md5Actual = bytes.md5String()
+        val md5Old = md5File.takeIf { it.exists() }?.readText()
+        if (md5Old != md5Actual) {
+            project.logger.info("Cordova ICONS md5 not matching, regenerating...")
+            cordovaFolder["icon.png"].writeBytes(bytes)
+            for (size in ICON_SIZES) {
+                cordovaFolder["icon-$size.png"].writeBytes(korge.getIconBytes(size))
+            }
+            md5File.writeText(md5Actual)
+        } else {
+            project.logger.info("Cordova ICONS already up-to-date")
+        }
+        korge.updateCordovaXmlFile(cordovaConfigXmlFile)
+    }
+
 
     private fun Project.addNativeRun() {
         afterEvaluate {
@@ -760,9 +782,6 @@ class KorgeGradleApply(val project: Project) {
             }
         }
 
-        val cordovaFolder = project.buildDir["cordova"]
-        val cordovaConfigXmlFile = cordovaFolder["config.xml"]
-
         //val korge = KorgeXml(project.file("korge.project.xml"))
         val korge = project.korge
 
@@ -786,11 +805,7 @@ class KorgeGradleApply(val project: Project) {
 
             val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon", dependsOn = listOf(cordovaCreate)) { task ->
                 task.doLast {
-                    cordovaFolder.mkdirs()
-                    cordovaFolder["icon.png"].writeBytes(korge.getIconBytes())
-                    for (size in ICON_SIZES) {
-                        cordovaFolder["icon-$size.png"].writeBytes(korge.getIconBytes(size))
-                    }
+                    synchronizeCordovaXmlAndIcons()
                 }
             }
 
@@ -805,7 +820,7 @@ class KorgeGradleApply(val project: Project) {
 
             val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaCreate, cordovaUpdateIcon)) { task ->
                 task.doLast {
-                    korge.updateCordovaXmlFile(cordovaConfigXmlFile)
+                    synchronizeCordovaXmlAndIcons()
                 }
             }
 
@@ -869,7 +884,7 @@ class KorgeGradleApply(val project: Project) {
                 val cordovaTargetInstall = project.addTask<NodeTask>("cordova${Target}Install", dependsOn = listOf(cordovaCreate)) { task ->
                     task.onlyIf { !cordovaFolder["platforms/$target"].exists() }
                     doFirst {
-                        korge.updateCordovaXmlFile(cordovaConfigXmlFile)
+                        synchronizeCordovaXmlAndIcons()
                     }
                     task.setCordova("platform", "add", target)
                 }
