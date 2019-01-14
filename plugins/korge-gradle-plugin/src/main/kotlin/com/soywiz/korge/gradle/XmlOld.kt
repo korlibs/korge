@@ -19,117 +19,85 @@ class KorgeXml(val file: File) {
 }
 */
 
+fun NodeList.toFlatNodeList(): List<Node> = this.flatMap {
+    when (it) {
+        is Node -> listOf(it)
+        is NodeList -> it.toFlatNodeList()
+        else -> error("Unsupported it")
+    }
+}
 
-class QXml private constructor(val obj: Any?, dummy: Boolean) : Iterable<QXml> {
+class QXml private constructor(val nodes: List<Node>, dummy: Boolean) : Iterable<QXml> {
 	override fun iterator(): Iterator<QXml> = list.iterator()
 
 	companion object {
-		operator fun invoke(obj: Any?): QXml = if (obj is QXml) obj else QXml(obj, true)
-		operator fun invoke(xml: String): QXml = QXml(xmlParse(xml))
+        operator fun invoke(xml: String): QXml = QXml(xmlParse(xml))
+        operator fun invoke(obj: Node): QXml = QXml(listOf(obj), true)
+        operator fun invoke(obj: List<Node>): QXml = QXml(obj, true)
+        operator fun invoke(obj: List<QXml>, dummy: Boolean = false): QXml = QXml(obj.flatMap { it.nodes })
+        operator fun invoke(obj: NodeList): QXml = QXml(obj.toFlatNodeList(), true)
 	}
 
-	val isEmpty get() = (obj == null) || (obj is NodeList && obj.isEmpty())
+	val isEmpty get() = nodes.isEmpty()
 	val isNotEmpty get() = !isEmpty
 
-	val name: String get() = when (obj) {
-		null -> "null"
-		is Node -> obj.name().toString()
-		else -> obj.toString()
+	val name: String get() = when (nodes.size) {
+		0 -> "null"
+		1 -> nodes.first().name().toString()
+		else -> nodes.toString()
 	}
 
-	val attributes: Map<String, String> get() = when (obj) {
-		is Node -> obj.attributes() as MutableMap<String, String>
-		is NodeList -> obj.map { QXml(it).attributes }.reduce { acc, map -> acc + map }
-		else -> mapOf()
-	}
+	val attributes: Map<String, String> get() = when {
+        nodes.isEmpty() -> mapOf()
+        else -> nodes.map { it.attributes() as Map<String, String> }.reduce { acc, map -> acc + map }
+    }
 
 	fun setAttribute(name: String, value: String) {
-		when (obj) {
-			is Node -> obj.attributes()[name] = value
-			is NodeList -> for (o in obj) QXml(o).setAttribute(name, value)
-			else -> Unit
-		}
+        for (node in nodes) node.attributes()[name] = value
 	}
 
 	fun setAttributes(vararg pairs: Pair<String, String>) {
 		for ((key, value) in pairs) setAttribute(key, value)
 	}
 
-	val text: String? get() = when (obj) {
-		null -> null
-		is Node -> obj.text()
-		is NodeList -> obj.text()
-		else -> obj.toString()
+	val text: String? get() = when (nodes.size) {
+		0 -> null
+		1 -> (nodes.first() as Node).text()
+		else -> nodes.map { it.text() }.joinToString("")
 	}
 
-	val list: List<QXml> get() = when (obj) {
-		is Node -> listOf(this)
-		is NodeList -> obj.map { QXml(it) }
-		else -> listOf()
-	}
+	val list: List<QXml> get() = nodes.map { QXml(it) }
 
-	val children: List<QXml> get() = when (obj) {
-		is Node -> obj.children().map { QXml(it) }
-		is NodeList -> obj.map { QXml(it) }
-		else -> listOf()
-	}
+	val children: List<QXml> get() = nodes.flatMap { it.children() as List<Node> }.map { QXml(it) }
 
-	val parent: QXml get() = when (obj) {
-		is Node -> QXml(obj.parent())
-		is NodeList -> QXml(obj.map { QXml(it).parent })
-		else -> QXml(null)
-	}
+	val parent: QXml get() = QXml(nodes.map { it.parent() })
 
 	fun remove() {
-		when (obj) {
-			is Node -> {
-				(parent.obj as? Node?)?.remove(obj)
-			}
-			is Iterable<*> -> {
-				for (child in children) child.remove()
-			}
-			else -> {
-				error("Can't remove $this")
-			}
-		}
+        for (node in nodes) node.parent().remove(node)
 	}
 
 	fun setValue(value: Any?) {
-		when (obj) {
-			is Node -> obj.setValue(value)
-			is NodeList -> obj.map { QXml(it).setValue(value) }
-		}
+        for (node in nodes) node.setValue(value)
 	}
 
-	fun appendNode(name: String, attributes: Map<String, Any?>): QXml {
-		return when (obj) {
-			is Node -> QXml(obj.appendNode(name, attributes.toMutableMap()))
-			is NodeList -> QXml(list.map { it.appendNode(name, attributes.toMutableMap()) })
-			else -> QXml(null)
-		}
-	}
+	fun appendNode(name: String, attributes: Map<String, Any?>): QXml =
+        QXml(nodes.map { it.appendNode(name, attributes.toMutableMap()) })
 
     fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap().toMutableMap())
 
 	fun getOrAppendNode(name: String, vararg attributes: Pair<String, String>): QXml {
 		return get(name).filter { node ->
-			attributes.all { node.attributes[it.first].toString() == it.second.toString() }
+			attributes.all { node.attributes[it.first] == it.second }
 		}.takeIf { it.isNotEmpty() }?.let {
-			QXml(NodeList(it))
+			QXml(it)
 		} ?: appendNode(name, *attributes)
 	}
 
-	operator fun get(key: String): QXml = when (obj) {
-		is Iterable<*> -> QXml(obj.map { QXml(it)[key].obj })
-		is Node -> QXml(obj.get(key))
-		else -> QXml(null)
-	}
+	operator fun get(key: String): QXml = QXml(NodeList(nodes.map { it.get(key) }))
 
-	fun serialize(): String {
-		return xmlSerialize(this.obj as Node)
-	}
+	fun serialize(): String = xmlSerialize(nodes.first())
 
-	override fun toString(): String = "QXml($obj)"
+	override fun toString(): String = "QXml($nodes)"
 }
 
 fun Node?.rchildren(): List<Node> {

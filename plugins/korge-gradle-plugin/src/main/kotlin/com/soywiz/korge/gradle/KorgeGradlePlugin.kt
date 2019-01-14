@@ -174,7 +174,8 @@ fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
     val cordovaConfigXml = cordovaConfigXmlFile.readText()
     val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
     this.updateCordovaXml(cordovaConfig)
-    cordovaConfigXmlFile.writeText(xmlSerialize(cordovaConfig.obj as Node))
+
+    cordovaConfigXmlFile.writeText(cordovaConfig.serialize())
 
 }
 
