@@ -8,7 +8,7 @@ class ColorMatrixEffectView(colorMatrix: Matrix3D) : EffectView() {
 	companion object {
 	    val u_ColorMatrix = Uniform("colorMatrix", VarType.Mat4)
 
-		val GRAYSCALE_MATRIX = Matrix3D(
+		val GRAYSCALE_MATRIX = Matrix3D.fromRows(
 			0.33f, 0.33f, 0.33f, 0f,
 			0.59f, 0.59f, 0.59f, 0f,
 			0.11f, 0.11f, 0.11f, 0f,

@@ -9,28 +9,28 @@ class Convolute3Filter(var kernel: Matrix3D) : Filter() {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
 
 		val KERNEL_GAUSSIAN_BLUR: Matrix3D
-			get() = Matrix3D(
+			get() = Matrix3D.fromRows3x3(
 				1f, 2f, 1f,
 				2f, 4f, 2f,
 				1f, 2f, 1f
 			) * (1f / 16f)
 
 		val KERNEL_BOX_BLUR: Matrix3D
-			get() = Matrix3D(
+			get() = Matrix3D.fromRows3x3(
 				1f, 1f, 1f,
 				1f, 1f, 1f,
 				1f, 1f, 1f
 			) * (1f / 9f)
 
 		val KERNEL_IDENTITY: Matrix3D
-			get() = Matrix3D(
+			get() = Matrix3D.fromRows3x3(
 				0f, 0f, 0f,
 				0f, 1f, 0f,
 				0f, 0f, 0f
 			)
 
 		val KERNEL_EDGE_DETECTION: Matrix3D
-			get() = Matrix3D(
+			get() = Matrix3D.fromRows3x3(
 				-1f, -1f, -1f,
 				-1f, +8f, -1f,
 				-1f, -1f, -1f

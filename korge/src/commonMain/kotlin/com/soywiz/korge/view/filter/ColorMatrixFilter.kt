@@ -9,14 +9,14 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double) : Filter() {
 		private val u_ColorMatrix = Uniform("colorMatrix", VarType.Mat4)
 		private val u_BlendRatio = Uniform("blendRatio", VarType.Float1)
 
-		val GRAYSCALE_MATRIX = Matrix3D(
+		val GRAYSCALE_MATRIX = Matrix3D.fromRows(
 			0.33f, 0.33f, 0.33f, 0f,
 			0.59f, 0.59f, 0.59f, 0f,
 			0.11f, 0.11f, 0.11f, 0f,
 			0f, 0f, 0f, 1f
 		)
 
-		val IDENTITY_MATRIX = Matrix3D(
+		val IDENTITY_MATRIX = Matrix3D.fromRows(
 			1f, 0f, 0f, 0f,
 			0f, 1f, 0f, 0f,
 			0f, 0f, 1f, 0f,
