@@ -7,7 +7,7 @@ matrix:
       KBUILD=linux
       JAVA_OPTS=-Xmx2g
     before_install:
-    - sudo apt-get install -y freeglut3-dev
+    - sudo apt-get install -y freeglut3-dev libopenal-dev
     script:
     - ./gradlew -s -i check build
   - os: linux
@@ -17,7 +17,7 @@ matrix:
       KBUILD=chrome
       JAVA_OPTS=-Xmx2g
     before_install:
-    - sudo apt-get install -y freeglut3-dev
+    - sudo apt-get install -y freeglut3-dev libopenal-dev
     script:
     - ./gradlew -s -i jsTestChrome
   - os: windows
