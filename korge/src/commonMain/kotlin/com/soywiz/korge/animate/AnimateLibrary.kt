@@ -34,7 +34,7 @@ class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?
 			inputSound = try {
 				nativeSoundProvider.createSound(dataBytes ?: byteArrayOf())
 			} catch (e: Throwable) {
-				nativeSoundProvider.createSound(AudioData(44100, 2, shortArrayOf()))
+				nativeSoundProvider.createSound(AudioData.DUMMY)
 			}
 		}
 		inputSound!!

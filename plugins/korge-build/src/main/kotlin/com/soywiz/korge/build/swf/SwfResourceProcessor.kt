@@ -8,13 +8,13 @@ import com.soywiz.korio.file.*
 import kotlin.coroutines.*
 
 object SwfResourceProcessor : ResourceProcessor("swf") {
-	override val version: Int = AniFile.VERSION
-	override val outputExtension: String = "ani"
+    override val version: Int = AniFile.VERSION
+    override val outputExtension: String = "ani"
 
-	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
-		val viewsLog = ViewsLog(coroutineContext)
-		val lib = inputFile.readSWF(viewsLog.views)
-		val config = lib.swfExportConfig
-		lib.writeTo(outputFile, config.toAnLibrarySerializerConfig(compression = 1.0))
-	}
+    override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
+        val viewsLog = ViewsLog(coroutineContext)
+        val lib = inputFile.readSWF(viewsLog.views)
+        val config = lib.swfExportConfig
+        lib.writeTo(outputFile, config.toAnLibrarySerializerConfig(compression = 1.0))
+    }
 }

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.config.KotlinCompilerVersion
+
 buildscript {
 	repositories {
 		maven { url "https://plugins.gradle.org/m2/" }
@@ -8,23 +10,50 @@ buildscript {
 }
 
 plugins {
-	id 'kotlin-multiplatform' version '1.3.11'
+	id 'kotlin-multiplatform' version '1.3.20-eap-100'
 	id 'com.moowork.node' version '1.2.0'
 }
 
-new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
-package com.soywiz.korge.build
+repositories {
+	mavenLocal()
+	jcenter()
+	maven { url 'https://plugins.gradle.org/m2/' }
+	maven { url "https://dl.bintray.com/soywiz/soywiz" }
+	maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
+}
+
+configurations {
+	rtArtifacts
+}
+dependencies {
+	rtArtifacts "com.soywiz:korge-jvm:$korgeVersion"
+}
+
+def versions = [:]
+
+configurations.rtArtifacts.each { file ->
+	def res = file.absolutePath =~ /.*?(\w+)-(jvm|metadata)-(.*)\.jar/
+	//println(file)
+	if (res.matches()) {
+		versions[res.group(1)] = res.group(3)
+	}
+}
+
+
+//new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
+new File("korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt").write("""
+package com.soywiz.korge.gradle
 
 object BuildVersions {
-	const val KORMA = "$kormaVersion"
-	const val KORIO = "$korioVersion"
-	const val KORIM = "$korimVersion"
-	const val KORAU = "$korauVersion"
-	const val KORUI = "$koruiVersion"
-	const val KOREV = "$korevVersion"
-	const val KORGW = "$korgwVersion"
-	const val KORGE = "$korgeVersion"
-	const val KOTLIN = "1.3.11"
+	const val KORMA = "${versions.korma}"
+	const val KORIO = "${versions.korio}"
+	const val KORIM = "${versions.korim}"
+	const val KORAU = "${versions.korau}"
+	const val KORUI = "${versions.korui ?: versions.korgw}"
+	const val KOREV = "${versions.korev}"
+	const val KORGW = "${versions.korgw}"
+	const val KORGE = "${versions.korge}"
+	const val KOTLIN = "${KotlinCompilerVersion.VERSION}"
 }
 """)
 
@@ -37,6 +66,7 @@ allprojects {
 		jcenter()
 		maven { url 'https://plugins.gradle.org/m2/' }
 		maven { url "https://dl.bintray.com/soywiz/soywiz" }
+		maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
 	}
 
 	apply plugin: 'maven'

@@ -8,23 +8,24 @@ import java.io.*
 
 // Used at korge-gradle-plugin
 @Suppress("unused")
-class KorgeBuildService : IKorgeBuildService {
-    override fun init() {
+object KorgeBuildService {
+    val initOnce by lazy {
         KorgeManualServiceRegistration.register()
     }
 
     //override fun version(): String = Korge.VERSION
-    override fun korgeVersion(): String = BuildVersions.KORGE
-    override fun kormaVersion(): String = BuildVersions.KORMA
-    override fun korioVersion(): String = BuildVersions.KORIO
-    override fun korimVersion(): String = BuildVersions.KORIM
-    override fun korauVersion(): String = BuildVersions.KORAU
-    override fun koruiVersion(): String = BuildVersions.KORUI
-    override fun korevVersion(): String = BuildVersions.KOREV
-    override fun korgwVersion(): String = BuildVersions.KORGW
-    override fun kotlinVersion(): String = BuildVersions.KOTLIN
+    //fun korgeVersion(): String = BuildVersions.KORGE
+    //fun kormaVersion(): String = BuildVersions.KORMA
+    //fun korioVersion(): String = BuildVersions.KORIO
+    //fun korimVersion(): String = BuildVersions.KORIM
+    //fun korauVersion(): String = BuildVersions.KORAU
+    //fun koruiVersion(): String = BuildVersions.KORUI
+    //fun korevVersion(): String = BuildVersions.KOREV
+    //fun korgwVersion(): String = BuildVersions.KORGW
+    //fun kotlinVersion(): String = BuildVersions.KOTLIN
 
-    override fun processResourcesFolder(src: File, dst: File) {
+    fun processResourcesFolder(src: File, dst: File) {
+        initOnce
         if (!src.exists()) return // Ignore empty folders
 
         runBlocking {
@@ -52,16 +53,16 @@ class KorgeBuildService : IKorgeBuildService {
     }
 }
 
-interface IKorgeBuildService {
-    fun init()
-    fun korgeVersion(): String
-    fun kormaVersion(): String
-    fun korioVersion(): String
-    fun korimVersion(): String
-    fun korauVersion(): String
-    fun koruiVersion(): String
-    fun korevVersion(): String
-    fun korgwVersion(): String
-    fun kotlinVersion(): String
-    fun processResourcesFolder(src: File, dst: File)
-}
+//interface IKorgeBuildService {
+//    fun init()
+//    fun korgeVersion(): String
+//    fun kormaVersion(): String
+//    fun korioVersion(): String
+//    fun korimVersion(): String
+//    fun korauVersion(): String
+//    fun koruiVersion(): String
+//    fun korevVersion(): String
+//    fun korgwVersion(): String
+//    fun kotlinVersion(): String
+//    fun processResourcesFolder(src: File, dst: File)
+//}

@@ -3,7 +3,6 @@ package com.soywiz.korge.animate
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korge.audio.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -11,7 +10,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.math.*
@@ -293,7 +291,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 					library.views.async {
 						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
 						if (data != null) {
-							views.soundSystem.play(data)
+							data.play()
 						}
 					}
 					//println("play sound!")

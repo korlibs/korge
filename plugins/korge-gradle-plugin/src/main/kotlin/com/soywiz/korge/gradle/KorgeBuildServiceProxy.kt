@@ -1,9 +1,6 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.build.*
-import java.lang.reflect.Proxy
-import java.net.*
-
+/*
 class RemoteProxy(val urls: Array<URL>) {
     private val rclassLoader = URLClassLoader(urls, ClassLoader.getSystemClassLoader())
 
@@ -32,3 +29,4 @@ private val rp by lazy { RemoteProxy((com.soywiz.korge.build.swf.SwfResourceProc
 private val kbsp by lazy { rp.proxy<IKorgeBuildService, KorgeBuildService>() }
 
 object KorgeBuildServiceProxy : IKorgeBuildService by kbsp
+*/

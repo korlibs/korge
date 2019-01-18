@@ -3,53 +3,13 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 dependencies {
-	compile project(":korge-combined")
-	//compile "com.soywiz:korge-combined:$korgeVersion"
-
 	compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 	compile "org.jetbrains.kotlin:kotlin-test"
 	compile "org.jetbrains.kotlin:kotlin-test-junit"
 
-	compileOnly "com.soywiz:krypto-jvm:$kryptoVersion"
-	testCompileOnly "com.soywiz:krypto-jvm:$kryptoVersion"
-
-	compileOnly "com.soywiz:korge-jvm:$korgeVersion"
-	compileOnly "com.soywiz:korge-swf-jvm:$korgeVersion"
-	compileOnly "com.soywiz:klogger-jvm:$kloggerVersion"
-	compileOnly "com.soywiz:korio-jvm:$korioVersion"
-	compileOnly "com.soywiz:korau-jvm:$korauVersion"
-	//compileOnly "com.soywiz:korau-mp3-jvm:$korauVersion"
-	//compileOnly "com.soywiz:korau-ogg-vorbis-jvm:$korauVersion"
-	compileOnly "com.soywiz:kds-jvm:$kdsVersion"
-	compileOnly "com.soywiz:kmem-jvm:$kmemVersion"
-	compileOnly "com.soywiz:korim-jvm:$korimVersion"
-	compileOnly "com.soywiz:korma-jvm:$kormaVersion"
-	compileOnly "com.soywiz:korinject-jvm:$korinjectVersion"
-	compileOnly "com.soywiz:kgl-jvm:$kglVersion"
-	compileOnly "com.soywiz:korag-jvm:$koragVersion"
-	compileOnly "com.soywiz:korui-jvm:$koruiVersion"
-	compileOnly "com.soywiz:korev-jvm:$korevVersion"
-	compileOnly "com.soywiz:korgw-jvm:$korgwVersion"
-	compileOnly "com.soywiz:klock-jvm:$klockVersion"
-
-	testCompileOnly "com.soywiz:korge-jvm:$korgeVersion"
-	testCompileOnly "com.soywiz:korge-swf-jvm:$korgeVersion"
-	testCompileOnly "com.soywiz:klogger-jvm:$kloggerVersion"
-	testCompileOnly "com.soywiz:korio-jvm:$korioVersion"
-	testCompileOnly "com.soywiz:korau-jvm:$korauVersion"
-	//testCompileOnly "com.soywiz:korau-mp3-jvm:$korauVersion"
-	//testCompileOnly "com.soywiz:korau-ogg-vorbis-jvm:$korauVersion"
-	testCompileOnly "com.soywiz:kds-jvm:$kdsVersion"
-	testCompileOnly "com.soywiz:kmem-jvm:$kmemVersion"
-	testCompileOnly "com.soywiz:korim-jvm:$korimVersion"
-	testCompileOnly "com.soywiz:korma-jvm:$kormaVersion"
-	testCompileOnly "com.soywiz:korinject-jvm:$korinjectVersion"
-	testCompileOnly "com.soywiz:kgl-jvm:$kglVersion"
-	testCompileOnly "com.soywiz:korag-jvm:$koragVersion"
-	testCompileOnly "com.soywiz:korui-jvm:$koruiVersion"
-	testCompileOnly "com.soywiz:korev-jvm:$korevVersion"
-	testCompileOnly "com.soywiz:korgw-jvm:$korgwVersion"
-	testCompileOnly "com.soywiz:klock-jvm:$klockVersion"
+	compile "com.soywiz:krypto:$kryptoVersion"
+	compile "com.soywiz:korge:$korgeVersion"
+	compile "com.soywiz:korge-swf:$korgeVersion"
 }
 
 publishing {

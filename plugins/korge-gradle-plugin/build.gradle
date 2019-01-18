@@ -19,12 +19,9 @@ group 'com.soywiz'
 version projectVersion
 
 dependencies {
-	//compile project(":korge-common")
-	compile project(":korge-build")
 	//compile project(":korge-build")
-	compile "com.soywiz:korge-combined:$korgeVersion"
 
-	compile "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.11"
+	compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 	compile "com.moowork.gradle:gradle-node-plugin:1.2.0"
 	compile "net.sf.proguard:proguard-gradle:6.0.3"
 

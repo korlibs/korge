@@ -7,8 +7,6 @@ import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.async.*
-import com.soywiz.korge.audio.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -28,8 +26,6 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 import kotlin.reflect.*
-
-private val logger = Logger("Views")
 
 interface BoundsProvider {
 	val virtualLeft: Double
@@ -117,7 +113,6 @@ class Views(
 		injector.mapInstance(CoroutineContext::class, coroutineContext)
 		injector.mapInstance(AG::class, ag)
 		injector.mapInstance(Views::class, this)
-		injector.mapInstance(SoundSystem::class, soundSystem)
 	}
 
 	fun dumpStats() {
@@ -277,7 +272,6 @@ class Views(
 	}
 
 	fun dispose() {
-		soundSystem.close()
 	}
 }
 

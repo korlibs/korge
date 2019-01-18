@@ -12,13 +12,13 @@ pluginManagement {
 		jcenter()
 		maven { url 'https://plugins.gradle.org/m2/' }
 		maven { url "https://dl.bintray.com/soywiz/soywiz" }
+		maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
 	}
 }
 
-//enableFeaturePreview('GRADLE_METADATA')
+enableFeaturePreview('GRADLE_METADATA')
 
 rootProject.name = 'korge-plugins'
 
-include ':korge-combined'
 include ':korge-build'
 include ':korge-gradle-plugin'

@@ -31,15 +31,15 @@ import javax.imageio.*
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-val kormaVersion get() = KorgeBuildServiceProxy.kormaVersion()
-val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
-val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
-val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
-val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
-val korevVersion get() = KorgeBuildServiceProxy.korevVersion()
-val korgwVersion get() = KorgeBuildServiceProxy.korgwVersion()
-val kotlinVersion get() = KorgeBuildServiceProxy.kotlinVersion()
-val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
+//val kormaVersion get() = KorgeBuildServiceProxy.kormaVersion()
+//val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
+//val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
+//val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
+//val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
+//val korevVersion get() = KorgeBuildServiceProxy.korevVersion()
+//val korgwVersion get() = KorgeBuildServiceProxy.korgwVersion()
+//val kotlinVersion get() = KorgeBuildServiceProxy.kotlinVersion()
+//val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
 
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
@@ -232,11 +232,14 @@ class KorgeGradleApply(val project: Project) {
     fun apply() {
         System.setProperty("java.awt.headless", "true")
 
-        if (project.gradle.gradleVersion != "4.7") {
-            error("Korge only works with Gradle 4.7, but running on Gradle ${project.gradle.gradleVersion}")
+        val expectedGradleVersion = "5.1.1"
+        val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
+
+        if (korgeCheckGradleVersion && project.gradle.gradleVersion != expectedGradleVersion) {
+            error("Korge only works with Gradle $expectedGradleVersion, but running on Gradle ${project.gradle.gradleVersion}")
         }
 
-        KorgeBuildServiceProxy.init()
+        //KorgeBuildServiceProxy.init()
         project.addVersionExtension()
         project.configureRepositories()
         project.configureKotlin()
@@ -313,7 +316,7 @@ class KorgeGradleApply(val project: Project) {
                         task.into(executableFile.parentFile)
                     }
 
-                    addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
+                    addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
                         task.executable = executableFile.absolutePath
                         task.args = listOf<String>()
                     }
@@ -328,7 +331,7 @@ class KorgeGradleApply(val project: Project) {
 
         afterEvaluate {
             for (buildType in RELEASE_DEBUG) {
-                addTask<Task>("packageMacosX64App${buildType.capitalize()}", group = "korge", dependsOn = listOf("link${buildType.capitalize()}ExecutableMacosX64")) {
+                addTask<Task>("packageMacosX64App${buildType.capitalize()}", group = "korge", dependsOn = listOf("linkMain${buildType.capitalize()}ExecutableMacosX64")) {
                     doLast {
                         val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
                         val executableFile = compilation.getBinary("EXECUTABLE", buildType)
@@ -513,7 +516,7 @@ class KorgeGradleApply(val project: Project) {
                 if (minimized) {
                     task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
                 }
-                task.from((jsCompilations["main"] as KotlinCompilation).output.allOutputs) { copy -> copy.configureWeb() }
+                task.from((jsCompilations["main"] as KotlinCompilation<*>).output.allOutputs) { copy -> copy.configureWeb() }
                 task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
                 for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
                     if (file.exists() && !file.isDirectory) {
@@ -526,7 +529,7 @@ class KorgeGradleApply(val project: Project) {
                 }
 
                 for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
-                    val main = (target["compilations"]["main"] as KotlinCompilation)
+                    val main = (target["compilations"]["main"] as KotlinCompilation<*>)
                     for (sourceSet in main.kotlinSourceSets) {
                         task.from(sourceSet.resources) { copy -> copy.configureWeb() }
                     }
@@ -672,15 +675,15 @@ class KorgeGradleApply(val project: Project) {
     }
 
     private fun Project.addVersionExtension() {
-        ext.set("korioVersion", korioVersion)
-        ext.set("kormaVersion", kormaVersion)
-        ext.set("korauVersion", korauVersion)
-        ext.set("korimVersion", korimVersion)
-        ext.set("koruiVersion", koruiVersion)
-        ext.set("korevVersion", korevVersion)
-        ext.set("korgwVersion", korgwVersion)
-        ext.set("korgeVersion", korgeVersion)
-        ext.set("kotlinVersion", kotlinVersion)
+        ext.set("korioVersion", BuildVersions.KORIO)
+        ext.set("kormaVersion", BuildVersions.KORMA)
+        ext.set("korauVersion", BuildVersions.KORAU)
+        ext.set("korimVersion", BuildVersions.KORIM)
+        ext.set("koruiVersion", BuildVersions.KORUI)
+        ext.set("korevVersion", BuildVersions.KOREV)
+        ext.set("korgwVersion", BuildVersions.KORGW)
+        ext.set("korgeVersion", BuildVersions.KORGE)
+        ext.set("kotlinVersion", BuildVersions.KOTLIN)
         //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
     }
 
@@ -688,6 +691,9 @@ class KorgeGradleApply(val project: Project) {
         repositories.apply {
             mavenLocal()
             maven { it.url = URI("https://dl.bintray.com/soywiz/soywiz") }
+            if (BuildVersions.KOTLIN.contains("eap")) {
+                maven { it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap") }
+            }
             jcenter()
             mavenCentral()
         }
@@ -738,7 +744,7 @@ class KorgeGradleApply(val project: Project) {
         //project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
 
         gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
-            api("com.soywiz:korge:$korgeVersion")
+            api("com.soywiz:korge:${BuildVersions.KORGE}")
         }
 
         //kotlin.sourceSets.create("")
@@ -748,7 +754,7 @@ class KorgeGradleApply(val project: Project) {
     fun Project.addKorgeTasks() {
         run {
             try {
-                project.dependencies.add("compile", "com.soywiz:korge:$korgeVersion")
+                project.dependencies.add("compile", "com.soywiz:korge:${BuildVersions.KORGE}")
             } catch (e: UnknownConfigurationException) {
                 //logger.error("KORGE: " + e.message)
             }
@@ -943,11 +949,12 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
     @TaskAction
     open fun task() {
         logger.info("KorgeResourcesTask ($this)")
+        val buildService = KorgeBuildService
         for (p in project.allprojects) {
             for (resourceFolder in p.getResourcesFolders(setOf(inputSourceSet))) {
                 if (resourceFolder.exists()) {
                     val output = resourceFolder.parentFile["genresources"]
-                    KorgeBuildServiceProxy.processResourcesFolder(resourceFolder, output)
+                    buildService.processResourcesFolder(resourceFolder, output)
                 }
             }
         }

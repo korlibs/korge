@@ -3,14 +3,13 @@ package com.soywiz.korge.lipsync
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
+import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.audio.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korev.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -58,17 +57,17 @@ class LipSyncHandler(val views: Views) {
 	suspend fun play(voice: Voice, name: String) = suspendCancellableCoroutine<Unit> { c ->
 		var cancel: Cancellable? = null
 
-		val channel = views.soundSystem.play(voice.voice)
+		val channel = voice.voice.play()
 
 		cancel = views.stage.addUpdatable {
-			val elapsedTime = channel.position
+			val elapsedTime = channel.current
 			val elapsedTimeMs = elapsedTime.millisecondsInt
 			//println("elapsedTime:$elapsedTime, channel.length=${channel.length}")
-			if (elapsedTime >= channel.length) {
+			if (elapsedTime >= channel.total) {
 				cancel?.cancel()
 				dispatch(name, 0.seconds, 'X')
 			} else {
-				dispatch(name, channel.position, voice[elapsedTimeMs])
+				dispatch(name, channel.current, voice[elapsedTimeMs])
 			}
 		}
 

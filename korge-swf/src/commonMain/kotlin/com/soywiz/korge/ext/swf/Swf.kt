@@ -10,9 +10,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.*
 import com.soywiz.korio.serialization.yaml.*
 
 data class SWFExportConfig(

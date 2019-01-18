@@ -1,6 +1,7 @@
 package com.soywiz.korge.build.lipsync
 
 import com.soywiz.korau.format.*
+import com.soywiz.korau.sound.*
 import com.soywiz.korge.build.*
 import com.soywiz.korio.*
 import com.soywiz.korio.dynamic.mapper.*
