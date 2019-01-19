@@ -383,12 +383,13 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4096) {
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
 	}
 
+	private val tempRect = Rectangle()
 	fun flush() {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
-				projMat.setToOrtho(0f, ag.backHeight.toFloat(), ag.backWidth.toFloat(), 0f, -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, ag.backHeight, ag.backWidth, 0), 0f, -1f, 1f)
 			} else {
-				projMat.setToOrtho(0f, 0f, ag.backWidth.toFloat(), ag.backHeight.toFloat(), -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 			}
 
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")

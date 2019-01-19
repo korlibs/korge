@@ -3,5 +3,5 @@ dependencies {
 	commonMainApi "com.soywiz:korgw:$korgwVersion"
 	commonMainApi "com.soywiz:korau:$korauVersion"
 	commonMainApi "com.soywiz:klogger:$kloggerVersion"
-
+	commonMainApi "com.soywiz:korma:$kormaVersion"
 }
