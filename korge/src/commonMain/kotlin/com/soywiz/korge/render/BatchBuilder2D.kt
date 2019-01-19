@@ -387,7 +387,7 @@ class BatchBuilder2D(val ag: AG, val maxQuads: Int = 4096) {
 	fun flush() {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
-				projMat.setToOrtho(tempRect.setBounds(0, ag.backHeight, ag.backWidth, 0), 0f, -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, ag.backHeight, ag.backWidth, 0), -1f, 1f)
 			} else {
 				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 			}
