@@ -20,3 +20,11 @@ project.file("korge/src/commonMain/kotlin/com/soywiz/korge/KorgeVersion.kt").tex
 	"\n" +
 		"val Korge.VERSION get() = \"${rootProject.property("projectVersion")}\"\n"
 
+subprojects {
+	afterEvaluate {
+		jvmTest {
+			jvmArgs += ["-Djava.awt.headless=true"]
+		}
+	}
+}
+

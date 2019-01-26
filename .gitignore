@@ -2,6 +2,7 @@
 /.gradle
 /.idea
 /out
+/local.properties
 Thumbs.db
 *.iws
 *.ipr

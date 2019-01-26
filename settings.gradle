@@ -1,26 +1,25 @@
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "kotlin-multiplatform") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
-            }
-        }
-    }
+	resolutionStrategy {
+		eachPlugin {
+			if (requested.id.id == "kotlin-multiplatform") {
+				useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+			}
+		}
+	}
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven { url 'https://plugins.gradle.org/m2/' }
-		maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
-    }
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url 'https://plugins.gradle.org/m2/' }
+	}
 }
 
 enableFeaturePreview('GRADLE_METADATA')
 
 rootProject.name = (new File(rootProject.projectDir, 'gradle.properties')).withInputStream {
-    Properties properties = new Properties()
-    properties.load(it)
-    properties
+	Properties properties = new Properties()
+	properties.load(it)
+	properties
 }.getProperty("project.name")
 
 include ':korge'
@@ -29,8 +28,4 @@ include ':korge-spriter'
 include ':korge-swf'
 include ':korge-ui'
 include ':korge-box2d'
-
-// Build
-//include ':korge-build'
-//include ':korge-gradle-plugin'
 

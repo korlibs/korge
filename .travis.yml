@@ -6,8 +6,6 @@ matrix:
     env:
       KBUILD=linux
       JAVA_OPTS=-Xmx2g
-    before_install:
-    - sudo apt-get install -y freeglut3-dev libopenal-dev
     script:
     - ./gradlew -s -i check build
   - os: linux
@@ -16,10 +14,8 @@ matrix:
     env:
       KBUILD=chrome
       JAVA_OPTS=-Xmx2g
-    before_install:
-    - sudo apt-get install -y freeglut3-dev libopenal-dev
     script:
-    - ./gradlew -s -i jsTestChrome
+      - ./gradlew -s -i jsTestChrome
   - os: windows
     env: KBUILD=windows
     language: shell # java is not supported but jdk is installed
@@ -35,4 +31,16 @@ matrix:
     - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
     script:
     - ./gradlew -s -i check build
+  - os: linux
+    language: android
+    android:
+      components:
+        - build-tools-28.0.3
+        - android-28
+    jdk: oraclejdk8
+    env:
+      KBUILD=android
+      JAVA_OPTS=-Xmx2g
+    script:
+      - ./gradlew -s -i check build
 

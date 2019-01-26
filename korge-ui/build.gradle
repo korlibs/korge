@@ -1,4 +1,52 @@
 dependencies {
 	commonMainApi project(":korge")
 	commonMainApi "com.soywiz:korui:$koruiVersion"
+
+	commonTestApi project(":korge")
+	commonTestApi "com.soywiz:korui:$koruiVersion"
+
+	////
+
+	if (hasAndroid) {
+		androidMainApi "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+		androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+	}
+
+	commonMainApi "com.soywiz:korgw:$korgwVersion"
+	commonMainApi "com.soywiz:korau:$korauVersion"
+	commonMainApi "com.soywiz:klogger:$kloggerVersion"
+
+	commonTestApi "com.soywiz:korgw:$korgwVersion"
+	commonTestApi "com.soywiz:korau:$korauVersion"
+	commonTestApi "com.soywiz:klogger:$kloggerVersion"
+
+	commonMainApi "com.soywiz:korev:$korevVersion"
+
+	commonMainApi "com.soywiz:korinject:$korinjectVersion"
+	commonMainApi "com.soywiz:klock:$klockVersion"
+
+	commonMainApi "com.soywiz:kgl:$koragVersion"
+	commonMainApi "com.soywiz:korag:$koragVersion"
+	commonMainApi "com.soywiz:korag-opengl:$koragVersion"
+	commonMainApi "com.soywiz:korma:$kormaVersion"
+
+	commonMainApi "com.soywiz:korim:$korimVersion"
+	commonMainApi "com.soywiz:korio:$korioVersion"
+	commonMainApi "com.soywiz:kds:$kdsVersion"
+	commonMainApi "com.soywiz:kmem:$kmemVersion"
+
+	commonTestApi "com.soywiz:korev:$korevVersion"
+
+	commonTestApi "com.soywiz:korinject:$korinjectVersion"
+	commonTestApi "com.soywiz:klock:$klockVersion"
+
+	commonTestApi "com.soywiz:kgl:$koragVersion"
+	commonTestApi "com.soywiz:korag:$koragVersion"
+	commonTestApi "com.soywiz:korag-opengl:$koragVersion"
+	commonTestApi "com.soywiz:korma:$kormaVersion"
+
+	commonTestApi "com.soywiz:korim:$korimVersion"
+	commonTestApi "com.soywiz:korio:$korioVersion"
+	commonTestApi "com.soywiz:kds:$kdsVersion"
+	commonTestApi "com.soywiz:kmem:$kmemVersion"
 }
