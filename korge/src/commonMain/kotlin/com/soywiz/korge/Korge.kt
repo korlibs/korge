@@ -324,16 +324,24 @@ object Korge {
 			views.resized(ag.backWidth, ag.backHeight)
 		}
 
-		ag.onResized { e ->
-			//println("ag.onResized:$e - backSize=(${ag.backWidth}, ${ag.backHeight}) :: ${agContainer.ag} :: frame=(${frame?.width}x${frame?.height})")
-			//println("ag.onResized: ${ag.backWidth},${ag.backHeight}")
-			views.resized(ag.backWidth, ag.backHeight)
-		}
+		//ag.onResized { e ->
+		//	//println("ag.onResized:$e - backSize=(${ag.backWidth}, ${ag.backHeight}) :: ${agContainer.ag} :: frame=(${frame?.width}x${frame?.height})")
+		//	//println("ag.onResized: ${ag.backWidth},${ag.backHeight}")
+		//	views.resized(ag.backWidth, ag.backHeight)
+		//}
 		//ag.resized(initialWidth, initialHeight)
+
+
+		//views.gameWindow.addEventListener<ReshapeEvent> {
+		//	//println("ag.onResized:$e - backSize=(${ag.backWidth}, ${ag.backHeight}) :: ${agContainer.ag} :: frame=(${frame?.width}x${frame?.height})")
+		//	//println("ag.onResized: ${ag.backWidth},${ag.backHeight}")
+		//	views.resized(ag.backWidth, ag.backHeight)
+		//}
+
 		eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
 		//println("lastTime: $lastTime")
-		ag.onRender {
+		views.gameWindow.addEventListener<RenderEvent> {
 			views.frameUpdateAndRender(
 				clear = clearEachFrame && views.clearEachFrame,
 				clearColor = bgcolor,
@@ -348,13 +356,17 @@ object Korge {
 			}
 			//println("render:$delta,$adelta")
 		}
+		//ag.onRender {
+		//}
 	}
 
-	fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
+	fun KoruiWithLogger(context: Any?, entry: suspend GameWindow.() -> Unit) {
 		return Korio {
-			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
-			DefaultGameWindow.loop {
-				entry()
+			withKorgeContext(context) {
+				configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+				DefaultGameWindow.loop {
+					entry()
+				}
 			}
 		}
 	}
@@ -373,8 +385,9 @@ object Korge {
 		bgcolor: RGBA? = Colors.BLACK,
 		debug: Boolean = false,
 		args: Array<String> = arrayOf(),
+		context: Any? = null,
 		entry: suspend Stage.() -> Unit
-	) = KoruiWithLogger {
+	) = KoruiWithLogger(context) {
 		val gameWindow = this
 		if (OS.isNative) println("Korui[0]")
 		configure(width, height, title, icon)
@@ -404,7 +417,7 @@ object Korge {
 		if (OS.isNative) println("Korui[1]")
 	}
 
-	operator fun invoke(config: Config) = KoruiWithLogger {
+	operator fun invoke(config: Config) = KoruiWithLogger(config.context) {
 		val module = config.module
 		configure(module.windowSize.width, module.windowSize.height, module.title)
 		val gameWindow = this
@@ -454,15 +467,16 @@ object Korge {
 	data class Config(
 		val module: Module,
 		val args: Array<String> = arrayOf(),
-		val eventDispatcher: EventDispatcher = DummyEventDispatcher,
 		val imageFormats: ImageFormat = RegisteredImageFormats,
 		val gameWindow: GameWindow? = null,
+		val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher,
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
 		val timeProvider: TimeProvider = TimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,
+		val context: Any? = null,
 		val constructedViews: (Views) -> Unit = {}
 	)
 
