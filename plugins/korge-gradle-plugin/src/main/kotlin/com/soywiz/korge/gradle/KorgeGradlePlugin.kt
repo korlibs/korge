@@ -54,7 +54,7 @@ enum class GameCategory {
 }
 
 @Suppress("unused")
-class KorgeExtension {
+class KorgeExtension(val project: Project) {
     internal fun init() {
         // Do nothing, but serves to be referenced to be installed
     }
@@ -82,6 +82,12 @@ class KorgeExtension {
     var fullscreen = true
 
     var backgroundColor: Int = 0xff000000.toInt()
+
+	var appleDevelopmentTeamId: String? = java.lang.System.getenv("DEVELOPMENT_TEAM")
+		?: java.lang.System.getProperty("appleDevelopmentTeamId")?.toString()
+		?: project.findProperty("appleDevelopmentTeamId")?.toString()
+
+	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String = "main"
 
@@ -198,7 +204,7 @@ val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByTy
 val Project.korge: KorgeExtension get() {
     val extension = project.extensions.findByName("korge") as? KorgeExtension?
     return if (extension == null) {
-        val newExtension = KorgeExtension()
+        val newExtension = KorgeExtension(this)
         project.extensions.add("korge", newExtension)
         newExtension
     } else {
