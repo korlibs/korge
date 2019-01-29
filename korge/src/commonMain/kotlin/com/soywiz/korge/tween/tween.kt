@@ -21,7 +21,7 @@ class TweenComponent(
 	val callback: (Double) -> Unit,
 	val c: CancellableContinuation<Unit>
 ) : UpdateComponent {
-	var elapsed = 0
+	var elapsedMs = 0
 	val ctime : Long = time ?: vs.map { it.endTime }.max()?.toLong() ?: 1000L
 	var cancelled = false
 	var done = false
@@ -50,21 +50,24 @@ class TweenComponent(
 			//println(" --> cancelled")
 			return completeOnce()
 		}
-		elapsed += dtMs
+		elapsedMs += dtMs
 
-		val ratio = (elapsed.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
-		for (v in vs) {
-			val durationInTween = (v.duration ?: (ctime - v.startTime))
-			val elapsedInTween = (elapsed - v.startTime).clamp(0L, durationInTween)
-			val ratioInTween =
-				if (durationInTween <= 0.0) 1.0 else elapsedInTween.toDouble() / durationInTween.toDouble()
-			v.set(easing(ratioInTween))
-		}
+		val ratio = (elapsedMs.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
+		setToMs(elapsedMs)
 		callback(easing(ratio))
 
 		if (ratio >= 1.0) {
 			//println(" --> completed")
 			return completeOnce()
+		}
+	}
+
+	fun setToMs(elapsed: Int) {
+		for (v in vs) {
+			val durationInTween = (v.duration ?: (ctime - v.startTime))
+			val elapsedInTween = (elapsed - v.startTime).clamp(0L, durationInTween)
+			val ratioInTween = if (durationInTween <= 0.0) 1.0 else elapsedInTween.toDouble() / durationInTween.toDouble()
+			v.set(easing(ratioInTween))
 		}
 	}
 
@@ -80,12 +83,17 @@ suspend fun View?.tween(
 	callback: (Double) -> Unit = emptyCallback
 ): Unit {
 	if (this != null) {
-		withTimeout(300 + time.millisecondsLong * 2) {
-			suspendCancellableCoroutine<Unit> { c ->
-				val view = this@tween
-				//println("STARTED TWEEN at thread $currentThreadId")
-				TweenComponent(view, vs.toList(), time.millisecondsLong, easing, callback, c).attach()
+		var tc: TweenComponent? = null
+		try {
+			withTimeout(300 + time.millisecondsLong * 2) {
+				suspendCancellableCoroutine<Unit> { c ->
+					val view = this@tween
+					//println("STARTED TWEEN at thread $currentThreadId")
+					tc = TweenComponent(view, vs.toList(), time.millisecondsLong, easing, callback, c).attach()
+				}
 			}
+		} catch (e: TimeoutCancellationException) {
+			tc?.setToMs(time.millisecondsInt)
 		}
 	}
 }
@@ -144,7 +152,7 @@ internal fun _interpolateFloat(ratio: Double, l: Float, r: Float) = ratio.interp
 internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateAny(l, r)
 
 @PublishedApi
-internal fun _interpolateColor(ratio: Double, l: Int, r: Int): Int = RGBA.blendRGBAInt(l, r, ratio)
+internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
 
 //inline operator fun KMutableProperty0<Float>.get(end: Number) = V2(this, this.get(), end.toFloat(), ::_interpolateFloat)
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
@@ -154,7 +162,7 @@ inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.g
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
 	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate)
 
-fun V2<Int>.color(): V2<Int> = this.copy(interpolator = ::_interpolateColor)
+fun V2<RGBA>.color(): V2<RGBA> = this.copy(interpolator = ::_interpolateColor)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })

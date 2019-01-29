@@ -58,7 +58,7 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 					m = identity,
 					filtering = filtering,
 					colorAdd = renderColorAdd,
-					colorMulInt = renderColorMulInt,
+					colorMul = renderColorMul,
 					blendFactors = blendMode.factors,
 					program = program
 				)

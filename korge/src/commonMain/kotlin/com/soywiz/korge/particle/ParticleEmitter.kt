@@ -169,7 +169,7 @@ class ParticleEmitter() {
 		var rotationDelta: Double = 0.0,
 		var scaleDelta: Double = 0.0
 	) {
-		val colorInt: RGBA get() = RGBA(RGBA.packf(colorR.toFloat(), colorG.toFloat(), colorB.toFloat(), colorA.toFloat()))
+		val color: RGBA get() = RGBA.float(colorR.toFloat(), colorG.toFloat(), colorB.toFloat(), colorA.toFloat())
 		val alive: Boolean get() = this.currentTime < this.totalTime
 	}
 

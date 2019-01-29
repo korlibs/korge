@@ -107,7 +107,7 @@ class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
 class KorgeDbTextureData(pool: BaseObjectPool) : TextureData(pool) {
 	override fun toString(): String = "[class DragonbonesTextureData]"
 
-	var renderTexture: Tex? = null // Initial value.
+	var renderTexture: BmpSlice? = null // Initial value.
 
 	override fun _onClear() {
 		super._onClear()

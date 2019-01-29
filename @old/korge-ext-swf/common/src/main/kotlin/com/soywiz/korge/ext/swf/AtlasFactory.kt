@@ -32,7 +32,7 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(views: Views, maxTextureSide:Int
 	val values = this.values.toList()
 	val packs = BinPacker.packSeveral(maxTextureSide.toDouble(), maxTextureSide.toDouble(), values) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
-	val premult = this.values.firstOrNull()?.bitmap?.premult ?: true
+	val premult = this.values.firstOrNull()?.bitmap?.premultiplied ?: true
 	for (pack in packs) {
 		val width = pack.width.toInt().nextPowerOfTwo
 		val height = pack.height.toInt().nextPowerOfTwo

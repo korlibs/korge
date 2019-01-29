@@ -138,7 +138,7 @@ class SWFShapeRasterizer(
 		focalPointRatio: Double
 	): Context2d.Gradient {
 		val aratios = DoubleArrayList(*ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
-		val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).rgba }.toIntArray())
+		val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).value }.toIntArray())
 
 		val m2 = Matrix()
 		m2.copyFrom(matrix)

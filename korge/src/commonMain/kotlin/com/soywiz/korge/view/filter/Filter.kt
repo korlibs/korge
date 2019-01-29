@@ -4,7 +4,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 
 abstract class Filter {
@@ -53,7 +53,7 @@ abstract class Filter {
 		texWidth: Int,
 		texHeight: Int,
 		renderColorAdd: Int,
-		renderColorMulInt: Int,
+		renderColorMul: RGBA,
 		blendMode: BlendMode
 	) {
 		//println("$this.render()")
@@ -89,7 +89,7 @@ abstract class Filter {
 				m = matrix,
 				filtering = true,
 				colorAdd = renderColorAdd,
-				colorMulInt = renderColorMulInt,
+				colorMul = renderColorMul,
 				blendFactors = blendMode.factors,
 				program = program
 			)

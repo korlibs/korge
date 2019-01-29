@@ -594,7 +594,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				is TagFrameLabel -> Unit
 				is TagFileAttributes -> Unit
 				is TagSetBackgroundColor -> {
-					lib.bgcolor = decodeSWFColor(it.color).rgba
+					lib.bgcolor = decodeSWFColor(it.color)
 				}
 				is TagProtect -> Unit // ignore
 				is TagDefineFont -> {

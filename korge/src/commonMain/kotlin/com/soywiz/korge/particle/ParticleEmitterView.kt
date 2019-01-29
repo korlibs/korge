@@ -45,7 +45,7 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 
 			for (p in simulator.particles) {
 				val scale = p.scale
-				context.multiplyColor = p.colorInt
+				context.multiplyColor = p.color
 				context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale)
 			}
 		}

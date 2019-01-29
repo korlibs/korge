@@ -290,7 +290,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
-	var bgcolor: Int = 0xFFFFFFFF.toInt()
+	var bgcolor: RGBA = Colors.WHITE
 	val symbolsById = arrayListOf<AnSymbol>()
 	val symbolsByName = hashMapOf<String, AnSymbol>()
 	var defaultSmoothing = true

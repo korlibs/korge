@@ -124,7 +124,7 @@ class Text : View(), IText, IHtml {
 					height = textBounds.height.toFloat(),
 					m = m,
 					filtering = false,
-					colorMulInt = RGBA.multiplyInt(bgcolor.rgba, renderColorMulInt),
+					colorMul = RGBA.multiply(bgcolor, renderColorMul),
 					colorAdd = colorAdd,
 					blendFactors = renderBlendMode.factors
 				)

@@ -74,7 +74,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 				texCuts = texCuts,
 				m = this.globalMatrix,
 				filtering = smoothing,
-				colorMulInt = renderColorMulInt,
+				colorMul = renderColorMul,
 				colorAdd = renderColorAdd,
 				blendFactors = renderBlendMode.factors
 			)
@@ -87,7 +87,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 				height = texHeight,
 				m = globalMatrix,
 				filtering = smoothing,
-				colorMulInt = renderColorMulInt,
+				colorMul = renderColorMul,
 				colorAdd = renderColorAdd,
 				blendFactors = renderBlendMode.factors
 			)

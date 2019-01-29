@@ -5,7 +5,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 
 open class EffectView : Container() {
 	var filtering = true
@@ -91,7 +90,7 @@ open class EffectView : Container() {
 				m = matrix,
 				filtering = filtering,
 				colorAdd = renderColorAdd,
-				colorMulInt = renderColorMulInt,
+				colorMul = renderColorMul,
 				blendFactors = blendMode.factors,
 				program = program
 			)

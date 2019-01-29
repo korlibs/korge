@@ -6,7 +6,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 fun BitmapFont.getBounds(text: String, format: Html.Format, out: Rectangle) {
@@ -68,7 +67,7 @@ fun BitmapFont.drawText(
 			(dx + glyph.xoffset).toFloat(),
 			(dy + glyph.yoffset).toFloat(),
 			m = m2,
-			colorMulInt = colMul.rgba,
+			colorMul = colMul,
 			colorAdd = colAdd,
 			blendFactors = blendMode.factors,
 			filtering = filtering

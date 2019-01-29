@@ -35,7 +35,7 @@ open class Mesh(
 
 		// @TODO: Render in one batch without matrix multiplication in CPU
 		val m = globalMatrix
-		val cmul = this.renderColorMulInt
+		val cmul = this.renderColorMul
 		val cadd = this.renderColorAdd
 		val vcount = vertices.size / 2
 		val isize = indices.size

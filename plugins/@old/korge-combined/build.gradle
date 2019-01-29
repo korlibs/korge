@@ -1,0 +1,60 @@
+apply plugin: 'kotlin'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+configurations {
+    rtArtifacts
+}
+dependencies {
+    rtArtifacts "com.soywiz:korge-jvm:$korgeVersion"
+    rtArtifacts "com.soywiz:korge-swf-jvm:$korgeVersion"
+    rtArtifacts "com.soywiz:klogger-jvm:$kloggerVersion"
+    rtArtifacts "com.soywiz:korio-jvm:$korioVersion"
+    rtArtifacts "com.soywiz:korau-jvm:$korauVersion"
+    //rtArtifacts "com.soywiz:korau-mp3-jvm:$korauVersion"
+    //rtArtifacts "com.soywiz:korau-ogg-vorbis-jvm:$korauVersion"
+    rtArtifacts "com.soywiz:kds-jvm:$kdsVersion"
+    rtArtifacts "com.soywiz:kmem-jvm:$kmemVersion"
+    rtArtifacts "com.soywiz:korim-jvm:$korimVersion"
+    rtArtifacts "com.soywiz:korma-jvm:$kormaVersion"
+    rtArtifacts "com.soywiz:korinject-jvm:$korinjectVersion"
+    rtArtifacts "com.soywiz:kgl-jvm:$kglVersion"
+    rtArtifacts "com.soywiz:korag-jvm:$koragVersion"
+    rtArtifacts "com.soywiz:korui-jvm:$koruiVersion"
+    rtArtifacts "com.soywiz:korev-jvm:$korevVersion"
+    rtArtifacts "com.soywiz:korgw-jvm:$korgwVersion"
+    rtArtifacts "com.soywiz:klock-jvm:$klockVersion"
+}
+
+task processRtArtifacts(type: Copy) {
+    configurations.rtArtifacts.each { file ->
+        if (!file.absolutePath.contains("kotlin-stdlib")) {
+            //println(file)
+            from(zipTree(file))
+        }
+    }
+    into("build/genresources")
+}
+
+//kotlin.sourceSets.main.resources.srcDirs(project.file("build/genresources"))
+
+jar.dependsOn(processRtArtifacts)
+jar {
+    from project.file("build/genresources")
+    //entryCompression ZipEntryCompression.STORED
+}
+
+//println()
+//processResources.dependsOn(processRtArtifacts)
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+}

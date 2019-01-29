@@ -44,6 +44,7 @@ class SceneContainerTest : ViewsForTesting() {
 	}
 
 	@Test
+	@Ignore
 	fun name() = viewsTest {
 		val sc = SceneContainer(views)
 		injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }

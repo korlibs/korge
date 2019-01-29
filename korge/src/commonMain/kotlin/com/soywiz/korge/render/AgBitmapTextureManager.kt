@@ -19,7 +19,7 @@ class AgBitmapTextureManager(val ag: AG) {
 	fun getTextureBase(bitmap: Bitmap): Texture.Base {
 		referencedBitmapsSinceGC += bitmap
 		if (bitmap._textureBase == null) {
-			bitmap._textureBase = Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premult), bitmap.width, bitmap.height)
+			bitmap._textureBase = Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premultiplied), bitmap.width, bitmap.height)
 		}
 		return bitmap._textureBase!!
 	}

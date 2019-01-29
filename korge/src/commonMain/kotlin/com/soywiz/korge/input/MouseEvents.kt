@@ -1,7 +1,6 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.korge.async.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -11,7 +10,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
-import kotlin.coroutines.*
 
 class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews {
 	val click = Signal<MouseEvents>()
@@ -123,7 +121,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 						y = bounds.y.toFloat(),
 						width = bounds.width.toFloat(),
 						height = bounds.height.toFloat(),
-						colorMulInt = RGBAInt(0xFF, 0, 0, 0x3F),
+						colorMul = RGBA(0xFF, 0, 0, 0x3F),
 						m = mouseHit.globalMatrix
 					)
 					renderContext.drawText(
@@ -144,7 +142,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 						y = bounds.y.toFloat(),
 						width = bounds.width.toFloat(),
 						height = bounds.height.toFloat(),
-						colorMulInt = RGBAInt(0x00, 0, 0xFF, 0x3F),
+						colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
 						m = mouseHitResultUsed.globalMatrix
 					)
 					var vview = mouseHitResultUsed

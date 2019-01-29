@@ -135,7 +135,7 @@ class KorgeDbSlot(pool: BaseObjectPool) : Slot(pool) {
 			val color = (round(this._colorTransform.redMultiplier * 0xFF).toInt() shl 16) +
 					(round(this._colorTransform.greenMultiplier * 0xFF).toInt() shl 8) +
 					round(this._colorTransform.blueMultiplier * 0xFF).toInt()
-			this._renderDisplay?.tint = RGBAInt(color, (alpha * 255.0).toInt())
+			this._renderDisplay?.tint = RGBA(color, (alpha * 255.0).toInt())
 		} else {
 			this._renderDisplay?.alpha = alpha
 		}

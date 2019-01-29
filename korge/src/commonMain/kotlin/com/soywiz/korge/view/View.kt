@@ -153,12 +153,8 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		set(value) { _setSize(0.0, false, value, true) }
 
 	var colorMul: RGBA
-		get() = RGBA(colorMulInt)
-		set(v) = run { colorMulInt = v.rgba }
-
-	var colorMulInt: Int
-		get() = _colorTransform.colorMulInt
-		set(v) = run { _colorTransform.colorMulInt = v }.also { invalidate() }
+		get() = _colorTransform.colorMul
+		set(v) = run { _colorTransform.colorMul = v }.also { invalidate() }
 
 	var colorAdd: Int
 		get() = _colorTransform.colorAdd;
@@ -167,9 +163,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v; invalidate() }
 
 	// alias
-	var tint: Int
-		get() = colorMulInt
-		set(value) = run { colorMulInt = value }
+	var tint: RGBA
+		get() = this.colorMul
+		set(value) = run { this.colorMul = value }
 
 	// region Properties
 	private val _props = linkedMapOf<String, String>()
@@ -403,7 +399,6 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			return _renderBlendMode
 		}
 
-	val renderColorMulInt: Int get() = renderColorTransform.colorMulInt
 	val renderColorMul: RGBA get() = renderColorTransform.colorMul
 	val renderColorAdd: Int get() = renderColorTransform.colorAdd
 	val renderAlpha: Double get() = renderColorTransform.mA
@@ -462,7 +457,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		}) { texture ->
 			tempMat2d.copyFrom(globalMatrix)
 			tempMat2d.pretranslate(-addx, -addy)
-			filter.render(ctx, tempMat2d, texture, texWidth, texHeight, renderColorAdd, renderColorMulInt, blendMode)
+			filter.render(ctx, tempMat2d, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
 		}
 	}
 
@@ -479,7 +474,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
 		if (!visible) out += ":visible=$visible"
 		if (alpha != 1.0) out += ":alpha=$alpha"
-		if (colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${colorMul.hexString}"
+		if (this.colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${this.colorMul.hexString}"
 		if (colorAdd != 0x7f7f7f7f) out += ":colorAdd=${colorAdd.shex}"
 		return out
 	}
@@ -630,7 +625,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	open fun copyPropsFrom(source: View) {
 		this.name = source.name
 		this.colorAdd = source.colorAdd
-		this.colorMulInt = source.colorMulInt
+		this.colorMul = source.colorMul
 		this.setMatrix(source.localMatrix)
 		this.visible = source.visible
 		this.ratio = source.ratio

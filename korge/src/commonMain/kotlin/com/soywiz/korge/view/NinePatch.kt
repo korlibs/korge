@@ -69,7 +69,7 @@ class NinePatch(
 			posCuts = posCuts,
 			texCuts = texCuts,
 			m = globalMatrix,
-			colorMulInt = renderColorMulInt,
+			colorMul = renderColorMul,
 			colorAdd = renderColorAdd,
 			filtering = smoothing,
 			blendFactors = renderBlendMode.factors

@@ -6,7 +6,6 @@ import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map, tileset).addTo(this).apply(callback)
@@ -32,7 +31,7 @@ open class TileMap(val map: IntArray2, val tileset: TileSet) : View() {
 		val dU = m.transform(tileWidth, 0.0) - pos
 		val dV = m.transform(0.0, tileHeight) - pos
 
-		val colMulInt = renderColorMulInt
+		val colMul = renderColorMul
 		val colAdd = renderColorAdd
 
 
@@ -72,10 +71,10 @@ open class TileMap(val map: IntArray2, val tileset: TileSet) : View() {
 					val p2 = p0 + dU + dV
 					val p3 = p0 + dV
 
-					info.vertices.select(info.vcount++).xy(p0.x, p0.y).uv(tex.tl_x, tex.tl_y).cols(colMulInt, colAdd)
-					info.vertices.select(info.vcount++).xy(p1.x, p1.y).uv(tex.tr_x, tex.tr_y).cols(colMulInt, colAdd)
-					info.vertices.select(info.vcount++).xy(p2.x, p2.y).uv(tex.br_x, tex.br_y).cols(colMulInt, colAdd)
-					info.vertices.select(info.vcount++).xy(p3.x, p3.y).uv(tex.bl_x, tex.bl_y).cols(colMulInt, colAdd)
+					info.vertices.select(info.vcount++).xy(p0.x, p0.y).uv(tex.tl_x, tex.tl_y).cols(colMul, colAdd)
+					info.vertices.select(info.vcount++).xy(p1.x, p1.y).uv(tex.tr_x, tex.tr_y).cols(colMul, colAdd)
+					info.vertices.select(info.vcount++).xy(p2.x, p2.y).uv(tex.br_x, tex.br_y).cols(colMul, colAdd)
+					info.vertices.select(info.vcount++).xy(p3.x, p3.y).uv(tex.bl_x, tex.bl_y).cols(colMul, colAdd)
 				}
 
 				info.icount += 6

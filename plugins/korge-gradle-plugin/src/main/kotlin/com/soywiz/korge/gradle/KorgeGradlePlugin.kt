@@ -689,13 +689,30 @@ class KorgeGradleApply(val project: Project) {
 
     private fun Project.configureRepositories() {
         repositories.apply {
-            mavenLocal()
-            maven { it.url = URI("https://dl.bintray.com/soywiz/soywiz") }
+            mavenLocal().content {
+				it.excludeGroup("Kotlin/Native")
+			}
+            maven {
+				it.url = URI("https://dl.bintray.com/soywiz/soywiz")
+				it.content {
+					it.includeGroup("com.soywiz")
+					it.excludeGroup("Kotlin/Native")
+				}
+			}
             if (BuildVersions.KOTLIN.contains("eap")) {
-                maven { it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap") }
+                maven {
+					it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
+					it.content {
+						it.excludeGroup("Kotlin/Native")
+					}
+				}
             }
-            jcenter()
-            mavenCentral()
+            jcenter().content {
+				it.excludeGroup("Kotlin/Native")
+			}
+            mavenCentral().content {
+				it.excludeGroup("Kotlin/Native")
+			}
         }
     }
 

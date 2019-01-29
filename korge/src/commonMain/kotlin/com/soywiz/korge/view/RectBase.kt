@@ -31,7 +31,7 @@ open class RectBase(
 	private fun computeVertexIfRequired() {
 		if (!dirtyVertices) return
 		dirtyVertices = false
-		vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMulInt, renderColorAdd)
+		vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
 	}
 
 	override fun renderInternal(ctx: RenderContext) {

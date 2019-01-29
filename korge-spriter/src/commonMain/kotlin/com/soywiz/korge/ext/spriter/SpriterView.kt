@@ -8,8 +8,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
 class SpriterView(
@@ -101,7 +99,7 @@ class SpriterView(
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 		val batch = ctx.batch
-		val colorMulInt = renderColorMulInt
+		val colorMul = renderColorMul
 		val colorAdd = renderColorAdd
 		for (obj in player.objectIterator()) {
 			val file = library.data.getFile(obj.ref)
@@ -135,7 +133,7 @@ class SpriterView(
 				tex.width.toFloat(),
 				tex.height.toFloat(),
 				t2,
-				colorMulInt = colorMulInt,
+				colorMul = colorMul,
 				colorAdd = colorAdd,
 				rotated = false
 			)

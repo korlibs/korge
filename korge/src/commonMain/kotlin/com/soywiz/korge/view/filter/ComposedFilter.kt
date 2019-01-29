@@ -2,6 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 
 class ComposedFilter(val filters: List<Filter>) : Filter() {
@@ -18,13 +19,13 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 		texWidth: Int,
 		texHeight: Int,
 		renderColorAdd: Int,
-		renderColorMulInt: Int,
+		renderColorMul: RGBA,
 		blendMode: BlendMode
 	) {
 		if (filters.isEmpty()) {
-			super.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMulInt, blendMode)
+			super.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
 		} else {
-			renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMulInt, blendMode, filters.size - 1)
+			renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filters.size - 1)
 		}
 	}
 
@@ -37,7 +38,7 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 		texWidth: Int,
 		texHeight: Int,
 		renderColorAdd: Int,
-		renderColorMulInt: Int,
+		renderColorMul: RGBA,
 		blendMode: BlendMode,
 		level: Int
 	) {
@@ -46,12 +47,12 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 		val newTexHeight = texHeight + filter.border
 		// @TODO: We only need two render textures
 		ctx.renderToTexture(newTexWidth, newTexHeight, {
-			filter.render(ctx, identity, texture, newTexWidth, newTexHeight, renderColorAdd, renderColorMulInt, blendMode)
+			filter.render(ctx, identity, texture, newTexWidth, newTexHeight, renderColorAdd, renderColorMul, blendMode)
 		}, { newtex ->
 			if (level > 0) {
-				renderIndex(ctx, matrix, newtex, newTexWidth, newTexHeight, renderColorAdd, renderColorMulInt, blendMode, level - 1)
+				renderIndex(ctx, matrix, newtex, newTexWidth, newTexHeight, renderColorAdd, renderColorMul, blendMode, level - 1)
 			} else {
-				filter.render(ctx, matrix, newtex, newTexWidth, newTexHeight, renderColorAdd, renderColorMulInt, blendMode)
+				filter.render(ctx, matrix, newtex, newTexWidth, newTexHeight, renderColorAdd, renderColorMul, blendMode)
 			}
 		})
 	}
