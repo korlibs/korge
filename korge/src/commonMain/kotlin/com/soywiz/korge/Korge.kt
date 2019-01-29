@@ -371,7 +371,7 @@ object Korge {
 		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
 		virtualWidth: Int = width, virtualHeight: Int = height,
 		icon: Bitmap? = null,
-		quality: GameWindow.Quality = GameWindow.Quality.AUTO,
+		quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
 		targetFps: Double = 0.0,
 		scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
 		scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
