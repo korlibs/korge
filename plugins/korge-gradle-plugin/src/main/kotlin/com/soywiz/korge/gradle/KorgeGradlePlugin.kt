@@ -299,23 +299,32 @@ class KorgeGradleApply(val project: Project) {
 				outputs.file(output)
 				doLast {
 					output.parentFile.mkdirs()
-					val text = "import ${korge.entryPoint}\nfun main(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }"
+
+					val text = Indenter {
+						line("import ${korge.entryPoint}")
+						line("fun main(args: Array<String>) = RootGameMain.runMain(args)")
+						line("object RootGameMain") {
+							line("fun runMain() = runMain(arrayOf())")
+							line("fun runMain(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
+						}
+					}
 					if (!output.exists() || output.readText() != text) output.writeText(text)
 				}
 			}
 		}
 
 		afterEvaluate {
-			kotlin.macosX64 {
-				compilations["main"].apply {
-					//println(this.binariesTaskName)
-					for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-						getLinkTask(NativeOutputKind.EXECUTABLE, type).dependsOn(prepareKotlinNativeBootstrap)
+			//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
+			for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())) {
+				target.apply {
+					compilations["main"].apply {
+						//println(this.binariesTaskName)
+						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+							getLinkTask(NativeOutputKind.EXECUTABLE, type).dependsOn(prepareKotlinNativeBootstrap)
+						}
+						defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
 					}
-					defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
-
-				}
-				/*
+					/*
 				binaries {
 					executable {
 						println("linkTask = $linkTask")
@@ -323,6 +332,7 @@ class KorgeGradleApply(val project: Project) {
 					}
 				}
 				*/
+				}
 			}
 		}
 	}
