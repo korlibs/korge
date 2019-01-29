@@ -162,7 +162,9 @@ inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.g
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
 	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate)
 
-fun V2<RGBA>.color(): V2<RGBA> = this.copy(interpolator = ::_interpolateColor)
+inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor)
+inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
+	V2(this, initial, end, ::_interpolateColor)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })

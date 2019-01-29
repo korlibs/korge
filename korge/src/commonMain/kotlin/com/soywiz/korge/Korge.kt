@@ -341,12 +341,10 @@ object Korge {
 		eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
 		//println("lastTime: $lastTime")
+		views.clearEachFrame = clearEachFrame
+		views.clearColor = bgcolor
 		views.gameWindow.addEventListener<RenderEvent> {
-			views.frameUpdateAndRender(
-				clear = clearEachFrame && views.clearEachFrame,
-				clearColor = bgcolor,
-				fixedSizeStep = fixedSizeStep
-			)
+			views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
 			if (moveMouseOutsideInNextFrame) {
 				moveMouseOutsideInNextFrame = false
@@ -360,19 +358,15 @@ object Korge {
 		//}
 	}
 
-	fun KoruiWithLogger(context: Any?, entry: suspend GameWindow.() -> Unit) {
-		return Korio {
-			withKorgeContext(context) {
-				configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
-				DefaultGameWindow.loop {
-					entry()
-				}
-			}
+	suspend fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
+		configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+		DefaultGameWindow.loop {
+			entry()
 		}
 	}
 
 	// New Korge
-	operator fun invoke(
+	suspend operator fun invoke(
 		title: String = "Korge",
 		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
 		virtualWidth: Int = width, virtualHeight: Int = height,
@@ -385,9 +379,8 @@ object Korge {
 		bgcolor: RGBA? = Colors.BLACK,
 		debug: Boolean = false,
 		args: Array<String> = arrayOf(),
-		context: Any? = null,
 		entry: suspend Stage.() -> Unit
-	) = KoruiWithLogger(context) {
+	) = KoruiWithLogger {
 		val gameWindow = this
 		if (OS.isNative) println("Korui[0]")
 		configure(width, height, title, icon)
@@ -417,7 +410,7 @@ object Korge {
 		if (OS.isNative) println("Korui[1]")
 	}
 
-	operator fun invoke(config: Config) = KoruiWithLogger(config.context) {
+	suspend operator fun invoke(config: Config) = KoruiWithLogger {
 		val module = config.module
 		configure(module.windowSize.width, module.windowSize.height, module.title)
 		val gameWindow = this

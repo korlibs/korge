@@ -178,6 +178,18 @@ fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
 
 }
 
+val Project.korioVersion get() = BuildVersions.KORIO
+val Project.kormaVersion get() = BuildVersions.KORMA
+val Project.korauVersion get() = BuildVersions.KORAU
+val Project.korimVersion get() = BuildVersions.KORIM
+val Project.koruiVersion get() = BuildVersions.KORUI
+val Project.korevVersion get() = BuildVersions.KOREV
+val Project.korgwVersion get() = BuildVersions.KORGW
+val Project.korgeVersion get() = BuildVersions.KORGE
+val Project.kotlinVersion get() = BuildVersions.KOTLIN
+
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
+
 val Project.korge: KorgeExtension get() {
     val extension = project.extensions.findByName("korge") as? KorgeExtension?
     return if (extension == null) {
@@ -667,23 +679,23 @@ class KorgeGradleApply(val project: Project) {
             task.keep("class jogamp.** { *; }")
 
             afterEvaluate {
-                task.keep("""public class ${runJvm.main} {
-                    public static void main(java.lang.String[]);
-                }""")
+				if (runJvm.main?.isNotBlank() == true) {
+					task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
+				}
             }
         }
     }
 
     private fun Project.addVersionExtension() {
-        ext.set("korioVersion", BuildVersions.KORIO)
-        ext.set("kormaVersion", BuildVersions.KORMA)
-        ext.set("korauVersion", BuildVersions.KORAU)
-        ext.set("korimVersion", BuildVersions.KORIM)
-        ext.set("koruiVersion", BuildVersions.KORUI)
-        ext.set("korevVersion", BuildVersions.KOREV)
-        ext.set("korgwVersion", BuildVersions.KORGW)
-        ext.set("korgeVersion", BuildVersions.KORGE)
-        ext.set("kotlinVersion", BuildVersions.KOTLIN)
+        ext.set("korioVersion", korioVersion)
+        ext.set("kormaVersion", kormaVersion)
+        ext.set("korauVersion", korauVersion)
+        ext.set("korimVersion", korimVersion)
+        ext.set("koruiVersion", koruiVersion)
+        ext.set("korevVersion", korevVersion)
+        ext.set("korgwVersion", korgwVersion)
+        ext.set("korgeVersion", korgeVersion)
+        ext.set("kotlinVersion", kotlinVersion)
         //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
     }
 
@@ -912,11 +924,11 @@ class KorgeGradleApply(val project: Project) {
                     task.setCordova("platform", "add", target)
                 }
 
-                val compileTarget = project.addTask<NodeTask>("compile$Target", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
+                val compileTarget = project.addTask<NodeTask>("compileCordova$Target", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target) // prepare + compile
                 }
 
-                val compileTargetRelease = project.addTask<NodeTask>("compile${Target}Release", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
+                val compileTargetRelease = project.addTask<NodeTask>("compileCordova${Target}Release", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
                     task.setCordova("build", target, "--release") // prepare + compile
                 }
 
@@ -926,7 +938,7 @@ class KorgeGradleApply(val project: Project) {
                     for (emulator in listOf(false, true)) {
                         val EmulatorText = if (emulator) "Emulator" else ""
                         val runTarget = project.addTask<NodeTask>(
-                            "run$Target$EmulatorText$NoMinimizedText",
+                            "runCordova$Target$EmulatorText$NoMinimizedText",
                             group = korgeGroup,
                             dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb, cordovaPrepareTargets)
                         ) { task ->

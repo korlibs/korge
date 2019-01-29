@@ -61,6 +61,7 @@ class Views(
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
+	var clearColor: RGBA = Colors.BLACK
 	override val views = this
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = 100
@@ -178,9 +179,9 @@ class Views(
 
 	val onBeforeRender = Signal<Unit>()
 
-	fun render(clearColor: RGBA = Colors.BLACK, clear: Boolean = true) {
+	fun render() {
 		onBeforeRender()
-		if (clear) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
+		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
 		stage.render(renderContext)
 
 		if (debugViews) {
@@ -194,7 +195,7 @@ class Views(
 		agBitmapTextureManager.afterRender()
 	}
 
-	fun frameUpdateAndRender(clear: Boolean, clearColor: RGBA, fixedSizeStep: TimeSpan = TimeSpan.NULL) {
+	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NULL) {
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
 		//println("Render")
@@ -210,7 +211,7 @@ class Views(
 		} else {
 			update(adelta)
 		}
-		render(clearColor, clear)
+		render()
 	}
 
 	override fun update(dtMs: Int) {
