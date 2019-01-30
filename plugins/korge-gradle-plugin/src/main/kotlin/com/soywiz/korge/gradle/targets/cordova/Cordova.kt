@@ -12,8 +12,9 @@ import org.gradle.api.*
 import org.gradle.api.tasks.*
 import java.io.*
 
-val Project.cordovaFolder get() = buildDir["cordova"]
-val Project.cordovaConfigXmlFile get() = cordovaFolder["config.xml"]
+private val Project.cordovaFolder get() = buildDir["cordova"]
+private val Project.cordovaConfigXmlFile get() = cordovaFolder["config.xml"].ensureParents()
+private val Project.cordova_bin get() = node_modules["cordova/bin/cordova"]
 
 fun Project.configureCordova() {
 	val jsInstallCordova = project.addTask<NpmTask>("jsInstallCordova") { task ->
@@ -39,8 +40,6 @@ fun Project.configureCordova() {
 		}
 		korge.updateCordovaXmlFile(cordovaConfigXmlFile)
 	}
-
-	val cordova_bin = node_modules["cordova/bin/cordova"]
 
 	fun NodeTask.setCordova(vararg args: String) {
 		setWorkingDir(cordovaFolder)
@@ -204,7 +203,7 @@ fun Project.configureCordova() {
 	}
 }
 
-fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
+private fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
 	val korge = this
 	cordovaConfig["name"].setValue(korge.name)
 	cordovaConfig["description"].setValue(korge.description)
@@ -248,12 +247,22 @@ fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
 	}
 }
 
-fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
+private fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
 	return updateXml(cordovaConfig) { updateCordovaXml(this) }
 }
 
-fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
-	val cordovaConfigXml = cordovaConfigXmlFile.readText()
+private fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
+	val cordovaConfigXml = if (cordovaConfigXmlFile.exists()) cordovaConfigXmlFile.readText() else """
+    	<?xml version='1.0' encoding='utf-8'?>
+		<widget id="com.soywiz.sample1" version="1.0.0" xmlns="http://www.w3.org/ns/widgets">
+			<name>sample</name>
+			<description>sample</description>
+			<author email="dev@cordova.apache.org" href="http://cordova.io">Apache Cordova Team</author>
+			<content src="index.html" />
+			<preference name="Orientation" value="landscape" />
+			<preference name="BackgroundColor" value="0xff000000" />
+		</widget>
+	""".trimIndent().trim()
 	val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
 	this.updateCordovaXml(cordovaConfig)
 
