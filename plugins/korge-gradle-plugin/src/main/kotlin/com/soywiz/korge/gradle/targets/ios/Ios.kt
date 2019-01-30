@@ -299,8 +299,7 @@ fun Project.configureNativeIos() {
 					line("<key>UIRequiredDeviceCapabilities</key>")
 					line("<array>")
 					indent {
-						//line("<string>armv7</string>")
-						line("<string>armv8</string>")
+						line("<string>armv7</string>")
 					}
 					line("</array>")
 					line("<key>UISupportedInterfaceOrientations</key>")
