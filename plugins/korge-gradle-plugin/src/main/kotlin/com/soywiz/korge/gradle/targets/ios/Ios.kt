@@ -491,11 +491,14 @@ fun Project.configureNativeIos() {
 			tasks.create("iosBuild$simulatorSuffix$debugSuffix") { task ->
 				task.dependsOn("prepareKotlinNativeIosProject", "linkMain${debugSuffix}FrameworkIos$arch")
 				val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
-				task.outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
+				afterEvaluate {
+					task.outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
+				}
 				task.doLast {
 					exec {
 						it.workingDir(xcodeProjDir)
-						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
+						//it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
+						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
 					}
 				}
 			}
@@ -506,6 +509,7 @@ fun Project.configureNativeIos() {
 			task.doFirst {
 				val appFolder = tasks.getByName("iosBuildSimulator$debugSuffix").outputs.files.first().parentFile
 				val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
+				println(listOf("xcrun", "simctl", "install", udid, appFolder.absolutePath).joinToString(" "))
 				task.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath)
 			}
 		}
