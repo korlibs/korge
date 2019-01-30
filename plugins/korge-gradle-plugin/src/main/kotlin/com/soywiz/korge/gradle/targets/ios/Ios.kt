@@ -81,191 +81,375 @@ fun Project.configureNativeIos() {
 		task.dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", "prepareKotlinNativeBootstrap")
 		task.doLast {
 			val folder = File(buildDir, "platforms/ios")
-			val swift = true
+			val swift = false
 			if (swift) {
-				folder["app/AppDelegate.swift"].ensureParents().writeText(Indenter {
-					line("import UIKit")
-					line("@UIApplicationMain")
-					line("class AppDelegate: UIResponder, UIApplicationDelegate") {
-						line("var window: UIWindow?")
-						line("func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool") {
-							line("return true")
-						}
-						line("func applicationWillResignActive(_ application: UIApplication)") {
-						}
-						line("func applicationDidEnterBackground(_ application: UIApplication)") {
-						}
-						line("func applicationWillEnterForeground(_ application: UIApplication)") {
-						}
-						line("func applicationDidBecomeActive(_ application: UIApplication)") {
-						}
-						line("func applicationWillTerminate(_ application: UIApplication)") {
-						}
-					}
-				})
-
-				folder["app/ViewController.swift"].ensureParents().writeText(Indenter {
-					line("import UIKit")
-					line("import GLKit")
-					line("import GameMain")
-
-					line("class ViewController: GLKViewController") {
-						line("var context: EAGLContext? = nil")
-						line("var gameWindow2: MyIosGameWindow2? = nil")
-						line("var rootGameMain: RootGameMain? = nil")
-
-						line("deinit") {
-							line("self.tearDownGL()")
-
-							line("if EAGLContext.current() === self.context") {
-								line("EAGLContext.setCurrent(nil)")
-							}
-						}
-
-						line("override func viewDidLoad()") {
-							line("super.viewDidLoad()")
-
-							line("self.gameWindow2 = MyIosGameWindow2.init()")
-							line("self.rootGameMain = RootGameMain.init()")
-
-							line("context = EAGLContext(api: .openGLES2)")
-							line("if context == nil") {
-								line("print(\"Failed to create ES context\")")
-							}
-
-							line("let view = self.view as! GLKView")
-							line("view.context = self.context!")
-							line("view.drawableDepthFormat = .format24")
-
-							line("self.setupGL()")
-						}
-
-						line("override func didReceiveMemoryWarning()") {
-							line("super.didReceiveMemoryWarning()")
-
-							line("if self.isViewLoaded && self.view.window != nil") {
-								line("self.view = nil")
-
-								line("self.tearDownGL()")
-
-								line("if EAGLContext.current() === self.context") {
-									line("EAGLContext.setCurrent(nil)")
-								}
-								line("self.context = nil")
-							}
-						}
-
-						line("func setupGL()") {
-							line("EAGLContext.setCurrent(self.context)")
-
-							// Change the working directory so that we can use C code to grab resource files
-							line("if let path = Bundle.main.resourcePath") {
-								line("let rpath = \"\\(path)/include/app/resources\"")
-								line("FileManager.default.changeCurrentDirectoryPath(rpath)")
-								line("self.gameWindow2?.setCustomCwd(cwd: rpath)")
-							}
-
-							line("engineInitialize()")
-
-							line("let width = Float(view.frame.size.width) // * view.contentScaleFactor)")
-							line("let height = Float(view.frame.size.height) // * view.contentScaleFactor)")
-							line("engineResize(width: width, height: height)")
-						}
-
-						line("func tearDownGL()") {
-							line("EAGLContext.setCurrent(self.context)")
-
-							line("engineFinalize()")
-						}
-
-						// MARK: - GLKView and GLKViewController delegate methods
-						line("func update()") {
-							line("engineUpdate()")
-						}
-
-						// Render
-						line("var initialized = false")
-						line("var reshape = true")
-						line("override func glkView(_ view: GLKView, drawIn rect: CGRect)") {
-							//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
-							line("if !initialized") {
-								line("initialized = true")
-								line("gameWindow2?.gameWindow.dispatchInitEvent()")
-								line("rootGameMain?.runMain()")
-								line("reshape = true")
-							}
-							line("let width = Int32(view.bounds.width * view.contentScaleFactor)")
-							line("let height = Int32(view.bounds.height * view.contentScaleFactor)")
-							line("if reshape") {
-								line("reshape = false")
-								line("gameWindow2?.gameWindow.dispatchReshapeEvent(x: 0, y: 0, width: width, height: height)")
-							}
-
-							//line("gameWindow2?.gameWindow.ag.setViewport(x: 0, y: 0, width: width, height: height)")
-							line("gameWindow2?.gameWindow.frame()")
-						}
-
-						line("private func engineInitialize()") {
-							//print("init[a]")
-							//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
-							//glClear(GLbitfield(GL_COLOR_BUFFER_BIT));
-							//gameWindow2?.gameWindow.frame()
-							//print("init[b]")
-						}
-
-						line("var touches: [UITouch] = []")
-
-						line("override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)") {
-							line("self.touches.removeAll()")
-							line("gameWindow2?.gameWindow.dispatchTouchEventStartStart()")
-							line("self.addTouches(touches)")
-							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-						}
-
-						line("override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)") {
-							line("gameWindow2?.gameWindow.dispatchTouchEventStartMove()")
-							line("self.addTouches(touches)")
-							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-						}
-
-						line("override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)") {
-							line("gameWindow2?.gameWindow.dispatchTouchEventStartEnd()")
-							line("self.addTouches(touches)")
-							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-						}
-
-						line("private func addTouches(_ touches: Set<UITouch>)") {
-							line("for touch in touches") {
-								line("var index = self.touches.index(of: touch)")
-								line("if index == nil") {
-									line("index = self.touches.count")
-									line("self.touches.append(touch)")
-								}
-								line("let location = touch.location(in: self.view)")
-								line("gameWindow2?.gameWindow.dispatchTouchEventAddTouch(id: Int32(index!), x: Double(location.x * view.contentScaleFactor), y: Double(location.y * view.contentScaleFactor))")
-							}
-						}
-
-						line("private func engineFinalize()") {
-						}
-
-						line("private func engineResize(width: Float, height: Float)") {
-						}
-
-						line("private func engineUpdate()") {
-						}
-					}
-				})
+				//folder["app/AppDelegate.swift"].ensureParents().writeText(Indenter {
+				//	line("import UIKit")
+				//	line("@UIApplicationMain")
+				//	line("class AppDelegate: UIResponder, UIApplicationDelegate") {
+				//		line("var window: UIWindow?")
+				//		line("func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool") {
+				//			line("return true")
+				//		}
+				//		line("func applicationWillResignActive(_ application: UIApplication)") {
+				//		}
+				//		line("func applicationDidEnterBackground(_ application: UIApplication)") {
+				//		}
+				//		line("func applicationWillEnterForeground(_ application: UIApplication)") {
+				//		}
+				//		line("func applicationDidBecomeActive(_ application: UIApplication)") {
+				//		}
+				//		line("func applicationWillTerminate(_ application: UIApplication)") {
+				//		}
+				//	}
+				//})
+//
+				//folder["app/ViewController.swift"].ensureParents().writeText(Indenter {
+				//	line("import UIKit")
+				//	line("import GLKit")
+				//	line("import GameMain")
+//
+				//	line("class ViewController: GLKViewController") {
+				//		line("var context: EAGLContext? = nil")
+				//		line("var gameWindow2: MyIosGameWindow2? = nil")
+				//		line("var rootGameMain: RootGameMain? = nil")
+//
+				//		line("deinit") {
+				//			line("self.tearDownGL()")
+//
+				//			line("if EAGLContext.current() === self.context") {
+				//				line("EAGLContext.setCurrent(nil)")
+				//			}
+				//		}
+//
+				//		line("override func viewDidLoad()") {
+				//			line("super.viewDidLoad()")
+//
+				//			line("self.gameWindow2 = MyIosGameWindow2.init()")
+				//			line("self.rootGameMain = RootGameMain.init()")
+//
+				//			line("context = EAGLContext(api: .openGLES2)")
+				//			line("if context == nil") {
+				//				line("print(\"Failed to create ES context\")")
+				//			}
+//
+				//			line("let view = self.view as! GLKView")
+				//			line("view.context = self.context!")
+				//			line("view.drawableDepthFormat = .format24")
+//
+				//			line("self.setupGL()")
+				//		}
+//
+				//		line("override func didReceiveMemoryWarning()") {
+				//			line("super.didReceiveMemoryWarning()")
+//
+				//			line("if self.isViewLoaded && self.view.window != nil") {
+				//				line("self.view = nil")
+//
+				//				line("self.tearDownGL()")
+//
+				//				line("if EAGLContext.current() === self.context") {
+				//					line("EAGLContext.setCurrent(nil)")
+				//				}
+				//				line("self.context = nil")
+				//			}
+				//		}
+//
+				//		line("func setupGL()") {
+				//			line("EAGLContext.setCurrent(self.context)")
+//
+				//			// Change the working directory so that we can use C code to grab resource files
+				//			line("if let path = Bundle.main.resourcePath") {
+				//				line("let rpath = \"\\(path)/include/app/resources\"")
+				//				line("FileManager.default.changeCurrentDirectoryPath(rpath)")
+				//				line("self.gameWindow2?.setCustomCwd(cwd: rpath)")
+				//			}
+//
+				//			line("engineInitialize()")
+//
+				//			line("let width = Float(view.frame.size.width) // * view.contentScaleFactor)")
+				//			line("let height = Float(view.frame.size.height) // * view.contentScaleFactor)")
+				//			line("engineResize(width: width, height: height)")
+				//		}
+//
+				//		line("func tearDownGL()") {
+				//			line("EAGLContext.setCurrent(self.context)")
+//
+				//			line("engineFinalize()")
+				//		}
+//
+				//		// MARK: - GLKView and GLKViewController delegate methods
+				//		line("func update()") {
+				//			line("engineUpdate()")
+				//		}
+//
+				//		// Render
+				//		line("var initialized = false")
+				//		line("var reshape = true")
+				//		line("override func glkView(_ view: GLKView, drawIn rect: CGRect)") {
+				//			//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
+				//			line("if !initialized") {
+				//				line("initialized = true")
+				//				line("gameWindow2?.gameWindow.dispatchInitEvent()")
+				//				line("rootGameMain?.runMain()")
+				//				line("reshape = true")
+				//			}
+				//			line("let width = Int32(view.bounds.width * view.contentScaleFactor)")
+				//			line("let height = Int32(view.bounds.height * view.contentScaleFactor)")
+				//			line("if reshape") {
+				//				line("reshape = false")
+				//				line("gameWindow2?.gameWindow.dispatchReshapeEvent(x: 0, y: 0, width: width, height: height)")
+				//			}
+//
+				//			//line("gameWindow2?.gameWindow.ag.setViewport(x: 0, y: 0, width: width, height: height)")
+				//			line("gameWindow2?.gameWindow.frame()")
+				//		}
+//
+				//		line("private func engineInitialize()") {
+				//			//print("init[a]")
+				//			//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
+				//			//glClear(GLbitfield(GL_COLOR_BUFFER_BIT));
+				//			//gameWindow2?.gameWindow.frame()
+				//			//print("init[b]")
+				//		}
+//
+				//		line("var touches: [UITouch] = []")
+//
+				//		line("override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)") {
+				//			line("self.touches.removeAll()")
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartStart()")
+				//			line("self.addTouches(touches)")
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+				//		}
+//
+				//		line("override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)") {
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartMove()")
+				//			line("self.addTouches(touches)")
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+				//		}
+//
+				//		line("override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)") {
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartEnd()")
+				//			line("self.addTouches(touches)")
+				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+				//		}
+//
+				//		line("private func addTouches(_ touches: Set<UITouch>)") {
+				//			line("for touch in touches") {
+				//				line("var index = self.touches.index(of: touch)")
+				//				line("if index == nil") {
+				//					line("index = self.touches.count")
+				//					line("self.touches.append(touch)")
+				//				}
+				//				line("let location = touch.location(in: self.view)")
+				//				line("gameWindow2?.gameWindow.dispatchTouchEventAddTouch(id: Int32(index!), x: Double(location.x * view.contentScaleFactor), y: Double(location.y * view.contentScaleFactor))")
+				//			}
+				//		}
+//
+				//		line("private func engineFinalize()") {
+				//		}
+//
+				//		line("private func engineResize(width: Float, height: Float)") {
+				//		}
+//
+				//		line("private func engineUpdate()") {
+				//		}
+				//	}
+				//})
 			} else {
-				folder["app/main.m"].ensureParents().writeText(Indenter {
-					line("#import <UIKit/UIKit.h>")
-					line("#import \"AppDelegate.h\"")
-					line("int main(int argc, char * argv[])") {
-						line("@autoreleasepool") {
-							line("return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));")
+				folder["app/main.m"].ensureParents().writeText("""
+					#import <UIKit/UIKit.h>
+					#import "AppDelegate.h"
+
+					int main(int argc, char * argv[]) {
+						@autoreleasepool {
+							return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
 						}
 					}
-				})
+				""".trimIndent())
+
+				folder["app/AppDelegate.h"].ensureParents().writeText("""
+					#import <UIKit/UIKit.h>
+					@interface AppDelegate : UIResponder <UIApplicationDelegate>
+					@property (strong, nonatomic) UIWindow *window;
+					@end
+				""".trimIndent())
+
+				folder["app/AppDelegate.m"].ensureParents().writeText("""
+					#import "AppDelegate.h"
+					@interface AppDelegate ()
+					@end
+					@implementation AppDelegate
+					- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+						return YES;
+					}
+					- (void)applicationWillResignActive:(UIApplication *)application {
+					}
+					- (void)applicationDidEnterBackground:(UIApplication *)application {
+					}
+					- (void)applicationWillEnterForeground:(UIApplication *)application {
+					}
+					- (void)applicationDidBecomeActive:(UIApplication *)application {
+					}
+					- (void)applicationWillTerminate:(UIApplication *)application {
+					}
+					@end
+				""".trimIndent())
+
+				folder["app/ViewController.h"].ensureParents().writeText("""
+					#import <UIKit/UIKit.h>
+					#import <GLKit/GLKit.h>
+					#import <GameMain/GameMain.h>
+					@interface ViewController : GLKViewController
+					@property(strong, nonatomic) EAGLContext *context;
+					@property(strong, nonatomic) GameMainMyIosGameWindow2 *gameWindow2;
+					@property(strong, nonatomic) GameMainRootGameMain *rootGameMain;
+					@property(strong, nonatomic) NSArray<UITouch*> *touches;
+					@property boolean_t initialized;
+					@property boolean_t reshape;
+					@end
+				""".trimIndent())
+
+				folder["app/ViewController.m"].ensureParents().writeText("""
+					#import "ViewController.h"
+					@interface ViewController ()
+					@end
+					@implementation ViewController
+					-(id)init {
+						if (self = [super init])  {
+						}
+						return self;
+					}
+
+					-(void)dealloc {
+						[self tearDownGL];
+						if (EAGLContext.currentContext == self.context) {
+							[EAGLContext setCurrentContext:nil];
+						}
+					}
+
+					- (void)viewDidLoad {
+						[super viewDidLoad];
+
+						self.initialized = false;
+						self.reshape = true;
+						self.touches = [[NSArray alloc] init];
+						self.gameWindow2 = [GameMainMyIosGameWindow2 myIosGameWindow2];
+						self.rootGameMain = [GameMainRootGameMain rootGameMain];
+
+						self.context = [[EAGLContext alloc] initWithAPI:(kEAGLRenderingAPIOpenGLES2)];
+						if (self.context == nil) {
+							printf("Failed to create ES context\n");
+						}
+						GLKView *view = (GLKView *)self.view;
+						view.context = self.context;
+						view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
+						[self setupGL];
+					}
+
+					-(void)didReceiveMemoryWarning {
+						[super didReceiveMemoryWarning];
+						if (self.isViewLoaded && self.view.window != nil) {
+							self.view = nil;
+							[self tearDownGL];
+							if (EAGLContext.currentContext == self.context) {
+								[EAGLContext setCurrentContext:nil];
+							}
+							self.context = nil;
+						}
+					}
+
+					-(void)setupGL {
+						[EAGLContext setCurrentContext:self.context];
+						NSString *path = NSBundle.mainBundle.resourcePath;
+						if (path != nil) {
+							NSString *rpath = [NSString stringWithFormat:@"%@%s", path, "/include/app/resources"];
+							[NSFileManager.defaultManager changeCurrentDirectoryPath:rpath];
+							[self.gameWindow2 setCustomCwdCwd:rpath];
+						}
+						[self engineInitialize];
+						double width = self.view.frame.size.width;
+						double height = self.view.frame.size.height;
+						[self engineResize:width height:height];
+					}
+
+					-(void)tearDownGL {
+						[EAGLContext setCurrentContext:nil];
+						[self engineFinalize];
+					}
+
+					-(void)update {
+						[self engineUpdate];
+					}
+
+					-(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+						if (!self.initialized) {
+							self.initialized = true;
+							[self.gameWindow2.gameWindow dispatchInitEvent];
+							[self.rootGameMain runMain];
+							self.reshape = true;
+						}
+						double width = self.view.bounds.size.width * self.view.contentScaleFactor;
+						double height = self.view.bounds.size.height * self.view.contentScaleFactor;
+						if (self.reshape) {
+							self.reshape = false;
+							[_gameWindow2.gameWindow dispatchReshapeEventX:0 y:0 width:width height:height];
+						}
+						[_gameWindow2.gameWindow frame];
+					}
+
+					-(void) engineInitialize {
+					}
+
+					-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+						self.touches = [[NSArray alloc] init];
+						[self.gameWindow2.gameWindow dispatchTouchEventStartStart];
+						[self addTouches:touches];
+						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
+					}
+
+					-(void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+						[self.gameWindow2.gameWindow dispatchTouchEventStartMove];
+						[self addTouches:touches];
+						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
+					}
+
+					-(void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+						[self.gameWindow2.gameWindow dispatchTouchEventStartEnd];
+						[self addTouches:touches];
+						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
+					}
+
+					-(void)addTouches:(NSSet<UITouch *> *)touches {
+						for (UITouch* touch in touches) {
+							CGPoint point = [touch locationInView:self.view];
+							int index = -1;
+							for (int n = 0; n < self.touches.count; n++) {
+								if ([self.touches objectAtIndex:n] == touch) {
+									index = n;
+									break;
+								}
+							}
+							if (index == -1) {
+								index = (int)self.touches.count;
+								self.touches = [self.touches arrayByAddingObject:touch];
+							}
+							[self.gameWindow2.gameWindow dispatchTouchEventAddTouchId:index x:point.x* self.view.contentScaleFactor y:point.y* self.view.contentScaleFactor];
+						}
+					}
+
+					-(void)engineFinalize {
+					}
+
+					-(void)engineResize:(double)width height:(double)height {
+					}
+
+					-(void)engineUpdate {
+					}
+
+					@end
+
+				""".trimIndent())
 			}
 
 			folder["app/Info.plist"].ensureParents().writeText(Indenter {
@@ -348,7 +532,7 @@ fun Project.configureNativeIos() {
 						indent {
 							line("<objects>")
 							indent {
-								line("""<glkViewController preferredFramesPerSecond="30" id="v5j-5E-UgZ" customClass="ViewController" customModule="demo312321" customModuleProvider="target" sceneMemberID="viewController">""")
+								line("""<glkViewController preferredFramesPerSecond="60" id="v5j-5E-UgZ" customClass="ViewController" customModuleProvider="" sceneMemberID="viewController">""")
 								indent {
 									line("""<glkView key="view" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" enableSetNeedsDisplay="NO" id="xs3-K8-37B">""")
 									indent {
