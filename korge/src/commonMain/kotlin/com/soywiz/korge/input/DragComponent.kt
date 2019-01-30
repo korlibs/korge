@@ -49,7 +49,7 @@ class DragComponent(override val view: View) : TouchComponent {
 	}
 
 	override fun onTouchEvent(views: Views, e: TouchEvent) {
-		val touch = e.touch
+		val touch = e.touches.first()
 		info.touch = touch
 		when (e.type) {
 			TouchEvent.Type.START -> {

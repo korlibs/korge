@@ -19,6 +19,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -106,7 +107,9 @@ object Korge {
 		val sc = SceneContainer(views)
 		views.stage += sc
 
-		register(views)
+		if (OS.isJsBrowser) {
+			KDynamic { global["views"] = views }
+		}
 
 		sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.seconds)
 
@@ -225,6 +228,7 @@ object Korge {
 				MouseEvent.Type.ENTER -> {
 				}
 				MouseEvent.Type.EXIT -> {
+					mouseDrag("mouseExit", -1000.0, -1000.0)
 				}
 			}
 			views.dispatch(e)
@@ -253,7 +257,7 @@ object Korge {
 
 		// TOUCH
 		fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
-			val t = e.touch
+			val t = e.touches.first()
 			val x = t.current.x
 			val y = t.current.y
 			updateTouch(t.id, x, y, start, end)
@@ -273,8 +277,9 @@ object Korge {
 
 		eventDispatcher.addEventListener<TouchEvent> { e ->
 			logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
-			val ix = getRealX(e.touch.current.x, e.scaleCoords).toInt()
-			val iy = getRealX(e.touch.current.y, e.scaleCoords).toInt()
+			val touch = e.touches.first()
+			val ix = getRealX(touch.current.x, e.scaleCoords).toInt()
+			val iy = getRealX(touch.current.y, e.scaleCoords).toInt()
 			when (e.type) {
 				TouchEvent.Type.START -> {
 					touch(e, start = true, end = false)
@@ -479,5 +484,3 @@ object Korge {
 
 	}
 }
-
-expect fun Korge.register(views: Views)

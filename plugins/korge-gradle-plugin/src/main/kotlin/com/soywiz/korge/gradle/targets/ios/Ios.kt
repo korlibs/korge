@@ -201,7 +201,7 @@ fun Project.configureNativeIos() {
 								line("gameWindow2?.gameWindow.dispatchReshapeEvent(x: 0, y: 0, width: width, height: height)")
 							}
 
-							line("gameWindow2?.gameWindow.ag.setViewport(x: 0, y: 0, width: width, height: height)")
+							//line("gameWindow2?.gameWindow.ag.setViewport(x: 0, y: 0, width: width, height: height)")
 							line("gameWindow2?.gameWindow.frame()")
 						}
 
@@ -211,6 +211,39 @@ fun Project.configureNativeIos() {
 							//glClear(GLbitfield(GL_COLOR_BUFFER_BIT));
 							//gameWindow2?.gameWindow.frame()
 							//print("init[b]")
+						}
+
+						line("var touches: [UITouch] = []")
+
+						line("override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)") {
+							line("self.touches.removeAll()")
+							line("gameWindow2?.gameWindow.dispatchTouchEventStartStart()")
+							line("self.addTouches(touches)")
+							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+						}
+
+						line("override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)") {
+							line("gameWindow2?.gameWindow.dispatchTouchEventStartMove()")
+							line("self.addTouches(touches)")
+							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+						}
+
+						line("override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)") {
+							line("gameWindow2?.gameWindow.dispatchTouchEventStartEnd()")
+							line("self.addTouches(touches)")
+							line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
+						}
+
+						line("private func addTouches(_ touches: Set<UITouch>)") {
+							line("for touch in touches") {
+								line("var index = self.touches.index(of: touch)")
+								line("if index == nil") {
+									line("index = self.touches.count")
+									line("self.touches.append(touch)")
+								}
+								line("let location = touch.location(in: self.view)")
+								line("gameWindow2?.gameWindow.dispatchTouchEventAddTouch(id: Int32(index!), x: Double(location.x * view.contentScaleFactor), y: Double(location.y * view.contentScaleFactor))")
+							}
 						}
 
 						line("private func engineFinalize()") {
