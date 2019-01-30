@@ -1,1324 +1,252 @@
 package com.soywiz.korge.gradle
 
-import com.moowork.gradle.node.NodeExtension
-import com.moowork.gradle.node.exec.NodeExecRunner
-import com.moowork.gradle.node.npm.NpmTask
-import com.moowork.gradle.node.task.NodeTask
-import com.soywiz.korge.gradle.apple.IcnsBuilder
-import com.soywiz.korge.gradle.apple.InfoPlistBuilder
+import com.soywiz.korge.gradle.targets.android.*
+import com.soywiz.korge.gradle.targets.cordova.*
+import com.soywiz.korge.gradle.targets.desktop.*
+import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.js.*
+import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
-import groovy.text.*
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
+import org.gradle.api.Project
 import org.gradle.api.artifacts.*
-import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.file.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.testing.Test
-import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.gradle.process.ExecResult
-import org.gradle.process.ExecSpec
+import org.gradle.plugins.ide.idea.model.*
+import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinJsDce
-import proguard.gradle.ProGuardTask
 import java.io.*
-import java.net.*
-import javax.imageio.*
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-//val kormaVersion get() = KorgeBuildServiceProxy.kormaVersion()
-//val korioVersion get() = KorgeBuildServiceProxy.korioVersion()
-//val korimVersion get() = KorgeBuildServiceProxy.korimVersion()
-//val korauVersion get() = KorgeBuildServiceProxy.korauVersion()
-//val koruiVersion get() = KorgeBuildServiceProxy.koruiVersion()
-//val korevVersion get() = KorgeBuildServiceProxy.korevVersion()
-//val korgwVersion get() = KorgeBuildServiceProxy.korgwVersion()
-//val kotlinVersion get() = KorgeBuildServiceProxy.kotlinVersion()
-//val korgeVersion get() = KorgeBuildServiceProxy.korgeVersion()
-
-
-enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
-
-data class KorgePluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
-
-enum class GameCategory {
-    ACTION, ADVENTURE, ARCADE, BOARD, CARD,
-    CASINO, DICE, EDUCATIONAL, FAMILY, KIDS,
-    MUSIC, PUZZLE, RACING, ROLE_PLAYING, SIMULATION,
-    SPORTS, STRATEGY, TRIVIA, WORD
-}
-
-@Suppress("unused")
-class KorgeExtension(val project: Project) {
-    internal fun init() {
-        // Do nothing, but serves to be referenced to be installed
-    }
-
-    var id: String = "com.unknown.unknownapp"
-    var version: String = "0.0.1"
-
-    var exeBaseName: String = "app"
-
-    var name: String = "unnamed"
-    var description: String = "description"
-    var orientation: Orientation = Orientation.DEFAULT
-    val plugins = arrayListOf<KorgePluginDescriptor>()
-
-    var copyright: String = "Copyright (c) 2019 Unknown"
-
-    var authorName = "unknown"
-    var authorEmail = "unknown@unknown"
-    var authorHref = "http://localhost"
-
-    val icon: File? = File("icon.png")
-
-    var gameCategory: GameCategory? = null
-
-    var fullscreen = true
-
-    var backgroundColor: Int = 0xff000000.toInt()
-
-	var appleDevelopmentTeamId: String? = java.lang.System.getenv("DEVELOPMENT_TEAM")
-		?: java.lang.System.getProperty("appleDevelopmentTeamId")?.toString()
-		?: project.findProperty("appleDevelopmentTeamId")?.toString()
-
-	var appleOrganizationName = "User Name Name"
-
-	var entryPoint: String = "main"
-
-    var androidMinSdk: String? = null
-    internal var _androidAppendBuildGradle: String? = null
-
-    @JvmOverloads
-    fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
-        plugins += KorgePluginDescriptor(name.toString(), args, version?.toString())
-        //println("cordovaPlugin($name, $args, $version)")
-    }
-
-    fun androidAppendBuildGradle(str: String) {
-        if (_androidAppendBuildGradle == null) {
-            _androidAppendBuildGradle = ""
-        }
-        _androidAppendBuildGradle += str
-    }
-
-    fun cordovaUseCrosswalk() {
-        // Required to have webgl on android emulator?
-        // https://crosswalk-project.org/documentation/cordova.html
-        // https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview/issues/205#issuecomment-371669478
-        if (androidMinSdk == null) androidMinSdk = "20"
-        cordovaPlugin("cordova-plugin-crosswalk-webview", version = "2.4.0")
-        androidAppendBuildGradle("""
-        	configurations.all {
-        		resolutionStrategy {
-        			force 'com.android.support:support-v4:27.1.0'
-        		}
-        	}
-        """)
-    }
-
-    @JvmOverloads
-    fun author(name: String, email: String, href: String) {
-        authorName = name
-        authorEmail = email
-        authorHref = href
-    }
-}
-
-fun KorgeExtension.updateCordovaXml(cordovaConfig: QXml) {
-    val korge = this
-    cordovaConfig["name"].setValue(korge.name)
-    cordovaConfig["description"].setValue(korge.description)
-
-    cordovaConfig.setAttribute("id", korge.id)
-    cordovaConfig.setAttribute("version", korge.version)
-
-    cordovaConfig["author"].apply {
-        setAttribute("email", korge.authorEmail)
-        setAttribute("href", korge.authorHref)
-        setValue(korge.authorName)
-    }
-
-    fun replaceCordovaPreference(name: String, value: String) {
-        // Remove Orientation node and set a new node
-        cordovaConfig.getOrAppendNode("preference", "name" to name).setAttribute("value", value)
-        cordovaConfig["preference"].list.filter { it.attributes["name"] == name }.forEach { it.remove() }
-        cordovaConfig.appendNode("preference", "name" to name, "value" to value)
-    }
-
-    // https://cordova.apache.org/docs/es/latest/config_ref/
-    replaceCordovaPreference("Orientation", korge.orientation.lc)
-    replaceCordovaPreference("Fullscreen", korge.fullscreen.toString())
-    replaceCordovaPreference("BackgroundColor", "0x%08x".format(korge.backgroundColor))
-
-    replaceCordovaPreference("DisallowOverscroll", "true")
-
-    if (korge.androidMinSdk != null) {
-        val android = cordovaConfig.getOrAppendNode("platform", "name" to "android")
-        android.getOrAppendNode("preference", "name" to "android-minSdkVersion").setAttribute("value", korge.androidMinSdk!!)
-    }
-
-    cordovaConfig["icon"].remove()
-    cordovaConfig.appendNode("icon", "src" to "icon.png")
-
-    val platformIos = cordovaConfig.getOrAppendNode("platform", "name" to "ios")
-    for (iconSize in ICON_SIZES) {
-        platformIos.getOrAppendNode("icon", "width" to "$iconSize", "height" to "$iconSize")
-            .setAttribute("src", "icon-$iconSize.png")
-    }
-}
-
-fun KorgeExtension.updateCordovaXmlString(cordovaConfig: String): String {
-    return updateXml(cordovaConfig) { updateCordovaXml(this) }
-}
-
-fun KorgeExtension.updateCordovaXmlFile(cordovaConfigXmlFile: File) {
-    val cordovaConfigXml = cordovaConfigXmlFile.readText()
-    val cordovaConfig = QXml(xmlParse(cordovaConfigXml))
-    this.updateCordovaXml(cordovaConfig)
-
-    cordovaConfigXmlFile.writeText(cordovaConfig.serialize())
-
-}
-
-val Project.korioVersion get() = BuildVersions.KORIO
-val Project.kormaVersion get() = BuildVersions.KORMA
-val Project.korauVersion get() = BuildVersions.KORAU
-val Project.korimVersion get() = BuildVersions.KORIM
-val Project.koruiVersion get() = BuildVersions.KORUI
-val Project.korevVersion get() = BuildVersions.KOREV
-val Project.korgwVersion get() = BuildVersions.KORGW
-val Project.korgeVersion get() = BuildVersions.KORGE
-val Project.kotlinVersion get() = BuildVersions.KOTLIN
-val Project.coroutinesVersion get() = "1.1.1"
 
 fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
-
 val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
-
-val Project.korge: KorgeExtension get() {
-    val extension = project.extensions.findByName("korge") as? KorgeExtension?
-    return if (extension == null) {
-        val newExtension = KorgeExtension(this)
-        project.extensions.add("korge", newExtension)
-        newExtension
-    } else {
-        extension
-    }
-}
+val Project.korge: KorgeExtension
+	get() {
+		val extension = project.extensions.findByName("korge") as? KorgeExtension?
+		return if (extension == null) {
+			val newExtension = KorgeExtension(this)
+			project.extensions.add("korge", newExtension)
+			newExtension
+		} else {
+			extension
+		}
+	}
 
 open class JsWebCopy() : Copy() {
-    open lateinit var targetDir: File
+	open lateinit var targetDir: File
 }
 
-fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
-    return if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine("cmd", "/c", *args)
-    } else {
-        commandLine(*args)
-    }
-}
-
-val ICON_SIZES = listOf(20, 29, 40, 44, 48, 50, 55, 57, 58, 60, 72, 76, 80, 87, 88, 100, 114, 120, 144, 152, 167, 172, 180, 196, 1024)
-
-fun File.ensureParents() = this.apply { parentFile.mkdirs() }
-fun <T> File.conditionally(ifNotExists: Boolean = true, block: File.() -> T): T? = if (!ifNotExists || !this.exists()) block() else null
+val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+//val node_modules by lazy { project.file("node_modules") }
+val Project.korgeGroup get() = "korge"
 
 class KorgeGradleApply(val project: Project) {
-    val korgeCacheDir = File(System.getProperty("user.home"), ".korge").apply { mkdirs() }
-    //val node_modules by lazy { project.file("node_modules") }
-    val node_modules by lazy { korgeCacheDir["node_modules"] }
-    val webMinFolder by lazy { project.buildDir["web-min"] }
-    val webFolder by lazy { project.buildDir["web"] }
-    val webMinWebpackFolder by lazy { project.buildDir["web-min-webpack"] }
-    val mocha_node_modules by lazy { project.buildDir["node_modules"] }
+	fun apply() {
+		System.setProperty("java.awt.headless", "true")
 
-    // Tasks
-    lateinit var jsWeb: JsWebCopy
-    lateinit var jsWebMin: JsWebCopy
-    lateinit var jsWebMinWebpack: DefaultTask
+		val expectedGradleVersion = "5.1.1"
+		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
-    fun KorgeExtension.getIconBytes(): ByteArray {
-        return if (icon != null && icon.exists()) {
-            icon.readBytes()
-        } else {
-            KorgeGradlePlugin::class.java.getResource("/icons/korge.png").readBytes()
-        }
-    }
+		if (korgeCheckGradleVersion && project.gradle.gradleVersion != expectedGradleVersion) {
+			error("Korge only works with Gradle $expectedGradleVersion, but running on Gradle ${project.gradle.gradleVersion}")
+		}
 
-    fun KorgeExtension.getIconBytes(size: Int): ByteArray {
-        return ImageIO.read(getIconBytes().inputStream()).getScaledInstance(size, size).toBufferedImage().encodePNG()
-    }
+		//KorgeBuildServiceProxy.init()
+		project.addVersionExtension()
+		project.configureRepositories()
+		project.configureKotlin()
+		project.addKorgeTasks()
+		project.configureIdea()
 
-    fun apply() {
-        System.setProperty("java.awt.headless", "true")
-
-        val expectedGradleVersion = "5.1.1"
-        val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
-
-        if (korgeCheckGradleVersion && project.gradle.gradleVersion != expectedGradleVersion) {
-            error("Korge only works with Gradle $expectedGradleVersion, but running on Gradle ${project.gradle.gradleVersion}")
-        }
-
-        //KorgeBuildServiceProxy.init()
-        project.addVersionExtension()
-        project.configureRepositories()
-        project.configureKotlin()
-        project.addKorgeTasks()
-        project.configureNode()
-        project.configureIdea()
-        project.addWeb()
-        project.addProguard()
-        project.addNativeRun()
-        project.configureJvmTest()
-
+		project.configureJvm()
+		project.configureJavaScript()
 		project.configureNativeDesktop()
 		project.configureNativeAndroid()
+		project.configureNativeIos()
+		project.configureCordova()
 
-        project.korge.init()
-    }
-
-	//Linux: ~/Android/Sdk
-	//Mac: ~/Library/Android/sdk
-	//Windows: %LOCALAPPDATA%\Android\sdk
-
-	val androidSdkPath by lazy {
-		System.getenv("ANDROID_HOME")
-			?: "${System.getProperty("user.home")}/AppData/Local/Android/sdk" // Windows
-			?: "${System.getProperty("user.home")}/Library/Android/sdk" // Mac
-			?: "${System.getProperty("user.home")}/Android/Sdk" // Linux
-			?: error("Can't find android sdk (ANDROID_HOME environment not set)")
+		project.korge.init()
 	}
 
-	val resolvedArtifacts = LinkedHashMap<String, String>()
-
-	fun Project.configureNativeDesktop() {
-		val prepareKotlinNativeBootstrap = tasks.create("prepareKotlinNativeBootstrap") { task ->
-			task.apply {
-				group = "korge"
-				val output = File(buildDir, "platforms/native-desktop/bootstrap.kt")
-				outputs.file(output)
-				doLast {
-					output.parentFile.mkdirs()
-
-					val text = Indenter {
-						line("import ${korge.entryPoint}")
-						line("fun main(args: Array<String>) = RootGameMain.runMain(args)")
-						line("object RootGameMain") {
-							line("fun runMain() = runMain(arrayOf())")
-							line("fun runMain(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
-						}
-					}
-					if (!output.exists() || output.readText() != text) output.writeText(text)
-				}
-			}
-		}
-
-		afterEvaluate {
-			//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
-			for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())) {
-				target.apply {
-					compilations["main"].apply {
-						//println(this.binariesTaskName)
-						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-							getLinkTask(NativeOutputKind.EXECUTABLE, type).dependsOn(prepareKotlinNativeBootstrap)
-						}
-						defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
-					}
-					/*
-				binaries {
-					executable {
-						println("linkTask = $linkTask")
-						linkTask.dependsOn(prepareKotlinNativeBootstrap)
-					}
-				}
-				*/
+	private fun Project.configureIdea() {
+		project.plugins.apply("idea")
+		(project["idea"] as IdeaModel).apply {
+			module { module ->
+				for (file in listOf(
+					".gradle", "node_modules", "classes", "docs", "dependency-cache",
+					"libs", "reports", "resources", "test-results", "tmp"
+				)) {
+					module.excludeDirs.add(file(".gradle"))
 				}
 			}
 		}
 	}
 
-	fun Project.configureNativeAndroid() {
-		configurations.all {
-			it.resolutionStrategy.eachDependency {
-				resolvedArtifacts["${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")] = it.requested.version.toString()
+	private fun Project.addVersionExtension() {
+		ext.set("korioVersion", korioVersion)
+		ext.set("kormaVersion", kormaVersion)
+		ext.set("korauVersion", korauVersion)
+		ext.set("korimVersion", korimVersion)
+		ext.set("koruiVersion", koruiVersion)
+		ext.set("korevVersion", korevVersion)
+		ext.set("korgwVersion", korgwVersion)
+		ext.set("korgeVersion", korgeVersion)
+		ext.set("kotlinVersion", kotlinVersion)
+		ext.set("coroutinesVersion", coroutinesVersion)
+		//ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
+	}
+
+	private fun Project.configureKotlin() {
+		plugins.apply("kotlin-multiplatform")
+
+		project.dependencies.add("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
+		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
+		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
+
+
+		//println("com.soywiz:korge:$korgeVersion")
+		//project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
+
+		gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
+			api("com.soywiz:korge:${BuildVersions.KORGE}")
+		}
+
+		//kotlin.sourceSets.create("")
+
+	}
+
+	fun Project.addKorgeTasks() {
+		run {
+			try {
+				project.dependencies.add("compile", "com.soywiz:korge:${BuildVersions.KORGE}")
+			} catch (e: UnknownConfigurationException) {
+				//logger.error("KORGE: " + e.message)
 			}
 		}
 
-		//val androidPackageName = "com.example.myapplication"
-		//val androidAppName = "My Awesome APP Name"
-		val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
-			task.apply {
-				group = "korge"
-				var overwrite = true
-				val outputFolder = File(buildDir, "platforms/android")
-				doLast {
-					val androidPackageName = korge.id
-					val androidAppName = korge.name
-
-					val DOLLAR = "\\$"
-					val ifNotExists = !overwrite
-					//File(outputFolder, "build.gradle").conditionally(ifNotExists) {
-					//	ensureParents().writeText("""
-					//		// Top-level build file where you can add configuration options common to all sub-projects/modules.
-					//		buildscript {
-					//			repositories { google(); jcenter() }
-					//			dependencies { classpath 'com.android.tools.build:gradle:3.3.0'; classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion" }
-					//		}
-					//		allprojects {
-					//			repositories {
-					//				mavenLocal(); maven { url = "https://dl.bintray.com/soywiz/soywiz" }; google(); jcenter()
-					//			}
-					//		}
-					//		task clean(type: Delete) { delete rootProject.buildDir }
-					//""".trimIndent())
-					//}
-					File(outputFolder, "local.properties").conditionally(ifNotExists) {
-						ensureParents().writeText("sdk.dir=$androidSdkPath")
-					}
-					File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("") }
-					File(
-						outputFolder,
-						"proguard-rules.pro"
-					).conditionally(ifNotExists) { ensureParents().writeText("#Rules here\n") }
-
-					File(outputFolder, "build.gradle").conditionally(ifNotExists) {
-						ensureParents().writeText(Indenter {
-							line("buildscript") {
-								line("repositories { google(); jcenter() }")
-								line("dependencies { classpath 'com.android.tools.build:gradle:3.3.0'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
-							}
-							line("repositories") {
-								line("mavenLocal()")
-								line("maven { url = 'https://dl.bintray.com/soywiz/soywiz' }")
-								line("google()")
-								line("jcenter()")
-							}
-
-							line("apply plugin: 'com.android.application'")
-							line("apply plugin: 'kotlin-android'")
-							line("apply plugin: 'kotlin-android-extensions'")
-
-							line("android") {
-								line("compileSdkVersion 28")
-								line("defaultConfig") {
-									line("applicationId '$androidPackageName'")
-									line("minSdkVersion 19")
-									line("targetSdkVersion 28")
-									line("versionCode 1")
-									line("versionName '1.0'")
-									line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
-								}
-								line("buildTypes") {
-									line("debug") {
-										line("minifyEnabled false")
-									}
-									line("release") {
-										line("minifyEnabled false")
-										line("proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'")
-									}
-								}
-								line("sourceSets") {
-									line("main") {
-										// @TODO: Use proper source sets of the app
-										line("java.srcDirs += ['${project.rootDir}/src/commonMain/kotlin', '${project.rootDir}/src/androidMain/kotlin']")
-										line("assets.srcDirs += ['${project.rootDir}/src/commonMain/resources', '${project.rootDir}/src/androidMain/resources']")
-									}
-								}
-							}
-
-							line("dependencies") {
-								line("implementation fileTree(dir: 'libs', include: ['*.jar'])")
-								line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
-
-								line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
-								for ((name, version) in resolvedArtifacts) {
-									if (name.startsWith("org.jetbrains.kotlin")) continue
-									line("api '$name-android:$version'")
-								}
-
-								line("implementation 'com.android.support:appcompat-v7:28.0.0'")
-								line("implementation 'com.android.support.constraint:constraint-layout:1.1.3'")
-								line("testImplementation 'junit:junit:4.12'")
-								line("androidTestImplementation 'com.android.support.test:runner:1.0.2'")
-								line("androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'")
-							}
-						}.toString())
-					}
-
-					File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
-						ensureParents().writeBytes(korge.getIconBytes())
-					}
-
-					File(outputFolder, "src/main/AndroidManifest.xml").conditionally(ifNotExists) {
-						ensureParents().writeText(Indenter {
-							line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-							line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
-							indent {
-								line("<application")
-								indent {
-									line("")
-									line("android:allowBackup=\"true\"")
-									line("android:label=\"$androidAppName\"")
-									line("android:icon=\"@mipmap/icon\"")
-									//line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-									//line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-									line("android:supportsRtl=\"true\"")
-									line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
-								}
-								line(">")
-								indent {
-									line("<activity android:name=\".MainActivity\">")
-									indent {
-										line("<intent-filter>")
-										indent {
-											line("<action android:name=\"android.intent.action.MAIN\"/>")
-											line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
-										}
-										line("</intent-filter>")
-									}
-									line("</activity>")
-								}
-								line("</application>")
-							}
-							line("</manifest>")
-						}.toString())
-					}
-
-					File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
-						ensureParents().writeText(Indenter {
-							line("package $androidPackageName")
-
-							line("import com.soywiz.klock.*")
-							line("import com.soywiz.korge.*")
-							line("import com.soywiz.korge.tween.*")
-							line("import com.soywiz.korge.view.*")
-							line("import com.soywiz.korgw.*")
-							line("import com.soywiz.korim.color.*")
-							line("import com.soywiz.korma.geom.*")
-							line("import kotlinx.coroutines.*")
-							line("import ${korge.entryPoint}")
-
-							line("class MainActivity : KorgwActivity()") {
-								line("override suspend fun activityMain()") {
-									line("${korge.entryPoint}()")
-								}
-							}
-						}.toString())
-					}
-
-
-					File(outputFolder, "gradle.properties").conditionally(ifNotExists) {
-						ensureParents().writeText("org.gradle.jvmargs=-Xmx1536m")
-					}
-				}
+		run {
+			project.addTask<KorgeResourcesTask>(
+				"genResources", group = korgeGroup, description = "process resources",
+				//overwrite = true, dependsOn = listOf("build")
+				overwrite = true, dependsOn = listOf()
+			) {
+				it.debug = true
+			}
+			try {
+				project.tasks["processResources"].dependsOn("genResources")
+			} catch (e: UnknownTaskException) {
 			}
 		}
 
-		// adb shell am start -n com.package.name/com.package.name.ActivityName
-		for (debug in listOf(false, true)) {
-			val suffixDebug = if (debug) "Debug" else "Release"
-			val installAndroidTask = tasks.create("installAndroid$suffixDebug", GradleBuild::class.java) { task ->
-				task.apply {
-					group = "korge"
-					dependsOn(prepareAndroidBootstrap)
-					buildFile = File(buildDir, "platforms/android/build.gradle")
-					version = "4.10.1"
-					tasks = listOf("install$suffixDebug")
-				}
+		run {
+			project.addTask<KorgeTestResourcesTask>(
+				"genTestResources", group = korgeGroup, description = "process test resources",
+				//overwrite = true, dependsOn = listOf("build")
+				overwrite = true, dependsOn = listOf()
+			) {
+				it.debug = true
 			}
+			try {
+				project.tasks["processTestResources"].dependsOn("genTestResources")
+			} catch (e: UnknownTaskException) {
+			}
+		}
 
-			for (emulator in listOf(null, false, true)) {
-				val suffixDevice = when (emulator) {
-					null -> ""
-					false -> "Device"
-					true -> "Emulator"
-				}
+		//val korge = KorgeXml(project.file("korge.project.xml"))
+		val korge = project.korge
 
-				val extra = when (emulator) {
-					null -> arrayOf()
-					false -> arrayOf("-d")
-					true -> arrayOf("-e")
-				}
-
-				tasks.create("runAndroid$suffixDevice$suffixDebug", Exec::class.java) { task ->
-					task.apply {
-						group = "korge"
-						dependsOn(installAndroidTask)
-						afterEvaluate {
-							commandLine(
-								"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
-								"${korge.id}/${korge.id}.MainActivity"
-							)
-						}
-					}
+		run {
+			val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
+				afterEvaluate {
+					task.classpath =
+						project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+					task.main = project.ext.get("mainClassName") as? String?
 				}
 			}
 		}
 	}
-
-    val nativeTarget = when {
-        Os.isFamily(Os.FAMILY_WINDOWS) -> "mingwX64"
-        Os.isFamily(Os.FAMILY_MAC) -> "macosX64"
-        Os.isFamily(Os.FAMILY_UNIX) -> "linuxX64"
-        else -> "unknownX64"
-    }
-    val cnativeTarget = nativeTarget.capitalize()
-
-    val nativeTargets = listOf("mingwX64", "linuxX64", "macosX64")
-    
-    val korgeGroup = "korge"
-
-    val RELEASE = "release"
-    val DEBUG = "debug"
-    val RELEASE_DEBUG = listOf(RELEASE, DEBUG)
-
-    private fun Project.configureJvmTest() {
-        val jvmTest = (tasks.findByName("jvmTest") as Test)
-        jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
-    }
-
-    val cordovaFolder by lazy { project.buildDir["cordova"] }
-    val cordovaConfigXmlFile by lazy { cordovaFolder["config.xml"] }
-
-    private fun Project.synchronizeCordovaXmlAndIcons() {
-        cordovaFolder.mkdirs()
-        val md5File = cordovaFolder["icon.png.md5"]
-        val bytes = korge.getIconBytes()
-        val md5Actual = bytes.md5String()
-        val md5Old = md5File.takeIf { it.exists() }?.readText()
-        if (md5Old != md5Actual) {
-            project.logger.info("Cordova ICONS md5 not matching, regenerating...")
-            cordovaFolder["icon.png"].writeBytes(bytes)
-            for (size in ICON_SIZES) {
-                cordovaFolder["icon-$size.png"].writeBytes(korge.getIconBytes(size))
-            }
-            md5File.writeText(md5Actual)
-        } else {
-            project.logger.info("Cordova ICONS already up-to-date")
-        }
-        korge.updateCordovaXmlFile(cordovaConfigXmlFile)
-    }
-
-
-    private fun Project.addNativeRun() {
-        afterEvaluate {
-            for (target in nativeTargets) {
-                val ctarget = target.capitalize()
-                for (kind in RELEASE_DEBUG) {
-                    val ckind = kind.capitalize()
-                    val ctargetKind = "$ctarget$ckind"
-
-                    val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
-                    val executableFile = compilation.getBinary("EXECUTABLE", kind)
-
-                    val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
-                        for (sourceSet in project.gkotlin.sourceSets) {
-                            task.from(sourceSet.resources)
-                        }
-                        task.into(executableFile.parentFile)
-                    }
-
-                    addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
-                        task.executable = executableFile.absolutePath
-                        task.args = listOf<String>()
-                    }
-                }
-                addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = korgeGroup) { task ->
-                }
-            }
-        }
-
-        addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = korgeGroup)
-        addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = korgeGroup)
-
-        afterEvaluate {
-            for (buildType in RELEASE_DEBUG) {
-                addTask<Task>("packageMacosX64App${buildType.capitalize()}", group = "korge", dependsOn = listOf("linkMain${buildType.capitalize()}ExecutableMacosX64")) {
-                    doLast {
-                        val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
-                        val executableFile = compilation.getBinary("EXECUTABLE", buildType)
-                        val appFolder = buildDir["${korge.name}-$buildType.app"].apply { mkdirs() }
-                        val appFolderContents = appFolder["Contents"].apply { mkdirs() }
-                        val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
-                        val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
-                        appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
-                        resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
-                        copy { copy ->
-                            for (sourceSet in project.gkotlin.sourceSets) {
-                                copy.from(sourceSet.resources)
-                            }
-                            copy.into(resourcesFolder)
-                        }
-                        executableFile.copyTo(appMacOSFolder[korge.exeBaseName], overwrite = true)
-                        appMacOSFolder[korge.exeBaseName].setExecutable(true)
-                    }
-                }
-            }
-        }
-    }
-
-
-    private fun Project.configureIdea() {
-        project.plugins.apply("idea")
-        (project["idea"] as IdeaModel).apply {
-            module { module ->
-                for (file in listOf(".gradle", "node_modules", "classes", "docs", "dependency-cache", "libs", "reports", "resources", "test-results", "tmp")) {
-                    module.excludeDirs.add(file(".gradle"))
-                }
-            }
-        }
-    }
-
-    private fun nodeExec(vararg args: Any, workingDir: File? = null): ExecResult {
-        return NodeExecRunner(project).apply {
-            this.workingDir = workingDir ?: this.workingDir
-            this.environment += mapOf(
-                "NODE_PATH" to node_modules
-            )
-            arguments = args.toList()
-        }.execute()
-    }
-
-    private fun Project.configureNode() {
-        plugins.apply("com.moowork.node")
-
-        (project["node"] as NodeExtension).apply {
-            this.version = "10.14.2"
-            //this.version = "8.11.4"
-            this.download = true
-
-            this.workDir = korgeCacheDir["nodejs"]
-            this.npmWorkDir = korgeCacheDir["npm"]
-            this.yarnWorkDir = korgeCacheDir["yarn"]
-            this.nodeModulesDir = this@KorgeGradleApply.node_modules
-
-            //this.nodeModulesDir = java.io.File(project.buildDir, "npm")
-        }
-
-        // Fix for https://github.com/srs/gradle-node-plugin/issues/301
-        repositories.whenObjectAdded {
-            if (it is IvyArtifactRepository) {
-                it.metadataSources {
-                    it.artifact()
-                }
-            }
-        }
-
-        val jsInstallMocha = project.addTask<NpmTask>("jsInstallMocha") { task ->
-            task.onlyIf { !node_modules["/mocha"].exists() }
-            task.setArgs(listOf("install", "mocha@5.2.0"))
-        }
-
-        val jsInstallCordova = project.addTask<NpmTask>("jsInstallCordova") { task ->
-            task.onlyIf { !node_modules["/cordova"].exists() }
-            task.setArgs(listOf("install", "cordova@8.1.2"))
-        }
-
-        val jsInstallCanvas = project.addTask<NpmTask>("jsInstallCanvas") { task ->
-            task.onlyIf { !node_modules["/canvas"].exists() }
-            task.setArgs(listOf("install", "canvas@2.2.0"))
-        }
-
-        val jsInstallWebpack = project.addTask<NpmTask>("jsInstallWebpack") { task ->
-            task.onlyIf { !node_modules["webpack"].exists() || !node_modules["webpack-cli"].exists() }
-            task.setArgs(listOf("install", "webpack@4.28.2", "webpack-cli@3.1.2"))
-        }
-
-        val jsInstallMochaHeadlessChrome = project.addTask<NpmTask>("jsInstallMochaHeadlessChrome") { task ->
-            task.onlyIf { !node_modules["mocha-headless-chrome"].exists() }
-            task.setArgs(listOf("install", "mocha-headless-chrome@2.0.1"))
-        }
-
-        val jsCompilations = project["kotlin"]["targets"]["js"]["compilations"]
-
-        val populateNodeModules = project.addTask<DefaultTask>("populateNodeModules") { task ->
-            task.doLast {
-                copy { copy ->
-                    copy.from(jsCompilations["main"]["output"]["allOutputs"])
-                    copy.from(jsCompilations["test"]["output"]["allOutputs"])
-                    (jsCompilations["test"]["runtimeDependencyFiles"] as Iterable<File>).forEach { file ->
-                        if (file.exists() && !file.isDirectory()) {
-                            copy.from(zipTree(file.absolutePath).matching { it.include("*.js") })
-                        }
-                    }
-                    for (sourceSet in project.gkotlin.sourceSets) {
-                        copy.from(sourceSet.resources)
-                    }
-                    copy.into(mocha_node_modules)
-                }
-                copy { copy ->
-                    copy.from("$node_modules/mocha")
-                    copy.into("$mocha_node_modules/mocha")
-                }
-            }
-        }
-
-        val jsTestChrome = project.addTask<NodeTask>("jsTestChrome", dependsOn = listOf(jsCompilations["test"]["compileKotlinTaskName"], jsInstallMochaHeadlessChrome, jsInstallMocha, populateNodeModules)) { task ->
-            task.doFirst {
-                File("$buildDir/node_modules/tests.html").writeText("""<!DOCTYPE html><html>
-                    <head>
-                        <title>Mocha Tests</title>
-                        <meta charset="utf-8">
-                        <link rel="stylesheet" href="mocha/mocha.css">
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-                    </head>
-                    <body>
-                    <div id="mocha"></div>
-                    <script src="mocha/mocha.js"></script>
-                    <script>
-                        requirejs.config({'baseUrl': '.', 'paths': { 'tests': '../classes/kotlin/js/test/${project.name}_test' }});
-                        mocha.setup('bdd');
-                        require(['tests'], function() { mocha.run(); });
-                    </script>
-                    </body>
-                    </html>
-                """)
-            }
-            task.setScript(node_modules["mocha-headless-chrome/bin/start"])
-            task.setArgs(listOf("-f", "$buildDir/node_modules/tests.html", "-a", "no-sandbox", "-a", "disable-setuid-sandbox", "-a", "allow-file-access-from-files"))
-        }
-
-        val runMocha = project.addTask<NodeTask>("runMocha", dependsOn = listOf(
-            jsCompilations["test"]["compileKotlinTaskName"],
-            jsInstallMocha, jsInstallCanvas,
-            populateNodeModules
-        )) { task ->
-            task.setEnvironment(mapOf("NODE_MODULES" to "$node_modules${File.pathSeparator}$mocha_node_modules"))
-            task.setScript(node_modules["mocha/bin/mocha"])
-            task.setWorkingDir(project.file("$buildDir/node_modules"))
-            task.setArgs(listOf("--timeout", "15000", "${project.name}_test.js"))
-        }
-
-        // Only run JS tests if not in windows
-        if (!org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
-            project.tasks.getByName("jsTest")?.dependsOn(runMocha)
-        }
-    }
-
-    private fun Project.addWeb() {
-        fun configureJsWeb(task: JsWebCopy, minimized: Boolean) {
-            val excludesNormal = arrayOf("**/*.kotlin_metadata","**/*.kotlin_module","**/*.MF","**/*.kjsm","**/*.map","**/*.meta.js")
-            val excludesJs = arrayOf("**/*.js")
-            val excludesAll = excludesNormal + excludesJs
-
-            fun CopySpec.configureWeb() {
-                if (minimized) {
-                    //include("**/require.min.js")
-                    exclude(*excludesAll)
-                } else {
-                    exclude(*excludesNormal)
-                }
-            }
-
-            task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
-            project.afterEvaluate {
-                val kotlinTargets = project["kotlin"]["targets"]
-                val jsCompilations = kotlinTargets["js"]["compilations"]
-                task.includeEmptyDirs = false
-                if (minimized) {
-                    task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
-                }
-                task.from((jsCompilations["main"] as KotlinCompilation<*>).output.allOutputs) { copy -> copy.configureWeb() }
-                task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
-                for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
-                    if (file.exists() && !file.isDirectory) {
-                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
-                        task.from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
-                    } else {
-                        task.from(file) { copy -> copy.configureWeb() }
-                        task.from(file) { copy -> copy.include("**/*.min.js") }
-                    }
-                }
-
-                for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
-                    val main = (target["compilations"]["main"] as KotlinCompilation<*>)
-                    for (sourceSet in main.kotlinSourceSets) {
-                        task.from(sourceSet.resources) { copy -> copy.configureWeb() }
-                    }
-                }
-                //task.exclude(*excludesNormal)
-                task.into(task.targetDir)
-            }
-
-            task.doLast {
-                task.targetDir["index.html"].writeText(SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
-                    "OUTPUT" to project.name,
-                    "TITLE" to korge.name
-                )).toString())
-            }
-        }
-
-        jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
-            configureJsWeb(task, minimized = false)
-        }
-
-        jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
-            configureJsWeb(task, minimized = true)
-        }
-
-        jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf(
-            "jsInstallWebpack",
-            "jsWebMin"
-        )) { task ->
-            task.doLast {
-                copy { copy ->
-                    copy.from(webMinFolder)
-                    copy.into(webMinWebpackFolder)
-                    copy.exclude("**/*.js", "**/index.template.html", "**/index.html")
-                }
-
-                val webpackConfigJs = buildDir["webpack.config.js"]
-
-                webpackConfigJs.writeText("""
-                    const path = require('path');
-                    const webpack = require('webpack');
-                    const modules = ${webMinFolder.absolutePath.quoted};
-
-                    module.exports = {
-                      context: modules,
-                      entry: ${"$webMinFolder/${project.name}.js".quoted},
-                      resolve: {
-                        modules: [ modules ],
-                      },
-                      output: {
-                        path: ${webMinWebpackFolder.absolutePath.quoted},
-                        filename: 'bundle.js'
-                      },
-                      target: 'node',
-                      plugins: [
-                        new webpack.IgnorePlugin(/^canvas${'$'}/)
-                      ]
-                    };
-                """.trimIndent())
-
-                nodeExec(node_modules["webpack/bin/webpack.js"], "--config", webpackConfigJs)
-
-                val indexHtml = webMinFolder["index.html"].readText()
-                webMinWebpackFolder["index.html"].writeText(indexHtml.replace(Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"), "<script src=\"bundle.js\" type=\"text/javascript\"></script>"))
-            }
-        }
-
-        project.afterEvaluate {
-            for (target in nativeTargets) {
-                val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
-                val targetTestTask = tasks.getByName("${target}Test")
-                val task = project.addTask<Copy>(taskName) { task ->
-                    for (sourceSet in project.gkotlin.sourceSets) {
-                        task.from(sourceSet.resources)
-                    }
-                    task.into(File(targetTestTask.inputs.properties["executable"].toString()).parentFile)
-                }
-                targetTestTask.dependsOn(task)
-            }
-
-            // @TODO: This doesn't work after migrating code to Kotlin.
-            //for (target in listOf(project.gkotlin.targets["js"], project.gkotlin.targets["metadata"])) {
-            //    for (it in (target["compilations"]["main"]["kotlinSourceSets"]["resources"] as Iterable<SourceDirectorySet>).flatMap { it.srcDirs }) {
-            //        (tasks["jsJar"] as Copy).from(it)
-            //    }
-            //}
-        }
-    }
-
-    private fun Project.addProguard() {
-        // Provide default mainClassName
-        if (!project.ext.has("mainClassName")) {
-            project.ext.set("mainClassName", "")
-        }
-
-        // packageJvmFatJar
-        val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = korgeGroup) { task ->
-            task.baseName = "${project.name}-all"
-            project.afterEvaluate {
-                task.manifest { manifest ->
-                    manifest.attributes(mapOf(
-                        "Implementation-Title" to project.ext.get("mainClassName"),
-                        "Implementation-Version" to project.version.toString(),
-                        "Main-Class" to project.ext.get("mainClassName")
-                    ))
-                }
-                //it.from()
-                //fileTree()
-                task.from(GroovyClosure(project) {
-                    (project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
-                    //listOf<File>()
-                })
-                task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
-            }
-        }
-
-        val runJvm = tasks.getByName("runJvm") as JavaExec
-
-        project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = korgeGroup, dependsOn = listOf(packageJvmFatJar)) { task ->
-            task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
-            task.injars(packageJvmFatJar.outputs.files.toList())
-            task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
-            task.dontwarn()
-            task.ignorewarnings()
-            //task.dontobfuscate()
-            task.assumenosideeffects("""
-                class kotlin.jvm.internal.Intrinsics {
-                    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-                }
-            """.trimIndent())
-
-            //task.keep("class jogamp.nativetag.**")
-            //task.keep("class jogamp.**")
-
-            task.keep("class com.jogamp.** { *; }")
-            task.keep("class jogamp.** { *; }")
-
-            afterEvaluate {
-				if (runJvm.main?.isNotBlank() == true) {
-					task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
-				}
-            }
-        }
-    }
-
-    private fun Project.addVersionExtension() {
-        ext.set("korioVersion", korioVersion)
-        ext.set("kormaVersion", kormaVersion)
-        ext.set("korauVersion", korauVersion)
-        ext.set("korimVersion", korimVersion)
-        ext.set("koruiVersion", koruiVersion)
-        ext.set("korevVersion", korevVersion)
-        ext.set("korgwVersion", korgwVersion)
-        ext.set("korgeVersion", korgeVersion)
-        ext.set("kotlinVersion", kotlinVersion)
-        //ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
-    }
-
-    private fun Project.configureRepositories() {
-        repositories.apply {
-            mavenLocal().content {
-				it.excludeGroup("Kotlin/Native")
-			}
-            maven {
-				it.url = URI("https://dl.bintray.com/soywiz/soywiz")
-				it.content {
-					it.includeGroup("com.soywiz")
-					it.excludeGroup("Kotlin/Native")
-				}
-			}
-            if (BuildVersions.KOTLIN.contains("eap")) {
-                maven {
-					it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
-					it.content {
-						it.excludeGroup("Kotlin/Native")
-					}
-				}
-            }
-            jcenter().content {
-				it.excludeGroup("Kotlin/Native")
-			}
-            mavenCentral().content {
-				it.excludeGroup("Kotlin/Native")
-			}
-        }
-    }
-
-    fun <T> Project.closure(callback: () -> T) = GroovyClosure(this, callback)
-
-    private fun Project.configureKotlin() {
-        plugins.apply("kotlin-multiplatform")
-        plugins.apply("kotlin-dce-js")
-
-        for (preset in nativeTargets) {
-            gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
-                compilations["main"].outputKinds("EXECUTABLE")
-            })
-        }
-
-        gkotlin.targets.add((gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
-        gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
-            compilations.getAt("main").apply {
-                for (task in listOf("compileKotlinJs", "compileTestKotlinJs")) {
-                    (project[task] as Kotlin2JsCompile).apply {
-                        kotlinOptions.apply {
-                            languageVersion = "1.3"
-                            sourceMap = true
-                            metaInfo = true
-                            moduleKind = "umd"
-                        }
-                    }
-                }
-            }
-        })
-
-
-        project.dependencies.add("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
-        project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
-        project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
-
-        project.dependencies.add("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
-        project.dependencies.add("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
-
-        project.dependencies.add("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-        project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
-
-
-        //println("com.soywiz:korge:$korgeVersion")
-        //project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
-
-        gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
-            api("com.soywiz:korge:${BuildVersions.KORGE}")
-        }
-
-        //kotlin.sourceSets.create("")
-
-    }
-
-    fun Project.addKorgeTasks() {
-        run {
-            try {
-                project.dependencies.add("compile", "com.soywiz:korge:${BuildVersions.KORGE}")
-            } catch (e: UnknownConfigurationException) {
-                //logger.error("KORGE: " + e.message)
-            }
-        }
-
-        run {
-            project.addTask<KorgeResourcesTask>(
-                "genResources", group = korgeGroup, description = "process resources",
-                //overwrite = true, dependsOn = listOf("build")
-                overwrite = true, dependsOn = listOf()
-            ) {
-                it.debug = true
-            }
-            try {
-                project.tasks["processResources"].dependsOn("genResources")
-            } catch (e: UnknownTaskException) {
-            }
-        }
-
-        run {
-            project.addTask<KorgeTestResourcesTask>(
-                "genTestResources", group = korgeGroup, description = "process test resources",
-                //overwrite = true, dependsOn = listOf("build")
-                overwrite = true, dependsOn = listOf()
-            ) {
-                it.debug = true
-            }
-            try {
-                project.tasks["processTestResources"].dependsOn("genTestResources")
-            } catch (e: UnknownTaskException) {
-            }
-        }
-
-        //val korge = KorgeXml(project.file("korge.project.xml"))
-        val korge = project.korge
-
-        run {
-            val cordova_bin = node_modules["cordova/bin/cordova"]
-
-            fun NodeTask.setCordova(vararg args: String) {
-                setWorkingDir(cordovaFolder)
-                setScript(cordova_bin)
-                setArgs(listOf(*args))
-            }
-
-            val cordovaCreate = project.addTask<NodeTask>("cordovaCreate", dependsOn = listOf("jsInstallCordova")) { task ->
-                task.onlyIf { !cordovaFolder.exists() }
-                task.doFirst {
-                    buildDir.mkdirs()
-                }
-                task.setCordova("create", cordovaFolder.absolutePath, "com.soywiz.sample1", "sample1")
-                task.setWorkingDir(project.projectDir)
-            }
-
-            val cordovaUpdateIcon = project.addTask<Task>("cordovaUpdateIcon", dependsOn = listOf(cordovaCreate)) { task ->
-                task.doLast {
-                    synchronizeCordovaXmlAndIcons()
-                }
-            }
-
-            val cordovaPluginsList = project.addTask<DefaultTask>("cordovaPluginsList", dependsOn = listOf(cordovaCreate)) { task ->
-                task.doLast {
-                    println("name: ${korge.name}")
-                    println("description: ${korge.description}")
-                    println("orientation: ${korge.orientation}")
-                    println("plugins: ${korge.plugins}")
-                }
-            }
-
-            val cordovaSynchronizeConfigXml = project.addTask<DefaultTask>("cordovaSynchronizeConfigXml", dependsOn = listOf(cordovaCreate, cordovaUpdateIcon)) { task ->
-                task.doLast {
-                    synchronizeCordovaXmlAndIcons()
-                }
-            }
-
-            val cordovaPluginsInstall = project.addTask<Task>("cordovaPluginsInstall", dependsOn = listOf(cordovaCreate)) { task ->
-                task.doLast {
-                    println("korge.plugins: ${korge.plugins}")
-                    for (plugin in korge.plugins) {
-                        val list = plugin.args.flatMap { listOf("--variable", "${it.key}=${it.value}") }.toTypedArray()
-                        nodeExec(
-                            cordova_bin, "plugin", "add", plugin.name, "--save", *list,
-                            workingDir = cordovaFolder
-                        )
-                    }
-                }
-            }
-
-            val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
-                afterEvaluate {
-                    task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
-                    task.main = project.ext.get("mainClassName") as? String?
-                }
-            }
-
-            val cordovaPackageJsWeb = project.addTask<Copy>("cordovaPackageJsWeb", group = korgeGroup, dependsOn = listOf("jsWebMinWebpack", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
-                //afterEvaluate {
-                //task.from(project.closure { jsWeb.targetDir })
-                task.from(project.closure { webMinWebpackFolder })
-                task.into(cordovaFolder["www"])
-                //}
-                task.doLast {
-                    val f = cordovaFolder["www/index.html"]
-                    f.writeText(f.readText().replace("</head>", "<script type=\"text/javascript\" src=\"cordova.js\"></script></head>"))
-                }
-            }
-
-            val cordovaPackageJsWebNoMinimized = project.addTask<Copy>("cordovaPackageJsWebNoMinimized", group = korgeGroup, dependsOn = listOf("jsWeb", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)) { task ->
-                task.from(project.closure { webFolder })
-                task.into(cordovaFolder["www"])
-                //}
-                task.doLast {
-                    val f = cordovaFolder["www/index.html"]
-                    f.writeText(f.readText().replace("</head>", "<script type=\"text/javascript\" src=\"cordova.js\"></script></head>"))
-                }
-            }
-
-            val cordovaPrepareTargets = project.addTask<Task>("cordovaPrepareTargets", group = korgeGroup, dependsOn = listOf(cordovaCreate)) { task ->
-                task.doLast {
-                    if (korge._androidAppendBuildGradle != null) {
-                        // https://cordova.apache.org/docs/en/8.x/guide/platforms/android/index.html
-                        val androidFolder = cordovaFolder["platforms/android"]
-                        if (androidFolder.exists()) {
-                            androidFolder["build-extras.gradle"].writeText(korge._androidAppendBuildGradle!!)
-                        }
-                    }
-                }
-            }
-
-            for (target in listOf("ios", "android", "browser", "osx", "windows")) {
-                val Target = target.capitalize()
-
-                val cordovaTargetInstall = project.addTask<NodeTask>("cordova${Target}Install", dependsOn = listOf(cordovaCreate)) { task ->
-                    task.onlyIf { !cordovaFolder["platforms/$target"].exists() }
-                    doFirst {
-                        synchronizeCordovaXmlAndIcons()
-                    }
-                    task.setCordova("platform", "add", target)
-                }
-
-                val compileTarget = project.addTask<NodeTask>("compileCordova$Target", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
-                    task.setCordova("build", target) // prepare + compile
-                }
-
-                val compileTargetRelease = project.addTask<NodeTask>("compileCordova${Target}Release", group = korgeGroup, dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)) { task ->
-                    task.setCordova("build", target, "--release") // prepare + compile
-                }
-
-                for (noMinimized in listOf(false, true)) {
-                    val NoMinimizedText = if (noMinimized) "NoMinimized" else ""
-
-                    for (emulator in listOf(false, true)) {
-                        val EmulatorText = if (emulator) "Emulator" else ""
-                        val runTarget = project.addTask<NodeTask>(
-                            "runCordova$Target$EmulatorText$NoMinimizedText",
-                            group = korgeGroup,
-                            dependsOn = listOf(cordovaTargetInstall, if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb, cordovaPrepareTargets)
-                        ) { task ->
-                            task.setCordova("run", target, if (emulator) "--emulator" else "--device")
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 open class KorgeGradlePlugin : Plugin<Project> {
-    override fun apply(project: Project) {
-        KorgeGradleApply(project).apply()
+	override fun apply(project: Project) {
+		KorgeGradleApply(project).apply()
 
-        //for (res in project.getResourcesFolders()) println("- $res")
-    }
+		//for (res in project.getResourcesFolders()) println("- $res")
+	}
 }
 
 
 abstract class KorgeBaseResourcesTask : DefaultTask() {
-    var debug = false
+	var debug = false
 
-    class GeneratePair {
-        val input = ArrayList<File>()
-        val output = ArrayList<File>()
+	class GeneratePair {
+		val input = ArrayList<File>()
+		val output = ArrayList<File>()
 
-        val available: Boolean get() = input.isNotEmpty() && output.isNotEmpty()
-    }
+		val available: Boolean get() = input.isNotEmpty() && output.isNotEmpty()
+	}
 
-    abstract var inputSourceSet: String
-    abstract var generatedSourceSet: String
-    abstract var processResources: String
+	abstract var inputSourceSet: String
+	abstract var generatedSourceSet: String
+	abstract var processResources: String
 
-    @Suppress("unused")
-    @TaskAction
-    open fun task() {
-        logger.info("KorgeResourcesTask ($this)")
-        val buildService = KorgeBuildService
-        for (p in project.allprojects) {
-            for (resourceFolder in p.getResourcesFolders(setOf(inputSourceSet))) {
-                if (resourceFolder.exists()) {
-                    val output = resourceFolder.parentFile["genresources"]
-                    buildService.processResourcesFolder(resourceFolder, output)
-                }
-            }
-        }
-    }
+	@Suppress("unused")
+	@TaskAction
+	open fun task() {
+		logger.info("KorgeResourcesTask ($this)")
+		val buildService = KorgeBuildService
+		for (p in project.allprojects) {
+			for (resourceFolder in p.getResourcesFolders(setOf(inputSourceSet))) {
+				if (resourceFolder.exists()) {
+					val output = resourceFolder.parentFile["genresources"]
+					buildService.processResourcesFolder(resourceFolder, output)
+				}
+			}
+		}
+	}
 }
 
-operator fun File.get(name: String) = File(this, name)
+object KorgeBuildService {
+	fun processResourcesFolder(resourceFolder: File, output: File) {
+		TODO("KorgeBuildService")
+	}
+}
 
 open class KorgeTestResourcesTask : KorgeBaseResourcesTask() {
-    override var inputSourceSet = "test"
-    override var generatedSourceSet = "testGenerated"
-    override var processResources = "processTestResources"
+	override var inputSourceSet = "test"
+	override var generatedSourceSet = "testGenerated"
+	override var processResources = "processTestResources"
 }
 
 open class KorgeResourcesTask : KorgeBaseResourcesTask() {
-    override var inputSourceSet = "main"
-    override var generatedSourceSet = "generated"
-    override var processResources = "processResources"
+	override var inputSourceSet = "main"
+	override var generatedSourceSet = "generated"
+	override var processResources = "processResources"
 }
 
 fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
-    val out = arrayListOf<File>()
-    try {
-        for (target in gkotlin.targets.toList()) {
-            //println("TARGET: $target")
-            for (compilation in target.compilations) {
-                //println("  - COMPILATION: $compilation :: name=${compilation.name}")
-                if (sourceSets != null && compilation.name !in sourceSets) continue
-                for (sourceSet in compilation.allKotlinSourceSets) {
-                    //println("    - SOURCE_SET: $sourceSet")
-                    for (resource in sourceSet.resources.srcDirs) {
-                        out += resource
-                        //println("        - RESOURCE: $resource")
-                    }
-                }
-            }
-        }
-    } catch (e: Throwable) {
-        e.printStackTrace()
-    }
-    return out.distinct()
+	val out = arrayListOf<File>()
+	try {
+		for (target in gkotlin.targets.toList()) {
+			//println("TARGET: $target")
+			for (compilation in target.compilations) {
+				//println("  - COMPILATION: $compilation :: name=${compilation.name}")
+				if (sourceSets != null && compilation.name !in sourceSets) continue
+				for (sourceSet in compilation.allKotlinSourceSets) {
+					//println("    - SOURCE_SET: $sourceSet")
+					for (resource in sourceSet.resources.srcDirs) {
+						out += resource
+						//println("        - RESOURCE: $resource")
+					}
+				}
+			}
+		}
+	} catch (e: Throwable) {
+		e.printStackTrace()
+	}
+	return out.distinct()
 }

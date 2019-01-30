@@ -1,4 +1,4 @@
-package com.soywiz.korge.gradle
+package com.soywiz.korge.gradle.util
 
 import groovy.util.*
 import groovy.xml.*
@@ -31,11 +31,16 @@ class QXml private constructor(val nodes: List<Node>, dummy: Boolean) : Iterable
 	override fun iterator(): Iterator<QXml> = list.iterator()
 
 	companion object {
-        operator fun invoke(xml: String): QXml = QXml(xmlParse(xml))
-        operator fun invoke(obj: Node): QXml = QXml(listOf(obj), true)
-        operator fun invoke(obj: List<Node>): QXml = QXml(obj, true)
-        operator fun invoke(obj: List<QXml>, dummy: Boolean = false): QXml = QXml(obj.flatMap { it.nodes })
-        operator fun invoke(obj: NodeList): QXml = QXml(obj.toFlatNodeList(), true)
+        operator fun invoke(xml: String): QXml =
+			QXml(xmlParse(xml))
+        operator fun invoke(obj: Node): QXml =
+			QXml(listOf(obj), true)
+        operator fun invoke(obj: List<Node>): QXml =
+			QXml(obj, true)
+        operator fun invoke(obj: List<QXml>, dummy: Boolean = false): QXml =
+			QXml(obj.flatMap { it.nodes })
+        operator fun invoke(obj: NodeList): QXml =
+			QXml(obj.toFlatNodeList(), true)
 	}
 
 	val isEmpty get() = nodes.isEmpty()
@@ -68,7 +73,11 @@ class QXml private constructor(val nodes: List<Node>, dummy: Boolean) : Iterable
 
 	val list: List<QXml> get() = nodes.map { QXml(it) }
 
-	val children: List<QXml> get() = nodes.flatMap { it.children() as List<Node> }.map { QXml(it) }
+	val children: List<QXml> get() = nodes.flatMap { it.children() as List<Node> }.map {
+		QXml(
+			it
+		)
+	}
 
 	val parent: QXml get() = QXml(nodes.map { it.parent() })
 
@@ -81,7 +90,7 @@ class QXml private constructor(val nodes: List<Node>, dummy: Boolean) : Iterable
 	}
 
 	fun appendNode(name: String, attributes: Map<String, Any?>): QXml =
-        QXml(nodes.map { it.appendNode(name, attributes.toMutableMap()) })
+		QXml(nodes.map { it.appendNode(name, attributes.toMutableMap()) })
 
     fun appendNode(name: String, vararg attributes: Pair<String, Any?>) = appendNode(name, attributes.toMap().toMutableMap())
 
@@ -93,7 +102,8 @@ class QXml private constructor(val nodes: List<Node>, dummy: Boolean) : Iterable
 		} ?: appendNode(name, *attributes)
 	}
 
-	operator fun get(key: String): QXml = QXml(NodeList(nodes.map { it.get(key) }))
+	operator fun get(key: String): QXml =
+		QXml(NodeList(nodes.map { it.get(key) }))
 
 	fun serialize(): String = xmlSerialize(nodes.first())
 
@@ -123,4 +133,6 @@ fun xmlSerialize(xml: Node): String {
     return sw.toString()
 }
 
-fun updateXml(xmlString: String, updater: QXml.() -> Unit): String = QXml(xmlString).apply(updater).serialize()
+fun updateXml(xmlString: String, updater: QXml.() -> Unit): String = QXml(
+	xmlString
+).apply(updater).serialize()

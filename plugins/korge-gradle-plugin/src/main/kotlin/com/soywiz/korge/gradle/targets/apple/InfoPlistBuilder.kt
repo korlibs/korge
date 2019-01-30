@@ -1,4 +1,4 @@
-package com.soywiz.korge.gradle.apple
+package com.soywiz.korge.gradle.targets.apple
 
 import com.soywiz.korge.gradle.GameCategory
 import com.soywiz.korge.gradle.KorgeExtension

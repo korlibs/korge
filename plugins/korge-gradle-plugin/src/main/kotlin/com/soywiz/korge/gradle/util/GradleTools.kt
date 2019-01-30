@@ -1,4 +1,4 @@
-package com.soywiz.korge.gradle
+package com.soywiz.korge.gradle.util
 
 import groovy.lang.*
 import org.gradle.api.*
@@ -27,8 +27,8 @@ inline fun <reified T : Task> Project.addTask(
 			"description" to description,
 			"overwrite" to overwrite
 		), name, LambdaClosure { it: T ->
-		configure(it, it)
-	}
+			configure(it, it)
+		}
 	).dependsOn(dependsOn.map { when (it) {
 		is Task -> it.name
 		else -> it.toString()

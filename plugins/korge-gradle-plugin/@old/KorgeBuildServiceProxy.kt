@@ -1,6 +1,13 @@
 package com.soywiz.korge.gradle
 
 /*
+
+object KorgeBuildService {
+	fun processResourcesFolder(resourceFolder: File, output: File) {
+		TODO("KorgeBuildService")
+	}
+}
+
 class RemoteProxy(val urls: Array<URL>) {
     private val rclassLoader = URLClassLoader(urls, ClassLoader.getSystemClassLoader())
 

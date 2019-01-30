@@ -1,4 +1,4 @@
-package com.soywiz.korge.gradle.apple
+package com.soywiz.korge.gradle.targets.apple
 
 import com.soywiz.korge.gradle.util.encodePNG
 import com.soywiz.korge.gradle.util.toBufferedImage
