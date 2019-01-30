@@ -1,7 +1,9 @@
 package com.soywiz.korge.gradle.targets.ios
 
+import com.moowork.gradle.node.npm.NpmTask
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.getIconBytes
+import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
@@ -264,7 +266,8 @@ fun Project.configureNativeIos() {
 					line("<key>UIRequiredDeviceCapabilities</key>")
 					line("<array>")
 					indent {
-						line("<string>armv7</string>")
+						//line("<string>armv7</string>")
+						line("<string>armv8</string>")
 					}
 					line("</array>")
 					line("<key>UISupportedInterfaceOrientations</key>")
@@ -511,8 +514,10 @@ fun Project.configureNativeIos() {
 		val debugSuffix = if (debug) "Debug" else "Release"
 		for (simulator in listOf(false, true)) {
 			val simulatorSuffix = if (simulator) "Simulator" else "Device"
+			//val arch = if (simulator) "X64" else "Arm64"
+			//val arch2 = if (simulator) "x64" else "armv8"
 			val arch = if (simulator) "X64" else "Arm64"
-			val arch2 = if (simulator) "x64" else "arm64"
+			val arch2 = if (simulator) "x86_64" else "arm64"
 			val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
 			tasks.create("iosBuild$simulatorSuffix$debugSuffix") { task ->
 				task.dependsOn("prepareKotlinNativeIosProject", "linkMain${debugSuffix}FrameworkIos$arch")
@@ -523,20 +528,31 @@ fun Project.configureNativeIos() {
 				task.doLast {
 					exec {
 						it.workingDir(xcodeProjDir)
-						//it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
-						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
+						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
+						//it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
+						//it.commandLine("xcrun", "xcodebuild", "VALID_ARCHS=$arch2", "ARCHS=$arch2", "ONLY_ACTIVE_ARCH=NO", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
+
 					}
 				}
 			}
 		}
 
 		tasks.create("iosInstallSimulator$debugSuffix", Exec::class.java) { task ->
-			task.dependsOn("iosBuildSimulator$debugSuffix", "iosBootSimulator")
+			val buildTaskName = "iosBuildSimulator$debugSuffix"
+			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doFirst {
-				val appFolder = tasks.getByName("iosBuildSimulator$debugSuffix").outputs.files.first().parentFile
+				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
 				val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
-				println(listOf("xcrun", "simctl", "install", udid, appFolder.absolutePath).joinToString(" "))
 				task.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath)
+			}
+		}
+
+		tasks.create("iosInstallDevice$debugSuffix", Exec::class.java) { task ->
+			val buildTaskName = "iosBuildDevice$debugSuffix"
+			task.dependsOn("installIosDeploy", buildTaskName)
+			task.doFirst {
+				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
+				task.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--bundle", appFolder)
 			}
 		}
 	}
@@ -549,6 +565,10 @@ fun Project.configureNativeIos() {
 	}
 
 
+	tasks.create("installIosDeploy", NpmTask::class.java) { task ->
+		task.onlyIf { !node_modules["ios-deploy"].exists() }
+		task.setArgs(listOf("install", "--unsafe-perm=true", "ios-deploy@1.9.4"))
+	}
 
 }
 
