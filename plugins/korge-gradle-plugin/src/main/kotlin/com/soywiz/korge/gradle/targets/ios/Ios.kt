@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle.targets.ios
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.getIconBytes
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
@@ -376,32 +377,57 @@ fun Project.configureNativeIos() {
 				}
 			""".trimIndent())
 
+			data class IconConfig(val idiom: String, val size: Number, val scale: Int) {
+				val sizeStr = "${size}x$size"
+				val scaleStr = "${scale}x"
+				val realSize = (size.toDouble() * scale).toInt()
+				val fileName = "icon$realSize.png"
+			}
+			val icons = listOf(
+				IconConfig("iphone", 20, 2),
+				IconConfig("iphone", 20, 3),
+				IconConfig("iphone", 29, 2),
+				IconConfig("iphone", 20, 3),
+				IconConfig("iphone", 40, 2),
+				IconConfig("iphone", 40, 3),
+				IconConfig("iphone", 60, 2),
+				IconConfig("iphone", 60, 3),
+				IconConfig("ipad", 20, 1),
+				IconConfig("ipad", 20, 2),
+				IconConfig("ipad", 29, 1),
+				IconConfig("ipad", 29, 2),
+				IconConfig("ipad", 40, 1),
+				IconConfig("ipad", 40, 2),
+				IconConfig("ipad", 76, 1),
+				IconConfig("ipad", 76, 2),
+				IconConfig("ipad", 83.5, 2),
+				IconConfig("ios-marketing", 1024, 1)
+			)
 
-			folder["app/Assets.xcassets/AppIcon.appiconset/Contents.json"].ensureParents().writeText("""
-				{
-				  "images" : [
-					{ "idiom" : "iphone", "size" : "20x20", "scale" : "2x" },
-					{ "idiom" : "iphone", "size" : "20x20", "scale" : "3x" },
-					{ "idiom" : "iphone", "size" : "29x29", "scale" : "2x" },
-					{ "idiom" : "iphone", "size" : "29x29", "scale" : "3x" },
-					{ "idiom" : "iphone", "size" : "40x40", "scale" : "2x" },
-					{ "idiom" : "iphone", "size" : "40x40", "scale" : "3x" },
-					{ "idiom" : "iphone", "size" : "60x60", "scale" : "2x" },
-					{ "idiom" : "iphone", "size" : "60x60", "scale" : "3x" },
-					{ "idiom" : "ipad", "size" : "20x20", "scale" : "1x" },
-					{ "idiom" : "ipad", "size" : "20x20", "scale" : "2x" },
-					{ "idiom" : "ipad", "size" : "29x29", "scale" : "1x" },
-					{ "idiom" : "ipad", "size" : "29x29", "scale" : "2x" },
-					{ "idiom" : "ipad", "size" : "40x40", "scale" : "1x"},
-					{ "idiom" : "ipad", "size" : "40x40", "scale" : "2x" },
-					{ "idiom" : "ipad", "size" : "76x76", "scale" : "1x" },
-					{ "idiom" : "ipad", "size" : "76x76", "scale" : "2x" },
-					{ "idiom" : "ipad", "size" : "83.5x83.5", "scale" : "2x" },
-					{ "idiom" : "ios-marketing", "size" : "1024x1024", "scale" : "1x" }
-				  ],
-				  "info" : { "version" : 1, "author" : "xcode" }
+			for (icon in icons.distinctBy { it.realSize }) {
+				folder["app/Assets.xcassets/AppIcon.appiconset/${icon.fileName}"].ensureParents().writeBytes(korge.getIconBytes(icon.realSize))
+			}
+
+			folder["app/Assets.xcassets/AppIcon.appiconset/Contents.json"].ensureParents().writeText(
+				Indenter {
+					line("{")
+					indent {
+						line("\"images\" : [")
+						indent {
+
+							for ((index, config) in icons.withIndex()) {
+								val isLast = (index == icons.lastIndex)
+								val tail = if (isLast) "" else ","
+								line("{ \"idiom\" : ${config.idiom.quoted}, \"size\" : ${config.sizeStr.quoted}, \"scale\" : ${config.scaleStr.quoted}, \"filename\" : ${config.fileName.quoted} }$tail")
+							}
+
+						}
+						line("],")
+						line("\"info\" : { \"version\": 1, \"author\": \"xcode\" }")
+					}
+					line("}")
 				}
-			""".trimIndent())
+			)
 
 
 			folder["project.yml"].ensureParents().writeText(Indenter {
