@@ -667,32 +667,35 @@ fun Project.configureNativeIos() {
 				line("targets:")
 
 				indent {
-					for (target in listOf("X64", "Arm64", "Arm32")) {
-						line("app-$target:")
-						indent {
-							line("platform: iOS")
-							line("type: application")
-							line("deploymentTarget: \"10.0\"")
-							line("sources:")
+					for (debug in listOf(false, true)) {
+						val debugSuffix = if (debug) "Debug" else "Release"
+						for (target in listOf("X64", "Arm64", "Arm32")) {
+							line("app-$target-$debugSuffix:")
 							indent {
-								line("- app")
-								line("- path: ../../../src/commonMain/resources")
+								line("platform: iOS")
+								line("type: application")
+								line("deploymentTarget: \"10.0\"")
+								line("sources:")
 								indent {
-									line("name: assets")
-									line("optional: true")
-									line("buildPhase:")
+									line("- app")
+									line("- path: ../../../src/commonMain/resources")
 									indent {
-										line("copyFiles:")
+										line("name: assets")
+										line("optional: true")
+										line("buildPhase:")
 										indent {
-											line("destination: resources")
-											line("subpath: include/app")
+											line("copyFiles:")
+											indent {
+												line("destination: resources")
+												line("subpath: include/app")
+											}
 										}
+										line("type: folder")
 									}
-									line("type: folder")
 								}
+								line("dependencies:")
+								line("  - framework: ../../bin/ios$target/main${debugSuffix}Framework/GameMain.framework")
 							}
-							line("dependencies:")
-							line("  - framework: ../../bin/ios$target/mainDebugFramework/GameMain.framework")
 						}
 					}
 				}
@@ -744,10 +747,7 @@ fun Project.configureNativeIos() {
 				task.doLast {
 					exec {
 						it.workingDir(xcodeProjDir)
-						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
-						//it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
-						//it.commandLine("xcrun", "xcodebuild", "VALID_ARCHS=$arch2", "ARCHS=$arch2", "ONLY_ACTIVE_ARCH=NO", "-scheme", "app-$arch", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-sdk", appleFindSdk(sdkName))
-
+						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
 					}
 				}
 			}
@@ -769,6 +769,15 @@ fun Project.configureNativeIos() {
 			task.doFirst {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
 				task.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--bundle", appFolder)
+			}
+		}
+
+		tasks.create("iosRunDevice$debugSuffix", Exec::class.java) { task ->
+			val buildTaskName = "iosBuildDevice$debugSuffix"
+			task.dependsOn("installIosDeploy", buildTaskName)
+			task.doFirst {
+				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
+				task.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
 			}
 		}
 	}
