@@ -56,28 +56,30 @@ private fun Project.addProguard() {
 		packageJvmFatJar
 	)
 	) { task ->
-		task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
-		task.injars(packageJvmFatJar.outputs.files.toList())
-		task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
-		task.dontwarn()
-		task.ignorewarnings()
-		//task.dontobfuscate()
-		task.assumenosideeffects("""
+		project.afterEvaluate {
+			task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
+			//println(packageJvmFatJar.outputs.files.toList())
+			task.injars(packageJvmFatJar.outputs.files.toList())
+			task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
+			task.dontwarn()
+			task.ignorewarnings()
+			//task.dontobfuscate()
+			task.assumenosideeffects("""
                 class kotlin.jvm.internal.Intrinsics {
                     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
                 }
             """.trimIndent())
 
-		//task.keep("class jogamp.nativetag.**")
-		//task.keep("class jogamp.**")
+			//task.keep("class jogamp.nativetag.**")
+			//task.keep("class jogamp.**")
 
-		task.keep("class com.jogamp.** { *; }")
-		task.keep("class jogamp.** { *; }")
+			task.keep("class com.jogamp.** { *; }")
+			task.keep("class jogamp.** { *; }")
 
-		afterEvaluate {
 			if (runJvm.main?.isNotBlank() == true) {
 				task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
 			}
 		}
+
 	}
 }
