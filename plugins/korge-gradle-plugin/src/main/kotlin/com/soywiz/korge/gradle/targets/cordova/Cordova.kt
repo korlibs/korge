@@ -40,8 +40,6 @@ fun Project.configureCordova() {
 		korge.updateCordovaXmlFile(cordovaConfigXmlFile)
 	}
 
-	synchronizeCordovaXmlAndIcons()
-
 	val cordova_bin = node_modules["cordova/bin/cordova"]
 
 	fun NodeTask.setCordova(vararg args: String) {

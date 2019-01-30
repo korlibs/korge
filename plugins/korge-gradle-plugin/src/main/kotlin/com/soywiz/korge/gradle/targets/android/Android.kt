@@ -36,14 +36,22 @@ fun Project.configureNativeAndroid() {
 
 	configurations.all {
 		it.resolutionStrategy.eachDependency {
-			resolvedArtifacts["${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")] =
-				it.requested.version.toString()
+			val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
+			//println("RESOLVE ARTIFACT: ${it.requested}")
+			//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
+			//if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
+			if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
+			if (cleanFullName.startsWith("junit:junit")) return@eachDependency
+			if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
+			if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
+			resolvedArtifacts[cleanFullName] = it.requested.version.toString()
 		}
 	}
 
 	//val androidPackageName = "com.example.myapplication"
 	//val androidAppName = "My Awesome APP Name"
 	val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
+		task.dependsOn("compileTestKotlinJvm") // So artifacts are resolved
 		task.apply {
 			group = "korge"
 			val overwrite = true

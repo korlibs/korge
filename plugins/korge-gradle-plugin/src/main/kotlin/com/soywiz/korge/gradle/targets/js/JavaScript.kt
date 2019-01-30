@@ -48,13 +48,11 @@ fun Project.configureJavaScript() {
 		}
 	})
 
-
 	project.dependencies.add("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
 	project.dependencies.add("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
 
-
 	configureNode()
-
+	addWeb()
 }
 
 private fun Project.configureNode() {

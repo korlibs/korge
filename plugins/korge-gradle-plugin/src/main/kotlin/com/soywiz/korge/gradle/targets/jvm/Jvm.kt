@@ -27,12 +27,6 @@ private fun Project.configureJvmTest() {
 
 
 private fun Project.addProguard() {
-
-	// Provide default mainClassName
-	if (!project.ext.has("mainClassName")) {
-		project.ext.set("mainClassName", "")
-	}
-
 	// packageJvmFatJar
 	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = korgeGroup) { task ->
 		task.baseName = "${project.name}-all"
@@ -40,9 +34,9 @@ private fun Project.addProguard() {
 			task.manifest { manifest ->
 				manifest.attributes(
 					mapOf(
-						"Implementation-Title" to project.ext.get("mainClassName"),
+						"Implementation-Title" to korge.jvmMainClassName,
 						"Implementation-Version" to project.version.toString(),
-						"Main-Class" to project.ext.get("mainClassName")
+						"Main-Class" to korge.jvmMainClassName
 					)
 				)
 			}

@@ -164,7 +164,7 @@ class KorgeGradleApply(val project: Project) {
 				afterEvaluate {
 					task.classpath =
 						project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
-					task.main = project.ext.get("mainClassName") as? String?
+					task.main = korge.jvmMainClassName
 				}
 			}
 		}

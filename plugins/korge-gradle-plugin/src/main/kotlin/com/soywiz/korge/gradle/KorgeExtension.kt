@@ -51,6 +51,7 @@ class KorgeExtension(val project: Project) {
 	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String = "main"
+	var jvmMainClassName: String = "MainKt"
 
 	var androidMinSdk: String? = null
 	internal var _androidAppendBuildGradle: String? = null
