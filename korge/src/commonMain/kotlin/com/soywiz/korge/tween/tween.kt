@@ -154,6 +154,9 @@ internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateA
 @PublishedApi
 internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
 
+@PublishedApi
+internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = Angle(_interpolate(ratio, l.radians, r.radians))
+
 //inline operator fun KMutableProperty0<Float>.get(end: Number) = V2(this, this.get(), end.toFloat(), ::_interpolateFloat)
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
@@ -165,6 +168,10 @@ inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) 
 inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor)
 inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
 	V2(this, initial, end, ::_interpolateColor)
+
+inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle)
+inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) =
+	V2(this, initial, end, ::_interpolateAngle)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })

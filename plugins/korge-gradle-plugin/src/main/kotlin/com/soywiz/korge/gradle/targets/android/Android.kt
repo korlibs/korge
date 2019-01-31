@@ -114,7 +114,8 @@ fun Project.configureNativeAndroid() {
 								line("versionCode 1")
 								line("versionName '1.0'")
 								line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
-								line("manifestPlaceholders = [${korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")}]")
+                                val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
+								line("manifestPlaceholders = ${if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }")
 							}
 							line("buildTypes") {
 								line("debug") {

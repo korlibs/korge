@@ -76,6 +76,9 @@ operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial
 operator inline fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::interpolate)
 operator inline fun KMutableProperty0<Double>.get(initial: Number, end: Number) = V2(this, initial.toDouble(), end.toDouble(), ::interpolate)
 
+operator inline fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end.toDouble(), ::interpolate)
+operator inline fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) = V2(this, initial.toDouble(), end.toDouble(), ::interpolate)
+
 @Deprecated("Use get instead", level = DeprecationLevel.ERROR)
 operator fun <V> V2<V>.rangeTo(that: V) = this.copy(initial = this.end, end = that)
 
