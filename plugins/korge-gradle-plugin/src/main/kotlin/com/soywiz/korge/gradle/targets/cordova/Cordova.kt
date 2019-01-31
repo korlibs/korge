@@ -16,6 +16,8 @@ private val Project.cordovaFolder get() = buildDir["cordova"]
 private val Project.cordovaConfigXmlFile get() = cordovaFolder["config.xml"].ensureParents()
 private val Project.cordova_bin get() = node_modules["cordova/bin/cordova"]
 
+val Project.korgeCordovaGroup get() = "korge-cordova"
+
 fun Project.configureCordova() {
 	val jsInstallCordova = project.addTask<NpmTask>("jsInstallCordova") { task ->
 		task.onlyIf { !node_modules["/cordova"].exists() }
@@ -102,7 +104,7 @@ fun Project.configureCordova() {
 
 	val cordovaPackageJsWeb = project.addTask<Copy>(
 		"cordovaPackageJsWeb",
-		group = korgeGroup,
+		group = korgeCordovaGroup,
 		dependsOn = listOf("jsWebMinWebpack", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)
 	) { task ->
 		//afterEvaluate {
@@ -123,7 +125,7 @@ fun Project.configureCordova() {
 
 	val cordovaPackageJsWebNoMinimized = project.addTask<Copy>(
 		"cordovaPackageJsWebNoMinimized",
-		group = korgeGroup,
+		group = korgeCordovaGroup,
 		dependsOn = listOf("jsWeb", cordovaCreate, cordovaPluginsInstall, cordovaSynchronizeConfigXml)
 	) { task ->
 		task.from(project.closure { webFolder })
@@ -141,7 +143,7 @@ fun Project.configureCordova() {
 	}
 
 	val cordovaPrepareTargets =
-		project.addTask<Task>("cordovaPrepareTargets", group = korgeGroup, dependsOn = listOf(cordovaCreate)) { task ->
+		project.addTask<Task>("cordovaPrepareTargets", group = korgeCordovaGroup, dependsOn = listOf(cordovaCreate)) { task ->
 			task.doLast {
 				if (korge._androidAppendBuildGradle != null) {
 					// https://cordova.apache.org/docs/en/8.x/guide/platforms/android/index.html
@@ -168,7 +170,7 @@ fun Project.configureCordova() {
 
 		val compileTarget = project.addTask<NodeTask>(
 			"compileCordova$Target",
-			group = korgeGroup,
+			group = korgeCordovaGroup,
 			dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)
 		) { task ->
 			task.setCordova("build", target) // prepare + compile
@@ -176,7 +178,7 @@ fun Project.configureCordova() {
 
 		val compileTargetRelease = project.addTask<NodeTask>(
 			"compileCordova${Target}Release",
-			group = korgeGroup,
+			group = korgeCordovaGroup,
 			dependsOn = listOf(cordovaTargetInstall, cordovaPackageJsWeb, cordovaPrepareTargets)
 		) { task ->
 			task.setCordova("build", target, "--release") // prepare + compile
@@ -189,7 +191,7 @@ fun Project.configureCordova() {
 				val EmulatorText = if (emulator) "Emulator" else ""
 				val runTarget = project.addTask<NodeTask>(
 					"runCordova$Target$EmulatorText$NoMinimizedText",
-					group = korgeGroup,
+					group = korgeCordovaGroup,
 					dependsOn = listOf(
 						cordovaTargetInstall,
 						if (noMinimized) cordovaPackageJsWebNoMinimized else cordovaPackageJsWeb,

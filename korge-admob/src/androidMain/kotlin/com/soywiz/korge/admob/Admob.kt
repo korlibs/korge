@@ -103,7 +103,9 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 		return builder.build()
 	}
 
-	override fun bannerPrepare(config: Admob.Config) {
+	override suspend fun available() = true
+
+	override suspend fun bannerPrepare(config: Admob.Config) {
 		this.bannerAtTop = config.bannerAtTop
 		activity.runOnUiThread {
 			adView.adUnitId = if (testing) "ca-app-pub-3940256099942544/6300978111" else config.id
@@ -122,7 +124,7 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 		}
 	}
 
-	override fun bannerShow() {
+	override suspend fun bannerShow() {
 		activity.runOnUiThread {
 			if (adView.parent != rootView) {
 				adView.removeFromParent()
@@ -139,20 +141,20 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 		//activity.view
 	}
 
-	override fun bannerHide() {
+	override suspend fun bannerHide() {
 		activity.runOnUiThread {
 			adView.visibility = View.INVISIBLE
 		}
 	}
 
-	override fun interstitialPrepare(config: Admob.Config) {
+	override suspend fun interstitialPrepare(config: Admob.Config) {
 		activity.runOnUiThread {
 			interstitial.adUnitId = if (testing) "ca-app-pub-3940256099942544/1033173712" else config.id
 			interstitial.loadAd(config.toAdRequest())
 		}
 	}
 
-	override fun interstitialIsLoaded(): Boolean = interstitial.isLoaded
+	override suspend fun interstitialIsLoaded(): Boolean = interstitial.isLoaded
 
 	override suspend fun interstitialShowAndWait() {
 		val result = mapOf(interstitialSignals.onAdClosed to "closed", interstitialSignals.onAdClicked to "clicked").executeAndWaitAnySignal {
@@ -162,7 +164,7 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 		}
 	}
 
-	override fun rewardvideolPrepare(config: Admob.Config) {
+	override suspend fun rewardvideolPrepare(config: Admob.Config) {
 		activity.runOnUiThread {
 			rewardVideo.userId = config.userId
 			if (config.immersiveMode != null) {
@@ -175,7 +177,7 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 		}
 	}
 
-	override fun rewardvideolIsLoaded(): Boolean = rewardVideo.isLoaded
+	override suspend fun rewardvideolIsLoaded(): Boolean = rewardVideo.isLoaded
 
 	override suspend fun rewardvideoShowAndWait() {
 		rewardVideoSignals.onRewardedVideoAdClosed.executeAndWaitSignal {

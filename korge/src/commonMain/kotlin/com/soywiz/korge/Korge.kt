@@ -364,7 +364,9 @@ object Korge {
 	}
 
 	suspend fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
-		configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+		if (!OS.isJsBrowser) {
+			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+		}
 		DefaultGameWindow.loop {
 			entry()
 		}

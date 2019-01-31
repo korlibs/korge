@@ -22,24 +22,31 @@ abstract class Admob {
 		val immersiveMode: Boolean? = null
 	)
 
-	open fun bannerPrepare(config: Config) = Unit
-	open fun bannerShow() = Unit
-	open fun bannerHide() = Unit
+	open suspend fun available() = false
 
-	open fun interstitialPrepare(config: Config) = Unit
-	open fun interstitialIsLoaded(): Boolean = false
+	open suspend fun bannerPrepare(config: Config) = Unit
+	open suspend fun bannerShow() = Unit
+	open suspend fun bannerHide() = Unit
+
+	open suspend fun interstitialPrepare(config: Config) = Unit
+	open suspend fun interstitialIsLoaded(): Boolean = false
 	open suspend fun interstitialShowAndWait() = Unit
 
-	open fun rewardvideolPrepare(config: Config) = Unit
-	open fun rewardvideolIsLoaded(): Boolean = false
+	open suspend fun rewardvideolPrepare(config: Config) = Unit
+	open suspend fun rewardvideolIsLoaded(): Boolean = false
 	open suspend fun rewardvideoShowAndWait() = Unit
 
-	suspend fun interstitialWaitLoaded() = run { while (!interstitialIsLoaded()) delay(100.milliseconds) }
-	suspend fun rewardvideolWaitLoaded() = run { while (!rewardvideolIsLoaded()) delay(100.milliseconds) }
+	suspend fun interstitialWaitLoaded() {
+		while (!interstitialIsLoaded()) delay(100.milliseconds)
+	}
+
+	suspend fun rewardvideolWaitLoaded() {
+		while (!rewardvideolIsLoaded()) delay(100.milliseconds)
+	}
 
 	// Utility methods
 
-	fun bannerPrepareAndShow(config: Config) {
+	suspend fun bannerPrepareAndShow(config: Config) {
 		bannerPrepare(config)
 		bannerShow()
 	}
