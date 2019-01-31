@@ -30,6 +30,8 @@ open class Module {
 	open val scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	open val clipBorders: Boolean = true
 
+	open val fullscreen: Boolean? = null
+
 	open suspend fun init(injector: AsyncInjector) {
 	}
 }

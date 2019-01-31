@@ -6,8 +6,8 @@ import android.widget.*
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.reward.*
 import com.soywiz.korio.android.*
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.waitOne
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.close
 import kotlinx.coroutines.*
 
 
@@ -155,17 +155,11 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 	override fun interstitialIsLoaded(): Boolean = interstitial.isLoaded
 
 	override suspend fun interstitialShowAndWait() {
-		val deferred = CompletableDeferred<String>()
-		val close1 = interstitialSignals.onAdClosed.add { deferred.complete("closed") }
-		val close2 = interstitialSignals.onAdClicked.add {  deferred.complete("clicked") }
-
-		activity.runOnUiThread {
-			interstitial.show()
+		val result = mapOf(interstitialSignals.onAdClosed to "closed", interstitialSignals.onAdClicked to "clicked").executeAndWaitAnySignal {
+			activity.runOnUiThread {
+				interstitial.show()
+			}
 		}
-
-		val result = deferred.await()
-		close1.close()
-		close2.close()
 	}
 
 	override fun rewardvideolPrepare(config: Admob.Config) {
@@ -184,10 +178,44 @@ private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob
 	override fun rewardvideolIsLoaded(): Boolean = rewardVideo.isLoaded
 
 	override suspend fun rewardvideoShowAndWait() {
-		activity.runOnUiThread {
-			rewardVideo.show()
+		rewardVideoSignals.onRewardedVideoAdClosed.executeAndWaitSignal {
+			activity.runOnUiThread {
+				rewardVideo.show()
+			}
 		}
-		rewardVideoSignals.onRewardedVideoAdClosed.waitOne()
+	}
+}
+
+private suspend inline fun <T> Map<Signal<Unit>, T>.executeAndWaitAnySignal(callback: () -> Unit): T {
+	val deferred = CompletableDeferred<T>()
+	val closeables = this.map { pair -> pair.key.once { deferred.complete(pair.value) } }
+	try {
+		callback()
+		return deferred.await()
+	} finally {
+		closeables.close()
+	}
+}
+
+private suspend inline fun <T> Iterable<Signal<T>>.executeAndWaitAnySignal(callback: () -> Unit): Pair<Signal<T>, T> {
+	val deferred = CompletableDeferred<Pair<Signal<T>, T>>()
+	val closeables = this.map { signal -> signal.once { deferred.complete(signal to it) } }
+	try {
+		callback()
+		return deferred.await()
+	} finally {
+		closeables.close()
+	}
+}
+
+private suspend inline fun <T> Signal<T>.executeAndWaitSignal(callback: () -> Unit): T {
+	val deferred = CompletableDeferred<T>()
+	val closeable = this.once { deferred.complete(it) }
+	try {
+		callback()
+		return deferred.await()
+	} finally {
+		closeable.close()
 	}
 }
 

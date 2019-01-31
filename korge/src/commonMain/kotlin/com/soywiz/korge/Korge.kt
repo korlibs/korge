@@ -383,12 +383,13 @@ object Korge {
 		clipBorders: Boolean = true,
 		bgcolor: RGBA? = Colors.BLACK,
 		debug: Boolean = false,
+		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
 		entry: suspend Stage.() -> Unit
 	) = KoruiWithLogger {
 		val gameWindow = this
 		if (OS.isNative) println("Korui[0]")
-		configure(width, height, title, icon)
+		configure(width, height, title, icon, fullscreen)
 		this.quality = quality
 		if (OS.isNative) println("CanvasApplicationEx.IN[0]")
 		val injector = AsyncInjector()
@@ -417,7 +418,7 @@ object Korge {
 
 	suspend operator fun invoke(config: Config) = KoruiWithLogger {
 		val module = config.module
-		configure(module.windowSize.width, module.windowSize.height, module.title)
+		configure(module.windowSize.width, module.windowSize.height, module.title, null, config.fullscreen ?: config.module.fullscreen ?: false)
 		val gameWindow = this
 		logger.trace { "Korge.invoke(config)" }
 		if (OS.isJvm) {
@@ -475,6 +476,7 @@ object Korge {
 		val debug: Boolean = false,
 		val trace: Boolean = false,
 		val context: Any? = null,
+		val fullscreen: Boolean? = null,
 		val constructedViews: (Views) -> Unit = {}
 	)
 

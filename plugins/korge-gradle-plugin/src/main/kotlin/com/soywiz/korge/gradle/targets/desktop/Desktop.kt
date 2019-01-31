@@ -96,6 +96,8 @@ fun Project.configureNativeDesktop() {
 		//    }
 		//}
 	}
+
+	addNativeRun()
 }
 
 private fun Project.addNativeRun() {
