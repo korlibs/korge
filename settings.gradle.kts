@@ -20,9 +20,10 @@ enableFeaturePreview("GRADLE_METADATA")
 rootProject.name = java.util.Properties().apply { load(File(rootProject.projectDir, "gradle.properties").readText().reader()) }.getProperty("project.name")
 
 include(":korge")
+include(":korge-admob")
 include(":korge-box2d")
 include(":korge-dragonbones")
-include(":korge-spriter")
+//include(":korge-spriter")
 include(":korge-swf")
 //include(":korge-ui")
 

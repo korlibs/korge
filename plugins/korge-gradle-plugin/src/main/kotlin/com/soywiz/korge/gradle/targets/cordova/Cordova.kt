@@ -68,7 +68,7 @@ fun Project.configureCordova() {
 				println("name: ${korge.name}")
 				println("description: ${korge.description}")
 				println("orientation: ${korge.orientation}")
-				println("plugins: ${korge.plugins}")
+				println("plugins: ${korge.cordovaPlugins}")
 			}
 		}
 
@@ -84,8 +84,8 @@ fun Project.configureCordova() {
 	val cordovaPluginsInstall =
 		project.addTask<Task>("cordovaPluginsInstall", dependsOn = listOf(cordovaCreate)) { task ->
 			task.doLast {
-				println("korge.plugins: ${korge.plugins}")
-				for (plugin in korge.plugins) {
+				println("korge.plugins: ${korge.cordovaPlugins}")
+				for (plugin in korge.cordovaPlugins) {
 					val list = plugin.args.flatMap {
 						listOf(
 							"--variable",

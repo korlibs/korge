@@ -4,6 +4,7 @@ import com.soywiz.korge.gradle.coroutinesVersion
 import com.soywiz.korge.gradle.targets.getIconBytes
 import com.soywiz.korge.gradle.korge
 import com.soywiz.korge.gradle.kotlinVersion
+import com.soywiz.korge.gradle.quoted
 import com.soywiz.korge.gradle.util.Indenter
 import com.soywiz.korge.gradle.util.conditionally
 import com.soywiz.korge.gradle.util.ensureParents
@@ -106,12 +107,14 @@ fun Project.configureNativeAndroid() {
 						line("android") {
 							line("compileSdkVersion 28")
 							line("defaultConfig") {
+								line("multiDexEnabled true")
 								line("applicationId '$androidPackageName'")
 								line("minSdkVersion 19")
 								line("targetSdkVersion 28")
 								line("versionCode 1")
 								line("versionName '1.0'")
 								line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
+								line("manifestPlaceholders = [${korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")}]")
 							}
 							line("buildTypes") {
 								line("debug") {
@@ -134,11 +137,16 @@ fun Project.configureNativeAndroid() {
 						line("dependencies") {
 							line("implementation fileTree(dir: 'libs', include: ['*.jar'])")
 							line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
+							line("implementation 'com.android.support:multidex:1.0.3'")
 
 							line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
 							for ((name, version) in resolvedArtifacts) {
 								if (name.startsWith("org.jetbrains.kotlin")) continue
 								line("api '$name-android:$version'")
+							}
+
+							for (dependency in korge.plugins.flatMap { it.androidDependencies }) {
+								line("implementation ${dependency.quoted}")
 							}
 
 							line("implementation 'com.android.support:appcompat-v7:28.0.0'")
@@ -172,6 +180,10 @@ fun Project.configureNativeAndroid() {
 							}
 							line(">")
 							indent {
+								for (text in korge.plugins.mapNotNull { it.androidManifestApplication }) {
+									line(text)
+								}
+
 								line("<activity android:name=\".MainActivity\">")
 								indent {
 									line("<intent-filter>")
@@ -205,6 +217,9 @@ fun Project.configureNativeAndroid() {
 
 						line("class MainActivity : KorgwActivity()") {
 							line("override suspend fun activityMain()") {
+								for (text in korge.plugins.mapNotNull { it.androidInit }) {
+									line(text)
+								}
 								line("${korge.entryPoint}()")
 							}
 						}

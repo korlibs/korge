@@ -15,6 +15,7 @@ val projDeps = Deps().run { LinkedHashMap<String, List<Dep>>().apply {
 	this["korge-dragonbones"] = base + korge
 	this["korge-spriter"] = base + korge
 	this["korge-swf"] = base + korge
+	this["korge-admob"] = base + korge
 } }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
