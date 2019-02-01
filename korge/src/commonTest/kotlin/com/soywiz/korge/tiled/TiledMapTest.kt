@@ -41,7 +41,7 @@ class TiledMapTest : ViewsForTesting() {
 		val tileset = TileSet(Bitmap32(32, 32).slice(), 32, 32)
 		val map = TileMap(IntArray2(200, 200), tileset)
 		views.stage += map
-		views.frameUpdateAndRender(false, Colors.TRANSPARENT_BLACK)
+		views.frameUpdateAndRender()
 		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
 		assertEquals(DefaultViewport.HEIGHT, views.actualVirtualHeight)
 		views.render()
