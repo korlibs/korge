@@ -4,6 +4,7 @@ import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.cordova.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.isMacos
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
@@ -66,7 +67,9 @@ class KorgeGradleApply(val project: Project) {
 		project.configureJavaScript()
 		project.configureNativeDesktop()
 		project.configureNativeAndroid()
-		project.configureNativeIos()
+		if (isMacos) {
+			project.configureNativeIos()
+		}
 		project.configureCordova()
 
 		project.korge.init()

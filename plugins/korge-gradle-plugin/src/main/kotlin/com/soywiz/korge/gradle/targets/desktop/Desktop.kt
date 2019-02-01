@@ -11,18 +11,24 @@ import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 
-private val nativeTargets = listOf("mingwX64", "linuxX64", "macosX64")
-
 private val RELEASE = "release"
 private val DEBUG = "debug"
 private val RELEASE_DEBUG = listOf(RELEASE, DEBUG)
 
 private val nativeTarget = when {
-	Os.isFamily(Os.FAMILY_WINDOWS) -> "mingwX64"
-	Os.isFamily(Os.FAMILY_MAC) -> "macosX64"
-	Os.isFamily(Os.FAMILY_UNIX) -> "linuxX64"
+	isWindows -> "mingwX64"
+	isMacos -> "macosX64"
+	isLinux -> "linuxX64"
 	else -> "unknownX64"
 }
+
+private val nativeTargets = when {
+	isWindows -> listOf("mingwX64")
+	isMacos -> listOf("macosX64")
+	isLinux -> listOf("linuxX64")
+	else -> listOf("mingwX64", "linuxX64", "macosX64")
+}
+
 private val cnativeTarget = nativeTarget.capitalize()
 
 fun Project.configureNativeDesktop() {
@@ -55,7 +61,12 @@ fun Project.configureNativeDesktop() {
 
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
-		for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())) {
+		for (target in when {
+			isWindows -> listOf(kotlin.mingwX64())
+			isMacos -> listOf(kotlin.macosX64())
+			isLinux -> listOf(kotlin.linuxX64())
+			else -> listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())
+		}) {
 			target.apply {
 				compilations["main"].apply {
 					//println(this.binariesTaskName)
