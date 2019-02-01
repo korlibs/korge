@@ -8,8 +8,8 @@ import com.soywiz.korge.gradle.quoted
 import com.soywiz.korge.gradle.util.Indenter
 import com.soywiz.korge.gradle.util.conditionally
 import com.soywiz.korge.gradle.util.ensureParents
+import org.gradle.api.DefaultTask
 import org.gradle.api.Project
-import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.GradleBuild
 import java.io.File
 import kotlin.collections.LinkedHashMap
@@ -261,15 +261,17 @@ fun Project.configureNativeAndroid() {
 				true -> arrayOf("-e")
 			}
 
-			tasks.create("runAndroid$suffixDevice$suffixDebug", Exec::class.java) { task ->
+			tasks.create("runAndroid$suffixDevice$suffixDebug", DefaultTask::class.java) { task ->
 				task.apply {
 					group = "korge"
 					dependsOn(installAndroidTask)
-					afterEvaluate {
-						commandLine(
-							"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
-							"${korge.id}/${korge.id}.MainActivity"
-						)
+					doFirst {
+						exec {
+							it.commandLine(
+								"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
+								"${korge.id}/${korge.id}.MainActivity"
+							)
+						}
 					}
 				}
 			}
