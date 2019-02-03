@@ -15,9 +15,10 @@ pluginManagement {
 	}
 }
 
-enableFeaturePreview("GRADLE_METADATA")
+//enableFeaturePreview("GRADLE_METADATA")
 
 rootProject.name = "korge-plugins"
 
-include(":korge-build")
+//include(":korge-build")
+//include(":korge-combined")
 include(":korge-gradle-plugin")

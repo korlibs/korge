@@ -1,14 +1,12 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.util.QXml
+import com.soywiz.korge.gradle.util.get
 import com.soywiz.korge.gradle.util.xmlParse
 import org.gradle.api.*
 import java.io.*
-import com.sun.javafx.scene.CameraHelper.project
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.publish.maven.MavenDependency
-import org.gradle.internal.impldep.org.apache.ivy.osgi.core.BundleInfoAdapter.getConfigurations
 
 
 
@@ -59,7 +57,7 @@ class KorgeExtension(val project: Project) {
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"
 
-	var icon: File? = File("icon.png")
+	var icon: File? = project.projectDir["icon.png"]
 
 	var gameCategory: GameCategory? = null
 

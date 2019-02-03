@@ -56,12 +56,18 @@ File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/Build
 package com.soywiz.korge.gradle
 
 object BuildVersions {
+	const val KLOCK = "${version("klock")}"
+	const val KDS = "${version("kds")}"
+	const val KMEM = "${version("kmem")}"
 	const val KORMA = "${version("korma")}"
 	const val KORIO = "${version("korio")}"
 	const val KORIM = "${version("korim")}"
 	const val KORAU = "${version("korau")}"
 	const val KORUI = "${version("korui") ?: version("korgw")}"
 	const val KOREV = "${version("korev")}"
+	const val KGL = "${version("kgl") ?: version("korgw")}"
+	const val KORAG = "${version("korag") ?: version("korgw")}"
+	const val KORAG_OPENGL = "${version("korag-opengl") ?: version("korgw")}"
 	const val KORGW = "${version("korgw")}"
 	const val KORGE = "${version("korge")}"
 	const val KOTLIN = "${KotlinCompilerVersion.VERSION}"
@@ -88,7 +94,7 @@ allprojects {
 	val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
 	val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
 
-	apply(plugin = "maven-publish")
+	//println("project: ${project.name}")
 
 	if (publishUser != null && publishPassword != null) {
 		extensions.getByType<PublishingExtension>().apply {
@@ -104,6 +110,7 @@ allprojects {
 			afterEvaluate {
 				configure(publications) {
 					this as MavenPublication
+					//println("MavenPublication: ${project.name}: $this")
 					pom.withXml {
 						this.asNode().apply {
 							appendNode("name", project.name)

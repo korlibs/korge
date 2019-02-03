@@ -115,7 +115,19 @@ class KorgeGradleApply(val project: Project) {
 		//project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
 
 		gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
+            api("com.soywiz:klock:${BuildVersions.KLOCK}")
+            api("com.soywiz:kmem:${BuildVersions.KMEM}")
+            api("com.soywiz:kds:${BuildVersions.KDS}")
+            api("com.soywiz:korma:${BuildVersions.KORMA}")
+            api("com.soywiz:korio:${BuildVersions.KORIO}")
+            api("com.soywiz:korim:${BuildVersions.KORIM}")
+            api("com.soywiz:korau:${BuildVersions.KORAU}")
+			api("com.soywiz:kgl:${BuildVersions.KGL}")
+			api("com.soywiz:korag:${BuildVersions.KORAG}")
+			api("com.soywiz:korag-opengl:${BuildVersions.KORAG_OPENGL}")
+			api("com.soywiz:korgw:${BuildVersions.KORGW}")
 			api("com.soywiz:korge:${BuildVersions.KORGE}")
+            api("com.soywiz:korev:${BuildVersions.KOREV}")
 		}
 
 		//kotlin.sourceSets.create("")
@@ -215,7 +227,7 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
 
 object KorgeBuildService {
 	fun processResourcesFolder(resourceFolder: File, output: File) {
-		TODO("KorgeBuildService")
+		//KorgeBuildService.processResourcesFolder(resourceFolder, output)
 	}
 }
 

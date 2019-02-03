@@ -7,9 +7,18 @@ dependencies {
 	compile "org.jetbrains.kotlin:kotlin-test"
 	compile "org.jetbrains.kotlin:kotlin-test-junit"
 
-	compile "com.soywiz:krypto:$kryptoVersion"
-	compile "com.soywiz:korge:$korgeVersion"
-	compile "com.soywiz:korge-swf:$korgeVersion"
+	//compile("com.soywiz:krypto-jvm:$kryptoVersion") {
+	//	targetConfiguration = "default"
+	//}
+	//compile("com.soywiz:korge-jvm:$korgeVersion") {
+	//	targetConfiguration = "default"
+	//}
+	//compile("com.soywiz:korge-swf-jvm:$korgeVersion") {
+	//	targetConfiguration = "default"
+	//}
+
+	//targetConfiguration = "default"
+	compile(project(":korge-combined"))
 }
 
 publishing {
