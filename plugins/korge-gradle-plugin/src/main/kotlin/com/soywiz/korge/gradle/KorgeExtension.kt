@@ -59,7 +59,7 @@ class KorgeExtension(val project: Project) {
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"
 
-	val icon: File? = File("icon.png")
+	var icon: File? = File("icon.png")
 
 	var gameCategory: GameCategory? = null
 
