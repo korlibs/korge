@@ -118,15 +118,24 @@ private fun Project.addNativeRun() {
 			for (kind in RELEASE_DEBUG) {
 				val ckind = kind.capitalize()
 				val ctargetKind = "$ctarget$ckind"
+				val buildType = if (kind == DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
 
 				val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
-				val executableFile = compilation.getBinary("EXECUTABLE", kind)
+				val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 
 				val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
 					for (sourceSet in project.gkotlin.sourceSets) {
 						task.from(sourceSet.resources)
 					}
 					task.into(executableFile.parentFile)
+				}
+
+				afterEvaluate {
+					try {
+						compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType).dependsOn(copyTask)
+					} catch (e: Throwable) {
+						e.printStackTrace()
+					}
 				}
 
 				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
