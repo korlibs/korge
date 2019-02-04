@@ -14,7 +14,7 @@ object BuildVersions {
 	const val KGL = "1.5.0"
 	const val KORAG = "1.5.0"
 	const val KORAG_OPENGL = "1.5.0"
-	const val KORGW = "1.5.0"
+	const val KORGW = "1.5.1"
 	const val KORGE = "1.0.0"
 	const val KOTLIN = "1.3.20"
 }
