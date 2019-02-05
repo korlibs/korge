@@ -146,30 +146,20 @@ class Views(
 			when (e) {
 				is MouseEvent -> stage.forEachComponent<MouseComponent>(tempComponents) { it.onMouseEvent(views, e) }
 				is ReshapeEvent -> stage.forEachComponent<ResizeComponent>(tempComponents) {
-					it.resized(
-						views,
-						e.width,
-						e.height
-					)
+					it.resized(views, e.width, e.height)
 				}
 				is KeyEvent -> stage.forEachComponent<KeyComponent>(tempComponents) { it.onKeyEvent(views, e) }
 				is GamePadConnectionEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(
-						views,
-						e
-					)
+					it.onGamepadEvent(views, e)
+				}
+				is GamePadUpdateEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
+					it.onGamepadEvent(views, e)
 				}
 				is GamePadButtonEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(
-						views,
-						e
-					)
+					it.onGamepadEvent(views, e)
 				}
 				is GamePadStickEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(
-						views,
-						e
-					)
+					it.onGamepadEvent(views, e)
 				}
 			}
 		} catch (e: PreventDefaultException) {

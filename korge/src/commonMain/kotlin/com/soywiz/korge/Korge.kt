@@ -298,8 +298,10 @@ object Korge {
 			views.dispatch(e)
 		}
 
-		fun gamepadUpdated(gamepad: GamepadInfo) {
-			input.gamepads[gamepad.index].copyFrom(gamepad)
+		fun gamepadUpdated(e: GamePadUpdateEvent) {
+			for (gamepad in e.gamepads) {
+				input.gamepads[gamepad.index].copyFrom(gamepad)
+			}
 			input.updateConnectedGamepads()
 		}
 
@@ -309,20 +311,20 @@ object Korge {
 		//	views.dispatch(gamepadTypedEvent)
 		//}
 
-		eventDispatcher.addEventListener<GamePadButtonEvent> { e ->
-			logger.trace { "eventDispatcher.addEventListener<GamePadButtonEvent>:$e" }
-		}
-
-		eventDispatcher.addEventListener<GamePadStickEvent> { e ->
-			logger.trace { "eventDispatcher.addEventListener<GamePadStickEvent>:$e" }
-		}
-
 		eventDispatcher.addEventListener<GamePadConnectionEvent> { e ->
 			logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
 			//gamepadUpdated(it.gamepad)
 			//it.copyTo(gamepadConnectionEvent)
-			//views.dispatch(gamepadConnectionEvent)
+			views.dispatch(e)
 		}
+
+		eventDispatcher.addEventListener<GamePadUpdateEvent> { e ->
+			//it.copyTo(gamepadConnectionEvent)
+			gamepadUpdated(e)
+			views.dispatch(e)
+		}
+
+
 
 		eventDispatcher.addEventListener<ReshapeEvent> { e ->
 			//println("Korge:eventDispatcher.addEventListener<ResizedEvent>:$e - backSize=(${ag.backWidth}, ${ag.backHeight})")
