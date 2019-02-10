@@ -4,15 +4,17 @@ import com.soywiz.korge.build.ResourceProcessor.Companion.processorsByExtension
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.*
 import java.io.File
+import java.util.logging.*
 
 // Used at korge-gradle-plugin
 @Suppress("unused")
 object KorgeBuildService {
-	fun processResourcesFolders(srcDirs: List<File>, dstDir: File) {
+	fun processResourcesFolders(srcDirs: List<File>, dstDir: File, logger: (String) -> Unit = { }) {
 		runCatching { dstDir.mkdirs() }
-		println("PROCESSORS:")
+
+		logger("PROCESSORS:")
 		for (processor in processorsByExtension) {
-			println(" - $processor")
+			logger(" - $processor")
 		}
 
 		for (srcDir in srcDirs) {
@@ -30,7 +32,7 @@ object KorgeBuildService {
 								val srcVfsFile = srcDirectory.toVfs().jail()[srcFile.name]
 								val dstVfsDir = dstDirectory.toVfs().jail()
 
-								println("$processor: srcFile=$srcFile -> dstDirectory=$dstDirectory...")
+								logger("$processor: srcFile=$srcFile -> dstDirectory=$dstDirectory...")
 								processor.process(srcVfsFile, dstVfsDir)
 							} catch (e: Throwable) {
 								e.printStackTrace()

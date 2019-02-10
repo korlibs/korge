@@ -5,8 +5,11 @@ import com.soywiz.korge.atlas.*
 import com.soywiz.korge.build.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.*
 import kotlinx.coroutines.channels.toList
@@ -21,7 +24,9 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		val atlasPath0 = inputFile.readString().trim()
 		val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.baseName
 		val atlasFolder = inputFile.parent[atlasPath].jail()
+		println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
 		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
+		println("atlasFiles=$files")
 
 		val bitmaps = files.map { it to it.readBitmap() }
 
@@ -77,7 +82,8 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 		//println(Json.stringify(atlasInfo, pretty = true))
 
-		outputFile.withCompoundExtension("atlas.json").writeString(Json.stringify(atlasInfo, pretty = true))
+        Mapper.jvmFallback()
+		outputFile.withCompoundExtension("atlas.json").writeString(Json.stringifyTyped(atlasInfo, pretty = true, mapper = Mapper))
 
 		//Atlas.Factory()
 		//println(files)

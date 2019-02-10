@@ -49,7 +49,7 @@ fun Project.addGenResourcesTasks() = this {
 					logger.info("kotlin.sourceSets.names: ${kotlin.sourceSets.names}")
 					logger.info("allResourcesDirs: $allResourcesDirs")
 					logger.info("resourcesDirs: $resourcesDirs")
-					buildService.processResourcesFolders(resourcesDirs, outDir)
+					buildService.processResourcesFolders(resourcesDirs, outDir) { logger.info(it) }
 				}
 			}
 		}
