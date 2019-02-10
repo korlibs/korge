@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.build.KorgeBuildService
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.cordova.*
 import com.soywiz.korge.gradle.targets.desktop.*
@@ -46,7 +47,7 @@ val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korg
 val Project.korgeGroup get() = "korge"
 
 class KorgeGradleApply(val project: Project) {
-	fun apply() {
+	fun apply() = project {
 		System.setProperty("java.awt.headless", "true")
 
 		val expectedGradleVersion = "5.1.1"
@@ -73,6 +74,26 @@ class KorgeGradleApply(val project: Project) {
 		project.configureCordova()
 
 		project.korge.init()
+
+		project.configureDependencies()
+	}
+
+	private fun Project.configureDependencies() {
+		korge.apply {
+			dependencyMulti("com.soywiz:klock:${BuildVersions.KLOCK}")
+			dependencyMulti("com.soywiz:kmem:${BuildVersions.KMEM}")
+			dependencyMulti("com.soywiz:kds:${BuildVersions.KDS}")
+			dependencyMulti("com.soywiz:korma:${BuildVersions.KORMA}")
+			dependencyMulti("com.soywiz:korio:${BuildVersions.KORIO}")
+			dependencyMulti("com.soywiz:korim:${BuildVersions.KORIM}")
+			dependencyMulti("com.soywiz:korau:${BuildVersions.KORAU}")
+			dependencyMulti("com.soywiz:kgl:${BuildVersions.KGL}")
+			dependencyMulti("com.soywiz:korag:${BuildVersions.KORAG}")
+			dependencyMulti("com.soywiz:korag-opengl:${BuildVersions.KORAG_OPENGL}")
+			dependencyMulti("com.soywiz:korgw:${BuildVersions.KORGW}")
+			dependencyMulti("com.soywiz:korge:${BuildVersions.KORGE}")
+			dependencyMulti("com.soywiz:korev:${BuildVersions.KOREV}")
+		}
 	}
 
 	private fun Project.configureIdea() {
@@ -114,21 +135,8 @@ class KorgeGradleApply(val project: Project) {
 		//println("com.soywiz:korge:$korgeVersion")
 		//project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
 
-		gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
-            api("com.soywiz:klock:${BuildVersions.KLOCK}")
-            api("com.soywiz:kmem:${BuildVersions.KMEM}")
-            api("com.soywiz:kds:${BuildVersions.KDS}")
-            api("com.soywiz:korma:${BuildVersions.KORMA}")
-            api("com.soywiz:korio:${BuildVersions.KORIO}")
-            api("com.soywiz:korim:${BuildVersions.KORIM}")
-            api("com.soywiz:korau:${BuildVersions.KORAU}")
-			api("com.soywiz:kgl:${BuildVersions.KGL}")
-			api("com.soywiz:korag:${BuildVersions.KORAG}")
-			api("com.soywiz:korag-opengl:${BuildVersions.KORAG_OPENGL}")
-			api("com.soywiz:korgw:${BuildVersions.KORGW}")
-			api("com.soywiz:korge:${BuildVersions.KORGE}")
-            api("com.soywiz:korev:${BuildVersions.KOREV}")
-		}
+		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
+		//}
 
 		//kotlin.sourceSets.create("")
 
@@ -222,12 +230,6 @@ abstract class KorgeBaseResourcesTask : DefaultTask() {
 				}
 			}
 		}
-	}
-}
-
-object KorgeBuildService {
-	fun processResourcesFolder(resourceFolder: File, output: File) {
-		//KorgeBuildService.processResourcesFolder(resourceFolder, output)
 	}
 }
 

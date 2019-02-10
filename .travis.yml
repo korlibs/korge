@@ -42,5 +42,5 @@ matrix:
       KBUILD=android
       JAVA_OPTS=-Xmx2g
     script:
-      - ./gradlew -s -i check build
+      - ./gradlew -s -i lint testDebugUnitTest
 

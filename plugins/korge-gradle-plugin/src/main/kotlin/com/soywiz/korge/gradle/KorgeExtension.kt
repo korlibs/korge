@@ -1,13 +1,14 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.gradle.util.QXml
-import com.soywiz.korge.gradle.util.get
-import com.soywiz.korge.gradle.util.xmlParse
+import com.moowork.gradle.node.*
+import com.moowork.gradle.node.npm.*
+import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
+import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
-import groovy.text.SimpleTemplateEngine
-import org.gradle.api.artifacts.ExternalModuleDependency
-
+import groovy.text.*
+import org.gradle.api.artifacts.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
@@ -151,6 +152,84 @@ class KorgeExtension(val project: Project) {
 		authorEmail = email
 		authorHref = href
 	}
+
+	/////////////////////////////////////////////////
+	/////////////////////////////////////////////////
+
+
+	fun dependencyProject(name: String) = project {
+		dependencies {
+			add("commonMainApi", project(name))
+			add("commonTestImplementation", project(name))
+		}
+	}
+
+	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosArm32", "iosX64") + DESKTOP_NATIVE_TARGETS
+	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
+	val ALL_TARGETS = listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS
+
+	@JvmOverloads
+	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false) = project {
+		dependencies {
+			for (target in targets) {
+				val base = when (target) {
+					"metadata" -> "common"
+					else -> target
+				}
+				val suffix = when {
+					target == "android" && androidIsJvm -> "-jvm"
+					target == "metadata" && suffixCommonRename -> "-common"
+					else -> "-${target.toLowerCase()}"
+				}
+
+				val packed = "$group:$name$suffix:$version"
+				add("${base}MainApi", packed)
+				add("${base}TestImplementation", packed)
+			}
+		}
+	}
+
+	@JvmOverloads
+	fun dependencyMulti(dependency: String, targets: List<String> = ALL_TARGETS) {
+		val (group, name, version) = dependency.split(":", limit = 3)
+		return dependencyMulti(group, name, version, targets)
+	}
+
+	@JvmOverloads
+	fun dependencyNodeModule(name: String, version: String) = project {
+		val node = extensions.getByType(NodeExtension::class.java)
+
+		val installNodeModule = tasks.create<NpmTask>("installJs${name.capitalize()}") {
+			onlyIf { !File(node.nodeModulesDir, name).exists() }
+			setArgs(arrayListOf("install", "$name@$version"))
+		}
+
+		tasks.getByName("jsTestNode").dependsOn(installNodeModule)
+	}
+
+	data class CInteropTargets(val name: String, val targets: List<String>)
+
+	val cinterops = arrayListOf<CInteropTargets>()
+
+
+	@JvmOverloads
+	fun dependencyCInterops(name: String, targets: List<String>) = project {
+		cinterops += CInteropTargets(name, targets)
+		for (target in targets) {
+			((kotlin.targets[target] as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
+				cinterops.apply {
+					maybeCreate(name).apply {
+					}
+				}
+			}
+		}
+	}
+
+	@JvmOverloads
+	fun dependencyCInteropsExternal(dependency: String, cinterop: String, targets: List<String> = ALL_NATIVE_TARGETS) {
+		dependencyMulti("$dependency:cinterop-$cinterop@klib", targets)
+	}
+
 }
 
 // println(project.resolveArtifacts("com.soywiz:korge-metadata:1.0.0"))

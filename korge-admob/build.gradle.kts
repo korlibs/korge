@@ -1,5 +1,12 @@
 import groovy.util.*
 import groovy.xml.*
+import com.soywiz.korlibs.*
+
+plugins.apply(KorlibsPlugin::class.java)
+
+korlibs {
+	dependencyProject(":korge")
+}
 
 val playServicesVersion = "16.0.0"
 

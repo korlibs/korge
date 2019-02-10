@@ -12,14 +12,8 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.util.*
 import java.net.*
 
-object LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
-    @JvmStatic
-    suspend fun main(args: Array<String>) = Korio {
-        val file = getRhubarbTool()
-        println(file.rhubarb.absolutePath)
-        println(processWav(LocalVfs["c:/temp/simple.wav"]))
-        println("DONE")
-    }
+open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
+    companion object : LipsyncResourceProcessor()
 
     override val version: Int = 0
     override val outputExtension: String = "lipsync"

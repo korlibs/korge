@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-	id("kotlin-multiplatform") version "1.3.20"
+	id("org.jetbrains.kotlin.jvm") version "1.3.21"
 	id("com.moowork.node") version "1.2.0"
 }
 
@@ -47,7 +47,7 @@ allprojects {
 val gradleProperties = Properties().apply { this.load(File(rootDir, "../gradle.properties").readText().reader()) }
 
 fun version(name: String) = when (name) {
-	"korge" -> gradleProperties["projectVersion"]
+	"korge" -> gradleProperties["version"]
 	else -> gradleProperties["${name}Version"]
 }
 
@@ -74,12 +74,7 @@ object BuildVersions {
 }
 """)
 
-val projectVersion: String by project
-
-allprojects {
-	group = "com.soywiz"
-	version = projectVersion
-
+subprojects {
 	repositories {
 		mavenLocal()
 		jcenter()

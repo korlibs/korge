@@ -2,6 +2,11 @@ package com.soywiz.korge.gradle.util
 
 import groovy.lang.*
 import org.gradle.api.*
+import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.tasks.TaskContainer
+
+operator fun Project.invoke(callback: Project.() -> Unit): Unit = run { this.apply(callback) }
+operator fun DependencyHandler.invoke(callback: DependencyHandler.() -> Unit) = this.apply(callback)
 
 open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit) {
 	@Suppress("unused")
@@ -11,6 +16,9 @@ open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit)
 }
 
 //inline class TaskName(val name: String)
+
+inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
+inline fun <reified T : Task> TaskContainer.createTyped(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
 
 inline fun <reified T : Task> Project.addTask(
 	name: String,

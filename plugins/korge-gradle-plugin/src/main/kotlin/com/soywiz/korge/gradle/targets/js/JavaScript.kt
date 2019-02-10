@@ -14,7 +14,9 @@ import org.gradle.process.ExecResult
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
+import java.awt.Desktop
 import java.io.File
+import java.net.URI
 
 val Project.node_modules get() = korgeCacheDir["node_modules"]
 val Project.webMinFolder get() = buildDir["web-min"]
@@ -226,6 +228,18 @@ private fun Project.addWeb() {
 
 	val jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
 		configureJsWeb(task, minimized = true)
+	}
+
+	val jsWebRun = project.tasks.create<Task>("jsWebRun") {
+		dependsOn(jsWeb)
+		doLast {
+			staticHttpServer(project.buildDir["web"]) { server ->
+				openBrowser("http://127.0.0.1:${server.address.port}/index.html")
+				while (true) {
+					Thread.sleep(1000L)
+				}
+			}
+		}
 	}
 
 	val jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf(

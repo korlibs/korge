@@ -8,10 +8,6 @@ import java.io.File
 // Used at korge-gradle-plugin
 @Suppress("unused")
 object KorgeBuildService {
-	val initOnce by lazy {
-		KorgeManualServiceRegistration.register()
-	}
-
 	//override fun version(): String = Korge.VERSION
 	//fun korgeVersion(): String = BuildVersions.KORGE
 	//fun kormaVersion(): String = BuildVersions.KORMA
@@ -24,7 +20,6 @@ object KorgeBuildService {
 	//fun kotlinVersion(): String = BuildVersions.KOTLIN
 
 	fun processResourcesFolder(src: File, dst: File) {
-		initOnce
 		if (!src.exists()) return // Ignore empty folders
 
 		runBlocking {

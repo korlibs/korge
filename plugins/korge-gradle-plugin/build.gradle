@@ -15,11 +15,8 @@ apply plugin: 'maven-publish'
 //	}
 //}
 
-group 'com.soywiz'
-version projectVersion
-
 dependencies {
-	//compile project(":korge-build")
+	compile project(":korge-build")
 
 	compile "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 	compile "com.moowork.gradle:gradle-node-plugin:1.2.0"

@@ -7,6 +7,7 @@ import com.soywiz.korge.build.swf.*
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.util.*
 
+/*
 // Workaround since META-INF/services are not loaded
 object KorgeManualServiceRegistration {
     fun register() {
@@ -37,3 +38,4 @@ object KorgeManualServiceRegistration {
         //)
     }
 }
+*/

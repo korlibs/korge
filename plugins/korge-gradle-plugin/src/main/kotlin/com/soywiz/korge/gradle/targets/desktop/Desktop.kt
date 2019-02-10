@@ -5,7 +5,6 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.apple.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
-import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -15,24 +14,24 @@ private val RELEASE = "release"
 private val DEBUG = "debug"
 private val RELEASE_DEBUG = listOf(RELEASE, DEBUG)
 
-private val nativeTarget = when {
+private val DESKTOP_NATIVE_TARGET = when {
 	isWindows -> "mingwX64"
 	isMacos -> "macosX64"
 	isLinux -> "linuxX64"
 	else -> "unknownX64"
 }
 
-private val nativeTargets = when {
+val DESKTOP_NATIVE_TARGETS = when {
 	isWindows -> listOf("mingwX64")
 	isMacos -> listOf("macosX64")
 	isLinux -> listOf("linuxX64")
 	else -> listOf("mingwX64", "linuxX64", "macosX64")
 }
 
-private val cnativeTarget = nativeTarget.capitalize()
+private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
 
 fun Project.configureNativeDesktop() {
-	for (preset in nativeTargets) {
+	for (preset in DESKTOP_NATIVE_TARGETS) {
 		gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
 			compilations["main"].outputKinds("EXECUTABLE")
 		})
@@ -51,7 +50,7 @@ fun Project.configureNativeDesktop() {
 					line("fun main(args: Array<String>) = RootGameMain.runMain(args)")
 					line("object RootGameMain") {
 						line("fun runMain() = runMain(arrayOf())")
-						line("fun runMain(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
+						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
 					}
 				}
 				if (!output.exists() || output.readText() != text) output.writeText(text)
@@ -88,7 +87,7 @@ fun Project.configureNativeDesktop() {
 	}
 
 	project.afterEvaluate {
-		for (target in nativeTargets) {
+		for (target in DESKTOP_NATIVE_TARGETS) {
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
 			val targetTestTask = project.tasks.getByName("${target}Test")
 			val task = project.addTask<Copy>(taskName) { task ->
@@ -113,7 +112,7 @@ fun Project.configureNativeDesktop() {
 
 private fun Project.addNativeRun() {
 	afterEvaluate {
-		for (target in nativeTargets) {
+		for (target in DESKTOP_NATIVE_TARGETS) {
 			val ctarget = target.capitalize()
 			for (kind in RELEASE_DEBUG) {
 				val ckind = kind.capitalize()

@@ -7,7 +7,9 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.file.*
 import kotlin.coroutines.*
 
-object SwfResourceProcessor : ResourceProcessor("swf") {
+open class SwfResourceProcessor : ResourceProcessor("swf") {
+    companion object : SwfResourceProcessor()
+
     override val version: Int = AniFile.VERSION
     override val outputExtension: String = "ani"
 

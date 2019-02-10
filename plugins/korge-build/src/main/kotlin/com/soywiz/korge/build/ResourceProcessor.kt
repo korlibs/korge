@@ -3,16 +3,7 @@ package com.soywiz.korge.build
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.runIgnoringExceptions
-
-val defaultResourceProcessors = ResourceProcessors()
-
-class ResourceProcessors {
-	val processors = ArrayList<ResourceProcessor>()
-
-	fun register(vararg processors: ResourceProcessor) = this.apply {
-		this@ResourceProcessors.processors += processors
-	}
-}
+import java.util.*
 
 abstract class ResourceProcessor(vararg extensions: String) {
 	abstract val version: Int
@@ -61,9 +52,13 @@ abstract class ResourceProcessor(vararg extensions: String) {
 	}
 
 	companion object {
+		val defaultResourceProcessors by lazy {
+			ServiceLoader.load(ResourceProcessor::class.java).toMutableList()
+		}
+
 		val processorsByExtension: Map<String, ResourceProcessor> by lazy {
 			try {
-				defaultResourceProcessors.processors.flatMap { processor -> processor.extensionLCs.map { it to processor } }
+				defaultResourceProcessors.flatMap { processor -> processor.extensionLCs.map { it to processor } }
 					.toMap()
 			} catch (e: Throwable) {
 				e.printStackTrace()

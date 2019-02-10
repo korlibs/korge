@@ -11,7 +11,9 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.*
 import kotlinx.coroutines.channels.toList
 
-object AtlasResourceProcessor : ResourceProcessor("atlas") {
+open class AtlasResourceProcessor : ResourceProcessor("atlas") {
+	companion object : AtlasResourceProcessor()
+
 	override val version: Int = 0
 	override val outputExtension: String = "atlas.json"
 

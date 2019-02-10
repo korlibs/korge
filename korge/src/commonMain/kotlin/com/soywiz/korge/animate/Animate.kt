@@ -288,7 +288,8 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			when (action) {
 				is AnPlaySoundAction -> {
 
-					library.views.async {
+
+					library.views.asyncImmediately {
 						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
 						if (data != null) {
 							data.play()
