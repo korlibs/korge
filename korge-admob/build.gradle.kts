@@ -18,7 +18,9 @@ dependencies {
 
 afterEvaluate {
 	extensions.getByType<PublishingExtension>().apply {
-		val publication = publications["kotlinMultiplatform"] as MavenPublication
+		//println("publications.names: ${publications.names}")
+		//val publication = publications["kotlinMultiplatform"] as MavenPublication
+		val publication = publications["metadata"] as MavenPublication
 		publication.artifact(File(buildDir, "korge-plugin.korge-plugin").apply {
 			val node = Node(null, "korge-plugin").apply {
 				appendNode("name").setValue("korge-admob")

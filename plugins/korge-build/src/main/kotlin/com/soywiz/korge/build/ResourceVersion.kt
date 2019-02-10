@@ -9,7 +9,7 @@ import com.soywiz.krypto.*
 
 data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: String, val configSha1: String = "") {
     suspend fun writeMeta(metaFile: VfsFile) {
-        metaFile.writeString(Json.stringify(this))
+        metaFile.writeString(Json.stringifyTyped(this, Mapper))
     }
 
     companion object {

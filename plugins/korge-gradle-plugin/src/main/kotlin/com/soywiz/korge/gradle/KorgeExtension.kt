@@ -101,15 +101,18 @@ class KorgeExtension(val project: Project) {
 	val plugins = arrayListOf<KorgePluginDescriptor>()
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
-		val xml = QXml(xmlParse(project.resolveArtifacts("$name@korge-plugin").first().readText()))
+		val parts = name.split(":", limit = 3)
+		val metadataName = parts.withIndex().map { (index, it) -> if (index == 1) "$it-metadata" else it }.joinToString(":")
+
+		val xml = QXml(xmlParse(project.resolveArtifacts("$metadataName@korge-plugin").first().readText()))
 		val plugin = KorgePluginDescriptor(name, args, xml)
 		plugins += plugin
 		for (variable in plugin.variables) {
 			if (variable !in args) {
-				error("When configuring Korge plugin '$name': Variable $variable is expected but not found. Expected variables: ${plugin.variables}")
+				error("When configuring Korge plugin '$name'('$metadataName'): Variable $variable is expected but not found. Expected variables: ${plugin.variables}")
 			}
 		}
-		project.dependencies.add("commonMainApi", name)
+		dependencyMulti(name)
 
 		for ((k, v) in args) {
 			config(k, v)

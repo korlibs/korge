@@ -3,6 +3,7 @@ package com.soywiz.korge.build
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.runIgnoringExceptions
+import java.io.*
 import java.util.*
 
 abstract class ResourceProcessor(vararg extensions: String) {
@@ -66,10 +67,10 @@ abstract class ResourceProcessor(vararg extensions: String) {
 			}
 		}
 
-		suspend fun process(
-			inputFiles: List<VfsFile>,
-			outputVfs: VfsFile,
-			extraOutVfs: VfsFile? = null,
+		/*
+		fun process(
+			inputFiles: List<File>,
+			outputVfs: File,
 			progressHandler: (ProgressReport) -> Unit = {}
 		) {
 			val outputVfsJail = outputVfs.jail()
@@ -80,8 +81,9 @@ abstract class ResourceProcessor(vararg extensions: String) {
 
 			for (inputFile in inputFiles) {
 				val inputVfs = inputFile.jail()
+				println("inputFile:$inputFile")
 				for (file in inputVfs.listRecursive()) {
-					//println(file)
+					println("file:$file")
 					val processor =
 						processorsByExtension[file.compoundExtensionLC] ?: processorsByExtension[file.extensionLC]
 						?: continue
@@ -135,5 +137,6 @@ abstract class ResourceProcessor(vararg extensions: String) {
 			progress.currentFile = progress.totalFiles
 			progressHandler(progress)
 		}
+		*/
 	}
 }

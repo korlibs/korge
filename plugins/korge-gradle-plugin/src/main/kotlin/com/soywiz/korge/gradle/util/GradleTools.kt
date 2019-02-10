@@ -5,8 +5,8 @@ import org.gradle.api.*
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.tasks.TaskContainer
 
-operator fun Project.invoke(callback: Project.() -> Unit): Unit = run { this.apply(callback) }
-operator fun DependencyHandler.invoke(callback: DependencyHandler.() -> Unit) = this.apply(callback)
+operator fun <T> Project.invoke(callback: Project.() -> T): T = callback(this)
+operator fun <T> DependencyHandler.invoke(callback: DependencyHandler.() -> T): T = callback(this)
 
 open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit) {
 	@Suppress("unused")

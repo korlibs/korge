@@ -16,6 +16,15 @@ fun Project.configureJvm() {
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
 
+	val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
+		dependsOn("jvmMainClasses")
+		afterEvaluate {
+			task.classpath =
+				project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+			task.main = korge.jvmMainClassName
+		}
+	}
+
 	addProguard()
 	configureJvmTest()
 }

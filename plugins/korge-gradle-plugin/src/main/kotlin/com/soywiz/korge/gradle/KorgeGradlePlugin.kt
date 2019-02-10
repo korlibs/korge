@@ -1,6 +1,5 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.build.KorgeBuildService
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.cordova.*
 import com.soywiz.korge.gradle.targets.desktop.*
@@ -9,15 +8,11 @@ import com.soywiz.korge.gradle.targets.isMacos
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
-import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.gradle.api.Project
-import org.gradle.api.artifacts.*
-import org.gradle.api.file.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.gradle.plugins.ide.idea.model.*
-import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
@@ -50,18 +45,19 @@ class KorgeGradleApply(val project: Project) {
 	fun apply() = project {
 		System.setProperty("java.awt.headless", "true")
 
-		val expectedGradleVersion = "5.1.1"
+		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
+		val expectedGradleVersion = SemVer("5.1.1")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
-		if (korgeCheckGradleVersion && project.gradle.gradleVersion != expectedGradleVersion) {
-			error("Korge only works with Gradle $expectedGradleVersion, but running on Gradle ${project.gradle.gradleVersion}")
+		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
+			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
 		}
 
 		//KorgeBuildServiceProxy.init()
 		project.addVersionExtension()
 		project.configureRepositories()
 		project.configureKotlin()
-		project.addKorgeTasks()
+		project.addGenResourcesTasks()
 		project.configureIdea()
 
 		project.configureJvm()
@@ -142,56 +138,7 @@ class KorgeGradleApply(val project: Project) {
 
 	}
 
-	fun Project.addKorgeTasks() {
-		run {
-			try {
-				project.dependencies.add("compile", "com.soywiz:korge:${BuildVersions.KORGE}")
-			} catch (e: UnknownConfigurationException) {
-				//logger.error("KORGE: " + e.message)
-			}
-		}
 
-		run {
-			project.addTask<KorgeResourcesTask>(
-				"genResources", group = korgeGroup, description = "process resources",
-				//overwrite = true, dependsOn = listOf("build")
-				overwrite = true, dependsOn = listOf()
-			) {
-				it.debug = true
-			}
-			try {
-				project.tasks["processResources"].dependsOn("genResources")
-			} catch (e: UnknownTaskException) {
-			}
-		}
-
-		run {
-			project.addTask<KorgeTestResourcesTask>(
-				"genTestResources", group = korgeGroup, description = "process test resources",
-				//overwrite = true, dependsOn = listOf("build")
-				overwrite = true, dependsOn = listOf()
-			) {
-				it.debug = true
-			}
-			try {
-				project.tasks["processTestResources"].dependsOn("genTestResources")
-			} catch (e: UnknownTaskException) {
-			}
-		}
-
-		//val korge = KorgeXml(project.file("korge.project.xml"))
-		val korge = project.korge
-
-		run {
-			val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
-				afterEvaluate {
-					task.classpath =
-						project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
-					task.main = korge.jvmMainClassName
-				}
-			}
-		}
-	}
 }
 
 open class KorgeGradlePlugin : Plugin<Project> {
@@ -200,70 +147,4 @@ open class KorgeGradlePlugin : Plugin<Project> {
 
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
-}
-
-
-abstract class KorgeBaseResourcesTask : DefaultTask() {
-	var debug = false
-
-	class GeneratePair {
-		val input = ArrayList<File>()
-		val output = ArrayList<File>()
-
-		val available: Boolean get() = input.isNotEmpty() && output.isNotEmpty()
-	}
-
-	abstract var inputSourceSet: String
-	abstract var generatedSourceSet: String
-	abstract var processResources: String
-
-	@Suppress("unused")
-	@TaskAction
-	open fun task() {
-		logger.info("KorgeResourcesTask ($this)")
-		val buildService = KorgeBuildService
-		for (p in project.allprojects) {
-			for (resourceFolder in p.getResourcesFolders(setOf(inputSourceSet))) {
-				if (resourceFolder.exists()) {
-					val output = resourceFolder.parentFile["genresources"]
-					buildService.processResourcesFolder(resourceFolder, output)
-				}
-			}
-		}
-	}
-}
-
-open class KorgeTestResourcesTask : KorgeBaseResourcesTask() {
-	override var inputSourceSet = "test"
-	override var generatedSourceSet = "testGenerated"
-	override var processResources = "processTestResources"
-}
-
-open class KorgeResourcesTask : KorgeBaseResourcesTask() {
-	override var inputSourceSet = "main"
-	override var generatedSourceSet = "generated"
-	override var processResources = "processResources"
-}
-
-fun Project.getResourcesFolders(sourceSets: Set<String>? = null): List<File> {
-	val out = arrayListOf<File>()
-	try {
-		for (target in gkotlin.targets.toList()) {
-			//println("TARGET: $target")
-			for (compilation in target.compilations) {
-				//println("  - COMPILATION: $compilation :: name=${compilation.name}")
-				if (sourceSets != null && compilation.name !in sourceSets) continue
-				for (sourceSet in compilation.allKotlinSourceSets) {
-					//println("    - SOURCE_SET: $sourceSet")
-					for (resource in sourceSet.resources.srcDirs) {
-						out += resource
-						//println("        - RESOURCE: $resource")
-					}
-				}
-			}
-		}
-	} catch (e: Throwable) {
-		e.printStackTrace()
-	}
-	return out.distinct()
 }
