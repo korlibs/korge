@@ -13,5 +13,5 @@ korlibs {
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "win32_winmm", ["mingwX64"])
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "linux_OpenAL", ["linuxX64"])
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "mac_OpenAL", ["macosX64"])
-
+	dependencyCInteropsExternal("com.soywiz:kgl:$kglVersion", "GL", ["linuxX64"])
 }

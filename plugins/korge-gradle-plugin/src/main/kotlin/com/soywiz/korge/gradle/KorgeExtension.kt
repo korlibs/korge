@@ -4,6 +4,7 @@ import com.moowork.gradle.node.*
 import com.moowork.gradle.node.npm.*
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korio.util.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
@@ -174,7 +175,18 @@ class KorgeExtension(val project: Project) {
 	@JvmOverloads
 	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false) = project {
 		dependencies {
-			for (target in targets) {
+			loop@for (target in targets) {
+				if (!OS.isMac){
+					when (target) {
+						"iosArm64", "iosArm32", "iosX64", "macosX64" -> continue@loop
+					}
+				}
+				if (!OS.isLinux){
+					when (target) {
+						"linuxX64" -> continue@loop
+					}
+				}
+
 				val base = when (target) {
 					"metadata" -> "common"
 					else -> target
