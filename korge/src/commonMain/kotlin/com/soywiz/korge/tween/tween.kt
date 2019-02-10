@@ -7,6 +7,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.*
@@ -97,6 +98,21 @@ suspend fun View?.tween(
 		}
 	}
 }
+
+suspend fun View?.tweenAsync(
+	vararg vs: V2<*>,
+	time: TimeSpan,
+	easing: Easing = Easing.LINEAR,
+	callback: (Double) -> Unit = emptyCallback
+) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
+
+fun View?.tweenAsync(
+	vararg vs: V2<*>,
+	coroutineContext: CoroutineContext,
+	time: TimeSpan,
+	easing: Easing = Easing.LINEAR,
+	callback: (Double) -> Unit = emptyCallback
+) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
 
 suspend fun View.show(time: TimeSpan, easing: Easing = Easing.LINEAR) =
 	tween(this::alpha[1.0], time = time, easing = easing) { this.visible = true }

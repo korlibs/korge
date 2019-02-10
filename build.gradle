@@ -13,3 +13,11 @@ org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdef
 		args "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev"
 	}
 }
+
+apply plugin: "idea"
+
+idea {
+	module {
+		excludeDirs << new File(rootDir, "@old")
+	}
+}
