@@ -5,6 +5,7 @@ import com.moowork.gradle.node.exec.NodeExecRunner
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import groovy.text.*
 import org.gradle.api.*
@@ -223,10 +224,12 @@ private fun Project.addWeb() {
 	}
 
 	val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+		task.group = GROUP_KORGE_PACKAGE
 		configureJsWeb(task, minimized = false)
 	}
 
 	val jsWebMin = project.addTask<JsWebCopy>(name = "jsWebMin", dependsOn = listOf("runDceJsKotlin")) { task ->
+		task.group = GROUP_KORGE_PACKAGE
 		configureJsWeb(task, minimized = true)
 	}
 
@@ -242,10 +245,16 @@ private fun Project.addWeb() {
 		}
 	}
 
+	val runJs = project.tasks.create<Task>("runJs") {
+		group = GROUP_KORGE_RUN
+		dependsOn(jsWebRun)
+	}
+
 	val jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf(
 		"jsInstallWebpack",
 		"jsWebMin"
 	)) { task ->
+		task.group = GROUP_KORGE_PACKAGE
 		task.doLast {
 			copy { copy ->
 				copy.from(webMinFolder)

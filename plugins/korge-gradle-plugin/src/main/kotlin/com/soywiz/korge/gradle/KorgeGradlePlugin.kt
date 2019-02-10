@@ -39,7 +39,6 @@ open class JsWebCopy() : Copy() {
 
 val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
 //val node_modules by lazy { project.file("node_modules") }
-val Project.korgeGroup get() = "korge"
 
 class KorgeGradleApply(val project: Project) {
 	fun apply() = project {

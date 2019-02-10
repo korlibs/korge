@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle.targets.jvm
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
@@ -16,11 +17,11 @@ fun Project.configureJvm() {
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
 
-	val runJvm = project.addTask<JavaExec>("runJvm", group = korgeGroup) { task ->
+	val runJvm = project.addTask<JavaExec>("runJvm", group = GROUP_KORGE) { task ->
+		group = GROUP_KORGE_RUN
 		dependsOn("jvmMainClasses")
 		afterEvaluate {
-			task.classpath =
-				project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+			task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
 			task.main = korge.jvmMainClassName
 		}
 	}
@@ -37,8 +38,9 @@ private fun Project.configureJvmTest() {
 
 private fun Project.addProguard() {
 	// packageJvmFatJar
-	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = korgeGroup) { task ->
+	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = GROUP_KORGE) { task ->
 		task.baseName = "${project.name}-all"
+		task.group = GROUP_KORGE_PACKAGE
 		project.afterEvaluate {
 			task.manifest { manifest ->
 				manifest.attributes(
@@ -61,10 +63,11 @@ private fun Project.addProguard() {
 
 	val runJvm = tasks.getByName("runJvm") as JavaExec
 
-	project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = korgeGroup, dependsOn = listOf(
+	project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = GROUP_KORGE, dependsOn = listOf(
 		packageJvmFatJar
 	)
 	) { task ->
+		task.group = GROUP_KORGE_PACKAGE
 		project.afterEvaluate {
 			task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
 			//println(packageJvmFatJar.outputs.files.toList())

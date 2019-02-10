@@ -21,12 +21,15 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	override val outputExtension: String = "atlas.json"
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
-		val atlasPath0 = inputFile.readString().trim()
-		val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.baseName
+		// @TODO: Ignored file content. Use atlas to store information like max width/height, scale, etc.
+		//val atlasPath0 = inputFile.readString().trim()
+		//val atlasPath0 = ""
+		//val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.baseName
+		val atlasPath = inputFile.baseName
 		val atlasFolder = inputFile.parent[atlasPath].jail()
-		println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
+		//println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
 		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
-		println("atlasFiles=$files")
+		//println("atlasFiles=$files")
 
 		val bitmaps = files.map { it to it.readBitmap() }
 

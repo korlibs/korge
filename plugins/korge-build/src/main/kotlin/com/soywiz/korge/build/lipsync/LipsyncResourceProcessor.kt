@@ -10,6 +10,8 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.util.*
+import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
@@ -25,23 +27,26 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
         outputFile.writeString(processAudioData(inputFile.readAudioData()).toLipString())
     }
 
-    data class Config(val url: URL, val folder: String, val exe: String)
+    data class Config(val url: URL, val folder: String, val sha1: ByteArray, val exe: String)
 
     val config by lazy {
         when {
             OS.isMac -> Config(
                 URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-osx.zip"),
                 "rhubarb-lip-sync-1.9.0-osx",
+                "72aa476490ce3bafef09a3a1c452db326f5e9aad".unhex,
                 "rhubarb"
             )
             OS.isLinux -> Config(
                 URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-linux.zip"),
                 "rhubarb-lip-sync-1.9.0-linux",
+                "191c935b31f56e990291acfe07e39feca3b9a701".unhex,
                 "rhubarb"
             )
             OS.isWindows -> Config(
                 URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-win32.zip"),
                 "rhubarb-lip-sync-1.9.0-win32",
+                "a28b77a1d5239a154b288ddcff18737e354c68b8".unhex,
                 "rhubarb.exe"
             )
             else -> error("Operating system '${OS.rawName}', '${OS.platformName}' not supported")
@@ -62,12 +67,25 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
         if (!outputFolder.exists()) {
             if (!localZipFile.exists()) {
                 println("Downloading ${config.url} ...")
-                localZipFile.writeBytes(config.url.openStream().use { it.readBytes() })
+                localZipFile.writeBytes(config.url.openStream().use {
+                    val data = it.readBytes()
+                    val expectedSha1 = config.sha1.hex
+                    val actualSha1 = data.sha1().hex
+                    if (expectedSha1 != actualSha1) {
+                        error("Downloaded file ${config.url} sha1 $actualSha1 doesn't match the expected sha1 $expectedSha1")
+                    }
+                    data
+                })
             }
+
+
             //val mem = MemoryVfs()
+            println("Extracting $localZipFile ...")
             val zip = localZipFile.openAsZip()
             //localZipFile.openAsZip().copyToTree(rootOutputFolder)
             zip.copyToTree(rootOutputFolder)
+
+            println("Done")
 
             //val executableFile = File(rootOutputFolder[config.exe].absolutePath)
 

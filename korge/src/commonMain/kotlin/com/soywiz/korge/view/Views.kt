@@ -354,8 +354,12 @@ inline fun <reified T : Component> View.forEachComponent(
 	tempComponents: ArrayList<Component> = arrayListOf(),
 	callback: (T) -> Unit
 ) {
-	for (c in getComponents(this, tempComponents)) {
+	val components = getComponents(this, tempComponents)
+	var n = 0
+	while (n < components.size) {
+		val c = components.getOrNull(n) ?: break
 		if (c is T) callback(c)
+		n++
 	}
 }
 

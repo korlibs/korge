@@ -351,15 +351,19 @@ object Korge {
 		views.clearEachFrame = clearEachFrame
 		views.clearColor = bgcolor
 		views.gameWindow.addEventListener<RenderEvent> {
-			views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
+			try {
+				views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
-			if (moveMouseOutsideInNextFrame) {
-				moveMouseOutsideInNextFrame = false
-				views.input.mouse.setTo(-1000, -1000)
-				//views.dispatch(mouseMovedEvent)
-				views.mouseUpdated()
+				if (moveMouseOutsideInNextFrame) {
+					moveMouseOutsideInNextFrame = false
+					views.input.mouse.setTo(-1000, -1000)
+					//views.dispatch(mouseMovedEvent)
+					views.mouseUpdated()
+				}
+				//println("render:$delta,$adelta")
+			} catch (e: Throwable) {
+				e.printStackTrace()
 			}
-			//println("render:$delta,$adelta")
 		}
 		//ag.onRender {
 		//}

@@ -1,13 +1,11 @@
 package com.soywiz.korge.gradle.targets.android
 
 import com.soywiz.korge.gradle.coroutinesVersion
-import com.soywiz.korge.gradle.targets.getIconBytes
 import com.soywiz.korge.gradle.korge
 import com.soywiz.korge.gradle.kotlinVersion
 import com.soywiz.korge.gradle.quoted
-import com.soywiz.korge.gradle.util.Indenter
-import com.soywiz.korge.gradle.util.conditionally
-import com.soywiz.korge.gradle.util.ensureParents
+import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
@@ -54,7 +52,6 @@ fun Project.configureNativeAndroid() {
 	val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
 		task.dependsOn("compileTestKotlinJvm") // So artifacts are resolved
 		task.apply {
-			group = "korge"
 			val overwrite = true
 			val outputFolder = File(buildDir, "platforms/android")
 			doLast {
@@ -86,6 +83,9 @@ fun Project.configureNativeAndroid() {
 					outputFolder,
 					"proguard-rules.pro"
 				).conditionally(ifNotExists) { ensureParents().writeText("#Rules here\n") }
+
+				outputFolder["gradle"].mkdirs()
+				rootDir["gradle"].copyRecursively(outputFolder["gradle"], overwrite = true) { f, e -> OnErrorAction.SKIP }
 
 				File(outputFolder, "build.gradle").conditionally(ifNotExists) {
 					ensureParents().writeText(Indenter {
@@ -145,6 +145,7 @@ fun Project.configureNativeAndroid() {
 							line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
 							for ((name, version) in resolvedArtifacts) {
 								if (name.startsWith("org.jetbrains.kotlin")) continue
+								if (name.contains("-metadata")) continue
 								line("api '$name-android:$version'")
 							}
 
@@ -242,7 +243,7 @@ fun Project.configureNativeAndroid() {
 		val suffixDebug = if (debug) "Debug" else "Release"
 		val installAndroidTask = tasks.create("installAndroid$suffixDebug", GradleBuild::class.java) { task ->
 			task.apply {
-				group = "korge"
+				group = GROUP_KORGE_INSTALL
 				dependsOn(prepareAndroidBootstrap)
 				buildFile = File(buildDir, "platforms/android/build.gradle")
 				version = "4.10.1"
@@ -263,17 +264,15 @@ fun Project.configureNativeAndroid() {
 				true -> arrayOf("-e")
 			}
 
-			tasks.create("runAndroid$suffixDevice$suffixDebug", DefaultTask::class.java) { task ->
-				task.apply {
-					group = "korge"
-					dependsOn(installAndroidTask)
-					doFirst {
-						exec {
-							it.commandLine(
-								"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
-								"${korge.id}/${korge.id}.MainActivity"
-							)
-						}
+			tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
+				group = GROUP_KORGE_RUN
+				dependsOn(installAndroidTask)
+				doFirst {
+					exec {
+						it.commandLine(
+							"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
+							"${korge.id}/${korge.id}.MainActivity"
+						)
 					}
 				}
 			}

@@ -39,7 +39,6 @@ fun Project.configureNativeDesktop() {
 
 	val prepareKotlinNativeBootstrap = tasks.create("prepareKotlinNativeBootstrap") { task ->
 		task.apply {
-			group = "korge"
 			val output = File(buildDir, "platforms/native-desktop/bootstrap.kt")
 			outputs.file(output)
 			doLast {
@@ -137,22 +136,25 @@ private fun Project.addNativeRun() {
 					}
 				}
 
-				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = korgeGroup) { task ->
+				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
+					task.group = GROUP_KORGE_RUN
 					task.executable = executableFile.absolutePath
 					task.args = listOf<String>()
 				}
 			}
-			addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = korgeGroup) { task ->
+			addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = GROUP_KORGE) { task ->
+				task.group = GROUP_KORGE_RUN
 			}
 		}
 	}
 
-	addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = korgeGroup)
-	addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = korgeGroup)
+	addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = GROUP_KORGE_RUN)
+	addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = GROUP_KORGE_RUN)
 
 	afterEvaluate {
 		for (buildType in RELEASE_DEBUG) {
 			addTask<Task>("packageMacosX64App${buildType.capitalize()}", group = "korge", dependsOn = listOf("linkMain${buildType.capitalize()}ExecutableMacosX64")) {
+				group = GROUP_KORGE_PACKAGE
 				doLast {
 					val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
 					val executableFile = compilation.getBinary("EXECUTABLE", buildType)

@@ -18,7 +18,7 @@ fun Project.addGenResourcesTasks() = this {
 
 	for (test in listOf(false, true)) {
 		val genResources = tasks.createTyped<Task>(if (test) "genTestResources" else "genResources") {
-			group = korgeGroup
+			group = GROUP_KORGE_RESOURCES
 
 			val outDir = if (test) genTestResourcesDir else genMainResourcesDir
 

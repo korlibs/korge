@@ -2,7 +2,7 @@ package com.soywiz.korge.gradle.targets.ios
 
 import com.moowork.gradle.node.npm.NpmTask
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.getIconBytes
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
@@ -15,9 +15,16 @@ fun Project.configureNativeIos() {
 	tasks.create("prepareKotlinNativeBootstrapIos") { task ->
 		task.apply {
 			doLast {
-				File(buildDir, "platforms/native-ios/info.kt").apply {
+				File(buildDir, "platforms/native-ios/info.kt").delete() // Delete old versions
+				File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
 					parentFile.mkdirs()
 					writeText("""
+    					import ${korge.entryPoint}
+
+						object RootGameMain {
+							fun runMain() = MyIosGameWindow2.gameWindow.entry { ${korge.entryPoint}() }
+						}
+
 						object MyIosGameWindow2 {
 							fun setCustomCwd(cwd: String?) = run { com.soywiz.korio.file.std.customCwd = cwd }
 							val gameWindow get() = com.soywiz.korgw.MyIosGameWindow
@@ -38,7 +45,6 @@ fun Project.configureNativeIos() {
 					//}
 					compilation.outputKind(NativeOutputKind.FRAMEWORK)
 
-					compilation.defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
 					compilation.defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-ios"))
 
 					afterEvaluate {
@@ -753,8 +759,10 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("iosInstallSimulator$debugSuffix", Exec::class.java) { task ->
+		tasks.create("installIosSimulator$debugSuffix", Exec::class.java) { task ->
 			val buildTaskName = "iosBuildSimulator$debugSuffix"
+			task.group = GROUP_KORGE_INSTALL
+
 			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doFirst {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
@@ -763,7 +771,8 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("iosInstallDevice$debugSuffix", Exec::class.java) { task ->
+		tasks.create("installIosDevice$debugSuffix", Exec::class.java) { task ->
+			task.group = GROUP_KORGE_INSTALL
 			val buildTaskName = "iosBuildDevice$debugSuffix"
 			task.dependsOn("installIosDeploy", buildTaskName)
 			task.doFirst {
@@ -772,12 +781,13 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("iosRunDevice$debugSuffix", Exec::class.java) { task ->
+		tasks.createTyped<Exec>("runIosDevice$debugSuffix") {
+			group = GROUP_KORGE_RUN
 			val buildTaskName = "iosBuildDevice$debugSuffix"
-			task.dependsOn("installIosDeploy", buildTaskName)
-			task.doFirst {
+			dependsOn("installIosDeploy", buildTaskName)
+			doFirst {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				task.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
+				commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
 			}
 		}
 	}
