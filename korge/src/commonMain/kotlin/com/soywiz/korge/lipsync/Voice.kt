@@ -1,23 +1,24 @@
 package com.soywiz.korge.lipsync
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korev.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korau.sound.NativeSound
+import com.soywiz.korau.sound.playAndWait
+import com.soywiz.korau.sound.readNativeSoundOptimized
+import com.soywiz.korev.Event
+import com.soywiz.korev.dispatch
+import com.soywiz.korge.animate.play
+import com.soywiz.korge.component.EventComponent
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korio.file.VfsFile
 
 class LipSync(val lipsync: String) {
-	val timeMs: Int get() = lipsync.length * 16
-	operator fun get(timeMs: Int): Char = lipsync.getOrElse(timeMs / 16) { 'X' }
-	fun getAF(timeMs: Int): Char {
-		val c = this[timeMs]
+	val totalTime: TimeSpan get() = (lipsync.length * 16).milliseconds
+	operator fun get(time: TimeSpan): Char = lipsync.getOrElse(time.millisecondsInt / 16) { 'X' }
+	fun getAF(time: TimeSpan): Char {
+		val c = this[time]
 		return when (c) {
 			'G' -> 'B'
 			'H' -> 'C'
@@ -29,61 +30,37 @@ class LipSync(val lipsync: String) {
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(Voice.Factory::class)
-class Voice(val views: Views, val voice: NativeSound, val lipsync: LipSync) {
-	val timeMs: Int get() = lipsync.timeMs
-	operator fun get(timeMs: Int): Char = lipsync[timeMs]
-	fun getAF(timeMs: Int): Char = lipsync.getAF(timeMs)
+class Voice(val voice: NativeSound, val lipsync: LipSync) {
+	val totalTime: TimeSpan get() = lipsync.totalTime
+	operator fun get(time: TimeSpan): Char = lipsync[time]
+	fun getAF(time: TimeSpan): Char = lipsync.getAF(time)
+	val event = LipSyncEvent()
 
-	suspend fun play(name: String) {
-		views.lipSync.play(this, name)
+	suspend fun play(name: String, views: Views) {
+		play(name) { e ->
+			views.dispatch(e)
+		}
+	}
+
+	suspend fun play(name: String, handler: (LipSyncEvent) -> Unit) {
+		voice.playAndWait { current, total ->
+			if (current >= total) {
+				handler(event.set(name, 0.seconds, 'X'))
+			} else {
+				handler(event.set(name, current, lipsync[current]))
+			}
+		}
 	}
 }
 
 data class LipSyncEvent(var name: String = "", var time: TimeSpan = 0.seconds, var lip: Char = 'X') : Event() {
+	fun set(name: String, elapsedTime: TimeSpan, lip: Char) = apply {
+		this.name = name
+		this.time = elapsedTime
+		this.lip = lip
+	}
+
 	val timeMs: Int get() = time.millisecondsInt
-}
-
-class LipSyncHandler(val views: Views) {
-	val event = LipSyncEvent()
-
-	private fun dispatch(name: String, elapsedTime: TimeSpan, lip: Char) {
-		views.dispatch(event.apply {
-			this.name = name
-			this.time = elapsedTime
-			this.lip = lip
-		})
-	}
-
-	suspend fun play(voice: Voice, name: String) = suspendCancellableCoroutine<Unit> { c ->
-		var cancel: Cancellable? = null
-
-		val channel = voice.voice.play()
-
-		cancel = views.stage.addUpdatable {
-			val elapsedTime = channel.current
-			val elapsedTimeMs = elapsedTime.millisecondsInt
-			//println("elapsedTime:$elapsedTime, channel.length=${channel.length}")
-			if (elapsedTime >= channel.total) {
-				cancel?.cancel()
-				dispatch(name, 0.seconds, 'X')
-			} else {
-				dispatch(name, channel.current, voice[elapsedTimeMs])
-			}
-		}
-
-		val cancel2 = launchImmediately(c.context) {
-			channel.await()
-			c.resume(Unit)
-		}
-
-		c.invokeOnCancellation {
-			val error = it ?: error("Unknown")
-			cancel?.cancel(error)
-			cancel2.cancel(error)
-			channel.stop()
-			dispatch(name, 0.seconds, 'X')
-		}
-	}
 }
 
 class LipSyncComponent(override val view: View) : EventComponent {
@@ -97,12 +74,11 @@ class LipSyncComponent(override val view: View) : EventComponent {
 	}
 }
 
-val Views.lipSync by Extra.PropertyThis<Views, LipSyncHandler> { LipSyncHandler(this) }
+fun View.lipsync() = this.getOrCreateComponent { LipSyncComponent(it) }
 
-suspend fun VfsFile.readVoice(views: Views): Voice {
+suspend fun VfsFile.readVoice(): Voice {
 	val lipsyncFile = this.withExtension("lipsync")
 	return Voice(
-		views,
 		this.readNativeSoundOptimized(),
 		LipSync(if (lipsyncFile.exists()) lipsyncFile.readString().trim() else "")
 	)

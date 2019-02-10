@@ -87,6 +87,7 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
         val partial = reqRange != null
         val length = if (partial) reqRange!!.endInclusive - reqRange.start + 1 else content.length
 
+        responseHeaders.add("Content-Length", "$length")
         responseHeaders.add("Content-Type", content.contentType)
         responseHeaders.add("Accept-Ranges", "bytes")
         sendHeaders(headers)
