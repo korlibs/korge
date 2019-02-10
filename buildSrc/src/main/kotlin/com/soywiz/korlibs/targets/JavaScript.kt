@@ -5,8 +5,10 @@ import org.gradle.api.*
 import org.gradle.api.artifacts.repositories.*
 import java.io.*
 import com.moowork.gradle.node.*
+import com.moowork.gradle.node.exec.NodeExecRunner
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
+import com.soywiz.korlibs.modules.staticHttpServer
 import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.*
@@ -104,11 +106,14 @@ fun Project.configureTargetJavaScript() {
         setArgs(listOf("install", "mocha-headless-chrome@2.0.1"))
     }
 
-    val jsTestChrome = tasks.create<NodeTask>("jsTestChrome") {
+    val jsTestChrome = tasks.create<Task>("jsTestChrome") {
         dependsOn(jsCompilations.test.compileKotlinTask, jsInstallMochaHeadlessChrome, installMocha, populateNodeModules)
 
         val resultsFile = buildDir["chrome-results/results.json"]
-        doFirst {
+        inputs.files(jsCompilations.test.compileKotlinTask.outputFile, jsCompilations.main.compileKotlinTask.outputFile)
+        outputs.file(resultsFile)
+
+        doLast {
             buildDir["node_modules/tests.html"].text = """
                 <!DOCTYPE html>
                 <html>
@@ -129,13 +134,15 @@ fun Project.configureTargetJavaScript() {
                 </body>
                 </html>
             """.trimIndent()
-        }
-        setScript(node.nodeModulesDir["mocha-headless-chrome/bin/start"])
-        setArgs(listOf("-f", "$buildDir/node_modules/tests.html", "-a", "no-sandbox", "-a", "disable-setuid-sandbox", "-a", "allow-file-access-from-files", "-o", resultsFile))
-        inputs.files(jsCompilations.test.compileKotlinTask.outputFile, jsCompilations.main.compileKotlinTask.outputFile)
-        outputs.file(resultsFile)
-    }
 
+            staticHttpServer(buildDir["node_modules"]) { httpServer ->
+                nodeExec(
+                    node.nodeModulesDir["mocha-headless-chrome/bin/start"],
+                    "-f", "http://127.0.0.1:${httpServer.address.port}/tests.html", "-o", resultsFile
+                )
+            }
+        }
+    }
 
     // Include resources from JS and Metadata (common) into the JS JAR
     val jsJar = tasks.getByName("jsJar") as Jar
@@ -159,4 +166,8 @@ fun Project.configureTargetJavaScript() {
             jsTest.dependsOn(jsTestChrome)
         }
     }
+}
+
+fun Project.nodeExec(vararg args: Any) {
+    NodeExecRunner(this).apply { this.arguments += args }.execute()
 }
