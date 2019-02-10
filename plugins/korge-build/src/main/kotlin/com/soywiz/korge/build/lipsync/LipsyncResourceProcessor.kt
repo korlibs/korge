@@ -10,7 +10,9 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.util.*
+import java.io.*
 import java.net.*
+import java.nio.file.*
 
 open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
     companion object : LipsyncResourceProcessor()
@@ -28,15 +30,21 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
     val config by lazy {
         when {
             OS.isMac -> Config(
-                URL("https://github.com/soywiz/korge-tools/releases/download/binaries/rhubarb-lip-sync-1.4.2-osx.zip"),
-                "rhubarb-lip-sync-1.4.2-osx",
+                URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-osx.zip"),
+                "rhubarb-lip-sync-1.9.0-osx",
                 "rhubarb"
             )
-            else -> Config(
-                URL("https://github.com/soywiz/korge-tools/releases/download/binaries/rhubarb-lip-sync-1.4.2-win32.zip"),
-                "rhubarb-lip-sync-1.4.2-win32",
+            OS.isLinux -> Config(
+                URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-linux.zip"),
+                "rhubarb-lip-sync-1.9.0-linux",
+                "rhubarb"
+            )
+            OS.isWindows -> Config(
+                URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-win32.zip"),
+                "rhubarb-lip-sync-1.9.0-win32",
                 "rhubarb.exe"
             )
+            else -> error("Operating system '${OS.rawName}', '${OS.platformName}' not supported")
         }
     }
 
@@ -53,13 +61,20 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
 
         if (!outputFolder.exists()) {
             if (!localZipFile.exists()) {
-                UrlVfs(config.url).copyTo(localZipFile)
+                println("Downloading ${config.url} ...")
+                localZipFile.writeBytes(config.url.openStream().use { it.readBytes() })
             }
             //val mem = MemoryVfs()
             val zip = localZipFile.openAsZip()
             //localZipFile.openAsZip().copyToTree(rootOutputFolder)
             zip.copyToTree(rootOutputFolder)
+
+            //val executableFile = File(rootOutputFolder[config.exe].absolutePath)
+
+            //println("Making executable $executableFile ...")
+            //executableFile.setExecutable(true, false)
         }
+
 
 
         //val zip = LocalVfs("c:/temp/rhubarb-lip-sync-1.4.2-win32.zip").openAsZip()
@@ -70,8 +85,12 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
         return@toolCache Tool(outputFolder[config.exe])
     }
 
+    fun VfsFile.toJvmFile() = File(this.absolutePath)
+
     suspend fun processWav(wavFile: VfsFile): String {
         val rhubarb = getRhubarbTool().rhubarb
+
+        rhubarb.toJvmFile().setExecutable(true, false)
         val result = rhubarb.parent.execToString(rhubarb.absolutePath, wavFile.absolutePath)
         return result
     }
@@ -81,7 +100,9 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
         val tempFile = tempVfs["rhubarb-file.wav"]
         try {
             tempFile.write(data.toWav())
+            rhubarb.toJvmFile().setExecutable(true, false)
             val result = tempVfs.execToString(listOf(rhubarb.absolutePath, "-f", "json", tempFile.absolutePath))
+            Mapper.jvmFallback()
             return Json.parseTyped<RhubarbFile>(result, Mapper)
         } finally {
             tempFile.delete()

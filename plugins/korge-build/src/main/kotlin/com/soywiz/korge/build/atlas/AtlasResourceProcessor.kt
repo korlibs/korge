@@ -82,7 +82,6 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 		//println(Json.stringify(atlasInfo, pretty = true))
 
-        Mapper.jvmFallback()
 		outputFile.withCompoundExtension("atlas.json").writeString(Json.stringifyTyped(atlasInfo, pretty = true, mapper = Mapper))
 
 		//Atlas.Factory()

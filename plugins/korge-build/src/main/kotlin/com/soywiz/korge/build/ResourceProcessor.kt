@@ -1,12 +1,18 @@
 package com.soywiz.korge.build
 
+import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.runIgnoringExceptions
+import com.soywiz.korio.util.*
 import java.io.*
 import java.util.*
 
 abstract class ResourceProcessor(vararg extensions: String) {
+	init {
+		MAPPER_ONCE
+	}
+
 	abstract val version: Int
 	abstract val outputExtension: String
 
@@ -53,6 +59,8 @@ abstract class ResourceProcessor(vararg extensions: String) {
 	}
 
 	companion object {
+		val MAPPER_ONCE by lazy { Mapper.jvmFallback() }
+
 		val defaultResourceProcessors by lazy {
 			ServiceLoader.load(ResourceProcessor::class.java).toMutableList()
 		}
@@ -65,6 +73,11 @@ abstract class ResourceProcessor(vararg extensions: String) {
 				e.printStackTrace()
 				mapOf<String, ResourceProcessor>()
 			}
+		}
+
+		fun tryGetProcessorByName(name: String): ResourceProcessor? {
+			val pinfo = PathInfo(name)
+			return processorsByExtension[pinfo.compoundExtensionLC] ?: processorsByExtension[pinfo.extensionLC]
 		}
 
 		/*

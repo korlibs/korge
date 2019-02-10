@@ -23,8 +23,9 @@ object KorgeBuildService {
 					val dstFile = File(dstDir, srcFile.relativeTo(srcDir).path)
 					val srcDirectory = srcFile.parentFile
 					val dstDirectory = dstFile.parentFile
-					val processor = ResourceProcessor.processorsByExtension[srcFile.extension]
+					val processor = ResourceProcessor.tryGetProcessorByName(srcFile.name)
 					if (processor != null) {
+						logger("$processor: srcFile=$srcFile -> dstDirectory=$dstDirectory...")
 						runBlocking {
 							try {
 								runCatching { dstDirectory.mkdirs() }
@@ -32,12 +33,13 @@ object KorgeBuildService {
 								val srcVfsFile = srcDirectory.toVfs().jail()[srcFile.name]
 								val dstVfsDir = dstDirectory.toVfs().jail()
 
-								logger("$processor: srcFile=$srcFile -> dstDirectory=$dstDirectory...")
 								processor.process(srcVfsFile, dstVfsDir)
 							} catch (e: Throwable) {
 								e.printStackTrace()
 							}
 						}
+					} else {
+						logger("$processor: srcFile=$srcFile")
 					}
 				}
 			}
