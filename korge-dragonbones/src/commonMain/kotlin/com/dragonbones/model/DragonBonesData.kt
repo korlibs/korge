@@ -129,7 +129,9 @@ class DragonBonesData(pool: BaseObjectPool) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	var frameIntArray: Int16Buffer? = null
+	//var frameIntArray: Int16Buffer? = null
+	//var frameIntArray: Float32BufferAsInt? = null
+	var frameIntArray: Float32Buffer? = null
 	//var frameIntArray: IntArrayList? = null
 	/**
 	 * @internal

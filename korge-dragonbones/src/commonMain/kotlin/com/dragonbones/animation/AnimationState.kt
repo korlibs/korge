@@ -376,7 +376,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 			// Create bone timelines map.
 			for (timeline in this._boneTimelines) {
 				val timelineName = ((timeline.target as BlendState).target as Bone).name
-				if (!(timelineName in boneTimelines)) {
+				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
 				}
 
@@ -385,7 +385,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 
 			for (timeline in this._boneBlendTimelines) {
 				val timelineName = ((timeline.target as BlendState).target as Bone).name
-				if (!(timelineName in boneTimelines)) {
+				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
 				}
 
@@ -504,7 +504,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 			// Create slot timelines map.
 			for (timeline in this._slotTimelines) {
 				val timelineName = (timeline.target as Slot).name
-				if (!(timelineName in slotTimelines)) {
+				if (timelineName !in slotTimelines) {
 					slotTimelines[timelineName] = arrayListOf()
 				}
 
@@ -513,7 +513,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 
 			for (timeline in this._slotBlendTimelines) {
 				val timelineName = ((timeline.target as BlendState).target as Slot).name
-				if (!(timelineName in slotTimelines)) {
+				if (timelineName !in slotTimelines) {
 					slotTimelines[timelineName] = arrayListOf()
 				}
 

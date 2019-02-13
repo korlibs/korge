@@ -552,7 +552,7 @@ class SurfaceTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(po
 			this._valueCount = frameIntArray[frameIntOffset + BinaryOffset.DeformValueCount].toInt()
 			this._deformCount = frameIntArray[frameIntOffset + BinaryOffset.DeformCount].toInt()
 			this._deformOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformValueOffset].toInt()
-			this._sameValueOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformFloatOffset] +
+			this._sameValueOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformFloatOffset].toInt() +
 					this._animationData!!.frameFloatOffset
 			this._valueScale = this._armature!!.armatureData.scale
 			this._valueArray = dragonBonesData.frameFloatArray!!
@@ -626,7 +626,7 @@ class AlphaTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) 
 
 		this._valueOffset = this._animationData!!.frameIntOffset
 		this._valueScale = 0.01
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 
 	override fun blend(_isDirty: Boolean) {
@@ -851,7 +851,7 @@ class SlotZIndexTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(p
 		super.init(armature, animationState, timelineData)
 
 		this._valueOffset = this._animationData!!.frameIntOffset
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 
 	override fun blend(_isDirty: Boolean) {
@@ -935,7 +935,7 @@ class DeformTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(poo
 			this._valueCount = frameIntArray[frameIntOffset + BinaryOffset.DeformValueCount].toInt()
 			this._deformCount = frameIntArray[frameIntOffset + BinaryOffset.DeformCount].toInt()
 			this._deformOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformValueOffset].toInt()
-			this._sameValueOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformFloatOffset] +
+			this._sameValueOffset = frameIntArray[frameIntOffset + BinaryOffset.DeformFloatOffset].toInt() +
 					this._animationData!!.frameFloatOffset
 			this._valueScale = this._armature!!.armatureData.scale
 			this._valueArray = dragonBonesData.frameFloatArray!!
@@ -1021,7 +1021,7 @@ class IKConstraintTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState
 
 		this._valueOffset = this._animationData!!.frameIntOffset
 		this._valueScale = 0.01
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 }
 
@@ -1049,7 +1049,7 @@ class AnimationProgressTimelineState(pool: BaseObjectPool) : SingleValueTimeline
 
 		this._valueOffset = this._animationData!!.frameIntOffset
 		this._valueScale = 0.0001
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 }
 
@@ -1077,7 +1077,7 @@ class AnimationWeightTimelineState(pool: BaseObjectPool) : SingleValueTimelineSt
 
 		this._valueOffset = this._animationData!!.frameIntOffset
 		this._valueScale = 0.0001
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 }
 
@@ -1106,6 +1106,6 @@ class AnimationParametersTimelineState(pool: BaseObjectPool) : DoubleValueTimeli
 
 		this._valueOffset = this._animationData!!.frameIntOffset
 		this._valueScale = 0.0001
-		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!.toFloat()
+		this._valueArray = this._animationData!!.parent!!.parent!!.frameIntArray!!
 	}
 }
