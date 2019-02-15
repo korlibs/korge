@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.get
 import com.sun.net.httpserver.*
 import org.gradle.api.Project
@@ -129,6 +130,13 @@ fun File.miniMimeType() = when (this.extension.toLowerCase()) {
 
 fun Project.openBrowser(url: String) {
 	exec {
-		it.commandLine("open", url)
+		when {
+			isWindows -> {
+				it.commandLine("cmd", "/c", "explorer.exe $url")
+				it.isIgnoreExitValue = true
+			}
+			isLinux -> it.commandLine("xdg-open", url)
+			else -> it.commandLine("open", url)
+		}
 	}
 }
