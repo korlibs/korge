@@ -31,6 +31,8 @@ dependencies {
 	compile("com.soywiz:korge-jvm:${version("korge")}")
 	compile("com.soywiz:korge-swf-jvm:${version("korge")}")
 	compile("com.soywiz:krypto-jvm:${version("krypto")}")
+	compile("com.soywiz:korau-mp3-jvm:${version("korau")}")
+	compile("com.soywiz:korau-ogg-vorbis-jvm:${version("korau")}")
 }
 
 publishing {
