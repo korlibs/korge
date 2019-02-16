@@ -8,6 +8,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -25,8 +26,10 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		//val atlasPath0 = inputFile.readString().trim()
 		//val atlasPath0 = ""
 		//val atlasPath = if (atlasPath0.isNotEmpty()) atlasPath0 else inputFile.baseName
-		val atlasPath = inputFile.baseName
+		val atlasPath = inputFile.baseNameWithoutExtension
 		val atlasFolder = inputFile.parent[atlasPath].jail()
+		//println("inputFile=$inputFile")
+		//println("outputFile=$outputFile")
 		//println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
 		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
 		//println("atlasFiles=$files")
@@ -42,7 +45,11 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		if (packs.size != 1) {
 			println("Atlas packer failed: ${packs.size}")
 		}
-		val pack = packs.first()
+
+		val dummyBmp = Bitmap32(2, 2)
+		val pack = packs.firstOrNull() ?: BinPacker.Result(16.0, 16.0, listOf(
+			(MemoryVfsMix("dummy.png" to dummyBmp.encode(PNG))["dummy.png"] to dummyBmp) to Rectangle(2, 2, 4, 4)
+		))
 		val out = Bitmap32(pack.width.toInt(), pack.height.toInt())
 
 		for (entry in pack.items) {
