@@ -5,14 +5,15 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 inline fun Container.graphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics().addTo(this).apply(callback)
 
 class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	private val shapes = arrayListOf<Shape>()
+	private val compoundShape = CompoundShape(shapes)
 	private var fill: Context2d.Paint? = null
+	private var stroke: Context2d.Paint? = null
 	@PublishedApi
 	internal var currentPath = GraphicsPath()
 	@PublishedApi
@@ -27,8 +28,16 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 		shapes.clear()
 	}
 
-	fun lineStyle(thickness: Double, color: RGBA, alpha: Double) = dirty {
-	}
+	private var thickness: Double = 1.0
+	private var pixelHinting: Boolean = false
+	private var scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL
+	private var startCap: Context2d.LineCap = Context2d.LineCap.BUTT
+	private var endCap: Context2d.LineCap = Context2d.LineCap.BUTT
+	private var lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER
+	private var miterLimit: Double = 20.0
+
+	@Deprecated("This doesn't do anything")
+	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
 
 	override val lastX: Double get() = currentPath.lastX
 	override val lastY: Double get() = currentPath.lastY
@@ -51,14 +60,7 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 		currentPath.quadTo(cx, cy, ax, ay)
 	}
 
-	inline fun fill(color: RGBA, alpha: Number = 1.0, callback: () -> Unit) {
-		beginFill(color, alpha.toDouble())
-		try {
-			callback()
-		} finally {
-			endFill()
-		}
-	}
+	inline fun fill(color: RGBA, alpha: Number = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
 
 	inline fun fill(paint: Context2d.Paint, callback: () -> Unit) {
 		beginFill(paint)
@@ -69,21 +71,68 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 		}
 	}
 
+	inline fun stroke(
+		paint: Context2d.Paint,
+		thickness: Double = 1.0, pixelHinting: Boolean = false,
+		scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL,
+		startCap: Context2d.LineCap = Context2d.LineCap.BUTT,
+		endCap: Context2d.LineCap = Context2d.LineCap.BUTT,
+		lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER,
+		miterLimit: Double = 20.0,
+		callback: () -> Unit
+	) {
+		beginStroke(paint, thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		try {
+			callback()
+		} finally {
+			endStroke()
+		}
+	}
+
 	fun beginFill(paint: Context2d.Paint) = dirty {
 		fill = paint
 		currentPath = GraphicsPath()
 	}
 
-	fun beginFill(color: RGBA, alpha: Double) = dirty {
-		fill = Context2d.Color(RGBA(color.r, color.g, color.b, (alpha * 255).toInt()))
+	fun beginStroke(
+		paint: Context2d.Paint,
+		thickness: Double = 1.0, pixelHinting: Boolean = false,
+		scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL,
+		startCap: Context2d.LineCap = Context2d.LineCap.BUTT,
+		endCap: Context2d.LineCap = Context2d.LineCap.BUTT,
+		lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER,
+		miterLimit: Double = 20.0
+	) = dirty {
+		this.thickness = thickness
+		this.pixelHinting = pixelHinting
+		this.scaleMode = scaleMode
+		this.startCap = startCap
+		this.endCap = endCap
+		this.lineJoin = lineJoin
+		this.miterLimit = miterLimit
+		stroke = paint
 		currentPath = GraphicsPath()
 	}
+
+	@PublishedApi
+	internal inline fun toColorFill(color: RGBA, alpha: Number): Context2d.Color {
+		return Context2d.Color(RGBA(color.r, color.g, color.b, (alpha.toDouble() * 255).toInt()))
+		//return Context2d.Color(color.withAd(alpha.toDouble())
+	}
+
+	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
 
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
 
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix())
+		currentPath = GraphicsPath()
+	}
+
+	fun endStroke() = dirty {
+		shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
+		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = GraphicsPath()
 	}
 
@@ -100,9 +149,7 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 			val image = NativeImage(bounds.width.toInt(), bounds.height.toInt())
 			image.context2d {
 				translate(-bounds.x, -bounds.y)
-				for (shape in shapes) {
-					shape.draw(this)
-				}
+				compoundShape.draw(this)
 			}
 			this.bitmap = image.slice()
 			sLeft = bounds.x
