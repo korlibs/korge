@@ -1,9 +1,12 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tests.*
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
@@ -15,11 +18,16 @@ class ViewsTest : ViewsForTesting() {
 
 	@Test
 	fun testBounds() = viewsTest {
-		val image = Image(tex)
-		image.x = 100.0
-		image.y = 100.0
+		val image = Image(tex).position(100, 100)
 		views.stage += image
 		assertEquals(Rectangle(100, 100, 10, 10), image.getGlobalBounds())
+	}
+
+	@Test
+	fun testBounds2() = viewsTest {
+		val image = Image(tex).position(-100, 100)
+		views.stage += image
+		assertEquals(Rectangle(-100, 100, 10, 10), image.getGlobalBounds())
 	}
 
 	@Test
@@ -88,5 +96,12 @@ class ViewsTest : ViewsForTesting() {
 		assertEquals(400, c.width.toInt())
 		assertEquals(100, c.height.toInt())
 		assertEquals(2.0, c.scaleX)
+	}
+
+	@Test
+	fun testTween() = viewsTest {
+		val image = solidRect(100, 100, Colors.RED).position(0, 0)
+		image.tween(image::x[-101], time = 4.seconds)
+		assertEquals(false, image.isVisibleToUser())
 	}
 }

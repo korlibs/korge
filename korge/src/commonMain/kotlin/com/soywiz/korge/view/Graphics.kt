@@ -34,7 +34,7 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	private var startCap: Context2d.LineCap = Context2d.LineCap.BUTT
 	private var endCap: Context2d.LineCap = Context2d.LineCap.BUTT
 	private var lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER
-	private var miterLimit: Double = 20.0
+	private var miterLimit: Double = 4.0
 
 	@Deprecated("This doesn't do anything")
 	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
@@ -72,16 +72,18 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	}
 
 	inline fun stroke(
+		color: RGBA, info: Context2d.StrokeInfo, callback: () -> Unit
+	) = stroke(
+		Context2d.Color(color),
+		info, callback
+	)
+
+	inline fun stroke(
 		paint: Context2d.Paint,
-		thickness: Double = 1.0, pixelHinting: Boolean = false,
-		scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL,
-		startCap: Context2d.LineCap = Context2d.LineCap.BUTT,
-		endCap: Context2d.LineCap = Context2d.LineCap.BUTT,
-		lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER,
-		miterLimit: Double = 20.0,
+		info: Context2d.StrokeInfo,
 		callback: () -> Unit
 	) {
-		beginStroke(paint, thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		beginStroke(paint, info)
 		try {
 			callback()
 		} finally {
@@ -89,27 +91,47 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 		}
 	}
 
+	inline fun fillStroke(
+		fill: Context2d.Paint,
+		stroke: Context2d.Paint,
+		strokeInfo: Context2d.StrokeInfo,
+		callback: () -> Unit
+	) {
+		beginFillStroke(fill, stroke, strokeInfo)
+		try {
+			callback()
+		} finally {
+			endFillStroke()
+		}
+	}
+
+	fun beginFillStroke(
+		fill: Context2d.Paint,
+		stroke: Context2d.Paint,
+		strokeInfo: Context2d.StrokeInfo
+	) {
+		this.fill = fill
+		this.stroke = stroke
+		this.setStrokeInfo(strokeInfo)
+	}
+
 	fun beginFill(paint: Context2d.Paint) = dirty {
 		fill = paint
 		currentPath = GraphicsPath()
 	}
 
-	fun beginStroke(
-		paint: Context2d.Paint,
-		thickness: Double = 1.0, pixelHinting: Boolean = false,
-		scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL,
-		startCap: Context2d.LineCap = Context2d.LineCap.BUTT,
-		endCap: Context2d.LineCap = Context2d.LineCap.BUTT,
-		lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER,
-		miterLimit: Double = 20.0
-	) = dirty {
-		this.thickness = thickness
-		this.pixelHinting = pixelHinting
-		this.scaleMode = scaleMode
-		this.startCap = startCap
-		this.endCap = endCap
-		this.lineJoin = lineJoin
-		this.miterLimit = miterLimit
+	private fun setStrokeInfo(info: Context2d.StrokeInfo) {
+		this.thickness = info.thickness
+		this.pixelHinting = info.pixelHinting
+		this.scaleMode = info.scaleMode
+		this.startCap = info.startCap
+		this.endCap = info.endCap
+		this.lineJoin = info.lineJoin
+		this.miterLimit = info.miterLimit
+	}
+
+	fun beginStroke(paint: Context2d.Paint, info: Context2d.StrokeInfo) = dirty {
+		setStrokeInfo(info)
 		stroke = paint
 		currentPath = GraphicsPath()
 	}
@@ -122,7 +144,6 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
-
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
 
 	fun endFill() = dirty {
@@ -131,8 +152,14 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	}
 
 	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
+		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
+		currentPath = GraphicsPath()
+	}
+
+	fun endFillStroke() = dirty {
+		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix())
+		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
 		currentPath = GraphicsPath()
 	}
 

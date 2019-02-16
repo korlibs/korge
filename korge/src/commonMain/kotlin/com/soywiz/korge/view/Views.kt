@@ -46,7 +46,7 @@ interface ViewsScope {
 }
 
 //@Singleton
-class Views(
+class Views constructor(
 	override val coroutineContext: CoroutineContext,
 	val ag: AG,
 	val injector: AsyncInjector,
@@ -297,7 +297,7 @@ fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
 	callback(log.views.stage, log)
 }
 
-class GameWindowLog : GameWindow() {
+open class GameWindowLog : GameWindow() {
 }
 
 class ViewsLog(

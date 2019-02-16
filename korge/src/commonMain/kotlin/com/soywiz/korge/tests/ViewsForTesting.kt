@@ -1,5 +1,6 @@
 package com.soywiz.korge.tests
 
+import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -8,22 +9,32 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.GameWindowCoroutineDispatcher
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.jvm.JvmOverloads
+import kotlin.math.max
 
-open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
-	var time = DateTime(0.0)
+open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480)) {
+	val startTime = DateTime(0.0)
+	var time = startTime
+	val elapsed get() = time - startTime
 	//val dispatcher2 = TestCoroutineDispatcher(frameTime)
-	val dispatcher = Dispatchers.Default
+	//val dispatcher = Dispatchers.Default
 
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}
 	val koruiEventDispatcher = EventDispatcher()
-	val viewsLog = ViewsLog(dispatcher, ag = LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT))
+	val dispatcher = FastGameWindowCoroutineDispatcher()
+	val gameWindow = object : GameWindowLog() {
+		override val coroutineDispatcher = dispatcher
+	}
+	val viewsLog = ViewsLog(dispatcher, ag = LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT), gameWindow = gameWindow)
 	val injector get() = viewsLog.injector
 	val ag get() = viewsLog.ag
 	val input get() = viewsLog.input
@@ -34,9 +45,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	suspend fun mouseMoveTo(x: Number, y: Number) {
 		koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x.toInt(), y = y.toInt()))
 		//views.update(frameTime)
-		time += frameTime
-		ag.onRender(ag)
-		delay(frameTime * 2) // Required because some events launch a coroutine
+		simulateFrame(count = 2)
 	}
 
 	suspend fun mouseDown() {
@@ -50,9 +59,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 				buttons = 1
 			)
 		)
-		time += frameTime
-		ag.onRender(ag)
-		delay(frameTime * 2) // Required because some events launch a coroutine
+		simulateFrame(count = 2)
 	}
 
 	suspend fun mouseUp() {
@@ -66,9 +73,7 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 				buttons = 0
 			)
 		)
-		time += frameTime
-		ag.onRender(ag)
-		delay(frameTime * 2) // Required because some events launch a coroutine
+		simulateFrame(count = 2)
 	}
 
 	//@Suppress("UNCHECKED_CAST")
@@ -94,20 +99,17 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 
 	suspend fun View.simulateClick() {
 		this.mouse.onClick(this.mouse)
-		ag.onRender(ag)
-		delayFrame()
+		simulateFrame()
 	}
 
 	suspend fun View.simulateOver() {
 		this.mouse.onOver(this.mouse)
-		ag.onRender(ag)
-		delayFrame()
+		simulateFrame()
 	}
 
 	suspend fun View.simulateOut() {
 		this.mouse.onOut(this.mouse)
-		ag.onRender(ag)
-		delayFrame()
+		simulateFrame()
 	}
 
 	suspend fun View.isVisibleToUser(): Boolean {
@@ -122,37 +124,81 @@ open class ViewsForTesting(val frameTime: TimeSpan = 10.milliseconds) {
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-	fun viewsTest(block: suspend CoroutineScope.() -> Unit): Unit = suspendTest {
+	fun viewsTest(block: suspend Stage.() -> Unit): Unit = suspendTest {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
 		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime)
-		val el = viewsLog.animationFrameLoopKorge {
+		injector.mapInstance<Module>(object : Module() {
+			override val title = "KorgeViewsForTesting"
+			override val size = this@ViewsForTesting.size
+			override val windowSize = this@ViewsForTesting.size
+		})
+
+		var completed = false
+		var completedException: Throwable? = null
+
+		this@ViewsForTesting.dispatcher.dispatch(coroutineContext, Runnable {
+			launchImmediately(dispatcher) {
+				try {
+					block(views.stage)
+				} catch (e: Throwable) {
+					completedException = e
+				} finally {
+					completed = true
+				}
+			}
+		})
+
+		withTimeout(10.seconds) {
+			while (!completed) {
+				simulateFrame()
+				dispatcher.executePending()
+			}
+
+			if (completedException != null) throw completedException!!
+		}
+	}
+
+	suspend private fun simulateFrame(count: Int = 1) {
+		repeat(count) {
 			time += frameTime
 			ag.onRender(ag)
+			delay(frameTime)
 		}
-		try {
-			withTimeout(10.seconds) {
-				block(views)
+	}
+
+	inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
+		val hasMore get() = timedTasks.isNotEmpty() || tasks.isNotEmpty()
+
+		override fun now() = time
+
+		override fun executePending() {
+			//println("executePending.hasMore=$hasMore")
+			try {
+				val timedTasks = mapWhile({ timedTasks.isNotEmpty() }) { timedTasks.removeHead() }
+
+				for (item in timedTasks) {
+					time = DateTime.fromUnix(max(time.unixMillis, item.time.unixMillis))
+					if (item.exception != null) {
+						item.continuation?.resumeWithException(item.exception!!)
+						if (item.callback != null) {
+							item.exception?.printStackTrace()
+						}
+					} else {
+						item.continuation?.resume(Unit)
+						item.callback?.run()
+					}
+				}
+
+				while (tasks.isNotEmpty()) {
+					val task = tasks.dequeue()
+					task.run()
+				}
+			} catch (e: Throwable) {
+				println("Error in GameWindowCoroutineDispatcher.executePending:")
+				e.printStackTrace()
 			}
-		} finally {
-			el.close()
 		}
-	}
-}
 
-private fun CoroutineScope.animationFrameLoopKorge(callback: suspend (Closeable) -> Unit): Closeable {
-	var job: Job? = null
-	val close = Closeable {
-		job?.cancel()
+		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
 	}
-	job = launchImmediately {
-		while (true) {
-			callback(close)
-			delayFrame()
-		}
-	}
-	return close
-}
-
-suspend private fun delayFrame() {
-	delay(16.milliseconds)
 }

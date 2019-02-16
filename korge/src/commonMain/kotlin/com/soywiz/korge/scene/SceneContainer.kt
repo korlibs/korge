@@ -5,6 +5,10 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
@@ -14,13 +18,19 @@ inline fun Container.sceneContainer(
 ): SceneContainer = SceneContainer(views).addTo(this).apply(callback)
 
 //typealias Sprite = Image
-class SceneContainer(val views: Views) : Container() {
+class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 	val transitionView = TransitionView()
 	var currentScene: Scene? = null
 
 	init {
 		this += transitionView
 	}
+
+	// Async versions
+	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
+	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
+	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> =  CoroutineScope(coroutineContext).async { back(time, transition) }
+	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> =  CoroutineScope(coroutineContext).async { forward(time, transition) }
 
 	suspend inline fun <reified T : Scene> changeTo(
 		vararg injects: Any,
@@ -34,6 +44,16 @@ class SceneContainer(val views: Views) : Container() {
 		transition: Transition = AlphaTransition
 	) = pushTo(T::class, *injects, time = time, transition = transition)
 
+	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
+		visitPos--
+		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
+	}
+
+	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
+		visitPos++
+		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
+	}
+
 	private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
 
 	companion object {
@@ -44,16 +64,6 @@ class SceneContainer(val views: Views) : Container() {
 	private var visitPos = 0
 
 	// https://developer.mozilla.org/en/docs/Web/API/History
-
-	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
-		visitPos--
-		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
-	}
-
-	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
-		visitPos++
-		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
-	}
 
 	private fun setCurrent(entry: VisitEntry) {
 		while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
@@ -85,16 +95,14 @@ class SceneContainer(val views: Views) : Container() {
 		entry: VisitEntry,
 		time: TimeSpan = 0.seconds,
 		transition: Transition = AlphaTransition
-	): Scene {
-		return _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
-	}
+	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
 
 	private suspend fun <T : Scene> _changeTo(
 		clazz: KClass<T>,
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
 		transition: Transition = AlphaTransition
-	): T {
+	): T = coroutineScope {
 		val oldScene = currentScene
 		val sceneInjector: AsyncInjector =
 			views.injector.child().mapInstance(SceneContainer::class, this@SceneContainer)
@@ -117,13 +125,12 @@ class SceneContainer(val views: Views) : Container() {
 
 		oldScene?.sceneDestroy()
 
-		launchImmediately(coroutineContext) {
+		launchImmediately(kotlin.coroutines.coroutineContext) {
 			instance.sceneAfterDestroy()
 		}
-		launchImmediately(coroutineContext) {
+		launchImmediately(kotlin.coroutines.coroutineContext) {
 			instance.sceneAfterInit()
 		}
-
-		return instance
+		instance
 	}
 }

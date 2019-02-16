@@ -31,7 +31,7 @@ import kotlin.reflect.*
 object Korge {
 	val logger = Logger("Korge")
 
-	suspend fun setupCanvas(config: Config): SceneContainer {
+	suspend fun setupCanvas(config: Config, context: CoroutineContext): SceneContainer {
 		logger.trace { "Korge.setupCanvas[1]" }
 		val injector = config.injector
 
@@ -48,7 +48,7 @@ object Korge {
 			// Instances
 			.mapInstance(ModuleArgs::class, moduleArgs)
 			.mapInstance(TimeProvider::class, config.timeProvider)
-			.mapInstance(CoroutineContext::class, coroutineContext)
+			.mapInstance(CoroutineContext::class, context)
 			.mapInstance(Module::class, config.module)
 			.mapInstance(AG::class, ag)
 			.mapInstance(Config::class, config)
@@ -369,6 +369,13 @@ object Korge {
 		//}
 	}
 
+	//private suspend fun <T> setContext(context: CoroutineContext, callback: suspend () -> T): T = suspendCancellableCoroutine { c ->
+	//	callback.startCoroutine(object : Continuation<T> {
+	//		override val context: CoroutineContext = context
+	//		override fun resumeWith(result: Result<T>) = c.resumeWith(result)
+	//	})
+	//}
+
 	suspend fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
 		if (!OS.isJsBrowser) {
 			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
@@ -404,12 +411,18 @@ object Korge {
 		val input = Input()
 		val stats = Stats()
 		Fonts.init()
-		val views = Views(coroutineContext, ag, injector, input, TimeProvider, stats, gameWindow)
+		val views = Views(coroutineDispatcher, ag, injector, input, TimeProvider, stats, gameWindow)
 		injector
 			.mapInstance(views)
 			.mapInstance(input)
 			.mapInstance(stats)
 			.mapInstance(Korge.ModuleArgs(args))
+			.mapInstance<Module>(object : Module() {
+				override val title = title
+				override val fullscreen: Boolean? = fullscreen
+				override val windowSize = SizeInt(width, height)
+				override val size = SizeInt(virtualWidth, virtualHeight)
+			})
 		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 		views.debugViews = debug
 		views.virtualWidth = virtualWidth
@@ -465,7 +478,7 @@ object Korge {
 			launchImmediately {
 				logger.trace { "Korge.test [2]" }
 				done.complete(
-					setupCanvas(config.copy(gameWindow = gameWindow, eventDispatcher = gameWindow))
+					setupCanvas(config.copy(gameWindow = gameWindow, eventDispatcher = gameWindow), context = gameWindow.coroutineDispatcher)
 				)
 			}
 		}
