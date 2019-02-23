@@ -1,7 +1,7 @@
 package com.soywiz.korge.gradle.targets.js
 
 import com.moowork.gradle.node.*
-import com.moowork.gradle.node.exec.NodeExecRunner
+import com.moowork.gradle.node.exec.*
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
 import com.soywiz.korge.gradle.*
@@ -11,13 +11,11 @@ import groovy.text.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.repositories.*
 import org.gradle.api.file.*
-import org.gradle.process.ExecResult
+import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
-import java.awt.Desktop
-import java.io.File
-import java.net.URI
+import java.io.*
 
 val Project.node_modules get() = korgeCacheDir["node_modules"]
 val Project.webMinFolder get() = buildDir["web-min"]
@@ -212,6 +210,10 @@ private fun Project.addWeb() {
 			}
 			//task.exclude(*excludesNormal)
 			task.into(task.targetDir)
+			task.doLast {
+				val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
+				task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
+			}
 		}
 
 		task.doLast {
