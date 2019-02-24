@@ -1,8 +1,0 @@
-apply plugin: 'kotlin-platform-js'
-
-dependencies {
-	expectedBy project(":korge-ext-lipsync-common")
-
-	compile project(":korge-js")
-	compile "com.soywiz:korfl-js:$korflVersion"
-}
