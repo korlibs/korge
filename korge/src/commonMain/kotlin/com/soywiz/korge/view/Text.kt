@@ -9,9 +9,9 @@ import com.soywiz.korim.font.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.text(
-	text: String, textSize: Double = 16.0, font: BitmapFont = Fonts.defaultFont,
+	text: String, textSize: Double = 16.0, color: RGBA = Colors.WHITE, font: BitmapFont = Fonts.defaultFont,
 	callback: @ViewsDslMarker Text.() -> Unit = {}
-) = Text(text, textSize = textSize, font = font).addTo(this).apply(callback)
+) = Text(text, textSize = textSize, color = color, font = font).addTo(this).apply(callback)
 
 class Text : View(), IText, IHtml {
 	companion object {
