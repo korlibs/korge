@@ -9,6 +9,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korio.util.encoding.*
 import kotlin.collections.ArrayList
 import kotlin.collections.List
@@ -34,6 +35,7 @@ typealias DisplayObject = View
 
 abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	//internal val _transform = ViewTransform(this)
+	open val isContainer get() = false
 
 	/**
 	 * Views marked with this, break batching by acting as reference point for computing vertices.
@@ -304,15 +306,24 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return Cancellable { component.detach() }
 	}
 
+	private fun <T : Component> findFirstComponentOfType(clazz: KClass<T>): T? {
+		components!!.fastForEach {
+			if (it::class == clazz) return it as T
+		}
+		return null
+
+	}
+
 	fun <T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T {
 		if (components == null) components = arrayListOf()
 		//var component = components!!.firstOrNull { it::class.isSubtypeOf(clazz) }
-		var component = components!!.firstOrNull { it::class == clazz }
+		var component: T? = findFirstComponentOfType(clazz)
+
 		if (component == null) {
 			component = gen(this)
 			components!! += component
 		}
-		return component!! as T
+		return component
 	}
 // endregion
 
@@ -635,8 +646,8 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	fun findViewByName(name: String): View? {
 		if (this.name == name) return this
-		if (this is Container) {
-			for (child in children) {
+		if (this.isContainer) {
+			for (child in (this as Container).children) {
 				val named = child.findViewByName(name)
 				if (named != null) return named
 			}

@@ -6,7 +6,10 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
+import org.gradle.jvm.tasks.*
+import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.gradle.*
 
@@ -24,6 +27,10 @@ fun Project.configureJvm() {
 			task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
 			task.main = korge.jvmMainClassName
 		}
+	}
+
+	for (jvmJar in project.getTasksByName("jvmJar", true)) {
+		(jvmJar as Jar).entryCompression = ZipEntryCompression.STORED
 	}
 
 	addProguard()

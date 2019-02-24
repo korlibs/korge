@@ -1,7 +1,6 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.korge.async.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*

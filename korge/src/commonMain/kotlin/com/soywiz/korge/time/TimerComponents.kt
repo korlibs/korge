@@ -2,6 +2,7 @@ package com.soywiz.korge.time
 
 import com.soywiz.klock.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
@@ -17,7 +18,7 @@ class TimerComponents(override val view: View) : UpdateComponent {
 	override fun update(ms: Double) {
 		timersIt.clear()
 		timersIt.addAll(timers)
-		for (timer in timersIt) timer(ms.toInt())
+		timersIt.fastForEach { timer -> timer(ms.toInt()) }
 	}
 
 	suspend fun wait(time: TimeSpan) = waitMilliseconds(time.milliseconds)

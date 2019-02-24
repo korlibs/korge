@@ -1,5 +1,7 @@
 package com.soywiz.korge.stat
 
+import com.soywiz.korge.internal.fastForEach
+
 class Stats {
 	interface Named {
 		val name: String
@@ -41,8 +43,8 @@ class Stats {
 	}
 
 	fun startFrame() {
-		for (c in counters.list) c.startFrame()
-		for (c in values.list) c.startFrame()
+		counters.list.fastForEach { it.startFrame() }
+		values.list.fastForEach { it.startFrame() }
 	}
 
 	class RCollection<T : Named> {

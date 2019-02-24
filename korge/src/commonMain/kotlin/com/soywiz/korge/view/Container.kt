@@ -6,6 +6,8 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.fastForEach
+import com.soywiz.korge.internal.fastForEachReverse
 import kotlin.reflect.*
 
 inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = {}) =
@@ -15,6 +17,8 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
 //open class Sprite : Container()
 
 open class Container : View() {
+	override val isContainer get() = false
+
 	val children = arrayListOf<View>()
 	val containerRoot: Container get() = parent?.containerRoot ?: this
 
@@ -54,7 +58,7 @@ open class Container : View() {
 	}
 
 	fun removeChildren() {
-		for (child in children) {
+		children.fastForEach { child ->
 			child.parent = null
 			child.index = -1
 		}
@@ -65,9 +69,10 @@ open class Container : View() {
 
 	override fun invalidate() {
 		super.invalidate()
-		for (child in children) {
-			if (!child._requireInvalidate) continue
-			child.invalidate()
+		children.fastForEach { child ->
+			if (child._requireInvalidate) {
+				child.invalidate()
+			}
 		}
 	}
 
@@ -92,7 +97,12 @@ open class Container : View() {
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
-		for (child in children.reversed().filter(View::visible)) return child.hitTest(x, y) ?: continue
+		children.fastForEachReverse { child ->
+			if (child.visible) {
+				val res = child.hitTest(x, y)
+				if (res != null) return res
+			}
+		}
 		return null
 	}
 
@@ -116,26 +126,20 @@ open class Container : View() {
 	}
 
 	private inline fun safeForEachChildren(crossinline callback: (View) -> Unit) {
-		var n = 0
-		while (n < children.size) {
-			callback(children[n])
-			n++
-		}
+		children.fastForEach(callback)
 	}
 
 	private inline fun safeForEachChildrenReversed(crossinline callback: (View) -> Unit) {
-		var n = 0
-		while (n < children.size) {
-			callback(children[children.size - n - 1])
-			n++
-		}
+		children.fastForEachReverse(callback)
 	}
 
 	override fun createInstance(): View = Container()
 
 	override fun clone(): View {
 		val out = super.clone()
-		for (child in children) out += child.clone()
+		children.fastForEach { child ->
+			out += child.clone()
+		}
 		return out
 	}
 }
