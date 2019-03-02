@@ -23,6 +23,8 @@ fun Project.configureJvm() {
 	val runJvm = project.addTask<JavaExec>("runJvm", group = GROUP_KORGE) { task ->
 		group = GROUP_KORGE_RUN
 		dependsOn("jvmMainClasses")
+		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+
 		afterEvaluate {
 			task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
 			task.main = korge.jvmMainClassName

@@ -1,9 +1,6 @@
 package com.soywiz.korge.gradle.targets.android
 
-import com.soywiz.korge.gradle.coroutinesVersion
-import com.soywiz.korge.gradle.korge
-import com.soywiz.korge.gradle.kotlinVersion
-import com.soywiz.korge.gradle.quoted
+import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
@@ -76,7 +73,7 @@ fun Project.configureNativeAndroid() {
 				//""".trimIndent())
 				//}
 				File(outputFolder, "local.properties").conditionally(ifNotExists) {
-					ensureParents().writeText("sdk.dir=$androidSdkPath")
+					ensureParents().writeText("sdk.dir=${androidSdkPath.escape()}")
 				}
 				File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("") }
 				File(
