@@ -6,13 +6,14 @@
 	<meta name="msapplication-tap-highlight" content="no">
 	<meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
 	<title>$TITLE</title>
-	<style type="text/css">html, body { touch-action: auto; position: fixed; } html, body, canvas { -webkit-tap-highlight-color: rgba(0,0,0,0); }</style>
+	<style type="text/css">html, body { touch-action: auto; position: fixed; } html, body, canvas { -webkit-tap-highlight-color: rgba(0,0,0,0); touch-action: none; } </style>
 </head>
 <body>
 
 <script data-main="$OUTPUT" src="require.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
+	/*
     function toggleFullScreen() {
         var doc = window.document;
         var docEl = doc.documentElement;
@@ -28,8 +29,6 @@
         }
     }
 
-	document.addEventListener("touchstart", function(){}, true);
-
     window.addEventListener('touchend', function() {
         if ((!document.mozFullScreen && !document.webkitIsFullScreen)) {
             //FullScreen is disabled
@@ -37,7 +36,23 @@
         } else {
             //FullScreen is enabled
         }
-    });
+    }, { passive: false });
+    */
+
+	document.addEventListener("touchstart", function(){}, { passive: false });
+
+    document.addEventListener('touchmove', function (event) {
+	  if (event.scale !== 1) { event.preventDefault(); }
+	}, { passive: false });
+
+	var lastTouchEnd = 0;
+	document.addEventListener('touchend', function (event) {
+	  var now = (new Date()).getTime();
+	  if (now - lastTouchEnd <= 300) {
+		event.preventDefault();
+	  }
+	  lastTouchEnd = now;
+	}, { passive: false });
 </script>
 
 </body>
