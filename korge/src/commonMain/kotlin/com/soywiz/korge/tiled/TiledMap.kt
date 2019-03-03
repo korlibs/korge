@@ -2,6 +2,7 @@ package com.soywiz.korge.tiled
 
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -189,7 +190,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	var maxGid = 1
 	//var lastBaseTexture = views.transparentTexture.base
 
-	for (element in elements) {
+	elements.fastForEach { element ->
 		val elementName = element.nameLC
 		@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
 		when {
@@ -355,13 +356,13 @@ suspend fun VfsFile.readTiledMap(
 	//val combinedTileset = kotlin.arrayOfNulls<Texture>(data.maxGid + 1)
 	val combinedTileset = arrayOfNulls<BmpSlice>(data.maxGid + 1)
 
-	for (layer in data.imageLayers) {
+	data.imageLayers.fastForEach { layer ->
 		layer.image = folder[layer.source].readBitmapOptimized()
 	}
 
 	val tiledTilesets = arrayListOf<TiledMap.TiledTileset>()
 
-	for (tileset in data.tilesets) {
+	data.tilesets.fastForEach { tileset ->
 		var bmp = folder[tileset.source].readBitmapOptimized()
 
 		// @TODO: Preprocess this, so in JS we don't have to do anything!

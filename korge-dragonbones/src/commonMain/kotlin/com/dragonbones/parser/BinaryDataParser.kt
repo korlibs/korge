@@ -26,6 +26,7 @@ import com.dragonbones.core.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 import com.soywiz.korio.serialization.json.*
 import kotlin.math.*
@@ -220,9 +221,9 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
 		if (rawData.containsDynamic(DataParser.BONE)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.BONE)
-			for (k in rawTimeliness.dynKeys) {
+			rawTimeliness.dynKeys.fastForEach { k ->
 				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
-				val bone = this._armature?.getBone(k) ?: continue
+				val bone = this._armature?.getBone(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
 					val timelineType = TimelineType[rawTimelines[i]]
@@ -235,9 +236,9 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
 		if (rawData.containsDynamic(DataParser.SLOT)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.SLOT)
-			for (k in rawTimeliness.dynKeys) {
+			rawTimeliness.dynKeys.fastForEach { k ->
 				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
-				val slot = this._armature?.getSlot(k) ?: continue
+				val slot = this._armature?.getSlot(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
 					val timelineType = TimelineType[rawTimelines[i]]
@@ -250,9 +251,9 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
 		if (rawData.containsDynamic(DataParser.CONSTRAINT)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.CONSTRAINT)
-			for (k in rawTimeliness.dynKeys) {
+			rawTimeliness.dynKeys.fastForEach { k ->
 				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
-				val constraint = this._armature?.getConstraint(k) ?: continue
+				val constraint = this._armature?.getConstraint(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
 					val timelineType = TimelineType[rawTimelines[i]]
@@ -265,7 +266,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
 		if (rawData.containsDynamic(DataParser.TIMELINE)) {
 			val rawTimelines = rawData.getDynamic(DataParser.TIMELINE) as ArrayList<Any?>
-			for (rawTimeline in rawTimelines) {
+			rawTimelines.fastForEach { rawTimeline ->
 				val timelineOffset = ObjectDataParser._getInt(rawTimeline, DataParser.OFFSET, 0)
 				if (timelineOffset >= 0) {
 					val timelineType = TimelineType[ObjectDataParser._getInt(rawTimeline, DataParser.TYPE, TimelineType.Action.id)]

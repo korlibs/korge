@@ -22,8 +22,10 @@
  */
 package com.dragonbones.model
 
+import com.dragonbones.armature.Bone
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 
@@ -163,27 +165,37 @@ class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
 	var parent: DragonBonesData? = null
 
 	override fun _onClear() {
-		for (action in this.defaultActions) {
+		this.defaultActions.fastForEach { action ->
 			action.returnToPool()
 		}
 
-		for (action in this.actions) {
+		this.actions.fastForEach { action ->
 			action.returnToPool()
 		}
 
-		for (v in this.bones.values) v.returnToPool()
+		this.bones.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.bones.clear()
 
-		for (v in this.slots.values) v.returnToPool()
+		this.slots.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.slots.clear()
 
-		for (v in this.constraints.values) v.returnToPool()
+		this.constraints.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.constraints.clear()
 
-		for (v in this.skins.values) v.returnToPool()
+		this.skins.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.skins.clear()
 
-		for (v in this.animations.values) v.returnToPool()
+		this.animations.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.animations.clear()
 
 		this.canvas?.returnToPool()
@@ -236,15 +248,7 @@ class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
 				continue
 			}
 
-			var flag = false
-			for (constraint in this.constraints.values) { // Wait constraint.
-				if (constraint.root == bone && this.sortedBones.indexOf(constraint.target) < 0) {
-					flag = true
-					break
-				}
-			}
-
-			if (flag) {
+			if (__hasFlag(bone)) {
 				continue
 			}
 
@@ -257,6 +261,15 @@ class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
 		}
 	}
 
+	private fun __hasFlag(bone: BoneData): Boolean {
+		this.constraints.fastValueForEach { constraint ->
+			if (constraint.root == bone && this.sortedBones.indexOf(constraint.target) < 0) {
+				return true
+			}
+		}
+		return false
+	}
+
 	/**
 	 * @internal
 	 */
@@ -266,7 +279,7 @@ class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
 		}
 
 		this.cacheFrameRate = frameRate
-		for (k in this.animations.keys) {
+		this.animations.fastKeyForEach { k ->
 			this.animations[k]!!.cacheFrames(this.cacheFrameRate)
 		}
 	}

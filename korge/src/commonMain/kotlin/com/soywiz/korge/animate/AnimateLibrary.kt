@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -302,7 +303,9 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 	}
 
 	fun processSymbolNames() {
-		for (symbol in symbolsById) if (symbol.name != null) symbolsByName[symbol.name!!] = symbol
+		symbolsById.fastForEach { symbol ->
+			if (symbol.name != null) symbolsByName[symbol.name!!] = symbol
+		}
 	}
 
 	fun AnSymbol.findFirstTexture(): BmpSlice? {
@@ -314,7 +317,7 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 			is AnSymbolMorphShape -> return this.texturesWithBitmap.objects.firstOrNull()?.texture
 			is AnSymbolBitmap -> return null
 			is AnSymbolMovieClip -> {
-				for (uid in this.uidInfo) {
+				this.uidInfo.fastForEach { uid ->
 					val res = create(uid.characterId).findFirstTexture()
 					if (res != null) return res
 				}

@@ -32,6 +32,7 @@ import com.dragonbones.model.*
 import com.dragonbones.parser.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 
 /**
@@ -87,7 +88,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 
 	protected fun _getTextureData(textureAtlasName: String, textureName: String): TextureData? {
 		if (textureAtlasName in this._textureAtlasDataMap) {
-			for (textureAtlasData in this._textureAtlasDataMap[textureAtlasName]!!) {
+			this._textureAtlasDataMap[textureAtlasName]!!.fastForEach { textureAtlasData ->
 				val textureData = textureAtlasData.getTexture(textureName)
 				if (textureData != null) {
 					return textureData
@@ -96,8 +97,8 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		}
 
 		if (this.autoSearch) { // Will be search all data, if the autoSearch is true.
-			for (k in this._textureAtlasDataMap.keys) {
-				for (textureAtlasData in this._textureAtlasDataMap[k]!!) {
+			this._textureAtlasDataMap.fastKeyForEach { k ->
+				this._textureAtlasDataMap[k]!!.fastForEach { textureAtlasData ->
 					if (textureAtlasData.autoSearch) {
 						val textureData = textureAtlasData.getTexture(textureName)
 						if (textureData != null) {
@@ -127,13 +128,15 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		}
 
 		if (armatureData == null && (mdragonBonesName.isEmpty() || this.autoSearch)) { // Will be search all data, if do not give a data name or the autoSearch is true.
-			for (k in this._dragonBonesDataMap.keys) {
+			var completed = false
+			this._dragonBonesDataMap.fastKeyForEach { k ->
+				if (completed) return@fastKeyForEach
 				dragonBonesData = this._dragonBonesDataMap[k]
 				if (mdragonBonesName.isEmpty() || dragonBonesData!!.autoSearch) {
 					armatureData = dragonBonesData?.getArmature(armatureName)
 					if (armatureData != null) {
 						mdragonBonesName = k
-						break
+						completed = true
 					}
 				}
 			}
@@ -147,21 +150,14 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 			dataPackage.skin = null
 
 			if (skinName.isNotEmpty()) {
-				dataPackage.skin = armatureData.getSkin(skinName)
+				dataPackage.skin = armatureData!!.getSkin(skinName)
 				if (dataPackage.skin == null && this.autoSearch) {
-					for (k in this._dragonBonesDataMap.keys) {
-						val skinDragonBonesData = this._dragonBonesDataMap[k]!!
-						val skinArmatureData = skinDragonBonesData.getArmature(skinName)
-						if (skinArmatureData != null) {
-							dataPackage.skin = skinArmatureData.defaultSkin
-							break
-						}
-					}
+					dataPackage.skin = __findDataPackageSkin(skinName)
 				}
 			}
 
 			if (dataPackage.skin == null) {
-				dataPackage.skin = armatureData.defaultSkin
+				dataPackage.skin = armatureData!!.defaultSkin
 			}
 
 			return true
@@ -170,8 +166,19 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		return false
 	}
 
+	private fun __findDataPackageSkin(skinName: String): SkinData? {
+		this._dragonBonesDataMap.fastKeyForEach { k ->
+			val skinDragonBonesData = this._dragonBonesDataMap[k]!!
+			val skinArmatureData = skinDragonBonesData.getArmature(skinName)
+			if (skinArmatureData != null) {
+				return skinArmatureData.defaultSkin
+			}
+		}
+		return null
+	}
+
 	private fun _buildBones(dataPackage: BuildArmaturePackage, armature: Armature) {
-		for (boneData in dataPackage.armature!!.sortedBones) {
+		dataPackage.armature!!.sortedBones.fastForEach { boneData ->
 			val bone = if (boneData.isBone) pool.borrowObject<Bone>() else pool.borrowObject<Surface>()
 			bone.init(boneData, armature)
 		}
@@ -187,19 +194,19 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		}
 
 		val skinSlots: FastStringMap<ArrayList<DisplayData?>> = FastStringMap()
-		for (k in defaultSkin.displays.keys) {
+		defaultSkin.displays.fastKeyForEach { k ->
 			val displays = defaultSkin.getDisplays(k)
 			skinSlots[k] = displays!!
 		}
 
 		if (currentSkin != defaultSkin) {
-			for (k in currentSkin.displays.keys) {
+			currentSkin.displays.fastKeyForEach { k ->
 				val displays = currentSkin.getDisplays(k)
 				skinSlots[k] = displays!!
 			}
 		}
 
-		for (slotData in dataPackage.armature!!.sortedSlots) {
+		dataPackage.armature!!.sortedSlots.fastForEach { slotData ->
 			val displayDatas = skinSlots[slotData.name]
 			val slot = this._buildSlot(dataPackage, slotData, armature)
 
@@ -217,8 +224,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 
 						val display = this._getSlotDisplay(dataPackage, displayData, slot)
 						slot.replaceDisplay(display, i)
-					}
-					else {
+					} else {
 						slot.replaceDisplay(null)
 					}
 				}
@@ -230,7 +236,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 
 	private fun _buildConstraints(dataPackage: BuildArmaturePackage, armature: Armature) {
 		val constraints = dataPackage.armature!!.constraints
-		for (k in constraints.keys) {
+		constraints.fastKeyForEach { k ->
 			val constraintData = constraints[k]
 			// TODO more constraint type.
 			when (constraintData!!.type) {
@@ -245,7 +251,6 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 					armature._addConstraint(pathConstraint)
 				}
 			}
-
 		}
 	}
 
@@ -283,7 +288,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 					if (!childArmature.inheritAnimation) {
 						val actions = if (armatureDisplayData.actions.length > 0) armatureDisplayData.actions else childArmature.armatureData.defaultActions
 						if (actions.length > 0) {
-							for (action in actions) {
+							actions.fastForEach { action ->
 								val eventObject = pool.borrowObject<EventObject>()
 								EventObject.actionDataToInstance(action, eventObject, slot.armature)
 								eventObject.slot = slot
@@ -610,7 +615,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		if (name in this._textureAtlasDataMap) {
 			val textureAtlasDataList = this._textureAtlasDataMap[name]!!
 			if (disposeData) {
-				for (textureAtlasData in textureAtlasDataList) {
+				textureAtlasDataList.fastForEach { textureAtlasData ->
 					//this._dragonBones.bufferObject(textureAtlasData)
 					textureAtlasData.returnToPool()
 				}
@@ -656,7 +661,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	 * @language zh_CN
 	 */
 	fun clear(disposeData: Boolean = true) {
-		for (k in this._dragonBonesDataMap.keys) {
+		this._dragonBonesDataMap.fastKeyForEach { k ->
 			if (disposeData) {
 				//this._dragonBones.bufferObject(this._dragonBonesDataMap[k])
 				this._dragonBonesDataMap[k]?.returnToPool()
@@ -664,10 +669,10 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		}
 		this._dragonBonesDataMap.clear()
 
-		for (k in this._textureAtlasDataMap.keys) {
+		this._textureAtlasDataMap.fastKeyForEach { k ->
 			if (disposeData) {
 				val textureAtlasDataList = this._textureAtlasDataMap[k]!!
-				for (textureAtlasData in textureAtlasDataList) {
+				textureAtlasDataList.fastForEach { textureAtlasData ->
 					//this._dragonBones.bufferObject(textureAtlasData)
 					textureAtlasData.returnToPool()
 				}
@@ -874,9 +879,9 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		var success = false
 		val defaultSkin = skin.parent!!.defaultSkin
 
-		for (slot in armature.getSlots()) {
+		armature.getSlots().fastForEach { slot ->
 			if (exclude != null && exclude.indexOf(slot.name) >= 0) {
-				continue
+				return@fastForEach
 			}
 
 			var displayDatas = skin.getDisplays(slot.name)
@@ -889,7 +894,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 					if (isOverride) {
 						slot.displayFrameCount = 0
 					}
-					continue
+					return@fastForEach
 				}
 			}
 
@@ -900,10 +905,9 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 				slot.replaceRawDisplayData(displayData, i)
 
 				if (displayData != null) {
-						slot.replaceDisplay(this._getSlotDisplay(null, displayData, slot), i)
-				}
-					else {
-						slot.replaceDisplay(null, i)
+					slot.replaceDisplay(this._getSlotDisplay(null, displayData, slot), i)
+				} else {
+					slot.replaceDisplay(null, i)
 				}
 			}
 
@@ -960,18 +964,18 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 			val rawAnimations = armature.animation.animations
 			val animations: FastStringMap<AnimationData> = FastStringMap()
 
-			for (k in rawAnimations.keys) {
+			rawAnimations.fastKeyForEach { k ->
 				animations[k] = rawAnimations[k]!!
 			}
 
-			for (k in armatureData.animations.keys) {
+			armatureData.animations.fastKeyForEach { k ->
 				animations[k] = armatureData.animations[k]!!
 			}
 
 			armature.animation.animations = animations
 		}
 
-		for (slot in armature.getSlots()) {
+		armature.getSlots().fastForEach { slot ->
 			for ((index, display) in slot.displayList.withIndex()) {
 				if (display is Armature) {
 					val displayDatas = skinData.getDisplays(slot.name)

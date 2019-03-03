@@ -24,6 +24,7 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 
@@ -82,7 +83,9 @@ abstract class TextureAtlasData(pool: BaseObjectPool) :  BaseObject(pool) {
 	val textures: FastStringMap<TextureData> = FastStringMap()
 
 	override fun _onClear() {
-		for (v in this.textures.values) v.returnToPool()
+		this.textures.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.textures.clear()
 
 		this.autoSearch = false
@@ -105,12 +108,14 @@ abstract class TextureAtlasData(pool: BaseObjectPool) :  BaseObject(pool) {
 		this.name = value.name
 		this.imagePath = value.imagePath
 
-		for (v in this.textures.values) v.returnToPool()
+		this.textures.fastValueForEach { v ->
+			v.returnToPool()
+		}
 		this.textures.clear()
 
 		// this.textures.clear();
 
-		for (k in value.textures.keys) {
+		value.textures.fastKeyForEach { k ->
 			val texture = this.createTexture()
 			texture.copyFrom(value.textures[k]!!)
 			this.textures[k] = texture

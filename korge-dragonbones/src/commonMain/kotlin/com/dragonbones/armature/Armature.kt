@@ -28,8 +28,10 @@ import com.dragonbones.animation.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.model.*
 import com.dragonbones.util.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 
 /**
@@ -140,10 +142,18 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	override fun _onClear() {
 		this._clock?.remove(this)
 
-		for (bone in this._bones) bone.returnToPool()
-		for (slot in this._slots) slot.returnToPool()
-		for (constraint in this._constraints) constraint.returnToPool()
-		for (action in this._actions) action.returnToPool()
+		this._bones.fastForEach { bone ->
+			bone.returnToPool()
+		}
+		this._slots.fastForEach { slot ->
+			slot.returnToPool()
+		}
+		this._constraints.fastForEach { constraint ->
+			constraint.returnToPool()
+		}
+		this._actions.fastForEach { action ->
+			action.returnToPool()
+		}
 
 		this._animation?.returnToPool()
 		this._proxy?.dbClear()
@@ -296,7 +306,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 
 	override fun advanceTime(passedTime: Double) {
 		_advanceTime(passedTime)
-		for (slot in _slots) {
+		_slots.fastForEach { slot ->
 			slot.childArmature?.advanceTime(passedTime)
 			//slot._armature?.advanceTime(passedTime)
 		}
@@ -362,7 +372,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 		}
 		// Do actions.
 		if (this._actions.lengthSet > 0) {
-			for (action in  this._actions) {
+			this._actions.fastForEach { action ->
 				val actionData = action.actionData
 				if (actionData != null) {
 					if (actionData.type == ActionType.Play) {
@@ -421,7 +431,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 				bone.invalidUpdate()
 
 				if (updateSlot) {
-					for (slot in this._slots) {
+					this._slots.fastForEach { slot ->
 						if (slot.parent == bone) {
 							slot.invalidUpdate()
 						}
@@ -430,12 +440,12 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 			}
 		}
 		else {
-			for (bone in  this._bones) {
+			this._bones.fastForEach { bone ->
 				bone.invalidUpdate()
 			}
 
 			if (updateSlot) {
-				for (slot in this._slots) {
+				this._slots.fastForEach { slot ->
 					slot.invalidUpdate()
 				}
 			}
@@ -460,7 +470,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	 * @language zh_CN
 	 */
 	fun containsPoint(x: Double, y: Double): Slot? {
-		for (slot in this._slots) {
+		this._slots.fastForEach { slot ->
 			if (slot.containsPoint(x, y)) {
 				return slot
 			}
@@ -516,7 +526,8 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 		var intSlotA: Slot? = null
 		var intSlotB: Slot? = null
 
-		for (slot in this._slots) {
+		for (n in 0 until this._slots.size) {
+			val slot = this._slots[n]
 			val intersectionCount = slot.intersectsSegment(xA, yA, xB, yB, intersectionPointA, intersectionPointB, normalRadians)
 			if (intersectionCount > 0) {
 				if (intersectionPointA != null || intersectionPointB != null) {
@@ -598,7 +609,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	 * @language zh_CN
 	 */
 	fun getBone(name: String?): Bone? {
-		for (bone in this._bones) {
+		this._bones.fastForEach { bone ->
 			if (bone.name == name) {
 				return bone
 			}
@@ -639,7 +650,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	 * @language zh_CN
 	 */
 	fun getSlot(name: String?): Slot? {
-		for (slot in this._slots) {
+		this._slots.fastForEach { slot ->
 			if (slot.name == name) {
 				return slot
 			}
@@ -663,7 +674,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 	 */
 	fun getSlotByDisplay(display: Any?): Slot? {
 		if (display != null) {
-			for (slot in this._slots) {
+			this._slots.fastForEach { slot ->
 				if (slot.display == display) {
 					return slot
 				}
@@ -774,7 +785,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 				this._armatureData!!.cacheFrames(value)
 
 				// Set child armature frameRate.
-				for (slot in this._slots) {
+				this._slots.fastForEach { slot ->
 					val childArmature = slot.childArmature
 					if (childArmature != null) {
 						childArmature.cacheFrameRate = value
@@ -860,7 +871,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 
 				this._replacedTexture = value
 
-				for (slot in this._slots) {
+				this._slots.fastForEach { slot ->
 					slot.invalidUpdate()
 					slot.update(-1)
 				}
@@ -881,7 +892,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 			this._clock?.add(this)
 
 			// Update childArmature clock.
-			for (slot in this._slots) {
+			this._slots.fastForEach { slot ->
 				val childArmature = slot.childArmature
 				if (childArmature != null) {
 					childArmature.clock = this._clock

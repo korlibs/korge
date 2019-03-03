@@ -5,6 +5,7 @@ package com.soywiz.korge.tween
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -64,7 +65,7 @@ class TweenComponent(
 	}
 
 	fun setToMs(elapsed: Int) {
-		for (v in vs) {
+		vs.fastForEach { v ->
 			val durationInTween = (v.duration ?: (ctime - v.startTime))
 			val elapsedInTween = (elapsed - v.startTime).clamp(0L, durationInTween)
 			val ratioInTween = if (durationInTween <= 0.0) 1.0 else elapsedInTween.toDouble() / durationInTween.toDouble()

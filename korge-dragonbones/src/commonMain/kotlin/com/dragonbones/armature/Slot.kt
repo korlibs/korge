@@ -30,6 +30,7 @@ import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -279,7 +280,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 		super._onClear()
 
 		val disposeDisplayList: ArrayList<Any> = arrayListOf()
-		for (dispayFrame in this._displayFrames) {
+		this._displayFrames.fastForEach { dispayFrame ->
 			val display = dispayFrame.display
 			if (
 				display != this._rawDisplay && display != this._meshDisplay &&
@@ -291,11 +292,10 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 			dispayFrame.returnToPool()
 		}
 
-		for (eachDisplay in disposeDisplayList) {
+		disposeDisplayList.fastForEach { eachDisplay ->
 			if (eachDisplay is Armature) {
 				eachDisplay.dispose()
-			}
-			else {
+			} else {
 				this._disposeDisplay(eachDisplay, true)
 			}
 		}
@@ -366,7 +366,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 	protected abstract fun _identityTransform()
 
 	protected fun _hasDisplay(display: Any?): Boolean {
-		for (displayFrame in this._displayFrames) {
+		this._displayFrames.fastForEach { displayFrame ->
 			if (displayFrame.display == display) {
 				return true
 			}
@@ -379,7 +379,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 	 * @internal
 	 */
 	fun _isBonesUpdate(): Boolean {
-		for (bone in this._geometryBones) {
+		this._geometryBones.fastForEach { bone ->
 			if (bone != null && bone._childrenTransformDirty) {
 				return true
 			}
@@ -589,7 +589,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 						}
 
 						if (actions != null && actions.lengthSet > 0) {
-							for (action in actions) {
+							actions.fastForEach { action ->
 								val eventObject = pool.borrowObject<EventObject>()
 								EventObject.actionDataToInstance(action, eventObject, this._armature!!)
 								eventObject.slot = this
@@ -1194,7 +1194,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 	 */
 	var displayList: ArrayList<Any?> get() {
 		val displays = ArrayList<Any?>()
-		for (displayFrame in this._displayFrames) {
+		this._displayFrames.fastForEach { displayFrame ->
 			displays.push(displayFrame.display)
 		}
 
@@ -1203,7 +1203,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 	set(value: ArrayList<Any?>) {
 		this.displayFrameCount = value.length
 		var index = 0
-		for (eachDisplay in value) {
+		value.fastForEach { eachDisplay ->
 			this.replaceDisplay(eachDisplay, index++)
 		}
 	}

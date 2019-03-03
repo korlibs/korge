@@ -299,7 +299,7 @@ object Korge {
 		}
 
 		fun gamepadUpdated(e: GamePadUpdateEvent) {
-			for (gamepad in e.gamepads) {
+			e.gamepads.fastForEach { gamepad ->
 				input.gamepads[gamepad.index].copyFrom(gamepad)
 			}
 			input.updateConnectedGamepads()

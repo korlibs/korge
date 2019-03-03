@@ -24,9 +24,11 @@ package com.dragonbones.armature
 
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -511,7 +513,7 @@ class Surface(pool: BaseObjectPool) :  Bone(pool) {
 			}
 			else {
 				if (_hasConstraint) { // Update constraints.
-					for (constraint in _armature!!._constraints) {
+					_armature!!._constraints.fastForEach { constraint ->
 						if (constraint._root == this) {
 							constraint.update()
 						}
@@ -537,7 +539,7 @@ class Surface(pool: BaseObjectPool) :  Bone(pool) {
 		}
 		else {
 			if (_hasConstraint) { // Update constraints.
-				for (constraint in _armature!!._constraints) {
+				_armature!!._constraints.fastForEach { constraint ->
 					if (constraint._root == this) {
 						constraint.update()
 					}

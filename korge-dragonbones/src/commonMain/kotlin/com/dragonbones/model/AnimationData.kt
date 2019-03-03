@@ -23,6 +23,7 @@ package com.dragonbones.model
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import com.dragonbones.core.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import kotlin.math.*
@@ -166,29 +167,29 @@ class AnimationData(pool: BaseObjectPool) :  BaseObject(pool) {
 	var parent: ArmatureData? = null
 
 	override fun _onClear(): Unit {
-		for (tl in this.boneTimelines.values) {
-			for (timeline in tl) {
+		this.boneTimelines.fastValueForEach { tl ->
+			tl.fastForEach { timeline ->
 				timeline.returnToPool()
 			}
 		}
 		this.boneTimelines.clear()
 
-		for (tl in this.slotTimelines.values) {
-			for (timeline in tl) {
+		this.slotTimelines.fastValueForEach { tl ->
+			tl.fastForEach { timeline ->
 				timeline.returnToPool()
 			}
 		}
 		this.slotTimelines.clear()
 
-		for (tl in this.constraintTimelines.values) {
-			for (timeline in tl) {
+		this.constraintTimelines.fastValueForEach { tl ->
+			tl.fastForEach { timeline ->
 				timeline.returnToPool()
 			}
 		}
 		this.constraintTimelines.clear()
 
-		for (tl in this.animationTimelines.values) {
-			for (timeline in tl) {
+		this.animationTimelines.fastValueForEach { tl ->
+			tl.fastForEach { timeline ->
 				timeline.returnToPool()
 			}
 		}
@@ -239,7 +240,7 @@ class AnimationData(pool: BaseObjectPool) :  BaseObject(pool) {
 			this.cachedFrames[i] = false
 		}
 
-		for (bone in this.parent!!.sortedBones) {
+		this.parent!!.sortedBones.fastForEach { bone ->
 			val indices = IntArrayList(cacheFrameCount)
 			for (i in 0 until indices.length) {
 				indices[i] = -1
@@ -248,7 +249,7 @@ class AnimationData(pool: BaseObjectPool) :  BaseObject(pool) {
 			this.boneCachedFrameIndices[bone.name] = indices
 		}
 
-		for (slot in this.parent!!.sortedSlots) {
+		this.parent!!.sortedSlots.fastForEach { slot ->
 			//val indices =  DoubleArray(cacheFrameCount)
 			val indices =  IntArrayList(cacheFrameCount)
 			for (i in 0 until indices.length) {

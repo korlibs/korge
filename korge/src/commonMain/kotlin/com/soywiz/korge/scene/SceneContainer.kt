@@ -1,6 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
@@ -106,7 +107,9 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		val oldScene = currentScene
 		val sceneInjector: AsyncInjector =
 			views.injector.child().mapInstance(SceneContainer::class, this@SceneContainer)
-		for (inject in injects) sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
+		injects.fastForEach { inject ->
+			sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
+		}
 		val instance = sceneInjector.get(clazz)
 		currentScene = instance
 

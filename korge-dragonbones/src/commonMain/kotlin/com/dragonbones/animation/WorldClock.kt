@@ -1,5 +1,6 @@
 package com.dragonbones.animation
 
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.util.*
 import com.soywiz.klock.*
 
@@ -230,7 +231,7 @@ class WorldClock : IAnimatable {
 	 * @language zh_CN
 	 */
 	fun clear(): Unit {
-		for (animatable in this._animatebles) {
+		this._animatebles.fastForEach { animatable ->
 			if (animatable != null) {
 				animatable.clock = null
 			}

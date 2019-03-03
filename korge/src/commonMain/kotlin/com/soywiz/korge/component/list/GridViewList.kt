@@ -1,5 +1,6 @@
 package com.soywiz.korge.component.list
 
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 
 class GridViewList(
@@ -39,7 +40,9 @@ class GridViewList(
 	fun update() {
 		while (rowsData.size < rows) addItem()
 		while (rowsData.size > rows) removeLastItem()
-		for (rowData in rowsData) rowData.length = columns
+		rowsData.fastForEach { rowData ->
+			rowData.length = columns
+		}
 	}
 
 	init {

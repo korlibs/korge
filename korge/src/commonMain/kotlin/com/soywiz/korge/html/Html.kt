@@ -2,6 +2,7 @@ package com.soywiz.korge.html
 
 import com.soywiz.kds.*
 import com.soywiz.korge.bitmapfont.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.serialization.xml.*
@@ -106,7 +107,7 @@ object Html {
 
 		fun doPositioning(ctx: PositionContext) {
 			ctx.x = ctx.bounds.x
-			for (v in spans) {
+			spans.fastForEach { v ->
 				// @TODO: Reposition when overflowing
 				v.doPositioning(ctx)
 			}
@@ -120,7 +121,7 @@ object Html {
 			bounds.y = restoreY
 			//println(bounds)
 			var sx = bounds.x
-			for (v in spans) {
+			spans.fastForEach { v ->
 				v.bounds.x = sx
 				sx += v.bounds.width
 			}
@@ -135,7 +136,9 @@ object Html {
 		val bounds = Rectangle()
 
 		fun doPositioning(ctx: PositionContext) {
-			for (v in lines) v.doPositioning(ctx)
+			lines.fastForEach { v ->
+				v.doPositioning(ctx)
+			}
 			lines.map { it.bounds }.bounds(bounds) // calculate bounds
 			ctx.x = bounds.left
 			ctx.y = bounds.bottom
@@ -154,7 +157,9 @@ object Html {
 
 		fun doPositioning(gp: MetricsProvider, bounds: Rectangle) {
 			val ctx = PositionContext(gp, bounds)
-			for (v in paragraphs) v.doPositioning(ctx)
+			paragraphs.fastForEach { v ->
+				v.doPositioning(ctx)
+			}
 			paragraphs.map { it.bounds }.bounds(this.bounds) // calculate bounds
 		}
 	}
@@ -207,7 +212,7 @@ object Html {
 					format.letterSpacing = xml.doubleNull("letterSpacing") ?: format.letterSpacing
 					format.kerning = xml.intNull("kerning") ?: format.kerning
 					format.color = Colors[xml.strNull("color") ?: "white"]
-					for (child in xml.allChildrenNoComments) {
+					xml.allChildrenNoComments.fastForEach { child ->
 						// @TODO: Change .copy for an inline format.keep { parse(xml, format) } that doesn't allocate at all
 						parse(child, Format(format))
 					}

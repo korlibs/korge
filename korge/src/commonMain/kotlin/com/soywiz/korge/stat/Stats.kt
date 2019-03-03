@@ -73,11 +73,11 @@ class Stats {
 	fun value(name: String): Value = values.getOrPut(name) { Value(name) }
 	fun dump() {
 		println("Counters:")
-		for (counter in counters.list) {
+		counters.list.fastForEach { counter ->
 			println(" - $counter")
 		}
 		println("Values:")
-		for (value in values.list) {
+		values.list.fastForEach { value ->
 			println(" - $value")
 		}
 	}

@@ -26,6 +26,7 @@ import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import kotlin.math.*
 
 /**
@@ -386,7 +387,7 @@ open class Bone(pool: BaseObjectPool) :  TransformObject(pool) {
 			}
 			else {
 				if (this._hasConstraint) { // Update constraints.
-					for (constraint in this._armature!!._constraints) {
+					this._armature!!._constraints.fastForEach { constraint ->
 						if (constraint._root == this) {
 							constraint.update()
 						}
@@ -412,7 +413,7 @@ open class Bone(pool: BaseObjectPool) :  TransformObject(pool) {
 		}
 		else {
 			if (this._hasConstraint) { // Update constraints.
-				for (constraint in this._armature!!._constraints) {
+				this._armature!!._constraints.fastForEach { constraint ->
 					if (constraint._root == this) {
 						constraint.update()
 					}
@@ -554,7 +555,7 @@ open class Bone(pool: BaseObjectPool) :  TransformObject(pool) {
 
 			this._visible = value
 
-			for (slot in this._armature!!.getSlots()) {
+			this._armature!!.getSlots().fastForEach { slot ->
 				if (slot.parent == this) {
 					slot._updateVisible()
 				}

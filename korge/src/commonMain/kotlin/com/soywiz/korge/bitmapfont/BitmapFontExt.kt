@@ -24,7 +24,8 @@ fun BitmapFont.getBounds(text: String, format: Html.Format, out: Rectangle) {
 			height = max(height, dy)
 			continue
 		}
-		val c2 = text.getOrElse(n + 1) { ' ' }.toInt()
+		var c2: Int = ' '.toInt()
+		if (n + 1 < text.length) c2 = text[n + 1].toInt()
 		val kerningOffset = font.kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
 		val glyph = font[c1]
 		dx += glyph.xadvance + kerningOffset

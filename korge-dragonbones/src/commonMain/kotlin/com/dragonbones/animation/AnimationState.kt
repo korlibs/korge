@@ -26,9 +26,11 @@ package com.dragonbones.animation
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import kotlin.math.*
 
 /**
@@ -260,27 +262,27 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 	var _parent: AnimationState? = null
 
 	override fun _onClear(): Unit {
-		for (timeline in this._boneTimelines) {
+		this._boneTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
 
-		for (timeline in this._boneBlendTimelines) {
+		this._boneBlendTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
 
-		for (timeline in this._slotTimelines) {
+		this._slotTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
 
-		for (timeline in this._slotBlendTimelines) {
+		this._slotBlendTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
 
-		for (timeline in this._constraintTimelines) {
+		this._constraintTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
 
-		for (timeline in this._animationTimelines) {
+		this._animationTimelines.fastForEach { timeline ->
 			val animationState = timeline.target as AnimationState
 			if (animationState._parent == this) {
 				animationState._fadeState = 1
@@ -342,11 +344,11 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 
 	private fun _updateTimelines(): Unit {
 		// Update constraint timelines.
-		for (constraint in this._armature!!._constraints) {
+		this._armature!!._constraints.fastForEach { constraint ->
 			val timelineDatas = this._animationData?.getConstraintTimelines(constraint.name)
 
 			if (timelineDatas != null) {
-				for (timelineData in timelineDatas) {
+				timelineDatas.fastForEach { timelineData ->
 					when (timelineData.type) {
 						TimelineType.IKConstraint -> {
 							val timeline = pool.borrowObject<IKConstraintTimelineState>()
@@ -374,7 +376,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 			// Update bone and surface timelines.
 			val boneTimelines: FastStringMap<ArrayList<TimelineState>> = FastStringMap()
 			// Create bone timelines map.
-			for (timeline in this._boneTimelines) {
+			this._boneTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.target as BlendState).target as Bone).name
 				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
@@ -383,7 +385,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				boneTimelines[timelineName]?.push(timeline)
 			}
 
-			for (timeline in this._boneBlendTimelines) {
+			this._boneBlendTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.target as BlendState).target as Bone).name
 				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
@@ -392,10 +394,10 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				boneTimelines[timelineName]?.push(timeline)
 			}
 			//
-			for (bone in this._armature!!.getBones()) {
+			this._armature!!.getBones().fastForEach { bone ->
 				val timelineName = bone.name
 				if (!this.containsBoneMask(timelineName)) {
-					continue
+					return@fastForEach
 				}
 
 				if (timelineName in boneTimelines) { // Remove bone timeline from map.
@@ -406,7 +408,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 						this._armature!!.animation.getBlendState(BlendState.BONE_TRANSFORM, bone.name, bone)
 
 					if (timelineDatas != null) {
-						for (timelineData in timelineDatas) {
+						timelineDatas.fastForEach { timelineData ->
 							when (timelineData.type) {
 								TimelineType.BoneAll -> {
 									val timeline = pool.borrowObject<BoneAllTimelineState>()
@@ -471,7 +473,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 						} else {
 							val timeline = pool.borrowObject<SurfaceTimelineState>()
 							timeline.target =
-									this._armature!!.animation.getBlendState(BlendState.SURFACE, bone.name, bone)
+								this._armature!!.animation.getBlendState(BlendState.SURFACE, bone.name, bone)
 							timeline.init(this._armature!!, this, null)
 							this._boneBlendTimelines.push(timeline)
 							this._poseTimelines.push(timeline)
@@ -480,8 +482,9 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				}
 			}
 
-			for (k in boneTimelines.keys) { // Remove bone timelines.
-				for (timeline in boneTimelines[k]!!) {
+			boneTimelines.fastKeyForEach { k ->
+				// Remove bone timelines.
+				boneTimelines[k]!!.fastForEach { timeline ->
 					var index = this._boneTimelines.indexOf(timeline)
 					if (index >= 0) {
 						this._boneTimelines.splice(index, 1)
@@ -502,7 +505,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 			val slotTimelines: FastStringMap<ArrayList<TimelineState>> = FastStringMap()
 			val ffdFlags = IntArrayList()
 			// Create slot timelines map.
-			for (timeline in this._slotTimelines) {
+			this._slotTimelines.fastForEach { timeline ->
 				val timelineName = (timeline.target as Slot).name
 				if (timelineName !in slotTimelines) {
 					slotTimelines[timelineName] = arrayListOf()
@@ -511,7 +514,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				slotTimelines[timelineName]?.push(timeline)
 			}
 
-			for (timeline in this._slotBlendTimelines) {
+			this._slotBlendTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.target as BlendState).target as Slot).name
 				if (timelineName !in slotTimelines) {
 					slotTimelines[timelineName] = arrayListOf()
@@ -520,10 +523,10 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				slotTimelines[timelineName]?.push(timeline)
 			}
 			//
-			for (slot in this._armature!!.getSlots()) {
+			this._armature!!.getSlots().fastForEach { slot ->
 				val boneName = slot.parent.name
 				if (!this.containsBoneMask(boneName)) {
-					continue
+					return@fastForEach
 				}
 
 				val timelineName = slot.name
@@ -536,7 +539,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 
 					val timelineDatas = this._animationData?.getSlotTimelines(timelineName)
 					if (timelineDatas != null) {
-						for (timelineData in timelineDatas) {
+						timelineDatas.fastForEach { timelineData ->
 							when (timelineData.type) {
 								TimelineType.SlotDisplay -> {
 									val timeline = pool.borrowObject<SlotDisplayTimelineState>()
@@ -641,8 +644,9 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				}
 			}
 
-			for (slotTimelines2 in slotTimelines.values) { // Remove slot timelines.
-				for (timeline in slotTimelines2) {
+			slotTimelines.fastValueForEach { slotTimelines2 ->
+				// Remove slot timelines.
+				slotTimelines2.fastForEach { timeline ->
 					var index = this._slotTimelines.indexOf(timeline)
 					if (index >= 0) {
 						this._slotTimelines.splice(index, 1)
@@ -1019,40 +1023,40 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				this._subFadeState = 0
 
 				if (this._poseTimelines.lengthSet > 0) { // Remove pose timelines.
-					for (timeline in this._poseTimelines) {
+					this._poseTimelines.fastForEach { timeline ->
 						var index = this._boneTimelines.indexOf(timeline)
 						if (index >= 0) {
 							this._boneTimelines.splice(index, 1)
 							timeline.returnToPool()
-							continue
+							return@fastForEach
 						}
 
 						index = this._boneBlendTimelines.indexOf(timeline)
 						if (index >= 0) {
 							this._boneBlendTimelines.splice(index, 1)
 							timeline.returnToPool()
-							continue
+							return@fastForEach
 						}
 
 						index = this._slotTimelines.indexOf(timeline)
 						if (index >= 0) {
 							this._slotTimelines.splice(index, 1)
 							timeline.returnToPool()
-							continue
+							return@fastForEach
 						}
 
 						index = this._slotBlendTimelines.indexOf(timeline)
 						if (index >= 0) {
 							this._slotBlendTimelines.splice(index, 1)
 							timeline.returnToPool()
-							continue
+							return@fastForEach
 						}
 
 						index = this._constraintTimelines.indexOf(timeline)
 						if (index >= 0) {
 							this._constraintTimelines.splice(index, 1)
 							timeline.returnToPool()
-							continue
+							return@fastForEach
 						}
 					}
 
@@ -1129,27 +1133,27 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 				this._fadeProgress = 0.000001 // Modify fade progress to different value.
 			}
 
-			for (timeline in this._boneTimelines) {
+			this._boneTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 			}
 
-			for (timeline in this._boneBlendTimelines) {
+			this._boneBlendTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 			}
 
-			for (timeline in this._slotTimelines) {
+			this._slotTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 			}
 
-			for (timeline in this._slotBlendTimelines) {
+			this._slotBlendTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 			}
 
-			for (timeline in this._constraintTimelines) {
+			this._constraintTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 			}
 
-			for (timeline in this._animationTimelines) {
+			this._animationTimelines.fastForEach { timeline ->
 				timeline.fadeOut()
 				//
 				val animaitonState = timeline.target as AnimationState
@@ -1198,7 +1202,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 		}
 
 		if (recursive) { // Add recursive mixing.
-			for (bone in this._armature!!.getBones()) {
+			this._armature!!.getBones().fastForEach { bone ->
 				if (this._boneMask.indexOf(bone.name) < 0 && currentBone.contains(bone)) {
 					this._boneMask.push(bone.name)
 				}
@@ -1232,16 +1236,16 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 			if (currentBone != null) {
 				val bones = this._armature!!.getBones()
 				if (this._boneMask.lengthSet > 0) { // Remove recursive mixing.
-					for (bone in bones) {
+					bones.fastForEach { bone ->
 						val index = this._boneMask.indexOf(bone.name)
 						if (index >= 0 && currentBone.contains(bone)) {
 							this._boneMask.splice(index, 1)
 						}
 					}
 				} else { // Add unrecursive mixing.
-					for (bone in bones) {
+					bones.fastForEach { bone ->
 						if (bone == currentBone) {
-							continue
+							return@fastForEach
 						}
 
 						if (!currentBone.contains(bone)) {
@@ -1274,7 +1278,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 	 */
 	fun addState(animationState: AnimationState, timelineDatas: ArrayList<TimelineData>? = null) {
 		if (timelineDatas != null) {
-			for (timelineData in timelineDatas) {
+			timelineDatas.fastForEach { timelineData ->
 				when (timelineData.type) {
 					TimelineType.AnimationProgress -> {
 						val timeline = pool.borrowObject<AnimationProgressTimelineState>()
@@ -1323,7 +1327,7 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 	 * @internal
 	 */
 	fun activeTimeline(): Unit {
-		for (timeline in this._slotTimelines) {
+		this._slotTimelines.fastForEach { timeline ->
 			timeline.dirty = true
 			timeline._currentTime = -1.0
 		}
@@ -1465,8 +1469,12 @@ class AnimationState(pool: BaseObjectPool) : BaseObject(pool) {
 
 			this._zOrderTimeline?.playState = -1
 
-			for (timeline in this._boneTimelines) timeline.playState = -1
-			for (timeline in this._slotTimelines) timeline.playState = -1
+			this._boneTimelines.fastForEach { timeline ->
+				timeline.playState = -1
+			}
+			this._slotTimelines.fastForEach { timeline ->
+				timeline.playState = -1
+			}
 		}
 	/**
 	 * - The blend weight.

@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.korag.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -66,7 +67,7 @@ class ParticleEmitter() {
 		var blendFuncSource = AG.BlendFactor.ONE
 		var blendFuncDestination = AG.BlendFactor.ONE
 
-		for (item in particleXml.allChildrenNoComments) {
+		particleXml.allChildrenNoComments.fastForEach { item ->
 			fun point() = IPoint(item.double("x"), item.double("y"))
 			fun scalar() = item.double("value")
 			fun blendFactor() = when (scalar().toInt()) {
@@ -113,10 +114,10 @@ class ParticleEmitter() {
 				"finishparticlesizevariance" -> endSizeVariance = scalar()
 				"duration" -> duration = scalar()
 				"emittertype" -> emitterType =
-						when (scalar().toInt()) { 0 -> Type.GRAVITY
-							; 1 -> Type.RADIAL
-							; else -> Type.GRAVITY
-							; }
+					when (scalar().toInt()) { 0 -> Type.GRAVITY
+						; 1 -> Type.RADIAL
+						; else -> Type.GRAVITY
+						; }
 				"maxradius" -> maxRadius = scalar()
 				"maxradiusvariance" -> maxRadiusVariance = scalar()
 				"minradius" -> minRadius = scalar()
@@ -302,7 +303,9 @@ class ParticleEmitter() {
 				emitting = false
 			}
 
-			for (p in particles) advance(p, time)
+			particles.fastForEach { p ->
+				advance(p, time)
+			}
 		}
 	}
 }

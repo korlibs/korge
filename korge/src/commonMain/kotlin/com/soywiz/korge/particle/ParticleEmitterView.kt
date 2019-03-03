@@ -1,5 +1,6 @@
 package com.soywiz.korge.particle
 
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -43,7 +44,7 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 			context.blendFactors = emitter.blendFactors
 			context.setMatrix(globalMatrix)
 
-			for (p in simulator.particles) {
+			simulator.particles.fastForEach { p ->
 				val scale = p.scale
 				context.multiplyColor = p.color
 				context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale)

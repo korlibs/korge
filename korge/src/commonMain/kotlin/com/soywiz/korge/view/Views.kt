@@ -175,7 +175,7 @@ class Views constructor(
 		stage.render(renderContext)
 
 		if (debugViews) {
-			for (debugHandler in debugHandlers) {
+			debugHandlers.fastForEach { debugHandler ->
 				this.debugHandler(renderContext)
 			}
 		}

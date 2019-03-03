@@ -4,6 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korge.html.*
+import com.soywiz.korge.internal.fastForEach
+import com.soywiz.korge.internal.fastForEachWithIndex
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -380,7 +382,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val currentState: String? get() = timelineRunner.currentStateName
 
 	init {
-		for (d in dummyDepths) this += d
+		dummyDepths.fastForEach { d ->
+			this += d
+		}
 		addUpdatable { updateInternal(it) }
 	}
 
@@ -392,8 +396,10 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 	override fun reset() {
 		super.reset()
-		for (view in viewUids) view.reset()
-		for (n in unsortedChildren.indices) {
+		viewUids.fastForEach { view ->
+			view.reset()
+		}
+		for (n in 0 until unsortedChildren.size) {
 			replaceDepth(n, dummyDepths[n])
 		}
 	}
@@ -462,7 +468,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		var state = 0
 
 		//println("::::")
-		for ((depth, child) in children.toList().withIndex()) {
+		children.fastForEachWithIndex { depth, child ->
 			val maskDepth = maskPushDepths.getOrElse(depth) { -1 }
 
 			// Push Mask
@@ -507,7 +513,6 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			}
 
 			//println("  " + ctx.batch.colorMask)
-
 		}
 
 		// Reset stencil
@@ -614,7 +619,9 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			afterSignals()
 			return deferred.await()
 		} finally {
-			for (c in closeables) c.close()
+			closeables.fastForEach { c ->
+				c.close()
+			}
 		}
 	}
 

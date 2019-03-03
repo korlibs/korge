@@ -27,6 +27,7 @@ package com.dragonbones.animation
 
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
+import com.dragonbones.internal.fastForEach
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
@@ -76,17 +77,18 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 	private var _lastAnimationState: AnimationState? = null
 
 	override fun _onClear(): Unit {
-		for (animationState in this._animationStates) {
+		this._animationStates.fastForEach { animationState ->
 			animationState.returnToPool()
 		}
 
 		this._animations.clear()
 
-		for (blendStates in this._blendStates.values()) {
-			for (kB in blendStates.keys()) {
+		this._blendStates.fastValueForEach { blendStates ->
+			blendStates.fastKeyForEach { kB ->
 				blendStates[kB]?.returnToPool()
 			}
 		}
+
 		this._blendStates.clear()
 
 		this._animationConfig?.returnToPool()
@@ -106,51 +108,44 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 	private fun _fadeOut(animationConfig: AnimationConfig): Unit {
 		when (animationConfig.fadeOutMode) {
 			AnimationFadeOutMode.SameLayer -> {
-				for (animationState in this._animationStates) {
-					if (animationState._parent != null) {
-						continue
-					}
-
-					if (animationState.layer == animationConfig.layer) {
-						animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+				this._animationStates.fastForEach { animationState ->
+					if (animationState._parent == null) {
+						if (animationState.layer == animationConfig.layer) {
+							animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+						}
 					}
 				}
 			}
 
 			AnimationFadeOutMode.SameGroup -> {
-				for (animationState in this._animationStates) {
-					if (animationState._parent != null) {
-						continue
-					}
 
-					if (animationState.group == animationConfig.group) {
-						animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+				this._animationStates.fastForEach { animationState ->
+					if (animationState._parent == null) {
+						if (animationState.group == animationConfig.group) {
+							animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+						}
 					}
 				}
 			}
 
 			AnimationFadeOutMode.SameLayerAndGroup -> {
-				for (animationState in this._animationStates) {
-					if (animationState._parent != null) {
-						continue
-					}
-
-					if (
-						animationState.layer == animationConfig.layer &&
-						animationState.group == animationConfig.group
-					) {
-						animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+				this._animationStates.fastForEach { animationState ->
+					if (animationState._parent == null) {
+						if (
+							animationState.layer == animationConfig.layer &&
+							animationState.group == animationConfig.group
+						) {
+							animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
+						}
 					}
 				}
 			}
 
 			AnimationFadeOutMode.All -> {
-				for (animationState in this._animationStates) {
-					if (animationState._parent != null) {
-						continue
+				this._animationStates.fastForEach { animationState ->
+					if (animationState._parent == null) {
+						animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
 					}
-
-					animationState.fadeOut(animationConfig.fadeOutTime, animationConfig.pauseFadeOut)
 				}
 			}
 
@@ -194,8 +189,8 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 			passedTime *= this._inheritTimeScale
 		}
 
-		for (blendStates in this._blendStates.values()) {
-			for (state in blendStates.values()) {
+		this._blendStates.fastValueForEach { blendStates ->
+			blendStates.fastValueForEach { state ->
 				state.reset()
 			}
 		}
@@ -216,11 +211,11 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 				if (this._animationDirty && cacheFrameRate > 0.0) { // Update cachedFrameIndices.
 					this._animationDirty = false
 
-					for (bone in this._armature!!.getBones()) {
+					this._armature!!.getBones().fastForEach { bone ->
 						bone._cachedFrameIndices = animationData.getBoneCachedFrameIndices(bone.name)
 					}
 
-					for (slot in this._armature!!.getSlots()) {
+					this._armature!!.getSlots().fastForEach { slot ->
 						if (slot.displayFrameCount > 0) {
 							val rawDisplayData = slot.getDisplayFrameAt(0).rawDisplayData
 							if (
@@ -228,7 +223,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 								rawDisplayData.parent == this._armature!!.armatureData.defaultSkin
 							) {
 								slot._cachedFrameIndices = animationData.getSlotCachedFrameIndices(slot.name)
-								continue
+								return@fastForEach
 							}
 						}
 
@@ -290,7 +285,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 	 * @language zh_CN
 	 */
 	fun reset() {
-		for (animationState in this._animationStates) {
+		this._animationStates.fastForEach { animationState ->
 			animationState.returnToPool()
 		}
 
@@ -321,7 +316,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 			}
 		}
 		else {
-			for (animationState in this._animationStates) {
+			this._animationStates.fastForEach { animationState ->
 				animationState.stop()
 			}
 		}
@@ -362,7 +357,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 		val animationData = this._animations[animationName]!!
 
 		if (animationConfig.fadeOutMode == AnimationFadeOutMode.Single) {
-			for (animationState in this._animationStates) {
+			this._animationStates.forEach { animationState ->
 				if (
 					animationState._fadeState < 1 &&
 					animationState.layer == animationConfig.layer &&
@@ -454,7 +449,8 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 			this._animationStates.add(animationState)
 		}
 
-		for (slot in this._armature!!.getSlots()) { // Child armature play same name animation.
+		this._armature!!.getSlots().fastForEach { slot ->
+			// Child armature play same name animation.
 			val childArmature = slot.childArmature
 			if (
 				childArmature != null && childArmature.inheritAnimation &&
@@ -465,9 +461,9 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 			}
 		}
 
-		for (k in animationData.animationTimelines.keys) { // Blend animation node.
-			val childAnimationState = this.fadeIn(k, 0.0, 1, animationState.layer, "", AnimationFadeOutMode.Single)
-					?: continue
+		animationData.animationTimelines.fastKeyForEach { k ->
+			// Blend animation node.
+			val childAnimationState = this.fadeIn(k, 0.0, 1, animationState.layer, "", AnimationFadeOutMode.Single) ?: return@fastKeyForEach
 
 			val timelines = animationData.animationTimelines[k]
 			childAnimationState.actionEnabled = false
@@ -850,7 +846,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 	 * @language zh_CN
 	 */
 	val isPlaying: Boolean get() {
-		for (animationState in this._animationStates) {
+		this._animationStates.fastForEach { animationState ->
 			if (animationState.isPlaying) {
 				return true
 			}
@@ -871,7 +867,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 	 * @language zh_CN
 	 */
 	val isCompleted: Boolean get() {
-		for (animationState in this._animationStates) {
+		this._animationStates.fastForEach { animationState ->
 			if (!animationState.isCompleted) {
 				return false
 			}
@@ -930,7 +926,7 @@ class Animation(pool: BaseObjectPool) : BaseObject(pool) {
 
 			this._animations.clear()
 
-			for (k in value.keys) {
+			value.fastKeyForEach { k ->
 				this._animationNames.push(k)
 				this._animations[k] = value[k]!!
 			}

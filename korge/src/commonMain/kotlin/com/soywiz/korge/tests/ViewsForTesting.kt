@@ -176,7 +176,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 			try {
 				val timedTasks = mapWhile({ timedTasks.isNotEmpty() }) { timedTasks.removeHead() }
 
-				for (item in timedTasks) {
+				timedTasks.fastForEach { item ->
 					time = DateTime.fromUnix(max(time.unixMillis, item.time.unixMillis))
 					if (item.exception != null) {
 						item.continuation?.resumeWithException(item.exception!!)

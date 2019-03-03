@@ -5,6 +5,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.fastForEach
 
 //@Singleton
 class Input : Extra by Extra.Mixin() {
@@ -23,7 +24,9 @@ class Input : Extra by Extra.Mixin() {
 
 	fun updateTouches() {
 		activeTouches.clear()
-		for (touch in touches) if (touch.active) activeTouches.add(touch)
+		touches.fastForEach { touch ->
+			if (touch.active) activeTouches.add(touch)
+		}
 	}
 
 	val mouse = Point(-1000.0, -1000.0)
@@ -41,7 +44,9 @@ class Input : Extra by Extra.Mixin() {
 
 	fun updateConnectedGamepads() {
 		connectedGamepads.clear()
-		for (gamepad in gamepads) if (gamepad.connected) connectedGamepads += gamepad
+		gamepads.fastForEach { gamepad ->
+			if (gamepad.connected) connectedGamepads += gamepad
+		}
 	}
 
 	fun setKey(keyCode: Int, b: Boolean) {

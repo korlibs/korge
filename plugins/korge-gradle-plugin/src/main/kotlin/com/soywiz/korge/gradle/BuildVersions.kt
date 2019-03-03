@@ -3,10 +3,10 @@ package com.soywiz.korge.gradle
 
 object BuildVersions {
 	const val KLOCK = "1.2.2"
-	const val KDS = "1.6.1"
-	const val KMEM = "1.6.1"
+	const val KDS = "1.6.2"
+	const val KMEM = "1.6.2"
 	const val KORMA = "1.6.2"
-	const val KORIO = "1.6.4"
+	const val KORIO = "1.6.5"
 	const val KORIM = "1.6.4"
 	const val KORAU = "1.6.4"
 	const val KORUI = "1.6.5"

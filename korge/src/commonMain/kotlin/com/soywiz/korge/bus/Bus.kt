@@ -1,5 +1,6 @@
 package com.soywiz.korge.bus
 
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korinject.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
@@ -37,7 +38,9 @@ class Bus(
 	}
 
 	override fun close() {
-		for (c in closeables) c.close()
+		closeables.fastForEach { c ->
+			c.close()
+		}
 	}
 }
 
@@ -47,9 +50,8 @@ class GlobalBus {
 
 	suspend fun send(message: Any) {
 		val clazz = message::class
-		val handlers = perClassHandlers[clazz]
-		if (handlers != null) {
-			for (handler in handlers) handler(message)
+		perClassHandlers[clazz]?.fastForEach { handler ->
+			handler(message)
 		}
 	}
 

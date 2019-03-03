@@ -5,6 +5,7 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.fastForEach
 
 class GamePadEvents(override val view: View) : GamepadComponent {
 	val gamepads = GamePadUpdateEvent()
@@ -68,7 +69,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 		for (gamepadIndex in 0 until event.gamepadsLength) {
 			val gamepad = event.gamepads[gamepadIndex]
 			val oldGamepad = this.oldGamepads.gamepads[gamepadIndex]
-			for (button in GameButton.BUTTONS) {
+			GameButton.BUTTONS.fastForEach { button ->
 				if (gamepad[button] != oldGamepad[button]) {
 					button(buttonEvent.apply {
 						this.gamepad = gamepad.index
@@ -78,7 +79,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 					})
 				}
 			}
-			for (stick in GameStick.STICKS) {
+			GameStick.STICKS.fastForEach { stick ->
 				val vector = gamepad[stick]
 				if (vector != oldGamepad[stick]) {
 					stick(stickEvent.apply {

@@ -6,6 +6,7 @@ korlibs {
 	dependencyMulti("com.soywiz:korgw:$korgwVersion")
 	dependencyMulti("com.soywiz:korinject:$korinjectVersion")
 	dependencyMulti("com.soywiz:klogger:$kloggerVersion")
+	dependencyMulti("com.soywiz:kds:$kdsVersion")
 
 	dependencyMulti("com.soywiz:korau:$korauVersion")
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "minimp3", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])

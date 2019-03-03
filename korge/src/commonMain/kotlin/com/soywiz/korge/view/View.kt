@@ -647,7 +647,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun findViewByName(name: String): View? {
 		if (this.name == name) return this
 		if (this.isContainer) {
-			for (child in (this as Container).children) {
+			(this as Container).children.fastForEach { child ->
 				val named = child.findViewByName(name)
 				if (named != null) return named
 			}
@@ -781,7 +781,7 @@ val View?.ancestors: List<View> get() = ancestorsUpTo(null)
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	emit("$indent$this")
 	if (this is Container) {
-		for (child in this.children) {
+		this.children.fastForEach { child ->
 			child.dump("$indent ", emit)
 		}
 	}
@@ -798,7 +798,7 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
 	if (this != null) {
 		handler(this)
 		if (this is Container) {
-			for (child in this.children) {
+			this.children.fastForEach { child ->
 				child.foreachDescendant(handler)
 			}
 		}
@@ -843,7 +843,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this
 	if (this is Container) {
-		for (child in this.children) {
+		this.children.fastForEach { child ->
 			val res = child.firstDescendantWith(check)
 			if (res != null) return res
 		}
@@ -855,7 +855,7 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 	if (this != null) {
 		if (check(this)) out += this
 		if (this is Container) {
-			for (child in this.children) {
+			this.children.fastForEach { child ->
 				child.descendantsWith(out, check)
 			}
 		}

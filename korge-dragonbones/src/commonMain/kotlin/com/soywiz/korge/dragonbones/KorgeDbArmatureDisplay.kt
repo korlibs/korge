@@ -29,6 +29,7 @@ import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -226,7 +227,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 		//println("dispatchDBEvent:$type")
 		val listeners = eventListeners[type]
 		if (listeners != null) {
-			for (listener in listeners) {
+			listeners.fastForEach { listener ->
 				listener(eventObject)
 			}
 		}
@@ -288,7 +289,9 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 
 	private fun returnEvents() {
 		if (this._eventsReturnQueue.size <= 0) return
-		for (obj in this._eventsReturnQueue) obj.returnToPool()
+		this._eventsReturnQueue.fastForEach { obj ->
+			obj.returnToPool()
+		}
 		this._eventsReturnQueue.clear()
 	}
 

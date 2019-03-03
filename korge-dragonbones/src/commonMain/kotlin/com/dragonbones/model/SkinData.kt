@@ -24,6 +24,7 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 
 /**
  * - The skin data, typically a armature data instance contains at least one skinData.
@@ -60,8 +61,8 @@ class SkinData(pool: BaseObjectPool) : BaseObject(pool) {
 	var parent: ArmatureData? = null
 
 	override fun _onClear() {
-		for (slotDisplays in this.displays.values) {
-			for (display in slotDisplays) {
+		this.displays.fastValueForEach { slotDisplays ->
+			slotDisplays.fastForEach { display ->
 				if (display != null) {
 					display.returnToPool()
 				}
@@ -93,12 +94,9 @@ class SkinData(pool: BaseObjectPool) : BaseObject(pool) {
 	 * @private
 	 */
 	fun getDisplay(slotName: String, displayName: String): DisplayData? {
-		val slotDisplays = this.getDisplays(slotName)
-		if (slotDisplays != null) {
-			for (display in slotDisplays) {
-				if (display != null && display.name == displayName) {
-					return display
-				}
+		getDisplays(slotName)?.fastForEach { display ->
+			if (display != null && display.name == displayName) {
+				return display
 			}
 		}
 

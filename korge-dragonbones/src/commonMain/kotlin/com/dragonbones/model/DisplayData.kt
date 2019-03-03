@@ -26,6 +26,7 @@ import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
 
 /**
@@ -118,7 +119,7 @@ class ArmatureDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 	override fun _onClear() {
 		super._onClear()
 
-		for (action in this.actions) {
+		this.actions.fastForEach { action ->
 			action.returnToPool()
 		}
 

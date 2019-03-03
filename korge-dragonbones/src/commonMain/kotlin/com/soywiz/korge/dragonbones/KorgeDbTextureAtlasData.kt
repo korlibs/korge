@@ -80,7 +80,7 @@ class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
 			this._renderTexture = value
 
 			if (this._renderTexture !== null) {
-				for (k in this.textures.keys) {
+				this.textures.fastKeyForEach { k ->
 					val textureData = this.textures[k] as KorgeDbTextureData
 
 					textureData.renderTexture = BitmapSliceCompat(
@@ -94,7 +94,7 @@ class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
 				}
 			}
 			else {
-				for (k in this.textures.keys) {
+				this.textures.fastKeyForEach { k ->
 					val textureData = this.textures[k] as KorgeDbTextureData
 					textureData.renderTexture = null
 				}

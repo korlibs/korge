@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -84,7 +85,9 @@ object AnLibraryDeserializer {
 			readSymbol(strings, atlases, sounds)
 		}
 
-		for (symbol in symbols) library.addSymbol(symbol)
+		symbols.fastForEach { symbol ->
+			library.addSymbol(symbol)
+		}
 		library.processSymbolNames()
 
 		return library
@@ -238,7 +241,9 @@ object AnLibraryDeserializer {
 						else -> TODO()
 					}
 				}
-				for (action in actions) ss.actions.add(timeInMs * 1000, action)
+				actions.fastForEach { action ->
+					ss.actions.add(timeInMs * 1000, action)
+				}
 			}
 
 			for (depth in 0 until totalDepths) {

@@ -2,6 +2,7 @@ package com.soywiz.korge.animate.serialization
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -74,7 +75,7 @@ object AnLibrarySerializer {
 		)
 		// Allocate Strings
 		val strings = OptimizedStringAllocator()
-		for (symbol in lib.symbolsById) {
+		lib.symbolsById.fastForEach { symbol ->
 			strings.add(symbol.name)
 			when (symbol) {
 				is AnSymbolMovieClip -> {
