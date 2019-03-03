@@ -9,20 +9,32 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korma.geom.*
 
-inline fun Container.tileMap(map: IntArray2, tileset: TileSet, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map, tileset).addTo(this).apply(callback)
+inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
+	TileMap(map, tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
 
-inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map.toIntArray2(), tileset).addTo(this).apply(callback)
+inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
+	TileMap(map.toIntArray2(), tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
 
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	@Deprecated("kept for compatiblity")
-	val map = Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data))
+	val map by lazy { Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data)) }
 	constructor(map: Bitmap32, tileset: TileSet) : this(map.toIntArray2(), tileset)
 
 	val tileWidth = tileset.width.toDouble()
 	val tileHeight = tileset.height.toDouble()
 	var smoothing = true
+
+	enum class Repeat(val get: (v: Int, max: Int) -> Int) {
+		NONE({ v, max -> v }),
+		REPEAT({ v, max -> v umod max }),
+		MIRROR({ v, max ->
+			val r = v umod max
+			if ((v / max) % 2 == 0) r else max - 1 - r
+		})
+	}
+
+	var repeatX = Repeat.NONE
+	var repeatY = Repeat.NONE
 
 	private val t0 = Point(0, 0)
 	private val tt0 = Point(0, 0)
@@ -47,16 +59,10 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		// @TODO: Bounds in clipped view
 		val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
 		val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
-		val mx0 = ((pp0.x / tileWidth) - 1).toInt().clamp(0, map.width)
-		val mx1 = ((pp1.x / tileWidth) + 1).toInt().clamp(0, map.width)
-		val my0 = ((pp0.y / tileHeight) - 1).toInt().clamp(0, map.height)
-		val my1 = ((pp1.y / tileHeight) + 1).toInt().clamp(0, map.height)
-
-		//views.stats.value("tiledmap.$name.bounds").set("${views.virtualLeft},${views.virtualTop},${views.virtualRight},${views.virtualBottom}")
-		//views.stats.value("tiledmap.$name.pp0,pp1").set("$pp0,$pp1")
-		//views.stats.value("tiledmap.$name.tileWidth,tileHeight").set("$tileWidth,$tileHeight")
-		//views.stats.value("tiledmap.$name.mx0,my0").set("$mx0,$my0")
-		//views.stats.value("tiledmap.$name.mx1,my1").set("$mx1,$my1")
+		val mx0 = ((pp0.x / tileWidth) - 1).toInt()
+		val mx1 = ((pp1.x / tileWidth) + 1).toInt()
+		val my0 = ((pp0.y / tileHeight) - 1).toInt()
+		val my1 = ((pp1.y / tileHeight) + 1).toInt()
 
 		val yheight = my1 - my0
 		val xwidth = mx1 - mx0
@@ -66,7 +72,13 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		var count = 0
 		for (y in my0 until my1) {
 			for (x in mx0 until mx1) {
-				val tex = tileset[intMap[x, y]] ?: continue
+				val rx = repeatX.get(x, intMap.width)
+				val ry = repeatY.get(y, intMap.height)
+
+				if (rx < 0 || rx >= intMap.width) continue
+				if (ry < 0 || ry >= intMap.height) continue
+
+				val tex = tileset[intMap[rx, ry]] ?: continue
 
 				val info = verticesPerTex.getOrPut(tex.bmp) {
 					val indices = TexturedVertexArray.quadIndices(ntiles)
@@ -122,10 +134,16 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
-		out.setTo(0, 0, tileWidth * map.width, tileHeight * map.height)
+		out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)
 	}
 
 	override fun hitTest(x: Double, y: Double): View? {
-		return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * map.width, tileHeight * map.height)) this else null
+		return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
 	}
 }
+
+fun <T : TileMap> T.repeat(repeatX: TileMap.Repeat, repeatY: TileMap.Repeat = repeatX): T = this.apply {
+	this.repeatX = repeatX
+	this.repeatY = repeatY
+}
+
