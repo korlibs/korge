@@ -119,8 +119,10 @@ open class Container : View() {
 	}
 
 	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
-		safeForEachChildrenReversed { child ->
-			child.dispatch(clazz, event)
+		if (propagateEvents) {
+			safeForEachChildrenReversed { child ->
+				child.dispatch(clazz, event)
+			}
 		}
 		super.dispatch(clazz, event)
 	}

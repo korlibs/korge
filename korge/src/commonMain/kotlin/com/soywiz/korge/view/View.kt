@@ -36,6 +36,7 @@ typealias DisplayObject = View
 abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	//internal val _transform = ViewTransform(this)
 	open val isContainer get() = false
+	open var propagateEvents = true
 
 	/**
 	 * Views marked with this, break batching by acting as reference point for computing vertices.
