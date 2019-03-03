@@ -83,9 +83,23 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("prepareKotlinNativeIosProject") { task ->
-		task.dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", "prepareKotlinNativeBootstrap")
+	val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
+	val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
+		dependsOn("genResources")
+		from(File(buildDir, "genMainResources"))
+		from(File(rootDir, "src/commonMain/resources"))
+		into(combinedResourcesFolder)
+		doFirst {
+			combinedResourcesFolder.mkdirs()
+		}
+	}
+
+	val prepareKotlinNativeIosProject = tasks.create("prepareKotlinNativeIosProject") { task ->
+		task.dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", "prepareKotlinNativeBootstrap", copyIosResources)
 		task.doLast {
+			// project.yml requires these folders to be available or it will fail
+			//File(rootDir, "src/commonMain/resources").mkdirs()
+
 			val folder = File(buildDir, "platforms/ios")
 			val swift = false
 			if (swift) {
@@ -684,19 +698,22 @@ fun Project.configureNativeIos() {
 								line("sources:")
 								indent {
 									line("- app")
-									line("- path: ../../../src/commonMain/resources")
-									indent {
-										line("name: assets")
-										line("optional: true")
-										line("buildPhase:")
+									//for (path in listOf("../../../src/commonMain/resources", "../../../build/genMainResources")) {
+									for (path in listOf(combinedResourcesFolder.relativeTo(folder))) {
+										line("- path: $path")
 										indent {
-											line("copyFiles:")
+											line("name: assets")
+											line("optional: true")
+											line("buildPhase:")
 											indent {
-												line("destination: resources")
-												line("subpath: include/app")
+												line("copyFiles:")
+												indent {
+													line("destination: resources")
+													line("subpath: include/app")
+												}
 											}
+											line("type: folder")
 										}
-										line("type: folder")
 									}
 								}
 								line("dependencies:")
@@ -745,7 +762,7 @@ fun Project.configureNativeIos() {
 			val arch2 = if (simulator) "x86_64" else "arm64"
 			val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
 			tasks.create("iosBuild$simulatorSuffix$debugSuffix") { task ->
-				task.dependsOn("prepareKotlinNativeIosProject", "linkMain${debugSuffix}FrameworkIos$arch")
+				task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
 				val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
 				afterEvaluate {
 					task.outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])

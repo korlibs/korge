@@ -129,7 +129,7 @@ fun Project.configureNativeAndroid() {
 
 									val rootDir = project.rootDir
 									line("java.srcDirs += [${"$rootDir/src/commonMain/kotlin".quoted}, ${"$rootDir/src/androidMain/kotlin".quoted}]")
-									line("assets.srcDirs += [${"$rootDir/src/commonMain/resources".quoted}, ${"$rootDir/src/androidMain/resources".quoted}]")
+									line("assets.srcDirs += [${"$rootDir/src/commonMain/resources".quoted}, ${"$rootDir/src/androidMain/resources".quoted}, ${"$rootDir/build/genMainResources".quoted}]")
 								}
 							}
 						}
