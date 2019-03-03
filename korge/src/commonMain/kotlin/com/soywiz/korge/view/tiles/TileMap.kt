@@ -1,16 +1,25 @@
 package com.soywiz.korge.view.tiles
 
+import com.soywiz.kds.IntArray2
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.util.*
+import com.soywiz.korge.util.toIntArray2
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korma.geom.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map, tileset).addTo(this).apply(callback)
 
-open class TileMap(val map: IntArray2, val tileset: TileSet) : View() {
+inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
+	TileMap(map.toIntArray2(), tileset).addTo(this).apply(callback)
+
+open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
+	@Deprecated("kept for compatiblity")
+	val map = Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data))
+	constructor(map: Bitmap32, tileset: TileSet) : this(map.toIntArray2(), tileset)
+
 	val tileWidth = tileset.width.toDouble()
 	val tileHeight = tileset.height.toDouble()
 	var smoothing = true
@@ -57,7 +66,7 @@ open class TileMap(val map: IntArray2, val tileset: TileSet) : View() {
 		var count = 0
 		for (y in my0 until my1) {
 			for (x in mx0 until mx1) {
-				val tex = tileset[map.getInt(x, y)] ?: continue
+				val tex = tileset[intMap[x, y]] ?: continue
 
 				val info = verticesPerTex.getOrPut(tex.bmp) {
 					val indices = TexturedVertexArray.quadIndices(ntiles)

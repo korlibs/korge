@@ -35,11 +35,10 @@ class TiledMapTest : ViewsForTesting() {
 	}
 
 	@Test
-
 	fun testRenderInBounds() {
 		val renderTilesCounter = views.stats.counter("renderedTiles")
 		val tileset = TileSet(Bitmap32(32, 32).slice(), 32, 32)
-		val map = TileMap(IntArray2(200, 200), tileset)
+		val map = TileMap(Bitmap32(200, 200), tileset)
 		views.stage += map
 		views.frameUpdateAndRender()
 		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
