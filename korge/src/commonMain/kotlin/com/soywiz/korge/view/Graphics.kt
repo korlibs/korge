@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -169,10 +170,17 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	override var sLeft = 0.0
 	override var sTop = 0.0
 
+	private val bb = BoundsBuilder()
+	private val bounds = Rectangle()
+
 	override fun renderInternal(ctx: RenderContext) {
 		if (dirty) {
 			dirty = false
-			val bounds = shapes.map { it.getBounds() }.bounds()
+
+			bb.reset()
+			shapes.fastForEach { it.addBounds(bb) }
+			bb.getBounds(bounds)
+
 			val image = NativeImage(bounds.width.toInt(), bounds.height.toInt())
 			image.context2d {
 				translate(-bounds.x, -bounds.y)
