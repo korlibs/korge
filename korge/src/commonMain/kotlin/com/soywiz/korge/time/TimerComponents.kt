@@ -11,56 +11,93 @@ import kotlin.collections.minusAssign
 import kotlin.collections.plusAssign
 import kotlin.coroutines.*
 
+private typealias TimerCallback = (Int) -> Unit
+
+inline class TimerRef(val ref: Double)
+
 class TimerComponents(override val view: View) : UpdateComponent {
-	private val timers = arrayListOf<(Int) -> Unit>()
-	private val timersIt = arrayListOf<(Int) -> Unit>()
+	private val _timers = arrayListOf<(Int) -> Unit>()
 
 	override fun update(ms: Double) {
-		timersIt.clear()
-		timersIt.addAll(timers)
-		timersIt.fastForEach { timer -> timer(ms.toInt()) }
+		_timers.fastForEach { it(ms.toInt()) }
+	}
+
+	private fun addTimer(callback: (Int) -> Unit) {
+		_timers += callback
+	}
+
+	private fun removeTimer(callback: (Int) -> Unit) {
+		_timers -= callback
 	}
 
 	suspend fun wait(time: TimeSpan) = waitMilliseconds(time.milliseconds)
 
-	suspend fun waitFrame() = waitMilliseconds(1000.0 / 60.0)
-
-	private var accumulated = 0.0
-
-	fun takeAccumulated() = accumulated.also { accumulated = 0.0 }
-	fun incrAccumulated(time: Double) = run { accumulated += time }
+	suspend fun waitFrame() = suspendCoroutine<Unit> { c ->
+		lateinit var timer: TimerCallback
+		timer = {
+			removeTimer(timer)
+			c.resume(Unit)
+		}
+		addTimer(timer)
+	}
 
 	suspend fun waitMilliseconds(time: Double): Unit = suspendCancellableCoroutine { c ->
 		waitMilliseconds(time) { c.resume(Unit) }
 	}
 
-	fun waitMilliseconds(time: Double, callback: () -> Unit = {}): Closeable {
-		var elapsedTime = takeAccumulated()
-		var timer: ((Int) -> Unit)? = null
+	fun waitMilliseconds(time: Double, callback: () -> Unit = {}): Closeable = timeoutMs(time, callback)
+
+	fun timeoutMs(time: Double, callback: () -> Unit = {}): Closeable {
+		var elapsedTime = 0.0
+		lateinit var timer: ((Int) -> Unit)
 		timer = {
 			elapsedTime += it
 			//println("TIMER: $elapsedTime")
 			if (elapsedTime >= time) {
-				incrAccumulated(elapsedTime - time)
-				timers -= timer!!
+				removeTimer(timer)
 				//println("DONE!")
 				callback()
 			}
 		}
-		timers += timer
-		return Closeable { timers -= timer }
+		addTimer(timer)
+		return Closeable { removeTimer(timer) }
+	}
+
+	fun intervalMs(time: Double, callback: () -> Unit = {}): Closeable {
+		lateinit var timer: TimerCallback
+		var elapsed = 0.0
+		timer = { deltaMs ->
+			elapsed += deltaMs
+			if (elapsed >= time) {
+				elapsed -= time
+				callback()
+			}
+		}
+		addTimer(timer)
+		return Closeable { removeTimer(timer) }
 	}
 }
 
 val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
-suspend fun View.waitMs(time: Int) = this.timers.waitMilliseconds(time.toDouble())
-suspend fun View.wait(time: TimeSpan) = this.timers.wait(time)
-suspend fun View.waitFrame() = this.timers.waitFrame()
 
-suspend fun View.sleepMs(time: Int) = this.timers.waitMilliseconds(time.toDouble())
-suspend fun View.sleep(time: TimeSpan) = this.timers.wait(time)
-suspend fun View.sleepFrame() = this.timers.waitFrame()
+@Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
+suspend fun View.waitMs(time: Int) = this.delay(time.milliseconds)
+@Deprecated("", ReplaceWith("this.delay(time)"))
+suspend fun View.wait(time: TimeSpan) = this.delay(time)
+@Deprecated("", ReplaceWith("this.delayFrame()"))
+suspend fun View.waitFrame() = this.delayFrame()
 
+@Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
+suspend fun View.sleepMs(time: Int) = this.delay(time.milliseconds)
+@Deprecated("", ReplaceWith("this.delay(time)"))
+suspend fun View.sleep(time: TimeSpan) = this.delay(time)
+@Deprecated("", ReplaceWith("this.delayFrame()"))
+suspend fun View.sleepFrame() = this.delayFrame()
+
+@Deprecated("", ReplaceWith("this.timeout(time, callback)"))
+fun View.timer(time: TimeSpan, callback: () -> Unit): Closeable = this.timeout(time, callback)
+
+fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeoutMs(time.milliseconds, callback)
+fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.intervalMs(time.milliseconds, callback)
 suspend fun View.delay(time: TimeSpan) = this.timers.wait(time)
-
-fun View.timer(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.waitMilliseconds(time.milliseconds, callback)
+suspend fun View.delayFrame() = this.timers.waitFrame()
