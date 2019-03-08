@@ -68,7 +68,7 @@ class TimerComponents(override val view: View) : UpdateComponent {
 		var elapsed = 0.0
 		timer = { deltaMs ->
 			elapsed += deltaMs
-			if (elapsed >= time) {
+			while (elapsed >= time) {
 				elapsed -= time
 				callback()
 			}
