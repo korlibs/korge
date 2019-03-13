@@ -146,7 +146,7 @@ fun Project.configureNativeAndroid() {
 								line("api '$name-android:$version'")
 							}
 
-							for (dependency in korge.plugins.flatMap { it.androidDependencies }) {
+							for (dependency in korge.plugins.pluginExts.flatMap { it.getAndroidDependencies() }) {
 								line("implementation ${dependency.quoted}")
 							}
 
@@ -181,7 +181,7 @@ fun Project.configureNativeAndroid() {
 							}
 							line(">")
 							indent {
-								for (text in korge.plugins.mapNotNull { it.androidManifestApplication }) {
+								for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidManifestApplication() }) {
 									line(text)
 								}
 
@@ -218,7 +218,7 @@ fun Project.configureNativeAndroid() {
 
 						line("class MainActivity : KorgwActivity()") {
 							line("override suspend fun activityMain()") {
-								for (text in korge.plugins.mapNotNull { it.androidInit }) {
+								for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
 									line(text)
 								}
 								line("${korge.entryPoint}()")

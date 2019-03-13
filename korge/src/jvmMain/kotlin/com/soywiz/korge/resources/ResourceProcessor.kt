@@ -1,20 +1,20 @@
-package com.soywiz.korge.build
+package com.soywiz.korge.resources
 
-import com.soywiz.korio.dynamic.mapper.*
+import com.soywiz.korio.dynamic.mapper.Mapper
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.runIgnoringExceptions
-import com.soywiz.korio.util.*
-import java.io.*
+import com.soywiz.korio.file.std.localVfs
+import com.soywiz.korio.util.AsyncOnce
+import com.soywiz.korio.util.jvmFallback
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 abstract class ResourceProcessor(vararg extensions: String) {
-	init {
-		MAPPER_ONCE
-	}
-
 	abstract val version: Int
 	abstract val outputExtension: String
+
+	private val binaryRootCache = AsyncOnce<VfsFile>()
+
+	val BINARY_ROOT by lazy { runBlocking { localVfs(System.getProperty("user.home"))[".korge"].apply { mkdir() }.jail() } }
 
 	val extensionLCs = extensions.toList().map(String::toLowerCase)
 	protected abstract suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile): Unit
@@ -58,11 +58,11 @@ abstract class ResourceProcessor(vararg extensions: String) {
 		val fraction: Double get() = if (totalFiles > 0) currentFile.toDouble() / totalFiles.toDouble() else 0.0
 	}
 
-	companion object {
-		val MAPPER_ONCE by lazy { Mapper.jvmFallback() }
+	class Group(val classLoader: ClassLoader) {
+		val MAPPER_ONCE = Mapper.jvmFallback()
 
 		val defaultResourceProcessors by lazy {
-			ServiceLoader.load(ResourceProcessor::class.java).toMutableList()
+			ServiceLoader.load(ResourceProcessor::class.java, classLoader).toMutableList()
 		}
 
 		val processorsByExtension: Map<String, ResourceProcessor> by lazy {

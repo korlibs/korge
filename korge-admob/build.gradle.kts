@@ -16,6 +16,7 @@ dependencies {
 	add("androidMainApi", "com.google.android.gms:play-services-ads:$playServicesVersion")
 }
 
+/*
 afterEvaluate {
 	extensions.getByType<PublishingExtension>().apply {
 		//println("publications.names: ${publications.names}")
@@ -51,3 +52,4 @@ afterEvaluate {
 		})
 	}
 }
+*/

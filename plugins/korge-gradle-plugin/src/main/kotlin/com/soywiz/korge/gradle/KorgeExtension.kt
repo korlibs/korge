@@ -2,24 +2,58 @@ package com.soywiz.korge.gradle
 
 import com.moowork.gradle.node.*
 import com.moowork.gradle.node.npm.*
+import com.soywiz.kds.*
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.plugin.*
 import com.soywiz.korio.util.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import java.net.*
+import java.util.*
+import kotlin.collections.LinkedHashMap
+import kotlin.reflect.*
 
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 
 data class KorgeCordovaPluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
-data class KorgePluginDescriptor(val artifact: String, val args: Map<String, String>, val xml: QXml) {
-	val variables get() = xml["variables"].attributes.keys.toList()
-	val androidInit get() = xml["android"]["init"].text?.replaceGroovy(args)
-	val androidManifestApplication get() = xml["android"]["manifest-application"].text?.replaceGroovy(args)
-	val androidDependencies get() = xml["android"]["dependencies"].children.mapNotNull { it.text?.replaceGroovy(args) }
+
+class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLoader = KorgePluginsContainer::class.java.classLoader) {
+    val globalParams = LinkedHashMap<String, String>()
+	val plugins = LinkedHashMap<MavenLocation, KorgePluginDescriptor>()
+
+    val files by lazy { project.resolveArtifacts(*plugins.values.map { it.jvmArtifact }.toTypedArray()) }
+    val urls by lazy { files.map { it.toURI().toURL() } }
+    val classLoader by lazy { URLClassLoader(urls.toTypedArray(), parentClassLoader) }
+
+	val pluginExts: List<KorgePluginExtension> by lazy {
+        val exts = ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList()
+		val ctx = KorgePluginExtension.InitContext()
+        for (ext in exts) {
+            for (param in ext.params) {
+				@Suppress("UNCHECKED_CAST")
+				(param as KMutableProperty1<KorgePluginExtension, String>).set(ext, globalParams[param.name]!!)
+            }
+			ext.init(ctx)
+        }
+        exts
+    }
+
+	fun addPlugin(artifact: MavenLocation): KorgePluginDescriptor {
+		return plugins.getOrPut(artifact) { KorgePluginDescriptor(this, artifact) }
+	}
+}
+
+data class KorgePluginDescriptor(val container: KorgePluginsContainer, val artifact: MavenLocation, val args: LinkedHashMap<String, String> = linkedHashMapOf()) {
+	val jvmArtifact = artifact.withNameSuffix("-jvm")
+    val files by lazy { container.project.resolveArtifacts(jvmArtifact) }
+    val urls by lazy { files.map { it.toURI().toURL() } }
+    val classLoader by lazy { URLClassLoader(urls.toTypedArray(), container.parentClassLoader) }
+	fun addArgs(args: Map<String, String>) = this.apply { this.args.putAll(args) }.apply { container.globalParams.putAll(args) }
 }
 
 enum class GameCategory {
@@ -35,6 +69,30 @@ fun String.replaceGroovy(replacements: Map<String, Any?>): String {
 	val template = templateEngine.createTemplate(this)
 	val replaced = template.make(replacements.toMutableMap())
 	return replaced.toString()
+}
+
+data class MavenLocation(val group: String, val name: String, val version: String, val classifier: String? = null) {
+
+	val versionWithClassifier by lazy { buildString {
+		append(version)
+		if (classifier != null) {
+			append(':')
+			append(classifier)
+		}
+	} }
+
+	companion object {
+		operator fun invoke(location: String): MavenLocation {
+			val parts = location.split(":")
+			return MavenLocation(parts[0], parts[1], parts[2], parts.getOrNull(3))
+		}
+	}
+
+	fun withNameSuffix(suffix: String) = copy(name = "$name$suffix")
+
+	val full: String by lazy { "$group:$name:$versionWithClassifier" }
+
+	override fun toString(): String = full
 }
 
 @Suppress("unused")
@@ -99,39 +157,44 @@ class KorgeExtension(val project: Project) {
 		configs[name] = value
 	}
 
-	val plugins = arrayListOf<KorgePluginDescriptor>()
+	val plugins = KorgePluginsContainer(project)
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
-		val parts = name.split(":", limit = 3)
-		val metadataName = parts.withIndex().map { (index, it) -> if (index == 1) "$it-metadata" else it }.joinToString(":")
-
-		val xml = QXml(xmlParse(project.resolveArtifacts("$metadataName@korge-plugin").first().readText()))
-		val plugin = KorgePluginDescriptor(name, args, xml)
-		plugins += plugin
-		for (variable in plugin.variables) {
-			if (variable !in args) {
-				error("When configuring Korge plugin '$name'('$metadataName'): Variable $variable is expected but not found. Expected variables: ${plugin.variables}")
-			}
-		}
-		dependencyMulti(name)
-
-		for ((k, v) in args) {
-			config(k, v)
-		}
-
-		for (pluginXml in xml["cordova"]["plugins"].children) {
-			val pluginName = pluginXml.name
-			val pluginVars = pluginXml.attributes.toList().associate { it.first to it.second.replaceGroovy(args) }
-
-			cordovaPlugin(pluginName, pluginVars)
-
-		}
-
-		//println("plugin.androidInit=${plugin.androidInit}")
-		//println("plugin.variables=${plugin.variables}")
+		dependencyMulti(name, registerPlugin = false)
+        plugins.addPlugin(MavenLocation(name)).addArgs(args)
     }
 
-    fun admob(ADMOB_APP_ID: String) {
+	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
+
+	fun supportSwf() {
+		dependencyMulti("com.soywiz:korge-swf:${BuildVersions.KORGE}")
+	}
+
+	fun supportShapeOps() {
+		dependencyMulti("com.soywiz:korma-shape-ops:${BuildVersions.KORMA}")
+	}
+
+	fun supportTriangulation() {
+		dependencyMulti("com.soywiz:korma-triangulate-pathfind:${BuildVersions.KORMA}")
+	}
+
+	fun supportDragonbones() {
+		dependencyMulti("com.soywiz:korge-dragonbones:${BuildVersions.KORGE}")
+	}
+
+	fun supportBox2d() {
+		dependencyMulti("com.soywiz:korge-box2d:${BuildVersions.KORGE}")
+	}
+
+	fun supportMp3() {
+		dependencyMulti("com.soywiz:korau-mp3:${BuildVersions.KORAU}")
+	}
+
+	fun supportOggVorbis() {
+		dependencyMulti("com.soywiz:korau-ogg-vorbis:${BuildVersions.KORAU}")
+	}
+
+	fun admob(ADMOB_APP_ID: String) {
         plugin("com.soywiz:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
 
@@ -205,9 +268,10 @@ class KorgeExtension(val project: Project) {
 	}
 
 	@JvmOverloads
-	fun dependencyMulti(dependency: String, targets: List<String> = ALL_TARGETS) {
-		val (group, name, version) = dependency.split(":", limit = 3)
-		return dependencyMulti(group, name, version, targets)
+	fun dependencyMulti(dependency: String, targets: List<String> = ALL_TARGETS, registerPlugin: Boolean = true) {
+		val location = MavenLocation(dependency)
+		if (registerPlugin) plugin(location.full)
+		return dependencyMulti(location.group, location.name, location.versionWithClassifier, targets)
 	}
 
 	@JvmOverloads
@@ -260,3 +324,6 @@ fun Project.resolveArtifacts(vararg artifacts: String): Set<File> {
     }
     return config.files
 }
+
+fun Project.resolveArtifacts(vararg artifacts: MavenLocation): Set<File> =
+	resolveArtifacts(*artifacts.map { it.full }.toTypedArray())

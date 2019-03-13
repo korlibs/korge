@@ -1,18 +1,23 @@
-package com.soywiz.korge.build.atlas
+package com.soywiz.korge.atlas
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.atlas.*
-import com.soywiz.korge.build.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.binpack.*
+import com.soywiz.kmem.nextAlignedTo
+import com.soywiz.korge.resources.ResourceProcessor
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.format.ImageEncodingProps
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.encode
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.dynamic.mapper.Mapper
+import com.soywiz.korio.dynamic.serialization.stringifyTyped
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.baseNameWithoutExtension
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.binpack.BinPacker
 import kotlinx.coroutines.channels.toList
 
 open class AtlasResourceProcessor : ResourceProcessor("atlas") {
@@ -47,9 +52,11 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		}
 
 		val dummyBmp = Bitmap32(2, 2)
-		val pack = packs.firstOrNull() ?: BinPacker.Result(16.0, 16.0, listOf(
-			(MemoryVfsMix("dummy.png" to dummyBmp.encode(PNG))["dummy.png"] to dummyBmp) to Rectangle(2, 2, 4, 4)
-		))
+		val pack = packs.firstOrNull() ?: BinPacker.Result(
+			16.0, 16.0, listOf(
+				(MemoryVfsMix("dummy.png" to dummyBmp.encode(PNG))["dummy.png"] to dummyBmp) to Rectangle(2, 2, 4, 4)
+			)
+		)
 		val out = Bitmap32(pack.width.toInt(), pack.height.toInt())
 
 		for (entry in pack.items) {
@@ -92,7 +99,8 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 		//println(Json.stringify(atlasInfo, pretty = true))
 
-		outputFile.withCompoundExtension("atlas.json").writeString(Json.stringifyTyped(atlasInfo, pretty = true, mapper = Mapper))
+		outputFile.withCompoundExtension("atlas.json")
+			.writeString(Json.stringifyTyped(atlasInfo, pretty = true, mapper = Mapper))
 
 		//Atlas.Factory()
 		//println(files)

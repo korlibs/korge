@@ -4,6 +4,7 @@ import com.soywiz.korge.build.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.resources.*
 import org.gradle.api.*
 
 fun Project.addGenResourcesTasks() = this {
@@ -49,7 +50,8 @@ fun Project.addGenResourcesTasks() = this {
 					logger.info("kotlin.sourceSets.names: ${kotlin.sourceSets.names}")
 					logger.info("allResourcesDirs: $allResourcesDirs")
 					logger.info("resourcesDirs: $resourcesDirs")
-					buildService.processResourcesFolders(resourcesDirs, outDir) { logger.info(it) }
+
+					buildService.processResourcesFolders(ResourceProcessor.Group(korge.defaultPluginsClassLoader), resourcesDirs, outDir) { logger.info(it) }
 				}
 			}
 		}
