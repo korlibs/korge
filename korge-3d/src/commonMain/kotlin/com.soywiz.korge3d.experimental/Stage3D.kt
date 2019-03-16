@@ -103,6 +103,7 @@ fun View3D?.foreachDescendant(handler: (View3D) -> Unit) {
 class RenderContext3D() {
 	lateinit var ag: AG
 	lateinit var rctx: RenderContext
+	val shaders = Shaders3D()
 	val textureUnit = AG.TextureUnit()
 	val bindMat4 = Matrix3D()
 	val bones = Array(128) { Matrix3D() }
@@ -564,7 +565,7 @@ open class ViewWithMesh3D(
 				ag.draw(
 					vertexBuffer,
 					type = mesh.drawType,
-					program = mesh.program ?: getProgram3D(
+					program = mesh.program ?: ctx.shaders.getProgram3D(
 						ctx.lights.size.clamp(0, 4),
 						mesh.maxWeights,
 						meshMaterial,

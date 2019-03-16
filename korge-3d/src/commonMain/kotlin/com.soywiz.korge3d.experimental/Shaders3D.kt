@@ -2,55 +2,80 @@ package com.soywiz.korge3d.experimental
 
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
-import com.soywiz.korge3d.experimental.Shaders3D.get
-import com.soywiz.korge3d.experimental.Shaders3D.mat4Identity
-import kotlin.native.concurrent.*
 
 @Korge3DExperimental
-object Shaders3D {
-	fun transpose(a: Operand) = Program.Func("transpose", a)
-	fun inverse(a: Operand) = Program.Func("inverse", a)
-	fun int(a: Operand) = Program.Func("int", a)
-	operator fun Operand.get(index: Operand) = Program.ArrayAccess(this, index)
+open class Shaders3D {
 
-	val u_Shiness = Uniform("u_shiness", VarType.Float1)
-	val u_IndexOfRefraction = Uniform("u_indexOfRefraction", VarType.Float1)
-	val u_AmbientColor = Uniform("u_ambientColor", VarType.Float4)
-	val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
-	val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
-	val u_BindShapeMatrix = Uniform("u_BindMat", VarType.Mat4)
-	val u_InvBindShapeMatrix = Uniform("u_InvBindMat", VarType.Mat4)
-	val u_ModMat = Uniform("u_ModMat", VarType.Mat4)
-	val u_NormMat = Uniform("u_NormMat", VarType.Mat4)
-	//val MAX_BONE_MATS = 16
-	val MAX_BONE_MATS = 64
-	val u_BoneMats = Uniform("u_BoneMats", VarType.Mat4, arrayCount = MAX_BONE_MATS)
-	val u_TexUnit = Uniform("u_TexUnit", VarType.TextureUnit)
-	val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false)
-	val a_norm = Attribute("a_Norm", VarType.Float3, normalized = false)
-	val a_tex = Attribute("a_TexCoords", VarType.Float2, normalized = false)
-	val a_boneIndex = Array(4) { Attribute("a_BoneIndex$it", VarType.Float4, normalized = false) }
-	val a_weight = Array(4) { Attribute("a_Weight$it", VarType.Float4, normalized = false) }
-	val a_col = Attribute("a_Col", VarType.Float3, normalized = true)
-	val v_col = Varying("v_Col", VarType.Float3)
+	//@ThreadLocal
+	private val programCache = LinkedHashMap<String, Program>()
 
-	val v_Pos = Varying("v_Pos", VarType.Float3)
-	val v_Norm = Varying("v_Norm", VarType.Float3)
-	val v_TexCoords = Varying("v_TexCoords", VarType.Float2)
+	var printShaders = false
 
-	val v_Temp1 = Varying("v_Temp1", VarType.Float4)
+	@Suppress("RemoveCurlyBracesFromTemplate")
+	fun getProgram3D(nlights: Int, nweights: Int, meshMaterial: Material3D?, hasTexture: Boolean): Program {
+		return programCache.getOrPut("program_L${nlights}_W${nweights}_M${meshMaterial?.kind}_T${hasTexture}") {
+			StandardShader3D(nlights, nweights, meshMaterial, hasTexture).program.apply {
+				if (printShaders) {
+					println(GlslGenerator(kind = ShaderType.VERTEX).generate(this.vertex.stm))
+					println(GlslGenerator(kind = ShaderType.FRAGMENT).generate(this.fragment.stm))
+				}
+			}
+		}
+	}
 
-	val programColor3D = Program(
-		vertex = VertexShader {
-			SET(v_col, a_col)
-			SET(out, u_ProjMat * u_ModMat * u_ViewMat * vec4(a_pos, 1f.lit))
-		},
-		fragment = FragmentShader {
-			SET(out, vec4(v_col, 1f.lit))
-			//SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit))
-		},
-		name = "programColor3D"
-	)
+
+	companion object {
+		val u_Shiness = Uniform("u_shiness", VarType.Float1)
+		val u_IndexOfRefraction = Uniform("u_indexOfRefraction", VarType.Float1)
+		val u_AmbientColor = Uniform("u_ambientColor", VarType.Float4)
+		val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
+		val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
+		val u_BindShapeMatrix = Uniform("u_BindMat", VarType.Mat4)
+		val u_InvBindShapeMatrix = Uniform("u_InvBindMat", VarType.Mat4)
+		val u_ModMat = Uniform("u_ModMat", VarType.Mat4)
+		val u_NormMat = Uniform("u_NormMat", VarType.Mat4)
+		//val MAX_BONE_MATS = 16
+		val MAX_BONE_MATS = 64
+		val u_BoneMats = Uniform("u_BoneMats", VarType.Mat4, arrayCount = MAX_BONE_MATS)
+		val u_TexUnit = Uniform("u_TexUnit", VarType.TextureUnit)
+		val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false)
+		val a_norm = Attribute("a_Norm", VarType.Float3, normalized = false)
+		val a_tex = Attribute("a_TexCoords", VarType.Float2, normalized = false)
+		val a_boneIndex = Array(4) { Attribute("a_BoneIndex$it", VarType.Float4, normalized = false) }
+		val a_weight = Array(4) { Attribute("a_Weight$it", VarType.Float4, normalized = false) }
+		val a_col = Attribute("a_Col", VarType.Float3, normalized = true)
+		val v_col = Varying("v_Col", VarType.Float3)
+
+		val v_Pos = Varying("v_Pos", VarType.Float3)
+		val v_Norm = Varying("v_Norm", VarType.Float3)
+		val v_TexCoords = Varying("v_TexCoords", VarType.Float2)
+
+		val v_Temp1 = Varying("v_Temp1", VarType.Float4)
+
+		val programColor3D = Program(
+			vertex = VertexShader {
+				SET(v_col, a_col)
+				SET(out, u_ProjMat * u_ModMat * u_ViewMat * vec4(a_pos, 1f.lit))
+			},
+			fragment = FragmentShader {
+				SET(out, vec4(v_col, 1f.lit))
+				//SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit))
+			},
+			name = "programColor3D"
+		)
+
+		val lights = (0 until 4).map { LightAttributes(it) }
+
+		val emission = MaterialLightUniform("emission")
+		val ambient = MaterialLightUniform("ambient")
+		val diffuse = MaterialLightUniform("diffuse")
+		val specular = MaterialLightUniform("specular")
+
+
+		val layoutPosCol = VertexLayout(a_pos, a_col)
+
+		private val FLOATS_PER_VERTEX = layoutPosCol.totalSize / Int.SIZE_BYTES /*Float.SIZE_BYTES is not defined*/
+	}
 
 	class LightAttributes(val id: Int) {
 		val u_sourcePos = Uniform("light${id}_pos", VarType.Float3)
@@ -58,43 +83,11 @@ object Shaders3D {
 		val u_attenuation = Uniform("light${id}_attenuation", VarType.Float3)
 	}
 
-	val lights = (0 until 4).map { LightAttributes(it) }
-
 	class MaterialLightUniform(val kind: String) {
 		//val mat = Material3D
 		val u_color = Uniform("u_${kind}_color", VarType.Float4)
 		val u_texUnit = Uniform("u_${kind}_texUnit", VarType.TextureUnit)
 	}
-
-	val emission = MaterialLightUniform("emission")
-	val ambient = MaterialLightUniform("ambient")
-	val diffuse = MaterialLightUniform("diffuse")
-	val specular = MaterialLightUniform("specular")
-
-
-	@ThreadLocal
-	val programCache = LinkedHashMap<String, Program>()
-
-	fun Program.Builder.mat4Identity() = Program.Func("mat4",
-		1f.lit, 0f.lit, 0f.lit, 0f.lit,
-		0f.lit, 1f.lit, 0f.lit, 0f.lit,
-		0f.lit, 0f.lit, 1f.lit, 0f.lit,
-		0f.lit, 0f.lit, 0f.lit, 1f.lit
-	)
-
-	@Suppress("RemoveCurlyBracesFromTemplate")
-	fun getProgram3D(nlights: Int, nweights: Int, meshMaterial: Material3D?, hasTexture: Boolean): Program {
-		return programCache.getOrPut("program_L${nlights}_W${nweights}_M${meshMaterial?.kind}_T${hasTexture}") {
-			StandardShader3D(nlights, nweights, meshMaterial, hasTexture).program.apply {
-				println(GlslGenerator(kind = ShaderType.VERTEX).generate(this.vertex.stm))
-				println(GlslGenerator(kind = ShaderType.FRAGMENT).generate(this.fragment.stm))
-			}
-		}
-	}
-
-	val layoutPosCol = VertexLayout(a_pos, a_col)
-
-	private val FLOATS_PER_VERTEX = layoutPosCol.totalSize / Int.SIZE_BYTES /*Float.SIZE_BYTES is not defined*/
 }
 
 @Korge3DExperimental
@@ -174,6 +167,14 @@ abstract class AbstractStandardShader3D() : BaseShader3D() {
 		}
 	}
 
+	fun Program.Builder.mat4Identity() = Program.Func("mat4",
+		1f.lit, 0f.lit, 0f.lit, 0f.lit,
+		0f.lit, 1f.lit, 0f.lit, 0f.lit,
+		0f.lit, 0f.lit, 1f.lit, 0f.lit,
+		0f.lit, 0f.lit, 0f.lit, 1f.lit
+	)
+
+
 	open fun Program.Builder.addLight(light: Shaders3D.LightAttributes, out: Operand) {
 		val v = Shaders3D.v_Pos
 		val N = Shaders3D.v_Norm
@@ -211,9 +212,9 @@ abstract class AbstractStandardShader3D() : BaseShader3D() {
 		//SET(out["rgb"], out["rgb"] + clamp(light.specular * pow(max(dot(R, E), 0f.lit), 0.3f.lit * u_Shiness), 0f.lit, 1f.lit)["rgb"])
 	}
 
-	fun Program.Builder.getBoneIndex(index: Int) = Shaders3D.int(Shaders3D.a_boneIndex[index / 4][index % 4])
-	fun Program.Builder.getWeight(index: Int) = Shaders3D.a_weight[index / 4][index % 4]
-	fun Program.Builder.getBone(index: Int) = Shaders3D.u_BoneMats[getBoneIndex(index)]
+	fun Program.Builder.getBoneIndex(index: Int): Operand = int(Shaders3D.a_boneIndex[index / 4][index % 4])
+	fun Program.Builder.getWeight(index: Int): Operand = Shaders3D.a_weight[index / 4][index % 4]
+	fun Program.Builder.getBone(index: Int): Operand = Shaders3D.u_BoneMats[getBoneIndex(index)]
 }
 
 @Korge3DExperimental
@@ -228,3 +229,8 @@ abstract class BaseShader3D {
 		)
 	}
 }
+
+private fun Program.Builder.transpose(a: Operand) = Program.Func("transpose", a)
+private fun Program.Builder.inverse(a: Operand) = Program.Func("inverse", a)
+private fun Program.Builder.int(a: Operand) = Program.Func("int", a)
+private operator fun Operand.get(index: Operand) = Program.ArrayAccess(this, index)
