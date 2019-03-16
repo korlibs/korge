@@ -1,7 +1,6 @@
 package com.soywiz.korge.lipsync
 
-import com.soywiz.korau.format.defaultAudioFormats
-import com.soywiz.korau.format.toWav
+import com.soywiz.korau.format.*
 import com.soywiz.korau.sound.AudioData
 import com.soywiz.korau.sound.readAudioData
 import com.soywiz.korge.resources.ResourceProcessor
@@ -21,16 +20,21 @@ import com.soywiz.korio.util.jvmFallback
 import com.soywiz.krypto.sha1
 import java.io.File
 import java.net.URL
+import java.util.*
 
 open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
-	companion object : LipsyncResourceProcessor()
+	companion object : LipsyncResourceProcessor() {
+		private val nativeAudioFormats = AudioFormats().register(
+			ServiceLoader.load(com.soywiz.korau.format.AudioFormat::class.java).toList()
+		)
+	}
 
 	override val version: Int = 0
 	override val outputExtension: String = "lipsync"
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
 		inputFile.copyTo(outputFile.parent[inputFile.baseName])
-		outputFile.writeString(processAudioData(inputFile.readAudioData(defaultAudioFormats)).toLipString())
+		outputFile.writeString(processAudioData(inputFile.readAudioData(nativeAudioFormats)).toLipString())
 	}
 
 	data class Config(val url: URL, val folder: String, val sha1: ByteArray, val exe: String)

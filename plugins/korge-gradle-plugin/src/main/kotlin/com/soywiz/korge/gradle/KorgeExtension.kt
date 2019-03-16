@@ -28,7 +28,10 @@ class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLo
 
     val files by lazy { project.resolveArtifacts(*plugins.values.map { it.jvmArtifact }.toTypedArray()) }
     val urls by lazy { files.map { it.toURI().toURL() } }
-    val classLoader by lazy { URLClassLoader(urls.toTypedArray(), parentClassLoader) }
+    val classLoader by lazy {
+		//println("KorgePluginsContainer.classLoader: $urls")
+		URLClassLoader(urls.toTypedArray(), parentClassLoader)
+	}
 
 	val pluginExts: List<KorgePluginExtension> by lazy {
         val exts = ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList()
@@ -166,6 +169,10 @@ class KorgeExtension(val project: Project) {
 
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
+	fun supportExperimental3d() {
+		dependencyMulti("com.soywiz:korge-3d:${BuildVersions.KORGE}")
+	}
+
 	fun supportSwf() {
 		dependencyMulti("com.soywiz:korge-swf:${BuildVersions.KORGE}")
 	}
@@ -192,6 +199,14 @@ class KorgeExtension(val project: Project) {
 
 	fun supportOggVorbis() {
 		dependencyMulti("com.soywiz:korau-ogg-vorbis:${BuildVersions.KORAU}")
+	}
+
+	fun supportQr() {
+		dependencyMulti("com.soywiz:korim-qr:${BuildVersions.KORIM}")
+	}
+
+	fun supportJpeg() {
+		dependencyMulti("com.soywiz:korim-jpeg:${BuildVersions.KORIM}")
 	}
 
 	fun admob(ADMOB_APP_ID: String) {

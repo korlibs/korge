@@ -1,0 +1,12 @@
+rootProject.name = rootDir.name + "-root"
+
+for (file in rootDir.listFiles()) {
+	if (file.name == "build" || file.name == "buildSrc" || file.name.startsWith(".")) continue
+	if (
+	["build.gradle", "build.gradle.kts"].collect { new File(file, it) }.any { it.exists() } &&
+		["settings.gradle", "settings.gradle.kts"].collect { new File(file, it) }.every { !it.exists() }
+	) {
+		include(":${file.name}")
+	}
+}
+
