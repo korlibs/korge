@@ -127,9 +127,9 @@ fun Project.configureNativeAndroid() {
 								line("main") {
 									// @TODO: Use proper source sets of the app
 
-									val rootDir = project.rootDir
-									line("java.srcDirs += [${"$rootDir/src/commonMain/kotlin".quoted}, ${"$rootDir/src/androidMain/kotlin".quoted}]")
-									line("assets.srcDirs += [${"$rootDir/src/commonMain/resources".quoted}, ${"$rootDir/src/androidMain/resources".quoted}, ${"$rootDir/build/genMainResources".quoted}]")
+									val projectDir = project.projectDir
+									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/androidMain/kotlin".quoted}]")
+									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/src/androidMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
 								}
 							}
 						}
