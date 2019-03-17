@@ -27,8 +27,12 @@ class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
 
 			val startTime = fseconds[n].seconds
 			val endTime = fseconds.getOrNull(n + 1)?.seconds ?: startTime
-			val ratio = (elapsedTimeInAnimation - startTime) / (endTime - startTime)
+			val fragmentTime = (endTime - startTime)
+			if (fragmentTime <= 0.seconds) return@fastForEach
+
+			val ratio = (elapsedTimeInAnimation - startTime) / fragmentTime
 			val aview = rootView[animation.target]
+			//println("ratio: $ratio, startTime=$startTime, endTime=$endTime, elapsedTimeInAnimation=$elapsedTimeInAnimation")
 			if (aview != null) {
 				when (aproperty) {
 					"transform" -> {

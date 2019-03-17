@@ -9,6 +9,7 @@ korlibs {
 	dependencyMulti("com.soywiz:kds:$kdsVersion")
 
 	dependencyMulti("com.soywiz:korau:$korauVersion")
+	dependencyMulti("com.soywiz:korio:$korioVersion")
 	dependencyMulti("com.soywiz:krypto:$kryptoVersion", ["jvm"])
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "minimp3", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
 	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "stb_vorbis", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
