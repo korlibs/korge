@@ -94,7 +94,9 @@ object Korge {
 		logger.trace { "Korge.setupCanvas[3]" }
 
 		logger.trace { "Korge.setupCanvas[4]" }
-		config.module.init(injector)
+		config.module.apply {
+			injector.configure()
+		}
 
 		logger.trace { "Korge.setupCanvas[5]" }
 

@@ -25,13 +25,13 @@ suspend fun VfsFile.writeKs3d(library: Library3D) {
 		write32LE(names.size)
 		for (name in names.instances) writeStringVL(name)
 		library.geometryDefs.fastForEach { key, geom ->
+			val mesh = geom.mesh
 			writeU_VL(names[key])
-			writeU_VL(geom.mesh.data.size * 4)
-			writeU_VL(geom.mesh.hasTexture.toInt())
-			writeU_VL(geom.mesh.maxWeights)
-			writeU_VL(geom.mesh.vertexCount)
-			writeFloatArrayLE(geom.mesh.data) // @TODO: Improve performance of this. Using FBuffer?
-
+			writeU_VL(mesh.fbuffer.size)
+			writeU_VL(mesh.hasTexture.toInt())
+			writeU_VL(mesh.maxWeights)
+			writeU_VL(mesh.vertexCount)
+			mesh.fbuffer.getAlignedArrayInt8(0, ByteArray(mesh.fbuffer.size), 0, mesh.fbuffer.size)
 		}
 	})
 }

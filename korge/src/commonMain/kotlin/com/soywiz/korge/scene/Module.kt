@@ -7,7 +7,12 @@ import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
+import kotlin.jvm.*
 import kotlin.reflect.*
+
+open class KorgeModule(mainScene: KClass<out Scene>) : Module() {
+	final override val mainScene: KClass<out Scene> = mainScene
+}
 
 open class Module {
 	open val imageFormats: List<ImageFormat> = listOf(PNG)
@@ -32,6 +37,9 @@ open class Module {
 
 	open val fullscreen: Boolean? = null
 
-	open suspend fun init(injector: AsyncInjector) {
-	}
+	@Deprecated("", ReplaceWith("injector.configure()"))
+	open suspend fun init(injector: AsyncInjector) = Unit
+
+	@Suppress("DEPRECATION")
+	open suspend fun AsyncInjector.configure() = init(this)
 }

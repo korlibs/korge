@@ -6,6 +6,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge3d.experimental.*
 import com.soywiz.korge3d.experimental.animation.*
+import com.soywiz.korge3d.experimental.internal.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
@@ -251,7 +252,7 @@ class ColladaParser {
 			geometryDefs[geom.id] = Library3D.GeometryDef(
 				Mesh3D(
 					//combinedData.toFloatArray().toFBuffer(),
-					combinedData.toFloatArray(),
+					combinedData.toFBuffer(),
 					VertexLayout(buildList {
 						add(Shaders3D.a_pos)
 						if (hasNormals) add(Shaders3D.a_norm)
@@ -433,7 +434,7 @@ class ColladaParser {
 										specular =
 											parseLightKindType(tech["specular"].firstOrNull(), tech.nameLC, params)
 												?: specular
-										shiness = tech["shiness"]["float"].firstText?.toFloatOrNull() ?: shiness
+										shiness = tech["shiness"]["float"].firstText?.toFloatOrNull()?.div(100f) ?: shiness
 										index_of_refraction =
 											tech["index_of_refraction"]["float"].firstText?.toFloatOrNull()
 												?: index_of_refraction
