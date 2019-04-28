@@ -3,6 +3,7 @@ package com.soywiz.korlibs.targets
 import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.tasks.testing.*
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 fun Project.configureTargetJVM() {
     gkotlin.apply {
@@ -19,6 +20,9 @@ fun Project.configureTargetJVM() {
     tasks {
         (getByName("jvmTest") as Test).apply {
             jvmArgs = (jvmArgs ?: arrayListOf()) + arrayListOf("-Djava.awt.headless=true")
+            testLogging {
+                it.exceptionFormat = TestExceptionFormat.FULL
+            }
         }
     }
 }

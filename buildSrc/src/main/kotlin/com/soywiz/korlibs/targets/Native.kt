@@ -35,12 +35,12 @@ fun Project.configureTargetNative() {
 
             val none = setOf<String>()
             val android = if (hasAndroid) setOf() else setOf("android")
-            val jvm = setOf("jvm")
-            val js = setOf("js")
-            val ios = setOf("iosX64", "iosArm32", "iosArm64")
-            val macos = setOf("macosX64")
-            val linux = setOf("linuxX64")
-            val mingw = setOf("mingwX64")
+            val jvm = korlibs.JVM_TARGETS.toSet()
+            val js = korlibs.JS_TARGETS.toSet()
+            val ios = korlibs.IOS_TARGETS.toSet()
+            val macos = korlibs.MACOS_DESKTOP_NATIVE_TARGETS.toSet()
+            val linux = korlibs.LINUX_DESKTOP_NATIVE_TARGETS.toSet()
+            val mingw = korlibs.WINDOWS_DESKTOP_NATIVE_TARGETS.toSet()
             val apple = ios + macos
             val allNative = apple + linux + mingw
             val jvmAndroid = jvm + android
@@ -57,7 +57,7 @@ fun Project.configureTargetNative() {
     }
 
     afterEvaluate {
-        for (target in listOf("macosX64", "linuxX64", "mingwX64")) {
+        for (target in korlibs.DESKTOP_NATIVE_TARGETS) {
             val taskName = "copyResourcesToExecutable_$target"
             val targetTestTask = tasks.getByName("${target}Test") as Exec
             val compileTestTask = tasks.getByName("compileTestKotlin${target.capitalize()}")
