@@ -395,12 +395,12 @@ object Korge {
 	//	})
 	//}
 
-	suspend fun KoruiWithLogger(entry: suspend GameWindow.() -> Unit) {
+	suspend fun KoruiWithLogger(gameWindow: GameWindow?, entry: suspend GameWindow.() -> Unit) {
 		if (!OS.isJsBrowser) {
 			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
 		}
 		try {
-			DefaultGameWindow.loop {
+			(gameWindow ?: coroutineContext[GameWindow] ?: DefaultGameWindow).loop {
 				entry()
 			}
 		} finally {
@@ -423,8 +423,9 @@ object Korge {
 		debug: Boolean = false,
 		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
+		gameWindow: GameWindow? = null,
 		entry: suspend Stage.() -> Unit
-	) = KoruiWithLogger {
+	) = KoruiWithLogger(gameWindow) {
 		val gameWindow = this
 		if (OS.isNative) println("Korui[0]")
 		configure(width, height, title, icon, fullscreen)
@@ -460,7 +461,7 @@ object Korge {
 		if (OS.isNative) println("Korui[1]")
 	}
 
-	suspend operator fun invoke(config: Config) = KoruiWithLogger {
+	suspend operator fun invoke(config: Config) = KoruiWithLogger(config.gameWindow) {
 		val module = config.module
 		configure(module.windowSize.width, module.windowSize.height, module.title, null, config.fullscreen ?: config.module.fullscreen ?: false)
 		val gameWindow = this
