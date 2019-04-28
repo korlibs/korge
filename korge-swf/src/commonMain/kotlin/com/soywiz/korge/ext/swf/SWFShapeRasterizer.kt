@@ -244,7 +244,7 @@ class SWFShapeRasterizer(
 			Context2d.ScaleMode.NORMAL,
 			lineCap,
 			lineCap,
-			"joints",
+			Context2d.LineJoin.MITER,
 			miterLimit
 		)
 		apath = GraphicsPath()
