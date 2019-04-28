@@ -826,7 +826,12 @@ fun View?.descendantsWithPropInt(prop: String, value: Int? = null): List<Pair<Vi
 fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<Pair<View, Int>> =
 	this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
 
+inline fun <reified T> View.getDescendantsOfType() = this.descendantsWith { it is T }
+
 operator fun View?.get(name: String): View? = firstDescendantWith { it.name == name }
+
+inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
+inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
 
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
 fun View?.firstDescendantWithName(name: String): View? = this[name]
