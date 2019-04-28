@@ -48,7 +48,7 @@ object Korge {
 			// Instances
 			.mapInstance(ModuleArgs::class, moduleArgs)
 			.mapInstance(TimeProvider::class, config.timeProvider)
-			.mapInstance(CoroutineContext::class, context)
+			.mapInstance(CoroutineContext::class, context + Job())
 			.mapInstance(Module::class, config.module)
 			.mapInstance(AG::class, ag)
 			.mapInstance(Config::class, config)
@@ -114,6 +114,10 @@ object Korge {
 		}
 
 		sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.seconds)
+
+		views.onClose {
+			sc.changeTo<EmptyScene>()
+		}
 
 		logger.trace { "Korge.setupCanvas[8]" }
 
@@ -256,6 +260,19 @@ object Korge {
 			views.dispatch(e)
 		}
 
+		eventDispatcher.addEventListener<ResumeEvent> { e -> views.dispatch(e) }
+		eventDispatcher.addEventListener<PauseEvent> { e -> views.dispatch(e) }
+		eventDispatcher.addEventListener<StopEvent> { e -> views.dispatch(e) }
+		eventDispatcher.addEventListener<DestroyEvent> { e ->
+			try {
+				views.dispatch(e)
+			} finally {
+				launchImmediately(views.coroutineContext) {
+					views.close()
+				}
+			}
+		}
+
 
 		// TOUCH
 		fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
@@ -382,8 +399,12 @@ object Korge {
 		if (!OS.isJsBrowser) {
 			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
 		}
-		DefaultGameWindow.loop {
-			entry()
+		try {
+			DefaultGameWindow.loop {
+				entry()
+			}
+		} finally {
+			println("Korge DefaultGameWindow.loop completed")
 		}
 	}
 

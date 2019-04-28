@@ -20,6 +20,7 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -55,7 +56,7 @@ class Views constructor(
 	val stats: Stats,
 	val gameWindow: GameWindow
 ) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
-	BoundsProvider, DialogInterface by gameWindow {
+	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
 
 	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
@@ -82,6 +83,23 @@ class Views constructor(
 	override val virtualTop get() = -actualVirtualTop * views.stage.scaleY
 	override val virtualRight get() = virtualLeft + virtualWidth * views.stage.scaleX
 	override val virtualBottom get() = virtualTop + virtualHeight * views.stage.scaleY
+
+	private val closeables = arrayListOf<AsyncCloseable>()
+
+	fun onClose(callback: suspend () -> Unit) {
+		closeables += object : AsyncCloseable {
+			override suspend fun close() {
+				callback()
+			}
+		}
+	}
+
+	override suspend fun close() {
+		closeables.fastForEach { it.close() }
+		closeables.clear()
+		coroutineContext.cancel()
+		gameWindow.close()
+	}
 
 	val actualVirtualRight get() = actualVirtualWidth
 	val actualVirtualBottom get() = actualVirtualHeight

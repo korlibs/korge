@@ -8,9 +8,8 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.supervisorScope
-import kotlin.coroutines.*
 import kotlin.reflect.*
 
 inline fun Container.sceneContainer(
@@ -30,8 +29,8 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 	// Async versions
 	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
 	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
-	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> =  CoroutineScope(coroutineContext).async { back(time, transition) }
-	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> =  CoroutineScope(coroutineContext).async { forward(time, transition) }
+	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
+	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
 
 	suspend inline fun <reified T : Scene> changeTo(
 		vararg injects: Any,
@@ -129,7 +128,8 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		oldScene?.sceneDestroy()
 
 		launchImmediately(kotlin.coroutines.coroutineContext) {
-			instance.sceneAfterDestroy()
+			oldScene?.sceneAfterDestroy()
+			oldScene?.coroutineContext?.cancel()
 		}
 		launchImmediately(kotlin.coroutines.coroutineContext) {
 			instance.sceneAfterInit()

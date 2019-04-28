@@ -153,14 +153,14 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	}
 
 	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
+		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = GraphicsPath()
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix())
-		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin.name, miterLimit)
+		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		currentPath = GraphicsPath()
 	}
 
