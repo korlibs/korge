@@ -97,7 +97,7 @@ open class ViewWithMesh3D(
 						val skeleton = this@ViewWithMesh3D.skeleton
 						val skin = mesh.skin
 						this[u_BindShapeMatrix] = identity
-						this[u_InvBindShapeMatrix] = identityInv
+						this[u_BindShapeMatrixInv] = identity
 						//println("skeleton: $skeleton, skin: $skin")
 						if (skeleton != null && skin != null) {
 							skin.bones.fastForEach { bone ->
@@ -114,7 +114,8 @@ open class ViewWithMesh3D(
 
 							}
 							this[u_BindShapeMatrix] = skin.bindShapeMatrix
-							this[u_InvBindShapeMatrix] = skin.invBindShapeMatrix
+							this[u_BindShapeMatrixInv] = skin.bindShapeMatrixInv
+
 							this[u_BoneMats] = skin.matrices
 						}
 

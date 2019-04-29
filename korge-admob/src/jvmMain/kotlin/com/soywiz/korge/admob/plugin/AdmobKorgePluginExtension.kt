@@ -12,7 +12,7 @@ class AdmobKorgePluginExtension : KorgePluginExtension(
 		"""try { com.google.android.gms.ads.MobileAds.initialize(com.soywiz.korio.android.androidContext(), ${ADMOB_APP_ID.quoted}) } catch (e: Throwable) { e.printStackTrace() }"""
 
 	override fun getAndroidManifestApplication(): String? =
-		"""<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value=${ADMOB_APP_ID.quoted} >"""
+		"""<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value=${ADMOB_APP_ID.quoted} />"""
 
 	override fun getAndroidDependencies() =
 		listOf("com.google.android.gms:play-services-ads:16.0.0")

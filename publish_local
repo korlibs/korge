@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 ./gradlew publishToMavenLocal
-./gradlew_linux publishLinuxX64PublicationToMavenLocal
+#./gradlew_linux publishLinuxX64PublicationToMavenLocal # Kotlin 1.3.30 crosscompiles linux on mac
+#./gradlew_win publishMingwX64PublicationToMavenLocal publishMingwX86PublicationToMavenLocal
 ./gradlew_win publishMingwX64PublicationToMavenLocal
-

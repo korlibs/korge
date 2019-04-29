@@ -165,6 +165,7 @@ class ColladaParser {
 
 				for (vcount in skin.vcounts) {
 					//println("-- vcount=$vcount")
+					var weightSum = 0.0
 					for (n in 0 until vcount) {
 						//joint.source = joint.indices[pos]
 						val jointIndex = joint.indices[pos]
@@ -173,11 +174,16 @@ class ColladaParser {
 						//println("$jointName[$joinIndex]: $weight")
 						weightIndices[n].add(jointIndex.toFloat())
 						weightWeights[n].add(w)
+						weightSum += w
 						pos++
 					}
 					for (n in vcount until maxWeights) {
-						weightIndices[n].add(-1f)
+						//weightIndices[n].add(-1f)
+						weightIndices[n].add(0f)
 						weightWeights[n].add(0f)
+					}
+					if (abs(weightSum - 1.0) > 0.0001) {
+						println("Not normalized weights: weightSum=$weightSum, weightWeights=${weightWeights.toList()}")
 					}
 				}
 				//println("jointSrcParam: $jointSrcParam")
@@ -895,13 +901,8 @@ class ColladaParser {
 }
 
 //fun com.soywiz.korma.geom.Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns(
-private fun Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setRows(
-	f[o + 0], f[o + 1], f[o + 2], f[o + 3],
-	f[o + 4], f[o + 5], f[o + 6], f[o + 7],
-	f[o + 8], f[o + 9], f[o + 10], f[o + 11],
-	f[o + 12], f[o + 13], f[o + 14], f[o + 15]
-)
-
+//private fun Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns4x4(f, o)
+private fun Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setRows4x4(f, o)
 
 private fun StrReader.readVector3D(): Vector3D {
 	val f = readFloats(FloatArrayList())

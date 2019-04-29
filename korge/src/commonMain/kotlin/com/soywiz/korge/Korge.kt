@@ -400,11 +400,11 @@ object Korge {
 			configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
 		}
 		try {
-			(gameWindow ?: coroutineContext[GameWindow] ?: DefaultGameWindow).loop {
+			(gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow()).loop {
 				entry()
 			}
 		} finally {
-			println("Korge DefaultGameWindow.loop completed")
+			println("Korge gameWindow.loop completed")
 		}
 	}
 

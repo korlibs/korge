@@ -44,8 +44,8 @@ data class Bone3D constructor(
 )
 
 @Korge3DExperimental
-data class Skin3D(val invBindShapeMatrix: Matrix3D, val bones: List<Bone3D>) {
-	val bindShapeMatrix = invBindShapeMatrix.clone().invert()
+data class Skin3D(val bindShapeMatrix: Matrix3D, val bones: List<Bone3D>) {
+	val bindShapeMatrixInv = bindShapeMatrix.clone().invert()
 	val matrices = Array(bones.size) { Matrix3D() }
 }
 

@@ -30,8 +30,8 @@ open class Shaders3D {
 		val u_AmbientColor = Uniform("u_ambientColor", VarType.Float4)
 		val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
 		val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
-		val u_BindShapeMatrix = Uniform("u_BindMat", VarType.Mat4)
-		val u_InvBindShapeMatrix = Uniform("u_InvBindMat", VarType.Mat4)
+		val u_BindShapeMatrix = Uniform("u_BindShapeMat", VarType.Mat4)
+		val u_BindShapeMatrixInv = Uniform("u_BindShapeMatInv", VarType.Mat4)
 		val u_ModMat = Uniform("u_ModMat", VarType.Mat4)
 		val u_NormMat = Uniform("u_NormMat", VarType.Mat4)
 		//val MAX_BONE_MATS = 16
@@ -105,40 +105,40 @@ abstract class AbstractStandardShader3D() : BaseShader3D() {
 	abstract val meshMaterial: Material3D?
 	abstract val hasTexture: Boolean
 
-	override fun Program.Builder.vertex() {
+	override fun Program.Builder.vertex() = Shaders3D.run {
 		val modelViewMat = createTemp(VarType.Mat4)
 		val normalMat = createTemp(VarType.Mat4)
 
-		val skinMatrix = createTemp(VarType.Mat4)
+		val boneMatrix = createTemp(VarType.Mat4)
 
 		val localPos = createTemp(VarType.Float4)
 		val localNorm = createTemp(VarType.Float4)
 		val skinPos = createTemp(VarType.Float4)
 
-		SET(localPos, vec4(1f.lit))
-		SET(localNorm, vec4(0f.lit))
-
 		if (nweights == 0) {
-			SET(skinMatrix, mat4Identity())
-			SET(localPos, vec4(Shaders3D.a_pos, 1f.lit))
-			SET(localNorm, vec4(Shaders3D.a_norm, 0f.lit))
+			//SET(boneMatrix, mat4Identity())
+			SET(localPos, vec4(a_pos, 1f.lit))
+			SET(localNorm, vec4(a_norm, 0f.lit))
 		} else {
-			SET(skinPos, Shaders3D.u_BindShapeMatrix * vec4(Shaders3D.a_pos["xyz"], 1f.lit))
+			SET(localPos, vec4(0f.lit))
+			SET(localNorm, vec4(0f.lit))
+			SET(skinPos, u_BindShapeMatrix * vec4(a_pos["xyz"], 1f.lit))
 			for (wIndex in 0 until nweights) {
 				IF(getBoneIndex(wIndex) ge 0.lit) {
-					SET(skinMatrix, getBone(wIndex))
-					SET(localPos, localPos + skinMatrix * vec4(skinPos["xyz"], 1f.lit) * getWeight(wIndex))
-					SET(localNorm, localNorm + skinMatrix * vec4(Shaders3D.a_norm, 0f.lit) * getWeight(wIndex))
+					SET(boneMatrix, getBone(wIndex))
+					SET(localPos, localPos + boneMatrix * vec4(skinPos["xyz"], 1f.lit) * getWeight(wIndex))
+					SET(localNorm, localNorm + boneMatrix * vec4(a_norm, 0f.lit) * getWeight(wIndex))
 				}
 			}
+			SET(localPos, u_BindShapeMatrixInv * localPos)
 		}
 
-		SET(modelViewMat, Shaders3D.u_ModMat * Shaders3D.u_ViewMat)
-		SET(normalMat, Shaders3D.u_NormMat)
-		SET(Shaders3D.v_Pos, vec3(modelViewMat * (Shaders3D.u_InvBindShapeMatrix * vec4(localPos["xyz"], 1f.lit))))
-		SET(Shaders3D.v_Norm, vec3(normalMat * normalize(vec4(localNorm["xyz"], 1f.lit))))
-		if (hasTexture) SET(Shaders3D.v_TexCoords, Shaders3D.a_tex["xy"])
-		SET(out, Shaders3D.u_ProjMat * vec4(Shaders3D.v_Pos, 1f.lit))
+		SET(modelViewMat, u_ModMat * u_ViewMat)
+		SET(normalMat, u_NormMat)
+		SET(v_Pos, vec3(modelViewMat * (vec4(localPos["xyz"], 1f.lit))))
+		SET(v_Norm, vec3(normalMat * normalize(vec4(localNorm["xyz"], 1f.lit))))
+		if (hasTexture) SET(v_TexCoords, a_tex["xy"])
+		SET(out, u_ProjMat * vec4(v_Pos, 1f.lit))
 	}
 
 	override fun Program.Builder.fragment() {
