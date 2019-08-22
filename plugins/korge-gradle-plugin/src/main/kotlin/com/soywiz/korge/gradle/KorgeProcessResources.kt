@@ -28,7 +28,7 @@ fun Project.addGenResourcesTasks() = this {
 				tasks.findByName(if (test) "jvmTestClasses" else "jvmMainClasses")?.dependsOn(this)
 				tasks.findByName(if (test) "jsTestClasses" else "jsMainClasses")?.dependsOn(this)
 				for (target in ALL_NATIVE_TARGETS) {
-					tasks.findByName(if (test) "compileTestKotlin${target.capitalize()}" else "compileKotlin${target.capitalize()}")?.dependsOn(this)
+					//tasks.findByName(if (test) "compileTestKotlin${target.capitalize()}" else "compileKotlin${target.capitalize()}")?.dependsOn(this)
 				}
 
 				val buildService = KorgeBuildService

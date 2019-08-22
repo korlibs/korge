@@ -4,10 +4,12 @@ import com.moowork.gradle.node.npm.NpmTask
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.js.node_modules
+import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 
@@ -39,6 +41,7 @@ fun Project.configureNativeIos() {
 		for (target in listOf(iosX64(), iosArm32(), iosArm64())) {
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
+				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
 				target.binaries { framework {  } }
 				target.compilations["main"].also { compilation ->
 					//for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
@@ -59,8 +62,7 @@ fun Project.configureNativeIos() {
 							}
 						}
 						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-							//compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type).dependsOn("prepareKotlinNativeIosProject")
-							TODO("compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type).dependsOn(\"prepareKotlinNativeIosProject\")")
+							compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNativeIosProject")
 						}
 					}
 				}
@@ -333,7 +335,8 @@ fun Project.configureNativeIos() {
 					@end
 				""".trimIndent())
 
-				folder["app/ViewController.m"].ensureParents().writeText("""
+				folder["app/ViewController.m"].ensureParents().writeText(
+					"""
 					#import "ViewController.h"
 					@interface ViewController ()
 					@end
@@ -765,7 +768,8 @@ fun Project.configureNativeIos() {
 			val arch2 = if (simulator) "x86_64" else "arm64"
 			val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
 			tasks.create("iosBuild$simulatorSuffix$debugSuffix") { task ->
-				task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
+				//task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
+				task.dependsOn(prepareKotlinNativeIosProject, "link${debugSuffix}FrameworkIos$arch")
 				val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
 				afterEvaluate {
 					task.outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])

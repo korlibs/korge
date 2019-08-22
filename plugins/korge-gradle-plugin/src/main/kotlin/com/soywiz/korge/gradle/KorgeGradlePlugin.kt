@@ -56,17 +56,19 @@ class KorgeGradleApply(val project: Project) {
 		project.addVersionExtension()
 		project.configureRepositories()
 		project.configureKotlin()
+
 		project.addGenResourcesTasks()
 		project.configureIdea()
 
 		project.configureJvm()
-		project.configureJavaScript()
+
 		project.configureNativeDesktop()
 		project.configureNativeAndroid()
 		if (isMacos) {
 			project.configureNativeIos()
 		}
 		project.configureCordova()
+		project.configureJavaScript()
 
 		project.korge.init()
 

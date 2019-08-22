@@ -87,7 +87,7 @@ fun Project.configureNativeAndroid() {
 				File(outputFolder, "build.gradle").conditionally(ifNotExists) {
 					ensureParents().writeText(Indenter {
 						line("buildscript") {
-							line("repositories { google(); jcenter() }")
+							line("repositories { google(); jcenter(); maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") } }")
 							line("dependencies { classpath 'com.android.tools.build:gradle:3.3.0'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
 						}
 						line("repositories") {
@@ -95,6 +95,7 @@ fun Project.configureNativeAndroid() {
 							line("maven { url = 'https://dl.bintray.com/soywiz/soywiz' }")
 							line("google()")
 							line("jcenter()")
+							line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") }")
 						}
 
 						line("apply plugin: 'com.android.application'")
@@ -155,6 +156,10 @@ fun Project.configureNativeAndroid() {
 							line("testImplementation 'junit:junit:4.12'")
 							line("androidTestImplementation 'com.android.support.test:runner:1.0.2'")
 							line("androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'")
+						}
+
+						line("configurations") {
+							line("androidTestImplementation.extendsFrom(commonMainApi)")
 						}
 					}.toString())
 				}

@@ -10,11 +10,14 @@ import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.*
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.gradle.*
 
 fun Project.configureJvm() {
-	gkotlin.targets.add((gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm"))
+	val jvmTarget = (gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm")
+	gkotlin.targets.add(jvmTarget)
+	//jvmTarget.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 
 	project.dependencies.add("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
@@ -26,7 +29,7 @@ fun Project.configureJvm() {
 		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
 		afterEvaluate {
-			task.classpath = project["kotlin"]["targets"]["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+			task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
 			task.main = korge.jvmMainClassName
 		}
 	}

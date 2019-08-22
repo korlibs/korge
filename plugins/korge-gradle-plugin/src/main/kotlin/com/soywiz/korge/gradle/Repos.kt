@@ -29,6 +29,9 @@ fun Project.configureRepositories() {
 		mavenCentral().content {
 			it.excludeGroup("Kotlin/Native")
 		}
+		if (BuildVersions.KOTLIN.contains("release")) {
+			maven { it.url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+		}
 	}
 }
 

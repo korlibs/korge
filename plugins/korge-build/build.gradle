@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
 apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
@@ -11,28 +13,25 @@ def version(String name) {
 	return gradleProperties["${name}Version"]
 }
 
+def setKDep(ExternalModuleDependency it) {
+	//it.targetConfiguration = "default"
+	//it.targetConfiguration = "runtime"
+	it.attributes { attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm) }
+}
 
 dependencies {
-	compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-	compile "org.jetbrains.kotlin:kotlin-test"
-	compile "org.jetbrains.kotlin:kotlin-test-junit"
+	compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	compile("org.jetbrains.kotlin:kotlin-test")
+	compile("org.jetbrains.kotlin:kotlin-test-junit")
 
-	//compile("com.soywiz:krypto-jvm:$kryptoVersion") {
-	//	targetConfiguration = "default"
-	//}
-	//compile("com.soywiz:korge-jvm:$korgeVersion") {
-	//	targetConfiguration = "default"
-	//}
-	//compile("com.soywiz:korge-swf-jvm:$korgeVersion") {
-	//	targetConfiguration = "default"
-	//}
-
-	//targetConfiguration = "default"
-	compile("com.soywiz.korlibs.korge:korge-jvm:${version("korge")}")
-	compile("com.soywiz.korlibs.korge:korge-swf-jvm:${version("korge")}")
-	compile("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}")
-	compile("com.soywiz.korlibs.korau:korau-mp3-jvm:${version("korau")}")
-	compile("com.soywiz.korlibs.korau:korau-ogg-vorbis-jvm:${version("korau")}")
+	compile project(":korge-jvm-bundle")
+	/*
+	compile("com.soywiz.korlibs.korge:korge-jvm:${version("korge")}") { setKDep(it) }
+	compile("com.soywiz.korlibs.korge:korge-swf-jvm:${version("korge")}") { setKDep(it) }
+	compile("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}") { setKDep(it) }
+	compile("com.soywiz.korlibs.korau:korau-mp3-jvm:${version("korau")}") { setKDep(it) }
+	compile("com.soywiz.korlibs.korau:korau-ogg-vorbis-jvm:${version("korau")}") { setKDep(it) }
+	*/
 }
 
 publishing {

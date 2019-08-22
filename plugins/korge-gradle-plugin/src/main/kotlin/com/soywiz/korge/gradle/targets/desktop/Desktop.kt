@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle.targets.desktop
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.apple.*
+import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
@@ -12,6 +13,7 @@ import com.soywiz.korim.format.PNG
 import groovy.time.BaseDuration
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
@@ -42,11 +44,10 @@ fun Project.configureNativeDesktop() {
 	for (preset in DESKTOP_NATIVE_TARGETS) {
 		gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
 			//(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
-			binaries {
-				executable {  }
-			}
+			binaries { executable {  } }
 		})
 	}
+
 
 	val prepareKotlinNativeBootstrap = tasks.create("prepareKotlinNativeBootstrap") { task ->
 		task.apply {
@@ -80,7 +81,7 @@ fun Project.configureNativeDesktop() {
 				compilations["main"].apply {
 					//println(this.binariesTaskName)
 					for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-						getLinkTask(NativeOutputKind.EXECUTABLE, type).dependsOn(prepareKotlinNativeBootstrap)
+						getLinkTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
 					}
 					defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
 				}
@@ -120,14 +121,11 @@ fun Project.configureNativeDesktop() {
 	addNativeRun()
 }
 
-fun KotlinNativeCompilation.getLinkTask(kind: NativeOutputKind, type: NativeBuildType) : KotlinNativeLink {
-	TODO("KotlinNativeCompilation.getLinkTask")
-}
-
 private fun Project.addNativeRun() {
 	fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {
-		TODO("KotlinNativeCompilation.getBinary")
-		return this.compileKotlinTask.outputFile.get()
+		return File("TODO_KotlinNativeCompilation_getBinary")
+		//TODO("KotlinNativeCompilation.getBinary")
+		//return this.compileKotlinTask.outputFile.get()
 		//val task = project.getTasksByName(this.compileKotlinTask.name).firstOrNull() ?: error("Can't find task ${this.compileKotlinTask}")
 		//return task.outputs.files.first()
 	}
@@ -137,11 +135,14 @@ private fun Project.addNativeRun() {
 		for (target in DESKTOP_NATIVE_TARGETS) {
 			val ctarget = target.capitalize()
 			for (kind in RELEASE_DEBUG) {
-				val ckind = kind.name.capitalize()
+				val ckind = kind.name.toLowerCase().capitalize()
 				val ctargetKind = "$ctarget$ckind"
 				val buildType = if (kind == DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
 
-				val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
+				val ktarget = gkotlin.targets[target]
+				//(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
+
+				val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
 				val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 
 				val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
@@ -163,7 +164,7 @@ private fun Project.addNativeRun() {
 							appRcFile.writeText(WindowsRC.generate(korge))
 							project.compileWindowsRC(appRcFile, appRcObjFile)
 
-							val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType)
+							val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
 							val subsystem = "console"
 							//val subsystem = "windows"
 							linkTask.binary.linkerOpts(
@@ -179,13 +180,14 @@ private fun Project.addNativeRun() {
 
 				afterEvaluate {
 					try {
-						compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType).dependsOn(copyTask)
+						compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(copyTask)
 					} catch (e: Throwable) {
 						e.printStackTrace()
 					}
 				}
 
-				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
+				//addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
+				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
 					task.group = GROUP_KORGE_RUN
 					task.executable = executableFile.absolutePath
 					task.args = listOf<String>()
@@ -206,7 +208,8 @@ private fun Project.addNativeRun() {
 				addTask<Task>(
 					"packageMacosX64App${buildType.name.capitalize()}",
 					group = GROUP_KORGE_PACKAGE,
-					dependsOn = listOf("linkMain${buildType.name.capitalize()}ExecutableMacosX64")
+					//dependsOn = listOf("linkMain${buildType.name.capitalize()}ExecutableMacosX64")
+					dependsOn = listOf("link${buildType.name.capitalize()}ExecutableMacosX64")
 				) {
 					group = GROUP_KORGE_PACKAGE
 					doLast {
@@ -235,7 +238,7 @@ private fun Project.addNativeRun() {
 			val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
 			for (kind in RELEASE_DEBUG) {
 				val buildType = if (kind == DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
-				val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType)
+				val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
 
 				addTask<Task>(
 					"packageMingwX64App${kind.name.capitalize()}",

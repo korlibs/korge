@@ -35,6 +35,7 @@ fun Project.configureJavaScript() {
 	plugins.apply("kotlin-dce-js")
 
 	gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
+		//attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 		compilations.getAt("main").apply {
 			for (task in listOf("compileKotlinJs", "compileTestKotlinJs")) {
 				(project[task] as Kotlin2JsCompile).apply {

@@ -2,12 +2,12 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-	const val KLOCK = "null"
-	const val KDS = "null"
-	const val KMEM = "null"
-	const val KORMA = "null"
-	const val KORIO = "null"
-	const val KORIM = "null"
+	const val KLOCK = "1.6.0-pre-50"
+	const val KDS = "1.8.0-pre-50"
+	const val KMEM = "1.8.0-pre-50"
+	const val KORMA = "1.8.0-pre-50"
+	const val KORIO = "1.8.0-pre-50"
+	const val KORIM = "1.8.0-pre-50"
 	const val KORAU = "1.7.0-pre-50"
 	const val KORGW = "1.7.0-pre-50"
 	const val KORGE = "1.3.0-pre-50"
