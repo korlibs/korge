@@ -1,0 +1,17 @@
+/*
+if (
+org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_UNIX) &&
+    (new File("/.dockerenv").exists() || System.getenv("TRAVIS") != null) &&
+    (new File("/usr/bin/apt-get").exists())
+) {
+
+    exec {
+        commandLine("sudo")
+        args("apt-get", "update")
+    }
+    exec {
+        commandLine("sudo")
+        args("apt-get", "-y", "install", "freeglut3-dev")
+    }
+}
+*/

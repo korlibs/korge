@@ -2,5 +2,9 @@ apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
 korlibs {
 	dependencyProject(":korge")
-	dependencyMulti("com.soywiz:kbox2d:$kbox2dVersion")
+	//dependencyMulti("com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
+}
+
+dependencies {
+	commonMainApi("com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
 }

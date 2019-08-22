@@ -13,11 +13,12 @@ import groovy.time.BaseDuration
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
-private val RELEASE = "release"
-private val DEBUG = "debug"
-private val RELEASE_DEBUG = listOf(RELEASE, DEBUG)
+private val RELEASE = NativeBuildType.RELEASE
+private val DEBUG = NativeBuildType.DEBUG
+private val RELEASE_DEBUG = listOf(NativeBuildType.RELEASE, NativeBuildType.DEBUG)
 
 private val DESKTOP_NATIVE_TARGET = when {
 	isWindows -> "mingwX64"
@@ -36,9 +37,14 @@ val DESKTOP_NATIVE_TARGETS = when {
 private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
 
 fun Project.configureNativeDesktop() {
+	val project = this
+
 	for (preset in DESKTOP_NATIVE_TARGETS) {
 		gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
-			compilations["main"].outputKinds("EXECUTABLE")
+			//(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
+			binaries {
+				executable {  }
+			}
 		})
 	}
 
@@ -114,13 +120,24 @@ fun Project.configureNativeDesktop() {
 	addNativeRun()
 }
 
+fun KotlinNativeCompilation.getLinkTask(kind: NativeOutputKind, type: NativeBuildType) : KotlinNativeLink {
+	TODO("KotlinNativeCompilation.getLinkTask")
+}
+
 private fun Project.addNativeRun() {
+	fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {
+		TODO("KotlinNativeCompilation.getBinary")
+		return this.compileKotlinTask.outputFile.get()
+		//val task = project.getTasksByName(this.compileKotlinTask.name).firstOrNull() ?: error("Can't find task ${this.compileKotlinTask}")
+		//return task.outputs.files.first()
+	}
+
 	afterEvaluate {
 	//run {
 		for (target in DESKTOP_NATIVE_TARGETS) {
 			val ctarget = target.capitalize()
 			for (kind in RELEASE_DEBUG) {
-				val ckind = kind.capitalize()
+				val ckind = kind.name.capitalize()
 				val ctargetKind = "$ctarget$ckind"
 				val buildType = if (kind == DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
 
@@ -187,14 +204,14 @@ private fun Project.addNativeRun() {
 		if (isMacos) {
 			for (buildType in RELEASE_DEBUG) {
 				addTask<Task>(
-					"packageMacosX64App${buildType.capitalize()}",
+					"packageMacosX64App${buildType.name.capitalize()}",
 					group = GROUP_KORGE_PACKAGE,
-					dependsOn = listOf("linkMain${buildType.capitalize()}ExecutableMacosX64")
+					dependsOn = listOf("linkMain${buildType.name.capitalize()}ExecutableMacosX64")
 				) {
 					group = GROUP_KORGE_PACKAGE
 					doLast {
 						val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
-						val executableFile = compilation.getBinary("EXECUTABLE", buildType)
+						val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 						val appFolder = buildDir["${korge.name}-$buildType.app"].apply { mkdirs() }
 						val appFolderContents = appFolder["Contents"].apply { mkdirs() }
 						val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
@@ -221,7 +238,7 @@ private fun Project.addNativeRun() {
 				val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType)
 
 				addTask<Task>(
-					"packageMingwX64App${kind.capitalize()}",
+					"packageMingwX64App${kind.name.capitalize()}",
 					group = GROUP_KORGE_PACKAGE,
 					dependsOn = listOf(linkTask)
 				) {

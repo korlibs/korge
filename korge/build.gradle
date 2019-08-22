@@ -3,18 +3,19 @@ apply plugin: com.soywiz.korlibs.KorlibsPlugin
 korlibs {
 	exposeVersion()
 
-	dependencyMulti("com.soywiz:korgw:$korgwVersion")
-	dependencyMulti("com.soywiz:korinject:$korinjectVersion")
-	dependencyMulti("com.soywiz:klogger:$kloggerVersion")
-	dependencyMulti("com.soywiz:kds:$kdsVersion")
+	//dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "minimp3", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
+	//dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "stb_vorbis", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
+	//dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "win32_winmm", ["mingwX64"])
+	//dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "linux_OpenAL", ["linuxX64"])
+	//dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "mac_OpenAL", ["macosX64"])
+	//dependencyCInteropsExternal("com.soywiz:kgl:$kglVersion", "GL", ["linuxX64"])
+}
 
-	dependencyMulti("com.soywiz:korau:$korauVersion")
-	dependencyMulti("com.soywiz:korio:$korioVersion")
-	dependencyMulti("com.soywiz:krypto:$kryptoVersion", ["jvm"])
-	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "minimp3", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
-	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "stb_vorbis", ["mingwX64", "macosX64", "linuxX64", "iosX64", "iosArm32", "iosArm64"])
-	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "win32_winmm", ["mingwX64"])
-	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "linux_OpenAL", ["linuxX64"])
-	dependencyCInteropsExternal("com.soywiz:korau:$korauVersion", "mac_OpenAL", ["macosX64"])
-	dependencyCInteropsExternal("com.soywiz:kgl:$kglVersion", "GL", ["linuxX64"])
+dependencies {
+	commonMainApi("com.soywiz.korlibs.korau:korau:$korauVersion")
+	commonMainApi("com.soywiz.korlibs.korgw:korgw:$korgwVersion")
+
+	commonMainApi("com.soywiz.korlibs.krypto:krypto:$kryptoVersion")
+	commonMainApi("com.soywiz.korlibs.korinject:korinject:$korinjectVersion")
+	commonMainApi("com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
 }

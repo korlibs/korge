@@ -10,3 +10,5 @@ for (file in rootDir.listFiles()) {
     }
 }
 
+enableFeaturePreview('GRADLE_METADATA')
+

@@ -39,11 +39,13 @@ fun Project.configureNativeIos() {
 		for (target in listOf(iosX64(), iosArm32(), iosArm64())) {
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
+				target.binaries { framework {  } }
 				target.compilations["main"].also { compilation ->
 					//for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
 					//	//getLinkTask(NativeOutputKind.FRAMEWORK, type).embedBitcode = Framework.BitcodeEmbeddingMode.DISABLE
 					//}
-					compilation.outputKind(NativeOutputKind.FRAMEWORK)
+
+					//compilation.outputKind(NativeOutputKind.FRAMEWORK)
 
 					compilation.defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-ios"))
 
@@ -57,7 +59,8 @@ fun Project.configureNativeIos() {
 							}
 						}
 						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-							compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type).dependsOn("prepareKotlinNativeIosProject")
+							//compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type).dependsOn("prepareKotlinNativeIosProject")
+							TODO("compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type).dependsOn(\"prepareKotlinNativeIosProject\")")
 						}
 					}
 				}

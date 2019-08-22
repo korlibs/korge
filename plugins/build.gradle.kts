@@ -4,17 +4,26 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 import java.util.Properties
 
 buildscript {
+	val kotlinVersion = project.properties["kotlinVersion"]?.toString() ?: ""
+	val isKotlinDev = kotlinVersion.contains("-release")
 	repositories {
 		maven { url = uri("https://plugins.gradle.org/m2/") }
+		if (isKotlinDev) {
+			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+		}
 	}
 	dependencies {
-		classpath("com.gradle.publish:plugin-publish-plugin:0.9.7")
+		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
+		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
 	}
 }
 
+val kotlinVersion = project.properties["kotlinVersion"]?.toString() ?: ""
+val isKotlinDev = kotlinVersion.contains("-release")
+
+
 plugins {
-	id("org.jetbrains.kotlin.jvm") version "1.3.21"
-	id("com.moowork.node") version "1.2.0"
+	id("com.moowork.node") version "1.3.1"
 }
 
 allprojects {
@@ -41,6 +50,9 @@ allprojects {
 				excludeGroup("Kotlin/Native")
 			}
 		}
+		if (isKotlinDev) {
+			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+		}
 	}
 }
 
@@ -63,11 +75,6 @@ object BuildVersions {
 	const val KORIO = "${version("korio")}"
 	const val KORIM = "${version("korim")}"
 	const val KORAU = "${version("korau")}"
-	const val KORUI = "${version("korui") ?: version("korgw")}"
-	const val KOREV = "${version("korev")}"
-	const val KGL = "${version("kgl") ?: version("korgw")}"
-	const val KORAG = "${version("korag") ?: version("korgw")}"
-	const val KORAG_OPENGL = "${version("korag-opengl") ?: version("korgw")}"
 	const val KORGW = "${version("korgw")}"
 	const val KORGE = "${version("korge")}"
 	const val KOTLIN = "${KotlinCompilerVersion.VERSION}"

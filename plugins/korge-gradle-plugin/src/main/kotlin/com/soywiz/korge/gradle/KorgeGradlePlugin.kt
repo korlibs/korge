@@ -75,7 +75,8 @@ class KorgeGradleApply(val project: Project) {
 
 	private fun Project.configureDependencies() {
 		korge.apply {
-			dependencyMulti("com.soywiz:klock:${BuildVersions.KLOCK}")
+			/*
+			dependencyMulti("com.soywiz.korlibs.klock:klock:${BuildVersions.KLOCK}")
 			dependencyMulti("com.soywiz:kmem:${BuildVersions.KMEM}")
 			dependencyMulti("com.soywiz:kds:${BuildVersions.KDS}")
 			dependencyMulti("com.soywiz:korma:${BuildVersions.KORMA}")
@@ -88,6 +89,10 @@ class KorgeGradleApply(val project: Project) {
 			dependencyMulti("com.soywiz:korgw:${BuildVersions.KORGW}")
 			dependencyMulti("com.soywiz:korge:${BuildVersions.KORGE}")
 			dependencyMulti("com.soywiz:korev:${BuildVersions.KOREV}")
+			 */
+		}
+		dependencies {
+			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${BuildVersions.KORGE}")
 		}
 	}
 
@@ -110,8 +115,8 @@ class KorgeGradleApply(val project: Project) {
 		ext.set("kormaVersion", kormaVersion)
 		ext.set("korauVersion", korauVersion)
 		ext.set("korimVersion", korimVersion)
-		ext.set("koruiVersion", koruiVersion)
-		ext.set("korevVersion", korevVersion)
+		//ext.set("koruiVersion", koruiVersion)
+		//ext.set("korevVersion", korevVersion)
 		ext.set("korgwVersion", korgwVersion)
 		ext.set("korgeVersion", korgeVersion)
 		ext.set("kotlinVersion", kotlinVersion)

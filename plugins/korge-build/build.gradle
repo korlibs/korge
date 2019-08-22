@@ -28,11 +28,11 @@ dependencies {
 	//}
 
 	//targetConfiguration = "default"
-	compile("com.soywiz:korge-jvm:${version("korge")}")
-	compile("com.soywiz:korge-swf-jvm:${version("korge")}")
-	compile("com.soywiz:krypto-jvm:${version("krypto")}")
-	compile("com.soywiz:korau-mp3-jvm:${version("korau")}")
-	compile("com.soywiz:korau-ogg-vorbis-jvm:${version("korau")}")
+	compile("com.soywiz.korlibs.korge:korge-jvm:${version("korge")}")
+	compile("com.soywiz.korlibs.korge:korge-swf-jvm:${version("korge")}")
+	compile("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}")
+	compile("com.soywiz.korlibs.korau:korau-mp3-jvm:${version("korau")}")
+	compile("com.soywiz.korlibs.korau:korau-ogg-vorbis-jvm:${version("korau")}")
 }
 
 publishing {
