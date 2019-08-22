@@ -122,12 +122,10 @@ fun Project.configureNativeDesktop() {
 }
 
 private fun Project.addNativeRun() {
+	val project = this
+
 	fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {
-		return File("TODO_KotlinNativeCompilation_getBinary")
-		//TODO("KotlinNativeCompilation.getBinary")
-		//return this.compileKotlinTask.outputFile.get()
-		//val task = project.getTasksByName(this.compileKotlinTask.name).firstOrNull() ?: error("Can't find task ${this.compileKotlinTask}")
-		//return task.outputs.files.first()
+		return this.getLinkTask(kind, type, project).binary.outputFile.absoluteFile
 	}
 
 	afterEvaluate {
@@ -150,6 +148,7 @@ private fun Project.addNativeRun() {
 					for (sourceSet in project.gkotlin.sourceSets) {
 						task.from(sourceSet.resources)
 					}
+					//println("executableFile.parentFile: ${executableFile.parentFile}")
 					task.into(executableFile.parentFile)
 					if (target == "mingwX64") {
 						val appRcFile = buildDir["app.rc"]
