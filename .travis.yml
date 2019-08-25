@@ -1,6 +1,13 @@
-matrix:
+stages:
+  - test
+  - name: bintray
+    if: branch = master
+  - name: publish
+    if: branch = master
+jobs:
   include:
   - os: linux
+    stage: test
     language: android
     android:
       components:
@@ -10,14 +17,20 @@ matrix:
     env:
       KBUILD=linux-chrome-android
       JAVA_OPTS=-Xmx2g
+    before_install:
+      - echo before_install
+    before_script:
+      - echo before_script
     script:
-    - ./gradlew -s -i assemble check jsTestChrome lint testDebugUnitTest
+    - ./gradlew -s -i assemble check lint testDebugUnitTest
   - os: windows
+    stage: test
     env: KBUILD=windows
     language: shell # java is not supported but jdk is installed
     script:
     - powershell -Command "cmd /c travis_win.bat"
   - os: osx
+    stage: test
     env:
       KBUILD=macos
       JAVA_OPTS=-Xmx2g
@@ -25,5 +38,43 @@ matrix:
     jdk: openjdk10
     before_install:
     - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
+    before_script:
+      - echo before_script
     script:
-    - ./gradlew -s -i check build
+    - ./gradlew -s -i check
+  - os: windows
+    stage: bintray
+    env: KBUILD=windows
+    language: shell # java is not supported but jdk is installed
+    script:
+      - powershell -Command "cmd /c travis_win_bintray.bat"
+  - os: osx
+    stage: bintray
+    env:
+      KBUILD=macos
+      JAVA_OPTS=-Xmx2g
+    language: java
+    jdk: openjdk10
+    before_install:
+      - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
+    before_script:
+      - echo before_script
+    script:
+      - ./gradlew -s -i localPublishToBintrayIfRequired
+  - os: linux
+    stage: publish
+    language: android
+    android:
+      components:
+        - build-tools-28.0.3
+        - android-28
+    jdk: oraclejdk8
+    env:
+      KBUILD=publish
+      JAVA_OPTS=-Xmx2g
+    before_install:
+      - echo before_instal
+    before_script:
+      - echo before_script
+    script:
+      - ./gradlew -s -i actuallyPublishBintray

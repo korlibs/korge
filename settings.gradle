@@ -6,9 +6,8 @@ for (file in rootDir.listFiles()) {
 		["build.gradle", "build.gradle.kts"].collect { new File(file, it) }.any { it.exists() } &&
 		["settings.gradle", "settings.gradle.kts"].collect { new File(file, it) }.every { !it.exists() }
 	) {
-        include(":${file.name}")
+		include(":${file.name}")
     }
 }
 
 enableFeaturePreview('GRADLE_METADATA')
-
