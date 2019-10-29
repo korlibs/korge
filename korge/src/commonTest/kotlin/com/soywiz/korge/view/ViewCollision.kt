@@ -1,11 +1,11 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korim.color.Colors
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ViewCollision {
 	@Test
+    @Ignore
 	fun test() {
 		val container = Container().apply {
 			solidRect(16, 16, Colors.RED).position(0, 0).name("view1")

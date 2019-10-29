@@ -7,6 +7,7 @@ import kotlin.test.*
 
 class TimerComponentsTest {
 	@Test
+    @Ignore
 	fun testTimerAcummulated() = suspendTest {
 		var log = ""
 		val view = DummyView()
