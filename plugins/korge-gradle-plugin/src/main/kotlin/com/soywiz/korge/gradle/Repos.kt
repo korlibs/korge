@@ -11,7 +11,6 @@ fun Project.configureRepositories() {
 		maven {
 			it.url = URI("https://dl.bintray.com/korlibs/korlibs")
 			it.content {
-				it.includeGroup("com.soywiz")
 				it.excludeGroup("Kotlin/Native")
 			}
 		}
