@@ -86,7 +86,7 @@ subprojects {
 		mavenLocal()
 		jcenter()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-		maven { url = uri("https://dl.bintray.com/soywiz/soywiz") }
+		maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
 	}
 
 	apply(plugin = "maven")
