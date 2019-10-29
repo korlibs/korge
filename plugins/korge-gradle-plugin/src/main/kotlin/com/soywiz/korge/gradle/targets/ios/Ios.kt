@@ -744,7 +744,11 @@ fun Project.configureNativeIos() {
 	tasks.create("iosCreateIphone7", Exec::class.java) { task ->
 		task.onlyIf { appleGetDevices().none { it.name == "iPhone 7" } }
 		task.doFirst {
-			task.commandLine("xcrun", "simctl", "create", "iPhone 7", "com.apple.CoreSimulator.SimDeviceType.iPhone-7", "com.apple.CoreSimulator.SimRuntime.iOS-12-1")
+            val result = execOutput("xcrun", "simctl", "list")
+            val regex = Regex("com\\.apple\\.CoreSimulator\\.SimRuntime\\.iOS[\\w\\-]+")
+            val simRuntime = regex.find(result)?.value ?: error("Can't find SimRuntime. exec: xcrun simctl list")
+            println("simRuntime: $simRuntime")
+			task.commandLine("xcrun", "simctl", "create", "iPhone 7", "com.apple.CoreSimulator.SimDeviceType.iPhone-7", simRuntime)
 		}
 	}
 
