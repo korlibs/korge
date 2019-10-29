@@ -1,76 +1,66 @@
 stages:
   - test_and_upload
+  - test_and_upload_linux
   - name: publish
     if: branch = master
 jobs:
   include:
-  - os: linux
-    stage: test_and_upload
-    language: android
-    android:
-      components:
-        - build-tools-28.0.3
-        - android-28
-    jdk: oraclejdk8
-    env:
-      KBUILD=linux-chrome-android
-      JAVA_OPTS=-Xmx2g
-    before_install:
-      - echo before_install
-    install:
-      - echo install
-    before_script:
-      - echo before_script
-    script:
-    - ./gradlew -s -i assemble check lint testDebugUnitTest
-  - os: windows
-    stage: test_and_upload
-    env: KBUILD=windows
-    language: shell # java is not supported but jdk is installed
-    script:
-      - powershell -Command "cmd /c travis_win.bat"
-      - |
-        if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-          powershell -Command "cmd /c travis_win_bintray.bat"
-        fi
-  - os: osx
-    stage: test_and_upload
-    env:
-      KBUILD=macos
-      JAVA_OPTS=-Xmx2g
-    language: java
-    jdk: openjdk10
-    before_install:
-      - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
-    install:
-      - echo install
-    before_script:
-      - echo before_script
-    script:
-      - ./gradlew -s -i check
-      - |
-        if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-          ./gradlew -s -i localPublishToBintrayIfRequired
-        fi
-  - os: linux
-    stage: publish
-    language: android
-    android:
-      components:
-        - build-tools-28.0.3
-        - android-28
-    jdk: oraclejdk8
-    env:
-      KBUILD=publish
-      JAVA_OPTS=-Xmx2g
-    before_install:
-      - echo before_instal
-    install:
-      - echo install
-    before_script:
-      - echo before_script
-    script:
-      - |
-        if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-            ./gradlew -s -i actuallyPublishBintray
-        fi
+    - os: windows
+      stage: test_and_upload
+      env: KBUILD=windows
+      language: shell # java is not supported but jdk is installed
+      script:
+        - powershell -Command "cmd /c travis_win.bat"
+    - os: osx
+      stage: test_and_upload
+      env:
+        KBUILD=macos
+        JAVA_OPTS=-Xmx2g
+      language: java
+      jdk: openjdk10
+      before_install:
+        - cp $(/usr/libexec/java_home)/lib/security/cacerts "${JAVA_HOME}/lib/security/cacerts"
+      install:
+        - echo install
+      before_script:
+        - echo before_script
+      script:
+        - ./gradlew check localPublishToBintrayIfRequiredOnTravisMasterNoPR
+    - os: linux
+      stage: test_and_upload_linux
+      language: android
+      android:
+        components:
+          - build-tools-28.0.3
+          - android-28
+      jdk: oraclejdk8
+      env:
+        KBUILD=linux-chrome-android
+        JAVA_OPTS=-Xmx2g
+      before_install:
+        - echo before_install
+      install:
+        - echo install
+      before_script:
+        - echo before_script
+      script:
+        - ./gradlew -s -i assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisMasterNoPR
+    - os: linux
+      stage: publish
+      language: android
+      android:
+        components:
+          - build-tools-28.0.3
+          - android-28
+      jdk: oraclejdk8
+      env:
+        KBUILD=publish
+        JAVA_OPTS=-Xmx2g
+      before_install:
+        - echo before_instal
+      install:
+        - echo install
+      before_script:
+        - echo before_script
+      script:
+        - ./gradlew actuallyPublishBintrayIfOnTravisMasterNoPR
