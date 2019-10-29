@@ -83,7 +83,7 @@ class ViewsTest : ViewsForTesting() {
 	}
 
 	@Test
-	fun size() = viewsTest {
+	fun testSize() = viewsTest {
 		val c = Container()
 		val s1 = SolidRect(100, 100, Colors.RED)
 		val s2 = SolidRect(100, 100, Colors.RED)
