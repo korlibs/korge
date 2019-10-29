@@ -25,7 +25,7 @@ jobs:
       before_script:
         - echo before_script
       script:
-        - ./gradlew check localPublishToBintrayIfRequiredOnTravisMasterNoPR
+        - ./gradlew check localPublishToBintrayIfRequiredOnTravisMasterNoPR -x jsNodeTest -x jsBrowserTest
     - os: linux
       stage: test_and_upload_linux
       language: android
@@ -44,7 +44,7 @@ jobs:
       before_script:
         - echo before_script
       script:
-        - ./gradlew -s -i assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisMasterNoPR
+        - ./gradlew -s -i assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisMasterNoPR -x jsNodeTest -x jsBrowserTest
     - os: linux
       stage: publish
       language: android
