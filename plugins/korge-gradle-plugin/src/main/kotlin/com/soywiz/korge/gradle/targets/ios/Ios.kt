@@ -723,7 +723,7 @@ fun Project.configureNativeIos() {
 									}
 								}
 								line("dependencies:")
-								line("  - framework: ../../bin/ios$target/main${debugSuffix}Framework/GameMain.framework")
+                                line("  - framework: ../../bin/ios$target/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
 							}
 						}
 					}
