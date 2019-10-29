@@ -75,7 +75,7 @@ fun Project.configureNativeAndroid() {
 				File(outputFolder, "local.properties").conditionally(ifNotExists) {
 					ensureParents().writeText("sdk.dir=${androidSdkPath.escape()}")
 				}
-				File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("") }
+				File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("enableFeaturePreview(\"GRADLE_METADATA\")") }
 				File(
 					outputFolder,
 					"proguard-rules.pro"
@@ -92,7 +92,7 @@ fun Project.configureNativeAndroid() {
 						}
 						line("repositories") {
 							line("mavenLocal()")
-							line("maven { url = 'https://dl.bintray.com/soywiz/soywiz' }")
+							line("maven { url = 'https://dl.bintray.com/korlibs/korlibs' }")
 							line("google()")
 							line("jcenter()")
 							line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") }")
@@ -103,6 +103,16 @@ fun Project.configureNativeAndroid() {
 						line("apply plugin: 'kotlin-android-extensions'")
 
 						line("android") {
+                            line("packagingOptions") {
+                                line("exclude 'META-INF/DEPENDENCIES'")
+                                line("exclude 'META-INF/LICENSE'")
+                                line("exclude 'META-INF/LICENSE.txt'")
+                                line("exclude 'META-INF/license.txt'")
+                                line("exclude 'META-INF/NOTICE'")
+                                line("exclude 'META-INF/NOTICE.txt'")
+                                line("exclude 'META-INF/notice.txt'")
+                                line("exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'")
+                            }
 							line("compileSdkVersion 28")
 							line("defaultConfig") {
 								line("multiDexEnabled true")
@@ -140,11 +150,14 @@ fun Project.configureNativeAndroid() {
 							line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
 							line("implementation 'com.android.support:multidex:1.0.3'")
 
-							line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
+							//line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
 							for ((name, version) in resolvedArtifacts) {
 								if (name.startsWith("org.jetbrains.kotlin")) continue
 								if (name.contains("-metadata")) continue
-								line("api '$name-android:$version'")
+                                //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
+                                if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
+                                    line("implementation '$name-android:$version'")
+                                }
 							}
 
 							for (dependency in korge.plugins.pluginExts.flatMap { it.getAndroidDependencies() }) {
