@@ -1,7 +1,6 @@
 package com.soywiz.korge3d.experimental
 
 import com.soywiz.korge3d.experimental.format.*
-import com.soywiz.korge3d.experimental.model.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import kotlin.test.*

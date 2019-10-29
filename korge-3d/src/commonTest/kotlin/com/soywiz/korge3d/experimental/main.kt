@@ -6,7 +6,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge3d.experimental.*
 import com.soywiz.korge3d.experimental.animation.*
 import com.soywiz.korge3d.experimental.format.*
-import com.soywiz.korge3d.experimental.model.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.*
