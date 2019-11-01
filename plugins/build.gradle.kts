@@ -34,9 +34,8 @@ allprojects {
 			}
 		}
 		maven {
-			url = uri("https://dl.bintray.com/soywiz/soywiz")
+			url = uri("https://dl.bintray.com/korlibs/korlibs")
 			content {
-				includeGroup("com.soywiz")
 				excludeGroup("Kotlin/Native")
 			}
 		}
@@ -106,7 +105,7 @@ subprojects {
 						username = publishUser
 						setPassword(publishPassword)
 					}
-					url = uri("https://api.bintray.com/maven/soywiz/soywiz/${project.property("project.package")}/")
+					url = uri("https://api.bintray.com/maven/korlibs/korlibs/${project.property("project.package")}/")
 				}
 			}
 			afterEvaluate {
