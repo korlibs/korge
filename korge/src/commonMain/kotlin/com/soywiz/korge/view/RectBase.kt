@@ -36,12 +36,12 @@ open class RectBase(
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-		super.renderInternal(ctx)
 		if (baseBitmap !== Bitmaps.transparent) {
 			computeVertexIfRequired()
 			//println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
 			ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
 		}
+		super.renderInternal(ctx)
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
