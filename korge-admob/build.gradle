@@ -5,6 +5,8 @@ def playServicesVersion = "16.0.0"
 korlibs {
 	dependencyProject(":korge")
 	dependencies {
-		androidMainApi "com.google.android.gms:play-services-ads:$playServicesVersion"
+        if (korlibs.hasAndroid) {
+            androidMainApi "com.google.android.gms:play-services-ads:$playServicesVersion"
+        }
 	}
 }
