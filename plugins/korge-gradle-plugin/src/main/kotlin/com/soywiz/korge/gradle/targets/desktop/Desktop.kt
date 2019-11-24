@@ -42,9 +42,14 @@ fun Project.configureNativeDesktop() {
 	val project = this
 
 	for (preset in DESKTOP_NATIVE_TARGETS) {
-		gkotlin.targets.add((gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset).createTarget(preset).apply {
+        //val target = gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset
+		gkotlin.targets.add((gkotlin.presets.getAt(preset) as AbstractKotlinNativeTargetPreset<*>).createTarget(preset).apply {
 			//(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
-			binaries { executable {  } }
+			binaries {
+                executable {
+                    this.entryPoint = "korge.bootstrap.main"
+                }
+            }
 		})
 	}
 
@@ -57,11 +62,12 @@ fun Project.configureNativeDesktop() {
 				output.parentFile.mkdirs()
 
 				val text = Indenter {
+                    line("package korge.bootstrap")
 					line("import ${korge.entryPoint}")
-					line("fun main(args: Array<String>) = RootGameMain.runMain(args)")
+					line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
 					line("object RootGameMain") {
 						line("fun runMain() = runMain(arrayOf())")
-						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>) = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
+						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
 					}
 				}
 				if (!output.exists() || output.readText() != text) output.writeText(text)

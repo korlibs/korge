@@ -170,47 +170,41 @@ class KorgeExtension(val project: Project) {
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
 	fun supportExperimental3d() {
-		dependencyMulti("com.soywiz:korge-3d:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-3d:${BuildVersions.KORGE}")
 	}
 
 	fun supportSwf() {
-		dependencyMulti("com.soywiz:korge-swf:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}")
 	}
 
-	fun supportShapeOps() {
-		dependencyMulti("com.soywiz:korma-shape-ops:${BuildVersions.KORMA}")
-	}
+    fun supportShape() {
+        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}")
+    }
 
-	fun supportTriangulation() {
-		dependencyMulti("com.soywiz:korma-triangulate-pathfind:${BuildVersions.KORMA}")
-	}
+    fun supportShapeOps() = supportShape()
+	fun supportTriangulation() = supportShape()
 
 	fun supportDragonbones() {
-		dependencyMulti("com.soywiz:korge-dragonbones:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}")
 	}
 
 	fun supportBox2d() {
-		dependencyMulti("com.soywiz:korge-box2d:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}")
 	}
 
-	fun supportMp3() {
-		dependencyMulti("com.soywiz:korau-mp3:${BuildVersions.KORAU}")
-	}
-
-	fun supportOggVorbis() {
-		dependencyMulti("com.soywiz:korau-ogg-vorbis:${BuildVersions.KORAU}")
-	}
+	fun supportMp3() = Unit
+	fun supportOggVorbis() = Unit
 
 	fun supportQr() {
-		dependencyMulti("com.soywiz:korim-qr:${BuildVersions.KORIM}")
+		dependencyMulti("com.soywiz.korlibs.korim:korim-qr:${BuildVersions.KORIM}")
 	}
 
 	fun supportJpeg() {
-		dependencyMulti("com.soywiz:korim-jpeg:${BuildVersions.KORIM}")
+		dependencyMulti("com.soywiz.korlibs.korim:korim-jpeg:${BuildVersions.KORIM}")
 	}
 
 	fun admob(ADMOB_APP_ID: String) {
-        plugin("com.soywiz:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
+        plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
 
 	fun cordovaUseCrosswalk() {
@@ -251,8 +245,9 @@ class KorgeExtension(val project: Project) {
 	val ALL_TARGETS = listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 
 	@JvmOverloads
-	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false) = project {
+	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {
 		dependencies {
+            /*
 			loop@for (target in targets) {
 				if (!OS.isMac){
 					when (target) {
@@ -279,7 +274,10 @@ class KorgeExtension(val project: Project) {
 				add("${base}MainApi", packed)
 				add("${base}TestImplementation", packed)
 			}
+             */
+            add("commonMainApi", "$group:$name:$version")
 		}
+        Unit
 	}
 
 	@JvmOverloads

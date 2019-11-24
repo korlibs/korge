@@ -23,13 +23,20 @@ fun Project.configureJvm() {
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
 
-	val runJvm = project.addTask<JavaExec>("runJvm", group = GROUP_KORGE) { task ->
+    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
+        it.kotlinOptions {
+            this.jvmTarget = "1.8"
+        }
+    }
+
+    val runJvm = project.addTask<JavaExec>("runJvm", group = GROUP_KORGE) { task ->
 		group = GROUP_KORGE_RUN
 		dependsOn("jvmMainClasses")
 		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
 		afterEvaluate {
 			task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+
 			task.main = korge.jvmMainClassName
 		}
 	}
@@ -66,7 +73,7 @@ private fun Project.addProguard() {
 			//it.from()
 			//fileTree()
 			task.from(GroovyClosure(project) {
-				(project["kotlin"]["targets"]["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
+				(project.gkotlin.targets["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
 				//listOf<File>()
 			})
 			task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)

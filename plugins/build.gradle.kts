@@ -15,7 +15,9 @@ buildscript {
 	dependencies {
 		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
 		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
-	}
+        classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.13")
+
+    }
 }
 
 val kotlinVersion = project.properties["kotlinVersion"]?.toString() ?: ""
@@ -90,8 +92,9 @@ subprojects {
 
 	apply(plugin = "maven")
 	apply(plugin = "maven-publish")
+    apply(plugin = "kotlin")
 
-	// Publishing
+    // Publishing
 	val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
 	val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
 

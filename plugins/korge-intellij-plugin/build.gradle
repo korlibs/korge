@@ -1,13 +1,7 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-	compile project(":korge")
 	compile project(":korge-build")
-	compile project(":korge")
-	compile project(":korge-ext-swf")
-	compile project(":korge-ext-spriter")
-	compile project(":korge-ext-tiled")
-	compile project(":korge-ext-ui")
 }
 
 apply plugin: 'org.jetbrains.intellij'
@@ -15,8 +9,8 @@ apply plugin: 'org.jetbrains.intellij'
 def globalProps = properties
 
 intellij {
-	version "IC-2017.2.5"
-	plugins = ['kotlin']
+	version "IC-2019.2.3"
+	plugins = ['Kotlin']
 	pluginName 'KorgePlugin'
 	downloadSources true
 }

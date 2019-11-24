@@ -6,7 +6,7 @@ import java.net.URI
 fun Project.configureRepositories() {
 	repositories.apply {
 		mavenLocal().content {
-			it.excludeGroup("Kotlin/Native")
+			//it.excludeGroup("Kotlin/Native")
 		}
 		maven {
 			it.url = URI("https://dl.bintray.com/korlibs/korlibs")

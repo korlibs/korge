@@ -3,6 +3,12 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 apply plugin: "kotlin"
 apply plugin: "java"
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 Properties gradleProperties = new Properties()
 gradleProperties.load(new StringReader(new File(rootDir, "../gradle.properties").text))
 ext.gradleProperties = gradleProperties
@@ -32,8 +38,6 @@ dependencies {
 	rtArtifacts("com.soywiz.korlibs.korma:korma-jvm:${version("korma")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korim:korim-jvm:${version("korim")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korgw:korgw-jvm:${version("korgw")}") { setKDep(it) }
-	rtArtifacts("com.soywiz.korlibs.korau:korau-mp3-jvm:${version("korau")}") { setKDep(it) }
-	rtArtifacts("com.soywiz.korlibs.korau:korau-ogg-vorbis-jvm:${version("korau")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korge:korge-jvm:${version("korge")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korge:korge-swf-jvm:${version("korge")}") { setKDep(it) }
 	rtArtifacts("org.jetbrains.kotlinx:kotlinx-coroutines-core:${version("coroutines")}")
