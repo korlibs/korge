@@ -25,7 +25,7 @@ jobs:
       before_script:
         - echo before_script
       script:
-        - ./gradlew check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest
+        - ./gradlew assemble check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
     - os: linux
       stage: test_and_upload_linux
       language: android
@@ -44,7 +44,7 @@ jobs:
       before_script:
         - echo before_script
       script:
-        - ./gradlew assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest
+        - ./gradlew assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
     - os: linux
       stage: publish
       language: android
