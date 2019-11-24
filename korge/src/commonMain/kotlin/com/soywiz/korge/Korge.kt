@@ -249,7 +249,7 @@ object Korge {
 				KeyEvent.Type.UP -> {
 					views.input.setKey(e.keyCode, false)
 
-					if (e.key == Key.F12) {
+					if (views.supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
 						views.debugViews = !views.debugViews
 					}
 				}

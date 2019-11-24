@@ -115,6 +115,7 @@ class Views constructor(
 
 	val stage = Stage(this)
 	val root = stage
+    var supportTogglingDebug = true
 	var debugViews = false
 	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
 
