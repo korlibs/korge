@@ -22,9 +22,9 @@ object KorgeSimpleNativeSyncIO {
     fun readBytes(file: String): ByteArray {
         val fd = fopen(file, "rb") ?: error("Can't open file '$file' for reading")
         try {
-            fseek(fd, 0L, SEEK_END)
+            fseek(fd, 0L.convert(), SEEK_END)
             val fileSize = ftell(fd)
-            fseek(fd, 0L, SEEK_CUR)
+            fseek(fd, 0L.convert(), SEEK_CUR)
 
             val out = ByteArray(fileSize.toInt())
             if (out.isNotEmpty()) {
@@ -38,6 +38,5 @@ object KorgeSimpleNativeSyncIO {
         } finally {
             fclose(fd)
         }
-
     }
 }
