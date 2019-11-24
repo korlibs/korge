@@ -35,10 +35,13 @@ class WorldView(val world: World = World(Vec2(0f, -10f))) : Container() {
 		val ViewKey = Box2dTypedUserData.Key<View>()
 	}
 
+    var velocityIterations = 6
+    var positionIterations = 2
+
 	init {
 		world[WorldViewKey] = this
 		addUpdatable {
-			world.step(it.toFloat() / 1000f, velocityIterations = 6, positionIterations = 2)
+			world.step(it.toFloat() / 1000f, velocityIterations = velocityIterations, positionIterations = positionIterations)
 			updateViews()
 		}
 	}
