@@ -8,50 +8,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
 
 object DebugBitmapFont {
-	val DEBUG_FONT_BYTES: ByteArray =
-		("" +
-				"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" +
-				"sT1xehsAAAAASUVORK5CYII=")
-					.fromBase64()
-
+	val DEBUG_FONT_BYTES: ByteArray = "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".fromBase64()
 }
 
 private var bmpFontOnce2 = AsyncOnce<BitmapFont>()
@@ -61,12 +18,18 @@ suspend fun getDebugBmpFontOnce() = bmpFontOnce2 {
 	val fntAdvance = 7
 	val fntWidth = 8
 	val fntHeight = 8
-	BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associate {
+
+    val fntBlockX = 2
+    val fntBlockY = 2
+    val fntBlockWidth = 12
+    val fntBlockHeight = 12
+
+    BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associate {
 		val x = it % 16
 		val y = it / 16
 		it to BitmapFont.Glyph(
 			it,
-			tex.sliceWithSize(x * fntWidth, y * fntHeight, fntWidth, fntHeight),
+			tex.sliceWithSize(x * fntBlockWidth + fntBlockX, y * fntBlockHeight + fntBlockY, fntWidth, fntHeight),
 			0,
 			0,
 			fntAdvance
