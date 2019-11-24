@@ -16,11 +16,11 @@ fun configureLoggerFromProperties(str: String) {
 }
 
 suspend fun configureLoggerFromProperties(file: VfsFile) {
-	println("configureLoggerFromProperties:")
+	//println("configureLoggerFromProperties:")
 	try {
 		configureLoggerFromProperties(file.readString())
 	} catch (e: Throwable) {
-		println("Couldn't load Klogger configuration $file : ${e.message}")
+		//println("Couldn't load Klogger configuration $file : ${e.message}")
 	}
 }
 
