@@ -7,10 +7,12 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.jvm.*
 
-inline fun Container.graphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics().addTo(this).apply(callback)
+inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).apply(callback)
+inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this).apply(callback)
 
-class Graphics : Image(Bitmaps.transparent), VectorBuilder {
+open class Graphics @JvmOverloads constructor(var autoScaling: Boolean = false) : Image(Bitmaps.transparent), VectorBuilder {
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
 	private var fill: Context2d.Paint? = null
@@ -36,6 +38,7 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	private var endCap: Context2d.LineCap = Context2d.LineCap.BUTT
 	private var lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER
 	private var miterLimit: Double = 4.0
+    var hitTestUsingShapes = false
 
 	@Deprecated("This doesn't do anything")
 	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
@@ -173,7 +176,33 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 	private val bb = BoundsBuilder()
 	private val bounds = Rectangle()
 
-	override fun renderInternal(ctx: RenderContext) {
+    private var renderedAtScaleX = 1.0
+    private var renderedAtScaleY = 1.0
+    private val matrixTransform = Matrix.Transform()
+
+    override val bwidth: Double get() = bitmap.width.toDouble() / renderedAtScaleX
+    override val bheight: Double get() = bitmap.height.toDouble() / renderedAtScaleY
+
+    override fun renderInternal(ctx: RenderContext) {
+        if (autoScaling) {
+            matrixTransform.setMatrix(this.globalMatrix)
+            //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
+            //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
+
+            val sx = kotlin.math.abs(matrixTransform.scaleX)
+            val sy = kotlin.math.abs(matrixTransform.scaleY)
+
+            val diffX = kotlin.math.abs((sx / renderedAtScaleX) - 1.0)
+            val diffY = kotlin.math.abs((sy / renderedAtScaleY) - 1.0)
+
+            if (diffX >= 0.1 || diffY >= 0.1) {
+                renderedAtScaleX = sx
+                renderedAtScaleY = sy
+                //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
+                dirty = true
+            }
+        }
+
 		if (dirty) {
 			dirty = false
 
@@ -181,8 +210,9 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 			shapes.fastForEach { it.addBounds(bb) }
 			bb.getBounds(bounds)
 
-			val image = NativeImage(bounds.width.toInt(), bounds.height.toInt())
+			val image = NativeImage((bounds.width * renderedAtScaleX).toInt(), (bounds.height * renderedAtScaleY).toInt())
 			image.context2d {
+                scale(renderedAtScaleX, renderedAtScaleY)
 				translate(-bounds.x, -bounds.y)
 				compoundShape.draw(this)
 			}
@@ -193,12 +223,16 @@ class Graphics : Image(Bitmaps.transparent), VectorBuilder {
 		super.renderInternal(ctx)
 	}
 
-	//override fun hitTestInternal(x: Double, y: Double): View? {
-	//	val lx = globalToLocalX(x, y)
-	//	val ly = globalToLocalY(x, y)
-	//	for (shape in shapes) {
-	//		if (shape.containsPoint(lx, ly)) return this
-	//	}
-	//	return null
-	//}
+	override fun hitTestInternal(x: Double, y: Double): View? {
+        if (hitTestUsingShapes) {
+            val lx = globalToLocalX(x, y)
+            val ly = globalToLocalY(x, y)
+            for (shape in shapes) {
+                if (shape.containsPoint(lx, ly)) return this
+            }
+            return null
+        } else {
+            return super.hitTestInternal(x, y)
+        }
+	}
 }
