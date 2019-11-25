@@ -47,7 +47,8 @@ fun Project.configureNativeDesktop() {
 			//(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
 			binaries {
                 executable {
-                    this.entryPoint = "korge.bootstrap.main"
+                    //this.entryPoint = "korge.bootstrap.main"
+                    //this.entryPoint = "korge.bootstrap"
                 }
             }
 		})
@@ -62,7 +63,7 @@ fun Project.configureNativeDesktop() {
 				output.parentFile.mkdirs()
 
 				val text = Indenter {
-                    line("package korge.bootstrap")
+                    //line("package korge.bootstrap")
 					line("import ${korge.entryPoint}")
 					line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
 					line("object RootGameMain") {

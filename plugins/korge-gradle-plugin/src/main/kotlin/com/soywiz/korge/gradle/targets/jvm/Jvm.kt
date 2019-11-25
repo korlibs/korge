@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle.targets.jvm
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korio.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -37,6 +38,9 @@ fun Project.configureJvm() {
 		afterEvaluate {
 			task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
 
+            if (OS.isMac) {
+                //task.jvmArgs("-XstartOnFirstThread")
+            }
 			task.main = korge.jvmMainClassName
 		}
 	}

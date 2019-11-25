@@ -1,7 +1,8 @@
 if (
 org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_UNIX) &&
     (new File("/.dockerenv").exists() || System.getenv("TRAVIS") != null) &&
-    (new File("/usr/bin/apt-get").exists())
+    (new File("/usr/bin/apt-get").exists()) &&
+    (!(new File("/usr/include/GL/glut.h").exists()) || !(new File("/usr/include/AL/al.h").exists()))
 ) {
 
     exec {
