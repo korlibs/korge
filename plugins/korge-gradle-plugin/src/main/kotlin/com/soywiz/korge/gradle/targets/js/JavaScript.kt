@@ -184,46 +184,52 @@ private fun Project.addWeb() {
 		}
 
 		task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
-		project.afterEvaluate {
-			val kotlinTargets = project["kotlin"]["targets"]
-			val jsCompilations = kotlinTargets["js"]["compilations"]
-			task.includeEmptyDirs = false
-			if (minimized) {
-				task.from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
-			}
-			task.from((jsCompilations["main"] as KotlinCompilation<*>).output.allOutputs) { copy -> copy.configureWeb() }
-			task.from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
-			for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
-				if (file.exists() && !file.isDirectory) {
-					task.from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
-					task.from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
-				} else {
-					task.from(file) { copy -> copy.configureWeb() }
-					task.from(file) { copy -> copy.include("**/*.min.js") }
-				}
-			}
 
-			for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
-				val main = (target["compilations"]["main"] as KotlinCompilation<*>)
-				for (sourceSet in main.kotlinSourceSets) {
-					task.from(sourceSet.resources) { copy -> copy.configureWeb() }
-				}
-			}
-			//task.exclude(*excludesNormal)
-			task.into(task.targetDir)
-			task.doLast {
-				val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
-				task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
-			}
-		}
+        val kotlinTargets by lazy {  project["kotlin"]["targets"] }
+        val jsCompilations by lazy {  kotlinTargets["js"]["compilations"] }
 
-		task.doLast {
-			task.targetDir["index.html"].writeText(
-				SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
-					"OUTPUT" to project.name,
-					"TITLE" to korge.name
-				)).toString())
-		}
+
+        //project.afterEvaluate {
+        //task.exclude(*excludesNormal)
+        task.doLast {
+            copy {
+                it.apply {
+                    includeEmptyDirs = false
+
+                    if (minimized) {
+                        from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
+                    }
+                    from((jsCompilations["main"] as KotlinCompilation<*>).output.allOutputs) { copy -> copy.configureWeb() }
+                    from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
+                    for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
+                        if (file.exists() && !file.isDirectory) {
+                            from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
+                            from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
+                        } else {
+                            from(file) { copy -> copy.configureWeb() }
+                            from(file) { copy -> copy.include("**/*.min.js") }
+                        }
+                    }
+
+                    for (target in listOf(kotlinTargets["js"], kotlinTargets["metadata"])) {
+                        val main = (target["compilations"]["main"] as KotlinCompilation<*>)
+                        for (sourceSet in main.kotlinSourceSets) {
+                            from(sourceSet.resources) { copy -> copy.configureWeb() }
+                        }
+                    }
+                    into(task.targetDir)
+                }
+            }
+
+            val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
+            task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
+            task.targetDir["index.html"].writeText(
+                SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
+                    "OUTPUT" to project.name,
+                    "TITLE" to korge.name
+                )).toString())
+
+        }
 	}
 
 	val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->

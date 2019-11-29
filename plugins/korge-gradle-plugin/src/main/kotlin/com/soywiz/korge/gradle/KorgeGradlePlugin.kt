@@ -33,7 +33,7 @@ val Project.korge: KorgeExtension
 		}
 	}
 
-open class JsWebCopy() : Copy() {
+open class JsWebCopy() : DefaultTask() {
 	open lateinit var targetDir: File
 }
 
