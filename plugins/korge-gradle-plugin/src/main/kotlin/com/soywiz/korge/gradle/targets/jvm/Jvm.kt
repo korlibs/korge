@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.util.*
 import com.soywiz.korio.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.internal.FactoryNamedDomainObjectContainer
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
@@ -35,14 +36,24 @@ fun Project.configureJvm() {
 		dependsOn("jvmMainClasses")
 		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
-		afterEvaluate {
-			task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+        task.doFirst {
+            //task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
+            val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
+            val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
+            //println(jvmCompilation)
+            //println(mainJvmCompilation)
+            //println(mainJvmCompilation.runtimeDependencyFiles.toList())
+            //println(mainJvmCompilation.compileDependencyFiles.toList())
+
+            //task.classpath = gkotlin.targets["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as? FileCollection?
+            task.classpath = mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
 
             if (OS.isMac) {
                 //task.jvmArgs("-XstartOnFirstThread")
             }
-			task.main = korge.jvmMainClassName
-		}
+
+            task.main = korge.jvmMainClassName
+        }
 	}
 
 	for (jvmJar in project.getTasksByName("jvmJar", true)) {

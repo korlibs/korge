@@ -32,8 +32,8 @@ inline fun <reified T : Task> Project.addTask(
 		mapOf(
 			"type" to T::class.java,
 			"group" to group,
-			"description" to description,
-			"overwrite" to overwrite
+			"description" to description
+            //, "overwrite" to overwrite // Not compatible with gradle 6
 		), name, LambdaClosure { it: T ->
 			configure(it, it)
 		}
