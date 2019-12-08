@@ -3,7 +3,3 @@ set -e
 ./gradlew publish
 ./gradlew_win publishMingwX64PublicationToMavenRepository publishMingwX64PublicationToMavenLocal
 ./gradlew_linux publish
-pushd plugins
-./gradlew publish
-popd
-#./gradlew_linux actuallyPublishBintray
