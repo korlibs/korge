@@ -311,8 +311,7 @@ fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
 	callback(log.views.stage, log)
 }
 
-open class GameWindowLog : GameWindow() {
-}
+open class GameWindowLog : GameWindow()
 
 class ViewsLog(
 	override val coroutineContext: CoroutineContext,
@@ -403,3 +402,16 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: 
 	}
 }
 
+/**
+ * Returns the box2D world coordinates for given pixel coordinates
+ * or null if there is no box2D worldView in the Stage
+ * @receiver Stage
+ * @param x Int
+ * @param y Int
+ * @return Point?
+ */
+fun Stage.convertPixelToWorld(x : Int, y : Int) : Point? {
+    val worldView = children.getOrNull(0) // Any better way to get the worldView of the stage?
+    return worldView?.let{Point((x-it.x)/it.scaleX, -(y-it.y)/it.scaleY)}
+}
+fun Stage.convertPixelToWorld(point : Point) : Point? = convertPixelToWorld(point.x.toInt(), point.y.toInt())
