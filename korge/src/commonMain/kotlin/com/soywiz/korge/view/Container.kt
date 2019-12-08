@@ -167,21 +167,18 @@ open class FixedSizeContainer(
 
     private val tempBounds = Rectangle()
 
-    // @TODO: Once korgw has been updated, mutate the scissors
-
-    //private val scissors = AG.Scissor(0, 0, 0, 0)
+    private val scissors = AG.Scissor(0, 0, 0, 0)
 
     override fun renderInternal(ctx: RenderContext) {
         if (clip) {
             val c2d = ctx.ctx2d
             val bounds = getGlobalBounds(tempBounds)
-            //val scissors = scissors.apply {
-            //    x = bounds.x.toInt()
-            //    y = bounds.y.toInt()
-            //    width = bounds.width.toInt()
-            //    height = bounds.height.toInt()
-            //}
-            val scissors = AG.Scissor(bounds.x.toInt(), bounds.y.toInt(), bounds.width.toInt(), bounds.height.toInt())
+            val scissors = scissors.apply {
+                x = bounds.x.toInt()
+                y = bounds.y.toInt()
+                width = bounds.width.toInt()
+                height = bounds.height.toInt()
+            }
             c2d.scissor(scissors) {
                 super.renderInternal(ctx)
             }

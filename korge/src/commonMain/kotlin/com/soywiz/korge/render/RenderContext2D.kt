@@ -92,8 +92,12 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 		)
 	}
 
+    @PublishedApi
+    internal val scissorPool = Pool(8) { AG.Scissor(0, 0, 0, 0) }
+
 	inline fun scissor(scissor: AG.Scissor?, block: () -> Unit) {
 		val oldScissor = batch.scissor
+        var returnScissor: AG.Scissor? = null
 
 		batch.flush()
 		if (scissor != null) {
@@ -102,7 +106,9 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 			val right = m.transformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
 			val bottom = m.transformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
 
-			batch.scissor = AG.Scissor(left, top, right - left, bottom - top)
+            returnScissor = scissorPool.alloc().setTo(left, top, right - left, bottom - top)
+
+			batch.scissor = returnScissor
 			//println("batch.scissor: ${batch.scissor}")
 		} else {
 			batch.scissor = null
@@ -110,8 +116,29 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 		try {
 			block()
 		} finally {
+
+            if (returnScissor != null) {
+                scissorPool.free(returnScissor)
+            }
+
 			batch.flush()
 			batch.scissor = oldScissor
 		}
 	}
+}
+
+@PublishedApi
+internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor = this.apply {
+    this.x = that.x
+    this.y = that.y
+    this.width = that.width
+    this.height = that.height
+}
+
+@PublishedApi
+internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor = this.apply {
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height
 }

@@ -295,14 +295,15 @@ class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by v
 
 	override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
 
+    private val scissors = AG.Scissor(0, 0, 0, 0)
+
 	override fun renderInternal(ctx: RenderContext) {
 		if (views.clipBorders) {
-			ctx.ctx2d.scissor(
-				AG.Scissor(
-					x.toInt(), y.toInt(), (views.virtualWidth * scaleX).toInt(),
-					(views.virtualHeight * scaleY).toInt()
-				)
-			) {
+            scissors.x = x.toInt()
+            scissors.y = y.toInt()
+            scissors.width = (views.virtualWidth * scaleX).toInt()
+            scissors.height = (views.virtualHeight * scaleY).toInt()
+			ctx.ctx2d.scissor(scissors) {
 				super.renderInternal(ctx)
 			}
 		} else {
