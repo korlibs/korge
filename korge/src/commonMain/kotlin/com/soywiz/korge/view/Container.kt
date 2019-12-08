@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.AG
 import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -148,10 +149,14 @@ open class Container : View() {
 
 fun <T : View> T.addTo(parent: Container) = this.apply { parent += this }
 
-inline fun Container.fixedSizeContainer(width: Number, height: Number, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
-	FixedSizeContainer(width.toDouble(), height.toDouble()).addTo(this).apply(callback)
+inline fun Container.fixedSizeContainer(width: Number, height: Number, clip: Boolean = false, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
+	FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this).apply(callback)
 
-open class FixedSizeContainer(override var width: Double = 100.0, override var height: Double = 100.0) : Container() {
+open class FixedSizeContainer(
+    override var width: Double = 100.0,
+    override var height: Double = 100.0,
+    var clip: Boolean = false
+) : Container() {
 	override fun getLocalBoundsInternal(out: Rectangle): Unit = Unit.run { out.setTo(0, 0, width, height) }
 
 	override fun toString(): String {
@@ -159,7 +164,40 @@ open class FixedSizeContainer(override var width: Double = 100.0, override var h
 		out += ":size=(${width.niceStr}x${height.niceStr})"
 		return out
 	}
+
+    private val tempBounds = Rectangle()
+
+    // @TODO: Once korgw has been updated, mutate the scissors
+
+    //private val scissors = AG.Scissor(0, 0, 0, 0)
+
+    override fun renderInternal(ctx: RenderContext) {
+        if (clip) {
+            val c2d = ctx.ctx2d
+            val bounds = getGlobalBounds(tempBounds)
+            //val scissors = scissors.apply {
+            //    x = bounds.x.toInt()
+            //    y = bounds.y.toInt()
+            //    width = bounds.width.toInt()
+            //    height = bounds.height.toInt()
+            //}
+            val scissors = AG.Scissor(bounds.x.toInt(), bounds.y.toInt(), bounds.width.toInt(), bounds.height.toInt())
+            c2d.scissor(scissors) {
+                super.renderInternal(ctx)
+            }
+        } else {
+            super.renderInternal(ctx)
+        }
+    }
 }
+
+inline fun Container.clipContainer(width: Number, height: Number, callback: @ViewsDslMarker ClipContainer.() -> Unit = {}) =
+    ClipContainer(width.toDouble(), height.toDouble()).addTo(this).apply(callback)
+
+open class ClipContainer(
+    width: Double = 100.0,
+    height: Double = 100.0
+) : FixedSizeContainer(width, height, clip = true)
 
 operator fun View?.plusAssign(view: View?) {
 	val container = this as? Container?
