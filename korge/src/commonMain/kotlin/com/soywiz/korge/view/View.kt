@@ -417,6 +417,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
 	fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
+    fun localMouseXY(views: Views, target: Point = Point()): Point = target.setTo(localMouseX(views), localMouseY(views))
 
 	fun invalidateMatrix() {
 		validLocalMatrix = false
@@ -832,6 +833,10 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
+inline fun <T : View> T.size(width: Number, height: Number): T = this.apply {
+    this.width = width.toDouble()
+    this.height = height.toDouble()
+}
 
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
 fun View?.firstDescendantWithName(name: String): View? = this[name]
