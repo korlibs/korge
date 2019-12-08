@@ -212,10 +212,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	val root: View get() = parent?.root ?: this
 	open val stage: Stage? get() = root as? Stage?
 
-	var mouseEnabled: Boolean = true
+	open var mouseEnabled: Boolean = true
 	//var mouseChildren: Boolean = false
-	var enabled: Boolean = true
-	var visible: Boolean = true
+    open var enabled: Boolean = true
+    open var visible: Boolean = true
 
 	fun setMatrix(matrix: Matrix) {
 		this._localMatrix.copyFrom(matrix)
