@@ -167,19 +167,11 @@ open class FixedSizeContainer(
 
     private val tempBounds = Rectangle()
 
-    private val scissors = AG.Scissor(0, 0, 0, 0)
-
     override fun renderInternal(ctx: RenderContext) {
         if (clip) {
             val c2d = ctx.ctx2d
             val bounds = getGlobalBounds(tempBounds)
-            val scissors = scissors.apply {
-                x = bounds.x.toInt()
-                y = bounds.y.toInt()
-                width = bounds.width.toInt()
-                height = bounds.height.toInt()
-            }
-            c2d.scissor(scissors) {
+            c2d.scissor(bounds) {
                 super.renderInternal(ctx)
             }
         } else {

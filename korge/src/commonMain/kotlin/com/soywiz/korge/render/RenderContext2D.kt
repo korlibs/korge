@@ -140,8 +140,11 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
     @PublishedApi
     internal val tempScissor: AG.Scissor = AG.Scissor(0, 0, 0, 0)
 
-    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) =
-        scissor(tempScissor.setTo(x, y, width, height), block)
+    inline fun scissor(x: Number, y: Number, width: Number, height: Number, block: () -> Unit) =
+        scissor(tempScissor.setTo(x.toInt(), y.toInt(), width.toInt(), height.toInt()), block)
+
+    inline fun scissor(rect: Rectangle, block: () -> Unit) =
+        scissor(rect.x, rect.y, rect.width, rect.height, block)
 }
 
 @PublishedApi
