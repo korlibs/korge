@@ -95,36 +95,53 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
     @PublishedApi
     internal val scissorPool = Pool(8) { AG.Scissor(0, 0, 0, 0) }
 
-	inline fun scissor(scissor: AG.Scissor?, block: () -> Unit) {
-		val oldScissor = batch.scissor
+    @PublishedApi
+    internal fun scissorStart(scissor: AG.Scissor?): AG.Scissor? {
         var returnScissor: AG.Scissor? = null
 
-		batch.flush()
-		if (scissor != null) {
-			val left = m.transformX(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-			val top = m.transformY(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-			val right = m.transformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
-			val bottom = m.transformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
+        batch.flush()
+        if (scissor != null) {
+            val left = m.transformX(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
+            val top = m.transformY(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
+            val right = m.transformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
+            val bottom = m.transformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
 
             returnScissor = scissorPool.alloc().setTo(left, top, right - left, bottom - top)
 
-			batch.scissor = returnScissor
-			//println("batch.scissor: ${batch.scissor}")
-		} else {
-			batch.scissor = null
-		}
+            batch.scissor = returnScissor
+            //println("batch.scissor: ${batch.scissor}")
+        } else {
+            batch.scissor = null
+        }
+
+        return returnScissor
+    }
+
+    @PublishedApi
+    internal fun scissorEnd(oldScissor: AG.Scissor?, returnScissor: AG.Scissor?) {
+        if (returnScissor != null) {
+            scissorPool.free(returnScissor)
+        }
+
+        batch.flush()
+        batch.scissor = oldScissor
+    }
+
+    inline fun scissor(scissor: AG.Scissor?, block: () -> Unit) {
+		val oldScissor = batch.scissor
+        val returnScissor = scissorStart(scissor)
 		try {
 			block()
 		} finally {
-
-            if (returnScissor != null) {
-                scissorPool.free(returnScissor)
-            }
-
-			batch.flush()
-			batch.scissor = oldScissor
+            scissorEnd(oldScissor, returnScissor)
 		}
 	}
+
+    @PublishedApi
+    internal val tempScissor: AG.Scissor = AG.Scissor(0, 0, 0, 0)
+
+    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) =
+        scissor(tempScissor.setTo(x, y, width, height), block)
 }
 
 @PublishedApi
