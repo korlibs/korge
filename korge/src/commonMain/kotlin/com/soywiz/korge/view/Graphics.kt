@@ -227,7 +227,7 @@ open class Graphics @JvmOverloads constructor(var autoScaling: Boolean = false) 
         if (hitTestUsingShapes) {
             val lx = globalToLocalX(x, y)
             val ly = globalToLocalY(x, y)
-            for (shape in shapes) {
+            shapes.fastForEach { shape ->
                 if (shape.containsPoint(lx, ly)) return this
             }
             return null
