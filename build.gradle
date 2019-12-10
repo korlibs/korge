@@ -11,10 +11,24 @@ buildscript {
 
     dependencies {
         classpath "com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.5.1" // Kotlin 1.3.60: https://github.com/korlibs/easy-kotlin-mpp-gradle-plugin
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
     }
+}
+
+repositories {
+    jcenter()
 }
 
 def buildExtraGradleFile = new File(rootDir, "build.extra.gradle")
 if (buildExtraGradleFile.exists()) {
 	apply from: buildExtraGradleFile
+}
+
+apply plugin: "org.jetbrains.dokka"
+apply plugin: "kotlin"
+
+dokka {
+    outputFormat = "html" 
+    outputDirectory = "$buildDir/dokka"
+    subProjects = ["korge"]
 }

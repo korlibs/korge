@@ -1,4 +1,5 @@
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
+apply plugin: "org.jetbrains.dokka"
 
 korlibs {
 	exposeVersion()
