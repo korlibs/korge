@@ -10,7 +10,7 @@ class SortedChildrenByComponent(override val view: Container, var comparator: Co
 }
 
 fun Container.sortChildrenBy(comparator: Comparator<View>) {
-	children.sortWith(comparator)
+	childrenInternal.sortWith(comparator)
 	for (n in 0 until children.size) {
 		val child = children[n]
 		child.index = n

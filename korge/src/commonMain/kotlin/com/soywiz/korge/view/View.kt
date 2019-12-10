@@ -562,7 +562,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		if (parent == null) return
 		val p = parent!!
 		for (i in index + 1 until p.children.size) p.children[i].index--
-		p.children.removeAt(index)
+		p.childrenInternal.removeAt(index)
 		parent = null
 		index = -1
 	}
@@ -756,8 +756,8 @@ fun View.hasAncestor(ancestor: View): Boolean {
 fun View.replaceWith(view: View): Boolean {
 	if (this == view) return false
 	if (parent == null) return false
-	view.parent?.children?.remove(view)
-	parent!!.children[this.index] = view
+	view.parent?.childrenInternal?.remove(view)
+	parent!!.childrenInternal[this.index] = view
 	view.index = this.index
 	view.parent = parent
 	parent = null

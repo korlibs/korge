@@ -23,7 +23,12 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
 open class Container : View() {
 	override val isContainer get() = false
 
-	val children = arrayListOf<View>()
+	internal val childrenInternal = arrayListOf<View>()
+
+	/**
+	 * Retrieves all the child [View]s.
+	 */
+	val children: List<View> get() = childrenInternal
 
 	/**
 	 * Recursively retrieves the top ancestor in the container hierarchy.
@@ -40,8 +45,8 @@ open class Container : View() {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
 			val index2 = view2.index
-			children[index1] = view2.apply { index = index1 }
-			children[index2] = view1.apply { index = index2 }
+			childrenInternal[index1] = view2.apply { index = index1 }
+			childrenInternal[index2] = view1.apply { index = index2 }
 		}
 	}
 
@@ -50,11 +55,11 @@ open class Container : View() {
 	 * Adds a child [View] at a specific index.
 	 */
 	fun addChildAt(view: View, index: Int) {
-		val index = index.clamp(0, this.children.size)
+		val index = index.clamp(0, this.childrenInternal.size)
 		view.removeFromParent()
 		view.index = index
-		children.add(index, view)
-		for (n in index + 1 until children.size) children[n].index = n // Update other indices
+		childrenInternal.add(index, view)
+		for (n in index + 1 until childrenInternal.size) childrenInternal[n].index = n // Update other indices
 		view.parent = this
 		view.invalidate()
 	}
@@ -69,13 +74,13 @@ open class Container : View() {
 	/**
 	 * Finds the [View] at a given index.
 	 */
-	fun getChildAt(index: Int): View = children[index]
+	fun getChildAt(index: Int): View = childrenInternal[index]
 
 	// @TODO: Untested
 	/**
 	 * Finds the first child [View] matching a given name.
 	 */
-	fun getChildByName(name: String): View? = children.firstOrNull { it.name == name }
+	fun getChildByName(name: String): View? = childrenInternal.firstOrNull { it.name == name }
 
 	/**
 	 * Removes a specific [View] from the container.
@@ -90,11 +95,11 @@ open class Container : View() {
 	 * Removes all child [View]s from the container.
 	 */
 	fun removeChildren() {
-		children.fastForEach { child ->
+		childrenInternal.fastForEach { child ->
 			child.parent = null
 			child.index = -1
 		}
-		children.clear()
+		childrenInternal.clear()
 	}
 
 	/**
@@ -107,7 +112,7 @@ open class Container : View() {
 	 */
 	override fun invalidate() {
 		super.invalidate()
-		children.fastForEach { child ->
+		childrenInternal.fastForEach { child ->
 			if (child._requireInvalidate) {
 				child.invalidate()
 			}
@@ -121,8 +126,8 @@ open class Container : View() {
 	 */
 	operator fun plusAssign(view: View) {
 		view.removeFromParent()
-		view.index = children.size
-		children += view
+		view.index = childrenInternal.size
+		childrenInternal += view
 		view.parent = this
 		view.invalidate()
 	}
@@ -148,7 +153,7 @@ open class Container : View() {
 	 * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
 	 */
 	override fun hitTest(x: Double, y: Double): View? {
-		children.fastForEachReverse { child ->
+		childrenInternal.fastForEachReverse { child ->
 			if (child.visible) {
 				val res = child.hitTest(x, y)
 				if (res != null) return res
@@ -184,11 +189,11 @@ open class Container : View() {
 	}
 
 	private inline fun safeForEachChildren(crossinline callback: (View) -> Unit) {
-		children.fastForEach(callback)
+		childrenInternal.fastForEach(callback)
 	}
 
 	private inline fun safeForEachChildrenReversed(crossinline callback: (View) -> Unit) {
-		children.fastForEachReverse(callback)
+		childrenInternal.fastForEachReverse(callback)
 	}
 
 	/**
@@ -202,7 +207,7 @@ open class Container : View() {
 	 */
 	override fun clone(): View {
 		val out = super.clone()
-		children.fastForEach { child ->
+		childrenInternal.fastForEach { child ->
 			out += child.clone()
 		}
 		return out
