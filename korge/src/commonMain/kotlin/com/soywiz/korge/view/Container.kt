@@ -17,13 +17,25 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
 // For Flash compatibility
 //open class Sprite : Container()
 
+/**
+ * A simple container of [View]s.
+ */
 open class Container : View() {
 	override val isContainer get() = false
 
 	val children = arrayListOf<View>()
+
+	/**
+	 * Recursively retrieves the top ancestor in the container hierarchy.
+	 *
+	 * Retrieves the top ancestor of the hierarchy. In case the container is orphan this very instance is returned.
+	 */
 	val containerRoot: Container get() = parent?.containerRoot ?: this
 
 	// @TODO: Untested
+	/**
+	 * Swaps the order of two child [View]s.
+	 */
 	fun swapChildren(view1: View, view2: View) {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
@@ -34,6 +46,9 @@ open class Container : View() {
 	}
 
 	// @TODO: Untested
+	/**
+	 * Adds a child [View] at a specific index.
+	 */
 	fun addChildAt(view: View, index: Int) {
 		val index = index.clamp(0, this.children.size)
 		view.removeFromParent()
@@ -45,19 +60,35 @@ open class Container : View() {
 	}
 
 	// @TODO: Untested
+	/**
+	 * Retrieves the index of a given child [View].
+	 */
 	fun getChildIndex(view: View): Int = view.index
 	// @TODO: Untested
+
+	/**
+	 * Finds the [View] at a given index.
+	 */
 	fun getChildAt(index: Int): View = children[index]
 
 	// @TODO: Untested
+	/**
+	 * Finds the first child [View] matching a given name.
+	 */
 	fun getChildByName(name: String): View? = children.firstOrNull { it.name == name }
 
+	/**
+	 * Removes a specific [View] from the container.
+	 */
 	fun removeChild(view: View?) {
 		if (view?.parent == this) {
 			view?.removeFromParent()
 		}
 	}
 
+	/**
+	 * Removes all child [View]s from the container.
+	 */
 	fun removeChildren() {
 		children.fastForEach { child ->
 			child.parent = null
@@ -66,8 +97,14 @@ open class Container : View() {
 		children.clear()
 	}
 
+	/**
+	 * Alias for [plusAssign].
+	 */
 	fun addChild(view: View) = this.plusAssign(view)
 
+	/**
+	 * Invalidates the container and all the child [View]s recursively.
+	 */
 	override fun invalidate() {
 		super.invalidate()
 		children.fastForEach { child ->
@@ -77,6 +114,11 @@ open class Container : View() {
 		}
 	}
 
+	/**
+	 * Adds a child [View] to the container.
+	 * 
+	 * If the [View] already belongs to a parent, it is removed from it and then added to the container.
+	 */
 	operator fun plusAssign(view: View) {
 		view.removeFromParent()
 		view.index = children.size
@@ -85,6 +127,9 @@ open class Container : View() {
 		view.invalidate()
 	}
 
+	/**
+	 * Removes a child [View] from the container.
+	 */
 	operator fun minusAssign(view: View) {
 		if (view.parent == this) view.removeFromParent()
 	}
@@ -97,6 +142,11 @@ open class Container : View() {
 		}
 	}
 
+	/**
+	 * Recursively finds the [View] displayed the given `x`, `y` coordinates.
+	 *
+	 * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
+	 */
 	override fun hitTest(x: Double, y: Double): View? {
 		children.fastForEachReverse { child ->
 			if (child.visible) {
@@ -119,6 +169,11 @@ open class Container : View() {
 		bb.getBounds(out)
 	}
 
+	/**
+	 * Propagates an [Event] to all child [View]s.
+	 *
+	 * The [Event] is propagated to all the child [View]s of the container, iterated in reverse orted. 
+	 */
 	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		if (propagateEvents) {
 			safeForEachChildrenReversed { child ->
@@ -136,8 +191,15 @@ open class Container : View() {
 		children.fastForEachReverse(callback)
 	}
 
+	/**
+	 * Creates a new container.
+	 * @return an empty container.
+	 */
 	override fun createInstance(): View = Container()
 
+	/**
+	 * Performs a deep copy of the container, by copying all the child [View]s.
+	 */
 	override fun clone(): View {
 		val out = super.clone()
 		children.fastForEach { child ->
@@ -147,6 +209,9 @@ open class Container : View() {
 	}
 }
 
+/**
+ * Alias for `parent += this`. Refer to [Container.plusAssign].
+ */
 fun <T : View> T.addTo(parent: Container) = this.apply { parent += this }
 
 inline fun Container.fixedSizeContainer(width: Number, height: Number, clip: Boolean = false, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
