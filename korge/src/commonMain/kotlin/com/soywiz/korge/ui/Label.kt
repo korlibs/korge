@@ -6,6 +6,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
+@Deprecated("Use UILabel")
 class Label(factory: UIFactory, skin: UISkin = factory.skin, initialText: String = "Label") : Widget(factory, skin), IText, IHtml {
 	val textView = Text(initialText).apply { this@Label += this }
 
@@ -23,4 +24,5 @@ class Label(factory: UIFactory, skin: UISkin = factory.skin, initialText: String
 
 }
 
+@Deprecated("Use UILabel")
 fun UIFactory.label(text: String = "Label", skin: UISkin = this.skin) = Label(this, skin, text)

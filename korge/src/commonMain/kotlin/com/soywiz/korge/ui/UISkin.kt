@@ -9,6 +9,7 @@ import com.soywiz.korio.lang.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(UISkin.Factory::class)
+@Deprecated("Use new UI")
 class UISkin(val views: Views, val texture: BitmapSlice<Bitmap>) {
 	val buttonOut = texture.sliceWithSize(0, 0, 64, 64)
 	val buttonOver = texture.sliceWithSize(64, 0, 64, 64)

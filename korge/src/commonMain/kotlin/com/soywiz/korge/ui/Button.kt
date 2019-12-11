@@ -7,6 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
+@Deprecated("Use UIButton")
 class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: String = "Label") : Widget(factory, skin),
 	IText, IHtml {
 	override fun createInstance(): View = Button(factory, skin, text)
@@ -64,4 +65,5 @@ class Button(factory: UIFactory, skin: UISkin = factory.skin, initialText: Strin
 	}
 }
 
+@Deprecated("Use UIButton")
 fun UIFactory.button(text: String = "Button", skin: UISkin = this.skin) = Button(this, skin, text)
