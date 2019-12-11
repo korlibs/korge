@@ -44,8 +44,3 @@ open class Image(
 	override fun toString(): String = super.toString() + ":bitmap=$bitmap"
 
 }
-
-inline fun <T : Image> T.anchor(ax: Number, ay: Number): T =
-	this.apply { anchorX = ax.toDouble() }.apply { anchorY = ay.toDouble() }
-
-inline fun <T : Image> T.center(): T = anchor(0.5, 0.5)

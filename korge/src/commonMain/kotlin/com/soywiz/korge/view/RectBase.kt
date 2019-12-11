@@ -71,3 +71,6 @@ open class RectBase(
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : RectBase> T.anchor(ax: Number, ay: Number): T =
 	this.apply { this.anchorX = ax.toDouble() }.apply { this.anchorY = ay.toDouble() }
+
+fun <T : RectBase> T.center(): T = anchor(0.5, 0.5)
+val <T : RectBase> T.centered: T get() = anchor(0.5, 0.5)
