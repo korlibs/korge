@@ -5,7 +5,7 @@ import kotlin.test.*
 
 class BatchBuilderTest {
 	val ag = LogAG(16, 16)
-	val bb = BatchBuilder2D(ag)
+	val bb = BatchBuilder2D(RenderContext(ag))
 
 	@Test
 	fun simpleBatch() {

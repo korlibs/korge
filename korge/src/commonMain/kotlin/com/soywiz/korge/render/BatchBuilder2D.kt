@@ -12,8 +12,8 @@ import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
-//class BatchBuilder2D(val ag: AG, val maxQuads: Int = 512) {
 class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
+    constructor(ag: AG, maxQuads: Int = 512) : this(RenderContext(ag), maxQuads)
     val ag: AG = ctx.ag
 	init {
         logger.trace { "BatchBuilder2D[0]" }
