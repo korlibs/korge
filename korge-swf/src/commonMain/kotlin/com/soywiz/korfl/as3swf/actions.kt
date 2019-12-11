@@ -1,4 +1,4 @@
-package com.codeazur.as3swf
+package com.soywiz.korfl.as3swf
 
 import com.soywiz.korio.util.*
 

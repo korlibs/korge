@@ -1,4 +1,4 @@
-package com.codeazur.as3swf
+package com.soywiz.korfl.as3swf
 
 @Suppress("unused")
 class Frame(var frameNumber: Int = 0, var tagIndexStart: Int = 0) {

@@ -1,4 +1,4 @@
-package com.codeazur.as3swf
+package com.soywiz.korfl.as3swf
 
 object ActionValueType {
 	val STRING: Int = 0

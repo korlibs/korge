@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.swf
 
-import com.codeazur.as3swf.*
+import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korfl.*
@@ -785,22 +785,22 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						//allMatrices += m
 					}
 					if (it.hasBlendMode) depth.blendMode = when (it.blendMode) {
-						com.codeazur.as3swf.BlendMode.NORMAL_0 -> BlendMode.NORMAL
-						com.codeazur.as3swf.BlendMode.NORMAL_1 -> BlendMode.NORMAL
-						com.codeazur.as3swf.BlendMode.LAYER -> BlendMode.INHERIT
-						com.codeazur.as3swf.BlendMode.MULTIPLY -> BlendMode.MULTIPLY
-						com.codeazur.as3swf.BlendMode.SCREEN -> BlendMode.SCREEN
-						com.codeazur.as3swf.BlendMode.LIGHTEN -> BlendMode.LIGHTEN
-						com.codeazur.as3swf.BlendMode.DARKEN -> BlendMode.DARKEN
-						com.codeazur.as3swf.BlendMode.DIFFERENCE -> BlendMode.DIFFERENCE
-						com.codeazur.as3swf.BlendMode.ADD -> BlendMode.ADD
-						com.codeazur.as3swf.BlendMode.SUBTRACT -> BlendMode.SUBTRACT
-						com.codeazur.as3swf.BlendMode.INVERT -> BlendMode.INVERT
-						com.codeazur.as3swf.BlendMode.ALPHA -> BlendMode.ALPHA
-						com.codeazur.as3swf.BlendMode.ERASE -> BlendMode.ERASE
-					//com.codeazur.as3swf.BlendMode.OVERLAY ->  BlendMode.OVERLAY
-						com.codeazur.as3swf.BlendMode.OVERLAY -> BlendMode.INHERIT
-						com.codeazur.as3swf.BlendMode.HARDLIGHT -> BlendMode.HARDLIGHT
+						com.soywiz.korfl.as3swf.BlendMode.NORMAL_0 -> BlendMode.NORMAL
+						com.soywiz.korfl.as3swf.BlendMode.NORMAL_1 -> BlendMode.NORMAL
+						com.soywiz.korfl.as3swf.BlendMode.LAYER -> BlendMode.INHERIT
+						com.soywiz.korfl.as3swf.BlendMode.MULTIPLY -> BlendMode.MULTIPLY
+						com.soywiz.korfl.as3swf.BlendMode.SCREEN -> BlendMode.SCREEN
+						com.soywiz.korfl.as3swf.BlendMode.LIGHTEN -> BlendMode.LIGHTEN
+						com.soywiz.korfl.as3swf.BlendMode.DARKEN -> BlendMode.DARKEN
+						com.soywiz.korfl.as3swf.BlendMode.DIFFERENCE -> BlendMode.DIFFERENCE
+						com.soywiz.korfl.as3swf.BlendMode.ADD -> BlendMode.ADD
+						com.soywiz.korfl.as3swf.BlendMode.SUBTRACT -> BlendMode.SUBTRACT
+						com.soywiz.korfl.as3swf.BlendMode.INVERT -> BlendMode.INVERT
+						com.soywiz.korfl.as3swf.BlendMode.ALPHA -> BlendMode.ALPHA
+						com.soywiz.korfl.as3swf.BlendMode.ERASE -> BlendMode.ERASE
+					//com.soywiz.korfl.as3swf.BlendMode.OVERLAY ->  BlendMode.OVERLAY
+						com.soywiz.korfl.as3swf.BlendMode.OVERLAY -> BlendMode.INHERIT
+						com.soywiz.korfl.as3swf.BlendMode.HARDLIGHT -> BlendMode.HARDLIGHT
 						else -> BlendMode.INHERIT
 					}
 					val uid = getUid(depthId)

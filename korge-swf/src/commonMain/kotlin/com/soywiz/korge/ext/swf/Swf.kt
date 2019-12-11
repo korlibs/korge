@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.swf
 
-import com.codeazur.as3swf.*
+import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.*

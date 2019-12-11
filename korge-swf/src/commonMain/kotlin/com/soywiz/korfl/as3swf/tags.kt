@@ -4,7 +4,7 @@
 	"PropertyName"
 )
 
-package com.codeazur.as3swf
+package com.soywiz.korfl.as3swf
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
@@ -421,7 +421,7 @@ open class TagDefineButton : _BaseTag(), IDefinitionTag {
 		}
 		if (actions.size > 0) {
 			str += "\n" + " ".repeat(indent + 2) + "Actions:"
-			if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+			if ((flags and com.soywiz.korfl.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 				for (i in 0 until actions.size) {
 					str += "\n" + " ".repeat(indent + 4) + "[" + i + "] " + actions[i].toString(indent + 4)
 				}
@@ -1583,7 +1583,7 @@ class TagDefineSound : _BaseTag(), IDefinitionTag {
 	}
 }
 
-class TagDefineSprite : com.codeazur.as3swf.SWFTimelineContainer(), IDefinitionTag {
+class TagDefineSprite : com.soywiz.korfl.as3swf.SWFTimelineContainer(), IDefinitionTag {
 	companion object {
 		const val TYPE = 39
 	}
@@ -1845,7 +1845,7 @@ open class TagDoAction : _BaseTag(), ITag {
 
 	override fun toString(indent: Int, flags: Int): String {
 		var str: String = Tag.toStringCommon(type, name, indent) + "Records: " + actions.size
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.soywiz.korfl.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -1884,7 +1884,7 @@ class TagDoInitAction : TagDoAction(), ITag {
 		var str: String = Tag.toStringCommon(type, name, indent) +
 				"SpriteID: " + spriteId + ", " +
 				"Records: " + actions.size
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.soywiz.korfl.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}

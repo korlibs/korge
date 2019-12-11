@@ -1,6 +1,6 @@
-package com.codeazur.as3swf
+package com.soywiz.korfl.as3swf
 
-import com.codeazur.as3swf.*
+import com.soywiz.korfl.as3swf.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -148,7 +148,7 @@ class SWFButtonCondAction {
 		if (condOverDownToIdle) a.add("overDownToIdle")
 		var str: String = "CondActionRecord (" + a.joinToString(", ") + ")"
 		if (condKeyPress > 0) str += ", KeyPress: " + condKeyPress
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.soywiz.korfl.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
@@ -253,7 +253,7 @@ class SWFClipActionRecord {
 		if (keyCode > 0) {
 			str += ", KeyCode: " + keyCode
 		}
-		if ((flags and com.codeazur.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
+		if ((flags and com.soywiz.korfl.as3swf.SWF.TOSTRING_FLAG_AVM1_BYTECODE) == 0) {
 			for (i in 0 until actions.size) {
 				str += "\n" + " ".repeat(indent + 2) + "[" + i + "] " + actions[i].toString(indent + 2)
 			}
