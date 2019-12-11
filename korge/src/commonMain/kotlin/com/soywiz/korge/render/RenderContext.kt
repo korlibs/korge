@@ -5,6 +5,7 @@ import com.soywiz.korag.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
 import kotlin.coroutines.*
 
 class RenderContext(
@@ -15,13 +16,14 @@ class RenderContext(
 ) : Extra by Extra.Mixin(), BoundsProvider by bp {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 	var frame = 0
-	val batch = BatchBuilder2D(ag)
-	val ctx2d = RenderContext2D(batch)
+	val batch by lazy { BatchBuilder2D(this) }
+	val ctx2d by lazy { RenderContext2D(batch, agBitmapTextureManager) }
+    val flushers = Signal<Unit>()
 
 	var masksEnabled = true
 
 	fun flush() {
-		batch.flush()
+        flushers(Unit)
 	}
 
 	fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (Texture) -> Unit) {

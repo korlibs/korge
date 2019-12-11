@@ -3,12 +3,16 @@ package com.soywiz.korge.render
 import com.soywiz.kds.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 private val logger = Logger("RenderContext2D")
 
-class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
+class RenderContext2D(
+    val batch: BatchBuilder2D,
+    val agBitmapTextureManager: AgBitmapTextureManager
+) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
 
 	val mpool = Pool<Matrix> { Matrix() }
@@ -77,6 +81,19 @@ class RenderContext2D(val batch: BatchBuilder2D) : Extra by Extra.Mixin() {
 	fun rotate(angle: Angle) {
 		m.prerotate(angle)
 	}
+
+    fun rect(x: Double, y: Double, width: Double, height: Double) {
+        batch.drawQuad(
+            agBitmapTextureManager.getTexture(Bitmaps.white),
+            x.toFloat(),
+            y.toFloat(),
+            width.toFloat(),
+            height.toFloat(),
+            m = m,
+            colorMul = multiplyColor,
+            blendFactors = blendFactors
+        )
+    }
 
 	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double) {
 		//println(m)
