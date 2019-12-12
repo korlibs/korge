@@ -71,8 +71,10 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		val atlasInfo = AtlasInfo(
 			frames = pack.items.map {
 				val file = it.first.first
-				val rect = it.second!!.displaced(2.0, 2.0)
+                val bmp = it.first.second
+				val rect = Rectangle(it.second!!.x + 2, it.second!!.y + 2, bmp.width, bmp.height)
 				val irect = rect.toInt()
+                println()
 				file.path.trim('/') to AtlasInfo.Entry(
 					frame = AtlasInfo.Rect(irect.x, irect.y, irect.width, irect.height),
 					rotated = false,
