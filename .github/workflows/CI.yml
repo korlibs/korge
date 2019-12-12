@@ -7,17 +7,19 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v1
-      - run: CALL gradlew.bat --no-daemon localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest -x jsNodeTest -x mingwX64Test
+      - run: CALL gradlew.bat localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest -x jsNodeTest -x mingwX64Test
         shell: cmd
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+      - run: CALL gradlew.bat --stop
+        shell: cmd
 
   build-mac:
     runs-on: macOS-10.14
     steps:
       - uses: actions/checkout@v1
-      - run: ./gradlew --no-daemon assemble check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew assemble check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
@@ -27,7 +29,11 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - run: ./gradlew --no-daemon assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR actuallyPublishBintrayIfOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+      - run: ./gradlew actuallyPublishBintrayIfOnTravisReleaseTagNoPR
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
