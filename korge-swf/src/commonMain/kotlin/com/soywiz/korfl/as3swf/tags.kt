@@ -647,7 +647,7 @@ class TagDefineEditText : _BaseTag(), IDefinitionTag {
 		useOutlines = ((flags2 and 0x01) != 0)
 		if (hasFont) fontId = data.readUI16()
 		if (hasFontClass) fontClass = data.readString()
-		if (hasFont) fontHeight = data.readUI16()
+		if (hasFont || hasFontClass) fontHeight = data.readUI16()
 		if (hasTextColor) textColor = data.readRGBA()
 		if (hasMaxLength) maxLength = data.readUI16()
 		if (hasLayout) {
