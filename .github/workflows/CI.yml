@@ -1,0 +1,33 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+      - run: CALL gradlew.bat --no-daemon assemble check localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+        shell: cmd
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+  build-mac:
+    runs-on: macOS-10.14
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew --no-daemon assemble check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+  build-linux:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew --no-daemon assemble check lint testDebugUnitTest localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR actuallyPublishBintrayIfOnTravisReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
