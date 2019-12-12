@@ -7,7 +7,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v1
-      - run: CALL gradlew.bat --no-daemon assemble check localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest -x jsNodeTest
+      - run: CALL gradlew.bat --no-daemon localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest -x jsNodeTest -x mingwX64Test
         shell: cmd
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
