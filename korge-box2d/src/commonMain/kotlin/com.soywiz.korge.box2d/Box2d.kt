@@ -53,6 +53,36 @@ class WorldView(override val world: World = World(Vec2(0f, -10f))) : Container()
         }
     }
 
+    /**
+     * Converts pixel-coordinates with (0,0) origin in the upper left to box2D World coordinates with (0,0) origin somewhere else in the view.
+     * @param x X-Pixel-Coordinate
+     * @param y Y-Pixel-Coordinate
+     * @return Point with World Coordinates
+     */
+    fun convertPixelToWorld(x : Double, y : Double) = Point((x-this.x)/scaleX, -(y-this.y)/scaleY)
+
+    /**
+     * Converts pixel-coordinates as Point with (0,0) origin in the upper left to box2D World coordinates with (0,0) origin somewhere else in the view.
+     * @param point Point with the Pixel-coordinates
+     * @return Point with World Coordinates
+     */
+    fun convertPixelToWorld(point : Point) = convertPixelToWorld(point.x, point.y)
+
+    /**
+     * Converts box2d world-coordinates with (0,0) origin in the view to Pixel-Coordinates with (0,0) origin in the upper left
+     * @param x X-World-Coordinate
+     * @param y Y-World-Coordinate
+     * @return Point with Pixel coordinates
+     */
+    fun convertWorldToPixel(x : Double, y: Double) = Point((x*scaleX)+this.x, -(y*this.scaleY)+this.y)
+
+    /**
+     * Converts box2d world-coordinates as Point with (0,0) origin in the view to Pixel-Coordinates with (0,0) origin in the upper left
+     * @param point Point with world-coordinates
+     * @return Point with pixel coordinates
+     */
+    fun convertWorldToPixel(point : Point) = convertWorldToPixel(point.x, point.y)
+
     fun updateViews() {
         world.forEachBody { node ->
             val view = node.viewContainerOrNull
