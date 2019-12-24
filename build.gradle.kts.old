@@ -43,7 +43,7 @@ allprojects {
             }
         }
         maven {
-            url = uri("https://dl.bintray.com/soywiz/soywiz")
+            url = uri("https://dl.bintray.com/korlibs/korlibs")
             content {
                 includeGroup("com.soywiz")
                 excludeGroup("Kotlin/Native")

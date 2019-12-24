@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "https://dl.bintray.com/soywiz/soywiz" }
+        maven { url "https://dl.bintray.com/korlibs/korlibs" }
         jcenter()
         mavenCentral()
     }
