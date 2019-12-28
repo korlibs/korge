@@ -7,6 +7,4 @@ class TransformedTexture(
 	val trimLeft: Float = 0f,
 	val trimTop: Float = 0f,
 	val rotated: Boolean = false
-) {
-
-}
+)

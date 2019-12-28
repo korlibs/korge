@@ -31,6 +31,7 @@ import kotlin.reflect.*
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class ViewsDslMarker
 
+@Deprecated("", replaceWith = ReplaceWith("View"))
 typealias DisplayObject = View
 
 abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
