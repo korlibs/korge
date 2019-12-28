@@ -1,9 +1,12 @@
+@file:UseExperimental(KorgeInternal::class)
+
 package com.soywiz.korge.render
 
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -12,7 +15,24 @@ import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
-class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
+/**
+ * Allows to draw quads and sprites buffering the geometry to limit the draw batches executed calling [AG] (Accelerated Graphics).
+ * This class handles a vertex structure of: x, y, u, v, colorMul, colorAdd. Allowing to draw texturized and tinted primitives.
+ *
+ * You should call: [drawQuad], [drawQuadFast], [drawNinePatch], [drawVertices] for buffering the geometries.
+ *
+ * For performance the actual drawing/rendering doesn't happen until the [flush] method is called (normally that happens automatically).
+ * Then the engine will call [flush] when required, automatically once the buffer is filled, at the end of the frame, or when [RenderContext.flush] is executed
+ * by other renderers.
+ */
+class BatchBuilder2D(
+    @KorgeInternal
+    val ctx: RenderContext,
+    /** Maximum number of quads that could be drawn in a single batch.
+     * Bigger numbers will increase memory usage, bug might reduce the number of batches per frame when using the same texture and properties.
+     */
+    val maxQuads: Int = 4096
+) {
     constructor(ag: AG, maxQuads: Int = 512) : this(RenderContext(ag), maxQuads)
     val ag: AG = ctx.ag
 	init {
@@ -23,7 +43,10 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	var flipRenderTexture = true
 	//var flipRenderTexture = false
 	val maxQuadsMargin = maxQuads + 9
+
+    /** Maximum number of vertices that can be buffered here in a single batch. It depens on the [maxQuads] parameter */
 	val maxVertices = maxQuads * 4
+    /** Maximum number of indices that can be buffered here in a single batch. It depens on the [maxQuads] parameter */
 	val maxIndices = maxQuads * 6
 
 	init { logger.trace { "BatchBuilder2D[1]" } }
@@ -48,14 +71,17 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
+    /** The current stencil state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
 	var stencil = AG.StencilState()
 
 	init { logger.trace { "BatchBuilder2D[5]" } }
 
+    /** The current color mask state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
 	var colorMask = AG.ColorMaskState()
 
 	init { logger.trace { "BatchBuilder2D[6]" } }
 
+    /** The current scissor state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
 	var scissor: AG.Scissor? = null
 
 	private val identity = Matrix()
@@ -78,6 +104,8 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	init { logger.trace { "BatchBuilder2D[8]" } }
 
 	private val projMat = Matrix3D()
+
+    @KorgeInternal
 	val viewMat = Matrix3D()
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
@@ -126,21 +154,27 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		addIndex(i5)
 	}
 
-	// 0..1
-	// |  |
-	// 3..2
+    /**
+     * Draws/buffers a textured ([tex]) and colored ([colorMul] and [colorAdd]) quad with this shape:
+     *
+     * 0..1
+     * |  |
+     * 3..2
+     *
+     * Vertices:
+     * 0: [x0], [y0] (top left)
+     * 1: [x1], [y1] (top right)
+     * 2: [x2], [y2] (bottom right)
+     * 3: [x3], [y3] (bottom left)
+     */
 	fun drawQuadFast(
-		x0: Float,
-		y0: Float,
-		x1: Float,
-		y1: Float,
-		x2: Float,
-		y2: Float,
-		x3: Float,
-		y3: Float,
+		x0: Float, y0: Float,
+		x1: Float, y1: Float,
+		x2: Float, y2: Float,
+		x3: Float, y3: Float,
 		tex: Texture,
-		colorMul: RGBA,
-		colorAdd: Int,
+		colorMul: RGBA, colorAdd: Int,
+        /** Not working right now */
 		rotated: Boolean = false
 	) {
 		ensure(6, 4)
@@ -167,6 +201,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		}
 	}
 
+    /**
+     * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
+     */
 	fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
 		ensure(icount, vcount)
 
@@ -179,6 +216,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		vertexPos += vcount * 6
 	}
 
+    /**
+     * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
+     */
 	fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
 		setStateFast(tex, smoothing, blendFactors, program)
 		drawVertices(array, vcount, icount)
@@ -193,9 +233,15 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		if (!checkAvailable(indices, vertices)) error("Too much vertices")
 	}
 
+    /**
+     * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
+     */
 	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) =
 		setStateFast(tex.base, smoothing, blendFactors, program)
 
+    /**
+     * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
+     */
 	fun setStateFast(tex: AG.Texture, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
 		if (tex != currentTex || currentSmoothing != smoothing || currentBlendFactors != blendFactors || currentProgram != program) {
 			flush()
@@ -206,6 +252,32 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		}
 	}
 
+    /**
+     * Draws/buffers a 9-patch image with the texture [tex] at [x], [y] with the total size of [width] and [height].
+     * [posCuts] and [texCuts] are [Point] an array of 4 points describing ratios (values between 0 and 1) inside the width/height of the area to be drawn,
+     * and the positions inside the texture.
+     *
+     * The 9-patch looks like this (dividing the image in 9 parts).
+     *
+     * 0--+-----+--+
+     * |  |     |  |
+     * |--1-----|--|
+     * |  |SSSSS|  |
+     * |  |SSSSS|  |
+     * |  |SSSSS|  |
+     * |--|-----2--|
+     * |  |     |  |
+     * +--+-----+--3
+     *
+     * 0: Top-left of the 9-patch
+     * 1: Top-left part where scales starts
+     * 2: Bottom-right part where scales ends
+     * 3: Bottom-right of the 9-patch
+     *
+     * S: Is the part that is scaled. The other regions are not scaled.
+     *
+     * It uses the transform [m] matrix, with an optional [filtering] and [colorMul]/[colorAdd], [blendFactors] and [program]
+     */
 	fun drawNinePatch(
 		tex: Texture,
 		x: Float = 0f,
@@ -283,6 +355,13 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		}
 	}
 
+    /**
+     * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
+     *
+     * It uses [m] transform matrix, an optional [filtering] and [colorMul], [colorAdd], [blendFactors] and [program] as state for drawing it.
+     *
+     * Note: To draw solid quads, you can use [Bitmaps.white] + [AgBitmapTextureManager] as texture and the [colorMul] as quad color.
+     */
 	fun drawQuad(
 		tex: Texture,
 		x: Float = 0f,
@@ -294,6 +373,7 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		colorMul: RGBA = Colors.WHITE,
 		colorAdd: Int = 0x7f7f7f7f,
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
+        /** Not working right now */
 		rotated: Boolean = false,
 		program: Program? = null
 	) {
@@ -316,17 +396,23 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	companion object {
 		init { logger.trace { "BatchBuilder2D.Companion[0]" } }
 
+        @KorgeInternal
 		val a_ColMul = DefaultShaders.a_Col
+        @KorgeInternal
 		val a_ColAdd = Attribute("a_Col2", VarType.Byte4, normalized = true)
 
 		init { logger.trace { "BatchBuilder2D.Companion[1]" } }
 
+        @KorgeInternal
 		val v_ColMul = DefaultShaders.v_Col
+        @KorgeInternal
 		val v_ColAdd = Varying("v_Col2", VarType.Byte4)
 
 		init { logger.trace { "BatchBuilder2D.Companion[2]" } }
 
+        @KorgeInternal
 		val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, a_ColMul, a_ColAdd)
+        @KorgeInternal
 		val VERTEX = VertexShader {
 			DefaultShaders.apply {
 				SET(v_Tex, a_Tex)
@@ -338,12 +424,14 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }
 
+        @KorgeInternal
 		val PROGRAM_PRE = Program(
 			vertex = VERTEX,
 			fragment = buildTextureLookupFragment(premultiplied = true),
 			name = "BatchBuilder2D.Premultiplied.Tinted"
 		)
 
+        @KorgeInternal
 		val PROGRAM_NOPRE = Program(
 			vertex = VERTEX,
 			fragment = buildTextureLookupFragment(premultiplied = false),
@@ -363,6 +451,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		//	name = "BatchBuilder2D.Tinted"
 		//)
 
+        /**
+         * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
+         */
 		fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShader {
 			DefaultShaders.apply {
 				SET(out, texture2D(u_Tex, v_Tex["xy"]))
@@ -386,6 +477,8 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	}
 
 	private val tempRect = Rectangle()
+
+    /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush() {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
@@ -441,6 +534,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	//	}
 	//}
 
+    /**
+     * Executes [callback] while setting temporarily the view matrix to [matrix]
+     */
 	inline fun setViewMatrixTemp(matrix: Matrix, temp: Matrix3D = Matrix3D(), callback: () -> Unit) {
 		flush()
 		temp.copyFrom(this.viewMat)
@@ -454,6 +550,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 		}
 	}
 
+    /**
+     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     */
 	inline fun setTemporalUniform(uniform: Uniform, value: Any?, callback: () -> Unit) {
 		val old = this.uniforms[uniform]
 		this.uniforms.putOrRemove(uniform, value)
@@ -467,6 +566,9 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 	@PublishedApi
 	internal val tempOldUniforms = AG.UniformValues()
 
+    /**
+     * Executes [callback] while setting temporarily a set of [uniforms]
+     */
 	inline fun setTemporalUniforms(uniforms: AG.UniformValues, callback: () -> Unit) {
 		flush()
 		tempOldUniforms.setTo(this.uniforms)
@@ -481,7 +583,14 @@ class BatchBuilder2D(val ctx: RenderContext, val maxQuads: Int = 4096) {
 }
 
 // @TODO: Call this mesh?
+/**
+ * Allows to build a set of textured and colored vertices. Where [vcount] is the number of vertices and [isize] [indices],
+ * the maximum number of indices.
+ * 
+ * [vcount] and [isize] could be decreased later, but not increased since the buffer is created at the beginning.
+ */
 class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int = indices.size) {
+    /** The initial/maximum number of vertices */
 	val initialVcount = vcount
 	//internal val data = IntArray(COMPONENTS_PER_VERTEX * vcount)
 	internal val _data = FBuffer(COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
@@ -491,8 +600,13 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//val icount = indices.size
 
 	companion object {
+        @KorgeInternal
 		const val COMPONENTS_PER_VERTEX = 6
+
+        @KorgeInternal
 		val QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
+
+        /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		fun quadIndices(quadCount: Int): IntArray {
 			val out = IntArray(quadCount * 6)
 			var m = 0
@@ -512,18 +626,34 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	}
 
 	private var offset = 0
-	fun select(i: Int) = this.apply { offset = i * COMPONENTS_PER_VERTEX }
+    
+    /** Moves the cursor for setting vertexs to the vertex [i] */
+    fun select(i: Int) = this.apply { offset = i * COMPONENTS_PER_VERTEX }
+    /** Sets the [x] of the vertex previously selected calling [select] */
 	fun setX(v: Float) = this.apply { f32[offset + 0] = v }
+    /** Sets the [y] of the vertex previously selected calling [select] */
 	fun setY(v: Float) = this.apply { f32[offset + 1] = v }
+    /** Sets the [u] (x in texture) of the vertex previously selected calling [select] */
 	fun setU(v: Float) = this.apply { f32[offset + 2] = v }
+    /** Sets the [v] (y in texture) of the vertex previously selected calling [select] */
 	fun setV(v: Float) = this.apply { f32[offset + 3] = v }
+    /** Sets the [cMul] (multiplicative color) of the vertex previously selected calling [select] */
 	fun setCMul(v: RGBA) = this.apply { i32[offset + 4] = v.value }
+    /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
 	fun setCAdd(v: Int) = this.apply { i32[offset + 5] = v }
+    /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
 	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.transformX(x, y).toFloat()).setY(matrix.transformY(x, y).toFloat())
+    /** Sets the [x] and [y] of the vertex previously selected calling [select] */
 	fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
+    /** Sets the [u] and [v] of the vertex previously selected calling [select] */
 	fun uv(tx: Float, ty: Float) = setU(tx).setV(ty)
+    /** Sets the [cMul] and [cAdd] (multiplicative and additive colors) of the vertex previously selected calling [select] */
 	fun cols(colMul: RGBA, colAdd: Int) = setCMul(colMul).setCAdd(colAdd)
 
+    /**
+     * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
+     * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]
+     */
 	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
 		select(index + 0).xy(x, y, matrix).uv(bmp.tl_x, bmp.tl_y).cols(colMul, colAdd)
 		select(index + 1).xy(x + width, y, matrix).uv(bmp.tr_x, bmp.tr_y).cols(colMul, colAdd)
@@ -532,7 +662,12 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	}
 
 	private val bounds: BoundsBuilder = BoundsBuilder()
-	fun getBounds(min: Int = 0, max: Int = vcount, out: Rectangle = Rectangle()): Rectangle {
+
+    /**
+     * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [Rectangle]
+     * Allows to define the output as [out] to be allocation-free, setting the [out] [Rectangle] and returning it.
+     */
+    fun getBounds(min: Int = 0, max: Int = vcount, out: Rectangle = Rectangle()): Rectangle {
 		bounds.reset()
 		for (n in min until max) {
 			select(n)
@@ -541,15 +676,23 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 		return bounds.getBounds(out)
 	}
 
+    /** [x] at the previously vertex selected by calling [select] */
 	val x: Float get() = f32[offset + 0]
+    /** [y] at the previously vertex selected by calling [select] */
 	val y: Float get() = f32[offset + 1]
+    /** [u] (x in texture) at the previously vertex selected by calling [select] */
 	val u: Float get() = f32[offset + 2]
+    /** [v] (y in texture) at the previously vertex selected by calling [select] */
 	val v: Float get() = f32[offset + 3]
+    /** [cMul] (multiplicative color) at the previously vertex selected by calling [select] */
 	val cMul: Int get() = i32[offset + 4]
+    /** [cAdd] (additive color) at the previously vertex selected by calling [select] */
 	val cAdd: Int get() = i32[offset + 5]
 
+    /** Describes the vertice previously selected by calling [select] */
 	val vertexString: String get() = "V(xy=($x, $y),uv=$u, $v,cMul=$cMul,cAdd=$cAdd)"
 
+    /** Describes a vertex at [index] */
 	fun str(index: Int): String {
 		val old = this.offset
 		try {
@@ -577,6 +720,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//}
 }
 
+@KorgeInternal
+@Deprecated("Not used anymore. Use TexturedVertexArray instead")
 class TexturedVertexArrayBuilder(count: Int) {
 	val indices = IntArray(count * 6)
 	val array = TexturedVertexArray(count * 4, indices)
@@ -604,6 +749,8 @@ class TexturedVertexArrayBuilder(count: Int) {
 	}
 }
 
+@KorgeInternal
+@Deprecated("Not used anymore")
 fun buildQuads(count: Int, build: TexturedVertexArrayBuilder.() -> Unit): TexturedVertexArray =
 	TexturedVertexArrayBuilder(count).apply(build).build()
 
