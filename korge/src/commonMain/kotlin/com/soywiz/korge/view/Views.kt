@@ -28,25 +28,12 @@ import kotlin.coroutines.*
 import kotlin.math.*
 import kotlin.reflect.*
 
-interface BoundsProvider {
-	val virtualLeft: Double
-	val virtualTop: Double
-	val virtualRight: Double
-	val virtualBottom: Double
-
-	object Dummy : BoundsProvider {
-		override val virtualLeft: Double = 0.0
-		override val virtualTop: Double = 0.0
-		override val virtualRight: Double = 0.0
-		override val virtualBottom: Double = 0.0
-	}
-}
-
-interface ViewsScope {
-	val views: Views
-}
-
 //@Singleton
+/**
+ * Heavyweight singleton object within the application that contains information about the Views.
+ * It contains information about the [coroutineContext], the [gameWindow], the [injector], the [input]
+ * and contains a reference to the [root] [Stage] view.
+ */
 class Views constructor(
 	override val coroutineContext: CoroutineContext,
 	val ag: AG,
@@ -70,6 +57,7 @@ class Views constructor(
 	val nativeWidth get() = ag.mainRenderBuffer.width
 	val nativeHeight get() = ag.mainRenderBuffer.height
 
+    // Later updated
 	var virtualWidth = DefaultViewport.WIDTH; internal set
 	var virtualHeight = DefaultViewport.HEIGHT; internal set
 
@@ -113,8 +101,12 @@ class Views constructor(
 
 	private val resizedEvent = ReshapeEvent(0, 0)
 
+    /** Reference to the root node [Stage] */
 	val stage = Stage(this)
+
+    /** Reference to the root node [Stage] (alias) */
 	val root = stage
+
     var supportTogglingDebug = true
 	var debugViews = false
 	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
@@ -285,27 +277,6 @@ class Views constructor(
 	}
 }
 
-class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by views {
-	val ag get() = views.ag
-	override val stage: Stage = this
-
-	override fun getLocalBoundsInternal(out: Rectangle) {
-		out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
-	}
-
-	override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
-
-	override fun renderInternal(ctx: RenderContext) {
-		if (views.clipBorders) {
-			ctx.ctx2d.scissor(x, y, (views.virtualWidth * scaleX), (views.virtualHeight * scaleY)) {
-				super.renderInternal(ctx)
-			}
-		} else {
-			super.renderInternal(ctx)
-		}
-	}
-}
-
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
 	val log = ViewsLog(coroutineContext)
 	callback(log.views.stage, log)
@@ -403,3 +374,20 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: 
 	}
 }
 
+interface BoundsProvider {
+    val virtualLeft: Double
+    val virtualTop: Double
+    val virtualRight: Double
+    val virtualBottom: Double
+
+    object Dummy : BoundsProvider {
+        override val virtualLeft: Double = 0.0
+        override val virtualTop: Double = 0.0
+        override val virtualRight: Double = 0.0
+        override val virtualBottom: Double = 0.0
+    }
+}
+
+interface ViewsScope {
+    val views: Views
+}

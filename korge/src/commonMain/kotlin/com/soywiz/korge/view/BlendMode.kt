@@ -2,9 +2,16 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.*
 
-// https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
-// color(RGB) = (sourceColor * srcRGB) + (destinationColor * dstRGB)
-// color(A) = (sourceAlpha * srcAlpha) + (destinationAlpha * dstAlpha)
+/**
+ * Determines how pixels should be blended. The most common blend modes are: [NORMAL] (normal mix) and [ADD] (additive blending) along with [MULTIPLY] and others.
+ *
+ * [https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate)
+ *
+ * ```kotlin
+ * // color(RGB) = (sourceColor * srcRGB) + (destinationColor * dstRGB)
+ * // color(A) = (sourceAlpha * srcAlpha) + (destinationAlpha * dstAlpha)
+ * ```
+ */
 enum class BlendMode(val factors: AG.Blending) {
 	INHERIT(AG.Blending.NORMAL),
 	NONE(AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)), // REPLACE

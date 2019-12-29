@@ -3,6 +3,10 @@ package com.soywiz.korge.component
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
 
+/**
+ * An interface that allows to control the behaviour of a [View] after some events.
+ * The most common case of Component is the [UpdateComponent]
+ */
 interface Component {
 	val view: View
 }
@@ -12,18 +16,68 @@ fun <T : Component> T.detach() = this.apply { this.view.removeComponent(this) }
 
 fun Component.removeFromView() = view.removeComponent(this)
 
+/**
+ * Component whose [onTouchEvent] is called,
+ * whenever a touch event happens.
+ */
 interface TouchComponent : Component {
 	fun onTouchEvent(views: Views, e: TouchEvent)
 }
 
+/**
+ * Component whose [onMouseEvent] is called,
+ * whenever a mouse event happens.
+ *
+ * **Notice** that this class produces raw mouse events.
+ * You would normally add mouse handlers by executing:
+ *
+ * ```kotlin
+ * view.mouse {
+ *     down { ... }
+ *     up { ... }
+ *     click { ... }
+ *     ...
+ * }
+ * ```
+ */
 interface MouseComponent : Component {
 	fun onMouseEvent(views: Views, event: MouseEvent)
 }
 
+/**
+ * Component whose [onKeyEvent] is called,
+ * whenever a key is pressed, released or typed.
+ *
+ * You would normally add key handlers by executing:
+ *
+ * ```kotlin
+ * view.keys {
+ *     press { ... }
+ *     down { ... }
+ *     up { ... }
+ * }
+ */
 interface KeyComponent : Component {
 	fun onKeyEvent(views: Views, event: KeyEvent)
 }
 
+/**
+ * Component whose [onGamepadEvent] is called, whenever
+ * a gamepad event occurs in the application (updated a frame, or connected a gamepad).
+ *
+ * You would normally add gamepad handlers by executing:
+ *
+ * ```kotlin
+ * view.gamepad {
+ *     down(...) { }
+ *     up(...) { }
+ *     button(...) {}
+ *     stick(...) {}
+ *     connected {  }
+ *     disconnected {  }
+ * }
+ * ```
+ */
 interface GamepadComponent : Component {
 	fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
 	fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
@@ -32,18 +86,43 @@ interface GamepadComponent : Component {
 	@Deprecated("") fun onGamepadEvent(views: Views, event: GamePadStickEvent)
 }
 
+/**
+ * Component whose [onEvent] method is called when an event has been triggered in that [View].
+ */
 interface EventComponent : Component {
 	fun onEvent(event: Event)
 }
 
+/**
+ * Component whose [update] method is called each frame
+ * with the delta milliseconds that has passed since the last frame.
+ *
+ * It is like [UpdateComponent] but includes a reference to the [Views] itself.
+ */
 interface UpdateComponentWithViews : Component {
 	fun update(views: Views, ms: Double)
 }
 
+/**
+ * Component whose [update] method is called each frame
+ * with the delta milliseconds that has passed since the last frame.
+ *
+ * In the case you need the [Views] object, you can use [UpdateComponentWithViews] instead.
+ *
+ * The typical way of adding an update component to a view is by calling:
+ *
+ * ```kotlin
+ * view.addUpdater { dt -> ... }
+ * ```
+ */
 interface UpdateComponent : Component {
 	fun update(ms: Double)
 }
 
+/**
+ * Component whose [resized] method is called everytime the game window
+ * has been resized.
+ */
 interface ResizeComponent : Component {
 	fun resized(views: Views, width: Int, height: Int)
 }

@@ -9,10 +9,14 @@ import com.soywiz.korma.interpolation.*
 inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit) = Camera().addTo(this).apply(callback)
 
 class Camera : Container() {
-	override var width: Double = stage?.views?.virtualWidth?.toDouble() ?: 100.0
-	override var height: Double = stage?.views?.virtualHeight?.toDouble() ?: 100.0
+    // @TODO: stage is not set at this point
+    //override var width: Double = stage?.views?.virtualWidth?.toDouble() ?: 100.0
+	//override var height: Double = stage?.views?.virtualHeight?.toDouble() ?: 100.0
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
+    override var width: Double = 100.0
+    override var height: Double = 100.0
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, width, height)
 	}
 

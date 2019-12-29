@@ -23,7 +23,7 @@ class NinePatchEx(
 
 	private val bounds = RectangleInt()
 
-	companion object {
+    companion object {
 		operator fun invoke(
 			ninePatch: NinePatchBitmap32,
 			width: Double = ninePatch.width.toDouble(), height: Double = ninePatch.height.toDouble()

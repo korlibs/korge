@@ -1,6 +1,9 @@
+@file:UseExperimental(KorgeInternal::class)
+
 package com.soywiz.korge.view
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
@@ -9,6 +12,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korio.util.encoding.*
 import kotlin.collections.ArrayList
@@ -16,7 +20,6 @@ import kotlin.collections.List
 import kotlin.collections.Map
 import kotlin.collections.arrayListOf
 import kotlin.collections.contains
-import kotlin.collections.firstOrNull
 import kotlin.collections.iterator
 import kotlin.collections.joinToString
 import kotlin.collections.linkedMapOf
@@ -34,9 +37,39 @@ annotation class ViewsDslMarker
 @Deprecated("", replaceWith = ReplaceWith("View"))
 typealias DisplayObject = View
 
+/**
+ * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.
+ *
+ * ## Basic description
+ *
+ * The [View] class is the base class for all the nodes in the display tree. It is abstract with the [renderInternal] method missing.
+ * [View] itself can't contain children, but the [Container] class and subclasses allow to have children.
+ * Typical non-container views are: [Image], [SolidRect] or [Text].
+ *
+ * Most views doesn't have the concept of size. They act just as points (x,y) or rather affine transforms (since they also include scale, rotation and skew)
+ *
+ * ## Properties
+ *
+ * Basic transform properties of the [View] are [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+ * Regarding to how the views are drawn there are: [alpha], [colorMul] ([tint]), [colorAdd].
+ *
+ * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
+ * [View] implements the [EventDispatcher] interface, and allows to handle and dispatch events.
+ *
+ * ## Components
+ *
+ * Views can have zero or more [Component]s attached. [Component] handle the behaviour of the [View] under several events.
+ * For example, the [UpdateComponent] will trigger its [UpdateComponent.update] method each frame.
+ *
+ * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
+ */
 abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
 	//internal val _transform = ViewTransform(this)
+
+    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
 	open val isContainer get() = false
+
+    /** Indicates if this view is going to propagate the events that reach this node to its children */
 	open var propagateEvents = true
 
 	/**
@@ -46,13 +79,20 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	 */
 	interface Reference // View that breaks batching Viewport
 
+    @KorgeInternal
+    @Deprecated("Not used by now")
 	enum class HitTestType {
 		BOUNDING, SHAPE
 	}
 
 	companion object {
-		private val identity = Matrix()
+		//private val identity = Matrix()
 
+        /**
+         * Determines the common [View] ancestor of [left] and [right] (if any) or null.
+         * If [left] and [right] are the same, the common ancestor is that value.
+         * If [left] or [right] are null, there is no common ancestor, and it returns null.
+         */
 		fun commonAncestor(left: View?, right: View?): View? {
 			var l: View? = left
 			var r: View? = right
@@ -72,14 +112,17 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		}
 	}
 
-	/**
-	 * Property used for interpolable
-	 */
+	/** Property used for interpolable views like morph shapes, progress bars etc. */
 	open var ratio: Double = 0.0
+    /** The index the child has in its parent */
 	var index: Int = 0; internal set
+    /** Ratio speed of this node, affecting all the [UpdateComponent] */
 	var speed: Double = 1.0
+    /** Parent [Container] of [this] View if any, or null */
 	var parent: Container? = null; internal set
+    /** Optional name of this view */
 	var name: String? = null
+    /** The [BlendMode] used for this view [BlendMode.INHERIT] will use the ancestors [blendMode]s */
 	var blendMode: BlendMode = BlendMode.INHERIT
 		set(value) {
 			if (field != value) {
@@ -88,6 +131,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			}
 		}
 
+    /** Computed [speed] combining all the speeds from ancestors */
 	val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
 	private var _scaleX: Double = 1.0
@@ -96,90 +140,134 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	private var _skewY: Double = 0.0
 	private var _rotation: Angle = 0.radians
 
+    /** Position of the view. **@NOTE**: If plan to change its values manually. You should call [View.invalidateMatrix] later to keep the matrix in sync */
 	val pos = Point()
 
+    /** Local X position of this view */
 	var x: Double
 		get() = ensureTransform().pos.x
 		set(v) = run { ensureTransform(); if (pos.x != v) run { pos.x = v; invalidateMatrix() } }
+    /** Local Y position of this view */
 	var y: Double
 		get() = ensureTransform().pos.y
 		set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }
 
+    /** Local scaling in the X axis of this view */
 	var scaleX: Double
 		get() = ensureTransform()._scaleX
 		set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }
+    /** Local scaling in the Y axis of this view */
 	var scaleY: Double
 		get() = ensureTransform()._scaleY
 		set(v) = run { ensureTransform(); if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }
+    /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
 	var scale: Double
 		get() = (scaleX + scaleY) / 2.0
 		set(v) = run { scaleX = v; scaleY = v }
-
+    /** Local skewing in the X axis of this view */
 	var skewX: Double
 		get() = ensureTransform()._skewX
 		set(v) = run { ensureTransform(); if (_skewX != v) run { _skewX = v; invalidateMatrix() } }
+    /** Local skewing in the Y axis of this view */
 	var skewY: Double
 		get() = ensureTransform()._skewY
 		set(v) = run { ensureTransform(); if (_skewY != v) run { _skewY = v; invalidateMatrix() } }
-
+    /** Local rotation of this view */
 	var rotation: Angle
 		get() = ensureTransform()._rotation
 		set(v) = run { ensureTransform(); if (_rotation != v) run { _rotation = v; invalidateMatrix() } }
+    /** Local rotation in radians of this view */
 	var rotationRadians: Double
 		get() = rotation.radians
 		set(v) = run { rotation = v.radians }
+    /** Local rotation in degrees of this view */
 	var rotationDegrees: Double
 		get() = rotation.degrees
 		set(v) = run { rotation = v.degrees }
 
+    /** The global x position of this view */
 	var globalX: Double
 		get() = parent?.localToGlobalX(x, y) ?: x;
 		set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
+    /** The global y position of this view */
 	var globalY: Double
 		get() = parent?.localToGlobalY(x, y) ?: y;
 		set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
 
-	fun setSize(width: Double, height: Double) = _setSize(width, true, height, true)
+    /**
+     * Changes the [width] and [height] to match the parameters.
+     */
+	open fun setSize(width: Double, height: Double) {
+        this.width = width
+        this.height = height
+    }
 
-	private fun _setSize(width: Double, swidth: Boolean, height: Double, sheight: Boolean) {
-		//val bounds = parent?.getLocalBounds() ?: this.getLocalBounds()
-		val bounds = this.getLocalBounds()
-		if (swidth) scaleX = width / bounds.width
-		if (sheight) scaleY = height / bounds.height
-	}
-
+    /**
+     * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
+     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     */
 	open var width: Double
 		get() = getLocalBounds().width * scaleX
-		set(value) { _setSize(value, true, 0.0, false) }
+		set(value) = run { scaleX = value / this.getLocalBounds().width }
 
+    /**
+     * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
+     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     */
 	open var height: Double
 		get() = getLocalBounds().height * scaleY
-		set(value) { _setSize(0.0, false, value, true) }
+		set(value) = run { scaleY = value / this.getLocalBounds().height }
 
+    /**
+     * The multiplicative [RGBA] color.
+     *
+     * That means:
+     * * [Colors.WHITE] would display the view without modifications
+     * * [Colors.BLACK] would display a black shape
+     * * [Colors.TRANSPARENT_BLACK] would be equivalent to setting [alpha]=0
+     * * [Colors.RED] would only show the red component of the view
+     */
 	var colorMul: RGBA
 		get() = _colorTransform.colorMul
 		set(v) = run { _colorTransform.colorMul = v }.also { invalidate() }
 
+    /**
+     * Additive part of the color transform.
+     * This Int is a packed version of R,G,B,A one-component byte values determining additive color transform.
+     * @NOTE: If you don't have this value computed, you can use [ColorTransform.aR] aB, aG and aA to control the
+     * per component values. You should call the [View.invalidate] method after that.
+     */
 	var colorAdd: Int
 		get() = _colorTransform.colorAdd;
 		set(v) = run { _colorTransform.colorAdd = v }.also { invalidate() }
 
+    /**
+     * Shortcut for adjusting the multiplicative alpha value manually.
+     * Equivalent to [ColorTransform.mA] + [View.invalidate]
+     */
 	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v; invalidate() }
 
-	// alias
+	/** Alias for [colorMul] to make this familiar to people coming from other engines. */
 	var tint: RGBA
 		get() = this.colorMul
 		set(value) = run { this.colorMul = value }
 
 	// region Properties
 	private val _props = linkedMapOf<String, String>()
+
+    /** Immutable map of custom String properties attached to this view. Should use [hasProp], [getProp] and [addProp] methods to control this */
 	val props: Map<String, String> get() = _props
 
+    /** Checks if this view has the [key] property */
 	fun hasProp(key: String) = key in _props
+    /** Gets the [key] property of this view as a [String] or [default] when not found */
 	fun getPropString(key: String, default: String = "") = _props[key] ?: default
+    /** Gets the [key] property of this view as an [Int] or [default] when not found */
 	fun getPropInt(key: String, default: Int = 0) = _props[key]?.toIntOrNull() ?: default
+    /** Gets the [key] property of this view as an [Double] or [default] when not found */
 	fun getPropDouble(key: String, default: Double = 0.0) = _props[key]?.toDoubleOrNull() ?: default
 
+    /** Adds or replaces the property [key] with the [value] */
 	fun addProp(key: String, value: String) {
 		_props[key] = value
 		//val componentGen = views.propsTriggers[key]
@@ -188,6 +276,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		//}
 	}
 
+    /** Adds a list of [values] properties at once */
 	fun addProps(values: Map<String, String>) {
 		for (pair in values) addProp(pair.key, pair.value)
 	}
@@ -210,26 +299,42 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		}
 	}
 
+    /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
 	val root: View get() = parent?.root ?: this
+
+    /** When included in the three, this returns the stage. When not attached yet, this will return null. */
 	open val stage: Stage? get() = root as? Stage?
 
+    /** Determines if mouse events will be handled for this view and its children */
 	open var mouseEnabled: Boolean = true
 	//var mouseChildren: Boolean = false
+
+    /** Determines if this view is enabled or not. For now, this doesn't have effect. */
+    @KorgeInternal
     open var enabled: Boolean = true
+
+    /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
 
+    /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
 	fun setMatrix(matrix: Matrix) {
 		this._localMatrix.copyFrom(matrix)
 		this.validLocalProps = false
 		invalidate()
 	}
 
+    /** Like [setMatrix] but directly sets an interpolated version of the [l] and [r] matrices with the [ratio] */
 	fun setMatrixInterpolated(ratio: Double, l: Matrix, r: Matrix) {
 		this._localMatrix.setToInterpolated(ratio, l, r)
 		this.validLocalProps = false
 		invalidate()
 	}
 
+    /**
+     * Sets the computed transform [Matrix] and all the decomposed transform properties at once.
+     * Normally this is used by animation libraries to set Views in a way that are fast to update
+     * and to access.
+     */
 	fun setComputedTransform(transform: Matrix.Computed) {
 		_localMatrix.copyFrom(transform.matrix)
 		_setTransform(transform.transform)
@@ -238,13 +343,21 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		validLocalMatrix = true
 	}
 
-	fun setTransform(transform: Matrix.Transform) {
+    /**
+     * Sets the [Matrix.Transform] decomposed version of the transformation,
+     * that directly includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+     */
+    fun setTransform(transform: Matrix.Transform) {
 		_setTransform(transform)
 		invalidate()
 		validLocalProps = true
 		validLocalMatrix = false
 	}
 
+    /**
+     * Like [setTransform] but without invalidation. If used at all, should be used with care and invalidate when required.
+     */
+    @KorgeInternal
 	fun _setTransform(t: Matrix.Transform) {
 		//transform.toMatrix(_localMatrix)
 		pos.x = t.x; pos.y = t.y
@@ -260,10 +373,13 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	internal var validLocalProps = true
 	internal var validLocalMatrix = true
 
+    /** Gets a list of [Component]s attached to this view. Should be used with care if at all. */
+    @KorgeInternal
 	val unsafeListRawComponents get() = components
 
 // region Components
-	private var components: ArrayList<Component>? = null
+    @PublishedApi
+	internal var components: ArrayList<Component>? = null
 	private var _componentsIt: ArrayList<Component>? = null
 	private val componentsIt: ArrayList<Component>?
 		get() {
@@ -275,30 +391,55 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			return _componentsIt
 		}
 
-	inline fun <reified T : Component> getOrCreateComponent(noinline gen: (View) -> T): T =
+    /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
+	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T =
 		getOrCreateComponent(T::class, gen)
 
+    @PublishedApi
+    internal fun ensureComponents() {
+        if (components == null) components = arrayListOf()
+    }
+
+    /** Creates a typed [clazz] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
+    inline fun <T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T {
+        ensureComponents()
+        //var component = components!!.firstOrNull { it::class.isSubtypeOf(clazz) }
+        var component: T? = findFirstComponentOfType(clazz)
+
+        if (component == null) {
+            component = gen(this)
+            components!! += component
+        }
+        return component
+    }
+
+    /** Removes a specific [c] component from the view */
 	fun removeComponent(c: Component): Unit {
 		//println("Remove component $c from $this")
 		components?.remove(c)
 	}
 
 	//fun removeComponents(c: KClass<out Component>) = run { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
+    /** Removes a set of components of the type [c] from the view */
 	fun removeComponents(c: KClass<out Component>) = run {
 		//println("Remove components of type $c from $this")
 		components?.removeAll { it::class == c }
 	}
 
+    /** Removes all the components attached to this view */
 	fun removeAllComponents() = run {
 		components?.clear()
 	}
 
+    /** Adds a component to this view */
 	fun addComponent(c: Component): Component {
 		if (components == null) components = arrayListOf()
 		components?.plusAssign(c)
 		return c
 	}
 
+    /** Adds a block that will be executed per frame to this view. This is deprecated, and you should use [addUpdater] instead that uses [TimeSpan] to provide the elapsed time */
+    @Deprecated("Use addUpdater, since this method uses dtMs: Int instead of a TimeSpan due to bugs in initial Kotlin inline classes")
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
 		val component = object : UpdateComponent {
 			override val view: View get() = this@View
@@ -308,28 +449,32 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return Cancellable { component.detach() }
 	}
 
-	private fun <T : Component> findFirstComponentOfType(clazz: KClass<T>): T? {
+    /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
+    fun addUpdater(updatable: (dt: TimeSpan) -> Unit): Cancellable {
+        val component = object : UpdateComponent {
+            override val view: View get() = this@View
+            override fun update(ms: Double) = run { updatable(ms.milliseconds) }
+        }.attach()
+        component.update(0.0)
+        return Cancellable { component.detach() }
+    }
+
+    @PublishedApi
+	internal fun <T : Component> findFirstComponentOfType(clazz: KClass<T>): T? {
 		components!!.fastForEach {
 			if (it::class == clazz) return it as T
 		}
 		return null
-
 	}
 
-	fun <T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T {
-		if (components == null) components = arrayListOf()
-		//var component = components!!.firstOrNull { it::class.isSubtypeOf(clazz) }
-		var component: T? = findFirstComponentOfType(clazz)
-
-		if (component == null) {
-			component = gen(this)
-			components!! += component
-		}
-		return component
-	}
 // endregion
 
 	private var _localMatrix = Matrix()
+
+    /**
+     * Local transform [Matrix]. If you plan to change its components manually
+     * instead of setting it directly, you should call the [View.invalidate] method.
+     */
 	var localMatrix: Matrix
 		get() {
 			if (!validLocalMatrix) {
@@ -346,7 +491,12 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	private var _globalMatrix = Matrix()
 	private var _globalMatrixVersion = -1
-	var globalMatrix: Matrix
+
+    /**
+     * Global transform [Matrix].
+     * Matrix that concatenates all the affine transforms of this view and its ancestors.
+     */
+    var globalMatrix: Matrix
 		get() {
 			if (_globalMatrixVersion != this._version) {
 				_globalMatrixVersion = this._version
@@ -370,7 +520,11 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	private val _globalMatrixInv = Matrix()
 	private var _globalMatrixInvVersion = -1
-	val globalMatrixInv: Matrix
+
+    /**
+     * The inverted version of the [globalMatrix]
+     */
+    val globalMatrixInv: Matrix
 		get() {
 			if (_globalMatrixInvVersion != this._version) {
 				_globalMatrixInvVersion = this._version
@@ -381,13 +535,23 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		}
 
 	private val _colorTransform = ColorTransform()
-	var colorTransform: ColorTransform
+
+    /**
+     * The [ColorTransform] of this view.
+     * If you plan to change its components manually, you should call the [View.invalidate] method.
+     * You can also use: [alpha], [colorMul] and [colorAdd] that won't require the [invalidate].
+     */
+    var colorTransform: ColorTransform
 		get() = _colorTransform
 		set(v) = run { _colorTransform.copyFrom(v); invalidate() }
 
 	private var _renderColorTransform = ColorTransform()
 	private var _renderColorTransformVersion = -1
-	val renderColorTransform: ColorTransform get() {
+
+    /**
+     * The concatenated version of [colorTransform] having into account all the color transformations of the ancestors
+     */
+    val renderColorTransform: ColorTransform get() {
 		if (_renderColorTransformVersion != this._version) {
 			_renderColorTransformVersion = this._version
 			_requireInvalidate = true
@@ -402,6 +566,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	private var _renderBlendMode: BlendMode = BlendMode.INHERIT
 	private var _renderBlendModeVersion: Int = -1
+    /**
+     * The actual [blendMode] of the view after computing the ancestors and reaching a view with a non [BlendMode.INHERIT].
+     */
 	val renderBlendMode: BlendMode
 		get() {
 			if (_renderBlendModeVersion != this._version) {
@@ -412,14 +579,23 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			return _renderBlendMode
 		}
 
+    /** The concatenated/global version of the local [colorMul] */
 	val renderColorMul: RGBA get() = renderColorTransform.colorMul
+    /** The concatenated/global version of the local [colorAdd] */
 	val renderColorAdd: Int get() = renderColorTransform.colorAdd
+    /** The concatenated/global version of the local [alpha] */
 	val renderAlpha: Double get() = renderColorTransform.mA
 
+    /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
 	fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
+    /** Computes the local Y coordinate of the mouse using the coords from the [Views] object */
 	fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
+    /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [Point] to avoid allocation. */
     fun localMouseXY(views: Views, target: Point = Point()): Point = target.setTo(localMouseX(views), localMouseY(views))
 
+    /**
+     * Invalidates the [localMatrix] [Matrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+     */
 	fun invalidateMatrix() {
 		validLocalMatrix = false
 		invalidate()
@@ -429,14 +605,33 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
 	private var _version = 0
 	internal var _requireInvalidate = false
-	open fun invalidate() {
+
+    /**
+     * Invalidates the [View] after changing some of its properties so the geometry can be computed again.
+     * If you change the [localMatrix] directly, you should call [invalidateMatrix] instead.
+     */
+    open fun invalidate() {
 		this._version++
 		_requireInvalidate = false
 		dirtyVertices = true
 	}
 
+    /**
+     * An optional [Filter] attached to this view.
+     * Filters allow to render this view to a texture, and to controls how to render that texture (using shaders, repeating the texture, etc.).
+     * You add multiple filters by creating a composite filter [ComposedFilter].
+     */
 	var filter: Filter? = null
 
+    /**
+     * The [render] method that is in charge of rendering.
+     * This method receives the [ctx] [RenderContext] that allows to buffer
+     * geometry to be drawn in batches.
+     *
+     * This method is final, and to control rendering you have to override [renderInternal].
+     * When a [filter] is set, the render is performed into a texture, and the [Filter]
+     * decides how to render that texture containing the View representation.
+     */
 	final override fun render(ctx: RenderContext) {
 		if (!visible) return
 		if (filter != null) {
@@ -475,6 +670,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		}
 	}
 
+    /** Method that all views must override in order to control how the view is going to be rendered */
 	protected abstract fun renderInternal(ctx: RenderContext)
 
 	@Suppress("RemoveCurlyBracesFromTemplate")
@@ -496,29 +692,46 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	protected val Double.str get() = this.toStringDecimal(2, skipTrailingZeros = true)
 
 	// Version with root-most object as reference
+    /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
 	fun globalToLocal(p: IPoint, out: Point = Point()): Point = globalToLocalXY(p.x, p.y, out)
+    /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
 	fun globalToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
+    /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
 	fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
+    /** Converts the global point [x], [y] (using root/stage as reference) into the Y in the local coordinate system. */
 	fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
+    /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
 	fun localToGlobal(p: IPoint, out: Point = Point()): Point = localToGlobalXY(p.x, p.y, out)
+    /** Converts the local point [x], [y] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
 	fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
 	fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
+    /** Converts the local point [x], [y] into a global Y coordinate (using root/stage as reference). */
 	fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
 	// Version with View.Reference as reference
+    /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
 	fun renderToLocal(p: IPoint, out: Point = Point()): Point = renderToLocalXY(p.x, p.y, out)
+    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
 	fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
+    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
 	fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
+    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local Y coordinate. */
 	fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
+    /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
 	fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
+    /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
 	fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
 	fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
+    /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
 	fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
+    /** Determines the view at the local point defined by [x] and [y] if any, or null */
 	open fun hitTest(x: Double, y: Double): View? = null
 
 	//fun hitTest(x: Double, y: Double): View? {
@@ -526,11 +739,15 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	//	return hitTestInternal(x, y)
 	//}
 
+    /** @TODO: Check this */
+    @KorgeInternal
 	open fun hitTestInternal(x: Double, y: Double): View? {
 		val bounds = getLocalBounds()
 		return if (checkGlobalBounds(x, y, bounds.left, bounds.top, bounds.right, bounds.bottom)) this else null
 	}
 
+    /** @TODO: Check this */
+    @KorgeInternal
 	open fun hitTestBoundingInternal(x: Double, y: Double): View? {
 		val bounds = getGlobalBounds()
 		return if (bounds.contains(x, y)) this else null
@@ -549,6 +766,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
 	}
 
+    /**
+     * Resets the View properties to an identity state.
+     */
 	open fun reset() {
 		_localMatrix.identity()
 		pos.setTo(0.0, 0.0)
@@ -559,6 +779,9 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		invalidate()
 	}
 
+    /**
+     * Removes this view from its parent.
+     */
 	fun removeFromParent() {
 		if (parent == null) return
 		val p = parent!!
@@ -583,6 +806,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	//	return out
 	//}
 
+    /**
+     * Gets the concatenated [Matrix] of this [View] up to the [target] view.
+     * Allows to define an [out] matrix that will hold the result to prevent allocations.
+     */
 	fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix {
 		var current: View? = this
 		out.identity()
@@ -597,9 +824,12 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return out
 	}
 
+    /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
 	val globalBounds: Rectangle get() = getGlobalBounds()
+    /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
 	fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
 
+    /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
 	fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
 		//val concat = (parent ?: this).getConcatMatrix(target ?: this)
 		val concat = (this).getConcatMatrix(target ?: this)
@@ -628,6 +858,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return out
 	}
 
+    /**
+     * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
+     * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
+     */
 	fun getLocalBounds(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
 
 	private val _localBounds: Rectangle = Rectangle()
@@ -636,6 +870,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	protected open fun createInstance(): View =
 		throw MustOverrideException("Must Override ${this::class}.createInstance()")
 
+    /**
+     * Allows to copy the basic properties (transform [localMatrix], [visible], [colorTransform], [ratio], [speed], [name]...)
+     * from [source] into [this]
+     */
 	open fun copyPropsFrom(source: View) {
 		this.name = source.name
 		this.colorAdd = source.colorAdd
@@ -647,6 +885,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		this.blendMode = source.blendMode
 	}
 
+    /**
+     * Allows to find a descendant view whose [View.name] property is [name].
+     * Returns null if can't find any.
+     */
 	fun findViewByName(name: String): View? {
 		if (this.name == name) return this
 		if (this.isContainer) {
@@ -658,6 +900,11 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return null
 	}
 
+    /**
+     * Allows to clone this view.
+     * This method is inadvisable in normal circumstances.
+     * This might not work property if the [View] doesn't override the [createInstance] method.
+     */
 	open fun clone(): View = createInstance().apply {
 		this@apply.copyPropsFrom(this@View)
 	}
@@ -741,19 +988,30 @@ class ViewTransform(var view: View) {
 }
 */
 
+/**
+ * Determines if the local coords [x], [y], hits this view or any of this descendants.
+ * Returns the view hitting or null
+ */
 inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
+
+/**
+ * Determines if the local coords [pos], hits this view or any of this descendants.
+ * Returns the view hitting or null
+ */
 fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
 
-
-open class DummyView : View() {
-	override fun createInstance(): View = DummyView()
-	override fun renderInternal(ctx: RenderContext) = Unit
-}
-
+/**
+ * Checks if this view has an [ancestor].
+ */
 fun View.hasAncestor(ancestor: View): Boolean {
 	return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
 }
 
+/**
+ * Replaces this view in its parent with [view].
+ * Returns true if the replacement was successful.
+ * If this view doesn't have a parent or [view] is the same as [this], returns null.
+ */
 fun View.replaceWith(view: View): Boolean {
 	if (this == view) return false
 	if (parent == null) return false
@@ -767,8 +1025,16 @@ fun View.replaceWith(view: View): Boolean {
 	return true
 }
 
+/**
+ * Returns the number of ancestors of this view.
+ * Views without parents return 0.
+ */
 val View?.ancestorCount: Int get() = this?.parent?.ancestorCount?.plus(1) ?: 0
 
+/**
+ * Returns a list of all the ancestors including this in order to reach from this view to the [target] view,
+ * or a list of all the ancestors in the case [target] is not an ancestor.
+ */
 fun View?.ancestorsUpTo(target: View?): List<View> {
 	var current = this
 	val out = arrayListOf<View>()
@@ -779,8 +1045,15 @@ fun View?.ancestorsUpTo(target: View?): List<View> {
 	return out
 }
 
+/**
+ * Returns a list of all the ancestors (including this) to reach the root node (usually the stage).
+ */
 val View?.ancestors: List<View> get() = ancestorsUpTo(null)
 
+/**
+ * Dumps a view and its children for debugging purposes.
+ * The [emit] block parameter allows to define how to print those results.
+ */
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	emit("$indent$this")
 	if (this is Container) {
@@ -790,6 +1063,9 @@ fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	}
 }
 
+/**
+ * Dumps a view and its children for debugging purposes into a [String].
+ */
 fun View?.dumpToString(): String {
 	if (this == null) return ""
 	val out = arrayListOf<String>()
@@ -797,6 +1073,10 @@ fun View?.dumpToString(): String {
 	return out.joinToString("\n")
 }
 
+/**
+ * Iterates all the descendants [View]s including this calling the [handler].
+ * Iteration happens in [Pre-order (NLR)](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order_(NLR)).
+ */
 fun View?.foreachDescendant(handler: (View) -> Unit) {
 	if (this != null) {
 		handler(this)
@@ -808,6 +1088,7 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
 	}
 }
 
+/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
 	if (this == null) return listOf()
 	return this.descendantsWith {
@@ -819,19 +1100,25 @@ fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
 	}
 }
 
+/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithPropString(prop: String, value: String? = null): List<Pair<View, String>> =
 	this.descendantsWithProp(prop, value).map { it to it.getPropString(prop) }
 
+/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithPropInt(prop: String, value: Int? = null): List<Pair<View, Int>> =
 	this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
 
+/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<Pair<View, Int>> =
 	this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
 
-inline fun <reified T> View.getDescendantsOfType() = this.descendantsWith { it is T }
+/** Returns a list of descendants views that are of type [T]. */
+inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith { it is T }
 
+/** Indexer that allows to get a descendant marked with the name [name]. */
 operator fun View?.get(name: String): View? = firstDescendantWith { it.name == name }
 
+/** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
 inline fun <T : View> T.size(width: Number, height: Number): T = this.apply {
@@ -842,6 +1129,7 @@ inline fun <T : View> T.size(width: Number, height: Number): T = this.apply {
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
 fun View?.firstDescendantWithName(name: String): View? = this[name]
 
+/** Returns a list of all the non-null [View.name] values of this and the descendants */
 val View?.allDescendantNames
 	get(): List<String> {
 		val out = arrayListOf<String>()
@@ -851,6 +1139,7 @@ val View?.allDescendantNames
 		return out
 	}
 
+/** Tries to find a view matching the [check] method or null if none is found */
 fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this
@@ -863,6 +1152,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	return null
 }
 
+/** Returns a list of descendants including this that matches the [check] method. Allows to provide an [out] array to reduce allocations. */
 fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) -> Boolean): List<View> {
 	if (this != null) {
 		if (check(this)) out += this
@@ -875,35 +1165,43 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 	return out
 }
 
+/** Chainable method returning this that sets [View.x] and [View.y] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.xy(x: Number, y: Number): T =
 	this.apply { this.x = x.toDouble() }.apply { this.y = y.toDouble() }
 
+/** Chainable method returning this that sets [View.x] and [View.y] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.position(x: Number, y: Number): T =
 	this.apply { this.x = x.toDouble() }.apply { this.y = y.toDouble() }
 
+/** Chainable method returning this that sets [View.rotation] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.rotation(rot: Angle): T =
 	this.apply { this.rotationRadians = rot.radians }
 
+/** Chainable method returning this that sets [View.rotationRadians] in radians */
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.rotation(rot: Number): T =
-	this.apply { this.rotationRadians = rot.toDouble() }
+@Deprecated("", ReplaceWith("this.rotation(rot.radians)", "com.soywiz.korma.geom.radians"))
+inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.radians)
 
 @Suppress("NOTHING_TO_INLINE")
+/** Chainable method returning this that sets [View.rotationDegrees] in radians */
 inline fun <T : View> T.rotationDegrees(degs: Number): T =
 	this.apply { this.rotationDegrees = degs.toDouble() }
 
 @Suppress("NOTHING_TO_INLINE")
+/** Chainable method returning this that sets [View.skewX] and [View.skewY] */
 inline fun <T : View> T.skew(sx: Number, sy: Number): T =
 	this.apply { this.skewX = sx.toDouble() }.apply { this.skewY = sy.toDouble() }
 
 @Suppress("NOTHING_TO_INLINE")
+/** Chainable method returning this that sets [View.scaleX] and [View.scaleY] */
 inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T =
 	this.apply { this.scaleX = sx.toDouble() }.apply { this.scaleY = sy.toDouble() }
 
 @Suppress("NOTHING_TO_INLINE")
+/** Chainable method returning this that sets [View.alpha] */
 inline fun <T : View> T.alpha(alpha: Number): T =
 	this.apply { this.alpha = alpha.toDouble() }
 

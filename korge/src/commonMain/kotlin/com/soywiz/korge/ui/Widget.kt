@@ -4,7 +4,7 @@ import com.soywiz.korge.view.*
 
 @Deprecated("Use UIView")
 abstract class Widget(val factory: UIFactory, val skin: UISkin = factory.skin) : FixedSizeContainer() {
-	override var width: Double = 100.0
+    override var width: Double = 100.0
 		set(value) {
 			field = value
 			updateSize()
