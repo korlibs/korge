@@ -13,9 +13,13 @@ import com.soywiz.korag.*
  * ```
  */
 enum class BlendMode(val factors: AG.Blending) {
+    /** Not an actual blending. It is used to indicate that the next non-inherit BlendMode from its ancestors will be used. */
 	INHERIT(AG.Blending.NORMAL),
+    /** Doesn't blend at all. Just replaces the colors. */
 	NONE(AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)), // REPLACE
+    /** Mixes the source and destination colors using the source alpha value */
 	NORMAL(AG.Blending.NORMAL),
+    /** Additive mixing for lighting effects */
 	ADD(AG.Blending.ADD),
 
 	// Unchecked

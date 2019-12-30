@@ -6,9 +6,15 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
-inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit) = Camera().addTo(this).apply(callback)
+/**
+ * Creates a new [Camera] and attaches to [this] [Container]. The [callback] argument is called with the [Camera] injected as this to be able to configure the camera.
+ */
+inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit = {}): Camera = Camera().addTo(this).apply(callback)
 
-class Camera : Container() {
+/**
+ * A [Camera] is a [FixedSizeContainer]
+ */
+class Camera : FixedSizeContainer(), View.Reference {
     // @TODO: stage is not set at this point
     //override var width: Double = stage?.views?.virtualWidth?.toDouble() ?: 100.0
 	//override var height: Double = stage?.views?.virtualHeight?.toDouble() ?: 100.0
