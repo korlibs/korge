@@ -72,7 +72,15 @@ open class Container : View() {
 	 */
 	val containerRoot: Container get() = parent?.containerRoot ?: this
 
-	/**
+    /**
+     * Recursively retrieves the ancestor in the container hierarchy that is a [View.Reference] like the stage or null when can't be found.
+     */
+    val referenceParent: Container? get() {
+        if (parent is Reference) return parent
+        return parent?.referenceParent
+    }
+
+    /**
 	 * Swaps the order of two child [View]s [view1] and [view2].
      * If [view1] or [view2] are not part of this container, this method doesn't do anything.
 	 */

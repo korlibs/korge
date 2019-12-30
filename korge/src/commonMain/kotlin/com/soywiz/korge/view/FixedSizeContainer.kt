@@ -11,7 +11,7 @@ open class FixedSizeContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,
     var clip: Boolean = false
-) : Container() {
+) : Container(), View.Reference {
     override fun getLocalBoundsInternal(out: Rectangle): Unit = Unit.run { out.setTo(0, 0, width, height) }
 
     override fun toString(): String {
