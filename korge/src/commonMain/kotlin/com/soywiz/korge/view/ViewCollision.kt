@@ -30,7 +30,7 @@ fun View.collidesWith(otherList: List<View>, kind: CollisionKind = CollisionKind
  * if no [root] is provided, it computes the root of the view [this] each frame, you can specify a collision [kind]
  */
 fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-	return addUpdatable {
+	return addUpdater {
 		(root ?: this.root).foreachDescendant {
 			if (this != it && filter(it) && this.collidesWith(it, kind)) {
 				callback(this, it)
@@ -44,7 +44,7 @@ fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, k
  * When a collision is found, [callback] is called. It returns a [Cancellable] to remove the component.
  */
 fun View.onDescendantCollision(root: View = this, filterSrc: (View) -> Boolean = { true }, filterDst: (View) -> Boolean = { true }, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-	return addUpdatable {
+	return addUpdater {
 		root.foreachDescendant { src ->
 			if (filterSrc(src)) {
 				root.foreachDescendant { dst ->

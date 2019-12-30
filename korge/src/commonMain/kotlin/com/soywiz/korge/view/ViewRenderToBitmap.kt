@@ -4,6 +4,10 @@ import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import kotlinx.coroutines.*
 
+/**
+ * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
+ * The rendering will happen before the next frame.
+ */
 suspend fun View.renderToBitmap(views: Views): Bitmap32 {
 	val view = this
 	val bounds = getLocalBounds()

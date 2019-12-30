@@ -1,10 +1,16 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
+/**
+ * [RectBase] is an abstract [Container] [View] that represents something with a Rect-like shape: like a [SolidRect] or an [Image].
+ * It supports anchoring [anchorX] and [anchorY] ratios [0..1] for anchoring this rectangle, and handles pre-computing of vertices for performance.
+ */
+@UseExperimental(KorgeInternal::class)
 open class RectBase(
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
@@ -26,7 +32,7 @@ open class RectBase(
 	val sRight get() = sLeft + bwidth
 	val sBottom get() = sTop + bheight
 
-	private val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
+    private val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
 	private fun computeVertexIfRequired() {
 		if (!dirtyVertices) return
