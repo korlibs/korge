@@ -456,7 +456,9 @@ object Korge {
 		views.clipBorders = clipBorders
 		views.targetFps = targetFps
 		Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-		entry(views.stage)
+        views.stage.launchImmediately {
+            entry(views.stage)
+        }
 		if (OS.isNative) println("CanvasApplicationEx.IN[1]")
 		if (OS.isNative) println("Korui[1]")
 	}
