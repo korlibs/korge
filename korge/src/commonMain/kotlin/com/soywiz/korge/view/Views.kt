@@ -356,7 +356,7 @@ fun getComponents(view: View, out: ArrayList<Component> = arrayListOf()): List<C
 
 fun appendComponents(view: View, out: ArrayList<Component>) {
 	if (view is Container) {
-		view.children.fastForEach { appendComponents(it, out) }
+		view.forEachChildren { appendComponents(it, out) }
 	}
 	val components = view.unsafeListRawComponents
 	if (components != null) out.addAll(components)

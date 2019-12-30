@@ -785,7 +785,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun removeFromParent() {
 		if (parent == null) return
 		val p = parent!!
-		for (i in index + 1 until p.children.size) p.children[i].index--
+		for (i in index + 1 until p.numChildren) p[i].index--
 		p.childrenInternal.removeAt(index)
 		parent = null
 		index = -1
@@ -892,9 +892,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun findViewByName(name: String): View? {
 		if (this.name == name) return this
 		if (this.isContainer) {
-			(this as Container).children.fastForEach { child ->
+			//(this as Container).children.fastForEach { child ->
+            (this as Container).forEachChildren { child ->
 				val named = child.findViewByName(name)
-				if (named != null) return named
+                if (named != null) return named
 			}
 		}
 		return null
@@ -1057,7 +1058,7 @@ val View?.ancestors: List<View> get() = ancestorsUpTo(null)
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	emit("$indent$this")
 	if (this is Container) {
-		this.children.fastForEach { child ->
+		this.forEachChildren { child ->
 			child.dump("$indent ", emit)
 		}
 	}
@@ -1081,7 +1082,7 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
 	if (this != null) {
 		handler(this)
 		if (this is Container) {
-			this.children.fastForEach { child ->
+			this.forEachChildren { child ->
 				child.foreachDescendant(handler)
 			}
 		}
@@ -1144,7 +1145,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this
 	if (this is Container) {
-		this.children.fastForEach { child ->
+		this.forEachChildren { child ->
 			val res = child.firstDescendantWith(check)
 			if (res != null) return res
 		}
@@ -1157,7 +1158,7 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 	if (this != null) {
 		if (check(this)) out += this
 		if (this is Container) {
-			this.children.fastForEach { child ->
+			this.forEachChildren { child ->
 				child.descendantsWith(out, check)
 			}
 		}

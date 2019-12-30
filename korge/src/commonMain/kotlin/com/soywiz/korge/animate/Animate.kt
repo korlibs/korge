@@ -468,7 +468,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		var state = 0
 
 		//println("::::")
-		children.fastForEachWithIndex { depth, child ->
+
+        forEachChildrenWithIndex { depth, child ->
 			val maskDepth = maskPushDepths.getOrElse(depth) { -1 }
 
 			// Push Mask

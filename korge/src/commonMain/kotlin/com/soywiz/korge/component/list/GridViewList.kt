@@ -24,7 +24,7 @@ class GridViewList(
 		}
 
 	private fun addItem() {
-		val n = container.children.size
+		val n = container.numChildren
 		val item = row0.clone()
 		container += item
 		item.setMatrixInterpolated(n.toDouble(), row0.localMatrix, row1.localMatrix)
@@ -33,7 +33,7 @@ class GridViewList(
 	}
 
 	private fun removeLastItem() {
-		container.children.lastOrNull()?.removeFromParent()
+		container.lastChild?.removeFromParent()
 		rowsData.removeAt(rowsData.size - 1)
 	}
 

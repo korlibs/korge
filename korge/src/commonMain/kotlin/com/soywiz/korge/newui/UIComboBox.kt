@@ -71,7 +71,7 @@ open class UIComboBox<T>(
 	protected fun updatedSelection() {
 		updatedSize()
 		for (n in items.indices) {
-			val button = itemsView.container.children[n] as? UIButton? ?: continue
+			val button = itemsView.container.getChildAt(n) as? UIButton? ?: continue
 			button.forcePressed = selectedIndex == n
 		}
 		onUpdatedSelection(this)

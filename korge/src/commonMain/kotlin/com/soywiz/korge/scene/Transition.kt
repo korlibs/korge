@@ -15,8 +15,8 @@ class TransitionView() : Container() {
 		addChild(dummy2)
 	}
 
-	val prev: View get() = children[0]
-	val next: View get() = children[1]
+	val prev: View get() = this[0]
+	val next: View get() = this[1]
 
 	fun startNewTransition(next: View) {
 		this.ratio = 0.0

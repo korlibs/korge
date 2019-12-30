@@ -21,7 +21,7 @@ class ViewList(
 	}
 
 	private fun addItem() {
-		val n = container.children.size
+		val n = container.numChildren
 		val item = view0.clone()
 		container += item
 		item.setMatrixInterpolated(n.toDouble(), view0.localMatrix, view1.localMatrix)
@@ -29,18 +29,20 @@ class ViewList(
 	}
 
 	private fun removeLastItem() {
-		val lastIndex = container.children.size - 1
-		val item = children[lastIndex]
-		item.removeFromParent()
-		onRemovedView(ChangeEvent(item, lastIndex))
+		val lastIndex = container.numChildren - 1
+		val item = container.lastChild
+        if (item != null) {
+            item.removeFromParent()
+            onRemovedView(ChangeEvent(item, lastIndex))
+        }
 	}
 
 	var length: Int
-		get() = container.children.size
+		get() = container.numChildren
 		set(value) {
 			while (value > length) addItem()
 			while (value < length) removeLastItem()
 		}
 
-	operator fun get(index: Int) = container.children.getOrNull(index)
+	operator fun get(index: Int): View? = container.getChildAtOrNull(index)
 }
