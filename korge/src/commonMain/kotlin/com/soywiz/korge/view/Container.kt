@@ -1,16 +1,13 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korge.render.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
-import com.soywiz.korge.internal.fastForEach
-import com.soywiz.korge.internal.fastForEachReverse
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
+/** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = {}) =
 	Container().addTo(this).apply(callback)
 
@@ -19,16 +16,54 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
 
 /**
  * A simple container of [View]s.
+ *
+ * All the [children] in this container has an associated index that determines its rendering order.
+ * The first child is rendered first, and the last, last. So when the childs are overlapping, the last child will overlap the previous ones.
+ *
+ * You can access the children by [numChildren], [getChildAt] or [size] and [get].
+ *
+ * You can add new children to this container by calling [addChild] or [addChildAt].
  */
+@UseExperimental(KorgeInternal::class)
 open class Container : View() {
 	override val isContainer get() = false
 
+    @KorgeInternal
+    @PublishedApi
 	internal val childrenInternal = arrayListOf<View>()
 
 	/**
 	 * Retrieves all the child [View]s.
+     * Shouldn't be used if possible. You can use [numChildren] and [getChildAt] to get the children.
+     * You can also use [forEachChildren], [forEachChildrenWithIndex] and [forEachChildrenReversed] to iterate children
 	 */
-	val children: List<View> get() = childrenInternal
+    @KorgeInternal
+    val children: List<View> get() = childrenInternal
+
+    /** Returns the first child of this container or null when the container doesn't have children */
+    val firstChild: View? get() = childrenInternal.firstOrNull()
+    /** Returns the last child of this container or null when the container doesn't have children */
+    val lastChild: View? get() = childrenInternal.lastOrNull()
+
+    /** Sorts all the children by using the specified [comparator]. */
+    fun sortChildrenBy(comparator: Comparator<View>) {
+        childrenInternal.sortWith(comparator)
+        forEachChildrenWithIndex { index, child ->
+            child.index = index
+        }
+    }
+
+    /** Iterates all the children of this container in normal order of rendering. */
+    inline fun forEachChildren(callback: (child: View) -> Unit) = childrenInternal.fastForEach(callback)
+    /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
+    inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) = childrenInternal.fastForEachWithIndex(callback)
+    /** Iterates all the children of this container in reverse order of rendering. */
+    inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = childrenInternal.fastForEachReverse(callback)
+
+    /** Returns the number of children this container has */
+    val numChildren: Int get() = children.size
+    /** Returns the number of children this container has */
+    val size: Int get() = numChildren
 
 	/**
 	 * Recursively retrieves the top ancestor in the container hierarchy.
@@ -37,10 +72,11 @@ open class Container : View() {
 	 */
 	val containerRoot: Container get() = parent?.containerRoot ?: this
 
-	// @TODO: Untested
 	/**
-	 * Swaps the order of two child [View]s.
+	 * Swaps the order of two child [View]s [view1] and [view2].
+     * If [view1] or [view2] are not part of this container, this method doesn't do anything.
 	 */
+    @KorgeUntested
 	fun swapChildren(view1: View, view2: View) {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
@@ -50,40 +86,50 @@ open class Container : View() {
 		}
 	}
 
-	// @TODO: Untested
 	/**
-	 * Adds a child [View] at a specific index.
+	 * Adds the [view] [View] as a child at a specific [index].
+     *
+     * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
 	 */
+    @KorgeUntested
 	fun addChildAt(view: View, index: Int) {
-		val index = index.clamp(0, this.childrenInternal.size)
+		val aindex = index.clamp(0, this.childrenInternal.size)
 		view.removeFromParent()
-		view.index = index
-		childrenInternal.add(index, view)
-		for (n in index + 1 until childrenInternal.size) childrenInternal[n].index = n // Update other indices
+		view.index = aindex
+		childrenInternal.add(aindex, view)
+		for (n in aindex + 1 until childrenInternal.size) childrenInternal[n].index = n // Update other indices
 		view.parent = this
 		view.invalidate()
 	}
 
-	// @TODO: Untested
 	/**
 	 * Retrieves the index of a given child [View].
 	 */
+    @KorgeUntested
 	fun getChildIndex(view: View): Int = view.index
-	// @TODO: Untested
 
 	/**
 	 * Finds the [View] at a given index.
+     * Remarks: if [index] is outside bounds 0..[numChildren] - 1, an [IndexOutOfBoundsException] will be thrown.
 	 */
+    @KorgeUntested
 	fun getChildAt(index: Int): View = childrenInternal[index]
 
-	// @TODO: Untested
-	/**
-	 * Finds the first child [View] matching a given name.
+    /**
+     * Finds the [View] at a given index. If the index is not valid, it returns null.
+     */
+    fun getChildAtOrNull(index: Int): View? = childrenInternal.getOrNull(index)
+
+    /**
+	 * Finds the first child [View] matching a given [name].
 	 */
+    @KorgeUntested
 	fun getChildByName(name: String): View? = childrenInternal.firstOrNull { it.name == name }
 
 	/**
-	 * Removes a specific [View] from the container.
+	 * Removes the specified [view] from this container.
+     *
+     * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
 	 */
 	fun removeChild(view: View?) {
 		if (view?.parent == this) {
@@ -92,7 +138,7 @@ open class Container : View() {
 	}
 
 	/**
-	 * Removes all child [View]s from the container.
+	 * Removes all [View]s children from this container.
 	 */
 	fun removeChildren() {
 		childrenInternal.fastForEach { child ->
@@ -103,7 +149,9 @@ open class Container : View() {
 	}
 
 	/**
-	 * Alias for [plusAssign].
+     * Adds a child [View] to the container.
+     *
+     * If the [View] already belongs to a parent, it is removed from it and then added to the container.
 	 */
 	fun addChild(view: View) = this.plusAssign(view)
 
@@ -120,9 +168,7 @@ open class Container : View() {
 	}
 
 	/**
-	 * Adds a child [View] to the container.
-	 * 
-	 * If the [View] already belongs to a parent, it is removed from it and then added to the container.
+	 * Alias for [addChild].
 	 */
 	operator fun plusAssign(view: View) {
 		view.removeFromParent()
@@ -132,17 +178,18 @@ open class Container : View() {
 		view.invalidate()
 	}
 
+    /** Alias for [getChildAt] */
+    operator fun get(index: Int): View = getChildAt(index)
+
 	/**
-	 * Removes a child [View] from the container.
+	 * Alias for [removeChild].
 	 */
-	operator fun minusAssign(view: View) {
-		if (view.parent == this) view.removeFromParent()
-	}
+	operator fun minusAssign(view: View) = removeChild(view)
 
 	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-		safeForEachChildren { child ->
+		forEachChildren { child ->
 			child.render(ctx)
 		}
 	}
@@ -167,7 +214,7 @@ open class Container : View() {
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		bb.reset()
-		safeForEachChildren { child ->
+		forEachChildren { child ->
 			child.getBounds(child, tempRect)
 			bb.add(tempRect)
 		}
@@ -181,19 +228,11 @@ open class Container : View() {
 	 */
 	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		if (propagateEvents) {
-			safeForEachChildrenReversed { child ->
+			forEachChildrenReversed { child ->
 				child.dispatch(clazz, event)
 			}
 		}
 		super.dispatch(clazz, event)
-	}
-
-	private inline fun safeForEachChildren(crossinline callback: (View) -> Unit) {
-		childrenInternal.fastForEach(callback)
-	}
-
-	private inline fun safeForEachChildrenReversed(crossinline callback: (View) -> Unit) {
-		childrenInternal.fastForEachReverse(callback)
 	}
 
 	/**
@@ -219,45 +258,7 @@ open class Container : View() {
  */
 fun <T : View> T.addTo(parent: Container) = this.apply { parent += this }
 
-inline fun Container.fixedSizeContainer(width: Number, height: Number, clip: Boolean = false, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
-	FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this).apply(callback)
-
-open class FixedSizeContainer(
-    override var width: Double = 100.0,
-    override var height: Double = 100.0,
-    var clip: Boolean = false
-) : Container() {
-	override fun getLocalBoundsInternal(out: Rectangle): Unit = Unit.run { out.setTo(0, 0, width, height) }
-
-	override fun toString(): String {
-		var out = super.toString()
-		out += ":size=(${width.niceStr}x${height.niceStr})"
-		return out
-	}
-
-    private val tempBounds = Rectangle()
-
-    override fun renderInternal(ctx: RenderContext) {
-        if (clip) {
-            val c2d = ctx.ctx2d
-            val bounds = getGlobalBounds(tempBounds)
-            c2d.scissor(bounds) {
-                super.renderInternal(ctx)
-            }
-        } else {
-            super.renderInternal(ctx)
-        }
-    }
-}
-
-inline fun Container.clipContainer(width: Number, height: Number, callback: @ViewsDslMarker ClipContainer.() -> Unit = {}) =
-    ClipContainer(width.toDouble(), height.toDouble()).addTo(this).apply(callback)
-
-open class ClipContainer(
-    width: Double = 100.0,
-    height: Double = 100.0
-) : FixedSizeContainer(width, height, clip = true)
-
+/** Adds the specified [view] to this view only if this view is a [Container]. */
 operator fun View?.plusAssign(view: View?) {
 	val container = this as? Container?
 	if (view != null) container?.addChild(view)

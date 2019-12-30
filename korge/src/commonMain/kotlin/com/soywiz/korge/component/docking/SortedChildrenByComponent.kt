@@ -9,14 +9,6 @@ class SortedChildrenByComponent(override val view: Container, var comparator: Co
 	}
 }
 
-fun Container.sortChildrenBy(comparator: Comparator<View>) {
-	childrenInternal.sortWith(comparator)
-	for (n in 0 until children.size) {
-		val child = children[n]
-		child.index = n
-	}
-}
-
 fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
 fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
 fun Container.sortChildrenByY() = sortChildrenBy(View::y)
