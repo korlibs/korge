@@ -477,22 +477,16 @@ object Korge {
 		val done = CompletableDeferred<SceneContainer>(Job())
 		logger.trace { "Korge.test without container" }
 		logger.trace { "Korge.test loading icon" }
-		this.icon = try {
-			when {
-				module.iconImage != null -> {
-					module.iconImage!!.render()
-				}
-				module.icon != null -> {
-					resourcesVfs[module.icon!!].readBitmapOptimized(config.imageFormats)
-				}
-				else -> {
-					null
-				}
+		try {
+            // Do nothing
+            when {
+				module.iconImage != null -> this.icon = module.iconImage!!.render()
+				module.icon != null -> this.icon = resourcesVfs[module.icon!!].readBitmapOptimized(config.imageFormats)
+				else -> Unit
 			}
 		} catch (e: Throwable) {
 			logger.error { "Couldn't get the application icon" }
 			e.printStackTrace()
-			null
 		}
 
 		logger.trace { "Korge.test pre CanvasApplicationEx" }
