@@ -5,12 +5,13 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 
-class ComposedFilter(val filters: List<Filter>) : Filter() {
+/**
+ * Allows to create a single [Filter] that will render several [filters] in order.
+ */
+class ComposedFilter(val filters: List<Filter>) : Filter {
 	constructor(vararg filters: Filter) : this(filters.toList())
 
 	override val border get() = filters.sumBy { it.border }
-
-	val filtering = true
 
 	override fun render(
 		ctx: RenderContext,
@@ -23,7 +24,7 @@ class ComposedFilter(val filters: List<Filter>) : Filter() {
 		blendMode: BlendMode
 	) {
 		if (filters.isEmpty()) {
-			super.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+            IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
 		} else {
 			renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filters.size - 1)
 		}

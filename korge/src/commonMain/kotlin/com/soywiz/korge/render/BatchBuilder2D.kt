@@ -425,20 +425,29 @@ class BatchBuilder2D(
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }
 
         @KorgeInternal
+        val FRAGMENT_PRE = buildTextureLookupFragment(premultiplied = true)
+
+        @KorgeInternal
+        val FRAGMENT_NOPRE = buildTextureLookupFragment(premultiplied = false)
+
+        @KorgeInternal
 		val PROGRAM_PRE = Program(
 			vertex = VERTEX,
-			fragment = buildTextureLookupFragment(premultiplied = true),
+			fragment = FRAGMENT_PRE,
 			name = "BatchBuilder2D.Premultiplied.Tinted"
 		)
 
         @KorgeInternal
 		val PROGRAM_NOPRE = Program(
 			vertex = VERTEX,
-			fragment = buildTextureLookupFragment(premultiplied = false),
+			fragment = FRAGMENT_NOPRE,
 			name = "BatchBuilder2D.NoPremultiplied.Tinted"
 		)
 
 		init { logger.trace { "BatchBuilder2D.Companion[4]" } }
+
+        @KorgeInternal
+        fun getTextureLookupProgram(premultiplied: Boolean) = if (premultiplied) PROGRAM_PRE else PROGRAM_NOPRE
 
 		//val PROGRAM_NORMAL = Program(
 		//	vertex = VERTEX,
@@ -451,9 +460,12 @@ class BatchBuilder2D(
 		//	name = "BatchBuilder2D.Tinted"
 		//)
 
+        fun getTextureLookupFragment(premultiplied: Boolean) = if (premultiplied) FRAGMENT_PRE else FRAGMENT_NOPRE
+
         /**
          * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
          */
+        @KorgeInternal
 		fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShader {
 			DefaultShaders.apply {
 				SET(out, texture2D(u_Tex, v_Tex["xy"]))

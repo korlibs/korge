@@ -2,10 +2,13 @@ package com.soywiz.korge.view.effect
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 	companion object {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
@@ -77,6 +80,8 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 	}
 }
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 inline fun Container.blurEffectView(
 	radius: Double = 10.0,
 	callback: @ViewsDslMarker BlurEffectView.() -> Unit = {}

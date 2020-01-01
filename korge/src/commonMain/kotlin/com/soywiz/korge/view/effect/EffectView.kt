@@ -2,10 +2,13 @@ package com.soywiz.korge.view.effect
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 open class EffectView : Container() {
 	var filtering = true
 	private val oldViewMatrix = Matrix3D()
@@ -109,5 +112,7 @@ open class EffectView : Container() {
 	}
 }
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 inline fun Container.effectView(callback: @ViewsDslMarker EffectView.() -> Unit = {}) =
 	EffectView().addTo(this).apply(callback)

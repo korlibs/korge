@@ -4,96 +4,52 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
-abstract class Filter {
-	companion object {
-		//val u_Time = Uniform("time", VarType.Float1)
-		val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
-		val DEFAULT_FRAGMENT = BatchBuilder2D.buildTextureLookupFragment(premultiplied = false)
+/**
+ * Interface for [View] filters.
+ *
+ * A filter is in charge of rendering a precomputed texture of a [View].
+ *
+ * [Filter] defines a [border]. The border is the amount of pixels, the generated texture should be grown from each side: left, top, right and bottom.
+ * For example, a Gauissan Blur effect would require a bigger texture to blur the edges.
+ *
+ * [Filter] defines how to render the precomputed texture of the View inside the [render] method.
+ *
+ * Filters are usually [ComposedFilter] or [ShaderFilter]
+ */
+interface Filter {
+    companion object {
+        //val u_Time = Uniform("time", VarType.Float1)
+        val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
+        val DEFAULT_FRAGMENT = BatchBuilder2D.buildTextureLookupFragment(premultiplied = false)
 
-		val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
-		val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
-		fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
-	}
+        val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
+        val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
+        fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+    }
 
-	private val textureSizeHolder = FloatArray(2)
+    /**
+     * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
+     *
+     * A 0 value means that the texture should be passed with its original size.
+     * A 1 value means that the texture should be passed width 2 more pixels of width and height (1 left, 1 right), (1 top, 1 bottom)
+     */
+    val border: Int get() = 0
 
-	val uniforms = AG.UniformValues(
-		//Filter.u_Time to timeHolder,
-		Filter.u_TextureSize to textureSizeHolder
-	)
-
-	open val border: Int = 0
-
-	var program: Program? = null
-
-	var vertex: VertexShader = BatchBuilder2D.VERTEX
-		set(value) {
-			field = value
-			program = null
-		}
-	var fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
-		set(value) {
-			field = value
-			program = null
-		}
-
-	internal val tempMat2d = Matrix()
-	internal val oldViewMatrix = Matrix3D()
-
-	protected open fun updateUniforms() {
-	}
-
-	open fun render(
-		ctx: RenderContext,
-		matrix: Matrix,
-		texture: Texture,
-		texWidth: Int,
-		texHeight: Int,
-		renderColorAdd: Int,
-		renderColorMul: RGBA,
-		blendMode: BlendMode
-	) {
-		//println("$this.render()")
-		// @TODO: Precompute vertices
-		textureSizeHolder[0] = texture.base.width.toFloat()
-		textureSizeHolder[1] = texture.base.height.toFloat()
-		updateUniforms()
-
-		if (program == null) {
-			program = Program(vertex, fragment.appending {
-				// Premultiplied
-				if (texture.premultiplied) {
-					out["rgb"] setTo out["rgb"] / out["a"]
-				}
-
-				// Color multiply and addition
-				// @TODO: Kotlin.JS BUG
-				//out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-				out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit)
-
-				// Required for shape masks:
-				if (texture.premultiplied) {
-					IF(out["a"] le 0f.lit) { DISCARD() }
-				}
-			})
-		}
-
-		ctx.batch.setTemporalUniforms(this.uniforms) {
-			//println("renderColorMulInt=" + RGBA(renderColorMulInt))
-			//println("blendMode:$blendMode")
-			ctx.batch.drawQuad(
-				texture,
-				m = matrix,
-				filtering = true,
-				colorAdd = renderColorAdd,
-				colorMul = renderColorMul,
-				blendFactors = blendMode.factors,
-				program = program
-			)
-			//ctx.batch.flush()
-		}
-	}
+    /**
+     * The method in charge of rendering the texture transformed using [ctx] [RenderContext] and [matrix].
+     * The method receives a [texture] that should be the original image with [border] additional pixels on each side.
+     */
+    fun render(
+        ctx: RenderContext,
+        matrix: Matrix,
+        texture: Texture,
+        texWidth: Int,
+        texHeight: Int,
+        renderColorAdd: Int,
+        renderColorMul: RGBA,
+        blendMode: BlendMode
+    )
 }

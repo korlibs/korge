@@ -28,6 +28,10 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
+/**
+ * Entry point for games written in Korge.
+ * You have to call the [Korge] method by either providing some parameters, or a [Korge.Config] object.
+ */
 object Korge {
 	val logger = Logger("Korge")
 

@@ -2,9 +2,12 @@ package com.soywiz.korge.view.effect
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import kotlin.math.*
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 class WaveEffectView : EffectView() {
 	companion object {
 		val u_Amplitude = Uniform("amplitude", VarType.Float2)
@@ -44,5 +47,7 @@ class WaveEffectView : EffectView() {
 	}
 }
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 inline fun Container.waveEffectView(callback: @ViewsDslMarker WaveEffectView.() -> Unit = {}) =
 	WaveEffectView().addTo(this).apply(callback)

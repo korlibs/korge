@@ -4,6 +4,9 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import kotlin.math.*
 
+/**
+ * A filter that simulates a page of a book.
+ */
 class PageFilter(
     hratio: Double = 0.5,
     hamplitude0: Double = 0.0,
@@ -14,7 +17,7 @@ class PageFilter(
     vamplitude0: Double = 0.0,
     vamplitude1: Double = 0.0,
     vamplitude2: Double = 0.0
-) : Filter() {
+) : ShaderFilter() {
     companion object {
         val u_Offset = Uniform("u_Offset", VarType.Float2)
         val u_HAmplitude = Uniform("u_HAmplitude", VarType.Float3)
@@ -37,24 +40,22 @@ class PageFilter(
 
     override val border: Int get() = max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toInt()
 
-    init {
-        fragment = FragmentShader {
-			for (n in 0..1) {
-				val vr = fragmentCoords01[n]
-				val offset = u_Offset[n]
-				val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
-				val tmp = DefaultShaders.t_Temp0[n]
-				IF(vr lt offset) {
-					val ratio = (vr - 0.0.lit) / offset
-					tmp setTo mix(amplitudes[0], amplitudes[1], sin01(ratio))
-				} ELSE {
-					val ratio = (vr - offset) / (1.0.lit - offset)
-					tmp setTo mix(amplitudes[2], amplitudes[1], sin01(1.0.lit + ratio))
-				}
-			}
-
-			out setTo tex(fragmentCoords + DefaultShaders.t_Temp0["yx"])
+    override val fragment = FragmentShader {
+        for (n in 0..1) {
+            val vr = fragmentCoords01[n]
+            val offset = u_Offset[n]
+            val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
+            val tmp = DefaultShaders.t_Temp0[n]
+            IF(vr lt offset) {
+                val ratio = (vr - 0.0.lit) / offset
+                tmp setTo mix(amplitudes[0], amplitudes[1], sin01(ratio))
+            } ELSE {
+                val ratio = (vr - offset) / (1.0.lit - offset)
+                tmp setTo mix(amplitudes[2], amplitudes[1], sin01(1.0.lit + ratio))
+            }
         }
+
+        out setTo tex(fragmentCoords + DefaultShaders.t_Temp0["yx"])
     }
 
 	private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))

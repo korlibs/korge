@@ -645,29 +645,30 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		val bounds = getLocalBounds()
 
 		val borderEffect = filter.border
-		val tempMat2d = filter.tempMat2d
-		val oldViewMatrix = filter.oldViewMatrix
+        ctx.matrixPool.alloc { tempMat2d ->
+            ctx.matrix3DPool.alloc { oldViewMatrix ->
+                val texWidth = bounds.width.toInt() + borderEffect * 2
+                val texHeight = bounds.height.toInt() + borderEffect * 2
 
-		val texWidth = bounds.width.toInt() + borderEffect * 2
-		val texHeight = bounds.height.toInt() + borderEffect * 2
+                val addx = -bounds.x + borderEffect
+                val addy = -bounds.y + borderEffect
 
-		val addx = -bounds.x + borderEffect
-		val addy = -bounds.y + borderEffect
+                //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
 
-		//println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
-
-		ctx.renderToTexture(texWidth, texHeight, render = {
-			tempMat2d.copyFrom(globalMatrixInv)
-			tempMat2d.translate(addx, addy)
-			//println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-			ctx.batch.setViewMatrixTemp(tempMat2d, temp = oldViewMatrix) {
-				renderInternal(ctx)
-			}
-		}) { texture ->
-			tempMat2d.copyFrom(globalMatrix)
-			tempMat2d.pretranslate(-addx, -addy)
-			filter.render(ctx, tempMat2d, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
-		}
+                ctx.renderToTexture(texWidth, texHeight, render = {
+                    tempMat2d.copyFrom(globalMatrixInv)
+                    tempMat2d.translate(addx, addy)
+                    //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                    ctx.batch.setViewMatrixTemp(tempMat2d, temp = oldViewMatrix) {
+                        renderInternal(ctx)
+                    }
+                }) { texture ->
+                    tempMat2d.copyFrom(globalMatrix)
+                    tempMat2d.pretranslate(-addx, -addy)
+                    filter.render(ctx, tempMat2d, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+                }
+            }
+        }
 	}
 
     /** Method that all views must override in order to control how the view is going to be rendered */

@@ -2,12 +2,12 @@ package com.soywiz.korge.view.effect
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
-/**
- * https://en.wikipedia.org/wiki/Kernel_(image_processing)
- */
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 class Convolute3EffectView(val kernel: Matrix3D) : EffectView() {
 	companion object {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
@@ -61,6 +61,8 @@ class Convolute3EffectView(val kernel: Matrix3D) : EffectView() {
 	}
 }
 
+@KorgeDeprecated
+@Deprecated("Use View.filter instead")
 inline fun Container.convolute3EffectView(
 	kernel: Matrix3D = Matrix3D(),
 	callback: @ViewsDslMarker Convolute3EffectView.() -> Unit = {}

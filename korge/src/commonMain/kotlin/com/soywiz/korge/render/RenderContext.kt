@@ -6,6 +6,7 @@ import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
 
 /**
@@ -48,6 +49,13 @@ class RenderContext(
 
     /** Allows to register handlers when the [flush] method is called */
     val flushers = Signal<Unit>()
+
+    /** Pool of [Matrix] objects that could be used temporarily by renders */
+    val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix() }
+    /** Pool of [Matrix3D] objects that could be used temporarily by renders */
+    val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix3D() }
+    /** Pool of [Point] objects that could be used temporarily by renders */
+    val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { Point() }
 
     /**
      * Allows to toggle whether stencil-based masks are enabled or not.
