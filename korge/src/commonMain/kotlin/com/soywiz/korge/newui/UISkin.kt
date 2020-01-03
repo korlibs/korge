@@ -21,6 +21,7 @@ data class UISkin(
 	val normal: BmpSlice,
 	val hover: BmpSlice,
 	val down: BmpSlice,
+	val disabled: BmpSlice = normal,
 	val backColor: RGBA = Colors.DARKGREY,
 	val font: Html.FontFace = Html.FontFace.Named("Arial")
 )

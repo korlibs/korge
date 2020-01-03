@@ -2,11 +2,9 @@ package com.soywiz.korge.newui
 
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import kotlin.properties.*
 
 inline fun Container.uiButton(
 	width: Number = 128,
@@ -22,17 +20,28 @@ open class UIButton(
 	label: String = "Button",
 	skin: UISkin = DefaultUISkin
 ) : UIView(width, height) {
-	var forcePressed  by uiObservable(false) { updateState() }
+	var forcePressed by uiObservable(false) { updateState() }
 	var skin: UISkin by uiObservable(skin) { updateState() }
 	var label by uiObservable(label) { updateState() }
-	private val rect = ninePatch(skin.normal, width, height, 16.0 / 64.0, 16.0 / 64.0, (64.0 - 16.0) / 64.0, (64.0 - 16.0) / 64.0) {}
-	private val textShadow = text(label).also { it.position(1, 1) }
+	var textSize by uiObservable(16) { updateState() }
+	var textColor by uiObservable(Colors.WHITE) { updateState() }
+	var textAlignment by uiObservable(Html.Alignment.MIDDLE_CENTER) { updateState() }
+	var shadowX by uiObservable(1) { updateState() }
+	var shadowY by uiObservable(1) { updateState() }
+	var shadowSize by uiObservable(16) { updateState() }
+	var shadowColor by uiObservable(Colors.BLACK.withA(64)) { updateState() }
+	var shadowVisible by uiObservable(true) { updateState() }
+	protected open val rect = ninePatch(skin.normal, width, height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
 	private val text = text(label)
+	private val textShadow = text(label)
 	private var bover by uiObservable(false) { updateState() }
 	private var bpressing by uiObservable(false) { updateState() }
 
-	// @TODO: Make mouseEnabled open
-	//override var mouseEnabled = uiObservable(true) { updateState() }
+	override var mouseEnabled = true
+		set(value) {
+			field = value
+			updateState()
+		}
 
 	fun simulateHover() {
 		bover = true
@@ -74,6 +83,9 @@ open class UIButton(
 
 	private fun updateState() {
 		when {
+			!mouseEnabled -> {
+				rect.tex = skin.disabled
+			}
 			bpressing || forcePressed -> {
 				rect.tex = skin.down
 			}
@@ -84,12 +96,14 @@ open class UIButton(
 				rect.tex = skin.normal
 			}
 		}
-		text.format = Html.Format(face = skin.font, align = Html.Alignment.MIDDLE_CENTER, color = Colors.WHITE)
+		text.format = Html.Format(face = skin.font, align = textAlignment, color = textColor, size = textSize)
 		text.setTextBounds(Rectangle(0, 0, width, height))
 		text.setText(label)
-		textShadow.format = Html.Format(face = skin.font, align = Html.Alignment.MIDDLE_CENTER, color = Colors.BLACK.withA(64))
+		textShadow.visible = shadowVisible
+		textShadow.format = Html.Format(face = skin.font, align = textAlignment, color = shadowColor, size = shadowSize)
 		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 		textShadow.setText(label)
+		textShadow.position(shadowX, shadowY)
 	}
 
 	override fun updatedSize() {
@@ -97,10 +111,5 @@ open class UIButton(
 		rect.width = width
 		rect.height = height
 		updateState()
-	}
-
-	override fun renderInternal(ctx: RenderContext) {
-		//alpha = if (mouseEnabled) 1.0 else 0.5
-		super.renderInternal(ctx)
 	}
 }
