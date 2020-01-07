@@ -13,4 +13,8 @@ org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdef
         commandLine("sudo")
         args("apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev")
     }
+    exec {
+        commandLine("sudo")
+        args("apt-get", "-y", "install", "libgtk-3-dev")
+    }
 }
