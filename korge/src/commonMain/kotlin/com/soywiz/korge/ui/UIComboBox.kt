@@ -1,4 +1,4 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*

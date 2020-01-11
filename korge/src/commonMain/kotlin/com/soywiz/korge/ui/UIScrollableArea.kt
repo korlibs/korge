@@ -1,4 +1,4 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
@@ -14,7 +14,14 @@ inline fun Container.uiScrollableArea(
 	config: UIScrollableArea.() -> Unit = {},
 	block: Container.() -> Unit = {}
 ): UIScrollableArea = UIScrollableArea(
-	width.toDouble(), height.toDouble(), contentWidth.toDouble(), contentHeight.toDouble(), buttonSize.toDouble(), verticalScroll, horizontalScroll, skin
+	width.toDouble(),
+	height.toDouble(),
+	contentWidth.toDouble(),
+	contentHeight.toDouble(),
+	buttonSize.toDouble(),
+	verticalScroll,
+	horizontalScroll,
+	skin
 ).also { addChild(it) }.also(config).also { block(it.container) }
 
 // @TODO: Optimize this!

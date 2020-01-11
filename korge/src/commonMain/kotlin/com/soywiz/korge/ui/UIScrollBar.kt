@@ -1,4 +1,4 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
@@ -6,7 +6,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
-import kotlin.properties.*
 
 inline fun Container.uiScrollBar(
 	width: Number,
@@ -19,7 +18,17 @@ inline fun Container.uiScrollBar(
 	stepSize: Double = pageSize.toDouble() / 10.0,
 	skin: UISkin = defaultUISkin,
 	block: UIScrollBar.() -> Unit = {}
-): UIScrollBar = UIScrollBar(width.toDouble(), height.toDouble(), current.toDouble(), pageSize.toDouble(), totalSize.toDouble(), buttonSize.toDouble(), direction, stepSize, skin).also { addChild(it) }.apply(block)
+): UIScrollBar = UIScrollBar(
+	width.toDouble(),
+	height.toDouble(),
+	current.toDouble(),
+	pageSize.toDouble(),
+	totalSize.toDouble(),
+	buttonSize.toDouble(),
+	direction,
+	stepSize,
+	skin
+).also { addChild(it) }.apply(block)
 
 open class UIScrollBar(
 	width: Double,

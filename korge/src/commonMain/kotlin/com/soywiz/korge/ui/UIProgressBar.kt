@@ -1,4 +1,4 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
@@ -9,7 +9,13 @@ inline fun Container.uiProgressBar(
 	maximum: Number = 1.0,
 	skin: UISkin = defaultUISkin,
 	block: UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(width.toDouble(), height.toDouble(), current.toDouble(), maximum.toDouble(), skin).also { addChild(it) }.also(block)
+): UIProgressBar = UIProgressBar(
+	width.toDouble(),
+	height.toDouble(),
+	current.toDouble(),
+	maximum.toDouble(),
+	skin
+).also { addChild(it) }.also(block)
 
 open class UIProgressBar(
 	width: Double = 256.0,

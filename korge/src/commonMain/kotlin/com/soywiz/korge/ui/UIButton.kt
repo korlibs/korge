@@ -1,4 +1,4 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
@@ -12,7 +12,12 @@ inline fun Container.uiButton(
 	label: String = "Button",
 	skin: UISkin = defaultUISkin,
 	block: UIButton.() -> Unit = {}
-): UIButton = UIButton(width.toDouble(), height.toDouble(), label, skin).also { addChild(it) }.apply(block)
+): UIButton = UIButton(
+	width.toDouble(),
+	height.toDouble(),
+	label,
+	skin
+).also { addChild(it) }.apply(block)
 
 open class UIButton(
 	width: Double = 128.0,

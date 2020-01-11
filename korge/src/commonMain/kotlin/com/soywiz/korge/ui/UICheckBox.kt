@@ -1,11 +1,10 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import kotlin.properties.*
 
 inline fun Container.uiCheckBox(
 	checked: Boolean? = false,
@@ -14,7 +13,13 @@ inline fun Container.uiCheckBox(
 	label: String = "CheckBox",
 	skin: UISkin = defaultUISkin,
 	block: UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(checked, width.toDouble(), height.toDouble(), label, skin).also { addChild(it) }.apply(block)
+): UICheckBox = UICheckBox(
+	checked,
+	width.toDouble(),
+	height.toDouble(),
+	label,
+	skin
+).also { addChild(it) }.apply(block)
 
 open class UICheckBox(
 	checked: Boolean? = false,
