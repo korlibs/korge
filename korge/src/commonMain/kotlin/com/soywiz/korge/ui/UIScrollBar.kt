@@ -61,9 +61,9 @@ open class UIScrollBar(
 	val clientHeight get() = if (isHorizontal) height else height - buttonHeight * 2
 
 	protected val background = solidRect(100, 100, skin.backColor)
-	protected val lessButton = uiButton(16, 16, "-", skin = skin)
-	protected val moreButton = uiButton(16, 16, "+", skin = skin)
-	protected val caretButton = uiButton(16, 16, "", skin = skin)
+	protected val lessButton = uiTextButton(16, 16, "-", skin = skin)
+	protected val moreButton = uiTextButton(16, 16, "+", skin = skin)
+	protected val caretButton = uiTextButton(16, 16, "", skin = skin)
 
 	protected val views get() = stage?.views
 

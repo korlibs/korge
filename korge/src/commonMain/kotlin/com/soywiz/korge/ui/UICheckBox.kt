@@ -13,27 +13,21 @@ inline fun Container.uiCheckBox(
 	label: String = "CheckBox",
 	skin: UISkin = defaultUISkin,
 	block: UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(
-	checked,
-	width.toDouble(),
-	height.toDouble(),
-	label,
-	skin
-).also { addChild(it) }.apply(block)
+): UICheckBox = UICheckBox(checked, width.toDouble(), height.toDouble(), label, skin).addTo(this).apply(block)
 
 open class UICheckBox(
 	checked: Boolean? = false,
 	width: Double = 96.0,
 	height: Double = 32.0,
 	label: String = "CheckBox",
-	private val skin: UISkin = DefaultUISkin
+	skin: UISkin = DefaultUISkin
 ) : UIView(width, height) {
 	var checked by uiObservable(checked) { onPropsUpdate() }
 	var label by uiObservable(label) { onPropsUpdate() }
 
 	private val area = solidRect(16, 16, Colors.TRANSPARENT_BLACK)
 	//private val box = solidRect(16, 16, Colors.DARKGREY)
-	private val box = uiButton(16, 16, skin = skin).also { it.mouseEnabled = false }
+	private val box = uiTextButton(16, 16, skin = skin).also { it.mouseEnabled = false }
 	private val text = text(label)
 
 	init {
@@ -51,13 +45,13 @@ open class UICheckBox(
 			.also {
 				it.forcePressed = true
 				if (checked == true) {
-					it.label = "X"
+					it.text = "X"
 				} else {
-					it.label = ""
+					it.text = ""
 				}
 			}
 		text.position(height + 8.0, 0)
-			.also { it.format = Html.Format(face = skin.font, align = Html.Alignment.MIDDLE_LEFT) }
+			.also { it.format = Html.Format(face = box.textFont, align = Html.Alignment.MIDDLE_LEFT) }
 			.also { it.setTextBounds(Rectangle(0, 0, width - height, height)) }
 			.setText(label)
 	}

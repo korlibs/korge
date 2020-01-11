@@ -33,8 +33,8 @@ open class UIComboBox<T>(
 	val itemHeight get() = 32
 	private val buttonSize get() = height
 	private val itemsView = uiScrollableArea(verticalScroll = true, horizontalScroll = false, skin = skin, config = { visible = false }) {  }
-	private val selectedButton = uiButton(16, 16, "", skin = skin).also { it.mouseEnabled = false }
-	private val dropButton = uiButton(16, 16, "+", skin = skin).also { it.mouseEnabled = false }
+	private val selectedButton = uiTextButton(16, 16, "", skin = skin).also { it.mouseEnabled = false }
+	private val dropButton = uiTextButton(16, 16, "+", skin = skin).also { it.mouseEnabled = false }
 	private val invisibleRect = solidRect(16, 16, Colors.TRANSPARENT_BLACK)
 	private var showItems = false
 
@@ -60,10 +60,10 @@ open class UIComboBox<T>(
 		itemsView.size(width, 196).position(0, height)
 		selectedButton.simulatePressing(showItems)
 		dropButton.simulatePressing(showItems)
-		dropButton.label = if (showItems) "-" else "+"
+		dropButton.text = if (showItems) "-" else "+"
 		invisibleRect.size(width, height)
 		selectedButton.position(0, 0).size(width - buttonSize, height)
-		selectedButton.label = selectedItem?.toString() ?: ""
+		selectedButton.text = selectedItem?.toString() ?: ""
 		//println("selectedIndex: $selectedIndex, selectedItem: $selectedItem")
 		dropButton.position(width - buttonSize, 0).size(buttonSize, height)
 	}
@@ -80,7 +80,7 @@ open class UIComboBox<T>(
 	protected fun updatedItems() {
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
-			val button = itemsView.container.uiButton(width - 32, itemHeight, label = item.toString(), skin = skin) {
+			val button = itemsView.container.uiTextButton(width - 32, itemHeight, text = item.toString(), skin = skin) {
 				position(0, index * itemHeight)
 				onClick {
 					showItems = false

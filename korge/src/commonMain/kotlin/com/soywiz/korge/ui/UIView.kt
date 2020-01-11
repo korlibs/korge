@@ -14,12 +14,20 @@ open class UIView(
 	override var width: Double by uiObservable(width) { onSizeChanged() }
 	override var height: Double by uiObservable(height) { onSizeChanged() }
 
-	var enabled by uiObservable(true) {
-		mouseEnabled = it
-		onEnabledChanged()
+	var enabled
+		get() = mouseEnabled
+		set(value) {
+			mouseEnabled = value
+			onEnabledChanged()
+		}
+
+	fun enable(set: Boolean = true) {
+		enabled = set
 	}
-	fun enable(set: Boolean = true) { enabled = set }
-	fun disable() { enabled = false }
+
+	fun disable() {
+		enabled = false
+	}
 
 	protected open fun onSizeChanged() {
 	}
