@@ -20,7 +20,7 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
 		private val u_BlendRatio = Uniform("blendRatio", VarType.Float1)
 
         /** A Matrix usable for [colorMatrix] that will transform any color into grayscale */
-		val GRAYSCALE_MATRIX = Matrix3D.fromRows(
+		val GRAYSCALE_MATRIX = Matrix3D.fromColumns(
 			0.33f, 0.33f, 0.33f, 0f,
 			0.59f, 0.59f, 0.59f, 0f,
 			0.11f, 0.11f, 0.11f, 0f,
@@ -28,7 +28,7 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
 		)
 
         /** A Matrix usable for [colorMatrix] that will preserve the original color */
-		val IDENTITY_MATRIX = Matrix3D.fromRows(
+		val IDENTITY_MATRIX = Matrix3D.fromColumns(
 			1f, 0f, 0f, 0f,
 			0f, 1f, 0f, 0f,
 			0f, 0f, 1f, 0f,
