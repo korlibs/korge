@@ -309,10 +309,6 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	open var mouseEnabled: Boolean = true
 	//var mouseChildren: Boolean = false
 
-    /** Determines if this view is enabled or not. For now, this doesn't have effect. */
-    @KorgeInternal
-    open var enabled: Boolean = true
-
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
 

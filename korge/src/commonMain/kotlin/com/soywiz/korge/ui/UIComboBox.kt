@@ -50,12 +50,12 @@ open class UIComboBox<T>(
 		}
 		invisibleRect.onClick {
 			showItems = !showItems
-			updatedSize()
+			onSizeChanged()
 		}
 	}
 
-	override fun updatedSize() {
-		super.updatedSize()
+	override fun onSizeChanged() {
+		super.onSizeChanged()
 		itemsView.visible = showItems
 		itemsView.size(width, 196).position(0, height)
 		selectedButton.simulatePressing(showItems)
@@ -69,7 +69,7 @@ open class UIComboBox<T>(
 	}
 
 	protected fun updatedSelection() {
-		updatedSize()
+		onSizeChanged()
 		for (n in items.indices) {
 			val button = itemsView.container.getChildAt(n) as? UIButton? ?: continue
 			button.forcePressed = selectedIndex == n
@@ -85,7 +85,7 @@ open class UIComboBox<T>(
 				onClick {
 					showItems = false
 					selectedIndex = index
-					updatedSize()
+					onSizeChanged()
 				}
 			}
 		}

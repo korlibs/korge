@@ -12,12 +12,7 @@ inline fun Container.uiButton(
 	label: String = "Button",
 	skin: UISkin = defaultUISkin,
 	block: UIButton.() -> Unit = {}
-): UIButton = UIButton(
-	width.toDouble(),
-	height.toDouble(),
-	label,
-	skin
-).also { addChild(it) }.apply(block)
+): UIButton = UIButton(width.toDouble(), height.toDouble(), label, skin).addTo(this).apply(block)
 
 open class UIButton(
 	width: Double = 128.0,
@@ -111,8 +106,8 @@ open class UIButton(
 		textShadow.position(shadowX, shadowY)
 	}
 
-	override fun updatedSize() {
-		super.updatedSize()
+	override fun onSizeChanged() {
+		super.onSizeChanged()
 		rect.width = width
 		rect.height = height
 		updateState()

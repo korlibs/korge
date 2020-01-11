@@ -36,13 +36,13 @@ open class UIScrollableArea(
 	horizontalScroll: Boolean = true,
 	skin: UISkin = DefaultUISkin
 ) : UIView(width, height) {
-	var buttonSize by uiObservable(buttonSize) { updatedSize() }
+	var buttonSize by uiObservable(buttonSize) { onSizeChanged() }
 
-	var contentWidth by uiObservable(contentWidth) { updatedSize() }
-	var contentHeight by uiObservable(contentHeight) { updatedSize() }
+	var contentWidth by uiObservable(contentWidth) { onSizeChanged() }
+	var contentHeight by uiObservable(contentHeight) { onSizeChanged() }
 
-	var verticalScroll by uiObservable(verticalScroll) { updatedSize() }
-	var horizontalScroll by uiObservable(horizontalScroll) { updatedSize() }
+	var verticalScroll by uiObservable(verticalScroll) { onSizeChanged() }
+	var horizontalScroll by uiObservable(horizontalScroll) { onSizeChanged() }
 
 	val clientWidth get() = if (verticalScroll) width - buttonSize else width
 	val clientHeight get() = if (horizontalScroll) height - buttonSize else height
@@ -53,11 +53,11 @@ open class UIScrollableArea(
 	val verScroll = uiScrollBar(buttonSize, height, skin = skin).also { it.onChange { moved() } }
 
 	init {
-		updatedSize()
+		onSizeChanged()
 	}
 
-	override fun updatedSize() {
-		super.updatedSize()
+	override fun onSizeChanged() {
+		super.onSizeChanged()
 
 		horScroll.totalSize = contentWidth
 		horScroll.pageSize = clientWidth

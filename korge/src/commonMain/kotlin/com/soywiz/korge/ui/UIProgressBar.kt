@@ -24,8 +24,8 @@ open class UIProgressBar(
 	maximum: Double = 1.0,
 	skin: UISkin = DefaultUISkin
 ) : UIView(width, height) {
-	var current: Double by uiObservable(current) { updatedSize() }
-	var maximum: Double by uiObservable(maximum) { updatedSize() }
+	var current: Double by uiObservable(current) { onSizeChanged() }
+	var maximum: Double by uiObservable(maximum) { onSizeChanged() }
 	override var ratio: Double
 		set(value) = run { current = value * maximum }
 		get() = current / maximum
@@ -34,10 +34,10 @@ open class UIProgressBar(
 	private val progress = uiButton(width, height, "", skin = skin).also { mouseEnabled = false }
 
 	init {
-		updatedSize()
+		onSizeChanged()
 	}
 
-	override fun updatedSize() {
+	override fun onSizeChanged() {
 		bg.size(width, height)
 		progress.forcePressed = true
 		progress.size(width * ratio, height)
