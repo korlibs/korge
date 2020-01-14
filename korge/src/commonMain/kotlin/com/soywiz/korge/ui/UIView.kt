@@ -18,7 +18,7 @@ open class UIView(
 		get() = mouseEnabled
 		set(value) {
 			mouseEnabled = value
-			onEnabledChanged()
+			updateState()
 		}
 
 	fun enable(set: Boolean = true) {
@@ -32,7 +32,7 @@ open class UIView(
 	protected open fun onSizeChanged() {
 	}
 
-	protected open fun onEnabledChanged() {
+	protected open fun updateState() {
 	}
 
 	override fun renderInternal(ctx: RenderContext) {
@@ -60,5 +60,4 @@ open class UIView(
 			}
 		}
 	}
-
 }

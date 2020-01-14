@@ -23,11 +23,6 @@ open class UIButton(
 	private var bover by uiObservable(false) { updateState() }
 	private var bpressing by uiObservable(false) { updateState() }
 
-	override fun onEnabledChanged() {
-		super.onEnabledChanged()
-		updateState()
-	}
-
 	fun simulateHover() {
 		bover = true
 	}
@@ -66,7 +61,7 @@ open class UIButton(
 		updateState()
 	}
 
-	private fun updateState() {
+	override fun updateState() {
 		when {
 			!enabled -> {
 				rect.tex = skin.disabled
@@ -81,10 +76,6 @@ open class UIButton(
 				rect.tex = skin.normal
 			}
 		}
-		onStateUpdated()
-	}
-
-	protected open fun onStateUpdated() {
 	}
 
 	override fun onSizeChanged() {

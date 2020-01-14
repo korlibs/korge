@@ -10,7 +10,7 @@ inline fun Container.uiTextButton(
 	height: Number = 64,
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
-	textFont: Html.FontFace = DefaultUIFont,
+	textFont: Html.FontFace = defaultUIFont,
 	block: UITextButton.() -> Unit = {}
 ): UITextButton = UITextButton(width.toDouble(), height.toDouble(), text, skin, textFont).addTo(this).apply(block)
 
@@ -36,6 +36,11 @@ open class UITextButton(
 	private val textView = text(text)
 	private val textShadow = text(text)
 
+	init {
+		updateText()
+		updateShadow()
+	}
+
 	private fun updateText() {
 		textView.format = Html.Format(face = textFont, size = textSize, color = textColor, align = textAlignment)
 		textView.setTextBounds(Rectangle(0, 0, width, height))
@@ -48,5 +53,11 @@ open class UITextButton(
 		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 		textShadow.setText(text)
 		textShadow.position(shadowX, shadowY)
+	}
+
+	override fun onSizeChanged() {
+		super.onSizeChanged()
+		textView.setTextBounds(Rectangle(0, 0, width, height))
+		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 	}
 }
