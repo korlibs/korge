@@ -7,21 +7,21 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiCheckBox(
-	checked: Boolean = false,
 	width: Number = 120.0,
 	height: Number = 32.0,
+	checked: Boolean = false,
 	text: String = "CheckBox",
 	textFont: Html.FontFace = defaultUIFont,
 	skin: UISkin = defaultUISkin,
 	checkedSkin: UISkin? = null,
 	block: UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(checked, width.toDouble(), height.toDouble(), text, textFont, skin, checkedSkin)
+): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkedSkin)
 	.addTo(this).apply(block)
 
 open class UICheckBox(
-	checked: Boolean = false,
 	width: Double = 120.0,
 	height: Double = 32.0,
+	checked: Boolean = false,
 	text: String = "CheckBox",
 	textFont: Html.FontFace = DefaultUIFont,
 	private val skin: UISkin = DefaultUISkin,

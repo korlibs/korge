@@ -1,7 +1,10 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
+import com.soywiz.korge.html.*
+import com.soywiz.korge.html.Html.Alignment.Companion.MIDDLE_CENTER
 import com.soywiz.korge.input.*
+import com.soywiz.korge.ui.UIScrollBar.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -14,9 +17,12 @@ inline fun Container.uiScrollBar(
 	pageSize: Number = 1.0,
 	totalSize: Number = 10.0,
 	buttonSize: Number = 32.0,
-	direction: UIScrollBar.Direction = if (width.toDouble() > height.toDouble()) UIScrollBar.Direction.Horizontal else UIScrollBar.Direction.Vertical,
 	stepSize: Double = pageSize.toDouble() / 10.0,
+	direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
+	font: Html.FontFace = defaultUIFont,
 	skin: UISkin = defaultUISkin,
+	upSkin: UISkin? = null,
+	downSkin: UISkin? = null,
 	block: UIScrollBar.() -> Unit = {}
 ): UIScrollBar = UIScrollBar(
 	width.toDouble(),
@@ -27,8 +33,11 @@ inline fun Container.uiScrollBar(
 	buttonSize.toDouble(),
 	direction,
 	stepSize,
-	skin
-).also { addChild(it) }.apply(block)
+	font,
+	skin,
+	upSkin,
+	downSkin
+).addTo(this).apply(block)
 
 open class UIScrollBar(
 	width: Double,
@@ -39,95 +48,114 @@ open class UIScrollBar(
 	buttonSize: Double = 32.0,
 	direction: Direction = if (width > height) Direction.Horizontal else Direction.Vertical,
 	var stepSize: Double = pageSize / 10.0,
-	skin: UISkin = DefaultUISkin
+	font: Html.FontFace = DefaultUIFont,
+	skin: UISkin = DefaultUISkin,
+	upSkin: UISkin? = null,
+	downSkin: UISkin? = null
 ) : UIView() {
-	val onChange = Signal<UIScrollBar>()
+
 	enum class Direction { Vertical, Horizontal }
-	var current by uiObservable(current) { updatedPos() }
-	var pageSize by uiObservable(pageSize) { updatedPos() }
-	var totalSize by uiObservable(totalSize) { updatedPos() }
+
+	override var width by uiObservable(width) { reshape() }
+	override var height by uiObservable(height) { reshape() }
+	var buttonSize by uiObservable(buttonSize) { reshape() }
 	var direction by uiObservable(direction) { reshape() }
+
+	var current by uiObservable(current) { updatePosition() }
+	var pageSize by uiObservable(pageSize) { updatePosition() }
+	var totalSize by uiObservable(totalSize) { updatePosition() }
+
+	var buttonVisible by uiObservable(true) {
+		upButton.visible = it
+		downButton.visible = it
+		reshape()
+	}
+
 	val isHorizontal get() = direction == Direction.Horizontal
 	val isVertical get() = direction == Direction.Vertical
+
+	val buttonWidth get() = if (!buttonVisible) 0.0 else if (isHorizontal) buttonSize else width
+	val buttonHeight get() = if (!buttonVisible) 0.0 else if (isHorizontal) height else buttonSize
+	val trackWidth get() = if (isHorizontal) width - buttonWidth * 2 else width
+	val trackHeight get() = if (isHorizontal) height else height - buttonHeight * 2
+
+	val onChange = Signal<UIScrollBar>()
+
 	override var ratio: Double
-		set(value) = run { current = value.clamp01() * (totalSize - pageSize) }
-		get() = (current / (totalSize - pageSize)).clamp(0.0, 1.0)
-	override var width: Double by uiObservable(width) { reshape() }
-	override var height: Double by uiObservable(height) { reshape() }
-	var buttonSize by uiObservable(buttonSize) { reshape() }
-	val buttonWidth get() = if (isHorizontal) buttonSize else width
-	val buttonHeight get() = if (isHorizontal) height else buttonSize
-	val clientWidth get() = if (isHorizontal) width - buttonWidth * 2 else width
-	val clientHeight get() = if (isHorizontal) height else height - buttonHeight * 2
+		get() = (current / (totalSize - pageSize)).clamp01()
+		set(value) {
+			current = value.clamp01() * (totalSize - pageSize)
+		}
 
 	protected val background = solidRect(100, 100, skin.backColor)
-	protected val lessButton = uiTextButton(16, 16, "-", skin = skin)
-	protected val moreButton = uiTextButton(16, 16, "+", skin = skin)
-	protected val caretButton = uiTextButton(16, 16, "", skin = skin)
+	protected val upButton =
+		if (upSkin == null) uiTextButton(16, 16, "-", skin, font).apply { textAlignment = MIDDLE_CENTER }
+		else uiButton(16, 16, upSkin)
+	protected val downButton =
+		if (downSkin == null) uiTextButton(16, 16, "+", skin, font).apply { textAlignment = MIDDLE_CENTER }
+		else uiButton(16, 16, downSkin)
+	protected val thumb = uiButton(16, 16, skin = skin)
 
 	protected val views get() = stage?.views
 
 	init {
 		reshape()
 
-		var slx: Double = 0.0
-		var sly: Double = 0.0
-		var iratio: Double = 0.0
-		var sratio: Double = 0.0
-		val tempP = Point()
-
-		lessButton.onDown {
-			deltaCurrent(-stepSize)
+		upButton.onDown {
+			changeCurrent(-stepSize)
 			reshape()
 		}
-		moreButton.onDown {
-			deltaCurrent(+stepSize)
+		downButton.onDown {
+			changeCurrent(+stepSize)
 			reshape()
 		}
 		background.onClick {
-			val pos = if (isHorizontal) caretButton.localMouseX(views!!) else caretButton.localMouseY(views!!)
-			deltaCurrent(this.pageSize * pos.sign)
+			val pos = if (isHorizontal) thumb.localMouseX(views!!) else thumb.localMouseY(views!!)
+			changeCurrent(pos.sign * 0.8 * this.pageSize)
 		}
-		caretButton.onMouseDrag {
+
+		val tempP = Point()
+		var initRatio = 0.0
+		var startRatio = 0.0
+		thumb.onMouseDrag {
 			val lmouse = background.localMouseXY(views, tempP)
-			val lx = lmouse.x
-			val ly = lmouse.y
-			val cratio = if (isHorizontal) lmouse.x / background.width else lmouse.y / background.height
+			val curPosition = if (isHorizontal) lmouse.x else lmouse.y
+			val size = if (isHorizontal) background.width - thumb.width else background.height - thumb.height
+			val curRatio = curPosition / size
 			if (it.start) {
-				slx = lx
-				sly = ly
-				iratio = ratio
-				sratio = cratio
+				initRatio = ratio
+				startRatio = curRatio
 			}
-			val dratio = cratio - sratio
-			ratio = iratio + dratio
+			ratio = initRatio + (curRatio - startRatio)
 			reshape()
 		}
 	}
 
-	private fun deltaCurrent(value: Double) {
-		//println("deltaCurrent: $value")
+	protected fun changeCurrent(value: Double) {
 		current = (current + value).clamp(0.0, totalSize - pageSize)
 	}
 
-	private fun reshape() {
+	protected fun reshape() {
 		if (isHorizontal) {
-			background.position(buttonWidth, 0).size(clientWidth, clientHeight)
-			lessButton.position(0, 0).size(buttonWidth, buttonHeight)
-			moreButton.position(width - buttonWidth, 0).size(buttonWidth, buttonHeight)
-			val caretWidth = (clientWidth * (pageSize / totalSize)).clamp(4.0, clientWidth)
-			caretButton.position(buttonWidth + (clientWidth - caretWidth) * ratio, 0).size(caretWidth, buttonHeight)
+			background.position(buttonWidth, 0).size(trackWidth, trackHeight) //
+			upButton.position(0, 0).size(buttonWidth, buttonHeight) //
+			downButton.position(width - buttonWidth, 0).size(buttonWidth, buttonHeight) //
 		} else {
-			background.position(0, buttonHeight).size(clientWidth, clientHeight)
-			lessButton.position(0, 0).size(buttonWidth, buttonHeight)
-			moreButton.position(0, height - buttonHeight).size(buttonWidth, buttonHeight)
-			val caretHeight = (clientHeight * (pageSize / totalSize)).clamp(4.0, clientHeight)
-			caretButton.position(0, buttonHeight + (clientHeight - caretHeight) * ratio).size(buttonWidth, caretHeight)
+			background.position(0, buttonHeight).size(trackWidth, trackHeight) //
+			upButton.position(0, 0).size(buttonWidth, buttonHeight) //
+			downButton.position(0, height - buttonHeight).size(buttonWidth, buttonHeight) //
 		}
+		updatePosition()
 	}
 
-	private fun updatedPos() {
-		reshape()
+	protected fun updatePosition() {
+		if (isHorizontal) {
+			val thumbWidth = (trackWidth * (pageSize / totalSize)).clamp(4.0, trackWidth)
+			thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0).size(thumbWidth, trackHeight)
+		} else {
+			val thumbHeight = (trackHeight * (pageSize / totalSize)).clamp(4.0, trackHeight)
+			thumb.position(0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
+		}
 		onChange(this)
 	}
 }
