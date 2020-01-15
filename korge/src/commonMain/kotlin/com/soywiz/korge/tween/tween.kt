@@ -174,6 +174,9 @@ internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mix
 @PublishedApi
 internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = Angle(_interpolate(ratio, l.radians, r.radians))
 
+@PublishedApi
+internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
+
 //inline operator fun KMutableProperty0<Float>.get(end: Number) = V2(this, this.get(), end.toFloat(), ::_interpolateFloat)
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
@@ -189,6 +192,10 @@ inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
 inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle)
 inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) =
 	V2(this, initial, end, ::_interpolateAngle)
+
+inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan)
+inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) =
+    V2(this, initial, end, ::_interpolateTimeSpan)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
