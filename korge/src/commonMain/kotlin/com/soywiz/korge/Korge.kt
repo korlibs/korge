@@ -439,7 +439,7 @@ object Korge {
 		val input = Input()
 		val stats = Stats()
 		Fonts.init()
-		val views = Views(coroutineDispatcher, ag, injector, input, TimeProvider, stats, gameWindow)
+		val views = Views(coroutineContext + Job(), ag, injector, input, TimeProvider, stats, gameWindow)
 		injector
 			.mapInstance(views)
 			.mapInstance(input)
@@ -460,7 +460,9 @@ object Korge {
 		views.clipBorders = clipBorders
 		views.targetFps = targetFps
 		Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-        views.stage.launchImmediately {
+        views.launchImmediately {
+            //println("coroutineContext: $coroutineContext")
+            //println("GameWindow: ${coroutineContext[GameWindow]}")
             entry(views.stage)
         }
 		if (OS.isNative) println("CanvasApplicationEx.IN[1]")
