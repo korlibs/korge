@@ -8,14 +8,14 @@ inline fun Container.uiProgressBar(
 	current: Number = 0.0,
 	maximum: Number = 1.0,
 	skin: UISkin = defaultUISkin,
-	block: UIProgressBar.() -> Unit = {}
+	block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
 ): UIProgressBar = UIProgressBar(
 	width.toDouble(),
 	height.toDouble(),
 	current.toDouble(),
 	maximum.toDouble(),
 	skin
-).also { addChild(it) }.also(block)
+).addTo(this).apply(block)
 
 open class UIProgressBar(
 	width: Double = 256.0,
@@ -24,22 +24,37 @@ open class UIProgressBar(
 	maximum: Double = 1.0,
 	skin: UISkin = DefaultUISkin
 ) : UIView(width, height) {
-	var current: Double by uiObservable(current) { onSizeChanged() }
-	var maximum: Double by uiObservable(maximum) { onSizeChanged() }
+
+	var current by uiObservable(current) { updateState() }
+	var maximum by uiObservable(maximum) { updateState() }
+	var skin by uiObservable(skin) {
+		background.color = it.backColor
+		onSkinChanged()
+	}
+
 	override var ratio: Double
 		set(value) = run { current = value * maximum }
 		get() = current / maximum
 
-	private val bg = solidRect(width, height, skin.backColor)
-	private val progress = uiTextButton(width, height, "", skin = skin).also { mouseEnabled = false }
+	private val background = solidRect(width, height, skin.backColor)
+	protected open val progressView: View =
+		ninePatch(skin.normal, width * current / maximum, height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
 
 	init {
 		onSizeChanged()
 	}
 
 	override fun onSizeChanged() {
-		bg.size(width, height)
-		progress.forcePressed = true
-		progress.size(width * ratio, height)
+		background.size(width, height)
+		updateState()
+	}
+
+	override fun updateState() {
+		progressView.size(width * ratio, height)
+	}
+
+	protected open fun onSkinChanged() {
+		(progressView as? NinePatch)?.tex = skin.normal
+		background.color = skin.backColor
 	}
 }

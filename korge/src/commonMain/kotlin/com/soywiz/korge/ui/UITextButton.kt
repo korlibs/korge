@@ -11,7 +11,7 @@ inline fun Container.uiTextButton(
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
 	textFont: Html.FontFace = defaultUIFont,
-	block: UITextButton.() -> Unit = {}
+	block: @ViewsDslMarker UITextButton.() -> Unit = {}
 ): UITextButton = UITextButton(width.toDouble(), height.toDouble(), text, skin, textFont).addTo(this).apply(block)
 
 open class UITextButton(

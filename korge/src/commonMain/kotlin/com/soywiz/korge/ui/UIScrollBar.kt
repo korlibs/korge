@@ -23,7 +23,7 @@ inline fun Container.uiScrollBar(
 	skin: UISkin = defaultUISkin,
 	upSkin: UISkin? = null,
 	downSkin: UISkin? = null,
-	block: UIScrollBar.() -> Unit = {}
+	block: @ViewsDslMarker UIScrollBar.() -> Unit = {}
 ): UIScrollBar = UIScrollBar(
 	width.toDouble(),
 	height.toDouble(),
