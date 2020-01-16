@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.html.*
 import com.soywiz.korge.view.*
 
 inline fun Container.uiScrollableArea(
@@ -10,9 +11,14 @@ inline fun Container.uiScrollableArea(
 	buttonSize: Number = 32.0,
 	verticalScroll: Boolean = true,
 	horizontalScroll: Boolean = true,
+	font: Html.FontFace = defaultUIFont,
 	skin: UISkin = defaultUISkin,
-	config: UIScrollableArea.() -> Unit = {},
-	block: Container.() -> Unit = {}
+	upSkin: UISkin? = null,
+	downSkin: UISkin? = null,
+	leftSkin: UISkin? = null,
+	rightSkin: UISkin? = null,
+	config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
+	block: @ViewsDslMarker Container.() -> Unit = {}
 ): UIScrollableArea = UIScrollableArea(
 	width.toDouble(),
 	height.toDouble(),
@@ -21,8 +27,13 @@ inline fun Container.uiScrollableArea(
 	buttonSize.toDouble(),
 	verticalScroll,
 	horizontalScroll,
-	skin
-).also { addChild(it) }.also(config).also { block(it.container) }
+	font,
+	skin,
+	upSkin,
+	downSkin,
+	leftSkin,
+	rightSkin
+).addTo(this).apply(config).also { block(it.container) }
 
 // @TODO: Optimize this!
 // @TODO: Add an actualContainer = this inside Container
@@ -34,8 +45,14 @@ open class UIScrollableArea(
 	buttonSize: Double = 32.0,
 	verticalScroll: Boolean = true,
 	horizontalScroll: Boolean = true,
-	skin: UISkin = DefaultUISkin
+	font: Html.FontFace = DefaultUIFont,
+	skin: UISkin = DefaultUISkin,
+	upSkin: UISkin? = null,
+	downSkin: UISkin? = null,
+	leftSkin: UISkin? = null,
+	rightSkin: UISkin? = null
 ) : UIView(width, height) {
+
 	var buttonSize by uiObservable(buttonSize) { onSizeChanged() }
 
 	var contentWidth by uiObservable(contentWidth) { onSizeChanged() }
@@ -44,13 +61,18 @@ open class UIScrollableArea(
 	var verticalScroll by uiObservable(verticalScroll) { onSizeChanged() }
 	var horizontalScroll by uiObservable(horizontalScroll) { onSizeChanged() }
 
-	val clientWidth get() = if (verticalScroll) width - buttonSize else width
-	val clientHeight get() = if (horizontalScroll) height - buttonSize else height
+	var stepRatio by uiObservable(0.1) { onSizeChanged() }
 
-	val clipContainer = clipContainer(clientWidth, clientHeight)
+	val viewportWidth get() = if (verticalScroll) width - buttonSize else width
+	val viewportHeight get() = if (horizontalScroll) height - buttonSize else height
+
+	val clipContainer = clipContainer(viewportWidth, viewportHeight)
 	val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
-	val horScroll = uiScrollBar(width, buttonSize, skin = skin).also { it.onChange { moved() } }
-	val verScroll = uiScrollBar(buttonSize, height, skin = skin).also { it.onChange { moved() } }
+
+	val horScrollBar = uiScrollBar(width, buttonSize, font = font, skin = skin, upSkin = leftSkin, downSkin = rightSkin)
+		.also { it.onChange { onMoved() } }
+	val verScrollBar = uiScrollBar(buttonSize, height, font = font, skin = skin, upSkin = upSkin, downSkin = downSkin)
+		.also { it.onChange { onMoved() } }
 
 	init {
 		onSizeChanged()
@@ -59,24 +81,28 @@ open class UIScrollableArea(
 	override fun onSizeChanged() {
 		super.onSizeChanged()
 
-		horScroll.totalSize = contentWidth
-		horScroll.pageSize = clientWidth
-		horScroll.stepSize = clientWidth / 4
+		horScrollBar.totalSize = contentWidth
+		horScrollBar.pageSize = viewportWidth
+		horScrollBar.stepSize = viewportWidth * stepRatio
 
-		verScroll.totalSize = contentHeight
-		verScroll.pageSize = clientHeight
-		verScroll.stepSize = clientHeight / 4
+		verScrollBar.totalSize = contentHeight
+		verScrollBar.pageSize = viewportHeight
+		verScrollBar.stepSize = viewportHeight * stepRatio
 
-		clipContainer.size(clientWidth, clientHeight)
+		clipContainer.size(viewportWidth, viewportHeight)
 		container.size(contentWidth, contentHeight)
 
-		horScroll.size(clientWidth, buttonSize).position(0, height - buttonSize).also { it.visible = horizontalScroll }
-		verScroll.size(buttonSize, clientHeight).position(width - buttonSize, 0).also { it.visible = verticalScroll }
+		horScrollBar.size(viewportWidth, buttonSize)
+		horScrollBar.position(0, height - buttonSize)
+		horScrollBar.visible = horizontalScroll
+
+		verScrollBar.size(buttonSize, viewportHeight)
+		verScrollBar.position(width - buttonSize, 0)
+		verScrollBar.visible = verticalScroll
 	}
 
-	protected fun moved() {
-		//println("" + verScroll.current + " :: " + verScroll.totalSize + " :: " + verScroll.pageSize + " :: " + verScroll.stepSize)
-		container.x = -horScroll.current
-		container.y = -verScroll.current
+	protected open fun onMoved() {
+		container.x = -horScrollBar.current
+		container.y = -verScrollBar.current
 	}
 }
