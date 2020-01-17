@@ -2,7 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.html.*
-import com.soywiz.korge.html.Html.Alignment.Companion.MIDDLE_CENTER
 import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.UIScrollBar.*
 import com.soywiz.korge.view.*
@@ -89,10 +88,10 @@ open class UIScrollBar(
 
 	protected val background = solidRect(100, 100, skin.backColor)
 	protected val upButton =
-		if (upSkin == null) uiTextButton(16, 16, "-", skin, font).apply { textAlignment = MIDDLE_CENTER }
+		if (upSkin == null) uiTextButton(16, 16, "-", skin, font)
 		else uiButton(16, 16, upSkin)
 	protected val downButton =
-		if (downSkin == null) uiTextButton(16, 16, "+", skin, font).apply { textAlignment = MIDDLE_CENTER }
+		if (downSkin == null) uiTextButton(16, 16, "+", skin, font)
 		else uiButton(16, 16, downSkin)
 	protected val thumb = uiButton(16, 16, skin = skin)
 

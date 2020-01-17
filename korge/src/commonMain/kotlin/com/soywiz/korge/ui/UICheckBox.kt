@@ -4,6 +4,7 @@ import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiCheckBox(
@@ -27,11 +28,14 @@ open class UICheckBox(
 	private val skin: UISkin = DefaultUISkin,
 	private val checkedSkin: UISkin? = null
 ) : UIView(width, height) {
+
 	var checked by uiObservable(checked) { updateState() }
 	var text by uiObservable(text) { updateText() }
 	var textFont by uiObservable(textFont) { updateText() }
 	var textSize by uiObservable(16) { updateText() }
 	var textColor by uiObservable(Colors.WHITE) { updateText() }
+
+	val onChange = Signal<UICheckBox>()
 
 	private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 	private val box = uiTextButton(height, height, skin = skin)
@@ -46,7 +50,7 @@ open class UICheckBox(
 		}
 		mouse {
 			onOver {
-				box.simulateHover()
+				box.simulateOver()
 			}
 			onOut {
 				box.simulateOut()
@@ -72,6 +76,7 @@ open class UICheckBox(
 		} else {
 			box.skin = if (checked) checkedSkin else skin
 		}
+		onChange(this)
 	}
 
 	private fun updateText() {

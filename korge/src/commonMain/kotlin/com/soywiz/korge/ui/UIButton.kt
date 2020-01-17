@@ -23,7 +23,7 @@ open class UIButton(
 	private var bover by uiObservable(false) { updateState() }
 	private var bpressing by uiObservable(false) { updateState() }
 
-	fun simulateHover() {
+	fun simulateOver() {
 		bover = true
 	}
 
@@ -46,7 +46,7 @@ open class UIButton(
 	init {
 		mouse {
 			onOver {
-				simulateHover()
+				simulateOver()
 			}
 			onOut {
 				simulateOut()
