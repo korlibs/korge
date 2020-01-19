@@ -12,7 +12,9 @@ import kotlin.jvm.*
 inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).apply(callback)
 inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this).apply(callback)
 
-open class Graphics @JvmOverloads constructor(var autoScaling: Boolean = false) : Image(Bitmaps.transparent), VectorBuilder {
+open class Graphics @JvmOverloads constructor(
+    var autoScaling: Boolean = false
+) : Image(Bitmaps.transparent), VectorBuilder {
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
 	private var fill: Context2d.Paint? = null
@@ -210,7 +212,10 @@ open class Graphics @JvmOverloads constructor(var autoScaling: Boolean = false) 
 			shapes.fastForEach { it.addBounds(bb) }
 			bb.getBounds(bounds)
 
-			val image = NativeImage((bounds.width * renderedAtScaleX).toInt(), (bounds.height * renderedAtScaleY).toInt())
+			val image = NativeImage(
+                (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
+                (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
+            )
 			image.context2d {
                 scale(renderedAtScaleX, renderedAtScaleY)
 				translate(-bounds.x, -bounds.y)
