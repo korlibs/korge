@@ -10,8 +10,7 @@ import kotlin.test.*
 
 class GraphicsTest {
 	@Test
-	@Ignore // @TODO: Enable with Korim is updated with its fixes for Node.JS
-	fun test() = suspendTest {
+	fun test() {
 		val g = Graphics().apply {
 			fill(Colors.RED) {
 				rect(-50, -50, 100, 100)
@@ -25,8 +24,19 @@ class GraphicsTest {
 		assertEquals("#ff0000ff", bmp[99, 99].hexString)
 		assertEquals(-50.0, g._sLeft)
 		assertEquals(-50.0, g._sTop)
-
 	}
+
+    @Test
+    fun testEmptyGraphics() {
+        val g = Graphics().apply {
+        }
+        val rc = TestRenderContext()
+        g.render(rc)
+        val bmp = g.bitmap.bmp.toBMP32()
+        // This would fail in Android
+        assertTrue(bmp.width > 0)
+        assertTrue(bmp.height > 0)
+    }
 }
 
 fun TestRenderContext() = RenderContext(LogAG())
