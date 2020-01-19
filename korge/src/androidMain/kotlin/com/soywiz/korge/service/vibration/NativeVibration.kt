@@ -22,17 +22,13 @@ actual class NativeVibration actual constructor(views: Views) {
      */
     @ExperimentalUnsignedTypes
     @SuppressLint("MissingPermission")
-    actual fun vibrate(timings: Array<TimeSpan>, amplitudes: Array<UInt>) {
+    actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<UInt>) {
         val onOffTimings = (listOf(TimeSpan.NULL) + timings).map { it.millisecondsLong }.toLongArray()
         if (amplitudes.size != onOffTimings.size) {
             vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
         } else {
             vibrator?.vibrate(
-                VibrationEffect.createWaveform(
-                    onOffTimings,
-                    amplitudes.toUIntArray().toIntArray(),
-                    NO_REPEAT
-                )
+                VibrationEffect.createWaveform(onOffTimings, amplitudes.toUIntArray().toIntArray(), NO_REPEAT)
             )
         }
 

@@ -15,7 +15,7 @@ expect class NativeVibration constructor(views: Views) {
      *        Ignored if the size is not equal with the timings.
      */
     @ExperimentalUnsignedTypes
-    fun vibrate(timings: Array<TimeSpan>, amplitudes: Array<UInt> = emptyArray())
+    fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<UInt> = emptyArray())
 
     /**
      * @param time vibration duration in milliseconds

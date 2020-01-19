@@ -9,7 +9,7 @@ actual class NativeVibration actual constructor(val views: Views) {
      * @param amplitudes list of intensities of the vibration (0-255)
      */
     @ExperimentalUnsignedTypes
-    actual fun vibrate(timings: Array<TimeSpan>, amplitudes: Array<UInt>) {
+    actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<UInt>) {
     }
 
     /**
