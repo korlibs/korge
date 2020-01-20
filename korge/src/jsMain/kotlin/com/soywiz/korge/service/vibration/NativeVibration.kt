@@ -1,11 +1,26 @@
 package com.soywiz.korge.service.vibration
 
-import com.soywiz.klock.*
-import com.soywiz.korge.view.*
-import kotlin.browser.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.view.Views
+import kotlin.browser.window
 
 actual class NativeVibration actual constructor(val views: Views) {
-    actual fun vibrate(pattern: Array<TimeSpan>) {
-        window.navigator.vibrate(pattern.map { it.milliseconds }.toTypedArray())
+
+    /**
+     * @param timings list of alternating ON-OFF durations in milliseconds. Staring with ON.
+     * @param amplitudes has no effect on JS backend
+     */
+    @ExperimentalUnsignedTypes
+    actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double>) {
+        window.navigator.vibrate(timings.map { it.milliseconds }.toTypedArray())
+    }
+
+    /**
+     * @param time vibration duration in milliseconds
+     * @param amplitude has no effect on JS backend
+     */
+    @ExperimentalUnsignedTypes
+    actual fun vibrate(time: TimeSpan, amplitude: Double) {
+        window.navigator.vibrate(time.milliseconds)
     }
 }
