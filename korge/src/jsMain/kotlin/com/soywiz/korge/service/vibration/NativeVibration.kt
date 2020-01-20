@@ -11,7 +11,7 @@ actual class NativeVibration actual constructor(val views: Views) {
      * @param amplitudes has no effect on JS backend
      */
     @ExperimentalUnsignedTypes
-    actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<UInt>) {
+    actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double>) {
         window.navigator.vibrate(timings.map { it.milliseconds }.toTypedArray())
     }
 
@@ -20,7 +20,7 @@ actual class NativeVibration actual constructor(val views: Views) {
      * @param amplitude has no effect on JS backend
      */
     @ExperimentalUnsignedTypes
-    actual fun vibrate(time: TimeSpan, amplitude: UInt) {
+    actual fun vibrate(time: TimeSpan, amplitude: Double) {
         window.navigator.vibrate(time.milliseconds)
     }
 }

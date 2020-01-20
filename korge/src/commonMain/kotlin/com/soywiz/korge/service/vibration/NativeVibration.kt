@@ -11,16 +11,17 @@ expect class NativeVibration constructor(views: Views) {
 
     /**
      * @param timings list of alternating ON-OFF durations in milliseconds. Staring with ON.
-     * @param amplitudes list of intensities of the vibration (0-255). Only supported on Android target.
-     *        Ignored if the size is not equal with the timings.
+     * @param amplitudes list of intensities of the vibration. A `0.2` results in 20% vibration power.
+     *        Only supported on Android target. Ignored if the size is not equal with the timings.
      */
     @ExperimentalUnsignedTypes
-    fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<UInt> = emptyArray())
+    fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double> = emptyArray())
 
     /**
      * @param time vibration duration in milliseconds
-     * @param amplitude intensity of the vibration (0-255). Only supported on Android target.
+     * @param amplitude percentage intensity of the vibration. A `0.2` results in 20% vibration power.
+     *        Only supported on Android target.
      */
     @ExperimentalUnsignedTypes
-    fun vibrate(time: TimeSpan, amplitude: UInt = 255U)
+    fun vibrate(time: TimeSpan, amplitude: Double = 1.0)
 }
