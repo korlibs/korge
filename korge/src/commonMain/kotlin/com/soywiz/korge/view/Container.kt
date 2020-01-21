@@ -26,7 +26,7 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
  */
 @UseExperimental(KorgeInternal::class)
 open class Container : View() {
-	override val isContainer get() = false
+	override val isContainer get() = true
 
     @KorgeInternal
     @PublishedApi

@@ -1,10 +1,10 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import kotlin.reflect.*
 
-inline fun <T> uiObservable(value: T, noinline observe: () -> Unit) = UIObservable(value, observe)
+inline fun <T> uiObservable(value: T, noinline observe: (T) -> Unit) = UIObservable(value, observe)
 
-class UIObservable<T>(val initial: T, val observe: () -> Unit) {
+class UIObservable<T>(val initial: T, val observe: (T) -> Unit) {
 	var currentValue = initial
 
 	operator fun getValue(obj: Any, prop: KProperty<*>): T {
@@ -13,6 +13,6 @@ class UIObservable<T>(val initial: T, val observe: () -> Unit) {
 
 	operator fun setValue(obj: Any, prop: KProperty<*>, value: T) {
 		currentValue = value
-		observe()
+		observe(value)
 	}
 }

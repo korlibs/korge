@@ -1,14 +1,20 @@
-package com.soywiz.korge.newui
+package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
+
+@PublishedApi
+internal var View.internalDefaultUISkin: UISkin? by extraProperty("defaultUiSkin") { null }
+
+var View.defaultUISkin: UISkin
+	get() = internalDefaultUISkin ?: parent?.defaultUISkin ?: DefaultUISkin
+	set(value) { internalDefaultUISkin = value }
 
 val DEFAULT_UI_SKIN_IMG by lazy {
 	PNG.decode(
@@ -20,26 +26,18 @@ val DefaultUISkin by lazy {
 	UISkin(
 		normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 0, 64, 64),
 		hover = DEFAULT_UI_SKIN_IMG.sliceWithSize(64, 0, 64, 64),
-		down = DEFAULT_UI_SKIN_IMG.sliceWithSize(127, 0, 64, 64),
-		font = Html.FontFace.Bitmap(getSyncDebugBmpFontOnce())
+		down = DEFAULT_UI_SKIN_IMG.sliceWithSize(127, 0, 64, 64)
 	)
 }
 
-private class SyncOnce<T> {
-	var value: T? = null
+@PublishedApi
+internal var View.internalDefaultUIFont: Html.FontFace? by extraProperty("defaultUiFont") { null }
 
-	operator fun invoke(callback: () -> T): T {
-		if (value == null) {
-			value = callback()
-		}
-		return value!!
-	}
-}
+var View.defaultUIFont: Html.FontFace
+	get() = internalDefaultUIFont ?: parent?.defaultUIFont ?: DefaultUIFont
+	set(value) { internalDefaultUIFont = value }
 
-
-private var bmpFontOnce2 = SyncOnce<BitmapFont>()
-
-private fun getSyncDebugBmpFontOnce() = bmpFontOnce2 {
+val DefaultUIFont by lazy {
 	val tex = PNG.decode(DebugBitmapFont.DEBUG_FONT_BYTES).toBMP32().premultiplied().slice()
 	val fntAdvance = 7
 	val fntWidth = 8
@@ -50,10 +48,10 @@ private fun getSyncDebugBmpFontOnce() = bmpFontOnce2 {
 	val fntBlockWidth = 12
 	val fntBlockHeight = 12
 
-	BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associate {
+	val bitmapFont = BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associateWith {
 		val x = it % 16
 		val y = it / 16
-		it to BitmapFont.Glyph(
+		BitmapFont.Glyph(
 			it,
 			tex.sliceWithSize(x * fntBlockWidth + fntBlockX, y * fntBlockHeight + fntBlockY, fntWidth, fntHeight),
 			0,
@@ -61,4 +59,6 @@ private fun getSyncDebugBmpFontOnce() = bmpFontOnce2 {
 			fntAdvance
 		)
 	}.toIntMap(), IntMap())
+
+	Html.FontFace.Bitmap(bitmapFont)
 }

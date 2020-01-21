@@ -24,10 +24,10 @@ suspend fun getDebugBmpFontOnce() = bmpFontOnce2 {
     val fntBlockWidth = 12
     val fntBlockHeight = 12
 
-    BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associate {
+    BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associateWith {
 		val x = it % 16
 		val y = it / 16
-		it to BitmapFont.Glyph(
+		BitmapFont.Glyph(
 			it,
 			tex.sliceWithSize(x * fntBlockWidth + fntBlockX, y * fntBlockHeight + fntBlockY, fntWidth, fntHeight),
 			0,
