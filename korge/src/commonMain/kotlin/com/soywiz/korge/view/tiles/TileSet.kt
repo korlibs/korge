@@ -82,7 +82,7 @@ class TileSet(
 			val btilewidth = tilewidth + border2
 			val btileheight = tileheight + border2
 			val barea = btilewidth * btileheight
-			val fullArea = bitmaps.size * barea
+			val fullArea = bitmaps.size.nextPowerOfTwo * barea
 			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
 
 			val out = Bitmap32(expectedSide, expectedSide).mipmaps(mipmaps)
