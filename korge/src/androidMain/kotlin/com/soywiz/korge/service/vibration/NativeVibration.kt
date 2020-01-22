@@ -50,7 +50,7 @@ actual class NativeVibration actual constructor(views: Views) {
      */
     private fun Double.toAndroidAmplitude() : Int{
         val amplitude = 255 * abs(this)
-        return min(amplitude, 1.0).toInt()
+        return min(amplitude, 255.0).toInt()
     }
 
 }
