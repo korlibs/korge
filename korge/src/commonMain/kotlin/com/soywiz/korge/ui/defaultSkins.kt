@@ -12,6 +12,11 @@ data class UISkin(
     val backColor: RGBA = Colors.DARKGREY
 )
 
+data class CheckBoxSkin(
+    val normal: UISkin = DefaultUISkin,
+    val checked: UISkin = DefaultCheckedSkin
+)
+
 val DefaultUISkin by lazy {
     UISkin(
         normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 0, 64, 64),
@@ -21,4 +26,21 @@ val DefaultUISkin by lazy {
     )
 }
 
+val DefaultCheckedSkin by lazy {
+    UISkin(
+        normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(0, 0, 64, 64),
+        hover = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(64, 0, 64, 64),
+        down = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(128, 0, 64, 64),
+        disabled = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(192, 0, 64, 64)
+    )
+}
+
+val DefaultCheckBoxSkin by lazy {
+    CheckBoxSkin(
+        normal = DefaultUISkin,
+        checked = DefaultCheckedSkin
+    )
+}
+
 var View.defaultUISkin: UISkin by defaultElement(DefaultUISkin)
+var View.defaultCheckBoxSkin: CheckBoxSkin by defaultElement(DefaultCheckBoxSkin)

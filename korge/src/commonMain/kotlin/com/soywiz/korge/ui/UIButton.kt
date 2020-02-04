@@ -18,7 +18,7 @@ open class UIButton(
 
 	var forcePressed by uiObservable(false) { updateState() }
 	var skin: UISkin by uiObservable(skin) { updateState() }
-	protected open val rect = ninePatch(skin.normal, width, height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
+	protected open val rect = ninePatch(skin.normal, width, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
 
 	private var bover by uiObservable(false) { updateState() }
 	private var bpressing by uiObservable(false) { updateState() }

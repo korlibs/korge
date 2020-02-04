@@ -86,6 +86,14 @@ open class UIComboBox<T>(
 			selectedButton.simulateOut()
 			dropButton.simulateOut()
 		}
+        invisibleRect.onDown {
+            selectedButton.simulateDown()
+            dropButton.simulateDown()
+        }
+        invisibleRect.onUp {
+            selectedButton.simulateUp()
+            dropButton.simulateUp()
+        }
 		invisibleRect.onClick {
 			showItems = !showItems
 			onSizeChanged()
