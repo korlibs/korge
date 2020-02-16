@@ -11,16 +11,16 @@ object KorgeUiSample {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
         Korge {
-            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(0, 0, 64, 64))) {
+            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(0, 0, 64, 64))) {
                 position(130, 270)
             }
-            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(64, 0, 64, 64))) {
+            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64, 0, 64, 64))) {
                 position(130, 340)
             }
-            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(128, 0, 64, 64))) {
+            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(128, 0, 64, 64))) {
                 position(130, 410)
             }
-            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(192, 0, 64, 64))) {
+            uiButton(64, 64, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(192, 0, 64, 64))) {
                 position(130, 480)
             }
         }
