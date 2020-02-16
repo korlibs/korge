@@ -24,7 +24,7 @@ fun View.collidesWith(otherList: List<View>, kind: CollisionKind = CollisionKind
 	return false
 }
 
-inline fun <reified T : View> Container.findCollision(subject: View): T? = findCollision(subject) { it is T && it != this } as T?
+inline fun <reified T : View> Container.findCollision(subject: View): T? = findCollision(subject) { it is T && it != subject } as T?
 
 fun Container.findCollision(subject: View, matcher: (View) -> Boolean): View? {
     var collides: View? = null
