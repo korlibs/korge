@@ -119,13 +119,21 @@ class Views constructor(
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
 
-	var targetFps: Double = -1.0
+    val onBeforeRender = Signal<Unit>()
+    val onAfterRender = Signal<Unit>()
+
+    var targetFps: Double = -1.0
 
 	init {
 		injector.mapInstance(CoroutineContext::class, coroutineContext)
 		injector.mapInstance(AG::class, ag)
 		injector.mapInstance(Views::class, this)
-	}
+        onAfterRender {
+            renderContext.flush()
+            renderContext.finish()
+            agBitmapTextureManager.afterRender()
+        }
+    }
 
 	fun dumpStats() {
 		stats.dump()
@@ -178,10 +186,8 @@ class Views constructor(
 		}
 	}
 
-	val onBeforeRender = Signal<Unit>()
-
 	fun render() {
-		onBeforeRender()
+        onBeforeRender()
 		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
 		stage.render(renderContext)
 
@@ -191,10 +197,8 @@ class Views constructor(
 			}
 		}
 
-		renderContext.flush()
-		renderContext.finish()
-		agBitmapTextureManager.afterRender()
-	}
+        onAfterRender()
+    }
 
 	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NULL) {
 		views.stats.startFrame()
