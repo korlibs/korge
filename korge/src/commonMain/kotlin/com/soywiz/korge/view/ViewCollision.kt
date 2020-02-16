@@ -24,6 +24,20 @@ fun View.collidesWith(otherList: List<View>, kind: CollisionKind = CollisionKind
 	return false
 }
 
+inline fun <reified T : View> Container.findCollision(subject: View): T? = findCollision(subject) { it is T && it != this } as T?
+
+fun Container.findCollision(subject: View, matcher: (View) -> Boolean): View? {
+    var collides: View? = null
+    this.foreachDescendant {
+        if (matcher(it)) {
+            if (subject.collidesWith(it)) {
+                collides = it
+            }
+        }
+    }
+    return collides
+}
+
 /**
  * Adds a component to [this] that checks each frame for collisions against descendant views of [root] that matches the [filter],
  * when a collision is found [callback] is executed with this view as receiver, and the collision target as first parameter.
