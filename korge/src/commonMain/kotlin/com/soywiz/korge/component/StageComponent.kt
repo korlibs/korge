@@ -3,10 +3,10 @@ package com.soywiz.korge.component
 import com.soywiz.korge.view.*
 
 /**
+ * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.
+ *
  * Component with [added] and [removed] methods that are executed
  * once the view is going to be displayed, and when the view has been removed
- *
- * Important NOTE: To use this compoennt you have to call the [Views.registerStageComponent] extension method at the start of the APP.
  */
 interface StageComponent : Component {
     fun added(views: Views)
