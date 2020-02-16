@@ -38,27 +38,5 @@ var View.defaultUIFont: Html.FontFace
 	set(value) { internalDefaultUIFont = value }
 
 val DefaultUIFont by lazy {
-	val tex = PNG.decode(DebugBitmapFont.DEBUG_FONT_BYTES).toBMP32().premultiplied().slice()
-	val fntAdvance = 7
-	val fntWidth = 8
-	val fntHeight = 8
-
-	val fntBlockX = 2
-	val fntBlockY = 2
-	val fntBlockWidth = 12
-	val fntBlockHeight = 12
-
-	val bitmapFont = BitmapFont(tex.bmp, fntHeight, fntHeight, fntHeight, (0 until 256).associateWith {
-		val x = it % 16
-		val y = it / 16
-		BitmapFont.Glyph(
-			it,
-			tex.sliceWithSize(x * fntBlockWidth + fntBlockX, y * fntBlockHeight + fntBlockY, fntWidth, fntHeight),
-			0,
-			0,
-			fntAdvance
-		)
-	}.toIntMap(), IntMap())
-
-	Html.FontFace.Bitmap(bitmapFont)
+	Html.FontFace.Bitmap(debugBmpFont)
 }

@@ -47,7 +47,6 @@ object Korge {
 		RegisteredImageFormats.register(*config.module.imageFormats.toTypedArray())
 
 		logger.trace { "pre injector" }
-		Fonts.init()
 		injector
 			// Instances
 			.mapInstance(ModuleArgs::class, moduleArgs)
@@ -438,7 +437,6 @@ object Korge {
 		val injector = AsyncInjector()
 		val input = Input()
 		val stats = Stats()
-		Fonts.init()
 		val views = Views(coroutineContext + Job(), ag, injector, input, TimeProvider, stats, gameWindow)
 		injector
 			.mapInstance(views)
