@@ -47,31 +47,37 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
 	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
+    // Global variants
 	var downPosGlobal = Point()
     var upPosGlobal = Point()
+    val startedPosGlobal = Point()
+    val lastPosGlobal = Point()
+    val currentPosGlobal = Point()
 
-    @Deprecated("Use downPosLocal or downPosGlobal instead")
-    val downPos get() = downPosGlobal
-    @Deprecated("Use downPosLocal or downPosGlobal instead")
-    val upPos get() = upPosGlobal
+    // Local variants
+    private val _downPosLocal: Point = Point()
+    private val _upPosLocal: Point = Point()
+    private val _startedPosLocal = Point()
+    private val _lastPosLocal = Point()
+    private val _currentPosLocal = Point()
 
-    // Local
-    val startedPosLocal = Point()
-    val lastPosLocal = Point()
-    val currentPosLocal = Point()
+    val startedPosLocal get() = view.globalToLocal(startedPosGlobal, _startedPosLocal)
+    val lastPosLocal get() = view.globalToLocal(lastPosGlobal, _lastPosLocal)
+    val currentPosLocal get() = view.globalToLocal(currentPosGlobal, _currentPosLocal)
+    val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
+    val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
 
+    // Deprecated variants
     @Deprecated("Use startedPosLocal instead")
     val startedPos get() = startedPosLocal
     @Deprecated("Use lastPosLocal instead")
     val lastPos get() = lastPosLocal
     @Deprecated("Use currentPosLocal instead")
     val currentPos get() = currentPosLocal
-
-    private val _downPosLocal: Point = Point()
-    private val _upPosLocal: Point = Point()
-
-    val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
-    val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
+    @Deprecated("Use downPosLocal or downPosGlobal instead")
+    val downPos get() = downPosGlobal
+    @Deprecated("Use upPosLocal or upPosGlobal instead")
+    val upPos get() = upPosGlobal
 
     var clickedCount = 0
 
@@ -185,19 +191,19 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 		val pressing = views.input.mouseButtons != 0
 		val overChanged = (lastOver != over)
 		val pressingChanged = pressing != lastPressing
-		view.globalToLocal(views.input.mouse, currentPosLocal)
+        currentPosGlobal.copyFrom(views.input.mouse)
 
 		//println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 
 		//println("MouseComponent: $hitTest, $over")
 
-		if (!overChanged && over && currentPosLocal != lastPosLocal) onMove(this)
-		if (!overChanged && !over && currentPosLocal != lastPosLocal) onMoveOutside(this)
-		if (currentPosLocal != lastPosLocal) onMoveAnywhere(this)
+		if (!overChanged && over && currentPosGlobal != lastPosGlobal) onMove(this)
+		if (!overChanged && !over && currentPosGlobal != lastPosGlobal) onMoveOutside(this)
+		if (currentPosGlobal != lastPosGlobal) onMoveAnywhere(this)
 		if (overChanged && over) onOver(this)
 		if (overChanged && !over) onOut(this)
 		if (over && pressingChanged && pressing) {
-			startedPosLocal.copyFrom(currentPosLocal)
+			startedPosGlobal.copyFrom(currentPosGlobal)
 			onDown(this)
 		}
 		if (overChanged && pressing) {
@@ -214,7 +220,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 
 		lastOver = over
 		lastPressing = pressing
-		lastPosLocal.copyFrom(currentPosLocal)
+		lastPosGlobal.copyFrom(currentPosGlobal)
 		clickedCount = 0
 	}
 }
