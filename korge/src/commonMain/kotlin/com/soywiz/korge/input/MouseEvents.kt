@@ -36,9 +36,6 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val onMoveAnywhere = moveAnywhere
 	val onMoveOutside = mouseOutside
 
-	val startedPos = Point()
-	val lastPos = Point()
-	val currentPos = Point()
 	var hitTest: View? = null; private set
 	private var lastOver = false
 	private var lastPressing = false
@@ -50,9 +47,33 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
 	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
-	var downPos = Point()
-	var upPos = Point()
-	var clickedCount = 0
+	var downPosGlobal = Point()
+    var upPosGlobal = Point()
+
+    @Deprecated("Use downPosLocal or downPosGlobal instead")
+    val downPos get() = downPosGlobal
+    @Deprecated("Use downPosLocal or downPosGlobal instead")
+    val upPos get() = upPosGlobal
+
+    // Local
+    val startedPosLocal = Point()
+    val lastPosLocal = Point()
+    val currentPosLocal = Point()
+
+    @Deprecated("Use startedPosLocal instead")
+    val startedPos get() = startedPosLocal
+    @Deprecated("Use lastPosLocal instead")
+    val lastPos get() = lastPosLocal
+    @Deprecated("Use currentPosLocal instead")
+    val currentPos get() = currentPosLocal
+
+    private val _downPosLocal: Point = Point()
+    private val _upPosLocal: Point = Point()
+
+    val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
+    val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
+
+    var clickedCount = 0
 
 	private fun hitTest(views: Views): View? {
 		if (!views.input.mouseHitSearch) {
@@ -73,8 +94,8 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 		//println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
 			MouseEvent.Type.UP -> {
-				upPos.copyFrom(views.input.mouse)
-				if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
+				upPosGlobal.copyFrom(views.input.mouse)
+				if (upPosGlobal.distanceTo(downPosGlobal) < CLICK_THRESHOLD) {
 					clickedCount++
 					//if (isOver) {
 					//	onClick(this)
@@ -82,7 +103,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 				}
 			}
 			MouseEvent.Type.DOWN -> {
-				downPos.copyFrom(views.input.mouse)
+				downPosGlobal.copyFrom(views.input.mouse)
 			}
 			MouseEvent.Type.CLICK -> {
 				if (isOver) {
@@ -164,19 +185,19 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 		val pressing = views.input.mouseButtons != 0
 		val overChanged = (lastOver != over)
 		val pressingChanged = pressing != lastPressing
-		view.globalToLocal(views.input.mouse, currentPos)
+		view.globalToLocal(views.input.mouse, currentPosLocal)
 
 		//println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 
 		//println("MouseComponent: $hitTest, $over")
 
-		if (!overChanged && over && currentPos != lastPos) onMove(this)
-		if (!overChanged && !over && currentPos != lastPos) onMoveOutside(this)
-		if (currentPos != lastPos) onMoveAnywhere(this)
+		if (!overChanged && over && currentPosLocal != lastPosLocal) onMove(this)
+		if (!overChanged && !over && currentPosLocal != lastPosLocal) onMoveOutside(this)
+		if (currentPosLocal != lastPosLocal) onMoveAnywhere(this)
 		if (overChanged && over) onOver(this)
 		if (overChanged && !over) onOut(this)
 		if (over && pressingChanged && pressing) {
-			startedPos.copyFrom(currentPos)
+			startedPosLocal.copyFrom(currentPosLocal)
 			onDown(this)
 		}
 		if (overChanged && pressing) {
@@ -193,7 +214,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 
 		lastOver = over
 		lastPressing = pressing
-		lastPos.copyFrom(currentPos)
+		lastPosLocal.copyFrom(currentPosLocal)
 		clickedCount = 0
 	}
 }
