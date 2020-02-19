@@ -10,8 +10,13 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import kotlin.js.*
+import kotlin.reflect.*
 
 class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews {
+    lateinit var views: Views
+    val coroutineContext get() = views.coroutineContext
+
 	val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
 	val out = Signal<MouseEvents>()
@@ -24,19 +29,65 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val moveAnywhere = Signal<MouseEvents>()
 	val mouseOutside = Signal<MouseEvents>()
 
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onClick")
 	val onClick = click
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onOver")
 	val onOver = over
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onOut")
 	val onOut = out
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onDown")
 	val onDown = down
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onDownFromOutside")
 	val onDownFromOutside = downFromOutside
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onUp")
 	val onUp = up
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onUpOutside")
 	val onUpOutside = upOutside
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onUpAnywhere")
 	val onUpAnywhere = upAnywhere
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onMove")
 	val onMove = move
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onMoveAnywhere")
 	val onMoveAnywhere = moveAnywhere
+
+    @Deprecated("Use function instead with suspend handler")
+    @JsName("_onMoveOutside")
 	val onMoveOutside = mouseOutside
 
-	var hitTest: View? = null; private set
+    @PublishedApi
+    internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents =
+        this.apply { prop.get(this).add { launchImmediately(this.coroutineContext) { handler(it) } } }
+
+    inline fun onClick(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onClick, handler)
+    inline fun onOver(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onOver, handler)
+    inline fun onOut(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onOut, handler)
+    inline fun onDown(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onDown, handler)
+    inline fun onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onDownFromOutside, handler)
+    inline fun onUp(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUp, handler)
+    inline fun onUpOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUpOutside, handler)
+    inline fun onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUpAnywhere, handler)
+    inline fun onMove(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onMove, handler)
+
+    var hitTest: View? = null; private set
 	private var lastOver = false
 	private var lastPressing = false
 
@@ -97,6 +148,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
 
 	override fun onMouseEvent(views: Views, event: MouseEvent) {
+        this.views = views
 		//println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
 			MouseEvent.Type.UP -> {
@@ -235,30 +287,16 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponent { MouseEvents(this) } }
 inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
 
-inline fun <T : View?> T?.onClick(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onClick?.add(handler) }
+@PublishedApi
+internal inline fun <T : View?> T?._mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit) =
+    this.apply { this?.mouse?.let { mouse -> prop.get(mouse).add { launchImmediately(mouse.coroutineContext) { handler(it) } } } }
 
-inline fun <T : View?> T?.onOver(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onOver?.add(handler) }
-
-inline fun <T : View?> T?.onOut(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onOut?.add(handler) }
-
-inline fun <T : View?> T?.onDown(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onDown?.add(handler) }
-
-inline fun <T : View?> T?.onDownFromOutside(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onDownFromOutside?.add(handler) }
-
-inline fun <T : View?> T?.onUp(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUp?.add(handler) }
-
-inline fun <T : View?> T?.onUpOutside(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUpOutside?.add(handler) }
-
-inline fun <T : View?> T?.onUpAnywhere(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onUpAnywhere?.add(handler) }
-
-inline fun <T : View?> T?.onMove(noinline handler: (MouseEvents) -> Unit) =
-	this.apply { this?.mouse?.onMove?.add(handler) }
-
+inline fun <T : View?> T.onClick(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::click, handler)
+inline fun <T : View?> T.onOver(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::over, handler)
+inline fun <T : View?> T.onOut(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::out, handler)
+inline fun <T : View?> T.onDown(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::down, handler)
+inline fun <T : View?> T.onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::downFromOutside, handler)
+inline fun <T : View?> T.onUp(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::up, handler)
+inline fun <T : View?> T.onUpOutside(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::upOutside, handler)
+inline fun <T : View?> T.onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::upAnywhere, handler)
+inline fun <T : View?> T.onMove(noinline handler: suspend (MouseEvents) -> Unit) = _mouseEvent(MouseEvents::move, handler)
