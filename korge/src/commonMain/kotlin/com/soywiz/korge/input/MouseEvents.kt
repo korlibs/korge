@@ -14,8 +14,10 @@ import kotlin.js.*
 import kotlin.reflect.*
 
 class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews {
-    lateinit var views: Views
-    val coroutineContext get() = views.coroutineContext
+    @PublishedApi
+    internal lateinit var views: Views
+    @PublishedApi
+    internal val coroutineContext get() = views.coroutineContext
 
 	val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()

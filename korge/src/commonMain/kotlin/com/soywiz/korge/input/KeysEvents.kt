@@ -9,8 +9,10 @@ import com.soywiz.korev.*
 import kotlin.reflect.*
 
 class KeysEvents(override val view: View) : KeyComponent {
-    lateinit var views: Views
-    val coroutineContext get() = views.coroutineContext
+    @PublishedApi
+    internal lateinit var views: Views
+    @PublishedApi
+    internal val coroutineContext get() = views.coroutineContext
 
     val onKeyDown = AsyncSignal<KeyEvent>()
 	val onKeyUp = AsyncSignal<KeyEvent>()
