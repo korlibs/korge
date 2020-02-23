@@ -13,9 +13,10 @@ inline fun Container.uiCheckBox(
     checked: Boolean = false,
     text: String = "CheckBox",
     textFont: Html.FontFace = defaultUIFont,
-    skin: CheckBoxSkin = defaultCheckBoxSkin,
+    skin: UISkin = defaultUISkin,
+    checkIcon: IconSkin = DefaultCheckSkin,
     block: @ViewsDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin)
+): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon)
     .addTo(this).apply(block)
 
 open class UICheckBox(
@@ -24,7 +25,8 @@ open class UICheckBox(
     checked: Boolean = false,
     text: String = "CheckBox",
     textFont: Html.FontFace = DefaultUIFont,
-    private val skin: CheckBoxSkin = DefaultCheckBoxSkin
+    private val skin: UISkin = DefaultUISkin,
+    private val checkIcon: IconSkin = DefaultCheckSkin
 ) : UIView(width, height) {
 
     var checked by uiObservable(checked) { updateState() }
@@ -36,34 +38,54 @@ open class UICheckBox(
     val onChange = Signal<UICheckBox>()
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-    private val box = uiButton(height, height, skin = skin.normal)
+    private val box = ninePatch(skin.normal, height, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
+    private val icon = ninePatch(
+        checkIcon.normal,
+        height - checkIcon.paddingLeft - checkIcon.paddingRight,
+        height - checkIcon.paddingTop - checkIcon.paddingBottom,
+        0.0, 0.0, 0.0, 0.0
+    ).also { it.position(checkIcon.paddingLeft, checkIcon.paddingTop); it.visible = false }
     private val textView = text(text)
+
+    private var over by uiObservable(false) { updateState() }
+    private var pressing by uiObservable(false) { updateState() }
 
     init {
         mouse {
             onOver {
-                box.simulateOver()
+                this@UICheckBox.over = true
             }
             onOut {
-                box.simulateOut()
+                this@UICheckBox.over = false
             }
             onDown {
-                box.simulateDown()
+                this@UICheckBox.pressing = true
             }
             onUpAnywhere {
-                box.simulateUp()
+                this@UICheckBox.pressing = false
             }
             onClick {
                 this@UICheckBox.checked = !this@UICheckBox.checked
             }
         }
-        updateState()
         updateText()
     }
 
     override fun updateState() {
         super.updateState()
-        box.skin = if (checked) skin.checked else skin.normal
+        box.tex = when {
+            !enabled -> skin.disabled
+            pressing -> skin.down
+            over -> skin.over
+            else -> skin.normal
+        }
+        icon.tex = when {
+            !enabled -> checkIcon.disabled
+            pressing -> checkIcon.down
+            over -> checkIcon.over
+            else -> checkIcon.normal
+        }
+        icon.visible = checked
         onChange(this)
     }
 
@@ -83,6 +105,8 @@ open class UICheckBox(
         super.onSizeChanged()
         background.size(width, height)
         box.size(height, height)
+        icon.width = width - checkIcon.paddingLeft - checkIcon.paddingRight
+        icon.height = height - checkIcon.paddingTop - checkIcon.paddingBottom
         textView.position(height + 8.0, 0)
         textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
     }

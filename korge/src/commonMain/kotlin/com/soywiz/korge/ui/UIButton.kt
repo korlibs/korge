@@ -20,8 +20,8 @@ open class UIButton(
 	var skin: UISkin by uiObservable(skin) { updateState() }
 	protected open val rect = ninePatch(skin.normal, width, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
 
-	private var bover by uiObservable(false) { updateState() }
-	private var bpressing by uiObservable(false) { updateState() }
+	protected var bover by uiObservable(false) { updateState() }
+	protected var bpressing by uiObservable(false) { updateState() }
 
 	fun simulateOver() {
 		bover = true
@@ -58,7 +58,6 @@ open class UIButton(
 				simulateUp()
 			}
 		}
-		updateState()
 	}
 
 	override fun updateState() {
@@ -70,7 +69,7 @@ open class UIButton(
 				rect.tex = skin.down
 			}
 			bover -> {
-				rect.tex = skin.hover
+				rect.tex = skin.over
 			}
 			else -> {
 				rect.tex = skin.normal

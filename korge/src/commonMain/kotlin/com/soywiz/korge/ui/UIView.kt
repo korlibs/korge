@@ -32,7 +32,7 @@ open class UIView(
 	protected open fun onSizeChanged() {
 	}
 
-	protected open fun updateState() {
+	open fun updateState() {
 	}
 
 	override fun renderInternal(ctx: RenderContext) {
