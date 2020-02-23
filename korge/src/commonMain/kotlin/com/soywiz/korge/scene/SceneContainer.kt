@@ -12,6 +12,10 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.coroutineScope
 import kotlin.reflect.*
 
+/**
+ * Creates a new [SceneContainer], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container]
+ * It requires to specify the [Views] singleton instance, and allows to specify a [defaultTransition] [Transition].
+ **/
 inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
