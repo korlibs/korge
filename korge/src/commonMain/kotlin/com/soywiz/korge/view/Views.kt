@@ -159,6 +159,7 @@ class Views constructor(
 
 	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
+        //println("Event: $clazz : $event")
 		try {
 			this.stage.dispatch(clazz, event)
 			stage.forEachComponent<EventComponent>(tempComponents) { it.onEvent(event) }
@@ -267,10 +268,13 @@ class Views constructor(
 		actualVirtualLeft = -(stage.x / ratioX).toInt()
 		actualVirtualTop = -(stage.y / ratioY).toInt()
 
-		stage.dispatch(resizedEvent.apply {
-			this.width = actualSize.width
-			this.height = actualSize.height
-		})
+        resizedEvent.apply {
+            this.width = actualSize.width
+            this.height = actualSize.height
+        }
+
+		stage.dispatch(resizedEvent)
+        dispatch(resizedEvent)
 
 		stage.invalidate()
 
