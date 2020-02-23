@@ -7,7 +7,7 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -49,6 +49,15 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
 
 	open suspend fun sceneAfterDestroy() {
 	}
+
+    internal suspend fun sceneAfterDestroyInternal() {
+        sceneAfterDestroy()
+        try {
+            (coroutineContext as Job).cancelAndJoin()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
 }
 
 abstract class ScaledScene : Scene() {

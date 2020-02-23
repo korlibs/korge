@@ -6,6 +6,7 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.cancel
@@ -138,8 +139,7 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		oldScene?.sceneDestroy()
 
 		launchImmediately(kotlin.coroutines.coroutineContext) {
-			oldScene?.sceneAfterDestroy()
-			oldScene?.coroutineContext?.cancel()
+			oldScene?.sceneAfterDestroyInternal()
 		}
 		launchImmediately(kotlin.coroutines.coroutineContext) {
 			instance.sceneAfterInit()
