@@ -108,6 +108,7 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		transition: Transition = AlphaTransition
 	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
 
+    /** Check [Scene] for details of the lifecycle. */
 	private suspend fun <T : Scene> _changeTo(
 		clazz: KClass<T>,
 		vararg injects: Any,
@@ -127,6 +128,10 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		transitionView.startNewTransition(instance._sceneViewContainer)
 
 		instance.sceneView.apply { instance.apply { sceneInit() } }
+
+        instance.launchImmediately {
+            instance.sceneView.apply { instance.apply { sceneMain() } }
+        }
 
 		oldScene?.sceneBeforeLeaving()
 
