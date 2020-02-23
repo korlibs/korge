@@ -17,7 +17,6 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.*
@@ -182,6 +181,7 @@ object Korge {
 			views.mouseUpdated()
 			downPos.copyFrom(views.input.mouse)
 			downTime = DateTime.now()
+            views.input.mouseInside = true
 		}
 
 		fun mouseUp(type: String, x: Double, y: Double) {
@@ -200,13 +200,17 @@ object Korge {
 			}
 		}
 
-		fun mouseDrag(type: String, x: Double, y: Double) {
+		fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {
 			views.input.mouse.setTo(x, y)
+            views.input.mouseInside = inside
+            if (!inside) {
+                moveMouseOutsideInNextFrame = true
+            }
 			views.mouseUpdated()
 			moveTime = DateTime.now()
 		}
 
-		fun mouseMove(type: String, x: Double, y: Double) {
+		fun mouseDrag(type: String, x: Double, y: Double) {
 			views.input.mouse.setTo(x, y)
 			views.mouseUpdated()
 			moveTime = DateTime.now()
@@ -226,18 +230,19 @@ object Korge {
 					updateTouch(mouseTouchId, x, y, start = false, end = true)
 				}
 				MouseEvent.Type.MOVE -> {
-					mouseDrag("mouseMove", x, y)
+					mouseMove("mouseMove", x, y, inside = true)
 				}
 				MouseEvent.Type.DRAG -> {
-					mouseMove("onMouseDrag", x, y)
+					mouseDrag("onMouseDrag", x, y)
 					updateTouch(mouseTouchId, x, y, start = false, end = false)
 				}
 				MouseEvent.Type.CLICK -> {
 				}
 				MouseEvent.Type.ENTER -> {
+                    mouseMove("mouseEnter", x, y, inside = true)
 				}
 				MouseEvent.Type.EXIT -> {
-					mouseDrag("mouseExit", -1000.0, -1000.0)
+					mouseMove("mouseExit", x, y, inside = false)
 				}
 			}
 			views.dispatch(e)
@@ -292,7 +297,7 @@ object Korge {
 					moveMouseOutsideInNextFrame = true
 				}
 				else -> {
-					mouseDrag("onTouchMove", x, y)
+					mouseMove("onTouchMove", x, y, inside = true)
 				}
 			}
 		}
@@ -378,7 +383,8 @@ object Korge {
 
 				if (moveMouseOutsideInNextFrame) {
 					moveMouseOutsideInNextFrame = false
-					views.input.mouse.setTo(-1000, -1000)
+					//views.input.mouse.setTo(-1000, -1000)
+                    views.input.mouseInside = false
 					//views.dispatch(mouseMovedEvent)
 					views.mouseUpdated()
 				}

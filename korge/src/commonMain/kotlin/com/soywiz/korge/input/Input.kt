@@ -31,6 +31,7 @@ class Input : Extra by Extra.Mixin() {
 
 	val mouse = Point(-1000.0, -1000.0)
 	var mouseButtons = 0
+    var mouseInside = true
 	var clicked = false
 	val keysRaw = BooleanArray(KEYCODES)
 	val keysRawPrev = BooleanArray(KEYCODES)

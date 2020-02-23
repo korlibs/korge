@@ -13,7 +13,7 @@ import com.soywiz.korev.*
 import kotlin.js.*
 import kotlin.reflect.*
 
-class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews {
+class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews, Extra by Extra.Mixin() {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
@@ -29,7 +29,11 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val upAnywhere = Signal<MouseEvents>()
 	val move = Signal<MouseEvents>()
 	val moveAnywhere = Signal<MouseEvents>()
-	val mouseOutside = Signal<MouseEvents>()
+    val moveOutside = Signal<MouseEvents>()
+    val exit = Signal<MouseEvents>()
+
+    @Deprecated("", ReplaceWith("moveOutside"))
+    val mouseOutside get() = moveOutside
 
     @Deprecated("Use function instead with suspend handler")
     @JsName("_onClick")
@@ -79,18 +83,20 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
     internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents =
         this.apply { prop.get(this).add { launchImmediately(this.coroutineContext) { handler(it) } } }
 
-    inline fun onClick(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onClick, handler)
-    inline fun onOver(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onOver, handler)
-    inline fun onOut(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onOut, handler)
-    inline fun onDown(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onDown, handler)
-    inline fun onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onDownFromOutside, handler)
-    inline fun onUp(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUp, handler)
-    inline fun onUpOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUpOutside, handler)
-    inline fun onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onUpAnywhere, handler)
-    inline fun onMove(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::onMove, handler)
+    inline fun onClick(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::click, handler)
+    inline fun onOver(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::over, handler)
+    inline fun onOut(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::out, handler)
+    inline fun onDown(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::down, handler)
+    inline fun onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::downFromOutside, handler)
+    inline fun onUp(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::up, handler)
+    inline fun onUpOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::upOutside, handler)
+    inline fun onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::upAnywhere, handler)
+    inline fun onMove(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::move, handler)
+    inline fun onExit(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::exit, handler)
 
     var hitTest: View? = null; private set
 	private var lastOver = false
+    private var lastInside = false
 	private var lastPressing = false
 
 	val CLICK_THRESHOLD = 16
@@ -241,9 +247,11 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 
 		hitTest = hitTest(views)
 		val over = isOver
+        val inside = views.input.mouseInside
 		if (over) views.input.mouseHitResultUsed = view
 		val pressing = views.input.mouseButtons != 0
 		val overChanged = (lastOver != over)
+        val insideChanged = (lastInside != inside)
 		val pressingChanged = pressing != lastPressing
         currentPosGlobal.copyFrom(views.input.mouse)
 
@@ -251,28 +259,35 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 
 		//println("MouseComponent: $hitTest, $over")
 
-		if (!overChanged && over && currentPosGlobal != lastPosGlobal) onMove(this)
-		if (!overChanged && !over && currentPosGlobal != lastPosGlobal) onMoveOutside(this)
-		if (currentPosGlobal != lastPosGlobal) onMoveAnywhere(this)
-		if (overChanged && over) onOver(this)
-		if (overChanged && !over) onOut(this)
+		if (!overChanged && over && currentPosGlobal != lastPosGlobal) move(this)
+		if (!overChanged && !over && currentPosGlobal != lastPosGlobal) moveOutside(this)
+		if (currentPosGlobal != lastPosGlobal) moveAnywhere(this)
+		if (overChanged && over) over(this)
+		if (overChanged && !over) out(this)
 		if (over && pressingChanged && pressing) {
 			startedPosGlobal.copyFrom(currentPosGlobal)
-			onDown(this)
+			down(this)
 		}
 		if (overChanged && pressing) {
-			onDownFromOutside(this)
+			downFromOutside(this)
 		}
 		if (pressingChanged && !pressing) {
-			if (over) onUp(this) else onUpOutside(this)
-			onUpAnywhere(this)
+			if (over) up(this) else upOutside(this)
+			upAnywhere(this)
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
 		}
 		if (over && clickedCount > 0) {
 			//onClick(this)
 		}
+        if (insideChanged && !inside) {
+            moveOutside(this)
+            out(this)
+            upOutside(this)
+            exit(this)
+        }
 
 		lastOver = over
+        lastInside = inside
 		lastPressing = pressing
 		lastPosGlobal.copyFrom(currentPosGlobal)
 		clickedCount = 0
