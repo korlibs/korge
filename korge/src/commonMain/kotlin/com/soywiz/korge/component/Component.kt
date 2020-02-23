@@ -124,7 +124,10 @@ interface UpdateComponent : Component {
  * has been resized.
  */
 interface ResizeComponent : Component {
-	fun resized(views: Views, width: Int, height: Int)
+    /**
+     * Includes the [Views] singleton. [width],[height] are [Views.nativeWidth],[Views.nativeHeight].
+     */
+	fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
 }
 
 /*
