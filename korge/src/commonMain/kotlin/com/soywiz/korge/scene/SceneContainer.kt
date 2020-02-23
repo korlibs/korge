@@ -1,102 +1,130 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
-import com.soywiz.korge.internal.fastForEach
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlin.reflect.*
 
+/**
+ * Creates a new [SceneContainer], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container]
+ * It requires to specify the [Views] singleton instance, and allows to specify a [defaultTransition] [Transition].
+ **/
 inline fun Container.sceneContainer(
 	views: Views,
+    defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
 	callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views).addTo(this).apply(callback)
+): SceneContainer = SceneContainer(views, defaultTransition).addTo(this).apply(callback)
 
-//typealias Sprite = Image
-class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
-	val transitionView = TransitionView()
+/**
+ * A [Container] [View] that can hold [Scene]s controllers and contains a history.
+ * It changes between scene objects by using the [AsyncInjector] and allow to use [Transition]s for the change.
+ * You can apply a easing to the [Transition] by calling [Transition.withEasing].
+ */
+class SceneContainer(
+    val views: Views,
+    /** Default [Transition] that will be used when no transition is specified */
+    val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD)
+) : Container(), CoroutineScope by views {
+    /** The [TransitionView] that will be in charge of rendering the old and new scenes during the transition using a specified [Transition] object */
+	val transitionView = TransitionView().also { this += it }
+
+    /** The [Scene] that is currently set or null */
 	var currentScene: Scene? = null
 
-	init {
-		this += transitionView
-	}
-
     // Async versions
-	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+    /** Async variant returning a [Deferred] for [changeTo] */
+	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
 
-	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
-        = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
-
-    fun <T : Scene> pushToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
-        = CoroutineScope(coroutineContext).async { pushTo(clazz, *injects, time = time, transition = transition) }
-
-    fun <T : Scene> changeToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+    /** Async variant returning a [Deferred] for [changeTo] */
+    fun <T : Scene> changeToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { changeTo(clazz, *injects, time = time, transition = transition) }
 
-	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
-	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
+    /** Async variant returning a [Deferred] for [pushTo] */
+	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
 
+    /** Async variant returning a [Deferred] for [pushTo] */
+    fun <T : Scene> pushToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { pushTo(clazz, *injects, time = time, transition = transition) }
+
+    /** Async variant returning a [Deferred] for [back] */
+	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
+
+    /** Async variant returning a [Deferred] for [forward] */
+	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
+
+    /**
+     * Changes to the [T] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
+     * This method waits until the [transition] has been completed, and returns the [T] created instance.
+     */
 	suspend inline fun <reified T : Scene> changeTo(
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	): T = changeTo(T::class, *injects, time = time, transition = transition)
 
+    /**
+     * Pushes the [T] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
+     * It removes the old [currentScene] if any.
+     * This method waits until the [transition] has been completed, and returns the [T] created instance.
+     */
     suspend inline fun <reified T : Scene> pushTo(
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	) = pushTo(T::class, *injects, time = time, transition = transition)
 
-	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
+    /**
+     * Returns to the previous pushed Scene with [pushTo] in [time] time, and with [transition].
+     * This method waits until the [transition] has been completed, and returns the old [Scene] instance.
+     */
+	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Scene {
 		visitPos--
 		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
 
-	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Scene {
+    /**
+     * Returns to the next pushed Scene with [pushTo] in [time] time, and with [transition].
+     * This method waits until the [transition] has been completed, and returns the old [Scene] instance.
+     */
+	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Scene {
 		visitPos++
 		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
 
-	private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
-
-	companion object {
-		private val EMPTY_VISIT_ENTRY = VisitEntry(EmptyScene::class, listOf())
-	}
-
-	private val visitStack = arrayListOf<VisitEntry>(EMPTY_VISIT_ENTRY)
-	private var visitPos = 0
-
-	// https://developer.mozilla.org/en/docs/Web/API/History
-
-	private fun setCurrent(entry: VisitEntry) {
-		while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
-		visitStack[visitPos] = entry
-	}
-
+    /**
+     * Pushes the [T] [clazz] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
+     * It removes the old [currentScene] if any.
+     * This method waits until the [transition] has been completed, and returns the [T] created instance.
+     */
 	suspend fun <T : Scene> pushTo(
 		clazz: KClass<T>,
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	): T {
 		visitPos++
 		setCurrent(VisitEntry(clazz, injects.toList()))
 		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
+    /**
+     * Changes to the [T] [clazz] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
+     * This method waits until the [transition] has been completed, and returns the [T] created instance.
+     */
 	suspend fun <T : Scene> changeTo(
 		clazz: KClass<T>,
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	): T {
 		setCurrent(VisitEntry(clazz, injects.toList()))
 		return _changeTo(clazz, *injects, time = time, transition = transition)
@@ -105,14 +133,15 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 	private suspend fun _changeTo(
 		entry: VisitEntry,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
 
+    /** Check [Scene] for details of the lifecycle. */
 	private suspend fun <T : Scene> _changeTo(
 		clazz: KClass<T>,
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
-		transition: Transition = AlphaTransition
+		transition: Transition = defaultTransition
 	): T = coroutineScope {
 		val oldScene = currentScene
 		val sceneInjector: AsyncInjector =
@@ -127,6 +156,10 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		transitionView.startNewTransition(instance._sceneViewContainer)
 
 		instance.sceneView.apply { instance.apply { sceneInit() } }
+
+        instance.launchImmediately {
+            instance.sceneView.apply { instance.apply { sceneMain() } }
+        }
 
 		oldScene?.sceneBeforeLeaving()
 
@@ -146,4 +179,20 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		}
 		instance
 	}
+
+    private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
+
+    companion object {
+        private val EMPTY_VISIT_ENTRY = VisitEntry(EmptyScene::class, listOf())
+    }
+
+    private val visitStack = arrayListOf<VisitEntry>(EMPTY_VISIT_ENTRY)
+    private var visitPos = 0
+
+    // https://developer.mozilla.org/en/docs/Web/API/History
+
+    private fun setCurrent(entry: VisitEntry) {
+        while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
+        visitStack[visitPos] = entry
+    }
 }

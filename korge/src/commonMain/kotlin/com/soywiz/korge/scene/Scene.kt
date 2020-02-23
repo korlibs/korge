@@ -12,41 +12,106 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
+/**
+ * Acts as a controller. Subclasses must override at least one of: [sceneInit] or [sceneMain].
+ *
+ * The lifecycle of the [Scene] for ([SceneContainer.pushTo], [SceneContainer.changeTo], [SceneContainer.back], [SceneContainer.forward]):
+ *
+ * - ## OLD Scene -> NEW Scene -- Scene is changed
+ * - NEW: [sceneInit] - BLOCK - Called when this scene enters. Waits until completed
+ * - NEW: [sceneMain] - DO NOT BLOCK - Called after [sceneInit]. Doesn't wait for completion. Its underlying Job is closed automatically on [sceneAfterDestroy]
+ * - OLD: [sceneBeforeLeaving] - BLOCK - Called on the old scene. Waits until completed.
+ * - Transition from the old view and the new view is performed [SceneContainer.transitionView] [View.ratio] 0..1
+ * - OLD: [sceneDestroy] - BLOCK - Called when this scene exits. Waits until completed.
+ * - OLD: [sceneAfterDestroy] - DO NOT BLOCK - Cancels the [Job] of the old scene. Do not wait
+ * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
+ * - ## New scene is returned
+ */
 abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
+    /** A child [AsyncInjector] for this instance. Set by the [init] method. */
 	lateinit var injector: AsyncInjector
+    /** The [Views] singleton of the application. Set by the [init] method. */
 	override lateinit var views: Views
-	val ag: AG get() = views.ag
+    /** The [SceneContainer] [View] that contains this [Scene]. Set by the [init] method. */
 	lateinit var sceneContainer: SceneContainer
+    /** The [ResourcesRoot] singleton. Set by the [init] method. */
 	lateinit var resourcesRoot: ResourcesRoot
-	//protected lateinit var bus: Bus
-	internal val _sceneViewContainer: Container = Container()
+
+    /** A reference to the [AG] from the [Views] */
+    val ag: AG get() = views.ag
+
+    /** A [Container] view that */
+    internal val _sceneViewContainer: Container = Container()
+
 	val root get() = _sceneViewContainer
+
 	protected val cancellables = CancellableGroup()
-	override val coroutineContext: CoroutineContext by lazy { Job(views.coroutineContext[Job.Key]) }
+	override val coroutineContext: CoroutineContext = Job(views.coroutineContext[Job.Key])
 	val sceneView: Container = createSceneView().apply {
 		_sceneViewContainer += this
 	}
 	protected open fun createSceneView(): Container = Container()
 
-	override suspend fun init(injector: AsyncInjector): Unit {
+    /**
+     * This method will be called by the [SceneContainer] that will display this [Scene].
+     * This will set the [injector], [views], [sceneContainer] and [resourcesRoot].
+     */
+    final override suspend fun init(injector: AsyncInjector) {
 		this.injector = injector
 		this.views = injector.get()
 		this.sceneContainer = injector.get()
 		this.resourcesRoot = injector.get()
 	}
 
-	abstract suspend fun Container.sceneInit(): Unit
+    /**
+     * BLOCK. This is called to setup the scene.
+     * **Nothing will be shown until this method completes**.
+     * Here you can read and wait for resources.
+     * No need to call super.
+     **/
+	open suspend fun Container.sceneInit(): Unit {
+    }
 
+    /**
+     * DO NOT BLOCK. This is called as a main method of the scene.
+     * This is called after [sceneInit].
+     * This method doesn't need to complete as long as it suspends.
+     * Its underlying job will be automatically closed on the [sceneAfterDestroy].
+     * No need to call super.
+     */
+    open suspend fun Container.sceneMain(): Unit {
+
+    }
+
+    /**
+     * DO NOT BLOCK. Called after the old scene has been destroyed
+     * and the transition has been completed.
+     **/
 	open suspend fun sceneAfterInit() {
 	}
 
+    /**
+     * BLOCK. Called on the old scene after the new scene has been
+     * initialized, and before the transition is performed.
+     */
 	open suspend fun sceneBeforeLeaving() {
 	}
 
+    /**
+     * BLOCK. Called on the old scene after the transition
+     * has been performed, and the old scene is not visible anymore.
+     */
 	open suspend fun sceneDestroy() {
 		cancellables.cancel()
 	}
 
+    /**
+     * DO NOT BLOCK. Called on the old scene after the transition
+     * has been performed, and the old scene is not visible anymore.
+     *
+     * At this stage the scene [coroutineContext] [Job] will be cancelled.
+     * Stopping [sceneMain] and other [launch] methods using this scene [CoroutineScope].
+     */
 	open suspend fun sceneAfterDestroy() {
 	}
 
@@ -84,10 +149,6 @@ abstract class LogScene : Scene() {
 
 	open fun log(msg: String) {
 		this.log += msg
-	}
-
-	override suspend fun init(injector: AsyncInjector) {
-		super.init(injector)
 	}
 
 	override suspend fun Container.sceneInit() {
