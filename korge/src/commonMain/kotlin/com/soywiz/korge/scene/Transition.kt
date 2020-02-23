@@ -7,13 +7,11 @@ import com.soywiz.korma.interpolation.*
 
 class TransitionView() : Container() {
 	var transition: Transition = AlphaTransition
-	val dummy1 = Container()
-	val dummy2 = Container()
-
-	init {
-		addChild(dummy1)
-		addChild(dummy2)
-	}
+    init {
+        // Dummy instances to always have two [View] instances
+        container()
+        container()
+    }
 
 	val prev: View get() = this[0]
 	val next: View get() = this[1]
