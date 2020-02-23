@@ -28,10 +28,10 @@ val DefaultUISkin by lazy {
 
 val DefaultCheckedSkin by lazy {
     UISkin(
-        normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(0, 0, 64, 64),
-        hover = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(64, 0, 64, 64),
-        down = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(128, 0, 64, 64),
-        disabled = DEFAULT_CHECKED_SKIN_IMG.sliceWithBounds(192, 0, 64, 64)
+        normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(0, 0, 64, 64),
+        hover = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64, 0, 64, 64),
+        down = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(128, 0, 64, 64),
+        disabled = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(192, 0, 64, 64)
     )
 }
 
