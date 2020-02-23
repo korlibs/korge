@@ -119,6 +119,9 @@ class Views constructor(
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
 
+    val actualWidth get() = actualSize.width
+    val actualHeight get() = actualSize.height
+
     val onBeforeRender = Signal<Unit>()
     val onAfterRender = Signal<Unit>()
 
