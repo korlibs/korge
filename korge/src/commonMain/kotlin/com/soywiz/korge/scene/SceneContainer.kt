@@ -26,9 +26,19 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		this += transitionView
 	}
 
-	// Async versions
-	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
-	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T> = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
+    // Async versions
+	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
+
+	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
+
+    fun <T : Scene> pushToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { pushTo(clazz, *injects, time = time, transition = transition) }
+
+    fun <T : Scene> changeToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<T>
+        = CoroutineScope(coroutineContext).async { changeTo(clazz, *injects, time = time, transition = transition) }
+
 	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
 	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = AlphaTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
 
@@ -36,9 +46,9 @@ class SceneContainer(val views: Views) : Container(), CoroutineScope by views {
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
 		transition: Transition = AlphaTransition
-	) = changeTo(T::class, *injects, time = time, transition = transition)
+	): T = changeTo(T::class, *injects, time = time, transition = transition)
 
-	suspend inline fun <reified T : Scene> pushTo(
+    suspend inline fun <reified T : Scene> pushTo(
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
 		transition: Transition = AlphaTransition

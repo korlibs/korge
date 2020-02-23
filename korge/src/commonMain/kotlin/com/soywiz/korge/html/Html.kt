@@ -3,6 +3,7 @@ package com.soywiz.korge.html
 import com.soywiz.kds.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.internal.fastForEach
+import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.serialization.xml.*
@@ -57,7 +58,8 @@ object Html {
 
 		val computedColor: RGBA get() = parent?.computedColor ?: color ?: Colors.WHITE
 
-		val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
+		//val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
+        val computedFace by Computed(Format::face) { FontFace.Bitmap(debugBmpFont) }
 		val computedSize by Computed(Format::size) { 16 }
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }
