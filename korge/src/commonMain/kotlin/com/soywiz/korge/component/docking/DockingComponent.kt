@@ -3,17 +3,25 @@ package com.soywiz.korge.component.docking
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korev.*
 
-class DockingComponent(override val view: View, var anchor: Anchor) : ResizeComponent {
-	//private val bounds = Rectangle()
+fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE) = DockingComponent(this, anchor, scaleMode).attach()
 
-	override fun resized(views: Views, width: Int, height: Int) {
-		view.x = views.actualVirtualLeft.toDouble() + (views.actualVirtualWidth) * anchor.sx
-		view.y = views.actualVirtualTop.toDouble() + (views.actualVirtualHeight) * anchor.sy
-		view.invalidate()
-		view.parent?.invalidate()
-	}
+class DockingComponent(override val view: View, var anchor: Anchor, var scaleMode: ScaleMode = ScaleMode.NO_SCALE) : ResizeComponent {
+    val initialViewSize = Size(view.width, view.height)
+    private val actualVirtualSize = Size(0, 0)
+    private val targetSize = Size(0, 0)
+
+    override fun resized(views: Views, width: Int, height: Int) {
+        view.position(
+            views.actualVirtualLeft.toDouble() + (views.actualVirtualWidth) * anchor.sx,
+            views.actualVirtualTop.toDouble() + (views.actualVirtualHeight) * anchor.sy
+        )
+        if (scaleMode != ScaleMode.NO_SCALE) {
+            actualVirtualSize.setTo(views.actualVirtualWidth, views.actualVirtualHeight)
+            val size = scaleMode.invoke(initialViewSize, actualVirtualSize, targetSize)
+            view.setSize(size.width, size.height)
+        }
+        view.invalidate()
+        view.parent?.invalidate()
+    }
 }
-
-fun <T : View> T.dockedTo(anchor: Anchor) = DockingComponent(this, anchor).attach()
