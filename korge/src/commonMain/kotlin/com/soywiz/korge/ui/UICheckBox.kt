@@ -44,7 +44,7 @@ open class UICheckBox(
         checkIcon.calculateWidth(height),
         checkIcon.calculateHeight(height),
         0.0, 0.0, 0.0, 0.0
-    ).also { it.position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)); it.visible = false }
+    ).position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)).also { it.visible = false }
     private val textView = text(text)
 
     private var over by uiObservable(false) { updateState() }

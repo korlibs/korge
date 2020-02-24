@@ -148,32 +148,26 @@ open class UIScrollBar(
 
 data class ScrollBarSkin(
     val thumbSkin: UISkin,
-    val upSkin: UISkin,
-    val downSkin: UISkin,
+    val upSkin: UISkin = thumbSkin,
+    val downSkin: UISkin = thumbSkin,
     val upIcon: IconSkin,
     val downIcon: IconSkin,
-    val backColor: RGBA
+    val backColor: RGBA = Colors.DARKGREY
 )
 
 val DefaultVerScrollBarSkin by lazy {
     ScrollBarSkin(
         thumbSkin = DefaultUISkin,
-        upSkin = DefaultUISkin,
-        downSkin = DefaultUISkin,
         upIcon = DefaultUpSkin,
-        downIcon = DefaultDownSkin,
-        backColor = Colors.DARKGREY
+        downIcon = DefaultDownSkin
     )
 }
 
 val DefaultHorScrollBarSkin by lazy {
     ScrollBarSkin(
         thumbSkin = DefaultUISkin,
-        upSkin = DefaultUISkin,
-        downSkin = DefaultUISkin,
         upIcon = DefaultLeftSkin,
-        downIcon = DefaultRightSkin,
-        backColor = Colors.DARKGREY
+        downIcon = DefaultRightSkin
     )
 }
 
