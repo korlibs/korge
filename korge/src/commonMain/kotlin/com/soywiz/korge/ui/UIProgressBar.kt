@@ -40,10 +40,6 @@ open class UIProgressBar(
 	protected open val progressView: View =
 		ninePatch(skin.normal, width * current / maximum, height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
 
-	init {
-		onSizeChanged()
-	}
-
 	override fun onSizeChanged() {
 		background.size(width, height)
 		updateState()

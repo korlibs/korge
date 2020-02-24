@@ -12,13 +12,7 @@ inline fun <T> Container.uiComboBox(
 	selectedIndex: Int = 0,
 	items: List<T>,
 	verticalScroll: Boolean = true,
-	textFont: Html.FontFace = defaultUIFont,
-	skin: UISkin = defaultUISkin,
-	showSkin: UISkin = skin,
-	hideSkin: UISkin? = null,
-	upSkin: UISkin? = null,
-	downSkin: UISkin? = null,
-	scrollbarSkin: UISkin = skin,
+	skin: ComboBoxSkin = defaultComboBoxSkin,
 	block: @ViewsDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(
 	width.toDouble(),
@@ -26,13 +20,7 @@ inline fun <T> Container.uiComboBox(
 	selectedIndex,
 	items,
 	verticalScroll,
-	textFont,
-	skin,
-	showSkin,
-	hideSkin,
-	upSkin,
-	downSkin,
-	scrollbarSkin
+	skin
 ).addTo(this).apply(block)
 
 open class UIComboBox<T>(
@@ -41,13 +29,7 @@ open class UIComboBox<T>(
 	selectedIndex: Int = 0,
 	items: List<T>,
 	verticalScroll: Boolean = true,
-	private val textFont: Html.FontFace = DefaultUIFont,
-	private val skin: UISkin = DefaultUISkin,
-	private val showSkin: UISkin = skin,
-	private val hideSkin: UISkin? = null,
-	upSkin: UISkin? = null,
-	downSkin: UISkin? = null,
-	scrollbarSkin: UISkin = skin
+    private val skin: ComboBoxSkin = DefaultComboBoxSkin
 ) : UIView(width, height) {
 
 	var selectedIndex by uiObservable(selectedIndex) { updateState() }
@@ -61,16 +43,10 @@ open class UIComboBox<T>(
 	private val itemsView = uiScrollableArea(
 		verticalScroll = verticalScroll,
 		horizontalScroll = false,
-		font = textFont,
-		skin = scrollbarSkin,
-		upSkin = upSkin,
-		downSkin = downSkin,
 		config = { visible = false }
 	)
-	private val selectedButton = uiTextButton(width - height, height, "", skin, textFont)
-	private val dropButton =
-		if (hideSkin == null) uiTextButton(height, height, "+", showSkin, textFont).position(width - height, 0)
-		else uiButton(height, height, showSkin).position(width - height, 0)
+	private val selectedButton = textButton(width - height, height, "", skin.selectedSkin, skin.textFont)
+	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0)
 	private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 	private var showItems = false
 
@@ -80,12 +56,20 @@ open class UIComboBox<T>(
 		updateItems()
 		invisibleRect.onOver {
 			selectedButton.simulateOver()
-			dropButton.simulateOver()
+			expandButton.simulateOver()
 		}
 		invisibleRect.onOut {
 			selectedButton.simulateOut()
-			dropButton.simulateOut()
+			expandButton.simulateOut()
 		}
+        invisibleRect.onDown {
+            selectedButton.simulateDown()
+            expandButton.simulateDown()
+        }
+        invisibleRect.onUp {
+            selectedButton.simulateUp()
+            expandButton.simulateUp()
+        }
 		invisibleRect.onClick {
 			showItems = !showItems
 			onSizeChanged()
@@ -102,7 +86,7 @@ open class UIComboBox<T>(
 	private fun updateItems() {
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
-			itemsView.container.uiTextButton(width - 32, itemHeight, item.toString(), skin, textFont) {
+			itemsView.container.textButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
 				position(0, index * itemHeight)
 				onClick {
 					showItems = false
@@ -128,15 +112,34 @@ open class UIComboBox<T>(
 		itemsView.visible = showItems
 		itemsView.size(width, viewportHeight).position(0, height)
 		selectedButton.simulatePressing(showItems)
-		dropButton.simulatePressing(showItems)
-		if (hideSkin == null) {
-			(dropButton as UITextButton).text = if (showItems) "-" else "+"
-		} else {
-			dropButton.skin = if (showItems) hideSkin else showSkin
-		}
+		expandButton.simulatePressing(showItems)
+        expandButton.skin = skin.expandSkin
+        expandButton.iconSkin = if (showItems) skin.hideIcon else skin.showIcon
 		invisibleRect.size(width, height)
 		selectedButton.size(width - height, height)
 		selectedButton.text = selectedItem?.toString() ?: ""
-		dropButton.position(width - height, 0).size(height, height)
+		expandButton.position(width - height, 0).size(height, height)
 	}
 }
+
+data class ComboBoxSkin(
+    val itemSkin: UISkin,
+    val selectedSkin: UISkin = itemSkin,
+    val expandSkin: UISkin = itemSkin,
+    val showIcon: IconSkin,
+    val hideIcon: IconSkin,
+    val scrollbarSkin: ScrollBarSkin,
+    val textFont: Html.FontFace
+)
+
+val DefaultComboBoxSkin by lazy {
+    ComboBoxSkin(
+        itemSkin = DefaultUISkin,
+        showIcon = DefaultDownSkin,
+        hideIcon = DefaultUpSkin,
+        scrollbarSkin = DefaultVerScrollBarSkin,
+        textFont = DefaultUIFont
+    )
+}
+
+var View.defaultComboBoxSkin: ComboBoxSkin by defaultElement(DefaultComboBoxSkin)

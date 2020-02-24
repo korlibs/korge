@@ -8,94 +8,106 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiCheckBox(
-	width: Number = 120.0,
-	height: Number = 32.0,
-	checked: Boolean = false,
-	text: String = "CheckBox",
-	textFont: Html.FontFace = defaultUIFont,
-	skin: UISkin = defaultUISkin,
-	checkedSkin: UISkin? = null,
-	block: @ViewsDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkedSkin)
-	.addTo(this).apply(block)
+    width: Number = 120.0,
+    height: Number = 32.0,
+    checked: Boolean = false,
+    text: String = "CheckBox",
+    textFont: Html.FontFace = defaultUIFont,
+    skin: UISkin = defaultUISkin,
+    checkIcon: IconSkin = defaultCheckSkin,
+    block: @ViewsDslMarker UICheckBox.() -> Unit = {}
+): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon)
+    .addTo(this).apply(block)
 
 open class UICheckBox(
-	width: Double = 120.0,
-	height: Double = 32.0,
-	checked: Boolean = false,
-	text: String = "CheckBox",
-	textFont: Html.FontFace = DefaultUIFont,
-	private val skin: UISkin = DefaultUISkin,
-	private val checkedSkin: UISkin? = null
+    width: Double = 120.0,
+    height: Double = 32.0,
+    checked: Boolean = false,
+    text: String = "CheckBox",
+    textFont: Html.FontFace = DefaultUIFont,
+    private val skin: UISkin = DefaultUISkin,
+    private val checkIcon: IconSkin = DefaultCheckSkin
 ) : UIView(width, height) {
 
-	var checked by uiObservable(checked) { updateState() }
-	var text by uiObservable(text) { updateText() }
-	var textFont by uiObservable(textFont) { updateText() }
-	var textSize by uiObservable(16) { updateText() }
-	var textColor by uiObservable(Colors.WHITE) { updateText() }
+    var checked by uiObservable(checked) { updateState() }
+    var text by uiObservable(text) { updateText() }
+    var textFont by uiObservable(textFont) { updateText() }
+    var textSize by uiObservable(16) { updateText() }
+    var textColor by uiObservable(Colors.WHITE) { updateText() }
 
-	val onChange = Signal<UICheckBox>()
+    val onChange = Signal<UICheckBox>()
 
-	private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-	private val box = uiTextButton(height, height, skin = skin)
-	private val textView = text(text)
+    private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    private val box = ninePatch(skin.normal, height, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
+    private val icon = ninePatch(
+        checkIcon.normal,
+        checkIcon.calculateWidth(height),
+        checkIcon.calculateHeight(height),
+        0.0, 0.0, 0.0, 0.0
+    ).position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)).also { it.visible = false }
+    private val textView = text(text)
 
-	init {
-		if (checkedSkin != null) {
-			box.text = ""
-		} else {
-			box.textColor = textColor
-			box.textFont = textFont
-		}
-		mouse {
-			onOver {
-				box.simulateOver()
-			}
-			onOut {
-				box.simulateOut()
-			}
-			onDown {
-				box.simulateDown()
-			}
-			onUpAnywhere {
-				box.simulateUp()
-			}
-			onClick {
-				this@UICheckBox.checked = !this@UICheckBox.checked
-			}
-		}
-		updateState()
-		updateText()
-	}
+    private var over by uiObservable(false) { updateState() }
+    private var pressing by uiObservable(false) { updateState() }
 
-	override fun updateState() {
-		super.updateState()
-		if (checkedSkin == null) {
-			box.text = if (checked) "X" else ""
-		} else {
-			box.skin = if (checked) checkedSkin else skin
-		}
-		onChange(this)
-	}
+    init {
+        mouse {
+            onOver {
+                this@UICheckBox.over = true
+            }
+            onOut {
+                this@UICheckBox.over = false
+            }
+            onDown {
+                this@UICheckBox.pressing = true
+            }
+            onUpAnywhere {
+                this@UICheckBox.pressing = false
+            }
+            onClick {
+                this@UICheckBox.checked = !this@UICheckBox.checked
+            }
+        }
+        updateText()
+    }
 
-	private fun updateText() {
-		textView.format = Html.Format(
-			face = textFont,
-			size = textSize,
-			color = textColor,
-			align = Html.Alignment.MIDDLE_LEFT
-		)
-		textView.setTextBounds(Rectangle(0, 0, width - height, height))
-		textView.setText(text)
-		textView.position(height + 8.0, 0)
-	}
+    override fun updateState() {
+        super.updateState()
+        box.tex = when {
+            !enabled -> skin.disabled
+            pressing -> skin.down
+            over -> skin.over
+            else -> skin.normal
+        }
+        icon.tex = when {
+            !enabled -> checkIcon.disabled
+            pressing -> checkIcon.down
+            over -> checkIcon.over
+            else -> checkIcon.normal
+        }
+        icon.visible = checked
+        onChange(this)
+    }
 
-	override fun onSizeChanged() {
-		super.onSizeChanged()
-		background.size(width, height)
-		box.size(height, height)
-		textView.position(height + 8.0, 0)
-		textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
-	}
+    private fun updateText() {
+        textView.format = Html.Format(
+            face = textFont,
+            size = textSize,
+            color = textColor,
+            align = Html.Alignment.MIDDLE_LEFT
+        )
+        textView.setTextBounds(Rectangle(0, 0, width - height, height))
+        textView.setText(text)
+        textView.position(height + 8.0, 0)
+    }
+
+    override fun onSizeChanged() {
+        super.onSizeChanged()
+        background.size(width, height)
+        box.size(height, height)
+        icon.width = checkIcon.calculateWidth(height)
+        icon.height = checkIcon.calculateHeight(height)
+        textView.position(height + 8.0, 0)
+        textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
+    }
 }
