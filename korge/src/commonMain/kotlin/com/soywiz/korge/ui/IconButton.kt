@@ -6,7 +6,7 @@ inline fun Container.iconButton(
     width: Number = 128,
     height: Number = 64,
     skin: UISkin = defaultUISkin,
-    iconSkin: IconSkin = DefaultCheckSkin,
+    iconSkin: IconSkin = defaultCheckSkin,
     block: @ViewsDslMarker UIButton.() -> Unit = {}
 ): IconButton = IconButton(width.toDouble(), height.toDouble(), skin, iconSkin).addTo(this).apply(block)
 
@@ -18,35 +18,29 @@ open class IconButton(
 ) : UIButton(width, height, skin) {
 
     var iconSkin: IconSkin by uiObservable(iconSkin) { updateState() }
+
     protected val icon = ninePatch(
         iconSkin.normal,
-        width - iconSkin.paddingLeft - iconSkin.paddingRight,
-        height - iconSkin.paddingTop - iconSkin.paddingBottom,
+        iconSkin.calculateWidth(width),
+        iconSkin.calculateHeight(height),
         0.0, 0.0, 0.0, 0.0
-    ).also { it.position(iconSkin.paddingLeft, iconSkin.paddingTop) }
+    ).also { it.position(iconSkin.paddingLeft(width), iconSkin.paddingTop(height)) }
 
     override fun updateState() {
         super.updateState()
-        when {
-            !enabled -> {
-                icon.tex = iconSkin.disabled
-            }
-            bpressing || forcePressed -> {
-                icon.tex = iconSkin.down
-            }
-            bover -> {
-                icon.tex = iconSkin.over
-            }
-            else -> {
-                icon.tex = iconSkin.normal
-            }
+        icon.tex = when {
+            !enabled -> iconSkin.disabled
+            bpressing || forcePressed -> iconSkin.down
+            bover -> iconSkin.over
+            else -> iconSkin.normal
         }
     }
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        icon.width = width - iconSkin.paddingLeft - iconSkin.paddingRight
-        icon.height = height - iconSkin.paddingTop - iconSkin.paddingBottom
+        icon.width = iconSkin.calculateWidth(width)
+        icon.height = iconSkin.calculateHeight(height)
+        icon.position(iconSkin.paddingLeft(width), iconSkin.paddingTop(height))
         updateState()
     }
 }

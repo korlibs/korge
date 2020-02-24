@@ -2,32 +2,12 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.util.encoding.*
 
-data class UISkin(
-    val normal: BmpSlice,
-    val over: BmpSlice = normal,
-    val down: BmpSlice = normal,
-    val disabled: BmpSlice = normal,
-    val backColor: RGBA = Colors.DARKGREY
-)
-
-data class IconSkin(
-    val normal: BmpSlice,
-    val over: BmpSlice = normal,
-    val down: BmpSlice = normal,
-    val disabled: BmpSlice = normal,
-    val paddingLeft: Double = 8.0,
-    val paddingRight: Double = 8.0,
-    val paddingTop: Double = 8.0,
-    val paddingBottom: Double = 8.0
-)
-
 val DEFAULT_UI_SKIN_IMG by lazy {
     PNG.decode(
-        "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAflBMVEVHcExFRElFRUhycnJRUFZBQElBP0pmZmZGRUlycnJra2tra2s8OkTX19c8OkRqampLSVV0dHTBwcGzs7OsrKygoKDe3t6mpqa6urro6Oj6+vrx8fFJSUnj4+P29vbHx8iQkJDU1NSbm5vs7OyEhYWWlpbPz9DLy8t8fHxdXl8vh/MTAAAADXRSTlMAjgcIA1ffebCuVN74M4EKjwAABidJREFUeNrtm+12qjoURUGjKJYiVdRWq2BB5f1f8JLwaetRspMx0Nw1ibY/zDld0y0EZFsWZzCajN/eJXgbT0YDq0bH/LkU1/OH7nTmSzGbusNm/mj8TmA80jXflUxfOmjmS6YvHbjldGa/E7GZnvlzIuV8xyfiiPkW+e/PE2iZPydjK+XPDYj6FX/KMd5/SbCNj2LaqJ7vyc33mvkiSpZlvtSWiWn5fFdE8aQR01zLGvDPb3baS3PK+Od4UM7/kqaeL/L7kSwXrmA8GM5I8UsFs2HxBp73BA7iLRTzCfm/vs7FfGL+KEpECbi+ioC8BCb5X5HmcbbSY5vkUyd8/nFPophf5k/zrXjuukVBPnUyJecXBqYWr+B4S2LBa5jP92gCNmI+F5CmeaK0fO76SHkJjGdqAmYWX7/8kPL/8M/AG5+/JeXf8s/AG69jP63TdyZ/cSTmqgnwLf5B/KFxro5mtALanvjclgBpehbweagF7LeU0Qg4NqTluPszLV6rTcAnjYNaBRQVVAqo8nWGv7pnAd8fjYAfyna+VQEyaBPwTaMWQNyHHGoBIY2eBawUBXzWAoK+BaxobCoBKvuQFxbgKQr4bgSsaWgTQJqtLuDjtQV43qISoLITfQoBcexJbgJFAatGwJKGNgGn+CRHLGbUAog70ScScJYUIF5/XioK2FQCLn0LONNQFOA1AhY0tAk40KgFqBxFSgFLytAn4COP03o8/LV4rBsBK/nhxc9TAR80WgJi+eEVRxEhYEOjbwFhJSCmUQtINosNZWgTQHwDGgGnmDBOLQE9VwDx/z9WAk4kzo0AYglqE7DI62khNcSTqoBlS8CGMvQJoJFWAlTWEc9RAaSj8FJRwKEl4EDatAkgrkSjSoDKQoqHiIj/QM8C1ooCinXEUwggno7XAlQWUkIAcSeiU0Ao/whbAg6U0QigHUZO2gQQr0kmihUQvriAYyNgQ9k2jQDiWlqbAOIXM7UAlaU0D5H2LYD45aw+AcQAfQu4KAo4Po2AiEYtgLiUrgUciRcVn0nARn60BXgrytAnIIkIIwkUKyB9mgrIw0iPtoDlgrQ1AohfLekTQKMRQKMWEP5PBUTPI+CSEMbF1yaAeIOBNgEXGrWA9XpJ2NYmCaCfTvMQa+JNRj0LCBQFhM8jIKBwJSBUE0C81bRfAUGQVQLCcE2+nlAI+NlShhYBb2QBflbdLH3kcdYygyPOJt8UKkDPR4Df7u7zONKPLKtul49oF5Qu1e3yxH4DT8vt8rzhgWsMZB9ZNq8aJvzwKLnlRElWNUxcKP0a+32o2DBxEQ0TouVFNBDJxPf9In/ZMpPwC0ThUea5PJUoWmZOlAI46WmZEU1P75lsw1mZv2yamidyF9PSKEmCedM05cf7L9nN85umqYCSPyiapsq2N9G4lqfKmh93f5/vrtvmskDyPCK7bpsLV1Jtd/tVeN02d6HUv2ibe/nGSUu1cfLVW2eZNaXmn7KyeVix+ZmpN1/32jz9BO3zw57b5x8ymow6v9adutYrwCRe6+x2O7vra4MgcCyz4Pm7GnDEaYJjYP5uBpzyVNkxMP9u53TNb1QNNPl34+75LzMD8z/8DDitiwWOgfkng+75p0PkR/7XYTAZ26xj/uE0cJhZ+dlgwgOyLvlZnj8PyAx7/4uIrNv7H9wyYED+Pwb++f7fMPDS+z+7icke7f+mTUxmzP5/vLtl4Pb+fxbcMvDix79Re6nH7h//3OCGgZc//tu7PzXwj/yMOX8NGLD+sX/XwJ31zx8DRqz/fhm4k/9PDRiy/r0ycH/9e23AmPV/28D99T8bOre/LH/x8x+7Y/7fNWDO+Z/dNf/tGjDg/NfumP9mDRhx/m93zW8Nf9eAIdc/7F3n6x9samB+i9ndr/+0zouMyd828DB/awloTn6LMbtzflbVgEH56xrokL/+FJiV32IDu3N+YcCw/FyBO+r+xbnrMgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+Q8fAob23HOYVwAAAABJRU5ErkJggg==".fromBase64()
+        "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".fromBase64()
     ).toBMP32()
 }
 
@@ -41,12 +21,73 @@ val DefaultUISkin by lazy {
 }
 
 val DefaultCheckSkin by lazy {
+    val leftRight = (64.0 - 44.0) / 64.0 / 2.0
+    val topBottom = (64.0 - 33.0) / 64.0 / 2.0
     IconSkin(
         normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 64, 44, 33),
         disabled = DEFAULT_UI_SKIN_IMG.sliceWithSize(44, 64, 44, 33),
-        paddingLeft = 7.0,
-        paddingRight = 7.0
+        indentRatioLeft = leftRight,
+        indentRatioRight = leftRight,
+        indentRatioTop = topBottom,
+        indentRatioBottom = topBottom
+    )
+}
+
+val DefaultUpSkin by lazy {
+    val leftRight = (64.0 - 44.0) / 64.0 / 2.0
+    val topBottom = (64.0 - 27.0) / 64.0 / 2.0
+    IconSkin(
+        normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 97, 44, 27),
+        disabled = DEFAULT_UI_SKIN_IMG.sliceWithSize(44, 97, 44, 27),
+        indentRatioLeft = leftRight,
+        indentRatioRight = leftRight,
+        indentRatioTop = topBottom,
+        indentRatioBottom = topBottom
+    )
+}
+
+val DefaultDownSkin by lazy {
+    val leftRight = (64.0 - 44.0) / 64.0 / 2.0
+    val topBottom = (64.0 - 27.0) / 64.0 / 2.0
+    IconSkin(
+        normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 124, 44, 27),
+        disabled = DEFAULT_UI_SKIN_IMG.sliceWithSize(44, 124, 44, 27),
+        indentRatioLeft = leftRight,
+        indentRatioRight = leftRight,
+        indentRatioTop = topBottom,
+        indentRatioBottom = topBottom
+    )
+}
+
+val DefaultLeftSkin by lazy {
+    val leftRight = (64.0 - 27.0) / 64.0 / 2.0
+    val topBottom = (64.0 - 44.0) / 64.0 / 2.0
+    IconSkin(
+        normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 151, 27, 44),
+        disabled = DEFAULT_UI_SKIN_IMG.sliceWithSize(27, 151, 27, 44),
+        indentRatioLeft = leftRight,
+        indentRatioRight = leftRight,
+        indentRatioTop = topBottom,
+        indentRatioBottom = topBottom
+    )
+}
+
+val DefaultRightSkin by lazy {
+    val leftRight = (64.0 - 27.0) / 64.0 / 2.0
+    val topBottom = (64.0 - 44.0) / 64.0 / 2.0
+    IconSkin(
+        normal = DEFAULT_UI_SKIN_IMG.sliceWithSize(0, 195, 27, 44),
+        disabled = DEFAULT_UI_SKIN_IMG.sliceWithSize(27, 195, 27, 44),
+        indentRatioLeft = leftRight,
+        indentRatioRight = leftRight,
+        indentRatioTop = topBottom,
+        indentRatioBottom = topBottom
     )
 }
 
 var View.defaultUISkin: UISkin by defaultElement(DefaultUISkin)
+var View.defaultCheckSkin: IconSkin by defaultElement(DefaultCheckSkin)
+var View.defaultUpSkin: IconSkin by defaultElement(DefaultUpSkin)
+var View.defaultDownSkin: IconSkin by defaultElement(DefaultDownSkin)
+var View.defaultLeftSkin: IconSkin by defaultElement(DefaultLeftSkin)
+var View.defaultRightSkin: IconSkin by defaultElement(DefaultRightSkin)

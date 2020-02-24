@@ -61,19 +61,11 @@ open class UIButton(
 	}
 
 	override fun updateState() {
-		when {
-			!enabled -> {
-				rect.tex = skin.disabled
-			}
-			bpressing || forcePressed -> {
-				rect.tex = skin.down
-			}
-			bover -> {
-				rect.tex = skin.over
-			}
-			else -> {
-				rect.tex = skin.normal
-			}
+		rect.tex = when {
+			!enabled -> skin.disabled
+			bpressing || forcePressed -> skin.down
+			bover -> skin.over
+			else -> skin.normal
 		}
 	}
 

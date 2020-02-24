@@ -61,10 +61,6 @@ open class UIComboBox<T>(
 	private val itemsView = uiScrollableArea(
 		verticalScroll = verticalScroll,
 		horizontalScroll = false,
-		font = textFont,
-		skin = scrollbarSkin,
-		upSkin = upSkin,
-		downSkin = downSkin,
 		config = { visible = false }
 	)
 	private val selectedButton = uiTextButton(width - height, height, "", skin, textFont)

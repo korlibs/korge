@@ -27,9 +27,6 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")
-            launchImmediately {
-                views.gameWindow.close()
-            }
         }
         enable()
     }

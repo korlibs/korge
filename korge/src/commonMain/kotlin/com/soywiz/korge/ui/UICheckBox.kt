@@ -14,7 +14,7 @@ inline fun Container.uiCheckBox(
     text: String = "CheckBox",
     textFont: Html.FontFace = defaultUIFont,
     skin: UISkin = defaultUISkin,
-    checkIcon: IconSkin = DefaultCheckSkin,
+    checkIcon: IconSkin = defaultCheckSkin,
     block: @ViewsDslMarker UICheckBox.() -> Unit = {}
 ): UICheckBox = UICheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon)
     .addTo(this).apply(block)
@@ -41,10 +41,10 @@ open class UICheckBox(
     private val box = ninePatch(skin.normal, height, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
     private val icon = ninePatch(
         checkIcon.normal,
-        height - checkIcon.paddingLeft - checkIcon.paddingRight,
-        height - checkIcon.paddingTop - checkIcon.paddingBottom,
+        checkIcon.calculateWidth(height),
+        checkIcon.calculateHeight(height),
         0.0, 0.0, 0.0, 0.0
-    ).also { it.position(checkIcon.paddingLeft, checkIcon.paddingTop); it.visible = false }
+    ).also { it.position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)); it.visible = false }
     private val textView = text(text)
 
     private var over by uiObservable(false) { updateState() }
@@ -105,8 +105,8 @@ open class UICheckBox(
         super.onSizeChanged()
         background.size(width, height)
         box.size(height, height)
-        icon.width = width - checkIcon.paddingLeft - checkIcon.paddingRight
-        icon.height = height - checkIcon.paddingTop - checkIcon.paddingBottom
+        icon.width = checkIcon.calculateWidth(height)
+        icon.height = checkIcon.calculateHeight(height)
         textView.position(height + 8.0, 0)
         textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
     }
