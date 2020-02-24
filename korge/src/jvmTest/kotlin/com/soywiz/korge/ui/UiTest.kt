@@ -14,7 +14,7 @@ fun main(): Unit = runBlocking { korge() }
 
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 
-    uiTextButton(256.0, 32.0) {
+    textButton(256.0, 32.0) {
         text = "Disabled Button"
         position(128, 128)
         onClick {
@@ -22,7 +22,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         }
         disable()
     }
-    uiTextButton(256.0, 32.0) {
+    textButton(256.0, 32.0) {
         text = "Enabled Button"
         position(128, 128 + 32)
         onClick {
@@ -55,7 +55,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(480, 128)
     }) {
         for (n in 0 until 16) {
-            uiTextButton(text = "HELLO $n").position(0, n * 64)
+            textButton(text = "HELLO $n").position(0, n * 64)
         }
     }
 

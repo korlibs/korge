@@ -45,7 +45,7 @@ open class UIComboBox<T>(
 		horizontalScroll = false,
 		config = { visible = false }
 	)
-	private val selectedButton = uiTextButton(width - height, height, "", skin.selectedSkin, skin.textFont)
+	private val selectedButton = textButton(width - height, height, "", skin.selectedSkin, skin.textFont)
 	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0)
 	private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 	private var showItems = false
@@ -86,7 +86,7 @@ open class UIComboBox<T>(
 	private fun updateItems() {
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
-			itemsView.container.uiTextButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
+			itemsView.container.textButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
 				position(0, index * itemHeight)
 				onClick {
 					showItems = false

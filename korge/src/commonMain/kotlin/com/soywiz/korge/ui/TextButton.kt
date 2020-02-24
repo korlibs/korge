@@ -5,16 +5,16 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
-inline fun Container.uiTextButton(
+inline fun Container.textButton(
 	width: Number = 128,
 	height: Number = 64,
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
 	textFont: Html.FontFace = defaultUIFont,
-	block: @ViewsDslMarker UITextButton.() -> Unit = {}
-): UITextButton = UITextButton(width.toDouble(), height.toDouble(), text, skin, textFont).addTo(this).apply(block)
+	block: @ViewsDslMarker TextButton.() -> Unit = {}
+): TextButton = TextButton(width.toDouble(), height.toDouble(), text, skin, textFont).addTo(this).apply(block)
 
-open class UITextButton(
+open class TextButton(
 	width: Double = 128.0,
 	height: Double = 64.0,
 	text: String = "Button",
