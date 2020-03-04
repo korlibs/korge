@@ -1,14 +1,12 @@
 package com.soywiz.korge.bus
 
 import com.soywiz.korge.internal.fastForEach
-import com.soywiz.korinject.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
-//@Prototype
 class Bus(
 	private val globalBus: GlobalBus
-) : Closeable, InjectedHandler {
+) : Closeable {
 	private val closeables = arrayListOf<Closeable>()
 
 	suspend fun send(message: Any) {
@@ -21,21 +19,9 @@ class Bus(
 		return closeable
 	}
 
-	fun registerInstance(instance: Any) {
-		TODO()
-		//for (method in instance.javaClass.allDeclaredMethods) {
-		//	if (method.getAnnotation(BusHandler::class.java) != null) {
-		//		val param = method.parameterTypes.firstOrNull() ?: continue
-		//		register(param) {
-		//			method.invokeSuspend(instance, listOf(it))
-		//		}
-		//	}
-		//}
-	}
-
-	suspend override fun injectedInto(instance: Any) {
-		registerInstance(instance)
-	}
+    inline fun <reified T : Any> register(noinline handler: suspend (T) -> Unit): Closeable {
+        return register(T::class, handler)
+    }
 
 	override fun close() {
 		closeables.fastForEach { c ->
@@ -44,7 +30,6 @@ class Bus(
 	}
 }
 
-//@Singleton
 class GlobalBus {
 	val perClassHandlers = HashMap<KClass<*>, ArrayList<suspend (Any) -> Unit>>()
 
@@ -65,8 +50,8 @@ class GlobalBus {
 			forClass(clazz).remove(chandler)
 		}
 	}
-}
 
-//@JTranscKeep
-//@JTranscKeepName
-annotation class BusHandler
+    inline fun <reified T : Any> register(noinline handler: suspend (T) -> Unit): Closeable {
+       return register(T::class, handler)
+    }
+}
