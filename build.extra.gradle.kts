@@ -4,7 +4,7 @@ import org.gradle.plugins.ide.idea.model.IdeaModel
 apply(plugin = "idea")
 
 if (
-Os.isFamily(Os.FAMILY_UNIX) &&
+    Os.isFamily(Os.FAMILY_UNIX) &&
     (File("/.dockerenv").exists() || System.getenv("TRAVIS") != null || System.getenv("GITHUB_REPOSITORY") != null) &&
     (File("/usr/bin/apt-get").exists()) &&
     (!(File("/usr/include/GL/glut.h").exists()) || !(File("/usr/include/AL/al.h").exists()))
