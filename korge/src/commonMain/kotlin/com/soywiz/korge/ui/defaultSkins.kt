@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
@@ -85,9 +86,9 @@ val DefaultRightSkin by lazy {
     )
 }
 
-var View.defaultUISkin: UISkin by defaultElement(DefaultUISkin)
-var View.defaultCheckSkin: IconSkin by defaultElement(DefaultCheckSkin)
-var View.defaultUpSkin: IconSkin by defaultElement(DefaultUpSkin)
-var View.defaultDownSkin: IconSkin by defaultElement(DefaultDownSkin)
-var View.defaultLeftSkin: IconSkin by defaultElement(DefaultLeftSkin)
-var View.defaultRightSkin: IconSkin by defaultElement(DefaultRightSkin)
+var View.defaultUISkin: UISkin by extraProperty { DefaultUISkin }
+var View.defaultCheckSkin: IconSkin by extraProperty { DefaultCheckSkin }
+var View.defaultUpSkin: IconSkin by extraProperty { DefaultUpSkin }
+var View.defaultDownSkin: IconSkin by extraProperty { DefaultDownSkin }
+var View.defaultLeftSkin: IconSkin by extraProperty { DefaultLeftSkin }
+var View.defaultRightSkin: IconSkin by extraProperty { DefaultRightSkin }

@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
@@ -142,4 +143,4 @@ val DefaultComboBoxSkin by lazy {
     )
 }
 
-var View.defaultComboBoxSkin: ComboBoxSkin by defaultElement(DefaultComboBoxSkin)
+var View.defaultComboBoxSkin: ComboBoxSkin by extraProperty { DefaultComboBoxSkin }

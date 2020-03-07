@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.UIScrollBar.*
@@ -171,5 +172,5 @@ val DefaultHorScrollBarSkin by lazy {
     )
 }
 
-var View.defaultVerScrollBarSkin: ScrollBarSkin by defaultElement(DefaultVerScrollBarSkin)
-var View.defaultHorScrollBarSkin: ScrollBarSkin by defaultElement(DefaultHorScrollBarSkin)
+var View.defaultVerScrollBarSkin: ScrollBarSkin by extraProperty { DefaultVerScrollBarSkin }
+var View.defaultHorScrollBarSkin: ScrollBarSkin by extraProperty { DefaultHorScrollBarSkin }
