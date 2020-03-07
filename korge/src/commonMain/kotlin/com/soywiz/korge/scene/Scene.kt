@@ -46,7 +46,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
 	val root get() = _sceneViewContainer
 
 	protected val cancellables = CancellableGroup()
-	override val coroutineContext: CoroutineContext = Job(views.coroutineContext[Job.Key])
+	override val coroutineContext: Job by lazy { Job(views.coroutineContext[Job.Key]) }
 	val sceneView: Container = createSceneView().apply {
 		_sceneViewContainer += this
 	}
@@ -118,7 +118,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
     internal suspend fun sceneAfterDestroyInternal() {
         sceneAfterDestroy()
         try {
-            (coroutineContext as Job).cancelAndJoin()
+            coroutineContext.cancelAndJoin()
         } catch (e: Throwable) {
             e.printStackTrace()
         }
