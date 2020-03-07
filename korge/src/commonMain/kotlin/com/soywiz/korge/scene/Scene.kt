@@ -21,7 +21,7 @@ import kotlin.coroutines.*
  * - NEW: [sceneInit] - BLOCK - Called when this scene enters. Waits until completed
  * - NEW: [sceneMain] - DO NOT BLOCK - Called after [sceneInit]. Doesn't wait for completion. Its underlying Job is closed automatically on [sceneAfterDestroy]
  * - OLD: [sceneBeforeLeaving] - BLOCK - Called on the old scene. Waits until completed.
- * - Transition from the old view and the new view is performed [SceneContainer.transitionView] [View.ratio] 0..1
+ * - Transition from the old view and the new view is performed the animation transition set values for [View.ratio] in the [SceneContainer.transitionView] in the range 0..1
  * - OLD: [sceneDestroy] - BLOCK - Called when this scene exits. Waits until completed.
  * - OLD: [sceneAfterDestroy] - DO NOT BLOCK - Cancels the [Job] of the old scene. Do not wait
  * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
@@ -40,7 +40,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
     /** A reference to the [AG] from the [Views] */
     val ag: AG get() = views.ag
 
-    /** A [Container] view that */
+    /** A [Container] view that will wrap the Scene view */
     internal val _sceneViewContainer: Container = Container()
 
 	val root get() = _sceneViewContainer
