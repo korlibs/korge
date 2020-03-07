@@ -1,9 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.seconds
-import com.soywiz.kmem.*
 import com.soywiz.korge.component.docking.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
@@ -11,6 +9,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class ViewsTest : ViewsForTesting() {
@@ -104,4 +103,30 @@ class ViewsTest : ViewsForTesting() {
 		image.tween(image::x[-101], time = 4.seconds)
 		assertEquals(false, image.isVisibleToUser())
 	}
+
+    @Test
+    fun testRect() = viewsTest {
+        assertEquals(Rectangle(0, 0, 1280, 720), this.stage.globalBounds)
+
+        RectBase().also { addChild(it) }.also { rect1 ->
+            assertEquals(Rectangle(0, 0, 0, 0), rect1.globalBounds)
+        }
+        Image(Bitmap32(16, 16, Colors.RED)).also { addChild(it) }.also { rect2 ->
+            assertEquals(Rectangle(0, 0, 16, 16), rect2.globalBounds)
+        }
+
+        SolidRect(32, 32, Colors.RED).also { addChild(it) }.also { rect3 ->
+            assertEquals(Rectangle(0, 0, 32, 32), rect3.globalBounds)
+        }
+
+        Circle(32.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+            assertEquals(Rectangle(0, 0, 64, 64), rect3.globalBounds)
+        }
+
+        Graphics().also { addChild(it) }.apply { fill(Colors.RED) { rect(0, 0, 100, 100) } }.also { rect4 ->
+            assertEquals(Rectangle(0, 0, 1, 1), rect4.globalBounds)
+            rect4.render(views.renderContext)
+            assertEquals(Rectangle(0, 0, 100, 100), rect4.globalBounds)
+        }
+    }
 }

@@ -21,6 +21,9 @@ open class Circle(radius: Double = 16.0, color: RGBA = Colors.WHITE, autoScaling
             field = value; updateGraphics()
         }
 
+    override val bwidth get() = radius * 2
+    override val bheight get() = radius * 2
+
     /** Color of the circle */
     // @TODO: We could paint a white circle, and then tint it using the [colorMul] property
     var color: RGBA = color

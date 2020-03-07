@@ -18,6 +18,10 @@ class SolidRect(width: Double, height: Double, color: RGBA) : RectBase() {
 
 	override var width: Double = width; set(v) = run { field = v }.also { dirtyVertices = true }
 	override var height: Double = height; set(v) = run { field = v }.also { dirtyVertices = true }
+
+    override val bwidth: Double get() = width
+    override val bheight: Double get() = height
+
     /** The [color] of this [SolidRect]. Alias of [colorMul]. */
     var color: RGBA
         set(value) = run { colorMul = value }

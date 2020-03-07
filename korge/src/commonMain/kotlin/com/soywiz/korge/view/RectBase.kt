@@ -24,8 +24,8 @@ open class RectBase(
 	var anchorX: Double = anchorX; set (v) = run { field = v }.also { dirtyVertices = true }
 	var anchorY: Double = anchorY; set(v) = run { field = v }.also { dirtyVertices = true }
 
-	protected open val bwidth get() = width
-	protected open val bheight get() = height
+    protected open val bwidth get() = 0.0
+	protected open val bheight get() = 0.0
 
 	protected open val sLeft get() = -bwidth * anchorX
 	protected open val sTop get() = -bheight * anchorY
