@@ -1,5 +1,7 @@
-apply plugin: com.soywiz.korlibs.KorlibsPlugin
-apply plugin: "org.jetbrains.dokka"
+import com.soywiz.korlibs.*
+
+apply<KorlibsPlugin>()
+apply(plugin = "org.jetbrains.dokka")
 
 korlibs {
 	exposeVersion()
@@ -12,11 +14,16 @@ korlibs {
 	//dependencyCInteropsExternal("com.soywiz.korlibs.korau:kgl:$kglVersion", "GL", ["linuxX64"])
 }
 
-dependencies {
-	commonMainApi("com.soywiz.korlibs.korau:korau:$korauVersion")
-	commonMainApi("com.soywiz.korlibs.korgw:korgw:$korgwVersion")
+val korauVersion: String by project
+val korgwVersion: String by project
+val kryptoVersion: String by project
+val korinjectVersion: String by project
+val kloggerVersion: String by project
 
-	commonMainApi("com.soywiz.korlibs.krypto:krypto:$kryptoVersion")
-	commonMainApi("com.soywiz.korlibs.korinject:korinject:$korinjectVersion")
-	commonMainApi("com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
+dependencies {
+	add("commonMainApi", "com.soywiz.korlibs.korau:korau:$korauVersion")
+	add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:$korgwVersion")
+	add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:$kryptoVersion")
+	add("commonMainApi", "com.soywiz.korlibs.korinject:korinject:$korinjectVersion")
+	add("commonMainApi", "com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
 }
