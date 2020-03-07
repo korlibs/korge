@@ -6,6 +6,7 @@ import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.input.MouseEvents
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -97,18 +98,23 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	//	//}
 	//}
 
+    val View.viewMouse: MouseEvents get() {
+        this.mouse.views = views
+        return this.mouse
+    }
+
 	suspend fun View.simulateClick() {
-		this.mouse.onClick(this.mouse)
+        viewMouse.onClick(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOver() {
-		this.mouse.onOver(this.mouse)
+        viewMouse.onOver(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOut() {
-		this.mouse.onOut(this.mouse)
+        viewMouse.onOut(viewMouse)
 		simulateFrame()
 	}
 
