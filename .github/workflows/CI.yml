@@ -13,6 +13,7 @@ jobs:
       - run: CALL gradlew.bat --no-daemon assemble check localPublishToBintrayIfRequiredOnCiReleaseTagNoPR -x jsBrowserTest
         shell: cmd
         env:
+          DISABLE_ANDROID: true
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
 
@@ -22,6 +23,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: ./gradlew --no-daemon assemble check localPublishToBintrayIfRequiredOnTravisReleaseTagNoPR -x jsBrowserTest
         env:
+          DISABLE_ANDROID: true
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
 
