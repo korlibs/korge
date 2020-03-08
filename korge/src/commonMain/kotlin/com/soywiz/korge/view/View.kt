@@ -457,13 +457,14 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 
     /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
     fun deferWithViews(block: (views: Views) -> Unit) {
-        addComponent(object : UpdateComponentWithViews {
-            override val view: View = this@View
-            override fun update(views: Views, ms: Double) {
-                block(views)
-                detach()
-            }
-        })
+        addComponent(DeferWithViewsUpdateComponentWithViews(this@View, block))
+    }
+
+    internal class DeferWithViewsUpdateComponentWithViews(override val view: View, val block: (views: Views) -> Unit) : UpdateComponentWithViews {
+        override fun update(views: Views, ms: Double) {
+            block(views)
+            detach()
+        }
     }
 
     @PublishedApi

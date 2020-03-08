@@ -53,11 +53,12 @@ open class UIView(
 			}
 		}
 		stage.getOrCreateComponent { stage ->
-			object : UpdateComponentWithViews {
-				override val view: View = stage
-				override fun update(views: Views, ms: Double) {
-				}
-			}
+            DummyUpdateComponentWithViews(stage)
 		}
 	}
+}
+
+internal class DummyUpdateComponentWithViews(override val view: View) : UpdateComponentWithViews {
+    override fun update(views: Views, ms: Double) {
+    }
 }
