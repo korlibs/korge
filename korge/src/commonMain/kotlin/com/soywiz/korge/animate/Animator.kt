@@ -29,15 +29,10 @@ open class Animator(
         val DEFAULT_SPEED = 128.0 // Points per second
         val DEFAULT_EASING = Easing.EASE_IN_OUT_QUAD
         val DEFAULT_COMPLETE_ON_CANCEL = true
-        //val DEFAULT_CANCEL = OnCancel.JustCancel
     }
 
     enum class NodeKind {
         Parallel, Sequence
-    }
-
-    enum class OnCancel {
-        JustCancel, Complete
     }
 
     @PublishedApi
@@ -49,7 +44,7 @@ open class Animator(
                 try {
                     while (nodes.isNotEmpty()) nodes.removeFirst().execute()
                 } catch (e: CancellationException) {
-                    println("CancellationException")
+                    //println("CancellationException")
                     if (completeOnCancel) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
@@ -120,7 +115,7 @@ open class Animator(
     inline fun View.alpha(alpha: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha.toDouble()], time = time, easing = easing)
 
     fun wait(time: TimeSpan = this.time) = __tween(time = time)
-    fun wait(time: (() -> TimeSpan)? = null) = __tween(lazyTime = time)
+    fun wait(time: () -> TimeSpan) = __tween(lazyTime = time)
 
     fun block(callback: () -> Unit) {
         nodes.add(object : BaseAnimatorNode {
