@@ -141,7 +141,7 @@ suspend fun View.launchAnimate(
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
     kind: Animator.NodeKind = Animator.NodeKind.Sequence,
     block: Animator.() -> Unit = {}
-): Job = launchImmediately { animate(time, speed, easing, completeOnCancel, kind, block) }
+): Job = launchImmediately(coroutineContext) { animate(time, speed, easing, completeOnCancel, kind, block) }
 
 suspend fun View.animate(
     time: TimeSpan = Animator.DEFAULT_TIME,
