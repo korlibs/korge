@@ -65,6 +65,11 @@ class TweenComponent(
 	}
 
 	fun setToMs(elapsed: Int) {
+        if (elapsed == 0) {
+            vs.fastForEach { v ->
+                v.init()
+            }
+        }
 		vs.fastForEach { v ->
 			val durationInTween = (v.duration ?: (ctime - v.startTime))
 			val elapsedInTween = (elapsed - v.startTime).clamp(0L, durationInTween)
@@ -139,25 +144,31 @@ suspend inline fun View.rotateBy(ddeg: Angle, time: TimeSpan, easing: Easing = E
 @Suppress("UNCHECKED_CAST")
 data class V2<V>(
 	val key: KMutableProperty0<V>,
-	val initial: V,
+	var initial: V,
 	val end: V,
 	val interpolator: (Double, V, V) -> V,
+    val includeStart: Boolean,
 	val startTime: Long = 0,
 	val duration: Long? = null
 ) {
 	val endTime = startTime + (duration ?: 0)
 
 	@Deprecated("", replaceWith = ReplaceWith("key .. (initial...end)", "com.soywiz.korge.tween.rangeTo"))
-	constructor(key: KMutableProperty0<V>, initial: V, end: V) : this(key, initial, end, ::_interpolateAny)
+	constructor(key: KMutableProperty0<V>, initial: V, end: V, includeStart: Boolean = false) : this(key, initial, end, ::_interpolateAny, includeStart)
 
+    fun init() {
+        if (!includeStart) {
+            initial = key.get()
+        }
+    }
 	fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
 
 	override fun toString(): String =
 		"V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
-operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateAny)
-operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateAny)
+operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateAny, includeStart = false)
+operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateAny, includeStart = true)
 
 @PublishedApi
 internal fun _interpolate(ratio: Double, l: Double, r: Double) = ratio.interpolate(l, r)
@@ -181,21 +192,21 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::_interpolate)
+inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::_interpolate, includeStart = false)
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
-	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate)
+	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate, true)
 
-inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor)
+inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor, includeStart = false)
 inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
-	V2(this, initial, end, ::_interpolateColor)
+	V2(this, initial, end, ::_interpolateColor, includeStart = true)
 
-inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle)
+inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle, includeStart = false)
 inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) =
-	V2(this, initial, end, ::_interpolateAngle)
+	V2(this, initial, end, ::_interpolateAngle, includeStart = true)
 
-inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan)
+inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
 inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) =
-    V2(this, initial, end, ::_interpolateTimeSpan)
+    V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
 
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
