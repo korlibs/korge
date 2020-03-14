@@ -46,12 +46,12 @@ class TweenComponent(
 	}
 
 	override fun update(ms: Double) {
+        if (cancelled) {
+            //println(" --> cancelled")
+            return completeOnce()
+        }
 		val dtMs = ms.toInt()
 		//println("TWEEN UPDATE[$this, $vs]: $elapsed + $dtMs")
-		if (cancelled) {
-			//println(" --> cancelled")
-			return completeOnce()
-		}
 		elapsedMs += dtMs
 
 		val ratio = (elapsedMs.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
