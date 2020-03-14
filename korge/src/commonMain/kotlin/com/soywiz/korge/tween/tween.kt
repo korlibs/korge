@@ -138,12 +138,12 @@ suspend inline fun View.rotateBy(ddeg: Angle, time: TimeSpan, easing: Easing = E
 
 @Suppress("UNCHECKED_CAST")
 data class V2<V>(
-	internal val key: KMutableProperty0<V>,
-	internal val initial: V,
-	internal val end: V,
-	internal val interpolator: (Double, V, V) -> V,
-	internal val startTime: Long = 0,
-	internal val duration: Long? = null
+	val key: KMutableProperty0<V>,
+	val initial: V,
+	val end: V,
+	val interpolator: (Double, V, V) -> V,
+	val startTime: Long = 0,
+	val duration: Long? = null
 ) {
 	val endTime = startTime + (duration ?: 0)
 
