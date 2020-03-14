@@ -134,6 +134,15 @@ fun View.animator(
     block: Animator.() -> Unit = {}
 ): Animator = Animator(this, time, speed, easing, completeOnCancel, kind).apply(block)
 
+suspend fun View.launchAnimate(
+    time: TimeSpan = Animator.DEFAULT_TIME,
+    speed: Double = Animator.DEFAULT_SPEED,
+    easing: Easing = Animator.DEFAULT_EASING,
+    completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
+    kind: Animator.NodeKind = Animator.NodeKind.Sequence,
+    block: Animator.() -> Unit = {}
+): Job = launchImmediately { animate(time, speed, easing, completeOnCancel, kind, block) }
+
 suspend fun View.animate(
     time: TimeSpan = Animator.DEFAULT_TIME,
     speed: Double = Animator.DEFAULT_SPEED,
