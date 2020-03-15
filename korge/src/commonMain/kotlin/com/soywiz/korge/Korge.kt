@@ -484,7 +484,6 @@ object Korge {
 
 		logger.trace { "Korge.test" }
 		logger.trace { "Korge.test.checkEnvironment" }
-		val done = CompletableDeferred<SceneContainer>(Job())
 		logger.trace { "Korge.test without container" }
 		logger.trace { "Korge.test loading icon" }
 		try {
@@ -504,14 +503,10 @@ object Korge {
 		this.quality = module.quality
 
 		logger.trace { "Korge.test [1]" }
-		coroutineScope {
-			launchImmediately {
-				logger.trace { "Korge.test [2]" }
-				done.complete(
-					setupCanvas(config.copy(gameWindow = gameWindow, eventDispatcher = gameWindow), context = gameWindow.coroutineDispatcher)
-				)
-			}
-		}
+        launchImmediately(gameWindow.coroutineDispatcher) {
+            logger.trace { "Korge.test [2]" }
+            setupCanvas(config.copy(gameWindow = gameWindow, eventDispatcher = gameWindow), context = gameWindow.coroutineDispatcher)
+        }
 	}
 
 	data class Config(
