@@ -14,7 +14,12 @@ class ResourcesRoot : AsyncDependency {
 		mountable.mount(path, file)
 	}
 
-	operator fun get(path: String) = root[path]
+	operator fun get(
+        @Resource
+        //@Language("resource") // @TODO: This doesn't work on Kotlin Common. reported already on Kotlin issue tracker
+        //language=resource
+        path: String
+    ) = root[path]
 	operator fun get(path: VPath) = root[path.path]
 
 	override suspend fun init() {
