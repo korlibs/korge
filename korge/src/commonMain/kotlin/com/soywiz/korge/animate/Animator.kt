@@ -35,6 +35,22 @@ open class Animator(
         Parallel, Sequence
     }
 
+    private var _onStart: () -> Unit = {}
+    private var _onComplete: () -> Unit = {}
+    private var _onCancel: () -> Unit = {}
+
+    fun onStart(action: () -> Unit) {
+        _onStart = action
+    }
+
+    fun onComplete(action: () -> Unit) {
+        _onComplete = action
+    }
+
+    fun onCancel(action: () -> Unit) {
+        _onCancel = action
+    }
+
     @PublishedApi
     internal val nodes = Deque<BaseAnimatorNode>()
 
@@ -42,21 +58,35 @@ open class Animator(
         when (kind) {
             NodeKind.Sequence -> {
                 try {
+                    _onStart()
                     while (nodes.isNotEmpty()) nodes.removeFirst().execute()
+                    _onComplete()
                 } catch (e: CancellationException) {
                     //println("CancellationException")
+                    _onCancel()
                     if (completeOnCancel) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
+                        _onComplete()
                     }
                 }
             }
             NodeKind.Parallel -> {
-                val jobs = arrayListOf<Job>()
-                while (nodes.isNotEmpty()) {
-                    val node = nodes.removeFirst()
-                    jobs += launchImmediately(coroutineContext) { node.execute() }
+                try {
+                    _onStart()
+                    val jobs = arrayListOf<Job>()
+                    while (nodes.isNotEmpty()) {
+                        val node = nodes.removeFirst()
+                        jobs += launchImmediately(coroutineContext) { node.execute() }
+                    }
+                    jobs.joinAll()
+                    _onComplete()
+                } catch (e: CancellationException) {
+                    _onCancel()
+                    if (completeOnCancel) {
+                        while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
+                        _onComplete()
+                    }
                 }
-                jobs.joinAll()
             }
         }
     }
