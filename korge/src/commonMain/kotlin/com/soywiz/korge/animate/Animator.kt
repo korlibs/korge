@@ -35,6 +35,12 @@ open class Animator(
         Parallel, Sequence
     }
 
+    private var _onCancel: () -> Unit = {}
+
+    fun onCancel(action: () -> Unit) {
+        _onCancel = action
+    }
+
     @PublishedApi
     internal val nodes = Deque<BaseAnimatorNode>()
 
@@ -44,19 +50,26 @@ open class Animator(
                 try {
                     while (nodes.isNotEmpty()) nodes.removeFirst().execute()
                 } catch (e: CancellationException) {
-                    //println("CancellationException")
+                    _onCancel()
                     if (completeOnCancel) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
                 }
             }
             NodeKind.Parallel -> {
-                val jobs = arrayListOf<Job>()
-                while (nodes.isNotEmpty()) {
-                    val node = nodes.removeFirst()
-                    jobs += launchImmediately(coroutineContext) { node.execute() }
+                try {
+                    val jobs = arrayListOf<Job>()
+                    while (nodes.isNotEmpty()) {
+                        val node = nodes.removeFirst()
+                        jobs += launchImmediately(coroutineContext) { node.execute() }
+                    }
+                    jobs.joinAll()
+                } catch (e: CancellationException) {
+                    _onCancel()
+                    if (completeOnCancel) {
+                        while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
+                    }
                 }
-                jobs.joinAll()
             }
         }
     }
