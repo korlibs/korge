@@ -101,15 +101,15 @@ open class Animator(
     }
 
     @PublishedApi
-    internal fun __tween(vararg vfs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
-        nodes.add(TweenNode(root, *vfs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing))
+    internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
+        nodes.add(TweenNode(root, *vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing))
     }
 
-    fun tween(vararg vfs: V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vfs, time = time, easing = easing)
-    fun tween(vararg vfs: V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vfs, lazyTime = time, easing = easing)
+    fun tween(vararg vs: V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vs, time = time, easing = easing)
+    fun tween(vararg vs: V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vs, lazyTime = time, easing = easing)
 
-    fun tween(vararg vfs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(lazyVs = vfs, time = time, easing = easing)
-    fun tween(vararg vfs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(lazyVs = vfs, lazyTime = time, easing = easing)
+    fun tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(lazyVs = vs, time = time, easing = easing)
+    fun tween(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(lazyVs = vs, lazyTime = time, easing = easing)
 
     fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }), time = time, easing = easing)
     fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::rotation[this.rotation + rotation] }), time = time, easing = easing)
