@@ -105,22 +105,26 @@ open class Animator(
         nodes.add(TweenNode(root, *vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing))
     }
 
+    @PublishedApi
+    internal fun __tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
+        nodes.add(TweenNode(root, lazyVs = vs, time = time, lazyTime = lazyTime, easing = easing))
+    }
+
     fun tween(vararg vs: V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vs, time = time, easing = easing)
     fun tween(vararg vs: V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vs, lazyTime = time, easing = easing)
 
-    fun tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(lazyVs = vs, time = time, easing = easing)
-    fun tween(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(lazyVs = vs, lazyTime = time, easing = easing)
+    fun tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vs, time = time, easing = easing)
+    fun tween(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vs, lazyTime = time, easing = easing)
 
-    fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }), time = time, easing = easing)
-    fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::rotation[this.rotation + rotation] }), time = time, easing = easing)
-    fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), time = time, easing = easing)
-    fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
+    fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }, time = time, easing = easing)
+    fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::rotation[this.rotation + rotation] }, time = time, easing = easing)
+    fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, time = time, easing = easing)
+    fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
 
     fun View.scaleTo(scaleX: Double, scaleY: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::scaleX[scaleX], this::scaleY[scaleY], time = time, easing = easing)
     fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
     fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
-    fun View.moveToWithSpeed(x: Double, y: Double, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) =
-        __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
+    fun View.moveToWithSpeed(x: Double, y: Double, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
 
     fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1, time, easing)
     fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0, time, easing)
