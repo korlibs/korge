@@ -14,7 +14,8 @@ class AnimatorTest : ViewsForTesting()  {
             view.moveTo(100, 0)
             view.moveBy(y = +100.0)
             view.moveBy(x = +10.0)
+            view.moveTo(x = { view.x + 10 })
         }
-        assertEquals("(110, 100)", view.pos.toString())
+        assertEquals("(120, 100)", view.pos.toString())
     }
 }
