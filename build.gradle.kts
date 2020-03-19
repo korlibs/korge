@@ -1,6 +1,4 @@
 buildscript {
-    val dokka_version: String by project
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -12,8 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.7.6") // Kotlin 1.3.70: https://github.com/korlibs/easy-kotlin-mpp-gradle-plugin
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}")
+        classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.7.10") // Kotlin 1.3.70: https://github.com/korlibs/easy-kotlin-mpp-gradle-plugin
     }
 }
 
