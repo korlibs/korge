@@ -28,7 +28,7 @@ jobs:
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest
         shell: cmd
-      - run: CALL gradlew.bat --no-daemon assemble check -x jsBrowserTest -x jsNodeTest
+      - run: CALL gradlew.bat --no-daemon assemble check -x jsBrowserTest
         shell: cmd
 
   test-mac:
@@ -40,7 +40,7 @@ jobs:
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
       - run: ./gradlew --no-daemon
       - run: ./gradlew --no-daemon jvmTest
-      - run: ./gradlew --no-daemon check -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew --no-daemon check -x jsBrowserTest
 
   test-linux:
     runs-on: ubuntu-latest
@@ -51,4 +51,4 @@ jobs:
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
       - run: ./gradlew --no-daemon
       - run: ./gradlew --no-daemon jvmTest
-      - run: ./gradlew --no-daemon check lint testDebugUnitTest -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew --no-daemon check lint testDebugUnitTest -x jsBrowserTest
