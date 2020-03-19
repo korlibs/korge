@@ -1,6 +1,7 @@
 package com.soywiz.korge.service.storage
 
 import com.soywiz.kds.*
+import com.soywiz.kds.atomic.KdsAtomicRef
 import com.soywiz.korge.native.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
@@ -9,19 +10,14 @@ actual object NativeStorage : IStorage {
     private fun saveStr(data: String) = KorgeSimpleNativeSyncIO.writeBytes("settings.json", data.toByteArray(UTF8))
     private fun loadStr(): String = KorgeSimpleNativeSyncIO.readBytes("settings.json").toString(UTF8)
 
-    private var map: CopyOnWriteFrozenMap<String, String>? = null
+    private var map = KdsAtomicRef<CopyOnWriteFrozenMap<String, String>?>(null)
 
     private fun ensureMap(): CopyOnWriteFrozenMap<String, String> {
-        if (map == null) {
-            map = try {
-                CopyOnWriteFrozenMap<String, String>().also {
-                    it.putAll(loadStr().fromJson() as Map<String, String>)
-                }
-            } catch (e: Throwable) {
-                CopyOnWriteFrozenMap()
-            }
+        if (map.value == null) {
+            map.value = CopyOnWriteFrozenMap()
+            kotlin.runCatching { map.value!!.putAll(loadStr().fromJson() as Map<String, String>) }
         }
-        return map!!
+        return map.value!!
     }
 
     private fun save() {
