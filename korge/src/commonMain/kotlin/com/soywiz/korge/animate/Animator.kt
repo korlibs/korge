@@ -13,6 +13,10 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
+@DslMarker
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
+annotation class AnimatorDslMarker
+
 interface BaseAnimatorNode {
     suspend fun execute()
     fun executeImmediately()
@@ -24,7 +28,8 @@ open class Animator(
     val speed: Double = DEFAULT_SPEED,
     val easing: Easing = DEFAULT_EASING,
     val completeOnCancel: Boolean = DEFAULT_COMPLETE_ON_CANCEL,
-    val kind: NodeKind = NodeKind.Sequence
+    val kind: NodeKind = NodeKind.Sequence,
+    val init: Animator.() -> Unit = {}
 ) : BaseAnimatorNode {
     companion object {
         val DEFAULT_TIME = 0.5.seconds
@@ -37,28 +42,42 @@ open class Animator(
         Parallel, Sequence
     }
 
+    private var _onCancel: () -> Unit = {}
+
+    fun onCancel(action: () -> Unit) {
+        _onCancel = action
+    }
+
     @PublishedApi
     internal val nodes = Deque<BaseAnimatorNode>()
 
     override suspend fun execute() {
+        init(this)
         when (kind) {
             NodeKind.Sequence -> {
                 try {
                     while (nodes.isNotEmpty()) nodes.removeFirst().execute()
                 } catch (e: CancellationException) {
-                    //println("CancellationException")
+                    _onCancel()
                     if (completeOnCancel) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
                 }
             }
             NodeKind.Parallel -> {
-                val jobs = arrayListOf<Job>()
-                while (nodes.isNotEmpty()) {
-                    val node = nodes.removeFirst()
-                    jobs += launchImmediately(coroutineContext) { node.execute() }
+                try {
+                    val jobs = arrayListOf<Job>()
+                    while (nodes.isNotEmpty()) {
+                        val node = nodes.removeFirst()
+                        jobs += launchImmediately(coroutineContext) { node.execute() }
+                    }
+                    jobs.joinAll()
+                } catch (e: CancellationException) {
+                    _onCancel()
+                    if (completeOnCancel) {
+                        while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
+                    }
                 }
-                jobs.joinAll()
             }
         }
     }
@@ -72,7 +91,7 @@ open class Animator(
         speed: Double = this.speed,
         easing: Easing = this.easing,
         completeOnCancel: Boolean = this.completeOnCancel,
-        callback: Animator.() -> Unit
+        callback: @AnimatorDslMarker Animator.() -> Unit
     ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Parallel).apply(callback).also { nodes.add(it) }
 
     inline fun sequence(
@@ -80,12 +99,27 @@ open class Animator(
         speed: Double = this.speed,
         easing: Easing = this.easing,
         completeOnCancel: Boolean = this.completeOnCancel,
-        callback: Animator.() -> Unit
+        callback: @AnimatorDslMarker Animator.() -> Unit
     ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence).apply(callback).also { nodes.add(it) }
+
+    fun parallelLazy(
+        time: TimeSpan = this.time,
+        speed: Double = this.speed,
+        easing: Easing = this.easing,
+        completeOnCancel: Boolean = this.completeOnCancel,
+        init: @AnimatorDslMarker Animator.() -> Unit
+    ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Parallel, init).also { nodes.add(it) }
+
+    fun sequenceLazy(
+        time: TimeSpan = this.time,
+        speed: Double = this.speed,
+        easing: Easing = this.easing,
+        completeOnCancel: Boolean = this.completeOnCancel,
+        init: @AnimatorDslMarker Animator.() -> Unit
+    ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence, init).also { nodes.add(it) }
 
     inner class TweenNode(val view: View, vararg val vs: V2<*>, val lazyVs: Array<out () -> V2<*>>? = null, val time: TimeSpan = 1.seconds, val lazyTime: (() -> TimeSpan)? = null, val easing: Easing) : BaseAnimatorNode {
         fun computeVs(): Array<out V2<*>> = if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs
-
         override suspend fun execute() {
             try {
                 val rtime = if (lazyTime != null) lazyTime!!() else time
@@ -155,7 +189,7 @@ fun View.animator(
     easing: Easing = Animator.DEFAULT_EASING,
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
     kind: Animator.NodeKind = Animator.NodeKind.Sequence,
-    block: Animator.() -> Unit = {}
+    block: @AnimatorDslMarker Animator.() -> Unit = {}
 ): Animator = Animator(this, time, speed, easing, completeOnCancel, kind).apply(block)
 
 suspend fun View.launchAnimate(
@@ -164,7 +198,7 @@ suspend fun View.launchAnimate(
     easing: Easing = Animator.DEFAULT_EASING,
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
     kind: Animator.NodeKind = Animator.NodeKind.Sequence,
-    block: Animator.() -> Unit = {}
+    block: @AnimatorDslMarker Animator.() -> Unit = {}
 ): Job = launchImmediately(coroutineContext) { animate(time, speed, easing, completeOnCancel, kind, block) }
 
 suspend fun View.animate(
@@ -173,7 +207,7 @@ suspend fun View.animate(
     easing: Easing = Animator.DEFAULT_EASING,
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
     kind: Animator.NodeKind = Animator.NodeKind.Sequence,
-    block: Animator.() -> Unit = {}
+    block: @AnimatorDslMarker Animator.() -> Unit = {}
 ): Animator = Animator(this, time, speed, easing, completeOnCancel, kind).apply(block).also { it.execute() }
 
 suspend fun View.animateSequence(
@@ -181,7 +215,7 @@ suspend fun View.animateSequence(
     speed: Double = Animator.DEFAULT_SPEED,
     easing: Easing = Animator.DEFAULT_EASING,
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
-    block: Animator.() -> Unit = {}
+    block: @AnimatorDslMarker Animator.() -> Unit = {}
 ): Animator = animate(time, speed, easing, completeOnCancel, Animator.NodeKind.Sequence, block)
 
 suspend fun View.animateParallel(
@@ -189,5 +223,5 @@ suspend fun View.animateParallel(
     speed: Double = Animator.DEFAULT_SPEED,
     easing: Easing = Animator.DEFAULT_EASING,
     completeOnCancel: Boolean = Animator.DEFAULT_COMPLETE_ON_CANCEL,
-    block: Animator.() -> Unit = {}
+    block: @AnimatorDslMarker Animator.() -> Unit = {}
 ): Animator = animate(time, speed, easing, completeOnCancel, Animator.NodeKind.Parallel, block)
