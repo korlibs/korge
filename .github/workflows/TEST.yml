@@ -38,9 +38,9 @@ jobs:
       - uses: actions/checkout@v1
       #- { uses: actions/cache@v1, with: { path: '~/.gradle/caches', key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-gradle-" } }
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
-      - run: ./gradlew
-      - run: ./gradlew jvmTest
-      - run: ./gradlew check -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew --no-daemon
+      - run: ./gradlew --no-daemon jvmTest
+      - run: ./gradlew --no-daemon check -x jsBrowserTest -x jsNodeTest
 
   test-linux:
     runs-on: ubuntu-latest
@@ -49,6 +49,6 @@ jobs:
       - uses: actions/checkout@v1
       #- { uses: actions/cache@v1, with: { path: '~/.gradle/caches', key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-gradle-" } }
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
-      - run: ./gradlew
-      - run: ./gradlew jvmTest
-      - run: ./gradlew check lint testDebugUnitTest -x jsBrowserTest -x jsNodeTest
+      - run: ./gradlew --no-daemon
+      - run: ./gradlew --no-daemon jvmTest
+      - run: ./gradlew --no-daemon check lint testDebugUnitTest -x jsBrowserTest -x jsNodeTest
