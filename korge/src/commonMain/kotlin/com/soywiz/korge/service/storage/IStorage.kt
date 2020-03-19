@@ -2,6 +2,7 @@ package com.soywiz.korge.service.storage
 
 import com.soywiz.korio.lang.*
 
+/** Defines a way of synchronously set and get persistent small values */
 interface IStorage {
 	operator fun set(key: String, value: String): Unit
 	fun getOrNull(key: String): String?

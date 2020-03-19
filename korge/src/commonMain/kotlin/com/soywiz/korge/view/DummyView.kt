@@ -2,6 +2,8 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.*
 
+fun Container.dummyView() = DummyView().also { this.addChild(it) }
+
 /**
  * A Dummy view that doesn't render anything.
  */
