@@ -42,6 +42,7 @@ open class Animator(
         Parallel, Sequence
     }
 
+    private var initialized = false
     private var _onCancel: () -> Unit = {}
 
     fun onCancel(action: () -> Unit) {
@@ -52,7 +53,10 @@ open class Animator(
     internal val nodes = Deque<BaseAnimatorNode>()
 
     override suspend fun execute() {
-        init(this)
+        if (!initialized) {
+            init(this)
+            initialized = true
+        }
         when (kind) {
             NodeKind.Sequence -> {
                 try {
@@ -83,6 +87,10 @@ open class Animator(
     }
 
     override fun executeImmediately() {
+        if (!initialized) {
+            init(this)
+            initialized = true
+        }
         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
     }
 
@@ -118,12 +126,23 @@ open class Animator(
         init: @AnimatorDslMarker Animator.() -> Unit
     ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence, init).also { nodes.add(it) }
 
-    inner class TweenNode(val view: View, vararg val vs: V2<*>, val lazyVs: Array<out () -> V2<*>>? = null, val time: TimeSpan = 1.seconds, val lazyTime: (() -> TimeSpan)? = null, val easing: Easing) : BaseAnimatorNode {
-        fun computeVs(): Array<out V2<*>> = if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs
+    inner class TweenNode(
+        val view: View,
+        vararg val vs: V2<*>,
+        val lazyVs: Array<out () -> V2<*>>? = null,
+        val time: TimeSpan = 1.seconds,
+        val lazyTime: (() -> TimeSpan)? = null,
+        val easing: Easing
+    ) : BaseAnimatorNode {
+
+        val computedVs by lazy {
+            if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs
+        }
+
         override suspend fun execute() {
             try {
-                val rtime = if (lazyTime != null) lazyTime!!() else time
-                view.tween(*computeVs(), time = rtime, easing = easing)
+                val rtime = lazyTime?.invoke() ?: time
+                view.tween(*computedVs, time = rtime, easing = easing)
             } catch (e: CancellationException) {
                 //println("TweenNode: $e")
                 if (completeOnCancel) {
@@ -131,7 +150,8 @@ open class Animator(
                 }
             }
         }
-        override fun executeImmediately() = computeVs().fastForEach { it.set(1.0) }
+
+        override fun executeImmediately() = computedVs.fastForEach { it.set(1.0) }
     }
 
     @PublishedApi
@@ -160,9 +180,10 @@ open class Animator(
     fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
     fun View.moveToWithSpeed(x: Double, y: Double, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
 
-    fun View.moveTo(x: () -> Number = { this.x }, y: () -> Number = { this.y }, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
     fun View.scaleTo(scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[scaleX()] }, { this::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
     fun View.rotateTo(rotation: () -> Angle, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun View.moveTo(x: () -> Number = { this.x }, y: () -> Number = { this.y }, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun View.moveToWithSpeed(x: () -> Number = { this.x }, y: () -> Number = { this.y }, speed: () -> Number = { this@Animator.speed }, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, lazyTime = { (hypot(this.x - x().toDouble(), this.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing)
 
     fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1, time, easing)
     fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0, time, easing)
