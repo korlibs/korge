@@ -164,7 +164,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 		}
 	}
 
-	suspend private fun simulateFrame(count: Int = 1) {
+	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
 			time += frameTime
 			ag.onRender(ag)
