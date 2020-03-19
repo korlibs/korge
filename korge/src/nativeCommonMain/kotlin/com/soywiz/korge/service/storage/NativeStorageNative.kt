@@ -9,14 +9,16 @@ actual object NativeStorage : IStorage {
     private fun saveStr(data: String) = KorgeSimpleNativeSyncIO.writeBytes("settings.json", data.toByteArray(UTF8))
     private fun loadStr(): String = KorgeSimpleNativeSyncIO.readBytes("settings.json").toString(UTF8)
 
-    private var map: LinkedHashMap<String, String>? = null
+    private var map: CopyOnWriteFrozenMap<String, String>? = null
 
-    private fun ensureMap(): LinkedHashMap<String, String> {
+    private fun ensureMap(): CopyOnWriteFrozenMap<String, String> {
         if (map == null) {
             map = try {
-                LinkedHashMap(loadStr().fromJson() as Map<String, String>)
+                CopyOnWriteFrozenMap<String, String>().also {
+                    it.putAll(loadStr().fromJson() as Map<String, String>)
+                }
             } catch (e: Throwable) {
-                linkedHashMapOf()
+                CopyOnWriteFrozenMap()
             }
         }
         return map!!

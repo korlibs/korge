@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class StorageTest {
+class NativeStorageTest {
     @BeforeTest
     fun cleanup() {
         NativeStorage.removeAll()
