@@ -22,7 +22,8 @@ open class Animator(
     val speed: Double = DEFAULT_SPEED,
     val easing: Easing = DEFAULT_EASING,
     val completeOnCancel: Boolean = DEFAULT_COMPLETE_ON_CANCEL,
-    val kind: NodeKind = NodeKind.Sequence
+    val kind: NodeKind = NodeKind.Sequence,
+    val init: Animator.() -> Unit = {}
 ) : BaseAnimatorNode {
     companion object {
         val DEFAULT_TIME = 0.5.seconds
@@ -45,6 +46,7 @@ open class Animator(
     internal val nodes = Deque<BaseAnimatorNode>()
 
     override suspend fun execute() {
+        init(this)
         when (kind) {
             NodeKind.Sequence -> {
                 try {
@@ -93,6 +95,22 @@ open class Animator(
         completeOnCancel: Boolean = this.completeOnCancel,
         callback: Animator.() -> Unit
     ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence).apply(callback).also { nodes.add(it) }
+
+    fun parallelLazy(
+        time: TimeSpan = this.time,
+        speed: Double = this.speed,
+        easing: Easing = this.easing,
+        completeOnCancel: Boolean = this.completeOnCancel,
+        init: Animator.() -> Unit
+    ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Parallel, init).also { nodes.add(it) }
+
+    fun sequenceLazy(
+        time: TimeSpan = this.time,
+        speed: Double = this.speed,
+        easing: Easing = this.easing,
+        completeOnCancel: Boolean = this.completeOnCancel,
+        init: Animator.() -> Unit
+    ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence, init).also { nodes.add(it) }
 
     inner class TweenNode(val view: View, vararg val vfs: V2<*>, val time: TimeSpan = 1.seconds, val lazyTime: (() -> TimeSpan)? = null, val easing: Easing) : BaseAnimatorNode {
         override suspend fun execute() {
