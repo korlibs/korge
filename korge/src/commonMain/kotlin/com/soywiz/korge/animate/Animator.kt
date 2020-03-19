@@ -83,13 +83,13 @@ open class Animator(
         callback: Animator.() -> Unit
     ) = Animator(root, time, speed, easing, completeOnCancel, NodeKind.Sequence).apply(callback).also { nodes.add(it) }
 
-    inner class TweenNode(val view: View, vararg val vfs: V2<*>, val lazyVfs: Array<out () -> V2<*>>? = null, val time: TimeSpan = 1.seconds, val lazyTime: (() -> TimeSpan)? = null, val easing: Easing) : BaseAnimatorNode {
-        fun computeVfs(): Array<out V2<*>> = if (lazyVfs != null) Array(lazyVfs.size) { lazyVfs[it]() } else vfs
+    inner class TweenNode(val view: View, vararg val vs: V2<*>, val lazyVs: Array<out () -> V2<*>>? = null, val time: TimeSpan = 1.seconds, val lazyTime: (() -> TimeSpan)? = null, val easing: Easing) : BaseAnimatorNode {
+        fun computeVs(): Array<out V2<*>> = if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs
 
         override suspend fun execute() {
             try {
                 val rtime = if (lazyTime != null) lazyTime!!() else time
-                view.tween(*computeVfs(), time = rtime, easing = easing)
+                view.tween(*computeVs(), time = rtime, easing = easing)
             } catch (e: CancellationException) {
                 //println("TweenNode: $e")
                 if (completeOnCancel) {
@@ -97,24 +97,24 @@ open class Animator(
                 }
             }
         }
-        override fun executeImmediately() = computeVfs().fastForEach { it.set(1.0) }
+        override fun executeImmediately() = computeVs().fastForEach { it.set(1.0) }
     }
 
     @PublishedApi
-    internal fun __tween(vararg vfs: V2<*>, lazyVfs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
-        nodes.add(TweenNode(root, *vfs, lazyVfs = lazyVfs, time = time, lazyTime = lazyTime, easing = easing))
+    internal fun __tween(vararg vfs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
+        nodes.add(TweenNode(root, *vfs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing))
     }
 
     fun tween(vararg vfs: V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vfs, time = time, easing = easing)
     fun tween(vararg vfs: V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vfs, lazyTime = time, easing = easing)
 
-    fun tween(vararg vfs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(lazyVfs = vfs, time = time, easing = easing)
-    fun tween(vararg vfs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(lazyVfs = vfs, lazyTime = time, easing = easing)
+    fun tween(vararg vfs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(lazyVs = vfs, time = time, easing = easing)
+    fun tween(vararg vfs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(lazyVs = vfs, lazyTime = time, easing = easing)
 
-    fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVfs = arrayOf({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }), time = time, easing = easing)
-    fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVfs = arrayOf({ this::rotation[this.rotation + rotation] }), time = time, easing = easing)
-    fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVfs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), time = time, easing = easing)
-    fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(lazyVfs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
+    fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }), time = time, easing = easing)
+    fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::rotation[this.rotation + rotation] }), time = time, easing = easing)
+    fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), time = time, easing = easing)
+    fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(lazyVs = arrayOf({ this::x[this.x + x] }, { this::y[this.y + y] }), lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
 
     fun View.scaleTo(scaleX: Double, scaleY: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::scaleX[scaleX], this::scaleY[scaleY], time = time, easing = easing)
     fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
