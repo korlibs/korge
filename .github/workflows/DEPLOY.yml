@@ -1,0 +1,43 @@
+name: DEPLOY
+
+on:
+  push:
+    branches:
+      - 'releases/**'
+    tags-ignore:
+      - '*.*'
+
+env:
+  BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+  BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+jobs:
+  publish-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: CALL gradlew.bat --no-daemon
+        shell: cmd
+      - run: CALL gradlew.bat --no-daemon assemble check publish -x jsBrowserTest -x jsNodeTest
+        shell: cmd
+
+  publish-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew
+      - run: ./gradlew assemble check publish -x jsBrowserTest -x jsNodeTest
+
+  publish-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew
+      - run: ./gradlew assemble check lint testDebugUnitTest publish -x jsBrowserTest -x jsNodeTest
+
+  publish-finalize:
+    needs: [publish-windows, publish-mac, publish-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew actuallyPublishBintray
