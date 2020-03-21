@@ -4,29 +4,16 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.korev.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korev.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korio.util.encoding.*
-import kotlin.collections.ArrayList
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.arrayListOf
-import kotlin.collections.contains
-import kotlin.collections.iterator
-import kotlin.collections.joinToString
-import kotlin.collections.linkedMapOf
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.plusAssign
-import kotlin.collections.removeAll
+import com.soywiz.korma.geom.*
 import kotlin.collections.set
 import kotlin.reflect.*
 
@@ -1178,12 +1165,54 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 /** Chainable method returning this that sets [View.x] and [View.y] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.xy(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble() }.apply { this.y = y.toDouble() }
+	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.position(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble() }.apply { this.y = y.toDouble() }
+	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
+
+/** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T =
+    this.apply { this.x = (x2.toDouble() + x1.toDouble() - this.width) / 2 }
+
+/** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T =
+    this.apply { this.y = (y2.toDouble() + y1.toDouble() - this.height) / 2 }
+
+/**
+ *  Chainable method returning this that sets [this] View
+ *  in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T =
+    this.centerXBetween(x1, x2).centerYBetween(y1, y2)
+
+/**
+ *  Chainable method returning this that sets [View.x] so that
+ *  [this] View is centered on the [other] View horizontally
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
+    this.centerYBetween(other.x, other.width)
+
+/**
+ *  Chainable method returning this that sets [View.y] so that
+ *  [this] View is centered on the [other] View vertically
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
+    this.centerYBetween(other.y, other.height)
+
+/**
+ *  Chainable method returning this that sets [View.x] and [View.y]
+ *  so that [this] View is centered on the [other] View
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.centerOn(other: T2): T =
+    this.centerXOn(other).centerYOn(other)
 
 /** Chainable method returning this that sets [View.rotation] */
 @Suppress("NOTHING_TO_INLINE")
