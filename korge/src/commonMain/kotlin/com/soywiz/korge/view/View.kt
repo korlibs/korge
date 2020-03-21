@@ -1195,7 +1195,7 @@ inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Nu
  *  [this] View is centered on the [other] View horizontally
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerXBy(other: T2): T =
+inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
     this.centerYBetween(other.x, other.width)
 
 /**
@@ -1203,7 +1203,7 @@ inline fun <T : View, T2 : View> T.centerXBy(other: T2): T =
  *  [this] View is centered on the [other] View vertically
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerYBy(other: T2): T =
+inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
     this.centerYBetween(other.y, other.height)
 
 /**
@@ -1211,8 +1211,8 @@ inline fun <T : View, T2 : View> T.centerYBy(other: T2): T =
  *  so that [this] View is centered on the [other] View
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerBy(other: T2): T =
-    this.centerXBy(other).centerYBy(other)
+inline fun <T : View, T2 : View> T.centerOn(other: T2): T =
+    this.centerXOn(other).centerYOn(other)
 
 /** Chainable method returning this that sets [View.rotation] */
 @Suppress("NOTHING_TO_INLINE")
