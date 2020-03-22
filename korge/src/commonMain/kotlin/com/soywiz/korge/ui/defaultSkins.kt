@@ -1,10 +1,26 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
+import com.soywiz.korge.html.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.util.encoding.*
+
+val DefaultTextSkin by lazy {
+    TextSkin(
+        normal = TextFormat(RGBA(0, 0, 0), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
+        over = TextFormat(RGBA(80, 80, 80), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
+        down = TextFormat(RGBA(120, 120, 120), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
+        disabled = TextFormat(RGBA(160, 160, 160), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
+        backColor = Colors.WHITE
+    )
+}
+
+val DefaultUIFont by lazy {
+    Html.FontFace.Bitmap(debugBmpFont)
+}
 
 val DEFAULT_UI_SKIN_IMG by lazy {
     PNG.decode(
@@ -86,9 +102,28 @@ val DefaultRightSkin by lazy {
     )
 }
 
-var View.defaultUISkin: UISkin by extraProperty { DefaultUISkin }
-var View.defaultCheckSkin: IconSkin by extraProperty { DefaultCheckSkin }
-var View.defaultUpSkin: IconSkin by extraProperty { DefaultUpSkin }
-var View.defaultDownSkin: IconSkin by extraProperty { DefaultDownSkin }
-var View.defaultLeftSkin: IconSkin by extraProperty { DefaultLeftSkin }
-var View.defaultRightSkin: IconSkin by extraProperty { DefaultRightSkin }
+val DefaultComboBoxSkin by lazy {
+    ComboBoxSkin(
+        itemSkin = DefaultUISkin,
+        showIcon = DefaultDownSkin,
+        hideIcon = DefaultUpSkin,
+        scrollbarSkin = DefaultVerScrollBarSkin,
+        textFont = DefaultUIFont
+    )
+}
+
+val DefaultVerScrollBarSkin by lazy {
+    ScrollBarSkin(
+        thumbSkin = DefaultUISkin,
+        upIcon = DefaultUpSkin,
+        downIcon = DefaultDownSkin
+    )
+}
+
+val DefaultHorScrollBarSkin by lazy {
+    ScrollBarSkin(
+        thumbSkin = DefaultUISkin,
+        upIcon = DefaultLeftSkin,
+        downIcon = DefaultRightSkin
+    )
+}

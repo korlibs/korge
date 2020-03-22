@@ -14,22 +14,25 @@ fun main(): Unit = runBlocking { korge() }
 
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 
-    textButton(256.0, 32.0) {
-        text = "Disabled Button"
+    uiText("Some text", 130, 20) {
+        position(128, 265)
+    }
+
+    textButton(256.0, 32.0, "Disabled Button") {
         position(128, 128)
         onClick {
             println("CLICKED!")
         }
         disable()
     }
-    textButton(256.0, 32.0) {
-        text = "Enabled Button"
+    textButton(256.0, 32.0, "Enabled Button") {
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")
         }
         enable()
     }
+
     uiScrollBar(256.0, 32.0, 0.0, 32.0, 64.0) {
         position(64, 64)
         onChange {
@@ -71,4 +74,3 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         }
     }
 }
-

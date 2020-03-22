@@ -1,7 +1,5 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -122,25 +120,3 @@ open class UIComboBox<T>(
 		expandButton.position(width - height, 0).size(height, height)
 	}
 }
-
-data class ComboBoxSkin(
-    val itemSkin: UISkin,
-    val selectedSkin: UISkin = itemSkin,
-    val expandSkin: UISkin = itemSkin,
-    val showIcon: IconSkin,
-    val hideIcon: IconSkin,
-    val scrollbarSkin: ScrollBarSkin,
-    val textFont: Html.FontFace
-)
-
-val DefaultComboBoxSkin by lazy {
-    ComboBoxSkin(
-        itemSkin = DefaultUISkin,
-        showIcon = DefaultDownSkin,
-        hideIcon = DefaultUpSkin,
-        scrollbarSkin = DefaultVerScrollBarSkin,
-        textFont = DefaultUIFont
-    )
-}
-
-var View.defaultComboBoxSkin: ComboBoxSkin by extraProperty { DefaultComboBoxSkin }

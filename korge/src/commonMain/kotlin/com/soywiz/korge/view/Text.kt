@@ -51,7 +51,6 @@ class Text : View(), IText, IHtml {
 		autoSize = false
 	}
 
-
 	fun unsetTextBounds() {
 		autoSize = true
 	}

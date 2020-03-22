@@ -1,11 +1,9 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.UIScrollBar.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -146,31 +144,3 @@ open class UIScrollBar(
         onChange(this)
     }
 }
-
-data class ScrollBarSkin(
-    val thumbSkin: UISkin,
-    val upSkin: UISkin = thumbSkin,
-    val downSkin: UISkin = thumbSkin,
-    val upIcon: IconSkin,
-    val downIcon: IconSkin,
-    val backColor: RGBA = Colors.DARKGREY
-)
-
-val DefaultVerScrollBarSkin by lazy {
-    ScrollBarSkin(
-        thumbSkin = DefaultUISkin,
-        upIcon = DefaultUpSkin,
-        downIcon = DefaultDownSkin
-    )
-}
-
-val DefaultHorScrollBarSkin by lazy {
-    ScrollBarSkin(
-        thumbSkin = DefaultUISkin,
-        upIcon = DefaultLeftSkin,
-        downIcon = DefaultRightSkin
-    )
-}
-
-var View.defaultVerScrollBarSkin: ScrollBarSkin by extraProperty { DefaultVerScrollBarSkin }
-var View.defaultHorScrollBarSkin: ScrollBarSkin by extraProperty { DefaultHorScrollBarSkin }
