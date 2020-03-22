@@ -22,3 +22,5 @@ idea.module {
         excludeDirs.add(File(rootProject.rootDir, name))
     }
 }
+
+tasks.maybeCreate("jsNodeTest")
