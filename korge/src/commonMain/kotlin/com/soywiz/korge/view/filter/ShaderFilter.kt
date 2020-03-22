@@ -29,6 +29,8 @@ abstract class ShaderFilter : Filter {
         fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
     }
 
+    var filtering = true
+
     private val textureSizeHolder = FloatArray(2)
 
     val uniforms = AG.UniformValues(
@@ -91,7 +93,7 @@ abstract class ShaderFilter : Filter {
             ctx.batch.drawQuad(
                 texture,
                 m = matrix,
-                filtering = true,
+                filtering = filtering,
                 colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
                 blendFactors = blendMode.factors,
