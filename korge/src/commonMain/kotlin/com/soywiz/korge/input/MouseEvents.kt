@@ -194,8 +194,8 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	}
 
 	override fun update(views: Views, ms: Double) {
-		val dtMs = ms.toInt()
 		if (!view.mouseEnabled) return
+        this.views = views
 
 		views.mouseDebugHandlerOnce {
 			views.debugHandlers += { ctx ->
