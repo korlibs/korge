@@ -8,3 +8,5 @@ Thumbs.db
 *.ipr
 *.iml
 *.hprof
+settings.json
+game.storage
