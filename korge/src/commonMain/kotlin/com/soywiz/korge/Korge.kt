@@ -250,21 +250,6 @@ object Korge {
 
 		eventDispatcher.addEventListener<KeyEvent> { e ->
 			logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
-			when (e.type) {
-				KeyEvent.Type.DOWN -> {
-					views.input.setKey(e.keyCode, true)
-				}
-				KeyEvent.Type.UP -> {
-					views.input.setKey(e.keyCode, false)
-
-					if (views.supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-						views.debugViews = !views.debugViews
-					}
-				}
-				KeyEvent.Type.TYPE -> {
-					//println("onKeyTyped: $it")
-				}
-			}
 			views.dispatch(e)
 		}
 

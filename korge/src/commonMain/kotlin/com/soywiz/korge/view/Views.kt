@@ -2,7 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -20,7 +19,6 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -44,6 +42,8 @@ class Views constructor(
 	val gameWindow: GameWindow
 ) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
 	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
+
+    val keys get() = input.keys
 
 	var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
@@ -171,7 +171,14 @@ class Views constructor(
 				is ReshapeEvent -> stage.forEachComponent<ResizeComponent>(tempComponents) {
 					it.resized(views, e.width, e.height)
 				}
-				is KeyEvent -> stage.forEachComponent<KeyComponent>(tempComponents) { it.onKeyEvent(views, e) }
+				is KeyEvent -> {
+                    input.triggerOldKeyEvent(e)
+                    input.keys.triggerKeyEvent(e)
+                    if (supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                        debugViews = !debugViews
+                    }
+                    stage.forEachComponent<KeyComponent>(tempComponents) { it.onKeyEvent(views, e) }
+                }
 				is GamePadConnectionEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
 					it.onGamepadEvent(views, e)
 				}
