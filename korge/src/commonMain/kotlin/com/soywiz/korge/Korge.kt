@@ -79,7 +79,6 @@ object Korge {
 		logger.trace { "Korge.setupCanvas[1h]" }
 		val input = views.input
 		logger.trace { "Korge.setupCanvas[1i]" }
-		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 		logger.trace { "Korge.setupCanvas[1j]" }
 		views.debugViews = config.debug
 		logger.trace { "Korge.setupCanvas[1k]" }
@@ -250,21 +249,6 @@ object Korge {
 
 		eventDispatcher.addEventListener<KeyEvent> { e ->
 			logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
-			when (e.type) {
-				KeyEvent.Type.DOWN -> {
-					views.input.setKey(e.keyCode, true)
-				}
-				KeyEvent.Type.UP -> {
-					views.input.setKey(e.keyCode, false)
-
-					if (views.supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-						views.debugViews = !views.debugViews
-					}
-				}
-				KeyEvent.Type.TYPE -> {
-					//println("onKeyTyped: $it")
-				}
-			}
 			views.dispatch(e)
 		}
 
@@ -455,7 +439,6 @@ object Korge {
 				override val windowSize = SizeInt(width, height)
 				override val size = SizeInt(virtualWidth, virtualHeight)
 			})
-		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 		views.debugViews = debug
 		views.virtualWidth = virtualWidth
 		views.virtualHeight = virtualHeight
