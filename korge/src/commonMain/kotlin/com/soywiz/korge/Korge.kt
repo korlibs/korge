@@ -79,7 +79,6 @@ object Korge {
 		logger.trace { "Korge.setupCanvas[1h]" }
 		val input = views.input
 		logger.trace { "Korge.setupCanvas[1i]" }
-		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 		logger.trace { "Korge.setupCanvas[1j]" }
 		views.debugViews = config.debug
 		logger.trace { "Korge.setupCanvas[1k]" }
@@ -440,7 +439,6 @@ object Korge {
 				override val windowSize = SizeInt(width, height)
 				override val size = SizeInt(virtualWidth, virtualHeight)
 			})
-		input._isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 		views.debugViews = debug
 		views.virtualWidth = virtualWidth
 		views.virtualHeight = virtualHeight

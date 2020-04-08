@@ -2,6 +2,7 @@ package com.soywiz.korge.input
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
@@ -18,11 +19,14 @@ class Input : Extra by Extra.Mixin() {
 	val touches = (0 until 16).map { Touch(it) }.toTypedArray()
 	val activeTouches = arrayListOf<Touch>()
 
-	var _isTouchDeviceGen = { false }
+    @KorgeInternal
+	var _isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
+
 	val isTouchDevice: Boolean get() = _isTouchDeviceGen()
 
 	fun getTouch(id: Int) = touches.firstOrNull { it.id == id } ?: touches.first { !it.active } ?: dummyTouch
 
+    @KorgeInternal
 	fun updateTouches() {
 		activeTouches.clear()
 		touches.fastForEach { touch ->
