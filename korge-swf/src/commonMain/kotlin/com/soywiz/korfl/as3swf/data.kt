@@ -1380,10 +1380,10 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 					}
 					if (lineStyle != null) {
 						val scaleMode = when {
-							(lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) -> Context2d.ScaleMode.NONE
-							lineStyle.noHScaleFlag -> Context2d.ScaleMode.HORIZONTAL
-							lineStyle.noVScaleFlag -> Context2d.ScaleMode.VERTICAL
-							else -> Context2d.ScaleMode.NORMAL
+							(lineStyle.noHScaleFlag && lineStyle.noVScaleFlag) -> LineScaleMode.NONE
+							lineStyle.noHScaleFlag -> LineScaleMode.HORIZONTAL
+							lineStyle.noVScaleFlag -> LineScaleMode.VERTICAL
+							else -> LineScaleMode.NORMAL
 						}
 
 						handler.lineStyle(

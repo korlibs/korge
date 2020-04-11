@@ -6,6 +6,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korim.vector.paint.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
@@ -25,7 +26,7 @@ class SWFShapeRasterizer(
 	val debug: Boolean,
 	val bounds: Rectangle,
 	val export: (ShapeExporter) -> Unit,
-	val rasterizerMethod: Context2d.ShapeRasterizerMethod,
+	val rasterizerMethod: ShapeRasterizerMethod,
 	val antialiasing: Boolean,
 	val requestScale: Double = 2.0,
 	val minSide: Int = 16,
@@ -114,17 +115,17 @@ class SWFShapeRasterizer(
 	}
 
 	fun GradientSpreadMode.toCtx() = when (this) {
-		GradientSpreadMode.PAD -> Context2d.CycleMethod.NO_CYCLE
-		GradientSpreadMode.REFLECT -> Context2d.CycleMethod.REFLECT
-		GradientSpreadMode.REPEAT -> Context2d.CycleMethod.REPEAT
+		GradientSpreadMode.PAD -> CycleMethod.NO_CYCLE
+		GradientSpreadMode.REFLECT -> CycleMethod.REFLECT
+		GradientSpreadMode.REPEAT -> CycleMethod.REPEAT
 	}
 
-	var fillStyle: Context2d.Paint = Context2d.None
+	var fillStyle: Paint = NonePaint
 
 	override fun beginFill(color: Int, alpha: Double) {
 		flush()
 		drawingFill = true
-		fillStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		fillStyle = ColorPaint(decodeSWFColor(color, alpha))
 	}
 
 	private fun createGradientPaint(
@@ -136,7 +137,7 @@ class SWFShapeRasterizer(
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
 		focalPointRatio: Double
-	): Context2d.Gradient {
+	): GradientPaint {
 		val aratios = DoubleArrayList(*ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
 		val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).value }.toIntArray())
 
@@ -153,13 +154,13 @@ class SWFShapeRasterizer(
 		//m2.prescale(1.0 / 20.0, 1.0 / 20.0)
 
 		val imethod = when (interpolationMethod) {
-			GradientInterpolationMode.NORMAL -> Context2d.Gradient.InterpolationMethod.NORMAL
-			GradientInterpolationMode.LINEAR -> Context2d.Gradient.InterpolationMethod.LINEAR
+			GradientInterpolationMode.NORMAL -> GradientInterpolationMethod.NORMAL
+			GradientInterpolationMode.LINEAR -> GradientInterpolationMethod.LINEAR
 		}
 
 		return when (type) {
-			GradientType.LINEAR -> Context2d.Gradient(
-				Context2d.Gradient.Kind.LINEAR,
+			GradientType.LINEAR -> GradientPaint(
+				GradientKind.LINEAR,
 				-1.0,
 				0.0,
 				0.0,
@@ -172,8 +173,8 @@ class SWFShapeRasterizer(
 				m2,
 				imethod
 			)
-			GradientType.RADIAL -> Context2d.Gradient(
-				Context2d.Gradient.Kind.RADIAL,
+			GradientType.RADIAL -> GradientPaint(
+				GradientKind.RADIAL,
 				focalPointRatio,
 				0.0,
 				0.0,
@@ -218,7 +219,7 @@ class SWFShapeRasterizer(
 		drawingFill = true
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
 		//fillStyle = Context2d.BitmapPaint(bmp, matrix.clone(), repeat, smooth)
-		fillStyle = Context2d.BitmapPaint(bmp, matrix.clone().scale(20.0, 20.0), repeat, smooth)
+		fillStyle = BitmapPaint(bmp, matrix.clone().scale(20.0, 20.0), repeat, smooth)
 		//fillStyle = Context2d.BitmapPaint(bmp, matrix.clone().prescale(20.0, 20.0), repeat, smooth)
 	}
 
@@ -241,10 +242,10 @@ class SWFShapeRasterizer(
 			Matrix().prescale(1.0 / 20.0, 1.0 / 20.0),
 			lineWidth,
 			true,
-			Context2d.ScaleMode.NORMAL,
+			LineScaleMode.NORMAL,
 			lineCap,
 			lineCap,
-			Context2d.LineJoin.MITER,
+			LineJoin.MITER,
 			miterLimit
 		)
 		apath = GraphicsPath()
@@ -259,17 +260,17 @@ class SWFShapeRasterizer(
 	}
 
 	private var lineWidth: Double = 1.0
-	private var lineScaleMode = Context2d.ScaleMode.NORMAL
+	private var lineScaleMode = LineScaleMode.NORMAL
 	private var miterLimit = 1.0
-	private var lineCap: Context2d.LineCap = Context2d.LineCap.ROUND
-	private var strokeStyle: Context2d.Paint = Context2d.Color(Colors.BLACK)
+	private var lineCap: LineCap = LineCap.ROUND
+	private var strokeStyle: Paint = ColorPaint(Colors.BLACK)
 
 	override fun lineStyle(
 		thickness: Double,
 		color: Int,
 		alpha: Double,
 		pixelHinting: Boolean,
-		scaleMode: Context2d.ScaleMode,
+		scaleMode: LineScaleMode,
 		startCaps: LineCapsStyle,
 		endCaps: LineCapsStyle,
 		joints: String?,
@@ -281,11 +282,11 @@ class SWFShapeRasterizer(
 		this.lineWidth = thickness * 20.0
 		this.lineScaleMode = scaleMode
 		this.miterLimit = miterLimit
-		this.strokeStyle = Context2d.Color(decodeSWFColor(color, alpha))
+		this.strokeStyle = ColorPaint(decodeSWFColor(color, alpha))
 		this.lineCap = when (startCaps) {
-			LineCapsStyle.NO -> Context2d.LineCap.BUTT
-			LineCapsStyle.ROUND -> Context2d.LineCap.ROUND
-			LineCapsStyle.SQUARE -> Context2d.LineCap.SQUARE
+			LineCapsStyle.NO -> LineCap.BUTT
+			LineCapsStyle.ROUND -> LineCap.ROUND
+			LineCapsStyle.SQUARE -> LineCap.SQUARE
 		}
 	}
 
