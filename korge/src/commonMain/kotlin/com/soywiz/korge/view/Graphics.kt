@@ -5,6 +5,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
@@ -17,8 +18,8 @@ open class Graphics @JvmOverloads constructor(
 ) : Image(Bitmaps.transparent), VectorBuilder {
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
-	private var fill: Context2d.Paint? = null
-	private var stroke: Context2d.Paint? = null
+	private var fill: Paint? = null
+	private var stroke: Paint? = null
 	@PublishedApi
 	internal var currentPath = GraphicsPath()
 	@PublishedApi
@@ -35,10 +36,10 @@ open class Graphics @JvmOverloads constructor(
 
 	private var thickness: Double = 1.0
 	private var pixelHinting: Boolean = false
-	private var scaleMode: Context2d.ScaleMode = Context2d.ScaleMode.NORMAL
-	private var startCap: Context2d.LineCap = Context2d.LineCap.BUTT
-	private var endCap: Context2d.LineCap = Context2d.LineCap.BUTT
-	private var lineJoin: Context2d.LineJoin = Context2d.LineJoin.MITER
+	private var scaleMode: LineScaleMode = LineScaleMode.NORMAL
+	private var startCap: LineCap = LineCap.BUTT
+	private var endCap: LineCap = LineCap.BUTT
+	private var lineJoin: LineJoin = LineJoin.MITER
 	private var miterLimit: Double = 4.0
     var hitTestUsingShapes = false
 
@@ -68,7 +69,7 @@ open class Graphics @JvmOverloads constructor(
 
 	inline fun fill(color: RGBA, alpha: Number = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
 
-	inline fun fill(paint: Context2d.Paint, callback: () -> Unit) {
+	inline fun fill(paint: Paint, callback: () -> Unit) {
 		beginFill(paint)
 		try {
 			callback()
@@ -80,12 +81,12 @@ open class Graphics @JvmOverloads constructor(
 	inline fun stroke(
 		color: RGBA, info: Context2d.StrokeInfo, callback: () -> Unit
 	) = stroke(
-		Context2d.Color(color),
+		ColorPaint(color),
 		info, callback
 	)
 
 	inline fun stroke(
-		paint: Context2d.Paint,
+		paint: Paint,
 		info: Context2d.StrokeInfo,
 		callback: () -> Unit
 	) {
@@ -98,8 +99,8 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun fillStroke(
-		fill: Context2d.Paint,
-		stroke: Context2d.Paint,
+		fill: Paint,
+		stroke: Paint,
 		strokeInfo: Context2d.StrokeInfo,
 		callback: () -> Unit
 	) {
@@ -112,8 +113,8 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun beginFillStroke(
-		fill: Context2d.Paint,
-		stroke: Context2d.Paint,
+		fill: Paint,
+		stroke: Paint,
 		strokeInfo: Context2d.StrokeInfo
 	) {
 		this.fill = fill
@@ -121,7 +122,7 @@ open class Graphics @JvmOverloads constructor(
 		this.setStrokeInfo(strokeInfo)
 	}
 
-	fun beginFill(paint: Context2d.Paint) = dirty {
+	fun beginFill(paint: Paint) = dirty {
 		fill = paint
 		currentPath = GraphicsPath()
 	}
@@ -136,15 +137,15 @@ open class Graphics @JvmOverloads constructor(
 		this.miterLimit = info.miterLimit
 	}
 
-	fun beginStroke(paint: Context2d.Paint, info: Context2d.StrokeInfo) = dirty {
+	fun beginStroke(paint: Paint, info: Context2d.StrokeInfo) = dirty {
 		setStrokeInfo(info)
 		stroke = paint
 		currentPath = GraphicsPath()
 	}
 
 	@PublishedApi
-	internal inline fun toColorFill(color: RGBA, alpha: Number): Context2d.Color {
-		return Context2d.Color(RGBA(color.r, color.g, color.b, (alpha.toDouble() * 255).toInt()))
+	internal inline fun toColorFill(color: RGBA, alpha: Number): ColorPaint {
+		return ColorPaint(RGBA(color.r, color.g, color.b, (alpha.toDouble() * 255).toInt()))
 		//return Context2d.Color(color.withAd(alpha.toDouble())
 	}
 
@@ -153,19 +154,19 @@ open class Graphics @JvmOverloads constructor(
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
 
 	fun endFill() = dirty {
-		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix())
+		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		currentPath = GraphicsPath()
 	}
 
 	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = GraphicsPath()
 	}
 
 	fun endFillStroke() = dirty {
-		shapes += FillShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix())
-		shapes += PolylineShape(currentPath, null, stroke ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
+		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		currentPath = GraphicsPath()
 	}
 
