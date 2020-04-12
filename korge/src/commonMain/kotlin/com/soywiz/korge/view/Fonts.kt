@@ -23,7 +23,7 @@ class Fonts : Html.MetricsProvider {
 		if (nameLC !in fonts) {
 			registerFont(
 				name,
-				BitmapFontGenerator.generate(name, min(size, 32), BitmapFontGenerator.LATIN_ALL)
+				BitmapFont(SystemFont(name), min(size, 32), CharacterSet.LATIN_ALL)
 			)
 		}
 		return fonts[nameLC] ?: defaultFont

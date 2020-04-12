@@ -20,7 +20,7 @@ open class Module {
 	open val bgcolor: RGBA = Colors.BLACK
 	open val title: String = "Game"
 	open val icon: String? = null
-	open val iconImage: Context2d.SizedDrawable? = null
+	open val iconImage: SizedDrawable? = null
 
 	open val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE
 

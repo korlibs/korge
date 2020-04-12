@@ -22,7 +22,7 @@ class SWFExportConfigTest {
 		assertEquals(
 			SWFExportConfig(
 				mipmaps = false,
-				rasterizerMethod = Context2d.ShapeRasterizerMethod.X2
+				rasterizerMethod = ShapeRasterizerMethod.X2
 			),
 			config
 		)
