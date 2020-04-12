@@ -55,61 +55,30 @@ open class Text2(
     var renderer: TextRenderer<String> = renderer; set(value) = run { if (field != value) run { field = value }.also { version++ } }
     private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()
-
-    private val arrayTex = arrayListOf<BmpSlice>()
-    private val arrayX = doubleArrayListOf()
-    private val arrayY = doubleArrayListOf()
-    private val arraySX = doubleArrayListOf()
-    private val arraySY = doubleArrayListOf()
-    private val arrayRot = doubleArrayListOf()
-
-    private val bitmapFontActions = object : TextRendererActions() {
-        val tr = Matrix.Transform()
-
-        override fun put(codePoint: Int): GlyphMetrics {
-            val bf = font as BitmapFont
-            val m = getGlyphMetrics(codePoint)
-            val g = bf[codePoint]
-            val x = 0.0
-            val y = -m.height
-            tr.setMatrix(transform)
-            //println("x: ${this.x}, y: ${this.y}")
-            arrayTex += g.texture
-            arrayX += this.x + transform.transformX(x, y)
-            arrayY += this.y + transform.transformY(x, y)
-            arraySX += tr.scaleX
-            arraySY += tr.scaleY
-            arrayRot += tr.rotation.radians
-            return m
-        }
-    }
+    private val bitmapFontActions = Text2TextRendererActions()
 
     override fun renderInternal(ctx: RenderContext) {
         container.colorMul = color
         if (font is BitmapFont) {
             bitmapFontActions.x = 0.0
             bitmapFontActions.y = 0.0
-            arrayTex.clear()
-            arrayX.clear()
-            arrayY.clear()
-            arraySX.clear()
-            arraySY.clear()
-            arrayRot.clear()
+
+            bitmapFontActions.mreset()
             renderer(bitmapFontActions, text, fontSize, font)
-            while (container.numChildren < arrayTex.size) {
+            while (container.numChildren < bitmapFontActions.arrayTex.size) {
                 container.image(Bitmaps.transparent)
             }
-            while (container.numChildren > arrayTex.size) {
+            while (container.numChildren > bitmapFontActions.arrayTex.size) {
                 container[container.numChildren - 1].removeFromParent()
             }
-            for (n in 0 until arrayTex.size) {
+            for (n in 0 until bitmapFontActions.arrayTex.size) {
                 (container[n] as Image).also {
-                    it.texture = arrayTex[n]
-                    it.x = arrayX[n]
-                    it.y = arrayY[n]
-                    it.scaleX = arraySX[n]
-                    it.scaleY = arraySY[n]
-                    it.rotationRadians = arrayRot[n]
+                    it.texture = bitmapFontActions.arrayTex[n]
+                    it.x = bitmapFontActions.arrayX[n]
+                    it.y = bitmapFontActions.arrayY[n]
+                    it.scaleX = bitmapFontActions.arraySX[n]
+                    it.scaleY = bitmapFontActions.arraySY[n]
+                    it.rotationRadians = bitmapFontActions.arrayRot[n]
                 }
             }
         } else {
@@ -125,5 +94,41 @@ open class Text2(
             }
         }
         super.renderInternal(ctx)
+    }
+}
+
+class Text2TextRendererActions : TextRendererActions() {
+    internal val arrayTex = arrayListOf<BmpSlice>()
+    internal val arrayX = doubleArrayListOf()
+    internal val arrayY = doubleArrayListOf()
+    internal val arraySX = doubleArrayListOf()
+    internal val arraySY = doubleArrayListOf()
+    internal val arrayRot = doubleArrayListOf()
+    private val tr = Matrix.Transform()
+
+    fun mreset() {
+        arrayTex.clear()
+        arrayX.clear()
+        arrayY.clear()
+        arraySX.clear()
+        arraySY.clear()
+        arrayRot.clear()
+    }
+
+    override fun put(codePoint: Int): GlyphMetrics {
+        val bf = font as BitmapFont
+        val m = getGlyphMetrics(codePoint)
+        val g = bf[codePoint]
+        val x = 0.0
+        val y = -m.height
+        tr.setMatrix(transform)
+        //println("x: ${this.x}, y: ${this.y}")
+        arrayTex += g.texture
+        arrayX += this.x + transform.transformX(x, y)
+        arrayY += this.y + transform.transformY(x, y)
+        arraySX += tr.scaleX
+        arraySY += tr.scaleY
+        arrayRot += tr.rotation.radians
+        return m
     }
 }
