@@ -51,12 +51,12 @@ fun BitmapFont.drawText(
 	val scale = textSize / fontSize.toDouble()
 	m2.pretranslate(x.toDouble(), y.toDouble())
 	m2.prescale(scale, scale)
-	var dx = 0
-	var dy = 0
+	var dx = 0.0
+	var dy = 0.0
 	for (n in str.indices) {
 		val c1 = str[n].toInt()
 		if (c1 == '\n'.toInt()) {
-			dx = 0
+			dx = 0.0
 			dy += fontSize
 			continue
 		}
@@ -84,8 +84,8 @@ fun RenderContext.drawText(
 	str: String,
 	x: Int,
 	y: Int,
-	m: Matrix = com.soywiz.korma.geom.Matrix(),
-	colMul: RGBA = com.soywiz.korim.color.Colors.WHITE,
+	m: Matrix = Matrix(),
+	colMul: RGBA = Colors.WHITE,
 	colAdd: Int = 0x7f7f7f7f,
 	blendMode: BlendMode = BlendMode.INHERIT,
 	filtering: Boolean = true
