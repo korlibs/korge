@@ -68,6 +68,7 @@ object Korge {
                 val sc = SceneContainer(views, name = "rootSceneContainer")
                 views.stage += sc
                 sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.seconds)
+                // Se we have the opportunity to execute deinitialization code at the scene level
                 views.onClose { sc.changeTo<EmptyScene>() }
             }
         )
@@ -117,8 +118,7 @@ object Korge {
             if (OS.isNative) println("CanvasApplicationEx.IN[0]")
             val input = Input()
             val stats = Stats()
-            //val views = Views(Job() + coroutineContext, ag, injector, input, timeProvider, stats, gameWindow)
-            val views = Views(SupervisorJob() + coroutineContext, ag, injector, input, timeProvider, stats, gameWindow)
+            val views = Views(gameWindow.coroutineDispatcher + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
                 .mapInstance(AG::class, ag)
@@ -127,7 +127,7 @@ object Korge {
                 .mapInstance(input)
                 .mapInstance(stats)
                 .mapInstance(ModuleArgs(args))
-                .mapInstance(CoroutineContext::class, coroutineContext)
+                .mapInstance(CoroutineContext::class, views.coroutineContext)
                 .mapInstance(GameWindow::class, gameWindow)
                 .mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
                 .mapPrototype(EmptyScene::class) { EmptyScene() }
@@ -149,12 +149,25 @@ object Korge {
             prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             views.launchImmediately {
-                //println("coroutineContext: $coroutineContext")
-                //println("GameWindow: ${coroutineContext[GameWindow]}")
-                entry(views.stage)
+                coroutineScope {
+                    //println("coroutineContext: $coroutineContext")
+                    //println("GameWindow: ${coroutineContext[GameWindow]}")
+                    entry(views.stage)
+                    // @TODO: Do not complete to prevent job cancelation?
+                    gameWindow.waitClose()
+                }
             }
             if (OS.isNative) println("CanvasApplicationEx.IN[1]")
             if (OS.isNative) println("Korui[1]")
+
+            // @TODO: Do not complete to prevent job cancelation?
+            gameWindow.waitClose()
+        }
+    }
+
+    suspend fun GameWindow.waitClose() {
+        while (running) {
+            delay(100.milliseconds)
         }
     }
 

@@ -46,7 +46,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
 	val root get() = _sceneViewContainer
 
 	protected val cancellables = CancellableGroup()
-	override val coroutineContext: Job by lazy { Job(views.coroutineContext[Job.Key]) }
+    override val coroutineContext by lazy { views.coroutineContext + Job(views.coroutineContext[Job.Key]) }
 	val sceneView: Container = createSceneView().apply {
 		_sceneViewContainer += this
 	}
