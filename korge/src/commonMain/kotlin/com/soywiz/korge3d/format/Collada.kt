@@ -93,7 +93,10 @@ class ColladaParser {
 			val weightIndices = Array(16) { FloatArrayList() }
 			val weightWeights = Array(16) { FloatArrayList() }
 
-			val VERTEX = geom.inputs["VERTEX"] ?: error("Do not have vertices!")
+			val VERTEX = geom.inputs["VERTEX"] ?: run {
+                println("WARNING.ColladaParser.Library3D.generateGeometries: Do not have vertices!")
+                null
+            } ?: return
 			val VERTEX_indices = VERTEX.indices
 
 			for (pname in listOf("X", "Y", "Z")) {
