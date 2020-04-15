@@ -58,7 +58,7 @@ class ViewsJvmTest : ViewsForTesting() {
 	@Test
 	@Ignore
 	fun textGetBounds() = viewsTest {
-		val font = getDebugBmpFontOnce()
+		val font = debugBmpFont
 		val text = Text("Hello World", font = font, textSize = 8.0)
 		val text2 = Text("Hello World", font = font, textSize = 16.0)
 		assertEquals(Rectangle(0, 0, 77, 8), text.globalBounds)
