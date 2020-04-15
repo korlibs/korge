@@ -35,7 +35,7 @@ object Korge {
 	val logger = Logger("Korge")
 
     suspend operator fun invoke(config: Config) {
-        println("Korge started from Config")
+        //println("Korge started from Config")
         Korge(
             title = config.module.title,
             width = config.module.windowSize.width,
@@ -59,7 +59,7 @@ object Korge {
             injector = config.injector,
             timeProvider = config.timeProvider,
             entry = {
-                println("Korge views prepared for Config")
+                //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*config.module.imageFormats.toTypedArray())
                 val injector = config.injector
                 injector.mapInstance(Module::class, config.module).mapInstance(Config::class, config)

@@ -6,10 +6,9 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.async.async
 import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlin.reflect.*
 
 /**
@@ -19,8 +18,9 @@ import kotlin.reflect.*
 inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
+    name: String = "sceneContainer",
 	callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views, defaultTransition).addTo(this).apply(callback)
+): SceneContainer = SceneContainer(views, defaultTransition, name).addTo(this).apply(callback)
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.
@@ -30,8 +30,12 @@ inline fun Container.sceneContainer(
 class SceneContainer(
     val views: Views,
     /** Default [Transition] that will be used when no transition is specified */
-    val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD)
+    val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
+    name: String = "sceneContainer"
 ) : Container(), CoroutineScope by views {
+    init {
+        this.name = name
+    }
     /** The [TransitionView] that will be in charge of rendering the old and new scenes during the transition using a specified [Transition] object */
 	val transitionView = TransitionView().also { this += it }
 
@@ -142,43 +146,46 @@ class SceneContainer(
 		vararg injects: Any,
 		time: TimeSpan = 0.seconds,
 		transition: Transition = defaultTransition
-	): T = coroutineScope {
-		val oldScene = currentScene
-		val sceneInjector: AsyncInjector =
-			views.injector.child().mapInstance(SceneContainer::class, this@SceneContainer)
-		injects.fastForEach { inject ->
-			sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
-		}
-		val instance = sceneInjector.get(clazz)
-		currentScene = instance
+	//): T = withContext(coroutineContext) { // @TODO: Hangs on native
+    ): T = run {
+        val oldScene = currentScene
+        val sceneInjector: AsyncInjector =
+            views.injector.child().mapInstance(SceneContainer::class, this@SceneContainer)
+        injects.fastForEach { inject ->
+            sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
+        }
+        val instance = sceneInjector.get(clazz)
+        currentScene = instance
 
-		transitionView.transition = transition
-		transitionView.startNewTransition(instance._sceneViewContainer)
+        transitionView.transition = transition
+        transitionView.startNewTransition(instance._sceneViewContainer)
 
-		instance.sceneView.apply { instance.apply { sceneInit() } }
+        instance.sceneView.apply { instance.apply { sceneInit() } }
 
         instance.launchImmediately {
             instance.sceneView.apply { instance.apply { sceneMain() } }
         }
 
-		oldScene?.sceneBeforeLeaving()
+        oldScene?.sceneBeforeLeaving()
 
-		if (time > 0.seconds) {
-			transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
-		} else {
-			transitionView.ratio = 1.0
-		}
+        if (time > 0.seconds) {
+            transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
+        } else {
+            transitionView.ratio = 1.0
+        }
 
-		oldScene?.sceneDestroy()
+        oldScene?.sceneDestroy()
 
-		launchImmediately(kotlin.coroutines.coroutineContext) {
-			oldScene?.sceneAfterDestroyInternal()
-		}
-		launchImmediately(kotlin.coroutines.coroutineContext) {
-			instance.sceneAfterInit()
-		}
-		instance
-	}
+        views.launchImmediately {
+            oldScene?.sceneAfterDestroyInternal()
+        }
+        views.launchImmediately {
+            instance.sceneAfterInit()
+        }
+
+        instance
+    }
+
 
     private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
 

@@ -118,7 +118,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
     internal suspend fun sceneAfterDestroyInternal() {
         sceneAfterDestroy()
         try {
-            coroutineContext.cancelAndJoin()
+            coroutineContext.cancel() // cancelAndJoin was being used when hanged on native?
         } catch (e: Throwable) {
             e.printStackTrace()
         }
