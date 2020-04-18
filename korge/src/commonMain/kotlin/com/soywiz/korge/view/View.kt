@@ -3,6 +3,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.component.*

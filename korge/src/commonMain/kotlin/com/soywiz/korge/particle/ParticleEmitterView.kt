@@ -1,6 +1,6 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.korge.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*

@@ -1,11 +1,10 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korge.html.*
-import com.soywiz.korge.internal.fastForEach
-import com.soywiz.korge.internal.fastForEachWithIndex
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*

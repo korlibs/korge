@@ -1,6 +1,6 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.korge.internal.fastForEachWithIndex
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.*
 

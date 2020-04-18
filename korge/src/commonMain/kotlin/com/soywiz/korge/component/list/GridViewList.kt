@@ -1,6 +1,6 @@
 package com.soywiz.korge.component.list
 
-import com.soywiz.korge.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 
 class GridViewList(

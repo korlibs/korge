@@ -1,5 +1,6 @@
 package com.soywiz.korge
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*

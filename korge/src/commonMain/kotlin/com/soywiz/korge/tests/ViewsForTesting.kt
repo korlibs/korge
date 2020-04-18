@@ -1,5 +1,6 @@
 package com.soywiz.korge.tests
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
 import com.soywiz.korag.log.*

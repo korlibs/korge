@@ -1,6 +1,6 @@
 package com.soywiz.korge.bus
 
-import com.soywiz.korge.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 

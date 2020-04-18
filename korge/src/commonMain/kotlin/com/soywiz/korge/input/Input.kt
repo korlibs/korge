@@ -1,12 +1,12 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.fastForEach
 
 //@Singleton
 @OptIn(KorgeInternal::class)

@@ -1,8 +1,8 @@
 package com.soywiz.korge.html
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*

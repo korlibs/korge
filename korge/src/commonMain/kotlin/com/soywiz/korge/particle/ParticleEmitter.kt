@@ -1,7 +1,7 @@
 package com.soywiz.korge.particle
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
-import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*

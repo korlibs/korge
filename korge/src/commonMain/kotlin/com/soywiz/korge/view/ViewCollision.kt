@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.threadLocal
 import com.soywiz.korma.geom.Rectangle

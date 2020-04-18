@@ -1,11 +1,11 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korev.*
-import com.soywiz.korge.internal.fastForEach
 
 class GamePadEvents(override val view: View) : GamepadComponent {
     @PublishedApi

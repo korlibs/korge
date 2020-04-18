@@ -1,5 +1,6 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*

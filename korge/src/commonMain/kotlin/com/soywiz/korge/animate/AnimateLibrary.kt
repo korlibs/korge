@@ -1,10 +1,10 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
-import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*

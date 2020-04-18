@@ -1,5 +1,7 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEachReverse
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*

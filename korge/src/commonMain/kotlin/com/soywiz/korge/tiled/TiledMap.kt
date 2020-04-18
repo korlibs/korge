@@ -1,8 +1,8 @@
 package com.soywiz.korge.tiled
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.internal.fastForEach
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
