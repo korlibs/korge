@@ -213,18 +213,25 @@ open class Graphics @JvmOverloads constructor(
 			shapes.fastForEach { it.addBounds(bb) }
 			bb.getBounds(bounds)
 
-			val image = NativeImage(
-                (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
-                (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
-            )
-			image.context2d {
-                scale(renderedAtScaleX, renderedAtScaleY)
-				translate(-bounds.x, -bounds.y)
-				compoundShape.draw(this)
-			}
-			this.bitmap = image.slice()
-			sLeft = bounds.x
-			sTop = bounds.y
+            // Removes old image
+            run {
+                ctx.agBitmapTextureManager.removeBitmap(this.bitmap.bmp)
+            }
+            // Generates new image
+            run {
+                val image = NativeImage(
+                    (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
+                    (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
+                )
+                image.context2d {
+                    scale(renderedAtScaleX, renderedAtScaleY)
+                    translate(-bounds.x, -bounds.y)
+                    compoundShape.draw(this)
+                }
+                this.bitmap = image.slice()
+                this.sLeft = bounds.x
+                this.sTop = bounds.y
+            }
 		}
 		super.renderInternal(ctx)
 	}

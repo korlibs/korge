@@ -1,4 +1,4 @@
 package com.soywiz.korge.annotations
 
-@RequiresOptIn
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class KorgeExperimental

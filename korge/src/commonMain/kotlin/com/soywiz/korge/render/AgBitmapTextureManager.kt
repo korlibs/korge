@@ -2,6 +2,7 @@ package com.soywiz.korge.render
 
 import com.soywiz.kds.*
 import com.soywiz.korag.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
@@ -23,28 +24,32 @@ fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.texMip
  * you can just call any of the getTexture* methods here each frame, even if not using it in the current frame.
  * You can also manage [Texture] manually, but you should release the textures manually by calling [Texture.close] so the resources are freed.
  */
-@UseExperimental(KorgeInternal::class)
+@OptIn(KorgeInternal::class, KorgeExperimental::class)
 class AgBitmapTextureManager(
     val ag: AG
 ) {
-    @KorgeInternal
-	val referencedBitmapsSinceGC = LinkedHashSet<Bitmap>()
-    @KorgeInternal
-	var referencedBitmaps = setOf<Bitmap>()
+	private val referencedBitmapsSinceGC = LinkedHashSet<Bitmap>()
+	private var referencedBitmaps = ArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */
     var framesBetweenGC = 60
+    //var framesBetweenGC = 360
 
 	//var Bitmap._textureBase: Texture.Base? by Extra.Property { null }
 	//var Bitmap._slices by Extra.Property { LinkedHashSet<BmpSlice>() }
 	//var BmpSlice._texture: Texture? by Extra.Property { null }
 
     /** Wrapper of [Texture.Base] that contains all the [Texture] slices referenced as [BmpSlice] in our current cache */
-    @KorgeInternal
-	class BitmapTextureInfo(val textureBase: Texture.Base) {
+	private class BitmapTextureInfo {
+        var textureBase: Texture.Base? = null
 		val slices = FastIdentityMap<BmpSlice, Texture>()
+        fun reset() {
+            textureBase = null
+            slices.clear()
+        }
 	}
 
+    private val textureInfoPool = Pool(reset = { it.reset() }) { BitmapTextureInfo() }
 	private val bitmapsToTextureBase = FastIdentityMap<Bitmap, BitmapTextureInfo>()
 
 	private var cachedBitmap: Bitmap? = null
@@ -61,14 +66,16 @@ class AgBitmapTextureManager(
      *
      * You shouldn't call this method directly. Use [getTexture] or [getTextureBase] instead.
      */
-    @KorgeInternal
-	fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
+	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
 		referencedBitmapsSinceGC += bitmap
 
 		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
-            BitmapTextureInfo(Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premultiplied), bitmap.width, bitmap.height))
+            textureInfoPool.alloc().also {
+                // @TODO: MAke Texture.Base mutable
+                it.textureBase = Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premultiplied), bitmap.width, bitmap.height)
+            }
         }
 
 		cachedBitmap = bitmap
@@ -78,7 +85,7 @@ class AgBitmapTextureManager(
 	}
 
     /** Obtains a temporal [Texture.Base] from [bitmap] [Bitmap]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
-	fun getTextureBase(bitmap: Bitmap): Texture.Base = getTextureInfo(bitmap).textureBase
+	fun getTextureBase(bitmap: Bitmap): Texture.Base = getTextureInfo(bitmap).textureBase!!
 
     /** Obtains a temporal [Texture] from [slice] [BmpSlice]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTexture(slice: BmpSlice): Texture {
@@ -88,7 +95,9 @@ class AgBitmapTextureManager(
 
 		val info = getTextureInfo(slice.bmp)
 
-		val texture = info.slices.getOrPut(slice) { Texture(info.textureBase).slice(Rectangle(slice.left, slice.top, slice.width, slice.height)) }
+		val texture = info.slices.getOrPut(slice) {
+            Texture(info.textureBase!!).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
+        }
 
 		cachedBmpSlice = slice
 		cachedBmpSliceTexture = texture
@@ -96,38 +105,50 @@ class AgBitmapTextureManager(
 		return texture
 	}
 
-    @KorgeInternal
-	var fcount = 0
+	private var fcount = 0
 
     /**
      * Called automatically by the engine after the render has been executed (each frame). It executes a texture GC every [framesBetweenGC] frames.
      */
-    @KorgeInternal
-    fun afterRender() {
+    internal fun afterRender() {
 		fcount++
 		if (fcount >= framesBetweenGC) {
 			fcount = 0
 			gc()
 		}
 		// Prevent leaks when not referenced anymore
-		cachedBitmap = null
-		cachedBitmapTextureInfo = null
-		cachedBmpSlice = null
-		cachedBmpSliceTexture = null
+		removeCache()
 	}
 
     /** Performs a kind of Garbage Collection of textures references since the last GC. This method is automatically executed every [framesBetweenGC] frames. */
-    @KorgeInternal
-	fun gc() {
-		val toRemove = referencedBitmaps - referencedBitmapsSinceGC
-		for (bmp in toRemove) {
-			val info = bitmapsToTextureBase.getAndRemove(bmp)
-			info?.textureBase?.close()
-		}
-		referencedBitmaps = referencedBitmapsSinceGC.toSet()
+	internal fun gc() {
+        //println("AgBitmapTextureManager.gc[${referencedBitmaps.size}] - [${referencedBitmapsSinceGC.size}]")
+        referencedBitmaps.fastForEach { bmp ->
+            if (bmp !in referencedBitmapsSinceGC) {
+                removeBitmap(bmp)
+            }
+        }
+        referencedBitmaps.clear()
+        referencedBitmaps.addAll(referencedBitmapsSinceGC)
+        referencedBitmapsSinceGC.clear()
 	}
 
-	private fun <K, V> FastIdentityMap<K, V>.getAndRemove(key: K): V? {
-		return get(key).also { remove(key) }
-	}
+    @KorgeExperimental
+    fun removeBitmap(bmp: Bitmap) {
+        //println("removeBitmap:${bmp.size}")
+        val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
+        referencedBitmapsSinceGC -= bmp
+        if (cachedBitmapTextureInfo == info) removeCache()
+        info.textureBase?.close()
+        textureInfoPool.free(info)
+    }
+
+    private fun removeCache() {
+        cachedBitmap = null
+        cachedBitmapTextureInfo = null
+        cachedBmpSlice = null
+        cachedBmpSliceTexture = null
+    }
 }
+
+private fun <K, V> FastIdentityMap<K, V>.getAndRemove(key: K): V? = get(key).also { remove(key) }

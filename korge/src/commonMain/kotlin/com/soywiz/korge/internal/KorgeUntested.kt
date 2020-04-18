@@ -1,5 +1,5 @@
 package com.soywiz.korge.internal
 
 /** A mechanism to annotate Korge untested properties and methods */
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class KorgeUntested
