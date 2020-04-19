@@ -187,6 +187,12 @@ open class Graphics @JvmOverloads constructor(
     override val bwidth: Double get() = bitmap.width.toDouble() / renderedAtScaleX
     override val bheight: Double get() = bitmap.height.toDouble() / renderedAtScaleY
 
+    var useNativeRendering = true
+
+    private fun createImage(width: Int, height: Int): Bitmap {
+        return if (useNativeRendering) NativeImage(width, height) else Bitmap32(width, height, premultiplied = true)
+    }
+
     override fun renderInternal(ctx: RenderContext) {
         if (autoScaling) {
             matrixTransform.setMatrix(this.globalMatrix)
@@ -220,7 +226,7 @@ open class Graphics @JvmOverloads constructor(
             }
             // Generates new image
             run {
-                val image = NativeImage(
+                val image = createImage(
                     (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
                     (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
                 )
