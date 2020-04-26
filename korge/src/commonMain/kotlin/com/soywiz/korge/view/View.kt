@@ -1173,6 +1173,9 @@ inline fun <T : View> T.xy(x: Number, y: Number): T =
 inline fun <T : View> T.position(x: Number, y: Number): T =
 	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
 
+fun <T : View> T.position(x: Double, y: Double): T =
+    this.apply { this.x = x; this.y = y }
+
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T =
@@ -1235,10 +1238,16 @@ inline fun <T : View> T.rotationDegrees(degs: Number): T =
 inline fun <T : View> T.skew(sx: Number, sy: Number): T =
 	this.apply { this.skewX = sx.toDouble() }.apply { this.skewY = sy.toDouble() }
 
+fun <T : View> T.skew(sx: Double, sy: Double): T =
+    this.apply { this.skewX = sx }.apply { this.skewY = sy }
+
 @Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.scaleX] and [View.scaleY] */
 inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T =
 	this.apply { this.scaleX = sx.toDouble() }.apply { this.scaleY = sy.toDouble() }
+
+fun <T : View> T.scale(sx: Double, sy: Double = sx): T =
+    this.apply { this.scaleX = sx }.apply { this.scaleY = sy }
 
 @Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.alpha] */

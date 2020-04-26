@@ -365,23 +365,26 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 
 		val transform = this.global
 
-		if (this._renderDisplay === this._rawDisplay || this._renderDisplay === this._meshDisplay) {
-			val x =
-				transform.x - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
-			val y =
-				transform.y - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
-			this._renderDisplay
-				?.position(x, y)
-				?.scale(transform.scaleX * this._textureScale, transform.scaleY * this._textureScale)
-				?.rotation(transform.rotation)
-				?.skew(-transform.skew, 0.0)
+        val rd = this._renderDisplay
+
+		if (rd === this._rawDisplay || rd === this._meshDisplay) {
+			val x = transform.x - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
+			val y = transform.y - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
+            if (rd != null) {
+                rd.position(x, y)
+                rd.scale(transform.scaleX * this._textureScale, transform.scaleY * this._textureScale)
+            }
 		} else {
-			this._renderDisplay
-				?.position(transform.x, transform.y)
-				?.scale(transform.scaleX, transform.scaleY)
-				?.rotation(transform.rotation)
-				?.skew(-transform.skew, 0.0)
+            if (rd != null) {
+                rd.position(transform.x.toDouble(), transform.y.toDouble())
+                rd.scale(transform.scaleX.toDouble(), transform.scaleY.toDouble())
+            }
 		}
+
+        if (rd != null) {
+            rd.rotationRadians = transform.rotation.toDouble()
+            rd.skew(-transform.skew.toDouble(), 0.0)
+        }
 	}
 
 	override fun _identityTransform() {
