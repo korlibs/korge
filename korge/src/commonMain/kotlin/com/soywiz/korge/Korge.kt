@@ -119,7 +119,11 @@ object Korge {
             if (OS.isNative) println("CanvasApplicationEx.IN[0]")
             val input = Input()
             val stats = Stats()
-            val views = Views(gameWindow.coroutineDispatcher + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+
+            // Use this once Korgw is on 1.12.5
+            //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+            val views = Views(coroutineContext + gameWindow.coroutineDispatcher + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
                 .mapInstance(AG::class, ag)
