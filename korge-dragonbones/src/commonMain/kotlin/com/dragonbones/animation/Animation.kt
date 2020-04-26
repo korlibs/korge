@@ -756,17 +756,18 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun getBlendState(type: String, name: String, target: BaseObject): BlendState {
-		if (type !in this._blendStates) {
-			this._blendStates[type] = FastStringMap()
-		}
+	fun getBlendState(type: String, name: String, target: TransformObject): BlendState {
+		if (type !in this._blendStates) this._blendStates[type] = FastStringMap()
 
 		val blendStates = this._blendStates[type]!!
 		if (name !in blendStates) {
 			val res = pool.blendState.borrow()
 			val blendState = res
 			blendStates[name] = res
-			blendState.target = target
+            blendState.targetTransformObject = target
+            if (target is Slot) blendState.targetSlot = target
+            if (target is Surface) blendState.targetSurface = target
+            if (target is Bone) blendState.targetBone = target
 		}
 
 		return blendStates[name]!!

@@ -377,7 +377,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 			val boneTimelines: FastStringMap<ArrayList<TimelineState>> = FastStringMap()
 			// Create bone timelines map.
 			this._boneTimelines.fastForEach { timeline ->
-				val timelineName = ((timeline.targetBlendState)!!.targetBone).name
+				val timelineName = ((timeline.targetBlendState)!!.targetBone)!!.name
 				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
 				}
@@ -386,7 +386,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 			}
 
 			this._boneBlendTimelines.fastForEach { timeline ->
-				val timelineName = ((timeline.targetBlendState)!!.targetBone).name
+				val timelineName = ((timeline.targetBlendState)!!.targetBone)!!.name
 				if (timelineName !in boneTimelines) {
 					boneTimelines[timelineName] = arrayListOf()
 				}
@@ -507,7 +507,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 			}
 
 			this._slotBlendTimelines.fastForEach { timeline ->
-				val timelineName = ((timeline.targetBlendState)!!.targetSlot).name
+				val timelineName = ((timeline.targetBlendState)!!.targetSlot)!!.name
 				if (timelineName !in slotTimelines) {
 					slotTimelines[timelineName] = arrayListOf()
 				}
@@ -883,7 +883,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 						prevTarget = blendState
 
 						if (blendState.dirty == 1) {
-							val pose = (blendState.targetBone).animationPose
+							val pose = (blendState.targetBone)!!.animationPose
 							pose.x = 0f
 							pose.y = 0f
 							pose.rotation = 0f
@@ -1524,14 +1524,19 @@ class BlendState(pool: SingleObjectPool<BlendState>) : BaseObject(pool) {
 	var leftWeight: Double = 0.0
 	var layerWeight: Double = 0.0
 	var blendWeight: Double = 0.0
-	var target: BaseObject? = null
-    val targetSlot get() = target as Slot
-    val targetBone get() = target as Bone
-    val targetSurface get() = target as Surface
+	//var target: BaseObject? = null
+    var targetSlot: Slot? = null
+    var targetBone: Bone? = null
+    var targetSurface: Surface? = null
+    var targetTransformObject: TransformObject? = null
+    val targetCommon: TransformObject? get() = targetSlot ?: targetBone ?: targetSurface ?: targetTransformObject
 
 	override fun _onClear() {
 		this.reset()
-		this.target = null
+		this.targetSlot = null
+        this.targetBone = null
+        this.targetSurface = null
+        this.targetTransformObject = null
 	}
 
 	fun reset() {

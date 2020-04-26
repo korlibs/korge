@@ -339,7 +339,7 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		val rd = this._rd
 		//
 		val blendState = this.targetBlendState!!
-		val bone = blendState.target as Bone
+		val bone = blendState.targetBone!!
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
 
@@ -384,7 +384,7 @@ class BoneTranslateTimelineState(pool: SingleObjectPool<BoneTranslateTimelineSta
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val bone = blendState.target as Bone
+		val bone = blendState.targetBone!!
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
 
@@ -442,7 +442,7 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val bone = blendState.target as Bone
+		val bone = blendState.targetBone!!
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
 
@@ -494,7 +494,7 @@ class BoneScaleTimelineState(pool: SingleObjectPool<BoneScaleTimelineState>) : D
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val bone = blendState.target as Bone
+		val bone = blendState.targetBone!!
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
 
@@ -558,13 +558,14 @@ class SurfaceTimelineState(pool: SingleObjectPool<SurfaceTimelineState>) : Mutil
 			this._valueArray = dragonBonesData.frameFloatArray!!
 			this._rd = DoubleArray(this._valueCount * 2)
 		} else {
-			this._deformCount = ((this.targetBlendState)!!.targetSurface)._deformVertices.size
+			this._deformCount = ((this.targetBlendState)!!.targetSurface)!!._deformVertices.size
 		}
 	}
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val surface = blendState.target as Surface
+		val surface = blendState.targetSurface
+            ?: error("blendState.targetSurface=null: target=${blendState.targetCommon}")
 		val blendWeight = blendState.blendWeight
 		val result = surface._deformVertices
 		val valueArray = this._valueArray
@@ -631,7 +632,7 @@ class AlphaTimelineState(pool: SingleObjectPool<AlphaTimelineState>) : SingleVal
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val alphaTarget = blendState.target as TransformObject
+		val alphaTarget = blendState.targetTransformObject!!
 		val blendWeight = blendState.blendWeight
 
 		if (blendState.dirty > 1) {
@@ -842,7 +843,7 @@ class SlotZIndexTimelineState(pool: SingleObjectPool<SlotZIndexTimelineState>) :
 
 		if (this._timelineData == null) { // Pose.
 			val blendState = this.targetBlendState!!
-			val slot = blendState.targetSlot
+			val slot = blendState.targetSlot!!
 			this._result = slot.slotData.zIndex.toDouble()
 		}
 	}
@@ -856,7 +857,7 @@ class SlotZIndexTimelineState(pool: SingleObjectPool<SlotZIndexTimelineState>) :
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val slot = blendState.targetSlot
+		val slot = blendState.targetSlot!!
 		val blendWeight = blendState.blendWeight
 
 		if (blendState.dirty > 1) {
@@ -908,7 +909,7 @@ class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : Mutilpl
 				this._animationData!!.frameIntOffset + this._timelineArray!![this._timelineData!!.offset + BinaryOffset.TimelineFrameValueCount]
 			val dragonBonesData = this._animationData?.parent?.parent
 			val frameIntArray = dragonBonesData!!.frameIntArray
-			val slot = (this.targetBlendState)!!.targetSlot
+			val slot = (this.targetBlendState)!!.targetSlot!!
 			this.geometryOffset = frameIntArray!![frameIntOffset + BinaryOffset.DeformVertexOffset].toInt()
 
 			if (this.geometryOffset < 0) {
@@ -947,7 +948,7 @@ class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : Mutilpl
 
 	override fun blend(_isDirty: Boolean) {
 		val blendState = this.targetBlendState!!
-		val slot = blendState.targetSlot
+		val slot = blendState.targetSlot!!
 		val blendWeight = blendState.blendWeight
 		val result = this.displayFrame!!.deformVertices
 		val valueArray = this._valueArray
@@ -959,9 +960,7 @@ class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : Mutilpl
 			val rd = this._rd
 
 			for (i in 0 until this._deformCount) {
-				var value: Double
-
-				value = when {
+				val value = when {
 					i < deformOffset -> valueArray[sameValueOffset + i].toDouble()
 					i < deformOffset + valueCount -> rd[i - deformOffset]
 					else -> valueArray[sameValueOffset + i - valueCount].toDouble()
