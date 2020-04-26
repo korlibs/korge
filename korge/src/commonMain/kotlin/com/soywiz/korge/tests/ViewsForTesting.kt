@@ -11,7 +11,7 @@ import com.soywiz.korge.input.MouseEvents
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korgw.GameWindowCoroutineDispatcher
+import com.soywiz.korgw.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -176,7 +176,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
 		val hasMore get() = timedTasks.isNotEmpty() || tasks.isNotEmpty()
 
-		override fun now() = time
+		override fun now() = KorgwPerformanceCounter(time.unixMillis.microseconds)
 
 		override fun executePending() {
 			//println("executePending.hasMore=$hasMore")
@@ -184,7 +184,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 				val timedTasks = mapWhile({ timedTasks.isNotEmpty() }) { timedTasks.removeHead() }
 
 				timedTasks.fastForEach { item ->
-					time = DateTime.fromUnix(max(time.unixMillis, item.time.unixMillis))
+					time = DateTime.fromUnix(max(time.unixMillis, item.time.milliseconds))
 					if (item.exception != null) {
 						item.continuation?.resumeWithException(item.exception!!)
 						if (item.callback != null) {
