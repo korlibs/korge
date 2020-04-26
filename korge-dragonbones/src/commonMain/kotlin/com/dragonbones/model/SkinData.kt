@@ -36,7 +36,7 @@ import com.dragonbones.internal.fastForEach
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class SkinData(pool: BaseObjectPool) : BaseObject(pool) {
+class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SkinData]"
 	}

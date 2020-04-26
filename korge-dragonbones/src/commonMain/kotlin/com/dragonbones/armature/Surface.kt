@@ -35,7 +35,7 @@ import kotlin.math.*
 /**
  * @internal
  */
-class Surface(pool: BaseObjectPool) :  Bone(pool) {
+class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.Surface]"
 	}

@@ -48,7 +48,7 @@ import kotlin.math.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-open class Bone(pool: BaseObjectPool) :  TransformObject(pool) {
+open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.Bone]"
 	}

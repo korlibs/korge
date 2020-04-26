@@ -45,7 +45,7 @@ import kotlin.math.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class KorgeDbSlot(pool: BaseObjectPool) : Slot(pool) {
+class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 	override fun toString(): String {
 		return "[class DragonbonesSlot]"
 	}
@@ -150,7 +150,7 @@ class KorgeDbSlot(pool: BaseObjectPool) : Slot(pool) {
 
 			if (this._armature?.replacedTexture != null) { // Update replaced texture atlas.
 				if (this._armature?._replaceTextureAtlasData === null) {
-					currentTextureAtlasData = pool.borrowObject<KorgeDbTextureAtlasData>()
+					currentTextureAtlasData = pool.textureAtlasData.borrow()
 					currentTextureAtlasData.copyFrom(currentTextureData.parent as KorgeDbTextureAtlasData)
 					currentTextureAtlasData.renderTexture = this._armature?.replacedTexture as? Bitmap?
 					this._armature?._replaceTextureAtlasData = currentTextureAtlasData

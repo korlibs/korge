@@ -44,12 +44,6 @@ import com.soywiz.korim.bitmap.*
  */
 open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: DataParser = ObjectDataParser(pool)) : BaseFactory(pool, dataParser) {
 	init {
-		pool.register<TextureAtlasData> { KorgeDbTextureAtlasData(pool) }
-		pool.register<TextureData> { KorgeDbTextureData(pool) }
-		pool.register<Slot> { KorgeDbSlot(pool) }
-		pool.register<KorgeDbTextureAtlasData> { KorgeDbTextureAtlasData(pool) }
-		pool.register<KorgeDbTextureData> { KorgeDbTextureData(pool) }
-		pool.register<KorgeDbSlot> { KorgeDbSlot(pool) }
 	}
 
 	val eventManager = KorgeDbArmatureDisplay()
@@ -88,14 +82,14 @@ open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: D
 		if (textureAtlasData != null) {
 			textureAtlasData.renderTexture = textureAtlas
 		} else {
-			textureAtlasData = pool.borrowObject<KorgeDbTextureAtlasData>()
+			textureAtlasData = pool.textureAtlasData.borrow()
 		}
 
 		return textureAtlasData
 	}
 
 	override fun _buildArmature(dataPackage: BuildArmaturePackage): Armature {
-		val armature = pool.borrowObject<Armature>()
+		val armature = pool.armature.borrow()
 		val armatureDisplay = KorgeDbArmatureDisplay()
 
 		armature.init(
@@ -107,7 +101,7 @@ open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: D
 	}
 
 	override fun _buildSlot(dataPackage: BuildArmaturePackage, slotData: SlotData, armature: Armature): Slot {
-		val slot = pool.borrowObject<KorgeDbSlot>()
+		val slot = pool.slot.borrow()
 		slot.init(
 			slotData, armature,
 			Image(Bitmaps.transparent), Mesh(drawMode = Mesh.DrawModes.Triangles)

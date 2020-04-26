@@ -179,7 +179,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 
 	private fun _buildBones(dataPackage: BuildArmaturePackage, armature: Armature) {
 		dataPackage.armature!!.sortedBones.fastForEach { boneData ->
-			val bone = if (boneData.isBone) pool.borrowObject<Bone>() else pool.borrowObject<Surface>()
+			val bone = if (boneData.isBone) pool.bone.borrow() else pool.surface.borrow()
 			bone.init(boneData, armature)
 		}
 	}
@@ -241,12 +241,12 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 			// TODO more constraint type.
 			when (constraintData!!.type) {
 				ConstraintType.IK -> {
-					val ikConstraint = pool.borrowObject<IKConstraint>()
+					val ikConstraint = pool.iKConstraint.borrow()
 					ikConstraint.init(constraintData, armature)
 					armature._addConstraint(ikConstraint)
 				}
 				ConstraintType.Path -> {
-					val pathConstraint = pool.borrowObject<PathConstraint>()
+					val pathConstraint = pool.pathConstraint.borrow()
 					pathConstraint.init(constraintData, armature)
 					armature._addConstraint(pathConstraint)
 				}
@@ -289,7 +289,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 						val actions = if (armatureDisplayData.actions.length > 0) armatureDisplayData.actions else childArmature.armatureData.defaultActions
 						if (actions.length > 0) {
 							actions.fastForEach { action ->
-								val eventObject = pool.borrowObject<EventObject>()
+								val eventObject = pool.eventObject.borrow()
 								EventObject.actionDataToInstance(action, eventObject, slot.armature)
 								eventObject.slot = slot
 								slot.armature._bufferAction(eventObject, false)

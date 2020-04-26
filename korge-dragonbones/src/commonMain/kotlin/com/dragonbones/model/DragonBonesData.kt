@@ -41,7 +41,7 @@ import com.soywiz.kmem.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class DragonBonesData(pool: BaseObjectPool) : BaseObject(pool) {
+class DragonBonesData(pool: SingleObjectPool<DragonBonesData>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.DragonBonesData]"
 	}

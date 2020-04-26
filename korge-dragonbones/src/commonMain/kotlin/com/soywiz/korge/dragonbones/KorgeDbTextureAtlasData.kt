@@ -39,7 +39,7 @@ import com.soywiz.korma.geom.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
+class KorgeDbTextureAtlasData(pool: SingleObjectPool<KorgeDbTextureAtlasData>) : TextureAtlasData(pool) {
 	override fun toString(): String {
 		return "[class DragonbonesTextureAtlasData]"
 	}
@@ -59,7 +59,7 @@ class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
 	/**
 	 * @inheritDoc
 	 */
-	override fun createTexture(): TextureData = pool.borrowObject()
+	override fun createTexture(): TextureData = pool.textureData.borrow()
 	/**
 	 * - The Dragonbones texture.
 	 * @version DragonBones 3.0
@@ -104,7 +104,7 @@ class KorgeDbTextureAtlasData(pool: BaseObjectPool) : TextureAtlasData(pool) {
 /**
  * @internal
  */
-class KorgeDbTextureData(pool: BaseObjectPool) : TextureData(pool) {
+class KorgeDbTextureData(pool: SingleObjectPool<KorgeDbTextureData>) : TextureData(pool) {
 	override fun toString(): String = "[class DragonbonesTextureData]"
 
 	var renderTexture: BmpSlice? = null // Initial value.

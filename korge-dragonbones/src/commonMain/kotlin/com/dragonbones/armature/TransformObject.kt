@@ -39,7 +39,7 @@ import com.dragonbones.geom.*
  * @version DragonBones 4.5
  * @language zh_CN
  */
-abstract class TransformObject(pool: BaseObjectPool) : BaseObject(pool) {
+abstract class TransformObject(pool: SingleObjectPool<out TransformObject>) : BaseObject(pool) {
 	internal val _helpMatrix: Matrix get() = pool._helpMatrix
 	internal val _helpTransform: Transform get() = pool._helpTransform
 	internal val _helpPoint: Point get() = pool._helpPoint

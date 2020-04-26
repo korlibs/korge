@@ -33,7 +33,7 @@ import kotlin.math.*
 /**
  * @internal
  */
-abstract class Constraint(pool: BaseObjectPool) : BaseObject(pool) {
+abstract class Constraint(pool: SingleObjectPool<out Constraint>) : BaseObject(pool) {
 	/**
 	 * - For timeline state.
 	 * @internal
@@ -70,7 +70,7 @@ abstract class Constraint(pool: BaseObjectPool) : BaseObject(pool) {
 /**
  * @internal
  */
-class IKConstraint(pool: BaseObjectPool) :  Constraint(pool) {
+class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.IKConstraint]"
 	}
@@ -111,12 +111,12 @@ class IKConstraint(pool: BaseObjectPool) :  Constraint(pool) {
 	}
 
 	private fun _computeB() {
-		val boneLength = (this._bone as Bone)._boneData!!.length
+		val boneLength = (this._bone!!)._boneData!!.length
 		val parent = this._root
 		val ikGlobal = this._target.global
 		val parentGlobal = parent.global
-		val global = (this._bone as Bone).global
-		val globalTransformMatrix = (this._bone as Bone).globalTransformMatrix
+		val global = (this._bone!!).global
+		val globalTransformMatrix = (this._bone!!).globalTransformMatrix
 
 		val x = globalTransformMatrix.a * boneLength
 		val y = globalTransformMatrix.b * boneLength
@@ -230,7 +230,7 @@ class IKConstraint(pool: BaseObjectPool) :  Constraint(pool) {
 /**
  * @internal
  */
-class PathConstraint(pool: BaseObjectPool) :  Constraint(pool) {
+class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool) {
 
 	var dirty: Boolean = false
 	var pathOffset: Int = 0
@@ -724,9 +724,9 @@ class PathConstraint(pool: BaseObjectPool) :  Constraint(pool) {
 		this.translateMix = data.translateMix
 
 		//
-		this._root = this._armature.getBone(data.root?.name) as Bone
-		this._target = this._armature.getBone(data.target?.name) as Bone
-		this._pathSlot = this._armature.getSlot(data.pathSlot?.name) as Slot
+		this._root = this._armature.getBone(data.root?.name)!!
+		this._target = this._armature.getBone(data.target?.name)!!
+		this._pathSlot = this._armature.getSlot(data.pathSlot?.name)
 
 		for (i in 0 until data.bones.length) {
 			val bone = this._armature.getBone(data.bones[i].name)

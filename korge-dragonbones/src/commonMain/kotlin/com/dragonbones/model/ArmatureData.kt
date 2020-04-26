@@ -39,7 +39,7 @@ import com.soywiz.kds.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
+class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.ArmatureData]"
 	}
@@ -487,7 +487,7 @@ class ArmatureData(pool: BaseObjectPool) : BaseObject(pool) {
  * @version DragonBones 3.0
  * @language zh_CN
  */
-open class BoneData(pool: BaseObjectPool) : BaseObject(pool) {
+open class BoneData(pool: SingleObjectPool<out BoneData>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoneData]"
 	}
@@ -584,7 +584,7 @@ open class BoneData(pool: BaseObjectPool) : BaseObject(pool) {
 /**
  * @internal
  */
-class SurfaceData(pool: BaseObjectPool) : BoneData(pool) {
+class SurfaceData(pool: SingleObjectPool<out SurfaceData>) : BoneData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SurfaceData]"
 	}
@@ -608,7 +608,7 @@ class SurfaceData(pool: BaseObjectPool) : BoneData(pool) {
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class SlotData(pool: BaseObjectPool) : BaseObject(pool) {
+class SlotData(pool: SingleObjectPool<SlotData>) : BaseObject(pool) {
 	companion object {
 		/**
 		 * @internal

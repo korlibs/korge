@@ -44,7 +44,7 @@ import kotlin.math.*
  * @version DragonBones 5.0
  * @language zh_CN
  */
-abstract class BoundingBoxData(pool: BaseObjectPool) : BaseObject(pool) {
+abstract class BoundingBoxData(pool: SingleObjectPool<out BoundingBoxData>) : BaseObject(pool) {
 	/**
 	 * - The bounding box type.
 	 * @version DragonBones 5.0
@@ -138,7 +138,7 @@ object OutCode {
  * @version DragonBones 5.1
  * @language zh_CN
  */
-class RectangleBoundingBoxData(pool: BaseObjectPool) : BoundingBoxData(pool) {
+class RectangleBoundingBoxData(pool: SingleObjectPool<RectangleBoundingBoxData>) : BoundingBoxData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.RectangleBoundingBoxData]"
 	}
@@ -370,7 +370,7 @@ class RectangleBoundingBoxData(pool: BaseObjectPool) : BoundingBoxData(pool) {
  * @version DragonBones 5.1
  * @language zh_CN
  */
-class EllipseBoundingBoxData(pool: BaseObjectPool) : BoundingBoxData(pool) {
+class EllipseBoundingBoxData(pool: SingleObjectPool<EllipseBoundingBoxData>) : BoundingBoxData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.EllipseData]"
 	}
@@ -536,7 +536,7 @@ class EllipseBoundingBoxData(pool: BaseObjectPool) : BoundingBoxData(pool) {
  * @version DragonBones 5.1
  * @language zh_CN
  */
-class PolygonBoundingBoxData(pool: BaseObjectPool) : BoundingBoxData(pool) {
+class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : BoundingBoxData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.PolygonBoundingBoxData]"
 	}

@@ -71,7 +71,7 @@ class GeometryData {
 /**
  * @private
  */
-abstract class DisplayData (pool: BaseObjectPool) : BaseObject(pool) {
+abstract class DisplayData (pool: SingleObjectPool<out DisplayData>) : BaseObject(pool) {
 	var type: DisplayType = DisplayType.None
 	var name: String = ""
 	var path: String = ""
@@ -85,10 +85,15 @@ abstract class DisplayData (pool: BaseObjectPool) : BaseObject(pool) {
 		//this.parent = null //
 	}
 }
+
+abstract class GeometryDisplayData (pool: SingleObjectPool<out GeometryDisplayData>) : DisplayData(pool) {
+    val geometry: GeometryData = GeometryData()
+}
+
 /**
  * @private
  */
-class ImageDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
+class ImageDisplayData(pool: SingleObjectPool<ImageDisplayData>) :  DisplayData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.ImageDisplayData]"
 	}
@@ -107,7 +112,7 @@ class ImageDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 /**
  * @private
  */
-class ArmatureDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
+class ArmatureDisplayData(pool: SingleObjectPool<ArmatureDisplayData>) :  DisplayData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.ArmatureDisplayData]"
 	}
@@ -139,12 +144,11 @@ class ArmatureDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 /**
  * @private
  */
-class MeshDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
+class MeshDisplayData(pool: SingleObjectPool<MeshDisplayData>) :  GeometryDisplayData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.MeshDisplayData]"
 	}
 
-	val geometry: GeometryData = GeometryData()
 	var texture: TextureData? = null
 
 	override fun _onClear() {
@@ -158,7 +162,7 @@ class MeshDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 /**
  * @private
  */
-class BoundingBoxDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
+class BoundingBoxDisplayData(pool: SingleObjectPool<BoundingBoxDisplayData>) :  DisplayData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoundingBoxDisplayData]"
 	}
@@ -179,14 +183,13 @@ class BoundingBoxDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 /**
  * @private
  */
-class PathDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
+class PathDisplayData(pool: SingleObjectPool<PathDisplayData>) :  GeometryDisplayData(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.PathDisplayData]"
 	}
 
 	var closed: Boolean = false
 	var constantSpeed: Boolean = false
-	val geometry: GeometryData = GeometryData()
 	var curveLengths: DoubleArray = DoubleArray(0)
 
 	override fun _onClear() {
@@ -202,7 +205,7 @@ class PathDisplayData(pool: BaseObjectPool) :  DisplayData(pool) {
 /**
  * @private
  */
-class WeightData(pool: BaseObjectPool) :  BaseObject(pool) {
+class WeightData(pool: SingleObjectPool<WeightData>) :  BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.WeightData]"
 	}

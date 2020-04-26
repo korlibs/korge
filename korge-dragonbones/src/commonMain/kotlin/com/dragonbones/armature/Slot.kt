@@ -37,7 +37,7 @@ import kotlin.math.*
 /**
  * @private
  */
-class DisplayFrame(pool: BaseObjectPool) :  BaseObject(pool) {
+class DisplayFrame(pool: SingleObjectPool<DisplayFrame>) :  BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.DisplayFrame]"
 	}
@@ -50,7 +50,15 @@ class DisplayFrame(pool: BaseObjectPool) :  BaseObject(pool) {
 	var deformVertices:  DoubleArray = DoubleArray(0)
 	//var deformVertices:  FloatArray = FloatArray(0)
 
-	override fun _onClear(): Unit {
+    val rawGeometryDisplayData get() = rawDisplayData as GeometryDisplayData
+    val rawMeshDisplayData get() = rawDisplayData as MeshDisplayData
+    val rawPathDisplayData get() = rawDisplayData as PathDisplayData
+
+    val geometryDisplayData get() = displayData as GeometryDisplayData
+    val meshDisplayData get() = displayData as MeshDisplayData
+    val pathDisplayData get() = displayData as PathDisplayData
+
+    override fun _onClear(): Unit {
 		this.rawDisplayData = null
 		this.displayData = null
 		this._textureData = null
@@ -63,16 +71,11 @@ class DisplayFrame(pool: BaseObjectPool) :  BaseObject(pool) {
 			return
 		}
 
-		val rawGeometryData: GeometryData
-		if (this.rawDisplayData?.type == DisplayType.Mesh) {
-			rawGeometryData = (this.rawDisplayData as MeshDisplayData).geometry
-		}
-		else if (this.rawDisplayData?.type == DisplayType.Path) {
-			rawGeometryData = (this.rawDisplayData as PathDisplayData).geometry
-		}
-		else {
-			return
-		}
+        val rawGeometryData: GeometryData = when (this.rawDisplayData?.type) {
+            DisplayType.Mesh -> (this.rawMeshDisplayData).geometry
+            DisplayType.Path -> (this.rawPathDisplayData).geometry
+            else -> return
+        }
 
 		var vertexCount = 0
 		if (rawGeometryData.weight != null) {
@@ -103,11 +106,11 @@ class DisplayFrame(pool: BaseObjectPool) :  BaseObject(pool) {
 
 		if (this.rawDisplayData != null) {
 			if (this.rawDisplayData?.type == DisplayType.Mesh) {
-				return (this.rawDisplayData as MeshDisplayData).geometry
+				return (this.rawMeshDisplayData).geometry
 			}
 
 			if (this.rawDisplayData?.type == DisplayType.Path) {
-				return (this.rawDisplayData as PathDisplayData).geometry
+				return (this.rawPathDisplayData).geometry
 			}
 		}
 
@@ -178,7 +181,7 @@ class DisplayFrame(pool: BaseObjectPool) :  BaseObject(pool) {
  * @version DragonBones 3.0
  * @language zh_CN
  */
-abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
+abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * - Displays the animated state or mixed group name controlled by the object, set to null to be controlled by all animation states.
 	 * @default null
@@ -590,7 +593,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 
 						if (actions != null && actions.lengthSet > 0) {
 							actions.fastForEach { action ->
-								val eventObject = pool.borrowObject<EventObject>()
+								val eventObject = pool.eventObject.borrow()
 								EventObject.actionDataToInstance(action, eventObject, this._armature!!)
 								eventObject.slot = this
 								this._armature!!._bufferAction(eventObject, false)
@@ -1124,7 +1127,7 @@ abstract class Slot(pool: BaseObjectPool) :  TransformObject(pool) {
 
 			//for (var i = prevCount; i < value; ++i) {
 			for (i in prevCount until value) {
-				this._displayFrames[i] = pool.borrowObject<DisplayFrame>()
+				this._displayFrames[i] = pool.displayFrame.borrow()
 			}
 		}
 		else if (prevCount > value) {

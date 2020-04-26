@@ -147,7 +147,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	}
 
 	private fun _parseBinaryTimeline(type: TimelineType, offset: Int, timelineData: TimelineData? = null): TimelineData {
-		val timeline: TimelineData = if (timelineData != null) timelineData else pool.borrowObject<TimelineData>()
+		val timeline: TimelineData = if (timelineData != null) timelineData else pool.timelineData.borrow()
 		timeline.type = type
 		timeline.offset = offset
 
@@ -191,7 +191,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	}
 
 	override fun _parseAnimation(rawData: Any?): AnimationData {
-		val animation: AnimationData = pool.borrowObject<AnimationData>()
+		val animation: AnimationData = pool.animationData.borrow()
 		animation.blendType = DataParser._getAnimationBlendType(ObjectDataParser._getString(rawData, DataParser.BLEND_TYPE, ""))
 		animation.frameCount = ObjectDataParser._getInt(rawData, DataParser.DURATION, 0)
 		animation.playTimes = ObjectDataParser._getInt(rawData, DataParser.PLAY_TIMES, 1)
@@ -274,7 +274,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 					var timeline: TimelineData? = null
 
 					if (timelineType == TimelineType.AnimationProgress && animation.blendType != AnimationBlendType.None) {
-						timeline = pool.borrowObject<AnimationTimelineData>()
+						timeline = pool.animationTimelineData.borrow()
 						val animaitonTimeline = timeline
 						animaitonTimeline.x = ObjectDataParser._getNumber(rawTimeline, DataParser.X, 0.0)
 						animaitonTimeline.y = ObjectDataParser._getNumber(rawTimeline, DataParser.Y, 0.0)
@@ -332,7 +332,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
 		val weightOffset = this._intArrayBuffer[geometry.offset + BinaryOffset.GeometryWeightOffset].toInt()
 		if (weightOffset >= 0) {
-			val weight = pool.borrowObject<WeightData>()
+			val weight = pool.weightData.borrow()
 			val vertexCount = this._intArrayBuffer[geometry.offset + BinaryOffset.GeometryVertexCount]
 			val boneCount = this._intArrayBuffer[weightOffset + BinaryOffset.WeigthBoneCount]
 			weight.offset = weightOffset

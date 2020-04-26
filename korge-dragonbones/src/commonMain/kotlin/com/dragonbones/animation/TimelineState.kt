@@ -34,7 +34,7 @@ import kotlin.math.*
 /**
  * @internal
  */
-class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
+class ActionTimelineState(pool: SingleObjectPool<ActionTimelineState>) : TimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.ActionTimelineState]"
 	}
@@ -43,7 +43,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 		val eventDispatcher = this._armature!!.eventDispatcher
 		if (this._animationState!!.actionEnabled) {
 			val frameOffset =
-				this._animationData!!.frameOffset + this._timelineArray!![(this._timelineData as TimelineData).offset + BinaryOffset.TimelineFrameOffset + frameIndex].toInt()
+				this._animationData!!.frameOffset + this._timelineArray!![(this._timelineData!!).offset + BinaryOffset.TimelineFrameOffset + frameIndex].toInt()
 			val actionCount = this._frameArray!![frameOffset + 1].toInt()
 			val actions =
 				this._animationData!!.parent!!.actions // May be the animaton data not belong to this armature data.
@@ -54,7 +54,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 				val action = actions[actionIndex]
 
 				if (action.type == ActionType.Play) {
-					val eventObject = pool.borrowObject<EventObject>()
+					val eventObject = pool.eventObject.borrow()
 					// eventObject.time = this._frameArray[frameOffset] * this._frameRateR; // Precision problem
 					eventObject.time = this._frameArray!![frameOffset].toDouble() / this._frameRate
 					eventObject.animationState = this._animationState!!
@@ -64,7 +64,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 					val eventType =
 						if (action.type == ActionType.Frame) EventObject.FRAME_EVENT else EventObject.SOUND_EVENT
 					if (action.type == ActionType.Sound || eventDispatcher.hasDBEventListener(eventType)) {
-						val eventObject = pool.borrowObject<EventObject>()
+						val eventObject = pool.eventObject.borrow()
 						// eventObject.time = this._frameArray[frameOffset] * this._frameRateR; // Precision problem
 						eventObject.time = this._frameArray!![frameOffset].toDouble() / this._frameRate
 						eventObject.animationState = this._animationState!!
@@ -96,7 +96,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 					prevPlayTimes = this.currentPlayTimes
 
 					if (eventActive && eventDispatcher!!.hasDBEventListener(EventObject.START)) {
-						val eventObject = pool.borrowObject<EventObject>()
+						val eventObject = pool.eventObject.borrow()
 						eventObject.type = EventObject.START
 						eventObject.armature = this._armature!!
 						eventObject.animationState = this._animationState!!
@@ -113,7 +113,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 
 			if (eventActive && this.currentPlayTimes != prevPlayTimes) {
 				if (eventDispatcher!!.hasDBEventListener(EventObject.LOOP_COMPLETE)) {
-					loopCompleteEvent = pool.borrowObject<EventObject>()
+					loopCompleteEvent = pool.eventObject.borrow()
 					loopCompleteEvent.type = EventObject.LOOP_COMPLETE
 					loopCompleteEvent.armature = this._armature!!
 					loopCompleteEvent.animationState = this._animationState!!
@@ -121,7 +121,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 
 				if (this.playState > 0) {
 					if (eventDispatcher.hasDBEventListener(EventObject.COMPLETE)) {
-						completeEvent = pool.borrowObject<EventObject>()
+						completeEvent = pool.eventObject.borrow()
 						completeEvent.type = EventObject.COMPLETE
 						completeEvent.armature = this._armature!!
 						completeEvent.animationState = this._animationState!!
@@ -279,7 +279,7 @@ class ActionTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 /**
  * @internal
  */
-class ZOrderTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
+class ZOrderTimelineState(pool: SingleObjectPool<ZOrderTimelineState>) : TimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.ZOrderTimelineState]"
 	}
@@ -301,7 +301,7 @@ class ZOrderTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 /**
  * @internal
  */
-class BoneAllTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(pool) {
+class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : MutilpleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoneAllTimelineState]"
 	}
@@ -338,7 +338,7 @@ class BoneAllTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(po
 		val valueScale = this._armature!!.armatureData.scale
 		val rd = this._rd
 		//
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -369,7 +369,7 @@ class BoneAllTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(po
 /**
  * @internal
  */
-class BoneTranslateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(pool) {
+class BoneTranslateTimelineState(pool: SingleObjectPool<BoneTranslateTimelineState>) : DoubleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoneTranslateTimelineState]"
 	}
@@ -383,7 +383,7 @@ class BoneTranslateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineStat
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -413,7 +413,7 @@ class BoneTranslateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineStat
 /**
  * @internal
  */
-class BoneRotateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(pool) {
+class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) : DoubleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoneRotateTimelineState]"
 	}
@@ -441,7 +441,7 @@ class BoneRotateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(p
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -471,7 +471,7 @@ class BoneRotateTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(p
 /**
  * @internal
  */
-class BoneScaleTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(pool) {
+class BoneScaleTimelineState(pool: SingleObjectPool<BoneScaleTimelineState>) : DoubleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.BoneScaleTimelineState]"
 	}
@@ -493,7 +493,7 @@ class BoneScaleTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(po
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -523,7 +523,7 @@ class BoneScaleTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(po
 /**
  * @internal
  */
-class SurfaceTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(pool) {
+class SurfaceTimelineState(pool: SingleObjectPool<SurfaceTimelineState>) : MutilpleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SurfaceTimelineState]"
 	}
@@ -558,12 +558,12 @@ class SurfaceTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(po
 			this._valueArray = dragonBonesData.frameFloatArray!!
 			this._rd = DoubleArray(this._valueCount * 2)
 		} else {
-			this._deformCount = ((this.target as BlendState).target as Surface)._deformVertices.size
+			this._deformCount = ((this.targetBlendState).targetSurface)._deformVertices.size
 		}
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val surface = blendState.target as Surface
 		val blendWeight = blendState.blendWeight
 		val result = surface._deformVertices
@@ -608,7 +608,7 @@ class SurfaceTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(po
 /**
  * @internal
  */
-class AlphaTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) {
+class AlphaTimelineState(pool: SingleObjectPool<AlphaTimelineState>) : SingleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.AlphaTimelineState]"
 	}
@@ -630,7 +630,7 @@ class AlphaTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) 
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
+		val blendState = this.targetBlendState
 		val alphaTarget = blendState.target as TransformObject
 		val blendWeight = blendState.blendWeight
 
@@ -653,14 +653,14 @@ class AlphaTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) 
 /**
  * @internal
  */
-class SlotDisplayTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
+class SlotDisplayTimelineState(pool: SingleObjectPool<SlotDisplayTimelineState>) : TimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SlotDisplayTimelineState]"
 	}
 
 	override fun _onArriveAtFrame() {
 		if (this.playState >= 0) {
-			val slot = this.target as Slot
+			val slot = this.targetSlot
 			val displayIndex: Int =
 				if (this._timelineData != null) this._frameArray!![this._frameOffset + 1].toInt() else slot._slotData!!.displayIndex
 
@@ -677,7 +677,7 @@ class SlotDisplayTimelineState(pool: BaseObjectPool) : TimelineState(pool) {
 /**
  * @internal
  */
-class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
+class SlotColorTimelineState(pool: SingleObjectPool<SlotColorTimelineState>) : TweenTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SlotColorTimelineState]"
 	}
@@ -740,7 +740,7 @@ class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
 				this._result[7] = colorArray[colorOffset++].toDouble()
 			}
 		} else { // Pose.
-			val slot = this.target as Slot
+			val slot = this.targetSlot
 			val color = slot.slotData.color!!
 			this._result[0] = color.alphaMultiplier
 			this._result[1] = color.redMultiplier
@@ -776,7 +776,7 @@ class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
 		super.update(passedTime)
 		// Fade animation.
 		if (this._isTween || this.dirty) {
-			val slot = this.target as Slot
+			val slot = this.targetSlot
 			val result = slot._colorTransform
 
 			if (this._animationState!!._fadeState != 0 || this._animationState!!._subFadeState != 0) {
@@ -832,7 +832,7 @@ class SlotColorTimelineState(pool: BaseObjectPool) : TweenTimelineState(pool) {
 /**
  * @internal
  */
-class SlotZIndexTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) {
+class SlotZIndexTimelineState(pool: SingleObjectPool<SlotZIndexTimelineState>) : SingleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.SlotZIndexTimelineState]"
 	}
@@ -841,8 +841,8 @@ class SlotZIndexTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(p
 		super._onArriveAtFrame()
 
 		if (this._timelineData == null) { // Pose.
-			val blendState = this.target as BlendState
-			val slot = blendState.target as Slot
+			val blendState = this.targetBlendState
+			val slot = blendState.targetSlot
 			this._result = slot.slotData.zIndex.toDouble()
 		}
 	}
@@ -855,8 +855,8 @@ class SlotZIndexTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(p
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
-		val slot = blendState.target as Slot
+		val blendState = this.targetBlendState
+		val slot = blendState.targetSlot
 		val blendWeight = blendState.blendWeight
 
 		if (blendState.dirty > 1) {
@@ -877,7 +877,7 @@ class SlotZIndexTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(p
 /**
  * @internal
  */
-class DeformTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(pool) {
+class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : MutilpleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.DeformTimelineState]"
 	}
@@ -908,7 +908,7 @@ class DeformTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(poo
 				this._animationData!!.frameIntOffset + this._timelineArray!![this._timelineData!!.offset + BinaryOffset.TimelineFrameValueCount]
 			val dragonBonesData = this._animationData?.parent?.parent
 			val frameIntArray = dragonBonesData!!.frameIntArray
-			val slot = (this.target as BlendState).target as Slot
+			val slot = (this.targetBlendState).targetSlot
 			this.geometryOffset = frameIntArray!![frameIntOffset + BinaryOffset.DeformVertexOffset].toInt()
 
 			if (this.geometryOffset < 0) {
@@ -946,8 +946,8 @@ class DeformTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(poo
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.target as BlendState
-		val slot = blendState.target as Slot
+		val blendState = this.targetBlendState
+		val slot = blendState.targetSlot
 		val blendWeight = blendState.blendWeight
 		val result = this.displayFrame!!.deformVertices
 		val valueArray = this._valueArray
@@ -993,7 +993,7 @@ class DeformTimelineState(pool: BaseObjectPool) : MutilpleValueTimelineState(poo
 /**
  * @internal
  */
-class IKConstraintTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(pool) {
+class IKConstraintTimelineState(pool: SingleObjectPool<IKConstraintTimelineState>) : DoubleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.IKConstraintTimelineState]"
 	}
@@ -1001,7 +1001,7 @@ class IKConstraintTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val ikConstraint = this.target as IKConstraint
+		val ikConstraint = this.targetIKConstraint
 
 		if (this._timelineData != null) {
 			ikConstraint._bendPositive = this._currentA > 0.0
@@ -1028,7 +1028,7 @@ class IKConstraintTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState
 /**
  * @internal
  */
-class AnimationProgressTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) {
+class AnimationProgressTimelineState(pool: SingleObjectPool<AnimationProgressTimelineState>) : SingleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.AnimationProgressTimelineState]"
 	}
@@ -1036,7 +1036,7 @@ class AnimationProgressTimelineState(pool: BaseObjectPool) : SingleValueTimeline
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.target as AnimationState
+		val animationState = this.targetAnimationState
 		if (animationState._parent != null) {
 			animationState.currentTime = this._result * animationState.totalTime
 		}
@@ -1056,7 +1056,7 @@ class AnimationProgressTimelineState(pool: BaseObjectPool) : SingleValueTimeline
 /**
  * @internal
  */
-class AnimationWeightTimelineState(pool: BaseObjectPool) : SingleValueTimelineState(pool) {
+class AnimationWeightTimelineState(pool: SingleObjectPool<AnimationWeightTimelineState>) : SingleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.AnimationWeightTimelineState]"
 	}
@@ -1064,7 +1064,7 @@ class AnimationWeightTimelineState(pool: BaseObjectPool) : SingleValueTimelineSt
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.target as AnimationState
+		val animationState = this.targetAnimationState
 		if (animationState._parent != null) {
 			animationState.weight = this._result
 		}
@@ -1084,7 +1084,7 @@ class AnimationWeightTimelineState(pool: BaseObjectPool) : SingleValueTimelineSt
 /**
  * @internal
  */
-class AnimationParametersTimelineState(pool: BaseObjectPool) : DoubleValueTimelineState(pool) {
+class AnimationParametersTimelineState(pool: SingleObjectPool<AnimationParametersTimelineState>) : DoubleValueTimelineState(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.AnimationParametersTimelineState]"
 	}
@@ -1092,7 +1092,7 @@ class AnimationParametersTimelineState(pool: BaseObjectPool) : DoubleValueTimeli
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.target as AnimationState
+		val animationState = this.targetAnimationState
 		if (animationState._parent != null) {
 			animationState.parameterX = this._resultA
 			animationState.parameterY = this._resultB

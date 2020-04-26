@@ -44,7 +44,7 @@ import com.dragonbones.util.*
  * @version DragonBones 5.0
  * @language zh_CN
  */
-class AnimationConfig(pool: BaseObjectPool) : BaseObject(pool) {
+class AnimationConfig(pool: SingleObjectPool<AnimationConfig>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.AnimationConfig]"
 	}

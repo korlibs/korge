@@ -33,7 +33,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import kotlin.math.*
 
-abstract class TimelineState(pool: BaseObjectPool) : BaseObject(pool) {
+abstract class TimelineState(pool: SingleObjectPool<out TimelineState>) : BaseObject(pool) {
 	var dirty: Boolean = false
 	/**
 	 * -1: start, 0: play, 1: complete;
@@ -42,6 +42,10 @@ abstract class TimelineState(pool: BaseObjectPool) : BaseObject(pool) {
 	var currentPlayTimes: Int = -1
 	var _currentTime: Double = -1.0
 	var target: BaseObject? = null
+    val targetAnimationState get() = target as AnimationState
+    val targetBlendState get() = target as BlendState
+    val targetSlot get() = target as Slot
+    val targetIKConstraint get() = target as IKConstraint
 
 	protected var _isTween: Boolean = false
 	protected var _valueOffset: Int = 0
@@ -210,7 +214,7 @@ abstract class TimelineState(pool: BaseObjectPool) : BaseObject(pool) {
 		if (this._setCurrentTime(passedTime)) {
 			if (this._frameCount > 1) {
 				val timelineFrameIndex = floor(this._currentTime * this._frameRate).toInt() // uint
-				val frameIndex = this._frameIndices!![(this._timelineData as TimelineData).frameIndicesOffset + timelineFrameIndex]
+				val frameIndex = this._frameIndices!![(this._timelineData!!).frameIndicesOffset + timelineFrameIndex]
 
 				if (this._frameIndex != frameIndex) {
 					this._frameIndex = frameIndex
@@ -241,7 +245,7 @@ abstract class TimelineState(pool: BaseObjectPool) : BaseObject(pool) {
 /**
  * @internal
  */
-abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
+abstract class TweenTimelineState(pool: SingleObjectPool<out TweenTimelineState>) :  TimelineState(pool) {
 	companion object {
 		private fun _getEasingValue(tweenType: TweenType, progress: Double, easing: Double): Double {
 			var value = progress
@@ -334,7 +338,7 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 				this._frameDurationR = 1.0 / (this._animationData!!.duration - this._framePosition)
 			}
 			else {
-				val nextFrameOffset = this._animationData!!.frameOffset + this._timelineArray!![(this._timelineData as TimelineData).offset + BinaryOffset.TimelineFrameOffset + this._frameIndex + 1]
+				val nextFrameOffset = this._animationData!!.frameOffset + this._timelineArray!![(this._timelineData!!).offset + BinaryOffset.TimelineFrameOffset + this._frameIndex + 1]
 				val frameDuration = this._frameArray!![nextFrameOffset] * this._frameRateR - this._framePosition
 
 				if (frameDuration > 0) {
@@ -368,7 +372,7 @@ abstract class TweenTimelineState(pool: BaseObjectPool) :  TimelineState(pool) {
 /**
  * @internal
  */
-abstract class SingleValueTimelineState(pool: BaseObjectPool) :  TweenTimelineState(pool) {
+abstract class SingleValueTimelineState(pool: SingleObjectPool<out SingleValueTimelineState>) :  TweenTimelineState(pool) {
 	protected var _current: Double = 0.0
 	protected var _difference: Double = 0.0
 	protected var _result: Double = 0.0
@@ -423,7 +427,7 @@ abstract class SingleValueTimelineState(pool: BaseObjectPool) :  TweenTimelineSt
 /**
  * @internal
  */
-abstract class DoubleValueTimelineState(pool: BaseObjectPool) :  TweenTimelineState(pool) {
+abstract class DoubleValueTimelineState(pool: SingleObjectPool<out DoubleValueTimelineState>) :  TweenTimelineState(pool) {
 	protected var _currentA: Double = 0.0
 	protected var _currentB: Double = 0.0
 	protected var _differenceA: Double = 0.0
@@ -492,7 +496,7 @@ abstract class DoubleValueTimelineState(pool: BaseObjectPool) :  TweenTimelineSt
 /**
  * @internal
  */
-abstract class MutilpleValueTimelineState(pool: BaseObjectPool) :  TweenTimelineState(pool) {
+abstract class MutilpleValueTimelineState(pool: SingleObjectPool<out MutilpleValueTimelineState>) :  TweenTimelineState(pool) {
 	protected var _valueCount: Int = 0
 	protected var _rd:  DoubleArray = DoubleArray(0)
 

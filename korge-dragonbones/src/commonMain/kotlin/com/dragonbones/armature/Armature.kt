@@ -52,7 +52,7 @@ import com.soywiz.kmem.*
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
+class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable {
 	override fun toString(): String {
 		return "[class dragonBones.Armature]"
 	}
@@ -294,7 +294,7 @@ class Armature(pool: BaseObjectPool) : BaseObject(pool), IAnimatable {
 		}
 
 		this._armatureData = armatureData
-		this._animation = pool.borrowObject<Animation>()
+		this._animation = pool.animation.borrow()
 		this._proxy = proxy
 		this._display = display
 		this._dragonBones = dragonBones

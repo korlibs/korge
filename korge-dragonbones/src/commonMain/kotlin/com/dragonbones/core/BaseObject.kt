@@ -34,7 +34,10 @@ package com.dragonbones.core
  * @version DragonBones 4.5
  * @language zh_CN
  */
-abstract class BaseObject(val pool: BaseObjectPool) {
+abstract class BaseObject(val sopool: SingleObjectPool<out BaseObject>) {
+    val pool = sopool.base
+    private val ipool = sopool as SingleObjectPool<BaseObject>
+
 	override fun toString(): String = "BaseObject.Unknown"
 
 	/**
@@ -63,6 +66,6 @@ abstract class BaseObject(val pool: BaseObjectPool) {
 	 */
 	fun returnToPool(): Unit {
 		this._onClear()
-		pool._returnObject(this)
+        ipool.returnObject(this)
 	}
 }

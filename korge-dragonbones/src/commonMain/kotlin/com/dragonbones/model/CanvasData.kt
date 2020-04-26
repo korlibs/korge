@@ -27,7 +27,7 @@ import com.dragonbones.core.*
 /**
  * @private
  */
-class CanvasData(pool: BaseObjectPool) : BaseObject(pool) {
+class CanvasData(pool: SingleObjectPool<CanvasData>) : BaseObject(pool) {
 	override fun toString(): String {
 		return "[class dragonBones.CanvasData]"
 	}
