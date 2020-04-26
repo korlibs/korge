@@ -41,11 +41,11 @@ abstract class TimelineState(pool: SingleObjectPool<out TimelineState>) : BaseOb
 	var playState: Int = -1
 	var currentPlayTimes: Int = -1
 	var _currentTime: Double = -1.0
-	var target: BaseObject? = null
-    val targetAnimationState get() = target as AnimationState
-    val targetBlendState get() = target as BlendState
-    val targetSlot get() = target as Slot
-    val targetIKConstraint get() = target as IKConstraint
+	//var target: BaseObject? = null
+    var targetAnimationState: AnimationState? = null
+    var targetBlendState: BlendState? = null
+    var targetSlot: Slot? = null
+    var targetIKConstraint: IKConstraint? = null
 
 	protected var _isTween: Boolean = false
 	protected var _valueOffset: Int = 0
@@ -75,7 +75,11 @@ abstract class TimelineState(pool: SingleObjectPool<out TimelineState>) : BaseOb
 		this.playState = -1
 		this.currentPlayTimes = -1
 		this._currentTime = -1.0
-		this.target = null
+		//this.target = null
+        this.targetAnimationState = null
+        this.targetBlendState = null
+        this.targetSlot = null
+        this.targetIKConstraint = null
 
 		this._isTween = false
 		this._valueOffset = 0

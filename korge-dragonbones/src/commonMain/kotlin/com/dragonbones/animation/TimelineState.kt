@@ -338,7 +338,7 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		val valueScale = this._armature!!.armatureData.scale
 		val rd = this._rd
 		//
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -383,7 +383,7 @@ class BoneTranslateTimelineState(pool: SingleObjectPool<BoneTranslateTimelineSta
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -441,7 +441,7 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -493,7 +493,7 @@ class BoneScaleTimelineState(pool: SingleObjectPool<BoneScaleTimelineState>) : D
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val bone = blendState.target as Bone
 		val blendWeight = blendState.blendWeight
 		val result = bone.animationPose
@@ -558,12 +558,12 @@ class SurfaceTimelineState(pool: SingleObjectPool<SurfaceTimelineState>) : Mutil
 			this._valueArray = dragonBonesData.frameFloatArray!!
 			this._rd = DoubleArray(this._valueCount * 2)
 		} else {
-			this._deformCount = ((this.targetBlendState).targetSurface)._deformVertices.size
+			this._deformCount = ((this.targetBlendState)!!.targetSurface)._deformVertices.size
 		}
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val surface = blendState.target as Surface
 		val blendWeight = blendState.blendWeight
 		val result = surface._deformVertices
@@ -630,7 +630,7 @@ class AlphaTimelineState(pool: SingleObjectPool<AlphaTimelineState>) : SingleVal
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val alphaTarget = blendState.target as TransformObject
 		val blendWeight = blendState.blendWeight
 
@@ -660,7 +660,7 @@ class SlotDisplayTimelineState(pool: SingleObjectPool<SlotDisplayTimelineState>)
 
 	override fun _onArriveAtFrame() {
 		if (this.playState >= 0) {
-			val slot = this.targetSlot
+			val slot = this.targetSlot!!
 			val displayIndex: Int =
 				if (this._timelineData != null) this._frameArray!![this._frameOffset + 1].toInt() else slot._slotData!!.displayIndex
 
@@ -740,7 +740,7 @@ class SlotColorTimelineState(pool: SingleObjectPool<SlotColorTimelineState>) : T
 				this._result[7] = colorArray[colorOffset++].toDouble()
 			}
 		} else { // Pose.
-			val slot = this.targetSlot
+			val slot = this.targetSlot!!
 			val color = slot.slotData.color!!
 			this._result[0] = color.alphaMultiplier
 			this._result[1] = color.redMultiplier
@@ -776,7 +776,7 @@ class SlotColorTimelineState(pool: SingleObjectPool<SlotColorTimelineState>) : T
 		super.update(passedTime)
 		// Fade animation.
 		if (this._isTween || this.dirty) {
-			val slot = this.targetSlot
+			val slot = this.targetSlot!!
 			val result = slot._colorTransform
 
 			if (this._animationState!!._fadeState != 0 || this._animationState!!._subFadeState != 0) {
@@ -841,7 +841,7 @@ class SlotZIndexTimelineState(pool: SingleObjectPool<SlotZIndexTimelineState>) :
 		super._onArriveAtFrame()
 
 		if (this._timelineData == null) { // Pose.
-			val blendState = this.targetBlendState
+			val blendState = this.targetBlendState!!
 			val slot = blendState.targetSlot
 			this._result = slot.slotData.zIndex.toDouble()
 		}
@@ -855,7 +855,7 @@ class SlotZIndexTimelineState(pool: SingleObjectPool<SlotZIndexTimelineState>) :
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val slot = blendState.targetSlot
 		val blendWeight = blendState.blendWeight
 
@@ -908,7 +908,7 @@ class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : Mutilpl
 				this._animationData!!.frameIntOffset + this._timelineArray!![this._timelineData!!.offset + BinaryOffset.TimelineFrameValueCount]
 			val dragonBonesData = this._animationData?.parent?.parent
 			val frameIntArray = dragonBonesData!!.frameIntArray
-			val slot = (this.targetBlendState).targetSlot
+			val slot = (this.targetBlendState)!!.targetSlot
 			this.geometryOffset = frameIntArray!![frameIntOffset + BinaryOffset.DeformVertexOffset].toInt()
 
 			if (this.geometryOffset < 0) {
@@ -946,7 +946,7 @@ class DeformTimelineState(pool: SingleObjectPool<DeformTimelineState>) : Mutilpl
 	}
 
 	override fun blend(_isDirty: Boolean) {
-		val blendState = this.targetBlendState
+		val blendState = this.targetBlendState!!
 		val slot = blendState.targetSlot
 		val blendWeight = blendState.blendWeight
 		val result = this.displayFrame!!.deformVertices
@@ -1001,7 +1001,7 @@ class IKConstraintTimelineState(pool: SingleObjectPool<IKConstraintTimelineState
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val ikConstraint = this.targetIKConstraint
+		val ikConstraint = this.targetIKConstraint!!
 
 		if (this._timelineData != null) {
 			ikConstraint._bendPositive = this._currentA > 0.0
@@ -1036,7 +1036,7 @@ class AnimationProgressTimelineState(pool: SingleObjectPool<AnimationProgressTim
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.targetAnimationState
+		val animationState = this.targetAnimationState!!
 		if (animationState._parent != null) {
 			animationState.currentTime = this._result * animationState.totalTime
 		}
@@ -1064,7 +1064,7 @@ class AnimationWeightTimelineState(pool: SingleObjectPool<AnimationWeightTimelin
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.targetAnimationState
+		val animationState = this.targetAnimationState!!
 		if (animationState._parent != null) {
 			animationState.weight = this._result
 		}
@@ -1092,7 +1092,7 @@ class AnimationParametersTimelineState(pool: SingleObjectPool<AnimationParameter
 	override fun _onUpdateFrame() {
 		super._onUpdateFrame()
 
-		val animationState = this.targetAnimationState
+		val animationState = this.targetAnimationState!!
 		if (animationState._parent != null) {
 			animationState.parameterX = this._resultA
 			animationState.parameterY = this._resultB
