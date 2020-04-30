@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -17,12 +18,13 @@ inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = G
 open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
 ) : Image(Bitmaps.transparent), VectorBuilder {
+    internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
 	private var stroke: Paint? = null
 	@PublishedApi
-	internal var currentPath = GraphicsPath()
+	internal var currentPath = graphicsPathPool.alloc()
 	@PublishedApi
 	internal var dirty = true
 
@@ -32,7 +34,16 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun clear() {
+        shapes.forEach {
+            if (it is StyledShape) {
+                val path = it.path
+                if (path != null) {
+                    graphicsPathPool.free(currentPath)
+                }
+            }
+        }
 		shapes.clear()
+        currentPath.clear()
 	}
 
 	private var thickness: Double = 1.0
@@ -52,21 +63,10 @@ open class Graphics @JvmOverloads constructor(
 	override val totalPoints: Int get() = currentPath.totalPoints
 
 	override fun close() = currentPath.close()
-	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
-		currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay)
-	}
-
-	override fun lineTo(x: Double, y: Double) {
-		currentPath.lineTo(x, y)
-	}
-
-	override fun moveTo(x: Double, y: Double) {
-		currentPath.moveTo(x, y)
-	}
-
-	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
-		currentPath.quadTo(cx, cy, ax, ay)
-	}
+	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = run { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
+	override fun lineTo(x: Double, y: Double) = run { currentPath.lineTo(x, y) }
+	override fun moveTo(x: Double, y: Double) = run { currentPath.moveTo(x, y) }
+	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = run { currentPath.quadTo(cx, cy, ax, ay) }
 
 	inline fun fill(color: RGBA, alpha: Number = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
 
@@ -125,7 +125,7 @@ open class Graphics @JvmOverloads constructor(
 
 	fun beginFill(paint: Paint) = dirty {
 		fill = paint
-		currentPath = GraphicsPath()
+		currentPath.clear()
 	}
 
 	private fun setStrokeInfo(info: Context2d.StrokeInfo) {
@@ -141,7 +141,7 @@ open class Graphics @JvmOverloads constructor(
 	fun beginStroke(paint: Paint, info: Context2d.StrokeInfo) = dirty {
 		setStrokeInfo(info)
 		stroke = paint
-		currentPath = GraphicsPath()
+        currentPath.clear()
 	}
 
 	@PublishedApi
@@ -153,22 +153,23 @@ open class Graphics @JvmOverloads constructor(
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
+    inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
 
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		currentPath = GraphicsPath()
+		currentPath = graphicsPathPool.alloc()
 	}
 
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
-		currentPath = GraphicsPath()
+		currentPath = graphicsPathPool.alloc()
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
-		currentPath = GraphicsPath()
+		shapes += PolylineShape(graphicsPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		currentPath = graphicsPathPool.alloc()
 	}
 
 	internal val _sLeft get() = sLeft

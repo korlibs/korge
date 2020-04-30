@@ -37,6 +37,20 @@ class GraphicsTest {
         assertTrue(bmp.width > 0)
         assertTrue(bmp.height > 0)
     }
+
+    @Test
+    fun testPathPool() {
+        val g = Graphics()
+        g.clear()
+        for (n in 0 until 10) {
+            g.fill(Colors.RED) { g.rect(0, 0, 100, 100) }
+            g.clear()
+        }
+        assertEquals(1, g.graphicsPathPool.itemsInPool)
+        for (n in 0 until 10) g.fill(Colors.RED) { g.rect(0, 0, 100, 100) }
+        g.clear()
+        assertEquals(10, g.graphicsPathPool.itemsInPool)
+    }
 }
 
 fun TestRenderContext() = RenderContext(LogAG())
