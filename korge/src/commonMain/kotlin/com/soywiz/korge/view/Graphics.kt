@@ -2,7 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -34,14 +33,7 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun clear() {
-        shapes.forEach {
-            if (it is StyledShape) {
-                val path = it.path
-                if (path != null) {
-                    graphicsPathPool.free(currentPath)
-                }
-            }
-        }
+        shapes.forEach { (it as? StyledShape)?.path?.let { path -> graphicsPathPool.free(path) } }
 		shapes.clear()
         currentPath.clear()
 	}
