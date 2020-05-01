@@ -208,9 +208,7 @@ open class Graphics @JvmOverloads constructor(
 		if (dirty) {
 			dirty = false
 
-			bb.reset()
-			shapes.fastForEach { it.addBounds(bb) }
-			bb.getBounds(bounds)
+            getLocalBoundsInternal(bounds)
 
             // Removes old image
             run {
@@ -235,7 +233,13 @@ open class Graphics @JvmOverloads constructor(
 		super.renderInternal(ctx)
 	}
 
-	override fun hitTestInternal(x: Double, y: Double): View? {
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        bb.reset()
+        shapes.fastForEach { it.addBounds(bb) }
+        bb.getBounds(out)
+    }
+
+    override fun hitTestInternal(x: Double, y: Double): View? {
         if (hitTestUsingShapes) {
             val lx = globalToLocalX(x, y)
             val ly = globalToLocalY(x, y)

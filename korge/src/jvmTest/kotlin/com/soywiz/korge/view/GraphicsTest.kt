@@ -39,6 +39,26 @@ class GraphicsTest {
     }
 
     @Test
+    fun testGraphicsSize() {
+        Graphics().apply {
+            fill(Colors.RED) {
+                rect(0, 0, 100, 100)
+            }
+        }.also { g ->
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
+        }
+        Graphics().apply {
+            fill(Colors.RED) {
+                rect(10, 10, 100, 100)
+            }
+        }.also { g ->
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
+        }
+    }
+
+    @Test
     fun testPathPool() {
         val g = Graphics()
         g.clear()
