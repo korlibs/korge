@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.8.3") // Kotlin 1.3.71: https://github.com/korlibs/easy-kotlin-mpp-gradle-plugin
+        classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.8.5") // Kotlin 1.3.72: https://github.com/korlibs/easy-kotlin-mpp-gradle-plugin
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}")
     }
 }
