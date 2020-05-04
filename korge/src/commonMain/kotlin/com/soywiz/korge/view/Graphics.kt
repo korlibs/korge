@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -137,10 +138,8 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	@PublishedApi
-	internal inline fun toColorFill(color: RGBA, alpha: Number): ColorPaint {
-		return ColorPaint(RGBA(color.r, color.g, color.b, (alpha.toDouble() * 255).toInt()))
-		//return Context2d.Color(color.withAd(alpha.toDouble())
-	}
+	internal inline fun toColorFill(color: RGBA, alpha: Number): ColorPaint =
+        ColorPaint(RGBA(color.r, color.g, color.b, (color.a * alpha.toDouble()).toInt().clamp(0, 255)))
 
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
