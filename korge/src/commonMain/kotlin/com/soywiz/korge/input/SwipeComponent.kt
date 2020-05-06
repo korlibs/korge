@@ -8,7 +8,13 @@ data class SwipeInfo(
     var dx: Double = 0.0,
     var dy: Double = 0.0,
     var direction: SwipeDirection
-)
+) {
+    fun setTo(dx: Double, dy: Double, direction: SwipeDirection) = this.apply {
+        this.dx = dx
+        this.dy = dy
+        this.direction = direction
+    }
+}
 
 enum class SwipeDirection {
     LEFT, RIGHT, TOP, BOTTOM
@@ -24,7 +30,7 @@ enum class SwipeDirection {
  * @property callback a callback to execute
  */
 fun <T : View> T.onSwipe(
-    threshold: kotlin.Number = -1,
+    threshold: Double = -1.0,
     direction: SwipeDirection? = null,
     callback: suspend Views.(SwipeInfo) -> Unit
 ): T {
@@ -37,9 +43,10 @@ fun <T : View> T.onSwipe(
     var movedRight = false
     var movedTop = false
     var movedBottom = false
-    val thr = threshold.toDouble()
+
     val view = this
     val mousePos = Point()
+    val swipeInfo = SwipeInfo(0.0, 0.0, SwipeDirection.TOP)
 
     fun views() = view.stage!!.views
 
@@ -62,47 +69,36 @@ fun <T : View> T.onSwipe(
 
     suspend fun triggerEvent(direction: SwipeDirection) {
         register = false
-        views().callback(SwipeInfo(cx - sx, cy - sy, direction))
+        views().callback(swipeInfo.setTo(cx - sx, cy - sy, direction))
     }
 
     suspend fun checkPositionOnMove() {
-        if (thr < 0) return
-        when (direction) {
-            SwipeDirection.LEFT -> if (sx - cx > thr && !movedRight) triggerEvent(direction)
-            SwipeDirection.RIGHT -> if (cx - sx > thr && !movedLeft) triggerEvent(direction)
-            SwipeDirection.TOP -> if (sy - cy > thr && !movedBottom) triggerEvent(direction)
-            SwipeDirection.BOTTOM -> if (cy - sy > thr && !movedTop) triggerEvent(direction)
-            null -> when {
-                sx - cx > thr && !movedRight -> triggerEvent(SwipeDirection.LEFT)
-                cx - sx > thr && !movedLeft -> triggerEvent(SwipeDirection.RIGHT)
-                sy - cy > thr && !movedBottom -> triggerEvent(SwipeDirection.TOP)
-                cy - sy > thr && !movedTop -> triggerEvent(SwipeDirection.BOTTOM)
-            }
+        if (threshold < 0) return
+        val curDirection = when {
+            sx - cx > threshold && !movedRight -> SwipeDirection.LEFT
+            cx - sx > threshold && !movedLeft -> SwipeDirection.RIGHT
+            sy - cy > threshold && !movedBottom -> SwipeDirection.TOP
+            cy - sy > threshold && !movedTop -> SwipeDirection.BOTTOM
+            else -> return
+        }
+        if (direction == null || direction == curDirection) {
+            triggerEvent(curDirection)
         }
     }
 
     suspend fun checkPositionOnUp() {
-        if (thr >= 0) return
+        if (threshold >= 0) return
         val horDiff = abs(cx - sx)
         val verDiff = abs(cy - sy)
-        when (direction) {
-            SwipeDirection.LEFT -> if (horDiff >= verDiff && cx < sx && !movedRight) triggerEvent(direction)
-            SwipeDirection.RIGHT -> if (horDiff >= verDiff && cx > sx && !movedLeft) triggerEvent(direction)
-            SwipeDirection.TOP -> if (horDiff <= verDiff && cy < sy && !movedBottom) triggerEvent(direction)
-            SwipeDirection.BOTTOM -> if (horDiff <= verDiff && cy > sy && !movedTop) triggerEvent(direction)
-            null -> if (horDiff >= verDiff) {
-                if (cx < sx && !movedRight) {
-                    triggerEvent(SwipeDirection.LEFT)
-                } else if (cx > sx && !movedLeft) {
-                    triggerEvent(SwipeDirection.RIGHT)
-                }
-            } else {
-                if (cy < sy && !movedBottom) {
-                    triggerEvent(SwipeDirection.TOP)
-                } else if (cy > sy && !movedTop) {
-                    triggerEvent(SwipeDirection.BOTTOM)
-                }
-            }
+        val curDirection = when {
+            horDiff >= verDiff && cx < sx && !movedRight -> SwipeDirection.LEFT
+            horDiff >= verDiff && cx > sx && !movedLeft -> SwipeDirection.RIGHT
+            horDiff <= verDiff && cy < sy && !movedBottom -> SwipeDirection.TOP
+            horDiff <= verDiff && cy > sy && !movedTop -> SwipeDirection.BOTTOM
+            else -> return
+        }
+        if (direction == null || direction == curDirection) {
+            triggerEvent(curDirection)
         }
     }
 
