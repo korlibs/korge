@@ -3,7 +3,6 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
@@ -36,6 +35,26 @@ class GraphicsTest {
         // This would fail in Android
         assertTrue(bmp.width > 0)
         assertTrue(bmp.height > 0)
+    }
+
+    @Test
+    fun testGraphicsSize() {
+        Graphics().apply {
+            fill(Colors.RED) {
+                rect(0, 0, 100, 100)
+            }
+        }.also { g ->
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
+        }
+        Graphics().apply {
+            fill(Colors.RED) {
+                rect(10, 10, 100, 100)
+            }
+        }.also { g ->
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
+        }
     }
 
     @Test
