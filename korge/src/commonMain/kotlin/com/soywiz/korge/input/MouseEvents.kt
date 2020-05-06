@@ -92,6 +92,8 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
     inline fun onUpOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::upOutside, handler)
     inline fun onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::upAnywhere, handler)
     inline fun onMove(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::move, handler)
+    inline fun onMoveAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveAnywhere, handler)
+    inline fun onMoveOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveOutside, handler)
     inline fun onExit(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::exit, handler)
 
     var hitTest: View? = null; private set
