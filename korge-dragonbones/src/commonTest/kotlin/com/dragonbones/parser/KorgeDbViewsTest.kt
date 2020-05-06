@@ -6,11 +6,12 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.json.*
+import doIOTest
 import kotlin.test.*
 
 class KorgeDbViewsTest {
 	@Test
-	fun test() = suspendTest {
+	fun test() = suspendTest({ doIOTest }) {
 		val factory = KorgeDbFactory()
 		val data = factory.parseDragonBonesData(Json.parse(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
 		val atlas = factory.parseTextureAtlasData(
