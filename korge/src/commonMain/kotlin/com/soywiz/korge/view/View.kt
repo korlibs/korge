@@ -433,16 +433,6 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		return Cancellable { component.detach() }
 	}
 
-    /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-    fun addUpdater(updatable: (dt: TimeSpan) -> Unit): Cancellable {
-        val component = object : UpdateComponent {
-            override val view: View get() = this@View
-            override fun update(ms: Double) = run { updatable(ms.milliseconds) }
-        }.attach()
-        component.update(0.0)
-        return Cancellable { component.detach() }
-    }
-
     /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
     fun deferWithViews(block: (views: Views) -> Unit) {
         addComponent(DeferWithViewsUpdateComponentWithViews(this@View, block))
@@ -1021,6 +1011,16 @@ fun View.replaceWith(view: View): Boolean {
 	view.invalidate()
 	this.index = -1
 	return true
+}
+
+/** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
+    val component = object : UpdateComponent {
+        override val view: View get() = this@addUpdater
+        override fun update(ms: Double) = run { updatable(this@addUpdater, ms.milliseconds) }
+    }.attach()
+    component.update(0.0)
+    return Cancellable { component.detach() }
 }
 
 /**

@@ -237,8 +237,7 @@ class Views constructor(
 		//println("Update: $dtMs")
 		input.startFrame(dtMs)
 		val dtMsD = dtMs.toDouble()
-		stage.updateSingleView(dtMsD, tempComponents)
-		stage.updateSingleViewWithViews(this, dtMsD, tempComponents)
+		stage.updateSingleViewWithViewsAll(this, dtMsD, tempComponents)
 		input.endFrame(dtMs)
 	}
 
@@ -392,6 +391,11 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: 
 	this.forEachComponent<UpdateComponentWithViews>(tempComponents) {
 		it.update(views, dtMsD * it.view.globalSpeed)
 	}
+}
+
+fun View.updateSingleViewWithViewsAll(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
+    updateSingleView(dtMsD, tempComponents)
+    updateSingleViewWithViews(views, dtMsD, tempComponents)
 }
 
 interface BoundsProvider {
