@@ -169,6 +169,7 @@ class Views constructor(
 			stage.forEachComponent<EventComponent>(tempComponents) { it.onEvent(event) }
 			when (e) {
 				is MouseEvent -> stage.forEachComponent<MouseComponent>(tempComponents) { it.onMouseEvent(views, e) }
+                is TouchEvent -> stage.forEachComponent<TouchComponent>(tempComponents) { it.onTouchEvent(views, e) }
 				is ReshapeEvent -> stage.forEachComponent<ResizeComponent>(tempComponents) {
 					it.resized(views, e.width, e.height)
 				}
