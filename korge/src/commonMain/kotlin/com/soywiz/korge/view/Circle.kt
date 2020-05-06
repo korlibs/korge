@@ -38,7 +38,7 @@ open class Circle(radius: Double = 16.0, color: RGBA = Colors.WHITE, autoScaling
     private fun updateGraphics() {
         clear()
         fill(color) {
-            circle(0.0, 0.0, radius)
+            circle(radius, radius, radius)
         }
     }
 }
