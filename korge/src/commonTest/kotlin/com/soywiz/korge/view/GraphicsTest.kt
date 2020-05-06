@@ -9,7 +9,7 @@ import kotlin.test.*
 
 class GraphicsTest {
 	@Test
-	fun test() {
+	fun test() = suspendTest({ !OS.isAndroid }) {
 		val g = Graphics().apply {
 			fill(Colors.RED) {
 				rect(-50, -50, 100, 100)
@@ -28,7 +28,7 @@ class GraphicsTest {
 	}
 
     @Test
-    fun testEmptyGraphics() {
+    fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
         val g = Graphics().apply {
         }
         val rc = TestRenderContext()
