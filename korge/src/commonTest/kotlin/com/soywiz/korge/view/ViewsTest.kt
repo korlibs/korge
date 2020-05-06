@@ -135,8 +135,9 @@ class ViewsTest : ViewsForTesting() {
         lateinit var rect: SolidRect
         val container = Container().apply {
             rect = solidRect(100, 100, Colors.RED)
-            rect.addUpdater {
+            rect.addUpdater { time ->
                 x++
+                assertEquals(0.0.seconds, time)
                 @Suppress("USELESS_IS_CHECK")
                 assertTrue { this is SolidRect }
             }
@@ -144,6 +145,6 @@ class ViewsTest : ViewsForTesting() {
         container.updateSingleView(0.0)
         container.updateSingleView(0.0)
         assertEquals(0.0, container.x)
-        assertEquals(2.0, rect.x)
+        assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.seconds once
     }
 }
