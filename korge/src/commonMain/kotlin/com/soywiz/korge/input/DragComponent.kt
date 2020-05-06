@@ -8,17 +8,31 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import kotlin.coroutines.*
 
+@Deprecated("Use onMouseDrag() instead")
 val View.drag by Extra.PropertyThis<View, DragComponent> { this.getOrCreateComponent { DragComponent(this) } }
 
+@Deprecated("Use onMouseDrag() instead", ReplaceWith(
+    "onMouseDrag {\nif (it.start) handler\n}",
+    "com.soywiz.korge.input.onMouseDrag"
+))
 suspend inline fun <T : View?> T?.onDragStart(noinline handler: suspend (DragComponent.Info) -> Unit) =
 	this.apply { this?.drag?.onDragStart?.addSuspend(coroutineContext, handler) }
 
+@Deprecated("Use onMouseDrag() instead", ReplaceWith(
+    "onMouseDrag {\nif (it.end) handler\n}",
+    "com.soywiz.korge.input.onMouseDrag"
+))
 suspend inline fun <T : View?> T?.onDragEnd(noinline handler: suspend (DragComponent.Info) -> Unit) =
 	this.apply { this?.drag?.onDragEnd?.addSuspend(coroutineContext, handler) }
 
+@Deprecated("Use onMouseDrag() instead", ReplaceWith(
+    "onMouseDrag(handler)",
+    "com.soywiz.korge.input.onMouseDrag"
+))
 suspend inline fun <T : View?> T?.onDragMove(noinline handler: suspend (DragComponent.Info) -> Unit) =
 	this.apply { this?.drag?.onDragMove?.addSuspend(coroutineContext, handler) }
 
+@Deprecated("Use onMouseDrag() instead")
 class DragComponent(override val view: View) : TouchComponent {
 	data class Info(
 		var touch: Touch = Touch.dummy,
