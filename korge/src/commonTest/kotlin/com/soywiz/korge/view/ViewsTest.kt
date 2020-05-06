@@ -124,7 +124,7 @@ class ViewsTest : ViewsForTesting() {
         }
 
         Graphics().also { addChild(it) }.apply { fill(Colors.RED) { rect(0, 0, 100, 100) } }.also { rect4 ->
-            assertEquals(Rectangle(0, 0, 1, 1), rect4.globalBounds)
+            assertEquals(Rectangle(0, 0, 100, 100), rect4.globalBounds)
             rect4.render(views.renderContext)
             assertEquals(Rectangle(0, 0, 100, 100), rect4.globalBounds)
         }
