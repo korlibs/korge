@@ -28,19 +28,22 @@ open class Circle(
 
     /** Radius of the circle */
     var radius: Double by uiObservable(radius) { updateGraphics() }
-    /** Color of the circle */
-    var color: RGBA by uiObservable(color) { updateGraphics() }
+    /** Color of the circle. Internally it uses the [colorMul] property */
+    var color: RGBA
+        get() = colorMul
+        set(value) = run { colorMul = value }
 
     override val bwidth get() = radius * 2
     override val bheight get() = radius * 2
 
     init {
+        this.color = color
         updateGraphics()
     }
 
     private fun updateGraphics() {
         clear()
-        fill(color) {
+        fill(Colors.WHITE) {
             circle(radius, radius, radius)
         }
     }
