@@ -3,6 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
