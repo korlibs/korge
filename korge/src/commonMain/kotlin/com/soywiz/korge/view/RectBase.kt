@@ -17,13 +17,13 @@ open class RectBase(
 	anchorY: Double = anchorX,
 	var hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
-) : Container() {
+) : Container(), Anchorable {
 	//abstract val width: Double
 	//abstract val height: Double
 
 	protected var baseBitmap: BmpSlice = Bitmaps.white; set(v) = run { field = v }.also { dirtyVertices = true }
-	var anchorX: Double = anchorX; set (v) = run { field = v }.also { dirtyVertices = true }
-	var anchorY: Double = anchorY; set(v) = run { field = v }.also { dirtyVertices = true }
+	override var anchorX: Double = anchorX; set (v) = run { field = v }.also { dirtyVertices = true }
+    override var anchorY: Double = anchorY; set(v) = run { field = v }.also { dirtyVertices = true }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
@@ -74,10 +74,3 @@ open class RectBase(
 		return out
 	}
 }
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : RectBase> T.anchor(ax: Number, ay: Number): T =
-	this.apply { this.anchorX = ax.toDouble() }.apply { this.anchorY = ay.toDouble() }
-
-fun <T : RectBase> T.center(): T = anchor(0.5, 0.5)
-val <T : RectBase> T.centered: T get() = anchor(0.5, 0.5)
