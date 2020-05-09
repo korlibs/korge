@@ -8,9 +8,8 @@ import com.soywiz.korma.geom.*
 /**
  * Allows to create a single [Filter] that will render several [filters] in order.
  */
-class ComposedFilter(val filters: MutableList<Filter>) : Filter {
-    constructor(filters: List<Filter>) : this(filters.toMutableList())
-	constructor(vararg filters: Filter) : this(filters.toMutableList())
+class ComposedFilter(val filters: List<Filter>) : Filter {
+	constructor(vararg filters: Filter) : this(filters.toList())
 
 	override val border get() = filters.sumBy { it.border }
 
