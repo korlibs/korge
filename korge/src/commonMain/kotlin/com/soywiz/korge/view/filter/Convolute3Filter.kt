@@ -46,25 +46,26 @@ class Convolute3Filter(
 				-1f, +8f, -1f,
 				-1f, -1f, -1f
 			)
+
+        private val FRAGMENT_SHADER = FragmentShader {
+            DefaultShaders {
+                out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
+
+                for (y in 0 until 3) {
+                    for (x in 0 until 3) {
+                        out setTo out + (tex(
+                            fragmentCoords + vec2(
+                                (x - 1).toFloat().lit,
+                                (y - 1).toFloat().lit
+                            )
+                        )) * u_Weights[x][y]
+                    }
+                }
+            }
+        }
 	}
 
 	val weights by uniforms.storageForMatrix3D(u_Weights, kernel)
 	override val border: Int = 1
-
-    override val fragment = FragmentShader {
-        DefaultShaders {
-            out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
-
-            for (y in 0 until 3) {
-                for (x in 0 until 3) {
-                    out setTo out + (tex(
-                        fragmentCoords + vec2(
-                            (x - 1).toFloat().lit,
-                            (y - 1).toFloat().lit
-                        )
-                    )) * u_Weights[x][y]
-                }
-            }
-        }
-    }
+    override val fragment = FRAGMENT_SHADER
 }

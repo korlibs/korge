@@ -34,6 +34,13 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
 			0f, 0f, 1f, 0f,
 			0f, 0f, 0f, 1f
 		)
+
+        private val FRAGMENT_SHADER = FragmentShader {
+            apply {
+                out setTo tex(fragmentCoords)
+                out setTo mix(out, (u_ColorMatrix * out), u_BlendRatio)
+            }
+        }
 	}
 
     /** The 4x4 [Matrix3D] that will be used for transforming each pixel components [r, g, b, a] */
@@ -47,10 +54,5 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
      * */
 	var blendRatio by uniforms.storageFor(u_BlendRatio).doubleDelegateX(blendRatio)
 
-	override val fragment = FragmentShader {
-        apply {
-            out setTo tex(fragmentCoords)
-            out setTo mix(out, (u_ColorMatrix * out), u_BlendRatio)
-        }
-    }
+	override val fragment = FRAGMENT_SHADER
 }
