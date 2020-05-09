@@ -39,12 +39,8 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
             val isLast = n == nsteps - 1
             val blur = gaussianBlurs[n]
             composed.filters.add(blur)
-            if (scale && isLast) {
-                val ratio = 1.0 - (ceil(radius) - radius)
-                blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
-            } else {
-                blur.weights.copyFrom(Convolute3Filter.KERNEL_GAUSSIAN_BLUR)
-            }
+            val ratio = if (scale && isLast) 1.0 - (ceil(radius) - radius) else 1.0
+            blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
         }
         composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
     }
