@@ -4,6 +4,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korma.geom.*
 
 @KorgeDeprecated
@@ -11,35 +12,10 @@ import com.soywiz.korma.geom.*
 class Convolute3EffectView(val kernel: Matrix3D) : EffectView() {
 	companion object {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
-
-
-		val KERNEL_GAUSSIAN_BLUR
-			get() = Matrix3D.fromRows3x3(
-				1f, 2f, 1f,
-				2f, 4f, 2f,
-				1f, 2f, 1f
-			) * (1f / 16f)
-
-		val KERNEL_BOX_BLUR
-			get() = Matrix3D.fromRows3x3(
-				1f, 1f, 1f,
-				1f, 1f, 1f,
-				1f, 1f, 1f
-			) * (1f / 9f)
-
-		val KERNEL_IDENTITY
-			get() = Matrix3D.fromRows3x3(
-				0f, 0f, 0f,
-				0f, 1f, 0f,
-				0f, 0f, 0f
-			)
-
-		val KERNEL_EDGE_DETECTION
-			get() = Matrix3D.fromRows3x3(
-				-1f, -1f, -1f,
-				-1f, +8f, -1f,
-				-1f, -1f, -1f
-			)
+		val KERNEL_GAUSSIAN_BLUR get() = Convolute3Filter.KERNEL_GAUSSIAN_BLUR
+		val KERNEL_BOX_BLUR get() = Convolute3Filter.KERNEL_BOX_BLUR
+		val KERNEL_IDENTITY get() = Convolute3Filter.KERNEL_IDENTITY
+		val KERNEL_EDGE_DETECTION get() = Convolute3Filter.KERNEL_EDGE_DETECTION
 	}
 
 	val weights by uniforms.storageForMatrix3D(u_Weights, kernel)

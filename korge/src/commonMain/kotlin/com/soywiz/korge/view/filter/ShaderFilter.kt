@@ -27,6 +27,25 @@ abstract class ShaderFilter : Filter {
         val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
         fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+
+        protected fun createProgram(vertex: VertexShader, fragment: FragmentShader, premultiplied: Boolean): Program {
+            return Program(vertex, fragment.appending {
+                // Premultiplied
+                if (premultiplied) {
+                    out["rgb"] setTo out["rgb"] / out["a"]
+                }
+
+                // Color multiply and addition
+                // @TODO: Kotlin.JS BUG
+                //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
+                out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit)
+
+                // Required for shape masks:
+                if (premultiplied) {
+                    IF(out["a"] le 0f.lit) { DISCARD() }
+                }
+            })
+        }
     }
 
     var filtering = true
@@ -46,27 +65,8 @@ abstract class ShaderFilter : Filter {
     /** The [FragmentShader] used this this [Filter]. This is usually overriden. */
     open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
 
-    protected fun createProgram(premultiplied: Boolean): Program {
-        return Program(vertex, fragment.appending {
-            // Premultiplied
-            if (premultiplied) {
-                out["rgb"] setTo out["rgb"] / out["a"]
-            }
-
-            // Color multiply and addition
-            // @TODO: Kotlin.JS BUG
-            //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-            out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit)
-
-            // Required for shape masks:
-            if (premultiplied) {
-                IF(out["a"] le 0f.lit) { DISCARD() }
-            }
-        })
-    }
-
-    private val programPremult: Program by lazy { createProgram(true) }
-    private val programNormal: Program by lazy { createProgram(false) }
+    private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
+    private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
 
     protected open fun updateUniforms() {
     }

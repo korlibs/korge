@@ -5,6 +5,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korma.geom.*
 
 @KorgeDeprecated
@@ -12,13 +13,7 @@ import com.soywiz.korma.geom.*
 class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 	companion object {
 		private val u_Weights = Uniform("weights", VarType.Mat3)
-
-		val KERNEL_GAUSSIAN_BLUR: Matrix3D
-			get() = Matrix3D.fromRows3x3(
-				1f, 2f, 1f,
-				2f, 4f, 2f,
-				1f, 2f, 1f
-			) * (1f / 16f)
+		val KERNEL_GAUSSIAN_BLUR: Matrix3D get() = Convolute3Filter.KERNEL_GAUSSIAN_BLUR
 	}
 
 	val weights by uniforms.storageForMatrix3D(u_Weights, KERNEL_GAUSSIAN_BLUR)

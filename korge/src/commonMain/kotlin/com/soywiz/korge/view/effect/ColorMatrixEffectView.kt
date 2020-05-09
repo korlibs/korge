@@ -3,6 +3,7 @@ package com.soywiz.korge.view.effect
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korma.geom.*
 
 @KorgeDeprecated
@@ -11,12 +12,7 @@ class ColorMatrixEffectView(colorMatrix: Matrix3D) : EffectView() {
 	companion object {
 	    val u_ColorMatrix = Uniform("colorMatrix", VarType.Mat4)
 
-		val GRAYSCALE_MATRIX = Matrix3D.fromRows(
-			0.33f, 0.33f, 0.33f, 0f,
-			0.59f, 0.59f, 0.59f, 0f,
-			0.11f, 0.11f, 0.11f, 0f,
-			0f, 0f, 0f, 1f
-		)
+		val GRAYSCALE_MATRIX get() = ColorMatrixFilter.GRAYSCALE_MATRIX
 	}
 
 	val colorMatrix by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
