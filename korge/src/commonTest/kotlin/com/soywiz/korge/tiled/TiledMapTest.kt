@@ -61,7 +61,7 @@ class TiledMapTest : ViewsForTesting() {
 	}
 
     @Test
-    fun testUnsignedIntUid() = suspendTest {
+    fun testUnsignedIntUid() = suspendTestNoJs {
         resourcesVfs["tiled/Spaceship 3.tmx"].readTiledMapData()
         resourcesVfs["tiled/Spaceship 3b.tmx"].readTiledMapData()
         resourcesVfs["tiled/Spaceship 3c.tmx"].readTiledMapData()
