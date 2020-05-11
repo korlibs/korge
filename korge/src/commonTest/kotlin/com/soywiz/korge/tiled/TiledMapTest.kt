@@ -59,4 +59,14 @@ class TiledMapTest : ViewsForTesting() {
 		assertTrue(librarian.objprops["script"].toString().contains("wait(1.5.seconds)"))
 		assertTrue(librarian.objprops["script"].toString().contains("move(\"librarian\")"))
 	}
+
+    @Test
+    fun testUnsignedIntUid() = suspendTestNoJs {
+        resourcesVfs["tiled/Spaceship 3.tmx"].readTiledMapData()
+        resourcesVfs["tiled/Spaceship 3b.tmx"].readTiledMapData()
+        resourcesVfs["tiled/Spaceship 3c.tmx"].readTiledMapData()
+        resourcesVfs["tiled/Spaceship 3d.tmx"].readTiledMapData()
+        resourcesVfs["tiled/Spaceship 3e.tmx"].readTiledMapData()
+        resourcesVfs["tiled/Spaceship 3f.tmx"].readTiledMapData()
+    }
 }

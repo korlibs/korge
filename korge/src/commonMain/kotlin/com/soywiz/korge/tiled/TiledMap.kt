@@ -263,12 +263,12 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 						@Suppress("IntroduceWhenSubject") // @TODO: BUG IN KOTLIN-JS with multicase in suspend functions
 						val tilesArray: IntArray = when {
 							encoding == "" || encoding == "xml" -> {
-								val items = data?.children("tile")?.map { it.int("gid") } ?: listOf()
+								val items = data?.children("tile")?.map { it.uint("gid") } ?: listOf()
 								items.toIntArray()
 							}
 							encoding == "csv" -> {
 								val content = data?.text ?: ""
-								val items = content.replace(spaces, "").split(',').map(String::toInt)
+								val items = content.replace(spaces, "").split(',').map { it.toUInt().toInt() }
 								items.toIntArray()
 							}
 							encoding == "base64" -> {
@@ -344,6 +344,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 	return tiledMap
 }
+
+private fun Xml.uint(name: String, defaultValue: Int = 0): Int = this.attributesLC[name]?.toUIntOrNull()?.toInt() ?: defaultValue
 
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
