@@ -100,10 +100,14 @@ object Korge {
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow()).loop {
+        val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        //println("Configure: ${width}x${height}")
+        // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
+        //realGameWindow.configure(width, height, title, icon, fullscreen)
+        realGameWindow.loop {
             val gameWindow = this
             if (OS.isNative) println("Korui[0]")
-            configure(width, height, title, icon, fullscreen)
+            realGameWindow.configure(width, height, title, icon, fullscreen)
             try {
                 // Do nothing
                 when {
@@ -177,7 +181,7 @@ object Korge {
     }
 
     @KorgeInternal
-    fun prepareViews(
+    suspend fun prepareViews(
         views: Views,
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
@@ -363,14 +367,24 @@ object Korge {
         }
 
         eventDispatcher.addEventListener<ReshapeEvent> { e ->
+            //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
+            //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             views.resized(ag.backWidth, ag.backHeight)
         }
 
+        //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
         eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
+        var renderShown = false
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
+        val deferred = CompletableDeferred<Unit>()
         views.gameWindow.addEventListener<RenderEvent> {
+            if (!renderShown) {
+                //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                renderShown = true
+                deferred.complete(Unit)
+            }
             try {
                 views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
@@ -383,6 +397,7 @@ object Korge {
                 e.printStackTrace()
             }
         }
+        deferred.await()
     }
 
 	data class Config(
