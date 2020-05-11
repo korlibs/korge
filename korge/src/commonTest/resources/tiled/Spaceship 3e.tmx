@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="24" height="24" tilewidth="64" tileheight="64" infinite="0" nextlayerid="9" nextobjectid="13">
+ <tileset firstgid="1" name="Spaceship 3" tilewidth="64" tileheight="64" tilecount="224" columns="8">
+  <image source="Spaceship 3.png" width="512" height="1792"/>
+  <tile id="0">
+   <properties>
+    <property name="OBJECT_TYPE" value="FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="135">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="136">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="137">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="138">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="139">
+   <properties>
+    <property name="OBJECT_TYPE" value="SECRET_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="140">
+   <properties>
+    <property name="OBJECT_TYPE" value="SECRET_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="141">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="142">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="143">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="144">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="145">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="146">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="147">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="148">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="149">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="150">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="151">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="152">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="153">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="154">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="155">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="156">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="157">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="158">
+   <properties>
+    <property name="OBJECT_TYPE" value="MEDICAL_CABINET"/>
+   </properties>
+  </tile>
+  <tile id="159">
+   <properties>
+    <property name="OBJECT_TYPE" value="MEDICAL_CABINET"/>
+   </properties>
+  </tile>
+  <tile id="160">
+   <properties>
+    <property name="OBJECT_TYPE" value="LOCKER"/>
+   </properties>
+  </tile>
+  <tile id="161">
+   <properties>
+    <property name="OBJECT_TYPE" value="CRYOSLEEP"/>
+   </properties>
+  </tile>
+  <tile id="162">
+   <properties>
+    <property name="OBJECT_TYPE" value="CRYOSLEEP"/>
+   </properties>
+  </tile>
+  <tile id="163">
+   <properties>
+    <property name="OBJECT_TYPE" value="CREW_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="164">
+   <properties>
+    <property name="OBJECT_TYPE" value="CREW_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="165">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="166">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="167">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="168">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="169">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="170">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="171">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="172">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="173">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="174">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="175">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="176">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="177">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="178">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="179">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="180">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="181">
+   <properties>
+    <property name="OBJECT_TYPE" value="ARMORY"/>
+   </properties>
+  </tile>
+  <tile id="182">
+   <properties>
+    <property name="OBJECT_TYPE" value="ARMORY"/>
+   </properties>
+  </tile>
+  <tile id="183">
+   <properties>
+    <property name="OBJECT_TYPE" value="TERMINAL"/>
+   </properties>
+  </tile>
+  <tile id="184">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="185">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="186">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="187">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="188">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="189">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="190">
+   <properties>
+    <property name="OBJECT_TYPE" value="WORK_BENCH"/>
+   </properties>
+  </tile>
+  <tile id="191">
+   <properties>
+    <property name="OBJECT_TYPE" value="WORK_BENCH"/>
+   </properties>
+  </tile>
+  <tile id="192">
+   <properties>
+    <property name="OBJECT_TYPE" value="SPARE_PARTS"/>
+   </properties>
+  </tile>
+  <tile id="193">
+   <properties>
+    <property name="OBJECT_TYPE" value="SPARE_PARTS"/>
+   </properties>
+  </tile>
+  <tile id="194">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_GEN"/>
+   </properties>
+  </tile>
+  <tile id="195">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="196">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="197">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="198">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="199">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="200">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="201">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="202">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="203">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="204">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="205">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="206">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINE_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="207">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINE_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="208">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="209">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="210">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="211">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="212">
+   <properties>
+    <property name="OBJECT_TYPE" value="CARGO"/>
+   </properties>
+  </tile>
+  <tile id="213">
+   <properties>
+    <property name="OBJECT_TYPE" value="DRONE_BAY"/>
+   </properties>
+  </tile>
+  <tile id="214">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR_ACTIVATOR_BLUE"/>
+   </properties>
+  </tile>
+  <tile id="215">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR_ACTIVATOR_RED"/>
+   </properties>
+  </tile>
+  <tile id="216">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_1"/>
+   </properties>
+  </tile>
+  <tile id="217">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_2"/>
+   </properties>
+  </tile>
+  <tile id="218">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_3"/>
+   </properties>
+  </tile>
+  <tile id="219">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_4"/>
+   </properties>
+  </tile>
+  <tile id="220">
+   <properties>
+    <property name="OBJECT_TYPE" value="BLOCKED_MARKER"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer id="1" name="Floor" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+2QUQqAMAxD5/0vrX4EQukba0EU2WC0jcljdox9uhs4ruDKfZsf36j3RJ1m+alSblUnrvRVDvnEoUq5ik7sTK9wZ15nz3zdb3/iP/EvYnb36zmxsuq+Tp8xXeswPeOsrHfv3etEnWb5q5V4Ua9y5Y8cmuXf9XsbOAFTZEGmAAkAAA==
+  </data>
+ </layer>
+ <layer id="2" name="Walls" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+3T+1NMYRzH8R20RaFStpTogi6olEjKKroJ3aOQChEq19KNkvzb3p+Z85155nT27K4fje/Ma57zXOe5fE8k8m9GM8c6gINJHKI/A+lGLROu4kSAFtquee3XKaNIFFV0NCLbk0N5GE3IRFDcovGG1xE2TkMa4O5zgPoRXEEMQeGu38GARPvQ3Hpf/z3q/ehDN3ocN/m+jTjaoHo7wta/7Otfo/4NvejCHUenr031u8iC7jQoLtF4H3b/D/h+6A3cpNR+7Qy2f6uv0/cRH6A7tTVU6h2Pohx1uIgLqMYgNHcD32FncPe/RfsKFMtYgptri9SPQWG5qLwbxhA0131HqvvCcugrPZ98ve+pH/faaij1Rnb3Vqa6/hfmfvbWssJd/zSNeoMRjGIM6ew/bH39X+dwHnb/43yvQvtXHtp7uu8bp93uZ4Hvt3Df9x31XFTiEextlPcTUPhz1H1fvbn28BpvUABbQ2U+8uAPu3vLzR0G/MI2lKvKK+vTeeZxEoVIJaYY9ARP8Qw/sYs9/IbexfJW53mFTCSKCjoew+5ukm+d9QyiaIXlkVvqXbT/lwhbX//XWdjd6d501jJoXtD6usMf0P5fIGx9ugPDclbnmsZzp5zhexbqm0MM6UYpE0pwKoli+ovwP/7uBv4AX7KNPwAJAAA=
+  </data>
+ </layer>
+ <layer id="3" name="Objects" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+1V204CUQw8/in/hXLxHlFMFARBEfCCd0TF72G6aZNJc9xdNpj4wEm6nZm2czYNWUJYn6Ib2A5huIPgefAAPTlbeG4qLpLqzts8oCengmdZcVqao2jxQ41Z7y+tVepfFma9v/jVcph+oec7R1/Rlk8MzhDdEErsscHkD7D4SxwhGuqfdeeu9vn0rsIU+cMV7R6RjxEniKaQyNlTbd/V3hz3lO/wtRg/cOKr40ZbAOdK7I60Hdl+Ds0gI7dRPyP/U2C7JzZq++HaM8iLCvgN1bi2CvwIk6dVGP3i8QB9EqndOG3guNBORPPSHYR7FW+pOCQs8Jo49picC9KWhSMa6AFfEjdYN1Agj2mmD3xFXL4l/F9ApTX8RxtYAKdIu2cACQAA
+  </data>
+ </layer>
+ <layer id="4" name="Doors" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+1R2QoAIQj08/e+769dexBCNKyFZVkKIp1xyjGAvPIE3plAyZ7hOaPFtEK0FhmAguE8Z3R0mtJvzCNavyHPMfc/raU+6Hx639f02v+G/J5o4jIa0f43JD+Q3L0CqZcB+dGroVDzQ7w7V9ybDwhxj9gk4BY/C+pmQWuBGktRQo2bYYe7TdBmyb8mcAPFsTaLAAkAAA==
+  </data>
+ </layer>
+ <layer id="5" name="Door_Activators" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+1R2w0AIQhzVEdzFLbwxrn6ZxpIkMjdDyQk8ii02FpZXeCbC0xawzGV1RCYDh9aEXnZ8xzvtcgb81LN4ou8qTmVkDE8i88DnfBhrE1PW/97Sy/mSIaIxZu5444h0/5g8Wbu6JPQggMQazqAulpZkwvkaNJu6IBVyw8XeAG/TvvvAAkAAA==
+  </data>
+ </layer>
+ <layer id="6" name="Use_Markers" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+2RUQ7DIAxDOSpH4yi9RrcdZraEJzMFDbXR1I9GQgEHXlqnlDvOOrCXUslAbsyKJzZYm85Hsth66z0y+OSqh7O73ph/Bd6R8Vl+X2xp3sP3qkc56z8jNjXxkdvszr90eLJpffdc8Qv/ULn0Fm/Cuaju2fkPL/Q96jWQB2m1X8QfQP2g2agG/pI/R/nqE2X3J6pTc+9nd66qc77017+Pms6cRXbM+K+kRs5PQg6YGR9eteHifbikA2/s0B8MAAkAAA==
+  </data>
+ </layer>
+ <layer id="7" name="Blocked" width="24" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAEA+2QSwrAIAxEvf8de5c2i8AjZEiU2kWxII6T+VTHON/qC1yP0Ra/jON8Bsds9yre53H3f4o+56mPXPRQW2HlJU9c5f1xbvf31bmfei/Fx0zvUvpZPuavnlXvbN5bOap3d37Wa507e1V+p7Oj4Z2oJ6aGuKOhnphewzy7LuN8Vu30ZvkZV2We+bcvcAMHYdzOAAkAAA==
+  </data>
+ </layer>
+ <objectgroup id="8" name="Rooms">
+  <object id="1" x="1184" y="608" width="256" height="256">
+   <properties>
+    <property name="ROOM" value="BRIDGE"/>
+   </properties>
+  </object>
+  <object id="2" x="928" y="224" width="112" height="208">
+   <properties>
+    <property name="ROOM" value="MEDICAL"/>
+   </properties>
+  </object>
+  <object id="3" x="480" y="224" width="384" height="208">
+   <properties>
+    <property name="ROOM" value="CRYO_BAY"/>
+   </properties>
+  </object>
+  <object id="4" x="544" y="608" width="384" height="272">
+   <properties>
+    <property name="ROOM" value="COMMONS"/>
+   </properties>
+  </object>
+  <object id="5" x="80" y="352" width="208" height="192">
+   <properties>
+    <property name="ROOM" value="CARGO_BAY"/>
+   </properties>
+  </object>
+  <object id="6" x="160" y="672" width="64" height="128">
+   <properties>
+    <property name="ROOM" value="ENGINE_ROOM"/>
+   </properties>
+  </object>
+  <object id="7" x="288" y="672" width="64" height="128">
+   <properties>
+    <property name="ROOM" value="ENGINEERING"/>
+   </properties>
+  </object>
+  <object id="8" x="96" y="928" width="192" height="192">
+   <properties>
+    <property name="ROOM" value="SHUTTLE_BAY"/>
+   </properties>
+  </object>
+  <object id="9" x="496" y="1056" width="112" height="192">
+   <properties>
+    <property name="ROOM" value="REPAIR_BAY"/>
+   </properties>
+  </object>
+  <object id="10" x="672" y="1056" width="64" height="192">
+   <properties>
+    <property name="ROOM" value="COMPUTER_ROOM"/>
+   </properties>
+  </object>
+  <object id="11" x="912" y="1056" width="160" height="64">
+   <properties>
+    <property name="ROOM" value="ARMORY"/>
+   </properties>
+  </object>
+  <object id="12" x="928" y="1168" width="144" height="80">
+   <properties>
+    <property name="ROOM" value="CAPTAIN_CABIN"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
