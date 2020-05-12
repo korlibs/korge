@@ -155,7 +155,7 @@ object Korge {
             views.targetFps = targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
-            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
+            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
 
             views.launchImmediately {
                 coroutineScope {
@@ -186,7 +186,8 @@ object Korge {
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL
+        fixedSizeStep: TimeSpan = TimeSpan.NULL,
+        waitForFirstRender: Boolean = true
     ) {
         val input = views.input
         val ag = views.ag
@@ -378,12 +379,12 @@ object Korge {
         var renderShown = false
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
-        val deferred = CompletableDeferred<Unit>()
+        val firstRenderDeferred = CompletableDeferred<Unit>()
         views.gameWindow.addEventListener<RenderEvent> {
             if (!renderShown) {
                 //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
                 renderShown = true
-                deferred.complete(Unit)
+                firstRenderDeferred.complete(Unit)
             }
             try {
                 views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
@@ -397,7 +398,9 @@ object Korge {
                 e.printStackTrace()
             }
         }
-        deferred.await()
+        if (waitForFirstRender) {
+            firstRenderDeferred.await()
+        }
     }
 
 	data class Config(
