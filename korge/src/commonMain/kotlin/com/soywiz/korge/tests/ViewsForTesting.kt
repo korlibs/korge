@@ -133,7 +133,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	// @TODO: Run a faster eventLoop where timers happen much faster
 	fun viewsTest(block: suspend Stage.() -> Unit): Unit = suspendTest {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
-		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime)
+		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime, waitForFirstRender = false)
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
 			override val size = this@ViewsForTesting.size

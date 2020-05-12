@@ -100,10 +100,14 @@ object Korge {
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow()).loop {
+        val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        //println("Configure: ${width}x${height}")
+        // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
+        //realGameWindow.configure(width, height, title, icon, fullscreen)
+        realGameWindow.loop {
             val gameWindow = this
             if (OS.isNative) println("Korui[0]")
-            configure(width, height, title, icon, fullscreen)
+            realGameWindow.configure(width, height, title, icon, fullscreen)
             try {
                 // Do nothing
                 when {
@@ -151,7 +155,7 @@ object Korge {
             views.targetFps = targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
-            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
+            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
 
             views.launchImmediately {
                 coroutineScope {
@@ -177,12 +181,13 @@ object Korge {
     }
 
     @KorgeInternal
-    fun prepareViews(
+    suspend fun prepareViews(
         views: Views,
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL
+        fixedSizeStep: TimeSpan = TimeSpan.NULL,
+        waitForFirstRender: Boolean = true
     ) {
         val input = views.input
         val ag = views.ag
@@ -363,14 +368,24 @@ object Korge {
         }
 
         eventDispatcher.addEventListener<ReshapeEvent> { e ->
+            //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
+            //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             views.resized(ag.backWidth, ag.backHeight)
         }
 
+        //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
         eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
+        var renderShown = false
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
+        val firstRenderDeferred = CompletableDeferred<Unit>()
         views.gameWindow.addEventListener<RenderEvent> {
+            if (!renderShown) {
+                //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                renderShown = true
+                firstRenderDeferred.complete(Unit)
+            }
             try {
                 views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
@@ -382,6 +397,9 @@ object Korge {
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
+        }
+        if (waitForFirstRender) {
+            firstRenderDeferred.await()
         }
     }
 

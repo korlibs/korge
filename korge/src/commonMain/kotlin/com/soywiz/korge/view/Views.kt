@@ -289,7 +289,7 @@ class Views constructor(
 
 		stage.invalidate()
 
-		//println("STAGE RESIZED: $this, virtualSize=$virtualSize, actualSize=$actualSize, targetSize=$targetSize")
+		//println("STAGE RESIZED: $this, virtualSize=$virtualSize, actualSize=$actualSize, targetSize=$targetSize, actualVirtualWidth=$actualVirtualWidth")
 	}
 
 	fun dispose() {

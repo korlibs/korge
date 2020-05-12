@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by views {
     val injector get() = views.injector
     val ag get() = views.ag
+    val gameWindow get() = views.gameWindow
     override val stage: Stage = this
 
     override fun getLocalBoundsInternal(out: Rectangle) {
