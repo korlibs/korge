@@ -7,6 +7,19 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.vector.VectorPath
+
+inline fun Container.sprite(
+    initialAnimation: SpriteAnimation, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(initialAnimation, anchorX, anchorY).addTo(this).apply(callback)
+
+inline fun Container.sprite(
+    texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(texture, anchorX, anchorY).addTo(this).apply(callback)
+
+inline fun Container.sprite(
+    texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(texture, anchorX, anchorY).addTo(this).apply(callback)
 
 /**
  * A [Sprite] is basically an [Image] with added abilities to display a [SpriteAnimation]
@@ -26,12 +39,28 @@ import com.soywiz.korio.async.Signal
  * @constructor It is possible to initialize a [Sprite] with a static [Bitmap] or [BmpSlice].
  * This will be exchanged when starting a [SpriteAnimation] with one of the available play functions
  */
-class Sprite(bitmap : Bitmap) : Image(bitmap) {
-    constructor(bmpSlice : BmpSlice) : this(bmpSlice.bmp)
-    constructor(initialAnimation : SpriteAnimation) : this(initialAnimation.firstSprite){
+class Sprite(
+        bitmap : Bitmap,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true) : Image(bitmap) {
+    constructor(
+        bmpSlice : BmpSlice,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true) : this(bmpSlice.bmp)
+    constructor(
+        initialAnimation : SpriteAnimation,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true) : this(initialAnimation.firstSprite){
         currentAnimation = initialAnimation
         bitmap = currentAnimation?.firstSprite ?: Bitmaps.transparent
     }
+
     private var animationRequested = false
     private var animationCyclesRequested = 0
         set(value) {
@@ -68,7 +97,6 @@ class Sprite(bitmap : Bitmap) : Image(bitmap) {
             spriteDisplayTime = spriteDisplayTime,
             animationCyclesRequested = times*(currentAnimation?.spriteStackSize ?: 0)
         )
-
 
     fun playAnimationForDuration(duration: TimeSpan, spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = this.spriteDisplayTime) =
         updateCurrentAnimation(
