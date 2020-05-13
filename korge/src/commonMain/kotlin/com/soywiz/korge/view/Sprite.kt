@@ -1,7 +1,6 @@
 package me.emig.engineEmi.graphics.animationen
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
+import com.soywiz.klock.*
 import com.soywiz.korge.view.Image
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korim.bitmap.Bitmap
@@ -40,33 +39,28 @@ class Sprite(bitmap : Bitmap) : Image(bitmap) {
         }
     }
 
-    fun playAnimationForDuration(duration: TimeSpan, spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) {
-        this.spriteDisplayTime = spriteDisplayTime
-        currentAnimation = spriteAnimation
-        animationRequested = true
-        animationRequestedDuration = duration
-    }
+    fun playAnimation(spriteAnimation: SpriteAnimation) = updateCurrentAnimation(spriteAnimation = spriteAnimation)
 
-    fun playAnimation(spriteAnimation: SpriteAnimation) {
+    fun playAnimationForDuration(duration: TimeSpan, spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) =
         updateCurrentAnimation(
-            spriteAnimation = spriteAnimation)
-    }
+            spriteAnimation = spriteAnimation,
+            spriteDisplayTime = spriteDisplayTime,
+            duration = duration
+        )
 
-    fun playAnimation(times: Int = 1, spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) {
+    fun playAnimation(times: Int = 1, spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) =
         updateCurrentAnimation(
             spriteAnimation = spriteAnimation,
             spriteDisplayTime = spriteDisplayTime,
             animationCyclesRequested = times*(currentAnimation?.spriteStackSize ?: 0)
         )
-    }
 
-    fun playAnimationLooped(spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) {
+    fun playAnimationLooped(spriteAnimation: SpriteAnimation, spriteDisplayTime: TimeSpan = 25.milliseconds) =
         updateCurrentAnimation(
             spriteAnimation = spriteAnimation,
             spriteDisplayTime = spriteDisplayTime,
             looped = true
         )
-    }
 
     fun stopAnimation() {
         animationRequested = false
@@ -82,17 +76,18 @@ class Sprite(bitmap : Bitmap) : Image(bitmap) {
         }
     }
 
-
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation,
         spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
         animationCyclesRequested : Int = 1,
+        duration : TimeSpan = 0.milliseconds,
         looped : Boolean = false
     ){
         this.spriteDisplayTime = spriteDisplayTime
         currentAnimation = spriteAnimation
         animationRequested = true
         animationLooped = looped
+        animationRequestedDuration = duration
         this.animationCyclesRequested = if (!looped) animationCyclesRequested else 1
     }
 }
