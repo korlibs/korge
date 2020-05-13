@@ -1,8 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
@@ -39,24 +38,24 @@ inline fun Container.sprite(
  * @constructor It is possible to initialize a [Sprite] with a static [Bitmap] or [BmpSlice].
  * This will be exchanged when starting a [SpriteAnimation] with one of the available play functions
  */
-class Sprite(
-        bitmap : Bitmap,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
-        hitShape: VectorPath? = null,
-        smoothing: Boolean = true) : Image(bitmap) {
+open class Sprite(
+    bitmap : Bitmap,
+    anchorX: Double = 0.0,
+    anchorY: Double = anchorX,
+    hitShape: VectorPath? = null,
+    smoothing: Boolean = true) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
     constructor(
         bmpSlice : BmpSlice,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
-        smoothing: Boolean = true) : this(bmpSlice.bmp)
+        smoothing: Boolean = true) : this(bmpSlice.bmp, anchorX, anchorY, hitShape, smoothing)
     constructor(
         initialAnimation : SpriteAnimation,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
-        smoothing: Boolean = true) : this(initialAnimation.firstSprite){
+        smoothing: Boolean = true) : this(initialAnimation.firstSprite, anchorX, anchorY, hitShape, smoothing){
         currentAnimation = initialAnimation
         bitmap = currentAnimation?.firstSprite ?: Bitmaps.transparent
     }
