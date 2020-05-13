@@ -10,22 +10,20 @@ import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korio.async.delay
 
 class SpriteAnimation(
-    val id : String = "",
-    private val spriteMap: Bitmap,
-    private val spriteWidth: Int = 16,
-    private val spriteHeight: Int = 16,
-    private val marginTop: Int = 0,
-    private val marginLeft: Int = 0,
-    private val columns: Int = 1,
-    private val rows: Int = 1,
-    private val offsetBetweenColumns: Int = 0,
-    private val offsetBetweenRows: Int = 0) {
+    spriteMap: Bitmap,
+    spriteWidth: Int = 16,
+    spriteHeight: Int = 16,
+    marginTop: Int = 0,
+    marginLeft: Int = 0,
+    columns: Int = 1,
+    rows: Int = 1,
+    offsetBetweenColumns: Int = 0,
+    offsetBetweenRows: Int = 0) {
 
     private var spriteStack: MutableList<BmpSlice> = mutableListOf()
     private var cycles = 0
     private var currentSpriteIndex = 0
     private var stop = false
-    var frameTime = 25.milliseconds
     val spriteStackSize : Int
         get() = spriteStack.size
     val firstSprite : BmpSlice
@@ -46,8 +44,5 @@ class SpriteAnimation(
         }
     }
 
-    fun nextSprite() = spriteStack[(++currentSpriteIndex % spriteStack.size)]
-
-    fun previousSprite() =spriteStack[(--currentSpriteIndex % spriteStack.size)]
-
+    fun getSprite(index : Int) = spriteStack[(index % spriteStack.size)]
 }
