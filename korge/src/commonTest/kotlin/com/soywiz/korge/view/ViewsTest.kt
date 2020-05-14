@@ -195,50 +195,50 @@ class ViewsTest : ViewsForTesting() {
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.leftToLeft(other)
+        rect.alignLeftToLeft(other)
         assertEquals(rect.x, 50.0)
         assertEquals(rect.y, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.leftToRight(other)
+        rect.alignLeftToRight(other)
         assertEquals(rect.x, 100.0)
         assertEquals(rect.y, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.rightToLeft(other)
+        rect.alignRightToLeft(other)
         assertEquals(rect.x, -50.0)
         assertEquals(rect.y, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.rightToRight(other)
+        rect.alignRightToRight(other)
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, 0.0)
 
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.topToTop(other)
+        rect.alignTopToTop(other)
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, 50.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.topToBottom(other)
+        rect.alignTopToBottom(other)
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, 100.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.bottomToTop(other)
+        rect.alignBottomToTop(other)
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, -50.0)
 
         rect.position(0, 0)
         other.position(50, 50)
-        rect.bottomToBottom(other)
+        rect.alignBottomToBottom(other)
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, 0.0)
     }
