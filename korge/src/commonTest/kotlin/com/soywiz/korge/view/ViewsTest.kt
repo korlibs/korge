@@ -119,6 +119,10 @@ class ViewsTest : ViewsForTesting() {
             assertEquals(Rectangle(0, 0, 32, 32), rect3.globalBounds)
         }
 
+        RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+            assertEquals(Rectangle(0, 0, 32, 24), rect3.globalBounds)
+        }
+
         Circle(32.0, Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEquals(Rectangle(0, 0, 64, 64).toString(), rect3.globalBounds.toString())
         }
