@@ -1173,8 +1173,20 @@ inline fun <T : View> T.xy(x: Number, y: Number): T =
 inline fun <T : View> T.position(x: Number, y: Number): T =
 	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
 
-fun <T : View> T.position(x: Double, y: Double): T =
+/** Chainable method returning this that sets [View.x] and [View.y] */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.position(x: Double, y: Double): T =
     this.apply { this.x = x; this.y = y }
+
+/** Chainable method returning this that sets [View.x] */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.positionX(x: Number): T =
+    this.apply { this.x = x.toDouble() }
+
+/** Chainable method returning this that sets [View.y] */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View> T.positionY(y: Number): T =
+    this.apply { this.y = y.toDouble() }
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 @Suppress("NOTHING_TO_INLINE")
@@ -1200,7 +1212,7 @@ inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Nu
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
-    this.centerYBetween(other.x, other.width)
+    this.centerXBetween(other.x, other.x + other.width)
 
 /**
  *  Chainable method returning this that sets [View.y] so that
@@ -1208,7 +1220,7 @@ inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
-    this.centerYBetween(other.y, other.height)
+    this.centerYBetween(other.y, other.y + other.height)
 
 /**
  *  Chainable method returning this that sets [View.x] and [View.y]
@@ -1217,6 +1229,70 @@ inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T : View, T2 : View> T.centerOn(other: T2): T =
     this.centerXOn(other).centerYOn(other)
+
+/**
+ *  Chainable method returning this that sets [View.x] so that
+ *  [this] View's left side is aligned with the [other] View's left side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.leftToLeft(other: T2): T =
+    this.apply { x = other.x }
+
+/**
+ *  Chainable method returning this that sets [View.x] so that
+ *  [this] View's left side is aligned with the [other] View's right side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.leftToRight(other: T2): T =
+    this.apply { x = other.x + other.width }
+
+/**
+ *  Chainable method returning this that sets [View.x] so that
+ *  [this] View's right side is aligned with the [other] View's left side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.rightToLeft(other: T2): T =
+    this.apply { x = other.x - width }
+
+/**
+ *  Chainable method returning this that sets [View.x] so that
+ *  [this] View's right side is aligned with the [other] View's right side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.rightToRight(other: T2): T =
+    this.apply { x = other.x + other.width - width }
+
+/**
+ *  Chainable method returning this that sets [View.y] so that
+ *  [this] View's top side is aligned with the [other] View's top side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.topToTop(other: T2): T =
+    this.apply { y = other.y }
+
+/**
+ *  Chainable method returning this that sets [View.y] so that
+ *  [this] View's top side is aligned with the [other] View's bottom side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.topToBottom(other: T2): T =
+    this.apply { y = other.y + other.height }
+
+/**
+ *  Chainable method returning this that sets [View.y] so that
+ *  [this] View's bottom side is aligned with the [other] View's top side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.bottomToTop(other: T2): T =
+    this.apply { y = other.y - height }
+
+/**
+ *  Chainable method returning this that sets [View.y] so that
+ *  [this] View's bottom side is aligned with the [other] View's bottom side
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : View, T2 : View> T.bottomToBottom(other: T2): T =
+    this.apply { y = other.y + other.height - height }
 
 /** Chainable method returning this that sets [View.rotation] */
 @Suppress("NOTHING_TO_INLINE")
