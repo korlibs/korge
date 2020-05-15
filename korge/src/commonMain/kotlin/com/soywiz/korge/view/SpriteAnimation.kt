@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kmem.umod
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
@@ -39,11 +40,5 @@ class SpriteAnimation(
         }
     }
 
-    fun getSprite(index : Int) : BmpSlice = spriteStack[index.realMod(spriteStack.size)]
-}
-
-// Kotlin % does produce mathematically wrong values vor % of negative Numbers
-fun Int.realMod(y: Int): Int {
-    val result = this % y
-    return if (result < 0) result + y else result
+    fun getSprite(index : Int) : BmpSlice = spriteStack[index umod spriteStack.size]
 }
