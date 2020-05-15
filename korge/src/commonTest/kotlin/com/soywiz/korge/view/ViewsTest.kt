@@ -151,4 +151,99 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(0.0, container.x)
         assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.seconds once
     }
+
+    @Test
+    fun testCentering() = viewsTest {
+        val rect = solidRect(100, 100, Colors.WHITE)
+
+        rect.position(0, 0)
+        rect.centerXBetween(100, 200)
+        assertEquals(rect.x, 100.0)
+        assertEquals(rect.y, 0.0)
+
+        rect.position(0, 0)
+        rect.centerYBetween(100, 200)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, 100.0)
+
+        rect.position(0, 0)
+        rect.centerBetween(0, 0, 200, 200)
+        assertEquals(rect.x, 50.0)
+        assertEquals(rect.y, 50.0)
+
+        val other = solidRect(50, 50, Colors.WHITE)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.centerXOn(other)
+        assertEquals(rect.x, 25.0)
+        assertEquals(rect.y, 0.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.centerYOn(other)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, 25.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.centerOn(other)
+        assertEquals(rect.x, 25.0)
+        assertEquals(rect.y, 25.0)
+    }
+
+    @Test
+    fun testRelativePositioning() = viewsTest {
+        val rect = solidRect(100, 100, Colors.WHITE)
+        val other = solidRect(50, 50, Colors.WHITE)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignLeftToLeftOf(other, padding = 5)
+        assertEquals(rect.x, 55.0)
+        assertEquals(rect.y, 0.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignLeftToRightOf(other, padding = 5)
+        assertEquals(rect.x, 105.0)
+        assertEquals(rect.y, 0.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignRightToLeftOf(other, padding = 5)
+        assertEquals(rect.x, -55.0)
+        assertEquals(rect.y, 0.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignRightToRightOf(other, padding = 5)
+        assertEquals(rect.x, -5.0)
+        assertEquals(rect.y, 0.0)
+
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignTopToTopOf(other, padding = 5)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, 55.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignTopToBottomOf(other, padding = 5)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, 105.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignBottomToTopOf(other, padding = 5)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, -55.0)
+
+        rect.position(0, 0)
+        other.position(50, 50)
+        rect.alignBottomToBottomOf(other, padding = 5)
+        assertEquals(rect.x, 0.0)
+        assertEquals(rect.y, -5.0)
+    }
 }
