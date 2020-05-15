@@ -1,13 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.measureTime
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.view.Image
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
-import com.soywiz.korio.async.delay
 
 class SpriteAnimation(
     spriteMap: Bitmap,
@@ -22,8 +17,8 @@ class SpriteAnimation(
 
     private var spriteStack: MutableList<BmpSlice> = mutableListOf()
     private var cycles = 0
-    private var currentSpriteIndex = 0
     private var stop = false
+    private var currentSpriteIndex = 0
     val spriteStackSize : Int
         get() = spriteStack.size
     val firstSprite : BmpSlice
@@ -44,5 +39,11 @@ class SpriteAnimation(
         }
     }
 
-    fun getSprite(index : Int) = spriteStack[(index % spriteStack.size)]
+    fun getSprite(index : Int) : BmpSlice = spriteStack[index.realMod(spriteStack.size)]
+}
+
+// Kotlin % does produce mathematically wrong values vor % of negative Numbers
+fun Int.realMod(y: Int): Int {
+    val result = this % y
+    return if (result < 0) result + y else result
 }
