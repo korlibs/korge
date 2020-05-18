@@ -1,6 +1,5 @@
 package com.soywiz.korge.view
 
-import SpriteAnimation
 import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
