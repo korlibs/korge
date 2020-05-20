@@ -68,7 +68,7 @@ class AgBitmapTextureManager(
      * You shouldn't call this method directly. Use [getTexture] or [getTextureBase] instead.
      */
 	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
-		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
+		if (cachedBitmap === bitmap) return cachedBitmapTextureInfo!!
         referencedBitmapsSinceGC += bitmap
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
@@ -89,7 +89,7 @@ class AgBitmapTextureManager(
 
     /** Obtains a temporal [Texture] from [slice] [BmpSlice]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTexture(slice: BmpSlice): Texture {
-		if (cachedBmpSlice == slice) return cachedBmpSliceTexture!!
+		if (cachedBmpSlice === slice) return cachedBmpSliceTexture!!
         referencedBitmapsSinceGC += slice.bmp
 
         val info = getTextureInfo(slice.bmp)
