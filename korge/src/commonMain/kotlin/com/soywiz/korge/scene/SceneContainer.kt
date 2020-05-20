@@ -205,7 +205,8 @@ class SceneContainer(
     }
 }
 
+// Disabled for now since they are not clear enough
 /** Gets the [SceneContainer] containing this [View], or null if not part of a [SceneContainer] */
-val View.sceneContainer: SceneContainer? get() = if (this is SceneContainer) this else this.parent?.sceneContainer
+// val View.sceneContainer: SceneContainer? get() = if (this is SceneContainer) this else this.parent?.sceneContainer
 /** Gets the [Scene] containing this [View] if any, or null if not part of a [Scene] */
-val View.scene: Scene? get() = sceneContainer?.scene
+// val View.scene: Scene? get() = sceneContainer?.scene
