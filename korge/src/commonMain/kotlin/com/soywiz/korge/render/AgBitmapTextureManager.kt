@@ -68,9 +68,8 @@ class AgBitmapTextureManager(
      * You shouldn't call this method directly. Use [getTexture] or [getTextureBase] instead.
      */
 	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
-		referencedBitmapsSinceGC += bitmap
-
 		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
+        referencedBitmapsSinceGC += bitmap
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
             textureInfoPool.alloc().also {
@@ -90,11 +89,10 @@ class AgBitmapTextureManager(
 
     /** Obtains a temporal [Texture] from [slice] [BmpSlice]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTexture(slice: BmpSlice): Texture {
-		referencedBitmapsSinceGC += slice.bmp
-
 		if (cachedBmpSlice == slice) return cachedBmpSliceTexture!!
+        referencedBitmapsSinceGC += slice.bmp
 
-		val info = getTextureInfo(slice.bmp)
+        val info = getTextureInfo(slice.bmp)
 
 		val texture = info.slices.getOrPut(slice) {
             Texture(info.textureBase!!).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
@@ -112,6 +110,8 @@ class AgBitmapTextureManager(
      * Called automatically by the engine after the render has been executed (each frame). It executes a texture GC every [framesBetweenGC] frames.
      */
     internal fun afterRender() {
+        cachedBitmap = null
+        cachedBmpSlice = null
 		fcount++
 		if (fcount >= framesBetweenGC) {
 			fcount = 0
