@@ -533,7 +533,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		get() = _colorTransform
 		set(v) = run { _colorTransform.copyFrom(v); invalidate() }
 
-	private var _renderColorTransform = ColorTransform()
+	private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
 	private var _renderColorTransformVersion = -1
 
     /**

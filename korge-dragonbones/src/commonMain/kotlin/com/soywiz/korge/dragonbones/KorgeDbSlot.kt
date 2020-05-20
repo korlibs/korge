@@ -109,18 +109,19 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 	}
 
 	override fun _updateBlendMode() {
-		if (this._renderDisplay is Container) {
-			when (this._blendMode) {
-				com.dragonbones.core.BlendMode.Normal -> this._renderDisplay?.blendMode = BlendMode.INHERIT
-				com.dragonbones.core.BlendMode.Add -> this._renderDisplay?.blendMode = BlendMode.ADD
-				com.dragonbones.core.BlendMode.Darken -> this._renderDisplay?.blendMode = BlendMode.DARKEN
-				com.dragonbones.core.BlendMode.Difference -> this._renderDisplay?.blendMode = BlendMode.DIFFERENCE
-				com.dragonbones.core.BlendMode.HardLight -> this._renderDisplay?.blendMode = BlendMode.HARDLIGHT
-				com.dragonbones.core.BlendMode.Lighten -> this._renderDisplay?.blendMode = BlendMode.LIGHTEN
-				com.dragonbones.core.BlendMode.Multiply -> this._renderDisplay?.blendMode = BlendMode.MULTIPLY
-				com.dragonbones.core.BlendMode.Overlay -> this._renderDisplay?.blendMode = BlendMode.OVERLAY
-				com.dragonbones.core.BlendMode.Screen -> this._renderDisplay?.blendMode = BlendMode.SCREEN
-				else -> Unit
+        val renderDisplay = this._renderDisplay
+		if (renderDisplay != null && renderDisplay.isContainer) {
+            renderDisplay.blendMode = when (this._blendMode) {
+				com.dragonbones.core.BlendMode.Normal -> BlendMode.INHERIT
+				com.dragonbones.core.BlendMode.Add -> BlendMode.ADD
+				com.dragonbones.core.BlendMode.Darken -> BlendMode.DARKEN
+				com.dragonbones.core.BlendMode.Difference -> BlendMode.DIFFERENCE
+				com.dragonbones.core.BlendMode.HardLight -> BlendMode.HARDLIGHT
+				com.dragonbones.core.BlendMode.Lighten -> BlendMode.LIGHTEN
+				com.dragonbones.core.BlendMode.Multiply -> BlendMode.MULTIPLY
+				com.dragonbones.core.BlendMode.Overlay -> BlendMode.OVERLAY
+				com.dragonbones.core.BlendMode.Screen -> BlendMode.SCREEN
+				else -> renderDisplay.blendMode
 			}
 		}
 		// TODO child armature.
