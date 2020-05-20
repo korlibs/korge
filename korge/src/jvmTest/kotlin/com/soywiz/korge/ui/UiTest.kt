@@ -71,8 +71,8 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
     /*
     launchImmediately {
         while (true) {
-            tween(progress::current[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-            tween(progress::current[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+            tween(progress::current[1.0], time = 1.secs, easing = Easing.EASE_IN_OUT)
+            tween(progress::current[1.0, 0.0], time = 1.secs, easing = Easing.EASE_IN_OUT)
         }
     }
      */

@@ -10,12 +10,13 @@ import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.animate.play
 import com.soywiz.korge.component.EventComponent
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.file.VfsFile
 
 class LipSync(val lipsync: String) {
-	val totalTime: TimeSpan get() = (lipsync.length * 16).milliseconds
+	val totalTime: TimeSpan get() = (lipsync.length * 16).ms
 	operator fun get(time: TimeSpan): Char = lipsync.getOrElse(time.millisecondsInt / 16) { 'X' }
 	fun getAF(time: TimeSpan): Char {
 		val c = this[time]
@@ -45,7 +46,7 @@ class Voice(val voice: NativeSound, val lipsync: LipSync) {
 	suspend fun play(name: String, handler: (LipSyncEvent) -> Unit) {
 		voice.playAndWait { current, total ->
 			if (current >= total) {
-				handler(event.set(name, 0.seconds, 'X'))
+				handler(event.set(name, 0.secs, 'X'))
 			} else {
 				handler(event.set(name, current, lipsync[current]))
 			}
@@ -53,7 +54,7 @@ class Voice(val voice: NativeSound, val lipsync: LipSync) {
 	}
 }
 
-data class LipSyncEvent(var name: String = "", var time: TimeSpan = 0.seconds, var lip: Char = 'X') : Event() {
+data class LipSyncEvent(var name: String = "", var time: TimeSpan = 0.secs, var lip: Char = 'X') : Event() {
 	fun set(name: String, elapsedTime: TimeSpan, lip: Char) = apply {
 		this.name = name
 		this.time = elapsedTime

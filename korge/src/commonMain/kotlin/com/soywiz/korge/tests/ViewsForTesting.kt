@@ -21,7 +21,7 @@ import kotlin.coroutines.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.max
 
-open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480)) {
+open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.ms, val size: SizeInt = SizeInt(640, 480)) {
 	val startTime = DateTime(0.0)
 	var time = startTime
 	val elapsed get() = time - startTime
@@ -155,7 +155,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 			}
 		})
 
-		withTimeout(10.seconds) {
+		withTimeout(10.secs) {
 			while (!completed) {
 				simulateFrame()
 				dispatcher.executePending()

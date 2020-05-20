@@ -3,6 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.klock.*
 import com.soywiz.korag.DefaultShaders.t_Temp0
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import kotlin.math.*
 
 /**
@@ -20,7 +21,7 @@ class WaveFilter(
 	crestCountY: Double = 2.0,
 	cyclesPerSecondX: Double = 1.0,
 	cyclesPerSecondY: Double = 1.0,
-	time: TimeSpan = 0.seconds
+	time: TimeSpan = 0.secs
 ) : ShaderFilter() {
 	companion object {
 		val u_Time = Uniform("time", VarType.Float1)
@@ -63,7 +64,7 @@ class WaveFilter(
 
     /** The elapsed time for the animation */
     var time: TimeSpan
-        get() = timeSeconds.seconds
+        get() = timeSeconds.secs
         set(value) = run { timeSeconds = value.seconds }
 
 	override val border: Int get() = max(amplitudeX, amplitudeY)

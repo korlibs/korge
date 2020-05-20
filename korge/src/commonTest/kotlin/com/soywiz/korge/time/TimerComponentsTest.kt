@@ -1,6 +1,7 @@
 package com.soywiz.korge.time
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import kotlin.test.*
@@ -12,9 +13,9 @@ class TimerComponentsTest {
 		var log = ""
 		val view = DummyView()
 		log += "a"
-		view.timer(5.milliseconds) {
+		view.timer(5.ms) {
 			log += "b"
-			view.timer(5.milliseconds) {
+			view.timer(5.ms) {
 				log += "c"
 			}
 		}

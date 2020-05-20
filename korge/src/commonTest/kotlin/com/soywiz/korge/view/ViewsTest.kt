@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.seconds
 import com.soywiz.korge.component.docking.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
@@ -100,7 +101,7 @@ class ViewsTest : ViewsForTesting() {
     @Test
     fun testTween() = viewsTest {
         val image = solidRect(100, 100, Colors.RED).position(0, 0)
-        image.tween(image::x[-101], time = 4.seconds)
+        image.tween(image::x[-101], time = 4.secs)
         assertEquals(false, image.isVisibleToUser())
     }
 
@@ -141,7 +142,7 @@ class ViewsTest : ViewsForTesting() {
             rect = solidRect(100, 100, Colors.RED)
             rect.addUpdater { time ->
                 x++
-                assertEquals(0.0.seconds, time)
+                assertEquals(0.0.secs, time)
                 @Suppress("USELESS_IS_CHECK")
                 assertTrue { this is SolidRect }
             }
@@ -149,7 +150,7 @@ class ViewsTest : ViewsForTesting() {
         container.updateSingleView(0.0)
         container.updateSingleView(0.0)
         assertEquals(0.0, container.x)
-        assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.seconds once
+        assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.secs once
     }
 
     @Test

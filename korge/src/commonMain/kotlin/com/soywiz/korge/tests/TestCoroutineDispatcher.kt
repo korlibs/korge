@@ -2,12 +2,13 @@ package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 @UseExperimental(InternalCoroutinesApi::class)
-class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
+class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.ms) :
 	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
 	CoroutineDispatcher(), ContinuationInterceptor, Delay {
 	var time = 0L; private set

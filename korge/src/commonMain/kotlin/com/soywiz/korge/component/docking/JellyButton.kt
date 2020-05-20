@@ -2,6 +2,7 @@ package com.soywiz.korge.component.docking
 
 import com.soywiz.klock.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -54,7 +55,7 @@ class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var t
 			else -> 1.0
 		}
 		CoroutineScope(coroutineContext).launchImmediately {
-			content.tween(content::scale[initialScale * scale], time = 200.milliseconds, easing = Easing.EASE_OUT_ELASTIC)
+			content.tween(content::scale[initialScale * scale], time = 200.ms, easing = Easing.EASE_OUT_ELASTIC)
 		}
 	}
 

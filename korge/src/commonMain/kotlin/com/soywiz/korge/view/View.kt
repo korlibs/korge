@@ -1019,7 +1019,7 @@ fun View.replaceWith(view: View): Boolean {
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponent {
         override val view: View get() = this@addUpdater
-        override fun update(ms: Double) = run { updatable(this@addUpdater, ms.milliseconds) }
+        override fun update(ms: Double) = run { updatable(this@addUpdater, ms.ms) }
     }.attach()
     component.update(0.0)
     return Cancellable { component.detach() }

@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
@@ -88,10 +89,10 @@ open class Sprite(
             return _onAnimationStarted!!
         }
 
-    var spriteDisplayTime : TimeSpan = 50.milliseconds
+    var spriteDisplayTime : TimeSpan = 50.ms
     private var animationLooped = false
-    private var lastAnimationFrameTime  : TimeSpan = 0.milliseconds
-    private var animationRequestedDuration : TimeSpan = 0.milliseconds
+    private var lastAnimationFrameTime  : TimeSpan = 0.ms
+    private var animationRequestedDuration : TimeSpan = 0.ms
 
     private var currentAnimation : SpriteAnimation? = null
     private var currentSpriteIndex = 0
@@ -164,11 +165,11 @@ open class Sprite(
 
     private fun nextSprite(frameTime : TimeSpan){
         lastAnimationFrameTime+=frameTime
-        if ((animationNumberOfFramesRequested > 0 || animationRequestedDuration > 0.milliseconds || animationLooped) && lastAnimationFrameTime+frameTime >= this.spriteDisplayTime){
+        if ((animationNumberOfFramesRequested > 0 || animationRequestedDuration > 0.ms || animationLooped) && lastAnimationFrameTime+frameTime >= this.spriteDisplayTime){
             setFrame(if (reversed) --currentSpriteIndex else ++currentSpriteIndex)
             animationNumberOfFramesRequested--
             animationRequestedDuration-=(frameTime+spriteDisplayTime)
-            lastAnimationFrameTime = 0.milliseconds
+            lastAnimationFrameTime = 0.ms
         }
     }
 
@@ -176,7 +177,7 @@ open class Sprite(
         spriteAnimation: SpriteAnimation?,
         spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
         animationCyclesRequested : Int = 1,
-        duration : TimeSpan = 0.milliseconds,
+        duration : TimeSpan = 0.ms,
         startFrame: Int = 0,
         looped : Boolean = false,
         reversed : Boolean = false
