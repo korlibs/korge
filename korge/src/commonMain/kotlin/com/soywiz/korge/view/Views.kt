@@ -374,7 +374,10 @@ fun appendComponents(view: View, out: ArrayList<Component>) {
 	if (view is Container) {
 		view.forEachChildren { appendComponents(it, out) }
 	}
-    view.components?.let { out.addAll(it) }
+    view.components?.let { components ->
+        components.fastForEach { out.add(it) }
+        //out.addAll(components) // This creates a slow iterator() on Kotlin/Native even if the array is not going to be updated inside
+    }
 }
 
 fun View.updateSingleView(dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {

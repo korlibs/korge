@@ -369,8 +369,10 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		get() {
 			if (components != null) {
 				if (_componentsIt == null) _componentsIt = ArrayList()
-				_componentsIt!!.clear()
-				_componentsIt!!.addAll(components!!)
+                val _componentsIt = _componentsIt!!
+				_componentsIt.clear()
+                components!!.fastForEach { _componentsIt.add(it) }
+				//_componentsIt!!.addAll(components!!) // It creates an iterator() on Kotlin/Native! Seems to be slow, and it is not going to be updated while iterating.
 			}
 			return _componentsIt
 		}
