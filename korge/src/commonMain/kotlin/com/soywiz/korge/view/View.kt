@@ -108,6 +108,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	var speed: Double = 1.0
     /** Parent [Container] of [this] View if any, or null */
 	var parent: Container? = null; internal set
+
     /** Optional name of this view */
 	var name: String? = null
     /** The [BlendMode] used for this view [BlendMode.INHERIT] will use the ancestors [blendMode]s */
@@ -977,6 +978,28 @@ class ViewTransform(var view: View) {
 	}
 }
 */
+
+/** When included in the three, this returns the Views singleton. When not attached yet, this will return null. */
+val View.views: Views? get() = stage?.views
+
+/**
+ * Register a callback that will be executed when the specified [this] [View]
+ * is attached to the [Stage].
+ */
+fun View.onAttachToStage(block: Views.(view: View) -> Unit) {
+    // @TODO: On KorGE 2.0 we should have components for subscribing to attaching and detaching from the stage.
+    // @TODO: We would keep a list of views with components attached to the Stage to avoid iterating the tree each time
+    addComponent(object : UpdateComponent {
+        override val view: View = this@onAttachToStage
+        override fun update(ms: Double) {
+            val views = view.views
+            if (views != null) {
+                removeFromView()
+                block(views, view)
+            }
+        }
+    })
+}
 
 /**
  * Determines if the local coords [x], [y], hits this view or any of this descendants.
