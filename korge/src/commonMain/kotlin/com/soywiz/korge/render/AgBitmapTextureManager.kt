@@ -56,8 +56,14 @@ class AgBitmapTextureManager(
 	private var cachedBitmap: Bitmap? = null
 	private var cachedBitmapTextureInfo: BitmapTextureInfo? = null
 
-	private var cachedBmpSlice: BmpSlice? = null
+    private var cachedBitmap2: Bitmap? = null
+    private var cachedBitmapTextureInfo2: BitmapTextureInfo? = null
+
+    private var cachedBmpSlice: BmpSlice? = null
 	private var cachedBmpSliceTexture: Texture? = null
+
+    private var cachedBmpSlice2: BmpSlice? = null
+    private var cachedBmpSliceTexture2: Texture? = null
 
     /**
      * Obtains a temporal [BitmapTextureInfo] from a [Bitmap].
@@ -69,6 +75,7 @@ class AgBitmapTextureManager(
      */
 	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
 		if (cachedBitmap === bitmap) return cachedBitmapTextureInfo!!
+        if (cachedBitmap2 === bitmap) return cachedBitmapTextureInfo2!!
         referencedBitmapsSinceGC += bitmap
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
@@ -77,6 +84,9 @@ class AgBitmapTextureManager(
                 it.textureBase = Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premultiplied), bitmap.width, bitmap.height)
             }
         }
+
+        cachedBitmap2 = cachedBitmap
+        cachedBitmapTextureInfo2 = cachedBitmapTextureInfo
 
 		cachedBitmap = bitmap
 		cachedBitmapTextureInfo = textureInfo
@@ -90,6 +100,7 @@ class AgBitmapTextureManager(
     /** Obtains a temporal [Texture] from [slice] [BmpSlice]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTexture(slice: BmpSlice): Texture {
 		if (cachedBmpSlice === slice) return cachedBmpSliceTexture!!
+        if (cachedBmpSlice2 === slice) return cachedBmpSliceTexture2!!
         referencedBitmapsSinceGC += slice.bmp
 
         val info = getTextureInfo(slice.bmp)
@@ -97,6 +108,9 @@ class AgBitmapTextureManager(
 		val texture = info.slices.getOrPut(slice) {
             Texture(info.textureBase!!).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
         }
+
+        cachedBmpSlice2 = cachedBmpSlice
+        cachedBmpSliceTexture2 = cachedBmpSliceTexture
 
 		cachedBmpSlice = slice
 		cachedBmpSliceTexture = texture
@@ -111,7 +125,15 @@ class AgBitmapTextureManager(
      */
     internal fun afterRender() {
         cachedBitmap = null
+        cachedBitmap2 = null
+        cachedBitmapTextureInfo = null
+        cachedBitmapTextureInfo2 = null
+
         cachedBmpSlice = null
+        cachedBmpSlice2 = null
+        cachedBmpSliceTexture = null
+        cachedBmpSliceTexture2 = null
+
 		fcount++
 		if (fcount >= framesBetweenGC) {
 			fcount = 0
