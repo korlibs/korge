@@ -357,24 +357,12 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 inline fun <reified T : Component> View.forEachComponent(
 	tempComponents: ArrayList<Component> = arrayListOf(),
 	callback: (T) -> Unit
-) {
-    forEachComponentAll(tempComponents) { c ->
-        if (c is T) callback(c)
-    }
-}
+) = forEachComponentAll(tempComponents) { c -> if (c is T) callback(c) }
 
 inline fun View.forEachComponentAll(
     tempComponents: ArrayList<Component> = arrayListOf(),
     callback: (Component) -> Unit
-) {
-    val components = getComponents(this, tempComponents)
-    var n = 0
-    while (n < components.size) {
-        val c = components.getOrNull(n) ?: break
-        callback(c)
-        n++
-    }
-}
+) = getComponents(this, tempComponents).fastForEach { callback(it) }
 
 fun getComponents(view: View, out: ArrayList<Component> = arrayListOf()): List<Component> {
 	out.clear()
@@ -403,7 +391,7 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: 
 }
 
 fun View.updateSingleViewWithViewsAll(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
-    this.forEachComponentAll {
+    this.forEachComponentAll(tempComponents) {
         when (it) {
             is UpdateComponent -> it.update(dtMsD * it.view.globalSpeed)
             is UpdateComponentWithViews -> it.update(views, dtMsD * it.view.globalSpeed)
