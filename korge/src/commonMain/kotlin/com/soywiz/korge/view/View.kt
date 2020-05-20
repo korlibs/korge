@@ -291,7 +291,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
 	val root: View get() = parent?.root ?: this
 
-    /** When included in the three, this returns the stage. When not attached yet, this will return null. */
+    /** When included in the tree, this returns the stage. When not attached yet, this will return null. */
 	open val stage: Stage? get() = root as? Stage?
 
     /** Determines if mouse events will be handled for this view and its children */
@@ -979,7 +979,7 @@ class ViewTransform(var view: View) {
 }
 */
 
-/** When included in the three, this returns the Views singleton. When not attached yet, this will return null. */
+/** When included in the tree, this returns the Views singleton. When not attached yet, this will return null. */
 val View.views: Views? get() = stage?.views
 
 /**
