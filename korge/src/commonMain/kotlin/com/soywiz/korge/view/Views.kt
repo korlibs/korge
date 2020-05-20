@@ -358,13 +358,22 @@ inline fun <reified T : Component> View.forEachComponent(
 	tempComponents: ArrayList<Component> = arrayListOf(),
 	callback: (T) -> Unit
 ) {
-	val components = getComponents(this, tempComponents)
-	var n = 0
-	while (n < components.size) {
-		val c = components.getOrNull(n) ?: break
-		if (c is T) callback(c)
-		n++
-	}
+    forEachComponentAll(tempComponents) { c ->
+        if (c is T) callback(c)
+    }
+}
+
+inline fun View.forEachComponentAll(
+    tempComponents: ArrayList<Component> = arrayListOf(),
+    callback: (Component) -> Unit
+) {
+    val components = getComponents(this, tempComponents)
+    var n = 0
+    while (n < components.size) {
+        val c = components.getOrNull(n) ?: break
+        callback(c)
+        n++
+    }
 }
 
 fun getComponents(view: View, out: ArrayList<Component> = arrayListOf()): List<Component> {
@@ -377,8 +386,7 @@ fun appendComponents(view: View, out: ArrayList<Component>) {
 	if (view is Container) {
 		view.forEachChildren { appendComponents(it, out) }
 	}
-	val components = view.unsafeListRawComponents
-	if (components != null) out.addAll(components)
+    view.components?.let { out.addAll(it) }
 }
 
 fun View.updateSingleView(dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
@@ -387,6 +395,7 @@ fun View.updateSingleView(dtMsD: Double, tempComponents: ArrayList<Component> = 
 	}
 }
 
+@Deprecated("")
 fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
 	this.forEachComponent<UpdateComponentWithViews>(tempComponents) {
 		it.update(views, dtMsD * it.view.globalSpeed)
@@ -394,8 +403,14 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: 
 }
 
 fun View.updateSingleViewWithViewsAll(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
-    updateSingleView(dtMsD, tempComponents)
-    updateSingleViewWithViews(views, dtMsD, tempComponents)
+    this.forEachComponentAll {
+        when (it) {
+            is UpdateComponent -> it.update(dtMsD * it.view.globalSpeed)
+            is UpdateComponentWithViews -> it.update(views, dtMsD * it.view.globalSpeed)
+        }
+    }
+    //updateSingleView(dtMsD, tempComponents)
+    //updateSingleViewWithViews(views, dtMsD, tempComponents)
 }
 
 interface BoundsProvider {
