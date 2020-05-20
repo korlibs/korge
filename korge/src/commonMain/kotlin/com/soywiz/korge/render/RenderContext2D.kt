@@ -175,10 +175,10 @@ class RenderContext2D(
 
         batch.flush()
         if (scissor != null) {
-            val left = m.transformX(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-            val top = m.transformY(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-            val right = m.transformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
-            val bottom = m.transformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
+            val left = m.fastTransformX(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
+            val top = m.fastTransformY(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
+            val right = m.fastTransformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
+            val bottom = m.fastTransformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
 
             returnScissor = scissorPool.alloc().setTo(left, top, right - left, bottom - top)
 
