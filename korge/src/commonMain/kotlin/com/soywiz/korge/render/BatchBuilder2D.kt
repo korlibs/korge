@@ -385,10 +385,10 @@ class BatchBuilder2D(
 		setStateFast(tex.base, filtering, blendFactors, program)
 
 		drawQuadFast(
-			m.transformXf(x0, y0), m.transformYf(x0, y0),
-			m.transformXf(x1, y0), m.transformYf(x1, y0),
-			m.transformXf(x1, y1), m.transformYf(x1, y1),
-			m.transformXf(x0, y1), m.transformYf(x0, y1),
+			m.transformX(x0, y0).toFloat(), m.transformY(x0, y0).toFloat(),
+			m.transformX(x1, y0).toFloat(), m.transformY(x1, y0).toFloat(),
+			m.transformX(x1, y1).toFloat(), m.transformY(x1, y1).toFloat(),
+			m.transformX(x0, y1).toFloat(), m.transformY(x0, y1).toFloat(),
 			tex, colorMul, colorAdd, rotated
 		)
 	}
@@ -680,15 +680,15 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         //fun IMatrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
         //fun IMatrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
 
-        val x0 = matrix.transformXf(x, y)
-        val x1 = matrix.transformXf(x + width, y)
-        val x2 = matrix.transformXf(x + width, y + height)
-        val x3 = matrix.transformXf(x, y + height)
+        val x0 = matrix.transformX(x, y).toFloat()
+        val x1 = matrix.transformX(x + width, y).toFloat()
+        val x2 = matrix.transformX(x + width, y + height).toFloat()
+        val x3 = matrix.transformX(x, y + height).toFloat()
 
-        val y0 = matrix.transformYf(x, y)
-        val y1 = matrix.transformYf(x + width, y)
-        val y2 = matrix.transformYf(x + width, y + height)
-        val y3 = matrix.transformYf(x, y + height)
+        val y0 = matrix.transformY(x, y).toFloat()
+        val y1 = matrix.transformY(x + width, y).toFloat()
+        val y2 = matrix.transformY(x + width, y + height).toFloat()
+        val y3 = matrix.transformY(x, y + height).toFloat()
 
         /*
         val wf = width.toFloat()
