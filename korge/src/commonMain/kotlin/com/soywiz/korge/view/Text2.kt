@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -124,8 +125,8 @@ class Text2TextRendererActions : TextRendererActions() {
         tr.setMatrix(transform)
         //println("x: ${this.x}, y: ${this.y}")
         arrayTex += g.texture
-        arrayX += this.x + transform.transformX(x, y)
-        arrayY += this.y + transform.transformY(x, y)
+        arrayX += this.x + transform.fastTransformX(x, y)
+        arrayY += this.y + transform.fastTransformY(x, y)
         arraySX += tr.scaleX
         arraySY += tr.scaleY
         arrayRot += tr.rotation.radians

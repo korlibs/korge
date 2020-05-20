@@ -385,10 +385,10 @@ class BatchBuilder2D(
 		setStateFast(tex.base, filtering, blendFactors, program)
 
 		drawQuadFast(
-			m.transformXf(x0, y0), m.transformYf(x0, y0),
-			m.transformXf(x1, y0), m.transformYf(x1, y0),
-			m.transformXf(x1, y1), m.transformYf(x1, y1),
-			m.transformXf(x0, y1), m.transformYf(x0, y1),
+            m.fastTransformXf(x0, y0), m.fastTransformYf(x0, y0),
+            m.fastTransformXf(x1, y0), m.fastTransformYf(x1, y0),
+            m.fastTransformXf(x1, y1), m.fastTransformYf(x1, y1),
+            m.fastTransformXf(x0, y1), m.fastTransformYf(x0, y1),
 			tex, colorMul, colorAdd, rotated
 		)
 	}
@@ -654,7 +654,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
 	fun setCAdd(v: Int) = this.apply { i32[offset + 5] = v }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
-	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.transformX(x, y).toFloat()).setY(matrix.transformY(x, y).toFloat())
+	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.fastTransformXf(x, y)).setY(matrix.fastTransformYf(x, y))
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
 	fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
@@ -662,15 +662,61 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     /** Sets the [cMul] and [cAdd] (multiplicative and additive colors) of the vertex previously selected calling [select] */
 	fun cols(colMul: RGBA, colAdd: Int) = setCMul(colMul).setCAdd(colAdd)
 
+    private fun quadV(pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: Int) {
+        f32[pos + 0] = x
+        f32[pos + 1] = y
+        f32[pos + 2] = u
+        f32[pos + 3] = v
+        i32[pos + 4] = colMul.value
+        i32[pos + 5] = colAdd
+    }
+
     /**
      * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
      * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]
      */
+    @OptIn(KorgeInternal::class)
 	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
-		select(index + 0).xy(x, y, matrix).uv(bmp.tl_x, bmp.tl_y).cols(colMul, colAdd)
-		select(index + 1).xy(x + width, y, matrix).uv(bmp.tr_x, bmp.tr_y).cols(colMul, colAdd)
-		select(index + 2).xy(x + width, y + height, matrix).uv(bmp.br_x, bmp.br_y).cols(colMul, colAdd)
-		select(index + 3).xy(x, y + height, matrix).uv(bmp.bl_x, bmp.bl_y).cols(colMul, colAdd)
+        //fun IMatrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+        //fun IMatrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+
+        val x0 = matrix.fastTransformXf(x, y)
+        val x1 = matrix.fastTransformXf(x + width, y)
+        val x2 = matrix.fastTransformXf(x + width, y + height)
+        val x3 = matrix.fastTransformXf(x, y + height)
+
+        val y0 = matrix.fastTransformYf(x, y)
+        val y1 = matrix.fastTransformYf(x + width, y)
+        val y2 = matrix.fastTransformYf(x + width, y + height)
+        val y3 = matrix.fastTransformYf(x, y + height)
+
+        /*
+        val wf = width.toFloat()
+        val hf = height.toFloat()
+        val x0f = x.toFloat()
+        val y0f = y.toFloat()
+        val x1f = x0f + wf
+        val y1f = y0f + hf
+        val mA = matrix.a.toFloat()
+        val mB = matrix.b.toFloat()
+        val mC = matrix.c.toFloat()
+        val mD = matrix.d.toFloat()
+        val mTx = matrix.tx.toFloat()
+        val mTy = matrix.ty.toFloat()
+        val x0 = mA * x0f + mC * y0f + mTx
+        val y0 = mD * y0f + mB * x0f + mTy
+        val x1 = mA * x1f + mC * y0f + mTx
+        val y1 = mD * y0f + mB * x1f + mTy
+        val x2 = mA * x1f + mC * y1f + mTx
+        val y2 = mD * y1f + mB * x1f + mTy
+        val x3 = mA * x0f + mC * y1f + mTx
+        val y3 = mD * y1f + mB * x0f + mTy
+         */
+
+        quadV((index + 0) * COMPONENTS_PER_VERTEX, x0, y0, bmp.tl_x, bmp.tl_y, colMul, colAdd)
+        quadV((index + 1) * COMPONENTS_PER_VERTEX, x1, y1, bmp.tr_x, bmp.tr_y, colMul, colAdd)
+        quadV((index + 2) * COMPONENTS_PER_VERTEX, x2, y2, bmp.br_x, bmp.br_y, colMul, colAdd)
+        quadV((index + 3) * COMPONENTS_PER_VERTEX, x3, y3, bmp.bl_x, bmp.bl_y, colMul, colAdd)
 	}
 
 	private val bounds: BoundsBuilder = BoundsBuilder()

@@ -3,6 +3,7 @@ package com.soywiz.korge.time
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
@@ -81,14 +82,14 @@ class TimerComponents(override val view: View) : UpdateComponent {
 val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
 
 @Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.waitMs(time: Int) = this.delay(time.milliseconds)
+suspend fun View.waitMs(time: Int) = this.delay(time.ms)
 @Deprecated("", ReplaceWith("this.delay(time)"))
 suspend fun View.wait(time: TimeSpan) = this.delay(time)
 @Deprecated("", ReplaceWith("this.delayFrame()"))
 suspend fun View.waitFrame() = this.delayFrame()
 
 @Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.sleepMs(time: Int) = this.delay(time.milliseconds)
+suspend fun View.sleepMs(time: Int) = this.delay(time.ms)
 @Deprecated("", ReplaceWith("this.delay(time)"))
 suspend fun View.sleep(time: TimeSpan) = this.delay(time)
 @Deprecated("", ReplaceWith("this.delayFrame()"))

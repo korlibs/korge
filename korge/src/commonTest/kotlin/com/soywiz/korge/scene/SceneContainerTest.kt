@@ -1,6 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
@@ -51,10 +52,10 @@ class SceneContainerTest : ViewsForTesting() {
 		injector.mapPrototype(Scene1::class) { Scene1(get(SceneInfo::class)) }
 		injector.mapPrototype(Scene2::class) { Scene2() }
 		views.stage += sc
-		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
+		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.ms)
 		//sc.changeTo<Scene1>(time = 10)
 
-		delay(10.milliseconds)
+		delay(10.ms)
 
 		assertNotNull(sc["box"])
 		assertEquals(

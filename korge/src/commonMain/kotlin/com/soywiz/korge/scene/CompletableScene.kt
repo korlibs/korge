@@ -1,6 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import kotlinx.coroutines.*
@@ -27,7 +28,7 @@ abstract class CompletableScene<T>() : Scene() {
 
 suspend inline fun <reified T : CompletableScene<R>, R> SceneContainer.changeToResult(
 	vararg injects: Any,
-	time: TimeSpan = 0.seconds,
+	time: TimeSpan = 0.ms,
 	transition: Transition = AlphaTransition
 ): R {
 	val instance = changeTo(T::class, *injects, time = time, transition = transition)

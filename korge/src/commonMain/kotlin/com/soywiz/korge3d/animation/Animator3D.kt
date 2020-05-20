@@ -3,16 +3,17 @@ package com.soywiz.korge3d.animation
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge3d.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
 @Korge3DExperimental
 class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
-	var currentTime = 0.milliseconds
+	var currentTime = 0.ms
 	fun update(ms: Int) {
-		//currentTime += ms.milliseconds * 0.1
-		currentTime += ms.milliseconds
+		//currentTime += ms.ms * 0.1
+		currentTime += ms.ms
 		animations.fastForEach { animation ->
 			val keyFrames = animation.keyFrames
 			val fseconds = keyFrames.seconds
@@ -25,10 +26,10 @@ class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
 			val n = keyFrames.findIndex(elapsedTimeInAnimation)
 			if (n < 0) return@fastForEach
 
-			val startTime = fseconds[n].seconds
-			val endTime = fseconds.getOrNull(n + 1)?.seconds ?: startTime
+			val startTime = fseconds[n].secs
+			val endTime = fseconds.getOrNull(n + 1)?.secs ?: startTime
 			val fragmentTime = (endTime - startTime)
-			if (fragmentTime <= 0.seconds) return@fastForEach
+			if (fragmentTime <= 0.ms) return@fastForEach
 
 			val ratio = (elapsedTimeInAnimation - startTime) / fragmentTime
 			val aview = rootView[animation.target]
@@ -88,7 +89,7 @@ data class Animation3D(val id: String, val target: String, val property: String,
 	) {
 		val transforms = matrices?.map { Transform3D().setMatrix(it) }?.toTypedArray()
 		val totalFrames = seconds.size
-		val totalTime = seconds.max()?.seconds ?: 0.seconds
+		val totalTime = seconds.max()?.secs ?: 0.secs
 
 		// @TODO: Binary Search
 		fun findIndex(time: TimeSpan): Int {

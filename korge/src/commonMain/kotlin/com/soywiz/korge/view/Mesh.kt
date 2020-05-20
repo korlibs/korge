@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kmem.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
@@ -49,8 +50,8 @@ open class Mesh(
 			val x = vertices[n * 2 + 0].toDouble() + pivotX
 			val y = vertices[n * 2 + 1].toDouble() + pivotY
 
-			val tx = m.transformX(x, y)
-			val ty = m.transformY(x, y)
+			val tx = m.fastTransformX(x, y)
+			val ty = m.fastTransformY(x, y)
 
 			tva.select(n)
 				.xy(tx, ty)

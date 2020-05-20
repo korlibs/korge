@@ -2,6 +2,7 @@ package com.soywiz.korge.tween
 
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
@@ -10,7 +11,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.test.*
 
-class TweenTest : ViewsForTesting(20.milliseconds) {
+class TweenTest : ViewsForTesting(20.ms) {
 	@Test
 	@Ignore // @TODO: Flaky!
 	fun name() = viewsTest {
@@ -26,7 +27,7 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 		val demo = Demo()
 
 		val p1 = asyncImmediately {
-			views.stage.tween(demo::b[100, 200], time = 100.milliseconds, easing = Easing.LINEAR) {
+			views.stage.tween(demo::b[100, 200], time = 100.ms, easing = Easing.LINEAR) {
 				result2 += "[b=" + demo.b + ":" + it.niceStr + "]"
 				//println(result2)
 			}
@@ -35,7 +36,7 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 
 		}
 		val p2 = asyncImmediately {
-			views.stage.tween(demo::c[100, 200], time = 100.milliseconds, easing = Easing.LINEAR) {
+			views.stage.tween(demo::c[100, 200], time = 100.ms, easing = Easing.LINEAR) {
 				result2 += "[c=" + demo.c + ":" + it.niceStr + "]"
 			}
 			//println(views.stage.unsafeListRawComponents)
@@ -43,11 +44,11 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 
 
 		//println(views.stage.unsafeListRawComponents)
-		views.stage.tween(demo::a[+10], time = 100.milliseconds, easing = Easing.LINEAR) {
+		views.stage.tween(demo::a[+10], time = 100.ms, easing = Easing.LINEAR) {
 			result += "[" + demo.a + ":" + it.niceStr + "]"
 		}
 		result += "---"
-		views.stage.tween(demo::a[-100, +100], time = 100.milliseconds, easing = Easing.LINEAR) {
+		views.stage.tween(demo::a[-100, +100], time = 100.ms, easing = Easing.LINEAR) {
 			result += "[" + demo.a + ":" + it.niceStr + "]"
 		}
 		result += "---"

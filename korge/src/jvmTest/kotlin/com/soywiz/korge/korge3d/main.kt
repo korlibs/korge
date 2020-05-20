@@ -1,6 +1,7 @@
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge3d.*
@@ -50,7 +51,7 @@ object Demo1 {
 
 			launchImmediately {
 				while (true) {
-					tween(time = 16.seconds) {
+					tween(time = 16.secs) {
 						cube1.modelMat.identity().rotate((it * 360).degrees, 0.degrees, 0.degrees)
 						cube2.modelMat.identity().rotate(0.degrees, (it * 360).degrees, 0.degrees)
 					}
@@ -76,8 +77,8 @@ object Demo2 {
 
 			launchImmediately {
 				while (true) {
-					tween(light1::y[-20], light2::x[-20], time = 1.seconds, easing = Easing.SMOOTH)
-					tween(light1::y[+20], light2::x[+20], time = 1.seconds, easing = Easing.SMOOTH)
+					tween(light1::y[-20], light2::x[-20], time = 1.secs, easing = Easing.SMOOTH)
+					tween(light1::y[+20], light2::x[+20], time = 1.secs, easing = Easing.SMOOTH)
 				}
 			}
 

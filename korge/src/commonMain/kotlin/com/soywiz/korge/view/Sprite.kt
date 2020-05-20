@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
@@ -63,17 +64,35 @@ open class Sprite(
     private var animationNumberOfFramesRequested = 0
         set(value) {
             if (value == 0)
-                triggerEvent(onAnimationCompleted)
+                triggerEvent(_onAnimationCompleted)
             field = value
         }
-    val onAnimationCompleted = Signal<SpriteAnimation>()
-    val onAnimationStopped = Signal<SpriteAnimation>()
-    val onAnimationStarted = Signal<SpriteAnimation>()
 
-    var spriteDisplayTime : TimeSpan = 50.milliseconds
+    private var _onAnimationCompleted: Signal<SpriteAnimation>? = null
+    private var _onAnimationStopped: Signal<SpriteAnimation>? = null
+    private var _onAnimationStarted: Signal<SpriteAnimation>? = null
+
+    val onAnimationCompleted: Signal<SpriteAnimation>
+        get() {
+            if (_onAnimationCompleted == null) _onAnimationCompleted = Signal()
+            return _onAnimationCompleted!!
+        }
+    val onAnimationStopped: Signal<SpriteAnimation>
+        get() {
+            if (_onAnimationStopped == null) _onAnimationStopped = Signal()
+            return _onAnimationStopped!!
+        }
+
+    val onAnimationStarted: Signal<SpriteAnimation>
+        get() {
+            if (_onAnimationStarted == null) _onAnimationStarted = Signal()
+            return _onAnimationStarted!!
+        }
+
+    var spriteDisplayTime : TimeSpan = 50.ms
     private var animationLooped = false
-    private var lastAnimationFrameTime  : TimeSpan = 0.milliseconds
-    private var animationRequestedDuration : TimeSpan = 0.milliseconds
+    private var lastAnimationFrameTime  : TimeSpan = 0.ms
+    private var animationRequestedDuration : TimeSpan = 0.ms
 
     private var currentAnimation : SpriteAnimation? = null
     private var currentSpriteIndex = 0
@@ -141,16 +160,16 @@ open class Sprite(
 
     fun stopAnimation() {
         animationRequested = false
-        triggerEvent(onAnimationStopped)
+        triggerEvent(_onAnimationStopped)
     }
 
     private fun nextSprite(frameTime : TimeSpan){
         lastAnimationFrameTime+=frameTime
-        if ((animationNumberOfFramesRequested > 0 || animationRequestedDuration > 0.milliseconds || animationLooped) && lastAnimationFrameTime+frameTime >= this.spriteDisplayTime){
+        if ((animationNumberOfFramesRequested > 0 || animationRequestedDuration > 0.ms || animationLooped) && lastAnimationFrameTime+frameTime >= this.spriteDisplayTime){
             setFrame(if (reversed) --currentSpriteIndex else ++currentSpriteIndex)
             animationNumberOfFramesRequested--
             animationRequestedDuration-=(frameTime+spriteDisplayTime)
-            lastAnimationFrameTime = 0.milliseconds
+            lastAnimationFrameTime = 0.ms
         }
     }
 
@@ -158,12 +177,12 @@ open class Sprite(
         spriteAnimation: SpriteAnimation?,
         spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
         animationCyclesRequested : Int = 1,
-        duration : TimeSpan = 0.milliseconds,
+        duration : TimeSpan = 0.ms,
         startFrame: Int = 0,
         looped : Boolean = false,
         reversed : Boolean = false
     ){
-        triggerEvent(onAnimationStarted)
+        triggerEvent(_onAnimationStarted)
         this.spriteDisplayTime = spriteDisplayTime
         currentAnimation = spriteAnimation
         animationRequested = true
@@ -180,6 +199,10 @@ open class Sprite(
         bitmap = currentAnimation?.getSprite(index) ?:  bitmap
     }
 
-    private fun triggerEvent(signal : Signal<SpriteAnimation>) = currentAnimation?.let { signal.invoke(it) }
+    private fun triggerEvent(signal : Signal<SpriteAnimation>?) {
+        if (signal != null) {
+            currentAnimation?.let { signal.invoke(it) }
+        }
+    }
 }
 
