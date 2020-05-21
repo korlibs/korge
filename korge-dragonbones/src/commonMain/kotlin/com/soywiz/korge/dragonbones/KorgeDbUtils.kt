@@ -1,7 +1,7 @@
 package com.soywiz.korge.dragonbones
 
 import com.dragonbones.model.*
-import com.soywiz.korge.render.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.*
