@@ -77,11 +77,15 @@ class Texture(
     /**
      * Represents a full texture region wraping a [base] [AG.Texture] and specifying its [width] and [height]
      */
-	class Base(val base: AG.Texture, val width: Int, val height: Int) : Closeable {
-		val premultiplied get() = base.premultiplied
-		override fun close() = base.close()
-		fun update(bmp: Bitmap32, mipmaps: Boolean = false) {
-			base.upload(bmp, mipmaps)
+	class Base(var base: AG.Texture?, var width: Int, var height: Int) : Closeable {
+        var version = -1
+		val premultiplied get() = base?.premultiplied == true
+		override fun close(): Unit = run {
+            base?.close()
+            base = null
+        }
+		fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
+			base?.upload(bmp, mipmaps)
 		}
 	}
 
