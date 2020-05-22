@@ -672,6 +672,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         i32[pos + 5] = colAdd
     }
 
+    fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: Int) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
+
     /**
      * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
      * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]

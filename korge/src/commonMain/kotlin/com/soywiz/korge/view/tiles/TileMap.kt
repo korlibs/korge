@@ -2,12 +2,15 @@ package com.soywiz.korge.view.tiles
 
 import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
@@ -42,7 +45,6 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	private val t0 = Point(0, 0)
 	private val tt0 = Point(0, 0)
 	private val tt1 = Point(0, 0)
-	private val tempPointPool = PointArea(16)
 
     // Analogous to Bitmap32.locking
     fun lock() = _map.lock()
@@ -53,69 +55,81 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	private fun computeVertexIfRequired(ctx: RenderContext) {
 		if (!dirtyVertices && cachedContentVersion == _map.contentVersion) return
         cachedContentVersion = _map.contentVersion
-		dirtyVertices = false
-		val m = globalMatrix
+        dirtyVertices = false
+        val m = globalMatrix
 
-		val renderTilesCounter = ctx.stats.counter("renderedTiles")
+        val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-		val pos = m.transform(0.0, 0.0)
-		val dU = m.transform(tileWidth, 0.0) - pos
-		val dV = m.transform(0.0, tileHeight) - pos
+        val posX = m.fastTransformXf(0.0, 0.0)
+        val posY = m.fastTransformYf(0.0, 0.0)
+        val dUX = m.fastTransformXf(tileWidth, 0.0) - posX
+        val dUY = m.fastTransformYf(tileWidth, 0.0) - posY
+        val dVX = m.fastTransformXf(0.0, tileHeight) - posX
+        val dVY = m.fastTransformYf(0.0, tileHeight) - posY
 
-		val colMul = renderColorMul
-		val colAdd = renderColorAdd
+        val colMul = renderColorMul
+        val colAdd = renderColorAdd
 
-		// @TODO: Bounds in clipped view
-		val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
-		val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
-		val mx0 = ((pp0.x / tileWidth) - 1).toInt()
-		val mx1 = ((pp1.x / tileWidth) + 1).toInt()
-		val my0 = ((pp0.y / tileHeight) - 1).toInt()
-		val my1 = ((pp1.y / tileHeight) + 1).toInt()
+        // @TODO: Bounds in clipped view
+        val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
+        val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
+        val mx0 = ((pp0.x / tileWidth) - 1).toInt()
+        val mx1 = ((pp1.x / tileWidth) + 1).toInt()
+        val my0 = ((pp0.y / tileHeight) - 1).toInt()
+        val my1 = ((pp1.y / tileHeight) + 1).toInt()
 
-		val yheight = my1 - my0
-		val xwidth = mx1 - mx0
-		val ntiles = xwidth * yheight
-		verticesPerTex.clear()
+        val yheight = my1 - my0
+        val xwidth = mx1 - mx0
+        val ntiles = xwidth * yheight
+        verticesPerTex.clear()
+        infos.clear()
 
-		var count = 0
-		for (y in my0 until my1) {
-			for (x in mx0 until mx1) {
-				val rx = repeatX.get(x, intMap.width)
-				val ry = repeatY.get(y, intMap.height)
+        var count = 0
+        for (y in my0 until my1) {
+            for (x in mx0 until mx1) {
+                val rx = repeatX.get(x, intMap.width)
+                val ry = repeatY.get(y, intMap.height)
 
-				if (rx < 0 || rx >= intMap.width) continue
-				if (ry < 0 || ry >= intMap.height) continue
-				val tex = tileset[intMap[rx, ry]] ?: continue
+                if (rx < 0 || rx >= intMap.width) continue
+                if (ry < 0 || ry >= intMap.height) continue
+                val tex = tileset[intMap[rx, ry]] ?: continue
 
-				val info = verticesPerTex.getOrPut(tex.bmp) { Info(TexturedVertexArray(ntiles * 4, TexturedVertexArray.quadIndices(ntiles))) }
+                val info = verticesPerTex.getOrPut(tex.bmp) { Info(tex.bmp, TexturedVertexArray(ntiles * 4, TexturedVertexArray.quadIndices(ntiles))).also { infos += it } }
 
-				tempPointPool {
-					val p0 = pos + (dU * x) + (dV * y)
-					val p1 = p0 + dU
-					val p2 = p0 + dU + dV
-					val p3 = p0 + dV
+                run {
+                    val p0X = posX + (dUX * x) + (dVX * y)
+                    val p0Y = posY + (dUY * x) + (dVY * y)
 
-					info.vertices.quadV(info.vcount++, p0.x.toFloat(), p0.y.toFloat(), tex.tl_x, tex.tl_y, colMul, colAdd)
-					info.vertices.quadV(info.vcount++, p1.x.toFloat(), p1.y.toFloat(), tex.tr_x, tex.tr_y, colMul, colAdd)
-					info.vertices.quadV(info.vcount++, p2.x.toFloat(), p2.y.toFloat(), tex.br_x, tex.br_y, colMul, colAdd)
-					info.vertices.quadV(info.vcount++, p3.x.toFloat(), p3.y.toFloat(), tex.bl_x, tex.bl_y, colMul, colAdd)
-				}
+                    val p1X = p0X + dUX
+                    val p1Y = p0Y + dUY
 
-				info.icount += 6
-				count++
-			}
-		}
-		renderTilesCounter?.increment(count)
+                    val p2X = p0X + dUX + dVX
+                    val p2Y = p0Y + dUY + dVY
+
+                    val p3X = p0X + dVX
+                    val p3Y = p0Y + dVY
+
+                    info.vertices.quadV(info.vcount++, p0X, p0Y, tex.tl_x, tex.tl_y, colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p1X, p1Y, tex.tr_x, tex.tr_y, colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p2X, p2Y, tex.br_x, tex.br_y, colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p3X, p3Y, tex.bl_x, tex.bl_y, colMul, colAdd)
+                }
+
+                info.icount += 6
+                count++
+            }
+        }
+        renderTilesCounter?.increment(count)
 	}
 
 	// @TOOD: Use a TextureVertexBuffer or something
-	class Info(val vertices: TexturedVertexArray) {
+	class Info(val tex: Bitmap, val vertices: TexturedVertexArray) {
 		var vcount = 0
 		var icount = 0
 	}
 
 	private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
+    private val infos = arrayListOf<Info>()
 
 	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
 	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
@@ -129,9 +143,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		}
 		computeVertexIfRequired(ctx)
 
-        verticesPerTex.fastForEach { tex, buffer ->
+        infos.fastForEach { buffer ->
             ctx.batch.drawVertices(
-                buffer.vertices, ctx.getTex(tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
+                buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
             )
         }
 		ctx.flush()
