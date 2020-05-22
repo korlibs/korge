@@ -14,11 +14,8 @@ class TileSet(
 	val height: Int,
 	val base: Bitmap = textures.filterNotNull().firstOrNull()?.bmp ?: Bitmaps.transparent.bmp
 ) {
-	init {
-		if (textures.any { if (it != null) it.bmp != base else false }) {
-			throw RuntimeException("All tiles in the set must have the same base texture")
-		}
-	}
+    val hasMultipleBaseBitmaps = textures.any { it != null && it.bmp != base }
+	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
 
 	operator fun get(index: Int): BmpSlice? = textures.getOrNull(index)
 

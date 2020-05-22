@@ -38,6 +38,7 @@ class AgBitmapTextureManager(
 
     /** Number of frames between each Texture Garbage Collection step */
     var framesBetweenGC = 60
+    //var framesBetweenGC = 30 * 60 // 30 seconds
     //var framesBetweenGC = 360
 
 	//var Bitmap._textureBase: Texture.Base? by Extra.Property { null }

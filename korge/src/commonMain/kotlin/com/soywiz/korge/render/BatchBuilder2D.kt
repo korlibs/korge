@@ -618,8 +618,11 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         @KorgeInternal
 		val QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
 
+        val EMPTY_INT_ARRAY = IntArray(0)
+
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		fun quadIndices(quadCount: Int): IntArray {
+            if (quadCount == 0) return EMPTY_INT_ARRAY
 			val out = IntArray(quadCount * 6)
 			var m = 0
 			var base = 0
@@ -662,7 +665,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     /** Sets the [cMul] and [cAdd] (multiplicative and additive colors) of the vertex previously selected calling [select] */
 	fun cols(colMul: RGBA, colAdd: Int) = setCMul(colMul).setCAdd(colAdd)
 
-    private fun quadV(pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: Int) {
+    fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: Int) {
+        val pos = index * COMPONENTS_PER_VERTEX
         f32[pos + 0] = x
         f32[pos + 1] = y
         f32[pos + 2] = u
@@ -670,6 +674,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         i32[pos + 4] = colMul.value
         i32[pos + 5] = colAdd
     }
+
+    fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: Int) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
 
     /**
      * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
@@ -713,10 +719,10 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         val y3 = mD * y1f + mB * x0f + mTy
          */
 
-        quadV((index + 0) * COMPONENTS_PER_VERTEX, x0, y0, bmp.tl_x, bmp.tl_y, colMul, colAdd)
-        quadV((index + 1) * COMPONENTS_PER_VERTEX, x1, y1, bmp.tr_x, bmp.tr_y, colMul, colAdd)
-        quadV((index + 2) * COMPONENTS_PER_VERTEX, x2, y2, bmp.br_x, bmp.br_y, colMul, colAdd)
-        quadV((index + 3) * COMPONENTS_PER_VERTEX, x3, y3, bmp.bl_x, bmp.bl_y, colMul, colAdd)
+        quadV(index + 0, x0, y0, bmp.tl_x, bmp.tl_y, colMul, colAdd)
+        quadV(index + 1, x1, y1, bmp.tr_x, bmp.tr_y, colMul, colAdd)
+        quadV(index + 2, x2, y2, bmp.br_x, bmp.br_y, colMul, colAdd)
+        quadV(index + 3, x3, y3, bmp.bl_x, bmp.bl_y, colMul, colAdd)
 	}
 
 	private val bounds: BoundsBuilder = BoundsBuilder()
