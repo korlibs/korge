@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.internal.*
@@ -8,6 +9,9 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.lang.assert
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -247,4 +251,98 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, -5.0)
     }
+
+    @Test
+    fun testSpriteAnimationPlay1Times() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(1)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
+
+    @Test
+    fun testSpriteAnimationPlay346Times() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(346)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
+
+    @Test
+    fun testSpriteAnimationPlay() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation()
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
+
+    @Test
+    fun testSpriteAnimationStartFrame() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(startFrame = 3, times = 10)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+    }
+
+    @Test
+    fun testSpriteAnimationReversed() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(reversed = true, times = 1000)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
+
+    @Test
+    fun testSpriteAnimationReversedStartFrame() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(reversed = true, times = 1000, startFrame = 7)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[7]))
+    }
+
+    @Test
+    fun testSpriteAnimationTimesAndSpriteTimeDisplay() = viewsTest {
+        val countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
+        val countDownAnimation = SpriteAnimation(countDownSpriteMap,24,36,0,0,10,1,0,0)
+        val countDownSprite = Sprite(countDownAnimation)
+
+        val digits = Array<Bitmap>(10){
+            countDownSpriteMap.extract(it*24, 0,24,36)
+        }
+        countDownSprite.playAnimation(times = 1, spriteDisplayTime = 100.milliseconds)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
 }
+
+// Workaround for getting Bitmap-Copy out of BmpSlice
+fun BmpSlice.extract(): Bitmap = bmp.extract(left, top, width, height)
