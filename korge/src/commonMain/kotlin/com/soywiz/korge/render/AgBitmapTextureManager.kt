@@ -9,10 +9,14 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
 
 /** Extra property for [Bitmap] objects that specify whether mipmaps should be created for this Bitmap */
-var Bitmap.texMipmaps: Boolean by Extra.Property { false }
+@Deprecated("Use mipmaps instead")
+var Bitmap.texMipmaps: Boolean
+    get() = this.mipmaps
+    set(value) = run { this.mipmaps = value }
 
 /** Enable or disable mipmap generation for this [Bitmap] */
-fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.texMipmaps = enable }
+@Deprecated("Use .mipmaps method from korim", level = DeprecationLevel.HIDDEN)
+fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
 
 /**
  * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.
@@ -42,10 +46,13 @@ class AgBitmapTextureManager(
 
     /** Wrapper of [Texture.Base] that contains all the [Texture] slices referenced as [BmpSlice] in our current cache */
 	private class BitmapTextureInfo {
-        var textureBase: Texture.Base? = null
+        var textureBase: Texture.Base = Texture.Base(null, 0, 0)
 		val slices = FastIdentityMap<BmpSlice, Texture>()
         fun reset() {
-            textureBase = null
+            textureBase.base = null
+            textureBase.version = -1
+            textureBase.width = 0
+            textureBase.height = 0
             slices.clear()
         }
 	}
@@ -78,18 +85,28 @@ class AgBitmapTextureManager(
         if (cachedBitmap2 === bitmap) return cachedBitmapTextureInfo2!!
         referencedBitmapsSinceGC += bitmap
 
+		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
+
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
             textureInfoPool.alloc().also {
-                // @TODO: MAke Texture.Base mutable
-                it.textureBase = Texture.Base(ag.createTexture(bitmap, bitmap.texMipmaps, bitmap.premultiplied), bitmap.width, bitmap.height)
+                val base = it.textureBase
+                base.version = -1
+                base.base = ag.createTexture(bitmap.premultiplied)
+                base.width = bitmap.width
+                base.height = bitmap.height
             }
         }
 
         cachedBitmap2 = cachedBitmap
         cachedBitmapTextureInfo2 = cachedBitmapTextureInfo
 
+        val base = textureInfo.textureBase
 		cachedBitmap = bitmap
 		cachedBitmapTextureInfo = textureInfo
+        if (bitmap.contentVersion != base.version) {
+            base.version = bitmap.contentVersion
+            base.update(bitmap, bitmap.mipmaps)
+        }
 
 		return textureInfo
 	}
@@ -162,7 +179,7 @@ class AgBitmapTextureManager(
         val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
         referencedBitmapsSinceGC -= bmp
         if (cachedBitmapTextureInfo == info) removeCache()
-        info.textureBase?.close()
+        info.textureBase.close()
         textureInfoPool.free(info)
     }
 

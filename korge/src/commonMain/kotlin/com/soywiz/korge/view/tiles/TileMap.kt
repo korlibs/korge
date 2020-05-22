@@ -16,8 +16,10 @@ inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.R
 	TileMap(map.toIntArray2(), tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
 
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
+    @PublishedApi
+    internal val _map = Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data))
 	@Deprecated("kept for compatiblity")
-	val map by lazy { Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data)) }
+	val map get() = _map
 	constructor(map: Bitmap32, tileset: TileSet) : this(map.toIntArray2(), tileset)
 
 	val tileWidth = tileset.width.toDouble()
@@ -41,8 +43,15 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	private val tt1 = Point(0, 0)
 	private val tempPointPool = PointArea(16)
 
+    // Analogous to Bitmap32.locking
+    fun lock() = _map.lock()
+    fun unlock() = _map.unlock()
+    inline fun lock(block: () -> Unit) = _map.lock(block = block)
+
+    private var cachedContentVersion = 0
 	private fun computeVertexIfRequired(ctx: RenderContext) {
-		if (!dirtyVertices) return
+		if (!dirtyVertices && cachedContentVersion == _map.contentVersion) return
+        cachedContentVersion = _map.contentVersion
 		dirtyVertices = false
 		val m = globalMatrix
 

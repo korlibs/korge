@@ -242,12 +242,12 @@ class BatchBuilder2D(
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
-	fun setStateFast(tex: AG.Texture, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+	fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
 		if (tex != currentTex || currentSmoothing != smoothing || currentBlendFactors != blendFactors || currentProgram != program) {
 			flush()
 			currentTex = tex
 			currentSmoothing = smoothing
-			currentBlendFactors = if (tex.isFbo) blendFactors.toRenderFboIntoBack() else blendFactors
+			currentBlendFactors = if (tex != null && tex.isFbo) blendFactors.toRenderFboIntoBack() else blendFactors
 			currentProgram = program
 		}
 	}
