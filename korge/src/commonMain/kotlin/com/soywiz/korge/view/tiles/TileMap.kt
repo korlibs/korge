@@ -1,12 +1,13 @@
 package com.soywiz.korge.view.tiles
 
+import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.util.toIntArray2
+import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
@@ -64,7 +65,6 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		val colMul = renderColorMul
 		val colAdd = renderColorAdd
 
-
 		// @TODO: Bounds in clipped view
 		val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
 		val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
@@ -86,14 +86,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
 				if (rx < 0 || rx >= intMap.width) continue
 				if (ry < 0 || ry >= intMap.height) continue
-
 				val tex = tileset[intMap[rx, ry]] ?: continue
 
-				val info = verticesPerTex.getOrPut(tex.bmp) {
-					val indices = TexturedVertexArray.quadIndices(ntiles)
-					//println(indices.toList())
-					Info(TexturedVertexArray(ntiles * 4, indices))
-				}
+				val info = verticesPerTex.getOrPut(tex.bmp) { Info(TexturedVertexArray(ntiles * 4, TexturedVertexArray.quadIndices(ntiles))) }
 
 				tempPointPool {
 					val p0 = pos + (dU * x) + (dV * y)
@@ -101,10 +96,10 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 					val p2 = p0 + dU + dV
 					val p3 = p0 + dV
 
-					info.vertices.select(info.vcount++).xy(p0.x, p0.y).uv(tex.tl_x, tex.tl_y).cols(colMul, colAdd)
-					info.vertices.select(info.vcount++).xy(p1.x, p1.y).uv(tex.tr_x, tex.tr_y).cols(colMul, colAdd)
-					info.vertices.select(info.vcount++).xy(p2.x, p2.y).uv(tex.br_x, tex.br_y).cols(colMul, colAdd)
-					info.vertices.select(info.vcount++).xy(p3.x, p3.y).uv(tex.bl_x, tex.bl_y).cols(colMul, colAdd)
+					info.vertices.quadV(info.vcount++, p0.x.toFloat(), p0.y.toFloat(), tex.tl_x, tex.tl_y, colMul, colAdd)
+					info.vertices.quadV(info.vcount++, p1.x.toFloat(), p1.y.toFloat(), tex.tr_x, tex.tr_y, colMul, colAdd)
+					info.vertices.quadV(info.vcount++, p2.x.toFloat(), p2.y.toFloat(), tex.br_x, tex.br_y, colMul, colAdd)
+					info.vertices.quadV(info.vcount++, p3.x.toFloat(), p3.y.toFloat(), tex.bl_x, tex.bl_y, colMul, colAdd)
 				}
 
 				info.icount += 6
@@ -120,7 +115,7 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		var icount = 0
 	}
 
-	private val verticesPerTex = LinkedHashMap<Bitmap, Info>()
+	private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
 
 	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
 	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
@@ -134,11 +129,11 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		}
 		computeVertexIfRequired(ctx)
 
-		for ((tex, buffer) in verticesPerTex) {
-			ctx.batch.drawVertices(
-				buffer.vertices, ctx.getTex(tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
-			)
-		}
+        verticesPerTex.fastForEach { tex, buffer ->
+            ctx.batch.drawVertices(
+                buffer.vertices, ctx.getTex(tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
+            )
+        }
 		ctx.flush()
 	}
 

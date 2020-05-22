@@ -69,4 +69,13 @@ class TiledMapTest : ViewsForTesting() {
         resourcesVfs["tiled/Spaceship 3e.tmx"].readTiledMapData()
         resourcesVfs["tiled/Spaceship 3f.tmx"].readTiledMapData()
     }
+
+    @Test
+    fun testMultiTexture() = suspendTestNoJs {
+        val tileSet = TileSet(listOf(Bitmap32(32, 32, Colors.RED).slice(), Bitmap32(32, 32, Colors.BLUE).slice()), 32, 32)
+        val tileMap = TileMap(Bitmap32(32, 32), tileSet)
+        tileMap.intMap[0, 0] = 0
+        tileMap.intMap[1, 0] = 1
+        tileMap.render(views.renderContext)
+    }
 }
