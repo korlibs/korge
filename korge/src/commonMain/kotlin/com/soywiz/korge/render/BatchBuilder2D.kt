@@ -618,8 +618,11 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         @KorgeInternal
 		val QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
 
+        val EMPTY_INT_ARRAY = IntArray(0)
+
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		fun quadIndices(quadCount: Int): IntArray {
+            if (quadCount == 0) return EMPTY_INT_ARRAY
 			val out = IntArray(quadCount * 6)
 			var m = 0
 			var base = 0

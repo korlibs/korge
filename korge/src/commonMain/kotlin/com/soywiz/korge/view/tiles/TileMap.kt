@@ -19,6 +19,7 @@ inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.
 inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map.toIntArray2(), tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
 
+@OptIn(KorgeInternal::class)
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
     @PublishedApi
     internal val _map = Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data))
@@ -60,12 +61,12 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val posX = m.fastTransformXf(0.0, 0.0)
-        val posY = m.fastTransformYf(0.0, 0.0)
-        val dUX = m.fastTransformXf(tileWidth, 0.0) - posX
-        val dUY = m.fastTransformYf(tileWidth, 0.0) - posY
-        val dVX = m.fastTransformXf(0.0, tileHeight) - posX
-        val dVY = m.fastTransformYf(0.0, tileHeight) - posY
+        val posX = m.fastTransformX(0.0, 0.0)
+        val posY = m.fastTransformY(0.0, 0.0)
+        val dUX = m.fastTransformX(tileWidth, 0.0) - posX
+        val dUY = m.fastTransformY(tileWidth, 0.0) - posY
+        val dVX = m.fastTransformX(0.0, tileHeight) - posX
+        val dVY = m.fastTransformY(0.0, tileHeight) - posY
 
         val colMul = renderColorMul
         val colAdd = renderColorAdd
@@ -81,6 +82,8 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
         val yheight = my1 - my0
         val xwidth = mx1 - mx0
         val ntiles = xwidth * yheight
+        val allocTiles = ntiles.nextPowerOfTwo
+        infos.fastForEach { infosPool.free(it) }
         verticesPerTex.clear()
         infos.clear()
 
@@ -94,7 +97,18 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
                 if (ry < 0 || ry >= intMap.height) continue
                 val tex = tileset[intMap[rx, ry]] ?: continue
 
-                val info = verticesPerTex.getOrPut(tex.bmp) { Info(tex.bmp, TexturedVertexArray(ntiles * 4, TexturedVertexArray.quadIndices(ntiles))).also { infos += it } }
+                val info = verticesPerTex.getOrPut(tex.bmp) {
+                    infosPool.alloc().also { info ->
+                        info.tex = tex.bmp
+                        if (info.vertices.initialVcount < allocTiles * 4) {
+                            info.vertices = TexturedVertexArray(allocTiles * 4, TexturedVertexArray.quadIndices(allocTiles))
+                            //println("ALLOC TexturedVertexArray")
+                        }
+                        info.vcount = 0
+                        info.icount = 0
+                        infos += info
+                    }
+                }
 
                 run {
                     val p0X = posX + (dUX * x) + (dVX * y)
@@ -123,13 +137,18 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	}
 
 	// @TOOD: Use a TextureVertexBuffer or something
-	class Info(val tex: Bitmap, val vertices: TexturedVertexArray) {
+    @KorgeInternal
+	private class Info(var tex: Bitmap, var vertices: TexturedVertexArray) {
 		var vcount = 0
 		var icount = 0
 	}
 
 	private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
     private val infos = arrayListOf<Info>()
+    companion object {
+        private val dummyTexturedVertexArray = TexturedVertexArray(0, IntArray(0))
+    }
+    private val infosPool = Pool { Info(Bitmaps.transparent.bmp, dummyTexturedVertexArray) }
 
 	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
 	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
