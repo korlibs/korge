@@ -52,8 +52,8 @@ class Camera : Container(), View.Reference {
 	fun getLocalMatrixFittingView(view: View?): Matrix =
 		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: Rectangle(0, 0, 100, 100))
 
-	fun setTo(view: View?) = run { this.localMatrix = getLocalMatrixFittingView(view) }
-	fun setTo(rect: Rectangle) = run { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
+	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view) }
+	fun setTo(rect: Rectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
 
 	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingView(view)],

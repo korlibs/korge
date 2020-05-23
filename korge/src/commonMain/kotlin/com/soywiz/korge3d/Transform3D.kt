@@ -13,25 +13,22 @@ class Transform3D {
     }
 
     val globalMatrixUncached: Matrix3D = Matrix3D()
-        get() = run {
+        get() {
             val parent = parent?.globalMatrixUncached ?: identityMat
             field.multiply(parent, matrix)
-            field
+            return field
         }
 
     val globalMatrix: Matrix3D
-        get() = run {
-            // @TODO: Cache!
-            globalMatrixUncached
-        }
+        get() = globalMatrixUncached // @TODO: Cache!
 
     val matrix: Matrix3D = Matrix3D()
-        get() = run {
+        get() {
             if (matrixDirty) {
                 matrixDirty = false
                 field.setTRS(translation, rotation, scale)
             }
-            field
+            return field
         }
 
     var children: ArrayList<Transform3D> = arrayListOf()

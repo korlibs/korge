@@ -47,13 +47,13 @@ open class Text2(
     private var cachedVersion = -1
     private var version = 0
 
-    var text: String = text; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var color: RGBA = color; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var font: Font = font; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var fontSize: Double = fontSize; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var horizontalAlign: HorizontalAlign = horizontalAlign; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var verticalAlign: VerticalAlign = verticalAlign; set(value) = run { if (field != value) run { field = value }.also { version++ } }
-    var renderer: TextRenderer<String> = renderer; set(value) = run { if (field != value) run { field = value }.also { version++ } }
+    var text: String = text; set(value) { if (field != value) { field = value; version++ } }
+    var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
+    var font: Font = font; set(value) { if (field != value) { field = value; version++ } }
+    var fontSize: Double = fontSize; set(value) { if (field != value) { field = value; version++ } }
+    var horizontalAlign: HorizontalAlign = horizontalAlign; set(value) { if (field != value) { field = value; version++ } }
+    var verticalAlign: VerticalAlign = verticalAlign; set(value) { if (field != value) { field = value; version++ } }
+    var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
     private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()

@@ -13,69 +13,69 @@ abstract class View3D {
 	///////
 
 	var x: Double
-		set(localX) = run { transform.setTranslation(localX, y, z, localW) }
+		set(localX) { transform.setTranslation(localX, y, z, localW) }
 		get() = transform.translation.x.toDouble()
 
 	var y: Double
-		set(localY) = run { transform.setTranslation(x, localY, z, localW) }
+		set(localY) { transform.setTranslation(x, localY, z, localW) }
 		get() = transform.translation.y.toDouble()
 
 	var z: Double
-		set(localZ) = run { transform.setTranslation(x, y, localZ, localW) }
+		set(localZ) { transform.setTranslation(x, y, localZ, localW) }
 		get() = transform.translation.z.toDouble()
 
 	var localW: Double
-		set(localW) = run { transform.setTranslation(x, y, z, localW) }
+		set(localW) { transform.setTranslation(x, y, z, localW) }
 		get() = transform.translation.w.toDouble()
 
 	///////
 
 	var scaleX: Double
-		set(scaleX) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleX) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.x.toDouble()
 
 	var scaleY: Double
-		set(scaleY) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleY) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.y.toDouble()
 
 	var scaleZ: Double
-		set(scaleZ) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleZ) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.z.toDouble()
 
 	var localScaleW: Double
-		set(scaleW) = run { transform.setScale(scaleX, scaleY, scaleZ, scaleW) }
+		set(scaleW) { transform.setScale(scaleX, scaleY, scaleZ, scaleW) }
 		get() = transform.scale.w.toDouble()
 
 	///////
 
 	var rotationX: Angle
-		set(rotationX) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationX) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.x
 
 	var rotationY: Angle
-		set(rotationY) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationY) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.y
 
 	var rotationZ: Angle
-		set(rotationZ) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationZ) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.z
 
 	///////
 
 	var rotationQuatX: Double
-		set(rotationQuatX) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatX) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.x
 
 	var rotationQuatY: Double
-		set(rotationQuatY) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatY) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.y
 
 	var rotationQuatZ: Double
-		set(rotationQuatZ) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatZ) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.z
 
 	var rotationQuatW: Double
-		set(rotationQuatW) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatW) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.w
 
 	///////

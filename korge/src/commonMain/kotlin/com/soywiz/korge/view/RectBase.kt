@@ -21,9 +21,9 @@ open class RectBase(
 	//abstract val width: Double
 	//abstract val height: Double
 
-	protected var baseBitmap: BmpSlice = Bitmaps.white; set(v) = run { field = v }.also { dirtyVertices = true }
-	override var anchorX: Double = anchorX; set (v) = run { field = v }.also { dirtyVertices = true }
-    override var anchorY: Double = anchorY; set(v) = run { field = v }.also { dirtyVertices = true }
+	protected var baseBitmap: BmpSlice = Bitmaps.white; set(v) { field = v; dirtyVertices = true }
+	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true }
+    override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0

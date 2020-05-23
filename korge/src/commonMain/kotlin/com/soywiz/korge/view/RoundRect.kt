@@ -53,7 +53,7 @@ class RoundRect(
     /** The [color] of this [RoundRect]. Alias of [colorMul]. */
     var color: RGBA
         get() = colorMul
-        set(value) = run { colorMul = value }
+        set(value) { colorMul = value }
 
     init {
         this.colorMul = color

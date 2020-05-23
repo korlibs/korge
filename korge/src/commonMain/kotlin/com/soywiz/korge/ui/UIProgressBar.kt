@@ -37,7 +37,7 @@ open class UIProgressBar(
 	}
 
 	override var ratio: Double
-		set(value) = run { current = value * maximum }
+		set(value) { current = value * maximum }
 		get() = current / maximum
 
 	private val background = solidRect(width, height, skin.backColor)

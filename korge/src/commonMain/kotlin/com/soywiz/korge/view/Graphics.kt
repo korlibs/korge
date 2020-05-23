@@ -56,10 +56,10 @@ open class Graphics @JvmOverloads constructor(
 	override val totalPoints: Int get() = currentPath.totalPoints
 
 	override fun close() = currentPath.close()
-	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = run { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
-	override fun lineTo(x: Double, y: Double) = run { currentPath.lineTo(x, y) }
-	override fun moveTo(x: Double, y: Double) = run { currentPath.moveTo(x, y) }
-	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = run { currentPath.quadTo(cx, cy, ax, ay) }
+	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
+	override fun lineTo(x: Double, y: Double) { currentPath.lineTo(x, y) }
+	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
+	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
     inline fun fill(color: RGBA, alpha: Double = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
     @Deprecated("Kotlin/Native boxes inline+Number")

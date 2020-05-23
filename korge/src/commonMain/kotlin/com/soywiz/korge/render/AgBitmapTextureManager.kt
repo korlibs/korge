@@ -12,7 +12,7 @@ import com.soywiz.korma.geom.Rectangle
 @Deprecated("Use mipmaps instead")
 var Bitmap.texMipmaps: Boolean
     get() = this.mipmaps
-    set(value) = run { this.mipmaps = value }
+    set(value) { this.mipmaps = value }
 
 /** Enable or disable mipmap generation for this [Bitmap] */
 @Deprecated("Use .mipmaps method from korim", level = DeprecationLevel.HIDDEN)

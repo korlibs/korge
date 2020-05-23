@@ -768,12 +768,12 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 
 	//class Item(private val data: IntArray, index: Int) {
 	//	val offset = index * COMPONENTS_PER_VERTEX
-	//	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) = run { data[offset + 0] = v.toBits() }
-	//	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) = run { data[offset + 1] = v.toBits() }
-	//	var tx: Float; get() = Float.fromBits(data[offset + 2]); set(v) = run { data[offset + 2] = v.toBits() }
-	//	var ty: Float; get() = Float.fromBits(data[offset + 3]); set(v) = run { data[offset + 3] = v.toBits() }
-	//	var colMul: Int; get() = data[offset + 4]; set(v) = run { data[offset + 4] = v }
-	//	var colAdd: Int; get() = data[offset + 5]; set(v) = run { data[offset + 5] = v }
+	//	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) { data[offset + 0] = v.toBits() }
+	//	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) { data[offset + 1] = v.toBits() }
+	//	var tx: Float; get() = Float.fromBits(data[offset + 2]); set(v) { data[offset + 2] = v.toBits() }
+	//	var ty: Float; get() = Float.fromBits(data[offset + 3]); set(v) { data[offset + 3] = v.toBits() }
+	//	var colMul: Int; get() = data[offset + 4]; set(v) { data[offset + 4] = v }
+	//	var colAdd: Int; get() = data[offset + 5]; set(v) { data[offset + 5] = v }
 	//	fun setXY(x: Double, y: Double, matrix: Matrix) = this.apply {
 	//		this.x = matrix.transformX(x, y).toFloat()
 	//		this.y = matrix.transformY(x, y).toFloat()

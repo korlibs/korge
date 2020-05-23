@@ -38,7 +38,7 @@ open class UIComboBox<T>(
 	var selectedIndex by uiObservable(selectedIndex) { updateState() }
 	var selectedItem: T?
 		get() = items.getOrNull(selectedIndex)
-		set(value) = run { selectedIndex = items.indexOf(value) }
+		set(value) { selectedIndex = items.indexOf(value) }
 	var items: List<T> by uiObservable(items) { updateItems() }
 	var itemHeight by uiObservable(32) { updateItemsSize() }
 	var viewportHeight by uiObservable(196) { onSizeChanged() }

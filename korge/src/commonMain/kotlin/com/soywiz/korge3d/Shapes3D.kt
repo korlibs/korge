@@ -27,7 +27,7 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
 
 	var material: Material3D?
 		get() = mesh.material
-		set(value) = run { mesh.material = value }
+		set(value) { mesh.material = value }
 
 	fun material(material: Material3D?) = this.apply { this.material = material }
 

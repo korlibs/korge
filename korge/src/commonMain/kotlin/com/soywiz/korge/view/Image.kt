@@ -29,8 +29,8 @@ open class Image(
 		smoothing: Boolean = true
 	) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
 
-	var bitmap: BmpSlice get() = baseBitmap; set(v) = run { baseBitmap = v }
-	var texture: BmpSlice get() = baseBitmap; set(v) = run { baseBitmap = v }
+	var bitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
+	var texture: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
 
 	init {
 		this.baseBitmap = bitmap

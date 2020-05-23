@@ -134,53 +134,53 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
     /** Local X position of this view */
 	var x: Double
 		get() = ensureTransform().pos.x
-		set(v) = run { ensureTransform(); if (pos.x != v) run { pos.x = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (pos.x != v) { pos.x = v; invalidateMatrix() } }
     /** Local Y position of this view */
 	var y: Double
 		get() = ensureTransform().pos.y
-		set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (pos.y != v) { pos.y = v; invalidateMatrix() } }
 
     /** Local scaling in the X axis of this view */
 	var scaleX: Double
 		get() = ensureTransform()._scaleX
-		set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
     /** Local scaling in the Y axis of this view */
 	var scaleY: Double
 		get() = ensureTransform()._scaleY
-		set(v) = run { ensureTransform(); if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
 	var scale: Double
 		get() = (scaleX + scaleY) / 2.0
-		set(v) = run { scaleX = v; scaleY = v }
+		set(v) { scaleX = v; scaleY = v }
     /** Local skewing in the X axis of this view */
 	var skewX: Double
 		get() = ensureTransform()._skewX
-		set(v) = run { ensureTransform(); if (_skewX != v) run { _skewX = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_skewX != v) { _skewX = v; invalidateMatrix() } }
     /** Local skewing in the Y axis of this view */
 	var skewY: Double
 		get() = ensureTransform()._skewY
-		set(v) = run { ensureTransform(); if (_skewY != v) run { _skewY = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
     /** Local rotation of this view */
 	var rotation: Angle
 		get() = ensureTransform()._rotation
-		set(v) = run { ensureTransform(); if (_rotation != v) run { _rotation = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
     /** Local rotation in radians of this view */
 	var rotationRadians: Double
 		get() = rotation.radians
-		set(v) = run { rotation = v.radians }
+		set(v) { rotation = v.radians }
     /** Local rotation in degrees of this view */
 	var rotationDegrees: Double
 		get() = rotation.degrees
-		set(v) = run { rotation = v.degrees }
+		set(v) { rotation = v.degrees }
 
     /** The global x position of this view */
 	var globalX: Double
 		get() = parent?.localToGlobalX(x, y) ?: x;
-		set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
+		set(value) { x = parent?.globalToLocalX(value, globalY) ?: value }
     /** The global y position of this view */
 	var globalY: Double
 		get() = parent?.localToGlobalY(x, y) ?: y;
-		set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
+		set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -196,7 +196,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	open var width: Double
 		get() = getLocalBounds().width * scaleX
-		set(value) = run { scaleX = value / this.getLocalBounds().width }
+		set(value) { scaleX = value / this.getLocalBounds().width }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
@@ -204,7 +204,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	open var height: Double
 		get() = getLocalBounds().height * scaleY
-		set(value) = run { scaleY = value / this.getLocalBounds().height }
+		set(value) { scaleY = value / this.getLocalBounds().height }
 
     /**
      * The multiplicative [RGBA] color.
@@ -217,7 +217,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	var colorMul: RGBA
 		get() = _colorTransform.colorMul
-		set(v) = run { _colorTransform.colorMul = v }.also { invalidate() }
+		set(v) { _colorTransform.colorMul = v; invalidate() }
 
     /**
      * Additive part of the color transform.
@@ -227,18 +227,18 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	var colorAdd: Int
 		get() = _colorTransform.colorAdd;
-		set(v) = run { _colorTransform.colorAdd = v }.also { invalidate() }
+		set(v) { _colorTransform.colorAdd = v; invalidate() }
 
     /**
      * Shortcut for adjusting the multiplicative alpha value manually.
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
-	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v; invalidate() }
+	var alpha: Double get() = _colorTransform.mA; set(v) { _colorTransform.mA = v; invalidate() }
 
 	/** Alias for [colorMul] to make this familiar to people coming from other engines. */
 	var tint: RGBA
 		get() = this.colorMul
-		set(value) = run { this.colorMul = value }
+		set(value) { this.colorMul = value }
 
 	// region Properties
 	private val _props = linkedMapOf<String, String>()
@@ -405,15 +405,15 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		components?.remove(c)
 	}
 
-	//fun removeComponents(c: KClass<out Component>) = run { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
+	//fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
     /** Removes a set of components of the type [c] from the view */
-	fun removeComponents(c: KClass<out Component>) = run {
+	fun removeComponents(c: KClass<out Component>) {
 		//println("Remove components of type $c from $this")
 		components?.removeAll { it::class == c }
 	}
 
     /** Removes all the components attached to this view */
-	fun removeAllComponents() = run {
+	fun removeAllComponents() {
 		components?.clear()
 	}
 
@@ -429,7 +429,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
 		val component = object : UpdateComponent {
 			override val view: View get() = this@View
-			override fun update(ms: Double) = run { updatable(ms.toInt()) }
+			override fun update(ms: Double) { updatable(ms.toInt()) }
 		}.attach()
 		component.update(0.0)
 		return Cancellable { component.detach() }
@@ -531,7 +531,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
     var colorTransform: ColorTransform
 		get() = _colorTransform
-		set(v) = run { _colorTransform.copyFrom(v); invalidate() }
+		set(v) { _colorTransform.copyFrom(v); invalidate() }
 
 	private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
 	private var _renderColorTransformVersion = -1
@@ -854,7 +854,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun getLocalBounds(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
 
 	private val _localBounds: Rectangle = Rectangle()
-	open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit = run { out.setTo(0, 0, 0, 0) }
+	open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit { out.setTo(0, 0, 0, 0) }
 
 	protected open fun createInstance(): View =
 		throw MustOverrideException("Must Override ${this::class}.createInstance()")
@@ -1020,7 +1020,7 @@ fun View.replaceWith(view: View): Boolean {
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponent {
         override val view: View get() = this@addUpdater
-        override fun update(ms: Double) = run { updatable(this@addUpdater, ms.ms) }
+        override fun update(ms: Double) { updatable(this@addUpdater, ms.ms) }
     }.attach()
     component.update(0.0)
     return Cancellable { component.detach() }
