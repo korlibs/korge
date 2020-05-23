@@ -51,11 +51,23 @@ typealias DisplayObject = View
  *
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */
-abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+abstract class View internal constructor(
+    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
+    val isContainer: Boolean
+) : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+    constructor() : this(false)
 	//internal val _transform = ViewTransform(this)
 
-    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
-	open val isContainer get() = false
+    @KorgeInternal
+    @PublishedApi
+    internal var _children: ArrayList<View>? = null
+
+    /** Iterates all the children of this container in normal order of rendering. */
+    inline fun forEachChildren(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
+    /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
+    inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) = _children?.fastForEachWithIndex(callback)
+    /** Iterates all the children of this container in reverse order of rendering. */
+    inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
 
     /** Indicates if this view is going to propagate the events that reach this node to its children */
 	open var propagateEvents = true
@@ -776,7 +788,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		if (parent == null) return
 		val p = parent!!
 		for (i in index + 1 until p.numChildren) p[i].index--
-		p.childrenInternal.removeAt(index)
+		p._children?.removeAt(index)
 		parent = null
 		index = -1
 	}
@@ -1004,10 +1016,11 @@ fun View.hasAncestor(ancestor: View): Boolean {
  * Returns true if the replacement was successful.
  * If this view doesn't have a parent or [view] is the same as [this], returns null.
  */
+@OptIn(KorgeInternal::class)
 fun View.replaceWith(view: View): Boolean {
 	if (this == view) return false
 	if (parent == null) return false
-	view.parent?.childrenInternal?.remove(view)
+	view.parent?._children?.remove(view)
 	parent!!.childrenInternal[this.index] = view
 	view.index = this.index
 	view.parent = parent
@@ -1025,6 +1038,16 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     }.attach()
     component.update(0.0)
     return Cancellable { component.detach() }
+}
+
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
+    object : UpdateComponentWithViews {
+        override val view: View get() = this@onNextFrame
+        override fun update(views: Views, ms: Double) {
+            removeFromView()
+            updatable(this@onNextFrame, views)
+        }
+    }.attach()
 }
 
 /**
@@ -1058,7 +1081,7 @@ val View?.ancestors: List<View> get() = ancestorsUpTo(null)
  */
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	emit("$indent$this")
-	if (this is Container) {
+	if (this != null && this.isContainer) {
 		this.forEachChildren { child ->
 			child.dump("$indent ", emit)
 		}
@@ -1082,7 +1105,7 @@ fun View?.dumpToString(): String {
 fun View?.foreachDescendant(handler: (View) -> Unit) {
 	if (this != null) {
 		handler(this)
-		if (this is Container) {
+		if (this.isContainer) {
 			this.forEachChildren { child ->
 				child.foreachDescendant(handler)
 			}
@@ -1149,7 +1172,7 @@ val View?.allDescendantNames
 fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this
-	if (this is Container) {
+	if (this.isContainer) {
 		this.forEachChildren { child ->
 			val res = child.firstDescendantWith(check)
 			if (res != null) return res
@@ -1162,7 +1185,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) -> Boolean): List<View> {
 	if (this != null) {
 		if (check(this)) out += this
-		if (this is Container) {
+		if (this.isContainer) {
 			this.forEachChildren { child ->
 				child.descendantsWith(out, check)
 			}

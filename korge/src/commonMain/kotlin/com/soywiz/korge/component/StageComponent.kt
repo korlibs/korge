@@ -1,5 +1,6 @@
 package com.soywiz.korge.component
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 
@@ -18,15 +19,19 @@ interface StageComponent : Component {
  * Enables the use of [StageComponent] components.
  */
 fun Views.registerStageComponent() {
+    val EXTRA_ID = "Views.registerStageComponent"
+    if (views.getExtra(EXTRA_ID) == true) return
+    views.setExtra(EXTRA_ID, true)
     val componentsInStagePrev = ArrayList<StageComponent>()
     val componentsInStageCur = linkedSetOf<StageComponent>()
     val componentsInStage = linkedSetOf<StageComponent>()
     val tempComponents: ArrayList<Component> = arrayListOf()
+    val tempViews: ArrayList<View> = arrayListOf()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
-        stage.forEachComponent<StageComponent>(tempComponents) {
+        stage.forEachComponent<StageComponent>(tempComponents, tempViews) {
             componentsInStageCur += it
             if (it !in componentsInStage) {
                 componentsInStage += it

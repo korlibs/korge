@@ -27,12 +27,13 @@ inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = 
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
 @UseExperimental(KorgeInternal::class)
-open class Container : View() {
-	final override val isContainer get() = true
-
+open class Container : View(true) {
     @KorgeInternal
     @PublishedApi
-	internal val childrenInternal = arrayListOf<View>()
+	internal val childrenInternal: ArrayList<View> get() {
+        if (_children == null) _children = arrayListOf()
+        return _children!!
+    }
 
 	/**
 	 * Retrieves all the child [View]s.
@@ -43,27 +44,25 @@ open class Container : View() {
     val children: List<View> get() = childrenInternal
 
     /** Returns the first child of this container or null when the container doesn't have children */
-    val firstChild: View? get() = childrenInternal.firstOrNull()
+    val firstChild: View? get() = _children?.firstOrNull()
     /** Returns the last child of this container or null when the container doesn't have children */
-    val lastChild: View? get() = childrenInternal.lastOrNull()
+    val lastChild: View? get() = _children?.lastOrNull()
 
     /** Sorts all the children by using the specified [comparator]. */
     fun sortChildrenBy(comparator: Comparator<View>) {
-        childrenInternal.sortWith(comparator)
+        _children?.sortWith(comparator)
         forEachChildrenWithIndex { index, child ->
             child.index = index
         }
     }
 
-    /** Iterates all the children of this container in normal order of rendering. */
-    inline fun forEachChildren(callback: (child: View) -> Unit) = childrenInternal.fastForEach(callback)
-    /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
-    inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) = childrenInternal.fastForEachWithIndex(callback)
-    /** Iterates all the children of this container in reverse order of rendering. */
-    inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = childrenInternal.fastForEachReverse(callback)
-
     /** Returns the number of children this container has */
-    val numChildren: Int get() = children.size
+    @Suppress("FoldInitializerAndIfToElvis")
+    val numChildren: Int get() {
+        val children = _children
+        if (children == null) return 0
+        return children.size
+    }
     /** Returns the number of children this container has */
     val size: Int get() = numChildren
 
@@ -91,8 +90,10 @@ open class Container : View() {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
 			val index2 = view2.index
-			childrenInternal[index1] = view2.apply { index = index1 }
-			childrenInternal[index2] = view1.apply { index = index2 }
+			_children?.set(index1, view2)
+            view2.index = index1
+            _children?.set(index2, view1)
+            view1.index = index2
 		}
 	}
 
@@ -103,11 +104,12 @@ open class Container : View() {
 	 */
     @KorgeUntested
 	fun addChildAt(view: View, index: Int) {
-		val aindex = index.clamp(0, this.childrenInternal.size)
+		val aindex = index.clamp(0, this.numChildren)
 		view.removeFromParent()
 		view.index = aindex
-		childrenInternal.add(aindex, view)
-		for (n in aindex + 1 until childrenInternal.size) childrenInternal[n].index = n // Update other indices
+        val children = childrenInternal
+        children.add(aindex, view)
+		for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
 		view.parent = this
 		view.invalidate()
 	}
@@ -127,13 +129,13 @@ open class Container : View() {
     /**
      * Finds the [View] at a given index. If the index is not valid, it returns null.
      */
-    fun getChildAtOrNull(index: Int): View? = childrenInternal.getOrNull(index)
+    fun getChildAtOrNull(index: Int): View? = _children?.getOrNull(index)
 
     /**
 	 * Finds the first child [View] matching a given [name].
 	 */
     @KorgeUntested
-	fun getChildByName(name: String): View? = childrenInternal.firstOrNull { it.name == name }
+	fun getChildByName(name: String): View? = _children?.firstOrNull { it.name == name }
 
 	/**
 	 * Removes the specified [view] from this container.
@@ -150,11 +152,11 @@ open class Container : View() {
 	 * Removes all [View]s children from this container.
 	 */
 	fun removeChildren() {
-		childrenInternal.fastForEach { child ->
+		_children?.fastForEach { child ->
 			child.parent = null
 			child.index = -1
 		}
-		childrenInternal.clear()
+        _children?.clear()
 	}
 
 	/**
@@ -169,7 +171,7 @@ open class Container : View() {
 	 */
 	override fun invalidate() {
 		super.invalidate()
-		childrenInternal.fastForEach { child ->
+        _children?.fastForEach { child ->
 			if (child._requireInvalidate) {
 				child.invalidate()
 			}
@@ -181,7 +183,7 @@ open class Container : View() {
 	 */
 	operator fun plusAssign(view: View) {
 		view.removeFromParent()
-		view.index = childrenInternal.size
+		view.index = numChildren
 		childrenInternal += view
 		view.parent = this
 		view.invalidate()
@@ -209,7 +211,7 @@ open class Container : View() {
 	 * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
 	 */
 	override fun hitTest(x: Double, y: Double): View? {
-		childrenInternal.fastForEachReverse { child ->
+        _children?.fastForEachReverse { child ->
 			if (child.visible) {
 				val res = child.hitTest(x, y)
 				if (res != null) return res
@@ -255,9 +257,7 @@ open class Container : View() {
 	 */
 	override fun clone(): View {
 		val out = super.clone()
-		childrenInternal.fastForEach { child ->
-			out += child.clone()
-		}
+        _children?.fastForEach { out += it.clone() }
 		return out
 	}
 }
