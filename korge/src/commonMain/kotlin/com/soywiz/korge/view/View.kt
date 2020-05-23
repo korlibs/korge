@@ -1276,7 +1276,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.y + padding.toDouble()
+    y = other.y + padding
     return this
 }
 
@@ -1285,7 +1285,7 @@ fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.y + other.height + padding.toDouble()
+    y = other.y + other.height + padding
     return this
 }
 
@@ -1294,7 +1294,7 @@ fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.y - height - padding.toDouble()
+    y = other.y - height - padding
     return this
 }
 
@@ -1303,7 +1303,7 @@ fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.y + other.height - height - padding.toDouble()
+    y = other.y + other.height - height - padding
     return this
 }
 
