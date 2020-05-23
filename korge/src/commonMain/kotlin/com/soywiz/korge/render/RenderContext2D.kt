@@ -213,18 +213,20 @@ class RenderContext2D(
 
 // @TODO: Remove once KorGW is updated
 @PublishedApi
-internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor = this.apply {
+internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor {
     this.x = that.x
     this.y = that.y
     this.width = that.width
     this.height = that.height
+    return this
 }
 
 // @TODO: Remove once KorGW is updated
 @PublishedApi
-internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor = this.apply {
+internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor {
     this.x = x
     this.y = y
     this.width = width
     this.height = height
+    return this
 }

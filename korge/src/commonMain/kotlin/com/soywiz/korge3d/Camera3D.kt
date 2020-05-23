@@ -46,10 +46,11 @@ abstract class Camera3D : View3D() {
 		var near: Double = near; set(value) = dirty({ field != value }) { field = value }
 		var far: Double = far; set(value) = dirty({ field != value }) { field = value }
 
-		fun set(fov: Angle = this.fov, near: Double = this.near, far: Double = this.far) = this.apply {
+		fun set(fov: Angle = this.fov, near: Double = this.near, far: Double = this.far): Perspective {
 			this.fov = fov
 			this.near = near
 			this.far = far
+            return this
 		}
 
 		override fun updateMatrix(mat: Matrix3D, width: Double, height: Double) {

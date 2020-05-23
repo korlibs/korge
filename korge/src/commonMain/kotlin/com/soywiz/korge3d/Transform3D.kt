@@ -54,8 +54,9 @@ class Transform3D {
     }
 
     @PublishedApi
-    internal fun updateTRSIfRequired() = this.apply {
+    internal fun updateTRSIfRequired(): Transform3D {
         if (transformDirty) updateTRS()
+        return this
     }
 
     val translation: Position3D get() = updateTRSIfRequired()._translation
@@ -75,9 +76,10 @@ class Transform3D {
     /////////////////
     /////////////////
 
-    fun setMatrix(mat: Matrix3D) = this.apply {
+    fun setMatrix(mat: Matrix3D): Transform3D {
         transformDirty = true
         this.matrix.copyFrom(mat)
+        return this
     }
 
     fun setTranslation(x: Float, y: Float, z: Float, w: Float = 1f) = updatingTRS {
@@ -157,20 +159,18 @@ class Transform3D {
     inline fun lookAt(tx: Number, ty: Number, tz: Number, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
     fun lookAt(tx: Double, ty: Double, tz: Double, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
 
+    //setTranslation(px, py, pz)
+    //lookUp(tx, ty, tz, up)
     fun setTranslationAndLookAt(
         px: Float, py: Float, pz: Float,
         tx: Float, ty: Float, tz: Float,
         up: Vector3D = UP
-    ) = this.apply {
-        //setTranslation(px, py, pz)
-        //lookUp(tx, ty, tz, up)
-        setMatrix(
-            matrix.multiply(
-                tempMat1.setToTranslation(px, py, pz),
-                tempMat2.setToLookAt(tempVec1.setTo(px, py, pz), tempVec2.setTo(tx, ty, tz), up)
-            )
+    ): Transform3D = setMatrix(
+        matrix.multiply(
+            tempMat1.setToTranslation(px, py, pz),
+            tempMat2.setToLookAt(tempVec1.setTo(px, py, pz), tempVec2.setTo(tx, ty, tz), up)
         )
-    }
+    )
 
     @Deprecated("Kotlin/Native boxes inline+Number")
     inline fun setTranslationAndLookAt(
@@ -185,9 +185,10 @@ class Transform3D {
     ) = setTranslationAndLookAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
 
     private val tempEuler = EulerRotation()
-    fun rotate(x: Angle, y: Angle, z: Angle) = this.apply {
+    fun rotate(x: Angle, y: Angle, z: Angle): Transform3D {
         tempEuler.setQuaternion(this.rotation)
         setRotation(tempEuler.x + x, tempEuler.y + y, tempEuler.z + z)
+        return this
     }
 
     fun copyFrom(localTransform: Transform3D) {

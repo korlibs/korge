@@ -10,11 +10,12 @@ data class MouseDragInfo(
     var start: Boolean = false,
     var end: Boolean = false
 ) {
-    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean) = this.apply {
+    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean): MouseDragInfo {
         this.dx = dx
         this.dy = dy
         this.start = start
         this.end = end
+        return this
     }
 }
 
@@ -70,7 +71,7 @@ fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
     return this
 }
 
-fun <T : View> T.draggable(): T = this.apply {
+fun <T : View> T.draggable(): T {
     val view = this
     var sx = 0.0
     var sy = 0.0
@@ -83,4 +84,5 @@ fun <T : View> T.draggable(): T = this.apply {
         view.y = sy + info.dy
         //println("DRAG: $dx, $dy, $start, $end")
     }
+    return this
 }

@@ -61,7 +61,7 @@ class ParticleEmitter() {
 			this.timeUntilStop = time
 		}
 
-	suspend fun load(file: VfsFile): ParticleEmitter = this.apply {
+	suspend fun load(file: VfsFile): ParticleEmitter {
 		val particleXml = file.readXml()
 
 		var blendFuncSource = AG.BlendFactor.ONE
@@ -134,6 +134,7 @@ class ParticleEmitter() {
 		}
 
 		blendFactors = AG.Blending(blendFuncSource, blendFuncDestination)
+        return this
 	}
 
 	data class Particle(

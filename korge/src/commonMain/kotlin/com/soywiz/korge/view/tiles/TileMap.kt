@@ -179,8 +179,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	}
 }
 
-fun <T : TileMap> T.repeat(repeatX: TileMap.Repeat, repeatY: TileMap.Repeat = repeatX): T = this.apply {
+fun <T : TileMap> T.repeat(repeatX: TileMap.Repeat, repeatY: TileMap.Repeat = repeatX): T {
 	this.repeatX = repeatX
 	this.repeatY = repeatY
+    return this
 }
 

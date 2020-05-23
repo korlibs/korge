@@ -152,7 +152,10 @@ operator fun View3D?.get(name: String): View3D? {
 }
 
 @Korge3DExperimental
-fun <T : View3D> T.name(name: String) = this.apply { this.name = name }
+fun <T : View3D> T.name(name: String): T {
+    this.name = name
+    return this
+}
 
 @Korge3DExperimental
 fun <T : View3D> T.position(x: Float, y: Float, z: Float, w: Float = 1f): T {
@@ -169,8 +172,9 @@ fun <T : View3D> T.position(x: Double, y: Double, z: Double, w: Double = 1.0): T
 fun <T : View3D> T.position(x: Int, y: Int, z: Int, w: Int = 1): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
 @Korge3DExperimental
-inline fun <T : View3D> T.rotation(x: Angle = 0.degrees, y: Angle = 0.degrees, z: Angle = 0.degrees): T = this.apply {
+inline fun <T : View3D> T.rotation(x: Angle = 0.degrees, y: Angle = 0.degrees, z: Angle = 0.degrees): T {
 	transform.setRotation(x, y, z)
+    return this
 }
 
 @Korge3DExperimental
@@ -217,6 +221,7 @@ fun <T : View3D> T.positionLookingAt(px: Double, py: Double, pz: Double, tx: Dou
 fun <T : View3D> T.positionLookingAt(px: Int, py: Int, pz: Int, tx: Int, ty: Int, tz: Int): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
 
 @Korge3DExperimental
-fun <T : View3D> T.addTo(container: Container3D) = this.apply {
+fun <T : View3D> T.addTo(container: Container3D): T {
 	container.addChild(this)
+    return this
 }

@@ -28,9 +28,10 @@ open class Graphics @JvmOverloads constructor(
 	@PublishedApi
 	internal var dirty = true
 
-	inline fun dirty(callback: () -> Unit) = this.apply {
+	inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
 		callback()
+        return this
 	}
 
 	fun clear() {

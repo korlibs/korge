@@ -29,7 +29,10 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
 		get() = mesh.material
 		set(value) { mesh.material = value }
 
-	fun material(material: Material3D?) = this.apply { this.material = material }
+	fun material(material: Material3D?) {
+        this.material = material
+        return this
+    }
 
 	companion object {
 		private val cubeSize = .5f

@@ -273,7 +273,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	private val tempTransform = Matrix.Transform()
 	//private val tempMatrix = Matrix2d()
 
-	private fun ensureTransform() = this.apply {
+	private fun ensureTransform(): View {
 		if (!validLocalProps) {
 			validLocalProps = true
 			val t = tempTransform.setMatrix(this._localMatrix)
@@ -285,6 +285,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			this._skewY = t.skewY
 			this._rotation = t.rotation
 		}
+        return this
 	}
 
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */

@@ -4,8 +4,9 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
-fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE): T = this.apply {
+fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE): T {
     DockingComponent(this, anchor, scaleMode).attach()
+    return this
 }
 
 class DockingComponent(override val view: View, var anchor: Anchor, var scaleMode: ScaleMode = ScaleMode.NO_SCALE) : ResizeComponent {

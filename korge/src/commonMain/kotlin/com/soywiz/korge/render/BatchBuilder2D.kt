@@ -643,19 +643,40 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	private var offset = 0
     
     /** Moves the cursor for setting vertexs to the vertex [i] */
-    fun select(i: Int) = this.apply { offset = i * COMPONENTS_PER_VERTEX }
+    fun select(i: Int): TexturedVertexArray {
+        offset = i * COMPONENTS_PER_VERTEX
+        return this
+    }
     /** Sets the [x] of the vertex previously selected calling [select] */
-	fun setX(v: Float) = this.apply { f32[offset + 0] = v }
+	fun setX(v: Float): TexturedVertexArray {
+        f32[offset + 0] = v
+        return this
+    }
     /** Sets the [y] of the vertex previously selected calling [select] */
-	fun setY(v: Float) = this.apply { f32[offset + 1] = v }
+	fun setY(v: Float): TexturedVertexArray {
+        f32[offset + 1] = v
+        return this
+    }
     /** Sets the [u] (x in texture) of the vertex previously selected calling [select] */
-	fun setU(v: Float) = this.apply { f32[offset + 2] = v }
+	fun setU(v: Float): TexturedVertexArray {
+        f32[offset + 2] = v
+        return this
+    }
     /** Sets the [v] (y in texture) of the vertex previously selected calling [select] */
-	fun setV(v: Float) = this.apply { f32[offset + 3] = v }
+	fun setV(v: Float): TexturedVertexArray {
+        f32[offset + 3] = v
+        return this
+    }
     /** Sets the [cMul] (multiplicative color) of the vertex previously selected calling [select] */
-	fun setCMul(v: RGBA) = this.apply { i32[offset + 4] = v.value }
+	fun setCMul(v: RGBA): TexturedVertexArray {
+        i32[offset + 4] = v.value
+        return this
+    }
     /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
-	fun setCAdd(v: Int) = this.apply { i32[offset + 5] = v }
+	fun setCAdd(v: Int): TexturedVertexArray {
+        i32[offset + 5] = v
+        return this
+    }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
 	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.fastTransformXf(x, y)).setY(matrix.fastTransformYf(x, y))
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
@@ -774,13 +795,13 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//	var ty: Float; get() = Float.fromBits(data[offset + 3]); set(v) { data[offset + 3] = v.toBits() }
 	//	var colMul: Int; get() = data[offset + 4]; set(v) { data[offset + 4] = v }
 	//	var colAdd: Int; get() = data[offset + 5]; set(v) { data[offset + 5] = v }
-	//	fun setXY(x: Double, y: Double, matrix: Matrix) = this.apply {
+	//	fun setXY(x: Double, y: Double, matrix: Matrix) {
 	//		this.x = matrix.transformX(x, y).toFloat()
 	//		this.y = matrix.transformY(x, y).toFloat()
 	//	}
-	//	fun setXY(x: Double, y: Double) = this.apply { this.x = x.toFloat() }.also { this.y = y.toFloat() }
-	//	fun setTXY(tx: Float, ty: Float) = this.apply { this.tx = tx }.also { this.ty = ty }
-	//	fun setCols(colMul: Int, colAdd: Int) = this.apply { this.colMul = colMul }.also { this.colAdd = colAdd }
+	//	fun setXY(x: Double, y: Double) { this.x = x.toFloat() }.also { this.y = y.toFloat() }
+	//	fun setTXY(tx: Float, ty: Float) { this.tx = tx }.also { this.ty = ty }
+	//	fun setCols(colMul: Int, colAdd: Int) { this.colMul = colMul }.also { this.colAdd = colAdd }
 	//}
 }
 
