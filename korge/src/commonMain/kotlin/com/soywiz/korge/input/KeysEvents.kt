@@ -36,7 +36,7 @@ class KeysEvents(override val view: View) : KeyComponent {
 	}
 }
 
-val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponent<KeysEvents> { KeysEvents(this) } }
+val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
 
 @PublishedApi

@@ -117,5 +117,5 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 	}
 }
 
-val View.gamepad by Extra.PropertyThis<View, GamePadEvents> { this.getOrCreateComponent<GamePadEvents> { GamePadEvents(this) } }
+val View.gamepad by Extra.PropertyThis<View, GamePadEvents> { this.getOrCreateComponentGamepad<GamePadEvents> { GamePadEvents(this) } }
 inline fun <T> View.gamepad(callback: GamePadEvents.() -> T): T = gamepad.run(callback)

@@ -23,4 +23,4 @@ class Gestures(override val view: View) : Component {
 	val onSwipe = Signal<Direction>()
 }
 
-val View.gestures get() = this.getOrCreateComponent<Gestures> { Gestures(this) }
+val View.gestures get() = this.getOrCreateComponentOther<Gestures> { Gestures(this) }

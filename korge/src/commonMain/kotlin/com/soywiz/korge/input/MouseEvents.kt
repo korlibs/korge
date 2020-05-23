@@ -314,7 +314,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 //var View.mouseEnabled by Extra.Property { true }
 
-val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponent<MouseEvents> { MouseEvents(this) } }
+val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponentMouse<MouseEvents> { MouseEvents(this) } }
 inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
 
 @PublishedApi

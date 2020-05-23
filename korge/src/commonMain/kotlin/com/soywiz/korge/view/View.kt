@@ -378,7 +378,7 @@ abstract class View internal constructor(
     @KorgeInternal
     @PublishedApi
     internal val componentsSure: Components get() {
-        if (_components == null) _components = Components(this)
+        if (_components == null) _components = Components()
         return _components!!
     }
 
@@ -387,19 +387,18 @@ abstract class View internal constructor(
 	internal var components: ArrayList<Component>? = null
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : MouseComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : KeyComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : GamepadComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : TouchComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : EventComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : UpdateComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : ResizeComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    /** Creates a typed [clazz] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
     @Deprecated("")
-    inline fun <reified T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, clazz, gen)
+	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+
+    inline fun <reified T : Component> getOrCreateComponentOther(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
 
     /** Removes a specific [c] component from the view */
 	fun removeComponent(c: Component) { _components?.remove(c) }

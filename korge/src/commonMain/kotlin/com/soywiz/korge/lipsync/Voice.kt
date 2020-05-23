@@ -1,8 +1,6 @@
 package com.soywiz.korge.lipsync
 
 import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
 import com.soywiz.korau.sound.NativeSound
 import com.soywiz.korau.sound.playAndWait
 import com.soywiz.korau.sound.readNativeSoundOptimized
@@ -75,7 +73,7 @@ class LipSyncComponent(override val view: View) : EventComponent {
 	}
 }
 
-fun View.lipsync() = this.getOrCreateComponent<LipSyncComponent> { LipSyncComponent(it) }
+fun View.lipsync() = this.getOrCreateComponentEvent<LipSyncComponent> { LipSyncComponent(it) }
 
 suspend fun VfsFile.readVoice(): Voice {
 	val lipsyncFile = this.withExtension("lipsync")
