@@ -13,13 +13,14 @@ import com.soywiz.korev.*
 import kotlin.js.*
 import kotlin.reflect.*
 
-class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWithViews, Extra by Extra.Mixin() {
+class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 
-	val click = Signal<MouseEvents>()
+
+    val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
 	val out = Signal<MouseEvents>()
 	val down = Signal<MouseEvents>()
@@ -197,7 +198,15 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 		}
 	}
 
-	override fun update(views: Views, ms: Double) {
+    inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews, Extra by Extra.Mixin() {
+        override fun update(views: Views, ms: Double) {
+            this@MouseEvents.update(views, ms)
+        }
+    }
+
+    val updater = MouseEventsUpdate(view).attach()
+
+    fun update(views: Views, ms: Double) {
 		if (!view.mouseEnabled) return
         this.views = views
 
@@ -305,7 +314,7 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 
 //var View.mouseEnabled by Extra.Property { true }
 
-val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponent { MouseEvents(this) } }
+val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateComponent<MouseEvents> { MouseEvents(this) } }
 inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
 
 @PublishedApi

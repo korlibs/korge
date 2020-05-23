@@ -51,6 +51,7 @@ typealias DisplayObject = View
  *
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */
+@OptIn(KorgeInternal::class)
 abstract class View internal constructor(
     /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
     val isContainer: Boolean
@@ -370,72 +371,65 @@ abstract class View internal constructor(
 	internal var validLocalProps = true
 	internal var validLocalMatrix = true
 
-    /** Gets a list of [Component]s attached to this view. Should be used with care if at all. */
     @KorgeInternal
-	val unsafeListRawComponents get() = components
+    @PublishedApi
+    internal var _components: Components? = null
+
+    @KorgeInternal
+    @PublishedApi
+    internal val componentsSure: Components get() {
+        if (_components == null) _components = Components(this)
+        return _components!!
+    }
 
 // region Components
     @PublishedApi
 	internal var components: ArrayList<Component>? = null
-	private var _componentsIt: ArrayList<Component>? = null
-	private val componentsIt: ArrayList<Component>?
-		get() {
-			if (components != null) {
-				if (_componentsIt == null) _componentsIt = ArrayList()
-                val _componentsIt = _componentsIt!!
-				_componentsIt.clear()
-                components!!.fastForEach { _componentsIt.add(it) }
-				//_componentsIt!!.addAll(components!!) // It creates an iterator() on Kotlin/Native! Seems to be slow, and it is not going to be updated while iterating.
-			}
-			return _componentsIt
-		}
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T =
-		getOrCreateComponent(T::class, gen)
-
-    @PublishedApi
-    internal fun ensureComponents() {
-        if (components == null) components = arrayListOf()
-    }
+	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : MouseComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : KeyComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : GamepadComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : TouchComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : EventComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : ResizeComponent> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
 
     /** Creates a typed [clazz] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-    inline fun <T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T {
-        ensureComponents()
-        //var component = components!!.firstOrNull { it::class.isSubtypeOf(clazz) }
-        var component: T? = findFirstComponentOfType(clazz)
-
-        if (component == null) {
-            component = gen(this)
-            components!! += component
-        }
-        return component
-    }
+    @Deprecated("")
+    inline fun <reified T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, clazz, gen)
 
     /** Removes a specific [c] component from the view */
-	fun removeComponent(c: Component): Unit {
-		//println("Remove component $c from $this")
-		components?.remove(c)
-	}
+	fun removeComponent(c: Component) { _components?.remove(c) }
+    fun removeComponent(c: MouseComponent) { _components?.remove(c) }
+    fun removeComponent(c: KeyComponent) { _components?.remove(c) }
+    fun removeComponent(c: GamepadComponent) { _components?.remove(c) }
+    fun removeComponent(c: TouchComponent) { _components?.remove(c) }
+    fun removeComponent(c: EventComponent) { _components?.remove(c) }
+    fun removeComponent(c: UpdateComponentWithViews) { _components?.remove(c) }
+    fun removeComponent(c: UpdateComponent) { _components?.remove(c) }
+    fun removeComponent(c: ResizeComponent) { _components?.remove(c) }
 
 	//fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
     /** Removes a set of components of the type [c] from the view */
-	fun removeComponents(c: KClass<out Component>) {
-		//println("Remove components of type $c from $this")
-		components?.removeAll { it::class == c }
-	}
+    @Deprecated("")
+	fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
 
     /** Removes all the components attached to this view */
-	fun removeAllComponents() {
-		components?.clear()
-	}
+    fun removeAllComponents(): Unit { _components?.removeAll() }
 
     /** Adds a component to this view */
-	fun addComponent(c: Component): Component {
-		if (components == null) components = arrayListOf()
-		components?.plusAssign(c)
-		return c
-	}
+	fun addComponent(c: Component): Component = componentsSure.add(c)
+    fun addComponent(c: MouseComponent) = componentsSure.add(c)
+    fun addComponent(c: KeyComponent) = componentsSure.add(c)
+    fun addComponent(c: GamepadComponent) = componentsSure.add(c)
+    fun addComponent(c: TouchComponent) = componentsSure.add(c)
+    fun addComponent(c: EventComponent) = componentsSure.add(c)
+    fun addComponent(c: UpdateComponentWithViews) = componentsSure.add(c)
+    fun addComponent(c: UpdateComponent) = componentsSure.add(c)
+    fun addComponent(c: ResizeComponent) = componentsSure.add(c)
 
     /** Adds a block that will be executed per frame to this view. This is deprecated, and you should use [addUpdater] instead that uses [TimeSpan] to provide the elapsed time */
     @Deprecated("Use addUpdater, since this method uses dtMs: Int instead of a TimeSpan due to bugs in initial Kotlin inline classes")
@@ -459,14 +453,6 @@ abstract class View internal constructor(
             detach()
         }
     }
-
-    @PublishedApi
-	internal fun <T : Component> findFirstComponentOfType(clazz: KClass<T>): T? {
-		components!!.fastForEach {
-			if (it::class == clazz) return it as T
-		}
-		return null
-	}
 
 // endregion
 

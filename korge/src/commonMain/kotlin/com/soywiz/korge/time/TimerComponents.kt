@@ -79,7 +79,7 @@ class TimerComponents(override val view: View) : UpdateComponent {
 	}
 }
 
-val View.timers get() = this.getOrCreateComponent { TimerComponents(this) }
+val View.timers get() = this.getOrCreateComponent<TimerComponents> { TimerComponents(this) }
 
 @Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
 suspend fun View.waitMs(time: Int) = this.delay(time.ms)

@@ -25,19 +25,26 @@ fun Views.registerStageComponent() {
     val componentsInStagePrev = ArrayList<StageComponent>()
     val componentsInStageCur = linkedSetOf<StageComponent>()
     val componentsInStage = linkedSetOf<StageComponent>()
-    val tempComponents: ArrayList<Component> = arrayListOf()
     val tempViews: ArrayList<View> = arrayListOf()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
-        stage.forEachComponent<StageComponent>(tempComponents, tempViews) {
-            componentsInStageCur += it
-            if (it !in componentsInStage) {
-                componentsInStage += it
-                it.added(views)
+
+        val stagedViews = getAllDescendantViews(stage, tempViews)
+
+        stagedViews.fastForEach { view ->
+            view._components?.eother?.fastForEach {
+                if (it is StageComponent) {
+                    componentsInStageCur += it
+                    if (it !in componentsInStage) {
+                        componentsInStage += it
+                        it.added(views)
+                    }
+                }
             }
         }
+
         componentsInStagePrev.fastForEach {
             if (it !in componentsInStageCur) {
                 it.removed(views)

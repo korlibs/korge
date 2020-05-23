@@ -75,7 +75,7 @@ class LipSyncComponent(override val view: View) : EventComponent {
 	}
 }
 
-fun View.lipsync() = this.getOrCreateComponent { LipSyncComponent(it) }
+fun View.lipsync() = this.getOrCreateComponent<LipSyncComponent> { LipSyncComponent(it) }
 
 suspend fun VfsFile.readVoice(): Voice {
 	val lipsyncFile = this.withExtension("lipsync")
