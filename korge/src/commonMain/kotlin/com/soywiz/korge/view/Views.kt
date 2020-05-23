@@ -165,7 +165,7 @@ class Views constructor(
 		val e = event
         //println("Event: $clazz : $event")
 		try {
-			//this.stage.dispatch(clazz, event)
+			this.stage.dispatch(clazz, event)
             val stagedViews = getAllDescendantViews(stage, tempViews)
 			when (e) {
 				is MouseEvent -> stagedViews.fastForEach { it._components?.mouse?.fastForEach { it.onMouseEvent(views, e) } }
