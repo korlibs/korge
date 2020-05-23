@@ -122,7 +122,6 @@ open class Container : View() {
 	 * Finds the [View] at a given index.
      * Remarks: if [index] is outside bounds 0..[numChildren] - 1, an [IndexOutOfBoundsException] will be thrown.
 	 */
-    @KorgeUntested
 	fun getChildAt(index: Int): View = childrenInternal[index]
 
     /**
