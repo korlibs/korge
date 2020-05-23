@@ -51,14 +51,44 @@ typealias DisplayObject = View
  *
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */
-abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+@OptIn(KorgeInternal::class)
+abstract class View internal constructor(
+    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
+    val isContainer: Boolean
+) : Renderable
+    , Extra by Extra.Mixin()
+    //, EventDispatcher by EventDispatcher.Mixin()
+{
+    constructor() : this(false)
 	//internal val _transform = ViewTransform(this)
 
-    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
-	open val isContainer get() = false
+
+    ///**
+    // * Propagates an [Event] to all child [View]s.
+    // *
+    // * The [Event] is propagated to all the child [View]s of the container, iterated in reverse orted.
+    // */
+    //override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
+    //    if (propagateEvents) {
+    //        forEachChildrenReversed { child ->
+    //            child.dispatch(clazz, event)
+    //        }
+    //    }
+    //}
+
+    @KorgeInternal
+    @PublishedApi
+    internal var _children: ArrayList<View>? = null
+
+    /** Iterates all the children of this container in normal order of rendering. */
+    inline fun forEachChildren(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
+    /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
+    inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) = _children?.fastForEachWithIndex(callback)
+    /** Iterates all the children of this container in reverse order of rendering. */
+    inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
 
     /** Indicates if this view is going to propagate the events that reach this node to its children */
-	open var propagateEvents = true
+	var propagateEvents = true
 
 	/**
 	 * Views marked with this, break batching by acting as reference point for computing vertices.
@@ -358,72 +388,64 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	internal var validLocalProps = true
 	internal var validLocalMatrix = true
 
-    /** Gets a list of [Component]s attached to this view. Should be used with care if at all. */
     @KorgeInternal
-	val unsafeListRawComponents get() = components
+    @PublishedApi
+    internal var _components: Components? = null
+
+    @KorgeInternal
+    @PublishedApi
+    internal val componentsSure: Components get() {
+        if (_components == null) _components = Components()
+        return _components!!
+    }
 
 // region Components
     @PublishedApi
 	internal var components: ArrayList<Component>? = null
-	private var _componentsIt: ArrayList<Component>? = null
-	private val componentsIt: ArrayList<Component>?
-		get() {
-			if (components != null) {
-				if (_componentsIt == null) _componentsIt = ArrayList()
-                val _componentsIt = _componentsIt!!
-				_componentsIt.clear()
-                components!!.fastForEach { _componentsIt.add(it) }
-				//_componentsIt!!.addAll(components!!) // It creates an iterator() on Kotlin/Native! Seems to be slow, and it is not going to be updated while iterating.
-			}
-			return _componentsIt
-		}
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T =
-		getOrCreateComponent(T::class, gen)
+    @Deprecated("")
+	inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
 
-    @PublishedApi
-    internal fun ensureComponents() {
-        if (components == null) components = arrayListOf()
-    }
-
-    /** Creates a typed [clazz] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-    inline fun <T : Component> getOrCreateComponent(clazz: KClass<T>, gen: (View) -> T): T {
-        ensureComponents()
-        //var component = components!!.firstOrNull { it::class.isSubtypeOf(clazz) }
-        var component: T? = findFirstComponentOfType(clazz)
-
-        if (component == null) {
-            component = gen(this)
-            components!! += component
-        }
-        return component
-    }
+    inline fun <reified T : Component> getOrCreateComponentOther(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
 
     /** Removes a specific [c] component from the view */
-	fun removeComponent(c: Component): Unit {
-		//println("Remove component $c from $this")
-		components?.remove(c)
-	}
+	fun removeComponent(c: Component) { _components?.remove(c) }
+    fun removeComponent(c: MouseComponent) { _components?.remove(c) }
+    fun removeComponent(c: KeyComponent) { _components?.remove(c) }
+    fun removeComponent(c: GamepadComponent) { _components?.remove(c) }
+    fun removeComponent(c: TouchComponent) { _components?.remove(c) }
+    fun removeComponent(c: EventComponent) { _components?.remove(c) }
+    fun removeComponent(c: UpdateComponentWithViews) { _components?.remove(c) }
+    fun removeComponent(c: UpdateComponent) { _components?.remove(c) }
+    fun removeComponent(c: ResizeComponent) { _components?.remove(c) }
 
 	//fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
     /** Removes a set of components of the type [c] from the view */
-	fun removeComponents(c: KClass<out Component>) {
-		//println("Remove components of type $c from $this")
-		components?.removeAll { it::class == c }
-	}
+    @Deprecated("")
+	fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
 
     /** Removes all the components attached to this view */
-	fun removeAllComponents() {
-		components?.clear()
-	}
+    fun removeAllComponents(): Unit { _components?.removeAll() }
 
     /** Adds a component to this view */
-	fun addComponent(c: Component): Component {
-		if (components == null) components = arrayListOf()
-		components?.plusAssign(c)
-		return c
-	}
+	fun addComponent(c: Component): Component = componentsSure.add(c)
+    fun addComponent(c: MouseComponent) = componentsSure.add(c)
+    fun addComponent(c: KeyComponent) = componentsSure.add(c)
+    fun addComponent(c: GamepadComponent) = componentsSure.add(c)
+    fun addComponent(c: TouchComponent) = componentsSure.add(c)
+    fun addComponent(c: EventComponent) = componentsSure.add(c)
+    fun addComponent(c: UpdateComponentWithViews) = componentsSure.add(c)
+    fun addComponent(c: UpdateComponent) = componentsSure.add(c)
+    fun addComponent(c: ResizeComponent) = componentsSure.add(c)
 
     /** Adds a block that will be executed per frame to this view. This is deprecated, and you should use [addUpdater] instead that uses [TimeSpan] to provide the elapsed time */
     @Deprecated("Use addUpdater, since this method uses dtMs: Int instead of a TimeSpan due to bugs in initial Kotlin inline classes")
@@ -447,14 +469,6 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
             detach()
         }
     }
-
-    @PublishedApi
-	internal fun <T : Component> findFirstComponentOfType(clazz: KClass<T>): T? {
-		components!!.fastForEach {
-			if (it::class == clazz) return it as T
-		}
-		return null
-	}
 
 // endregion
 
@@ -776,7 +790,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		if (parent == null) return
 		val p = parent!!
 		for (i in index + 1 until p.numChildren) p[i].index--
-		p.childrenInternal.removeAt(index)
+		p._children?.removeAt(index)
 		parent = null
 		index = -1
 	}
@@ -1004,10 +1018,11 @@ fun View.hasAncestor(ancestor: View): Boolean {
  * Returns true if the replacement was successful.
  * If this view doesn't have a parent or [view] is the same as [this], returns null.
  */
+@OptIn(KorgeInternal::class)
 fun View.replaceWith(view: View): Boolean {
 	if (this == view) return false
 	if (parent == null) return false
-	view.parent?.childrenInternal?.remove(view)
+	view.parent?._children?.remove(view)
 	parent!!.childrenInternal[this.index] = view
 	view.index = this.index
 	view.parent = parent
@@ -1025,6 +1040,16 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     }.attach()
     component.update(0.0)
     return Cancellable { component.detach() }
+}
+
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
+    object : UpdateComponentWithViews {
+        override val view: View get() = this@onNextFrame
+        override fun update(views: Views, ms: Double) {
+            removeFromView()
+            updatable(this@onNextFrame, views)
+        }
+    }.attach()
 }
 
 /**
@@ -1058,7 +1083,7 @@ val View?.ancestors: List<View> get() = ancestorsUpTo(null)
  */
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
 	emit("$indent$this")
-	if (this is Container) {
+	if (this != null && this.isContainer) {
 		this.forEachChildren { child ->
 			child.dump("$indent ", emit)
 		}
@@ -1082,7 +1107,7 @@ fun View?.dumpToString(): String {
 fun View?.foreachDescendant(handler: (View) -> Unit) {
 	if (this != null) {
 		handler(this)
-		if (this is Container) {
+		if (this.isContainer) {
 			this.forEachChildren { child ->
 				child.foreachDescendant(handler)
 			}
@@ -1149,7 +1174,7 @@ val View?.allDescendantNames
 fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 	if (this == null) return null
 	if (check(this)) return this
-	if (this is Container) {
+	if (this.isContainer) {
 		this.forEachChildren { child ->
 			val res = child.firstDescendantWith(check)
 			if (res != null) return res
@@ -1162,7 +1187,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
 fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) -> Boolean): List<View> {
 	if (this != null) {
 		if (check(this)) out += this
-		if (this is Container) {
+		if (this.isContainer) {
 			this.forEachChildren { child ->
 				child.descendantsWith(out, check)
 			}

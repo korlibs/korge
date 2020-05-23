@@ -9,7 +9,7 @@ import com.soywiz.korev.*
 import kotlin.coroutines.*
 
 @Deprecated("Use onMouseDrag() instead")
-val View.drag by Extra.PropertyThis<View, DragComponent> { this.getOrCreateComponent { DragComponent(this) } }
+val View.drag by Extra.PropertyThis<View, DragComponent> { this.getOrCreateComponentTouch<DragComponent> { DragComponent(this) } }
 
 @Deprecated("Use onMouseDrag() instead", ReplaceWith(
     "onMouseDrag {\nif (it.start) handler\n}",

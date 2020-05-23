@@ -3,7 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korim.color.Colors
 import kotlin.test.*
 
-class ViewCollision {
+class ViewCollisionTest {
 	@Test
     @Ignore
 	fun test() {

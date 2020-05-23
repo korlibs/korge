@@ -1,5 +1,6 @@
 package com.soywiz.korge.component
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 
@@ -18,21 +19,32 @@ interface StageComponent : Component {
  * Enables the use of [StageComponent] components.
  */
 fun Views.registerStageComponent() {
+    val EXTRA_ID = "Views.registerStageComponent"
+    if (views.getExtra(EXTRA_ID) == true) return
+    views.setExtra(EXTRA_ID, true)
     val componentsInStagePrev = ArrayList<StageComponent>()
     val componentsInStageCur = linkedSetOf<StageComponent>()
     val componentsInStage = linkedSetOf<StageComponent>()
-    val tempComponents: ArrayList<Component> = arrayListOf()
+    val tempViews: ArrayList<View> = arrayListOf()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
-        stage.forEachComponent<StageComponent>(tempComponents) {
-            componentsInStageCur += it
-            if (it !in componentsInStage) {
-                componentsInStage += it
-                it.added(views)
+
+        val stagedViews = getAllDescendantViews(stage, tempViews)
+
+        stagedViews.fastForEach { view ->
+            view._components?.eother?.fastForEach {
+                if (it is StageComponent) {
+                    componentsInStageCur += it
+                    if (it !in componentsInStage) {
+                        componentsInStage += it
+                        it.added(views)
+                    }
+                }
             }
         }
+
         componentsInStagePrev.fastForEach {
             if (it !in componentsInStageCur) {
                 it.removed(views)

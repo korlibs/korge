@@ -96,7 +96,7 @@ suspend fun View?.tween(
 				suspendCancellableCoroutine<Unit> { c ->
 					val view = this@tween
 					//println("STARTED TWEEN at thread $currentThreadId")
-					tc = TweenComponent(view, vs.toList(), time.millisecondsLong, easing, callback, c).attach()
+					tc = TweenComponent(view, vs.toList(), time.millisecondsLong, easing, callback, c).also { it.attach() }
 				}
 			}
 		} catch (e: TimeoutCancellationException) {

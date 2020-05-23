@@ -7,7 +7,6 @@ import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -114,7 +113,7 @@ class Views constructor(
 
 	var lastTime = timeProvider.now()
 
-	private val tempComponents: ArrayList<Component> = arrayListOf()
+    private val tempViews: ArrayList<View> = arrayListOf()
 
 	private val virtualSize = SizeInt()
 	private val actualSize = SizeInt()
@@ -161,38 +160,30 @@ class Views constructor(
 		resized()
 	}
 
-	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
+	@Suppress("EXPERIMENTAL_API_USAGE")
+    override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
         //println("Event: $clazz : $event")
 		try {
 			this.stage.dispatch(clazz, event)
-			stage.forEachComponent<EventComponent>(tempComponents) { it.onEvent(event) }
+            val stagedViews = getAllDescendantViews(stage, tempViews)
 			when (e) {
-				is MouseEvent -> stage.forEachComponent<MouseComponent>(tempComponents) { it.onMouseEvent(views, e) }
-                is TouchEvent -> stage.forEachComponent<TouchComponent>(tempComponents) { it.onTouchEvent(views, e) }
-				is ReshapeEvent -> stage.forEachComponent<ResizeComponent>(tempComponents) {
-					it.resized(views, e.width, e.height)
-				}
+				is MouseEvent -> stagedViews.fastForEach { it._components?.mouse?.fastForEach { it.onMouseEvent(views, e) } }
+                is TouchEvent -> stagedViews.fastForEach { it._components?.touch?.fastForEach { it.onTouchEvent(views, e) } }
+				is ReshapeEvent -> stagedViews.fastForEach { it._components?.resize?.fastForEach { it.resized(views, e.width, e.height) } }
 				is KeyEvent -> {
                     input.triggerOldKeyEvent(e)
                     input.keys.triggerKeyEvent(e)
                     if (supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                         debugViews = !debugViews
                     }
-                    stage.forEachComponent<KeyComponent>(tempComponents) { it.onKeyEvent(views, e) }
+                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.onKeyEvent(views, e) } }
                 }
-				is GamePadConnectionEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(views, e)
-				}
-				is GamePadUpdateEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(views, e)
-				}
-				is GamePadButtonEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(views, e)
-				}
-				is GamePadStickEvent -> stage.forEachComponent<GamepadComponent>(tempComponents) {
-					it.onGamepadEvent(views, e)
-				}
+				is GamePadConnectionEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				is GamePadUpdateEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+                else -> stagedViews.fastForEach { it._components?.event?.fastForEach { it.onEvent(e) } }
 			}
 		} catch (e: PreventDefaultException) {
 			//println("PreventDefaultException.Reason: ${e.reason}")
@@ -237,7 +228,7 @@ class Views constructor(
 		//println("Update: $dtMs")
 		input.startFrame(dtMs)
 		val dtMsD = dtMs.toDouble()
-		stage.updateSingleViewWithViewsAll(this, dtMsD, tempComponents)
+		stage.updateSingleViewWithViewsAll(this, dtMsD, tempViews)
 		input.endFrame(dtMs)
 	}
 
@@ -354,51 +345,61 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 /////////////////////////
 /////////////////////////
 
-inline fun <reified T : Component> View.forEachComponent(
-	tempComponents: ArrayList<Component> = arrayListOf(),
-	callback: (T) -> Unit
-) = forEachComponentAll(tempComponents) { c -> if (c is T) callback(c) }
+@OptIn(KorgeInternal::class)
+fun getAllDescendantViews(view: View, out: ArrayList<View> = arrayListOf(), reversed: Boolean = true): ArrayList<View> {
+    if (out.size == 0) out.add(view) else out[0] = view
+    var count = 1
+    var n = 0
+    if (reversed) {
+        while (n < count) {
+            out[n]._children?.fastForEachReverse {
+                if (out.size <= count) out.add(it) else out[count] = it
+                count++
+            }
+            n++
+        }
+    } else {
+        while (n < count) {
+            out[n]._children?.fastForEach {
+                if (out.size <= count) out.add(it) else out[count] = it
+                count++
+            }
+            n++
+        }
 
-inline fun View.forEachComponentAll(
-    tempComponents: ArrayList<Component> = arrayListOf(),
-    callback: (Component) -> Unit
-) = getComponents(this, tempComponents).fastForEach { callback(it) }
-
-fun getComponents(view: View, out: ArrayList<Component> = arrayListOf()): List<Component> {
-	out.clear()
-	appendComponents(view, out)
-	return out
+    }
+    while (out.size > count) out.removeAt(out.size - 1)
+    return out
 }
 
-fun appendComponents(view: View, out: ArrayList<Component>) {
-	if (view is Container) {
-		view.forEachChildren { appendComponents(it, out) }
-	}
-    view.components?.let { components ->
-        components.fastForEach { out.add(it) }
-        //out.addAll(components) // This creates a slow iterator() on Kotlin/Native even if the array is not going to be updated inside
+@OptIn(KorgeInternal::class)
+fun View.updateSingleView(dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+    getAllDescendantViews(this, tempViews).fastForEach { view ->
+        view._components?.update?.fastForEach { comp ->
+            comp.update(dtMsD * view.globalSpeed)
+        }
     }
 }
 
-fun View.updateSingleView(dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
-	this.forEachComponent<UpdateComponent>(tempComponents) {
-		it.update(dtMsD * it.view.globalSpeed)
-	}
-}
-
 @Deprecated("")
-fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
-	this.forEachComponent<UpdateComponentWithViews>(tempComponents) {
-		it.update(views, dtMsD * it.view.globalSpeed)
-	}
+@OptIn(KorgeInternal::class)
+fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+    getAllDescendantViews(this, tempViews).fastForEach { view ->
+        view._components?.updateWV?.fastForEach { comp ->
+            comp.update(views, dtMsD * view.globalSpeed)
+        }
+    }
 }
 
-fun View.updateSingleViewWithViewsAll(views: Views, dtMsD: Double, tempComponents: ArrayList<Component> = arrayListOf()) {
-    this.forEachComponentAll(tempComponents) {
-        when (it) {
-            is UpdateComponent -> it.update(dtMsD * it.view.globalSpeed)
-            is UpdateComponentWithViews -> it.update(views, dtMsD * it.view.globalSpeed)
-        }
+@OptIn(KorgeInternal::class)
+fun View.updateSingleViewWithViewsAll(
+    views: Views,
+    dtMsD: Double,
+    tempViews: ArrayList<View> = arrayListOf()
+) {
+    getAllDescendantViews(this, tempViews).fastForEach { view ->
+        view._components?.updateWV?.fastForEach { comp -> comp.update(views, dtMsD * view.globalSpeed) }
+        view._components?.update?.fastForEach { comp -> comp.update(dtMsD * view.globalSpeed) }
     }
     //updateSingleView(dtMsD, tempComponents)
     //updateSingleViewWithViews(views, dtMsD, tempComponents)

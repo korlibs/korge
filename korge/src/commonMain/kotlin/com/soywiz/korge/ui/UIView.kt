@@ -52,7 +52,7 @@ open class UIView(
 
 			}
 		}
-		stage.getOrCreateComponent { stage ->
+		stage.getOrCreateComponentUpdateWithViews<DummyUpdateComponentWithViews> { stage ->
             DummyUpdateComponentWithViews(stage)
 		}
 	}
