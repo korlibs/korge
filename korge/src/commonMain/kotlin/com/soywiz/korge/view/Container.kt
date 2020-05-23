@@ -233,20 +233,6 @@ open class Container : View(true) {
 	}
 
 	/**
-	 * Propagates an [Event] to all child [View]s.
-	 *
-	 * The [Event] is propagated to all the child [View]s of the container, iterated in reverse orted. 
-	 */
-	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
-		if (propagateEvents) {
-			forEachChildrenReversed { child ->
-				child.dispatch(clazz, event)
-			}
-		}
-		super.dispatch(clazz, event)
-	}
-
-	/**
 	 * Creates a new container.
 	 * @return an empty container.
 	 */

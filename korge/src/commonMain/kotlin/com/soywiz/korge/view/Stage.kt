@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korev.*
 import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -7,7 +8,11 @@ import kotlinx.coroutines.*
 /**
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
-class Stage(val views: Views) : Container(), View.Reference, CoroutineScope by views {
+class Stage(val views: Views) : Container()
+    , View.Reference
+    , CoroutineScope by views
+    , EventDispatcher by EventDispatcher.Mixin()
+{
     val injector get() = views.injector
     val ag get() = views.ag
     val gameWindow get() = views.gameWindow

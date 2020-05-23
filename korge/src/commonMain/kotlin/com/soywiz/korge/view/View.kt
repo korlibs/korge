@@ -55,9 +55,26 @@ typealias DisplayObject = View
 abstract class View internal constructor(
     /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
     val isContainer: Boolean
-) : Renderable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin() {
+) : Renderable
+    , Extra by Extra.Mixin()
+    //, EventDispatcher by EventDispatcher.Mixin()
+{
     constructor() : this(false)
 	//internal val _transform = ViewTransform(this)
+
+
+    ///**
+    // * Propagates an [Event] to all child [View]s.
+    // *
+    // * The [Event] is propagated to all the child [View]s of the container, iterated in reverse orted.
+    // */
+    //override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
+    //    if (propagateEvents) {
+    //        forEachChildrenReversed { child ->
+    //            child.dispatch(clazz, event)
+    //        }
+    //    }
+    //}
 
     @KorgeInternal
     @PublishedApi
