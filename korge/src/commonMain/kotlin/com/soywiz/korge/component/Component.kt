@@ -11,8 +11,14 @@ interface Component {
 	val view: View
 }
 
-fun <T : Component> T.attach() = this.apply { this.view.addComponent(this) }
-fun <T : Component> T.detach() = this.apply { this.view.removeComponent(this) }
+fun <T : Component> T.attach(): T {
+    this.view.addComponent(this)
+    return this
+}
+fun <T : Component> T.detach(): T {
+    this.view.removeComponent(this)
+    return this
+}
 
 fun Component.removeFromView() = view.removeComponent(this)
 

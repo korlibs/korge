@@ -80,7 +80,7 @@ class Texture(
 	class Base(var base: AG.Texture?, var width: Int, var height: Int) : Closeable {
         var version = -1
 		val premultiplied get() = base?.premultiplied == true
-		override fun close(): Unit = run {
+		override fun close(): Unit {
             base?.close()
             base = null
         }

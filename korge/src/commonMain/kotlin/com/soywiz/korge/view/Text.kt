@@ -187,5 +187,5 @@ interface IHtml {
 	var html: String
 }
 
-fun View?.setText(text: String) = run { this.foreachDescendant { if (it is IText) it.text = text } }
-fun View?.setHtml(html: String) = run { this.foreachDescendant { if (it is IHtml) it.html = html } }
+fun View?.setText(text: String) { this.foreachDescendant { if (it is IText) it.text = text } }
+fun View?.setHtml(html: String) { this.foreachDescendant { if (it is IHtml) it.html = html } }

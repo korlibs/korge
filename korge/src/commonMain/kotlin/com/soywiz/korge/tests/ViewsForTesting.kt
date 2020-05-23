@@ -44,13 +44,18 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	val stats get() = views.stats
 	val mouse get() = input.mouse
 
-	suspend fun mouseMoveTo(x: Number, y: Number) {
-		koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x.toInt(), y = y.toInt()))
-		//views.update(frameTime)
-		simulateFrame(count = 2)
-	}
+    suspend fun mouseMoveTo(x: Int, y: Int) {
+        koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
+        //views.update(frameTime)
+        simulateFrame(count = 2)
+    }
 
-	suspend fun mouseDown() {
+    suspend fun mouseMoveTo(x: Double, y: Double) = mouseMoveTo(x.toInt(), y.toInt())
+
+    @Deprecated("Kotlin/Native boxes inline+Number")
+    suspend fun mouseMoveTo(x: Number, y: Number) = mouseMoveTo(x.toInt(), y.toInt())
+
+    suspend fun mouseDown() {
 		koruiEventDispatcher.dispatch(
 			MouseEvent(
 				type = MouseEvent.Type.DOWN,

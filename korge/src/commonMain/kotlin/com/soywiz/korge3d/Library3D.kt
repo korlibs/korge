@@ -147,10 +147,10 @@ fun Library3D.Instance3D.instantiate(jointParent: Joint3D? = null, ctx: LibraryI
 	val view: View3D = when (def) {
 		null -> {
 			if (type.equals("JOINT", ignoreCase = true)) {
-				Joint3D(id, name, sid ?: "unknownSid", jointParent, this.transform).also {
-					jointParent?.childJoints?.add(it)
-					jointParent?.children?.add(it)
-				}
+				val it = Joint3D(id, name, sid ?: "unknownSid", jointParent, this.transform)
+                jointParent?.childJoints?.add(it)
+                jointParent?.children?.add(it)
+                it
 			} else {
 				Container3D()
 			}

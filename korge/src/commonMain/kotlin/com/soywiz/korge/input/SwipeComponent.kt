@@ -9,10 +9,11 @@ data class SwipeInfo(
     var dy: Double = 0.0,
     var direction: SwipeDirection
 ) {
-    fun setTo(dx: Double, dy: Double, direction: SwipeDirection) = this.apply {
+    fun setTo(dx: Double, dy: Double, direction: SwipeDirection): SwipeInfo {
         this.dx = dx
         this.dy = dy
         this.direction = direction
+        return this
     }
 }
 

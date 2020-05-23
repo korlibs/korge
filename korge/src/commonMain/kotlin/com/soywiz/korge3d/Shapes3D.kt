@@ -4,14 +4,17 @@ import com.soywiz.korge3d.internal.*
 import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline fun Container3D.box(width: Number, height: Number, depth: Number, callback: Cube3D.() -> Unit = {}): Cube3D
+    = box(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
+
+@Korge3DExperimental
 inline fun Container3D.box(
-	width: Number = 1,
-	height: Number = width,
-	depth: Number = height,
-	callback: Cube3D.() -> Unit = {}
-): Cube3D {
-	return Cube3D(width.toDouble(), height.toDouble(), depth.toDouble()).apply(callback).addTo(this)
-}
+    width: Double = 1.0,
+    height: Double = width,
+    depth: Double = height,
+    callback: Cube3D.() -> Unit = {}
+): Cube3D = Cube3D(width, height, depth).apply(callback).addTo(this)
 
 @Korge3DExperimental
 class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWithMesh3D(mesh.copy()) {
@@ -21,13 +24,14 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
 
 	var material: Material3D?
 		get() = mesh.material
-		set(value) = run { mesh.material = value }
+		set(value) { mesh.material = value }
 
-	fun material(material: Material3D?) = this.apply { this.material = material }
+	fun material(material: Material3D?): Cube3D {
+        this.material = material
+        return this
+    }
 
 	companion object {
-		private val cubeSize = .5f
-
 		val mesh = MeshBuilder3D {
 			vector3DTemps {
 				fun face(pos: Vector3D) {

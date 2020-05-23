@@ -2,13 +2,22 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.iconButton(
-    width: Number = 128,
-    height: Number = 64,
+    width: Number,
+    height: Number,
     skin: UISkin = defaultUISkin,
     iconSkin: IconSkin = defaultCheckSkin,
     block: @ViewsDslMarker UIButton.() -> Unit = {}
-): IconButton = IconButton(width.toDouble(), height.toDouble(), skin, iconSkin).addTo(this).apply(block)
+): IconButton = iconButton(width.toDouble(), height.toDouble(), skin, iconSkin, block)
+
+inline fun Container.iconButton(
+    width: Double = 128.0,
+    height: Double = 64.0,
+    skin: UISkin = defaultUISkin,
+    iconSkin: IconSkin = defaultCheckSkin,
+    block: @ViewsDslMarker UIButton.() -> Unit = {}
+): IconButton = IconButton(width, height, skin, iconSkin).addTo(this).apply(block)
 
 open class IconButton(
     width: Double = 128.0,

@@ -148,8 +148,14 @@ class RenderContext2D(
 	}
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
-    inline fun scissor(x: Number, y: Number, width: Number, height: Number, block: () -> Unit) =
-        scissor(tempScissor.setTo(x.toInt(), y.toInt(), width.toInt(), height.toInt()), block)
+    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(tempScissor.setTo(x, y, width, height), block)
+
+    /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
+    @Deprecated("Kotlin/Native boxes inline+Number")
+    inline fun scissor(x: Number, y: Number, width: Number, height: Number, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
+
+    /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
+    inline fun scissor(x: Double, y: Double, width: Double, height: Double, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
     inline fun scissor(rect: Rectangle, block: () -> Unit) =
@@ -207,18 +213,20 @@ class RenderContext2D(
 
 // @TODO: Remove once KorGW is updated
 @PublishedApi
-internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor = this.apply {
+internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor {
     this.x = that.x
     this.y = that.y
     this.width = that.width
     this.height = that.height
+    return this
 }
 
 // @TODO: Remove once KorGW is updated
 @PublishedApi
-internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor = this.apply {
+internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor {
     this.x = x
     this.y = y
     this.width = width
     this.height = height
+    return this
 }

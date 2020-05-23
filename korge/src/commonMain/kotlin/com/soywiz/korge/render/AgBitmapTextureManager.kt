@@ -12,11 +12,14 @@ import com.soywiz.korma.geom.Rectangle
 @Deprecated("Use mipmaps instead")
 var Bitmap.texMipmaps: Boolean
     get() = this.mipmaps
-    set(value) = run { this.mipmaps = value }
+    set(value) { this.mipmaps = value }
 
 /** Enable or disable mipmap generation for this [Bitmap] */
 @Deprecated("Use .mipmaps method from korim", level = DeprecationLevel.HIDDEN)
-fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
+fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T {
+    this.mipmaps = enable
+    return this
+}
 
 /**
  * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.

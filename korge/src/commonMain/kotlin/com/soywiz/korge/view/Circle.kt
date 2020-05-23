@@ -31,7 +31,7 @@ open class Circle(
     /** Color of the circle. Internally it uses the [colorMul] property */
     var color: RGBA
         get() = colorMul
-        set(value) = run { colorMul = value }
+        set(value) { colorMul = value }
 
     override val bwidth get() = radius * 2
     override val bheight get() = radius * 2

@@ -2,9 +2,10 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiScrollableArea(
-    width: Number = 256.0,
-    height: Number = 256.0,
+    width: Number,
+    height: Number,
     contentWidth: Number = 512.0,
     contentHeight: Number = 512.0,
     buttonSize: Number = 32.0,
@@ -14,17 +15,25 @@ inline fun Container.uiScrollableArea(
     verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
     config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
     block: @ViewsDslMarker Container.() -> Unit = {}
-): UIScrollableArea = UIScrollableArea(
-    width.toDouble(),
-    height.toDouble(),
-    contentWidth.toDouble(),
-    contentHeight.toDouble(),
-    buttonSize.toDouble(),
-    verticalScroll,
-    horizontalScroll,
-    horSkin,
-    verSkin
-).addTo(this).apply(config).also { block(it.container) }
+): UIScrollableArea = uiScrollableArea(
+    width.toDouble(), height.toDouble(), contentWidth.toDouble(), contentHeight.toDouble(), buttonSize.toDouble(),
+    verticalScroll, horizontalScroll, horSkin, verSkin, config, block
+)
+
+inline fun Container.uiScrollableArea(
+    width: Double = 256.0,
+    height: Double = 256.0,
+    contentWidth: Double = 512.0,
+    contentHeight: Double = 512.0,
+    buttonSize: Double = 32.0,
+    verticalScroll: Boolean = true,
+    horizontalScroll: Boolean = true,
+    horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
+    verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
+    config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
+    block: @ViewsDslMarker Container.() -> Unit = {}
+): UIScrollableArea = UIScrollableArea(width, height, contentWidth, contentHeight, buttonSize, verticalScroll, horizontalScroll, horSkin, verSkin)
+    .addTo(this).apply(config).also { block(it.container) }
 
 // @TODO: Optimize this!
 // @TODO: Add an actualContainer = this inside Container

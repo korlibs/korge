@@ -3,9 +3,12 @@ package com.soywiz.korge.view
 import com.soywiz.korim.color.*
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
-inline fun Container.solidRect(
-	width: Number, height: Number, color: RGBA, callback: @ViewsDslMarker SolidRect.() -> Unit = {}
-) = SolidRect(width.toDouble(), height.toDouble(), color).addTo(this).apply(callback)
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline fun Container.solidRect(width: Number, height: Number, color: RGBA, callback: @ViewsDslMarker SolidRect.() -> Unit = {})
+    = solidRect(width.toDouble(), height.toDouble(), color, callback)
+
+inline fun Container.solidRect(width: Double, height: Double, color: RGBA, callback: @ViewsDslMarker SolidRect.() -> Unit = {})
+    = SolidRect(width, height, color).addTo(this).apply(callback)
 
 /**
  * A Rect [RectBase] [View] of size [width] and [height] with the initial color, [color].
@@ -16,15 +19,15 @@ class SolidRect(width: Double, height: Double, color: RGBA) : RectBase() {
 			SolidRect(width.toDouble(), height.toDouble(), color)
 	}
 
-	override var width: Double = width; set(v) = run { field = v }.also { dirtyVertices = true }
-	override var height: Double = height; set(v) = run { field = v }.also { dirtyVertices = true }
+	override var width: Double = width; set(v) { field = v; dirtyVertices = true }
+	override var height: Double = height; set(v) { field = v; dirtyVertices = true }
 
     override val bwidth: Double get() = width
     override val bheight: Double get() = height
 
     /** The [color] of this [SolidRect]. Alias of [colorMul]. */
     var color: RGBA
-        set(value) = run { colorMul = value }
+        set(value) { colorMul = value }
         get() = colorMul
 
 	init {

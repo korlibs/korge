@@ -73,4 +73,8 @@ open class Mesh(
 	}
 }
 
-fun <T : Mesh> T.pivot(x: Double, y: Double): T = this.apply { this.pivotX = x }.also { this.pivotY = y }
+fun <T : Mesh> T.pivot(x: Double, y: Double): T {
+    this.pivotX = x
+    this.pivotY = y
+    return this
+}

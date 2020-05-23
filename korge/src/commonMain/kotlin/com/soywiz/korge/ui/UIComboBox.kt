@@ -5,22 +5,26 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun <T> Container.uiComboBox(
-	width: Number = 192.0,
-	height: Number = 32.0,
+	width: Number,
+	height: Number,
 	selectedIndex: Int = 0,
 	items: List<T>,
 	verticalScroll: Boolean = true,
 	skin: ComboBoxSkin = defaultComboBoxSkin,
 	block: @ViewsDslMarker UIComboBox<T>.() -> Unit = {}
-) = UIComboBox(
-	width.toDouble(),
-	height.toDouble(),
-	selectedIndex,
-	items,
-	verticalScroll,
-	skin
-).addTo(this).apply(block)
+) = uiComboBox(width.toDouble(), height.toDouble(), selectedIndex, items, verticalScroll, skin, block)
+
+inline fun <T> Container.uiComboBox(
+    width: Double = 192.0,
+    height: Double = 32.0,
+    selectedIndex: Int = 0,
+    items: List<T>,
+    verticalScroll: Boolean = true,
+    skin: ComboBoxSkin = defaultComboBoxSkin,
+    block: @ViewsDslMarker UIComboBox<T>.() -> Unit = {}
+) = UIComboBox(width, height, selectedIndex, items, verticalScroll, skin).addTo(this).apply(block)
 
 open class UIComboBox<T>(
 	width: Double = 192.0,
@@ -34,7 +38,7 @@ open class UIComboBox<T>(
 	var selectedIndex by uiObservable(selectedIndex) { updateState() }
 	var selectedItem: T?
 		get() = items.getOrNull(selectedIndex)
-		set(value) = run { selectedIndex = items.indexOf(value) }
+		set(value) { selectedIndex = items.indexOf(value) }
 	var items: List<T> by uiObservable(items) { updateItems() }
 	var itemHeight by uiObservable(32) { updateItemsSize() }
 	var viewportHeight by uiObservable(196) { onSizeChanged() }

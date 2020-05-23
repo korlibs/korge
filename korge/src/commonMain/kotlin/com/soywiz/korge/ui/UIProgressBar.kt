@@ -2,20 +2,21 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiProgressBar(
-	width: Number = 256.0,
-	height: Number = 24.0,
-	current: Number = 0.0,
-	maximum: Number = 1.0,
+	width: Number, height: Number, current: Number, maximum: Number,
 	skin: UISkin = defaultUISkin,
 	block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(
-	width.toDouble(),
-	height.toDouble(),
-	current.toDouble(),
-	maximum.toDouble(),
-	skin
-).addTo(this).apply(block)
+): UIProgressBar = uiProgressBar(width.toDouble(), height.toDouble(), current.toDouble(), maximum.toDouble(), skin, block)
+
+inline fun Container.uiProgressBar(
+    width: Double = 256.0,
+    height: Double = 24.0,
+    current: Double = 0.0,
+    maximum: Double = 1.0,
+    skin: UISkin = defaultUISkin,
+    block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
+): UIProgressBar = UIProgressBar(width, height, current, maximum, skin).addTo(this).apply(block)
 
 open class UIProgressBar(
 	width: Double = 256.0,
@@ -33,7 +34,7 @@ open class UIProgressBar(
 	}
 
 	override var ratio: Double
-		set(value) = run { current = value * maximum }
+		set(value) { current = value * maximum }
 		get() = current / maximum
 
 	private val background = solidRect(width, height, skin.backColor)

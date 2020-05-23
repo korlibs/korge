@@ -27,11 +27,12 @@ open class Light3D(
 		constantAttenuation: Double = 1.0,
 		linearAttenuation: Double = 0.0,
 		quadraticAttenuation: Double = 0.00111109
-	) = this.apply {
+	): Light3D {
 		this.color = color
 		this.constantAttenuation = constantAttenuation
 		this.linearAttenuation = linearAttenuation
 		this.quadraticAttenuation = quadraticAttenuation
+        return this
 	}
 
 	override fun render(ctx: RenderContext3D) {

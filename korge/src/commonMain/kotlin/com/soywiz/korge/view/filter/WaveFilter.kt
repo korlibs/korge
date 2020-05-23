@@ -65,7 +65,7 @@ class WaveFilter(
     /** The elapsed time for the animation */
     var time: TimeSpan
         get() = timeSeconds.secs
-        set(value) = run { timeSeconds = value.seconds }
+        set(value) { timeSeconds = value.seconds }
 
 	override val border: Int get() = max(amplitudeX, amplitudeY)
     override val fragment = FRAGMENT_SHADER

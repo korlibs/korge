@@ -12,7 +12,7 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
     private val composedFilters = arrayListOf<Convolute3Filter>()
     private val composed = ComposedFilter(composedFilters)
     var radius: Double = initialRadius
-        set(value) = run { field = value.clamp(0.0, 32.0) }
+        set(value) { field = value.clamp(0.0, 32.0) }
     //override val border: Int get() = composed.border
     override val border: Int get() = (radius * 3).toInt()
     val nsteps get() = radius.toIntCeil()

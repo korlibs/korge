@@ -80,8 +80,10 @@ class MouseEvents(override val view: View) : MouseComponent, UpdateComponentWith
 	val onMoveOutside = mouseOutside
 
     @PublishedApi
-    internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents =
-        this.apply { prop.get(this).add { launchImmediately(this.coroutineContext) { handler(it) } } }
+    internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents {
+        prop.get(this).add { launchImmediately(this.coroutineContext) { handler(it) } }
+        return this
+    }
 
     inline fun onClick(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::click, handler)
     inline fun onOver(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::over, handler)
@@ -307,8 +309,10 @@ val View.mouse by Extra.PropertyThis<View, MouseEvents> { this.getOrCreateCompon
 inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
 
 @PublishedApi
-internal inline fun <T : View?> T?.doMouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit) =
-    this.apply { this?.mouse?.let { mouse -> prop.get(mouse).add { launchImmediately(mouse.coroutineContext) { handler(it) } } } }
+internal inline fun <T : View?> T?.doMouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): T? {
+    this?.mouse?.let { mouse -> prop.get(mouse).add { launchImmediately(mouse.coroutineContext) { handler(it) } } }
+    return this
+}
 
 inline fun <T : View?> T.onClick(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::click, handler)
 inline fun <T : View?> T.onOver(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::over, handler)

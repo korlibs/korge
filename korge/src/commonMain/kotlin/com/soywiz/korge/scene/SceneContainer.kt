@@ -147,8 +147,7 @@ class SceneContainer(
 		vararg injects: Any,
 		time: TimeSpan = 0.secs,
 		transition: Transition = defaultTransition
-	//): T = withContext(coroutineContext) { // @TODO: Hangs on native
-    ): T = run {
+    ): T {
         val oldScene = currentScene
         val sceneInjector: AsyncInjector =
             views.injector.child().mapInstance(SceneContainer::class, this@SceneContainer)
@@ -184,7 +183,7 @@ class SceneContainer(
             instance.sceneAfterInit()
         }
 
-        instance
+        return instance
     }
 
 

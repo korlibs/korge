@@ -40,8 +40,10 @@ val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponen
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
 
 @PublishedApi
-internal inline fun <T : View?> T._keyEvent(prop: KProperty1<KeysEvents, AsyncSignal<KeyEvent>>, noinline handler: suspend (KeyEvent) -> Unit): T =
-    this.apply { this?.keys?.let { keys -> prop.get(keys).add(handler) } }
+internal inline fun <T : View?> T._keyEvent(prop: KProperty1<KeysEvents, AsyncSignal<KeyEvent>>, noinline handler: suspend (KeyEvent) -> Unit): T {
+    this?.keys?.let { keys -> prop.get(keys).add(handler) }
+    return this
+}
 
 inline fun <T : View?> T.onKeyDown(noinline handler: suspend (KeyEvent) -> Unit): T = _keyEvent(KeysEvents::onKeyDown, handler)
 inline fun <T : View?> T.onKeyUp(noinline handler: suspend (KeyEvent) -> Unit): T = _keyEvent(KeysEvents::onKeyUp, handler)

@@ -266,7 +266,10 @@ open class Container : View() {
 /**
  * Alias for `parent += this`. Refer to [Container.plusAssign].
  */
-fun <T : View> T.addTo(parent: Container) = this.apply { parent += this }
+fun <T : View> T.addTo(parent: Container): T {
+    parent += this
+    return this
+}
 
 /** Adds the specified [view] to this view only if this view is a [Container]. */
 operator fun View?.plusAssign(view: View?) {

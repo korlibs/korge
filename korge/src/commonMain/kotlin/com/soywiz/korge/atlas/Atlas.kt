@@ -46,7 +46,7 @@ class Atlas(val info: AtlasInfo) {
 
 	operator fun get(name: String) = textures[name] ?: invalidOp("Can't find texture '$name' in atlas")
 
-	internal suspend fun load(views: Views, folder: VfsFile): Atlas = this.apply {
+	internal suspend fun load(views: Views, folder: VfsFile): Atlas {
 		ensure()
 		val atlasTex = folder[info.image].readBitmapSlice()
 		for ((frameName, frame) in info.frames) {
@@ -56,6 +56,7 @@ class Atlas(val info: AtlasInfo) {
 				frame.rotated
 			)
 		}
+        return this
 	}
 }
 

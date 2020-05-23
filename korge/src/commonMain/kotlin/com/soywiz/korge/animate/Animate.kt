@@ -577,7 +577,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		update()
 	}
 
-	suspend fun playAndWaitStop(name: String): Unit = run { playAndWaitEvent(name, setOf()) }
+	suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 
@@ -646,13 +646,13 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	override fun toString(): String = super.toString() + ":symbol=" + symbol
 }
 
-fun View?.play(name: String) = run { (this as? AnPlayable?)?.play(name) }
-suspend fun View?.playAndWaitStop(name: String) = run { (this as? AnMovieClip?)?.playAndWaitStop(name) }
+fun View?.play(name: String) { (this as? AnPlayable?)?.play(name) }
+suspend fun View?.playAndWaitStop(name: String) { (this as? AnMovieClip?)?.playAndWaitStop(name) }
 suspend fun View?.playAndWaitEvent(name: String, vararg events: String) =
 	run { (this as? AnMovieClip?)?.playAndWaitEvent(name, *events) }
 
-suspend fun View?.waitStop() = run { (this as? AnMovieClip?)?.waitStop() }
-suspend fun View?.waitEvent(vararg events: String) = run { (this as? AnMovieClip?)?.waitEvent(*events) }
+suspend fun View?.waitStop() { (this as? AnMovieClip?)?.waitStop() }
+suspend fun View?.waitEvent(vararg events: String) { (this as? AnMovieClip?)?.waitEvent(*events) }
 
 val View?.playingName: String? get() = (this as? AnMovieClip?)?.timelineRunner?.currentStateName
-fun View?.seekStill(name: String, ratio: Double = 0.0) = run { (this as? AnMovieClip?)?.seekStill(name, ratio) }
+fun View?.seekStill(name: String, ratio: Double = 0.0) { (this as? AnMovieClip?)?.seekStill(name, ratio) }

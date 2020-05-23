@@ -5,14 +5,24 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.textButton(
-	width: Number = 128,
-	height: Number = 64,
+	width: Number,
+	height: Number,
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
 	textFont: Html.FontFace = defaultUIFont,
 	block: @ViewsDslMarker TextButton.() -> Unit = {}
-): TextButton = TextButton(width.toDouble(), height.toDouble(), text, skin, textFont).addTo(this).apply(block)
+): TextButton = textButton(width.toDouble(), height.toDouble(), text, skin, textFont, block)
+
+inline fun Container.textButton(
+    width: Double = 128.0,
+    height: Double = 64.0,
+    text: String = "Button",
+    skin: UISkin = defaultUISkin,
+    textFont: Html.FontFace = defaultUIFont,
+    block: @ViewsDslMarker TextButton.() -> Unit = {}
+): TextButton = TextButton(width, height, text, skin, textFont).addTo(this).apply(block)
 
 open class TextButton(
 	width: Double = 128.0,

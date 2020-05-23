@@ -13,69 +13,69 @@ abstract class View3D {
 	///////
 
 	var x: Double
-		set(localX) = run { transform.setTranslation(localX, y, z, localW) }
+		set(localX) { transform.setTranslation(localX, y, z, localW) }
 		get() = transform.translation.x.toDouble()
 
 	var y: Double
-		set(localY) = run { transform.setTranslation(x, localY, z, localW) }
+		set(localY) { transform.setTranslation(x, localY, z, localW) }
 		get() = transform.translation.y.toDouble()
 
 	var z: Double
-		set(localZ) = run { transform.setTranslation(x, y, localZ, localW) }
+		set(localZ) { transform.setTranslation(x, y, localZ, localW) }
 		get() = transform.translation.z.toDouble()
 
 	var localW: Double
-		set(localW) = run { transform.setTranslation(x, y, z, localW) }
+		set(localW) { transform.setTranslation(x, y, z, localW) }
 		get() = transform.translation.w.toDouble()
 
 	///////
 
 	var scaleX: Double
-		set(scaleX) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleX) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.x.toDouble()
 
 	var scaleY: Double
-		set(scaleY) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleY) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.y.toDouble()
 
 	var scaleZ: Double
-		set(scaleZ) = run { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleZ) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
 		get() = transform.scale.z.toDouble()
 
 	var localScaleW: Double
-		set(scaleW) = run { transform.setScale(scaleX, scaleY, scaleZ, scaleW) }
+		set(scaleW) { transform.setScale(scaleX, scaleY, scaleZ, scaleW) }
 		get() = transform.scale.w.toDouble()
 
 	///////
 
 	var rotationX: Angle
-		set(rotationX) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationX) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.x
 
 	var rotationY: Angle
-		set(rotationY) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationY) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.y
 
 	var rotationZ: Angle
-		set(rotationZ) = run { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationZ) { transform.setRotation(rotationX, rotationY, rotationZ) }
 		get() = transform.rotationEuler.z
 
 	///////
 
 	var rotationQuatX: Double
-		set(rotationQuatX) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatX) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.x
 
 	var rotationQuatY: Double
-		set(rotationQuatY) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatY) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.y
 
 	var rotationQuatZ: Double
-		set(rotationQuatZ) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatZ) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.z
 
 	var rotationQuatW: Double
-		set(rotationQuatW) = run { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatW) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
 		get() = transform.rotation.w
 
 	///////
@@ -152,35 +152,77 @@ operator fun View3D?.get(name: String): View3D? {
 }
 
 @Korge3DExperimental
-fun <T : View3D> T.name(name: String) = this.apply { this.name = name }
-
-@Korge3DExperimental
-inline fun <T : View3D> T.position(x: Number, y: Number, z: Number, w: Number = 1f): T = this.apply {
-	transform.setTranslation(x, y, z, w)
+fun <T : View3D> T.name(name: String): T {
+    this.name = name
+    return this
 }
 
 @Korge3DExperimental
-inline fun <T : View3D> T.rotation(x: Angle = 0.degrees, y: Angle = 0.degrees, z: Angle = 0.degrees): T = this.apply {
+fun <T : View3D> T.position(x: Float, y: Float, z: Float, w: Float = 1f): T {
+    transform.setTranslation(x, y, z, w)
+    return this
+}
+
+@Korge3DExperimental
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline fun <T : View3D> T.position(x: Number, y: Number, z: Number, w: Number = 1f): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+@Korge3DExperimental
+fun <T : View3D> T.position(x: Double, y: Double, z: Double, w: Double = 1.0): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+@Korge3DExperimental
+fun <T : View3D> T.position(x: Int, y: Int, z: Int, w: Int = 1): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+
+@Korge3DExperimental
+fun <T : View3D> T.rotation(x: Angle = 0.degrees, y: Angle = 0.degrees, z: Angle = 0.degrees): T {
 	transform.setRotation(x, y, z)
+    return this
 }
 
 @Korge3DExperimental
-inline fun <T : View3D> T.scale(x: Number = 1, y: Number = 1, z: Number = 1, w: Number = 1): T = this.apply {
-	transform.setScale(x, y, z, w)
+fun <T : View3D> T.scale(x: Float = 1f, y: Float = 1f, z: Float = 1f, w: Float = 1f): T {
+    transform.setScale(x, y, z, w)
+    return this
 }
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 @Korge3DExperimental
-inline fun <T : View3D> T.lookAt(x: Number, y: Number, z: Number): T = this.apply {
-	transform.lookAt(x, y, z)
+inline fun <T : View3D> T.scale(x: Number = 1, y: Number = 1, z: Number = 1, w: Number = 1): T = scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+@Korge3DExperimental
+inline fun <T : View3D> T.scale(x: Double = 1.0, y: Double = 1.0, z: Double = 1.0, w: Double = 1.0): T = scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+@Korge3DExperimental
+inline fun <T : View3D> T.scale(x: Int = 1, y: Int = 1, z: Int = 1, w: Int = 1): T = scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+
+@Korge3DExperimental
+fun <T : View3D> T.lookAt(x: Float, y: Float, z: Float): T {
+    transform.lookAt(x, y, z)
+    return this
 }
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 @Korge3DExperimental
-inline fun <T : View3D> T.positionLookingAt(px: Number, py: Number, pz: Number, tx: Number, ty: Number, tz: Number): T =
-	this.apply {
-		transform.setTranslationAndLookAt(px, py, pz, tx, ty, tz)
-	}
+inline fun <T : View3D> T.lookAt(x: Number, y: Number, z: Number): T = lookAt(x.toFloat(), y.toFloat(), z.toFloat())
+@Korge3DExperimental
+inline fun <T : View3D> T.lookAt(x: Double, y: Double, z: Double): T = lookAt(x.toFloat(), y.toFloat(), z.toFloat())
+@Korge3DExperimental
+inline fun <T : View3D> T.lookAt(x: Int, y: Int, z: Int): T = lookAt(x.toFloat(), y.toFloat(), z.toFloat())
+
 
 @Korge3DExperimental
-fun <T : View3D> T.addTo(container: Container3D) = this.apply {
+fun <T : View3D> T.positionLookingAt(px: Float, py: Float, pz: Float, tx: Float, ty: Float, tz: Float): T {
+    transform.setTranslationAndLookAt(px, py, pz, tx, ty, tz)
+    return this
+}
+
+@Deprecated("Kotlin/Native boxes inline+Number")
+@Korge3DExperimental
+inline fun <T : View3D> T.positionLookingAt(px: Number, py: Number, pz: Number, tx: Number, ty: Number, tz: Number): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
+
+@Korge3DExperimental
+fun <T : View3D> T.positionLookingAt(px: Double, py: Double, pz: Double, tx: Double, ty: Double, tz: Double): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
+@Korge3DExperimental
+fun <T : View3D> T.positionLookingAt(px: Int, py: Int, pz: Int, tx: Int, ty: Int, tz: Int): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
+
+@Korge3DExperimental
+fun <T : View3D> T.addTo(container: Container3D): T {
 	container.addChild(this)
+    return this
 }

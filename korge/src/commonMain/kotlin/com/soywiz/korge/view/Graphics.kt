@@ -28,9 +28,10 @@ open class Graphics @JvmOverloads constructor(
 	@PublishedApi
 	internal var dirty = true
 
-	inline fun dirty(callback: () -> Unit) = this.apply {
+	inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
 		callback()
+        return this
 	}
 
 	fun clear() {
@@ -56,12 +57,14 @@ open class Graphics @JvmOverloads constructor(
 	override val totalPoints: Int get() = currentPath.totalPoints
 
 	override fun close() = currentPath.close()
-	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = run { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
-	override fun lineTo(x: Double, y: Double) = run { currentPath.lineTo(x, y) }
-	override fun moveTo(x: Double, y: Double) = run { currentPath.moveTo(x, y) }
-	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = run { currentPath.quadTo(cx, cy, ax, ay) }
+	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
+	override fun lineTo(x: Double, y: Double) { currentPath.lineTo(x, y) }
+	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
+	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
-	inline fun fill(color: RGBA, alpha: Number = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
+    inline fun fill(color: RGBA, alpha: Double = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
+    @Deprecated("Kotlin/Native boxes inline+Number")
+    inline fun fill(color: RGBA, alpha: Number, callback: () -> Unit) = fill(color, alpha.toDouble(), callback)
 
 	inline fun fill(paint: Paint, callback: () -> Unit) {
 		beginFill(paint)
@@ -137,9 +140,9 @@ open class Graphics @JvmOverloads constructor(
         currentPath.clear()
 	}
 
-	@PublishedApi
-	internal inline fun toColorFill(color: RGBA, alpha: Number): ColorPaint =
-        ColorPaint(RGBA(color.r, color.g, color.b, (color.a * alpha.toDouble()).toInt().clamp(0, 255)))
+    @PublishedApi
+    internal fun toColorFill(color: RGBA, alpha: Double): ColorPaint =
+        ColorPaint(RGBA(color.r, color.g, color.b, (color.a * alpha).toInt().clamp(0, 255)))
 
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 

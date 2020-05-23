@@ -27,8 +27,10 @@ fun Container.sortChildrenByY() = sortChildrenBy(View::y)
 //fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::y)
 //fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(kotlin.Comparator { a: View, b: View -> selector(a).compareTo(selector(b)) })
 
-fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T =
-	this.apply { SortedChildrenByComponent(this, comparator).attach() }
+fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
+    SortedChildrenByComponent(this, comparator).attach()
+    return this
+}
 
 fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T =
 	this.keepChildrenSortedBy(selector.toComparator())

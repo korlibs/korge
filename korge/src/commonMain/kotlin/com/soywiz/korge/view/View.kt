@@ -134,53 +134,53 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
     /** Local X position of this view */
 	var x: Double
 		get() = ensureTransform().pos.x
-		set(v) = run { ensureTransform(); if (pos.x != v) run { pos.x = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (pos.x != v) { pos.x = v; invalidateMatrix() } }
     /** Local Y position of this view */
 	var y: Double
 		get() = ensureTransform().pos.y
-		set(v) = run { ensureTransform(); if (pos.y != v) run { pos.y = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (pos.y != v) { pos.y = v; invalidateMatrix() } }
 
     /** Local scaling in the X axis of this view */
 	var scaleX: Double
 		get() = ensureTransform()._scaleX
-		set(v) = run { ensureTransform(); if (_scaleX != v) run { _scaleX = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
     /** Local scaling in the Y axis of this view */
 	var scaleY: Double
 		get() = ensureTransform()._scaleY
-		set(v) = run { ensureTransform(); if (_scaleY != v) run { _scaleY = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
 	var scale: Double
 		get() = (scaleX + scaleY) / 2.0
-		set(v) = run { scaleX = v; scaleY = v }
+		set(v) { scaleX = v; scaleY = v }
     /** Local skewing in the X axis of this view */
 	var skewX: Double
 		get() = ensureTransform()._skewX
-		set(v) = run { ensureTransform(); if (_skewX != v) run { _skewX = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_skewX != v) { _skewX = v; invalidateMatrix() } }
     /** Local skewing in the Y axis of this view */
 	var skewY: Double
 		get() = ensureTransform()._skewY
-		set(v) = run { ensureTransform(); if (_skewY != v) run { _skewY = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
     /** Local rotation of this view */
 	var rotation: Angle
 		get() = ensureTransform()._rotation
-		set(v) = run { ensureTransform(); if (_rotation != v) run { _rotation = v; invalidateMatrix() } }
+		set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
     /** Local rotation in radians of this view */
 	var rotationRadians: Double
 		get() = rotation.radians
-		set(v) = run { rotation = v.radians }
+		set(v) { rotation = v.radians }
     /** Local rotation in degrees of this view */
 	var rotationDegrees: Double
 		get() = rotation.degrees
-		set(v) = run { rotation = v.degrees }
+		set(v) { rotation = v.degrees }
 
     /** The global x position of this view */
 	var globalX: Double
 		get() = parent?.localToGlobalX(x, y) ?: x;
-		set(value) = run { x = parent?.globalToLocalX(value, globalY) ?: value }
+		set(value) { x = parent?.globalToLocalX(value, globalY) ?: value }
     /** The global y position of this view */
 	var globalY: Double
 		get() = parent?.localToGlobalY(x, y) ?: y;
-		set(value) = run { y = parent?.globalToLocalY(globalX, value) ?: value }
+		set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -196,7 +196,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	open var width: Double
 		get() = getLocalBounds().width * scaleX
-		set(value) = run { scaleX = value / this.getLocalBounds().width }
+		set(value) { scaleX = value / this.getLocalBounds().width }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
@@ -204,7 +204,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	open var height: Double
 		get() = getLocalBounds().height * scaleY
-		set(value) = run { scaleY = value / this.getLocalBounds().height }
+		set(value) { scaleY = value / this.getLocalBounds().height }
 
     /**
      * The multiplicative [RGBA] color.
@@ -217,7 +217,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	var colorMul: RGBA
 		get() = _colorTransform.colorMul
-		set(v) = run { _colorTransform.colorMul = v }.also { invalidate() }
+		set(v) { _colorTransform.colorMul = v; invalidate() }
 
     /**
      * Additive part of the color transform.
@@ -227,18 +227,18 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
 	var colorAdd: Int
 		get() = _colorTransform.colorAdd;
-		set(v) = run { _colorTransform.colorAdd = v }.also { invalidate() }
+		set(v) { _colorTransform.colorAdd = v; invalidate() }
 
     /**
      * Shortcut for adjusting the multiplicative alpha value manually.
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
-	var alpha: Double get() = _colorTransform.mA; set(v) = run { _colorTransform.mA = v; invalidate() }
+	var alpha: Double get() = _colorTransform.mA; set(v) { _colorTransform.mA = v; invalidate() }
 
 	/** Alias for [colorMul] to make this familiar to people coming from other engines. */
 	var tint: RGBA
 		get() = this.colorMul
-		set(value) = run { this.colorMul = value }
+		set(value) { this.colorMul = value }
 
 	// region Properties
 	private val _props = linkedMapOf<String, String>()
@@ -273,7 +273,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	private val tempTransform = Matrix.Transform()
 	//private val tempMatrix = Matrix2d()
 
-	private fun ensureTransform() = this.apply {
+	private fun ensureTransform(): View {
 		if (!validLocalProps) {
 			validLocalProps = true
 			val t = tempTransform.setMatrix(this._localMatrix)
@@ -285,6 +285,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 			this._skewY = t.skewY
 			this._rotation = t.rotation
 		}
+        return this
 	}
 
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
@@ -405,15 +406,15 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 		components?.remove(c)
 	}
 
-	//fun removeComponents(c: KClass<out Component>) = run { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
+	//fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
     /** Removes a set of components of the type [c] from the view */
-	fun removeComponents(c: KClass<out Component>) = run {
+	fun removeComponents(c: KClass<out Component>) {
 		//println("Remove components of type $c from $this")
 		components?.removeAll { it::class == c }
 	}
 
     /** Removes all the components attached to this view */
-	fun removeAllComponents() = run {
+	fun removeAllComponents() {
 		components?.clear()
 	}
 
@@ -429,7 +430,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
 		val component = object : UpdateComponent {
 			override val view: View get() = this@View
-			override fun update(ms: Double) = run { updatable(ms.toInt()) }
+			override fun update(ms: Double) { updatable(ms.toInt()) }
 		}.attach()
 		component.update(0.0)
 		return Cancellable { component.detach() }
@@ -531,7 +532,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
      */
     var colorTransform: ColorTransform
 		get() = _colorTransform
-		set(v) = run { _colorTransform.copyFrom(v); invalidate() }
+		set(v) { _colorTransform.copyFrom(v); invalidate() }
 
 	private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
 	private var _renderColorTransformVersion = -1
@@ -854,7 +855,7 @@ abstract class View : Renderable, Extra by Extra.Mixin(), EventDispatcher by Eve
 	fun getLocalBounds(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
 
 	private val _localBounds: Rectangle = Rectangle()
-	open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit = run { out.setTo(0, 0, 0, 0) }
+	open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit { out.setTo(0, 0, 0, 0) }
 
 	protected open fun createInstance(): View =
 		throw MustOverrideException("Must Override ${this::class}.createInstance()")
@@ -982,13 +983,14 @@ class ViewTransform(var view: View) {
  * Determines if the local coords [x], [y], hits this view or any of this descendants.
  * Returns the view hitting or null
  */
-inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
+fun View.hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
 /**
  * Determines if the local coords [pos], hits this view or any of this descendants.
  * Returns the view hitting or null
  */
 fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
+//fun View.hitTest(pos: Point): View? = hitTest(pos.x, pos.y)
 
 /**
  * Checks if this view has an [ancestor].
@@ -1019,7 +1021,7 @@ fun View.replaceWith(view: View): Boolean {
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponent {
         override val view: View get() = this@addUpdater
-        override fun update(ms: Double) = run { updatable(this@addUpdater, ms.ms) }
+        override fun update(ms: Double) { updatable(this@addUpdater, ms.ms) }
     }.attach()
     component.update(0.0)
     return Cancellable { component.detach() }
@@ -1121,10 +1123,14 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
-inline fun <T : View> T.size(width: Number, height: Number): T = this.apply {
-    this.width = width.toDouble()
-    this.height = height.toDouble()
+
+fun <T : View> T.size(width: Double, height: Double): T {
+    this.width = width
+    this.height = height
+    return this
 }
+
+fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
 
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
 fun View?.firstDescendantWithName(name: String): View? = this[name]
@@ -1166,169 +1172,190 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 }
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.xy(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
+fun <T : View> T.xy(x: Double, y: Double): T {
+	this.x = x
+    this.y = y
+    return this
+}
+
+fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.position(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
+fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)
 
-/** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.position(x: Double, y: Double): T =
-    this.apply { this.x = x; this.y = y }
+fun <T : View> T.positionX(x: Double): T {
+    this.x = x
+    return this
+}
+fun <T : View> T.positionY(y: Double): T {
+    this.y = y
+    return this
+}
 
 /** Chainable method returning this that sets [View.x] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.positionX(x: Number): T =
-    this.apply { this.x = x.toDouble() }
+fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
 
 /** Chainable method returning this that sets [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.positionY(y: Number): T =
-    this.apply { this.y = y.toDouble() }
+fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T =
-    this.apply { this.x = (x2.toDouble() + x1.toDouble() - this.width) / 2 }
+fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
+    this.x = (x2 + x1 - this.width) / 2
+    return this
+}
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T =
-    this.apply { this.y = (y2.toDouble() + y1.toDouble() - this.height) / 2 }
+fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
+    this.y = (y2 + y1 - this.height) / 2
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [this] View
- *  in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
+ * Chainable method returning this that sets [this] View
+ * in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T =
-    this.centerXBetween(x1, x2).centerYBetween(y1, y2)
+fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): T = this.centerXBetween(x1, x2).centerYBetween(y1, y2)
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View is centered on the [other] View horizontally
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View is centered on the [other] View horizontally
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
-    this.centerXBetween(other.x, other.x + other.width)
+fun <T : View> T.centerXOn(other: View): T = this.centerXBetween(other.x, other.x + other.width)
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View is centered on the [other] View vertically
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View is centered on the [other] View vertically
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
-    this.centerYBetween(other.y, other.y + other.height)
+fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.y + other.height)
 
 /**
- *  Chainable method returning this that sets [View.x] and [View.y]
- *  so that [this] View is centered on the [other] View
+ * Chainable method returning this that sets [View.x] and [View.y]
+ * so that [this] View is centered on the [other] View
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerOn(other: T2): T =
-    this.centerXOn(other).centerYOn(other)
+fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's left side is aligned with the [other] View's left side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's left side is aligned with the [other] View's left side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignLeftToLeftOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + padding.toDouble() }
+fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
+    x = other.x + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's left side is aligned with the [other] View's right side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's left side is aligned with the [other] View's right side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignLeftToRightOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + other.width + padding.toDouble()}
+fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
+    x = other.x + other.width + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's right side is aligned with the [other] View's left side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's right side is aligned with the [other] View's left side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignRightToLeftOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x - width - padding.toDouble() }
+fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
+    x = other.x - width - padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's right side is aligned with the [other] View's right side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's right side is aligned with the [other] View's right side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignRightToRightOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + other.width - width - padding.toDouble() }
+fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
+    x = other.x + other.width - width - padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's top side is aligned with the [other] View's top side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's top side is aligned with the [other] View's top side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignTopToTopOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + padding.toDouble() }
+fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
+    y = other.y + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's top side is aligned with the [other] View's bottom side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's top side is aligned with the [other] View's bottom side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignTopToBottomOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + other.height + padding.toDouble() }
+fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
+    y = other.y + other.height + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's bottom side is aligned with the [other] View's top side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's bottom side is aligned with the [other] View's top side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignBottomToTopOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y - height - padding.toDouble() }
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
+    y = other.y - height - padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's bottom side is aligned with the [other] View's bottom side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's bottom side is aligned with the [other] View's bottom side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignBottomToBottomOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + other.height - height - padding.toDouble() }
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
+    y = other.y + other.height - height - padding
+    return this
+}
 
 /** Chainable method returning this that sets [View.rotation] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.rotation(rot: Angle): T =
-	this.apply { this.rotationRadians = rot.radians }
+fun <T : View> T.rotation(rot: Angle): T {
+    this.rotationRadians = rot.radians
+    return this
+}
 
-/** Chainable method returning this that sets [View.rotationRadians] in radians */
-@Suppress("NOTHING_TO_INLINE")
-@Deprecated("", ReplaceWith("this.rotation(rot.radians)", "com.soywiz.korma.geom.radians"))
-inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.radians)
-
-@Suppress("NOTHING_TO_INLINE")
-/** Chainable method returning this that sets [View.rotationDegrees] in radians */
-inline fun <T : View> T.rotationDegrees(degs: Number): T =
-	this.apply { this.rotationDegrees = degs.toDouble() }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.skewX] and [View.skewY] */
-inline fun <T : View> T.skew(sx: Number, sy: Number): T =
-	this.apply { this.skewX = sx.toDouble() }.apply { this.skewY = sy.toDouble() }
+fun <T : View> T.skew(sx: Double, sy: Double): T {
+    this.skewX = sx
+    this.skewY = sy
+    return this
+}
 
-fun <T : View> T.skew(sx: Double, sy: Double): T =
-    this.apply { this.skewX = sx }.apply { this.skewY = sy }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.scaleX] and [View.scaleY] */
-inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T =
-	this.apply { this.scaleX = sx.toDouble() }.apply { this.scaleY = sy.toDouble() }
+fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
+    this.scaleX = sx
+    this.scaleY = sy
+    return this
+}
 
-fun <T : View> T.scale(sx: Double, sy: Double = sx): T =
-    this.apply { this.scaleX = sx }.apply { this.scaleY = sy }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.alpha] */
-inline fun <T : View> T.alpha(alpha: Number): T =
-	this.apply { this.alpha = alpha.toDouble() }
+fun <T : View> T.alpha(alpha: Double): T {
+    this.alpha = alpha
+    return this
+}
 
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.skew(sx: Number, sy: Number): T = skew(sx.toDouble(), sy.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alpha(alpha: Number): T = alpha(alpha.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.toDouble().radians)
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotationDegrees(degs: Number): T = rotation(degs.toDouble().degrees)
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionX(x: Number): T = positionX(x.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionY(y: Number): T = positionY(y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T = centerXBetween(x1.toDouble(), x2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T = centerYBetween(y1.toDouble(), y2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignLeftToLeftOf(other: View, padding: Number): T = alignLeftToLeftOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignLeftToRightOf(other: View, padding: Number): T = alignLeftToRightOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignRightToLeftOf(other: View, padding: Number): T = alignRightToLeftOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignRightToRightOf(other: View, padding: Number): T = alignRightToRightOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignTopToTopOf(other: View, padding: Number): T = alignTopToTopOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignTopToBottomOf(other: View, padding: Number): T = alignTopToBottomOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignBottomToTopOf(other: View, padding: Number): T = alignBottomToTopOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number): T = alignBottomToBottomOf(other, padding.toDouble())
