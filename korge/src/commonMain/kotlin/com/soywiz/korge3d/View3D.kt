@@ -215,6 +215,7 @@ fun <T : View3D> T.positionLookingAt(px: Float, py: Float, pz: Float, tx: Float,
 @Deprecated("Kotlin/Native boxes inline+Number")
 @Korge3DExperimental
 inline fun <T : View3D> T.positionLookingAt(px: Number, py: Number, pz: Number, tx: Number, ty: Number, tz: Number): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
+
 @Korge3DExperimental
 fun <T : View3D> T.positionLookingAt(px: Double, py: Double, pz: Double, tx: Double, ty: Double, tz: Double): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
 @Korge3DExperimental

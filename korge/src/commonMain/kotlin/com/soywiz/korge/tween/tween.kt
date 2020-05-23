@@ -197,6 +197,12 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
 inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
 
+inline operator fun KMutableProperty0<Double>.get(end: Int) = get(end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Int, end: Int) = get(initial.toDouble(), end.toDouble())
+
+inline operator fun KMutableProperty0<Double>.get(end: Float) = get(end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Float, end: Float) = get(initial.toDouble(), end.toDouble())
+
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline operator fun KMutableProperty0<Double>.get(end: Number) = get(end.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number")
