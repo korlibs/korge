@@ -70,7 +70,7 @@ abstract class View internal constructor(
     inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
 
     /** Indicates if this view is going to propagate the events that reach this node to its children */
-	open var propagateEvents = true
+	var propagateEvents = true
 
 	/**
 	 * Views marked with this, break batching by acting as reference point for computing vertices.
