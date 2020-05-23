@@ -346,16 +346,27 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 /////////////////////////
 
 @OptIn(KorgeInternal::class)
-fun getAllDescendantViews(view: View, out: ArrayList<View> = arrayListOf()): ArrayList<View> {
+fun getAllDescendantViews(view: View, out: ArrayList<View> = arrayListOf(), reversed: Boolean = true): ArrayList<View> {
     if (out.size == 0) out.add(view) else out[0] = view
     var count = 1
     var n = 0
-    while (n < count) {
-        out[n]._children?.fastForEachReverse {
-            if (out.size <= count) out.add(it) else out[count] = it
-            count++
+    if (reversed) {
+        while (n < count) {
+            out[n]._children?.fastForEachReverse {
+                if (out.size <= count) out.add(it) else out[count] = it
+                count++
+            }
+            n++
         }
-        n++
+    } else {
+        while (n < count) {
+            out[n]._children?.fastForEach {
+                if (out.size <= count) out.add(it) else out[count] = it
+                count++
+            }
+            n++
+        }
+
     }
     while (out.size > count) out.removeAt(out.size - 1)
     return out
