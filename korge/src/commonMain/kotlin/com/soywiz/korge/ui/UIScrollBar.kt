@@ -10,13 +10,7 @@ import kotlin.math.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiScrollBar(
-    width: Number,
-    height: Number,
-    current: Number = 0.0,
-    pageSize: Number = 1.0,
-    totalSize: Number = 10.0,
-    buttonSize: Number = 32.0,
-    stepSize: Number = pageSize.toDouble() / 10.0,
+    width: Number, height: Number, current: Number, pageSize: Number, totalSize: Number, buttonSize: Number, stepSize: Number,
     direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
     skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
     block: @ViewsDslMarker UIScrollBar.() -> Unit = {}

@@ -7,9 +7,7 @@ import com.soywiz.korma.geom.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiText(
-    text: String,
-    width: Number = 128,
-    height: Number = 64,
+    text: String, width: Number, height: Number,
     skin: TextSkin = defaultTextSkin,
     block: @ViewsDslMarker UIText.() -> Unit = {}
 ): UIText = uiText(text, width.toDouble(), height.toDouble(), skin, block)

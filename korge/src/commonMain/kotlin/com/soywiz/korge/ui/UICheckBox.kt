@@ -9,8 +9,8 @@ import com.soywiz.korma.geom.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiCheckBox(
-    width: Number = 120.0,
-    height: Number = 32.0,
+    width: Number,
+    height: Number,
     checked: Boolean = false,
     text: String = "CheckBox",
     textFont: Html.FontFace = defaultUIFont,

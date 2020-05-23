@@ -4,10 +4,7 @@ import com.soywiz.korge.view.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiProgressBar(
-	width: Number = 256.0,
-	height: Number = 24.0,
-	current: Number = 0.0,
-	maximum: Number = 1.0,
+	width: Number, height: Number, current: Number, maximum: Number,
 	skin: UISkin = defaultUISkin,
 	block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
 ): UIProgressBar = uiProgressBar(width.toDouble(), height.toDouble(), current.toDouble(), maximum.toDouble(), skin, block)

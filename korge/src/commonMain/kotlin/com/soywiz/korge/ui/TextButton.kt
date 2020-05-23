@@ -7,8 +7,8 @@ import com.soywiz.korma.geom.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.textButton(
-	width: Number = 128,
-	height: Number = 64,
+	width: Number,
+	height: Number,
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
 	textFont: Html.FontFace = defaultUIFont,

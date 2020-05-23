@@ -1130,8 +1130,6 @@ fun <T : View> T.size(width: Double, height: Double): T {
     return this
 }
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
 fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
 
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
@@ -1295,7 +1293,7 @@ fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
  * Chainable method returning this that sets [View.y] so that
  * [this] View's bottom side is aligned with the [other] View's top side
  */
-fun <T : View> T.alignBottomToTopOf(other: View, padding: Number = 0.0): T {
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
     y = other.y - height - padding.toDouble()
     return this
 }
@@ -1304,7 +1302,7 @@ fun <T : View> T.alignBottomToTopOf(other: View, padding: Number = 0.0): T {
  * Chainable method returning this that sets [View.y] so that
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
-fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number = 0.0): T {
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
     y = other.y + other.height - height - padding.toDouble()
     return this
 }
@@ -1341,12 +1339,23 @@ fun <T : View> T.alpha(alpha: Double): T {
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.toDouble().radians)
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotationDegrees(degs: Number): T = rotation(degs.toDouble().degrees)
 
-@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T = centerXBetween(x1.toDouble(), x2.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T = centerYBetween(y1.toDouble(), y2.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionX(x: Number): T = positionX(x.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionY(y: Number): T = positionY(y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
+
 @Deprecated("Kotlin/Native boxes inline+Number") inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T = centerXBetween(x1.toDouble(), x2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T = centerYBetween(y1.toDouble(), y2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignLeftToLeftOf(other: View, padding: Number): T = alignLeftToLeftOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignLeftToRightOf(other: View, padding: Number): T = alignLeftToRightOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignRightToLeftOf(other: View, padding: Number): T = alignRightToLeftOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignRightToRightOf(other: View, padding: Number): T = alignRightToRightOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignTopToTopOf(other: View, padding: Number): T = alignTopToTopOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignTopToBottomOf(other: View, padding: Number): T = alignTopToBottomOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignBottomToTopOf(other: View, padding: Number): T = alignBottomToTopOf(other, padding.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number): T = alignBottomToBottomOf(other, padding.toDouble())

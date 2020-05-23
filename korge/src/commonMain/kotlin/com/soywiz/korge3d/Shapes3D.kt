@@ -5,13 +5,10 @@ import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
 @Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container3D.box(
-	width: Number = 1,
-	height: Number = width,
-	depth: Number = height,
-	callback: Cube3D.() -> Unit = {}
-): Cube3D = box(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
+inline fun Container3D.box(width: Number, height: Number, depth: Number, callback: Cube3D.() -> Unit = {}): Cube3D
+    = box(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
 
+@Korge3DExperimental
 inline fun Container3D.box(
     width: Double = 1.0,
     height: Double = width,
@@ -29,14 +26,12 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
 		get() = mesh.material
 		set(value) { mesh.material = value }
 
-	fun material(material: Material3D?) {
+	fun material(material: Material3D?): Cube3D {
         this.material = material
         return this
     }
 
 	companion object {
-		private val cubeSize = .5f
-
 		val mesh = MeshBuilder3D {
 			vector3DTemps {
 				fun face(pos: Vector3D) {

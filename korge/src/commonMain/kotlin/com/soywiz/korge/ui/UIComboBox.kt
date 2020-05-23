@@ -7,8 +7,8 @@ import com.soywiz.korio.async.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun <T> Container.uiComboBox(
-	width: Number = 192.0,
-	height: Number = 32.0,
+	width: Number,
+	height: Number,
 	selectedIndex: Int = 0,
 	items: List<T>,
 	verticalScroll: Boolean = true,

@@ -4,8 +4,8 @@ import com.soywiz.korge.view.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiScrollableArea(
-    width: Number = 256.0,
-    height: Number = 256.0,
+    width: Number,
+    height: Number,
     contentWidth: Number = 512.0,
     contentHeight: Number = 512.0,
     buttonSize: Number = 32.0,
