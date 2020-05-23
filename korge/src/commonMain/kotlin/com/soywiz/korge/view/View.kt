@@ -982,13 +982,14 @@ class ViewTransform(var view: View) {
  * Determines if the local coords [x], [y], hits this view or any of this descendants.
  * Returns the view hitting or null
  */
-inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
+fun View.hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
 /**
  * Determines if the local coords [pos], hits this view or any of this descendants.
  * Returns the view hitting or null
  */
 fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
+//fun View.hitTest(pos: Point): View? = hitTest(pos.x, pos.y)
 
 /**
  * Checks if this view has an [ancestor].
@@ -1121,10 +1122,16 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
-inline fun <T : View> T.size(width: Number, height: Number): T = this.apply {
-    this.width = width.toDouble()
-    this.height = height.toDouble()
+
+fun <T : View> T.size(width: Double, height: Double): T {
+    this.width = width
+    this.height = height
+    return this
 }
+
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
+fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
 
 @Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
 fun View?.firstDescendantWithName(name: String): View? = this[name]
@@ -1166,169 +1173,179 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
 }
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.xy(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
+fun <T : View> T.xy(x: Double, y: Double): T {
+	this.x = x
+    this.y = y
+    return this
+}
+
+fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.position(x: Number, y: Number): T =
-	this.apply { this.x = x.toDouble(); this.y = y.toDouble() }
+fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)
 
-/** Chainable method returning this that sets [View.x] and [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.position(x: Double, y: Double): T =
-    this.apply { this.x = x; this.y = y }
+fun <T : View> T.positionX(x: Double): T {
+    this.x = x
+    return this
+}
+fun <T : View> T.positionY(y: Double): T {
+    this.y = y
+    return this
+}
 
 /** Chainable method returning this that sets [View.x] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.positionX(x: Number): T =
-    this.apply { this.x = x.toDouble() }
+fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
 
 /** Chainable method returning this that sets [View.y] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.positionY(y: Number): T =
-    this.apply { this.y = y.toDouble() }
+fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T =
-    this.apply { this.x = (x2.toDouble() + x1.toDouble() - this.width) / 2 }
+fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
+    this.x = (x2 + x1 - this.width) / 2
+    return this
+}
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T =
-    this.apply { this.y = (y2.toDouble() + y1.toDouble() - this.height) / 2 }
+fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
+    this.y = (y2 + y1 - this.height) / 2
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [this] View
- *  in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
+ * Chainable method returning this that sets [this] View
+ * in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T =
-    this.centerXBetween(x1, x2).centerYBetween(y1, y2)
+fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): T = this.centerXBetween(x1, x2).centerYBetween(y1, y2)
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View is centered on the [other] View horizontally
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View is centered on the [other] View horizontally
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerXOn(other: T2): T =
-    this.centerXBetween(other.x, other.x + other.width)
+fun <T : View> T.centerXOn(other: View): T = this.centerXBetween(other.x, other.x + other.width)
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View is centered on the [other] View vertically
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View is centered on the [other] View vertically
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerYOn(other: T2): T =
-    this.centerYBetween(other.y, other.y + other.height)
+fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.y + other.height)
 
 /**
- *  Chainable method returning this that sets [View.x] and [View.y]
- *  so that [this] View is centered on the [other] View
+ * Chainable method returning this that sets [View.x] and [View.y]
+ * so that [this] View is centered on the [other] View
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.centerOn(other: T2): T =
-    this.centerXOn(other).centerYOn(other)
+fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's left side is aligned with the [other] View's left side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's left side is aligned with the [other] View's left side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignLeftToLeftOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + padding.toDouble() }
+fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
+    x = other.x + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's left side is aligned with the [other] View's right side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's left side is aligned with the [other] View's right side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignLeftToRightOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + other.width + padding.toDouble()}
+fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
+    x = other.x + other.width + padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's right side is aligned with the [other] View's left side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's right side is aligned with the [other] View's left side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignRightToLeftOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x - width - padding.toDouble() }
+fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
+    x = other.x - width - padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.x] so that
- *  [this] View's right side is aligned with the [other] View's right side
+ * Chainable method returning this that sets [View.x] so that
+ * [this] View's right side is aligned with the [other] View's right side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignRightToRightOf(other: T2, padding: Number = 0.0): T =
-    this.apply { x = other.x + other.width - width - padding.toDouble() }
+fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
+    x = other.x + other.width - width - padding
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's top side is aligned with the [other] View's top side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's top side is aligned with the [other] View's top side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignTopToTopOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + padding.toDouble() }
+fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
+    y = other.y + padding.toDouble()
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's top side is aligned with the [other] View's bottom side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's top side is aligned with the [other] View's bottom side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignTopToBottomOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + other.height + padding.toDouble() }
+fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
+    y = other.y + other.height + padding.toDouble()
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's bottom side is aligned with the [other] View's top side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's bottom side is aligned with the [other] View's top side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignBottomToTopOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y - height - padding.toDouble() }
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Number = 0.0): T {
+    y = other.y - height - padding.toDouble()
+    return this
+}
 
 /**
- *  Chainable method returning this that sets [View.y] so that
- *  [this] View's bottom side is aligned with the [other] View's bottom side
+ * Chainable method returning this that sets [View.y] so that
+ * [this] View's bottom side is aligned with the [other] View's bottom side
  */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View, T2 : View> T.alignBottomToBottomOf(other: T2, padding: Number = 0.0): T =
-    this.apply { y = other.y + other.height - height - padding.toDouble() }
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number = 0.0): T {
+    y = other.y + other.height - height - padding.toDouble()
+    return this
+}
 
 /** Chainable method returning this that sets [View.rotation] */
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> T.rotation(rot: Angle): T =
-	this.apply { this.rotationRadians = rot.radians }
+fun <T : View> T.rotation(rot: Angle): T {
+    this.rotationRadians = rot.radians
+    return this
+}
 
-/** Chainable method returning this that sets [View.rotationRadians] in radians */
-@Suppress("NOTHING_TO_INLINE")
-@Deprecated("", ReplaceWith("this.rotation(rot.radians)", "com.soywiz.korma.geom.radians"))
-inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.radians)
-
-@Suppress("NOTHING_TO_INLINE")
-/** Chainable method returning this that sets [View.rotationDegrees] in radians */
-inline fun <T : View> T.rotationDegrees(degs: Number): T =
-	this.apply { this.rotationDegrees = degs.toDouble() }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.skewX] and [View.skewY] */
-inline fun <T : View> T.skew(sx: Number, sy: Number): T =
-	this.apply { this.skewX = sx.toDouble() }.apply { this.skewY = sy.toDouble() }
+fun <T : View> T.skew(sx: Double, sy: Double): T {
+    this.skewX = sx
+    this.skewY = sy
+    return this
+}
 
-fun <T : View> T.skew(sx: Double, sy: Double): T =
-    this.apply { this.skewX = sx }.apply { this.skewY = sy }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.scaleX] and [View.scaleY] */
-inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T =
-	this.apply { this.scaleX = sx.toDouble() }.apply { this.scaleY = sy.toDouble() }
+fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
+    this.scaleX = sx
+    this.scaleY = sy
+    return this
+}
 
-fun <T : View> T.scale(sx: Double, sy: Double = sx): T =
-    this.apply { this.scaleX = sx }.apply { this.scaleY = sy }
-
-@Suppress("NOTHING_TO_INLINE")
 /** Chainable method returning this that sets [View.alpha] */
-inline fun <T : View> T.alpha(alpha: Number): T =
-	this.apply { this.alpha = alpha.toDouble() }
+fun <T : View> T.alpha(alpha: Double): T {
+    this.alpha = alpha
+    return this
+}
 
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.skew(sx: Number, sy: Number): T = skew(sx.toDouble(), sy.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.alpha(alpha: Number): T = alpha(alpha.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.toDouble().radians)
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.rotationDegrees(degs: Number): T = rotation(degs.toDouble().degrees)
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T = centerXBetween(x1.toDouble(), x2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T = centerYBetween(y1.toDouble(), y2.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionX(x: Number): T = positionX(x.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun <T : View> T.positionY(y: Number): T = positionY(y.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number") inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())

@@ -4,14 +4,20 @@ import com.soywiz.korge3d.internal.*
 import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container3D.box(
 	width: Number = 1,
 	height: Number = width,
 	depth: Number = height,
 	callback: Cube3D.() -> Unit = {}
-): Cube3D {
-	return Cube3D(width.toDouble(), height.toDouble(), depth.toDouble()).apply(callback).addTo(this)
-}
+): Cube3D = box(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
+
+inline fun Container3D.box(
+    width: Double = 1.0,
+    height: Double = width,
+    depth: Double = height,
+    callback: Cube3D.() -> Unit = {}
+): Cube3D = Cube3D(width, height, depth).apply(callback).addTo(this)
 
 @Korge3DExperimental
 class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWithMesh3D(mesh.copy()) {

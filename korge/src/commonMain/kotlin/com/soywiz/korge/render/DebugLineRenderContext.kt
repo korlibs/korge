@@ -76,7 +76,9 @@ class DebugLineRenderContext(
     }
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
+    @Deprecated("Kotlin/Native boxes inline+Number")
     inline fun line(x0: Number, y0: Number, x1: Number, y1: Number) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat())
+    fun line(x0: Double, y0: Double, x1: Double, y1: Double) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat())
 
     /** Prepares for drawing a set of lines with the specified [matrix]. It flushes all other contexts, and the set [matrix]. */
     inline fun <T> draw(matrix: Matrix, body: () -> T): T {

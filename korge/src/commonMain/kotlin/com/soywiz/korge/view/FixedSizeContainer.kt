@@ -4,8 +4,13 @@ import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
+inline fun Container.fixedSizeContainer(width: Double, height: Double, clip: Boolean = false, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
+    FixedSizeContainer(width, height, clip).addTo(this).apply(callback)
+
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.fixedSizeContainer(width: Number, height: Number, clip: Boolean = false, callback: @ViewsDslMarker FixedSizeContainer.() -> Unit = {}) =
-    FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this).apply(callback)
+    fixedSizeContainer(width.toDouble(), height.toDouble(), clip, callback)
+
 
 open class FixedSizeContainer(
     override var width: Double = 100.0,

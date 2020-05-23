@@ -126,14 +126,16 @@ suspend fun View.show(time: TimeSpan, easing: Easing = Easing.LINEAR) =
 suspend fun View.hide(time: TimeSpan, easing: Easing = Easing.LINEAR) =
 	tween(this::alpha[0.0], time = time, easing = easing)
 
-suspend inline fun View.moveTo(x: Number, y: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) =
-	tween(this::x[x.toDouble()], this::y[y.toDouble()], time = time, easing = easing)
+suspend inline fun View.moveTo(x: Double, y: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::x[x], this::y[y], time = time, easing = easing)
+suspend inline fun View.moveBy(dx: Double, dy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
+suspend inline fun View.scaleTo(sx: Double, sy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
 
-suspend inline fun View.moveBy(dx: Number, dy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) =
-	tween(this::x[this.x + dx.toDouble()], this::y[this.y + dy.toDouble()], time = time, easing = easing)
-
-suspend inline fun View.scaleTo(sx: Number, sy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) =
-	tween(this::scaleX[sx.toDouble()], this::scaleY[sy.toDouble()], time = time, easing = easing)
+@Deprecated("Kotlin/Native boxes inline+Number")
+suspend inline fun View.moveTo(x: Number, y: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+@Deprecated("Kotlin/Native boxes inline+Number")
+suspend inline fun View.moveBy(dx: Number, dy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = moveBy(dx.toDouble(), dy.toDouble(), time, easing)
+@Deprecated("Kotlin/Native boxes inline+Number")
+suspend inline fun View.scaleTo(sx: Number, sy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = scaleTo(sx.toDouble(), sy.toDouble(), time, easing)
 
 suspend inline fun View.rotateTo(deg: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) =
 	tween(this::rotationRadians[deg.radians], time = time, easing = easing)
@@ -192,9 +194,13 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<Double>.get(end: Number) = V2(this, this.get(), end.toDouble(), ::_interpolate, includeStart = false)
-inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) =
-	V2(this, initial.toDouble(), end.toDouble(), ::_interpolate, true)
+inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
+inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
+
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline operator fun KMutableProperty0<Double>.get(end: Number) = get(end.toDouble())
+@Deprecated("Kotlin/Native boxes inline+Number")
+inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) = get(initial.toDouble(), end.toDouble())
 
 inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor, includeStart = false)
 inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =

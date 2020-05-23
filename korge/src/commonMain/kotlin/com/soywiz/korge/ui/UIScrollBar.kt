@@ -8,6 +8,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
+@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiScrollBar(
     width: Number,
     height: Number,
@@ -15,21 +16,25 @@ inline fun Container.uiScrollBar(
     pageSize: Number = 1.0,
     totalSize: Number = 10.0,
     buttonSize: Number = 32.0,
-    stepSize: Double = pageSize.toDouble() / 10.0,
+    stepSize: Number = pageSize.toDouble() / 10.0,
     direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
     skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
     block: @ViewsDslMarker UIScrollBar.() -> Unit = {}
-): UIScrollBar = UIScrollBar(
-    width.toDouble(),
-    height.toDouble(),
-    current.toDouble(),
-    pageSize.toDouble(),
-    totalSize.toDouble(),
-    buttonSize.toDouble(),
-    stepSize,
-    direction,
-    skin
-).addTo(this).apply(block)
+): UIScrollBar = uiScrollBar(width.toDouble(), height.toDouble(), current.toDouble(), pageSize.toDouble(), totalSize.toDouble(), buttonSize.toDouble(),
+    stepSize.toDouble(), direction, skin, block)
+
+inline fun Container.uiScrollBar(
+    width: Double,
+    height: Double,
+    current: Double = 0.0,
+    pageSize: Double = 1.0,
+    totalSize: Double = 10.0,
+    buttonSize: Double = 32.0,
+    stepSize: Double = pageSize / 10.0,
+    direction: Direction = Direction.auto(width, height),
+    skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
+    block: @ViewsDslMarker UIScrollBar.() -> Unit = {}
+): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction, skin).addTo(this).apply(block)
 
 open class UIScrollBar(
     width: Double,
@@ -39,11 +44,17 @@ open class UIScrollBar(
     totalSize: Double,
     buttonSize: Double = 32.0,
     var stepSize: Double = pageSize / 10.0,
-    direction: Direction = if (width > height) Direction.Horizontal else Direction.Vertical,
+    direction: Direction = Direction.auto(width, height),
     skin: ScrollBarSkin = if (direction == Direction.Horizontal) DefaultHorScrollBarSkin else DefaultVerScrollBarSkin
 ) : UIView() {
 
-    enum class Direction { Vertical, Horizontal }
+    enum class Direction {
+        Vertical, Horizontal;
+
+        companion object {
+            fun auto(width: Double, height: Double) = if (width > height) Horizontal else Vertical
+        }
+    }
 
     override var width by uiObservable(width) { reshape() }
     override var height by uiObservable(height) { reshape() }
