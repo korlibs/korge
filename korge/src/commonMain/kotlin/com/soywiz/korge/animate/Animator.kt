@@ -180,6 +180,7 @@ open class Animator(
     fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
     fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
     fun View.moveToWithSpeed(x: Double, y: Double, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).secs }, easing = easing)
+    fun View.alpha(alpha: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha], time = time, easing = easing)
 
     fun View.scaleTo(scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[scaleX()] }, { this::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
     fun View.rotateTo(rotation: () -> Angle, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
@@ -189,10 +190,14 @@ open class Animator(
     fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1, time, easing)
     fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0, time, easing)
 
+    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
     inline fun View.scaleTo(scaleX: Number, scaleY: Number = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
+    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
     inline fun View.moveTo(x: Number, y: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
     inline fun View.moveToWithSpeed(x: Number, y: Number, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
-    inline fun View.alpha(alpha: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha.toDouble()], time = time, easing = easing)
+    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
+    inline fun View.alpha(alpha: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
 
     fun wait(time: TimeSpan = this.time) = __tween(time = time)
     fun wait(time: () -> TimeSpan) = __tween(lazyTime = time)

@@ -5,9 +5,15 @@ interface Anchorable {
     var anchorY: Double
 }
 
+fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T {
+    this.anchorX = ax
+    this.anchorY = ay
+    return this
+}
+
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : Anchorable> T.anchor(ax: Number, ay: Number): T =
-    this.apply { this.anchorX = ax.toDouble() }.apply { this.anchorY = ay.toDouble() }
+@Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
+inline fun <T : Anchorable> T.anchor(ax: Number, ay: Number): T = anchor(ax.toDouble(), ay.toDouble())
 
 fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
 val <T : Anchorable> T.centered: T get() = anchor(0.5, 0.5)

@@ -62,9 +62,6 @@ abstract class Camera3D : View3D() {
 	}
 }
 
-// @TODO: Move to KorMA
-private val tempMatrix3D = Matrix3D()
-
 class Transform3D {
 	@PublishedApi
 	internal var matrixDirty = false

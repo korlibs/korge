@@ -793,10 +793,7 @@ class TexturedVertexArrayBuilder(count: Int) {
 	fun quad(x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
 		val offset4 = offset * 4
 		val i6 = offset * 6
-		array.select(offset4 + 0).xy(x, y, matrix).uv(bmp.tl_x, bmp.tl_y).cols(colMul, colAdd)
-		array.select(offset4 + 1).xy(x + width, y, matrix).uv(bmp.tr_x, bmp.tr_y).cols(colMul, colAdd)
-		array.select(offset4 + 2).xy(x + width, y + height, matrix).uv(bmp.br_x, bmp.br_y).cols(colMul, colAdd)
-		array.select(offset4 + 3).xy(x, y + height, matrix).uv(bmp.bl_x, bmp.bl_y).cols(colMul, colAdd)
+        array.quad(offset4, x, y, width, height, matrix, bmp, colMul, colAdd)
 		indices[i6 + 0] = offset4 + 0
 		indices[i6 + 1] = offset4 + 1
 		indices[i6 + 2] = offset4 + 2
@@ -805,6 +802,7 @@ class TexturedVertexArrayBuilder(count: Int) {
 		indices[i6 + 5] = offset4 + 2
 		offset++
 	}
+    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
 	inline fun quad(x: Number, y: Number, width: Number, height: Number, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) =
 			quad(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), matrix, bmp, colMul, colAdd)
 	fun build() = array.apply {
