@@ -24,7 +24,6 @@ class SpritesTest : ViewsForTesting() {
 
     // MUST BE CALLED BEFORE EACH TEST
     suspend fun setup(){
-        async(Dispatchers.Default){
             countDownSpriteMap = resourcesVfs["countDown.png"].readBitmap().toBMP32()
             digits = Array<Bitmap>(10) {
                 countDownSpriteMap.extract(it * 24, 0, 24, 36)
@@ -32,7 +31,6 @@ class SpritesTest : ViewsForTesting() {
 
             countDownAnimation = SpriteAnimation(countDownSpriteMap, 24, 36, 0, 0, 10, 1, 0, 0)
             countDownSprite = Sprite(countDownAnimation)
-        }.await()
     }
 
     @Test
