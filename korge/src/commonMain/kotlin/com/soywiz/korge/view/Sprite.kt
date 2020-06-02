@@ -126,18 +126,6 @@ open class Sprite(
     }
 
     fun playAnimation(
-        spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
-        startFrame: Int = -1,
-        reversed: Boolean = false) =
-        updateCurrentAnimation(
-            spriteAnimation = spriteAnimation,
-            spriteDisplayTime = spriteDisplayTime,
-            startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
-            reversed = reversed,
-            type = AnimationType.STANDARD)
-
-    fun playAnimation(
         times: Int = 1,
         spriteAnimation: SpriteAnimation? = currentAnimation,
         spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
