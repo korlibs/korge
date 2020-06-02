@@ -26,8 +26,8 @@ class SpriteAnimation(
         get() = spriteStack[0]
 
     init{
-        for (col in 0 until columns){
-            for (row in 0 until rows){
+        for (row in 0 until rows){
+            for (col in 0 until columns){
                 spriteStack.add(
                     spriteMap.sliceWithSize(
                         marginLeft + (spriteWidth + offsetBetweenColumns) * col,
