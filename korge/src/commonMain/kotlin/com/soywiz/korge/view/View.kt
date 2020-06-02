@@ -1042,6 +1042,26 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     return Cancellable { component.detach() }
 }
 
+fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, updatable: T.() -> Unit): Cancellable {
+    val tickTime = time.nanoseconds.toInt()
+    var accum = 0
+    val component = object : UpdateComponent {
+        override val view: View get() = this@addFixedUpdater
+        override fun update(ms: Double) {
+            accum += ms.milliseconds.nanoseconds.toInt()
+            //println("UPDATE: accum=$accum, tickTime=$tickTime")
+            while (accum >= tickTime) {
+                accum -= tickTime
+                updatable(this@addFixedUpdater)
+            }
+        }
+    }.attach()
+    if (initial) {
+        updatable(this@addFixedUpdater)
+    }
+    return Cancellable { component.detach() }
+}
+
 fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
     object : UpdateComponentWithViews {
         override val view: View get() = this@onNextFrame

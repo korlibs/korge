@@ -17,6 +17,34 @@ class ViewsTest : ViewsForTesting() {
     val tex = Bitmap32(10, 10)
 
     @Test
+    fun testFixedUpdater() {
+        run {
+            val view = DummyView()
+            var ticks = 0
+            view.addFixedUpdater(1.seconds / 60, initial = false) {
+                ticks++
+            }
+            assertEquals(0, ticks)
+            view.updateSingleView(50.0)
+            assertEquals(3, ticks)
+            view.updateSingleView(16.0)
+            assertEquals(3, ticks)
+            view.updateSingleView(1.0)
+            assertEquals(4, ticks)
+        }
+        run {
+            val view = DummyView()
+            var ticks = 0
+            view.addFixedUpdater(1.seconds / 60, initial = true) {
+                ticks++
+            }
+            assertEquals(1, ticks)
+            view.updateSingleView(50.0)
+            assertEquals(4, ticks)
+        }
+    }
+
+    @Test
     fun testBounds() = viewsTest {
         val image = Image(tex).position(100, 100)
         views.stage += image
