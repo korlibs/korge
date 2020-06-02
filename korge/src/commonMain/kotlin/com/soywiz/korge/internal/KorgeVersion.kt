@@ -1,3 +1,3 @@
 package com.soywiz.korge.internal
 
-internal const val KORGE_VERSION = "1.12.11"
+internal const val KORGE_VERSION = "1.12.12-SNAPSHOT"
