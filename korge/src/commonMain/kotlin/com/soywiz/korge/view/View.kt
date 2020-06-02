@@ -1042,7 +1042,12 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     return Cancellable { component.detach() }
 }
 
-fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, updatable: T.() -> Unit): Cancellable {
+/**
+ * Adds an [updatable] block that will be executed every [time] time, the calls will be discretized on each frame and will handle accumulations.
+ * The [initial] properly allows to adjust if the [updatable] will be called immediately after calling this function.
+ * To avoid executing too much blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
+ */
+fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, limitCallsPerFrame: Int = 16, updatable: T.() -> Unit): Cancellable {
     val tickTime = time.nanoseconds.toInt()
     var accum = 0
     val component = object : UpdateComponent {
@@ -1050,9 +1055,16 @@ fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, updata
         override fun update(ms: Double) {
             accum += ms.milliseconds.nanoseconds.toInt()
             //println("UPDATE: accum=$accum, tickTime=$tickTime")
+            var calls = 0
             while (accum >= tickTime) {
                 accum -= tickTime
                 updatable(this@addFixedUpdater)
+                calls++
+                if (calls >= limitCallsPerFrame) {
+                    // We do not accumulate for the next frame in this case
+                    accum = 0
+                    break
+                }
             }
         }
     }.attach()
