@@ -45,6 +45,20 @@ class ViewsTest : ViewsForTesting() {
     }
 
     @Test
+    fun testFixedUpdaterLimit() {
+        val view = DummyView()
+        var ticks = 0
+        view.addFixedUpdater(1.seconds / 60, initial = true, limitCallsPerFrame = 6) {
+            ticks++
+        }
+        assertEquals(1, ticks)
+        view.updateSingleView(1000.0)
+        assertEquals(7, ticks)
+        view.updateSingleView(1000.0)
+        assertEquals(13, ticks)
+    }
+
+    @Test
     fun testBounds() = viewsTest {
         val image = Image(tex).position(100, 100)
         views.stage += image
