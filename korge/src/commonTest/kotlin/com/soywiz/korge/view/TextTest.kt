@@ -7,16 +7,26 @@ import kotlin.test.*
 class TextTest {
 	@Test
 	fun testRender() {
+        val vertices = arrayListOf<List<VertexInfo>>()
+
         testRenderContext { ctx ->
+            ctx.batch.beforeFlush {
+                vertices.add(it.readVertices())
+            }
             val text = Text("1").apply {
                 textSize = 32.0
             }
             text.render(ctx)
-            assertEquals(Point(0, 0), ctx.batch.readVertex(0).xy)
-            assertEquals(Point(32, 0), ctx.batch.readVertex(1).xy)
-            assertEquals(Point(32, 32), ctx.batch.readVertex(2).xy)
-            assertEquals(Point(0, 32), ctx.batch.readVertex(3).xy)
         }
+        assertEquals(
+            listOf(listOf(
+                Point(0, 0),
+                Point(32, 0),
+                Point(32, 32),
+                Point(0, 32)
+            )),
+            vertices.map { it.map { it.xy } }
+        )
         //println(ag.log)
 	}
 }

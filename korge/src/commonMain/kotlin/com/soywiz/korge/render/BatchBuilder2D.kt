@@ -10,6 +10,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -130,7 +131,9 @@ class BatchBuilder2D(
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
 
-    internal fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
+    fun readVertices(): List<VertexInfo> = (0 until vertexCount).map { readVertex(it) }
+
+    fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
         out.read(this.vertices, n)
         return out
     }
@@ -494,6 +497,7 @@ class BatchBuilder2D(
 	}
 
 	private val tempRect = Rectangle()
+    val beforeFlush = Signal<BatchBuilder2D>()
 
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush() {
@@ -534,6 +538,7 @@ class BatchBuilder2D(
 				colorMask = colorMask,
 				scissor = scissor
 			)
+            beforeFlush(this)
 		}
 
 		vertexCount = 0
