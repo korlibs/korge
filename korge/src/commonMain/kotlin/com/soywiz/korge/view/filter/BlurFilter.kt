@@ -29,7 +29,9 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
     ) {
         val nsteps = this.nsteps
         // Cache values
-        while (gaussianBlurs.size < nsteps) gaussianBlurs.add(Convolute3Filter(Convolute3Filter.KERNEL_GAUSSIAN_BLUR, gaussianBlurs.size.toDouble()))
+        while (gaussianBlurs.size < nsteps) {
+            gaussianBlurs.add(Convolute3Filter(Matrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble()))
+        }
 
         //println("border: $border")
 
