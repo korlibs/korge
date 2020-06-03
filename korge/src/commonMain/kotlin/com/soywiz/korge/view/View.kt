@@ -735,7 +735,7 @@ abstract class View internal constructor(
     /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
 	fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.fastTransformY(x, y)
 
-    /** Determines the view at the local point defined by [x] and [y] if any, or null */
+    /** Determines the view at the global point defined by [x] and [y] if any, or null */
 	open fun hitTest(x: Double, y: Double): View? = null
 
 	//fun hitTest(x: Double, y: Double): View? {
@@ -764,11 +764,16 @@ abstract class View internal constructor(
 		sTop: Double,
 		sRight: Double,
 		sBottom: Double
-	): Boolean {
-		val lx = globalToLocalX(x, y)
-		val ly = globalToLocalY(x, y)
-		return lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
-	}
+	): Boolean = checkLocalBounds(globalToLocalX(x, y), globalToLocalY(x, y), sLeft, sTop, sRight, sBottom)
+
+    protected fun checkLocalBounds(
+        lx: Double,
+        ly: Double,
+        sLeft: Double,
+        sTop: Double,
+        sRight: Double,
+        sBottom: Double
+    ): Boolean = lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
 
     /**
      * Resets the View properties to an identity state.
