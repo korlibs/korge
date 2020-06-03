@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.*
  * - swizzle="bgra" would interchange red and blue channels
  * - swizzle="rrra" would show as greyscale the red component
  */
-class SwizzleColorsFilter private constructor(initialSwizzle: String = "rgba") : Filter {
+class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
     private var proxy: ProxySwizzle = ProxySwizzle(initialSwizzle)
 
     class ProxySwizzle(val swizzle: String = "rgba") : ShaderFilter() {
