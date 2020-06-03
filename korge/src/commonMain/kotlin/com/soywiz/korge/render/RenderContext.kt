@@ -2,6 +2,7 @@ package com.soywiz.korge.render
 
 import com.soywiz.kds.*
 import com.soywiz.korag.*
+import com.soywiz.korag.log.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -126,3 +127,12 @@ class RenderContext(
      */
     fun getTex(bmp: Bitmap): Texture.Base = agBitmapTextureManager.getTextureBase(bmp)
 }
+
+inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {
+    val ctx = RenderContext(ag)
+    block(ctx)
+    ctx.flush()
+    return ag
+}
+
+inline fun testRenderContext(block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), block)

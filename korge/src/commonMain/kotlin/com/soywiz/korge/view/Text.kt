@@ -65,6 +65,18 @@ class Text : View(), IText, IHtml {
 			recalculateBoundsWhenRequired()
 		}
 
+    var font: BitmapFont?
+        get() = (format.computedFace as? Html.FontFace.Bitmap?)?.font
+        set(value) = run { format.face = if (value != null) Html.FontFace.Bitmap(value) else null }
+
+    var color: RGBA
+        get() = format.computedColor
+        set(value) = run { format.color = value }
+
+    var textSize: Double
+        get() = format.computedSize.toDouble()
+        set(value) = run { format.size = value.toInt() }
+
 	override var text: String
 		get() = if (document != null) document?.xml?.text ?: "" else _text
 		set(value) {
