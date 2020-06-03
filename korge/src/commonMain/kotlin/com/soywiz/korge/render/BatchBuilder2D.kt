@@ -51,8 +51,8 @@ class BatchBuilder2D(
 
 	init { logger.trace { "BatchBuilder2D[1]" } }
 
-	private val vertices = FBuffer.alloc(6 * 4 * maxVertices)
-	private val indices = FBuffer.alloc(2 * maxIndices)
+	internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
+    internal val indices = FBuffer.alloc(2 * maxIndices)
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
@@ -129,6 +129,11 @@ class BatchBuilder2D(
 	}
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
+
+    internal fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
+        out.read(this.vertices, n)
+        return out
+    }
 
 	// @TODO: copy data from TexturedVertexArray
 	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
