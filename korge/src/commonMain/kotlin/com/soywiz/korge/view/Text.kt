@@ -100,7 +100,15 @@ class Text : View(), IText, IHtml {
 		document?.doPositioning(fonts, textBounds)
 	}
 
-	override fun renderInternal(ctx: RenderContext) {
+    override fun hitTest(x: Double, y: Double): View? {
+        val rect = when {
+            autoSize -> tempRect.also { fonts.getBounds(text, format, out = it) }
+            else -> textBounds
+        }
+        return if (rect.contains(globalToLocalX(x, y), globalToLocalY(x, y))) this else null
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 		val colorMul = renderColorMul
 		val colorAdd = renderColorAdd
