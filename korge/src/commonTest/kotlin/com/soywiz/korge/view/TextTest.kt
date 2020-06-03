@@ -5,8 +5,8 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class TextTest {
-	@Test
-	fun testRender() {
+    @Test
+    fun testRender() {
         val vertices = arrayListOf<List<VertexInfo>>()
 
         testRenderContext { ctx ->
@@ -19,14 +19,33 @@ class TextTest {
             text.render(ctx)
         }
         assertEquals(
-            listOf(listOf(
-                Point(0, 0),
-                Point(32, 0),
-                Point(32, 32),
-                Point(0, 32)
-            )),
+            listOf(
+                listOf(
+                    Point(0, 0),
+                    Point(32, 0),
+                    Point(32, 32),
+                    Point(0, 32)
+                )
+            ),
             vertices.map { it.map { it.xy } }
         )
         //println(ag.log)
-	}
+    }
+
+    @Test
+    fun testBounds() {
+        val text = Text("1", textSize = 32.0)
+        assertEquals(Rectangle(0, 0, 28, 32), text.getLocalBounds())
+    }
+
+    @Test
+    fun testHitTest() {
+        val text = Text("1", textSize = 32.0)
+        assertEquals(text, text.hitTest(10, 5))
+        assertEquals(null, text.hitTest(30, 5))
+        text.setTextBounds(Rectangle(0, 0, 32, 32))
+        assertEquals(text, text.hitTest(10, 5))
+        assertEquals(text, text.hitTest(30, 5))
+        assertEquals(null, text.hitTest(33, 5))
+    }
 }
