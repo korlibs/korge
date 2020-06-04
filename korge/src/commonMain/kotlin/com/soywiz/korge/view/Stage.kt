@@ -18,6 +18,17 @@ class Stage(val views: Views) : Container()
     val gameWindow get() = views.gameWindow
     override val stage: Stage = this
 
+    /** Mouse coordinates relative to the [Stage] singleton */
+    val mouseXY: Point = Point(0.0, 0.0)
+        get() {
+            field.setTo(mouseX, mouseY)
+            return field
+        }
+    /** Mouse X coordinate relative to the [Stage] singleton */
+    val mouseX get() = localMouseX(views)
+    /** Mouse Y coordinate relative to the [Stage] singleton */
+    val mouseY get() = localMouseY(views)
+
     override fun getLocalBoundsInternal(out: Rectangle) {
         out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
     }

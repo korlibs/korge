@@ -92,8 +92,19 @@ class Views constructor(
 	val actualVirtualRight get() = actualVirtualWidth
 	val actualVirtualBottom get() = actualVirtualHeight
 
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
+    @KorgeInternal
 	val nativeMouseX: Double get() = input.mouse.x
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
+    @KorgeInternal
 	val nativeMouseY: Double get() = input.mouse.y
+
+    /** Mouse coordinates relative to the [Stage] singleton */
+    val globalMouseXY get() = stage.mouseXY
+    /** Mouse X coordinate relative to the [Stage] singleton */
+    val globalMouseX get() = stage.mouseX
+    /** Mouse Y coordinate relative to the [Stage] singleton */
+    val globalMouseY get() = stage.mouseY
 
 	var scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	var scaleAnchor = Anchor.MIDDLE_CENTER
