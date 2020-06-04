@@ -41,6 +41,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	val ag get() = viewsLog.ag
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
+    val stage get() = views.stage
 	val stats get() = views.stats
 	val mouse get() = input.mouse
 
