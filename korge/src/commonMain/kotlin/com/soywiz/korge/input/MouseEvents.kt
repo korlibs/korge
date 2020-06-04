@@ -10,15 +10,16 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
+import com.soywiz.korge.internal.*
 import kotlin.js.*
 import kotlin.reflect.*
 
+@OptIn(KorgeInternal::class)
 class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
-
 
     val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
@@ -111,11 +112,16 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	var Input.mouseHitResultUsed by Extra.Property<View?> { null }
 	var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
-    // Global variants
+    // Global variants (Not related to the STAGE! but to the window coordinates, so can't be translated directly use *Stage variants instead or directly Stage.mouseXY!)
+    @KorgeInternal
 	var downPosGlobal = Point()
+    @KorgeInternal
     var upPosGlobal = Point()
+    @KorgeInternal
     val startedPosGlobal = Point()
+    @KorgeInternal
     val lastPosGlobal = Point()
+    @KorgeInternal
     val currentPosGlobal = Point()
 
     // Local variants
@@ -130,6 +136,19 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val currentPosLocal get() = view.globalToLocal(currentPosGlobal, _currentPosLocal)
     val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
     val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
+
+    // Stage-based variants
+    private val _downPosStage: Point = Point()
+    private val _upPosStage: Point = Point()
+    private val _startedPosStage = Point()
+    private val _lastPosStage = Point()
+    private val _currentPosStage = Point()
+
+    val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal, _startedPosStage)
+    val lastPosStage get() = views.stage.globalToLocal(lastPosGlobal, _lastPosStage)
+    val currentPosStage get() = views.stage.globalToLocal(currentPosGlobal, _currentPosStage)
+    val downPosStage get() = views.stage.globalToLocal(downPosGlobal, _downPosStage)
+    val upPosStage get() = views.stage.globalToLocal(upPosGlobal, _upPosStage)
 
     // Deprecated variants
     @Deprecated("Use startedPosLocal instead")
