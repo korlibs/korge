@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.time.HRTimeProvider
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -37,7 +38,7 @@ object KorgeHeadless {
         debug: Boolean = false,
         fullscreen: Boolean? = null,
         args: Array<String> = arrayOf(),
-        timeProvider: TimeProvider = TimeProvider,
+        timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         entry: suspend Stage.() -> Unit
     ) = Korge(

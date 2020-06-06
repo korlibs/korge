@@ -11,6 +11,8 @@ import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
+import com.soywiz.korge.time.HRTimeProvider
+import com.soywiz.korge.time.toTimeProvider
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -93,7 +95,7 @@ object Korge {
 		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
 		gameWindow: GameWindow? = null,
-        timeProvider: TimeProvider = TimeProvider,
+        timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         entry: suspend Stage.() -> Unit
 	) {
@@ -131,7 +133,8 @@ object Korge {
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
                 .mapInstance(AG::class, ag)
-                .mapInstance(TimeProvider::class, timeProvider)
+                .mapInstance(TimeProvider::class, timeProvider.toTimeProvider()) // Deprecated
+                .mapInstance(HRTimeProvider::class, timeProvider)
                 .mapInstance(views)
                 .mapInstance(input)
                 .mapInstance(stats)
@@ -411,7 +414,7 @@ object Korge {
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider,
+		val timeProvider: HRTimeProvider = HRTimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,
