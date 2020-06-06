@@ -7,6 +7,7 @@ import com.soywiz.korag.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.time.HRTimeSpan
 
 //@Singleton
 @OptIn(KorgeInternal::class)
@@ -45,9 +46,9 @@ class Input : Extra by Extra.Mixin() {
     @KorgeInternal
     val keysRawPrev = BooleanArray(KEYCODES)
     @KorgeInternal
-	val keysPressingTime = IntArray(KEYCODES)
+	val keysPressingTime = DoubleArray(KEYCODES)
     @KorgeInternal
-	val keysLastTimeTriggered = IntArray(KEYCODES)
+	val keysLastTimeTriggered = DoubleArray(KEYCODES)
     @KorgeInternal
 	val keysPressing = BooleanArray(KEYCODES)
     @KorgeInternal
@@ -72,40 +73,41 @@ class Input : Extra by Extra.Mixin() {
 	}
 
     @KorgeInternal
-	fun startFrame(dtMs: Int) {
+	fun startFrame(delta: HRTimeSpan) {
 		this.extra?.clear()
-        keys.startFrame(dtMs)
+        keys.startFrame(delta)
 	}
 
-    fun endFrame(dtMs: Int) {
+    @KorgeInternal
+    fun endFrame(delta: HRTimeSpan) {
 		this.clicked = false
-        keys.endFrame(dtMs)
-        endFrameOldKeys(dtMs)
+        keys.endFrame(delta)
+        endFrameOldKeys(delta)
 	}
 
-    private fun endFrameOldKeys(dtMs: Int) {
+    private fun endFrameOldKeys(delta: HRTimeSpan) {
         for (n in 0 until KEYCODES) {
             val prev = keysRawPrev[n]
             val curr = keysRaw[n]
             keysJustReleased[n] = prev && !curr
             keysJustPressed[n] = !prev && curr
             if (curr) {
-                keysPressingTime[n] += dtMs
+                keysPressingTime[n] += delta.nanosecondsDouble
             } else {
-                keysPressingTime[n] = 0
-                keysLastTimeTriggered[n] = 0
+                keysPressingTime[n] = 0.0
+                keysLastTimeTriggered[n] = 0.0
             }
             var triggerPress = false
-            val pressingTime = keysPressingTime[n]
+            val pressingTime = HRTimeSpan.fromNanoseconds(keysPressingTime[n])
             if (keysPressingTime[n] > 0) {
-                val timeBarrier = when (pressingTime) {
-                    in 0 until 1 -> 0
-                    in 1 until 300 -> 100
-                    in 300 until 1000 -> 50
-                    else -> 20
+                val timeBarrier = when (pressingTime.millisecondsDouble) {
+                    in 0.0 .. 1.0 -> HRTimeSpan.fromMilliseconds(0)
+                    in 1.0 .. 300.0 -> HRTimeSpan.fromMilliseconds(100)
+                    in 300.0 .. 1000.0 -> HRTimeSpan.fromMilliseconds(50)
+                    else -> HRTimeSpan.fromMilliseconds(20)
                 }
 
-                val elapsedTime = pressingTime - keysLastTimeTriggered[n]
+                val elapsedTime = pressingTime - HRTimeSpan.fromNanoseconds(keysLastTimeTriggered[n])
                 if (elapsedTime >= timeBarrier) {
                     triggerPress = true
                 }
@@ -153,9 +155,9 @@ class InputKeys {
         }
     }
 
-    internal fun startFrame(dtMs: Int) {
+    internal fun startFrame(delta: HRTimeSpan) {
     }
-    internal fun endFrame(dtMs: Int) {
+    internal fun endFrame(delta: HRTimeSpan) {
         arraycopy(pressing, 0, pressingPrev, 0, pressing.size)
     }
 }

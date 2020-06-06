@@ -3,6 +3,7 @@ package com.soywiz.korge.component
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
+import com.soywiz.korge.time.HRTimeSpan
 import kotlin.reflect.*
 
 /**
@@ -121,7 +122,9 @@ interface EventComponent : Component {
  * It is like [UpdateComponent] but includes a reference to the [Views] itself.
  */
 interface UpdateComponentWithViews : Component {
+    @Deprecated("")
 	fun update(views: Views, ms: Double)
+    fun update(views: Views, delta: HRTimeSpan) = update(views, delta.millisecondsDouble)
 }
 
 /**
@@ -137,7 +140,9 @@ interface UpdateComponentWithViews : Component {
  * ```
  */
 interface UpdateComponent : Component {
+    @Deprecated("")
     fun update(ms: Double)
+    fun update(delta: HRTimeSpan) = update(delta.millisecondsDouble)
 }
 
 /**
