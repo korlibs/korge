@@ -9,6 +9,10 @@ import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.time.HRTimeSpan
+import com.soywiz.korge.time.hr
+import com.soywiz.korge.time.hrNanoseconds
+import com.soywiz.korge.time.timeSpan
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
@@ -450,9 +454,9 @@ abstract class View internal constructor(
     /** Adds a block that will be executed per frame to this view. This is deprecated, and you should use [addUpdater] instead that uses [TimeSpan] to provide the elapsed time */
     @Deprecated("Use addUpdater, since this method uses dtMs: Int instead of a TimeSpan due to bugs in initial Kotlin inline classes")
 	fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
-		val component = object : UpdateComponent {
+		val component = object : UpdateComponentV2 {
 			override val view: View get() = this@View
-			override fun update(ms: Double) { updatable(ms.toInt()) }
+            override fun update(dt: HRTimeSpan) = updatable(dt.millisecondsInt)
 		}.attach()
 		component.update(0.0)
 		return Cancellable { component.detach() }
@@ -1039,26 +1043,39 @@ fun View.replaceWith(view: View): Boolean {
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponent {
+    val component = object : UpdateComponentV2 {
         override val view: View get() = this@addUpdater
-        override fun update(ms: Double) { updatable(this@addUpdater, ms.ms) }
+        override fun update(dt: HRTimeSpan) { updatable(this@addUpdater, dt.timeSpan) }
     }.attach()
-    component.update(0.0)
+    component.update(HRTimeSpan.ZERO)
     return Cancellable { component.detach() }
 }
+
+/** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
+fun <T : View> T.addHrUpdater(updatable: T.(dt: HRTimeSpan) -> Unit): Cancellable {
+    val component = object : UpdateComponentV2 {
+        override val view: View get() = this@addHrUpdater
+        override fun update(dt: HRTimeSpan) { updatable(this@addHrUpdater, dt) }
+    }.attach()
+    component.update(HRTimeSpan.ZERO)
+    return Cancellable { component.detach() }
+}
+
+fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, limitCallsPerFrame: Int = 16, updatable: T.() -> Unit): Cancellable
+    = addFixedUpdater(time.hr, initial, limitCallsPerFrame, updatable)
 
 /**
  * Adds an [updatable] block that will be executed every [time] time, the calls will be discretized on each frame and will handle accumulations.
  * The [initial] properly allows to adjust if the [updatable] will be called immediately after calling this function.
  * To avoid executing too much blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
  */
-fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, limitCallsPerFrame: Int = 16, updatable: T.() -> Unit): Cancellable {
-    val tickTime = time.nanoseconds.toInt()
-    var accum = 0
-    val component = object : UpdateComponent {
+fun <T : View> T.addFixedUpdater(time: HRTimeSpan, initial: Boolean = true, limitCallsPerFrame: Int = 16, updatable: T.() -> Unit): Cancellable {
+    val tickTime = time
+    var accum = 0.hrNanoseconds
+    val component = object : UpdateComponentV2 {
         override val view: View get() = this@addFixedUpdater
-        override fun update(ms: Double) {
-            accum += ms.milliseconds.nanoseconds.toInt()
+        override fun update(dt: HRTimeSpan) {
+            accum += dt
             //println("UPDATE: accum=$accum, tickTime=$tickTime")
             var calls = 0
             while (accum >= tickTime) {
@@ -1067,7 +1084,7 @@ fun <T : View> T.addFixedUpdater(time: TimeSpan, initial: Boolean = true, limitC
                 calls++
                 if (calls >= limitCallsPerFrame) {
                     // We do not accumulate for the next frame in this case
-                    accum = 0
+                    accum = 0.hrNanoseconds
                     break
                 }
             }

@@ -6,6 +6,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -18,13 +19,13 @@ import kotlin.reflect.*
 class TweenComponent(
 	override val view: View,
 	private val vs: List<V2<*>>,
-	val time: Long? = null,
+	val time: HRTimeSpan = HRTimeSpan.NULL,
 	val easing: Easing = Easing.LINEAR,
 	val callback: (Double) -> Unit,
 	val c: CancellableContinuation<Unit>
-) : UpdateComponent {
-	var elapsedMs = 0
-	val ctime : Long = time ?: vs.map { it.endTime }.max()?.toLong() ?: 1000L
+) : UpdateComponentV2 {
+	var elapsed = 0.hrNanoseconds
+	val hrtime = if (time != HRTimeSpan.NULL) (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds else 1.hrSeconds
 	var cancelled = false
 	var done = false
 
@@ -45,17 +46,16 @@ class TweenComponent(
 		}
 	}
 
-	override fun update(ms: Double) {
+	override fun update(dt: HRTimeSpan) {
         if (cancelled) {
             //println(" --> cancelled")
             return completeOnce()
         }
-		val dtMs = ms.toInt()
 		//println("TWEEN UPDATE[$this, $vs]: $elapsed + $dtMs")
-		elapsedMs += dtMs
+		elapsed += dt
 
-		val ratio = (elapsedMs.toDouble() / ctime.toDouble()).clamp(0.0, 1.0)
-		setToMs(elapsedMs)
+		val ratio = (elapsed / hrtime).clamp(0.0, 1.0)
+		setTo(elapsed)
 		callback(easing(ratio))
 
 		if (ratio >= 1.0) {
@@ -64,16 +64,19 @@ class TweenComponent(
 		}
 	}
 
-	fun setToMs(elapsed: Int) {
-        if (elapsed == 0) {
+    @Deprecated("")
+    fun setToMs(elapsed: Int) = setTo(elapsed.hrMilliseconds)
+
+	fun setTo(elapsed: HRTimeSpan) {
+        if (elapsed == 0.hrNanoseconds) {
             vs.fastForEach { v ->
                 v.init()
             }
         }
 		vs.fastForEach { v ->
-			val durationInTween = (v.duration ?: (ctime - v.startTime))
-			val elapsedInTween = (elapsed - v.startTime).clamp(0L, durationInTween)
-			val ratioInTween = if (durationInTween <= 0.0) 1.0 else elapsedInTween.toDouble() / durationInTween.toDouble()
+			val durationInTween = v.duration.coalesce { (hrtime - v.startTime) }
+			val elapsedInTween = (elapsed - v.startTime).clamp(0.hrNanoseconds, durationInTween)
+			val ratioInTween = if (durationInTween <= 0.hrNanoseconds) 1.0 else elapsedInTween / durationInTween
 			v.set(easing(ratioInTween))
 		}
 	}
@@ -96,11 +99,11 @@ suspend fun View?.tween(
 				suspendCancellableCoroutine<Unit> { c ->
 					val view = this@tween
 					//println("STARTED TWEEN at thread $currentThreadId")
-					tc = TweenComponent(view, vs.toList(), time.millisecondsLong, easing, callback, c).also { it.attach() }
+					tc = TweenComponent(view, vs.toList(), time.hr, easing, callback, c).also { it.attach() }
 				}
 			}
 		} catch (e: TimeoutCancellationException) {
-			tc?.setToMs(time.millisecondsInt)
+			tc?.setTo(time.hr)
 		}
 	}
 }
@@ -150,10 +153,10 @@ data class V2<V>(
 	val end: V,
 	val interpolator: (Double, V, V) -> V,
     val includeStart: Boolean,
-	val startTime: Long = 0,
-	val duration: Long? = null
+	val startTime: HRTimeSpan = 0.hrNanoseconds,
+	val duration: HRTimeSpan = HRTimeSpan.NULL
 ) {
-	val endTime = startTime + (duration ?: 0)
+	val endTime = startTime + duration.coalesce { 0.hrNanoseconds }
 
 	@Deprecated("", replaceWith = ReplaceWith("key .. (initial...end)", "com.soywiz.korge.tween.rangeTo"))
 	constructor(key: KMutableProperty0<V>, initial: V, end: V, includeStart: Boolean = false) : this(key, initial, end, ::_interpolateAny, includeStart)
@@ -223,8 +226,11 @@ inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: Time
 fun <V> V2<V>.easing(easing: Easing): V2<V> =
 	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
 
-inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime.millisecondsLong)
-inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.millisecondsLong)
+inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime.hr)
+inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.hr)
+
+inline fun <V> V2<V>.delay(startTime: HRTimeSpan) = this.copy(startTime = startTime)
+inline fun <V> V2<V>.duration(duration: HRTimeSpan) = this.copy(duration = duration)
 
 inline fun <V> V2<V>.linear() = this
 inline fun <V> V2<V>.smooth() = this.easing(Easing.SMOOTH)

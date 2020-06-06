@@ -10,10 +10,23 @@ val TimeSpan.hr get() = HRTimeSpan.fromMilliseconds(this.milliseconds)
 /** Converts a [HRTimeSpan] into a low-resolution [TimeSpan] */
 val HRTimeSpan.timeSpan get() = nanosecondsRaw.microseconds
 
+val Int.hrSeconds get() = HRTimeSpan.fromSeconds(this)
+val Int.hrMilliseconds get() = HRTimeSpan.fromMilliseconds(this)
+val Int.hrMicroseconds get() = HRTimeSpan.fromMicroseconds(this)
+val Int.hrNanoseconds get() = HRTimeSpan.fromNanoseconds(this)
+
+val Double.hrSeconds get() = HRTimeSpan.fromSeconds(this)
+val Double.hrMilliseconds get() = HRTimeSpan.fromMilliseconds(this)
+val Double.hrMicroseconds get() = HRTimeSpan.fromMicroseconds(this)
+val Double.hrNanoseconds get() = HRTimeSpan.fromNanoseconds(this)
+
 // @TODO: Ensure nanosecondsRaw has no decimals
 /** A High-Resolution TimeSpan that stores its values as nanoseconds. Just uses 52-bits and won't store decimals */
 inline class HRTimeSpan constructor(val nanosecondsRaw: Double) : Comparable<HRTimeSpan> {
     companion object {
+        val ZERO = HRTimeSpan(0.0)
+        val NULL = HRTimeSpan(Double.NaN)
+
         fun fromSeconds(value: Double) = HRTimeSpan(round(value * 1_000_000_000))
         fun fromMilliseconds(value: Double) = HRTimeSpan(round(value * 1_000_000))
         fun fromMicroseconds(value: Double) = HRTimeSpan(round(value * 1_000))
@@ -42,4 +55,16 @@ inline class HRTimeSpan constructor(val nanosecondsRaw: Double) : Comparable<HRT
     operator fun times(other: Int): HRTimeSpan = fromNanoseconds(nanosecondsRaw * other)
     operator fun div(other: HRTimeSpan): Double = (nanosecondsRaw / other.nanosecondsRaw)
     override fun compareTo(other: HRTimeSpan): Int = this.nanosecondsRaw.compareTo(other.nanosecondsRaw)
+
+    override fun toString(): String = "$nanosecondsRaw".removeSuffix(".0") + " ns"
 }
+
+fun max(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = kotlin.math.max(a.nanosecondsRaw, b.nanosecondsRaw).hrNanoseconds
+fun min(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = kotlin.math.min(a.nanosecondsRaw, b.nanosecondsRaw).hrNanoseconds
+fun HRTimeSpan.clamp(min: HRTimeSpan, max: HRTimeSpan): HRTimeSpan = when {
+    this < min -> min
+    this > max -> max
+    else -> this
+}
+
+inline fun HRTimeSpan.coalesce(block: () -> HRTimeSpan): HRTimeSpan = if (this != HRTimeSpan.NULL) this else block()

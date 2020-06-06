@@ -1,9 +1,11 @@
 package com.soywiz.korge.component
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
 import com.soywiz.korge.time.HRTimeSpan
+import com.soywiz.korge.time.hr
 import kotlin.reflect.*
 
 /**
@@ -142,7 +144,12 @@ interface UpdateComponentWithViews : Component {
 interface UpdateComponent : Component {
     @Deprecated("")
     fun update(ms: Double)
-    fun update(delta: HRTimeSpan) = update(delta.millisecondsDouble)
+    fun update(delta: HRTimeSpan): Unit = update(delta.millisecondsDouble)
+}
+
+interface UpdateComponentV2 : UpdateComponent {
+    override fun update(ms: Double): Unit = update(ms.milliseconds.hr)
+    override fun update(dt: HRTimeSpan)
 }
 
 /**
