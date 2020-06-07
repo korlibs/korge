@@ -14,21 +14,12 @@ class SpriteAnimation(
     columns: Int = 1,
     rows: Int = 1,
     offsetBetweenColumns: Int = 0,
-    offsetBetweenRows: Int = 0) {
-
-    private var spriteStack: MutableList<BmpSlice> = mutableListOf()
-    private var cycles = 0
-    private var stop = false
-    private var currentSpriteIndex = 0
-    val spriteStackSize : Int
-        get() = spriteStack.size
-    val firstSprite : BmpSlice
-        get() = spriteStack[0]
-
-    init{
+    offsetBetweenRows: Int = 0
+) {
+    private val spriteStack: List<BmpSlice> = ArrayList<BmpSlice>().apply {
         for (row in 0 until rows){
             for (col in 0 until columns){
-                spriteStack.add(
+                add(
                     spriteMap.sliceWithSize(
                         marginLeft + (spriteWidth + offsetBetweenColumns) * col,
                         marginTop + (spriteHeight + offsetBetweenRows) * row,
@@ -39,6 +30,13 @@ class SpriteAnimation(
             }
         }
     }
+    private var cycles = 0
+    private var stop = false
+    private var currentSpriteIndex = 0
+    val spriteStackSize : Int
+        get() = spriteStack.size
+    val firstSprite : BmpSlice
+        get() = spriteStack[0]
 
     fun getSprite(index : Int) : BmpSlice = spriteStack[index umod spriteStack.size]
 }
