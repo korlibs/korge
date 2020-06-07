@@ -49,19 +49,38 @@ class TileSet(
 			return TileSet(out, tileWidth, tileHeight)
 		}
 
+        fun extractBmpSlices(
+            bmp: Bitmap32,
+            tilewidth: Int,
+            tileheight: Int,
+            columns: Int,
+            tilecount: Int,
+            spacing: Int,
+            margin :Int
+        ): List<BitmapSlice<Bitmap32>> {
+            return ArrayList<BitmapSlice<Bitmap32>>().apply {
+                loop@ for (y in 0 until bmp.height / tileheight) {
+                    for (x in 0 until columns) {
+                        add(bmp.sliceWithSize(
+                            margin + x * (tilewidth + spacing),
+                            margin + y * (tileheight + spacing),
+                            tilewidth, tileheight
+                        ))
+                        if (this.size >= tilecount) break@loop
+                    }
+                }
+            }
+        }
+
 		fun extractBitmaps(
 			bmp: Bitmap32,
 			tilewidth: Int,
 			tileheight: Int,
 			columns: Int,
-			tilecount: Int
-		): List<Bitmap32> {
-			return (0 until tilecount).map { n ->
-				val y = n / columns
-				val x = n % columns
-				bmp.sliceWithSize(x * tilewidth, y * tileheight, tilewidth, tileheight).extract()
-			}
-		}
+			tilecount: Int,
+            spacing: Int,
+            margin :Int
+		): List<Bitmap32> = extractBmpSlices(bmp, tilewidth, tileheight, columns, tilecount, spacing, margin).map { it.extract() }
 
 		fun fromBitmaps(
 			tilewidth: Int,

@@ -49,6 +49,8 @@ data class TileSetData(
 	val tilewidth: Int,
 	val tileheight: Int,
 	val tilecount: Int,
+    val spacing: Int,
+    val margin: Int,
 	val columns: Int,
 	val image: Xml?,
 	val source: String,
@@ -209,6 +211,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 				val tilewidth = element.int("tilewidth")
 				val tileheight = element.int("tileheight")
 				val tilecount = element.int("tilecount", -1)
+                val spacing = element.int("spacing")
+                val margin = element.int("margin")
 				val columns = element.int("columns", -1)
 				val image = element.child("image")
 				val source = image?.str("source") ?: ""
@@ -222,6 +226,8 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					tileheight = tileheight,
 					tilecount = tilecount,
 					columns = columns,
+                    spacing = spacing,
+                    margin = margin,
 					image = image,
 					source = source,
 					width = width,
@@ -378,15 +384,23 @@ suspend fun VfsFile.readTiledMap(
 		val ptileset = if (createBorder > 0) {
 			bmp = bmp.toBMP32()
 
-			val slices =
-				TileSet.extractBitmaps(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
-
-			TileSet.fromBitmaps(
-				tileset.tilewidth, tileset.tileheight,
-				slices,
-				border = createBorder,
-				mipmaps = false
-			)
+            // There is already separation between tiles, use it as it is
+            if (tileset.spacing >= createBorder) {
+                TileSet(
+                    TileSet.extractBmpSlices(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount, tileset.spacing, tileset.margin),
+                    tileset.tilewidth, tileset.tileheight,
+                    bmp
+                )
+            }
+            // No separation between tiles: create a new Bitmap adding that separation
+            else {
+                TileSet.fromBitmaps(
+                    tileset.tilewidth, tileset.tileheight,
+                    TileSet.extractBitmaps(bmp, tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount, tileset.spacing, tileset.margin),
+                    border = createBorder,
+                    mipmaps = false
+                )
+            }
 		} else {
 			TileSet(bmp.slice(), tileset.tilewidth, tileset.tileheight, tileset.columns, tileset.tilecount)
 		}
