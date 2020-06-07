@@ -61,11 +61,11 @@ class TileSet(
             return ArrayList<BitmapSlice<Bitmap32>>().apply {
                 loop@ for (y in 0 until bmp.height / tileheight) {
                     for (x in 0 until columns) {
-                        bmp.sliceWithSize(
+                        add(bmp.sliceWithSize(
                             margin + x * (tilewidth + spacing),
                             margin + y * (tileheight + spacing),
                             tilewidth, tileheight
-                        )
+                        ))
                         if (this.size >= tilecount) break@loop
                     }
                 }
