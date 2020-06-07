@@ -84,11 +84,11 @@ fun View.collidesWithShape(otherList: List<View>): Boolean = collidesWith(otherL
 
 inline fun <reified T : View> Container.findCollision(subject: View): T? = findCollision(subject) { it is T && it != subject } as T?
 
-fun Container.findCollision(subject: View, matcher: (View) -> Boolean): View? {
+fun Container.findCollision(subject: View, kind: CollisionKind = CollisionKind.GLOBAL_RECT,matcher: (View) -> Boolean): View? {
     var collides: View? = null
     this.foreachDescendant {
         if (matcher(it)) {
-            if (subject.collidesWith(it)) {
+            if (subject.collidesWith(it, kind)) {
                 collides = it
             }
         }
@@ -109,6 +109,10 @@ fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, k
 			}
 		}
 	}
+}
+
+fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = null, callback: View.(View) -> Unit): Cancellable {
+    return onCollision(filter, root, kind = CollisionKind.GLOBAL_RECT, callback = callback)
 }
 
 /**
