@@ -178,10 +178,33 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	}
 
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
+    lateinit var lastEvent: MouseEvent
+    var button: MouseButton = MouseButton.LEFT
+    var buttons: Int = 0
+    var scrollDeltaX: Double = 0.0
+    var scrollDeltaY: Double = 0.0
+    var scrollDeltaZ: Double = 0.0
+    var isShiftDown: Boolean = false
+    var isCtrlDown: Boolean = false
+    var isAltDown: Boolean = false
+    var isMetaDown: Boolean = false
 
-	override fun onMouseEvent(views: Views, event: MouseEvent) {
+	@Suppress("DuplicatedCode")
+    override fun onMouseEvent(views: Views, event: MouseEvent) {
         this.views = views
-		//println("MouseEvent.onMouseEvent($views, $event)")
+        // Store event
+        this.lastEvent = event
+        this.button = event.button
+        this.buttons = event.buttons
+        this.scrollDeltaX = event.scrollDeltaX
+        this.scrollDeltaY = event.scrollDeltaY
+        this.scrollDeltaZ = event.scrollDeltaZ
+        this.isShiftDown = event.isShiftDown
+        this.isCtrlDown = event.isCtrlDown
+        this.isAltDown = event.isAltDown
+        this.isMetaDown = event.isMetaDown
+
+        //println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
 			MouseEvent.Type.UP -> {
 				upPosGlobal.copyFrom(views.input.mouse)
