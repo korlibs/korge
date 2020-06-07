@@ -43,20 +43,23 @@ open class Sprite(
     anchorX: Double = 0.0,
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
-    smoothing: Boolean = true) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
+    smoothing: Boolean = true
+) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
     constructor(
         bmpSlice: BmpSlice,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
-        smoothing: Boolean = true) : this(bmpSlice.bmp, anchorX, anchorY, hitShape, smoothing)
+        smoothing: Boolean = true
+    ) : this(bmpSlice.bmp, anchorX, anchorY, hitShape, smoothing)
 
     constructor(
         initialAnimation: SpriteAnimation,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
-        smoothing: Boolean = true) : this(initialAnimation.firstSprite, anchorX, anchorY, hitShape, smoothing) {
+        smoothing: Boolean = true
+    ) : this(initialAnimation.firstSprite, anchorX, anchorY, hitShape, smoothing) {
         currentAnimation = initialAnimation
         setFrame(0)
     }
@@ -125,49 +128,54 @@ open class Sprite(
         }
     }
 
+    private fun getDefaultTime(spriteAnimation: SpriteAnimation?): TimeSpan = when {
+        spriteAnimation != null && spriteAnimation.defaultTimePerFrame != TimeSpan.NULL -> spriteAnimation.defaultTimePerFrame
+        else -> spriteDisplayTime
+    }
+
     fun playAnimation(
         times: Int = 1,
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
+        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
-        reversed: Boolean = false) =
-        updateCurrentAnimation(
-            spriteAnimation = spriteAnimation,
-            spriteDisplayTime = spriteDisplayTime,
-            animationCyclesRequested = times,
-            startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
-            reversed = reversed,
-            type = AnimationType.STANDARD
-        )
+        reversed: Boolean = false
+    ) = updateCurrentAnimation(
+        spriteAnimation = spriteAnimation,
+        spriteDisplayTime = spriteDisplayTime,
+        animationCyclesRequested = times,
+        startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        reversed = reversed,
+        type = AnimationType.STANDARD
+    )
 
     fun playAnimationForDuration(
         duration: TimeSpan,
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
+        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
-        reversed: Boolean = false) =
-        updateCurrentAnimation(
-            spriteAnimation = spriteAnimation,
-            spriteDisplayTime = spriteDisplayTime,
-            duration = duration,
-            startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
-            reversed = reversed,
-            type = AnimationType.DURATION
-        )
+        reversed: Boolean = false
+    ) = updateCurrentAnimation(
+        spriteAnimation = spriteAnimation,
+        spriteDisplayTime = spriteDisplayTime,
+        duration = duration,
+        startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        reversed = reversed,
+        type = AnimationType.DURATION
+    )
 
     fun playAnimationLooped(
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
+        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
-        reversed: Boolean = false) =
-        updateCurrentAnimation(
-            spriteAnimation = spriteAnimation,
-            spriteDisplayTime = spriteDisplayTime,
-            startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
-            looped = true,
-            reversed = reversed,
-            type = AnimationType.LOOPED
-        )
+        reversed: Boolean = false
+    ) = updateCurrentAnimation(
+        spriteAnimation = spriteAnimation,
+        spriteDisplayTime = spriteDisplayTime,
+        startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        looped = true,
+        reversed = reversed,
+        type = AnimationType.LOOPED
+    )
 
     fun stopAnimation() {
         animationRequested = false
@@ -197,7 +205,7 @@ open class Sprite(
 
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,
-        spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
+        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         animationCyclesRequested: Int = 1,
         duration: TimeSpan = 0.milliseconds,
         startFrame: Int = 0,

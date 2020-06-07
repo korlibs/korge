@@ -8,6 +8,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 
+@Deprecated("Use readAtlas instead")
 suspend fun VfsFile.readAtlas2(views: Views): Atlas2 {
 	val json = Json.parse(this.readString())
 	return KDynamic {
@@ -36,6 +37,7 @@ suspend fun VfsFile.readAtlas2(views: Views): Atlas2 {
 	}
 }
 
+@Deprecated("Use Atlas instead")
 class Atlas2(val entries: List<Entry>, val textures: Map<String, BmpSlice>) {
 	data class Entry(
 		val x: Int,
