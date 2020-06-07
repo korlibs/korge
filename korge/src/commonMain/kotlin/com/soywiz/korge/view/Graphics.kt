@@ -11,6 +11,7 @@ import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).apply(callback)
 inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this).apply(callback)
@@ -19,6 +20,7 @@ open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
 ) : Image(Bitmaps.transparent), VectorBuilder {
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
+    private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
@@ -27,6 +29,26 @@ open class Graphics @JvmOverloads constructor(
 	internal var currentPath = graphicsPathPool.alloc()
 	@PublishedApi
 	internal var dirty = true
+
+    private var hitShapeVersion = -1
+    private var hitShapeAnchorVersion = -1
+
+    private val tempVectorPath = VectorPath()
+    private val tempMatrix = Matrix()
+    var customHitShape: VectorPath? = null
+    override var hitShape: VectorPath?
+        set(value) {
+            customHitShape = value
+        }
+        get() {
+            if (customHitShape != null) return customHitShape
+            if (hitShapeVersion != shapeVersion) {
+                hitShapeVersion = shapeVersion
+                tempVectorPath.clear()
+                tempVectorPath.write(compoundShape.getPath(), tempMatrix.identity())
+            }
+            return tempVectorPath
+        }
 
 	inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
@@ -47,7 +69,7 @@ open class Graphics @JvmOverloads constructor(
 	private var endCap: LineCap = LineCap.BUTT
 	private var lineJoin: LineJoin = LineJoin.MITER
 	private var miterLimit: Double = 4.0
-    var hitTestUsingShapes = false
+    var hitTestUsingShapes = true
 
 	@Deprecated("This doesn't do anything")
 	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
@@ -152,18 +174,21 @@ open class Graphics @JvmOverloads constructor(
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		shapes += PolylineShape(graphicsPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	internal val _sLeft get() = sLeft
@@ -245,10 +270,33 @@ open class Graphics @JvmOverloads constructor(
         out.displace(-anchorDispX, -anchorDispY)
     }
 
+    override fun hitTest(x: Double, y: Double): View? = hitTestInternal(x, y)
+
     override fun hitTestInternal(x: Double, y: Double): View? {
-        val lx = globalToLocalX(x, y) - anchorDispX
-        val ly = globalToLocalY(x, y) - anchorDispY
+        val anchorDispX = this.anchorDispX
+        val anchorDispY = this.anchorDispY
+        val sLeft = this.sLeft
+        val sTop = this.sTop
+        val bwidth = this.bwidth
+        val bheight = this.bheight
+
+        val lx = globalToLocalX(x, y) + anchorDispX
+        val ly = globalToLocalY(x, y) + anchorDispY
+
+        val centerX = sLeft + bwidth * 0.5 + anchorDispX
+        val centerY = sTop + bheight * 0.5 + anchorDispY
+
+        val manhattanDist = (lx - centerX).absoluteValue + (ly - centerY).absoluteValue
+        val manhattanDist2 = bwidth * 0.5 + bheight * 0.5
+        //println("($centerX, $centerY)-($lx, $ly): $manhattanDist > $manhattanDist2")
+        if (manhattanDist > manhattanDist2) return null
+        val outerCircleRadius = hypot(bwidth * 0.5, bheight * 0.5)
+        val dist = Point.distance(lx, ly, centerX, centerY)
+        //println("($centerX, $centerY)-($lx, $ly): $dist > $outerCircleRadius")
+        if (dist > outerCircleRadius) return null
+
         if (hitTestUsingShapes) {
+            if (!bounds.contains(lx, ly)) return null
             shapes.fastForEach { shape ->
                 if (shape.containsPoint(lx, ly)) return this
             }

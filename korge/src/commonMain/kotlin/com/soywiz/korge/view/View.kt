@@ -12,10 +12,12 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.collections.set
 import kotlin.reflect.*
 
@@ -106,6 +108,8 @@ abstract class View internal constructor(
     enum class HitTestType {
         BOUNDING, SHAPE
     }
+
+    open var hitShape: VectorPath? = null
 
     companion object {
         //private val identity = Matrix()
