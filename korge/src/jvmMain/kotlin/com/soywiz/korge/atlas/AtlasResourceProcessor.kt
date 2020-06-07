@@ -74,14 +74,16 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
                 val bmp = it.first.second
 				val rect = Rectangle(it.second!!.x + 2, it.second!!.y + 2, bmp.width, bmp.height)
 				val irect = rect.toInt()
-				file.path.trim('/') to AtlasInfo.Entry(
+                val filename = file.path.trim('/')
+                AtlasInfo.Entry(
+                    filename = filename,
 					frame = AtlasInfo.Rect(irect.x, irect.y, irect.width, irect.height),
 					rotated = false,
 					sourceSize = AtlasInfo.Size(irect.width, irect.height),
 					spriteSourceSize = AtlasInfo.Rect(0, 0, irect.width, irect.height),
 					trimmed = false
 				)
-			}.toMap(),
+			},
 			meta = AtlasInfo.Meta(
 				app = "korge",
 				format = "RGBA8888",
