@@ -3,6 +3,7 @@ package com.soywiz.korge.ext.swf
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.image.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
@@ -31,7 +32,8 @@ class SWFShapeRasterizer(
 	val requestScale: Double = 2.0,
 	val minSide: Int = 16,
 	val maxSide: Int = 512,
-	val path: GraphicsPath = GraphicsPath()
+	val path: GraphicsPath = GraphicsPath(),
+    val charId: Int = -1
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
@@ -67,6 +69,7 @@ class SWFShapeRasterizer(
 
 	val image by lazy {
 		val image = NativeImage(actualBoundsWidth, actualBoundsHeight)
+        //val image = Bitmap32(actualBoundsWidth, actualBoundsHeight)
 		val ctx = image.getContext2d(antialiasing = antialiasing)
 		ctx.scale(actualScale, actualScale)
 		ctx.translate(-bounds.x, -bounds.y)
@@ -74,6 +77,9 @@ class SWFShapeRasterizer(
 		//ctx.lineScaleHack *= requestScale
 		//ctx.lineScaleHack *= 1.0
 		//ctx.lineScaleHack *= 2.0
+
+        //println("drawShape[$charId]: rasterizerMethod=$rasterizerMethod, actualScale=$actualScale, bounds=$bounds: ${actualShape.toExtString()}")
+
 		ctx.drawShape(actualShape, rasterizerMethod)
 
 		//println(actualShape.toSvg(scale = 1.0 / 20.0).toOuterXmlIndented())

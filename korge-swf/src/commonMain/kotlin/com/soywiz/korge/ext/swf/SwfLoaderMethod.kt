@@ -107,7 +107,8 @@ class SWFShapeRasterizerRequest(
 			requestScale = config.exportScale * adaptiveScaling,
 			minSide = config.minShapeSide,
 			maxSide = config.maxShapeSide,
-			path = path
+			path = path,
+            charId = charId
 		)
 	}
 }
@@ -449,7 +450,8 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					antialiasing = config.antialiasing,
 					requestScale = config.exportScale,
 					minSide = config.minMorphShapeSide,
-					maxSide = config.maxMorphShapeSide
+					maxSide = config.maxMorphShapeSide,
+                    charId = morph.id
 				)
 				itemsInAtlas.put(
 					{ texture -> morph.texturesWithBitmap.add((ratio * 1000).toInt(), texture) },
