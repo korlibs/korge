@@ -1,12 +1,16 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klock.*
 import com.soywiz.kmem.umod
 import com.soywiz.korge.atlas.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
 
-class SpriteAnimation(val sprites: List<BmpSlice>) {
+class SpriteAnimation(
+    val sprites: List<BmpSlice>,
+    val defaultTimePerFrame: TimeSpan = TimeSpan.NULL
+) {
     companion object {
         operator fun invoke(
             spriteMap: Bitmap,
@@ -45,5 +49,5 @@ class SpriteAnimation(val sprites: List<BmpSlice>) {
     operator fun get(index: Int) = getSprite(index)
 }
 
-fun Atlas.getSpriteAnimation(prefix: String = ""): SpriteAnimation =
-    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice })
+fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NULL): SpriteAnimation =
+    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }, defaultTimePerFrame)

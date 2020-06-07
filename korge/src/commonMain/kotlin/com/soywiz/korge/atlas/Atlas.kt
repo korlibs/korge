@@ -7,7 +7,9 @@ import com.soywiz.korio.file.*
 
 class Atlas(val info: AtlasInfo, val texture: BitmapSlice<Bitmap>) {
     inner class Entry(val info: AtlasInfo.Entry) {
-        val slice = texture.slice(info.frame.rect)
+        val slice = texture.slice(info.frame.rect).let {
+            BitmapSlice(it.bmp, it.bounds, info.filename, info.rotated)
+        }
         val filename get() = info.filename
     }
 
