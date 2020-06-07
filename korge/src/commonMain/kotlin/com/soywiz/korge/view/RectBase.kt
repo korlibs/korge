@@ -28,8 +28,12 @@ open class RectBase(
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
 
-	protected open val sLeft get() = -bwidth * anchorX
-	protected open val sTop get() = -bheight * anchorY
+    protected val anchorDispX get() = (anchorX * bwidth)
+    protected val anchorDispY get() = (anchorY * bheight)
+
+    protected open val sLeft get() = -anchorDispX
+	protected open val sTop get() = -anchorDispY
+
 	val sRight get() = sLeft + bwidth
 	val sBottom get() = sTop + bheight
 
