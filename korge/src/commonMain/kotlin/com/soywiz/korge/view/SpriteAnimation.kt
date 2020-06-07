@@ -1,11 +1,12 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kmem.umod
+import com.soywiz.korge.atlas.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
 
-class SpriteAnimation(val spriteStack: List<BmpSlice>) {
+class SpriteAnimation(val sprites: List<BmpSlice>) {
     companion object {
         operator fun invoke(
             spriteMap: Bitmap,
@@ -37,8 +38,12 @@ class SpriteAnimation(val spriteStack: List<BmpSlice>) {
         }
     }
 
-    val spriteStackSize : Int get() = spriteStack.size
-    val firstSprite : BmpSlice get() = spriteStack[0]
-    fun getSprite(index: Int): BmpSlice = spriteStack[index umod spriteStack.size]
+    val spriteStackSize: Int get() = sprites.size
+    val size: Int get() = sprites.size
+    val firstSprite: BmpSlice get() = sprites[0]
+    fun getSprite(index: Int): BmpSlice = sprites[index umod sprites.size]
     operator fun get(index: Int) = getSprite(index)
 }
+
+fun Atlas.getSpriteAnimation(prefix: String = ""): SpriteAnimation =
+    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice })

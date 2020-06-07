@@ -11,10 +11,10 @@ class Atlas(val info: AtlasInfo, val texture: BitmapSlice<Bitmap>) {
         val filename get() = info.filename
     }
 
-	val textures = info.frames.map { Entry(it) }
-    val texturesMap = textures.associateBy { it.filename }
+	val entries = info.frames.map { Entry(it) }
+    val entriesMap = entries.associateBy { it.filename }
 
-    fun tryGetEntryByName(name: String): Entry? = texturesMap[name]
+    fun tryGetEntryByName(name: String): Entry? = entriesMap[name]
     fun tryGet(name: String): BmpSlice? = tryGetEntryByName(name)?.slice
 	operator fun get(name: String): BmpSlice = tryGet(name) ?: error("Can't find '$name' it atlas")
 }
