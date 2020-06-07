@@ -14,6 +14,7 @@ korlibs {
 	//dependencyCInteropsExternal("com.soywiz.korlibs.korau:kgl:$kglVersion", "GL", ["linuxX64"])
 }
 
+val klockVersion: String by project
 val korauVersion: String by project
 val korimVersion: String by project
 val korgwVersion: String by project
@@ -22,6 +23,7 @@ val korinjectVersion: String by project
 val kloggerVersion: String by project
 
 dependencies {
+    add("commonMainApi", "com.soywiz.korlibs.klock:klock:$klockVersion")
 	add("commonMainApi", "com.soywiz.korlibs.korau:korau:$korauVersion")
     add("commonMainApi", "com.soywiz.korlibs.korim:korim:$korimVersion")
 	add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:$korgwVersion")
