@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
@@ -15,21 +16,29 @@ import com.soywiz.korma.geom.vector.*
 open class RectBase(
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
-	var hitShape: VectorPath? = null,
+	hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
 ) : Container(), Anchorable {
+    init {
+        this.hitShape = hitShape
+    }
+
 	//abstract val width: Double
 	//abstract val height: Double
 
+    protected var anchorVersion = 0
+
 	protected var baseBitmap: BmpSlice = Bitmaps.white; set(v) { field = v; dirtyVertices = true }
-	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true }
-    override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true }
+	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
+    override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
 
-    protected val anchorDispX get() = (anchorX * bwidth)
-    protected val anchorDispY get() = (anchorY * bheight)
+    //@KorgeInternal
+    internal val anchorDispX get() = (anchorX * bwidth)
+    //@KorgeInternal
+    internal val anchorDispY get() = (anchorY * bheight)
 
     protected open val sLeft get() = -anchorDispX
 	protected open val sTop get() = -anchorDispY

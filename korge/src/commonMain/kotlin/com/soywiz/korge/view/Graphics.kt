@@ -20,6 +20,7 @@ open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
 ) : Image(Bitmaps.transparent), VectorBuilder {
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
+    private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
 	private val compoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
@@ -28,6 +29,26 @@ open class Graphics @JvmOverloads constructor(
 	internal var currentPath = graphicsPathPool.alloc()
 	@PublishedApi
 	internal var dirty = true
+
+    private var hitShapeVersion = -1
+    private var hitShapeAnchorVersion = -1
+
+    private val tempVectorPath = VectorPath()
+    private val tempMatrix = Matrix()
+    var customHitShape: VectorPath? = null
+    override var hitShape: VectorPath?
+        set(value) {
+            customHitShape = value
+        }
+        get() {
+            if (customHitShape != null) return customHitShape
+            if (hitShapeVersion != shapeVersion) {
+                hitShapeVersion = shapeVersion
+                tempVectorPath.clear()
+                tempVectorPath.write(compoundShape.getPath(), tempMatrix.identity())
+            }
+            return tempVectorPath
+        }
 
 	inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
@@ -153,18 +174,21 @@ open class Graphics @JvmOverloads constructor(
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		shapes += PolylineShape(graphicsPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		currentPath = graphicsPathPool.alloc()
+        shapeVersion++
 	}
 
 	internal val _sLeft get() = sLeft
@@ -272,6 +296,7 @@ open class Graphics @JvmOverloads constructor(
         if (dist > outerCircleRadius) return null
 
         if (hitTestUsingShapes) {
+            if (!bounds.contains(lx, ly)) return null
             shapes.fastForEach { shape ->
                 if (shape.containsPoint(lx, ly)) return this
             }
