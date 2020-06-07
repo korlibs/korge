@@ -24,7 +24,12 @@ class Atlas(val info: AtlasInfo, val texture: BitmapSlice<Bitmap>) {
 @Deprecated("")
 suspend fun VfsFile.readAtlas(views: Views): Atlas = readAtlas()
 suspend fun VfsFile.readAtlas(): Atlas {
-    val info = AtlasInfo.loadJsonSpriter(this.readString())
+    val content = this.readString()
+    val info = when {
+        content.startsWith("{") -> AtlasInfo.loadJsonSpriter(content)
+        content.startsWith("<") -> AtlasInfo.loadXml(content)
+        else -> error("Unexpected atlas starting with '${content.firstOrNull()}'")
+    }
     val folder = this.parent
     val atlasTex = folder[info.image].readBitmapSlice()
     return Atlas(info, atlasTex)

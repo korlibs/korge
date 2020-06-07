@@ -2,6 +2,7 @@ package com.soywiz.korge.atlas
 
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.serialization.json.*
+import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -101,5 +102,28 @@ data class AtlasInfo(
 			}
 			return info.copy(frames = info.frames.map { it.applyRotation() })
 		}
+
+        fun loadXml(content: String): AtlasInfo {
+            val xml = Xml(content)
+            val imagePath = xml.str("imagePath")
+            return AtlasInfo(xml.children("SubTexture").map {
+                val rect = Rect(it.int("x"), it.int("y"), it.int("width"), it.int("height"))
+                Entry(
+                    filename = it.str("name"),
+                    frame = rect,
+                    rotated = false,
+                    sourceSize = Size(rect.w, rect.h),
+                    spriteSourceSize = rect,
+                    trimmed = false
+                )
+            }, Meta(
+                app = "Unknown",
+                format = "xml",
+                image = imagePath,
+                scale = 1.0,
+                size = Size(-1, -1),
+                version = "1.0"
+            ))
+        }
 	}
 }
