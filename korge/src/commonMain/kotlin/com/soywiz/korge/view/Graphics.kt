@@ -169,8 +169,8 @@ open class Graphics @JvmOverloads constructor(
 	internal val _sLeft get() = sLeft
 	internal val _sTop get() = sTop
 
-	override var sLeft = 0.0
-	override var sTop = 0.0
+    override val sLeft get() = bounds.x + super.sLeft
+    override val sTop get() = bounds.y + super.sTop
 
 	private val bb = BoundsBuilder()
 	private val bounds = Rectangle()
@@ -229,8 +229,6 @@ open class Graphics @JvmOverloads constructor(
                     compoundShape.draw(this)
                 }
                 this.bitmap = image.slice()
-                this.sLeft = bounds.x
-                this.sTop = bounds.y
             }
 		}
 		super.renderInternal(ctx)
