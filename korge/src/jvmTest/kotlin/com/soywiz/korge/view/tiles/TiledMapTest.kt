@@ -12,4 +12,10 @@ class TiledMapTest {
     fun test() = suspendTest {
         vfs["tmxbug1/lv1.tmx"].readTiledMap()
     }
+
+    @Test
+    fun test2() = suspendTest {
+        resourcesVfs["tiled/Abstract_Platformer.tmx"].readTiledMap()
+        resourcesVfs["tiled/platformer.tmx"].readTiledMap()
+    }
 }
