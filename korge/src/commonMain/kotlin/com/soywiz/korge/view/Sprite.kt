@@ -97,12 +97,12 @@ open class Sprite(
             return _onAnimationStarted!!
         }
 
-    var spriteDisplayTime: TimeSpan = 50.ms
+    var spriteDisplayTime: TimeSpan = 50.milliseconds
     private var animationLooped = false
-    private var lastAnimationFrameTime: TimeSpan = 0.ms
-    private var animationRemainingDuration: TimeSpan = 0.ms
+    private var lastAnimationFrameTime: TimeSpan = 0.milliseconds
+    private var animationRemainingDuration: TimeSpan = 0.milliseconds
         set(value) {
-            if (value <= 0.ms && animationType == AnimationType.DURATION) {
+            if (value <= 0.milliseconds && animationType == AnimationType.DURATION) {
                 stopAnimation()
                 triggerEvent(_onAnimationCompleted)
             }
@@ -191,7 +191,7 @@ open class Sprite(
                 }
             }
             setFrame(if (reversed) --currentSpriteIndex else ++currentSpriteIndex)
-            lastAnimationFrameTime = 0.ms
+            lastAnimationFrameTime = 0.milliseconds
         }
     }
 
@@ -199,7 +199,7 @@ open class Sprite(
         spriteAnimation: SpriteAnimation?,
         spriteDisplayTime: TimeSpan = this.spriteDisplayTime,
         animationCyclesRequested: Int = 1,
-        duration: TimeSpan = 0.ms,
+        duration: TimeSpan = 0.milliseconds,
         startFrame: Int = 0,
         looped: Boolean = false,
         reversed: Boolean = false,

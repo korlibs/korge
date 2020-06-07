@@ -21,7 +21,7 @@ class WaveFilter(
 	crestCountY: Double = 2.0,
 	cyclesPerSecondX: Double = 1.0,
 	cyclesPerSecondY: Double = 1.0,
-	time: TimeSpan = 0.secs
+	time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
 	companion object {
 		val u_Time = Uniform("time", VarType.Float1)
@@ -64,7 +64,7 @@ class WaveFilter(
 
     /** The elapsed time for the animation */
     var time: TimeSpan
-        get() = timeSeconds.secs
+        get() = timeSeconds.seconds
         set(value) { timeSeconds = value.seconds }
 
 	override val border: Int get() = max(amplitudeX, amplitudeY)

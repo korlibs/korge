@@ -2,6 +2,7 @@ package com.soywiz.korge
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
@@ -11,6 +12,7 @@ import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -68,7 +70,7 @@ object Korge {
                 config.module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
                 views.stage += sc
-                sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.ms)
+                sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
                 // Se we have the opportunity to execute deinitialization code at the scene level
                 views.onClose { sc.changeTo<EmptyScene>() }
             }
@@ -93,7 +95,7 @@ object Korge {
 		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
 		gameWindow: GameWindow? = null,
-        timeProvider: TimeProvider = TimeProvider,
+        timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         entry: suspend Stage.() -> Unit
 	) {
@@ -131,7 +133,8 @@ object Korge {
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
                 .mapInstance(AG::class, ag)
-                .mapInstance(TimeProvider::class, timeProvider)
+                .mapInstance(TimeProvider::class, timeProvider.toTimeProvider()) // Deprecated
+                .mapInstance(HRTimeProvider::class, timeProvider)
                 .mapInstance(views)
                 .mapInstance(input)
                 .mapInstance(stats)
@@ -176,7 +179,7 @@ object Korge {
 
     suspend fun GameWindow.waitClose() {
         while (running) {
-            delay(100.ms)
+            delay(100.milliseconds)
         }
     }
 
@@ -239,7 +242,7 @@ object Korge {
 
             if (type == "onTouchEnd") {
                 upTime = DateTime.now()
-                if ((downTime - upTime) <= 40.ms) {
+                if ((downTime - upTime) <= 40.milliseconds) {
                     //Console.log("mouseClick: $name")
                     views.dispatch(MouseEvent(MouseEvent.Type.CLICK))
                 }
@@ -411,7 +414,7 @@ object Korge {
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider,
+		val timeProvider: HRTimeProvider = HRTimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,

@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -23,7 +24,6 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.math.*
 import kotlin.reflect.*
 
 //@Singleton
@@ -33,14 +33,14 @@ import kotlin.reflect.*
  * and contains a reference to the [root] [Stage] view.
  */
 class Views constructor(
-	override val coroutineContext: CoroutineContext,
-	val ag: AG,
-	val injector: AsyncInjector,
-	val input: Input,
-	val timeProvider: TimeProvider,
-	val stats: Stats,
-	val gameWindow: GameWindow
-) : Updatable, Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
+    override val coroutineContext: CoroutineContext,
+    val ag: AG,
+    val injector: AsyncInjector,
+    val input: Input,
+    val timeProvider: HRTimeProvider,
+    val stats: Stats,
+    val gameWindow: GameWindow
+) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
 	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
 
     val keys get() = input.keys
@@ -52,7 +52,7 @@ class Views constructor(
 	var clearColor: RGBA = Colors.BLACK
 	override val views = this
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
-	var clampElapsedTimeTo = 100
+	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
 
 	val nativeWidth get() = ag.mainRenderBuffer.width
 	val nativeHeight get() = ag.mainRenderBuffer.height
@@ -216,31 +216,35 @@ class Views constructor(
     }
 
 	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NULL) {
+        val currentTime = timeProvider.now()
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
 		//println("Render")
-		val currentTime = timeProvider.now()
 		//println("currentTime: $currentTime")
-		val delta = (currentTime - lastTime).millisecondsInt
-		val adelta = min(delta, views.clampElapsedTimeTo)
+		val delta = (currentTime - lastTime)
+		val adelta = if (delta > views.clampElapsedTimeTo) views.clampElapsedTimeTo else delta
 		//println("delta: $delta")
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
 		if (fixedSizeStep != TimeSpan.NULL) {
-			update(fixedSizeStep.millisecondsInt)
+			update(fixedSizeStep.hr)
 		} else {
 			update(adelta)
 		}
 		render()
 	}
 
-	override fun update(dtMs: Int) {
+    @Deprecated("")
+    fun update(dtMs: Int) {
+        update(dtMs.hrMilliseconds)
+    }
+
+	fun update(elapsed: HRTimeSpan) {
 		//println(this)
 		//println("Update: $dtMs")
-		input.startFrame(dtMs)
-		val dtMsD = dtMs.toDouble()
-		stage.updateSingleViewWithViewsAll(this, dtMsD, tempViews)
-		input.endFrame(dtMs)
+		input.startFrame(elapsed)
+		stage.updateSingleViewWithViewsAll(this, elapsed, tempViews)
+		input.endFrame(elapsed)
 	}
 
 
@@ -311,7 +315,7 @@ class ViewsLog(
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: LogAG = LogAG(),
 	val input: Input = Input(),
-	val timeProvider: TimeProvider = TimeProvider,
+	val timeProvider: HRTimeProvider = HRTimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
@@ -405,12 +409,12 @@ fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: Array
 @OptIn(KorgeInternal::class)
 fun View.updateSingleViewWithViewsAll(
     views: Views,
-    dtMsD: Double,
+    delta: HRTimeSpan,
     tempViews: ArrayList<View> = arrayListOf()
 ) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
-        view._components?.updateWV?.fastForEach { comp -> comp.update(views, dtMsD * view.globalSpeed) }
-        view._components?.update?.fastForEach { comp -> comp.update(dtMsD * view.globalSpeed) }
+        view._components?.updateWV?.fastForEach { comp -> comp.update(views, delta * view.globalSpeed) }
+        view._components?.update?.fastForEach { comp -> comp.update(delta * view.globalSpeed) }
     }
     //updateSingleView(dtMsD, tempComponents)
     //updateSingleViewWithViews(views, dtMsD, tempComponents)

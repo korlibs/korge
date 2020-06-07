@@ -10,10 +10,10 @@ import com.soywiz.korma.interpolation.*
 
 @Korge3DExperimental
 class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
-	var currentTime = 0.ms
+	var currentTime = 0.milliseconds
 	fun update(ms: Int) {
 		//currentTime += ms.ms * 0.1
-		currentTime += ms.ms
+		currentTime += ms.milliseconds
 		animations.fastForEach { animation ->
 			val keyFrames = animation.keyFrames
 			val fseconds = keyFrames.seconds
@@ -26,10 +26,10 @@ class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
 			val n = keyFrames.findIndex(elapsedTimeInAnimation)
 			if (n < 0) return@fastForEach
 
-			val startTime = fseconds[n].secs
-			val endTime = fseconds.getOrNull(n + 1)?.secs ?: startTime
+			val startTime = fseconds[n].toDouble().seconds
+			val endTime = fseconds.getOrNull(n + 1)?.let { it.toDouble().seconds } ?: startTime
 			val fragmentTime = (endTime - startTime)
-			if (fragmentTime <= 0.ms) return@fastForEach
+			if (fragmentTime <= 0.milliseconds) return@fastForEach
 
 			val ratio = (elapsedTimeInAnimation - startTime) / fragmentTime
 			val aview = rootView[animation.target]
@@ -89,7 +89,7 @@ data class Animation3D(val id: String, val target: String, val property: String,
 	) {
 		val transforms = matrices?.map { Transform3D().setMatrix(it) }?.toTypedArray()
 		val totalFrames = seconds.size
-		val totalTime = seconds.max()?.secs ?: 0.secs
+		val totalTime = seconds.max()?.let { it.toDouble().seconds } ?: 0.seconds
 
 		// @TODO: Binary Search
 		fun findIndex(time: TimeSpan): Int {

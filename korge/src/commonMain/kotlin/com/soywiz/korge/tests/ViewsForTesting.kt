@@ -3,6 +3,7 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.iterators.*
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.hrMilliseconds
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -21,7 +22,7 @@ import kotlin.coroutines.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.max
 
-open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.ms, val size: SizeInt = SizeInt(640, 480)) {
+open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480)) {
 	val startTime = DateTime(0.0)
 	var time = startTime
 	val elapsed get() = time - startTime
@@ -161,7 +162,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 			}
 		})
 
-		withTimeout(10.secs) {
+		withTimeout(10.seconds) {
 			while (!completed) {
 				simulateFrame()
 				dispatcher.executePending()
@@ -182,7 +183,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
 		val hasMore get() = timedTasks.isNotEmpty() || tasks.isNotEmpty()
 
-		override fun now() = KorgwPerformanceCounter(time.unixMillis.microseconds)
+		override fun now() = time.unixMillisDouble.hrMilliseconds
 
 		override fun executePending() {
 			//println("executePending.hasMore=$hasMore")
@@ -190,7 +191,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 				val timedTasks = mapWhile({ timedTasks.isNotEmpty() }) { timedTasks.removeHead() }
 
 				timedTasks.fastForEach { item ->
-					time = DateTime.fromUnix(max(time.unixMillis, item.time.milliseconds))
+					time = DateTime.fromUnix(max(time.unixMillis, item.time.millisecondsDouble))
 					if (item.exception != null) {
 						item.continuation?.resumeWithException(item.exception!!)
 						if (item.callback != null) {

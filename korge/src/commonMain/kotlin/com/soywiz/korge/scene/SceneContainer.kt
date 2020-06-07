@@ -45,35 +45,35 @@ class SceneContainer(
 
     // Async versions
     /** Async variant returning a [Deferred] for [changeTo] */
-	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<T>
+	inline fun <reified T : Scene> changeToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { changeTo<T>(*injects, time = time, transition = transition) }
 
     /** Async variant returning a [Deferred] for [changeTo] */
-    fun <T : Scene> changeToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<T>
+    fun <T : Scene> changeToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { changeTo(clazz, *injects, time = time, transition = transition) }
 
     /** Async variant returning a [Deferred] for [pushTo] */
-	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<T>
+	inline fun <reified T : Scene> pushToAsync(vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { pushTo<T>(*injects, time = time, transition = transition) }
 
     /** Async variant returning a [Deferred] for [pushTo] */
-    fun <T : Scene> pushToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<T>
+    fun <T : Scene> pushToAsync(clazz: KClass<T>, vararg injects: Any, time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<T>
         = CoroutineScope(coroutineContext).async { pushTo(clazz, *injects, time = time, transition = transition) }
 
     /** Async variant returning a [Deferred] for [back] */
-	suspend fun backAsync(time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
+	suspend fun backAsync(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { back(time, transition) }
 
     /** Async variant returning a [Deferred] for [forward] */
-	suspend fun forwardAsync(time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
+	suspend fun forwardAsync(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Deferred<Scene> = CoroutineScope(coroutineContext).async { forward(time, transition) }
 
     /**
      * Changes to the [T] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
      * This method waits until the [transition] has been completed, and returns the [T] created instance.
      */
 	suspend inline fun <reified T : Scene> changeTo(
-		vararg injects: Any,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
 	): T = changeTo(T::class, *injects, time = time, transition = transition)
 
     /**
@@ -82,16 +82,16 @@ class SceneContainer(
      * This method waits until the [transition] has been completed, and returns the [T] created instance.
      */
     suspend inline fun <reified T : Scene> pushTo(
-		vararg injects: Any,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
 	) = pushTo(T::class, *injects, time = time, transition = transition)
 
     /**
      * Returns to the previous pushed Scene with [pushTo] in [time] time, and with [transition].
      * This method waits until the [transition] has been completed, and returns the old [Scene] instance.
      */
-	suspend fun back(time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Scene {
+	suspend fun back(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Scene {
 		visitPos--
 		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
@@ -100,7 +100,7 @@ class SceneContainer(
      * Returns to the next pushed Scene with [pushTo] in [time] time, and with [transition].
      * This method waits until the [transition] has been completed, and returns the old [Scene] instance.
      */
-	suspend fun forward(time: TimeSpan = 0.secs, transition: Transition = defaultTransition): Scene {
+	suspend fun forward(time: TimeSpan = 0.seconds, transition: Transition = defaultTransition): Scene {
 		visitPos++
 		return _changeTo(visitStack.getOrNull(visitPos) ?: EMPTY_VISIT_ENTRY, time = time, transition = transition)
 	}
@@ -111,10 +111,10 @@ class SceneContainer(
      * This method waits until the [transition] has been completed, and returns the [T] created instance.
      */
 	suspend fun <T : Scene> pushTo(
-		clazz: KClass<T>,
-		vararg injects: Any,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        clazz: KClass<T>,
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
 	): T {
 		visitPos++
 		setCurrent(VisitEntry(clazz, injects.toList()))
@@ -126,27 +126,27 @@ class SceneContainer(
      * This method waits until the [transition] has been completed, and returns the [T] created instance.
      */
 	suspend fun <T : Scene> changeTo(
-		clazz: KClass<T>,
-		vararg injects: Any,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        clazz: KClass<T>,
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
 	): T {
 		setCurrent(VisitEntry(clazz, injects.toList()))
 		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
 	private suspend fun _changeTo(
-		entry: VisitEntry,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        entry: VisitEntry,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
 	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
 
     /** Check [Scene] for details of the lifecycle. */
 	private suspend fun <T : Scene> _changeTo(
-		clazz: KClass<T>,
-		vararg injects: Any,
-		time: TimeSpan = 0.secs,
-		transition: Transition = defaultTransition
+        clazz: KClass<T>,
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
     ): T {
         val oldScene = currentScene
         val sceneInjector: AsyncInjector =
@@ -168,7 +168,7 @@ class SceneContainer(
 
         oldScene?.sceneBeforeLeaving()
 
-        if (time > 0.secs) {
+        if (time > 0.seconds) {
             transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
         } else {
             transitionView.ratio = 1.0
