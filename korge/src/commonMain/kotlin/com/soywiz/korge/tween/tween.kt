@@ -26,7 +26,7 @@ class TweenComponent(
 	val c: CancellableContinuation<Unit>
 ) : UpdateComponentV2 {
 	var elapsed = 0.hrNanoseconds
-	val hrtime = if (time != HRTimeSpan.NULL) (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds else 1.hrSeconds
+	val hrtime = if (time != HRTimeSpan.NULL) time else (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds
 	var cancelled = false
 	var done = false
 
@@ -56,6 +56,7 @@ class TweenComponent(
 		elapsed += dt
 
 		val ratio = (elapsed / hrtime).clamp(0.0, 1.0)
+        //println("$elapsed/$hrtime : $ratio")
 		setTo(elapsed)
 		callback(easing(ratio))
 
