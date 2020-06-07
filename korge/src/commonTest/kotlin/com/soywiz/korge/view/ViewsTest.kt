@@ -143,7 +143,7 @@ class ViewsTest : ViewsForTesting() {
     @Test
     fun testTween() = viewsTest {
         val image = solidRect(100, 100, Colors.RED).position(0, 0)
-        image.tween(image::x[-101], time = 4.secs)
+        image.tween(image::x[-101], time = 4.seconds)
         assertEquals(false, image.isVisibleToUser())
     }
 
@@ -184,7 +184,7 @@ class ViewsTest : ViewsForTesting() {
             rect = solidRect(100, 100, Colors.RED)
             rect.addUpdater { time ->
                 x++
-                assertEquals(0.0.secs, time)
+                assertEquals(0.0.seconds, time)
                 @Suppress("USELESS_IS_CHECK")
                 assertTrue { this is SolidRect }
             }

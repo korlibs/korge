@@ -72,7 +72,7 @@ class TimerComponents(override val view: View) : UpdateComponentV2 {
 val View.timers get() = this.getOrCreateComponentUpdate<TimerComponents> { TimerComponents(this) }
 
 @Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.waitMs(time: Int) = this.delay(time.ms)
+suspend fun View.waitMs(time: Int) = this.delay(time.milliseconds)
 
 @Deprecated("", ReplaceWith("this.delay(time)"))
 suspend fun View.wait(time: TimeSpan) = this.delay(time)
@@ -81,7 +81,7 @@ suspend fun View.wait(time: TimeSpan) = this.delay(time)
 suspend fun View.waitFrame() = this.delayFrame()
 
 @Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.sleepMs(time: Int) = this.delay(time.ms)
+suspend fun View.sleepMs(time: Int) = this.delay(time.milliseconds)
 
 @Deprecated("", ReplaceWith("this.delay(time)"))
 suspend fun View.sleep(time: TimeSpan) = this.delay(time)

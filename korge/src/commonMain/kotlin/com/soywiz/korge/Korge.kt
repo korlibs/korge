@@ -70,7 +70,7 @@ object Korge {
                 config.module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
                 views.stage += sc
-                sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.ms)
+                sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
                 // Se we have the opportunity to execute deinitialization code at the scene level
                 views.onClose { sc.changeTo<EmptyScene>() }
             }
@@ -179,7 +179,7 @@ object Korge {
 
     suspend fun GameWindow.waitClose() {
         while (running) {
-            delay(100.ms)
+            delay(100.milliseconds)
         }
     }
 
@@ -242,7 +242,7 @@ object Korge {
 
             if (type == "onTouchEnd") {
                 upTime = DateTime.now()
-                if ((downTime - upTime) <= 40.ms) {
+                if ((downTime - upTime) <= 40.milliseconds) {
                     //Console.log("mouseClick: $name")
                     views.dispatch(MouseEvent(MouseEvent.Type.CLICK))
                 }

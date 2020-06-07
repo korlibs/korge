@@ -27,9 +27,9 @@ abstract class CompletableScene<T>() : Scene() {
 }
 
 suspend inline fun <reified T : CompletableScene<R>, R> SceneContainer.changeToResult(
-	vararg injects: Any,
-	time: TimeSpan = 0.ms,
-	transition: Transition = AlphaTransition
+    vararg injects: Any,
+    time: TimeSpan = 0.milliseconds,
+    transition: Transition = AlphaTransition
 ): R {
 	val instance = changeTo(T::class, *injects, time = time, transition = transition)
 	return instance.completed.await()

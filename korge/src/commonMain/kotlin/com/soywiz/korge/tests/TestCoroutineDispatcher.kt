@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 @UseExperimental(InternalCoroutinesApi::class)
-class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.ms) :
+class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
 	CoroutineDispatcher(), ContinuationInterceptor, Delay {
 	var time = 0L; private set

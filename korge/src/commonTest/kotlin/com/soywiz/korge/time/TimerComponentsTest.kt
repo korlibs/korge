@@ -13,9 +13,9 @@ class TimerComponentsTest {
 		var log = ""
 		val view = DummyView()
 		log += "a"
-		view.timer(5.ms) {
+		view.timer(5.milliseconds) {
 			log += "b"
-			view.timer(5.ms) {
+			view.timer(5.milliseconds) {
 				log += "c"
 			}
 		}
