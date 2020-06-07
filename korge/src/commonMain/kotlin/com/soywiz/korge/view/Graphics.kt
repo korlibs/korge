@@ -11,6 +11,7 @@ import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).apply(callback)
 inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this).apply(callback)
@@ -47,7 +48,7 @@ open class Graphics @JvmOverloads constructor(
 	private var endCap: LineCap = LineCap.BUTT
 	private var lineJoin: LineJoin = LineJoin.MITER
 	private var miterLimit: Double = 4.0
-    var hitTestUsingShapes = false
+    var hitTestUsingShapes = true
 
 	@Deprecated("This doesn't do anything")
 	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
@@ -245,9 +246,31 @@ open class Graphics @JvmOverloads constructor(
         out.displace(-anchorDispX, -anchorDispY)
     }
 
+    override fun hitTest(x: Double, y: Double): View? = hitTestInternal(x, y)
+
     override fun hitTestInternal(x: Double, y: Double): View? {
-        val lx = globalToLocalX(x, y) - anchorDispX
-        val ly = globalToLocalY(x, y) - anchorDispY
+        val anchorDispX = this.anchorDispX
+        val anchorDispY = this.anchorDispY
+        val sLeft = this.sLeft
+        val sTop = this.sTop
+        val bwidth = this.bwidth
+        val bheight = this.bheight
+
+        val lx = globalToLocalX(x, y) + anchorDispX
+        val ly = globalToLocalY(x, y) + anchorDispY
+
+        val centerX = sLeft + bwidth * 0.5 + anchorDispX
+        val centerY = sTop + bheight * 0.5 + anchorDispY
+
+        val manhattanDist = (lx - centerX).absoluteValue + (ly - centerY).absoluteValue
+        val manhattanDist2 = bwidth * 0.5 + bheight * 0.5
+        //println("($centerX, $centerY)-($lx, $ly): $manhattanDist > $manhattanDist2")
+        if (manhattanDist > manhattanDist2) return null
+        val outerCircleRadius = hypot(bwidth * 0.5, bheight * 0.5)
+        val dist = Point.distance(lx, ly, centerX, centerY)
+        //println("($centerX, $centerY)-($lx, $ly): $dist > $outerCircleRadius")
+        if (dist > outerCircleRadius) return null
+
         if (hitTestUsingShapes) {
             shapes.fastForEach { shape ->
                 if (shape.containsPoint(lx, ly)) return this
