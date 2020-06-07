@@ -169,8 +169,8 @@ open class Graphics @JvmOverloads constructor(
 	internal val _sLeft get() = sLeft
 	internal val _sTop get() = sTop
 
-	override var sLeft = 0.0
-	override var sTop = 0.0
+    override val sLeft get() = bounds.x - anchorDispX
+    override val sTop get() = bounds.y - anchorDispY
 
 	private val bb = BoundsBuilder()
 	private val bounds = Rectangle()
@@ -211,7 +211,7 @@ open class Graphics @JvmOverloads constructor(
 		if (dirty) {
 			dirty = false
 
-            getLocalBoundsInternal(bounds)
+            getLocalBoundsInternalNoAnchor(bounds)
 
             // Removes old image
             run {
@@ -229,29 +229,32 @@ open class Graphics @JvmOverloads constructor(
                     compoundShape.draw(this)
                 }
                 this.bitmap = image.slice()
-                this.sLeft = bounds.x
-                this.sTop = bounds.y
             }
 		}
 		super.renderInternal(ctx)
 	}
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    fun getLocalBoundsInternalNoAnchor(out: Rectangle) {
         bb.reset()
         shapes.fastForEach { it.addBounds(bb) }
         bb.getBounds(out)
     }
 
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        getLocalBoundsInternalNoAnchor(out)
+        out.displace(-anchorDispX, -anchorDispY)
+    }
+
     override fun hitTestInternal(x: Double, y: Double): View? {
+        val lx = globalToLocalX(x, y) - anchorDispX
+        val ly = globalToLocalY(x, y) - anchorDispY
         if (hitTestUsingShapes) {
-            val lx = globalToLocalX(x, y)
-            val ly = globalToLocalY(x, y)
             shapes.fastForEach { shape ->
                 if (shape.containsPoint(lx, ly)) return this
             }
             return null
         } else {
-            return super.hitTestInternal(x, y)
+            return if (bounds.contains(lx, ly)) return this else null
         }
 	}
 }
