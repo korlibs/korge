@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.seconds
+import com.soywiz.klock.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
@@ -21,21 +21,21 @@ class ViewsTest : ViewsForTesting() {
         run {
             val view = DummyView()
             var ticks = 0
-            view.addFixedUpdater(1.seconds / 60, initial = false) {
+            view.addFixedUpdater(60.timesPerSecond, initial = false) { // Each 16.6666667 milliseconds
                 ticks++
             }
             assertEquals(0, ticks)
             view.updateSingleView(50.0)
             assertEquals(3, ticks)
             view.updateSingleView(16.0)
-            assertEquals(3, ticks)
+            assertEquals(4, ticks) // This is 4 instead of 3 (16 < 16.6666) since the fixedUpdater approximates it to prevent micro-stuttering
             view.updateSingleView(1.0)
             assertEquals(4, ticks)
         }
         run {
             val view = DummyView()
             var ticks = 0
-            view.addFixedUpdater(1.seconds / 60, initial = true) {
+            view.addFixedUpdater(60.timesPerSecond, initial = true) {
                 ticks++
             }
             assertEquals(1, ticks)

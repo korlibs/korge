@@ -1,7 +1,7 @@
 package com.soywiz.korge.component.docking
 
+import com.soywiz.klock.hr.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.time.HRTimeSpan
 import com.soywiz.korge.view.*
 
 class SortedChildrenByComponent(override val view: Container, var comparator: Comparator<View>) : UpdateComponentV2 {

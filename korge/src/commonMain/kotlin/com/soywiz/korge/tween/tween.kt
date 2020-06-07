@@ -4,6 +4,7 @@ package com.soywiz.korge.tween
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.time.*

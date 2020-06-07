@@ -2,6 +2,7 @@ package com.soywiz.korge
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
@@ -11,8 +12,7 @@ import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
-import com.soywiz.korge.time.HRTimeProvider
-import com.soywiz.korge.time.toTimeProvider
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*

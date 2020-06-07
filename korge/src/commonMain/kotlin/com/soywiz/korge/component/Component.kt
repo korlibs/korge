@@ -1,11 +1,11 @@
 package com.soywiz.korge.component
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.hr.HRTimeSpan
+import com.soywiz.klock.hr.hr
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
-import com.soywiz.korge.time.HRTimeSpan
-import com.soywiz.korge.time.hr
 import kotlin.reflect.*
 
 /**
@@ -13,30 +13,82 @@ import kotlin.reflect.*
  * The most common case of Component is the [UpdateComponent]
  */
 interface Component {
-	val view: View
+    val view: View
 }
 
 @Deprecated("Unoptimized")
-fun <T : Component> T.attach(): T { this.view.addComponent(this); return this }
-fun MouseComponent.attach(): MouseComponent { this.view.addComponent(this); return this }
-fun KeyComponent.attach(): KeyComponent { this.view.addComponent(this); return this }
-fun GamepadComponent.attach(): GamepadComponent { this.view.addComponent(this); return this }
-fun TouchComponent.attach(): TouchComponent { this.view.addComponent(this); return this }
-fun EventComponent.attach(): EventComponent { this.view.addComponent(this); return this }
-fun UpdateComponentWithViews.attach(): UpdateComponentWithViews { this.view.addComponent(this); return this }
-fun UpdateComponent.attach(): UpdateComponent { this.view.addComponent(this); return this }
-fun ResizeComponent.attach(): ResizeComponent { this.view.addComponent(this); return this }
+fun <T : Component> T.attach(): T {
+    this.view.addComponent(this); return this
+}
+
+fun MouseComponent.attach(): MouseComponent {
+    this.view.addComponent(this); return this
+}
+
+fun KeyComponent.attach(): KeyComponent {
+    this.view.addComponent(this); return this
+}
+
+fun GamepadComponent.attach(): GamepadComponent {
+    this.view.addComponent(this); return this
+}
+
+fun TouchComponent.attach(): TouchComponent {
+    this.view.addComponent(this); return this
+}
+
+fun EventComponent.attach(): EventComponent {
+    this.view.addComponent(this); return this
+}
+
+fun UpdateComponentWithViews.attach(): UpdateComponentWithViews {
+    this.view.addComponent(this); return this
+}
+
+fun UpdateComponent.attach(): UpdateComponent {
+    this.view.addComponent(this); return this
+}
+
+fun ResizeComponent.attach(): ResizeComponent {
+    this.view.addComponent(this); return this
+}
 
 @Deprecated("Unoptimized")
-fun <T : Component> T.detach(): T { this.view.removeComponent(this); return this }
-fun MouseComponent.detach(): MouseComponent { this.view.removeComponent(this); return this }
-fun KeyComponent.detach(): KeyComponent { this.view.removeComponent(this); return this }
-fun GamepadComponent.detach(): GamepadComponent { this.view.removeComponent(this); return this }
-fun TouchComponent.detach(): TouchComponent { this.view.removeComponent(this); return this }
-fun EventComponent.detach(): EventComponent { this.view.removeComponent(this); return this }
-fun UpdateComponentWithViews.detach(): UpdateComponentWithViews { this.view.removeComponent(this); return this }
-fun UpdateComponent.detach(): UpdateComponent { this.view.removeComponent(this); return this }
-fun ResizeComponent.detach(): ResizeComponent { this.view.removeComponent(this); return this }
+fun <T : Component> T.detach(): T {
+    this.view.removeComponent(this); return this
+}
+
+fun MouseComponent.detach(): MouseComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun KeyComponent.detach(): KeyComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun GamepadComponent.detach(): GamepadComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun TouchComponent.detach(): TouchComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun EventComponent.detach(): EventComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun UpdateComponentWithViews.detach(): UpdateComponentWithViews {
+    this.view.removeComponent(this); return this
+}
+
+fun UpdateComponent.detach(): UpdateComponent {
+    this.view.removeComponent(this); return this
+}
+
+fun ResizeComponent.detach(): ResizeComponent {
+    this.view.removeComponent(this); return this
+}
 
 fun Component.removeFromView() = view.removeComponent(this)
 
@@ -45,7 +97,7 @@ fun Component.removeFromView() = view.removeComponent(this)
  * whenever a touch event happens.
  */
 interface TouchComponent : Component {
-	fun onTouchEvent(views: Views, e: TouchEvent)
+    fun onTouchEvent(views: Views, e: TouchEvent)
 }
 
 /**
@@ -65,7 +117,7 @@ interface TouchComponent : Component {
  * ```
  */
 interface MouseComponent : Component {
-	fun onMouseEvent(views: Views, event: MouseEvent)
+    fun onMouseEvent(views: Views, event: MouseEvent)
 }
 
 /**
@@ -82,7 +134,7 @@ interface MouseComponent : Component {
  * }
  */
 interface KeyComponent : Component {
-	fun onKeyEvent(views: Views, event: KeyEvent)
+    fun onKeyEvent(views: Views, event: KeyEvent)
 }
 
 /**
@@ -103,18 +155,20 @@ interface KeyComponent : Component {
  * ```
  */
 interface GamepadComponent : Component {
-	fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
-	fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
+    fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
+    fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
 
-	@Deprecated("") fun onGamepadEvent(views: Views, event: GamePadButtonEvent)
-	@Deprecated("") fun onGamepadEvent(views: Views, event: GamePadStickEvent)
+    @Deprecated("")
+    fun onGamepadEvent(views: Views, event: GamePadButtonEvent)
+    @Deprecated("")
+    fun onGamepadEvent(views: Views, event: GamePadStickEvent)
 }
 
 /**
  * Component whose [onEvent] method is called when an event has been triggered in that [View].
  */
 interface EventComponent : Component {
-	fun onEvent(event: Event)
+    fun onEvent(event: Event)
 }
 
 /**
@@ -125,7 +179,7 @@ interface EventComponent : Component {
  */
 interface UpdateComponentWithViews : Component {
     @Deprecated("")
-	fun update(views: Views, ms: Double)
+    fun update(views: Views, ms: Double)
     fun update(views: Views, delta: HRTimeSpan) = update(views, delta.millisecondsDouble)
 }
 
@@ -144,10 +198,12 @@ interface UpdateComponentWithViews : Component {
 interface UpdateComponent : Component {
     @Deprecated("")
     fun update(ms: Double)
+    @Suppress("DEPRECATION")
     fun update(delta: HRTimeSpan): Unit = update(delta.millisecondsDouble)
 }
 
 interface UpdateComponentV2 : UpdateComponent {
+    @Suppress("DEPRECATION")
     override fun update(ms: Double): Unit = update(ms.milliseconds.hr)
     override fun update(dt: HRTimeSpan)
 }
@@ -160,7 +216,7 @@ interface ResizeComponent : Component {
     /**
      * Includes the [Views] singleton. [width],[height] are [Views.nativeWidth],[Views.nativeHeight].
      */
-	fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
+    fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
 }
 
 /*
@@ -203,15 +259,42 @@ class Components {
     var resize: ArrayList<ResizeComponent>? = null
     var other: ArrayList<Component>? = null
 
-    val emouse: ArrayList<MouseComponent> get() { if (mouse == null) mouse = arrayListOf(); return mouse!! }
-    val ekey: ArrayList<KeyComponent> get() { if (key == null) key = arrayListOf(); return key!! }
-    val egamepad: ArrayList<GamepadComponent> get() { if (gamepad == null) gamepad = arrayListOf(); return gamepad!! }
-    val etouch: ArrayList<TouchComponent> get() { if (touch == null) touch = arrayListOf(); return touch!! }
-    val eevent: ArrayList<EventComponent> get() { if (event == null) event = arrayListOf(); return event!! }
-    val eupdateWV: ArrayList<UpdateComponentWithViews> get() { if (updateWV == null) updateWV = arrayListOf(); return updateWV!! }
-    val eupdate: ArrayList<UpdateComponent> get() { if (update == null) update = arrayListOf(); return update!! }
-    val eresize: ArrayList<ResizeComponent> get() { if (resize == null) resize = arrayListOf(); return resize!! }
-    val eother: ArrayList<Component> get() { if (other == null) other = arrayListOf(); return other!! }
+    val emouse: ArrayList<MouseComponent>
+        get() {
+            if (mouse == null) mouse = arrayListOf(); return mouse!!
+        }
+    val ekey: ArrayList<KeyComponent>
+        get() {
+            if (key == null) key = arrayListOf(); return key!!
+        }
+    val egamepad: ArrayList<GamepadComponent>
+        get() {
+            if (gamepad == null) gamepad = arrayListOf(); return gamepad!!
+        }
+    val etouch: ArrayList<TouchComponent>
+        get() {
+            if (touch == null) touch = arrayListOf(); return touch!!
+        }
+    val eevent: ArrayList<EventComponent>
+        get() {
+            if (event == null) event = arrayListOf(); return event!!
+        }
+    val eupdateWV: ArrayList<UpdateComponentWithViews>
+        get() {
+            if (updateWV == null) updateWV = arrayListOf(); return updateWV!!
+        }
+    val eupdate: ArrayList<UpdateComponent>
+        get() {
+            if (update == null) update = arrayListOf(); return update!!
+        }
+    val eresize: ArrayList<ResizeComponent>
+        get() {
+            if (resize == null) resize = arrayListOf(); return resize!!
+        }
+    val eother: ArrayList<Component>
+        get() {
+            if (other == null) other = arrayListOf(); return other!!
+        }
 
     fun getArrayComponentOrNull(c: Component): ArrayList<out Component>? = when (c) {
         is MouseComponent -> mouse
@@ -251,14 +334,38 @@ class Components {
     fun add(c: Component): Component {
         (getArrayComponent(c) as ArrayList<Component>).plusAssign(c); return c
     }
-    fun add(c: MouseComponent): MouseComponent { emouse.plusAssign(c); return c }
-    fun add(c: KeyComponent): KeyComponent { ekey.plusAssign(c); return c }
-    fun add(c: GamepadComponent): GamepadComponent { egamepad.plusAssign(c); return c }
-    fun add(c: TouchComponent): TouchComponent { etouch.plusAssign(c); return c }
-    fun add(c: EventComponent): EventComponent { eevent.plusAssign(c); return c }
-    fun add(c: UpdateComponentWithViews): UpdateComponentWithViews { eupdateWV.plusAssign(c); return c }
-    fun add(c: UpdateComponent): UpdateComponent { eupdate.plusAssign(c); return c }
-    fun add(c: ResizeComponent): ResizeComponent { eresize.plusAssign(c); return c }
+
+    fun add(c: MouseComponent): MouseComponent {
+        emouse.plusAssign(c); return c
+    }
+
+    fun add(c: KeyComponent): KeyComponent {
+        ekey.plusAssign(c); return c
+    }
+
+    fun add(c: GamepadComponent): GamepadComponent {
+        egamepad.plusAssign(c); return c
+    }
+
+    fun add(c: TouchComponent): TouchComponent {
+        etouch.plusAssign(c); return c
+    }
+
+    fun add(c: EventComponent): EventComponent {
+        eevent.plusAssign(c); return c
+    }
+
+    fun add(c: UpdateComponentWithViews): UpdateComponentWithViews {
+        eupdateWV.plusAssign(c); return c
+    }
+
+    fun add(c: UpdateComponent): UpdateComponent {
+        eupdate.plusAssign(c); return c
+    }
+
+    fun add(c: ResizeComponent): ResizeComponent {
+        eresize.plusAssign(c); return c
+    }
 
     fun removeAll() {
         mouse?.clear()
@@ -286,7 +393,12 @@ class Components {
         }
     }
 
-    inline fun <reified T : Component> getOrCreateComponent(view: View, array: ArrayList<T>, clazz: KClass<out T>, gen: (View) -> T): T {
+    inline fun <reified T : Component> getOrCreateComponent(
+        view: View,
+        array: ArrayList<T>,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T {
         var component: T? = findFirstComponentOfType(array, clazz)
         if (component == null) {
             component = gen(view)
@@ -295,15 +407,53 @@ class Components {
         return component
     }
 
-    inline fun <reified T : Component> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, eother, clazz, gen) as T
-    inline fun <reified T : MouseComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, emouse, clazz, gen) as T
-    inline fun <reified T : KeyComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, ekey, clazz, gen) as T
-    inline fun <reified T : GamepadComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, egamepad, clazz, gen) as T
-    inline fun <reified T : TouchComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, etouch, clazz, gen) as T
-    inline fun <reified T : EventComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, eevent, clazz, gen) as T
-    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, eupdateWV, clazz, gen) as T
-    inline fun <reified T : UpdateComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, eupdate, clazz, gen) as T
-    inline fun <reified T : ResizeComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T = getOrCreateComponent(view, eresize, clazz, gen) as T
+    inline fun <reified T : Component> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T =
+        getOrCreateComponent(view, eother, clazz, gen) as T
+
+    inline fun <reified T : MouseComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, emouse, clazz, gen) as T
+
+    inline fun <reified T : KeyComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T =
+        getOrCreateComponent(view, ekey, clazz, gen) as T
+
+    inline fun <reified T : GamepadComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, egamepad, clazz, gen) as T
+
+    inline fun <reified T : TouchComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, etouch, clazz, gen) as T
+
+    inline fun <reified T : EventComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, eevent, clazz, gen) as T
+
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, eupdateWV, clazz, gen) as T
+
+    inline fun <reified T : UpdateComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, eupdate, clazz, gen) as T
+
+    inline fun <reified T : ResizeComponent> getOrCreateComponent(
+        view: View,
+        clazz: KClass<out T>,
+        gen: (View) -> T
+    ): T = getOrCreateComponent(view, eresize, clazz, gen) as T
 
     fun <T : Component> findFirstComponentOfType(array: ArrayList<T>, clazz: KClass<out T>): T? {
         array.fastForEach { if (it::class == clazz) return it }

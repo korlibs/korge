@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -11,9 +12,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.stat.*
-import com.soywiz.korge.time.HRTimeSpan
-import com.soywiz.korge.time.HRTimeProvider
-import com.soywiz.korge.time.hr
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -238,7 +236,7 @@ class Views constructor(
 
     @Deprecated("")
     fun update(dtMs: Int) {
-        update(HRTimeSpan.fromMilliseconds(dtMs.toDouble()))
+        update(dtMs.hrMilliseconds)
     }
 
 	fun update(elapsed: HRTimeSpan) {

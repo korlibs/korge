@@ -1,10 +1,9 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.time.HRTimeProvider
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
