@@ -108,12 +108,9 @@ data class AtlasInfo(
             val imagePath = xml.str("imagePath")
 
             return AtlasInfo( (xml.children("SubTexture") + xml.children("sprite")).map {
-                val filename = it.strNull("name") ?: it.str("n")
-                val width = it.intNull("width") ?: it.int("w")
-                val height = it.intNull("height") ?: it.int("h")
-                val rect = Rect(it.int("x"), it.int("y"), width, height)
+                val rect = Rect(it.int("x"), it.int("y"), it.intNull("width") ?: it.int("w"), it.intNull("height") ?: it.int("h"))
                 Entry(
-                    filename = filename,
+                    filename = it.strNull("name") ?: it.str("n"),
                     frame = rect,
                     rotated = false,
                     sourceSize = Size(rect.w, rect.h),
