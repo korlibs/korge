@@ -312,7 +312,8 @@ abstract class View internal constructor(
     var colorMul: RGBA
         get() = _colorTransform.colorMul
         set(v) {
-            _colorTransform.colorMul = v; invalidate()
+            _colorTransform.colorMul = v
+            invalidateColorTransform()
         }
 
     /**
@@ -324,7 +325,8 @@ abstract class View internal constructor(
     var colorAdd: Int
         get() = _colorTransform.colorAdd;
         set(v) {
-            _colorTransform.colorAdd = v; invalidate()
+            _colorTransform.colorAdd = v
+            invalidateColorTransform()
         }
 
     /**
@@ -334,7 +336,8 @@ abstract class View internal constructor(
     var alpha: Double
         get() = _colorTransform.mA;
         set(v) {
-            _colorTransform.mA = v; invalidate()
+            _colorTransform.mA = v
+            invalidateColorTransform()
         }
 
     /** Alias for [colorMul] to make this familiar to people coming from other engines. */
@@ -685,9 +688,9 @@ abstract class View internal constructor(
      */
     val renderColorTransform: ColorTransform
         get() {
-            if (_renderColorTransformVersion != this._version) {
-                _renderColorTransformVersion = this._version
-                _requireInvalidate = true
+            if (_renderColorTransformVersion != this._versionColor) {
+                _renderColorTransformVersion = this._versionColor
+                _requireInvalidateColor = true
                 when {
                     parent != null && parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
                     parent != null && this !is View.Reference -> _renderColorTransform.setToConcat(
@@ -747,16 +750,34 @@ abstract class View internal constructor(
     protected var dirtyVertices = true
 
     private var _version = 0
+    private var _versionColor = 0
     internal var _requireInvalidate = false
+    internal var _requireInvalidateColor = false
 
     /**
      * Invalidates the [View] after changing some of its properties so the geometry can be computed again.
      * If you change the [localMatrix] directly, you should call [invalidateMatrix] instead.
      */
-    open fun invalidate() {
+    fun invalidate() {
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        _children?.fastForEach { child ->
+            if (child._requireInvalidate) {
+                child.invalidate()
+            }
+        }
+    }
+
+    fun invalidateColorTransform() {
+        this._versionColor++
+        _requireInvalidateColor = false
+        dirtyVertices = true
+        _children?.fastForEach { child ->
+            if (child._requireInvalidateColor) {
+                child.invalidateColorTransform()
+            }
+        }
     }
 
     /**

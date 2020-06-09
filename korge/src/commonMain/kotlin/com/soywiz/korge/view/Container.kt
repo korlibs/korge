@@ -167,18 +167,6 @@ open class Container : View(true) {
 	fun addChild(view: View) = this.plusAssign(view)
 
 	/**
-	 * Invalidates the container and all the child [View]s recursively.
-	 */
-	override fun invalidate() {
-		super.invalidate()
-        _children?.fastForEach { child ->
-			if (child._requireInvalidate) {
-				child.invalidate()
-			}
-		}
-	}
-
-	/**
 	 * Alias for [addChild].
 	 */
 	operator fun plusAssign(view: View) {
