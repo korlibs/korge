@@ -27,4 +27,3 @@ class AtlasInfoTest {
         assertEquals(true, firstFrame.trimmed)
     }
 }
-

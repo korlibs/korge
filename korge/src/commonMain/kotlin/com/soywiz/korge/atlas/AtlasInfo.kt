@@ -110,7 +110,7 @@ data class AtlasInfo(
             return AtlasInfo( (xml.children("SubTexture") + xml.children("sprite")).map {
                 val filename = it.strNull("name") ?: it.str("n")
                 val width = it.intNull("width") ?: it.int("w")
-                val height = it.intNull("width") ?: it.int("h")
+                val height = it.intNull("height") ?: it.int("h")
                 val rect = Rect(it.int("x"), it.int("y"), width, height)
                 Entry(
                     filename = filename,
