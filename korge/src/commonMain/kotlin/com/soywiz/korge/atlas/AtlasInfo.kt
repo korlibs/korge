@@ -106,10 +106,14 @@ data class AtlasInfo(
         fun loadXml(content: String): AtlasInfo {
             val xml = Xml(content)
             val imagePath = xml.str("imagePath")
-            return AtlasInfo(xml.children("SubTexture").map {
-                val rect = Rect(it.int("x"), it.int("y"), it.int("width"), it.int("height"))
+
+            return AtlasInfo( (xml.children("SubTexture") + xml.children("sprite")).map {
+                val filename = it.strNull("name") ?: it.str("n")
+                val width = it.intNull("width") ?: it.int("w")
+                val height = it.intNull("width") ?: it.int("h")
+                val rect = Rect(it.int("x"), it.int("y"), width, height)
                 Entry(
-                    filename = it.str("name"),
+                    filename = filename,
                     frame = rect,
                     rotated = false,
                     sourceSize = Size(rect.w, rect.h),

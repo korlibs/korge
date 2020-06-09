@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker https://www.codeandweb.com/texturepacker -->
+<!-- $TexturePacker:SmartUpdate:34adc7856bec28a50bc084bd1ea98fb2:71380a26560b864d20c2559987c89e25:b6e948514e0cb539aaa6a5a450ca154f$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+pX => x pos of the pivot point (relative to sprite width)
+pY => y pos of the pivot point (relative to sprite height)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+with polygon mode enabled:
+vertices   => points in sprite coordinate system (x0,y0,x1,y1,x2,y2, ...)
+verticesUV => points in sheet coordinate system (x0,y0,x1,y1,x2,y2, ...)
+triangles  => sprite triangulation, 3 vertex indices per triangle
+-->
+<TextureAtlas imagePath="adventurer.png" w="100" h="2035">
+    <sprite n="air-attack-3-end-00.png" x="0" y="0" w="50" h="37"/>
+    <sprite n="air-attack-3-end-01.png" x="50" y="0" w="50" h="37"/>
+    <sprite n="air-attack-3-end-02.png" x="0" y="37" w="50" h="37"/>
+    <sprite n="air-attack1-00.png" x="50" y="37" w="50" h="37"/>
+    <sprite n="air-attack1-01.png" x="0" y="74" w="50" h="37"/>
+    <sprite n="air-attack1-02.png" x="50" y="74" w="50" h="37"/>
+    <sprite n="air-attack1-03.png" x="0" y="111" w="50" h="37"/>
+    <sprite n="air-attack2-00.png" x="50" y="111" w="50" h="37"/>
+    <sprite n="air-attack2-01.png" x="0" y="148" w="50" h="37"/>
+    <sprite n="air-attack2-02.png" x="50" y="148" w="50" h="37"/>
+    <sprite n="air-attack3-loop-00.png" x="0" y="185" w="50" h="37"/>
+    <sprite n="air-attack3-loop-01.png" x="50" y="185" w="50" h="37"/>
+    <sprite n="air-attack3-rdy-00.png" x="0" y="222" w="50" h="37"/>
+    <sprite n="attack1-00.png" x="50" y="222" w="50" h="37"/>
+    <sprite n="attack1-01.png" x="0" y="259" w="50" h="37"/>
+    <sprite n="attack1-02.png" x="50" y="259" w="50" h="37"/>
+    <sprite n="attack1-03.png" x="0" y="296" w="50" h="37"/>
+    <sprite n="attack1-04.png" x="50" y="296" w="50" h="37"/>
+    <sprite n="attack2-00.png" x="0" y="333" w="50" h="37"/>
+    <sprite n="attack2-01.png" x="50" y="333" w="50" h="37"/>
+    <sprite n="attack2-02.png" x="0" y="370" w="50" h="37"/>
+    <sprite n="attack2-03.png" x="50" y="370" w="50" h="37"/>
+    <sprite n="attack2-04.png" x="0" y="407" w="50" h="37"/>
+    <sprite n="attack2-05.png" x="50" y="407" w="50" h="37"/>
+    <sprite n="attack3-00.png" x="0" y="444" w="50" h="37"/>
+    <sprite n="attack3-01.png" x="50" y="444" w="50" h="37"/>
+    <sprite n="attack3-02.png" x="0" y="481" w="50" h="37"/>
+    <sprite n="attack3-03.png" x="50" y="481" w="50" h="37"/>
+    <sprite n="attack3-04.png" x="0" y="518" w="50" h="37"/>
+    <sprite n="attack3-05.png" x="50" y="518" w="50" h="37"/>
+    <sprite n="cast-00.png" x="0" y="555" w="50" h="37"/>
+    <sprite n="cast-01.png" x="50" y="555" w="50" h="37"/>
+    <sprite n="cast-02.png" x="0" y="592" w="50" h="37"/>
+    <sprite n="cast-03.png" x="50" y="592" w="50" h="37"/>
+    <sprite n="cast-loop-00.png" x="0" y="629" w="50" h="37"/>
+    <sprite n="cast-loop-01.png" x="50" y="629" w="50" h="37"/>
+    <sprite n="cast-loop-02.png" x="0" y="666" w="50" h="37"/>
+    <sprite n="cast-loop-03.png" x="50" y="666" w="50" h="37"/>
+    <sprite n="crnr-clmb-00.png" x="0" y="703" w="50" h="37"/>
+    <sprite n="crnr-clmb-01.png" x="50" y="703" w="50" h="37"/>
+    <sprite n="crnr-clmb-02.png" x="0" y="740" w="50" h="37"/>
+    <sprite n="crnr-clmb-03.png" x="50" y="740" w="50" h="37"/>
+    <sprite n="crnr-clmb-04.png" x="0" y="777" w="50" h="37"/>
+    <sprite n="crnr-grb-00.png" x="50" y="777" w="50" h="37"/>
+    <sprite n="crnr-grb-01.png" x="0" y="814" w="50" h="37"/>
+    <sprite n="crnr-grb-02.png" x="50" y="814" w="50" h="37"/>
+    <sprite n="crnr-grb-03.png" x="0" y="851" w="50" h="37"/>
+    <sprite n="crnr-jmp-00.png" x="50" y="851" w="50" h="37"/>
+    <sprite n="crnr-jmp-01.png" x="0" y="888" w="50" h="37"/>
+    <sprite n="crouch-00.png" x="50" y="888" w="50" h="37"/>
+    <sprite n="crouch-01.png" x="0" y="925" w="50" h="37"/>
+    <sprite n="crouch-02.png" x="50" y="925" w="50" h="37"/>
+    <sprite n="crouch-03.png" x="0" y="962" w="50" h="37"/>
+    <sprite n="die-00.png" x="50" y="962" w="50" h="37"/>
+    <sprite n="die-01.png" x="0" y="999" w="50" h="37"/>
+    <sprite n="die-02.png" x="50" y="999" w="50" h="37"/>
+    <sprite n="die-03.png" x="0" y="1036" w="50" h="37"/>
+    <sprite n="die-04.png" x="50" y="1036" w="50" h="37"/>
+    <sprite n="die-05.png" x="0" y="1073" w="50" h="37"/>
+    <sprite n="die-06.png" x="50" y="1073" w="50" h="37"/>
+    <sprite n="fall-00.png" x="0" y="1110" w="50" h="37"/>
+    <sprite n="fall-01.png" x="50" y="1110" w="50" h="37"/>
+    <sprite n="hurt-00.png" x="0" y="1147" w="50" h="37"/>
+    <sprite n="hurt-01.png" x="50" y="1147" w="50" h="37"/>
+    <sprite n="hurt-02.png" x="0" y="1184" w="50" h="37"/>
+    <sprite n="idle-00.png" x="50" y="1184" w="50" h="37"/>
+    <sprite n="idle-01.png" x="0" y="1221" w="50" h="37"/>
+    <sprite n="idle-2-00.png" x="50" y="1221" w="50" h="37"/>
+    <sprite n="idle-2-01.png" x="0" y="1258" w="50" h="37"/>
+    <sprite n="idle-2-02.png" x="50" y="1258" w="50" h="37"/>
+    <sprite n="idle-2-03.png" x="0" y="1295" w="50" h="37"/>
+    <sprite n="idle-02.png" x="50" y="1295" w="50" h="37"/>
+    <sprite n="idle-03.png" x="0" y="1332" w="50" h="37"/>
+    <sprite n="items-00.png" x="50" y="1332" w="50" h="37"/>
+    <sprite n="items-01.png" x="0" y="1369" w="50" h="37"/>
+    <sprite n="items-02.png" x="50" y="1369" w="50" h="37"/>
+    <sprite n="jump-00.png" x="0" y="1406" w="50" h="37"/>
+    <sprite n="jump-01.png" x="50" y="1406" w="50" h="37"/>
+    <sprite n="jump-02.png" x="0" y="1443" w="50" h="37"/>
+    <sprite n="jump-03.png" x="50" y="1443" w="50" h="37"/>
+    <sprite n="ladder-climb-00.png" x="0" y="1480" w="50" h="37"/>
+    <sprite n="ladder-climb-01.png" x="50" y="1480" w="50" h="37"/>
+    <sprite n="ladder-climb-02.png" x="0" y="1517" w="50" h="37"/>
+    <sprite n="ladder-climb-03.png" x="50" y="1517" w="50" h="37"/>
+    <sprite n="run-00.png" x="0" y="1554" w="50" h="37"/>
+    <sprite n="run-01.png" x="50" y="1554" w="50" h="37"/>
+    <sprite n="run-02.png" x="0" y="1591" w="50" h="37"/>
+    <sprite n="run-03.png" x="50" y="1591" w="50" h="37"/>
+    <sprite n="run-04.png" x="0" y="1628" w="50" h="37"/>
+    <sprite n="run-05.png" x="50" y="1628" w="50" h="37"/>
+    <sprite n="slide-00.png" x="0" y="1665" w="50" h="37"/>
+    <sprite n="slide-01.png" x="50" y="1665" w="50" h="37"/>
+    <sprite n="smrslt-00.png" x="0" y="1702" w="50" h="37"/>
+    <sprite n="smrslt-01.png" x="50" y="1702" w="50" h="37"/>
+    <sprite n="smrslt-02.png" x="0" y="1739" w="50" h="37"/>
+    <sprite n="smrslt-03.png" x="50" y="1739" w="50" h="37"/>
+    <sprite n="stand-00.png" x="0" y="1776" w="50" h="37"/>
+    <sprite n="stand-01.png" x="50" y="1776" w="50" h="37"/>
+    <sprite n="stand-02.png" x="0" y="1813" w="50" h="37"/>
+    <sprite n="swrd-drw-00.png" x="50" y="1813" w="50" h="37"/>
+    <sprite n="swrd-drw-01.png" x="0" y="1850" w="50" h="37"/>
+    <sprite n="swrd-drw-02.png" x="50" y="1850" w="50" h="37"/>
+    <sprite n="swrd-drw-03.png" x="0" y="1887" w="50" h="37"/>
+    <sprite n="swrd-shte-00.png" x="50" y="1887" w="50" h="37"/>
+    <sprite n="swrd-shte-01.png" x="0" y="1924" w="50" h="37"/>
+    <sprite n="swrd-shte-02.png" x="50" y="1924" w="50" h="37"/>
+    <sprite n="swrd-shte-03.png" x="0" y="1961" w="50" h="37"/>
+    <sprite n="wall-slide-00.png" x="50" y="1961" w="50" h="37"/>
+    <sprite n="wall-slide-01.png" x="0" y="1998" w="50" h="37"/>
+</TextureAtlas>

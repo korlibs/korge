@@ -27,4 +27,14 @@ class SpriteAnimationTest {
         assertEquals("beam0.png", animation[0].name)
         assertEquals("beam6.png", animation[6].name)
     }
+
+    @Test
+    fun testDifferentXMLStyle() = suspendTest {
+        val atlas = resourcesVfs["atlas/adventurer.xml"].readAtlas()
+        val animation = atlas.getSpriteAnimation("run", 100.milliseconds)
+        assertEquals(100, atlas.texture.width)
+        assertEquals(2035, atlas.texture.height)
+        assertEquals(109, atlas.entries.size)
+        assertEquals(6, animation.size)
+    }
 }
