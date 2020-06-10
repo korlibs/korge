@@ -36,9 +36,9 @@ open class RectBase(
 	protected open val bheight get() = 0.0
 
     //@KorgeInternal
-    internal val anchorDispX get() = (anchorX * bwidth)
+    override val anchorDispX get() = (anchorX * bwidth)
     //@KorgeInternal
-    internal val anchorDispY get() = (anchorY * bheight)
+    override val anchorDispY get() = (anchorY * bheight)
 
     protected open val sLeft get() = -anchorDispX
 	protected open val sTop get() = -anchorDispY
@@ -68,12 +68,14 @@ open class RectBase(
 		out.setTo(sLeft, sTop, bwidth, bheight)
 	}
 
+    /*
 	override fun hitTest(x: Double, y: Double): View? {
 		val lres = if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) &&
 			(hitShape?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) != false)
 		) this else null
 		return lres ?: super.hitTestInternal(x, y)
 	}
+    */
 
 	//override fun hitTestInternal(x: Double, y: Double): View? {
 	//	return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) &&

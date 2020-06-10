@@ -174,9 +174,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 		out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)
 	}
 
-	override fun hitTest(x: Double, y: Double): View? {
-		return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
-	}
+	//override fun hitTest(x: Double, y: Double): View? {
+	//	return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
+	//}
 }
 
 fun <T : TileMap> T.repeat(repeatX: TileMap.Repeat, repeatY: TileMap.Repeat = repeatX): T {

@@ -24,9 +24,8 @@ internal class ViewCollisionContext {
                 // Includes anchoring
                 view.getLocalBounds(tempRect1)
                 out.clear()
-                // @TODO: This is a hack
-                val dispX = if (view is RectBase) view.anchorDispX else 0.0
-                val dispY = if (view is RectBase) view.anchorDispY else 0.0
+                val dispX = view.anchorDispX
+                val dispY = view.anchorDispY
                 out.rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.width, tempRect1.height)
                 out
             }
@@ -38,10 +37,7 @@ internal class ViewCollisionContext {
 
     fun getGlobalMatrix(view: View, out: Matrix): Matrix {
         out.copyFrom(view.localMatrix)
-        // @TODO: This is a hack
-        if (view is RectBase) {
-            out.pretranslate(-view.anchorDispX, -view.anchorDispY)
-        }
+        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
         out.multiply(out, view.parent?.globalMatrix ?: ident)
         //return view.globalMatrix
         return out

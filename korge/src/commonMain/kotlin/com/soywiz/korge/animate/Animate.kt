@@ -12,6 +12,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
@@ -95,15 +96,19 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 		}
 	}
 
-	override fun hitTest(x: Double, y: Double): View? {
-		val sLeft = dx.toDouble()
-		val sTop = dy.toDouble()
-		val sRight = sLeft + texWidth
-		val sBottom = sTop + texHeight
-		return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) &&
-			(symbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) != false)
-		) this else null
-	}
+    override var hitShape: VectorPath? = null
+        get() = field ?: symbol.path
+        set(value) { field = value }
+
+    //override fun hitTest(x: Double, y: Double): View? {
+	//	val sLeft = dx.toDouble()
+	//	val sTop = dy.toDouble()
+	//	val sRight = sLeft + texWidth
+	//	val sBottom = sTop + texHeight
+	//	return if (checkGlobalBounds(x, y, sLeft, sTop, sRight, sBottom) &&
+	//		(symbol.path?.containsPoint(globalToLocalX(x, y), globalToLocalY(x, y)) != false)
+	//	) this else null
+	//}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(dx, dy, texWidth, texHeight)

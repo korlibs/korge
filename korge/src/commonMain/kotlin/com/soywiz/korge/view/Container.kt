@@ -193,21 +193,6 @@ open class Container : View(true) {
 		}
 	}
 
-	/**
-	 * Recursively finds the [View] displayed the given `x`, `y` coordinates.
-	 *
-	 * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
-	 */
-	override fun hitTest(x: Double, y: Double): View? {
-        _children?.fastForEachReverse { child ->
-			if (child.visible) {
-				val res = child.hitTest(x, y)
-				if (res != null) return res
-			}
-		}
-		return null
-	}
-
 	private val bb = BoundsBuilder()
 	private val tempRect = Rectangle()
 
