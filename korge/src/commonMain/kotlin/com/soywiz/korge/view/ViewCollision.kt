@@ -112,7 +112,7 @@ fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, k
 }
 
 fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = null, callback: View.(View) -> Unit): Cancellable {
-    return onCollision(filter, root, kind = CollisionKind.GLOBAL_RECT, callback = callback)
+    return onCollision(filter, root, kind = CollisionKind.SHAPE, callback = callback)
 }
 
 /**
