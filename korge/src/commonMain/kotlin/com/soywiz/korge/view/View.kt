@@ -1503,6 +1503,12 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
+inline fun <T : View> T.hitShape(crossinline block: VectorBuilder.() -> Unit): T {
+    buildPath { block() }.also {
+        this.hitShape = it
+    }
+    return this
+}
 
 fun <T : View> T.size(width: Double, height: Double): T {
     this.width = width
