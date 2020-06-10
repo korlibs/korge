@@ -33,7 +33,7 @@ class Stage(val views: Views) : Container()
         out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
     }
 
-    override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
+    //override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
 
     override fun renderInternal(ctx: RenderContext) {
         if (views.clipBorders) {

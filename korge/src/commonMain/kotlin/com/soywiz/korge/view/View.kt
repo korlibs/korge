@@ -17,8 +17,10 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.collections.set
+import kotlin.math.*
 import kotlin.reflect.*
 
 @DslMarker
@@ -78,6 +80,10 @@ abstract class View internal constructor(
     //        }
     //    }
     //}
+
+    internal open val anchorDispX get() = 0.0
+    //@KorgeInternal
+    internal open val anchorDispY get() = 0.0
 
     @KorgeInternal
     @PublishedApi
@@ -915,28 +921,106 @@ abstract class View internal constructor(
     /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
     fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.fastTransformY(x, y)
 
-    /** Determines the view at the global point defined by [x] and [y] if any, or null */
-    open fun hitTest(x: Double, y: Double): View? = null
+    /**
+     * Determines the view at the global point defined by [x] and [y] if any, or null
+     *
+     * When a container, recursively finds the [View] displayed the given global [x], [y] coordinates.
+     *
+     * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
+     */
+    // @TODO: Make this final
+    //open fun hitTest(x: Double, y: Double): View? {
+    fun hitTest(x: Double, y: Double): View? {
+        val res = hitTestInternal(x, y)
+        if (res != null) return res
+        _children?.fastForEachReverse { child ->
+            if (child.visible) {
+                child.hitTest(x, y)?.let {
+                    return it
+                }
+            }
+        }
+        return if (this is Stage) this else null
+    }
+
+    fun hitTestAny(x: Double, y: Double): Boolean = hitTest(x, y) != null
+
+    var hitTestUsingShapes: Boolean? = null
+
+    /** [x] and [y] coordinates are global */
+    protected fun hitTestInternal(x: Double, y: Double): View? {
+        //println("x,y: $x,$y")
+        //println("bounds: ${getGlobalBounds(_localBounds)}")
+        //if (!getGlobalBounds(_localBounds).contains(x, y)) return null
+
+        val bounds = getLocalBounds()
+
+        // Adjusted coordinates to compensate anchoring
+        val llx = globalToLocalX(x, y)
+        val lly = globalToLocalY(x, y)
+
+        if (!bounds.contains(llx, lly)) return null
+
+        val anchorDispX = this.anchorDispX
+        val anchorDispY = this.anchorDispY
+
+        val lx = llx + anchorDispX
+        val ly = lly + anchorDispY
+
+        /*
+        val sLeft = bounds.left
+        val sTop = bounds.top
+        val bwidth = bounds.width
+        val bheight = bounds.height
+
+        val centerX = sLeft + bwidth * 0.5 + anchorDispX
+        val centerY = sTop + bheight * 0.5 + anchorDispY
+
+        val manhattanDist = (lx - centerX).absoluteValue + (ly - centerY).absoluteValue
+        val manhattanDist2 = bwidth * 0.5 + bheight * 0.5
+        //println("($centerX, $centerY)-($lx, $ly): $manhattanDist > $manhattanDist2")
+        if (manhattanDist > manhattanDist2) return null
+        val outerCircleRadius = hypot(bwidth * 0.5, bheight * 0.5)
+        val dist = Point.distance(lx, ly, centerX, centerY)
+        //println("($centerX, $centerY)-($lx, $ly): $dist > $outerCircleRadius")
+        if (dist > outerCircleRadius) return null
+        */
+
+        //println("lx=$lx,ly=$ly")
+        //println("localBounds:$bounds")
+
+
+        if (hitTestUsingShapes == true || (hitTestUsingShapes == null && hitShape != null)) {
+            return if (hitShape!!.containsPoint(lx, ly)) this else null
+        } else {
+            return this
+        }
+    }
 
     //fun hitTest(x: Double, y: Double): View? {
     //	if (!mouseEnabled) return null
     //	return hitTestInternal(x, y)
     //}
 
+    /*
     /** @TODO: Check this */
     @KorgeInternal
     open fun hitTestInternal(x: Double, y: Double): View? {
         val bounds = getLocalBounds()
         return if (checkGlobalBounds(x, y, bounds.left, bounds.top, bounds.right, bounds.bottom)) this else null
     }
+    */
 
+    /*
     /** @TODO: Check this */
     @KorgeInternal
     open fun hitTestBoundingInternal(x: Double, y: Double): View? {
         val bounds = getGlobalBounds()
         return if (bounds.contains(x, y)) this else null
     }
+     */
 
+    /** [x] and [y] are global, while [sLeft], [sTop], [sRight], [sBottom] are local */
     protected fun checkGlobalBounds(
         x: Double,
         y: Double,
@@ -946,6 +1030,12 @@ abstract class View internal constructor(
         sBottom: Double
     ): Boolean = checkLocalBounds(globalToLocalX(x, y), globalToLocalY(x, y), sLeft, sTop, sRight, sBottom)
 
+    //protected fun checkGlobalBounds(
+    //    x: Double,
+    //    y: Double,
+    //    grect: Rectangle
+    //): Boolean = grect.contains(x, y)
+
     protected fun checkLocalBounds(
         lx: Double,
         ly: Double,
@@ -954,6 +1044,12 @@ abstract class View internal constructor(
         sRight: Double,
         sBottom: Double
     ): Boolean = lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
+
+    //protected fun checkLocalBounds(
+    //    lx: Double,
+    //    ly: Double,
+    //    lrect: Rectangle
+    //): Boolean = lrect.contains(lx, ly)
 
     /**
      * Resets the View properties to an identity state.
