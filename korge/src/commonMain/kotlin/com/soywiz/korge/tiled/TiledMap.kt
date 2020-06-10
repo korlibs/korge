@@ -87,7 +87,7 @@ class TiledMap(
 		var opacity = 1.0
 		var offsetx: Double = 0.0
 		var offsety: Double = 0.0
-		val properties = hashMapOf<String, Any>()
+		val properties = hashMapOf<String, Any?>()
 
 		class Patterns : Layer() {
 			//val tilemap = TileMap(Bitmap32(0, 0), )
@@ -95,9 +95,13 @@ class TiledMap(
 		}
 
 		data class ObjectInfo(
-			val id: Int, val name: String, val type: String,
-			val bounds: IRectangleInt,
-			val objprops: Map<String, Any>
+			val id: Int,
+            val gid: Int?,
+            val name: String,
+            val rotation: Double, // in degrees
+            val type: String,
+			val bounds: Rectangle,
+			val objprops: Map<String, Any?>
 		)
 
 		class Objects : Layer() {
@@ -106,13 +110,14 @@ class TiledMap(
 			}
 
 			interface Poly : Object {
-				val points: List<IPoint>
+				val points: List<Point>
 			}
 
+            data class PPoint(override val info: ObjectInfo) : Object
 			data class Rect(override val info: ObjectInfo) : Object
 			data class Ellipse(override val info: ObjectInfo) : Object
-			data class Polyline(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
-			data class Polygon(override val info: ObjectInfo, override val points: List<IPoint>) : Poly
+			data class Polyline(override val info: ObjectInfo, override val points: List<Point>) : Poly
+			data class Polygon(override val info: ObjectInfo, override val points: List<Point>) : Poly
 
 			val objects = arrayListOf<Object>()
 			val objectsById by lazy { objects.associateBy { it.id } }
@@ -304,12 +309,14 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 					is TiledMap.Layer.Objects -> {
 						for (obj in element.children("object")) {
 							val id = obj.int("id")
+                            val rotation = obj.double("rotation")
+                            val gid = obj.intNull("gid")
 							val name = obj.str("name")
 							val type = obj.str("type")
-							val bounds = obj.run { IRectangleInt(int("x"), int("y"), int("width"), int("height")) }
+							val bounds = obj.run { Rectangle(double("x"), double("y"), double("width"), double("height")) }
 							var rkind = RKind.RECT
-							var points = listOf<IPoint>()
-							var objprops: Map<String, Any> = LinkedHashMap()
+							var points = listOf<Point>()
+							var objprops: Map<String, Any?> = LinkedHashMap()
 
 							for (kind in obj.allNodeChildren) {
 								val kindType = kind.nameLC
@@ -322,7 +329,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 										val pointsStr = kind.str("points")
 										points = pointsStr.split(spaces).map {
 											val parts = it.split(',').map { it.trim().toDoubleOrNull() ?: 0.0 }
-											IPoint(parts[0], parts[1])
+											Point(parts[0], parts[1])
 										}
 
 										rkind = (if (kindType == "polyline") RKind.POLYLINE else RKind.POLYGON)
@@ -330,12 +337,16 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 									kindType == "properties" -> {
 										objprops = kind.parseProperties()
 									}
+                                    kindType == "point" -> {
+                                        rkind = RKind.POINT
+                                    }
 									else -> invalidOp("Invalid object kind '$kindType'")
 								}
 							}
 
-							val info = TiledMap.Layer.ObjectInfo(id, name, type, bounds, objprops)
+							val info = TiledMap.Layer.ObjectInfo(id, gid, name, rotation, type, bounds, objprops)
 							layer.objects += when (rkind) {
+                                RKind.POINT -> TiledMap.Layer.Objects.PPoint(info)
 								RKind.RECT -> TiledMap.Layer.Objects.Rect(info)
 								RKind.ELLIPSE -> TiledMap.Layer.Objects.Ellipse(info)
 								RKind.POLYLINE -> TiledMap.Layer.Objects.Polyline(info, points)
@@ -424,5 +435,5 @@ suspend fun VfsFile.readTiledMap(
 }
 
 private enum class RKind {
-	RECT, ELLIPSE, POLYLINE, POLYGON
+	POINT, RECT, ELLIPSE, POLYLINE, POLYGON
 }
