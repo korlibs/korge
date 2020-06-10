@@ -348,25 +348,30 @@ abstract class View internal constructor(
         }
 
     // region Properties
-    private val _props = linkedMapOf<String, String>()
+    private val _props = linkedMapOf<String, Any?>()
 
     /** Immutable map of custom String properties attached to this view. Should use [hasProp], [getProp] and [addProp] methods to control this */
-    val props: Map<String, String> get() = _props
+    val props: Map<String, Any?> get() = _props
 
     /** Checks if this view has the [key] property */
     fun hasProp(key: String) = key in _props
 
     /** Gets the [key] property of this view as a [String] or [default] when not found */
-    fun getPropString(key: String, default: String = "") = _props[key] ?: default
-
-    /** Gets the [key] property of this view as an [Int] or [default] when not found */
-    fun getPropInt(key: String, default: Int = 0) = _props[key]?.toIntOrNull() ?: default
+    fun getPropString(key: String, default: String = "") = _props[key]?.toString() ?: default
 
     /** Gets the [key] property of this view as an [Double] or [default] when not found */
-    fun getPropDouble(key: String, default: Double = 0.0) = _props[key]?.toDoubleOrNull() ?: default
+    fun getPropDouble(key: String, default: Double = 0.0): Double {
+        val value = _props[key]
+        if (value is Number) return value.toDouble()
+        if (value is String) return value.toDoubleOrNull() ?: default
+        return default
+    }
+
+    /** Gets the [key] property of this view as an [Int] or [default] when not found */
+    fun getPropInt(key: String, default: Int = 0) = getPropDouble(key, default.toDouble()).toInt()
 
     /** Adds or replaces the property [key] with the [value] */
-    fun addProp(key: String, value: String) {
+    fun addProp(key: String, value: Any?) {
         _props[key] = value
         //val componentGen = views.propsTriggers[key]
         //if (componentGen != null) {
@@ -375,7 +380,7 @@ abstract class View internal constructor(
     }
 
     /** Adds a list of [values] properties at once */
-    fun addProps(values: Map<String, String>) {
+    fun addProps(values: Map<String, Any?>) {
         for (pair in values) addProp(pair.key, pair.value)
     }
     // endregion
@@ -1406,7 +1411,8 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
-inline fun <T : View> T.name(name: String): T = this.also { it.name = name }
+inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
+inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 
 fun <T : View> T.size(width: Double, height: Double): T {
     this.width = width
