@@ -933,11 +933,7 @@ abstract class View internal constructor(
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
-    // @TODO: Make this final
-    //open fun hitTest(x: Double, y: Double): View? {
     fun hitTest(x: Double, y: Double): View? {
-        val res = hitTestInternal(x, y)
-        if (res != null) return res
         _children?.fastForEachReverse { child ->
             if (child.visible) {
                 child.hitTest(x, y)?.let {
@@ -945,6 +941,8 @@ abstract class View internal constructor(
                 }
             }
         }
+        val res = hitTestInternal(x, y)
+        if (res != null) return res
         return if (this is Stage) this else null
     }
 
