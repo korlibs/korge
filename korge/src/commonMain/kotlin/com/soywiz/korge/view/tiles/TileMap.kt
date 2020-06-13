@@ -12,6 +12,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map, tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
@@ -46,6 +47,8 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 	private val t0 = Point(0, 0)
 	private val tt0 = Point(0, 0)
 	private val tt1 = Point(0, 0)
+    private val tt2 = Point(0, 0)
+    private val tt3 = Point(0, 0)
 
     // Analogous to Bitmap32.locking
     fun lock() = _map.lock()
@@ -74,22 +77,34 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
         // @TODO: Bounds in clipped view
         val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
         val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
+        val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
+        val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mx0 = ((pp0.x / tileWidth) - 1).toInt()
         val mx1 = ((pp1.x / tileWidth) + 1).toInt()
+        val mx2 = ((pp2.x / tileWidth) + 1).toInt()
+        val mx3 = ((pp3.x / tileWidth) + 1).toInt()
         val my0 = ((pp0.y / tileHeight) - 1).toInt()
         val my1 = ((pp1.y / tileHeight) + 1).toInt()
+        val my2 = ((pp2.y / tileHeight) + 1).toInt()
+        val my3 = ((pp3.y / tileHeight) + 1).toInt()
 
-        val yheight = my1 - my0
-        val xwidth = mx1 - mx0
+        val ymin = min(min(min(my0, my1), my2), my3)
+        val ymax = max(max(max(my0, my1), my2), my3)
+        val xmin = min(min(min(mx0, mx1), mx2), mx3)
+        val xmax = max(max(max(mx0, mx1), mx2), mx3)
+
+        val yheight = ymax - ymin
+        val xwidth = xmax - xmin
         val ntiles = xwidth * yheight
         val allocTiles = ntiles.nextPowerOfTwo
+        //println("(mx0=$mx0, my0=$my0)-(mx1=$mx1, my1=$my1)-(mx2=$mx2, my2=$my2)-(mx3=$mx3, my3=$my3) ($xwidth, $yheight)")
         infos.fastForEach { infosPool.free(it) }
         verticesPerTex.clear()
         infos.clear()
 
         var count = 0
-        for (y in my0 until my1) {
-            for (x in mx0 until mx1) {
+        for (y in ymin until ymax) {
+            for (x in xmin until xmax) {
                 val rx = repeatX.get(x, intMap.width)
                 val ry = repeatY.get(y, intMap.height)
 
