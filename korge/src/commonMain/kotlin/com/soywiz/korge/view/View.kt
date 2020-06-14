@@ -1120,16 +1120,39 @@ abstract class View internal constructor(
      * Allows to define an [out] matrix that will hold the result to prevent allocations.
      */
     fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix {
-        var current: View? = this
-        out.identity()
+        return getConcatMatrix(target, true, out)
+    }
 
-        while (current != null) {
-            //out.premultiply(current.localMatrix)
-            out.multiply(out, current.localMatrix)
-            if (current == target) break
-            current = current.parent
+    fun getConcatMatrix(target: View, inclusive: Boolean, out: Matrix = Matrix()): Matrix {
+        val thisAncestor = this.hasAncestor(target)
+        val targetAncestor = target.hasAncestor(this)
+
+        when {
+            this == target -> {
+                out.identity()
+            }
+            !thisAncestor && targetAncestor -> {
+                target.getConcatMatrix(this, inclusive, out)
+                //println("OUT: $out")
+                out.invert()
+            }
+            // Unrelated
+            !thisAncestor && !targetAncestor -> {
+                out.identity()
+            }
+            else -> {
+                var current: View? = this
+                out.identity()
+
+                while (current != null) {
+                    //out.premultiply(current.localMatrix)
+                    if (current == target && !inclusive) break
+                    out.multiply(out, current.localMatrix)
+                    if (current == target) break
+                    current = current.parent
+                }
+            }
         }
-
         return out
     }
 
@@ -1140,9 +1163,10 @@ abstract class View internal constructor(
     fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
+    private val boundsTemp = Matrix()
     fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
         //val concat = (parent ?: this).getConcatMatrix(target ?: this)
-        val concat = (this).getConcatMatrix(target ?: this)
+        val concat = (this).getConcatMatrix(target ?: this, inclusive = false, out = boundsTemp)
         val bb = BoundsBuilder()
 
         getLocalBoundsInternal(out)
@@ -1652,8 +1676,9 @@ fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(othe
  * Chainable method returning this that sets [View.x] so that
  * [this] View's left side is aligned with the [other] View's left side
  */
+// @TODO: What about rotations? we might need to adjust y too?
 fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
-    x = other.x + padding
+    x = other.getBounds(this).left + padding
     return this
 }
 
@@ -1662,7 +1687,7 @@ fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
  * [this] View's left side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
-    x = other.x + other.width + padding
+    x = other.getBounds(this).right + padding
     return this
 }
 
@@ -1671,7 +1696,7 @@ fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's right side is aligned with the [other] View's left side
  */
 fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
-    x = other.x - width - padding
+    x = other.getBounds(this).left - width - padding
     return this
 }
 
@@ -1680,7 +1705,7 @@ fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
  * [this] View's right side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
-    x = other.x + other.width - width - padding
+    x = other.getBounds(this).right - width - padding
     return this
 }
 
@@ -1689,7 +1714,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.y + padding
+    y = other.getBounds(this).top + padding
     return this
 }
 
@@ -1698,7 +1723,7 @@ fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.y + other.height + padding
+    y = other.getBounds(this).bottom + padding
     return this
 }
 
@@ -1707,7 +1732,7 @@ fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.y - height - padding
+    y = other.getBounds(this).top - height - padding
     return this
 }
 
@@ -1716,7 +1741,7 @@ fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.y + other.height - height - padding
+    y = other.getBounds(this).bottom - height - padding
     return this
 }
 
