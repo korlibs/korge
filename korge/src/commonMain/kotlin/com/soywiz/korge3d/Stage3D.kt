@@ -7,8 +7,13 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
-inline fun Container.scene3D(views: Views3D = Views3D(), callback: Stage3D.() -> Unit = {}): Stage3DView =
-	Stage3DView(Stage3D(views).apply(callback)).addTo(this)
+inline fun Container.scene3D(views: Views3D = Views3D(), callback: Stage3D.() -> Unit = {}): Stage3DView {
+    val stage3D = Stage3D(views)
+    val view = Stage3DView(stage3D)
+    view.addTo(this)
+    stage3D.apply(callback)
+    return view
+}
 
 @Korge3DExperimental
 class Views3D {

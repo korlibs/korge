@@ -5,7 +5,7 @@ inline fun Container.clipContainer(width: Number, height: Number, callback: @Vie
     clipContainer(width.toDouble(), height.toDouble(), callback)
 
 inline fun Container.clipContainer(width: Double, height: Double, callback: @ViewsDslMarker ClipContainer.() -> Unit = {}) =
-    ClipContainer(width, height).addTo(this).apply(callback)
+    ClipContainer(width, height).addTo(this, callback)
 
 open class ClipContainer(
     width: Double = 100.0,

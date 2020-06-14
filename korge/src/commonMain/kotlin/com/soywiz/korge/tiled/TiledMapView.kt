@@ -8,7 +8,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, callback: @ViewsDslMarker TiledMapView.() -> Unit = {}) =
-	TiledMapView(tiledMap, showShapes).addTo(this).apply(callback)
+	TiledMapView(tiledMap, showShapes).addTo(this, callback)
 
 class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Container() {
 	init {

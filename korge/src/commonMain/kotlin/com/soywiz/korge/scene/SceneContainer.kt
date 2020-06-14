@@ -2,7 +2,6 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
@@ -21,7 +20,7 @@ inline fun Container.sceneContainer(
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
 	callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views, defaultTransition, name).addTo(this).apply(callback)
+): SceneContainer = SceneContainer(views, defaultTransition, name).addTo(this, callback)
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.

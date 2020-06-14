@@ -115,4 +115,4 @@ open class EffectView : Container() {
 @KorgeDeprecated
 @Deprecated("Use View.filter instead")
 inline fun Container.effectView(callback: @ViewsDslMarker EffectView.() -> Unit = {}) =
-	EffectView().addTo(this).apply(callback)
+	EffectView().addTo(this, callback)

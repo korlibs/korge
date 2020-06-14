@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.korge.component.docking.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.tween.get
@@ -112,7 +113,52 @@ class ViewsTest : ViewsForTesting() {
         val b = Container()
         assertEquals(a, View.commonAncestor(a, a))
         assertEquals(null, View.commonAncestor(a, null))
+        assertEquals(null, View.commonAncestor(null, a))
         assertEquals(null, View.commonAncestor(a, b))
+        assertEquals(null, View.commonAncestor(b, a))
+    }
+
+    @Test
+    fun alignTest() = viewsTest {
+        fixedSizeContainer(1280, 720) {
+            scale(0.5)
+            val rootView = this
+            x = 32.0
+            y = -100.0
+            val zoomOut = solidRect(100, 100, Colors.RED) {
+                anchor(0.5, 1.0)
+                alignBottomToBottomOf(rootView, 150.0)
+                alignRightToRightOf(rootView, 60.0)
+            }
+            val zoomIn = solidRect(100, 100, Colors.RED) {
+                anchor(0.5, 1.0)
+                println("addZoomMap")
+                println(zoomOut.x)
+                println(zoomOut.getBounds(this))
+                alignLeftToLeftOf(zoomOut)
+                alignBottomToTopOf(zoomOut, 10.0)
+            }
+        }
+    }
+
+    @Test
+    fun alignTest2a() = viewsTest {
+        val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
+        val rect2 = solidRect(83, 65, Colors.RED)
+        rect2.alignTopToTopOf(rect1, 3.0).also { assertEquals(53.0, rect2.y) }
+        rect2.alignBottomToTopOf(rect1, 3.0).also { assertEquals(-18.0, rect2.y) }
+        rect2.alignBottomToBottomOf(rect1, 3.0).also { assertEquals(82.0, rect2.y) }
+        rect2.alignTopToBottomOf(rect1, 3.0).also { assertEquals(153.0, rect2.y) }
+    }
+
+    @Test
+    fun alignTest2b() = viewsTest {
+        val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
+        val rect2 = solidRect(83, 65, Colors.RED)
+        rect2.alignLeftToLeftOf(rect1, 3.0).also { assertEquals(203.0, rect2.x) }
+        rect2.alignRightToLeftOf(rect1, 3.0).also { assertEquals(114.0, rect2.x) }
+        rect2.alignRightToRightOf(rect1, 3.0).also { assertEquals(514.0, rect2.x) }
+        rect2.alignLeftToRightOf(rect1, 3.0).also { assertEquals(603.0, rect2.x) }
     }
 
     @Test
@@ -122,6 +168,17 @@ class ViewsTest : ViewsForTesting() {
         a += b
         assertEquals(a, View.commonAncestor(a, b))
         assertEquals(a, View.commonAncestor(b, a))
+    }
+
+    @Test
+    fun commonAncestorSiblings() = viewsTest {
+        val a = Container()
+        val b = Container()
+        val c = Container()
+        a += b
+        a += c
+        assertEquals(a, View.commonAncestor(b, c))
+        assertEquals(a, View.commonAncestor(c, b))
     }
 
     @Test
@@ -138,6 +195,21 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(400, c.width.toInt())
         assertEquals(100, c.height.toInt())
         assertEquals(2.0, c.scaleX)
+    }
+
+    @Test
+    // This test is verified against AS3
+    fun testSize2() = viewsTest {
+        val container = Container();
+        container.x = 100.0
+        container.y = 100.0
+        this.addChild(container)
+        val contents = Graphics().apply {
+            fill(Colors.RED) { circle(0.0,0.0,100.0) }
+        }
+        container.addChild(contents)
+        assertEquals(Rectangle(-100, -100, 200, 200), contents.getBounds(container)) // (x=-100, y=-100, w=200, h=200)
+        assertEquals(Rectangle(0, 0, 200, 200), contents.getBounds(this)) // (x=0, y=0, w=200, h=200)
     }
 
     @Test

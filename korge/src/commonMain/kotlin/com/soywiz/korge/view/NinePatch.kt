@@ -8,7 +8,7 @@ import kotlin.math.*
 inline fun Container.ninePatch(
 	tex: BmpSlice, width: Double, height: Double, left: Double, top: Double, right: Double, bottom: Double,
 	callback: @ViewsDslMarker NinePatch.() -> Unit = {}
-) = NinePatch(tex, width, height, left, top, right, bottom).addTo(this).apply(callback)
+) = NinePatch(tex, width, height, left, top, right, bottom).addTo(this, callback)
 
 class NinePatch(
 	var tex: BmpSlice,

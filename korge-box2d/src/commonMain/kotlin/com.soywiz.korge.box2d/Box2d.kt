@@ -15,7 +15,7 @@ import kotlin.math.*
  * See [WorldView] for more details.
  */
 inline fun Container.worldView(world: World = World(Vec2(0f, -10f)), callback: WorldView.() -> Unit = {}): WorldView =
-    WorldView(world).addTo(this).apply(callback)
+    WorldView(world).addTo(this, callback)
 
 /**
  * [View] with a Box2d [World] attached.

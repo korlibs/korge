@@ -27,7 +27,7 @@ inline fun Container.roundRect(
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
     callback: @ViewsDslMarker RoundRect.() -> Unit = {}
-) = RoundRect(width, height, rx, ry, color, autoScaling).addTo(this).apply(callback)
+) = RoundRect(width, height, rx, ry, color, autoScaling).addTo(this, callback)
 
 /**
  * A Rect [View] with rounded corners of size [width] and [height] with the initial [color].

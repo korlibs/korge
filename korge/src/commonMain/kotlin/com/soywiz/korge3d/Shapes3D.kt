@@ -14,7 +14,7 @@ inline fun Container3D.box(
     height: Double = width,
     depth: Double = height,
     callback: Cube3D.() -> Unit = {}
-): Cube3D = Cube3D(width, height, depth).apply(callback).addTo(this)
+): Cube3D = Cube3D(width, height, depth).addTo(this, callback)
 
 @Korge3DExperimental
 class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWithMesh3D(mesh.copy()) {

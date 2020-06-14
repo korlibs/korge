@@ -81,4 +81,4 @@ inline fun Container.blurEffectView(
 	radius: Double = 10.0,
 	callback: @ViewsDslMarker BlurEffectView.() -> Unit = {}
 ) =
-	BlurEffectView(radius).addTo(this).apply(callback)
+	BlurEffectView(radius).addTo(this, callback)

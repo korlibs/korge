@@ -10,7 +10,7 @@ fun Container3D.light(
 	linearAttenuation: Double = 0.0,
 	quadraticAttenuation: Double = 0.00111109,
 	callback: Light3D.() -> Unit = {}
-) = Light3D(color, constantAttenuation, linearAttenuation, quadraticAttenuation).apply(callback).addTo(this)
+) = Light3D(color, constantAttenuation, linearAttenuation, quadraticAttenuation).addTo(this, callback)
 
 @Korge3DExperimental
 open class Light3D(
