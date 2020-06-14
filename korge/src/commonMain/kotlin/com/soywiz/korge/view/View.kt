@@ -1678,7 +1678,7 @@ fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(othe
  */
 // @TODO: What about rotations? we might need to adjust y too?
 fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).left + padding
+    x = other.getBounds(this).left + 0.0 + padding
     return this
 }
 
@@ -1687,7 +1687,7 @@ fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
  * [this] View's left side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).right + padding
+    x = other.getBounds(this).right + 0.0 + padding
     return this
 }
 
@@ -1714,7 +1714,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).top + padding
+    y = other.getBounds(this).top + 0.0 + padding
     return this
 }
 
@@ -1723,7 +1723,7 @@ fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).bottom + padding
+    y = other.getBounds(this).bottom + 0.0 + padding
     return this
 }
 

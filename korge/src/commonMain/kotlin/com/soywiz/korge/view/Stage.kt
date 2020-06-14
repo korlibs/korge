@@ -30,7 +30,7 @@ class Stage(val views: Views) : Container()
     val mouseY get() = localMouseY(views)
 
     override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setTo(views.actualVirtualLeft, views.actualVirtualTop, views.actualVirtualWidth, views.actualVirtualHeight)
+        out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)
     }
 
     //override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
