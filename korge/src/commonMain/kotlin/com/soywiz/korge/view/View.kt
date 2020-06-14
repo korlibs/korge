@@ -1198,8 +1198,8 @@ abstract class View internal constructor(
 
     fun getLocalBounds(doAnchoring: Boolean, out: Rectangle = _localBounds) = getLocalBounds(out).also {
         if (!doAnchoring) {
-            it.x -= anchorDispX
-            it.y -= anchorDispY
+            it.x += anchorDispX
+            it.y += anchorDispY
         }
     }
 
@@ -1687,14 +1687,17 @@ fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
 fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
-    val parent = this.parent
+    //val parent = this.parent
+    //val bounds = other.getBoundsNoAnchoring(this)
     val bounds = other.getBoundsNoAnchoring(parent)
-    val ratioM1_1 = ratio * 2 - 1
+    //bounds.setTo(other.x, other.y, other.unscaledWidth, other.unscaledHeight)
+    val ratioM1_1 = (ratio * 2 - 1)
+    val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
     val iratio = if (inside) ratio else 1.0 - ratio
     if (doX) {
-        x = (bounds.left + bounds.width * ratio) - (width * iratio) - (padding * ratioM1_1)
+        x = (bounds.x + (bounds.width * ratio)) - (width * iratio) - (padding * rratioM1_1)
     } else {
-        y = (bounds.top + bounds.height * ratio) - (height * iratio) - (padding * ratioM1_1)
+        y = (bounds.y + (bounds.height * ratio)) - (height * iratio) - (padding * rratioM1_1)
     }
     return this
 }
@@ -1745,7 +1748,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    return alignY(other, 1.0, inside = true, padding = padding)
+    return alignY(other, 0.0, inside = true, padding = padding)
 }
 
 /**

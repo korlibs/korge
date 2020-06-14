@@ -142,15 +142,23 @@ class ViewsTest : ViewsForTesting() {
     }
 
     @Test
-    fun alignTest2() = viewsTest {
+    fun alignTest2a() = viewsTest {
         val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
-        val rect2 = solidRect(100, 100, Colors.RED)
-        run {
-            rect2.alignTopToTopOf(rect1)
-            assertEquals(50.0, rect2.y)
-            rect2.alignBottomToTopOf(rect1)
-            assertEquals(50.0 - 100, rect2.y)
-        }
+        val rect2 = solidRect(83, 65, Colors.RED)
+        rect2.alignTopToTopOf(rect1, 3.0).also { assertEquals(53.0, rect2.y) }
+        rect2.alignBottomToTopOf(rect1, 3.0).also { assertEquals(-18.0, rect2.y) }
+        rect2.alignBottomToBottomOf(rect1, 3.0).also { assertEquals(82.0, rect2.y) }
+        rect2.alignTopToBottomOf(rect1, 3.0).also { assertEquals(153.0, rect2.y) }
+    }
+
+    @Test
+    fun alignTest2b() = viewsTest {
+        val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
+        val rect2 = solidRect(83, 65, Colors.RED)
+        rect2.alignLeftToLeftOf(rect1, 3.0).also { assertEquals(203.0, rect2.x) }
+        rect2.alignRightToLeftOf(rect1, 3.0).also { assertEquals(114.0, rect2.x) }
+        rect2.alignRightToRightOf(rect1, 3.0).also { assertEquals(514.0, rect2.x) }
+        rect2.alignLeftToRightOf(rect1, 3.0).also { assertEquals(603.0, rect2.x) }
     }
 
     @Test
