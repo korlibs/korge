@@ -8,7 +8,7 @@ inline fun Container.solidRect(width: Number, height: Number, color: RGBA, callb
     = solidRect(width.toDouble(), height.toDouble(), color, callback)
 
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA, callback: @ViewsDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width, height, color).addTo(this).apply(callback)
+    = SolidRect(width, height, color).addTo(this, callback)
 
 /**
  * A Rect [RectBase] [View] of size [width] and [height] with the initial color, [color].

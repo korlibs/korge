@@ -35,7 +35,7 @@ inline fun Container.text2(
     noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
     block: Text2.() -> Unit = {}
 ): Text2
-    = Text2(text, fontSize, color, font, horizontalAlign, verticalAlign, renderer).addTo(this).also(block)
+    = Text2(text, fontSize, color, font, horizontalAlign, verticalAlign, renderer).addTo(this, block)
 
 @KorgeExperimental
 open class Text2(

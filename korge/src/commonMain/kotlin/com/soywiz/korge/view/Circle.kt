@@ -14,7 +14,7 @@ inline fun Container.circle(
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
     callback: Circle.() -> Unit = {}
-): Circle = Circle(radius, color, autoScaling).addTo(this).apply(callback)
+): Circle = Circle(radius, color, autoScaling).addTo(this, callback)
 
 /**
  * A [Graphics] class that automatically keeps a circle shape with [radius] and [color].

@@ -15,7 +15,7 @@ inline fun Container.text(
 	color: RGBA = Colors.WHITE,
 	font: BitmapFont = Fonts.defaultFont,
 	callback: @ViewsDslMarker Text.() -> Unit = {}
-) = Text(text, textSize = textSize, color = color, font = font).addTo(this).apply(callback)
+) = Text(text, textSize = textSize, color = color, font = font).addTo(this, callback)
 
 class Text : View(), IText, IHtml {
 	companion object {

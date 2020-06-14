@@ -32,4 +32,4 @@ inline fun Container.colorMatrixEffectView(
 	matrix: Matrix3D = Matrix3D(),
 	callback: @ViewsDslMarker ColorMatrixEffectView.() -> Unit = {}
 ) =
-	ColorMatrixEffectView(matrix).addTo(this).apply(callback)
+	ColorMatrixEffectView(matrix).addTo(this, callback)

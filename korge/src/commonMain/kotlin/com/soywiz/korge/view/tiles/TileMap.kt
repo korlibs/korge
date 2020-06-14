@@ -10,15 +10,14 @@ import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map, tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
+	TileMap(map, tileset).repeat(repeatX, repeatY).addTo(this, callback)
 
 inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewsDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map.toIntArray2(), tileset).addTo(this).repeat(repeatX, repeatY).apply(callback)
+	TileMap(map.toIntArray2(), tileset).repeat(repeatX, repeatY).addTo(this, callback)
 
 @OptIn(KorgeInternal::class)
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {

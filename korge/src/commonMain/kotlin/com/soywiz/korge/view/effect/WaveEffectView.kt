@@ -50,4 +50,4 @@ class WaveEffectView : EffectView() {
 @KorgeDeprecated
 @Deprecated("Use View.filter instead")
 inline fun Container.waveEffectView(callback: @ViewsDslMarker WaveEffectView.() -> Unit = {}) =
-	WaveEffectView().addTo(this).apply(callback)
+	WaveEffectView().addTo(this, callback)

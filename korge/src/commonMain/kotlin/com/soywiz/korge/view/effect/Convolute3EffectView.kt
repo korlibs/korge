@@ -43,4 +43,4 @@ inline fun Container.convolute3EffectView(
 	kernel: Matrix3D = Matrix3D(),
 	callback: @ViewsDslMarker Convolute3EffectView.() -> Unit = {}
 ) =
-	Convolute3EffectView(kernel).addTo(this).apply(callback)
+	Convolute3EffectView(kernel).addTo(this, callback)

@@ -11,10 +11,9 @@ import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
-import kotlin.math.*
 
-inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).apply(callback)
-inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this).apply(callback)
+inline fun Container.graphics(autoScaling: Boolean = false, callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback)
+inline fun Container.sgraphics(callback: Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback)
 
 open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false

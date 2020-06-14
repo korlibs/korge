@@ -15,7 +15,7 @@ inline fun Container.ellipse(
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
     callback: Ellipse.() -> Unit = {}
-): Ellipse = Ellipse(radiusX, radiusY, color, autoScaling).addTo(this).apply(callback)
+): Ellipse = Ellipse(radiusX, radiusY, color, autoScaling).addTo(this, callback)
 
 /**
  * A [Graphics] class that automatically keeps a ellipse shape with [radiusX], [radiusY] and [color].

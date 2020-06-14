@@ -1,17 +1,14 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.kds.iterators.fastForEachReverse
 import com.soywiz.kmem.*
-import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
-import kotlin.reflect.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(callback: @ViewsDslMarker Container.() -> Unit = {}) =
-	Container().addTo(this).apply(callback)
+	Container().addTo(this, callback)
 
 // For Flash compatibility
 //open class Sprite : Container()
@@ -234,3 +231,6 @@ operator fun View?.plusAssign(view: View?) {
 	val container = this as? Container?
 	if (view != null) container?.addChild(view)
 }
+
+inline fun <T : View> T.addTo(instance: Container, callback: @ViewsDslMarker T.() -> Unit = {}) =
+    this.addTo(instance).apply(callback)

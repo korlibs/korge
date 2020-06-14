@@ -226,3 +226,5 @@ fun <T : View3D> T.addTo(container: Container3D): T {
 	container.addChild(this)
     return this
 }
+
+inline fun <T : View3D> T.addTo(container: Container3D, callback: T.() -> Unit): T = addTo(container).apply(callback)

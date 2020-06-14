@@ -5,7 +5,7 @@ import com.soywiz.korge.render.*
 inline fun Container.scaleView(
 	width: Int, height: Int, scale: Double = 2.0, filtering: Boolean = false,
 	callback: @ViewsDslMarker Container.() -> Unit = {}
-) = ScaleView(width, height, scale, filtering).addTo(this).apply(callback)
+) = ScaleView(width, height, scale, filtering).addTo(this, callback)
 
 class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boolean = false) :
 	FixedSizeContainer(), View.Reference {

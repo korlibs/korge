@@ -3,13 +3,12 @@ package com.soywiz.korge.view
 import com.soywiz.klock.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
 /**
  * Creates a new [Camera] and attaches to [this] [Container]. The [callback] argument is called with the [Camera] injected as this to be able to configure the camera.
  */
-inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit = {}): Camera = Camera().addTo(this).apply(callback)
+inline fun Container.camera(callback: @ViewsDslMarker Camera.() -> Unit = {}): Camera = Camera().addTo(this, callback)
 
 /**
  * A [Camera] is a [Container] that allows to center its position using [setTo] and [tweenTo] methods.

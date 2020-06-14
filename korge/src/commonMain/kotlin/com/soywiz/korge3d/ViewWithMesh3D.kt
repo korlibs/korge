@@ -8,7 +8,7 @@ import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
 inline fun Container3D.mesh(mesh: Mesh3D, callback: ViewWithMesh3D.() -> Unit = {}): ViewWithMesh3D {
-	return ViewWithMesh3D(mesh).apply(callback).addTo(this)
+	return ViewWithMesh3D(mesh).addTo(this, callback)
 }
 
 @Korge3DExperimental

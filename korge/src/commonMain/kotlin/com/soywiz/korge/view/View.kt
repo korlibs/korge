@@ -21,6 +21,7 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.collections.set
 import kotlin.math.*
+import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 @DslMarker
@@ -1124,6 +1125,21 @@ abstract class View internal constructor(
     }
 
     fun getConcatMatrix(target: View, inclusive: Boolean, out: Matrix = Matrix()): Matrix {
+        if (inclusive) {
+            out.multiply(target.globalMatrixInv, this.globalMatrix)
+        } else {
+            out.multiply(this.globalMatrix, target.globalMatrixInv)
+            out.multiply(target.localMatrix, out)
+            /*
+            val mat = target.parent?.globalMatrixInv
+            if (mat != null) {
+                out.premultiply(mat)
+            }
+             */
+        }
+        /*
+        globalMatrix
+        val common =
         val thisAncestor = this.hasAncestor(target)
         val targetAncestor = target.hasAncestor(this)
 
@@ -1131,12 +1147,15 @@ abstract class View internal constructor(
             this == target -> {
                 out.identity()
             }
-            !thisAncestor && targetAncestor -> {
-                target.getConcatMatrix(this, inclusive, out)
+            thisAncestor && !targetAncestor -> {
+                println("!!!!!!!!!!!!!!! Inverted!")
+                out.identity()
+                val target2 = if (inclusive) target else target.parent
+                target2?.getConcatMatrix(this, true, out)
                 //println("OUT: $out")
                 out.invert()
             }
-            // Unrelated
+            // Unrelated, let's use the identity Matrix
             !thisAncestor && !targetAncestor -> {
                 out.identity()
             }
@@ -1153,6 +1172,7 @@ abstract class View internal constructor(
                 }
             }
         }
+         */
         return out
     }
 
@@ -1343,6 +1363,10 @@ fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
  */
 fun View.hasAncestor(ancestor: View): Boolean {
     return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
+}
+
+fun View?.commonAncestor(ancestor: View?): View? {
+    return View.commonAncestor(this, ancestor)
 }
 
 /**

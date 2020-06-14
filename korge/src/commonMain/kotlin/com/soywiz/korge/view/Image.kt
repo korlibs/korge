@@ -1,16 +1,15 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 inline fun Container.image(
 	texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Image.() -> Unit = {}
-): Image = Image(texture, anchorX, anchorY).addTo(this).apply(callback)
+): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.image(
 	texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Image.() -> Unit = {}
-): Image = Image(texture, anchorX, anchorY).addTo(this).apply(callback)
+): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 //typealias Sprite = Image
 

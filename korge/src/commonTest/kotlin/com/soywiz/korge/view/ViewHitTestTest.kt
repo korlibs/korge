@@ -2,10 +2,8 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.circle
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class ViewHitTestTest : ViewsForTesting() {
@@ -41,7 +39,7 @@ inline fun Container.polygon(
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
     callback: Polygon.() -> Unit = {}
-): Polygon = Polygon(radius, sides, color, autoScaling).addTo(this).apply(callback)
+): Polygon = Polygon(radius, sides, color, autoScaling).addTo(this, callback)
 
 class Polygon(
     radius: Double = 16.0,
