@@ -131,17 +131,22 @@ abstract class View internal constructor(
             var r: View? = right
             var lCount = l.ancestorCount
             var rCount = r.ancestorCount
-            while (lCount != rCount) {
-                if (lCount > rCount) {
+            //println("commonAncestor: $lCount, $rCount")
+            while (lCount >= 0 || rCount >= 0) {
+                if (l == r) return l
+                val ldec = lCount >= rCount
+                val rdec = rCount >= lCount
+
+                if (ldec) {
                     lCount--
                     l = l?.parent
-                } else {
+                }
+                if (rdec) {
                     rCount--
                     r = r?.parent
                 }
-                if (lCount < 0 && rCount < 0) break
             }
-            return if (l == r) l else null
+            return null
         }
     }
 
@@ -297,25 +302,24 @@ abstract class View internal constructor(
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var width: Double
-        get() = getLocalBounds().width
-        set(value) {
-            scaleX = value / this.getLocalBounds().width
-        }
+        get() = scaledWidth
+        set(value) { scaledWidth = value }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var height: Double
-        get() = getLocalBounds().height
-        set(value) {
-            scaleY = value / this.getLocalBounds().height
-        }
+        get() = scaledHeight
+        set(value) { scaledHeight = value }
+
+    val unscaledWidth: Double get() = getLocalBounds().width
+    val unscaledHeight: Double get() = getLocalBounds().height
 
     var scaledWidth: Double
-        get() = getLocalBounds().width * scaleX
+        get() = unscaledWidth * scaleX
         set(value) {
-            scaleX = value / this.getLocalBounds().width
+            scaleX = value / unscaledWidth
         }
 
     /**
@@ -323,9 +327,9 @@ abstract class View internal constructor(
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     var scaledHeight: Double
-        get() = getLocalBounds().height * scaleY
+        get() = unscaledHeight * scaleY
         set(value) {
-            scaleY = value / this.getLocalBounds().height
+            scaleY = value / unscaledHeight
         }
 
     /**
@@ -1121,58 +1125,20 @@ abstract class View internal constructor(
      * Allows to define an [out] matrix that will hold the result to prevent allocations.
      */
     fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix {
-        return getConcatMatrix(target, true, out)
+        return getConcatMatrix(target, false, out)
     }
 
     fun getConcatMatrix(target: View, inclusive: Boolean, out: Matrix = Matrix()): Matrix {
-        if (inclusive) {
-            out.multiply(target.globalMatrixInv, this.globalMatrix)
-        } else {
+        if (View.commonAncestor(this, target) != null) {
             out.multiply(this.globalMatrix, target.globalMatrixInv)
-            out.multiply(target.localMatrix, out)
-            /*
-            val mat = target.parent?.globalMatrixInv
-            if (mat != null) {
-                out.premultiply(mat)
-            }
-             */
+            //out.identity()
+            //out.identity()
+        } else {
+            out.identity()
         }
-        /*
-        globalMatrix
-        val common =
-        val thisAncestor = this.hasAncestor(target)
-        val targetAncestor = target.hasAncestor(this)
-
-        when {
-            this == target -> {
-                out.identity()
-            }
-            thisAncestor && !targetAncestor -> {
-                println("!!!!!!!!!!!!!!! Inverted!")
-                out.identity()
-                val target2 = if (inclusive) target else target.parent
-                target2?.getConcatMatrix(this, true, out)
-                //println("OUT: $out")
-                out.invert()
-            }
-            // Unrelated, let's use the identity Matrix
-            !thisAncestor && !targetAncestor -> {
-                out.identity()
-            }
-            else -> {
-                var current: View? = this
-                out.identity()
-
-                while (current != null) {
-                    //out.premultiply(current.localMatrix)
-                    if (current == target && !inclusive) break
-                    out.multiply(out, current.localMatrix)
-                    if (current == target) break
-                    current = current.parent
-                }
-            }
+        if (inclusive) {
+            out.premultiply(target.localMatrix)
         }
-         */
         return out
     }
 
@@ -1182,14 +1148,26 @@ abstract class View internal constructor(
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
 
+    // @TODO: Would not include strokes
+    //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
+
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
     private val boundsTemp = Matrix()
+
     fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
+        return getBounds(target, true, out)
+    }
+
+    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
+        return getBounds(target, false, out)
+    }
+
+    fun getBounds(target: View? = this, doAnchoring: Boolean, out: Rectangle = Rectangle()): Rectangle {
         //val concat = (parent ?: this).getConcatMatrix(target ?: this)
-        val concat = (this).getConcatMatrix(target ?: this, inclusive = false, out = boundsTemp)
+        val concat = this.getConcatMatrix(target ?: this, boundsTemp)
         val bb = BoundsBuilder()
 
-        getLocalBoundsInternal(out)
+        getLocalBounds(doAnchoring, out)
 
         val p1x = out.left
         val p1y = out.top
@@ -1217,6 +1195,13 @@ abstract class View internal constructor(
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
     fun getLocalBounds(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
+
+    fun getLocalBounds(doAnchoring: Boolean, out: Rectangle = _localBounds) = getLocalBounds(out).also {
+        if (!doAnchoring) {
+            it.x -= anchorDispX
+            it.y -= anchorDispY
+        }
+    }
 
     private val _localBounds: Rectangle = Rectangle()
     open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit {
@@ -1576,7 +1561,12 @@ operator fun View?.get(name: String): View? = firstDescendantWith { it.name == n
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
-inline fun <T : View> T.hitShape(crossinline block: VectorBuilder.() -> Unit): T {
+
+@DslMarker
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
+annotation class VectorBuilderDslMarker
+
+inline fun <T : View> T.hitShape(crossinline block: @VectorBuilderDslMarker VectorBuilder.() -> Unit): T {
     buildPath { block() }.also {
         this.hitShape = it
     }
@@ -1696,14 +1686,34 @@ fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.
  */
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
+fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
+    val parent = this.parent
+    val bounds = other.getBoundsNoAnchoring(parent)
+    val ratioM1_1 = ratio * 2 - 1
+    val iratio = if (inside) ratio else 1.0 - ratio
+    if (doX) {
+        x = (bounds.left + bounds.width * ratio) - (width * iratio) - (padding * ratioM1_1)
+    } else {
+        y = (bounds.top + bounds.height * ratio) - (height * iratio) - (padding * ratioM1_1)
+    }
+    return this
+}
+
+fun <T : View> T.alignX(other: View, ratio: Double, inside: Boolean, padding: Double = 0.0): T {
+    return alignXY(other, ratio, inside, doX = true, padding = padding)
+}
+
+fun <T : View> T.alignY(other: View, ratio: Double, inside: Boolean, padding: Double = 0.0): T {
+    return alignXY(other, ratio, inside, doX = false, padding = padding)
+}
+
 /**
  * Chainable method returning this that sets [View.x] so that
  * [this] View's left side is aligned with the [other] View's left side
  */
 // @TODO: What about rotations? we might need to adjust y too?
 fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).left + 0.0 + padding
-    return this
+    return alignX(other, 0.0, inside = true, padding = padding)
 }
 
 /**
@@ -1711,8 +1721,7 @@ fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
  * [this] View's left side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).right + 0.0 + padding
-    return this
+    return alignX(other, 1.0, inside = false, padding = padding)
 }
 
 /**
@@ -1720,8 +1729,7 @@ fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's right side is aligned with the [other] View's left side
  */
 fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).left - width - padding
-    return this
+    return alignX(other, 0.0, inside = false, padding = padding)
 }
 
 /**
@@ -1729,8 +1737,7 @@ fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
  * [this] View's right side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
-    x = other.getBounds(this).right - width - padding
-    return this
+    return alignX(other, 1.0, inside = true, padding = padding)
 }
 
 /**
@@ -1738,8 +1745,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).top + 0.0 + padding
-    return this
+    return alignY(other, 1.0, inside = true, padding = padding)
 }
 
 /**
@@ -1747,8 +1753,7 @@ fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's top side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).bottom + 0.0 + padding
-    return this
+    return alignY(other, 1.0, inside = false, padding = padding)
 }
 
 /**
@@ -1756,8 +1761,7 @@ fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).top - height - padding
-    return this
+    return alignY(other, 0.0, inside = false, padding = padding)
 }
 
 /**
@@ -1765,8 +1769,7 @@ fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
-    y = other.getBounds(this).bottom - height - padding
-    return this
+    return alignY(other, 1.0, inside = true, padding = padding)
 }
 
 /** Chainable method returning this that sets [View.rotation] */

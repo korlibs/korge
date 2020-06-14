@@ -4,6 +4,7 @@ import com.soywiz.korge.tests.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class ViewHitTestTest : ViewsForTesting() {
