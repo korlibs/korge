@@ -286,12 +286,17 @@ abstract class View internal constructor(
         this.height = height
     }
 
+    open fun setSizeScaled(width: Double, height: Double) {
+        this.scaledWidth = width
+        this.scaledHeight = height
+    }
+
     /**
      * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var width: Double
-        get() = getLocalBounds().width * scaleX
+        get() = getLocalBounds().width
         set(value) {
             scaleX = value / this.getLocalBounds().width
         }
@@ -301,6 +306,22 @@ abstract class View internal constructor(
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var height: Double
+        get() = getLocalBounds().height
+        set(value) {
+            scaleY = value / this.getLocalBounds().height
+        }
+
+    var scaledWidth: Double
+        get() = getLocalBounds().width * scaleX
+        set(value) {
+            scaleX = value / this.getLocalBounds().width
+        }
+
+    /**
+     * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
+     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     */
+    var scaledHeight: Double
         get() = getLocalBounds().height * scaleY
         set(value) {
             scaleY = value / this.getLocalBounds().height
