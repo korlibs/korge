@@ -32,7 +32,8 @@ class SpriteAnimation(
                                     marginLeft + (spriteWidth + offsetBetweenColumns) * col,
                                     marginTop + (spriteHeight + offsetBetweenRows) * row,
                                     spriteWidth,
-                                    spriteHeight
+                                    spriteHeight,
+                                    name = "slice$size"
                                 )
                             )
                         }

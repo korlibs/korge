@@ -3,7 +3,7 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.iterators.*
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.hrMilliseconds
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -19,10 +19,10 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.jvm.JvmOverloads
+import kotlin.jvm.*
 import kotlin.math.max
 
-open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480)) {
+open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480), val log: Boolean = false) {
 	val startTime = DateTime(0.0)
 	var time = startTime
 	val elapsed get() = time - startTime
@@ -37,14 +37,24 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	val gameWindow = object : GameWindowLog() {
 		override val coroutineDispatcher = dispatcher
 	}
-	val viewsLog = ViewsLog(dispatcher, ag = LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT), gameWindow = gameWindow)
+	val viewsLog = ViewsLog(dispatcher, ag = if (log) LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT) else DummyAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT), gameWindow = gameWindow)
 	val injector get() = viewsLog.injector
 	val ag get() = viewsLog.ag
+    val logAg get() = ag as? LogAG?
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
 	val mouse get() = input.mouse
+
+    suspend fun <T> deferred(block: suspend (CompletableDeferred<T>) -> Unit): T {
+        val deferred = CompletableDeferred<T>()
+        block(deferred)
+        return deferred.await()
+    }
+
+    @JvmName("deferredUnit")
+    suspend fun deferred(block: suspend CompletableDeferred<Unit>.() -> Unit) = deferred<Unit>(block)
 
     suspend inline fun mouseMoveAndClickTo(x: Number, y: Number, button: MouseButton = MouseButton.LEFT) {
         mouseMoveTo(x.toDouble(), y.toDouble())
@@ -153,8 +163,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-	fun viewsTest(block: suspend Stage.() -> Unit): Unit = suspendTest {
-		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
+	fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, block: suspend Stage.() -> Unit): Unit = suspendTest(timeout = timeout, cond = { !OS.isNative }) {
         Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
 
 		injector.mapInstance<Module>(object : Module() {
@@ -178,7 +187,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 			}
 		})
 
-		withTimeout(10.seconds) {
+		withTimeout(timeout ?: TimeSpan.NULL) {
 			while (!completed) {
 				simulateFrame()
 				dispatcher.executePending()
@@ -188,12 +197,22 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 		}
 	}
 
+    private var simulatedFrames = 0
+    private var lastDelay = PerformanceCounter.hr
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
-			time += frameTime
-			ag.onRender(ag)
+            //println("SIMULATE: $frameTime")
+            time += frameTime
+            // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
             gameWindow.dispatch(RenderEvent())
-			delay(frameTime)
+            ag.onRender(ag)
+            simulatedFrames++
+            val now = PerformanceCounter.hr
+            val elapsedSinceLastDelay = now - lastDelay
+            if (elapsedSinceLastDelay >= 1.hrSeconds) {
+                lastDelay = now
+                delay(1)
+            }
 		}
 	}
 

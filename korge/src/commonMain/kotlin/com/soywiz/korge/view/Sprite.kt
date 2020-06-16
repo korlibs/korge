@@ -1,8 +1,8 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.kmem.umod
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.vector.VectorPath
 
@@ -11,7 +11,7 @@ inline fun Container.sprite(
 ): Sprite = Sprite(initialAnimation, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.sprite(
-    texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Sprite.() -> Unit = {}
+    texture: BmpSlice = Bitmaps.white, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewsDslMarker Sprite.() -> Unit = {}
 ): Sprite = Sprite(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.sprite(
@@ -44,7 +44,7 @@ open class Sprite(
     smoothing: Boolean = true
 ) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
     constructor(
-        bmpSlice: BmpSlice,
+        bmpSlice: BmpSlice = Bitmaps.white,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
@@ -63,6 +63,7 @@ open class Sprite(
     }
 
     private var animationRequested = false
+    var totalFramesPlayed = 0
     private var animationNumberOfFramesRequested = 0
         set(value) {
             if (value == 0) {
@@ -79,6 +80,7 @@ open class Sprite(
     private var _onAnimationCompleted: Signal<SpriteAnimation>? = null
     private var _onAnimationStopped: Signal<SpriteAnimation>? = null
     private var _onAnimationStarted: Signal<SpriteAnimation>? = null
+    private var _onFrameChanged: Signal<SpriteAnimation>? = null
 
     val onAnimationCompleted : Signal<SpriteAnimation>
         get(){
@@ -98,6 +100,12 @@ open class Sprite(
             return _onAnimationStarted!!
         }
 
+    val onFrameChanged : Signal<SpriteAnimation>
+        get() {
+            if (_onFrameChanged == null) _onFrameChanged = Signal()
+            return _onFrameChanged!!
+        }
+
     var spriteDisplayTime: TimeSpan = 50.milliseconds
     private var animationLooped = false
     private var lastAnimationFrameTime: TimeSpan = 0.milliseconds
@@ -111,15 +119,18 @@ open class Sprite(
         }
 
     private var currentAnimation: SpriteAnimation? = null
-    private var currentSpriteIndex = 0
-        set(value) {
-            setFrame(value)
-            field = value
+
+    var currentSpriteIndex = 0
+        private set(value) {
+            field = value umod totalFrames
+            bitmap = currentAnimation?.getSprite(value) ?: bitmap
         }
+
     private var reversed = false
 
     init {
         addUpdater { frameTime ->
+            //println("UPDATER: animationRequested=$animationRequested")
             if (animationRequested) {
                 nextSprite(frameTime)
             }
@@ -136,12 +147,14 @@ open class Sprite(
         spriteAnimation: SpriteAnimation? = currentAnimation,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
+        endFrame: Int = 0,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
         spriteAnimation = spriteAnimation,
         spriteDisplayTime = spriteDisplayTime,
         animationCyclesRequested = times,
         startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        endFrame = endFrame,
         reversed = reversed,
         type = AnimationType.STANDARD
     )
@@ -150,12 +163,14 @@ open class Sprite(
         spriteAnimation: SpriteAnimation? = currentAnimation,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
+        endFrame: Int = 0,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
         spriteAnimation = spriteAnimation,
         spriteDisplayTime = spriteDisplayTime,
         animationCyclesRequested = 1,
         startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        endFrame = endFrame,
         reversed = reversed,
         type = AnimationType.STANDARD
     )
@@ -210,10 +225,14 @@ open class Sprite(
 
                 }
             }
-            setFrame(if (reversed) --currentSpriteIndex else ++currentSpriteIndex)
+            if (reversed) --currentSpriteIndex else ++currentSpriteIndex
+            totalFramesPlayed++
+            triggerEvent(_onFrameChanged)
             lastAnimationFrameTime = 0.milliseconds
         }
     }
+
+    val totalFrames get() = currentAnimation?.size ?: 1
 
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,
@@ -221,6 +240,7 @@ open class Sprite(
         animationCyclesRequested: Int = 1,
         duration: TimeSpan = 0.milliseconds,
         startFrame: Int = 0,
+        endFrame: Int = 0,
         looped: Boolean = false,
         reversed: Boolean = false,
         type: AnimationType = AnimationType.STANDARD
@@ -234,13 +254,20 @@ open class Sprite(
         this.reversed = reversed
         animationType = type
         animationRequested = true
+        val endFrame = endFrame umod totalFrames
         currentAnimation?.let {
-            this.animationNumberOfFramesRequested = if (!looped) animationCyclesRequested * it.spriteStackSize else it.spriteStackSize
+            val count = when {
+                startFrame > endFrame -> (if (reversed) startFrame - endFrame else it.spriteStackSize-(startFrame - endFrame))
+                endFrame > startFrame -> (if (reversed) (startFrame - endFrame) umod it.spriteStackSize else endFrame-startFrame)
+                else -> 0
+            }
+            val requestedFrames = count + (animationCyclesRequested * it.spriteStackSize)
+            this.animationNumberOfFramesRequested = requestedFrames
         }
     }
 
     fun setFrame(index: Int) {
-        bitmap = currentAnimation?.getSprite(index) ?: bitmap
+        currentSpriteIndex = index
     }
 
     private fun triggerEvent(signal: Signal<SpriteAnimation>?) {
