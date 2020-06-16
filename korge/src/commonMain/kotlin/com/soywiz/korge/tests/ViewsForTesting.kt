@@ -45,9 +45,6 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
     val stage get() = views.stage
 	val stats get() = views.stats
 	val mouse get() = input.mouse
-    init {
-        Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
-    }
 
     suspend inline fun mouseMoveAndClickTo(x: Number, y: Number, button: MouseButton = MouseButton.LEFT) {
         mouseMoveTo(x.toDouble(), y.toDouble())
@@ -158,6 +155,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	// @TODO: Run a faster eventLoop where timers happen much faster
 	fun viewsTest(block: suspend Stage.() -> Unit): Unit = suspendTest {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
+        Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
