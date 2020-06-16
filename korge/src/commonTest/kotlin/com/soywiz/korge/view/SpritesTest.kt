@@ -36,63 +36,117 @@ class SpritesTest : ViewsForTesting() {
     fun testSpriteAnimationPlay1Times() = viewsTest {
         setup()
         countDownSprite.playAnimation(1)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        countDownSprite.onAnimationCompleted {
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        }
     }
 
     @Test
     fun testSpriteAnimationPlay346Times() = viewsTest {
         setup()
         countDownSprite.playAnimation(346)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        }
     }
 
     @Test
     fun testSpriteAnimationPlay() = viewsTest {
         setup()
         countDownSprite.playAnimation()
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        }
     }
 
     @Test
     fun testSpriteAnimationStartFrame() = viewsTest {
         setup()
         countDownSprite.playAnimation(startFrame = 3, times = 10)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+        }
     }
 
     @Test
     fun testSpriteAnimationReversed() = viewsTest {
         setup()
         countDownSprite.playAnimation(reversed = true, times = 1000)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        }
     }
 
     @Test
     fun testSpriteAnimationReversedStartFrame() = viewsTest {
         setup()
         countDownSprite.playAnimation(reversed = true, times = 1000, startFrame = 7)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[7]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[7]))
+        }
     }
 
     @Test
     fun testSpriteAnimationTimesAndSpriteTimeDisplay() = viewsTest {
         setup()
         countDownSprite.playAnimation(times = 1, spriteDisplayTime = 100.milliseconds)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+        }
     }
 
     @Test
     fun testSpriteAnimationEndFrame() = viewsTest {
         setup()
         countDownSprite.playAnimation(times = 1, endFrame = 3)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+        }
     }
 
     @Test
     fun testSpriteAnimationEndFrameReversed() = viewsTest {
         setup()
         countDownSprite.playAnimation(times = 2, reversed = true, endFrame = 6)
-        assert(countDownSprite.bitmap.extract().contentEquals(digits[6]))
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[6]))
+        }
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrameAndStartFrame() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 2, startFrame = 9 , endFrame = 2)
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[2]))
+        }
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrameAndStartFrame2() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 0, startFrame = 2 , endFrame = 1)
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[2]))
+        }
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrameAndStartFrameReversed() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 2, startFrame = 9 , endFrame = 2, reversed = true)
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[2]))
+        }
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrameAndStartFrameReversed2() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 2, startFrame = 1 , endFrame = 9, reversed = true)
+        countDownSprite.onAnimationCompleted{
+            assert(countDownSprite.bitmap.extract().contentEquals(digits[2]))
+        }
     }
 }
 

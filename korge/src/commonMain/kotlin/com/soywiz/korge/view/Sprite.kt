@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
+import com.soywiz.kmem.umod
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korio.async.Signal
@@ -111,11 +112,13 @@ open class Sprite(
         }
 
     private var currentAnimation: SpriteAnimation? = null
+
     private var currentSpriteIndex = 0
         set(value) {
             setFrame(value)
             field = value
         }
+
     private var reversed = false
 
     init {
@@ -214,7 +217,7 @@ open class Sprite(
 
                 }
             }
-            setFrame(if (reversed) --currentSpriteIndex else ++currentSpriteIndex)
+            if (reversed) --currentSpriteIndex else ++currentSpriteIndex
             lastAnimationFrameTime = 0.milliseconds
         }
     }
@@ -222,7 +225,7 @@ open class Sprite(
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
-        animationCyclesRequested: Int = 1,
+        animationCyclesRequested: Int = 0,
         duration: TimeSpan = 0.milliseconds,
         startFrame: Int = 0,
         endFrame: Int = 0,
@@ -235,17 +238,22 @@ open class Sprite(
         currentAnimation = spriteAnimation
         animationLooped = looped
         animationRemainingDuration = duration
-        currentSpriteIndex = startFrame // HIER LIEGT DER HASE IM PFEFFER
+        currentSpriteIndex = startFrame
         this.reversed = reversed
         animationType = type
         animationRequested = true
         currentAnimation?.let {
-            this.animationNumberOfFramesRequested = if (!looped) animationCyclesRequested * it.spriteStackSize else it.spriteStackSize
-            this.animationNumberOfFramesRequested += if (reversed) it.spriteStackSize-endFrame else endFrame
+            this.animationNumberOfFramesRequested = when {
+                startFrame > endFrame -> (if (reversed) startFrame - endFrame else it.spriteStackSize-(startFrame - endFrame))
+                endFrame > startFrame -> (if (reversed) (startFrame - endFrame) umod it.spriteStackSize else endFrame-startFrame)
+                else -> 0
+            }
+            this.animationNumberOfFramesRequested += (animationCyclesRequested * it.spriteStackSize)
         }
     }
 
     fun setFrame(index: Int) {
+
         bitmap = currentAnimation?.getSprite(index) ?: bitmap
     }
 
