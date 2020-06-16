@@ -39,7 +39,7 @@ class SpritesTest : ViewsForTesting() {
                 logs.add("completed")
             }
             if (triggerFrames) {
-                countDownSprite.onFrameChanged { logs.add("frame[${countDownSprite.currentSpriteIndex}]") }
+                countDownSprite.onFrameChanged { logs.add("${countDownSprite.currentSpriteIndex}") }
             }
             block(this)
         }
@@ -52,12 +52,26 @@ class SpritesTest : ViewsForTesting() {
             countDownSprite.playAnimation(1)
         }
         assertEquals(
-            "started,frame[1],frame[2],frame[3],frame[4],frame[5],frame[6],frame[7],frame[8],frame[9],stopped,completed,frame[0]",
+            "started,1,2,3,4,5,6,7,8,9,stopped,completed,0",
             logs.joinToString(",")
         )
         assertEquals(10, countDownSprite.totalFramesPlayed)
         assertEquals(countDownSprite.bitmap, countDownAnimation[0])
     }
+
+    @Test
+    fun testSpriteAnimationPlay1TimesReversed() = viewsTest {
+        testPlayAnimation(triggerFrames = true) {
+            countDownSprite.playAnimation(1, reversed = true)
+        }
+        assertEquals(
+            "started,9,8,7,6,5,4,3,2,1,stopped,completed,0",
+            logs.joinToString(",")
+        )
+        assertEquals(10, countDownSprite.totalFramesPlayed)
+        assertEquals(countDownSprite.bitmap, countDownAnimation[0])
+    }
+
 
     @Test
     fun testSpriteAnimationPlay1TimesM1LastFrame() = viewsTest {
@@ -66,7 +80,7 @@ class SpritesTest : ViewsForTesting() {
             countDownSprite.playAnimation(0, endFrame = -1)
         }
         assertEquals(
-            "started,frame[1],frame[2],frame[3],frame[4],frame[5],frame[6],frame[7],frame[8],stopped,completed,frame[9]",
+            "started,1,2,3,4,5,6,7,8,stopped,completed,9",
             logs.joinToString(",")
         )
         assertEquals(9, countDownSprite.totalFramesPlayed)
