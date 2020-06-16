@@ -120,10 +120,10 @@ open class Sprite(
 
     private var currentAnimation: SpriteAnimation? = null
 
-    private var currentSpriteIndex = 0
-        set(value) {
-            setFrame(value)
-            field = value
+    var currentSpriteIndex = 0
+        private set(value) {
+            field = value umod totalFrames
+            bitmap = currentAnimation?.getSprite(value) ?: bitmap
         }
 
     private var reversed = false
@@ -232,6 +232,8 @@ open class Sprite(
         }
     }
 
+    val totalFrames get() = currentAnimation?.size ?: 1
+
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
@@ -252,6 +254,7 @@ open class Sprite(
         this.reversed = reversed
         animationType = type
         animationRequested = true
+        val endFrame = endFrame umod totalFrames
         currentAnimation?.let {
             val count = when {
                 startFrame > endFrame -> (if (reversed) startFrame - endFrame else it.spriteStackSize-(startFrame - endFrame))
@@ -263,10 +266,8 @@ open class Sprite(
         }
     }
 
-    val currentFrameIndex get() = if (currentAnimation != null) currentSpriteIndex umod currentAnimation!!.size else 0
-
     fun setFrame(index: Int) {
-        bitmap = currentAnimation?.getSprite(index) ?: bitmap
+        currentSpriteIndex = index
     }
 
     private fun triggerEvent(signal: Signal<SpriteAnimation>?) {

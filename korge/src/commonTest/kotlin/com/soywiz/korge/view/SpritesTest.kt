@@ -39,12 +39,13 @@ class SpritesTest : ViewsForTesting() {
                 logs.add("completed")
             }
             if (triggerFrames) {
-                countDownSprite.onFrameChanged { logs.add("frame[${countDownSprite.currentFrameIndex}]") }
+                countDownSprite.onFrameChanged { logs.add("frame[${countDownSprite.currentSpriteIndex}]") }
             }
             block(this)
         }
     }
 
+    // @TODO: Shouldn't the default value end with frame 9?
     @Test
     fun testSpriteAnimationPlay1Times() = viewsTest {
         testPlayAnimation(triggerFrames = true) {
@@ -56,6 +57,20 @@ class SpritesTest : ViewsForTesting() {
         )
         assertEquals(10, countDownSprite.totalFramesPlayed)
         assertEquals(countDownSprite.bitmap, countDownAnimation[0])
+    }
+
+    @Test
+    fun testSpriteAnimationPlay1TimesM1LastFrame() = viewsTest {
+        testPlayAnimation(triggerFrames = true) {
+            // @TODO: Shouldn't be 1 times?
+            countDownSprite.playAnimation(0, endFrame = -1)
+        }
+        assertEquals(
+            "started,frame[1],frame[2],frame[3],frame[4],frame[5],frame[6],frame[7],frame[8],stopped,completed,frame[9]",
+            logs.joinToString(",")
+        )
+        assertEquals(9, countDownSprite.totalFramesPlayed)
+        assertEquals(countDownSprite.bitmap, countDownAnimation[9])
     }
 
     @Test
