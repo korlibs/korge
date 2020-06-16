@@ -3,7 +3,7 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.iterators.*
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.hrMilliseconds
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -163,8 +163,7 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-	fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, block: suspend Stage.() -> Unit): Unit = suspendTest(timeout = timeout) {
-		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
+	fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, block: suspend Stage.() -> Unit): Unit = suspendTest(timeout = timeout, cond = { !OS.isNative }) {
         Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
 
 		injector.mapInstance<Module>(object : Module() {
@@ -198,14 +197,22 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 		}
 	}
 
+    private var simulatedFrames = 0
+    private var lastDelay = PerformanceCounter.hr
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
-      //println("SIMULATE: $frameTime")
-			time += frameTime
-      // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
-      gameWindow.dispatch(RenderEvent())
-      ag.onRender(ag)
-      //delay(frameTime)
+            //println("SIMULATE: $frameTime")
+            time += frameTime
+            // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
+            gameWindow.dispatch(RenderEvent())
+            ag.onRender(ag)
+            simulatedFrames++
+            val now = PerformanceCounter.hr
+            val elapsedSinceLastDelay = now - lastDelay
+            if (elapsedSinceLastDelay >= 1.hrSeconds) {
+                lastDelay = now
+                delay(1)
+            }
 		}
 	}
 
