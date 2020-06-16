@@ -174,10 +174,9 @@ class Views constructor(
 	@Suppress("EXPERIMENTAL_API_USAGE")
     override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
-        //println("Event: $clazz : $event")
 		try {
 			this.stage.dispatch(clazz, event)
-            val stagedViews = getAllDescendantViews(stage, tempViews)
+            val stagedViews = getAllDescendantViews(stage, tempViews, true)
 			when (e) {
 				is MouseEvent -> stagedViews.fastForEach { it._components?.mouse?.fastForEach { it.onMouseEvent(views, e) } }
                 is TouchEvent -> stagedViews.fastForEach { it._components?.touch?.fastForEach { it.onTouchEvent(views, e) } }
@@ -356,35 +355,31 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 
 //suspend val AsyncInjector.views: Views get() = this.get<Views>()
 
-
 /////////////////////////
 /////////////////////////
 
 @OptIn(KorgeInternal::class)
-fun getAllDescendantViews(view: View, out: ArrayList<View> = arrayListOf(), reversed: Boolean = true): ArrayList<View> {
-    if (out.size == 0) out.add(view) else out[0] = view
-    var count = 1
-    var n = 0
-    if (reversed) {
-        while (n < count) {
-            out[n]._children?.fastForEachReverse {
-                if (out.size <= count) out.add(it) else out[count] = it
-                count++
-            }
-            n++
-        }
-    } else {
-        while (n < count) {
-            out[n]._children?.fastForEach {
-                if (out.size <= count) out.add(it) else out[count] = it
-                count++
-            }
-            n++
-        }
-
-    }
-    while (out.size > count) out.removeAt(out.size - 1)
+fun getAllDescendantViews(view: View, out: ArrayList<View> = ArrayList(), reversed: Boolean = true): ArrayList<View> {
+    out.clear()
+    val pos = getAllDescendantViewsBase(view, out, reversed, 0)
+    while (out.size > pos) out.removeAt(out.size - 1)
     return out
+}
+
+private fun <T> ArrayList<T>.replaceOrAdd(pos: Int, value: T) {
+    if (pos >= this.size) add(value) else this[pos] = value
+}
+
+private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed: Boolean, cursor: Int): Int {
+    var pos = cursor
+    if (reversed) {
+        view.forEachChildrenReversed { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
+        out.replaceOrAdd(pos++, view)
+    } else {
+        out.replaceOrAdd(pos++, view)
+        view.forEachChildren { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
+    }
+    return pos
 }
 
 @OptIn(KorgeInternal::class)

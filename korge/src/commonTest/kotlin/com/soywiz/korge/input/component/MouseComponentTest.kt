@@ -4,15 +4,12 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.util.*
+import com.soywiz.korim.color.*
 import kotlin.test.*
 
 class MouseComponentTest : ViewsForTesting() {
 	@Test
-	@Ignore // @TODO: Re-enable this
 	fun name() = viewsTest {
-		if (OS.isJs) return@viewsTest
-
 		val log = arrayListOf<String>()
 		val tex = Bitmap32(16, 16)
 		val image = Image(tex)
@@ -40,4 +37,19 @@ class MouseComponentTest : ViewsForTesting() {
 		mouseUp()
 		assertEquals("onOver,onOut,onOver,onDown,onMove,onOut,onUpOutside", log.joinToString(","))
 	}
+
+    @Test
+    fun test2() = viewsTest {
+        val log = arrayListOf<String>()
+        fixedSizeContainer(100, 100) {
+            solidRect(50, 50, Colors.RED) {
+                onClick { log += "rect" }
+            }
+            onClick { log += "container" }
+        }
+        mouseMoveAndClickTo(80, 80)
+        assertEquals("container", log.joinToString(","))
+        mouseMoveAndClickTo(45, 45)
+        assertEquals("container,rect", log.joinToString(","))
+    }
 }
