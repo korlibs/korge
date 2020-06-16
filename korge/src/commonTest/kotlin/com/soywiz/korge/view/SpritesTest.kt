@@ -28,7 +28,6 @@ class SpritesTest : ViewsForTesting() {
             digits = Array<Bitmap>(10) {
                 countDownSpriteMap.extract(it * 24, 0, 24, 36)
             }
-
             countDownAnimation = SpriteAnimation(countDownSpriteMap, 24, 36, 0, 0, 10, 1, 0, 0)
             countDownSprite = Sprite(countDownAnimation)
     }
@@ -80,6 +79,20 @@ class SpritesTest : ViewsForTesting() {
         setup()
         countDownSprite.playAnimation(times = 1, spriteDisplayTime = 100.milliseconds)
         assert(countDownSprite.bitmap.extract().contentEquals(digits[0]))
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrame() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 1, endFrame = 3)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[3]))
+    }
+
+    @Test
+    fun testSpriteAnimationEndFrameReversed() = viewsTest {
+        setup()
+        countDownSprite.playAnimation(times = 2, reversed = true, endFrame = 6)
+        assert(countDownSprite.bitmap.extract().contentEquals(digits[6]))
     }
 }
 

@@ -136,12 +136,14 @@ open class Sprite(
         spriteAnimation: SpriteAnimation? = currentAnimation,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
+        endFrame: Int = 0,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
         spriteAnimation = spriteAnimation,
         spriteDisplayTime = spriteDisplayTime,
         animationCyclesRequested = times,
         startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        endFrame = endFrame,
         reversed = reversed,
         type = AnimationType.STANDARD
     )
@@ -150,12 +152,14 @@ open class Sprite(
         spriteAnimation: SpriteAnimation? = currentAnimation,
         spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
+        endFrame: Int = 0,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
         spriteAnimation = spriteAnimation,
         spriteDisplayTime = spriteDisplayTime,
         animationCyclesRequested = 1,
         startFrame = if (startFrame >= 0) startFrame else currentSpriteIndex,
+        endFrame = endFrame,
         reversed = reversed,
         type = AnimationType.STANDARD
     )
@@ -221,6 +225,7 @@ open class Sprite(
         animationCyclesRequested: Int = 1,
         duration: TimeSpan = 0.milliseconds,
         startFrame: Int = 0,
+        endFrame: Int = 0,
         looped: Boolean = false,
         reversed: Boolean = false,
         type: AnimationType = AnimationType.STANDARD
@@ -230,12 +235,13 @@ open class Sprite(
         currentAnimation = spriteAnimation
         animationLooped = looped
         animationRemainingDuration = duration
-        currentSpriteIndex = startFrame
+        currentSpriteIndex = startFrame // HIER LIEGT DER HASE IM PFEFFER
         this.reversed = reversed
         animationType = type
         animationRequested = true
         currentAnimation?.let {
             this.animationNumberOfFramesRequested = if (!looped) animationCyclesRequested * it.spriteStackSize else it.spriteStackSize
+            this.animationNumberOfFramesRequested += if (reversed) it.spriteStackSize-endFrame else endFrame
         }
     }
 
