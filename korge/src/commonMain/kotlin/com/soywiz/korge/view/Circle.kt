@@ -38,7 +38,6 @@ open class Circle(
 
     init {
         this.color = color
-        this.hitShape { circle(x,y,radius) }
         updateGraphics()
     }
 
