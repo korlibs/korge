@@ -56,6 +56,11 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
     @JvmName("deferredUnit")
     suspend fun deferred(block: suspend CompletableDeferred<Unit>.() -> Unit) = deferred<Unit>(block)
 
+    suspend inline fun mouseMoveAndClickTo(x: Number, y: Number, button: MouseButton = MouseButton.LEFT) {
+        mouseMoveTo(x.toDouble(), y.toDouble())
+        mouseClick(button)
+    }
+
     suspend fun mouseMoveTo(x: Int, y: Int) {
         koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
         //views.update(frameTime)
@@ -67,33 +72,43 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
     @Deprecated("Kotlin/Native boxes inline+Number")
     suspend fun mouseMoveTo(x: Number, y: Number) = mouseMoveTo(x.toInt(), y.toInt())
 
-    suspend fun mouseDown() {
-		koruiEventDispatcher.dispatch(
-			MouseEvent(
-				type = MouseEvent.Type.DOWN,
-				id = 0,
-				x = mouse.x.toInt(),
-				y = mouse.y.toInt(),
-				button = MouseButton.LEFT,
-				buttons = 1
-			)
-		)
+    private var mouseButtons = 0
+
+    suspend fun mouseDown(button: MouseButton = MouseButton.LEFT) {
+        mouseEvent(MouseEvent.Type.DOWN, button, false)
 		simulateFrame(count = 2)
 	}
 
-	suspend fun mouseUp() {
-		koruiEventDispatcher.dispatch(
-			MouseEvent(
-				type = MouseEvent.Type.UP,
-				id = 0,
-				x = input.mouse.x.toInt(),
-				y = input.mouse.y.toInt(),
-				button = MouseButton.LEFT,
-				buttons = 0
-			)
-		)
-		simulateFrame(count = 2)
+	suspend fun mouseUp(button: MouseButton = MouseButton.LEFT) {
+        mouseEvent(MouseEvent.Type.UP, button, false)
+        simulateFrame(count = 2)
 	}
+
+    suspend fun mouseClick(button: MouseButton = MouseButton.LEFT) {
+        //mouseDown(button)
+        //simulateFrame(count = 2)
+        //mouseUp(button)
+        mouseEvent(MouseEvent.Type.CLICK, button, false)
+        simulateFrame(count = 2)
+    }
+
+    private fun mouseEvent(type: MouseEvent.Type, button: MouseButton, set: Boolean?) {
+        mouseButtons = when (set) {
+            true -> mouseButtons or (1 shl button.id)
+            false -> mouseButtons and (1 shl button.id).inv()
+            else -> mouseButtons
+        }
+        koruiEventDispatcher.dispatch(
+            MouseEvent(
+                type = type,
+                id = 0,
+                x = input.mouse.x.toInt(),
+                y = input.mouse.y.toInt(),
+                button = button,
+                buttons = mouseButtons
+            )
+        )
+    }
 
 	//@Suppress("UNCHECKED_CAST")
 	//fun <T : Scene> testScene(
@@ -150,7 +165,8 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 	// @TODO: Run a faster eventLoop where timers happen much faster
 	fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, block: suspend Stage.() -> Unit): Unit = suspendTest(timeout = timeout) {
 		if (OS.isNative) return@suspendTest // @TODO: kotlin-native SKIP NATIVE FOR NOW: kotlin.IllegalStateException: Cannot execute task because event loop was shut down
-		Korge.prepareViews(views, koruiEventDispatcher, fixedSizeStep = frameTime, waitForFirstRender = false)
+        Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
+
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
 			override val size = this@ViewsForTesting.size
@@ -184,12 +200,12 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
-            //println("SIMULATE: $frameTime")
+      //println("SIMULATE: $frameTime")
 			time += frameTime
-            // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
-            gameWindow.dispatch(RenderEvent())
-			ag.onRender(ag)
-			//delay(frameTime)
+      // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
+      gameWindow.dispatch(RenderEvent())
+      ag.onRender(ag)
+      //delay(frameTime)
 		}
 	}
 

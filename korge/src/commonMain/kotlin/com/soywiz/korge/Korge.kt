@@ -184,14 +184,13 @@ object Korge {
     }
 
     @KorgeInternal
-    suspend fun prepareViews(
+    fun prepareViewsBase(
         views: Views,
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL,
-        waitForFirstRender: Boolean = true
-    ) {
+        fixedSizeStep: TimeSpan = TimeSpan.NULL
+    ): CompletableDeferred<Unit> {
         val input = views.input
         val ag = views.ag
         val downPos = Point()
@@ -266,6 +265,7 @@ object Korge {
         }
 
         eventDispatcher.addEventListener<MouseEvent> { e ->
+            //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
             val x = getRealX(e.x.toDouble(), e.scaleCoords)
             val y = getRealY(e.y.toDouble(), e.scaleCoords)
@@ -402,6 +402,20 @@ object Korge {
                 e.printStackTrace()
             }
         }
+
+        return firstRenderDeferred
+    }
+
+    @KorgeInternal
+    suspend fun prepareViews(
+        views: Views,
+        eventDispatcher: EventDispatcher,
+        clearEachFrame: Boolean = true,
+        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+        fixedSizeStep: TimeSpan = TimeSpan.NULL,
+        waitForFirstRender: Boolean = true
+    ) {
+       val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep)
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }
