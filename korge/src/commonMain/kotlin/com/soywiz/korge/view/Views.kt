@@ -313,7 +313,7 @@ open class GameWindowLog : GameWindow() {
 class ViewsLog(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
-	val ag: LogAG = LogAG(),
+	val ag: AG = LogAG(),
 	val input: Input = Input(),
 	val timeProvider: HRTimeProvider = HRTimeProvider,
 	val stats: Stats = Stats(),

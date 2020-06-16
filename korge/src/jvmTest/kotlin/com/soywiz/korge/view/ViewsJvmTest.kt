@@ -1,12 +1,13 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.log.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
-class ViewsJvmTest : ViewsForTesting() {
+class ViewsJvmTest : ViewsForTesting(log = true) {
 	val tex = Bitmap32(10, 10)
 
 	@Test
@@ -51,7 +52,7 @@ class ViewsJvmTest : ViewsForTesting() {
 			disposeTemporalPerFrameStuff()
 			flipInternal()
 			""".trimIndent(),
-			ag.getLogAsString()
+            (logAg)?.getLogAsString()
 		)
 	}
 
