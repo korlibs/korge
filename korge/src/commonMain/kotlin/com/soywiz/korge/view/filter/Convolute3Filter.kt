@@ -49,9 +49,9 @@ class Convolute3Filter(
 
         /** A Sharpen Kernel. This [Matrix3D] can be used as [kernel] for [Convolute3Filter] */
         val KERNEL_SHARPEN: Matrix3D = Matrix3D.fromRows3x3(
-            0f, -1f, 0f,
-            -1f, +4f, -1f,
-            0f, -1f, 0f
+            -1f, -1f, -1f,
+            -1f, +9f, -1f,
+            -1f, -1f, -1f
         )
 
         private val FRAGMENT_SHADER = FragmentShader {
