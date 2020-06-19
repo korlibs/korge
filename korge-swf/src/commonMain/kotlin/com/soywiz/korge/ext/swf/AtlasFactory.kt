@@ -28,29 +28,35 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 	maxTextureSide: Int,
 	mipmaps: Boolean
 ): Map<T, TextureWithBitmapSlice> {
-	//val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
+    val borderSize = 4
+    val alignTo = 8
+    val borderSize2 = borderSize * 2
+
+    //val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
 	val values = this.values.toList()
 	val packs = BinPacker.packSeveral(
 		maxTextureSide.toDouble(),
 		maxTextureSide.toDouble(),
 		values
-	) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
+	) { Size((it.width + borderSize2).nextAlignedTo(alignTo), (it.height + borderSize2).nextAlignedTo(alignTo)) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
 	val premultiplied = this.values.firstOrNull()?.bitmap?.premultiplied ?: true
 	for (pack in packs) {
-		val width = pack.width.toInt().nextPowerOfTwo
-		val height = pack.height.toInt().nextPowerOfTwo
-		val bmp = Bitmap32(width, height, premultiplied = premultiplied)
+		val atlasWidth = pack.width.toInt().nextPowerOfTwo
+		val atlasHeight = pack.height.toInt().nextPowerOfTwo
+		val bmp = Bitmap32(atlasWidth, atlasHeight, premultiplied = premultiplied)
 		for ((ibmp, rect) in pack.items) {
 			val r = rect ?: continue
-            val dwidth = rect.width.toInt()
-            val dheight = rect.height.toInt()
-			val dx0 = r.x.toInt() + 2
-			val dy0 = r.y.toInt() + 2
-            val dx1 = dx0 + dwidth - 1
-            val dy1 = dy0 + dheight - 1
+            val width = ibmp.width
+            val height = ibmp.height
+			val dx0 = r.x.toInt() + borderSize
+			val dy0 = r.y.toInt() + borderSize
+            val dx1 = dx0 + width - 1
+            val dy1 = dy0 + height - 1
 
 			bmp.put(ibmp.bitmap.toBMP32(), dx0, dy0)
+
+            //println("dx=$dx0,dy=$dy0 - $dx1,$dy1 -- $width, $height, [[${bmp.width}x${bmp.height}]]")
 
             val alphaThresold = 0.75
 
@@ -58,30 +64,16 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
                 val py = dy0 + y
                 val v0 = bmp[dx0, py]
                 val v1 = bmp[dx1, py]
-
-                if (v0.ad >= alphaThresold) {
-                    bmp[dx0 - 1, py] = v0
-                    bmp[dx0 - 2, py] = v0
-                }
-                if (v1.ad >= alphaThresold) {
-                    bmp[dx1 + 1, py] = v1
-                    bmp[dx1 + 2, py] = v1
-                }
+                if (v0.ad >= alphaThresold) for (i in 1..borderSize) bmp[dx0 - i, py] = v0
+                if (v1.ad >= alphaThresold) for (i in 1..borderSize) bmp[dx1 + i, py] = v1
             }
 
             for (x in -2 until width + 2) {
                 val px = dx0 + x
                 val v0 = bmp[px, dy0]
                 val v1 = bmp[px, dy1]
-
-                if (v0.ad >= alphaThresold) {
-                    bmp[px, dy0 - 1] = v0
-                    bmp[px, dy0 - 2] = v0
-                }
-                if (v1.ad >= alphaThresold) {
-                    bmp[px, dy1 + 1] = v1
-                    bmp[px, dy1 + 2] = v1
-                }
+                if (v0.ad >= alphaThresold) for (i in 1..borderSize) bmp[px, dy0 - i] = v0
+                if (v1.ad >= alphaThresold) for (i in 1..borderSize) bmp[px, dy1 + i] = v1
             }
 		}
 
