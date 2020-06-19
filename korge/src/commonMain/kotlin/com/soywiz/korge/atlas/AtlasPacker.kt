@@ -33,24 +33,25 @@ object AtlasPacker {
             val out = Bitmap32(pack.width.toInt().nextPowerOfTwo, pack.height.toInt().nextPowerOfTwo, premultiplied = true)
             val packedItems = arrayListOf<Entry<T>>()
             for ((item, rectOrNull) in pack.items) {
-                val rect = rectOrNull ?: Rectangle(0, 0, 1, 1)
+                val rectWithBorder = rectOrNull ?: Rectangle(0, 0, 1, 1)
                 val width = item.second.width
                 val height = item.second.height
-                val x0 = rect.x.toInt() + borderSize
-                val y0 = rect.y.toInt() + borderSize
+                val x0 = rectWithBorder.x.toInt() + borderSize
+                val y0 = rectWithBorder.y.toInt() + borderSize
+                val rect = Rectangle(x0, y0, width, height)
                 val x1 = x0 + width - 1
                 val y1 = y0 + height - 1
                 val bmp = item.second.extract().toBMP32IfRequired().premultipliedIfRequired()
                 out.draw(bmp, x0, y0)
-                packedItems.add(Entry(item.first, item.second, bmp.slice(), rect, Rectangle(x0, y0, width, height)))
                 for (i in 1..borderSize) {
                     Bitmap32.copyRect(out, x0, y0, out, x0 - i, y0, 1, height)
-                    Bitmap32.copyRect(out, x1, y0, out, x0 + i, y0, 1, height)
+                    Bitmap32.copyRect(out, x1, y0, out, x1 + i, y0, 1, height)
                 }
                 for (i in 1..borderSize) {
-                    Bitmap32.copyRect(out, x0 - borderSize, y0, out, x0, y0 - i, width + borderSize2, 1)
-                    Bitmap32.copyRect(out, x0 - borderSize, y1, out, x0, y1 + i, width + borderSize2, 1)
+                    Bitmap32.copyRect(out, x0 - borderSize, y0, out, x0 - borderSize, y0 - i, width + borderSize2, 1)
+                    Bitmap32.copyRect(out, x0 - borderSize, y1, out, x0 - borderSize, y1 + i, width + borderSize2, 1)
                 }
+                packedItems.add(Entry(item.first, item.second, out.slice(rect.toInt()), rectWithBorder, rect))
             }
             val atlasInfo = AtlasInfo(
                 frames = packedItems.map {

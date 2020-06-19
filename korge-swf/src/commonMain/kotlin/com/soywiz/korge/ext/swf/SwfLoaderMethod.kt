@@ -460,9 +460,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			}
 		}
 
-		for ((processor, texture) in itemsInAtlas.toAtlas(views, config.maxTextureSide, config.mipmaps)) processor(
-			texture
-		)
+		for ((processor, texture) in itemsInAtlas.toAtlas(views, config.maxTextureSide, config.mipmaps)) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
