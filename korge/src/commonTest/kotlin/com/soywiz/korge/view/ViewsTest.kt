@@ -191,9 +191,9 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(200, c.width.toInt())
         assertEquals(100, c.height.toInt())
         assertEquals(1.0, c.scaleX)
-        c.width = 400.0
-        assertEquals(400, c.width.toInt())
-        assertEquals(100, c.height.toInt())
+        c.scaledWidth = 400.0
+        assertEquals(400, c.scaledWidth.toInt())
+        assertEquals(100, c.scaledHeight.toInt())
         assertEquals(2.0, c.scaleX)
     }
 

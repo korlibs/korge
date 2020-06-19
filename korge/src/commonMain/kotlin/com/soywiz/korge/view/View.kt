@@ -300,6 +300,8 @@ abstract class View internal constructor(
     /**
      * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     *
+     * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var width: Double
         get() = unscaledWidth
@@ -308,6 +310,8 @@ abstract class View internal constructor(
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     *
+     * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var height: Double
         get() = unscaledHeight
@@ -1251,6 +1255,9 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 }
+
+val View.width: Double get() = unscaledWidth
+val View.height: Double get() = unscaledHeight
 
 // Doesn't seems to work
 //operator fun <T : View, R> T.invoke(callback: T.() -> R): R = this.apply(callback)
