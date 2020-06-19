@@ -43,18 +43,24 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 		val bmp = Bitmap32(width, height, premultiplied = premultiplied)
 		for ((ibmp, rect) in pack.items) {
 			val r = rect ?: continue
-			val dx = r.x.toInt() + 2
-			val dy = r.y.toInt() + 2
+            val dwidth = rect.width.toInt()
+            val dheight = rect.height.toInt()
+			val dx0 = r.x.toInt() + 2
+			val dy0 = r.y.toInt() + 2
+            val dx1 = dx0 + width - 1
+            val dy1 = dy0 + height - 1
 
-			bmp.put(ibmp.bitmap.toBMP32(), dx, dy)
+			bmp.put(ibmp.bitmap.toBMP32(), dx0, dy0)
 
-			//val dwidth = rect.width.toInt()
-			//val dheight = rect.height.toInt()
-			//val dxr = dx + width - 1
-			//Bitmap32.copyRect(bmp, dx, dy, bmp, dx - 1, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dx, dy, bmp, dx - 2, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dxr, dy, bmp, dxr + 1, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dxr, dy, bmp, dxr + 2, dy, 1, dheight)
+			Bitmap32.copyRect(bmp, dx0, dy0, bmp, dx0 - 1, dy0, 1, dheight)
+			Bitmap32.copyRect(bmp, dx0, dy0, bmp, dx0 - 2, dy0, 1, dheight)
+			Bitmap32.copyRect(bmp, dx1, dy0, bmp, dx1 + 1, dy0, 1, dheight)
+			Bitmap32.copyRect(bmp, dx1, dy0, bmp, dx1 + 2, dy0, 1, dheight)
+
+            Bitmap32.copyRect(bmp, dx0 - 2, dy0, bmp, dx0 - 2, dy0 - 1, dwidth + 2 + 2, 1)
+            Bitmap32.copyRect(bmp, dx0 - 2, dy0, bmp, dx0 - 2, dy0 - 2, dwidth + 2 + 2, 1)
+            Bitmap32.copyRect(bmp, dx0 - 2, dy1, bmp, dx0 - 2, dy0 - 1, dwidth + 2 + 2, 1)
+            Bitmap32.copyRect(bmp, dx0 - 2, dy1, bmp, dx0 - 2, dy0 - 2, dwidth + 2 + 2, 1)
 		}
 
 		val texture = bmp.slice()
