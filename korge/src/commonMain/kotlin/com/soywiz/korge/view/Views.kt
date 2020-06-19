@@ -8,6 +8,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -54,26 +55,48 @@ class Views constructor(
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
 
+    /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
+    @KorgeInternal
 	val nativeWidth get() = ag.mainRenderBuffer.width
+    /** Native height in pixels (in retina displays this will be twice the window height). Use [virtualHeight] instead */
+    @KorgeInternal
 	val nativeHeight get() = ag.mainRenderBuffer.height
 
     // Later updated
+    /** The defined virtual width */
 	var virtualWidth = DefaultViewport.WIDTH; internal set
+    /** The defined virtual height */
 	var virtualHeight = DefaultViewport.HEIGHT; internal set
 
+    @KorgeExperimental
 	var actualVirtualLeft = 0; private set
+    @KorgeExperimental
 	var actualVirtualTop = 0; private set
 
+    @KorgeExperimental
 	var actualVirtualWidth = DefaultViewport.WIDTH; private set
+    @KorgeExperimental
 	var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
+    @KorgeExperimental
 	override val virtualLeft get() = -actualVirtualLeft * views.stage.scaleX
+    @KorgeExperimental
 	override val virtualTop get() = -actualVirtualTop * views.stage.scaleY
+    @KorgeExperimental
 	override val virtualRight get() = virtualLeft + virtualWidth * views.stage.scaleX
+    @KorgeExperimental
 	override val virtualBottom get() = virtualTop + virtualHeight * views.stage.scaleY
+
+    @KorgeExperimental
+    val actualVirtualRight get() = actualVirtualWidth
+    @KorgeExperimental
+    val actualVirtualBottom get() = actualVirtualHeight
 
 	private val closeables = arrayListOf<AsyncCloseable>()
 
+    /**
+     * Adds a [callback] to be executed when the game is closed in normal circumstances.
+     */
 	fun onClose(callback: suspend () -> Unit) {
 		closeables += object : AsyncCloseable {
 			override suspend fun close() {
@@ -82,15 +105,13 @@ class Views constructor(
 		}
 	}
 
+    @KorgeInternal
 	override suspend fun close() {
 		closeables.fastForEach { it.close() }
 		closeables.clear()
 		coroutineContext.cancel()
 		gameWindow.close()
 	}
-
-	val actualVirtualRight get() = actualVirtualWidth
-	val actualVirtualBottom get() = actualVirtualHeight
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
     @KorgeInternal
@@ -125,12 +146,13 @@ class Views constructor(
 	var lastTime = timeProvider.now()
 
     private val tempViews: ArrayList<View> = arrayListOf()
-
 	private val virtualSize = SizeInt()
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
 
+    @KorgeInternal
     val actualWidth get() = actualSize.width
+    @KorgeInternal
     val actualHeight get() = actualSize.height
 
     val onBeforeRender = Signal<Unit>()
@@ -184,7 +206,7 @@ class Views constructor(
 				is KeyEvent -> {
                     input.triggerOldKeyEvent(e)
                     input.keys.triggerKeyEvent(e)
-                    if (supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                    if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                         debugViews = !debugViews
                     }
                     stagedViews.fastForEach { it._components?.key?.fastForEach { it.onKeyEvent(views, e) } }
