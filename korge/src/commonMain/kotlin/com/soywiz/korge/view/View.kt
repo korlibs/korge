@@ -1686,6 +1686,10 @@ fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.
  */
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
+fun <T : View> T.centerXOnStage(): T = this.centerXBetween(0.0, stage!!.views.virtualWidth.toDouble())
+fun <T : View> T.centerYOnStage(): T = this.centerYBetween(0.0, stage!!.views.virtualHeight.toDouble())
+fun <T : View> T.centerOnStage(): T = this.centerXOnStage().centerYOnStage()
+
 fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
     //val parent = this.parent
     //val bounds = other.getBoundsNoAnchoring(this)
