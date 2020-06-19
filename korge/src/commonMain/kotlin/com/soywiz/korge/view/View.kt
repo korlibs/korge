@@ -302,16 +302,16 @@ abstract class View internal constructor(
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var width: Double
-        get() = scaledWidth
-        set(value) { scaledWidth = value }
+        get() = unscaledWidth
+        set(value) { scaleX = value / unscaledWidth }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     open var height: Double
-        get() = scaledHeight
-        set(value) { scaledHeight = value }
+        get() = unscaledHeight
+        set(value) { scaleY = value / unscaledHeight }
 
     val unscaledWidth: Double get() = getLocalBounds().width
     val unscaledHeight: Double get() = getLocalBounds().height
