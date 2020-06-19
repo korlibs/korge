@@ -47,20 +47,42 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
             val dheight = rect.height.toInt()
 			val dx0 = r.x.toInt() + 2
 			val dy0 = r.y.toInt() + 2
-            val dx1 = dx0 + width - 1
-            val dy1 = dy0 + height - 1
+            val dx1 = dx0 + dwidth - 1
+            val dy1 = dy0 + dheight - 1
 
 			bmp.put(ibmp.bitmap.toBMP32(), dx0, dy0)
 
-			Bitmap32.copyRect(bmp, dx0, dy0, bmp, dx0 - 1, dy0, 1, dheight)
-			Bitmap32.copyRect(bmp, dx0, dy0, bmp, dx0 - 2, dy0, 1, dheight)
-			Bitmap32.copyRect(bmp, dx1, dy0, bmp, dx1 + 1, dy0, 1, dheight)
-			Bitmap32.copyRect(bmp, dx1, dy0, bmp, dx1 + 2, dy0, 1, dheight)
+            val alphaThresold = 0.75
 
-            Bitmap32.copyRect(bmp, dx0 - 2, dy0, bmp, dx0 - 2, dy0 - 1, dwidth + 2 + 2, 1)
-            Bitmap32.copyRect(bmp, dx0 - 2, dy0, bmp, dx0 - 2, dy0 - 2, dwidth + 2 + 2, 1)
-            Bitmap32.copyRect(bmp, dx0 - 2, dy1, bmp, dx0 - 2, dy0 - 1, dwidth + 2 + 2, 1)
-            Bitmap32.copyRect(bmp, dx0 - 2, dy1, bmp, dx0 - 2, dy0 - 2, dwidth + 2 + 2, 1)
+            for (y in 0 until height) {
+                val py = dy0 + y
+                val v0 = bmp[dx0, py]
+                val v1 = bmp[dx1, py]
+
+                if (v0.ad >= alphaThresold) {
+                    bmp[dx0 - 1, py] = v0
+                    bmp[dx0 - 2, py] = v0
+                }
+                if (v1.ad >= alphaThresold) {
+                    bmp[dx1 + 1, py] = v1
+                    bmp[dx1 + 2, py] = v1
+                }
+            }
+
+            for (x in -2 until width + 2) {
+                val px = dx0 + x
+                val v0 = bmp[px, dy0]
+                val v1 = bmp[px, dy1]
+
+                if (v0.ad >= alphaThresold) {
+                    bmp[px, dy0 - 1] = v0
+                    bmp[px, dy0 - 2] = v0
+                }
+                if (v1.ad >= alphaThresold) {
+                    bmp[px, dy1 + 1] = v1
+                    bmp[px, dy1 + 2] = v1
+                }
+            }
 		}
 
 		val texture = bmp.slice()
