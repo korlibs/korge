@@ -2,6 +2,7 @@ package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.atlas.AtlasPacker
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -28,33 +29,52 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 	maxTextureSide: Int,
 	mipmaps: Boolean
 ): Map<T, TextureWithBitmapSlice> {
-	//val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
+    val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
+    val out = LinkedHashMap<T, TextureWithBitmapSlice>()
+    //println("NUMBER OF ATLAS: ${atlas.atlases.map { "" + it.tex.width + "x" + it.tex.height  }}")
+    for (at in atlas.atlases) {
+        val texture = at.tex.slice()
+        for (item in at.packedItems) {
+            val ibmp = item.item.value
+            val rect2 = item.rect
+            out[item.item.key] = TextureWithBitmapSlice(
+                texture = texture.slice(rect2),
+                bitmapSlice = item.slice,
+                scale = ibmp.scale,
+                bounds = ibmp.bounds
+            )
+        }
+    }
+    return out
+    //val borderSize = 4
+    /*
+    val borderSize = 8
+    val alignTo = 8
+    val borderSize2 = borderSize * 2
+
+    //val packs = BinPacker.packSeveral(2048.0, 2048.0, this) { Size(it.width + 4, it.height + 4) }
 	val values = this.values.toList()
 	val packs = BinPacker.packSeveral(
 		maxTextureSide.toDouble(),
 		maxTextureSide.toDouble(),
 		values
-	) { Size((it.width + 4).nextAlignedTo(4), (it.height + 4).nextAlignedTo(4)) }
+	) { Size((it.width + borderSize2).nextAlignedTo(alignTo), (it.height + borderSize2).nextAlignedTo(alignTo)) }
 	val bitmapsToTextures = hashMapOf<BitmapWithScale, TextureWithBitmapSlice>()
 	val premultiplied = this.values.firstOrNull()?.bitmap?.premultiplied ?: true
 	for (pack in packs) {
-		val width = pack.width.toInt().nextPowerOfTwo
-		val height = pack.height.toInt().nextPowerOfTwo
-		val bmp = Bitmap32(width, height, premultiplied = premultiplied)
+		val atlasWidth = pack.width.toInt().nextPowerOfTwo
+		val atlasHeight = pack.height.toInt().nextPowerOfTwo
+		val bmp = Bitmap32(atlasWidth, atlasHeight, premultiplied = premultiplied)
 		for ((ibmp, rect) in pack.items) {
 			val r = rect ?: continue
-			val dx = r.x.toInt() + 2
-			val dy = r.y.toInt() + 2
+            val width = ibmp.width
+            val height = ibmp.height
+			val dx0 = r.x.toInt() + borderSize
+			val dy0 = r.y.toInt() + borderSize
+            val dx1 = dx0 + width - 1
+            val dy1 = dy0 + height - 1
 
-			bmp.put(ibmp.bitmap.toBMP32(), dx, dy)
-
-			//val dwidth = rect.width.toInt()
-			//val dheight = rect.height.toInt()
-			//val dxr = dx + width - 1
-			//Bitmap32.copyRect(bmp, dx, dy, bmp, dx - 1, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dx, dy, bmp, dx - 2, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dxr, dy, bmp, dxr + 1, dy, 1, dheight)
-			//Bitmap32.copyRect(bmp, dxr, dy, bmp, dxr + 2, dy, 1, dheight)
+			bmp.put(ibmp.bitmap.toBMP32(), dx0, dy0)
 		}
 
 		val texture = bmp.slice()
@@ -71,4 +91,5 @@ suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
 		}
 	}
 	return this.mapValues { bitmapsToTextures[it.value]!! }
+     */
 }
