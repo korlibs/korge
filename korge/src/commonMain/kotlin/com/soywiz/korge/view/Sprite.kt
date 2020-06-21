@@ -37,19 +37,19 @@ inline fun Container.sprite(
  * This will be exchanged when starting a [SpriteAnimation] with one of the available play functions
  */
 open class Sprite(
-    bitmap: Bitmap,
+    bitmap: BmpSlice = Bitmaps.white,
     anchorX: Double = 0.0,
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
     smoothing: Boolean = true
 ) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
     constructor(
-        bmpSlice: BmpSlice = Bitmaps.white,
+        bitmap : Bitmap,
         anchorX: Double = 0.0,
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(bmpSlice.bmp, anchorX, anchorY, hitShape, smoothing)
+    ) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
 
     constructor(
         initialAnimation: SpriteAnimation,
