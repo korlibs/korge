@@ -3,10 +3,10 @@ name: TEST
 on:
   pull_request:
   push:
-    branches-ignore:
-      - 'releases/**'
+    branches:
+      - '*'
     tags-ignore:
-      - '*.*'
+      - 'v*'
     paths-ignore:
       - 'README.md'
       - '.github/workflows/DEPLOY.yml'
@@ -28,9 +28,10 @@ jobs:
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest
         shell: cmd
-      - run: CALL gradlew.bat --no-daemon assemble check -x jsBrowserTest -x jsNodeTest
+      - run: CALL gradlew.bat --no-daemon assemble check
         shell: cmd
-
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
   test-mac:
     runs-on: macos-latest
     if: "!contains(github.event.head_commit.message, '-SNAPSHOT')"
@@ -40,8 +41,9 @@ jobs:
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
       - run: ./gradlew --no-daemon
       - run: ./gradlew --no-daemon jvmTest
-      - run: ./gradlew --no-daemon check -x jsBrowserTest -x jsNodeTest
-
+      - run: ./gradlew --no-daemon check
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
   test-linux:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '-SNAPSHOT')"
