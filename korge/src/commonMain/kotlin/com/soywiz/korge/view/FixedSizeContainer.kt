@@ -5,15 +5,27 @@ import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
-inline fun Container.fixedSizeContainer(width: Double, height: Double, clip: Boolean = false, callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}) =
-    FixedSizeContainer(width, height, clip).addTo(this, callback)
+inline fun Container.fixedSizeContainer(
+    width: Double,
+    height: Double,
+    clip: Boolean = false,
+    callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
+) = FixedSizeContainer(width, height, clip).addTo(this, callback)
 
-inline fun Container.fixedSizeContainer(width: Int, height: Int, clip: Boolean = false, callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}) =
-    FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
+inline fun Container.fixedSizeContainer(
+    width: Int,
+    height: Int,
+    clip: Boolean = false,
+    callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
+) = FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
 
 @Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.fixedSizeContainer(width: Number, height: Number, clip: Boolean = false, callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}) =
-    fixedSizeContainer(width.toDouble(), height.toDouble(), clip, callback)
+inline fun Container.fixedSizeContainer(
+    width: Number,
+    height: Number,
+    clip: Boolean = false,
+    callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
+) = fixedSizeContainer(width.toDouble(), height.toDouble(), clip, callback)
 
 
 open class FixedSizeContainer(
@@ -21,7 +33,10 @@ open class FixedSizeContainer(
     override var height: Double = 100.0,
     var clip: Boolean = false
 ) : Container(), View.Reference {
-    override fun getLocalBoundsInternal(out: Rectangle): Unit = Unit.run { out.setTo(0, 0, width, height) }
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        out.setTo(0, 0, width, height)
+    }
 
     override fun toString(): String {
         var out = super.toString()
