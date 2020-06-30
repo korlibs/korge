@@ -2,6 +2,7 @@ package com.soywiz.korge.view.camera
 
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -9,11 +10,14 @@ import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
+import kotlin.math.*
 
 fun main(): Unit = runBlocking { korge() }
 
 //TODO: Move completed sample to korge-samples
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "Camera test", bgcolor = Colors.WHITE) {
+
+    onClick { speed = abs(speed - 1.0) }
 
     fun elements() = Container().apply {
         solidRect(400.0, 400.0, Colors.YELLOW)
@@ -50,6 +54,9 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "C
     cam.setTo(cam2)
     delay(1.seconds)
 
+    cam.rotate(90.degrees, 1.seconds)
+    cam.rotate((-90).degrees, 1.seconds)
+
     cam.moveTo(10.0, 10.0, time = 1.seconds)
     cam.moveTo(50.0, 50.0, time = 1.seconds)
     cam.moveTo(0.0, 0.0, time = 1.seconds)
@@ -63,17 +70,16 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "C
 
     cam.tweenTo(cam2, time = 2.seconds)
 
-    cam.rotate(90.degrees, time = 1.seconds)
-    cam.rotate((-90).degrees, time = 1.seconds)
-
-    val actor = solidRect(50.0, 50.0, Colors.RED)
-    container.content.addChild(actor)
-    actor.centerOn(container.content)
+    lateinit var actor: View
+    container.updateContent {
+        actor = solidRect(50.0, 50.0, Colors.RED)
+        //actor.centerOnParent()
+    }
     delay(1.seconds)
     cam.zoom(2.0, 1.seconds)
     delay(1.seconds)
 
-    cam.follow(actor, 20.0)
+    cam.follow(actor)
     actor.moveBy(150.0, 150.0, 3.seconds)
     actor.moveBy(-100.0, -100.0, 2.seconds)
     cam.unfollow()

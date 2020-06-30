@@ -1,7 +1,8 @@
 package com.soywiz.korge.view.camera
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.korge.util.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -19,12 +20,12 @@ class Camera(
     override var anchorY: Double = 0.5
 ) : MutableInterpolable<Camera>, Interpolable<Camera>, Anchorable {
 
-    var x: Double by Observable(x, { if (withUpdate) setTo(x = it) })
-    var y: Double by Observable(y, { if (withUpdate) setTo(y = it) })
-    var width: Double by Observable(width, { if (withUpdate) setTo(width = it) })
-    var height: Double by Observable(height, { if (withUpdate) setTo(height = it) })
-    var zoom: Double by Observable(zoom, { if (withUpdate) setTo(zoom = it) })
-    var angle: Angle by Observable(angle, { if (withUpdate) setTo(angle = it) })
+    var x: Double by Observable(x, before = { if (withUpdate) setTo(x = it) })
+    var y: Double by Observable(y, before = { if (withUpdate) setTo(y = it) })
+    var width: Double by Observable(width, before = { if (withUpdate) setTo(width = it) })
+    var height: Double by Observable(height, before = { if (withUpdate) setTo(height = it) })
+    var zoom: Double by Observable(zoom, before = { if (withUpdate) setTo(zoom = it) })
+    var angle: Angle by Observable(angle, before = { if (withUpdate) setTo(angle = it) })
 
     internal var container: CameraContainer? = null
     private var cancelFollowing: Cancellable? = null
@@ -45,6 +46,17 @@ class Camera(
         callback()
         withUpdate = prev
     }
+
+    internal fun createTweenPropertiesTo(other: Camera): Array<V2<*>> = arrayOf(
+        this::x[other.x],
+        this::y[other.y],
+        this::width[other.width],
+        this::height[other.height],
+        this::zoom[other.zoom],
+        this::angle[other.angle],
+        this::anchorX[other.anchorX],
+        this::anchorY[other.anchorY]
+    )
 
     fun setTo(
         x: Double = this.x,
@@ -75,8 +87,9 @@ class Camera(
     }
 
     suspend fun tweenTo(other: Camera, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-        container?.tweenTo(other, time = time, easing = easing)
-        withoutUpdate { setTo(other) }
+        withoutUpdate {
+            container?.tweenTo(other, time = time, easing = easing)
+        }
     }
 
     fun follow(view: View, threshold: Double = 0.0) {
@@ -138,6 +151,10 @@ class Camera(
     )
 
     override fun interpolateWith(ratio: Double, other: Camera) = Camera().setToInterpolated(ratio, this, other)
+
+    override fun toString() = "Camera(" +
+        "x=$x, y=$y, width=$width, height=$height, " +
+        "zoom=$zoom, angle=$angle, anchorX=$anchorX, anchorY=$anchorY)"
 }
 
 fun Camera.xy(x: Double, y: Double): Camera {
@@ -165,7 +182,7 @@ suspend fun Camera.resizeTo(width: Double, height: Double, time: TimeSpan, easin
 }
 
 suspend fun Camera.rotate(angle: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(angle = angle), time = time, easing = easing)
+    tweenTo(copy(angle = this.angle + angle), time = time, easing = easing)
 }
 
 suspend fun Camera.zoom(value: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
