@@ -1475,7 +1475,12 @@ fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
  * Returns the number of ancestors of this view.
  * Views without parents return 0.
  */
-val View?.ancestorCount: Int get() = this?.parent?.ancestorCount?.plus(1) ?: 0
+// @TODO: This should be computed and invalidated when a view is attached to a container
+val View?.ancestorCount: Int get() {
+    if (this == null) return 0
+    val parent = parent ?: return 0
+    return parent.ancestorCount + 1
+}
 
 /**
  * Returns a list of all the ancestors including this in order to reach from this view to the [target] view,
