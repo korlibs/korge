@@ -1694,13 +1694,13 @@ fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): 
  * Chainable method returning this that sets [View.x] so that
  * [this] View is centered on the [other] View horizontally
  */
-fun <T : View> T.centerXOn(other: View): T = this.centerXBetween(other.x, other.x + other.width)
+fun <T : View> T.centerXOn(other: View): T = this.alignX(other, 0.5, true)
 
 /**
  * Chainable method returning this that sets [View.y] so that
  * [this] View is centered on the [other] View vertically
  */
-fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.y + other.height)
+fun <T : View> T.centerYOn(other: View): T = this.alignY(other, 0.5, true)
 
 /**
  * Chainable method returning this that sets [View.x] and [View.y]
@@ -1708,8 +1708,8 @@ fun <T : View> T.centerYOn(other: View): T = this.centerYBetween(other.y, other.
  */
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
-fun <T : View> T.centerXOnStage(): T = this.centerXBetween(0.0, stage!!.views.virtualWidth.toDouble())
-fun <T : View> T.centerYOnStage(): T = this.centerYBetween(0.0, stage!!.views.virtualHeight.toDouble())
+fun <T : View> T.centerXOnStage(): T = this.centerXOn(root)
+fun <T : View> T.centerYOnStage(): T = this.centerXOn(root)
 fun <T : View> T.centerOnStage(): T = this.centerXOnStage().centerYOnStage()
 
 fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
