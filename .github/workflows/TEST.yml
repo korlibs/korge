@@ -31,10 +31,11 @@ jobs:
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest
         shell: cmd
-      - run: CALL gradlew.bat --no-daemon assemble check
+      - run: CALL gradlew.bat --no-daemon check
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
+
   test-mac:
     runs-on: macos-latest
     if: "!contains(github.event.head_commit.message, '-SNAPSHOT')"
