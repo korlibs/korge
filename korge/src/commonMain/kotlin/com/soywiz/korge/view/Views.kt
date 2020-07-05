@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -294,17 +295,18 @@ class Views constructor(
 		val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
 		val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
 
-		actualVirtualWidth = (actualSize.width / ratioX).toInt()
-		actualVirtualHeight = (actualSize.height / ratioY).toInt()
+		actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
+		actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 
+        // @TODO: Create a parent to stage that is "invisible" in code but that affect the matrix so we don't adjust stage stuff?
 		stage.scaleX = ratioX
 		stage.scaleY = ratioY
 
-		stage.x = (((actualVirtualWidth - virtualWidth) * anchor.sx) * ratioX).toInt().toDouble()
-		stage.y = (((actualVirtualHeight - virtualHeight) * anchor.sy) * ratioY).toInt().toDouble()
+		stage.x = (((actualVirtualWidth - virtualWidth) * anchor.sx) * ratioX).toIntRound().toDouble()
+		stage.y = (((actualVirtualHeight - virtualHeight) * anchor.sy) * ratioY).toIntRound().toDouble()
 
-		actualVirtualLeft = -(stage.x / ratioX).toInt()
-		actualVirtualTop = -(stage.y / ratioY).toInt()
+		actualVirtualLeft = -(stage.x / ratioX).toIntRound()
+		actualVirtualTop = -(stage.y / ratioY).toIntRound()
 
         resizedEvent.apply {
             this.width = actualSize.width
