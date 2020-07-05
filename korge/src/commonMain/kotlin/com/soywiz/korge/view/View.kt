@@ -1721,9 +1721,9 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
     val iratio = if (inside) ratio else 1.0 - ratio
     if (doX) {
-        x = (bounds.x + (bounds.width * ratio)) - (width * iratio) - (padding * rratioM1_1)
+        x = (bounds.x + (bounds.width * ratio)) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {
-        y = (bounds.y + (bounds.height * ratio)) - (height * iratio) - (padding * rratioM1_1)
+        y = (bounds.y + (bounds.height * ratio)) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
     }
     return this
 }

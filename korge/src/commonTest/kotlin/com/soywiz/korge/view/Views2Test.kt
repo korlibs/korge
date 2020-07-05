@@ -4,6 +4,7 @@ import com.soywiz.korge.tests.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import kotlin.math.*
 import kotlin.test.*
 
 class Views2Test : ViewsForTesting(
@@ -56,6 +57,10 @@ class Views2Test : ViewsForTesting(
         )
     }
 
+    // @TODO: This should go into kotlin-test
+    private fun assertEquals(expect: Double, actual: Double, epsilon: Double) {
+        assertTrue { (expect - actual).absoluteValue <= epsilon }
+    }
 
     @Test
     fun testImageCenterOnSibling() = viewsTest {
@@ -72,6 +77,10 @@ class Views2Test : ViewsForTesting(
         val rect2 = image(bmp).size(RECT_WIDTH, RECT_HEIGHT).apply {
             centerOn(rect1)
         }
+
+        assertEquals(20.0, rect1.scaleX)
+        assertEquals(6.66666, rect1.scaleY, 0.001)
+
         assertEquals(
             Point(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
@@ -79,5 +88,12 @@ class Views2Test : ViewsForTesting(
             ),
             rect2.pos
         )
+    }
+
+    @Test
+    fun testImageLocalBounds() = viewsTest {
+        val image = image(Bitmap32(10, 10, Colors.TRANSPARENT_BLACK)).size(100, 100).xy(50, 50)
+        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBounds().toStringBounds())
+        assertEquals(Rectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
     }
 }

@@ -65,7 +65,7 @@ open class RectBase(
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
-		out.setTo(sLeft, sTop, bwidth, bheight)
+        out.setTo(sLeft, sTop, bwidth, bheight)
 	}
 
     /*
