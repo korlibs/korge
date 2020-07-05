@@ -1709,7 +1709,7 @@ fun <T : View> T.centerYOn(other: View): T = this.alignY(other, 0.5, true)
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
 
 fun <T : View> T.centerXOnStage(): T = this.centerXOn(root)
-fun <T : View> T.centerYOnStage(): T = this.centerXOn(root)
+fun <T : View> T.centerYOnStage(): T = this.centerYOn(root)
 fun <T : View> T.centerOnStage(): T = this.centerXOnStage().centerYOnStage()
 
 fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
