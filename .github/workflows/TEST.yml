@@ -16,6 +16,9 @@ on:
       - 'docs/**'
       - 'old/**'
 
+env:
+  NO_HEADLESS_TEST: true
+
 jobs:
   test-windows:
     runs-on: windows-latest
@@ -51,6 +54,9 @@ jobs:
       - uses: actions/checkout@v1
       #- { uses: actions/cache@v1, with: { path: '~/.gradle/caches', key: "${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-gradle-" } }
       #- { uses: actions/cache@v1, with: { path: '~/.konan', key: "${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}", restore-keys: "${{ runner.os }}-konan-" } }
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon  assemble check lint testDebugUnitTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository -x jsBrowserTest -x jsNodeTest
       - run: ./gradlew --no-daemon
       - run: ./gradlew --no-daemon jvmTest
       - run: ./gradlew --no-daemon check lint testDebugUnitTest
