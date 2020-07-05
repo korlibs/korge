@@ -35,7 +35,6 @@ open class ViewsForTesting @JvmOverloads constructor(
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}
-	val koruiEventDispatcher = EventDispatcher()
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override var width: Int = initialSize.width
@@ -85,7 +84,7 @@ open class ViewsForTesting @JvmOverloads constructor(
     }
 
     suspend fun mouseMoveTo(x: Int, y: Int) {
-        koruiEventDispatcher.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
+        gameWindow.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
         //views.update(frameTime)
         simulateFrame(count = 2)
     }
@@ -121,7 +120,7 @@ open class ViewsForTesting @JvmOverloads constructor(
             false -> mouseButtons and (1 shl button.id).inv()
             else -> mouseButtons
         }
-        koruiEventDispatcher.dispatch(
+        gameWindow.dispatch(
             MouseEvent(
                 type = type,
                 id = 0,
