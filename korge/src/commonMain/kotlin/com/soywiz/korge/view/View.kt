@@ -1480,8 +1480,10 @@ val View?.ancestorCount: Int get() {
     var count = 0
     var node = this
     while (node != null) {
-        count++
         node = node.parent
+        if (node != null) {
+            count++
+        }
     }
     return count
     /*
