@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: CALL gradlew.bat --no-daemon
         shell: cmd
-      - run: CALL gradlew.bat --no-daemon assemble check publishMingwX64PublicationToMavenRepository
+      - run: CALL gradlew.bat --no-daemon -Pkotlin.incremental.multiplatform=false -Pkotlin.native.disableCompilerDaemon=true -Porg.gradle.parallel=false -Porg.gradle.parallel.intra=false -Porg.gradle.configureondemand=true assemble check publishMingwX64PublicationToMavenRepository
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
