@@ -22,30 +22,53 @@ import kotlin.coroutines.*
 import kotlin.jvm.*
 import kotlin.math.max
 
-open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 10.milliseconds, val size: SizeInt = SizeInt(640, 480), val log: Boolean = false) {
+open class ViewsForTesting @JvmOverloads constructor(
+    val frameTime: TimeSpan = 10.milliseconds,
+    val windowSize: SizeInt = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
+    val virtualSize: SizeInt = SizeInt(windowSize.size.clone()),
+    val log: Boolean = false
+) {
 	val startTime = DateTime(0.0)
 	var time = startTime
 	val elapsed get() = time - startTime
-	//val dispatcher2 = TestCoroutineDispatcher(frameTime)
-	//val dispatcher = Dispatchers.Default
 
 	val timeProvider: TimeProvider = object : TimeProvider {
 		override fun now(): DateTime = time
 	}
 	val koruiEventDispatcher = EventDispatcher()
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-	val gameWindow = object : GameWindowLog() {
-		override val coroutineDispatcher = dispatcher
-	}
-	val viewsLog = ViewsLog(dispatcher, ag = if (log) LogAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT) else DummyAG(DefaultViewport.WIDTH, DefaultViewport.HEIGHT), gameWindow = gameWindow)
+    class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+        override var width: Int = initialSize.width
+        override var height: Int = initialSize.height
+        override val coroutineDispatcher = dispatcher
+    }
+
+	val gameWindow = TestGameWindow(windowSize, dispatcher)
+    val ag = if (log) LogAG(windowSize.width, windowSize.height) else DummyAG(windowSize.width, windowSize.height)
+	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow).also { viewsLog ->
+        viewsLog.views.virtualWidth = virtualSize.width
+        viewsLog.views.virtualHeight = virtualSize.height
+    }
 	val injector get() = viewsLog.injector
-	val ag get() = viewsLog.ag
     val logAg get() = ag as? LogAG?
+    val dummyAg get() = ag as? DummyAG?
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
 	val mouse get() = input.mouse
+
+    fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
+        logAg?.backWidth = width
+        logAg?.backHeight = height
+        dummyAg?.backWidth = width
+        dummyAg?.backHeight = height
+        gameWindow.width = width
+        gameWindow.height = height
+        views.scaleAnchor = scaleAnchor
+        views.scaleMode = scaleMode
+        gameWindow.dispatchReshapeEvent(0, 0, width, height)
+    }
 
     suspend fun <T> deferred(block: suspend (CompletableDeferred<T>) -> Unit): T {
         val deferred = CompletableDeferred<T>()
@@ -164,12 +187,12 @@ open class ViewsForTesting @JvmOverloads constructor(val frameTime: TimeSpan = 1
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
 	fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, block: suspend Stage.() -> Unit): Unit = suspendTest(timeout = timeout, cond = { !OS.isNative }) {
-        Korge.prepareViewsBase(views, koruiEventDispatcher, fixedSizeStep = frameTime)
+        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
-			override val size = this@ViewsForTesting.size
-			override val windowSize = this@ViewsForTesting.size
+			override val size = this@ViewsForTesting.windowSize
+			override val windowSize = this@ViewsForTesting.windowSize
 		})
 
 		var completed = false
