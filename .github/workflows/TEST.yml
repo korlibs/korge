@@ -31,7 +31,7 @@ jobs:
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest
         shell: cmd
-      - run: CALL gradlew.bat --no-daemon -Pkotlin.incremental.multiplatform=false -Pkotlin.native.disableCompilerDaemon=true -Porg.gradle.parallel=false -Porg.gradle.parallel.intra=false -Porg.gradle.configureondemand=true check
+      - run: CALL gradlew.bat --no-daemon check
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
