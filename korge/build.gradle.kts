@@ -1,7 +1,7 @@
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
-apply(plugin = "org.jetbrains.dokka")
+//apply(plugin = "org.jetbrains.dokka")
 
 korlibs {
 	exposeVersion()

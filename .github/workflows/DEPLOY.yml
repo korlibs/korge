@@ -6,6 +6,7 @@ on:
       - 'v*'
 
 env:
+  NO_HEADLESS_TEST: true
   FORCED_VERSION: ${{ github.ref }}
   BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
   BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
@@ -33,8 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: ./gradlew
-      - run: ./gradlew assemble check lint testDebugUnitTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon  assemble check lint testDebugUnitTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository
 
   publish-finalize:
     needs: [publish-windows, publish-mac, publish-linux]
