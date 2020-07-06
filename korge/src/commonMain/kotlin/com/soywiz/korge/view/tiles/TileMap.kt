@@ -109,7 +109,13 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
                 if (rx < 0 || rx >= intMap.width) continue
                 if (ry < 0 || ry >= intMap.height) continue
-                val tex = tileset[intMap[rx, ry]] ?: continue
+                val cell = intMap[rx, ry]
+                val cellData = cell.extract(0, 28)
+                val flipX = cell.extract(31)
+                val flipY = cell.extract(30)
+                val rotate = cell.extract(29)
+
+                val tex = tileset[cellData] ?: continue
 
                 val info = verticesPerTex.getOrPut(tex.bmp) {
                     infosPool.alloc().also { info ->
@@ -137,10 +143,22 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
                     val p3X = p0X + dVX
                     val p3Y = p0Y + dVY
 
-                    info.vertices.quadV(info.vcount++, p0X, p0Y, tex.tl_x, tex.tl_y, colMul, colAdd)
-                    info.vertices.quadV(info.vcount++, p1X, p1Y, tex.tr_x, tex.tr_y, colMul, colAdd)
-                    info.vertices.quadV(info.vcount++, p2X, p2Y, tex.br_x, tex.br_y, colMul, colAdd)
-                    info.vertices.quadV(info.vcount++, p3X, p3Y, tex.bl_x, tex.bl_y, colMul, colAdd)
+                    tempX[0] = tex.tl_x
+                    tempX[1] = tex.tr_x
+                    tempX[2] = tex.br_x
+                    tempX[3] = tex.bl_x
+
+                    tempY[0] = tex.tl_y
+                    tempY[1] = tex.tr_y
+                    tempY[2] = tex.br_y
+                    tempY[3] = tex.bl_y
+
+                    computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
+
+                    info.vertices.quadV(info.vcount++, p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
+                    info.vertices.quadV(info.vcount++, p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
                 }
 
                 info.icount += 6
@@ -149,6 +167,10 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
         }
         renderTilesCounter?.increment(count)
 	}
+
+    private val indices = IntArray(4)
+    private val tempX = FloatArray(4)
+    private val tempY = FloatArray(4)
 
 	// @TOOD: Use a TextureVertexBuffer or something
     @KorgeInternal
@@ -161,6 +183,37 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
     private val infos = arrayListOf<Info>()
     companion object {
         private val dummyTexturedVertexArray = TexturedVertexArray(0, IntArray(0))
+
+        fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
+            indices[0] = 0 // TL
+            indices[1] = 1 // TR
+            indices[2] = 2 // BR
+            indices[3] = 3 // BL
+
+            if (rotate) {
+                indices.swap(TR, BL)
+            }
+            if (flipY) {
+                indices.swap(TL, BL)
+                indices.swap(TR, BR)
+            }
+            if (flipX) {
+                indices.swap(TL, TR)
+                indices.swap(BL, BR)
+            }
+            return indices
+        }
+
+        private fun IntArray.swap(a: Int, b: Int): IntArray = this.apply {
+            val t = this[a]
+            this[a] = this[b]
+            this[b] = t
+        }
+
+        private const val TL = 0
+        private const val TR = 1
+        private const val BR = 2
+        private const val BL = 3
     }
     private val infosPool = Pool { Info(Bitmaps.transparent.bmp, dummyTexturedVertexArray) }
 
