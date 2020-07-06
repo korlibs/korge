@@ -153,19 +153,25 @@ class SceneContainer(
         injects.fastForEach { inject ->
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
-        val instance = sceneInjector.get(clazz)
-        currentScene = instance
+        val newScene = sceneInjector.get(clazz)
+        currentScene = newScene
 
         transitionView.transition = transition
-        transitionView.startNewTransition(instance._sceneViewContainer)
+        transitionView.startNewTransition(newScene._sceneViewContainer)
 
-        instance.sceneView.apply { instance.apply { sceneInit() } }
-
-        instance.launchImmediately {
-            instance.sceneView.apply { instance.apply { sceneMain() } }
+        withContext(newScene.coroutineContext) {
+            newScene.sceneView.apply { newScene.apply { sceneInit() } }
         }
 
-        oldScene?.sceneBeforeLeaving()
+        newScene.launchImmediately {
+            newScene.sceneView.apply { newScene.apply { sceneMain() } }
+        }
+
+        if (oldScene != null) {
+            withContext(oldScene.coroutineContext) {
+                oldScene.sceneBeforeLeaving()
+            }
+        }
 
         if (time > 0.seconds) {
             transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
@@ -173,16 +179,22 @@ class SceneContainer(
             transitionView.ratio = 1.0
         }
 
-        oldScene?.sceneDestroy()
+        if (oldScene != null) {
+            withContext(oldScene.coroutineContext) {
+                oldScene.sceneDestroy()
+            }
 
-        views.launchImmediately {
-            oldScene?.sceneAfterDestroyInternal()
+            oldScene.launchImmediately {
+                oldScene.sceneAfterDestroyInternal()
+            }
         }
         views.launchImmediately {
-            instance.sceneAfterInit()
+            withContext(newScene.coroutineContext) {
+                newScene.sceneAfterInit()
+            }
         }
 
-        return instance
+        return newScene
     }
 
 

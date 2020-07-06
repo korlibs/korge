@@ -342,7 +342,7 @@ class ViewsLog(
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views = Views(coroutineContext, ag, injector, input, timeProvider, stats, gameWindow)
+	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow)
 }
 
 fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture =
