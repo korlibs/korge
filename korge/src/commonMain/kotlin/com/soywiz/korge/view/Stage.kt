@@ -8,10 +8,11 @@ import kotlinx.coroutines.*
 /**
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
-class Stage(val views: Views) : Container()
+class Stage(override val views: Views) : Container()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
+    , ViewsScope
 {
     val injector get() = views.injector
     val ag get() = views.ag
