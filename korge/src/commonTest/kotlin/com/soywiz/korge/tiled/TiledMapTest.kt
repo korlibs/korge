@@ -1,9 +1,8 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.korge.*
+import com.soywiz.kmem.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.tests.*
-import com.soywiz.korge.util.*
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -77,5 +76,16 @@ class TiledMapTest : ViewsForTesting() {
         tileMap.intMap[0, 0] = 0
         tileMap.intMap[1, 0] = 1
         tileMap.render(views.renderContext)
+    }
+
+    @Test
+    fun testTileMapFlipRotateIndices() {
+        assertEquals(
+            "0123, 0321, 3210, 1230, 1032, 3012, 2301, 2103",
+            (0 until 8).joinToString(", ") {
+                TileMap.computeIndices(flipX = it.extract(2), flipY = it.extract(1), rotate = it.extract(0))
+                    .joinToString("")
+            }
+        )
     }
 }
