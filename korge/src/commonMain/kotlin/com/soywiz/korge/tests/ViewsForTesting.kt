@@ -198,9 +198,9 @@ open class ViewsForTesting @JvmOverloads constructor(
 		var completedException: Throwable? = null
 
 		this@ViewsForTesting.dispatcher.dispatch(coroutineContext, Runnable {
-			launchImmediately(dispatcher) {
+			launchImmediately(views.coroutineContext + dispatcher) {
 				try {
-					block(views.stage)
+                    block(views.stage)
 				} catch (e: Throwable) {
 					completedException = e
 				} finally {
