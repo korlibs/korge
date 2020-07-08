@@ -186,8 +186,8 @@ class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbol
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(),
 	AnElement, IText, IHtml {
 	private val textField = Text("", 16.0).apply {
-		textBounds.copyFrom(symbol.bounds)
-		html = symbol.initialHtml
+		textBounds.copyFrom(this@AnTextField.symbol.bounds)
+		html = this@AnTextField.symbol.initialHtml
 		relayout()
 	}
 

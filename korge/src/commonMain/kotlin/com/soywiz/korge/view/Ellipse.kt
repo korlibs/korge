@@ -48,7 +48,7 @@ open class Ellipse(
         clear()
         fill(Colors.WHITE) {
             //ellipse(radiusX, radiusY, radiusX, radiusY)
-            ellipse(0.0, 0.0, radiusX, radiusY)
+            ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
         }
     }
 }

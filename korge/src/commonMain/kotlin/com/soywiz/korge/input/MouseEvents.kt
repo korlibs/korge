@@ -370,15 +370,18 @@ internal inline fun <T : View?> T?.doMouseEvent(prop: KProperty1<MouseEvents, Si
     this?.mouse?.let { mouse -> prop.get(mouse).add { launchImmediately(mouse.coroutineContext) { handler(it) } } }
     return this
 }
+@DslMarker
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
+annotation class EventsDslMarker
 
-inline fun <T : View?> T.onClick(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::click, handler)
-inline fun <T : View?> T.onOver(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::over, handler)
-inline fun <T : View?> T.onOut(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::out, handler)
-inline fun <T : View?> T.onDown(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::down, handler)
-inline fun <T : View?> T.onDownFromOutside(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::downFromOutside, handler)
-inline fun <T : View?> T.onUp(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::up, handler)
-inline fun <T : View?> T.onUpOutside(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upOutside, handler)
-inline fun <T : View?> T.onUpAnywhere(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upAnywhere, handler)
-inline fun <T : View?> T.onMove(noinline handler: suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
+inline fun <T : View?> T.onClick(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::click, handler)
+inline fun <T : View?> T.onOver(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::over, handler)
+inline fun <T : View?> T.onOut(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::out, handler)
+inline fun <T : View?> T.onDown(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::down, handler)
+inline fun <T : View?> T.onDownFromOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::downFromOutside, handler)
+inline fun <T : View?> T.onUp(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::up, handler)
+inline fun <T : View?> T.onUpOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upOutside, handler)
+inline fun <T : View?> T.onUpAnywhere(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upAnywhere, handler)
+inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
 
 fun ViewsScope.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)

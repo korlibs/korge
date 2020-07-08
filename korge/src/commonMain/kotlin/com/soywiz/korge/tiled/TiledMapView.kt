@@ -34,7 +34,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
                                 }
                                 is TiledMap.Layer.Objects.Rect -> {
                                     if (gid != null) {
-                                        val tileTex = tiledMap.tileset[gid] ?: Bitmaps.transparent
+                                        val tileTex = this@TiledMapView.tiledMap.tileset[gid] ?: Bitmaps.transparent
                                         //println("tileTex[gid=$gid]: $tileTex!")
                                         shouldShow = true
                                         image(tileTex)

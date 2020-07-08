@@ -251,9 +251,9 @@ open class Graphics @JvmOverloads constructor(
                     (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
                 )
                 image.context2d {
-                    scale(renderedAtScaleX, renderedAtScaleY)
-                    translate(-bounds.x, -bounds.y)
-                    compoundShape.draw(this)
+                    scale(this@Graphics.renderedAtScaleX, this@Graphics.renderedAtScaleY)
+                    translate(-this@Graphics.bounds.x, -this@Graphics.bounds.y)
+                    this@Graphics.compoundShape.draw(this)
                 }
                 this.bitmap = image.slice()
             }

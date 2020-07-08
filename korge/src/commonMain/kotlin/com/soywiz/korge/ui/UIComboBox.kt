@@ -90,10 +90,10 @@ open class UIComboBox<T>(
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
 			itemsView.container.textButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
-				position(0, index * itemHeight)
+				position(0, index * this@UIComboBox.itemHeight)
 				onClick {
-					showItems = false
-					selectedIndex = index
+                    this@UIComboBox.showItems = false
+                    this@UIComboBox.selectedIndex = index
 				}
 			}
 		}

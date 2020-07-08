@@ -63,7 +63,7 @@ class RoundRect(
     private fun updateGraphics() {
         clear()
         fill(Colors.WHITE) {
-            roundRect(0, 0, width, height, rx, ry)
+            roundRect(0.0, 0.0, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
         }
     }
 }
