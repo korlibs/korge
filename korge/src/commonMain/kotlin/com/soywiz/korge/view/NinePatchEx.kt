@@ -6,12 +6,12 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.ninePatch(
-	tex: NinePatchEx.Tex, width: Double, height: Double, callback: @ViewsDslMarker NinePatchEx.() -> Unit
+	tex: NinePatchEx.Tex, width: Double, height: Double, callback: NinePatchEx.() -> Unit
 ) = NinePatchEx(tex, width, height).addTo(this, callback)
 
 inline fun Container.ninePatch(
 	ninePatch: NinePatchBitmap32, width: Double = ninePatch.dwidth, height: Double = ninePatch.dheight,
-	callback: @ViewsDslMarker NinePatchEx.() -> Unit
+	callback: NinePatchEx.() -> Unit
 ) = NinePatchEx(ninePatch, width, height).addTo(this, callback)
 
 class NinePatchEx(

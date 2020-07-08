@@ -30,6 +30,6 @@ class ColorMatrixEffectView(colorMatrix: Matrix3D) : EffectView() {
 @Deprecated("Use View.filter instead")
 inline fun Container.colorMatrixEffectView(
 	matrix: Matrix3D = Matrix3D(),
-	callback: @ViewsDslMarker ColorMatrixEffectView.() -> Unit = {}
+	callback: ColorMatrixEffectView.() -> Unit = {}
 ) =
 	ColorMatrixEffectView(matrix).addTo(this, callback)

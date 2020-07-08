@@ -8,7 +8,7 @@ inline fun Container.iconButton(
     height: Number,
     skin: UISkin = defaultUISkin,
     iconSkin: IconSkin = defaultCheckSkin,
-    block: @ViewsDslMarker UIButton.() -> Unit = {}
+    block: UIButton.() -> Unit = {}
 ): IconButton = iconButton(width.toDouble(), height.toDouble(), skin, iconSkin, block)
 
 inline fun Container.iconButton(
@@ -16,7 +16,7 @@ inline fun Container.iconButton(
     height: Double = 64.0,
     skin: UISkin = defaultUISkin,
     iconSkin: IconSkin = defaultCheckSkin,
-    block: @ViewsDslMarker UIButton.() -> Unit = {}
+    block: UIButton.() -> Unit = {}
 ): IconButton = IconButton(width, height, skin, iconSkin).addTo(this).apply(block)
 
 open class IconButton(

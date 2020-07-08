@@ -86,11 +86,11 @@ open class Graphics @JvmOverloads constructor(
 	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
 	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
-    inline fun fill(color: RGBA, alpha: Double = 1.0, callback: () -> Unit) = fill(toColorFill(color, alpha), callback)
+    inline fun fill(color: RGBA, alpha: Double = 1.0, callback: VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), callback)
     @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun fill(color: RGBA, alpha: Number, callback: () -> Unit) = fill(color, alpha.toDouble(), callback)
+    inline fun fill(color: RGBA, alpha: Number, callback: VectorBuilder.() -> Unit) = fill(color, alpha.toDouble(), callback)
 
-	inline fun fill(paint: Paint, callback: () -> Unit) {
+	inline fun fill(paint: Paint, callback: VectorBuilder.() -> Unit) {
 		beginFill(paint)
 		try {
 			callback()
@@ -100,7 +100,7 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun stroke(
-		color: RGBA, info: Context2d.StrokeInfo, callback: () -> Unit
+		color: RGBA, info: Context2d.StrokeInfo, callback: VectorBuilder.() -> Unit
 	) = stroke(
 		ColorPaint(color),
 		info, callback
@@ -109,7 +109,7 @@ open class Graphics @JvmOverloads constructor(
 	inline fun stroke(
 		paint: Paint,
 		info: Context2d.StrokeInfo,
-		callback: () -> Unit
+		callback: VectorBuilder.() -> Unit
 	) {
 		beginStroke(paint, info)
 		try {
@@ -123,7 +123,7 @@ open class Graphics @JvmOverloads constructor(
 		fill: Paint,
 		stroke: Paint,
 		strokeInfo: Context2d.StrokeInfo,
-		callback: () -> Unit
+		callback: VectorBuilder.() -> Unit
 	) {
 		beginFillStroke(fill, stroke, strokeInfo)
 		try {
@@ -251,9 +251,9 @@ open class Graphics @JvmOverloads constructor(
                     (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
                 )
                 image.context2d {
-                    scale(renderedAtScaleX, renderedAtScaleY)
-                    translate(-bounds.x, -bounds.y)
-                    compoundShape.draw(this)
+                    scale(this@Graphics.renderedAtScaleX, this@Graphics.renderedAtScaleY)
+                    translate(-this@Graphics.bounds.x, -this@Graphics.bounds.y)
+                    this@Graphics.compoundShape.draw(this)
                 }
                 this.bitmap = image.slice()
             }

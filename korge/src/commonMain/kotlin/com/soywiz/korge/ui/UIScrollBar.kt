@@ -13,7 +13,7 @@ inline fun Container.uiScrollBar(
     width: Number, height: Number, current: Number, pageSize: Number, totalSize: Number, buttonSize: Number, stepSize: Number,
     direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
     skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
-    block: @ViewsDslMarker UIScrollBar.() -> Unit = {}
+    block: UIScrollBar.() -> Unit = {}
 ): UIScrollBar = uiScrollBar(width.toDouble(), height.toDouble(), current.toDouble(), pageSize.toDouble(), totalSize.toDouble(), buttonSize.toDouble(),
     stepSize.toDouble(), direction, skin, block)
 
@@ -27,7 +27,7 @@ inline fun Container.uiScrollBar(
     stepSize: Double = pageSize / 10.0,
     direction: Direction = Direction.auto(width, height),
     skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
-    block: @ViewsDslMarker UIScrollBar.() -> Unit = {}
+    block: UIScrollBar.() -> Unit = {}
 ): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction, skin).addTo(this).apply(block)
 
 open class UIScrollBar(

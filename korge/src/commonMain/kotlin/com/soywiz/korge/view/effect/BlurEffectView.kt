@@ -79,6 +79,6 @@ class BlurEffectView(initialRadius: Double = 10.0) : EffectView() {
 @Deprecated("Use View.filter instead")
 inline fun Container.blurEffectView(
 	radius: Double = 10.0,
-	callback: @ViewsDslMarker BlurEffectView.() -> Unit = {}
+	callback: BlurEffectView.() -> Unit = {}
 ) =
 	BlurEffectView(radius).addTo(this, callback)

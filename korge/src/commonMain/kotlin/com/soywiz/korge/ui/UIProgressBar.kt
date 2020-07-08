@@ -6,7 +6,7 @@ import com.soywiz.korge.view.*
 inline fun Container.uiProgressBar(
 	width: Number, height: Number, current: Number, maximum: Number,
 	skin: UISkin = defaultUISkin,
-	block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
+	block: UIProgressBar.() -> Unit = {}
 ): UIProgressBar = uiProgressBar(width.toDouble(), height.toDouble(), current.toDouble(), maximum.toDouble(), skin, block)
 
 inline fun Container.uiProgressBar(
@@ -15,7 +15,7 @@ inline fun Container.uiProgressBar(
     current: Double = 0.0,
     maximum: Double = 1.0,
     skin: UISkin = defaultUISkin,
-    block: @ViewsDslMarker UIProgressBar.() -> Unit = {}
+    block: UIProgressBar.() -> Unit = {}
 ): UIProgressBar = UIProgressBar(width, height, current, maximum, skin).addTo(this).apply(block)
 
 open class UIProgressBar(

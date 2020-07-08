@@ -7,7 +7,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
-inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, callback: @ViewsDslMarker TiledMapView.() -> Unit = {}) =
+inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
 	TiledMapView(tiledMap, showShapes).addTo(this, callback)
 
 class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Container() {
@@ -34,7 +34,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
                                 }
                                 is TiledMap.Layer.Objects.Rect -> {
                                     if (gid != null) {
-                                        val tileTex = tiledMap.tileset[gid] ?: Bitmaps.transparent
+                                        val tileTex = this@TiledMapView.tiledMap.tileset[gid] ?: Bitmaps.transparent
                                         //println("tileTex[gid=$gid]: $tileTex!")
                                         shouldShow = true
                                         image(tileTex)

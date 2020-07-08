@@ -44,7 +44,7 @@ open class Circle(
     private fun updateGraphics() {
         clear()
         fill(Colors.WHITE) {
-            circle(radius, radius, radius)
+            circle(this@Circle.radius, this@Circle.radius, this@Circle.radius)
         }
     }
 }

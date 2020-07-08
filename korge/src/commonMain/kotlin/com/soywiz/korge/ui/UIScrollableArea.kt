@@ -13,8 +13,8 @@ inline fun Container.uiScrollableArea(
     horizontalScroll: Boolean = true,
     horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
     verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
-    config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
-    block: @ViewsDslMarker Container.() -> Unit = {}
+    config: UIScrollableArea.() -> Unit = {},
+    block: Container.() -> Unit = {}
 ): UIScrollableArea = uiScrollableArea(
     width.toDouble(), height.toDouble(), contentWidth.toDouble(), contentHeight.toDouble(), buttonSize.toDouble(),
     verticalScroll, horizontalScroll, horSkin, verSkin, config, block
@@ -30,8 +30,8 @@ inline fun Container.uiScrollableArea(
     horizontalScroll: Boolean = true,
     horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
     verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
-    config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
-    block: @ViewsDslMarker Container.() -> Unit = {}
+    config: UIScrollableArea.() -> Unit = {},
+    block: Container.() -> Unit = {}
 ): UIScrollableArea = UIScrollableArea(width, height, contentWidth, contentHeight, buttonSize, verticalScroll, horizontalScroll, horSkin, verSkin)
     .addTo(this).apply(config).also { block(it.container) }
 
@@ -65,8 +65,8 @@ open class UIScrollableArea(
     val clipContainer = clipContainer(viewportWidth, viewportHeight)
     val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
 
-    val horScrollBar = uiScrollBar(width, buttonSize, skin = horSkin) { onChange { onMoved() } }
-    val verScrollBar = uiScrollBar(buttonSize, height, skin = verSkin) { onChange { onMoved() } }
+    val horScrollBar = uiScrollBar(width, buttonSize, skin = horSkin) { onChange { this@UIScrollableArea.onMoved() } }
+    val verScrollBar = uiScrollBar(buttonSize, height, skin = verSkin) { onChange { this@UIScrollableArea.onMoved() } }
 
     init {
         calculateSizes()
