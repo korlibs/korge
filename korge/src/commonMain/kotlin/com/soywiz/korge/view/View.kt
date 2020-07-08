@@ -25,10 +25,6 @@ import kotlin.math.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
-@DslMarker
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
-annotation class ViewsDslMarker
-
 @Deprecated("", replaceWith = ReplaceWith("View"))
 typealias DisplayObject = View
 

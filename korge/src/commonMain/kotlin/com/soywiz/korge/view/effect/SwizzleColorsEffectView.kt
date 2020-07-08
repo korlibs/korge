@@ -22,5 +22,5 @@ class SwizzleColorsEffectView(initialSwizzle: String = "rgba") : EffectView() {
 
 @KorgeDeprecated
 @Deprecated("Use View.filter instead")
-inline fun Container.swizzleColorsEffectView(swizzle: String = "rgba", callback: @ViewsDslMarker SwizzleColorsEffectView.() -> Unit = {}) =
+inline fun Container.swizzleColorsEffectView(swizzle: String = "rgba", callback: SwizzleColorsEffectView.() -> Unit = {}) =
 	SwizzleColorsEffectView(swizzle).addTo(this, callback)

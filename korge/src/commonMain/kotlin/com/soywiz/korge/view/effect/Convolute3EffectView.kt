@@ -41,6 +41,6 @@ class Convolute3EffectView(val kernel: Matrix3D) : EffectView() {
 @Deprecated("Use View.filter instead")
 inline fun Container.convolute3EffectView(
 	kernel: Matrix3D = Matrix3D(),
-	callback: @ViewsDslMarker Convolute3EffectView.() -> Unit = {}
+	callback: Convolute3EffectView.() -> Unit = {}
 ) =
 	Convolute3EffectView(kernel).addTo(this, callback)

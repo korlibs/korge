@@ -13,8 +13,8 @@ inline fun Container.uiScrollableArea(
     horizontalScroll: Boolean = true,
     horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
     verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
-    config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
-    block: @ViewsDslMarker Container.() -> Unit = {}
+    config: UIScrollableArea.() -> Unit = {},
+    block: Container.() -> Unit = {}
 ): UIScrollableArea = uiScrollableArea(
     width.toDouble(), height.toDouble(), contentWidth.toDouble(), contentHeight.toDouble(), buttonSize.toDouble(),
     verticalScroll, horizontalScroll, horSkin, verSkin, config, block
@@ -30,8 +30,8 @@ inline fun Container.uiScrollableArea(
     horizontalScroll: Boolean = true,
     horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
     verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
-    config: @ViewsDslMarker UIScrollableArea.() -> Unit = {},
-    block: @ViewsDslMarker Container.() -> Unit = {}
+    config: UIScrollableArea.() -> Unit = {},
+    block: Container.() -> Unit = {}
 ): UIScrollableArea = UIScrollableArea(width, height, contentWidth, contentHeight, buttonSize, verticalScroll, horizontalScroll, horSkin, verSkin)
     .addTo(this).apply(config).also { block(it.container) }
 

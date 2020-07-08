@@ -16,7 +16,7 @@ inline fun Container.roundRect(
     ry: Number = rx,
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
-    callback: @ViewsDslMarker RoundRect.() -> Unit = {}
+    callback: RoundRect.() -> Unit = {}
 ) = roundRect(width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble(), color, autoScaling, callback)
 
 inline fun Container.roundRect(
@@ -26,7 +26,7 @@ inline fun Container.roundRect(
     ry: Double = rx,
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
-    callback: @ViewsDslMarker RoundRect.() -> Unit = {}
+    callback: RoundRect.() -> Unit = {}
 ) = RoundRect(width, height, rx, ry, color, autoScaling).addTo(this, callback)
 
 /**
