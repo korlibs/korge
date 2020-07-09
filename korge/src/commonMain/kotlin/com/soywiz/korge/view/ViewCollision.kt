@@ -10,29 +10,24 @@ import com.soywiz.korma.geom.vector.*
 internal class ViewCollisionContext {
     val tempRect1 = Rectangle()
     val tempRect2 = Rectangle()
-    val tempVectorPath1 = VectorPath()
-    val tempVectorPath2 = VectorPath()
+    val tempVectorPath1 = listOf(VectorPath())
+    val tempVectorPath2 = listOf(VectorPath())
 
     val ident = Matrix()
     val lmat = Matrix()
     val rmat = Matrix()
 
-    fun getVectorPath(view: View, out: VectorPath): VectorPath {
+    fun getVectorPath(view: View, out: List<VectorPath>): List<VectorPath> {
         val hitShape = view.hitShape
-        return when (hitShape) {
-            null -> {
-                // Includes anchoring
-                view.getLocalBounds(tempRect1)
-                out.clear()
-                val dispX = view.anchorDispX
-                val dispY = view.anchorDispY
-                out.rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.width, tempRect1.height)
-                out
-            }
-            else -> {
-                hitShape
-            }
-        }
+        val hitShapes = view.hitShapes
+        if (hitShapes != null) return hitShapes
+        if (hitShape != null) return listOf(hitShape)
+        view.getLocalBounds(tempRect1)
+        out[0].clear()
+        val dispX = view.anchorDispX
+        val dispY = view.anchorDispY
+        out[0].rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.width, tempRect1.height)
+        return out
     }
 
     fun getGlobalMatrix(view: View, out: Matrix): Matrix {
@@ -48,9 +43,14 @@ internal class ViewCollisionContext {
         right.getGlobalBounds(tempRect2)
         if (!tempRect1.intersects(tempRect2)) return false
         if (kind == CollisionKind.SHAPE) {
-            val leftPath = getVectorPath(left, tempVectorPath1)
-            val rightPath = getVectorPath(right, tempVectorPath2)
-            return VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))
+            val leftPaths = getVectorPath(left, tempVectorPath1)
+            val rightPaths = getVectorPath(right, tempVectorPath2)
+            leftPaths.fastForEach { leftPath ->
+                rightPaths.fastForEach { rightPath ->
+                    if  (VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))) return true
+                }
+            }
+            return false
         }
         return true
     }

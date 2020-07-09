@@ -95,6 +95,21 @@ class GraphicsTest {
         assertEquals(true, circle1.xy(160, 100).collidesWithShape(circle2.xy(0, 0)))
         assertEquals(false, circle1.xy(167, 100).collidesWithShape(circle2.xy(0, 0)))
     }
+
+    @Test
+    fun testMultiShapeHitTesting() {
+        val graphics = Graphics().apply {
+            fill(Colors.RED) {
+                circle(0.0, 0.0, 32.0)
+            }
+            fill(Colors.BLUE) {
+                circle(0.0, 0.0, 16.0)
+            }
+        }
+        assertEquals(graphics, graphics.hitTest(0, 0))
+        assertEquals(graphics, graphics.hitTest(20, 0))
+        assertEquals(null, graphics.hitTest(33, 0))
+    }
 }
 
 fun TestRenderContext() = RenderContext(LogAG())
