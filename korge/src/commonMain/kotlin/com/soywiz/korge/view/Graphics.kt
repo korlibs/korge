@@ -32,21 +32,36 @@ open class Graphics @JvmOverloads constructor(
     private var hitShapeVersion = -1
     private var hitShapeAnchorVersion = -1
 
-    private val tempVectorPath = VectorPath()
+    private var tempVectorPaths = arrayListOf<VectorPath>()
     private val tempMatrix = Matrix()
-    var customHitShape: VectorPath? = null
+    private var customHitShapes: List<VectorPath>? = null
+
     override var hitShape: VectorPath?
+        set(value) = run { customHitShapes = value?.let { listOf(it) } }
+        get() = hitShapes?.firstOrNull()
+
+    override var hitShapes: List<VectorPath>?
         set(value) {
-            customHitShape = value
+            customHitShapes = value
         }
         get() {
-            if (customHitShape != null) return customHitShape
+            if (customHitShapes != null) return customHitShapes
             if (hitShapeVersion != shapeVersion) {
                 hitShapeVersion = shapeVersion
-                tempVectorPath.clear()
-                tempVectorPath.write(compoundShape.getPath(), tempMatrix.identity())
+                tempVectorPaths.clear()
+
+                // @TODO: Try to combine polygons on KorGE 2.0 to have a single hitShape
+                for (shape in shapes) {
+                    //when (shape) {
+                        //is StyledShape -> shape.path?.let { tempVectorPaths.add(it) }
+                        //else ->
+                            tempVectorPaths.add(shape.getPath())
+                    //}
+                }
             }
-            return tempVectorPath
+
+            //println("AAAAAAAAAAAAAAAA")
+            return tempVectorPaths
         }
 
 	inline fun dirty(callback: () -> Unit): Graphics {

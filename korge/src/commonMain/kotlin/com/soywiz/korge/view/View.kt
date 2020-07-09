@@ -115,6 +115,7 @@ abstract class View internal constructor(
     }
 
     open var hitShape: VectorPath? = null
+    open var hitShapes: List<VectorPath>? = null
 
     companion object {
         //private val identity = Matrix()
@@ -1020,9 +1021,12 @@ abstract class View internal constructor(
         //println("lx=$lx,ly=$ly")
         //println("localBounds:$bounds")
 
-
-        if (hitTestUsingShapes == true || (hitTestUsingShapes == null && hitShape != null)) {
-            return if (hitShape!!.containsPoint(lx, ly)) this else null
+        val hitShape = this.hitShape
+        val hitShapes = this.hitShapes
+        if (hitTestUsingShapes == true || (hitTestUsingShapes == null && (hitShape != null || hitShapes != null))) {
+            hitShapes?.fastForEach { if (it.containsPoint(lx, ly)) return this }
+            if (hitShape != null && hitShape.containsPoint(lx, ly)) return this
+            return null
         } else {
             return this
         }
