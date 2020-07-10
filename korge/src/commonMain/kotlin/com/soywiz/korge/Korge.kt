@@ -11,6 +11,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*

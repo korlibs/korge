@@ -7,11 +7,25 @@ import kotlin.reflect.*
 
 class StorageItem<T : Any>(val storage: IStorage, val clazz: KClass<T>, val key: String, val mapper: ObjectMapper, val gen: (() -> T)?) {
     val isDefined: Boolean get() = key in storage
+    @Suppress("UNCHECKED_CAST")
+    val realGen: (() -> T)? = when {
+        gen != null -> gen
+        else -> when (clazz) {
+            Boolean::class -> ({ false } as (() -> T))
+            Int::class -> ({ 0 } as (() -> T))
+            Long::class -> ({ 0L } as (() -> T))
+            Float::class -> ({ 0f } as (() -> T))
+            Double::class -> ({ 0.0 } as (() -> T))
+            String::class -> ({ "" } as (() -> T))
+            else -> null
+        }
+    }
 	var value: T
 		set(value) { storage[key] = Json.stringify(mapper.toUntyped(clazz, value)) }
 		get () {
 			if (!isDefined) storage[key] = Json.stringify(mapper.toUntyped(clazz,
-                gen?.invoke() ?: error("Can't find '$key' and no default generator was defined")
+                realGen?.invoke()
+                    ?: error("Can't find '$key' and no default generator was defined")
             ))
 			return Json.parseTyped(clazz, storage[key], mapper)
 		}

@@ -1,30 +1,30 @@
 package com.soywiz.korge.service.storage
 
+import com.soywiz.korge.view.*
 import java.io.*
 import java.util.*
 
-actual object NativeStorage : IStorage {
+actual class NativeStorage actual constructor(val views: Views) : IStorage {
 	val props = Properties()
+    val file = File("game.storage")
 
 	init {
 		load()
 	}
 
 	private fun load() {
-		try {
-			FileInputStream(File("game.storage")).use { fis ->
-				props.load(fis)
-			}
-		} catch (e: IOException) {
-			e.printStackTrace()
-		}
-	}
+        if (!file.exists()) return
+
+        try {
+            FileInputStream(file).use { fis -> props.load(fis) }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
 
 	private fun save() {
 		try {
-			FileOutputStream(File("game.storage")).use { fout ->
-				props.store(fout, "")
-			}
+			FileOutputStream(file).use { fout -> props.store(fout, "") }
 		} catch (e: IOException) {
 			e.printStackTrace()
 		}

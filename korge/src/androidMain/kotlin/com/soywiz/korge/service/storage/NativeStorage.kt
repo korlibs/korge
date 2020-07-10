@@ -1,51 +1,31 @@
 package com.soywiz.korge.service.storage
 
-import java.io.*
-import java.util.*
+import android.content.*
+import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 
-actual object NativeStorage : IStorage {
-	val props = Properties()
+actual class NativeStorage actual constructor(val views: Views) : IStorage {
+    private val context = (views.gameWindow as AndroidGameWindow).androidContext
+    private val preferences = context.getSharedPreferences("KorgeNativeStorage", Context.MODE_PRIVATE)
 
-	init {
-		load()
-	}
-
-	private fun load() {
-		try {
-			FileInputStream(File("game.storage")).use { fis ->
-				props.load(fis)
-			}
-		} catch (e: IOException) {
-			e.printStackTrace()
-		}
-	}
-
-	private fun save() {
-		try {
-			FileOutputStream(File("game.storage")).use { fout ->
-				props.store(fout, "")
-			}
-		} catch (e: IOException) {
-			e.printStackTrace()
-		}
-	}
+    private inline fun edit(block: SharedPreferences.Editor.() -> Unit) {
+        preferences.edit().apply {
+            block()
+            apply()
+        }
+    }
 
 	actual override fun set(key: String, value: String) {
-		props[key] = value
-		save()
+        edit { putString(key, value) }
 	}
 
-	actual override fun getOrNull(key: String): String? {
-		return props[key]?.toString()
-	}
+	actual override fun getOrNull(key: String): String? = preferences.getString(key, null)
 
 	actual override fun remove(key: String) {
-		props.remove(key)
-		save()
+        edit { remove(key) }
 	}
 
 	actual override fun removeAll() {
-		props.clear()
-		save()
+        edit { removeAll() }
 	}
 }

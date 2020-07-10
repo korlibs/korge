@@ -13,6 +13,7 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -42,13 +43,13 @@ class Views constructor(
     val timeProvider: HRTimeProvider,
     val stats: Stats,
     val gameWindow: GameWindow
-) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
+) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope, ViewsContainer,
 	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
     override val views = this
 
     val keys get() = input.keys
 
-	var imageFormats = RegisteredImageFormats
+    var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
@@ -375,6 +376,11 @@ fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) =
 suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture =
 	texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
+@Deprecated("Use ViewsContainer")
+interface ViewsScope {
+    val views: Views
+}
+
 interface ViewsContainer {
 	val views: Views
 }
@@ -467,8 +473,4 @@ interface BoundsProvider {
         override val virtualRight: Double = 0.0
         override val virtualBottom: Double = 0.0
     }
-}
-
-interface ViewsScope {
-    val views: Views
 }
