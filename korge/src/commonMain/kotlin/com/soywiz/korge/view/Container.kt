@@ -7,7 +7,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
-inline fun Container.container(callback: Container.() -> Unit = {}) =
+inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {}) =
 	Container().addTo(this, callback)
 
 // For Flash compatibility
@@ -232,5 +232,5 @@ operator fun View?.plusAssign(view: View?) {
 	if (view != null) container?.addChild(view)
 }
 
-inline fun <T : View> T.addTo(instance: Container, callback: T.() -> Unit = {}) =
+inline fun <T : View> T.addTo(instance: Container, callback: @ViewDslMarker T.() -> Unit = {}) =
     this.addTo(instance).apply(callback)

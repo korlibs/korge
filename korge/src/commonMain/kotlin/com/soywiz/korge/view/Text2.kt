@@ -33,7 +33,7 @@ inline fun Container.text2(
     color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
     horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
     noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    block: Text2.() -> Unit = {}
+    block: @ViewDslMarker Text2.() -> Unit = {}
 ): Text2
     = Text2(text, fontSize, color, font, horizontalAlign, verticalAlign, renderer).addTo(this, block)
 

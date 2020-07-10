@@ -16,7 +16,7 @@ inline fun Container.uiCheckBox(
     textFont: Html.FontFace = defaultUIFont,
     skin: UISkin = defaultUISkin,
     checkIcon: IconSkin = defaultCheckSkin,
-    block: UICheckBox.() -> Unit = {}
+    block: @ViewDslMarker UICheckBox.() -> Unit = {}
 ): UICheckBox = uiCheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon, block)
 
 inline fun Container.uiCheckBox(
@@ -27,7 +27,7 @@ inline fun Container.uiCheckBox(
     textFont: Html.FontFace = defaultUIFont,
     skin: UISkin = defaultUISkin,
     checkIcon: IconSkin = defaultCheckSkin,
-    block: UICheckBox.() -> Unit = {}
+    block: @ViewDslMarker UICheckBox.() -> Unit = {}
 ): UICheckBox = UICheckBox(width, height, checked, text, textFont, skin, checkIcon).addTo(this).apply(block)
 
 open class UICheckBox(

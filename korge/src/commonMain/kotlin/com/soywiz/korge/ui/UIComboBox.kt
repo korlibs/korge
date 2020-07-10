@@ -13,7 +13,7 @@ inline fun <T> Container.uiComboBox(
 	items: List<T>,
 	verticalScroll: Boolean = true,
 	skin: ComboBoxSkin = defaultComboBoxSkin,
-	block: UIComboBox<T>.() -> Unit = {}
+	block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = uiComboBox(width.toDouble(), height.toDouble(), selectedIndex, items, verticalScroll, skin, block)
 
 inline fun <T> Container.uiComboBox(
@@ -23,7 +23,7 @@ inline fun <T> Container.uiComboBox(
     items: List<T>,
     verticalScroll: Boolean = true,
     skin: ComboBoxSkin = defaultComboBoxSkin,
-    block: UIComboBox<T>.() -> Unit = {}
+    block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(width, height, selectedIndex, items, verticalScroll, skin).addTo(this).apply(block)
 
 open class UIComboBox<T>(

@@ -4,7 +4,7 @@ import com.soywiz.korge.render.*
 
 inline fun Container.scaleView(
 	width: Int, height: Int, scale: Double = 2.0, filtering: Boolean = false,
-	callback: Container.() -> Unit = {}
+	callback: @ViewDslMarker Container.() -> Unit = {}
 ) = ScaleView(width, height, scale, filtering).addTo(this, callback)
 
 class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boolean = false) :

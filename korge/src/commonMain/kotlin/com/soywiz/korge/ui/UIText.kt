@@ -9,7 +9,7 @@ import com.soywiz.korma.geom.*
 inline fun Container.uiText(
     text: String, width: Number, height: Number,
     skin: TextSkin = defaultTextSkin,
-    block: UIText.() -> Unit = {}
+    block: @ViewDslMarker UIText.() -> Unit = {}
 ): UIText = uiText(text, width.toDouble(), height.toDouble(), skin, block)
 
 inline fun Container.uiText(
@@ -17,7 +17,7 @@ inline fun Container.uiText(
     width: Double = 128.0,
     height: Double = 64.0,
     skin: TextSkin = defaultTextSkin,
-    block: UIText.() -> Unit = {}
+    block: @ViewDslMarker UIText.() -> Unit = {}
 ): UIText = UIText(text, width, height, skin).addTo(this).apply(block)
 
 class UIText(

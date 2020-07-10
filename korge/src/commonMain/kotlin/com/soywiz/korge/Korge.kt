@@ -97,7 +97,7 @@ object Korge {
 		gameWindow: GameWindow? = null,
         timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
-        entry: suspend Stage.() -> Unit
+        entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
