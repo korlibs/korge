@@ -7,15 +7,15 @@ import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.vector.VectorPath
 
 inline fun Container.sprite(
-    initialAnimation: SpriteAnimation, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: Sprite.() -> Unit = {}
+    initialAnimation: SpriteAnimation, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
 ): Sprite = Sprite(initialAnimation, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.sprite(
-    texture: BmpSlice = Bitmaps.white, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: Sprite.() -> Unit = {}
+    texture: BmpSlice = Bitmaps.white, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
 ): Sprite = Sprite(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.sprite(
-    texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: Sprite.() -> Unit = {}
+    texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
 ): Sprite = Sprite(texture, anchorX, anchorY).addTo(this, callback)
 
 /**

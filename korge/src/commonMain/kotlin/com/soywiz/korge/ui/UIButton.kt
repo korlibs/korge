@@ -8,14 +8,14 @@ inline fun Container.uiButton(
 	width: Number,
 	height: Number,
 	skin: UISkin = defaultUISkin,
-	block: UIButton.() -> Unit = {}
+	block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = uiButton(width.toDouble(), height.toDouble(), skin, block)
 
 inline fun Container.uiButton(
     width: Double = 128.0,
     height: Double = 64.0,
     skin: UISkin = defaultUISkin,
-    block: UIButton.() -> Unit = {}
+    block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = UIButton(width, height, skin).addTo(this).apply(block)
 
 open class UIButton(

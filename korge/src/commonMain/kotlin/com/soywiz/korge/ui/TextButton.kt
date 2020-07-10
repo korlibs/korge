@@ -12,7 +12,7 @@ inline fun Container.textButton(
 	text: String = "Button",
 	skin: UISkin = defaultUISkin,
 	textFont: Html.FontFace = defaultUIFont,
-	block: TextButton.() -> Unit = {}
+	block: @ViewDslMarker TextButton.() -> Unit = {}
 ): TextButton = textButton(width.toDouble(), height.toDouble(), text, skin, textFont, block)
 
 inline fun Container.textButton(
@@ -21,7 +21,7 @@ inline fun Container.textButton(
     text: String = "Button",
     skin: UISkin = defaultUISkin,
     textFont: Html.FontFace = defaultUIFont,
-    block: TextButton.() -> Unit = {}
+    block: @ViewDslMarker TextButton.() -> Unit = {}
 ): TextButton = TextButton(width, height, text, skin, textFont).addTo(this).apply(block)
 
 open class TextButton(

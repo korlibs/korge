@@ -55,7 +55,6 @@ typealias DisplayObject = View
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */
 @OptIn(KorgeInternal::class)
-@KorDslMarker
 abstract class View internal constructor(
     /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
     val isContainer: Boolean
@@ -1586,11 +1585,7 @@ inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
 
-@DslMarker
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
-annotation class VectorBuilderDslMarker
-
-inline fun <T : View> T.hitShape(crossinline block: @VectorBuilderDslMarker VectorBuilder.() -> Unit): T {
+inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder.() -> Unit): T {
     buildPath { block() }.also {
         this.hitShape = it
     }
@@ -1891,3 +1886,7 @@ inline fun <T : View> T.alignBottomToTopOf(other: View, padding: Number): T =
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number): T =
     alignBottomToBottomOf(other, padding.toDouble())
+
+@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS) annotation class ViewDslMarker
+// @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
+//typealias ViewDslMarker = KorDslMarker
