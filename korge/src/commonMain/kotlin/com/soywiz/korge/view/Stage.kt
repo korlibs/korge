@@ -12,7 +12,7 @@ class Stage(override val views: Views) : Container()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
-    , ViewsScope
+    , ViewsScope, ViewsContainer
 {
     val injector get() = views.injector
     val ag get() = views.ag

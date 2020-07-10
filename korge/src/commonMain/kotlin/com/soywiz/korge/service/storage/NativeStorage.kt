@@ -11,4 +11,5 @@ expect class NativeStorage(views: Views) : IStorage {
 	override fun removeAll()
 }
 
-val Views.storage by Extra.PropertyThis<Views, NativeStorage> { NativeStorage(this) }
+val Views.storage: NativeStorage by Extra.PropertyThis<Views, NativeStorage> { NativeStorage(this) }
+val ViewsContainer.storage: NativeStorage get() = this.views.storage

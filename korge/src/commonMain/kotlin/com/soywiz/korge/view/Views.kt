@@ -43,7 +43,7 @@ class Views constructor(
     val timeProvider: HRTimeProvider,
     val stats: Stats,
     val gameWindow: GameWindow
-) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
+) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope, ViewsContainer,
 	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
     override val views = this
 
@@ -376,6 +376,11 @@ fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) =
 suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture =
 	texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
+@Deprecated("Use ViewsContainer")
+interface ViewsScope {
+    val views: Views
+}
+
 interface ViewsContainer {
 	val views: Views
 }
@@ -468,8 +473,4 @@ interface BoundsProvider {
         override val virtualRight: Double = 0.0
         override val virtualBottom: Double = 0.0
     }
-}
-
-interface ViewsScope {
-    val views: Views
 }
