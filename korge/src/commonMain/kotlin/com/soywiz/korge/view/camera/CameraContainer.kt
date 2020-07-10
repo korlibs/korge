@@ -10,15 +10,15 @@ inline fun Container.cameraContainer(
     width: Double,
     height: Double,
     camera: Camera = Camera(0.0, 0.0, width, height),
-    noinline decoration: @ViewsDslMarker CameraContainer.() -> Unit = {},
-    content: @ViewsDslMarker Container.() -> Unit = {}
+    noinline decoration: @ViewDslMarker CameraContainer.() -> Unit = {},
+    content: @ViewDslMarker Container.() -> Unit = {}
 ) = CameraContainer(width, height, camera, decoration).addTo(this).also { content(it.content) }
 
 class CameraContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,
     camera: Camera = Camera(0.0, 0.0, width, height),
-    decoration: @ViewsDslMarker CameraContainer.() -> Unit = {}
+    decoration: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, true), View.Reference {
 
     private val contentContainer = Container()
