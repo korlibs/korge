@@ -14,8 +14,8 @@ class NativeStorageTest : ViewsForTesting() {
     fun test() = viewsTest {
         val demo = views.storage.item<Int>("hello")
         assertEquals(false, demo.isDefined)
-        //assertEquals(0, demo.value)
-        assertFailsWith<Throwable> { demo.value }
+        assertEquals(0, demo.value)
+        //assertFailsWith<Throwable> { demo.value }
         demo.value = 10
         assertEquals(true, demo.isDefined)
         assertEquals(10, demo.value)
