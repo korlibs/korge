@@ -98,20 +98,33 @@ class Camera(
         cancelFollowing?.cancel()
         cancelFollowing = view.addUpdater {
             val camera = this@Camera
-            val cxcenter = camera.x + camera.width * camera.anchorX
-            val cycenter = camera.y + camera.height * camera.anchorY
-            val vxcenter = x + width / 2
-            val vycenter = y + height / 2
-            val dx = cxcenter - vxcenter
-            val dy = cycenter - vycenter
+
+            camera.x = view.x + width / 2
+            camera.y = view.y + height / 2
+
+
+            /*
+            val cxcenter = (camera.width * camera.anchorX)
+            val cycenter = (camera.height * camera.anchorY)
+            val vxcenter = (x + width / 2)
+            val vycenter = (y + height / 2)
+            camera.x = cxcenter - vxcenter
+            camera.y = cycenter - vycenter
+            println("camera=[${camera.width}, ${camera.height}], [${camera.anchorX}, ${camera.anchorY}]")
+            println("view=[${view.x}, ${view.y}]")
+             */
+
+            /*
+
+            println("dx=$dx, dy=$dy")
+
             val adx = abs(dx) - threshold
             val ady = abs(dy) - threshold
             if (adx > 0 || ady > 0) {
-                camera.xy(
-                    camera.x - dx.sign * adx,
-                    camera.y - dy.sign * ady
-                )
+                camera.x -= dx.sign * adx
+                camera.y -= dy.sign * ady
             }
+            */
         }
     }
 
