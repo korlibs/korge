@@ -44,6 +44,7 @@ class Views constructor(
     val gameWindow: GameWindow
 ) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope,
 	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
+    override val views = this
 
     val keys get() = input.keys
 
@@ -52,7 +53,6 @@ class Views constructor(
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
-	override val views = this
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
 
@@ -323,6 +323,22 @@ class Views constructor(
 
 	fun dispose() {
 	}
+
+    @KorgeInternal
+    fun getWindowBounds(view: View, out: Rectangle = Rectangle()): Rectangle {
+        val bounds = view.getGlobalBounds(out)
+        return bounds.setBounds(
+            globalToWindowX(bounds.left, bounds.top),
+            globalToWindowY(bounds.left, bounds.top),
+            globalToWindowX(bounds.right, bounds.bottom),
+            globalToWindowY(bounds.right, bounds.bottom)
+        )
+    }
+
+    /** Transform global coordinates [x] and [y] into coordinates in the window space X */
+    fun globalToWindowX(x: Double, y: Double): Double = stage.localMatrix.transformX(x, y)
+    /** Transform global coordinates [x] and [y] into coordinates in the window space Y */
+    fun globalToWindowY(x: Double, y: Double): Double = stage.localMatrix.transformY(x, y)
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {

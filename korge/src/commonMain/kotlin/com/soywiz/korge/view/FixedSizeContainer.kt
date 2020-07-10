@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -30,10 +31,11 @@ open class FixedSizeContainer(
 
     private val tempBounds = Rectangle()
 
+    @OptIn(KorgeInternal::class)
     override fun renderInternal(ctx: RenderContext) {
         if (clip) {
             val c2d = ctx.ctx2d
-            val bounds = getGlobalBounds(tempBounds)
+            val bounds = stage?.views?.getWindowBounds(this, tempBounds) ?: getGlobalBounds(tempBounds)
             c2d.scissor(bounds) {
                 super.renderInternal(ctx)
             }
