@@ -3,10 +3,11 @@ package com.soywiz.korge.service.storage
 import com.soywiz.kds.*
 import com.soywiz.kds.atomic.KdsAtomicRef
 import com.soywiz.korge.native.*
+import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 
-actual object NativeStorage : IStorage {
+actual class NativeStorage actual constructor(val views: Views) : IStorage {
     private fun saveStr(data: String) = KorgeSimpleNativeSyncIO.writeBytes("settings.json", data.toByteArray(UTF8))
     private fun loadStr(): String = KorgeSimpleNativeSyncIO.readBytes("settings.json").toString(UTF8)
 

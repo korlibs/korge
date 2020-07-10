@@ -1,9 +1,10 @@
 package com.soywiz.korge.service.storage
 
+import com.soywiz.korge.view.*
 import java.io.*
 import java.util.*
 
-actual object NativeStorage : IStorage {
+actual class NativeStorage actual constructor(val views: Views) : IStorage {
 	val props = Properties()
 
 	init {

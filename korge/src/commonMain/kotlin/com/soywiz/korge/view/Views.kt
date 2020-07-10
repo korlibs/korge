@@ -13,6 +13,7 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -48,7 +49,7 @@ class Views constructor(
 
     val keys get() = input.keys
 
-	var imageFormats = RegisteredImageFormats
+    var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
