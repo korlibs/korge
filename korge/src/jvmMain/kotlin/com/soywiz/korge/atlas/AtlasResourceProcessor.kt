@@ -8,11 +8,12 @@ import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.encode
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.dynamic.mapper.Mapper
+import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.stringifyTyped
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
@@ -25,6 +26,8 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	override val outputExtension: String = "atlas.json"
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
+        val mapper = ObjectMapper().jvmFallback()
+
 		// @TODO: Ignored file content. Use atlas to store information like max width/height, scale, etc.
 		//val atlasPath0 = inputFile.readString().trim()
 		//val atlasPath0 = ""
@@ -41,7 +44,7 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 
 		val outputImageFile = outputFile.withCompoundExtension("atlas.png")
 
-        val atlases = AtlasPacker.pack(bitmaps)
+        val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
         val atlas = atlases.atlases.first()
 
 		outputImageFile.write(
@@ -51,7 +54,7 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		//println(Json.stringify(atlasInfo, pretty = true))
 
 		outputFile.withCompoundExtension("atlas.json")
-			.writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = Mapper))
+			.writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
 
 		//Atlas.Factory()
 		//println(files)
