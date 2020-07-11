@@ -3,14 +3,15 @@ package com.soywiz.korge.atlas
 import com.soywiz.korge.resources.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.util.*
 import kotlinx.coroutines.channels.*
-import org.junit.*
 import org.junit.Test
 import kotlin.test.*
 
 class AtlasResourceProcessorTest {
+    // @TODO: Do not test on windows since CI is checking out files converting \n to \r\n and SHA-1 file is different because of this :/
     @Test
-    fun name() = suspendTest {
+    fun name() = suspendTest({ !OS.isWindows }) {
         val memoryVfs = MemoryVfs()
         memoryVfs["atlas"].mkdir()
         val processed1 = AtlasResourceProcessor.process(resourcesVfs["atlas/simple.atlas"], memoryVfs)

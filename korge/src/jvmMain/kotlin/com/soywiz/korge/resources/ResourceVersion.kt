@@ -7,7 +7,7 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.encoding.hex
-import com.soywiz.krypto.SHA1
+import com.soywiz.krypto.*
 
 data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: String, val configSha1: String = "") {
 	suspend fun writeMeta(metaFile: VfsFile) {
@@ -31,9 +31,8 @@ data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: S
 
 		suspend fun fromFile(file: VfsFile, loaderVersion: Int): ResourceVersion {
 			val configFile = file.appendExtension("config")
-			val hash = SHA1.digest(file.readBytes()).hex
-			val configHash =
-				if (configFile.exists()) SHA1.digest(configFile.readBytes()).hex else ""
+			val hash = file.readBytes().sha1().hex
+			val configHash = if (configFile.exists()) configFile.readBytes().sha1().hex else ""
 			return ResourceVersion(file.baseName, loaderVersion, hash, configHash)
 		}
 
