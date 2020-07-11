@@ -1,9 +1,10 @@
 package com.soywiz.korge.tests
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.kds.mapWhile
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -21,6 +22,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
 import kotlin.math.max
+import kotlin.time.*
 
 open class ViewsForTesting @JvmOverloads constructor(
     val frameTime: TimeSpan = 10.milliseconds,
@@ -211,6 +213,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 
 		withTimeout(timeout ?: TimeSpan.NULL) {
 			while (!completed) {
+                //println("FRAME")
 				simulateFrame()
 				dispatcher.executePending()
 			}
@@ -238,28 +241,65 @@ open class ViewsForTesting @JvmOverloads constructor(
 		}
 	}
 
-	inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
-		val hasMore get() = timedTasks.isNotEmpty() || tasks.isNotEmpty()
+    class TimedTask2(val time: DateTime, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
+        var exception: Throwable? = null
+        override fun toString(): String = "${time.unixMillisLong}"
+    }
+
+    inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
+		val hasMore get() = timedTasks2.isNotEmpty() || tasks.isNotEmpty()
 
 		override fun now() = time.unixMillisDouble.hrMilliseconds
 
-		override fun executePending() {
-			//println("executePending.hasMore=$hasMore")
-			try {
-				val timedTasks = mapWhile({ timedTasks.isNotEmpty() }) { timedTasks.removeHead() }
+        val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
 
-				timedTasks.fastForEach { item ->
-					time = DateTime.fromUnix(max(time.unixMillis, item.time.millisecondsDouble))
-					if (item.exception != null) {
-						item.continuation?.resumeWithException(item.exception!!)
-						if (item.callback != null) {
-							item.exception?.printStackTrace()
-						}
-					} else {
-						item.continuation?.resume(Unit)
-						item.callback?.run()
-					}
-				}
+        override fun invokeOnTimeout(timeMillis: Long, block: Runnable): DisposableHandle {
+            //println("invokeOnTimeout: $timeMillis")
+            val task = TimedTask2(time + timeMillis.toDouble().milliseconds, null, block)
+            timedTasks2.add(task)
+            return object : DisposableHandle {
+                override fun dispose() {
+                    timedTasks2.remove(task)
+                }
+            }
+        }
+
+        override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
+            //println("scheduleResumeAfterDelay: $timeMillis")
+            val task = TimedTask2(time + timeMillis.toDouble().milliseconds, continuation, null)
+            continuation.invokeOnCancellation {
+                task.exception = it
+            }
+            timedTasks2.add(task)
+        }
+
+        override fun executePending() {
+			//println("executePending.hasMore=$hasMore")
+            var skippingFrames = 0
+			try {
+                // Skip time after several frames without activity
+                if (tasks.isEmpty() && timedTasks2.isNotEmpty()) {
+                    skippingFrames++
+                    if (skippingFrames >= 100) {
+                        time = timedTasks2.head.time
+                    }
+                } else {
+                    skippingFrames = 0
+                }
+
+                while (timedTasks2.isNotEmpty() && time >= timedTasks2.head.time) {
+                    val item = timedTasks2.removeHead()
+                    //println("TIME[${time.unixMillisLong}]: TIMED TASK. Executing: $item")
+                    if (item.exception != null) {
+                        item.continuation?.resumeWithException(item.exception!!)
+                        if (item.callback != null) {
+                            item.exception?.printStackTrace()
+                        }
+                    } else {
+                        item.continuation?.resume(Unit)
+                        item.callback?.run()
+                    }
+                }
 
 				while (tasks.isNotEmpty()) {
 					val task = tasks.dequeue()
