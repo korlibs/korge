@@ -35,7 +35,7 @@ class TweenComponent(
 			cancelled = true
 			//println("TWEEN CANCELLED[$this, $vs]: $elapsed")
 		}
-		update(0.0)
+		update(0.hrNanoseconds)
 	}
 
 	fun completeOnce() {
@@ -60,7 +60,9 @@ class TweenComponent(
 		setTo(elapsed)
 		callback(easing(ratio))
 
-		if (ratio >= 1.0) {
+        //println("UPDATE! : dt=${dt.timeSpan} : ratio=$ratio")
+
+        if (ratio >= 1.0) {
 			//println(" --> completed")
 			return completeOnce()
 		}
@@ -78,8 +80,10 @@ class TweenComponent(
 		vs.fastForEach { v ->
 			val durationInTween = v.duration.coalesce { (hrtime - v.startTime) }
 			val elapsedInTween = (elapsed - v.startTime).clamp(0.hrNanoseconds, durationInTween)
-			val ratioInTween = if (durationInTween <= 0.hrNanoseconds) 1.0 else elapsedInTween / durationInTween
-			v.set(easing(ratioInTween))
+			val ratioInTween = if (durationInTween <= 0.hrNanoseconds || elapsedInTween >= durationInTween) 1.0 else elapsedInTween / durationInTween
+            val easedRatioInTween = easing(ratioInTween)
+            //println("easedRatioInTween: $easedRatioInTween")
+			v.set(easedRatioInTween)
 		}
 	}
 
@@ -178,10 +182,18 @@ operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::
 operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateAny, includeStart = true)
 
 @PublishedApi
-internal fun _interpolate(ratio: Double, l: Double, r: Double) = ratio.interpolate(l, r)
+internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = when {
+    ratio < 0.0 -> l
+    ratio >= 1.0 -> r
+    else -> ratio.interpolate(l, r)
+}
 
 @PublishedApi
-internal fun _interpolateFloat(ratio: Double, l: Float, r: Float) = ratio.interpolate(l, r)
+internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = when {
+    ratio < 0.0 -> l
+    ratio >= 1.0 -> r
+    else -> ratio.interpolate(l, r)
+}
 
 @PublishedApi
 internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateAny(l, r)
@@ -190,7 +202,21 @@ internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateA
 internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
 
 @PublishedApi
-internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = Angle(_interpolate(ratio, l.radians, r.radians))
+internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle= _interpolateAngleAny(ratio, l, r, minimizeAngle = true)
+
+@PublishedApi
+internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle= _interpolateAngleAny(ratio, l, r, minimizeAngle = false)
+
+internal fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
+    if (!minimizeAngle) return Angle(_interpolate(ratio, l.radians, r.radians))
+    val ln = l.normalized
+    val rn = r.normalized
+    return when {
+        (rn - ln).absoluteValue <= 180.degrees -> Angle(_interpolate(ratio, ln.radians, rn.radians))
+        ln < rn -> Angle(_interpolate(ratio, (ln + 360.degrees).radians, rn.radians)).normalized
+        else -> Angle(_interpolate(ratio, ln.radians, (rn + 360.degrees).radians)).normalized
+    }
+}
 
 @PublishedApi
 internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
@@ -220,6 +246,8 @@ inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
 inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle, includeStart = false)
 inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) =
 	V2(this, initial, end, ::_interpolateAngle, includeStart = true)
+
+fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
 
 inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
 inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) =
