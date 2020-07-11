@@ -2,6 +2,7 @@ package com.soywiz.korge.view.camera
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
@@ -9,6 +10,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
+@KorgeExperimental
 class Camera(
     x: Double = 0.0,
     y: Double = 0.0,
@@ -16,8 +18,8 @@ class Camera(
     height: Double = 100.0,
     zoom: Double = 1.0,
     angle: Angle = 0.degrees,
-    override var anchorX: Double = 0.5,
-    override var anchorY: Double = 0.5
+    override var anchorX: Double = 0.0,
+    override var anchorY: Double = 0.0
 ) : MutableInterpolable<Camera>, Interpolable<Camera>, Anchorable {
 
     var x: Double by Observable(x, before = { if (withUpdate) setTo(x = it) })
@@ -40,22 +42,22 @@ class Camera(
     }
 
     // when we don't want to update CameraContainer
-    internal inline fun withoutUpdate(callback: Camera.() -> Unit) {
+    private inline fun withoutUpdate(callback: Camera.() -> Unit) {
         val prev = withUpdate
         withUpdate = false
         callback()
         withUpdate = prev
     }
 
-    internal fun createTweenPropertiesTo(other: Camera): Array<V2<*>> = arrayOf(
-        this::x[other.x],
-        this::y[other.y],
-        this::width[other.width],
-        this::height[other.height],
-        this::zoom[other.zoom],
-        this::angle[other.angle],
-        this::anchorX[other.anchorX],
-        this::anchorY[other.anchorY]
+    fun setTo(other: Camera) = setTo(
+        other.x,
+        other.y,
+        other.width,
+        other.height,
+        other.zoom,
+        other.angle,
+        other.anchorX,
+        other.anchorY
     )
 
     fun setTo(
@@ -67,28 +69,67 @@ class Camera(
         angle: Angle = this.angle,
         anchorX: Double = this.anchorX,
         anchorY: Double = this.anchorY
-    ) = setTo(Camera(x, y, width, height, zoom, angle, anchorX, anchorY))
-
-    fun setTo(other: Camera): Camera {
+    ): Camera {
         if (withUpdate) {
-            container?.setTo(other)
+            container?.setTo(x, y, width, height, zoom, angle, anchorX, anchorY)
         }
         withoutUpdate {
-            this.x = other.x
-            this.y = other.y
-            this.width = other.width
-            this.height = other.height
-            this.zoom = other.zoom
-            this.angle = other.angle
-            this.anchorX = other.anchorX
-            this.anchorY = other.anchorY
+            this.x = x
+            this.y = y
+            this.width = width
+            this.height = height
+            this.zoom = zoom
+            this.angle = angle
+            this.anchorX = anchorX
+            this.anchorY = anchorY
         }
         return this
     }
 
-    suspend fun tweenTo(other: Camera, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-        withoutUpdate {
-            container?.tweenTo(other, time = time, easing = easing)
+    suspend fun tweenTo(other: Camera, time: TimeSpan, easing: Easing = Easing.LINEAR) = tweenTo(
+        x = other.x,
+        y = other.y,
+        width = other.width,
+        height = other.height,
+        zoom = other.zoom,
+        angle = other.angle,
+        anchorX = other.anchorX,
+        anchorY = other.anchorY,
+        time = time,
+        easing = easing
+    )
+
+    suspend fun tweenTo(
+        x: Double = this.x,
+        y: Double = this.y,
+        width: Double = this.width,
+        height: Double = this.height,
+        zoom: Double = this.zoom,
+        angle: Angle = this.angle,
+        anchorX: Double = this.anchorX,
+        anchorY: Double = this.anchorY,
+        time: TimeSpan,
+        easing: Easing = Easing.LINEAR
+    ) {
+        val initialX = this.x
+        val initialY = this.y
+        val initialWidth = this.width
+        val initialHeight = this.height
+        val initialZoom = this.zoom
+        val initialAngle = this.angle
+        val initialAnchorX = this.anchorX
+        val initialAnchorY = this.anchorY
+        container?.tween(time = time, easing = easing) { ratio ->
+            setTo(
+                ratio.interpolate(initialX, x),
+                ratio.interpolate(initialY, y),
+                ratio.interpolate(initialWidth, width),
+                ratio.interpolate(initialHeight, height),
+                ratio.interpolate(initialZoom, zoom),
+                ratio.interpolate(initialAngle, angle),
+                ratio.interpolate(initialAnchorX, anchorX),
+                ratio.interpolate(initialAnchorY, anchorY)
+            )
         }
     }
 
@@ -98,33 +139,13 @@ class Camera(
         cancelFollowing?.cancel()
         cancelFollowing = view.addUpdater {
             val camera = this@Camera
-
-            camera.x = view.x + width / 2
-            camera.y = view.y + height / 2
-
-
-            /*
-            val cxcenter = (camera.width * camera.anchorX)
-            val cycenter = (camera.height * camera.anchorY)
-            val vxcenter = (x + width / 2)
-            val vycenter = (y + height / 2)
-            camera.x = cxcenter - vxcenter
-            camera.y = cycenter - vycenter
-            println("camera=[${camera.width}, ${camera.height}], [${camera.anchorX}, ${camera.anchorY}]")
-            println("view=[${view.x}, ${view.y}]")
-             */
-
-            /*
-
-            println("dx=$dx, dy=$dy")
-
-            val adx = abs(dx) - threshold
-            val ady = abs(dy) - threshold
-            if (adx > 0 || ady > 0) {
-                camera.x -= dx.sign * adx
-                camera.y -= dy.sign * ady
+            val x = view.x + view.width / 2
+            val y = view.y + view.height / 2
+            val dx = x - camera.x
+            val dy = y - camera.y
+            if (abs(dx) > threshold || abs(dy) > threshold) {
+                camera.xy(x - dx.sign * threshold, y - dy.sign * threshold)
             }
-            */
         }
     }
 
@@ -183,21 +204,21 @@ fun Camera.anchor(anchorX: Double, anchorY: Double): Camera {
 }
 
 suspend fun Camera.moveTo(x: Double, y: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(x = x, y = y), time = time, easing = easing)
+    tweenTo(x = x, y = y, time = time, easing = easing)
 }
 
 suspend fun Camera.moveBy(dx: Double, dy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(x = x + dx, y = y + dy), time = time, easing = easing)
+    tweenTo(x = x + dx, y = y + dy, time = time, easing = easing)
 }
 
 suspend fun Camera.resizeTo(width: Double, height: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(width = width, height = height), time = time, easing = easing)
+    tweenTo(width = width, height = height, time = time, easing = easing)
 }
 
 suspend fun Camera.rotate(angle: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(angle = this.angle + angle), time = time, easing = easing)
+    tweenTo(angle = this.angle + angle, time = time, easing = easing)
 }
 
 suspend fun Camera.zoom(value: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(copy(zoom = value), time = time, easing = easing)
+    tweenTo(zoom = value, time = time, easing = easing)
 }
