@@ -10,12 +10,10 @@ import com.soywiz.korim.color.*
 internal fun ViewsContainer.installFpsDebugOverlay() {
     val frequencies = Deque<Int>()
     var previousTime = DateTime.now()
-    //var globalMaxFps = 0
     var frames = 0
-    val MAX_FREQUENCY_VALUES = 100
+    val MAX_FREQUENCIES_SIZE = 50
     views.debugHandlers.add { ctx ->
         val scale = ctx.ag.devicePixelRatio
-        //val scale = 2.0
 
         val fontSize = 8.0 * scale
         val currentTime = DateTime.now()
@@ -23,12 +21,10 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         val elapsedFrequency = elapsedTime.toFrequency().hertz.toIntRound()
         if (frames > 3) {
             frequencies += elapsedFrequency
-            if (frequencies.size > MAX_FREQUENCY_VALUES) {
+            if (frequencies.size > MAX_FREQUENCIES_SIZE) {
                 frequencies.removeFirst()
             }
         }
-
-        //println(frequencies.toList() + ", $elapsedTime, ${currentTime.unixMillisLong}, ${previousTime.unixMillisLong}")
 
         frames++
         previousTime = currentTime
@@ -41,15 +37,14 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
             ctx.drawText(Fonts.defaultFont, fontSize, text, x = x, y = y, colMul = Colors.WHITE)
         }
 
-        drawTextWithShadow("${elapsedFrequency}fps : [${minFps}-${maxFps}]", 0, 0)
+        drawTextWithShadow("FPS: ${elapsedFrequency}, range: [${minFps}-${maxFps}]", 0, 0)
 
         val graphLeft = 1f
         val graphTop = (fontSize * 2).toFloat()
-        val overlayWidth = 100 * scale
+        val overlayWidth = 120f * scale.toFloat()
         val overlayHeight = 30 * scale
-        val overlayHeightGap = 5f
+        val overlayHeightGap = 5.0
 
-        //globalMaxFps = kotlin.math.max(globalMaxFps, maxFps)
         var previousX = 0f
         var previousY = 0f
         renderContext.debugLineRenderContext.line(
@@ -58,15 +53,15 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         )
         renderContext.debugLineRenderContext.line(
             graphLeft, graphTop + overlayHeight.toFloat(),
-            graphLeft + overlayWidth.toFloat(), graphTop + overlayHeight.toFloat()
+            graphLeft + overlayWidth, graphTop + overlayHeight.toFloat()
         )
 
         for (n in 0 until frequencies.size) {
             val y = (overlayHeight - frequencies[n].toDouble().convertRange(
-                0.0, maxFps.toDouble(),
-                overlayHeightGap.toDouble(), overlayHeight.toDouble()
-            ).toFloat() + graphTop).toFloat()
-            val x = graphLeft + (n.toFloat() * overlayWidth.toFloat() / MAX_FREQUENCY_VALUES.toFloat())
+                minFps.toDouble() - 5.0, maxFps.toDouble(),
+                overlayHeightGap, overlayHeight
+            ) + graphTop).toFloat()
+            val x = graphLeft + (n.toFloat() * overlayWidth / MAX_FREQUENCIES_SIZE.toFloat())
             if (n > 0) {
                 renderContext.debugLineRenderContext.line(previousX, previousY, x, y)
             }
