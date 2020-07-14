@@ -38,6 +38,11 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         fun installDebugExtensionOnce(views: Views) {
             views.mouseDebugHandlerOnce {
                 views.debugHandlers += { ctx ->
+                    val scale = ctx.ag.devicePixelRatio
+                    //val scale = 2.0
+
+                    var yy = 60.toDouble() * scale
+                    val lineHeight = 8.toDouble() * scale
                     val mouseHit = hitTest(views)
                     if (mouseHit != null) {
                         val bounds = mouseHit.getLocalBounds()
@@ -52,11 +57,12 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                         )
                         renderContext.drawText(
                             Fonts.defaultFont,
-                            16.0,
+                            lineHeight.toDouble(),
                             mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
                             x = 0,
-                            y = 0
+                            y = yy.toInt()
                         )
+                        yy += lineHeight
                     }
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
@@ -72,11 +78,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             m = mouseHitResultUsed.globalMatrix
                         )
                         var vview = mouseHitResultUsed
-                        var yy = 16
                         while (vview != null) {
-                            renderContext.drawText(Fonts.defaultFont, 16.0, vview.toString(), x = 0, y = yy)
+                            renderContext.drawText(Fonts.defaultFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
                             vview = vview?.parent
-                            yy += 16
+                            yy += lineHeight
                         }
                     }
                 }

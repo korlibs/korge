@@ -171,6 +171,7 @@ class Views constructor(
             renderContext.finish()
             agBitmapTextureManager.afterRender()
         }
+        installFpsDebugOverlay()
     }
 
 	fun dumpStats() {
