@@ -57,10 +57,11 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         )
 
         for (n in 0 until frequencies.size) {
-            val y = (overlayHeight - frequencies[n].toDouble().convertRange(
+            val scaledFreq = frequencies[n].toDouble().convertRange(
                 minFps.toDouble() - 5.0, maxFps.toDouble(),
                 overlayHeightGap, overlayHeight
-            ) + graphTop).toFloat()
+            )
+            val y = (graphTop + overlayHeight - scaledFreq).toFloat()
             val x = graphLeft + (n.toFloat() * overlayWidth / MAX_FREQUENCIES_SIZE.toFloat())
             if (n > 0) {
                 renderContext.debugLineRenderContext.line(previousX, previousY, x, y)
