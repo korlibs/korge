@@ -19,7 +19,7 @@ open class Templates(
 
     @PublishedApi
     internal suspend fun cache(name: String, callback: suspend () -> Template): Template = when {
-		// @TODO: Kotlin 1.4-M3 regression bug
+		// @TODO: Kotlin 1.4-M3 regression bug: https://youtrack.jetbrains.com/issue/KT-40337
         //cache -> tcache(name) { callback() }
 		cache -> tcache.call(name) { callback() }
         else -> callback()

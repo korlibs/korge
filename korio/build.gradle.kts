@@ -1,5 +1,10 @@
+val coroutinesVersion: String by project
+
 dependencies {
-	add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7-1.4-M3")
+	add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+	add("commonMainApi", project(":klock"))
+	add("commonMainApi", project(":kds"))
+	add("commonMainApi", project(":kmem"))
 }
 /*
 import com.soywiz.korlibs.korlibs
@@ -12,9 +17,7 @@ val kmemVersion: String by project
 val coroutinesVersion: String by project
 
 dependencies {
-	add("commonMainApi", "com.soywiz.korlibs.klock:klock:$klockVersion")
-    add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
-    add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:$kmemVersion")
+
 
     add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 

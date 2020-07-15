@@ -94,10 +94,18 @@ subprojects {
 				dependsOn(commonTest)
 			}
 
+			val nonJsMain by creating {
+				dependsOn(commonMain)
+			}
+			val nonJsTest by creating {
+				dependsOn(commonTest)
+			}
+
 			// Default source set for JVM-specific sources and dependencies:
 			val jvmMain by getting {
 				dependsOn(concurrentMain)
 				dependsOn(nonNativeCommonMain)
+				dependsOn(nonJsMain)
 				dependencies {
 					implementation(kotlin("stdlib-jdk8"))
 				}
@@ -106,6 +114,7 @@ subprojects {
 			val jvmTest by getting {
 				dependsOn(concurrentTest)
 				dependsOn(nonNativeCommonTest)
+				dependsOn(nonJsTest)
 				dependencies {
 					implementation(kotlin("test-junit"))
 				}
