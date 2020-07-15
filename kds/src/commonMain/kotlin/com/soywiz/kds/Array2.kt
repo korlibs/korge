@@ -83,12 +83,10 @@ data class Array2<TGen>(val width: Int, val height: Int, val data: Array<TGen>) 
     }
 
     override fun equals(other: Any?): Boolean {
-        return (other is Array2<*/*TGen*/>) && this.width == other.width && this.height == other.height && this.data.contentEquals(
-            other.data
-        )
+        return (other is Array2<*/*TGen*/>) && this.width == other.width && this.height == other.height && this.data.contentEquals(other.data)
     }
 
-    override fun hashCode(): Int = width + height + data.hashCode()
+    override fun hashCode(): Int = width + height + data.contentHashCode()
 
     private fun index(x: Int, y: Int): Int {
         if ((x !in 0 until width) || (y !in 0 until height)) throw IndexOutOfBoundsException()
