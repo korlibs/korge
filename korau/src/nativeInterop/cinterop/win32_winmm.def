@@ -1,0 +1,8 @@
+package = platform.windows.winmm
+#headers = wtypes.h mmsystem.h
+#compilerOpts = -DUNICODE -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -DWINAPI_FAMILY=3 -DOEMRESOURCE -Wno-incompatible-pointer-types -Wno-deprecated-declarations
+linkerOpts = -lwinmm
+#noStringConversion =
+depends = platform.windows
+
+---

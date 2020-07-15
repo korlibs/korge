@@ -1,0 +1,48 @@
+dependencies {
+	if (hasAndroid) {
+		androidMainApi "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+		androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+	}
+
+	commonMainApi "com.soywiz.korlibs.korgw:korgw:$korgwVersion"
+	commonMainApi "com.soywiz.korlibs.korau:korau:$korauVersion"
+	commonMainApi "com.soywiz.korlibs.klogger:klogger:$kloggerVersion"
+
+	commonTestApi "com.soywiz.korlibs.korgw:korgw:$korgwVersion"
+	commonTestApi "com.soywiz.korlibs.korau:korau:$korauVersion"
+	commonTestApi "com.soywiz.korlibs.klogger:klogger:$kloggerVersion"
+
+	/////
+
+	commonMainApi "com.soywiz.korlibs.korev:korev:$korevVersion"
+
+	commonMainApi "com.soywiz.korlibs.korinject:korinject:$korinjectVersion"
+	commonMainApi "com.soywiz.korlibs.klock:klock:$klockVersion"
+
+	commonMainApi "com.soywiz.korlibs.kgl:kgl:$koragVersion"
+	commonMainApi "com.soywiz.korlibs.korag:korag:$koragVersion"
+	commonMainApi "com.soywiz.korlibs.korag:korag-opengl:$koragVersion"
+	commonMainApi "com.soywiz.korlibs.korma:korma:$kormaVersion"
+
+	commonMainApi "com.soywiz.korlibs.korim:korim:$korimVersion"
+	commonMainApi "com.soywiz.korlibs.korio:korio:$korioVersion"
+	commonMainApi "com.soywiz.korlibs.kds:kds:$kdsVersion"
+	commonMainApi "com.soywiz.korlibs.kmem:kmem:$kmemVersion"
+
+	///
+
+	commonTestApi "com.soywiz.korlibs.korev:korev:$korevVersion"
+
+	commonTestApi "com.soywiz.korlibs.korinject:korinject:$korinjectVersion"
+	commonTestApi "com.soywiz.korlibs.klock:klock:$klockVersion"
+
+	commonTestApi "com.soywiz.korlibs.kgl:kgl:$koragVersion"
+	commonTestApi "com.soywiz.korlibs.korag:korag:$koragVersion"
+	commonTestApi "com.soywiz.korlibs.korag:korag-opengl:$koragVersion"
+	commonTestApi "com.soywiz.korlibs.korma:korma:$kormaVersion"
+
+	commonTestApi "com.soywiz.korlibs.korim:korim:$korimVersion"
+	commonTestApi "com.soywiz.korlibs.korio:korio:$korioVersion"
+	commonTestApi "com.soywiz.korlibs.kds:kds:$kdsVersion"
+	commonTestApi "com.soywiz.korlibs.kmem:kmem:$kmemVersion"
+}

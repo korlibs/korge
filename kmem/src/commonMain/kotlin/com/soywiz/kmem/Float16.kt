@@ -1,0 +1,113 @@
+@file:Suppress("EXPERIMENTAL_FEATURE_WARNING", "NOTHING_TO_INLINE")
+
+package com.soywiz.kmem
+
+import kotlin.math.*
+
+/**
+ * Represents a floating point value of 16 bits. Also known as Half-precision floating-point format (IEEE 754-2008).
+ * This is an inline class backed by a [UShort].
+ * No operations defined for this class, you should convert from and into other values.
+ * To get its internal representation, call the [toRawBits] function.
+ *
+ * Mantissa/fraction: 10 bits
+ * Exponent: 5 bits
+ * Sign: 1 bit
+ *
+ * Significance: stored 10 bits (but can achieve 11 bits of integral precision)
+ *
+ * @see https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+ */
+
+@UseExperimental(ExperimentalUnsignedTypes::class)
+inline class Float16(val rawBits: UShort) {
+    @PublishedApi
+    internal constructor(value: Double) : this(doubleToIntBits(value))
+
+    val value: Double get() = intBitsToDouble(rawBits)
+
+    fun toFloat() = value.toFloat()
+    fun toDouble() = value
+
+    /** Return the internal bits representation (16-bits) as [UShort] */
+    fun toBits(): UShort = rawBits
+    /** Return the internal bits representation (16-bits) as [UShort] */
+    fun toRawBits(): UShort = rawBits
+
+    override fun toString(): String = toDouble().toString()
+
+    companion object {
+        const val FLOAT16_EXPONENT_BASE = 15
+
+        fun fromBits(bits: UShort): Float16 = Float16(bits)
+        fun fromBits(bits: Int): Float16 = Float16(bits.toUShort())
+
+        fun intBitsToDouble(word: UShort): Double {
+            val w = word.toInt()
+            val sign = if ((w and 0x8000) != 0) -1 else 1
+            val exponent = (w ushr 10) and 0x1f
+            val significand = w and 0x3ff
+            return when (exponent) {
+                0 -> when (significand) {
+                    0 -> if (sign < 0) -0.0 else +0.0
+                    else -> sign * 2.0.pow((1 - FLOAT16_EXPONENT_BASE).toDouble()) * (significand / 1024) // subnormal number
+                }
+                31 -> when {
+                    significand != 0 -> Double.NaN
+                    sign < 0 -> Double.NEGATIVE_INFINITY
+                    else -> Double.POSITIVE_INFINITY
+                }
+                // normal number
+                else -> sign * 2.0.pow((exponent - FLOAT16_EXPONENT_BASE).toDouble()) * (1 + significand / 1024)
+            }
+        }
+
+        fun doubleToIntBits(value: Double): UShort {
+            val dword = value.toFloat().reinterpretAsInt()
+
+            return when {
+                (dword and 0x7FFFFFFF) == 0 -> dword ushr 16
+                else -> {
+                    val sign = dword and 0x80000000.toInt()
+                    val exponent = dword and 0x7FF00000
+                    var significand = dword and 0x000FFFFF
+
+                    when (exponent) {
+                        0 -> sign ushr 16
+                        0x7FF00000 -> if (significand == 0) ((sign ushr 16) or 0x7C00) else 0xFE00
+                        else -> {
+                            val signedExponent = (exponent ushr 20) - 1023 + 15
+                            when {
+                                signedExponent >= 0x1F -> (significand ushr 16) or 0x7C00
+                                signedExponent <= 0 -> {
+                                    val halfSignificand = if ((10 - signedExponent) > 21) {
+                                        0
+                                    } else {
+                                        significand = significand or 0x00100000
+                                        val add = if (((significand ushr (10 - signedExponent)) and 0x00000001) != 0) 1 else 0
+                                        (significand ushr (11 - signedExponent)) + add
+                                    }
+                                    ((sign ushr 16) or halfSignificand)
+                                }
+                                else -> {
+                                    val halfSignificand = significand ushr 10
+                                    val out = (sign or (signedExponent shl 10) or halfSignificand)
+                                    if ((significand and 0x00000200) != 0) out + 1 else out
+                                }
+                            }
+                        }
+                    }
+                }
+            }.toUShort()
+        }
+    }
+}
+
+/** Converts value into [Float16] */
+fun Int.toFloat16(): Float16 = Float16(this.toDouble())
+/** Converts value into [Float16] */
+fun Double.toFloat16(): Float16 = Float16(this)
+/** Converts value into [Float16] */
+fun Float.toFloat16(): Float16 = Float16(this.toDouble())
+/** Converts value into [Float16] */
+inline fun Number.toFloat16(): Float16 = Float16(this.toDouble())

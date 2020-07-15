@@ -1,0 +1,1 @@
+opusenc --discard-comments --bitrate 32 --padding 0 wav1.wav opus1.opus

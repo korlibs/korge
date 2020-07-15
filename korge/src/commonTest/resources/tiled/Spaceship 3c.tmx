@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="24" height="24" tilewidth="64" tileheight="64" infinite="0" nextlayerid="9" nextobjectid="13">
+ <tileset firstgid="1" name="Spaceship 3" tilewidth="64" tileheight="64" tilecount="224" columns="8">
+  <image source="Spaceship 3.png" width="512" height="1792"/>
+  <tile id="0">
+   <properties>
+    <property name="OBJECT_TYPE" value="FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="135">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="136">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="137">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="138">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="139">
+   <properties>
+    <property name="OBJECT_TYPE" value="SECRET_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="140">
+   <properties>
+    <property name="OBJECT_TYPE" value="SECRET_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="141">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="142">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="143">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="144">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="145">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR"/>
+   </properties>
+  </tile>
+  <tile id="146">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="147">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="148">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="149">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="150">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="151">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="152">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="153">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_DOOR"/>
+   </properties>
+  </tile>
+  <tile id="154">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="155">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="156">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="157">
+   <properties>
+    <property name="OBJECT_TYPE" value="HEALING_PLATFORM"/>
+   </properties>
+  </tile>
+  <tile id="158">
+   <properties>
+    <property name="OBJECT_TYPE" value="MEDICAL_CABINET"/>
+   </properties>
+  </tile>
+  <tile id="159">
+   <properties>
+    <property name="OBJECT_TYPE" value="MEDICAL_CABINET"/>
+   </properties>
+  </tile>
+  <tile id="160">
+   <properties>
+    <property name="OBJECT_TYPE" value="LOCKER"/>
+   </properties>
+  </tile>
+  <tile id="161">
+   <properties>
+    <property name="OBJECT_TYPE" value="CRYOSLEEP"/>
+   </properties>
+  </tile>
+  <tile id="162">
+   <properties>
+    <property name="OBJECT_TYPE" value="CRYOSLEEP"/>
+   </properties>
+  </tile>
+  <tile id="163">
+   <properties>
+    <property name="OBJECT_TYPE" value="CREW_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="164">
+   <properties>
+    <property name="OBJECT_TYPE" value="CREW_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="165">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="166">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="167">
+   <properties>
+    <property name="OBJECT_TYPE" value="MAIN_VIEWSCREEN"/>
+   </properties>
+  </tile>
+  <tile id="168">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="169">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="170">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENTERTAINMENT_CENTER"/>
+   </properties>
+  </tile>
+  <tile id="171">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="172">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="173">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMMON_TABLE"/>
+   </properties>
+  </tile>
+  <tile id="174">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="175">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="176">
+   <properties>
+    <property name="OBJECT_TYPE" value="FOOD_SERVICE"/>
+   </properties>
+  </tile>
+  <tile id="177">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="178">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="179">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="180">
+   <properties>
+    <property name="OBJECT_TYPE" value="DANCE_FLOOR"/>
+   </properties>
+  </tile>
+  <tile id="181">
+   <properties>
+    <property name="OBJECT_TYPE" value="ARMORY"/>
+   </properties>
+  </tile>
+  <tile id="182">
+   <properties>
+    <property name="OBJECT_TYPE" value="ARMORY"/>
+   </properties>
+  </tile>
+  <tile id="183">
+   <properties>
+    <property name="OBJECT_TYPE" value="TERMINAL"/>
+   </properties>
+  </tile>
+  <tile id="184">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="185">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="186">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="187">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CORE"/>
+   </properties>
+  </tile>
+  <tile id="188">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="189">
+   <properties>
+    <property name="OBJECT_TYPE" value="COMPUTER_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="190">
+   <properties>
+    <property name="OBJECT_TYPE" value="WORK_BENCH"/>
+   </properties>
+  </tile>
+  <tile id="191">
+   <properties>
+    <property name="OBJECT_TYPE" value="WORK_BENCH"/>
+   </properties>
+  </tile>
+  <tile id="192">
+   <properties>
+    <property name="OBJECT_TYPE" value="SPARE_PARTS"/>
+   </properties>
+  </tile>
+  <tile id="193">
+   <properties>
+    <property name="OBJECT_TYPE" value="SPARE_PARTS"/>
+   </properties>
+  </tile>
+  <tile id="194">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE_GEN"/>
+   </properties>
+  </tile>
+  <tile id="195">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="196">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="197">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="198">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="199">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="200">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="201">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="202">
+   <properties>
+    <property name="OBJECT_TYPE" value="SHUTTLE"/>
+   </properties>
+  </tile>
+  <tile id="203">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="204">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="205">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINES"/>
+   </properties>
+  </tile>
+  <tile id="206">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINE_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="207">
+   <properties>
+    <property name="OBJECT_TYPE" value="ENGINE_CONTROLS"/>
+   </properties>
+  </tile>
+  <tile id="208">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="209">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="210">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="211">
+   <properties>
+    <property name="OBJECT_TYPE" value="TELEPORT"/>
+   </properties>
+  </tile>
+  <tile id="212">
+   <properties>
+    <property name="OBJECT_TYPE" value="CARGO"/>
+   </properties>
+  </tile>
+  <tile id="213">
+   <properties>
+    <property name="OBJECT_TYPE" value="DRONE_BAY"/>
+   </properties>
+  </tile>
+  <tile id="214">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR_ACTIVATOR_BLUE"/>
+   </properties>
+  </tile>
+  <tile id="215">
+   <properties>
+    <property name="OBJECT_TYPE" value="DOOR_ACTIVATOR_RED"/>
+   </properties>
+  </tile>
+  <tile id="216">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_1"/>
+   </properties>
+  </tile>
+  <tile id="217">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_2"/>
+   </properties>
+  </tile>
+  <tile id="218">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_3"/>
+   </properties>
+  </tile>
+  <tile id="219">
+   <properties>
+    <property name="OBJECT_TYPE" value="USE_MARKER_4"/>
+   </properties>
+  </tile>
+  <tile id="220">
+   <properties>
+    <property name="OBJECT_TYPE" value="BLOCKED_MARKER"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer id="1" name="Floor" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,
+0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Walls" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,52,2,3,3,3,3,3,3,3,3,4,5,0,0,0,0,0,0,
+0,0,0,0,0,0,42,53,19,19,19,19,19,54,55,19,56,6,0,0,0,0,0,0,
+36,49,11,11,12,9,51,7,0,0,0,0,0,63,58,0,51,7,0,0,0,0,0,0,
+48,53,19,19,76,10,50,23,0,0,0,0,0,63,58,0,62,7,0,0,0,0,0,0,
+47,7,0,0,75,74,73,70,71,71,71,60,65,64,59,60,61,7,0,0,0,0,0,0,
+46,7,0,0,122,121,72,67,68,68,68,66,67,68,68,66,69,8,9,0,0,0,0,0,
+45,77,11,11,78,79,0,125,65,71,71,60,65,71,71,123,114,113,10,11,11,11,12,13,
+33,43,44,39,40,80,123,124,127,68,68,66,67,68,126,119,0,112,111,19,19,19,110,14,
+0,42,53,54,82,81,119,63,58,0,0,0,0,0,0,58,0,118,115,0,0,0,109,15,
+0,41,7,122,121,122,121,63,58,0,0,0,0,0,0,58,0,117,116,0,0,0,109,15,
+0,29,77,83,84,85,119,63,58,0,0,0,0,0,0,58,0,117,116,0,0,0,109,15,
+36,37,38,39,40,86,120,63,59,71,71,60,65,71,64,58,0,106,107,11,11,11,108,16,
+35,88,19,19,73,87,0,72,67,68,68,66,67,68,68,120,104,105,20,19,19,19,18,17,
+0,0,0,0,122,121,125,65,130,133,129,65,123,125,65,60,103,22,21,0,0,0,0,0,
+0,0,0,0,91,92,93,94,131,132,134,135,119,124,127,66,102,7,0,0,0,0,0,0,
+34,89,11,11,90,20,31,6,57,63,58,63,58,63,59,60,101,7,0,0,0,0,0,0,
+33,32,19,19,18,21,30,7,57,63,58,63,58,122,128,66,100,7,0,0,0,0,0,0,
+0,0,0,0,0,0,29,77,11,95,96,95,96,97,98,11,99,23,0,0,0,0,0,0,
+0,0,0,0,0,0,28,27,26,26,26,26,26,26,26,26,25,24,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Objects" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,3221225634,3221225635,0,0,0,163,162,0,157,156,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,3221225633,0,0,0,0,0,161,0,158,155,0,0,0,0,0,0,0,
+0,213,213,213,214,0,0,3221225634,3221225635,0,0,0,163,162,0,0,159,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,3221225633,0,0,0,0,0,161,0,0,160,0,0,0,0,0,0,0,
+0,211,212,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,210,209,1610612920,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,170,171,0,1,0,0,0,0,0,0,0,164,0,0,0,
+0,0,206,0,207,208,0,0,0,1,1,0,172,173,174,0,0,0,0,0,165,0,166,0,
+0,0,205,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,167,0,
+0,0,204,0,0,0,0,0,180,179,0,1,1,1,0,0,0,0,0,0,164,0,168,0,
+0,0,0,0,0,0,0,0,181,178,0,1,175,1,1,0,0,0,0,0,165,0,0,0,
+0,202,203,0,2684354744,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,200,201,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,198,199,0,0,0,0,191,0,0,0,190,0,0,0,0,183,0,0,0,0,0,0,0,
+0,196,197,0,195,0,0,192,0,0,0,189,0,0,184,0,182,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,193,0,0,186,185,0,0,0,0,161,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,194,0,0,187,188,0,0,1610612920,163,162,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="4" name="Doors" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,137,0,0,0,137,0,0,0,0,0,0,0,0,
+0,0,0,0,138,139,0,0,0,0,0,136,0,0,0,136,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,137,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,136,0,0,0,0,0,138,139,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,138,139,138,139,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,137,0,0,0,0,0,138,139,0,0,0,0,0,
+153,154,0,0,0,0,0,0,0,0,0,136,0,0,0,0,0,0,0,0,0,0,0,0,
+152,151,0,0,138,139,0,0,0,144,145,0,0,0,0,137,0,0,0,0,0,0,0,0,
+149,150,0,0,0,0,0,0,0,143,146,0,0,0,0,136,0,0,0,0,0,0,0,0,
+148,147,0,0,0,0,0,0,0,0,0,0,0,0,0,140,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,138,142,141,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="5" name="Door_Activators" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,215,0,0,0,215,0,0,0,0,0,0,0,0,
+0,0,0,0,1610612951,2684354775,0,0,0,0,0,3221225687,0,0,0,3221225687,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,215,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3221225687,0,0,0,0,0,1610612951,2684354775,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1610612951,2684354775,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,1610612952,2684354776,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,215,0,0,0,0,0,1610612951,2684354775,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3221225687,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,215,215,0,0,0,216,0,0,0,0,0,0,0,0,0,
+0,0,0,0,1610612952,2684354776,0,0,0,3221225687,3221225687,0,0,0,3221225688,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,215,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3221225687,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,1610612952,2684354776,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="6" name="Use_Markers" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1610612953,0,2684354777,0,0,0,219,3221225691,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,1610612953,0,0,0,2684354777,0,0,219,3221225691,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1610612953,0,2684354777,0,0,0,2684354777,0,0,0,0,0,0,0,0,
+0,217,217,217,217,0,0,0,1610612953,0,0,0,2684354777,0,0,2684354777,0,0,0,0,0,0,0,0,
+0,219,3221225691,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,219,3221225691,2684354779,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,3221225689,3221225689,3221225689,0,0,0,0,2684354777,0,0,0,0,
+0,0,0,0,1610612955,1610612955,0,0,217,217,217,0,0,0,0,0,0,0,0,2684354777,0,0,218,0,
+0,0,0,1610612953,0,0,0,0,0,0,0,0,217,217,217,0,0,0,0,0,0,0,218,0,
+0,0,0,0,0,0,0,0,219,3221225691,0,0,3221225689,3221225689,3221225689,0,0,0,0,2684354777,0,0,218,0,
+0,0,0,0,0,0,0,0,219,3221225691,0,0,0,0,0,0,0,0,0,2684354777,0,0,0,0,
+0,0,0,0,1610612955,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,1610612953,3221225689,0,0,0,1610612953,0,0,219,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,1610612953,0,0,219,0,0,220,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,1610612953,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,1610612953,0,0,0,0,0,2684354779,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="7" name="Blocked" width="24" height="24">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,221,221,0,0,0,221,221,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,221,0,0,0,0,0,221,0,0,0,0,0,0,0,0,0,0,
+0,221,221,221,0,0,0,221,221,0,0,0,221,221,0,0,221,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,221,0,0,0,0,0,221,0,0,221,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,221,221,221,0,0,0,0,0,0,0,0,0,221,0,0,0,
+0,0,221,0,0,0,0,0,0,0,0,0,221,221,221,0,0,0,0,0,221,0,0,0,
+0,0,221,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,221,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,221,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,221,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,221,221,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,221,221,0,0,0,0,221,0,0,0,0,0,0,0,0,221,0,0,0,0,0,0,0,
+0,0,0,0,221,0,0,221,0,0,0,0,0,0,0,0,221,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,221,0,0,221,221,0,0,0,0,221,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,221,0,0,221,221,0,0,0,221,221,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="8" name="Rooms">
+  <object id="1" x="1184" y="608" width="256" height="256">
+   <properties>
+    <property name="ROOM" value="BRIDGE"/>
+   </properties>
+  </object>
+  <object id="2" x="928" y="224" width="112" height="208">
+   <properties>
+    <property name="ROOM" value="MEDICAL"/>
+   </properties>
+  </object>
+  <object id="3" x="480" y="224" width="384" height="208">
+   <properties>
+    <property name="ROOM" value="CRYO_BAY"/>
+   </properties>
+  </object>
+  <object id="4" x="544" y="608" width="384" height="272">
+   <properties>
+    <property name="ROOM" value="COMMONS"/>
+   </properties>
+  </object>
+  <object id="5" x="80" y="352" width="208" height="192">
+   <properties>
+    <property name="ROOM" value="CARGO_BAY"/>
+   </properties>
+  </object>
+  <object id="6" x="160" y="672" width="64" height="128">
+   <properties>
+    <property name="ROOM" value="ENGINE_ROOM"/>
+   </properties>
+  </object>
+  <object id="7" x="288" y="672" width="64" height="128">
+   <properties>
+    <property name="ROOM" value="ENGINEERING"/>
+   </properties>
+  </object>
+  <object id="8" x="96" y="928" width="192" height="192">
+   <properties>
+    <property name="ROOM" value="SHUTTLE_BAY"/>
+   </properties>
+  </object>
+  <object id="9" x="496" y="1056" width="112" height="192">
+   <properties>
+    <property name="ROOM" value="REPAIR_BAY"/>
+   </properties>
+  </object>
+  <object id="10" x="672" y="1056" width="64" height="192">
+   <properties>
+    <property name="ROOM" value="COMPUTER_ROOM"/>
+   </properties>
+  </object>
+  <object id="11" x="912" y="1056" width="160" height="64">
+   <properties>
+    <property name="ROOM" value="ARMORY"/>
+   </properties>
+  </object>
+  <object id="12" x="928" y="1168" width="144" height="80">
+   <properties>
+    <property name="ROOM" value="CAPTAIN_CABIN"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

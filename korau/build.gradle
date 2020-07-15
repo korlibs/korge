@@ -1,0 +1,75 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: com.soywiz.korlibs.KorlibsPlugin
+
+korlibs {
+    exposeVersion()
+    def nativeTargets = [
+        "mingwX64", "macosX64",
+        *(korlibs.linuxEnabled ? ["linuxX64"] : []),
+        "iosX64", "iosArm32", "iosArm64",
+        "tvosX64", "tvosArm64",
+        "watchosX86", "watchosArm32", "watchosArm64"
+    ]
+    dependencyCInterops("minimp3",    nativeTargets)
+    dependencyCInterops("stb_vorbis", nativeTargets)
+    dependencyCInterops("win32_winmm", ["mingwX64"])
+    if (korlibs.linuxEnabled) {
+        dependencyCInterops("linux_OpenAL", ["linuxX64"])
+    }
+    dependencyCInterops("mac_OpenAL", ["macosX64"])
+
+    if (System.getProperty("idea.version") != null) {
+        if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)) {
+            dependencyCInterops("minimp3", ["nativeCommon", "nativePosix"])
+            dependencyCInterops("stb_vorbis", ["nativeCommon", "nativePosix"])
+            dependencyCInterops("AVFoundation", ["nativeCommon", "nativePosix"])
+            dependencyCInterops("mac_OpenAL", ["nativeCommon", "nativePosix"])
+        }
+    }
+}
+
+kotlin {
+    if (korlibs.linuxEnabled) {
+        linuxX64 {
+            compilations.main {
+                cinterops {
+                    linux_OpenAL {
+                        // warning: -linker-option(s)/-linkerOpts/-lopt option is not supported by cinterop. Please add linker options to .def file or binary compilation instead.
+
+                        //print(it)
+                        //def linuxFolder = new File(rootDir, "nlib/linuxX64")
+                        //compilerOpts("-I/usr/include", "-I/usr/include/x86_64-linux-gnu/", "-I${new File(linuxFolder, "include").absolutePath}")
+                        //linkerOpts("-L/usr/X11R6/lib", "-L/usr/lib/x86_64-linux-gnu", "-L${new File(linuxFolder, "lib/x86_64-linux-gnu").absolutePath}", "-lopenal")
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+	commonMainApi("com.soywiz.korlibs.korio:korio:$korioVersion")
+
+    def jnaVersion = "5.5.0"
+    add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
+    add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+
+    //jvmMainApi "org.jogamp.gluegen:gluegen-rt-main:2.3.2"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-windows-amd64"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-windows-i586"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-macosx-universal"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-i586"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-amd64"
+    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-armv6"
+}
+
+
+task runSample(type: JavaExec) {
+    classpath = kotlin.targets.jvm.compilations.test.runtimeDependencyFiles
+    if (Os.isFamily(Os.FAMILY_MAC)) {
+        //jvmArgs "-XstartOnFirstThread"
+    }
+    main = 'com.soywiz.korau.impl.jna.JnaSoundProviderSample'
+}
