@@ -31,6 +31,9 @@ allprojects {
 
 subprojects {
 	apply(plugin = "kotlin-multiplatform")
+	apply(plugin = "maven-publish")
+
+	group = "com.soywiz.korlibs.${project.name}"
 
 	kotlin {
 		jvm {
@@ -103,6 +106,13 @@ subprojects {
 				dependsOn(commonTest)
 			}
 
+			val nonJvmMain by creating {
+				dependsOn(commonMain)
+			}
+			val nonJvmTest by creating {
+				dependsOn(commonTest)
+			}
+
 			// Default source set for JVM-specific sources and dependencies:
 			val jvmMain by getting {
 				dependsOn(concurrentMain)
@@ -125,6 +135,7 @@ subprojects {
 			val jsMain by getting {
 				dependsOn(commonMain)
 				dependsOn(nonNativeCommonMain)
+				dependsOn(nonJvmMain)
 				dependencies {
 					implementation(kotlin("stdlib-js"))
 				}
@@ -132,6 +143,7 @@ subprojects {
 			val jsTest by getting {
 				dependsOn(commonTest)
 				dependsOn(nonNativeCommonTest)
+				dependsOn(nonJvmTest)
 				dependencies {
 					implementation(kotlin("test-js"))
 				}
