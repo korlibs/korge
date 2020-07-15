@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
@@ -11,3 +12,4 @@ val kdsVersion: String by project
 dependencies {
     add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
 }
+*/

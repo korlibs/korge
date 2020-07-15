@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.*
 
 plugins {
@@ -54,4 +55,5 @@ dependencies {
     jvmMainApi("org.jcodec:jcodec:0.2.5")
     //jvmMainApi(project(":korvi-jcodec"))
 }
+*/
 */

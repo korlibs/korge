@@ -1,0 +1,24 @@
+rootProject.name = "korlibs-root"
+
+pluginManagement {
+	repositories {
+		mavenCentral()
+		gradlePluginPortal()
+		maven ("https://dl.bintray.com/kotlin/kotlin-eap")
+	}
+}
+
+enableFeaturePreview("GRADLE_METADATA")
+
+/*
+for (file in rootDir.listFiles()) {
+	if (file.name == "build" || file.name == "buildSrc" || file.name.startsWith(".")) continue
+	if (
+			setOf("build.gradle", "build.gradle.kts").map { File(file, it) }.any { it.exists() } &&
+			setOf("settings.gradle", "settings.gradle.kts").map { File(file, it) }.all { !it.exists() }
+	) {
+		include(":${file.name}")
+	}
+}
+*/
+include(":kbignum")

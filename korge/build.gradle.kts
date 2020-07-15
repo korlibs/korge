@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
@@ -35,3 +36,4 @@ dependencies {
 	add("commonMainApi", "com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
 	add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
 }
+*/

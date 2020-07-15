@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.korlibs
 
 apply<com.soywiz.korlibs.KorlibsPlugin>()
@@ -35,3 +36,4 @@ dependencies {
     add("mingwX64MainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core-mingwx64:$coroutinesVersion")
     add("macosX64MainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core-macosx64:$coroutinesVersion")
 }
+*/

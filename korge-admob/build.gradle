@@ -1,3 +1,5 @@
+/*
+
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
 def playServicesVersion = "16.0.0"
@@ -23,3 +25,4 @@ korlibs {
         }
     }
 }
+*/

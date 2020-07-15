@@ -1,3 +1,4 @@
+/*
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
 korlibs {
@@ -6,3 +7,4 @@ korlibs {
 dependencies {
     add("commonMainApi", "com.soywiz.korlibs.korma:korma:$kormaVersion")
 }
+*/

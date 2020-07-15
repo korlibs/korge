@@ -1,0 +1,19 @@
+apply plugin: 'kotlin'
+
+dependencies {
+    compile project(":korte")
+    compile project(":korte-common")
+    compile "com.soywiz.korlibs.korio:korio-vertx:$korioVersion"
+    compile "io.vertx:vertx-core:$vertxVersion"
+    compile "io.vertx:vertx-web:$vertxVersion"
+}
+
+configurations {
+    provided
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+}

@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
@@ -5,3 +6,4 @@ apply<KorlibsPlugin>()
 korlibs {
     dependencyProject(":korma")
 }
+*/

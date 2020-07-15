@@ -1,3 +1,5 @@
+/*
+
 plugins {
 	java
 	`java-gradle-plugin`
@@ -50,3 +52,4 @@ dependencies {
 	implementation(gradleApi())
 	implementation(localGroovy())
 }
+*/

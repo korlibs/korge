@@ -1,0 +1,12 @@
+/*
+apply plugin: com.soywiz.korlibs.KorlibsPluginNoNativeNoAndroid
+//apply plugin: com.soywiz.korlibs.KorlibsPlugin
+
+korlibs {
+    dependencies {
+        jvmMainApi project(":korte")
+        jvmMainApi "io.ktor:ktor-server-core:$ktorVersion"
+        jvmTestImplementation "io.ktor:ktor-server-test-host:$ktorVersion"
+    }
+}
+*/

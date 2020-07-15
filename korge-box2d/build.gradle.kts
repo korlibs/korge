@@ -1,3 +1,5 @@
+/*
+
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
@@ -12,3 +14,4 @@ val kbox2dVersion: String by project
 dependencies {
 	add("commonMainApi","com.soywiz.korlibs.kbox2d:kbox2d:$kbox2dVersion")
 }
+*/

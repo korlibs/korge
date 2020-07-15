@@ -1,3 +1,4 @@
+/*
 import com.soywiz.korlibs.*
 
 apply<KorlibsPlugin>()
@@ -14,3 +15,4 @@ dependencies {
     add("commonMainApi", "com.soywiz.korlibs.korio:korio:$korioVersion")
     add("commonMainApi", "com.soywiz.korlibs.korma:korma:$kormaVersion")
 }
+*/

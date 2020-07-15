@@ -1,3 +1,4 @@
+/*
 import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
@@ -73,3 +74,4 @@ task runSample(type: JavaExec) {
     }
     main = 'com.soywiz.korau.impl.jna.JnaSoundProviderSample'
 }
+*/

@@ -1,3 +1,4 @@
+/*
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
 korlibs {
@@ -7,4 +8,4 @@ korlibs {
 dependencies {
     add("jvmTestImplementation", "com.vladsch.flexmark:flexmark-all:0.61.6")
 }
-
+*/

@@ -1,0 +1,11 @@
+/*
+apply plugin: com.soywiz.korlibs.KorlibsPlugin
+
+korlibs {
+    dependencyProject(":korte")
+}
+
+dependencies {
+	commonMainApi("com.soywiz.korlibs.korio:korio:$korioVersion")
+}
+ */
