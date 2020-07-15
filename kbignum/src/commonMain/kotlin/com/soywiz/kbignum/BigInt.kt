@@ -47,7 +47,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 
 		operator fun invoke(value: Long): BigInt {
 			if (value.toInt().toLong() == value) return invoke(value.toInt())
-			return invoke("$value")
+			return invoke(value.toString())
 		}
 
 		private fun create(value: Int): BigInt {
