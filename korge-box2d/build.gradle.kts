@@ -1,3 +1,8 @@
+dependencies {
+	add("commonMainApi", project(":korge"))
+	add("commonMainApi", project(":kbox2d"))
+
+}
 /*
 
 import com.soywiz.korlibs.*

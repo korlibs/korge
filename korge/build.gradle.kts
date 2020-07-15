@@ -1,3 +1,11 @@
+dependencies {
+	add("commonMainApi", project(":korgw"))
+	add("commonMainApi", project(":korau"))
+	add("commonMainApi", project(":klogger"))
+	add("commonMainApi", project(":korinject"))
+	add("jvmMainApi", project(":krypto"))
+}
+
 /*
 import com.soywiz.korlibs.*
 
@@ -15,25 +23,4 @@ korlibs {
 	//dependencyCInteropsExternal("com.soywiz.korlibs.korau:kgl:$kglVersion", "GL", ["linuxX64"])
 }
 
-val klockVersion: String by project
-val korauVersion: String by project
-val korimVersion: String by project
-val kormaVersion: String by project
-val korgwVersion: String by project
-val kryptoVersion: String by project
-val korinjectVersion: String by project
-val kloggerVersion: String by project
-val kdsVersion: String by project
-
-dependencies {
-    add("commonMainApi", "com.soywiz.korlibs.klock:klock:$klockVersion")
-	add("commonMainApi", "com.soywiz.korlibs.korau:korau:$korauVersion")
-    add("commonMainApi", "com.soywiz.korlibs.korma:korma:$kormaVersion")
-    add("commonMainApi", "com.soywiz.korlibs.korim:korim:$korimVersion")
-	add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:$korgwVersion")
-	add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:$kryptoVersion")
-	add("commonMainApi", "com.soywiz.korlibs.korinject:korinject:$korinjectVersion")
-	add("commonMainApi", "com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
-	add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
-}
 */

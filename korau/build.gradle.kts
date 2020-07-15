@@ -1,3 +1,11 @@
+val jnaVersion: String by project
+
+dependencies {
+	add("commonMainApi", project(":korio"))
+	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
+	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+}
+
 /*
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -48,24 +56,6 @@ kotlin {
         }
     }
 }
-
-dependencies {
-	commonMainApi("com.soywiz.korlibs.korio:korio:$korioVersion")
-
-    def jnaVersion = "5.5.0"
-    add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
-    add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
-
-    //jvmMainApi "org.jogamp.gluegen:gluegen-rt-main:2.3.2"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-windows-amd64"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-windows-i586"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-macosx-universal"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-i586"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-amd64"
-    //jvmMainApi "org.jogamp.joal:joal:2.3.2:natives-linux-armv6"
-}
-
 
 task runSample(type: JavaExec) {
     classpath = kotlin.targets.jvm.compilations.test.runtimeDependencyFiles

@@ -1,10 +1,3 @@
-/*
-
-import com.soywiz.korlibs.*
-
-apply<KorlibsPlugin>()
-
-korlibs {
-	dependencyProject(":korge")
+dependencies {
+	add("commonMainApi", project(":korge"))
 }
-*/

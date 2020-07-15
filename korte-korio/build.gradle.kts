@@ -1,3 +1,7 @@
+dependencies {
+	add("commonMainApi", project(":korte"))
+	add("commonMainApi", project(":korio"))
+}
 /*
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 

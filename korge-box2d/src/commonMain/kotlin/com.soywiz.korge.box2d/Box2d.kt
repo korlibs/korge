@@ -93,7 +93,7 @@ class WorldView(override val world: World = World(Vec2(0f, -10f))) : Container()
                 }
                 view.x = node.position.x.toDouble()
                 view.y = -node.position.y.toDouble()
-                view.rotationRadians = -node.angle.toDouble()
+                view.rotation = -node.angle
             }
         }
     }
@@ -213,7 +213,7 @@ inline fun WorldRef.createSimpleBody(
     body: BodyDef.() -> Unit = {}
 ): Body = createBody {
     this.type = type
-    this.angle = angle.radians.toFloat()
+    this.angle = angle
     this.angularVelocity = angularVelocity.toFloat()
     this.position.set(x.toFloat(), y.toFloat())
     this.linearVelocity.set(linearVelocityX.toFloat(), linearVelocityY.toFloat())

@@ -21,6 +21,7 @@ for (file in rootDir.listFiles()) {
 	}
 }
 */
+include(":kbox2d")
 include(":kbignum")
 include(":klock")
 include(":klogger")
@@ -32,5 +33,17 @@ include(":korma-shape")
 include(":luak")
 include(":krypto")
 include(":korte")
+include(":korte-ktor")
+include(":korte-korio")
+include(":korte-vertx")
 include(":korio")
 include(":korim")
+include(":korau")
+include(":korgw")
+include(":korvi")
+include(":korge")
+include(":korge-box2d")
+include(":korge-admob")
+include(":korge-dragonbones")
+include(":korge-swf")
+

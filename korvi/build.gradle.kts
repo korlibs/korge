@@ -1,3 +1,11 @@
+val jcodecVersion: String by project
+
+dependencies {
+	add("commonMainApi", project(":korim"))
+	add("commonMainApi", project(":korau"))
+	add("jvmMainApi", "org.jcodec:jcodec:$jcodecVersion")
+}
+
 /*
 import com.soywiz.korlibs.*
 

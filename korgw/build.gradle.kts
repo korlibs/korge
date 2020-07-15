@@ -1,13 +1,17 @@
+val jnaVersion: String by project
+
+dependencies {
+	commonMainApi(project(":korim"))
+	commonMainApi(project(":klock"))
+	commonMainApi(project(":kmem"))
+	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
+	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+}
+
 /*
 import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
-
-dependencies {
-    commonMainApi("com.soywiz.korlibs.korim:korim:$korimVersion")
-    commonMainApi("com.soywiz.korlibs.klock:klock:$klockVersion")
-    commonMainApi("com.soywiz.korlibs.kmem:kmem:$kmemVersion")
-}
 
 korlibs {
     exposeVersion()
@@ -15,11 +19,6 @@ korlibs {
     //dependencyCInterops("GL", ["linuxX64"])
 
     dependencies {
-        def jnaVersion = "5.5.0"
-        add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
-        add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
-        //add("jvmMainApi", "com.github.jnr:jnr-ffi:2.1.11")
-
         if (hasAndroid) {
             add("androidMainApi", "com.android.support:appcompat-v7:28.0.0")
         }
