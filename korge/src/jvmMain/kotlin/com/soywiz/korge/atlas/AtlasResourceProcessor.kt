@@ -37,12 +37,14 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		//println("inputFile=$inputFile")
 		//println("outputFile=$outputFile")
 		//println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
-		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
+		val files = atlasFolder.listRecursiveSimple { it.extensionLC == "png" || it.extensionLC == "jpg" }
 		//println("atlasFiles=$files")
 
 		val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
 
 		val outputImageFile = outputFile.withCompoundExtension("atlas.png")
+
+		//println("outputImageFile=$outputImageFile")
 
         val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
         val atlas = atlases.atlases.first()

@@ -15,6 +15,7 @@ abstract class LocalVfs : Vfs() {
 
 abstract class LocalVfsV2 : LocalVfs() {
     final override suspend fun list(path: String): ReceiveChannel<VfsFile> = listFlow(path).toChannel()
+	override suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
     override suspend fun listFlow(path: String): Flow<VfsFile> = emptyFlow()
 }
 

@@ -46,7 +46,7 @@ data class VfsFile(
 
 	suspend fun writeFile(file: VfsFile, vararg attributes: Vfs.Attribute): Long = file.copyTo(this, *attributes)
 
-	suspend fun listNames(): List<String> = list().toList().map { it.baseName }
+	suspend fun listNames(): List<String> = listSimple().map { it.baseName }
 
 	suspend fun copyTo(target: AsyncOutputStream) = this.openUse { this.copyTo(target) }
 	suspend fun copyTo(target: VfsFile, vararg attributes: Vfs.Attribute): Long = this.openInputStream().use { target.writeStream(this, *attributes) }
@@ -130,18 +130,31 @@ data class VfsFile(
 
     @Deprecated("Use listFlow instead", ReplaceWith("listFlow().toChannel()", "com.soywiz.korio.async.toChannel"))
 	suspend fun list(): ReceiveChannel<VfsFile> = listFlow().toChannel()
+	suspend fun listSimple(): List<VfsFile> = vfs.listSimple(this.path)
     suspend fun listFlow(): Flow<VfsFile> = vfs.listFlow(this.path)
 
     @Deprecated("Use listRecursiveFlow instead", ReplaceWith("listRecursiveFlow(filter).toChannel()", "com.soywiz.korio.async.toChannel"))
 	suspend fun listRecursive(filter: (VfsFile) -> Boolean = { true }): ReceiveChannel<VfsFile> = listRecursiveFlow(filter).toChannel()
 
-    suspend fun listRecursiveFlow(filter: (VfsFile) -> Boolean = { true }): Flow<VfsFile> = flow {
+	suspend fun listRecursiveSimple(filter: (VfsFile) -> Boolean = { true }): List<VfsFile> = ArrayList<VfsFile>().apply {
+		for (file in listSimple()) {
+			if (filter(file)) {
+				add(file)
+				val stat = file.stat()
+				if (stat.isDirectory) {
+					addAll(file.listRecursiveSimple(filter))
+				}
+			}
+		}
+	}
+
+	suspend fun listRecursiveFlow(filter: (VfsFile) -> Boolean = { true }): Flow<VfsFile> = flow {
         listFlow().collect { file ->
             if (filter(file)) {
                 emit(file)
                 val stat = file.stat()
                 if (stat.isDirectory) {
-                    file.listRecursiveFlow().collect { emit(it) }
+                    file.listRecursiveFlow(filter).collect { emit(it) }
                 }
             }
         }
