@@ -13,7 +13,7 @@ val MonthSpan.wrapped get() = WMonthSpan(this)
  * Represents a number of years and months temporal distance.
  */
 @KlockExperimental
-class WMonthSpan(val value: MonthSpan) : Comparable<WMonthSpan>, Serializable {
+data class WMonthSpan(val value: MonthSpan) : Comparable<WMonthSpan>, Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

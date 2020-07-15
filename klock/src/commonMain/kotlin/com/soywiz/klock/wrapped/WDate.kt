@@ -15,7 +15,7 @@ val Date.wrapped get() = WDate(this)
  * It is packed in an inline class wrapping an Int to prevent allocations.
  */
 @KlockExperimental
-class WDate(val value: Date) : Comparable<WDate>, Serializable {
+data class WDate(val value: Date) : Comparable<WDate>, Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
@@ -63,8 +63,6 @@ class WDate(val value: Date) : Comparable<WDate>, Serializable {
     operator fun plus(time: WDateTimeSpan) = (this.value + time.value).wrapped
     operator fun plus(time: WTime) = (this.value + time.value).wrapped
 
-    override fun equals(other: Any?): Boolean = (other is WDate) && this.value == other.value
-    override fun hashCode(): Int = value.hashCode()
     /** Converts this date to String formatting it like "2020-01-01", "2020-12-31" or "-2020-12-31" if the [year] is negative */
     override fun toString(): String = value.toString()
 }

@@ -18,7 +18,7 @@ val DateTime.wrapped get() = WDateTime(this)
  * - Wed May 23 144683 18:29:30 GMT+0200 (Central European Summer Time)
  */
 @KlockExperimental
-class WDateTime(val value: DateTime) : Comparable<WDateTime>, Serializable {
+data class WDateTime(val value: DateTime) : Comparable<WDateTime>, Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

@@ -13,7 +13,7 @@ val YearMonth.wrapped get() = WYearMonth(this)
  * Represents a couple of [year] and [month].
  */
 @KlockExperimental
-class WYearMonth(val value: YearMonth) : Serializable {
+data class WYearMonth(val value: YearMonth) : Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

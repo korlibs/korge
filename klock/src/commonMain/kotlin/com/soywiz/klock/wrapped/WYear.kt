@@ -18,7 +18,7 @@ val Year.wrapped get() = WYear(this)
  * The integrated model is capable of determine if a year is leap for years 1 until 9999 inclusive.
  */
 @KlockExperimental
-class WYear(val value: Year) : Comparable<WYear>, Serializable {
+data class WYear(val value: Year) : Comparable<WYear>, Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

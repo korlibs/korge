@@ -16,7 +16,7 @@ val TimezoneOffset.wrapped get() = WTimezoneOffset(this)
  * This class is inlined so no boxing should be required.
  */
 @KlockExperimental
-class WTimezoneOffset(val value: TimezoneOffset) : Serializable {
+data class WTimezoneOffset(val value: TimezoneOffset) : Serializable {
     /** Returns whether this [WTimezoneOffset] has a positive component */
     val positive: Boolean get() = value.positive
 

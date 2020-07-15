@@ -13,7 +13,7 @@ val Time.wrapped get() = WTime(this)
  * Represents a union of [millisecond], [second], [minute] and [hour].
  */
 @KlockExperimental
-class WTime(val value: Time) : Comparable<WTime>, Serializable {
+data class WTime(val value: Time) : Comparable<WTime>, Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
