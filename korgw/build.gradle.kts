@@ -1,5 +1,13 @@
 val jnaVersion: String by project
 
+val enableKotlinNative: String by project
+val doEnableKotlinNative get() = enableKotlinNative == "true"
+if (doEnableKotlinNative) {
+	kotlin {
+		linuxX64().compilations["main"].cinterops { maybeCreate("GL") }
+	}
+}
+
 dependencies {
 	commonMainApi(project(":korim"))
 	commonMainApi(project(":klock"))

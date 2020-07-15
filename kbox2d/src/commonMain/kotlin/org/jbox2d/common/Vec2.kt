@@ -27,6 +27,9 @@ import org.jbox2d.internal.*
 import kotlin.jvm.*
 import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
+private val __dummy = Vec2()
+
 /**
  * A 2D column vector
  */
@@ -147,8 +150,7 @@ data class Vec2(
     override fun toString(): String = "($x,$y)"
 
     companion object {
-        @ThreadLocal
-        internal val dummy = Vec2()
+        internal val dummy get() = __dummy
 
         fun abs(a: Vec2): Vec2 = Vec2(MathUtils.abs(a.x), MathUtils.abs(a.y))
 

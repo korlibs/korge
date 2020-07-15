@@ -29,6 +29,9 @@ allprojects {
 	}
 }
 
+val enableKotlinNative: String by project
+val doEnableKotlinNative get() = enableKotlinNative == "true"
+
 subprojects {
 	apply(plugin = "kotlin-multiplatform")
 	apply(plugin = "maven-publish")
@@ -62,6 +65,9 @@ subprojects {
 				}
 			}
 		}
+		if (doEnableKotlinNative) {
+			linuxX64()
+		}
 
 		// common
 		//    js
@@ -91,6 +97,15 @@ subprojects {
 			val concurrentTest by creating {
 				dependsOn(commonTest)
 			}
+
+			val nativeCommonMain by creating { dependsOn(concurrentMain) }
+			val nativeCommonTest by creating { dependsOn(concurrentTest) }
+
+			val nativePosixMain by creating { dependsOn(nativeCommonMain) }
+			val nativePosixTest by creating { dependsOn(nativeCommonTest) }
+
+			val nativePosixNonAppleMain by creating { dependsOn(nativePosixMain) }
+			val nativePosixNonAppleTest by creating { dependsOn(nativePosixTest) }
 
 			val nonNativeCommonMain by creating {
 				dependsOn(commonMain)
@@ -146,6 +161,30 @@ subprojects {
 				dependsOn(nonJvmTest)
 				dependencies {
 					implementation(kotlin("test-js"))
+				}
+			}
+
+			if (doEnableKotlinNative) {
+				val linuxX64Main by getting {
+					dependsOn(commonMain)
+					dependsOn(nativeCommonMain)
+					dependsOn(nativePosixMain)
+					dependsOn(nativePosixNonAppleMain)
+					dependsOn(nonJvmMain)
+					dependsOn(nonJsMain)
+					dependencies {
+				
+					}
+				}
+				val linuxX64Test by getting {
+					dependsOn(commonTest)
+					dependsOn(nativeCommonTest)
+					dependsOn(nativePosixTest)
+					dependsOn(nativePosixNonAppleTest)
+					dependsOn(nonJvmTest)
+					dependsOn(nonJsTest)
+					dependencies {
+					}
 				}
 			}
 		}

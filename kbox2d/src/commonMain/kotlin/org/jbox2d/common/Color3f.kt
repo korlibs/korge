@@ -88,21 +88,22 @@ class Color3f {
         z = argColor.z
     }
 
+	// @TODO: Do not mutate those
     companion object {
 
-        @ThreadLocal
+        //@ThreadLocal
         val WHITE = Color3f(1f, 1f, 1f)
 
-        @ThreadLocal
+        //@ThreadLocal
         val BLACK = Color3f(0f, 0f, 0f)
 
-        @ThreadLocal
+        //@ThreadLocal
         val BLUE = Color3f(0f, 0f, 1f)
 
-        @ThreadLocal
+        //@ThreadLocal
         val GREEN = Color3f(0f, 1f, 0f)
 
-        @ThreadLocal
+        //@ThreadLocal
         val RED = Color3f(1f, 0f, 0f)
     }
 }

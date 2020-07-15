@@ -23,8 +23,38 @@
  */
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.*
+
+@ThreadLocal private var _FAST_ABS = true
+@ThreadLocal private var _FAST_FLOOR = true
+@ThreadLocal private var _FAST_CEIL = true
+@ThreadLocal private var _FAST_ROUND = false
+@ThreadLocal private var _FAST_ATAN2 = true
+@ThreadLocal private var _FAST_POW = true
+@ThreadLocal private var _CONTACT_STACK_INIT_SIZE = 10
+@ThreadLocal private var _SINCOS_LUT_ENABLED = true
+@ThreadLocal private var _SINCOS_LUT_LERP = false
+@ThreadLocal private var _maxManifoldPoints = 2
+@ThreadLocal private var _maxPolygonVertices = 8
+@ThreadLocal private var _aabbExtension = 0.1f
+@ThreadLocal private var _aabbMultiplier = 2.0f
+@ThreadLocal private var _linearSlop = 0.005f
+@ThreadLocal private var _angularSlop = 2.0f / 180.0f * Settings.PI
+@ThreadLocal private var _polygonRadius = 2.0f * _linearSlop
+@ThreadLocal private var _maxSubSteps = 8
+@ThreadLocal private var _maxTOIContacts = 32
+@ThreadLocal private var _velocityThreshold = 1.0f
+@ThreadLocal private var _maxLinearCorrection = 0.2f
+@ThreadLocal private var _maxAngularCorrection = 8.0f / 180.0f * Settings.PI
+@ThreadLocal private var _maxTranslation = 2.0f
+@ThreadLocal private var _maxTranslationSquared = _maxTranslation * _maxTranslation
+@ThreadLocal private var _maxRotation = 0.5f * Settings.PI
+@ThreadLocal private var _maxRotationSquared = _maxRotation * _maxRotation
+@ThreadLocal private var _baumgarte = 0.2f
+@ThreadLocal private var _toiBaugarte = 0.75f
+@ThreadLocal private var _timeToSleep = 0.5f
+@ThreadLocal private var _linearSleepTolerance = 0.01f
+@ThreadLocal private var _angularSleepTolerance = 2.0f / 180.0f * Settings.PI
 
 /**
  * Global tuning constants based on MKS units and various integer maximums (vertices per shape,
@@ -42,30 +72,37 @@ object Settings {
 
     // JBox2D specific settings
 
-    @ThreadLocal
-    var FAST_ABS = true
+    var FAST_ABS: Boolean
+		get() = _FAST_ABS
+		set(value) = run { _FAST_ABS = value }
 
-    @ThreadLocal
-    var FAST_FLOOR = true
+    var FAST_FLOOR: Boolean
+		get() = _FAST_FLOOR
+		set(value) = run { _FAST_FLOOR = value }
 
-    @ThreadLocal
-    var FAST_CEIL = true
+    var FAST_CEIL
+		get() = _FAST_CEIL
+		set(value) = run { _FAST_CEIL = value }
 
-    @ThreadLocal
-    //var FAST_ROUND = true
-    var FAST_ROUND = false
+    var FAST_ROUND
+		get() = _FAST_ROUND
+		set(value) = run { _FAST_ROUND = value }
 
-    @ThreadLocal
-    var FAST_ATAN2 = true
+    var FAST_ATAN2
+		get() = _FAST_ATAN2
+		set(value) = run { _FAST_ATAN2 = value }
 
-    @ThreadLocal
-    var FAST_POW = true
+    var FAST_POW
+		get() = _FAST_POW
+		set(value) = run { _FAST_POW = value }
 
-    @ThreadLocal
-    var CONTACT_STACK_INIT_SIZE = 10
+    var CONTACT_STACK_INIT_SIZE
+		get() = _CONTACT_STACK_INIT_SIZE
+		set(value) = run { _CONTACT_STACK_INIT_SIZE = value }
 
-    @ThreadLocal
-    var SINCOS_LUT_ENABLED = true
+    var SINCOS_LUT_ENABLED
+		get() = _SINCOS_LUT_ENABLED
+		set(value) = run { _SINCOS_LUT_ENABLED = value }
     /**
      * smaller the precision, the larger the table. If a small table is used (eg, precision is .006 or
      * greater), make sure you set the table to lerp it's results. Accuracy chart is in the MathUtils
@@ -100,8 +137,9 @@ object Settings {
      * and speed of lerp vs non lerp. Or, run the tests yourself in [SinCosTest].
      */
 
-    @ThreadLocal
-    var SINCOS_LUT_LERP = false
+    var SINCOS_LUT_LERP
+		get() = _SINCOS_LUT_LERP
+		set(value) = run { _SINCOS_LUT_LERP = value }
 
 
     // Collision
@@ -110,47 +148,53 @@ object Settings {
      * The maximum number of contact points between two convex shapes.
      */
 
-    @ThreadLocal
-    var maxManifoldPoints = 2
+    var maxManifoldPoints
+		get() = _maxManifoldPoints
+		set(value) = run { _maxManifoldPoints = value }
 
     /**
      * The maximum number of vertices on a convex polygon.
      */
 
-    @ThreadLocal
-    var maxPolygonVertices = 8
+    var maxPolygonVertices
+		get() = _maxPolygonVertices
+		set(value) = run { _maxPolygonVertices = value }
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This allows proxies to move by a small amount
      * without triggering a tree adjustment. This is in meters.
      */
 
-    @ThreadLocal
-    var aabbExtension = 0.1f
+    var aabbExtension
+		get() = _aabbExtension
+		set(value) = run { _aabbExtension = value }
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This is used to predict the future position
      * based on the current displacement. This is a dimensionless multiplier.
      */
 
-    @ThreadLocal
-    var aabbMultiplier = 2.0f
+    var aabbMultiplier
+		get() = _aabbMultiplier
+		set(value) = run { _aabbMultiplier = value }
 
     /**
      * A small length used as a collision and constraint tolerance. Usually it is chosen to be
      * numerically significant, but visually insignificant.
      */
 
-    @ThreadLocal
-    var linearSlop = 0.005f
+    var linearSlop
+		get() = _linearSlop
+		set(value) = run { _linearSlop = value }
 
     /**
      * A small angle used as a collision and constraint tolerance. Usually it is chosen to be
      * numerically significant, but visually insignificant.
      */
 
-    @ThreadLocal
-    var angularSlop = 2.0f / 180.0f * PI
+    var angularSlop
+		get() = _angularSlop
+		set(value) = run { _angularSlop = value }
 
     /**
      * The radius of the polygon/edge shape skin. This should not be modified. Making this smaller
@@ -158,13 +202,15 @@ object Settings {
      * artifacts for vertex collision.
      */
 
-    @ThreadLocal
-    var polygonRadius = 2.0f * linearSlop
+    var polygonRadius
+		get() = _polygonRadius
+		set(value) = run { _polygonRadius = value }
 
     /** Maximum number of sub-steps per contact in continuous physics simulation.  */
 
-    @ThreadLocal
-    var maxSubSteps = 8
+    var maxSubSteps
+		get() = _maxSubSteps
+		set(value) = run { _maxSubSteps = value }
 
     // Dynamics
 
@@ -172,65 +218,75 @@ object Settings {
      * Maximum number of contacts to be handled to solve a TOI island.
      */
 
-    @ThreadLocal
-    var maxTOIContacts = 32
+    var maxTOIContacts
+		get() = _maxTOIContacts
+		set(value) = run { _maxTOIContacts = value }
 
     /**
      * A velocity threshold for elastic collisions. Any collision with a relative linear velocity
      * below this threshold will be treated as inelastic.
      */
 
-    @ThreadLocal
-    var velocityThreshold = 1.0f
+    var velocityThreshold
+		get() = _velocityThreshold
+		set(value) = run { _velocityThreshold = value }
 
     /**
      * The maximum linear position correction used when solving constraints. This helps to prevent
      * overshoot.
      */
 
-    @ThreadLocal
-    var maxLinearCorrection = 0.2f
+    var maxLinearCorrection
+		get() = _maxLinearCorrection
+		set(value) = run { _maxLinearCorrection = value }
 
     /**
      * The maximum angular position correction used when solving constraints. This helps to prevent
      * overshoot.
      */
 
-    @ThreadLocal
-    var maxAngularCorrection = 8.0f / 180.0f * PI
+    var maxAngularCorrection
+		get() = _maxAngularCorrection
+		set(value) = run { _maxAngularCorrection = value }
 
     /**
      * The maximum linear velocity of a body. This limit is very large and is used to prevent
      * numerical problems. You shouldn't need to adjust this.
      */
 
-    @ThreadLocal
-    var maxTranslation = 2.0f
+    var maxTranslation
+		get() = _maxTranslation
+		set(value) = run { _maxTranslation = value }
 
-    @ThreadLocal
-    var maxTranslationSquared = maxTranslation * maxTranslation
+    var maxTranslationSquared
+		get() = _maxTranslationSquared
+		set(value) = run { _maxTranslationSquared = value }
 
     /**
      * The maximum angular velocity of a body. This limit is very large and is used to prevent
      * numerical problems. You shouldn't need to adjust this.
      */
 
-    @ThreadLocal
-    var maxRotation = 0.5f * PI
+    var maxRotation
+		get() = _maxRotation
+		set(value) = run { _maxRotation = value }
 
-    @ThreadLocal
-    var maxRotationSquared = maxRotation * maxRotation
+    var maxRotationSquared
+		get() = _maxRotationSquared
+		set(value) = run { _maxRotationSquared = value }
 
     /**
      * This scale factor controls how fast overlap is resolved. Ideally this would be 1 so that
      * overlap is removed in one time step. However using values close to 1 often lead to overshoot.
      */
 
-    @ThreadLocal
-    var baumgarte = 0.2f
+    var baumgarte
+		get() = _baumgarte
+		set(value) = run { _baumgarte = value }
 
-    @ThreadLocal
-    var toiBaugarte = 0.75f
+    var toiBaugarte
+		get() = _toiBaugarte
+		set(value) = run { _toiBaugarte = value }
 
 
     // Sleep
@@ -239,22 +295,25 @@ object Settings {
      * The time that a body must be still before it will go to sleep.
      */
 
-    @ThreadLocal
-    var timeToSleep = 0.5f
+    var timeToSleep
+		get() = _timeToSleep
+		set(value) = run { _timeToSleep = value }
 
     /**
      * A body cannot sleep if its linear velocity is above this tolerance.
      */
 
-    @ThreadLocal
-    var linearSleepTolerance = 0.01f
+    var linearSleepTolerance
+		get() = _linearSleepTolerance
+		set(value) = run { _linearSleepTolerance = value }
 
     /**
      * A body cannot sleep if its angular velocity is above this tolerance.
      */
 
-    @ThreadLocal
-    var angularSleepTolerance = 2.0f / 180.0f * PI
+    var angularSleepTolerance
+		get() = _angularSleepTolerance
+		set(value) = run { _angularSleepTolerance = value }
 
     // Particle
 

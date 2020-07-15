@@ -9,6 +9,12 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.internal.niceStr
 import kotlin.native.concurrent.ThreadLocal
 
+// @TODO: ThreadLocal on JVM
+@ThreadLocal
+private val tempMatrix: Matrix = Matrix()
+@ThreadLocal
+private val identityMatrix: Matrix = Matrix()
+
 open class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
@@ -249,12 +255,6 @@ open class VectorPath(
         }
     }
     fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = ensureScanline().containsPoint(x, y, winding)
-
-    @ThreadLocal
-    private val tempMatrix: Matrix = Matrix()
-
-    @ThreadLocal
-    private val identityMatrix: Matrix = Matrix()
 
     fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
 

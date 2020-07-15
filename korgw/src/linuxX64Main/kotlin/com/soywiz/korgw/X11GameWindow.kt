@@ -19,6 +19,11 @@ import com.soywiz.korio.stream.toByteArray
 import kotlinx.cinterop.*
 import platform.posix.*
 
+// https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_swap_control.txt
+@ThreadLocal
+private var setSwapInterval = false
+@ThreadLocal
+private var swapIntervalEXT: CPointer<CFunction<(CPointer<Display>?, GLXDrawable, Int) -> Unit>>? = null
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
 class X11Ag(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
@@ -308,12 +313,6 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
             }
         }
     }
-
-    // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_swap_control.txt
-    @ThreadLocal
-    var setSwapInterval = false
-    @ThreadLocal
-    var swapIntervalEXT: CPointer<CFunction<(CPointer<Display>?, GLXDrawable, Int) -> Unit>>? = null
 
     override fun doInitRender() {
         ctx.makeCurrent()

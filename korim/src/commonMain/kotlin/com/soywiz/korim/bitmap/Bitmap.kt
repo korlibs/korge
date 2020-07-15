@@ -17,7 +17,7 @@ abstract class Bitmap(
     var premultiplied: Boolean,
     val backingArray: Any?
 ) : Sizeable, Extra by Extra.Mixin() {
-    @ThreadLocal
+    //@ThreadLocal
     protected val tempRgba: RgbaArray by lazy { RgbaArray(width * 2) }
 
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */

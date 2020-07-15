@@ -4,15 +4,15 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.lang.*
 import kotlin.native.concurrent.*
 
-object Base64 {
-    @SharedImmutable
-	private val TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-    @SharedImmutable
-	private val DECODE = IntArray(0x100).apply {
-		for (n in 0..255) this[n] = -1
-		for (n in TABLE.indices) this[TABLE[n].toInt()] = n
-	}
+@SharedImmutable
+private val TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+@SharedImmutable
+private val DECODE = IntArray(0x100).apply {
+	for (n in 0..255) this[n] = -1
+	for (n in TABLE.indices) this[TABLE[n].toInt()] = n
+}
 
+object Base64 {
 	fun decode(str: String): ByteArray {
 		val dst = ByteArray((str.length * 4) / 3 + 4)
 		return dst.copyOf(decodeInline(dst, str.length) { str[it].toInt() and 0xFF })
