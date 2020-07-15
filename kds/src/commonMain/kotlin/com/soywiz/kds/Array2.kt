@@ -234,7 +234,7 @@ data class IntArray2(val width: Int, val height: Int, val data: IntArray) : Iter
         )
     }
 
-    override fun hashCode(): Int = width + height + data.hashCode()
+    override fun hashCode(): Int = width + height + data.contentHashCode()
 
     private fun index(x: Int, y: Int): Int {
         if ((x !in 0 until width) || (y !in 0 until height)) throw IndexOutOfBoundsException()
@@ -382,7 +382,7 @@ data class DoubleArray2(val width: Int, val height: Int, val data: DoubleArray) 
         )
     }
 
-    override fun hashCode(): Int = width + height + data.hashCode()
+    override fun hashCode(): Int = width + height + data.contentHashCode()
 
     private fun index(x: Int, y: Int): Int {
         if ((x !in 0 until width) || (y !in 0 until height)) throw IndexOutOfBoundsException()
@@ -530,7 +530,7 @@ data class FloatArray2(val width: Int, val height: Int, val data: FloatArray) : 
         )
     }
 
-    override fun hashCode(): Int = width + height + data.hashCode()
+    override fun hashCode(): Int = width + height + data.contentHashCode()
 
     private fun index(x: Int, y: Int): Int {
         if ((x !in 0 until width) || (y !in 0 until height)) throw IndexOutOfBoundsException()
