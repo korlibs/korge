@@ -46,4 +46,4 @@ include(":korge-box2d")
 include(":korge-admob")
 include(":korge-dragonbones")
 include(":korge-swf")
-
+include(":korge-hello-world")

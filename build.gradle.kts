@@ -1,5 +1,6 @@
 plugins {
 	java
+	//kotlin("multiplatform") version "1.4-M2"
 	kotlin("multiplatform") version "1.4-M3"
 }
 
@@ -38,7 +39,8 @@ subprojects {
 			}
 			withJava()
 		}
-		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+		//js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.LEGACY) {
 			browser {
 				//binaries.executable()
 				/*
@@ -52,7 +54,7 @@ subprojects {
 				testTask {
 					useKarma {
 						useChromeHeadless()
-						webpackConfig.cssSupport.enabled = true
+						//webpackConfig.cssSupport.enabled = true
 					}
 				}
 			}
