@@ -61,12 +61,17 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		}
 	}
 
+	@PublishedApi
+	internal fun _rendererBufferingStart() = rendererBufferingStart()
+	@PublishedApi
+	internal fun _rendererBufferingEnd() = rendererBufferingEnd()
+
     inline fun <T> buffering(callback: () -> T): T {
-        rendererBufferingStart()
+        _rendererBufferingStart()
         try {
             return callback()
         } finally {
-            rendererBufferingEnd()
+            _rendererBufferingEnd()
         }
     }
 
