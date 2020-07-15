@@ -22,3 +22,14 @@ for (file in rootDir.listFiles()) {
 }
 */
 include(":kbignum")
+include(":klock")
+include(":klogger")
+include(":kmem")
+include(":kds")
+include(":korma")
+include(":korma-shape")
+include(":luak")
+include(":krypto")
+include(":korte")
+//include(":korio")
+//include(":korinject")

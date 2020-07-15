@@ -17,4 +17,8 @@ internal class AsyncCache {
 		val deferred = lock { (deferreds.getOrPut(key) { KorteDeferred.asyncImmediately(coroutineContext) { gen() } } as KorteDeferred<T>) }
 		return deferred.await()
 	}
+
+	suspend fun <T> call(key: String, gen: suspend () -> T): T {
+		return invoke(key, gen)
+	}
 }

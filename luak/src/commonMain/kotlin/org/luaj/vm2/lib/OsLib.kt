@@ -180,7 +180,7 @@ open class OsLib : TwoArgFunction() {
      */
     @UseExperimental(ExperimentalTime::class)
     protected fun clock(): Double {
-        return MonoClock.markNow().elapsedNow().inSeconds
+        return TimeSource.Monotonic.markNow().elapsedNow().inSeconds
         //return (JSystem.currentTimeMillis() - t0) / 1000.0
     }
 

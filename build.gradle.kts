@@ -58,6 +58,15 @@ subprojects {
 			}
 		}
 
+		// common
+		//    js
+		//    concurrent // non-js
+		//      jvmAndroid
+		//         android
+		//         jvm
+		//      native
+		//         kotlin-native
+		//    nonNative: [js, jvmAndroid]
 		sourceSets {
 			val commonMain by getting {
 				dependencies {
@@ -71,30 +80,51 @@ subprojects {
 				}
 			}
 
+			val concurrentMain by creating {
+				dependsOn(commonMain)
+			}
+			val concurrentTest by creating {
+				dependsOn(commonTest)
+			}
+
+			val nonNativeCommonMain by creating {
+				dependsOn(commonMain)
+			}
+			val nonNativeCommonTest by creating {
+				dependsOn(commonTest)
+			}
+
 			// Default source set for JVM-specific sources and dependencies:
-			jvm().compilations["main"].defaultSourceSet {
+			val jvmMain by getting {
+				dependsOn(concurrentMain)
+				dependsOn(nonNativeCommonMain)
 				dependencies {
 					implementation(kotlin("stdlib-jdk8"))
 				}
 			}
 			// JVM-specific tests and their dependencies:
-			jvm().compilations["test"].defaultSourceSet {
+			val jvmTest by getting {
+				dependsOn(concurrentTest)
+				dependsOn(nonNativeCommonTest)
 				dependencies {
 					implementation(kotlin("test-junit"))
 				}
 			}
 
-			js().compilations["main"].defaultSourceSet  {
+			val jsMain by getting {
+				dependsOn(commonMain)
+				dependsOn(nonNativeCommonMain)
 				dependencies {
 					implementation(kotlin("stdlib-js"))
 				}
 			}
-			js().compilations["test"].defaultSourceSet {
+			val jsTest by getting {
+				dependsOn(commonTest)
+				dependsOn(nonNativeCommonTest)
 				dependencies {
 					implementation(kotlin("test-js"))
 				}
 			}
-
 		}
 	}
 }

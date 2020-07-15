@@ -1,3 +1,6 @@
+dependencies {
+	add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7-1.4-M3")
+}
 /*
 import com.soywiz.korlibs.korlibs
 
