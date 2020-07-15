@@ -10,6 +10,7 @@ import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import kotlin.coroutines.*
+/*
 
 // @TODO: Try to prevent webpack to not get confused about this
 private external val require: dynamic
@@ -441,3 +442,4 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 		}
 	}
 }
+*/

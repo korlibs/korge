@@ -9,8 +9,10 @@ import org.w3c.xhr.*
 
 internal actual val httpFactory: HttpFactory by lazy {
 	object : HttpFactory {
-		override fun createClient(): HttpClient = if (OS.isJsNodeJs) HttpClientNodeJs() else HttpClientBrowserJs()
-		override fun createServer(): HttpServer = HttpSeverNodeJs()
+		//override fun createClient(): HttpClient = if (OS.isJsNodeJs) HttpClientNodeJs() else HttpClientBrowserJs()
+		//override fun createServer(): HttpServer = HttpSeverNodeJs()
+		override fun createClient(): HttpClient = HttpClientBrowserJs()
+		override fun createServer(): HttpServer = error("HttpServer not available on Browser")
 	}
 }
 
