@@ -63,6 +63,11 @@ internal inline fun hashCoder(count: Int, gen: (index: Int) -> Int): Int {
     return out
 }
 
+internal fun IntArray.contentHashCode(src: Int, dst: Int): Int = hashCoder(dst - src) { this[src + it].toInt() }
+internal fun ShortArray.contentHashCode(src: Int, dst: Int): Int = hashCoder(dst - src) { this[src + it].toInt() }
+internal fun FloatArray.contentHashCode(src: Int, dst: Int): Int = hashCoder(dst - src) { this[src + it].toRawBits() }
+internal fun DoubleArray.contentHashCode(src: Int, dst: Int): Int = hashCoder(dst - src) { this[src + it].toInt() } // Do not want to use Long (.toRawBits) to prevent boxing on JS
+
 internal inline fun equaler(count: Int, gen: (index: Int) -> Boolean): Boolean {
     for (n in 0 until count) if (!gen(n)) return false
     return true

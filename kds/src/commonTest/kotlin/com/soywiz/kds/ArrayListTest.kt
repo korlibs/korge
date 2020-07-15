@@ -142,4 +142,17 @@ class ArrayListTest {
         assertEquals(listOf(5), intArrayListOf(1, 2, 3, 4, 5).apply { removeAt(0, 4) }.toList())
         assertEquals(listOf(), intArrayListOf(1, 2, 3, 4, 5).apply { removeAt(0, 5) }.toList())
     }
+
+    @Test
+    fun testHashCode() {
+        val a = IntArrayList(10)
+        a.add(10)
+        val hc1 = a.hashCode()
+        a.add(20)
+        val hc2 = a.hashCode()
+        a.removeAt(a.size - 1)
+        val hc3 = a.hashCode()
+        assertNotEquals(hc1, hc2)
+        assertEquals(hc1, hc3)
+    }
 }

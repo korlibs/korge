@@ -65,7 +65,7 @@ class ByteArrayDeque(val initialBits: Int = 10) {
         write(tempBuffer, 0, 1)
     }
 
-    override fun hashCode(): Int = ring.hashCode()
+    override fun hashCode(): Int = ring.contentHashCode()
     override fun equals(other: Any?): Boolean = (other is ByteArrayDeque) && this.ring == other.ring
 }
 
@@ -128,7 +128,7 @@ class ShortArrayDeque(val initialBits: Int = 10) {
         write(tempBuffer, 0, 1)
     }
 
-    override fun hashCode(): Int = ring.hashCode()
+    override fun hashCode(): Int = ring.contentHashCode()
     override fun equals(other: Any?): Boolean = (other is ShortArrayDeque) && this.ring == other.ring
 }
 
@@ -192,7 +192,7 @@ class IntArrayDeque(val initialBits: Int = 10) {
         write(tempBuffer, 0, 1)
     }
 
-    override fun hashCode(): Int = ring.hashCode()
+    override fun hashCode(): Int = ring.contentHashCode()
     override fun equals(other: Any?): Boolean = (other is IntArrayDeque) && this.ring == other.ring
 }
 
@@ -256,6 +256,6 @@ class FloatArrayDeque(val initialBits: Int = 10) {
         write(tempBuffer, 0, 1)
     }
 
-    override fun hashCode(): Int = ring.hashCode()
+    override fun hashCode(): Int = ring.contentHashCode()
     override fun equals(other: Any?): Boolean = (other is FloatArrayDeque) && this.ring == other.ring
 }

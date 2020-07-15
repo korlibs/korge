@@ -1,4 +1,4 @@
-rootProject.name = "korlibs-root"
+rootProject.name = "korlibs-next"
 
 pluginManagement {
 	repositories {

@@ -147,7 +147,7 @@ class IntArrayList(capacity: Int = 7) : List<Int> {
     override fun subList(fromIndex: Int, toIndex: Int): List<Int> = data.asList().subList(fromIndex, toIndex)
 
     // Data
-    override fun hashCode(): Int = data.contentHashCode()
+    override fun hashCode(): Int = data.contentHashCode(0, size)
     override fun equals(other: Any?): Boolean {
         if (other is IntArrayList) return data.contentEquals(other.data)
         if (other is List<*>) return other == this
@@ -310,7 +310,7 @@ class DoubleArrayList(capacity: Int = 7) : List<Double> {
     override fun subList(fromIndex: Int, toIndex: Int): List<Double> = data.asList().subList(fromIndex, toIndex)
 
     // Data
-    override fun hashCode(): Int = data.contentHashCode()
+    override fun hashCode(): Int = data.contentHashCode(0, size)
     override fun equals(other: Any?): Boolean {
         if (other is DoubleArrayList) return data.contentEquals(other.data)
         if (other is List<*>) return other == this
@@ -473,7 +473,7 @@ class FloatArrayList(capacity: Int = 7) : List<Float> {
     override fun subList(fromIndex: Int, toIndex: Int): List<Float> = data.asList().subList(fromIndex, toIndex)
 
     // Data
-    override fun hashCode(): Int = data.contentHashCode()
+    override fun hashCode(): Int = data.contentHashCode(0, size)
     override fun equals(other: Any?): Boolean {
         if (other is FloatArrayList) return data.contentEquals(other.data)
         if (other is List<*>) return other == this
