@@ -98,15 +98,6 @@ subprojects {
 				dependsOn(commonTest)
 			}
 
-			val nativeCommonMain by creating { dependsOn(concurrentMain) }
-			val nativeCommonTest by creating { dependsOn(concurrentTest) }
-
-			val nativePosixMain by creating { dependsOn(nativeCommonMain) }
-			val nativePosixTest by creating { dependsOn(nativeCommonTest) }
-
-			val nativePosixNonAppleMain by creating { dependsOn(nativePosixMain) }
-			val nativePosixNonAppleTest by creating { dependsOn(nativePosixTest) }
-
 			val nonNativeCommonMain by creating {
 				dependsOn(commonMain)
 			}
@@ -174,6 +165,15 @@ subprojects {
 			}
 
 			if (doEnableKotlinNative) {
+				val nativeCommonMain by creating { dependsOn(concurrentMain) }
+				val nativeCommonTest by creating { dependsOn(concurrentTest) }
+
+				val nativePosixMain by creating { dependsOn(nativeCommonMain) }
+				val nativePosixTest by creating { dependsOn(nativeCommonTest) }
+
+				val nativePosixNonAppleMain by creating { dependsOn(nativePosixMain) }
+				val nativePosixNonAppleTest by creating { dependsOn(nativePosixTest) }
+
 				val linuxX64Main by getting {
 					dependsOn(commonMain)
 					dependsOn(nativeCommonMain)
