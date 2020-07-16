@@ -128,11 +128,19 @@ subprojects {
 				dependsOn(commonTest)
 			}
 
+			val jvmAndroidMain by creating {
+				dependsOn(commonMain)
+			}
+			val jvmAndroidTest by creating {
+				dependsOn(commonTest)
+			}
+
 			// Default source set for JVM-specific sources and dependencies:
 			val jvmMain by getting {
 				dependsOn(concurrentMain)
 				dependsOn(nonNativeCommonMain)
 				dependsOn(nonJsMain)
+				dependsOn(jvmAndroidMain)
 				dependencies {
 					implementation(kotlin("stdlib-jdk8"))
 				}
@@ -142,6 +150,7 @@ subprojects {
 				dependsOn(concurrentTest)
 				dependsOn(nonNativeCommonTest)
 				dependsOn(nonJsTest)
+				dependsOn(jvmAndroidTest)
 				dependencies {
 					implementation(kotlin("test-junit"))
 				}
