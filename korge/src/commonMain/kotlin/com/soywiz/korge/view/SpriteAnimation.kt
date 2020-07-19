@@ -21,12 +21,13 @@ class SpriteAnimation(
             columns: Int = 1,
             rows: Int = 1,
             offsetBetweenColumns: Int = 0,
-            offsetBetweenRows: Int = 0
+            offsetBetweenRows: Int = 0,
+            timePerFrame: TimeSpan = TimeSpan.NULL
         ): SpriteAnimation {
             return SpriteAnimation(
                 ArrayList<BmpSlice>().apply {
-                    for (row in 0 until rows){
-                        for (col in 0 until columns){
+                    for (row in 0 until rows) {
+                        for (col in 0 until columns) {
                             add(
                                 spriteMap.sliceWithSize(
                                     marginLeft + (spriteWidth + offsetBetweenColumns) * col,
@@ -38,7 +39,8 @@ class SpriteAnimation(
                             )
                         }
                     }
-                }
+                },
+                timePerFrame
             )
         }
     }
