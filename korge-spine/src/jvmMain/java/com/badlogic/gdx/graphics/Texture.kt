@@ -1,15 +1,10 @@
-package com.badlogic.gdx.graphics;
+package com.badlogic.gdx.graphics
 
-public class Texture {
-    public float getWidth() {
-        return 0;
-    }
+class Texture {
+    val width: Float
+        get() = 0f
+    val height: Float
+        get() = 0f
 
-    public float getHeight() {
-        return 0;
-    }
-
-    public void bind() {
-
-    }
+    fun bind() {}
 }

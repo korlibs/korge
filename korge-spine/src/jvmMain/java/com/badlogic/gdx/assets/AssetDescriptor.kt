@@ -1,9 +1,5 @@
-package com.badlogic.gdx.assets;
+package com.badlogic.gdx.assets
 
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
 
-public class AssetDescriptor {
-    public AssetDescriptor(String atlasName, Class<TextureAtlas> textureAtlasClass) {
-
-    }
-}
+class AssetDescriptor(atlasName: String?, textureAtlasClass: Class<TextureAtlas?>?)

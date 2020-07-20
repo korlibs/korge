@@ -1,4 +1,3 @@
-package com.badlogic.gdx.graphics;
+package com.badlogic.gdx.graphics
 
-public interface GL30 extends GL20 {
-}
+interface GL30 : GL20

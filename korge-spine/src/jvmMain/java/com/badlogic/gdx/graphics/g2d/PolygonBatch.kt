@@ -1,100 +1,69 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Affine2;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Affine2
+import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.graphics.glutils.ShaderProgram
 
-public interface PolygonBatch extends Batch {
-    default void setColor (Color tint) {
-    }
+interface PolygonBatch : Batch {
+    @JvmDefault
+    fun setColor(r: Float, g: Float, b: Float, a: Float) {}
+    @JvmDefault
+    var color: Color?
+        get() = null
+        set(tint) {}
+    @JvmDefault
+    var packedColor: Float
+        get() = 0f
+        set(packedColor) {}
 
-    default void setColor(float r, float g, float b, float a) {
-    }
-
-    default void setPackedColor(float packedColor) {
-    }
-
-    default Color getColor() {
-        return null;
-    }
-
-    default float getPackedColor() {
-        return 0f;
-    }
-
-    default void draw (Texture texture, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation, int srcX, int srcY, int srcWidth, int srcHeight, boolean flipX, boolean flipY) {
-    }
-
-    default void draw(Texture texture, float x, float y, float width, float height, int srcX, int srcY, int srcWidth, int srcHeight, boolean flipX, boolean flipY) {
-    }
-
-    default void draw(Texture texture, float x, float y, int srcX, int srcY, int srcWidth, int srcHeight) {
-    }
-
-    default void draw(Texture texture, float x, float y, float width, float height, float u, float v, float u2, float v2) {
-    }
-
-    default void draw(Texture texture, float x, float y) {
-    }
-
-    default void draw(Texture texture, float x, float y, float width, float height) {
-    }
-
-    default void draw(TextureRegion region, float x, float y) {
-    }
-
-    default void draw(TextureRegion region, float x, float y, float width, float height) {
-    }
-
-    default void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation) {
-    }
-
-    default void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation, boolean clockwise) {
-    }
-
-    default void draw (TextureRegion region, float width, float height, Affine2 transform) {
-    }
-
-    default void flush() {
-    }
-
-    default void disableBlending() {
-    }
-
-    default void enableBlending() {
-    }
-
-    default void dispose() {
-    }
-
-    default Matrix4 getProjectionMatrix() {
-        return null;
-    }
-
-    default Matrix4 getTransformMatrix() {
-        return null;
-    }
-
-    default void setProjectionMatrix(Matrix4 projection) {
-    }
-
-    default void setTransformMatrix(Matrix4 transform) {
-    }
-
-    default void setShader (ShaderProgram newShader) {
-    }
-
-    default ShaderProgram getShader() {
-        return null;
-    }
-
-    default boolean isBlendingEnabled() {
-        return false;
-    }
-
-    default boolean isDrawing() {
-        return false;
-    }
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float, srcX: Int, srcY: Int, srcWidth: Int, srcHeight: Int, flipX: Boolean, flipY: Boolean) {}
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float, width: Float, height: Float, srcX: Int, srcY: Int, srcWidth: Int, srcHeight: Int, flipX: Boolean, flipY: Boolean) {}
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float, srcX: Int, srcY: Int, srcWidth: Int, srcHeight: Int) {}
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float, width: Float, height: Float, u: Float, v: Float, u2: Float, v2: Float) {}
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float) {}
+    @JvmDefault
+    fun draw(texture: Texture?, x: Float, y: Float, width: Float, height: Float) {}
+    @JvmDefault
+    fun draw(region: TextureRegion?, x: Float, y: Float) {}
+    @JvmDefault
+    fun draw(region: TextureRegion?, x: Float, y: Float, width: Float, height: Float) {}
+    @JvmDefault
+    fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float) {}
+    @JvmDefault
+    fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float, clockwise: Boolean) {}
+    @JvmDefault
+    fun draw(region: TextureRegion?, width: Float, height: Float, transform: Affine2?) {}
+    @JvmDefault
+    fun flush() {}
+    @JvmDefault
+    fun disableBlending() {}
+    @JvmDefault
+    fun enableBlending() {}
+    @JvmDefault
+    fun dispose() {}
+    @JvmDefault
+    var projectionMatrix: Matrix4?
+        get() = null
+        set(projection) {}
+    @JvmDefault
+    var transformMatrix: Matrix4?
+        get() = null
+        set(transform) {}
+    @JvmDefault
+    var shader: ShaderProgram?
+        get() = null
+        set(newShader) {}
+    @JvmDefault
+    val isBlendingEnabled: Boolean
+        get() = false
+    @JvmDefault
+    val isDrawing: Boolean
+        get() = false
 }

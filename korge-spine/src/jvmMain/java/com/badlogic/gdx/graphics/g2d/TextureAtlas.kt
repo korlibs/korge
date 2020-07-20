@@ -1,18 +1,30 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-public class TextureAtlas {
-    public AtlasRegion findRegion(String path) {
-        throw new RuntimeException();
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import java.lang.RuntimeException
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+
+class TextureAtlas {
+    fun findRegion(path: String?): AtlasRegion {
+        throw RuntimeException()
     }
 
-    static public class AtlasRegion extends TextureRegion {
-        public float offsetX;
-        public float offsetY;
-        public float originalWidth;
-        public float originalHeight;
-        public boolean rotate;
-        public float packedHeight;
-        public float packedWidth;
-        public int degrees;
+    class AtlasRegion : TextureRegion() {
+        @JvmField
+        var offsetX = 0f
+        @JvmField
+        var offsetY = 0f
+        @JvmField
+        var originalWidth = 0f
+        @JvmField
+        var originalHeight = 0f
+        @JvmField
+        var rotate = false
+        @JvmField
+        var packedHeight = 0f
+        @JvmField
+        var packedWidth = 0f
+        @JvmField
+        var degrees = 0
     }
 }

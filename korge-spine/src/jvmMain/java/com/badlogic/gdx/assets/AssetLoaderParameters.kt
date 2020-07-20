@@ -1,4 +1,3 @@
-package com.badlogic.gdx.assets;
+package com.badlogic.gdx.assets
 
-public class AssetLoaderParameters<T> {
-}
+open class AssetLoaderParameters<T> 

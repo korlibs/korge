@@ -1,19 +1,14 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-public class PolygonRegion {
-    public short[] getTriangles() {
-        return new short[0];
-    }
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 
-    public float[] getVertices() {
-        return new float[0];
-    }
-
-    public TextureRegion getRegion() {
-        return null;
-    }
-
-    public float[] getTextureCoords() {
-        return new float[0];
-    }
+class PolygonRegion {
+    val triangles: ShortArray
+        get() = ShortArray(0)
+    val vertices: FloatArray
+        get() = FloatArray(0)
+    val region: TextureRegion?
+        get() = null
+    val textureCoords: FloatArray
+        get() = FloatArray(0)
 }

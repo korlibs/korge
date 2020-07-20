@@ -1,4 +1,3 @@
-package com.badlogic.gdx.assets.loaders;
+package com.badlogic.gdx.assets.loaders
 
-public class FileHandleResolver {
-}
+class FileHandleResolver 

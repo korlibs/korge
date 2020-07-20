@@ -1,12 +1,7 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Affine2;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.graphics.*
 
-public class PolygonSpriteBatch implements PolygonBatch {
-    public void draw(Texture texture, float[] items, int i, int size, short[] items1, int i1, int size1) {
-    }
+class PolygonSpriteBatch : PolygonBatch {
+    fun draw(texture: Texture?, items: FloatArray?, i: Int, size: Int, items1: ShortArray?, i1: Int, size1: Int) {}
 }

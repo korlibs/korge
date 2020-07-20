@@ -1,10 +1,7 @@
-package com.badlogic.gdx.assets;
+package com.badlogic.gdx.assets
 
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import kotlin.NotImplementedError;
-
-public class AssetManager {
-    public <T> T get(String atlasName, Class<T> textureAtlasClass) {
-        throw new NotImplementedError();
+class AssetManager {
+    fun <T> get(atlasName: String?, textureAtlasClass: Class<T>?): T {
+        throw NotImplementedError()
     }
 }

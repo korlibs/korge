@@ -1,27 +1,25 @@
-package com.badlogic.gdx.files;
+package com.badlogic.gdx.files
 
-import kotlin.NotImplementedError;
+import java.io.*
 
-import java.io.Reader;
-
-public class FileHandle {
-    public String nameWithoutExtension() {
-        throw new NotImplementedError();
+class FileHandle {
+    fun nameWithoutExtension(): String {
+        throw NotImplementedError()
     }
 
-    public byte[] read(int i) {
-        return new byte[0];
+    fun read(i: Int): ByteArray {
+        return ByteArray(0)
     }
 
-    public Reader reader(String charset) {
-        throw new NotImplementedError();
+    fun reader(charset: String?): Reader {
+        throw NotImplementedError()
     }
 
-    public String pathWithoutExtension() {
-        return null;
+    fun pathWithoutExtension(): String? {
+        return null
     }
 
-    public String extension() {
-        return null;
+    fun extension(): String? {
+        return null
     }
 }

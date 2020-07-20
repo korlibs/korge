@@ -1,6 +1,3 @@
-package com.badlogic.gdx.assets.loaders;
+package com.badlogic.gdx.assets.loaders
 
-public class AsynchronousAssetLoader<T, R> {
-    public AsynchronousAssetLoader(FileHandleResolver resolver) {
-    }
-}
+open class AsynchronousAssetLoader<T, R>(resolver: FileHandleResolver?)

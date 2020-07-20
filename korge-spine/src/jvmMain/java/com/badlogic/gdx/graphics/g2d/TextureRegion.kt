@@ -1,34 +1,30 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-import com.badlogic.gdx.graphics.Texture;
-import kotlin.NotImplementedError;
+import com.badlogic.gdx.graphics.*
 
-public class TextureRegion {
-    public float getU() {
-        throw new NotImplementedError();
-    }
-
-    public float getV() {
-        throw new NotImplementedError();
-    }
-
-    public float getU2() {
-        throw new NotImplementedError();
-    }
-
-    public float getV2() {
-        throw new NotImplementedError();
-    }
-
-    public Texture getTexture() {
-        throw new NotImplementedError();
-    }
-
-    public float getRegionWidth() {
-        return 0;
-    }
-
-    public float getRegionHeight() {
-        return 0;
-    }
+open class TextureRegion {
+    val u: Float
+        get() {
+            throw NotImplementedError()
+        }
+    val v: Float
+        get() {
+            throw NotImplementedError()
+        }
+    val u2: Float
+        get() {
+            throw NotImplementedError()
+        }
+    val v2: Float
+        get() {
+            throw NotImplementedError()
+        }
+    val texture: Texture
+        get() {
+            throw NotImplementedError()
+        }
+    val regionWidth: Float
+        get() = 0f
+    val regionHeight: Float
+        get() = 0f
 }

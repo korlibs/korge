@@ -1,36 +1,29 @@
-package com.badlogic.gdx.graphics.g2d;
+package com.badlogic.gdx.graphics.g2d
 
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*
 
-public interface Batch {
-    default void begin() {
-    }
+interface Batch {
+    @JvmDefault
+    fun begin() {}
+    @JvmDefault
+    fun end() {}
+    @JvmDefault
+    val blendSrcFunc: Int
+        get() = 0
+    @JvmDefault
+    val blendDstFunc: Int
+        get() = 0
+    @JvmDefault
+    val blendSrcFuncAlpha: Int
+        get() = 0
+    @JvmDefault
+    val blendDstFuncAlpha: Int
+        get() = 0
 
-    default void end() {
-    }
-
-    default int getBlendSrcFunc() {
-        return 0;
-    }
-
-    default int getBlendDstFunc() {
-        return 0;
-    }
-
-    default int getBlendSrcFuncAlpha() {
-        return 0;
-    }
-
-    default int getBlendDstFuncAlpha() {
-        return 0;
-    }
-
-    default void setBlendFunctionSeparate(int blendSrc, int blendDst, int blendSrcAlpha, int blendDstAlpha) {
-    }
-
-    default void setBlendFunction(int source, int dest) {
-    }
-
-    default void draw(Texture texture, float[] vertices, int index0, int index1) {
-    }
+    @JvmDefault
+    fun setBlendFunctionSeparate(blendSrc: Int, blendDst: Int, blendSrcAlpha: Int, blendDstAlpha: Int) {}
+    @JvmDefault
+    fun setBlendFunction(source: Int, dest: Int) {}
+    @JvmDefault
+    fun draw(texture: Texture?, vertices: FloatArray?, index0: Int, index1: Int) {}
 }
