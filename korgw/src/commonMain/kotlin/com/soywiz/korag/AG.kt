@@ -9,6 +9,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
+import kotlinx.coroutines.*
 
 interface AGFactory {
 	val supportsNativeFrame: Boolean
