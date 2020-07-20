@@ -659,7 +659,7 @@ public class JsonReader implements BaseJsonReader {
 
     /** @param name May be null. */
     private void addChild (@Null String name, JsonValue child) {
-        child.setName(name);
+        child.name = name;
         if (current == null) {
             current = child;
             root = child;
