@@ -8,13 +8,12 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
-import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
 
-inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback)
-inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback)
+inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
+inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback).apply { redrawIfRequired() }
 
 open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
@@ -65,11 +64,24 @@ open class Graphics @JvmOverloads constructor(
             return tempVectorPaths
         }
 
-	inline fun dirty(callback: () -> Unit): Graphics {
+    @PublishedApi
+    internal inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
 		callback()
         return this
 	}
+
+    /**
+     * Ensure that after this function the [bitmap] property is up-to-date with all the drawings inside [block].
+     */
+    inline fun lock(block: Graphics.() -> Unit): Graphics {
+        try {
+            block()
+        } finally {
+            redrawIfRequired()
+        }
+        return this
+    }
 
 	fun clear() {
         shapes.forEach { (it as? StyledShape)?.path?.let { path -> graphicsPathPool.free(path) } }
@@ -232,6 +244,20 @@ open class Graphics @JvmOverloads constructor(
     }
 
     override fun renderInternal(ctx: RenderContext) {
+        bitmapsToRemove.fastForEach {
+            ctx.agBitmapTextureManager.removeBitmap(it)
+        }
+        bitmapsToRemove.clear()
+
+        redrawIfRequired()
+		super.renderInternal(ctx)
+	}
+
+    @PublishedApi
+    internal val bitmapsToRemove = arrayListOf<Bitmap>()
+
+    @PublishedApi
+    internal fun redrawIfRequired() {
         if (autoScaling) {
             matrixTransform.setMatrix(this.globalMatrix)
             //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
@@ -251,20 +277,20 @@ open class Graphics @JvmOverloads constructor(
             }
         }
 
-		if (dirty) {
-			dirty = false
+        if (dirty) {
+            dirty = false
 
             getLocalBoundsInternalNoAnchor(bounds)
 
             // Removes old image
             run {
-                ctx.agBitmapTextureManager.removeBitmap(this.bitmap.bmp)
+                bitmapsToRemove.add(this.bitmap.bmp)
             }
             // Generates new image
             run {
                 val image = createImage(
-                    (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
-                    (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
+                    (bounds.width * renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
+                    (bounds.height * renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
                 )
                 image.context2d {
                     scale(this@Graphics.renderedAtScaleX, this@Graphics.renderedAtScaleY)
@@ -273,9 +299,8 @@ open class Graphics @JvmOverloads constructor(
                 }
                 this.bitmap = image.slice()
             }
-		}
-		super.renderInternal(ctx)
-	}
+        }
+    }
 
     fun getLocalBoundsInternalNoAnchor(out: Rectangle) {
         bb.reset()

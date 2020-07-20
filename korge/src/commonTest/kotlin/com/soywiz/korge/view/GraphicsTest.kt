@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -12,15 +13,13 @@ import kotlin.test.*
 class GraphicsTest {
 	@Test
 	fun test() = suspendTest({ !OS.isAndroid }) {
-		val g = Graphics().apply {
+		val g = Graphics().lock {
 			fill(Colors.RED) {
 				rect(-50, -50, 100, 100)
 			}
 		}
-		val rc = TestRenderContext()
-		g.render(rc)
 		val bmp = g.bitmap.bmp.toBMP32()
-		assertEquals(Size(100, 100), bmp.size)
+		assertEquals(Size(101, 101), bmp.size)
 		//assertEquals("#ff0000ff", bmp[0, 0].hexString)
 		//assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)
@@ -109,6 +108,31 @@ class GraphicsTest {
         assertEquals(graphics, graphics.hitTest(0, 0))
         assertEquals(graphics, graphics.hitTest(20, 0))
         assertEquals(null, graphics.hitTest(33, 0))
+    }
+
+    @Test
+    fun testGraphicsTextureSize() {
+        val bitmap = Graphics().lock {
+            stroke(Colors["#f0f0f0"], Context2d.StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+        }.bitmap
+        assertEquals("153x103", "${bitmap.width}x${bitmap.height}")
+    }
+
+    @Test
+    fun testUpdatingTheGraphicsBitmapAndRenderingRemovesThePreviousBitmapFromActiveTextures() {
+        val g = Graphics()
+        assertEquals(0, g.bitmapsToRemove.size)
+        g.apply {
+            stroke(Colors["#f0f0f0"], Context2d.StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+        }
+        assertEquals(0, g.bitmapsToRemove.size)
+        assertEquals("1x1", "${g.bitmap.width}x${g.bitmap.height}")
+        g.lock { }
+        assertEquals(1, g.bitmapsToRemove.size)
+        assertEquals("153x103", "${g.bitmap.width}x${g.bitmap.height}")
+        val rc = TestRenderContext()
+        g.render(rc)
+        assertEquals(0, g.bitmapsToRemove.size)
     }
 }
 
