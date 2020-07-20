@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  * @author Nathan Sweet */
 public class JsonWriter extends Writer {
     final Writer writer;
-    private final Array<JsonObject> stack = new Array();
+    private final JArray<JsonObject> stack = new JArray();
     private JsonObject current;
     private boolean named;
     private OutputType outputType = OutputType.json;
