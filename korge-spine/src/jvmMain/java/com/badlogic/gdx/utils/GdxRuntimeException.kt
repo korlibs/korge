@@ -5,32 +5,30 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 
-package com.badlogic.gdx.utils;
+package com.badlogic.gdx.utils
 
 /** Typed runtime exception used throughout libgdx
  *
- * @author mzechner */
-public class GdxRuntimeException extends RuntimeException {
-    private static final long serialVersionUID = 6735854402467673117L;
+ * @author mzechner
+ */
+class GdxRuntimeException : RuntimeException {
 
-    public GdxRuntimeException (String message) {
-        super(message);
-    }
+    constructor(message: String) : super(message) {}
 
-    public GdxRuntimeException (Throwable t) {
-        super(t);
-    }
+    constructor(t: Throwable) : super(t) {}
 
-    public GdxRuntimeException (String message, Throwable t) {
-        super(message, t);
+    constructor(message: String, t: Throwable) : super(message, t) {}
+
+    companion object {
+        private val serialVersionUID = 6735854402467673117L
     }
 }
