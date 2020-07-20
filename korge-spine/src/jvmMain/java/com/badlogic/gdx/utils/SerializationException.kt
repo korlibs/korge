@@ -5,66 +5,59 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 
-package com.badlogic.gdx.utils;
+package com.badlogic.gdx.utils
 
 /** Indicates an error during serialization due to misconfiguration or during deserialization due to invalid input data.
- * @author Nathan Sweet */
-public class SerializationException extends RuntimeException {
-    private StringBuilder trace;
+ * @author Nathan Sweet
+ */
+class SerializationException : RuntimeException {
+    private var trace: StringBuilder? = null
 
-    public SerializationException () {
-        super();
+    constructor() : super() {}
+
+    constructor(message: String, cause: Throwable?) : super(message, cause) {}
+
+    constructor(message: String) : super(message) {}
+
+    constructor(cause: Throwable?) : super("", cause) {}
+
+    /** Returns true if any of the exceptions that caused this exception are of the specified type.  */
+    fun causedBy(type: Class<*>): Boolean {
+        return causedBy(this, type)
     }
 
-    public SerializationException (String message, Throwable cause) {
-        super(message, cause);
+    private fun causedBy(ex: Throwable, type: Class<*>): Boolean {
+        val cause = ex.cause
+        if (cause == null || cause === ex) return false
+        return if (type.isAssignableFrom(cause.javaClass)) true else causedBy(cause, type)
     }
 
-    public SerializationException (String message) {
-        super(message);
-    }
-
-    public SerializationException (Throwable cause) {
-        super("", cause);
-    }
-
-    /** Returns true if any of the exceptions that caused this exception are of the specified type. */
-    public boolean causedBy (Class type) {
-        return causedBy(this, type);
-    }
-
-    private boolean causedBy (Throwable ex, Class type) {
-        Throwable cause = ex.getCause();
-        if (cause == null || cause == ex) return false;
-        if (type.isAssignableFrom(cause.getClass())) return true;
-        return causedBy(cause, type);
-    }
-
-    public String getMessage () {
-        if (trace == null) return super.getMessage();
-        StringBuilder sb = new StringBuilder(512);
-        sb.append(super.getMessage());
-        if (sb.length() > 0) sb.append('\n');
-        sb.append("Serialization trace:");
-        sb.append(trace);
-        return sb.toString();
-    }
+    override val message: String?
+        get() {
+            if (trace == null) return super.message
+            val sb = StringBuilder(512)
+            sb.append(super.message)
+            if (sb.length > 0) sb.append('\n')
+            sb.append("Serialization trace:")
+            sb.append(trace)
+            return sb.toString()
+        }
 
     /** Adds information to the exception message about where in the the object graph serialization failure occurred. Serializers
-     * can catch {@link SerializationException}, add trace information, and rethrow the exception. */
-    public void addTrace (String info) {
-        if (info == null) throw new IllegalArgumentException("info cannot be null.");
-        if (trace == null) trace = new StringBuilder(512);
-        trace.append('\n');
-        trace.append(info);
+     * can catch [SerializationException], add trace information, and rethrow the exception.  */
+    fun addTrace(info: String?) {
+        requireNotNull(info) { "info cannot be null." }
+        if (trace == null) trace = StringBuilder(512)
+        trace!!.append('\n')
+        trace!!.append(info)
     }
 }
