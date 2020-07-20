@@ -32,7 +32,7 @@ class Matrix3 : Serializable {
     /** Get the values in this matrix.
      * @return The float values that make up this matrix in column-major order.
      */
-    val values get() = `val`
+    val values = `val`
     private val tmp = FloatArray(9)
 
     constructor() {
