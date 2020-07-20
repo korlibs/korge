@@ -905,7 +905,7 @@ class JsonValue : Iterable<JsonValue> {
                     run {
                         var child = `object`.child
                         while (child != null) {
-                            buffer.append(outputType.quoteName(child.name))
+                            buffer.append(outputType.quoteName(child.name!!))
                             buffer.append(':')
                             json(child, buffer, outputType)
                             if (child.next != null) buffer.append(',')
@@ -1014,7 +1014,7 @@ class JsonValue : Iterable<JsonValue> {
                     var child = `object`.child
                     while (child != null) {
                         if (newLines) indent(indent, buffer)
-                        buffer.append(outputType!!.quoteName(child.name))
+                        buffer.append(outputType!!.quoteName(child.name!!))
                         buffer.append(": ")
                         prettyPrint(child, buffer, indent + 1, settings)
                         if ((!newLines || outputType != OutputType.minimal) && child.next != null) buffer.append(',')
@@ -1097,7 +1097,7 @@ class JsonValue : Iterable<JsonValue> {
                     var child = `object`.child
                     while (child != null) {
                         if (newLines) indent(indent, writer)
-                        writer.append(outputType!!.quoteName(child.name))
+                        writer.append(outputType!!.quoteName(child.name!!))
                         writer.append(": ")
                         prettyPrint(child, writer, indent + 1, settings)
                         if ((!newLines || outputType != OutputType.minimal) && child.next != null) writer.append(',')
