@@ -1,10 +1,10 @@
-package com.badlogic.gdx;
+package com.badlogic.gdx
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.GL30
 
-public class Gdx {
-    static public GL20 gl;
-    public static GL30 gl30 = null;
-    public static Graphics graphics;
+object Gdx {
+    var gl: GL20? = null
+    var gl30: GL30? = null
+    var graphics: Graphics? = null
 }

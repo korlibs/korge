@@ -1,13 +1,9 @@
-package com.badlogic.gdx;
+package com.badlogic.gdx
 
-import kotlin.NotImplementedError;
+class Graphics {
+    val width: Float
+        get() = throw NotImplementedError()
 
-public class Graphics {
-    public float getWidth() {
-        throw new NotImplementedError();
-    }
-
-    public float getHeight() {
-        throw new NotImplementedError();
-    }
+    val height: Float
+        get() = throw NotImplementedError()
 }

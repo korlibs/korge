@@ -100,7 +100,7 @@ public class TwoColorPolygonBatch implements PolygonBatch {
 			throw new IllegalArgumentException("Can't have more than 32767 vertices per batch: " + maxTriangles);
 
 		Mesh.VertexDataType vertexDataType = Mesh.VertexDataType.VertexArray;
-		if (Gdx.gl30 != null) vertexDataType = VertexDataType.VertexBufferObjectWithVAO;
+		if (Gdx.INSTANCE.getGl30() != null) vertexDataType = VertexDataType.VertexBufferObjectWithVAO;
 		mesh = new Mesh(vertexDataType, false, maxVertices, maxTriangles * 3, //
 			new VertexAttribute(Usage.Position, 2, "a_position"), //
 			new VertexAttribute(Usage.ColorPacked, 4, "a_light"), //
@@ -111,13 +111,13 @@ public class TwoColorPolygonBatch implements PolygonBatch {
 		triangles = new short[maxTriangles * 3];
 		defaultShader = createDefaultShader();
 		shader = defaultShader;
-		projectionMatrix.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		projectionMatrix.setToOrtho2D(0, 0, Gdx.INSTANCE.getGraphics().getWidth(), Gdx.INSTANCE.getGraphics().getHeight());
 	}
 
 	@Override
 	public void begin () {
 		if (drawing) throw new IllegalStateException("end must be called before begin.");
-		Gdx.gl.glDepthMask(false);
+		Gdx.INSTANCE.getGl().glDepthMask(false);
 		shader.begin();
 		setupMatrices();
 		drawing = true;
@@ -128,8 +128,8 @@ public class TwoColorPolygonBatch implements PolygonBatch {
 		if (!drawing) throw new IllegalStateException("begin must be called before end.");
 		if (vertexIndex > 0) flush();
 		shader.end();
-		Gdx.gl.glDepthMask(true);
-		if (isBlendingEnabled()) Gdx.gl.glDisable(GL20.GL_BLEND);
+		Gdx.INSTANCE.getGl().glDepthMask(true);
+		if (isBlendingEnabled()) Gdx.INSTANCE.getGl().glDisable(GL20.GL_BLEND);
 
 		lastTexture = null;
 		drawing = false;
@@ -1305,8 +1305,8 @@ public class TwoColorPolygonBatch implements PolygonBatch {
 		Mesh mesh = this.mesh;
 		mesh.setVertices(vertices, 0, vertexIndex);
 		mesh.setIndices(triangles, 0, triangleIndex);
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		if (blendSrcFunc != -1) Gdx.gl.glBlendFuncSeparate(blendSrcFunc, blendDstFunc, blendSrcFuncAlpha, blendDstFuncAlpha);
+		Gdx.INSTANCE.getGl().glEnable(GL20.GL_BLEND);
+		if (blendSrcFunc != -1) Gdx.INSTANCE.getGl().glBlendFuncSeparate(blendSrcFunc, blendDstFunc, blendSrcFuncAlpha, blendDstFuncAlpha);
 		mesh.render(shader, GL20.GL_TRIANGLES, 0, triangleIndex);
 
 		vertexIndex = 0;

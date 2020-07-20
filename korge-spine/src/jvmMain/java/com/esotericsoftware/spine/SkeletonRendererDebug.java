@@ -74,9 +74,9 @@ public class SkeletonRendererDebug {
 	public void draw (Skeleton skeleton) {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 
-		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.INSTANCE.getGl().glEnable(GL20.GL_BLEND);
 		int srcFunc = premultipliedAlpha ? GL20.GL_ONE : GL20.GL_SRC_ALPHA;
-		Gdx.gl.glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.INSTANCE.getGl().glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
 		ShapeRenderer shapes = this.shapes;
 		Array<Bone> bones = skeleton.getBones();

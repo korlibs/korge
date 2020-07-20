@@ -1,4 +1,3 @@
-package com.badlogic.gdx.scenes.scene2d.utils;
+package com.badlogic.gdx.scenes.scene2d.utils
 
-public class BaseDrawable {
-}
+open class BaseDrawable

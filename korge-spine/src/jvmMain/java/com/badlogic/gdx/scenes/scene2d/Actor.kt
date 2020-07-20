@@ -1,17 +1,14 @@
-package com.badlogic.gdx.scenes.scene2d;
+package com.badlogic.gdx.scenes.scene2d
 
-public class Actor {
-    public void act (float delta) {
-    }
+open class Actor {
 
-    public float getY() {
-        return 0;
-    }
+    val y: Float
+        get() = 0f
 
-    public float getX() {
-        return 0;
-    }
+    val x: Float
+        get() = 0f
 
-    public void remove() {
-    }
+    open fun act(delta: Float) {}
+
+    fun remove() {}
 }
