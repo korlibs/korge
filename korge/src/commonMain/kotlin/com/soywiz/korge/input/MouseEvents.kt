@@ -106,53 +106,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	val moveAnywhere = Signal<MouseEvents>()
     val moveOutside = Signal<MouseEvents>()
     val exit = Signal<MouseEvents>()
-
-    @Deprecated("", ReplaceWith("moveOutside"))
-    val mouseOutside get() = moveOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onClick")
-	val onClick = click
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onOver")
-	val onOver = over
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onOut")
-	val onOut = out
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onDown")
-	val onDown = down
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onDownFromOutside")
-	val onDownFromOutside = downFromOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUp")
-	val onUp = up
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUpOutside")
-	val onUpOutside = upOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUpAnywhere")
-	val onUpAnywhere = upAnywhere
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMove")
-	val onMove = move
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMoveAnywhere")
-	val onMoveAnywhere = moveAnywhere
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMoveOutside")
-	val onMoveOutside = mouseOutside
+    val scroll = Signal<MouseEvents>()
+    val scrollAnywhere = Signal<MouseEvents>()
+    val scrollOutside = Signal<MouseEvents>()
 
     @PublishedApi
     internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents {
@@ -172,6 +128,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     inline fun onMoveAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveAnywhere, handler)
     inline fun onMoveOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveOutside, handler)
     inline fun onExit(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::exit, handler)
+    inline fun onScroll(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scroll, handler)
+    inline fun onScrollAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scrollAnywhere, handler)
+    inline fun onScrollOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scrollOutside, handler)
 
     var hitTest: View? = null; private set
 	private var lastOver = false
@@ -218,18 +177,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val downPosStage get() = views.stage.globalToLocal(downPosGlobal, _downPosStage)
     val upPosStage get() = views.stage.globalToLocal(upPosGlobal, _upPosStage)
 
-    // Deprecated variants
-    @Deprecated("Use startedPosLocal instead")
-    val startedPos get() = startedPosLocal
-    @Deprecated("Use lastPosLocal instead")
-    val lastPos get() = lastPosLocal
-    @Deprecated("Use currentPosLocal instead")
-    val currentPos get() = currentPosLocal
-    @Deprecated("Use downPosLocal or downPosGlobal instead")
-    val downPos get() = downPosGlobal
-    @Deprecated("Use upPosLocal or upPosGlobal instead")
-    val upPos get() = upPosGlobal
-
     var clickedCount = 0
 
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
@@ -275,8 +222,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 			}
 			MouseEvent.Type.CLICK -> {
 				if (isOver) {
-					onClick(this@MouseEvents)
-					if (onClick.listenerCount > 0) {
+					click(this@MouseEvents)
+					if (click.listenerCount > 0) {
 						preventDefault(view)
 					}
 				}
@@ -290,6 +237,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 }
                 */
 			}
+            MouseEvent.Type.SCROLL -> {
+                if (isOver) {
+                    scroll(this@MouseEvents)
+                } else {
+                    scrollOutside(this@MouseEvents)
+                }
+                scrollAnywhere(this@MouseEvents)
+            }
 			else -> {
 			}
 		}
@@ -388,5 +343,6 @@ inline fun <T : View?> T.onUp(noinline handler: @EventsDslMarker suspend (MouseE
 inline fun <T : View?> T.onUpOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upOutside, handler)
 inline fun <T : View?> T.onUpAnywhere(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upAnywhere, handler)
 inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
+inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
 fun ViewsScope.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)

@@ -158,17 +158,17 @@ open class ViewsForTesting @JvmOverloads constructor(
     }
 
 	suspend fun View.simulateClick() {
-        viewMouse.onClick(viewMouse)
+        viewMouse.click(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOver() {
-        viewMouse.onOver(viewMouse)
+        viewMouse.over(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOut() {
-        viewMouse.onOut(viewMouse)
+        viewMouse.out(viewMouse)
 		simulateFrame()
 	}
 

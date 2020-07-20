@@ -321,17 +321,14 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         val isAltDown = false
         val isMetaDown = false
         val scaleCoords = false
-        dispatchMouseEvent(type, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords)
-        if (simulateClickOnUp && type == MouseEvent.Type.UP) {
-            dispatchMouseEvent(MouseEvent.Type.CLICK, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords)
-        }
+        dispatchMouseEvent(type, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = simulateClickOnUp)
     }
 
     fun dispatchMouseEvent(
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int,
         scrollDeltaX: Double, scrollDeltaY: Double, scrollDeltaZ: Double,
         isShiftDown: Boolean, isCtrlDown: Boolean, isAltDown: Boolean, isMetaDown: Boolean,
-        scaleCoords: Boolean
+        scaleCoords: Boolean, simulateClickOnUp: Boolean = false
     ) {
         dispatch(mouseEvent.apply {
             this.type = type
@@ -349,6 +346,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
             this.isMetaDown = isMetaDown
             this.scaleCoords = scaleCoords
         })
+        if (simulateClickOnUp && type == MouseEvent.Type.UP) {
+            dispatchMouseEvent(MouseEvent.Type.CLICK, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = false)
+        }
     }
 
     fun dispatchTouchEventStartStart() = dispatchTouchEventStart(TouchEvent.Type.START)

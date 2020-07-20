@@ -238,32 +238,57 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow(), DialogInterfa
                     val mot = MyXMotionEvent(e.pointer)
                     //val mot = e.xmotion
                     val but = e.xbutton
-                    val scrollDeltaX = 0.0
-                    val scrollDeltaY = 0.0
-                    val scrollDeltaZ = 0.0
+
                     val isShiftDown = false
                     val isCtrlDown = false
                     val isAltDown = false
                     val isMetaDown = false
-                    val ev = when (e.type) {
+                    val evType = when (e.type) {
                         MotionNotify -> MouseEvent.Type.MOVE
                         ButtonPress -> MouseEvent.Type.DOWN
                         ButtonRelease -> MouseEvent.Type.UP
                         else -> MouseEvent.Type.MOVE
                     }
+
+                    //in 4..7 -> MouseButton.LEFT // 4=WHEEL_UP, 5=WHEEL_DOWN, 6=WHEEL_LEFT, 7=WHEEL_RIGHT!
+                    val scrollDeltaX = when (mot.button) {
+                        6 -> -1.0
+                        7 -> +1.0
+                        else -> 0.0
+                    }
+                    val scrollDeltaY = when (mot.button) {
+                        4 -> -1.0
+                        5 -> +1.0
+                        else -> 0.0
+                    }
+                    val scrollDeltaZ = 0.0
+
                     val button = when (mot.button) {
                         1 -> MouseButton.LEFT
                         2 -> MouseButton.MIDDLE
                         3 -> MouseButton.RIGHT
-                        4 -> MouseButton.BUTTON4 // WHEEL_UP!
-                        5 -> MouseButton.BUTTON5 // WHEEL_DOWN!
+                        in 4..7 -> MouseButton.BUTTON_WHEEL
                         else -> MouseButton.BUTTON_UNKNOWN
                     }
-                    //println(XMotionEvent().size())
-                    //println(mot.size)
-                    //println("MOUSE ${ev} ${mot.x} ${mot.y} ${mot.button}")
 
-                    dispatchSimpleMouseEvent(ev, 0, mot.x, mot.y, button, simulateClickOnUp = true)
+                    val realEvType = when (button) {
+                        MouseButton.BUTTON_WHEEL -> {
+                            when (evType) {
+                                MouseEvent.Type.DOWN -> MouseEvent.Type.SCROLL
+                                else -> null
+                            }
+                        }
+                        else -> evType
+                    }
+
+                    if (realEvType != null) {
+                        dispatchMouseEvent(
+                            realEvType, 0, mot.x, mot.y,
+                            button, 0,
+                            scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, false,
+                            simulateClickOnUp = true
+                        )
+                    }
                 }
                 else -> {
                     //println("OTHER EVENT ${e.type}")

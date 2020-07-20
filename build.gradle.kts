@@ -43,7 +43,6 @@ subprojects {
 			compilations.all {
 				kotlinOptions.jvmTarget = "1.8"
 			}
-			withJava()
 		}
 		//js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
 		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.LEGACY) {

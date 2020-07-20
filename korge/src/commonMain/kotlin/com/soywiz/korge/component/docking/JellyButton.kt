@@ -60,7 +60,7 @@ class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var t
 	}
 
 	suspend fun onClick(callback: suspend () -> Unit) {
-		hitTest?.mouse?.onClick?.addSuspend { callback() }
+		hitTest?.mouse?.click?.addSuspend { callback() }
 	}
 }
 
