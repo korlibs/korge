@@ -222,4 +222,26 @@ class YamlTest {
             )
         )
     }
+
+    @Test
+    fun testMapListIssue() {
+        assertEquals(
+            mapOf(
+                "hello" to listOf("a", "b"),
+                "world" to listOf("c", "d"),
+                "test" to listOf("e", "f")
+            ),
+            Yaml.decode("""
+			hello:
+			- a
+			- b
+			world:
+			- c
+			- d
+			test:
+			- e
+			- f
+		""".trimIndent())
+        )
+    }
 }

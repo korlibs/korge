@@ -112,6 +112,7 @@ object Yaml {
                             lastMapKey = key
                             lastMapValue = value
                             map[key] = value
+                            list = null
                             if (TRACE) println("${levelStr}MAP[$key]: $value")
                         }
                     }

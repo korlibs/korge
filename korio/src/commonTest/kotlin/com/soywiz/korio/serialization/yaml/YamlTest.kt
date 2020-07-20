@@ -239,4 +239,26 @@ class YamlTest {
 	//		Yaml.read("[a:1,b:2]")
 	//	)
 	//}
+
+	@Test
+	fun testMapListIssue() {
+		assertEquals(
+			mapOf(
+				"hello" to listOf("a", "b"),
+				"world" to listOf("c", "d"),
+				"test" to listOf("e", "f")
+			),
+			Yaml.decode("""
+			hello:
+			- a
+			- b
+			world:
+			- c
+			- d
+			test:
+			- e
+			- f
+		""".trimIndent())
+		)
+	}
 }
