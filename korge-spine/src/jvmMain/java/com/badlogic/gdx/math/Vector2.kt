@@ -1,538 +1,520 @@
-package com.badlogic.gdx.math;
+package com.badlogic.gdx.math
 
-import java.io.Serializable;
+import java.io.Serializable
 
-import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.NumberUtils;
+import com.badlogic.gdx.utils.GdxRuntimeException
+import com.badlogic.gdx.utils.NumberUtils
 
 /** Encapsulates a 2D vector. Allows chaining methods by returning a reference to itself
- * @author badlogicgames@gmail.com */
-public class Vector2 implements Serializable, Vector<Vector2> {
-    private static final long serialVersionUID = 913902788239530931L;
+ * @author badlogicgames@gmail.com
+ */
+class Vector2 : Serializable, Vector<Vector2> {
 
-    public final static Vector2 X = new Vector2(1, 0);
-    public final static Vector2 Y = new Vector2(0, 1);
-    public final static Vector2 Zero = new Vector2(0, 0);
+    /** the x-component of this vector  */
+    @JvmField
+    var x: Float = 0.toFloat()
 
-    /** the x-component of this vector **/
-    public float x;
-    /** the y-component of this vector **/
-    public float y;
+    /** the y-component of this vector  */
+    @JvmField
+    var y: Float = 0.toFloat()
 
-    /** Constructs a new vector at (0,0) */
-    public Vector2 () {
-    }
+    override val isUnit: Boolean
+        get() = isUnit(0.000000001f)
+
+    override val isZero: Boolean
+        get() = x == 0f && y == 0f
+
+    /** Constructs a new vector at (0,0)  */
+    constructor() {}
 
     /** Constructs a vector with the given components
      * @param x The x-component
-     * @param y The y-component */
-    public Vector2 (float x, float y) {
-        this.x = x;
-        this.y = y;
+     * @param y The y-component
+     */
+    constructor(x: Float, y: Float) {
+        this.x = x
+        this.y = y
     }
 
     /** Constructs a vector from the given vector
-     * @param v The vector */
-    public Vector2 (Vector2 v) {
-        set(v);
+     * @param v The vector
+     */
+    constructor(v: Vector2) {
+        set(v)
     }
 
-    @Override
-    public Vector2 cpy () {
-        return new Vector2(this);
+    override fun cpy(): Vector2 {
+        return Vector2(this)
     }
 
-    public static float len (float x, float y) {
-        return (float)Math.sqrt(x * x + y * y);
+    override fun len(): Float {
+        return Math.sqrt((x * x + y * y).toDouble()).toFloat()
     }
 
-    @Override
-    public float len () {
-        return (float)Math.sqrt(x * x + y * y);
+    override fun len2(): Float {
+        return x * x + y * y
     }
 
-    public static float len2 (float x, float y) {
-        return x * x + y * y;
-    }
-
-    @Override
-    public float len2 () {
-        return x * x + y * y;
-    }
-
-    @Override
-    public Vector2 set (Vector2 v) {
-        x = v.x;
-        y = v.y;
-        return this;
+    override fun set(v: Vector2): Vector2 {
+        x = v.x
+        y = v.y
+        return this
     }
 
     /** Sets the components of this vector
      * @param x The x-component
      * @param y The y-component
-     * @return This vector for chaining */
-    public Vector2 set (float x, float y) {
-        this.x = x;
-        this.y = y;
-        return this;
+     * @return This vector for chaining
+     */
+    operator fun set(x: Float, y: Float): Vector2 {
+        this.x = x
+        this.y = y
+        return this
     }
 
-    @Override
-    public Vector2 sub (Vector2 v) {
-        x -= v.x;
-        y -= v.y;
-        return this;
+    override fun sub(v: Vector2): Vector2 {
+        x -= v.x
+        y -= v.y
+        return this
     }
 
     /** Substracts the other vector from this vector.
      * @param x The x-component of the other vector
      * @param y The y-component of the other vector
-     * @return This vector for chaining */
-    public Vector2 sub (float x, float y) {
-        this.x -= x;
-        this.y -= y;
-        return this;
+     * @return This vector for chaining
+     */
+    fun sub(x: Float, y: Float): Vector2 {
+        this.x -= x
+        this.y -= y
+        return this
     }
 
-    @Override
-    public Vector2 nor () {
-        float len = len();
-        if (len != 0) {
-            x /= len;
-            y /= len;
+    override fun nor(): Vector2 {
+        val len = len()
+        if (len != 0f) {
+            x /= len
+            y /= len
         }
-        return this;
+        return this
     }
 
-    @Override
-    public Vector2 add (Vector2 v) {
-        x += v.x;
-        y += v.y;
-        return this;
+    override fun add(v: Vector2): Vector2 {
+        x += v.x
+        y += v.y
+        return this
     }
 
     /** Adds the given components to this vector
      * @param x The x-component
      * @param y The y-component
-     * @return This vector for chaining */
-    public Vector2 add (float x, float y) {
-        this.x += x;
-        this.y += y;
-        return this;
+     * @return This vector for chaining
+     */
+    fun add(x: Float, y: Float): Vector2 {
+        this.x += x
+        this.y += y
+        return this
     }
 
-    public static float dot (float x1, float y1, float x2, float y2) {
-        return x1 * x2 + y1 * y2;
+    override fun dot(v: Vector2): Float {
+        return x * v.x + y * v.y
     }
 
-    @Override
-    public float dot (Vector2 v) {
-        return x * v.x + y * v.y;
+    fun dot(ox: Float, oy: Float): Float {
+        return x * ox + y * oy
     }
 
-    public float dot (float ox, float oy) {
-        return x * ox + y * oy;
-    }
-
-    @Override
-    public Vector2 scl (float scalar) {
-        x *= scalar;
-        y *= scalar;
-        return this;
+    override fun scl(scalar: Float): Vector2 {
+        x *= scalar
+        y *= scalar
+        return this
     }
 
     /** Multiplies this vector by a scalar
-     * @return This vector for chaining */
-    public Vector2 scl (float x, float y) {
-        this.x *= x;
-        this.y *= y;
-        return this;
+     * @return This vector for chaining
+     */
+    fun scl(x: Float, y: Float): Vector2 {
+        this.x *= x
+        this.y *= y
+        return this
     }
 
-    @Override
-    public Vector2 scl (Vector2 v) {
-        this.x *= v.x;
-        this.y *= v.y;
-        return this;
+    override fun scl(v: Vector2): Vector2 {
+        this.x *= v.x
+        this.y *= v.y
+        return this
     }
 
-    @Override
-    public Vector2 mulAdd (Vector2 vec, float scalar) {
-        this.x += vec.x * scalar;
-        this.y += vec.y * scalar;
-        return this;
+    override fun mulAdd(vec: Vector2, scalar: Float): Vector2 {
+        this.x += vec.x * scalar
+        this.y += vec.y * scalar
+        return this
     }
 
-    @Override
-    public Vector2 mulAdd (Vector2 vec, Vector2 mulVec) {
-        this.x += vec.x * mulVec.x;
-        this.y += vec.y * mulVec.y;
-        return this;
+    override fun mulAdd(vec: Vector2, mulVec: Vector2): Vector2 {
+        this.x += vec.x * mulVec.x
+        this.y += vec.y * mulVec.y
+        return this
     }
 
-    public static float dst (float x1, float y1, float x2, float y2) {
-        final float x_d = x2 - x1;
-        final float y_d = y2 - y1;
-        return (float)Math.sqrt(x_d * x_d + y_d * y_d);
-    }
-
-    @Override
-    public float dst (Vector2 v) {
-        final float x_d = v.x - x;
-        final float y_d = v.y - y;
-        return (float)Math.sqrt(x_d * x_d + y_d * y_d);
+    override fun dst(v: Vector2): Float {
+        val x_d = v.x - x
+        val y_d = v.y - y
+        return Math.sqrt((x_d * x_d + y_d * y_d).toDouble()).toFloat()
     }
 
     /** @param x The x-component of the other vector
      * @param y The y-component of the other vector
-     * @return the distance between this and the other vector */
-    public float dst (float x, float y) {
-        final float x_d = x - this.x;
-        final float y_d = y - this.y;
-        return (float)Math.sqrt(x_d * x_d + y_d * y_d);
+     * @return the distance between this and the other vector
+     */
+    fun dst(x: Float, y: Float): Float {
+        val x_d = x - this.x
+        val y_d = y - this.y
+        return Math.sqrt((x_d * x_d + y_d * y_d).toDouble()).toFloat()
     }
 
-    public static float dst2 (float x1, float y1, float x2, float y2) {
-        final float x_d = x2 - x1;
-        final float y_d = y2 - y1;
-        return x_d * x_d + y_d * y_d;
-    }
-
-    @Override
-    public float dst2 (Vector2 v) {
-        final float x_d = v.x - x;
-        final float y_d = v.y - y;
-        return x_d * x_d + y_d * y_d;
+    override fun dst2(v: Vector2): Float {
+        val x_d = v.x - x
+        val y_d = v.y - y
+        return x_d * x_d + y_d * y_d
     }
 
     /** @param x The x-component of the other vector
      * @param y The y-component of the other vector
-     * @return the squared distance between this and the other vector */
-    public float dst2 (float x, float y) {
-        final float x_d = x - this.x;
-        final float y_d = y - this.y;
-        return x_d * x_d + y_d * y_d;
+     * @return the squared distance between this and the other vector
+     */
+    fun dst2(x: Float, y: Float): Float {
+        val x_d = x - this.x
+        val y_d = y - this.y
+        return x_d * x_d + y_d * y_d
     }
 
-    @Override
-    public Vector2 limit (float limit) {
-        return limit2(limit * limit);
+    override fun limit(limit: Float): Vector2 {
+        return limit2(limit * limit)
     }
 
-    @Override
-    public Vector2 limit2 (float limit2) {
-        float len2 = len2();
-        if (len2 > limit2) {
-            return scl((float)Math.sqrt(limit2 / len2));
-        }
-        return this;
+    override fun limit2(limit2: Float): Vector2 {
+        val len2 = len2()
+        return if (len2 > limit2) {
+            scl(Math.sqrt((limit2 / len2).toDouble()).toFloat())
+        } else this
     }
 
-    @Override
-    public Vector2 clamp (float min, float max) {
-        final float len2 = len2();
-        if (len2 == 0f) return this;
-        float max2 = max * max;
-        if (len2 > max2) return scl((float)Math.sqrt(max2 / len2));
-        float min2 = min * min;
-        if (len2 < min2) return scl((float)Math.sqrt(min2 / len2));
-        return this;
+    override fun clamp(min: Float, max: Float): Vector2 {
+        val len2 = len2()
+        if (len2 == 0f) return this
+        val max2 = max * max
+        if (len2 > max2) return scl(Math.sqrt((max2 / len2).toDouble()).toFloat())
+        val min2 = min * min
+        return if (len2 < min2) scl(Math.sqrt((min2 / len2).toDouble()).toFloat()) else this
     }
 
-    @Override
-    public Vector2 setLength (float len) {
-        return setLength2(len * len);
+    override fun setLength(len: Float): Vector2 {
+        return setLength2(len * len)
     }
 
-    @Override
-    public Vector2 setLength2 (float len2) {
-        float oldLen2 = len2();
-        return (oldLen2 == 0 || oldLen2 == len2) ? this : scl((float)Math.sqrt(len2 / oldLen2));
+    override fun setLength2(len2: Float): Vector2 {
+        val oldLen2 = len2()
+        return if (oldLen2 == 0f || oldLen2 == len2) this else scl(Math.sqrt((len2 / oldLen2).toDouble()).toFloat())
     }
 
-    /** Converts this {@code Vector2} to a string in the format {@code (x,y)}.
-     * @return a string representation of this object. */
-    @Override
-    public String toString () {
-        return "(" + x + "," + y + ")";
+    /** Converts this `Vector2` to a string in the format `(x,y)`.
+     * @return a string representation of this object.
+     */
+    override fun toString(): String {
+        return "($x,$y)"
     }
 
-    /** Sets this {@code Vector2} to the value represented by the specified string according to the format of {@link #toString()}.
+    /** Sets this `Vector2` to the value represented by the specified string according to the format of [.toString].
      * @param v the string.
-     * @return this vector for chaining */
-    public Vector2 fromString (String v) {
-        int s = v.indexOf(',', 1);
-        if (s != -1 && v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')') {
+     * @return this vector for chaining
+     */
+    fun fromString(v: String): Vector2 {
+        val s = v.indexOf(',', 1)
+        if (s != -1 && v[0] == '(' && v[v.length - 1] == ')') {
             try {
-                float x = Float.parseFloat(v.substring(1, s));
-                float y = Float.parseFloat(v.substring(s + 1, v.length() - 1));
-                return this.set(x, y);
-            } catch (NumberFormatException ex) {
+                val x = java.lang.Float.parseFloat(v.substring(1, s))
+                val y = java.lang.Float.parseFloat(v.substring(s + 1, v.length - 1))
+                return this.set(x, y)
+            } catch (ex: NumberFormatException) {
                 // Throw a GdxRuntimeException
             }
+
         }
-        throw new GdxRuntimeException("Malformed Vector2: " + v);
+        throw GdxRuntimeException("Malformed Vector2: $v")
     }
 
     /** Left-multiplies this vector by the given matrix
      * @param mat the matrix
-     * @return this vector */
-    public Vector2 mul (Matrix3 mat) {
-        float x = this.x * mat.val[0] + this.y * mat.val[3] + mat.val[6];
-        float y = this.x * mat.val[1] + this.y * mat.val[4] + mat.val[7];
-        this.x = x;
-        this.y = y;
-        return this;
+     * @return this vector
+     */
+    fun mul(mat: Matrix3): Vector2 {
+        val x = this.x * mat.`val`[0] + this.y * mat.`val`[3] + mat.`val`[6]
+        val y = this.x * mat.`val`[1] + this.y * mat.`val`[4] + mat.`val`[7]
+        this.x = x
+        this.y = y
+        return this
     }
 
     /** Calculates the 2D cross product between this and the given vector.
      * @param v the other vector
-     * @return the cross product */
-    public float crs (Vector2 v) {
-        return this.x * v.y - this.y * v.x;
+     * @return the cross product
+     */
+    fun crs(v: Vector2): Float {
+        return this.x * v.y - this.y * v.x
     }
 
     /** Calculates the 2D cross product between this and the given vector.
      * @param x the x-coordinate of the other vector
      * @param y the y-coordinate of the other vector
-     * @return the cross product */
-    public float crs (float x, float y) {
-        return this.x * y - this.y * x;
+     * @return the cross product
+     */
+    fun crs(x: Float, y: Float): Float {
+        return this.x * y - this.y * x
     }
 
     /** @return the angle in degrees of this vector (point) relative to the x-axis. Angles are towards the positive y-axis
-     *         (typically counter-clockwise) and between 0 and 360. */
-    public float angle () {
-        float angle = (float)Math.atan2(y, x) * MathUtils.radiansToDegrees;
-        if (angle < 0) angle += 360;
-        return angle;
+     * (typically counter-clockwise) and between 0 and 360.
+     */
+    fun angle(): Float {
+        var angle = Math.atan2(y.toDouble(), x.toDouble()).toFloat() * MathUtils.radiansToDegrees
+        if (angle < 0) angle += 360f
+        return angle
     }
 
     /** @return the angle in degrees of this vector (point) relative to the given vector. Angles are towards the positive y-axis
-     *         (typically counter-clockwise.) between -180 and +180 */
-    public float angle (Vector2 reference) {
-        return (float)Math.atan2(crs(reference), dot(reference)) * MathUtils.radiansToDegrees;
+     * (typically counter-clockwise.) between -180 and +180
+     */
+    fun angle(reference: Vector2): Float {
+        return Math.atan2(crs(reference).toDouble(), dot(reference).toDouble()).toFloat() * MathUtils.radiansToDegrees
     }
 
     /** @return the angle in radians of this vector (point) relative to the x-axis. Angles are towards the positive y-axis.
-     *         (typically counter-clockwise) */
-    public float angleRad () {
-        return (float)Math.atan2(y, x);
+     * (typically counter-clockwise)
+     */
+    fun angleRad(): Float {
+        return Math.atan2(y.toDouble(), x.toDouble()).toFloat()
     }
 
     /** @return the angle in radians of this vector (point) relative to the given vector. Angles are towards the positive y-axis.
-     *         (typically counter-clockwise.) */
-    public float angleRad (Vector2 reference) {
-        return (float)Math.atan2(crs(reference), dot(reference));
+     * (typically counter-clockwise.)
+     */
+    fun angleRad(reference: Vector2): Float {
+        return Math.atan2(crs(reference).toDouble(), dot(reference).toDouble()).toFloat()
     }
 
     /** Sets the angle of the vector in degrees relative to the x-axis, towards the positive y-axis (typically counter-clockwise).
-     * @param degrees The angle in degrees to set. */
-    public Vector2 setAngle (float degrees) {
-        return setAngleRad(degrees * MathUtils.degreesToRadians);
+     * @param degrees The angle in degrees to set.
+     */
+    fun setAngle(degrees: Float): Vector2 {
+        return setAngleRad(degrees * MathUtils.degreesToRadians)
     }
 
     /** Sets the angle of the vector in radians relative to the x-axis, towards the positive y-axis (typically counter-clockwise).
-     * @param radians The angle in radians to set. */
-    public Vector2 setAngleRad (float radians) {
-        this.set(len(), 0f);
-        this.rotateRad(radians);
+     * @param radians The angle in radians to set.
+     */
+    fun setAngleRad(radians: Float): Vector2 {
+        this[len()] = 0f
+        this.rotateRad(radians)
 
-        return this;
+        return this
     }
 
     /** Rotates the Vector2 by the given angle, counter-clockwise assuming the y-axis points up.
-     * @param degrees the angle in degrees */
-    public Vector2 rotate (float degrees) {
-        return rotateRad(degrees * MathUtils.degreesToRadians);
+     * @param degrees the angle in degrees
+     */
+    fun rotate(degrees: Float): Vector2 {
+        return rotateRad(degrees * MathUtils.degreesToRadians)
     }
 
     /** Rotates the Vector2 by the given angle around reference vector, counter-clockwise assuming the y-axis points up.
      * @param degrees the angle in degrees
-     * @param reference center Vector2 */
-    public Vector2 rotateAround (Vector2 reference, float degrees) {
-        return this.sub(reference).rotate(degrees).add(reference);
+     * @param reference center Vector2
+     */
+    fun rotateAround(reference: Vector2, degrees: Float): Vector2 {
+        return this.sub(reference).rotate(degrees).add(reference)
     }
 
     /** Rotates the Vector2 by the given angle, counter-clockwise assuming the y-axis points up.
-     * @param radians the angle in radians */
-    public Vector2 rotateRad (float radians) {
-        float cos = (float)Math.cos(radians);
-        float sin = (float)Math.sin(radians);
+     * @param radians the angle in radians
+     */
+    fun rotateRad(radians: Float): Vector2 {
+        val cos = Math.cos(radians.toDouble()).toFloat()
+        val sin = Math.sin(radians.toDouble()).toFloat()
 
-        float newX = this.x * cos - this.y * sin;
-        float newY = this.x * sin + this.y * cos;
+        val newX = this.x * cos - this.y * sin
+        val newY = this.x * sin + this.y * cos
 
-        this.x = newX;
-        this.y = newY;
+        this.x = newX
+        this.y = newY
 
-        return this;
+        return this
     }
 
     /** Rotates the Vector2 by the given angle around reference vector, counter-clockwise assuming the y-axis points up.
      * @param radians the angle in radians
-     * @param reference center Vector2 */
-    public Vector2 rotateAroundRad (Vector2 reference, float radians) {
-        return this.sub(reference).rotateRad(radians).add(reference);
+     * @param reference center Vector2
+     */
+    fun rotateAroundRad(reference: Vector2, radians: Float): Vector2 {
+        return this.sub(reference).rotateRad(radians).add(reference)
     }
 
-    /** Rotates the Vector2 by 90 degrees in the specified direction, where >= 0 is counter-clockwise and < 0 is clockwise. */
-    public Vector2 rotate90 (int dir) {
-        float x = this.x;
+    /** Rotates the Vector2 by 90 degrees in the specified direction, where >= 0 is counter-clockwise and < 0 is clockwise.  */
+    fun rotate90(dir: Int): Vector2 {
+        val x = this.x
         if (dir >= 0) {
-            this.x = -y;
-            y = x;
+            this.x = -y
+            y = x
         } else {
-            this.x = y;
-            y = -x;
+            this.x = y
+            y = -x
         }
-        return this;
+        return this
     }
 
-    @Override
-    public Vector2 lerp (Vector2 target, float alpha) {
-        final float invAlpha = 1.0f - alpha;
-        this.x = (x * invAlpha) + (target.x * alpha);
-        this.y = (y * invAlpha) + (target.y * alpha);
-        return this;
+    override fun lerp(target: Vector2, alpha: Float): Vector2 {
+        val invAlpha = 1.0f - alpha
+        this.x = x * invAlpha + target.x * alpha
+        this.y = y * invAlpha + target.y * alpha
+        return this
     }
 
-    @Override
-    public Vector2 interpolate (Vector2 target, float alpha, Interpolation interpolation) {
-        return lerp(target, interpolation.apply(alpha));
+    override fun interpolate(target: Vector2, alpha: Float, interpolation: Interpolation): Vector2 {
+        return lerp(target, interpolation.apply(alpha))
     }
 
-    @Override
-    public Vector2 setToRandomDirection () {
-        float theta = MathUtils.random(0f, MathUtils.PI2);
-        return this.set(MathUtils.cos(theta), MathUtils.sin(theta));
+    override fun setToRandomDirection(): Vector2 {
+        val theta = MathUtils.random(0f, MathUtils.PI2)
+        return this.set(MathUtils.cos(theta), MathUtils.sin(theta))
     }
 
-    @Override
-    public int hashCode () {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + NumberUtils.floatToIntBits(x);
-        result = prime * result + NumberUtils.floatToIntBits(y);
-        return result;
+    override fun hashCode(): Int {
+        val prime = 31
+        var result = 1
+        result = prime * result + NumberUtils.floatToIntBits(x)
+        result = prime * result + NumberUtils.floatToIntBits(y)
+        return result
     }
 
-    @Override
-    public boolean equals (Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        Vector2 other = (Vector2)obj;
-        if (NumberUtils.floatToIntBits(x) != NumberUtils.floatToIntBits(other.x)) return false;
-        if (NumberUtils.floatToIntBits(y) != NumberUtils.floatToIntBits(other.y)) return false;
-        return true;
+    override fun equals(obj: Any?): Boolean {
+        if (this === obj) return true
+        if (obj == null) return false
+        if (javaClass != obj.javaClass) return false
+        val other = obj as Vector2?
+        if (NumberUtils.floatToIntBits(x) != NumberUtils.floatToIntBits(other!!.x)) return false
+        return if (NumberUtils.floatToIntBits(y) != NumberUtils.floatToIntBits(other.y)) false else true
     }
 
-    @Override
-    public boolean epsilonEquals (Vector2 other, float epsilon) {
-        if (other == null) return false;
-        if (Math.abs(other.x - x) > epsilon) return false;
-        if (Math.abs(other.y - y) > epsilon) return false;
-        return true;
+    override fun epsilonEquals(other: Vector2?, epsilon: Float): Boolean {
+        if (other == null) return false
+        if (Math.abs(other.x - x) > epsilon) return false
+        return if (Math.abs(other.y - y) > epsilon) false else true
     }
 
     /** Compares this vector with the other vector, using the supplied epsilon for fuzzy equality testing.
-     * @return whether the vectors are the same. */
-    public boolean epsilonEquals (float x, float y, float epsilon) {
-        if (Math.abs(x - this.x) > epsilon) return false;
-        if (Math.abs(y - this.y) > epsilon) return false;
-        return true;
+     * @return whether the vectors are the same.
+     */
+    @JvmOverloads
+    fun epsilonEquals(x: Float, y: Float, epsilon: Float = MathUtils.FLOAT_ROUNDING_ERROR): Boolean {
+        if (Math.abs(x - this.x) > epsilon) return false
+        return if (Math.abs(y - this.y) > epsilon) false else true
     }
 
     /** Compares this vector with the other vector using MathUtils.FLOAT_ROUNDING_ERROR for fuzzy equality testing
      * @param other other vector to compare
-     * @return true if vector are equal, otherwise false */
-    public boolean epsilonEquals (final Vector2 other) {
-        return epsilonEquals(other, MathUtils.FLOAT_ROUNDING_ERROR);
+     * @return true if vector are equal, otherwise false
+     */
+    fun epsilonEquals(other: Vector2): Boolean {
+        return epsilonEquals(other, MathUtils.FLOAT_ROUNDING_ERROR)
     }
 
-    /** Compares this vector with the other vector using MathUtils.FLOAT_ROUNDING_ERROR for fuzzy equality testing
-     * @param x x component of the other vector to compare
-     * @param y y component of the other vector to compare
-     * @return true if vector are equal, otherwise false */
-    public boolean epsilonEquals (float x, float y) {
-        return epsilonEquals(x, y, MathUtils.FLOAT_ROUNDING_ERROR);
+    override fun isUnit(margin: Float): Boolean {
+        return Math.abs(len2() - 1f) < margin
     }
 
-    @Override
-    public boolean isUnit () {
-        return isUnit(0.000000001f);
+    override fun isZero(margin: Float): Boolean {
+        return len2() < margin
     }
 
-    @Override
-    public boolean isUnit (final float margin) {
-        return Math.abs(len2() - 1f) < margin;
+    override fun isOnLine(other: Vector2): Boolean {
+        return MathUtils.isZero(x * other.y - y * other.x)
     }
 
-    @Override
-    public boolean isZero () {
-        return x == 0 && y == 0;
+    override fun isOnLine(other: Vector2, epsilon: Float): Boolean {
+        return MathUtils.isZero(x * other.y - y * other.x, epsilon)
     }
 
-    @Override
-    public boolean isZero (final float margin) {
-        return len2() < margin;
+    override fun isCollinear(other: Vector2, epsilon: Float): Boolean {
+        return isOnLine(other, epsilon) && dot(other) > 0f
     }
 
-    @Override
-    public boolean isOnLine (Vector2 other) {
-        return MathUtils.isZero(x * other.y - y * other.x);
+    override fun isCollinear(other: Vector2): Boolean {
+        return isOnLine(other) && dot(other) > 0f
     }
 
-    @Override
-    public boolean isOnLine (Vector2 other, float epsilon) {
-        return MathUtils.isZero(x * other.y - y * other.x, epsilon);
+    override fun isCollinearOpposite(other: Vector2, epsilon: Float): Boolean {
+        return isOnLine(other, epsilon) && dot(other) < 0f
     }
 
-    @Override
-    public boolean isCollinear (Vector2 other, float epsilon) {
-        return isOnLine(other, epsilon) && dot(other) > 0f;
+    override fun isCollinearOpposite(other: Vector2): Boolean {
+        return isOnLine(other) && dot(other) < 0f
     }
 
-    @Override
-    public boolean isCollinear (Vector2 other) {
-        return isOnLine(other) && dot(other) > 0f;
+    override fun isPerpendicular(vector: Vector2): Boolean {
+        return MathUtils.isZero(dot(vector))
     }
 
-    @Override
-    public boolean isCollinearOpposite (Vector2 other, float epsilon) {
-        return isOnLine(other, epsilon) && dot(other) < 0f;
+    override fun isPerpendicular(vector: Vector2, epsilon: Float): Boolean {
+        return MathUtils.isZero(dot(vector), epsilon)
     }
 
-    @Override
-    public boolean isCollinearOpposite (Vector2 other) {
-        return isOnLine(other) && dot(other) < 0f;
+    override fun hasSameDirection(vector: Vector2): Boolean {
+        return dot(vector) > 0
     }
 
-    @Override
-    public boolean isPerpendicular (Vector2 vector) {
-        return MathUtils.isZero(dot(vector));
+    override fun hasOppositeDirection(vector: Vector2): Boolean {
+        return dot(vector) < 0
     }
 
-    @Override
-    public boolean isPerpendicular (Vector2 vector, float epsilon) {
-        return MathUtils.isZero(dot(vector), epsilon);
+    override fun setZero(): Vector2 {
+        this.x = 0f
+        this.y = 0f
+        return this
     }
 
-    @Override
-    public boolean hasSameDirection (Vector2 vector) {
-        return dot(vector) > 0;
-    }
+    companion object {
+        private const val serialVersionUID = 913902788239530931L
 
-    @Override
-    public boolean hasOppositeDirection (Vector2 vector) {
-        return dot(vector) < 0;
-    }
+        val X = Vector2(1f, 0f)
+        val Y = Vector2(0f, 1f)
+        val Zero = Vector2(0f, 0f)
 
-    @Override
-    public Vector2 setZero () {
-        this.x = 0;
-        this.y = 0;
-        return this;
+        fun len(x: Float, y: Float): Float {
+            return Math.sqrt((x * x + y * y).toDouble()).toFloat()
+        }
+
+        fun len2(x: Float, y: Float): Float {
+            return x * x + y * y
+        }
+
+        fun dot(x1: Float, y1: Float, x2: Float, y2: Float): Float {
+            return x1 * x2 + y1 * y2
+        }
+
+        fun dst(x1: Float, y1: Float, x2: Float, y2: Float): Float {
+            val x_d = x2 - x1
+            val y_d = y2 - y1
+            return Math.sqrt((x_d * x_d + y_d * y_d).toDouble()).toFloat()
+        }
+
+        fun dst2(x1: Float, y1: Float, x2: Float, y2: Float): Float {
+            val x_d = x2 - x1
+            val y_d = y2 - y1
+            return x_d * x_d + y_d * y_d
+        }
     }
 }
+/** Compares this vector with the other vector using MathUtils.FLOAT_ROUNDING_ERROR for fuzzy equality testing
+ * @param x x component of the other vector to compare
+ * @param y y component of the other vector to compare
+ * @return true if vector are equal, otherwise false
+ */

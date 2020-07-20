@@ -141,7 +141,7 @@ interface Vector<T : Vector<T>?> {
      * @param interpolator An Interpolation object describing the used interpolation method
      * @return This vector for chaining.
      */
-    fun interpolate(target: T, alpha: Float, interpolator: Interpolation?): T
+    fun interpolate(target: T, alpha: Float, interpolator: Interpolation): T
 
     /** Sets this vector to the unit vector with a random direction
      * @return This vector for chaining
@@ -214,7 +214,7 @@ interface Vector<T : Vector<T>?> {
      * @param epsilon
      * @return whether the vectors have fuzzy equality.
      */
-    fun epsilonEquals(other: T, epsilon: Float): Boolean
+    fun epsilonEquals(other: T?, epsilon: Float): Boolean
 
     /** First scale a supplied vector, then add it to this vector.
      * @param v addition vector
