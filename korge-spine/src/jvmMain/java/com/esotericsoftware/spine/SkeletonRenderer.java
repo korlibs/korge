@@ -34,10 +34,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
 import com.badlogic.gdx.utils.NumberUtils;
-import com.badlogic.gdx.utils.ShortArray;
+import com.badlogic.gdx.utils.JShortArray;
 
 import com.esotericsoftware.spine.attachments.Attachment;
 import com.esotericsoftware.spine.attachments.ClippingAttachment;
@@ -51,7 +51,7 @@ public class SkeletonRenderer {
 	static private final short[] quadTriangles = {0, 1, 2, 2, 3, 0};
 
 	private boolean premultipliedAlpha;
-	private final FloatArray vertices = new FloatArray(32);
+	private final JFloatArray vertices = new JFloatArray(32);
 	private final SkeletonClipping clipper = new SkeletonClipping();
 	private VertexEffect vertexEffect;
 	private final Vector2 temp = new Vector2();
@@ -88,7 +88,7 @@ public class SkeletonRenderer {
 		float[] vertices = this.vertices.items;
 		Color skeletonColor = skeleton.color;
 		float r = skeletonColor.r, g = skeletonColor.g, b = skeletonColor.b, a = skeletonColor.a;
-		Array<Slot> drawOrder = skeleton.drawOrder;
+		JArray<Slot> drawOrder = skeleton.drawOrder;
 		for (int i = 0, n = drawOrder.size; i < n; i++) {
 			Slot slot = drawOrder.get(i);
 			if (!slot.bone.active) {
@@ -170,7 +170,7 @@ public class SkeletonRenderer {
 		short[] triangles = null;
 		Color color = null, skeletonColor = skeleton.color;
 		float r = skeletonColor.r, g = skeletonColor.g, b = skeletonColor.b, a = skeletonColor.a;
-		Array<Slot> drawOrder = skeleton.drawOrder;
+		JArray<Slot> drawOrder = skeleton.drawOrder;
 		for (int i = 0, n = drawOrder.size; i < n; i++) {
 			Slot slot = drawOrder.get(i);
 			if (!slot.bone.active) {
@@ -233,8 +233,8 @@ public class SkeletonRenderer {
 
 				if (clipper.isClipping()) {
 					clipper.clipTriangles(vertices, verticesLength, triangles, triangles.length, uvs, c, 0, false);
-					FloatArray clippedVertices = clipper.getClippedVertices();
-					ShortArray clippedTriangles = clipper.getClippedTriangles();
+					JFloatArray clippedVertices = clipper.getClippedVertices();
+					JShortArray clippedTriangles = clipper.getClippedTriangles();
 					if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 5, c, 0);
 					batch.draw(texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.items, 0,
 						clippedTriangles.size);
@@ -297,7 +297,7 @@ public class SkeletonRenderer {
 		short[] triangles = null;
 		Color color = null, skeletonColor = skeleton.color;
 		float r = skeletonColor.r, g = skeletonColor.g, b = skeletonColor.b, a = skeletonColor.a;
-		Array<Slot> drawOrder = skeleton.drawOrder;
+		JArray<Slot> drawOrder = skeleton.drawOrder;
 		for (int i = 0, n = drawOrder.size; i < n; i++) {
 			Slot slot = drawOrder.get(i);
 			if (!slot.bone.active) {
@@ -368,8 +368,8 @@ public class SkeletonRenderer {
 
 				if (clipper.isClipping()) {
 					clipper.clipTriangles(vertices, verticesLength, triangles, triangles.length, uvs, light, dark, true);
-					FloatArray clippedVertices = clipper.getClippedVertices();
-					ShortArray clippedTriangles = clipper.getClippedTriangles();
+					JFloatArray clippedVertices = clipper.getClippedVertices();
+					JShortArray clippedTriangles = clipper.getClippedTriangles();
 					if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 6, light, dark);
 					batch.drawTwoColor(texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.items, 0,
 						clippedTriangles.size);

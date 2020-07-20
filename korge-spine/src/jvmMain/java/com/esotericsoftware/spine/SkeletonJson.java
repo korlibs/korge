@@ -34,9 +34,9 @@ import static com.esotericsoftware.spine.utils.SpineUtils.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JIntArray;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.SerializationException;
@@ -82,7 +82,7 @@ import com.esotericsoftware.spine.attachments.VertexAttachment;
 public class SkeletonJson {
 	private final AttachmentLoader attachmentLoader;
 	private float scale = 1;
-	private Array<LinkedMesh> linkedMeshes = new Array();
+	private JArray<LinkedMesh> linkedMeshes = new JArray();
 
 	public SkeletonJson (TextureAtlas atlas) {
 		attachmentLoader = new AtlasAttachmentLoader(atlas);
@@ -483,8 +483,8 @@ public class SkeletonJson {
 			attachment.setVertices(vertices);
 			return;
 		}
-		FloatArray weights = new FloatArray(verticesLength * 3 * 3);
-		IntArray bones = new IntArray(verticesLength * 3);
+		JFloatArray weights = new JFloatArray(verticesLength * 3 * 3);
+		JIntArray bones = new JIntArray(verticesLength * 3);
 		for (int i = 0, n = vertices.length; i < n;) {
 			int boneCount = (int)vertices[i++];
 			bones.add(boneCount);
@@ -501,7 +501,7 @@ public class SkeletonJson {
 
 	private void readAnimation (JsonValue map, String name, SkeletonData skeletonData) {
 		float scale = this.scale;
-		Array<Timeline> timelines = new Array();
+		JArray<Timeline> timelines = new JArray();
 		float duration = 0;
 
 		// Slot timelines.

@@ -29,13 +29,13 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the setup pose for a {@link PathConstraint}.
  * <p>
  * See <a href="http://esotericsoftware.com/spine-path-constraints">Path constraints</a> in the Spine User Guide. */
 public class PathConstraintData extends ConstraintData {
-	final Array<BoneData> bones = new Array();
+	final JArray<BoneData> bones = new JArray();
 	SlotData target;
 	PositionMode positionMode;
 	SpacingMode spacingMode;
@@ -48,7 +48,7 @@ public class PathConstraintData extends ConstraintData {
 	}
 
 	/** The bones that will be modified by this path constraint. */
-	public Array<BoneData> getBones () {
+	public JArray<BoneData> getBones () {
 		return bones;
 	}
 

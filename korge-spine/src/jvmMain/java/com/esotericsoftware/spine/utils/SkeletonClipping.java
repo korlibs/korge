@@ -29,22 +29,22 @@
 
 package com.esotericsoftware.spine.utils;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.ShortArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JShortArray;
 import com.esotericsoftware.spine.Slot;
 import com.esotericsoftware.spine.attachments.ClippingAttachment;
 
 public class SkeletonClipping {
 	private final Triangulator triangulator = new Triangulator();
-	private final FloatArray clippingPolygon = new FloatArray();
-	private final FloatArray clipOutput = new FloatArray(128);
-	private final FloatArray clippedVertices = new FloatArray(128);
-	private final ShortArray clippedTriangles = new ShortArray(128);
-	private final FloatArray scratch = new FloatArray();
+	private final JFloatArray clippingPolygon = new JFloatArray();
+	private final JFloatArray clipOutput = new JFloatArray(128);
+	private final JFloatArray clippedVertices = new JFloatArray(128);
+	private final JShortArray clippedTriangles = new JShortArray(128);
+	private final JFloatArray scratch = new JFloatArray();
 
 	private ClippingAttachment clipAttachment;
-	private Array<FloatArray> clippingPolygons;
+	private JArray<JFloatArray> clippingPolygons;
 
 	public int clipStart (Slot slot, ClippingAttachment clip) {
 		if (clipAttachment != null) return 0;
@@ -55,9 +55,9 @@ public class SkeletonClipping {
 		float[] vertices = clippingPolygon.setSize(n);
 		clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
 		makeClockwise(clippingPolygon);
-		ShortArray triangles = triangulator.triangulate(clippingPolygon);
+		JShortArray triangles = triangulator.triangulate(clippingPolygon);
 		clippingPolygons = triangulator.decompose(clippingPolygon, triangles);
-		for (FloatArray polygon : clippingPolygons) {
+		for (JFloatArray polygon : clippingPolygons) {
 			makeClockwise(polygon);
 			polygon.add(polygon.items[0]);
 			polygon.add(polygon.items[1]);
@@ -85,8 +85,8 @@ public class SkeletonClipping {
 	public void clipTriangles (float[] vertices, int verticesLength, short[] triangles, int trianglesLength, float[] uvs,
 		float light, float dark, boolean twoColor) {
 
-		FloatArray clipOutput = this.clipOutput, clippedVertices = this.clippedVertices;
-		ShortArray clippedTriangles = this.clippedTriangles;
+		JFloatArray clipOutput = this.clipOutput, clippedVertices = this.clippedVertices;
+		JShortArray clippedTriangles = this.clippedTriangles;
 		Object[] polygons = clippingPolygons.items;
 		int polygonsCount = clippingPolygons.size;
 		int vertexSize = twoColor ? 6 : 5;
@@ -110,7 +110,7 @@ public class SkeletonClipping {
 
 			for (int p = 0; p < polygonsCount; p++) {
 				int s = clippedVertices.size;
-				if (clip(x1, y1, x2, y2, x3, y3, (FloatArray)polygons[p], clipOutput)) {
+				if (clip(x1, y1, x2, y2, x3, y3, (JFloatArray)polygons[p], clipOutput)) {
 					int clipOutputLength = clipOutput.size;
 					if (clipOutputLength == 0) continue;
 					float d0 = y2 - y3, d1 = x3 - x2, d2 = x1 - x3, d4 = y3 - y1;
@@ -203,12 +203,12 @@ public class SkeletonClipping {
 
 	/** Clips the input triangle against the convex, clockwise clipping area. If the triangle lies entirely within the clipping
 	 * area, false is returned. The clipping area must duplicate the first vertex at the end of the vertices list. */
-	boolean clip (float x1, float y1, float x2, float y2, float x3, float y3, FloatArray clippingArea, FloatArray output) {
-		FloatArray originalOutput = output;
+	boolean clip (float x1, float y1, float x2, float y2, float x3, float y3, JFloatArray clippingArea, JFloatArray output) {
+		JFloatArray originalOutput = output;
 		boolean clipped = false;
 
 		// Avoid copy at the end.
-		FloatArray input = null;
+		JFloatArray input = null;
 		if (clippingArea.size % 4 >= 2) {
 			input = output;
 			output = scratch;
@@ -282,7 +282,7 @@ public class SkeletonClipping {
 			output.add(output.items[1]);
 
 			if (i == clippingVerticesLast) break;
-			FloatArray temp = output;
+			JFloatArray temp = output;
 			output = input;
 			output.clear();
 			input = temp;
@@ -297,15 +297,15 @@ public class SkeletonClipping {
 		return clipped;
 	}
 
-	public FloatArray getClippedVertices () {
+	public JFloatArray getClippedVertices () {
 		return clippedVertices;
 	}
 
-	public ShortArray getClippedTriangles () {
+	public JShortArray getClippedTriangles () {
 		return clippedTriangles;
 	}
 
-	static void makeClockwise (FloatArray polygon) {
+	static void makeClockwise (JFloatArray polygon) {
 		float[] vertices = polygon.items;
 		int verticeslength = polygon.size;
 

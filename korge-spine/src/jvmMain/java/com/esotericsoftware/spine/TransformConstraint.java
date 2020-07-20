@@ -32,7 +32,7 @@ package com.esotericsoftware.spine;
 import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the current pose for a transform constraint. A transform constraint adjusts the world transform of the constrained
  * bones to match that of the target bone.
@@ -40,7 +40,7 @@ import com.badlogic.gdx.utils.Array;
  * See <a href="http://esotericsoftware.com/spine-transform-constraints">Transform constraints</a> in the Spine User Guide. */
 public class TransformConstraint implements Updatable {
 	final TransformConstraintData data;
-	final Array<Bone> bones;
+	final JArray<Bone> bones;
 	Bone target;
 	float rotateMix, translateMix, scaleMix, shearMix;
 
@@ -55,7 +55,7 @@ public class TransformConstraint implements Updatable {
 		translateMix = data.translateMix;
 		scaleMix = data.scaleMix;
 		shearMix = data.shearMix;
-		bones = new Array(data.bones.size);
+		bones = new JArray(data.bones.size);
 		for (BoneData boneData : data.bones)
 			bones.add(skeleton.findBone(boneData.name));
 		target = skeleton.findBone(data.target.name);
@@ -66,7 +66,7 @@ public class TransformConstraint implements Updatable {
 		if (constraint == null) throw new IllegalArgumentException("constraint cannot be null.");
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		data = constraint.data;
-		bones = new Array(constraint.bones.size);
+		bones = new JArray(constraint.bones.size);
 		for (Bone bone : constraint.bones)
 			bones.add(skeleton.bones.get(bone.data.index));
 		target = skeleton.bones.get(constraint.target.data.index);
@@ -101,7 +101,7 @@ public class TransformConstraint implements Updatable {
 		float ta = target.a, tb = target.b, tc = target.c, td = target.d;
 		float degRadReflect = ta * td - tb * tc > 0 ? degRad : -degRad;
 		float offsetRotation = data.offsetRotation * degRadReflect, offsetShearY = data.offsetShearY * degRadReflect;
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			boolean modified = false;
@@ -165,7 +165,7 @@ public class TransformConstraint implements Updatable {
 		float ta = target.a, tb = target.b, tc = target.c, td = target.d;
 		float degRadReflect = ta * td - tb * tc > 0 ? degRad : -degRad;
 		float offsetRotation = data.offsetRotation * degRadReflect, offsetShearY = data.offsetShearY * degRadReflect;
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			boolean modified = false;
@@ -224,7 +224,7 @@ public class TransformConstraint implements Updatable {
 		float rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
 		Bone target = this.target;
 		if (!target.appliedValid) target.updateAppliedTransform();
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			if (!bone.appliedValid) bone.updateAppliedTransform();
@@ -263,7 +263,7 @@ public class TransformConstraint implements Updatable {
 		float rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
 		Bone target = this.target;
 		if (!target.appliedValid) target.updateAppliedTransform();
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			if (!bone.appliedValid) bone.updateAppliedTransform();
@@ -291,7 +291,7 @@ public class TransformConstraint implements Updatable {
 	}
 
 	/** The bones that will be modified by this transform constraint. */
-	public Array<Bone> getBones () {
+	public JArray<Bone> getBones () {
 		return bones;
 	}
 

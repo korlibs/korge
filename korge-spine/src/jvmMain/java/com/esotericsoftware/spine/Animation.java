@@ -35,9 +35,9 @@ import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JIntSet;
 
 import com.esotericsoftware.spine.attachments.Attachment;
 import com.esotericsoftware.spine.attachments.VertexAttachment;
@@ -45,23 +45,23 @@ import com.esotericsoftware.spine.attachments.VertexAttachment;
 /** A simple container for a list of timelines and a name. */
 public class Animation {
 	final String name;
-	Array<Timeline> timelines;
-	final IntSet timelineIDs = new IntSet();
+	JArray<Timeline> timelines;
+	final JIntSet timelineIDs = new JIntSet();
 	float duration;
 
-	public Animation (String name, Array<Timeline> timelines, float duration) {
+	public Animation (String name, JArray<Timeline> timelines, float duration) {
 		if (name == null) throw new IllegalArgumentException("name cannot be null.");
 		this.name = name;
 		this.duration = duration;
 		setTimelines(timelines);
 	}
 
-	/** If the returned array or the timelines it contains are modified, {@link #setTimelines(Array)} must be called. */
-	public Array<Timeline> getTimelines () {
+	/** If the returned array or the timelines it contains are modified, {@link #setTimelines(JArray)} must be called. */
+	public JArray<Timeline> getTimelines () {
 		return timelines;
 	}
 
-	public void setTimelines (Array<Timeline> timelines) {
+	public void setTimelines (JArray<Timeline> timelines) {
 		if (timelines == null) throw new IllegalArgumentException("timelines cannot be null.");
 		this.timelines = timelines;
 
@@ -86,11 +86,11 @@ public class Animation {
 
 	/** Applies all the animation's timelines to the specified skeleton.
 	 * <p>
-	 * See Timeline {@link Timeline#apply(Skeleton, float, float, Array, float, MixBlend, MixDirection)}.
+	 * See Timeline {@link Timeline#apply(Skeleton, float, float, JArray, float, MixBlend, MixDirection)}.
 	 * @param loop If true, the animation repeats after {@link #getDuration()}.
 	 * @param events May be null to ignore fired events. */
-	public void apply (Skeleton skeleton, float lastTime, float time, boolean loop, Array<Event> events, float alpha,
-		MixBlend blend, MixDirection direction) {
+	public void apply (Skeleton skeleton, float lastTime, float time, boolean loop, JArray<Event> events, float alpha,
+                       MixBlend blend, MixDirection direction) {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 
 		if (loop && duration != 0) {
@@ -98,7 +98,7 @@ public class Animation {
 			if (lastTime > 0) lastTime %= duration;
 		}
 
-		Array<Timeline> timelines = this.timelines;
+		JArray<Timeline> timelines = this.timelines;
 		for (int i = 0, n = timelines.size; i < n; i++)
 			timelines.get(i).apply(skeleton, lastTime, time, events, alpha, blend, direction);
 	}
@@ -171,8 +171,8 @@ public class Animation {
 		 * @param blend Controls how mixing is applied when <code>alpha</code> < 1.
 		 * @param direction Indicates whether the timeline is mixing in or out. Used by timelines which perform instant transitions,
 		 *           such as {@link DrawOrderTimeline} or {@link AttachmentTimeline}, and other such as {@link ScaleTimeline}. */
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction);
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction);
 
 		/** Uniquely encodes both the type of this timeline and the skeleton property that it affects. */
 		public int getPropertyId ();
@@ -181,7 +181,7 @@ public class Animation {
 	/** Controls how a timeline value is mixed with the setup pose value or current pose value when a timeline's <code>alpha</code>
 	 * < 1.
 	 * <p>
-	 * See Timeline {@link Timeline#apply(Skeleton, float, float, Array, float, MixBlend, MixDirection)}. */
+	 * See Timeline {@link Timeline#apply(Skeleton, float, float, JArray, float, MixBlend, MixDirection)}. */
 	static public enum MixBlend {
 		/** Transitions from the setup value to the timeline value (the current value is not used). Before the first key, the setup
 		 * value is set. */
@@ -209,7 +209,7 @@ public class Animation {
 	/** Indicates whether a timeline's <code>alpha</code> is mixing out over time toward 0 (the setup or current pose value) or
 	 * mixing in toward 1 (the timeline's value).
 	 * <p>
-	 * See Timeline {@link Timeline#apply(Skeleton, float, float, Array, float, MixBlend, MixDirection)}. */
+	 * See Timeline {@link Timeline#apply(Skeleton, float, float, JArray, float, MixBlend, MixDirection)}. */
 	static public enum MixDirection {
 		in, out
 	}
@@ -366,8 +366,8 @@ public class Animation {
 			frames[frameIndex + ROTATION] = degrees;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Bone bone = skeleton.bones.get(boneIndex);
 			if (!bone.active) return;
@@ -464,8 +464,8 @@ public class Animation {
 			frames[frameIndex + Y] = y;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Bone bone = skeleton.bones.get(boneIndex);
 			if (!bone.active) return;
@@ -526,8 +526,8 @@ public class Animation {
 			return (TimelineType.scale.ordinal() << 24) + boneIndex;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Bone bone = skeleton.bones.get(boneIndex);
 			if (!bone.active) return;
@@ -629,8 +629,8 @@ public class Animation {
 			return (TimelineType.shear.ordinal() << 24) + boneIndex;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Bone bone = skeleton.bones.get(boneIndex);
 			if (!bone.active) return;
@@ -724,8 +724,8 @@ public class Animation {
 			frames[frameIndex + A] = a;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Slot slot = skeleton.slots.get(slotIndex);
 			if (!slot.bone.active) return;
@@ -824,8 +824,8 @@ public class Animation {
 			frames[frameIndex + B2] = b2;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Slot slot = skeleton.slots.get(slotIndex);
 			if (!slot.bone.active) return;
@@ -939,8 +939,8 @@ public class Animation {
 			attachmentNames[frameIndex] = attachmentName;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Slot slot = skeleton.slots.get(slotIndex);
 			if (!slot.bone.active) return;
@@ -1022,8 +1022,8 @@ public class Animation {
 			frameVertices[frameIndex] = vertices;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			Slot slot = skeleton.slots.get(slotIndex);
 			if (!slot.bone.active) return;
@@ -1031,7 +1031,7 @@ public class Animation {
 			if (!(slotAttachment instanceof VertexAttachment)
 				|| ((VertexAttachment)slotAttachment).getDeformAttachment() != attachment) return;
 
-			FloatArray deformArray = slot.getDeform();
+			JFloatArray deformArray = slot.getDeform();
 			if (deformArray.size == 0) blend = setup;
 
 			float[][] frameVertices = this.frameVertices;
@@ -1244,8 +1244,8 @@ public class Animation {
 		}
 
 		/** Fires events for frames > <code>lastTime</code> and <= <code>time</code>. */
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> firedEvents, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> firedEvents, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			if (firedEvents == null) return;
 			float[] frames = this.frames;
@@ -1312,11 +1312,11 @@ public class Animation {
 			drawOrders[frameIndex] = drawOrder;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
-			Array<Slot> drawOrder = skeleton.drawOrder;
-			Array<Slot> slots = skeleton.slots;
+			JArray<Slot> drawOrder = skeleton.drawOrder;
+			JArray<Slot> slots = skeleton.slots;
 			if (direction == out) {
 				if (blend == setup) arraycopy(slots.items, 0, drawOrder.items, 0, slots.size);
 				return;
@@ -1391,8 +1391,8 @@ public class Animation {
 			frames[frameIndex + STRETCH] = stretch ? 1 : 0;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			IkConstraint constraint = skeleton.ikConstraints.get(ikConstraintIndex);
 			if (!constraint.active) return;
@@ -1518,8 +1518,8 @@ public class Animation {
 			frames[frameIndex + SHEAR] = shearMix;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			TransformConstraint constraint = skeleton.transformConstraints.get(transformConstraintIndex);
 			if (!constraint.active) return;
@@ -1621,8 +1621,8 @@ public class Animation {
 			frames[frameIndex + VALUE] = position;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			PathConstraint constraint = skeleton.pathConstraints.get(pathConstraintIndex);
 			if (!constraint.active) return;
@@ -1668,8 +1668,8 @@ public class Animation {
 			return (TimelineType.pathConstraintSpacing.ordinal() << 24) + pathConstraintIndex;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			PathConstraint constraint = skeleton.pathConstraints.get(pathConstraintIndex);
 			if (!constraint.active) return;
@@ -1749,8 +1749,8 @@ public class Animation {
 			frames[frameIndex + TRANSLATE] = translateMix;
 		}
 
-		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> events, float alpha, MixBlend blend,
-			MixDirection direction) {
+		public void apply (Skeleton skeleton, float lastTime, float time, JArray<Event> events, float alpha, MixBlend blend,
+                           MixDirection direction) {
 
 			PathConstraint constraint = skeleton.pathConstraints.get(pathConstraintIndex);
 			if (!constraint.active) return;

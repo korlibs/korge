@@ -36,7 +36,7 @@ import java.util.NoSuchElementException;
  * Skarupke's blog post</a>). Linear probing continues to work even when all hashCodes collide, just more slowly.
  * @author Nathan Sweet
  * @author Tommy Ettinger */
-public class IntSet {
+public class JIntSet {
     public int size;
 
     int[] keyTable;
@@ -63,20 +63,20 @@ public class IntSet {
     private IntSetIterator iterator1, iterator2;
 
     /** Creates a new set with an initial capacity of 51 and a load factor of 0.8. */
-    public IntSet () {
+    public JIntSet() {
         this(51, 0.8f);
     }
 
     /** Creates a new set with a load factor of 0.8.
      * @param initialCapacity If not a power of two, it is increased to the next nearest power of two. */
-    public IntSet (int initialCapacity) {
+    public JIntSet(int initialCapacity) {
         this(initialCapacity, 0.8f);
     }
 
     /** Creates a new set with the specified initial capacity and load factor. This set will hold initialCapacity items before
      * growing the backing table.
      * @param initialCapacity If not a power of two, it is increased to the next nearest power of two. */
-    public IntSet (int initialCapacity, float loadFactor) {
+    public JIntSet(int initialCapacity, float loadFactor) {
         if (loadFactor <= 0f || loadFactor >= 1f)
             throw new IllegalArgumentException("loadFactor must be > 0 and < 1: " + loadFactor);
         this.loadFactor = loadFactor;
@@ -90,7 +90,7 @@ public class IntSet {
     }
 
     /** Creates a new set identical to the specified set. */
-    public IntSet (IntSet set) {
+    public JIntSet(JIntSet set) {
         this((int)(set.keyTable.length * set.loadFactor), set.loadFactor);
         System.arraycopy(set.keyTable, 0, keyTable, 0, set.keyTable.length);
         size = set.size;
@@ -142,11 +142,11 @@ public class IntSet {
         return true;
     }
 
-    public void addAll (IntArray array) {
+    public void addAll (JIntArray array) {
         addAll(array.items, 0, array.size);
     }
 
-    public void addAll (IntArray array, int offset, int length) {
+    public void addAll (JIntArray array, int offset, int length) {
         if (offset + length > array.size)
             throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
         addAll(array.items, offset, length);
@@ -162,7 +162,7 @@ public class IntSet {
             add(array[i]);
     }
 
-    public void addAll (IntSet set) {
+    public void addAll (JIntSet set) {
         ensureCapacity(set.size);
         if (set.hasZeroValue) add(0);
         int[] keyTable = set.keyTable;
@@ -296,8 +296,8 @@ public class IntSet {
     }
 
     public boolean equals (Object obj) {
-        if (!(obj instanceof IntSet)) return false;
-        IntSet other = (IntSet)obj;
+        if (!(obj instanceof JIntSet)) return false;
+        JIntSet other = (JIntSet)obj;
         if (other.size != size) return false;
         if (other.hasZeroValue != hasZeroValue) return false;
         int[] keyTable = this.keyTable;
@@ -354,8 +354,8 @@ public class IntSet {
         return iterator2;
     }
 
-    static public IntSet with (int... array) {
-        IntSet set = new IntSet();
+    static public JIntSet with (int... array) {
+        JIntSet set = new JIntSet();
         set.addAll(array);
         return set;
     }
@@ -365,11 +365,11 @@ public class IntSet {
 
         public boolean hasNext;
 
-        final IntSet set;
+        final JIntSet set;
         int nextIndex, currentIndex;
         boolean valid = true;
 
-        public IntSetIterator (IntSet set) {
+        public IntSetIterator (JIntSet set) {
             this.set = set;
             reset();
         }
@@ -428,8 +428,8 @@ public class IntSet {
         }
 
         /** Returns a new array containing the remaining keys. */
-        public IntArray toArray () {
-            IntArray array = new IntArray(true, set.size);
+        public JIntArray toArray () {
+            JIntArray array = new JIntArray(true, set.size);
             while (hasNext)
                 array.add(next());
             return array;

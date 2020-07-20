@@ -31,10 +31,10 @@ package com.esotericsoftware.spine;
 
 import static com.esotericsoftware.spine.Animation.RotateTimeline.*;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntSet;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JIntArray;
+import com.badlogic.gdx.utils.JIntSet;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
@@ -51,7 +51,7 @@ import com.esotericsoftware.spine.Animation.Timeline;
  * <p>
  * See <a href='http://esotericsoftware.com/spine-applying-animations/'>Applying Animations</a> in the Spine Runtimes Guide. */
 public class AnimationState {
-	static private final Animation emptyAnimation = new Animation("<empty>", new Array(0), 0);
+	static private final Animation emptyAnimation = new Animation("<empty>", new JArray(0), 0);
 
 	/** 1) A previously applied timeline has set this property.<br>
 	 * Result: Mix from the current pose to the timeline pose. */
@@ -81,11 +81,11 @@ public class AnimationState {
 	static private final int SETUP = 1, CURRENT = 2;
 
 	private AnimationStateData data;
-	final Array<TrackEntry> tracks = new Array();
-	private final Array<Event> events = new Array();
-	final Array<AnimationStateListener> listeners = new Array();
+	final JArray<TrackEntry> tracks = new JArray();
+	private final JArray<Event> events = new JArray();
+	final JArray<AnimationStateListener> listeners = new JArray();
 	private final EventQueue queue = new EventQueue();
-	private final IntSet propertyIDs = new IntSet();
+	private final JIntSet propertyIDs = new JIntSet();
 	boolean animationsChanged;
 	private float timeScale = 1;
 	private int unkeyedState;
@@ -197,7 +197,7 @@ public class AnimationState {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		if (animationsChanged) animationsChanged();
 
-		Array<Event> events = this.events;
+		JArray<Event> events = this.events;
 		boolean applied = false;
 		for (int i = 0, n = tracks.size; i < n; i++) {
 			TrackEntry current = tracks.get(i);
@@ -283,7 +283,7 @@ public class AnimationState {
 			if (blend != MixBlend.first) blend = from.mixBlend; // Track 0 ignores track mix blend.
 		}
 
-		Array<Event> events = mix < from.eventThreshold ? this.events : null;
+		JArray<Event> events = mix < from.eventThreshold ? this.events : null;
 		boolean attachments = mix < from.attachmentThreshold, drawOrder = mix < from.drawOrderThreshold;
 		float animationLast = from.animationLast, animationTime = from.getAnimationTime();
 		int timelineCount = from.animation.timelines.size;
@@ -463,7 +463,7 @@ public class AnimationState {
 		float trackLastWrapped = entry.trackLast % duration;
 
 		// Queue events before complete.
-		Array<Event> events = this.events;
+		JArray<Event> events = this.events;
 		int i = 0, n = events.size;
 		for (; i < n; i++) {
 			Event event = events.get(i);
@@ -764,7 +764,7 @@ public class AnimationState {
 		int[] timelineMode = entry.timelineMode.setSize(timelinesCount);
 		entry.timelineHoldMix.clear();
 		Object[] timelineHoldMix = entry.timelineHoldMix.setSize(timelinesCount);
-		IntSet propertyIDs = this.propertyIDs;
+		JIntSet propertyIDs = this.propertyIDs;
 
 		if (to != null && to.holdPrevious) {
 			for (int i = 0; i < timelinesCount; i++) {
@@ -851,7 +851,7 @@ public class AnimationState {
 	}
 
 	/** The list of tracks that currently have animations, which may contain null entries. */
-	public Array<TrackEntry> getTracks () {
+	public JArray<TrackEntry> getTracks () {
 		return tracks;
 	}
 
@@ -882,9 +882,9 @@ public class AnimationState {
 		float alpha, mixTime, mixDuration, interruptAlpha, totalAlpha;
 		MixBlend mixBlend = MixBlend.replace;
 
-		final IntArray timelineMode = new IntArray();
-		final Array<TrackEntry> timelineHoldMix = new Array();
-		final FloatArray timelinesRotation = new FloatArray();
+		final JIntArray timelineMode = new JIntArray();
+		final JArray<TrackEntry> timelineHoldMix = new JArray();
+		final JFloatArray timelinesRotation = new JFloatArray();
 
 		public void reset () {
 			next = null;
@@ -1195,7 +1195,7 @@ public class AnimationState {
 	}
 
 	class EventQueue {
-		private final Array objects = new Array();
+		private final JArray objects = new JArray();
 		boolean drainDisabled;
 
 		void start (TrackEntry entry) {
@@ -1235,8 +1235,8 @@ public class AnimationState {
 			if (drainDisabled) return; // Not reentrant.
 			drainDisabled = true;
 
-			Array objects = this.objects;
-			Array<AnimationStateListener> listeners = AnimationState.this.listeners;
+			JArray objects = this.objects;
+			JArray<AnimationStateListener> listeners = AnimationState.this.listeners;
 			for (int i = 0; i < objects.size; i += 2) {
 				EventType type = (EventType)objects.get(i);
 				TrackEntry entry = (TrackEntry)objects.get(i + 1);

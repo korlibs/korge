@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the setup pose and all of the stateless data for a skeleton.
  * <p>
@@ -37,15 +37,15 @@ import com.badlogic.gdx.utils.Array;
  * Guide. */
 public class SkeletonData {
 	String name;
-	final Array<BoneData> bones = new Array(); // Ordered parents first.
-	final Array<SlotData> slots = new Array(); // Setup pose draw order.
-	final Array<Skin> skins = new Array();
+	final JArray<BoneData> bones = new JArray(); // Ordered parents first.
+	final JArray<SlotData> slots = new JArray(); // Setup pose draw order.
+	final JArray<Skin> skins = new JArray();
 	Skin defaultSkin;
-	final Array<EventData> events = new Array();
-	final Array<Animation> animations = new Array();
-	final Array<IkConstraintData> ikConstraints = new Array();
-	final Array<TransformConstraintData> transformConstraints = new Array();
-	final Array<PathConstraintData> pathConstraints = new Array();
+	final JArray<EventData> events = new JArray();
+	final JArray<Animation> animations = new JArray();
+	final JArray<IkConstraintData> ikConstraints = new JArray();
+	final JArray<TransformConstraintData> transformConstraints = new JArray();
+	final JArray<PathConstraintData> pathConstraints = new JArray();
 	float x, y, width, height;
 	String version, hash;
 
@@ -56,7 +56,7 @@ public class SkeletonData {
 	// --- Bones.
 
 	/** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-	public Array<BoneData> getBones () {
+	public JArray<BoneData> getBones () {
 		return bones;
 	}
 
@@ -65,7 +65,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public BoneData findBone (String boneName) {
 		if (boneName == null) throw new IllegalArgumentException("boneName cannot be null.");
-		Array<BoneData> bones = this.bones;
+		JArray<BoneData> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			BoneData bone = bones.get(i);
 			if (bone.name.equals(boneName)) return bone;
@@ -76,7 +76,7 @@ public class SkeletonData {
 	// --- Slots.
 
 	/** The skeleton's slots. */
-	public Array<SlotData> getSlots () {
+	public JArray<SlotData> getSlots () {
 		return slots;
 	}
 
@@ -85,7 +85,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public SlotData findSlot (String slotName) {
 		if (slotName == null) throw new IllegalArgumentException("slotName cannot be null.");
-		Array<SlotData> slots = this.slots;
+		JArray<SlotData> slots = this.slots;
 		for (int i = 0, n = slots.size; i < n; i++) {
 			SlotData slot = slots.get(i);
 			if (slot.name.equals(slotName)) return slot;
@@ -119,7 +119,7 @@ public class SkeletonData {
 	}
 
 	/** All skins, including the default skin. */
-	public Array<Skin> getSkins () {
+	public JArray<Skin> getSkins () {
 		return skins;
 	}
 
@@ -136,14 +136,14 @@ public class SkeletonData {
 	}
 
 	/** The skeleton's events. */
-	public Array<EventData> getEvents () {
+	public JArray<EventData> getEvents () {
 		return events;
 	}
 
 	// --- Animations.
 
 	/** The skeleton's animations. */
-	public Array<Animation> getAnimations () {
+	public JArray<Animation> getAnimations () {
 		return animations;
 	}
 
@@ -152,7 +152,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public Animation findAnimation (String animationName) {
 		if (animationName == null) throw new IllegalArgumentException("animationName cannot be null.");
-		Array<Animation> animations = this.animations;
+		JArray<Animation> animations = this.animations;
 		for (int i = 0, n = animations.size; i < n; i++) {
 			Animation animation = animations.get(i);
 			if (animation.name.equals(animationName)) return animation;
@@ -163,7 +163,7 @@ public class SkeletonData {
 	// --- IK constraints
 
 	/** The skeleton's IK constraints. */
-	public Array<IkConstraintData> getIkConstraints () {
+	public JArray<IkConstraintData> getIkConstraints () {
 		return ikConstraints;
 	}
 
@@ -172,7 +172,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public IkConstraintData findIkConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<IkConstraintData> ikConstraints = this.ikConstraints;
+		JArray<IkConstraintData> ikConstraints = this.ikConstraints;
 		for (int i = 0, n = ikConstraints.size; i < n; i++) {
 			IkConstraintData constraint = ikConstraints.get(i);
 			if (constraint.name.equals(constraintName)) return constraint;
@@ -183,7 +183,7 @@ public class SkeletonData {
 	// --- Transform constraints
 
 	/** The skeleton's transform constraints. */
-	public Array<TransformConstraintData> getTransformConstraints () {
+	public JArray<TransformConstraintData> getTransformConstraints () {
 		return transformConstraints;
 	}
 
@@ -192,7 +192,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public TransformConstraintData findTransformConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<TransformConstraintData> transformConstraints = this.transformConstraints;
+		JArray<TransformConstraintData> transformConstraints = this.transformConstraints;
 		for (int i = 0, n = transformConstraints.size; i < n; i++) {
 			TransformConstraintData constraint = transformConstraints.get(i);
 			if (constraint.name.equals(constraintName)) return constraint;
@@ -203,7 +203,7 @@ public class SkeletonData {
 	// --- Path constraints
 
 	/** The skeleton's path constraints. */
-	public Array<PathConstraintData> getPathConstraints () {
+	public JArray<PathConstraintData> getPathConstraints () {
 		return pathConstraints;
 	}
 
@@ -212,7 +212,7 @@ public class SkeletonData {
 	 * @return May be null. */
 	public PathConstraintData findPathConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<PathConstraintData> pathConstraints = this.pathConstraints;
+		JArray<PathConstraintData> pathConstraints = this.pathConstraints;
 		for (int i = 0, n = pathConstraints.size; i < n; i++) {
 			PathConstraintData constraint = pathConstraints.get(i);
 			if (constraint.name.equals(constraintName)) return constraint;

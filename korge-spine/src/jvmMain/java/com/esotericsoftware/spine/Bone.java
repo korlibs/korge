@@ -34,7 +34,7 @@ import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 import com.esotericsoftware.spine.BoneData.TransformMode;
 
@@ -47,7 +47,7 @@ public class Bone implements Updatable {
 	final BoneData data;
 	final Skeleton skeleton;
 	final Bone parent;
-	final Array<Bone> children = new Array();
+	final JArray<Bone> children = new JArray();
 	float x, y, rotation, scaleX, scaleY, shearX, shearY;
 	float ax, ay, arotation, ascaleX, ascaleY, ashearX, ashearY;
 	boolean appliedValid;
@@ -233,7 +233,7 @@ public class Bone implements Updatable {
 	}
 
 	/** The immediate children of this bone. */
-	public Array<Bone> getChildren () {
+	public JArray<Bone> getChildren () {
 		return children;
 	}
 

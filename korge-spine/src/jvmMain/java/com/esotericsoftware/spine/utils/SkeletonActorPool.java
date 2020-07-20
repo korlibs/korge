@@ -30,7 +30,7 @@
 package com.esotericsoftware.spine.utils;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 import com.badlogic.gdx.utils.Pool;
 import com.esotericsoftware.spine.AnimationState;
 import com.esotericsoftware.spine.AnimationState.TrackEntry;
@@ -46,7 +46,7 @@ public class SkeletonActorPool extends Pool<SkeletonActor> {
 	AnimationStateData stateData;
 	private final Pool<Skeleton> skeletonPool;
 	private final Pool<AnimationState> statePool;
-	private final Array<SkeletonActor> obtained;
+	private final JArray<SkeletonActor> obtained;
 
 	public SkeletonActorPool (SkeletonRenderer renderer, SkeletonData skeletonData, AnimationStateData stateData) {
 		this(renderer, skeletonData, stateData, 16, Integer.MAX_VALUE);
@@ -60,7 +60,7 @@ public class SkeletonActorPool extends Pool<SkeletonActor> {
 		this.skeletonData = skeletonData;
 		this.stateData = stateData;
 
-		obtained = new Array(false, initialCapacity);
+		obtained = new JArray(false, initialCapacity);
 
 		skeletonPool = new Pool<Skeleton>(initialCapacity, max) {
 			protected Skeleton newObject () {
@@ -90,11 +90,11 @@ public class SkeletonActorPool extends Pool<SkeletonActor> {
 
 	/** Each obtained skeleton actor that is no longer playing an animation is removed from the stage and returned to the pool. */
 	public void freeComplete () {
-		Array<SkeletonActor> obtained = this.obtained;
+		JArray<SkeletonActor> obtained = this.obtained;
 		outer:
 		for (int i = obtained.size - 1; i >= 0; i--) {
 			SkeletonActor actor = obtained.get(i);
-			Array<TrackEntry> tracks = actor.state.getTracks();
+			JArray<TrackEntry> tracks = actor.state.getTracks();
 			for (int ii = 0, nn = tracks.size; ii < nn; ii++)
 				if (tracks.get(ii) != null) continue outer;
 			free(actor);
@@ -108,7 +108,7 @@ public class SkeletonActorPool extends Pool<SkeletonActor> {
 	}
 
 	/** This pool keeps a reference to the obtained instance, so it should be returned to the pool via {@link #free(SkeletonActor)}
-	 * , {@link #freeAll(Array)} or {@link #freeComplete()} to avoid leaking memory. */
+	 * , {@link #freeAll(JArray)} or {@link #freeComplete()} to avoid leaking memory. */
 	public SkeletonActor obtain () {
 		SkeletonActor actor = super.obtain();
 		actor.setSkeleton(skeletonPool.obtain());
@@ -124,7 +124,7 @@ public class SkeletonActorPool extends Pool<SkeletonActor> {
 		statePool.free(actor.getAnimationState());
 	}
 
-	public Array<SkeletonActor> getObtained () {
+	public JArray<SkeletonActor> getObtained () {
 		return obtained;
 	}
 }

@@ -16,51 +16,49 @@
 
 package com.badlogic.gdx.utils;
 
+import java.util.Arrays;
+
 import com.badlogic.gdx.math.MathUtils;
 
-import java.util.BitSet;
-
-/** A resizable, ordered or unordered boolean array. Avoids the boxing that occurs with ArrayList<Boolean>. It is less memory
- * efficient than {@link BitSet}, except for very small sizes. It more CPU efficient than {@link BitSet}, except for very large
- * sizes or if BitSet functionality such as and, or, xor, etc are needed. If unordered, this class avoids a memory copy when
- * removing elements (the last element is moved to the removed element's position).
+/** A resizable, ordered or unordered short array. Avoids the boxing that occurs with ArrayList<Short>. If unordered, this class
+ * avoids a memory copy when removing elements (the last element is moved to the removed element's position).
  * @author Nathan Sweet */
-public class BooleanArray {
-    public boolean[] items;
+public class JShortArray {
+    public short[] items;
     public int size;
     public boolean ordered;
 
     /** Creates an ordered array with a capacity of 16. */
-    public BooleanArray () {
+    public JShortArray() {
         this(true, 16);
     }
 
     /** Creates an ordered array with the specified capacity. */
-    public BooleanArray (int capacity) {
+    public JShortArray(int capacity) {
         this(true, capacity);
     }
 
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public BooleanArray (boolean ordered, int capacity) {
+    public JShortArray(boolean ordered, int capacity) {
         this.ordered = ordered;
-        items = new boolean[capacity];
+        items = new short[capacity];
     }
 
     /** Creates a new array containing the elements in the specific array. The new array will be ordered if the specific array is
      * ordered. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be
      * grown. */
-    public BooleanArray (BooleanArray array) {
+    public JShortArray(JShortArray array) {
         this.ordered = array.ordered;
         size = array.size;
-        items = new boolean[size];
+        items = new short[size];
         System.arraycopy(array.items, 0, items, 0, size);
     }
 
     /** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
      * so any subsequent elements added will cause the backing array to be grown. */
-    public BooleanArray (boolean[] array) {
+    public JShortArray(short[] array) {
         this(true, array, 0, array.length);
     }
 
@@ -68,28 +66,35 @@ public class BooleanArray {
      * subsequent elements added will cause the backing array to be grown.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy. */
-    public BooleanArray (boolean ordered, boolean[] array, int startIndex, int count) {
+    public JShortArray(boolean ordered, short[] array, int startIndex, int count) {
         this(ordered, count);
         size = count;
         System.arraycopy(array, startIndex, items, 0, count);
     }
 
-    public void add (boolean value) {
-        boolean[] items = this.items;
+    /** Casts the specified value to short and adds it. */
+    public void add (int value) {
+        short[] items = this.items;
+        if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
+        items[size++] = (short)value;
+    }
+
+    public void add (short value) {
+        short[] items = this.items;
         if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
         items[size++] = value;
     }
 
-    public void add (boolean value1, boolean value2) {
-        boolean[] items = this.items;
+    public void add (short value1, short value2) {
+        short[] items = this.items;
         if (size + 1 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
         items[size] = value1;
         items[size + 1] = value2;
         size += 2;
     }
 
-    public void add (boolean value1, boolean value2, boolean value3) {
-        boolean[] items = this.items;
+    public void add (short value1, short value2, short value3) {
+        short[] items = this.items;
         if (size + 2 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
         items[size] = value1;
         items[size + 1] = value2;
@@ -97,8 +102,8 @@ public class BooleanArray {
         size += 3;
     }
 
-    public void add (boolean value1, boolean value2, boolean value3, boolean value4) {
-        boolean[] items = this.items;
+    public void add (short value1, short value2, short value3, short value4) {
+        short[] items = this.items;
         if (size + 3 >= items.length) items = resize(Math.max(8, (int)(size * 1.8f))); // 1.75 isn't enough when size=5.
         items[size] = value1;
         items[size + 1] = value2;
@@ -107,41 +112,63 @@ public class BooleanArray {
         size += 4;
     }
 
-    public void addAll (BooleanArray array) {
+    public void addAll (JShortArray array) {
         addAll(array.items, 0, array.size);
     }
 
-    public void addAll (BooleanArray array, int offset, int length) {
+    public void addAll (JShortArray array, int offset, int length) {
         if (offset + length > array.size)
             throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
         addAll(array.items, offset, length);
     }
 
-    public void addAll (boolean... array) {
+    public void addAll (short... array) {
         addAll(array, 0, array.length);
     }
 
-    public void addAll (boolean[] array, int offset, int length) {
-        boolean[] items = this.items;
+    public void addAll (short[] array, int offset, int length) {
+        short[] items = this.items;
         int sizeNeeded = size + length;
         if (sizeNeeded > items.length) items = resize(Math.max(8, (int)(sizeNeeded * 1.75f)));
         System.arraycopy(array, offset, items, size, length);
         size += length;
     }
 
-    public boolean get (int index) {
+    public short get (int index) {
         if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
         return items[index];
     }
 
-    public void set (int index, boolean value) {
+    public void set (int index, short value) {
         if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
         items[index] = value;
     }
 
-    public void insert (int index, boolean value) {
+    public void incr (int index, short value) {
+        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+        items[index] += value;
+    }
+
+    public void incr (short value) {
+        short[] items = this.items;
+        for (int i = 0, n = size; i < n; i++)
+            items[i] += value;
+    }
+
+    public void mul (int index, short value) {
+        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+        items[index] *= value;
+    }
+
+    public void mul (short value) {
+        short[] items = this.items;
+        for (int i = 0, n = size; i < n; i++)
+            items[i] *= value;
+    }
+
+    public void insert (int index, short value) {
         if (index > size) throw new IndexOutOfBoundsException("index can't be > size: " + index + " > " + size);
-        boolean[] items = this.items;
+        short[] items = this.items;
         if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
         if (ordered)
             System.arraycopy(items, index, items, index + 1, size - index);
@@ -154,17 +181,50 @@ public class BooleanArray {
     public void swap (int first, int second) {
         if (first >= size) throw new IndexOutOfBoundsException("first can't be >= size: " + first + " >= " + size);
         if (second >= size) throw new IndexOutOfBoundsException("second can't be >= size: " + second + " >= " + size);
-        boolean[] items = this.items;
-        boolean firstValue = items[first];
+        short[] items = this.items;
+        short firstValue = items[first];
         items[first] = items[second];
         items[second] = firstValue;
     }
 
+    public boolean contains (short value) {
+        int i = size - 1;
+        short[] items = this.items;
+        while (i >= 0)
+            if (items[i--] == value) return true;
+        return false;
+    }
+
+    public int indexOf (short value) {
+        short[] items = this.items;
+        for (int i = 0, n = size; i < n; i++)
+            if (items[i] == value) return i;
+        return -1;
+    }
+
+    public int lastIndexOf (char value) {
+        short[] items = this.items;
+        for (int i = size - 1; i >= 0; i--)
+            if (items[i] == value) return i;
+        return -1;
+    }
+
+    public boolean removeValue (short value) {
+        short[] items = this.items;
+        for (int i = 0, n = size; i < n; i++) {
+            if (items[i] == value) {
+                removeIndex(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Removes and returns the item at the specified index. */
-    public boolean removeIndex (int index) {
+    public short removeIndex (int index) {
         if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        boolean[] items = this.items;
-        boolean value = items[index];
+        short[] items = this.items;
+        short value = items[index];
         size--;
         if (ordered)
             System.arraycopy(items, index + 1, items, index, size - index);
@@ -190,12 +250,12 @@ public class BooleanArray {
 
     /** Removes from this array all of elements contained in the specified array.
      * @return true if this array was modified. */
-    public boolean removeAll (BooleanArray array) {
+    public boolean removeAll (JShortArray array) {
         int size = this.size;
         int startSize = size;
-        boolean[] items = this.items;
+        short[] items = this.items;
         for (int i = 0, n = array.size; i < n; i++) {
-            boolean item = array.get(i);
+            short item = array.get(i);
             for (int ii = 0; ii < size; ii++) {
                 if (item == items[ii]) {
                     removeIndex(ii);
@@ -208,17 +268,17 @@ public class BooleanArray {
     }
 
     /** Removes and returns the last item. */
-    public boolean pop () {
+    public short pop () {
         return items[--size];
     }
 
     /** Returns the last item. */
-    public boolean peek () {
+    public short peek () {
         return items[size - 1];
     }
 
     /** Returns the first item. */
-    public boolean first () {
+    public short first () {
         if (size == 0) throw new IllegalStateException("Array is empty.");
         return items[0];
     }
@@ -240,7 +300,7 @@ public class BooleanArray {
     /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
      * have been removed, or if it is known that more items will not be added.
      * @return {@link #items} */
-    public boolean[] shrink () {
+    public short[] shrink () {
         if (items.length != size) resize(size);
         return items;
     }
@@ -248,7 +308,7 @@ public class BooleanArray {
     /** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
      * items to avoid multiple backing array resizes.
      * @return {@link #items} */
-    public boolean[] ensureCapacity (int additionalCapacity) {
+    public short[] ensureCapacity (int additionalCapacity) {
         if (additionalCapacity < 0) throw new IllegalArgumentException("additionalCapacity must be >= 0: " + additionalCapacity);
         int sizeNeeded = size + additionalCapacity;
         if (sizeNeeded > items.length) resize(Math.max(8, sizeNeeded));
@@ -257,36 +317,40 @@ public class BooleanArray {
 
     /** Sets the array size, leaving any values beyond the current size undefined.
      * @return {@link #items} */
-    public boolean[] setSize (int newSize) {
+    public short[] setSize (int newSize) {
         if (newSize < 0) throw new IllegalArgumentException("newSize must be >= 0: " + newSize);
         if (newSize > items.length) resize(Math.max(8, newSize));
         size = newSize;
         return items;
     }
 
-    protected boolean[] resize (int newSize) {
-        boolean[] newItems = new boolean[newSize];
-        boolean[] items = this.items;
+    protected short[] resize (int newSize) {
+        short[] newItems = new short[newSize];
+        short[] items = this.items;
         System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.length));
         this.items = newItems;
         return newItems;
     }
 
+    public void sort () {
+        Arrays.sort(items, 0, size);
+    }
+
     public void reverse () {
-        boolean[] items = this.items;
+        short[] items = this.items;
         for (int i = 0, lastIndex = size - 1, n = size / 2; i < n; i++) {
             int ii = lastIndex - i;
-            boolean temp = items[i];
+            short temp = items[i];
             items[i] = items[ii];
             items[ii] = temp;
         }
     }
 
     public void shuffle () {
-        boolean[] items = this.items;
+        short[] items = this.items;
         for (int i = size - 1; i >= 0; i--) {
             int ii = MathUtils.random(i);
-            boolean temp = items[i];
+            short temp = items[i];
             items[i] = items[ii];
             items[ii] = temp;
         }
@@ -298,37 +362,36 @@ public class BooleanArray {
         if (size > newSize) size = newSize;
     }
 
-    /** Returns a random item from the array, or false if the array is empty. */
-    public boolean random () {
-        if (size == 0) return false;
+    /** Returns a random item from the array, or zero if the array is empty. */
+    public short random () {
+        if (size == 0) return 0;
         return items[MathUtils.random(0, size - 1)];
     }
 
-    public boolean[] toArray () {
-        boolean[] array = new boolean[size];
+    public short[] toArray () {
+        short[] array = new short[size];
         System.arraycopy(items, 0, array, 0, size);
         return array;
     }
 
     public int hashCode () {
         if (!ordered) return super.hashCode();
-        boolean[] items = this.items;
+        short[] items = this.items;
         int h = 1;
         for (int i = 0, n = size; i < n; i++)
-            h = h * 31 + (items[i] ? 1231 : 1237);
+            h = h * 31 + items[i];
         return h;
     }
 
-    /** Returns false if either array is unordered. */
     public boolean equals (Object object) {
         if (object == this) return true;
         if (!ordered) return false;
-        if (!(object instanceof BooleanArray)) return false;
-        BooleanArray array = (BooleanArray)object;
+        if (!(object instanceof JShortArray)) return false;
+        JShortArray array = (JShortArray)object;
         if (!array.ordered) return false;
         int n = size;
         if (n != array.size) return false;
-        boolean[] items1 = this.items, items2 = array.items;
+        short[] items1 = this.items, items2 = array.items;
         for (int i = 0; i < n; i++)
             if (items1[i] != items2[i]) return false;
         return true;
@@ -336,7 +399,7 @@ public class BooleanArray {
 
     public String toString () {
         if (size == 0) return "[]";
-        boolean[] items = this.items;
+        short[] items = this.items;
         StringBuilder buffer = new StringBuilder(32);
         buffer.append('[');
         buffer.append(items[0]);
@@ -350,7 +413,7 @@ public class BooleanArray {
 
     public String toString (String separator) {
         if (size == 0) return "";
-        boolean[] items = this.items;
+        short[] items = this.items;
         StringBuilder buffer = new StringBuilder(32);
         buffer.append(items[0]);
         for (int i = 1; i < size; i++) {
@@ -360,8 +423,8 @@ public class BooleanArray {
         return buffer.toString();
     }
 
-    /** @see #BooleanArray(boolean[]) */
-    static public BooleanArray with (boolean... array) {
-        return new BooleanArray(array);
+    /** @see #JShortArray(short[]) */
+    static public JShortArray with (short... array) {
+        return new JShortArray(array);
     }
 }

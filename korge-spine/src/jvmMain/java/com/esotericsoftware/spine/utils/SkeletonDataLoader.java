@@ -36,7 +36,7 @@ import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 import com.esotericsoftware.spine.SkeletonBinary;
 import com.esotericsoftware.spine.SkeletonData;
@@ -100,10 +100,10 @@ public class SkeletonDataLoader extends AsynchronousAssetLoader<SkeletonData, Sk
 	}
 
 	/** @param parameter May be null. */
-	public Array<AssetDescriptor> getDependencies (String fileName, FileHandle file, SkeletonDataParameter parameter) {
+	public JArray<AssetDescriptor> getDependencies (String fileName, FileHandle file, SkeletonDataParameter parameter) {
 		if (parameter == null) return null;
 		if (parameter.attachmentLoader != null) return null;
-		Array<AssetDescriptor> dependencies = new Array();
+		JArray<AssetDescriptor> dependencies = new JArray();
 		dependencies.add(new AssetDescriptor(parameter.atlasName, TextureAtlas.class));
 		return dependencies;
 	}

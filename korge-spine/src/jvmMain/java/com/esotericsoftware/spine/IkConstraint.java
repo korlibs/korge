@@ -31,7 +31,7 @@ package com.esotericsoftware.spine;
 
 import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.
@@ -39,7 +39,7 @@ import com.badlogic.gdx.utils.Array;
  * See <a href="http://esotericsoftware.com/spine-ik-constraints">IK constraints</a> in the Spine User Guide. */
 public class IkConstraint implements Updatable {
 	final IkConstraintData data;
-	final Array<Bone> bones;
+	final JArray<Bone> bones;
 	Bone target;
 	int bendDirection;
 	boolean compress, stretch;
@@ -57,7 +57,7 @@ public class IkConstraint implements Updatable {
 		compress = data.compress;
 		stretch = data.stretch;
 
-		bones = new Array(data.bones.size);
+		bones = new JArray(data.bones.size);
 		for (BoneData boneData : data.bones)
 			bones.add(skeleton.findBone(boneData.name));
 		target = skeleton.findBone(data.target.name);
@@ -68,7 +68,7 @@ public class IkConstraint implements Updatable {
 		if (constraint == null) throw new IllegalArgumentException("constraint cannot be null.");
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		data = constraint.data;
-		bones = new Array(constraint.bones.size);
+		bones = new JArray(constraint.bones.size);
 		for (Bone bone : constraint.bones)
 			bones.add(skeleton.bones.get(bone.data.index));
 		target = skeleton.bones.get(constraint.target.data.index);
@@ -86,7 +86,7 @@ public class IkConstraint implements Updatable {
 
 	public void update () {
 		Bone target = this.target;
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		switch (bones.size) {
 		case 1:
 			apply(bones.first(), target.worldX, target.worldY, compress, stretch, data.uniform, mix);
@@ -98,7 +98,7 @@ public class IkConstraint implements Updatable {
 	}
 
 	/** The bones that will be modified by this IK constraint. */
-	public Array<Bone> getBones () {
+	public JArray<Bone> getBones () {
 		return bones;
 	}
 

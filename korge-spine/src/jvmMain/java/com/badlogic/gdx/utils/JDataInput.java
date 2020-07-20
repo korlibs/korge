@@ -2,8 +2,8 @@ package com.badlogic.gdx.utils;
 
 import java.io.IOException;
 
-public class DataInput {
-    public DataInput(byte[] data) {
+public class JDataInput {
+    public JDataInput(byte[] data) {
 
     }
 

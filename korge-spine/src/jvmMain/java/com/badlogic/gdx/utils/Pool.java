@@ -25,7 +25,7 @@ abstract public class Pool<T> {
     /** The highest number of free objects. Can be reset any time. */
     public int peak;
 
-    private final Array<T> freeObjects;
+    private final JArray<T> freeObjects;
 
     /** Creates a pool with an initial capacity of 16 and no maximum. */
     public Pool () {
@@ -49,7 +49,7 @@ abstract public class Pool<T> {
     public Pool (int initialCapacity, int max, boolean preFill) {
         if (initialCapacity > max && preFill)
             throw new IllegalArgumentException("max must be larger than initialCapacity if preFill is set to true.");
-        freeObjects = new Array(false, initialCapacity);
+        freeObjects = new JArray(false, initialCapacity);
         this.max = max;
         if (preFill) {
             for (int i = 0; i < initialCapacity; i++)
@@ -99,9 +99,9 @@ abstract public class Pool<T> {
      * <p>
      * The pool does not check if an object is already freed, so the same object must not be freed multiple times.
      * @see #free(Object) */
-    public void freeAll (Array<T> objects) {
+    public void freeAll (JArray<T> objects) {
         if (objects == null) throw new IllegalArgumentException("objects cannot be null.");
-        Array<T> freeObjects = this.freeObjects;
+        JArray<T> freeObjects = this.freeObjects;
         int max = this.max;
         for (int i = 0; i < objects.size; i++) {
             T object = objects.get(i);

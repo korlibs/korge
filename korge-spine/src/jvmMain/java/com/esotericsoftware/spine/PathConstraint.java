@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
 import com.esotericsoftware.spine.PathConstraintData.PositionMode;
 import com.esotericsoftware.spine.PathConstraintData.RotateMode;
 import com.esotericsoftware.spine.PathConstraintData.SpacingMode;
@@ -47,21 +47,21 @@ public class PathConstraint implements Updatable {
 	static private final float epsilon = 0.00001f;
 
 	final PathConstraintData data;
-	final Array<Bone> bones;
+	final JArray<Bone> bones;
 	Slot target;
 	float position, spacing, rotateMix, translateMix;
 
 	boolean active;
 
-	private final FloatArray spaces = new FloatArray(), positions = new FloatArray();
-	private final FloatArray world = new FloatArray(), curves = new FloatArray(), lengths = new FloatArray();
+	private final JFloatArray spaces = new JFloatArray(), positions = new JFloatArray();
+	private final JFloatArray world = new JFloatArray(), curves = new JFloatArray(), lengths = new JFloatArray();
 	private final float[] segments = new float[10];
 
 	public PathConstraint (PathConstraintData data, Skeleton skeleton) {
 		if (data == null) throw new IllegalArgumentException("data cannot be null.");
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		this.data = data;
-		bones = new Array(data.bones.size);
+		bones = new JArray(data.bones.size);
 		for (BoneData boneData : data.bones)
 			bones.add(skeleton.findBone(boneData.name));
 		target = skeleton.findSlot(data.target.name);
@@ -76,7 +76,7 @@ public class PathConstraint implements Updatable {
 		if (constraint == null) throw new IllegalArgumentException("constraint cannot be null.");
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		data = constraint.data;
-		bones = new Array(constraint.bones.size);
+		bones = new JArray(constraint.bones.size);
 		for (Bone bone : constraint.bones)
 			bones.add(skeleton.bones.get(bone.data.index));
 		target = skeleton.slots.get(constraint.target.data.index);
@@ -487,7 +487,7 @@ public class PathConstraint implements Updatable {
 	}
 
 	/** The bones that will be modified by this path constraint. */
-	public Array<Bone> getBones () {
+	public JArray<Bone> getBones () {
 		return bones;
 	}
 

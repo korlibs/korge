@@ -23,25 +23,25 @@ import com.badlogic.gdx.math.MathUtils;
 /** A resizable, ordered or unordered float array. Avoids the boxing that occurs with ArrayList<Float>. If unordered, this class
  * avoids a memory copy when removing elements (the last element is moved to the removed element's position).
  * @author Nathan Sweet */
-public class FloatArray {
+public class JFloatArray {
     public float[] items;
     public int size;
     public boolean ordered;
 
     /** Creates an ordered array with a capacity of 16. */
-    public FloatArray () {
+    public JFloatArray() {
         this(true, 16);
     }
 
     /** Creates an ordered array with the specified capacity. */
-    public FloatArray (int capacity) {
+    public JFloatArray(int capacity) {
         this(true, capacity);
     }
 
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public FloatArray (boolean ordered, int capacity) {
+    public JFloatArray(boolean ordered, int capacity) {
         this.ordered = ordered;
         items = new float[capacity];
     }
@@ -49,7 +49,7 @@ public class FloatArray {
     /** Creates a new array containing the elements in the specific array. The new array will be ordered if the specific array is
      * ordered. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be
      * grown. */
-    public FloatArray (FloatArray array) {
+    public JFloatArray(JFloatArray array) {
         this.ordered = array.ordered;
         size = array.size;
         items = new float[size];
@@ -58,7 +58,7 @@ public class FloatArray {
 
     /** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
      * so any subsequent elements added will cause the backing array to be grown. */
-    public FloatArray (float[] array) {
+    public JFloatArray(float[] array) {
         this(true, array, 0, array.length);
     }
 
@@ -66,7 +66,7 @@ public class FloatArray {
      * subsequent elements added will cause the backing array to be grown.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy. */
-    public FloatArray (boolean ordered, float[] array, int startIndex, int count) {
+    public JFloatArray(boolean ordered, float[] array, int startIndex, int count) {
         this(ordered, count);
         size = count;
         System.arraycopy(array, startIndex, items, 0, count);
@@ -105,11 +105,11 @@ public class FloatArray {
         size += 4;
     }
 
-    public void addAll (FloatArray array) {
+    public void addAll (JFloatArray array) {
         addAll(array.items, 0, array.size);
     }
 
-    public void addAll (FloatArray array, int offset, int length) {
+    public void addAll (JFloatArray array, int offset, int length) {
         if (offset + length > array.size)
             throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
         addAll(array.items, offset, length);
@@ -243,7 +243,7 @@ public class FloatArray {
 
     /** Removes from this array all of elements contained in the specified array.
      * @return true if this array was modified. */
-    public boolean removeAll (FloatArray array) {
+    public boolean removeAll (JFloatArray array) {
         int size = this.size;
         int startSize = size;
         float[] items = this.items;
@@ -380,8 +380,8 @@ public class FloatArray {
     public boolean equals (Object object) {
         if (object == this) return true;
         if (!ordered) return false;
-        if (!(object instanceof FloatArray)) return false;
-        FloatArray array = (FloatArray)object;
+        if (!(object instanceof JFloatArray)) return false;
+        JFloatArray array = (JFloatArray)object;
         if (!array.ordered) return false;
         int n = size;
         if (n != array.size) return false;
@@ -394,8 +394,8 @@ public class FloatArray {
     /** Returns false if either array is unordered. */
     public boolean equals (Object object, float epsilon) {
         if (object == this) return true;
-        if (!(object instanceof FloatArray)) return false;
-        FloatArray array = (FloatArray)object;
+        if (!(object instanceof JFloatArray)) return false;
+        JFloatArray array = (JFloatArray)object;
         int n = size;
         if (n != array.size) return false;
         if (!ordered) return false;
@@ -432,8 +432,8 @@ public class FloatArray {
         return buffer.toString();
     }
 
-    /** @see #FloatArray(float[]) */
-    static public FloatArray with (float... array) {
-        return new FloatArray(array);
+    /** @see #JFloatArray(float[]) */
+    static public JFloatArray with (float... array) {
+        return new JFloatArray(array);
     }
 }

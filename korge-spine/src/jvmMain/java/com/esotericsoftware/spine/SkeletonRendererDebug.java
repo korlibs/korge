@@ -35,8 +35,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
 import com.esotericsoftware.spine.attachments.Attachment;
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment;
 import com.esotericsoftware.spine.attachments.ClippingAttachment;
@@ -56,7 +56,7 @@ public class SkeletonRendererDebug {
 	private boolean drawBones = true, drawRegionAttachments = true, drawBoundingBoxes = true, drawPoints = true;
 	private boolean drawMeshHull = true, drawMeshTriangles = true, drawPaths = true, drawClipping = true;
 	private final SkeletonBounds bounds = new SkeletonBounds();
-	private final FloatArray vertices = new FloatArray(32);
+	private final JFloatArray vertices = new JFloatArray(32);
 	private float scale = 1;
 	private float boneWidth = 2;
 	private boolean premultipliedAlpha;
@@ -79,8 +79,8 @@ public class SkeletonRendererDebug {
 		Gdx.INSTANCE.getGl().glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
 		ShapeRenderer shapes = this.shapes;
-		Array<Bone> bones = skeleton.getBones();
-		Array<Slot> slots = skeleton.getSlots();
+		JArray<Bone> bones = skeleton.getBones();
+		JArray<Slot> slots = skeleton.getSlots();
 
 		shapes.begin(ShapeType.Filled);
 
@@ -173,10 +173,10 @@ public class SkeletonRendererDebug {
 			bounds.update(skeleton, true);
 			shapes.setColor(aabbColor);
 			shapes.rect(bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-			Array<FloatArray> polygons = bounds.getPolygons();
-			Array<BoundingBoxAttachment> boxes = bounds.getBoundingBoxes();
+			JArray<JFloatArray> polygons = bounds.getPolygons();
+			JArray<BoundingBoxAttachment> boxes = bounds.getBoundingBoxes();
 			for (int i = 0, n = polygons.size; i < n; i++) {
-				FloatArray polygon = polygons.get(i);
+				JFloatArray polygon = polygons.get(i);
 				shapes.setColor(boxes.get(i).getColor());
 				shapes.polygon(polygon.items, 0, polygon.size);
 			}

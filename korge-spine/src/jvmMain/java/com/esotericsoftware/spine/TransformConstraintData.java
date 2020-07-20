@@ -29,13 +29,13 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the setup pose for a {@link TransformConstraint}.
  * <p>
  * See <a href="http://esotericsoftware.com/spine-transform-constraints">Transform constraints</a> in the Spine User Guide. */
 public class TransformConstraintData extends ConstraintData {
-	final Array<BoneData> bones = new Array();
+	final JArray<BoneData> bones = new JArray();
 	BoneData target;
 	float rotateMix, translateMix, scaleMix, shearMix;
 	float offsetRotation, offsetX, offsetY, offsetScaleX, offsetScaleY, offsetShearY;
@@ -46,7 +46,7 @@ public class TransformConstraintData extends ConstraintData {
 	}
 
 	/** The bones that will be modified by this transform constraint. */
-	public Array<BoneData> getBones () {
+	public JArray<BoneData> getBones () {
 		return bones;
 	}
 

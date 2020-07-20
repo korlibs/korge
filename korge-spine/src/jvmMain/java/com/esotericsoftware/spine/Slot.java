@@ -30,7 +30,7 @@
 package com.esotericsoftware.spine;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JFloatArray;
 
 import com.esotericsoftware.spine.Animation.DeformTimeline;
 import com.esotericsoftware.spine.attachments.Attachment;
@@ -45,7 +45,7 @@ public class Slot {
 	final Color color = new Color(), darkColor;
 	Attachment attachment;
 	private float attachmentTime;
-	private FloatArray deform = new FloatArray();
+	private JFloatArray deform = new JFloatArray();
 
 	int attachmentState;
 
@@ -126,11 +126,11 @@ public class Slot {
 	 * weighted mesh, the entries are an offset for each vertex which will be added to the mesh's local vertex positions.
 	 * <p>
 	 * See {@link VertexAttachment#computeWorldVertices(Slot, int, int, float[], int, int)} and {@link DeformTimeline}. */
-	public FloatArray getDeform () {
+	public JFloatArray getDeform () {
 		return deform;
 	}
 
-	public void setDeform (FloatArray deform) {
+	public void setDeform (JFloatArray deform) {
 		if (deform == null) throw new IllegalArgumentException("deform cannot be null.");
 		this.deform = deform;
 	}

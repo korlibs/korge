@@ -33,8 +33,8 @@ import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
 
 import com.esotericsoftware.spine.Skin.SkinEntry;
 import com.esotericsoftware.spine.attachments.Attachment;
@@ -48,14 +48,14 @@ import com.esotericsoftware.spine.attachments.RegionAttachment;
  * Runtimes Guide. */
 public class Skeleton {
 	final SkeletonData data;
-	final Array<Bone> bones;
-	final Array<Slot> slots;
-	Array<Slot> drawOrder;
-	final Array<IkConstraint> ikConstraints;
-	final Array<TransformConstraint> transformConstraints;
-	final Array<PathConstraint> pathConstraints;
-	final Array<Updatable> updateCache = new Array();
-	final Array<Bone> updateCacheReset = new Array();
+	final JArray<Bone> bones;
+	final JArray<Slot> slots;
+	JArray<Slot> drawOrder;
+	final JArray<IkConstraint> ikConstraints;
+	final JArray<TransformConstraint> transformConstraints;
+	final JArray<PathConstraint> pathConstraints;
+	final JArray<Updatable> updateCache = new JArray();
+	final JArray<Bone> updateCacheReset = new JArray();
 	Skin skin;
 	final Color color;
 	float time;
@@ -66,7 +66,7 @@ public class Skeleton {
 		if (data == null) throw new IllegalArgumentException("data cannot be null.");
 		this.data = data;
 
-		bones = new Array(data.bones.size);
+		bones = new JArray(data.bones.size);
 		for (BoneData boneData : data.bones) {
 			Bone bone;
 			if (boneData.parent == null)
@@ -79,8 +79,8 @@ public class Skeleton {
 			bones.add(bone);
 		}
 
-		slots = new Array(data.slots.size);
-		drawOrder = new Array(data.slots.size);
+		slots = new JArray(data.slots.size);
+		drawOrder = new JArray(data.slots.size);
 		for (SlotData slotData : data.slots) {
 			Bone bone = bones.get(slotData.boneData.index);
 			Slot slot = new Slot(slotData, bone);
@@ -88,15 +88,15 @@ public class Skeleton {
 			drawOrder.add(slot);
 		}
 
-		ikConstraints = new Array(data.ikConstraints.size);
+		ikConstraints = new JArray(data.ikConstraints.size);
 		for (IkConstraintData ikConstraintData : data.ikConstraints)
 			ikConstraints.add(new IkConstraint(ikConstraintData, this));
 
-		transformConstraints = new Array(data.transformConstraints.size);
+		transformConstraints = new JArray(data.transformConstraints.size);
 		for (TransformConstraintData transformConstraintData : data.transformConstraints)
 			transformConstraints.add(new TransformConstraint(transformConstraintData, this));
 
-		pathConstraints = new Array(data.pathConstraints.size);
+		pathConstraints = new JArray(data.pathConstraints.size);
 		for (PathConstraintData pathConstraintData : data.pathConstraints)
 			pathConstraints.add(new PathConstraint(pathConstraintData, this));
 
@@ -110,7 +110,7 @@ public class Skeleton {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 		data = skeleton.data;
 
-		bones = new Array(skeleton.bones.size);
+		bones = new JArray(skeleton.bones.size);
 		for (Bone bone : skeleton.bones) {
 			Bone newBone;
 			if (bone.parent == null)
@@ -123,25 +123,25 @@ public class Skeleton {
 			bones.add(newBone);
 		}
 
-		slots = new Array(skeleton.slots.size);
+		slots = new JArray(skeleton.slots.size);
 		for (Slot slot : skeleton.slots) {
 			Bone bone = bones.get(slot.bone.data.index);
 			slots.add(new Slot(slot, bone));
 		}
 
-		drawOrder = new Array(slots.size);
+		drawOrder = new JArray(slots.size);
 		for (Slot slot : skeleton.drawOrder)
 			drawOrder.add(slots.get(slot.data.index));
 
-		ikConstraints = new Array(skeleton.ikConstraints.size);
+		ikConstraints = new JArray(skeleton.ikConstraints.size);
 		for (IkConstraint ikConstraint : skeleton.ikConstraints)
 			ikConstraints.add(new IkConstraint(ikConstraint, this));
 
-		transformConstraints = new Array(skeleton.transformConstraints.size);
+		transformConstraints = new JArray(skeleton.transformConstraints.size);
 		for (TransformConstraint transformConstraint : skeleton.transformConstraints)
 			transformConstraints.add(new TransformConstraint(transformConstraint, this));
 
-		pathConstraints = new Array(skeleton.pathConstraints.size);
+		pathConstraints = new JArray(skeleton.pathConstraints.size);
 		for (PathConstraint pathConstraint : skeleton.pathConstraints)
 			pathConstraints.add(new PathConstraint(pathConstraint, this));
 
@@ -157,7 +157,7 @@ public class Skeleton {
 	/** Caches information about bones and constraints. Must be called if the {@link #getSkin()} is modified or if bones,
 	 * constraints, or weighted path attachments are added or removed. */
 	public void updateCache () {
-		Array<Updatable> updateCache = this.updateCache;
+		JArray<Updatable> updateCache = this.updateCache;
 		updateCache.clear();
 		updateCacheReset.clear();
 
@@ -222,7 +222,7 @@ public class Skeleton {
 		Bone target = constraint.target;
 		sortBone(target);
 
-		Array<Bone> constrained = constraint.bones;
+		JArray<Bone> constrained = constraint.bones;
 		Bone parent = constrained.first();
 		sortBone(parent);
 
@@ -252,7 +252,7 @@ public class Skeleton {
 		Attachment attachment = slot.attachment;
 		if (attachment instanceof PathAttachment) sortPathConstraintAttachment(attachment, slotBone);
 
-		Array<Bone> constrained = constraint.bones;
+		JArray<Bone> constrained = constraint.bones;
 		int boneCount = constrained.size;
 		for (int i = 0; i < boneCount; i++)
 			sortBone(constrained.get(i));
@@ -272,7 +272,7 @@ public class Skeleton {
 
 		sortBone(constraint.target);
 
-		Array<Bone> constrained = constraint.bones;
+		JArray<Bone> constrained = constraint.bones;
 		int boneCount = constrained.size;
 		if (constraint.data.local) {
 			for (int i = 0; i < boneCount; i++) {
@@ -304,7 +304,7 @@ public class Skeleton {
 		if (pathBones == null)
 			sortBone(slotBone);
 		else {
-			Array<Bone> bones = this.bones;
+			JArray<Bone> bones = this.bones;
 			for (int i = 0, n = pathBones.length; i < n;) {
 				int nn = pathBones[i++];
 				nn += i;
@@ -322,7 +322,7 @@ public class Skeleton {
 		updateCache.add(bone);
 	}
 
-	private void sortReset (Array<Bone> bones) {
+	private void sortReset (JArray<Bone> bones) {
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			if (!bone.active) continue;
@@ -339,7 +339,7 @@ public class Skeleton {
 		// This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
 		// before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
 		// updateWorldTransform.
-		Array<Bone> updateCacheReset = this.updateCacheReset;
+		JArray<Bone> updateCacheReset = this.updateCacheReset;
 		for (int i = 0, n = updateCacheReset.size; i < n; i++) {
 			Bone bone = updateCacheReset.get(i);
 			bone.ax = bone.x;
@@ -351,7 +351,7 @@ public class Skeleton {
 			bone.ashearY = bone.shearY;
 			bone.appliedValid = true;
 		}
-		Array<Updatable> updateCache = this.updateCache;
+		JArray<Updatable> updateCache = this.updateCache;
 		for (int i = 0, n = updateCache.size; i < n; i++)
 			updateCache.get(i).update();
 	}
@@ -366,7 +366,7 @@ public class Skeleton {
 		// This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
 		// before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
 		// updateWorldTransform.
-		Array<Bone> updateCacheReset = this.updateCacheReset;
+		JArray<Bone> updateCacheReset = this.updateCacheReset;
 		for (int i = 0, n = updateCacheReset.size; i < n; i++) {
 			Bone bone = updateCacheReset.get(i);
 			bone.ax = bone.x;
@@ -396,7 +396,7 @@ public class Skeleton {
 		rootBone.d = (pc * lb + pd * ld) * scaleY;
 
 		// Update everything except root bone.
-		Array<Updatable> updateCache = this.updateCache;
+		JArray<Updatable> updateCache = this.updateCache;
 		for (int i = 0, n = updateCache.size; i < n; i++) {
 			Updatable updatable = updateCache.get(i);
 			if (updatable != rootBone) updatable.update();
@@ -411,11 +411,11 @@ public class Skeleton {
 
 	/** Sets the bones and constraints to their setup pose values. */
 	public void setBonesToSetupPose () {
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++)
 			bones.get(i).setToSetupPose();
 
-		Array<IkConstraint> ikConstraints = this.ikConstraints;
+		JArray<IkConstraint> ikConstraints = this.ikConstraints;
 		for (int i = 0, n = ikConstraints.size; i < n; i++) {
 			IkConstraint constraint = ikConstraints.get(i);
 			constraint.mix = constraint.data.mix;
@@ -425,7 +425,7 @@ public class Skeleton {
 			constraint.stretch = constraint.data.stretch;
 		}
 
-		Array<TransformConstraint> transformConstraints = this.transformConstraints;
+		JArray<TransformConstraint> transformConstraints = this.transformConstraints;
 		for (int i = 0, n = transformConstraints.size; i < n; i++) {
 			TransformConstraint constraint = transformConstraints.get(i);
 			TransformConstraintData data = constraint.data;
@@ -435,7 +435,7 @@ public class Skeleton {
 			constraint.shearMix = data.shearMix;
 		}
 
-		Array<PathConstraint> pathConstraints = this.pathConstraints;
+		JArray<PathConstraint> pathConstraints = this.pathConstraints;
 		for (int i = 0, n = pathConstraints.size; i < n; i++) {
 			PathConstraint constraint = pathConstraints.get(i);
 			PathConstraintData data = constraint.data;
@@ -448,7 +448,7 @@ public class Skeleton {
 
 	/** Sets the slots and draw order to their setup pose values. */
 	public void setSlotsToSetupPose () {
-		Array<Slot> slots = this.slots;
+		JArray<Slot> slots = this.slots;
 		arraycopy(slots.items, 0, drawOrder.items, 0, slots.size);
 		for (int i = 0, n = slots.size; i < n; i++)
 			slots.get(i).setToSetupPose();
@@ -460,12 +460,12 @@ public class Skeleton {
 	}
 
 	/** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-	public Array<Bone> getBones () {
+	public JArray<Bone> getBones () {
 		return bones;
 	}
 
 	/** The list of bones and constraints, sorted in the order they should be updated, as computed by {@link #updateCache()}. */
-	public Array<Updatable> getUpdateCache () {
+	public JArray<Updatable> getUpdateCache () {
 		return updateCache;
 	}
 
@@ -480,7 +480,7 @@ public class Skeleton {
 	 * @return May be null. */
 	public Bone findBone (String boneName) {
 		if (boneName == null) throw new IllegalArgumentException("boneName cannot be null.");
-		Array<Bone> bones = this.bones;
+		JArray<Bone> bones = this.bones;
 		for (int i = 0, n = bones.size; i < n; i++) {
 			Bone bone = bones.get(i);
 			if (bone.data.name.equals(boneName)) return bone;
@@ -489,7 +489,7 @@ public class Skeleton {
 	}
 
 	/** The skeleton's slots. */
-	public Array<Slot> getSlots () {
+	public JArray<Slot> getSlots () {
 		return slots;
 	}
 
@@ -498,7 +498,7 @@ public class Skeleton {
 	 * @return May be null. */
 	public Slot findSlot (String slotName) {
 		if (slotName == null) throw new IllegalArgumentException("slotName cannot be null.");
-		Array<Slot> slots = this.slots;
+		JArray<Slot> slots = this.slots;
 		for (int i = 0, n = slots.size; i < n; i++) {
 			Slot slot = slots.get(i);
 			if (slot.data.name.equals(slotName)) return slot;
@@ -507,11 +507,11 @@ public class Skeleton {
 	}
 
 	/** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order. */
-	public Array<Slot> getDrawOrder () {
+	public JArray<Slot> getDrawOrder () {
 		return drawOrder;
 	}
 
-	public void setDrawOrder (Array<Slot> drawOrder) {
+	public void setDrawOrder (JArray<Slot> drawOrder) {
 		if (drawOrder == null) throw new IllegalArgumentException("drawOrder cannot be null.");
 		this.drawOrder = drawOrder;
 	}
@@ -547,7 +547,7 @@ public class Skeleton {
 			if (skin != null)
 				newSkin.attachAll(this, skin);
 			else {
-				Array<Slot> slots = this.slots;
+				JArray<Slot> slots = this.slots;
 				for (int i = 0, n = slots.size; i < n; i++) {
 					Slot slot = slots.get(i);
 					String name = slot.data.attachmentName;
@@ -605,7 +605,7 @@ public class Skeleton {
 	}
 
 	/** The skeleton's IK constraints. */
-	public Array<IkConstraint> getIkConstraints () {
+	public JArray<IkConstraint> getIkConstraints () {
 		return ikConstraints;
 	}
 
@@ -614,7 +614,7 @@ public class Skeleton {
 	 * @return May be null. */
 	public IkConstraint findIkConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<IkConstraint> ikConstraints = this.ikConstraints;
+		JArray<IkConstraint> ikConstraints = this.ikConstraints;
 		for (int i = 0, n = ikConstraints.size; i < n; i++) {
 			IkConstraint ikConstraint = ikConstraints.get(i);
 			if (ikConstraint.data.name.equals(constraintName)) return ikConstraint;
@@ -623,7 +623,7 @@ public class Skeleton {
 	}
 
 	/** The skeleton's transform constraints. */
-	public Array<TransformConstraint> getTransformConstraints () {
+	public JArray<TransformConstraint> getTransformConstraints () {
 		return transformConstraints;
 	}
 
@@ -632,7 +632,7 @@ public class Skeleton {
 	 * @return May be null. */
 	public TransformConstraint findTransformConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<TransformConstraint> transformConstraints = this.transformConstraints;
+		JArray<TransformConstraint> transformConstraints = this.transformConstraints;
 		for (int i = 0, n = transformConstraints.size; i < n; i++) {
 			TransformConstraint constraint = transformConstraints.get(i);
 			if (constraint.data.name.equals(constraintName)) return constraint;
@@ -641,7 +641,7 @@ public class Skeleton {
 	}
 
 	/** The skeleton's path constraints. */
-	public Array<PathConstraint> getPathConstraints () {
+	public JArray<PathConstraint> getPathConstraints () {
 		return pathConstraints;
 	}
 
@@ -650,7 +650,7 @@ public class Skeleton {
 	 * @return May be null. */
 	public PathConstraint findPathConstraint (String constraintName) {
 		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		Array<PathConstraint> pathConstraints = this.pathConstraints;
+		JArray<PathConstraint> pathConstraints = this.pathConstraints;
 		for (int i = 0, n = pathConstraints.size; i < n; i++) {
 			PathConstraint constraint = pathConstraints.get(i);
 			if (constraint.data.name.equals(constraintName)) return constraint;
@@ -662,11 +662,11 @@ public class Skeleton {
 	 * @param offset An output value, the distance from the skeleton origin to the bottom left corner of the AABB.
 	 * @param size An output value, the width and height of the AABB.
 	 * @param temp Working memory to temporarily store attachments' computed world vertices. */
-	public void getBounds (Vector2 offset, Vector2 size, FloatArray temp) {
+	public void getBounds (Vector2 offset, Vector2 size, JFloatArray temp) {
 		if (offset == null) throw new IllegalArgumentException("offset cannot be null.");
 		if (size == null) throw new IllegalArgumentException("size cannot be null.");
 		if (temp == null) throw new IllegalArgumentException("temp cannot be null.");
-		Array<Slot> drawOrder = this.drawOrder;
+		JArray<Slot> drawOrder = this.drawOrder;
 		float minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
 		for (int i = 0, n = drawOrder.size; i < n; i++) {
 			Slot slot = drawOrder.get(i);

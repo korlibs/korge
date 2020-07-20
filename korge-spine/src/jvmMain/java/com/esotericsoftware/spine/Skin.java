@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 import com.badlogic.gdx.utils.OrderedMap;
 import com.esotericsoftware.spine.attachments.Attachment;
 import com.esotericsoftware.spine.attachments.MeshAttachment;
@@ -41,8 +41,8 @@ import com.esotericsoftware.spine.attachments.MeshAttachment;
 public class Skin {
 	final String name;
 	final OrderedMap<SkinEntry, SkinEntry> attachments = new OrderedMap();
-	final Array<BoneData> bones = new Array();
-	final Array<ConstraintData> constraints = new Array();
+	final JArray<BoneData> bones = new JArray();
+	final JArray<ConstraintData> constraints = new JArray();
 	private final SkinEntry lookup = new SkinEntry();
 
 	public Skin (String name) {
@@ -111,12 +111,12 @@ public class Skin {
 	}
 
 	/** Returns all attachments in this skin. */
-	public Array<SkinEntry> getAttachments () {
+	public JArray<SkinEntry> getAttachments () {
 		return attachments.orderedKeys();
 	}
 
 	/** Returns all attachments in this skin for the specified slot index. */
-	public void getAttachments (int slotIndex, Array<SkinEntry> attachments) {
+	public void getAttachments (int slotIndex, JArray<SkinEntry> attachments) {
 		if (slotIndex < 0) throw new IllegalArgumentException("slotIndex must be >= 0.");
 		if (attachments == null) throw new IllegalArgumentException("attachments cannot be null.");
 		for (SkinEntry entry : this.attachments.keys())
@@ -130,11 +130,11 @@ public class Skin {
 		constraints.clear();
 	}
 
-	public Array<BoneData> getBones () {
+	public JArray<BoneData> getBones () {
 		return bones;
 	}
 
-	public Array<ConstraintData> getConstraints () {
+	public JArray<ConstraintData> getConstraints () {
 		return constraints;
 	}
 

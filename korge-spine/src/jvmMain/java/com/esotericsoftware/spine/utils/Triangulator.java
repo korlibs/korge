@@ -29,48 +29,48 @@
 
 package com.esotericsoftware.spine.utils;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.BooleanArray;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JBooleanArray;
+import com.badlogic.gdx.utils.JFloatArray;
 import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.ShortArray;
+import com.badlogic.gdx.utils.JShortArray;
 
 class Triangulator {
-	private final Array<FloatArray> convexPolygons = new Array();
-	private final Array<ShortArray> convexPolygonsIndices = new Array();
+	private final JArray<JFloatArray> convexPolygons = new JArray();
+	private final JArray<JShortArray> convexPolygonsIndices = new JArray();
 
-	private final ShortArray indicesArray = new ShortArray();
-	private final BooleanArray isConcaveArray = new BooleanArray();
-	private final ShortArray triangles = new ShortArray();
+	private final JShortArray indicesArray = new JShortArray();
+	private final JBooleanArray isConcaveArray = new JBooleanArray();
+	private final JShortArray triangles = new JShortArray();
 
-	private final Pool<FloatArray> polygonPool = new Pool() {
-		protected FloatArray newObject () {
-			return new FloatArray(16);
+	private final Pool<JFloatArray> polygonPool = new Pool() {
+		protected JFloatArray newObject () {
+			return new JFloatArray(16);
 		}
 	};
 
-	private final Pool<ShortArray> polygonIndicesPool = new Pool() {
-		protected ShortArray newObject () {
-			return new ShortArray(16);
+	private final Pool<JShortArray> polygonIndicesPool = new Pool() {
+		protected JShortArray newObject () {
+			return new JShortArray(16);
 		}
 	};
 
-	public ShortArray triangulate (FloatArray verticesArray) {
+	public JShortArray triangulate (JFloatArray verticesArray) {
 		float[] vertices = verticesArray.items;
 		int vertexCount = verticesArray.size >> 1;
 
-		ShortArray indicesArray = this.indicesArray;
+		JShortArray indicesArray = this.indicesArray;
 		indicesArray.clear();
 		short[] indices = indicesArray.setSize(vertexCount);
 		for (short i = 0; i < vertexCount; i++)
 			indices[i] = i;
 
-		BooleanArray isConcaveArray = this.isConcaveArray;
+		JBooleanArray isConcaveArray = this.isConcaveArray;
 		boolean[] isConcave = isConcaveArray.setSize(vertexCount);
 		for (int i = 0, n = vertexCount; i < n; ++i)
 			isConcave[i] = isConcave(i, vertexCount, vertices, indices);
 
-		ShortArray triangles = this.triangles;
+		JShortArray triangles = this.triangles;
 		triangles.clear();
 		triangles.ensureCapacity(Math.max(0, vertexCount - 2) << 2);
 
@@ -133,21 +133,21 @@ class Triangulator {
 		return triangles;
 	}
 
-	public Array<FloatArray> decompose (FloatArray verticesArray, ShortArray triangles) {
+	public JArray<JFloatArray> decompose (JFloatArray verticesArray, JShortArray triangles) {
 		float[] vertices = verticesArray.items;
 
-		Array<FloatArray> convexPolygons = this.convexPolygons;
+		JArray<JFloatArray> convexPolygons = this.convexPolygons;
 		polygonPool.freeAll(convexPolygons);
 		convexPolygons.clear();
 
-		Array<ShortArray> convexPolygonsIndices = this.convexPolygonsIndices;
+		JArray<JShortArray> convexPolygonsIndices = this.convexPolygonsIndices;
 		polygonIndicesPool.freeAll(convexPolygonsIndices);
 		convexPolygonsIndices.clear();
 
-		ShortArray polygonIndices = polygonIndicesPool.obtain();
+		JShortArray polygonIndices = polygonIndicesPool.obtain();
 		polygonIndices.clear();
 
-		FloatArray polygon = polygonPool.obtain();
+		JFloatArray polygon = polygonPool.obtain();
 		polygon.clear();
 
 		// Merge subsequent triangles if they form a triangle fan.
@@ -224,13 +224,13 @@ class Triangulator {
 
 			for (int ii = 0; ii < n; ii++) {
 				if (ii == i) continue;
-				ShortArray otherIndices = convexPolygonsIndices.get(ii);
+				JShortArray otherIndices = convexPolygonsIndices.get(ii);
 				if (otherIndices.size != 3) continue;
 				int otherFirstIndex = otherIndices.get(0);
 				int otherSecondIndex = otherIndices.get(1);
 				int otherLastIndex = otherIndices.get(2);
 
-				FloatArray otherPoly = convexPolygons.get(ii);
+				JFloatArray otherPoly = convexPolygons.get(ii);
 				float x3 = otherPoly.get(otherPoly.size - 2), y3 = otherPoly.get(otherPoly.size - 1);
 
 				if (otherFirstIndex != firstIndex || otherSecondIndex != lastIndex) continue;

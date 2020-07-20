@@ -35,10 +35,10 @@ import java.io.IOException;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.DataInput;
-import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JDataInput;
+import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JIntArray;
 import com.badlogic.gdx.utils.SerializationException;
 
 import com.esotericsoftware.spine.Animation.AttachmentTimeline;
@@ -102,7 +102,7 @@ public class SkeletonBinary {
 
 	private final AttachmentLoader attachmentLoader;
 	private float scale = 1;
-	private Array<LinkedMesh> linkedMeshes = new Array();
+	private JArray<LinkedMesh> linkedMeshes = new JArray();
 
 	public SkeletonBinary (TextureAtlas atlas) {
 		attachmentLoader = new AtlasAttachmentLoader(atlas);
@@ -162,7 +162,7 @@ public class SkeletonBinary {
 			Object[] o;
 
 			// Strings.
-			input.strings = new Array(n = input.readInt(true));
+			input.strings = new JArray(n = input.readInt(true));
 			o = input.strings.setSize(n);
 			for (int i = 0; i < n; i++)
 				o[i] = input.readString();
@@ -536,8 +536,8 @@ public class SkeletonBinary {
 			vertices.vertices = readFloatArray(input, verticesLength, scale);
 			return vertices;
 		}
-		FloatArray weights = new FloatArray(verticesLength * 3 * 3);
-		IntArray bonesArray = new IntArray(verticesLength * 3);
+		JFloatArray weights = new JFloatArray(verticesLength * 3 * 3);
+		JIntArray bonesArray = new JIntArray(verticesLength * 3);
 		for (int i = 0; i < vertexCount; i++) {
 			int boneCount = input.readInt(true);
 			bonesArray.add(boneCount);
@@ -574,7 +574,7 @@ public class SkeletonBinary {
 	}
 
 	private Animation readAnimation (SkeletonInput input, String name, SkeletonData skeletonData) {
-		Array<Timeline> timelines = new Array(32);
+		JArray<Timeline> timelines = new JArray(32);
 		float scale = this.scale;
 		float duration = 0;
 
@@ -874,9 +874,9 @@ public class SkeletonBinary {
 		float[] vertices;
 	}
 
-	static class SkeletonInput extends DataInput {
+	static class SkeletonInput extends JDataInput {
 		private char[] chars = new char[32];
-		Array<String> strings;
+		JArray<String> strings;
 
 		public SkeletonInput (FileHandle file) {
 			super(file.read(512));

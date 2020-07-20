@@ -31,7 +31,7 @@ package com.esotericsoftware.spine.attachments;
 
 import static com.esotericsoftware.spine.utils.SpineUtils.*;
 
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JFloatArray;
 
 import com.esotericsoftware.spine.Bone;
 import com.esotericsoftware.spine.Skeleton;
@@ -66,7 +66,7 @@ abstract public class VertexAttachment extends Attachment {
 	public void computeWorldVertices (Slot slot, int start, int count, float[] worldVertices, int offset, int stride) {
 		count = offset + (count >> 1) * stride;
 		Skeleton skeleton = slot.getSkeleton();
-		FloatArray deformArray = slot.getDeform();
+		JFloatArray deformArray = slot.getDeform();
 		float[] vertices = this.vertices;
 		int[] bones = this.bones;
 		if (bones == null) {

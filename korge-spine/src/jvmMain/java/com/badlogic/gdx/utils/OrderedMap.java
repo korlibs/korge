@@ -18,13 +18,13 @@ package com.badlogic.gdx.utils;
 
 import java.util.NoSuchElementException;
 
-/** An {@link ObjectMap} that also stores keys in an {@link Array} using the insertion order. Null keys are not allowed. No
+/** An {@link ObjectMap} that also stores keys in an {@link JArray} using the insertion order. Null keys are not allowed. No
  * allocation is done except when growing the table size.
  * <p>
  * Iteration over the {@link #entries()}, {@link #keys()}, and {@link #values()} is ordered and faster than an unordered map. Keys
  * can also be accessed and the order changed using {@link #orderedKeys()}. There is some additional overhead for put and remove.
  * When used for faster iteration versus ObjectMap and the order does not actually matter, copying during remove can be greatly
- * reduced by setting {@link Array#ordered} to false for {@link OrderedMap#orderedKeys()}.
+ * reduced by setting {@link JArray#ordered} to false for {@link OrderedMap#orderedKeys()}.
  * <p>
  * This class performs fast contains (typically O(1), worst case O(n) but that is rare in practice). Remove is somewhat slower due
  * to {@link #orderedKeys()}. Add may be slightly slower, depending on hash collisions. Hashcodes are rehashed to reduce
@@ -41,25 +41,25 @@ import java.util.NoSuchElementException;
  * @author Nathan Sweet
  * @author Tommy Ettinger */
 public class OrderedMap<K, V> extends ObjectMap<K, V> {
-    final Array<K> keys;
+    final JArray<K> keys;
 
     public OrderedMap () {
-        keys = new Array();
+        keys = new JArray();
     }
 
     public OrderedMap (int initialCapacity) {
         super(initialCapacity);
-        keys = new Array(initialCapacity);
+        keys = new JArray(initialCapacity);
     }
 
     public OrderedMap (int initialCapacity, float loadFactor) {
         super(initialCapacity, loadFactor);
-        keys = new Array(initialCapacity);
+        keys = new JArray(initialCapacity);
     }
 
     public OrderedMap (OrderedMap<? extends K, ? extends V> map) {
         super(map);
-        keys = new Array(map.keys);
+        keys = new JArray(map.keys);
     }
 
     public V put (K key, V value) {
@@ -134,7 +134,7 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
         super.clear();
     }
 
-    public Array<K> orderedKeys () {
+    public JArray<K> orderedKeys () {
         return keys;
     }
 
@@ -212,7 +212,7 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
         if (size == 0) return braces ? "{}" : "";
         java.lang.StringBuilder buffer = new java.lang.StringBuilder(32);
         if (braces) buffer.append('{');
-        Array<K> keys = this.keys;
+        JArray<K> keys = this.keys;
         for (int i = 0, n = keys.size; i < n; i++) {
             K key = keys.get(i);
             if (i > 0) buffer.append(separator);
@@ -226,7 +226,7 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
     }
 
     static public class OrderedMapEntries<K, V> extends Entries<K, V> {
-        private Array<K> keys;
+        private JArray<K> keys;
 
         public OrderedMapEntries (OrderedMap<K, V> map) {
             super(map);
@@ -259,7 +259,7 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
     }
 
     static public class OrderedMapKeys<K> extends Keys<K> {
-        private Array<K> keys;
+        private JArray<K> keys;
 
         public OrderedMapKeys (OrderedMap<K, ?> map) {
             super(map);
@@ -289,20 +289,20 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
             currentIndex = -1;
         }
 
-        public Array<K> toArray (Array<K> array) {
+        public JArray<K> toArray (JArray<K> array) {
             array.addAll(keys, nextIndex, keys.size - nextIndex);
             nextIndex = keys.size;
             hasNext = false;
             return array;
         }
 
-        public Array<K> toArray () {
-            return toArray(new Array(true, keys.size - nextIndex));
+        public JArray<K> toArray () {
+            return toArray(new JArray(true, keys.size - nextIndex));
         }
     }
 
     static public class OrderedMapValues<V> extends Values<V> {
-        private Array keys;
+        private JArray keys;
 
         public OrderedMapValues (OrderedMap<?, V> map) {
             super(map);
@@ -332,7 +332,7 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
             currentIndex = -1;
         }
 
-        public Array<V> toArray (Array<V> array) {
+        public JArray<V> toArray (JArray<V> array) {
             int n = keys.size;
             array.ensureCapacity(n - nextIndex);
             Object[] keys = this.keys.items;
@@ -344,8 +344,8 @@ public class OrderedMap<K, V> extends ObjectMap<K, V> {
             return array;
         }
 
-        public Array<V> toArray () {
-            return toArray(new Array(true, keys.size - nextIndex));
+        public JArray<V> toArray () {
+            return toArray(new JArray(true, keys.size - nextIndex));
         }
     }
 }

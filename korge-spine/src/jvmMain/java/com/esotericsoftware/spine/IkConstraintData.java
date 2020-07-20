@@ -29,13 +29,13 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JArray;
 
 /** Stores the setup pose for an {@link IkConstraint}.
  * <p>
  * See <a href="http://esotericsoftware.com/spine-ik-constraints">IK constraints</a> in the Spine User Guide. */
 public class IkConstraintData extends ConstraintData {
-	final Array<BoneData> bones = new Array();
+	final JArray<BoneData> bones = new JArray();
 	BoneData target;
 	int bendDirection = 1;
 	boolean compress, stretch, uniform;
@@ -46,7 +46,7 @@ public class IkConstraintData extends ConstraintData {
 	}
 
 	/** The bones that are constrained by this IK constraint. */
-	public Array<BoneData> getBones () {
+	public JArray<BoneData> getBones () {
 		return bones;
 	}
 

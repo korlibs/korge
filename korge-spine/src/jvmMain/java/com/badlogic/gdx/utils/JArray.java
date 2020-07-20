@@ -17,7 +17,6 @@
 package com.badlogic.gdx.utils;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -27,9 +26,9 @@ import com.badlogic.gdx.utils.reflect.ArrayReflection;
 /** A resizable, ordered or unordered array of objects. If unordered, this class avoids a memory copy when removing elements (the
  * last element is moved to the removed element's position).
  * @author Nathan Sweet */
-public class Array<T> implements Iterable<T> {
+public class JArray<T> implements Iterable<T> {
     /** Provides direct access to the underlying array. If the Array's generic type is not Object, this field may only be accessed
-     * if the {@link Array#Array(boolean, int, Class)} constructor was used. */
+     * if the {@link JArray#JArray(boolean, int, Class)} constructor was used. */
     public T[] items;
 
     public int size;
@@ -39,19 +38,19 @@ public class Array<T> implements Iterable<T> {
     private Predicate.PredicateIterable<T> predicateIterable;
 
     /** Creates an ordered array with a capacity of 16. */
-    public Array () {
+    public JArray() {
         this(true, 16);
     }
 
     /** Creates an ordered array with the specified capacity. */
-    public Array (int capacity) {
+    public JArray(int capacity) {
         this(true, capacity);
     }
 
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public Array (boolean ordered, int capacity) {
+    public JArray(boolean ordered, int capacity) {
         this.ordered = ordered;
         items = (T[])new Object[capacity];
     }
@@ -60,20 +59,20 @@ public class Array<T> implements Iterable<T> {
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public Array (boolean ordered, int capacity, Class arrayType) {
+    public JArray(boolean ordered, int capacity, Class arrayType) {
         this.ordered = ordered;
         items = (T[])ArrayReflection.newInstance(arrayType, capacity);
     }
 
     /** Creates an ordered array with {@link #items} of the specified type and a capacity of 16. */
-    public Array (Class arrayType) {
+    public JArray(Class arrayType) {
         this(true, 16, arrayType);
     }
 
     /** Creates a new array containing the elements in the specified array. The new array will have the same type of backing array
      * and will be ordered if the specified array is ordered. The capacity is set to the number of elements, so any subsequent
      * elements added will cause the backing array to be grown. */
-    public Array (Array<? extends T> array) {
+    public JArray(JArray<? extends T> array) {
         this(array.ordered, array.size, array.items.getClass().getComponentType());
         size = array.size;
         System.arraycopy(array.items, 0, items, 0, size);
@@ -82,7 +81,7 @@ public class Array<T> implements Iterable<T> {
     /** Creates a new ordered array containing the elements in the specified array. The new array will have the same type of
      * backing array. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array
      * to be grown. */
-    public Array (T[] array) {
+    public JArray(T[] array) {
         this(true, array, 0, array.length);
     }
 
@@ -90,7 +89,7 @@ public class Array<T> implements Iterable<T> {
      * The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be grown.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
      *           memory copy. */
-    public Array (boolean ordered, T[] array, int start, int count) {
+    public JArray(boolean ordered, T[] array, int start, int count) {
         this(ordered, count, array.getClass().getComponentType());
         size = count;
         System.arraycopy(array, start, items, 0, size);
@@ -129,11 +128,11 @@ public class Array<T> implements Iterable<T> {
         size += 4;
     }
 
-    public void addAll (Array<? extends T> array) {
+    public void addAll (JArray<? extends T> array) {
         addAll(array.items, 0, array.size);
     }
 
-    public void addAll (Array<? extends T> array, int start, int count) {
+    public void addAll (JArray<? extends T> array, int start, int count) {
         if (start + count > array.size)
             throw new IllegalArgumentException("start + count must be <= size: " + start + " + " + count + " <= " + array.size);
         addAll(array.items, start, count);
@@ -201,7 +200,7 @@ public class Array<T> implements Iterable<T> {
     /** Returns true if this array contains all the specified values.
      * @param values May contains nulls.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used. */
-    public boolean containsAll (Array<? extends T> values, boolean identity) {
+    public boolean containsAll (JArray<? extends T> values, boolean identity) {
         T[] items = values.items;
         for (int i = 0, n = values.size; i < n; i++)
             if (!contains(items[i], identity)) return false;
@@ -211,7 +210,7 @@ public class Array<T> implements Iterable<T> {
     /** Returns true if this array contains any the specified values.
      * @param values May contains nulls.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used. */
-    public boolean containsAny (Array<? extends T> values, boolean identity) {
+    public boolean containsAny (JArray<? extends T> values, boolean identity) {
         T[] items = values.items;
         for (int i = 0, n = values.size; i < n; i++)
             if (contains(items[i], identity)) return true;
@@ -310,7 +309,7 @@ public class Array<T> implements Iterable<T> {
     /** Removes from this array all of elements contained in the specified array.
      * @param identity True to use ==, false to use .equals().
      * @return true if this array was modified. */
-    public boolean removeAll (Array<? extends T> array, boolean identity) {
+    public boolean removeAll (JArray<? extends T> array, boolean identity) {
         int size = this.size;
         int startSize = size;
         T[] items = this.items;
@@ -461,7 +460,7 @@ public class Array<T> implements Iterable<T> {
         return items[MathUtils.random(0, size - 1)];
     }
 
-    /** Returns the items as an array. Note the array is typed, so the {@link #Array(Class)} constructor must have been used.
+    /** Returns the items as an array. Note the array is typed, so the {@link #JArray(Class)} constructor must have been used.
      * Otherwise use {@link #toArray(Class)} to specify the array type. */
     public T[] toArray () {
         return (T[])toArray(items.getClass().getComponentType());
@@ -489,8 +488,8 @@ public class Array<T> implements Iterable<T> {
     public boolean equals (Object object) {
         if (object == this) return true;
         if (!ordered) return false;
-        if (!(object instanceof Array)) return false;
-        Array array = (Array)object;
+        if (!(object instanceof JArray)) return false;
+        JArray array = (JArray)object;
         if (!array.ordered) return false;
         int n = size;
         if (n != array.size) return false;
@@ -506,8 +505,8 @@ public class Array<T> implements Iterable<T> {
     public boolean equalsIdentity (Object object) {
         if (object == this) return true;
         if (!ordered) return false;
-        if (!(object instanceof Array)) return false;
-        Array array = (Array)object;
+        if (!(object instanceof JArray)) return false;
+        JArray array = (JArray)object;
         if (!array.ordered) return false;
         int n = size;
         if (n != array.size) return false;
@@ -543,34 +542,34 @@ public class Array<T> implements Iterable<T> {
         return buffer.toString();
     }
 
-    /** @see #Array(Class) */
-    static public <T> Array<T> of (Class<T> arrayType) {
-        return new Array(arrayType);
+    /** @see #JArray(Class) */
+    static public <T> JArray<T> of (Class<T> arrayType) {
+        return new JArray(arrayType);
     }
 
-    /** @see #Array(boolean, int, Class) */
-    static public <T> Array<T> of (boolean ordered, int capacity, Class<T> arrayType) {
-        return new Array(ordered, capacity, arrayType);
+    /** @see #JArray(boolean, int, Class) */
+    static public <T> JArray<T> of (boolean ordered, int capacity, Class<T> arrayType) {
+        return new JArray(ordered, capacity, arrayType);
     }
 
-    /** @see #Array(Object[]) */
-    static public <T> Array<T> with (T... array) {
-        return new Array(array);
+    /** @see #JArray(Object[]) */
+    static public <T> JArray<T> with (T... array) {
+        return new JArray(array);
     }
 
     static public class ArrayIterator<T> implements Iterator<T>, Iterable<T> {
-        private final Array<T> array;
+        private final JArray<T> array;
         private final boolean allowRemove;
         int index;
         boolean valid = true;
 
 // ArrayIterable<T> iterable;
 
-        public ArrayIterator (Array<T> array) {
+        public ArrayIterator (JArray<T> array) {
             this(array, true);
         }
 
-        public ArrayIterator (Array<T> array, boolean allowRemove) {
+        public ArrayIterator (JArray<T> array, boolean allowRemove) {
             this.array = array;
             this.allowRemove = allowRemove;
         }
@@ -608,17 +607,17 @@ public class Array<T> implements Iterable<T> {
     }
 
     static public class ArrayIterable<T> implements Iterable<T> {
-        private final Array<T> array;
+        private final JArray<T> array;
         private final boolean allowRemove;
         private ArrayIterator iterator1, iterator2;
 
 // java.io.StringWriter lastAcquire = new java.io.StringWriter();
 
-        public ArrayIterable (Array<T> array) {
+        public ArrayIterable (JArray<T> array) {
             this(array, true);
         }
 
-        public ArrayIterable (Array<T> array, boolean allowRemove) {
+        public ArrayIterable (JArray<T> array, boolean allowRemove) {
             this.array = array;
             this.allowRemove = allowRemove;
         }

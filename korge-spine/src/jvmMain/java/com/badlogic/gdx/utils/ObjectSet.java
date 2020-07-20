@@ -138,11 +138,11 @@ public class ObjectSet<T> implements Iterable<T> {
         return true;
     }
 
-    public void addAll (Array<? extends T> array) {
+    public void addAll (JArray<? extends T> array) {
         addAll(array.items, 0, array.size);
     }
 
-    public void addAll (Array<? extends T> array, int offset, int length) {
+    public void addAll (JArray<? extends T> array, int offset, int length) {
         if (offset + length > array.size)
             throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
         addAll(array.items, offset, length);
@@ -426,15 +426,15 @@ public class ObjectSet<T> implements Iterable<T> {
         }
 
         /** Adds the remaining values to the array. */
-        public Array<K> toArray (Array<K> array) {
+        public JArray<K> toArray (JArray<K> array) {
             while (hasNext)
                 array.add(next());
             return array;
         }
 
         /** Returns a new array containing the remaining values. */
-        public Array<K> toArray () {
-            return toArray(new Array<K>(true, set.size));
+        public JArray<K> toArray () {
+            return toArray(new JArray<K>(true, set.size));
         }
     }
 }

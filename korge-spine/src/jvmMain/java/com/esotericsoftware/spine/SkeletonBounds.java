@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine;
 
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JFloatArray;
 import com.badlogic.gdx.utils.Pool;
 import com.esotericsoftware.spine.attachments.Attachment;
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment;
@@ -39,11 +39,11 @@ import com.esotericsoftware.spine.attachments.BoundingBoxAttachment;
  * provided along with convenience methods for doing hit detection. */
 public class SkeletonBounds {
 	private float minX, minY, maxX, maxY;
-	private Array<BoundingBoxAttachment> boundingBoxes = new Array();
-	private Array<FloatArray> polygons = new Array();
-	private Pool<FloatArray> polygonPool = new Pool() {
+	private JArray<BoundingBoxAttachment> boundingBoxes = new JArray();
+	private JArray<JFloatArray> polygons = new JArray();
+	private Pool<JFloatArray> polygonPool = new Pool() {
 		protected Object newObject () {
-			return new FloatArray();
+			return new JFloatArray();
 		}
 	};
 
@@ -53,9 +53,9 @@ public class SkeletonBounds {
 	 *           SkeletonBounds AABB methods will always return true. */
 	public void update (Skeleton skeleton, boolean updateAabb) {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
-		Array<BoundingBoxAttachment> boundingBoxes = this.boundingBoxes;
-		Array<FloatArray> polygons = this.polygons;
-		Array<Slot> slots = skeleton.slots;
+		JArray<BoundingBoxAttachment> boundingBoxes = this.boundingBoxes;
+		JArray<JFloatArray> polygons = this.polygons;
+		JArray<Slot> slots = skeleton.slots;
 		int slotCount = slots.size;
 
 		boundingBoxes.clear();
@@ -70,7 +70,7 @@ public class SkeletonBounds {
 				BoundingBoxAttachment boundingBox = (BoundingBoxAttachment)attachment;
 				boundingBoxes.add(boundingBox);
 
-				FloatArray polygon = polygonPool.obtain();
+				JFloatArray polygon = polygonPool.obtain();
 				polygons.add(polygon);
 				boundingBox.computeWorldVertices(slot, 0, boundingBox.getWorldVerticesLength(),
 					polygon.setSize(boundingBox.getWorldVerticesLength()), 0, 2);
@@ -89,9 +89,9 @@ public class SkeletonBounds {
 
 	private void aabbCompute () {
 		float minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-		Array<FloatArray> polygons = this.polygons;
+		JArray<JFloatArray> polygons = this.polygons;
 		for (int i = 0, n = polygons.size; i < n; i++) {
-			FloatArray polygon = polygons.get(i);
+			JFloatArray polygon = polygons.get(i);
 			float[] vertices = polygon.items;
 			for (int ii = 0, nn = polygon.size; ii < nn; ii += 2) {
 				float x = vertices[ii];
@@ -142,14 +142,14 @@ public class SkeletonBounds {
 	/** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
 	 * efficient to only call this method if {@link #aabbContainsPoint(float, float)} returns true. */
 	public BoundingBoxAttachment containsPoint (float x, float y) {
-		Array<FloatArray> polygons = this.polygons;
+		JArray<JFloatArray> polygons = this.polygons;
 		for (int i = 0, n = polygons.size; i < n; i++)
 			if (containsPoint(polygons.get(i), x, y)) return boundingBoxes.get(i);
 		return null;
 	}
 
 	/** Returns true if the polygon contains the point. */
-	public boolean containsPoint (FloatArray polygon, float x, float y) {
+	public boolean containsPoint (JFloatArray polygon, float x, float y) {
 		if (polygon == null) throw new IllegalArgumentException("polygon cannot be null.");
 		float[] vertices = polygon.items;
 		int nn = polygon.size;
@@ -172,14 +172,14 @@ public class SkeletonBounds {
 	 * is usually more efficient to only call this method if {@link #aabbIntersectsSegment(float, float, float, float)} returns
 	 * true. */
 	public BoundingBoxAttachment intersectsSegment (float x1, float y1, float x2, float y2) {
-		Array<FloatArray> polygons = this.polygons;
+		JArray<JFloatArray> polygons = this.polygons;
 		for (int i = 0, n = polygons.size; i < n; i++)
 			if (intersectsSegment(polygons.get(i), x1, y1, x2, y2)) return boundingBoxes.get(i);
 		return null;
 	}
 
 	/** Returns true if the polygon contains any part of the line segment. */
-	public boolean intersectsSegment (FloatArray polygon, float x1, float y1, float x2, float y2) {
+	public boolean intersectsSegment (JFloatArray polygon, float x1, float y1, float x2, float y2) {
 		if (polygon == null) throw new IllegalArgumentException("polygon cannot be null.");
 		float[] vertices = polygon.items;
 		int nn = polygon.size;
@@ -234,17 +234,17 @@ public class SkeletonBounds {
 	}
 
 	/** The visible bounding boxes. */
-	public Array<BoundingBoxAttachment> getBoundingBoxes () {
+	public JArray<BoundingBoxAttachment> getBoundingBoxes () {
 		return boundingBoxes;
 	}
 
 	/** The world vertices for the bounding box polygons. */
-	public Array<FloatArray> getPolygons () {
+	public JArray<JFloatArray> getPolygons () {
 		return polygons;
 	}
 
 	/** Returns the polygon for the specified bounding box, or null. */
-	public FloatArray getPolygon (BoundingBoxAttachment boundingBox) {
+	public JFloatArray getPolygon (BoundingBoxAttachment boundingBox) {
 		if (boundingBox == null) throw new IllegalArgumentException("boundingBox cannot be null.");
 		int index = boundingBoxes.indexOf(boundingBox, true);
 		return index == -1 ? null : polygons.get(index);
