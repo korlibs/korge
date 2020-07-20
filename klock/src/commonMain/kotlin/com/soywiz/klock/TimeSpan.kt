@@ -134,7 +134,7 @@ inline class TimeSpan(
          * Useful to represent an alternative "null" time lapse
          * avoiding the boxing of a nullable type.
          */
-        val NULL = TimeSpan(Double.NaN)
+        val NIL = TimeSpan(Double.NaN)
 
         @PublishedApi
         internal fun fromMilliseconds(ms: Double) = when (ms) {
@@ -203,4 +203,4 @@ fun TimeSpan.clamp(min: TimeSpan, max: TimeSpan): TimeSpan = when {
     this > max -> max
     else -> this
 }
-inline fun TimeSpan.coalesce(block: () -> TimeSpan): TimeSpan = if (this != TimeSpan.NULL) this else block()
+inline fun TimeSpan.coalesce(block: () -> TimeSpan): TimeSpan = if (this != TimeSpan.NIL) this else block()

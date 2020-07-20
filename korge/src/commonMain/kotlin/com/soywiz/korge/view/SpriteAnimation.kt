@@ -9,7 +9,7 @@ import com.soywiz.korim.bitmap.sliceWithSize
 
 class SpriteAnimation(
     val sprites: List<BmpSlice>,
-    val defaultTimePerFrame: TimeSpan = TimeSpan.NULL
+    val defaultTimePerFrame: TimeSpan = TimeSpan.NIL
 ) {
     companion object {
         operator fun invoke(
@@ -50,8 +50,8 @@ class SpriteAnimation(
     operator fun get(index: Int) = getSprite(index)
 }
 
-fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NULL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }, defaultTimePerFrame)
 
-fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan = TimeSpan.NULL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }, defaultTimePerFrame)

@@ -7,9 +7,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 interface AGFactory {
@@ -177,7 +175,7 @@ abstract class AG : Extra by Extra.Mixin() {
 		val gen: () -> Bitmap?
 	) : BitmapSourceBase {
 		companion object {
-			val NULL = SyncBitmapSource(true, 0, 0) { null }
+			val NIL = SyncBitmapSource(true, 0, 0) { null }
 		}
 
 		override fun toString(): String = "SyncBitmapSource(rgba=$rgba, width=$width, height=$height)"
@@ -191,7 +189,7 @@ abstract class AG : Extra by Extra.Mixin() {
 		val gen: suspend () -> Bitmap?
 	) : BitmapSourceBase {
 		companion object {
-			val NULL = AsyncBitmapSource(EmptyCoroutineContext, true, 0, 0) { null }
+			val NIL = AsyncBitmapSource(EmptyCoroutineContext, true, 0, 0) { null }
 		}
 	}
 
@@ -206,7 +204,7 @@ abstract class AG : Extra by Extra.Mixin() {
 		open val premultiplied = true
 		var requestMipmaps = false
 		var mipmaps = false; protected set
-		var source: BitmapSourceBase = SyncBitmapSource.NULL
+		var source: BitmapSourceBase = SyncBitmapSource.NIL
 		private var uploaded: Boolean = false
 		private var generating: Boolean = false
 		private var generated: Boolean = false
@@ -230,7 +228,7 @@ abstract class AG : Extra by Extra.Mixin() {
 					rgba = bmp.bpp > 8,
 					width = bmp.width,
 					height = bmp.height
-				) { bmp } else SyncBitmapSource.NULL, mipmaps)
+				) { bmp } else SyncBitmapSource.NIL, mipmaps)
 		}
 
 		fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): Texture {
@@ -304,7 +302,7 @@ abstract class AG : Extra by Extra.Mixin() {
 		override fun close() {
 			if (!alreadyClosed) {
 				alreadyClosed = true
-				source = SyncBitmapSource.NULL
+				source = SyncBitmapSource.NIL
 				tempBitmap = null
 				deletedTextureCount++
 				//Console.log("CLOSED TEXTURE: $texId")

@@ -7,7 +7,6 @@ import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -18,15 +17,15 @@ import kotlin.coroutines.*
 import kotlin.reflect.*
 
 class TweenComponent(
-	override val view: View,
-	private val vs: List<V2<*>>,
-	val time: HRTimeSpan = HRTimeSpan.NULL,
-	val easing: Easing = Easing.LINEAR,
-	val callback: (Double) -> Unit,
-	val c: CancellableContinuation<Unit>
+        override val view: View,
+        private val vs: List<V2<*>>,
+        val time: HRTimeSpan = HRTimeSpan.NIL,
+        val easing: Easing = Easing.LINEAR,
+        val callback: (Double) -> Unit,
+        val c: CancellableContinuation<Unit>
 ) : UpdateComponentV2 {
 	var elapsed = 0.hrNanoseconds
-	val hrtime = if (time != HRTimeSpan.NULL) time else (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds
+	val hrtime = if (time != HRTimeSpan.NIL) time else (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds
 	var cancelled = false
 	var done = false
 
@@ -160,7 +159,7 @@ data class V2<V>(
 	val interpolator: (Double, V, V) -> V,
     val includeStart: Boolean,
 	val startTime: HRTimeSpan = 0.hrNanoseconds,
-	val duration: HRTimeSpan = HRTimeSpan.NULL
+	val duration: HRTimeSpan = HRTimeSpan.NIL
 ) {
 	val endTime = startTime + duration.coalesce { 0.hrNanoseconds }
 

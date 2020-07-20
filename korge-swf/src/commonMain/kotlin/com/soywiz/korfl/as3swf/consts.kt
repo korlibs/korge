@@ -3,7 +3,7 @@ package com.soywiz.korfl.as3swf
 object ActionValueType {
 	val STRING: Int = 0
 	val FLOAT: Int = 1
-	val NULL: Int = 2
+	val NIL: Int = 2
 	val UNDEFINED: Int = 3
 	val REGISTER: Int = 4
 	val BOOLEAN: Int = 5
@@ -15,7 +15,7 @@ object ActionValueType {
 	fun toString(bitmapFormat: Int) = when (bitmapFormat) {
 		STRING -> "string"
 		FLOAT -> "float"
-		NULL -> "null"
+		NIL -> "null"
 		UNDEFINED -> "undefined"
 		REGISTER -> "register"
 		BOOLEAN -> "boolean"

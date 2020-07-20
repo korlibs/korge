@@ -73,7 +73,7 @@ data class WTimeSpan(val value: TimeSpan) : Comparable<WTimeSpan>, Serializable 
          * Useful to represent an alternative "null" time lapse
          * avoiding the boxing of a nullable type.
          */
-        val NULL get() = TimeSpan.NULL.wrapped
+        val NIL get() = TimeSpan.NIL.wrapped
     }
 
     /**

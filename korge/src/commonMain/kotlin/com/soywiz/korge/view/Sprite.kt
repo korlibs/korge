@@ -138,7 +138,7 @@ open class Sprite(
     }
 
     private fun getDefaultTime(spriteAnimation: SpriteAnimation?): TimeSpan = when {
-        spriteAnimation != null && spriteAnimation.defaultTimePerFrame != TimeSpan.NULL -> spriteAnimation.defaultTimePerFrame
+        spriteAnimation != null && spriteAnimation.defaultTimePerFrame != TimeSpan.NIL -> spriteAnimation.defaultTimePerFrame
         else -> spriteDisplayTime
     }
 

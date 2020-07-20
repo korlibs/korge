@@ -2,7 +2,6 @@ package com.soywiz.korma.algo
 
 import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.*
 
 class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) -> Boolean) {
     companion object {
@@ -24,7 +23,7 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
         // Reset
         queue.clear()
         for (n in weights.indices) weights[n] = Int.MAX_VALUE
-        for (n in prev.indices) prev[n] = NULL.index
+        for (n in prev.indices) prev[n] = NIL.index
 
         val first = getNode(x0, y0)
         val dest = getNode(x1, y1)
@@ -54,19 +53,19 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
 
         if (findClosest || closest == dest) {
             var current: AStarNode = closest
-            while (current != NULL) {
+            while (current != NIL) {
                 emit(current.posX, current.posY)
                 current = current.prev
             }
         }
     }
 
-    private val NULL = AStarNode(-1)
+    private val NIL = AStarNode(-1)
 
     private val posX = IntArray(width * height) { it % width }
     private val posY = IntArray(width * height) { it / width }
     private val weights = IntArray(width * height) { Int.MAX_VALUE }
-    private val prev = IntArray(width * height) { NULL.index }
+    private val prev = IntArray(width * height) { NIL.index }
     private val queue = IntPriorityQueue { a, b -> AStarNode(a).weight - AStarNode(b).weight }
 
     private fun inside(x: Int, y: Int): Boolean = (x in 0 until width) && (y in 0 until height)

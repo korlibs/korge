@@ -4,14 +4,12 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
-import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -181,7 +179,7 @@ object Korge {
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL
+        fixedSizeStep: TimeSpan = TimeSpan.NIL
     ): CompletableDeferred<Unit> {
         val injector = views.injector
         injector.mapInstance(views)
@@ -411,12 +409,12 @@ object Korge {
 
     @KorgeInternal
     suspend fun prepareViews(
-        views: Views,
-        eventDispatcher: EventDispatcher,
-        clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL,
-        waitForFirstRender: Boolean = true
+            views: Views,
+            eventDispatcher: EventDispatcher,
+            clearEachFrame: Boolean = true,
+            bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+            fixedSizeStep: TimeSpan = TimeSpan.NIL,
+            waitForFirstRender: Boolean = true
     ) {
         val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep)
         if (waitForFirstRender) {

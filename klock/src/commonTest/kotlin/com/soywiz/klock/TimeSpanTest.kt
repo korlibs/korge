@@ -58,8 +58,8 @@ class TimeSpanTest {
 
     @Test
     fun testNull() {
-        assertTrue { TimeSpan.ZERO != TimeSpan.NULL }
-        assertTrue { TimeSpan.NULL == TimeSpan.NULL }
+        assertTrue { TimeSpan.ZERO != TimeSpan.NIL }
+        assertTrue { TimeSpan.NIL == TimeSpan.NIL }
     }
 
     @Test

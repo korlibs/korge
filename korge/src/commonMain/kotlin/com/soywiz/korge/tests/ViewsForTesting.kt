@@ -1,7 +1,6 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds
@@ -21,8 +20,6 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
-import kotlin.math.max
-import kotlin.time.*
 
 open class ViewsForTesting @JvmOverloads constructor(
     val frameTime: TimeSpan = 10.milliseconds,
@@ -211,7 +208,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 			}
 		})
 
-		withTimeout(timeout ?: TimeSpan.NULL) {
+		withTimeout(timeout ?: TimeSpan.NIL) {
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()

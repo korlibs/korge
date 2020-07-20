@@ -13,7 +13,6 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -239,7 +238,7 @@ class Views constructor(
         onAfterRender()
     }
 
-	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NULL) {
+	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL) {
         val currentTime = timeProvider.now()
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
@@ -250,7 +249,7 @@ class Views constructor(
 		//println("delta: $delta")
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
-		if (fixedSizeStep != TimeSpan.NULL) {
+		if (fixedSizeStep != TimeSpan.NIL) {
 			update(fixedSizeStep.hr)
 		} else {
 			update(adelta)
