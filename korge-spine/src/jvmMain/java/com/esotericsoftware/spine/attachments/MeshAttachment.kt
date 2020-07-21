@@ -40,13 +40,13 @@ import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
  *
  * See [Mesh attachments](http://esotericsoftware.com/spine-meshes) in the Spine User Guide.  */
 class MeshAttachment(name: String) : VertexAttachment(name) {
-    lateinit var region: TextureRegion
+    var region: TextureRegion? = null
 
     /** The name of the texture region for this attachment.  */
     var path: String? = null
     /** The UV pair for each vertex, normalized within the texture region.  */
     /** Sets the texture coordinates for the region. The values are u,v pairs for each vertex.  */
-    var regionUVs: FloatArray? = null
+    lateinit var regionUVs: FloatArray
 
     /** The UV pair for each vertex, normalized within the entire texture.
      *
@@ -55,7 +55,7 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
     var uVs: FloatArray? = null
 
     /** Triplets of vertex indices which describe the mesh's triangulation.  */
-    var triangles: ShortArray? = null
+    lateinit var triangles: ShortArray
 
     /** The color to tint the mesh.  */
     val color = Color(1f, 1f, 1f, 1f)
@@ -188,18 +188,18 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
         copy.color.set(color)
 
         copyTo(copy)
-        copy.regionUVs = FloatArray(regionUVs!!.size)
-        arraycopy(regionUVs, 0, copy.regionUVs, 0, regionUVs!!.size)
+        copy.regionUVs = FloatArray(regionUVs.size)
+        arraycopy(regionUVs, 0, copy.regionUVs, 0, regionUVs.size)
         copy.uVs = FloatArray(uVs!!.size)
-        arraycopy(uVs, 0, copy.uVs, 0, uVs!!.size)
-        copy.triangles = ShortArray(triangles!!.size)
-        arraycopy(triangles, 0, copy.triangles, 0, triangles!!.size)
+        arraycopy(uVs!!, 0, copy.uVs!!, 0, uVs!!.size)
+        copy.triangles = ShortArray(triangles.size)
+        arraycopy(triangles, 0, copy.triangles, 0, triangles.size)
         copy.hullLength = hullLength
 
         // Nonessential.
         if (edges != null) {
             copy.edges = ShortArray(edges!!.size)
-            arraycopy(edges, 0, copy.edges, 0, edges!!.size)
+            arraycopy(edges!!, 0, copy.edges!!, 0, edges!!.size)
         }
         copy.width = width
         copy.height = height

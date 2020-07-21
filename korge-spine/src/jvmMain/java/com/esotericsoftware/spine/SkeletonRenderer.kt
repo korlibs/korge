@@ -73,14 +73,17 @@ class SkeletonRenderer {
      * previous blend function is not restored, since that could result in unnecessary flushes, depending on what is rendered
      * next.  */
     fun draw(batch: Batch, skeleton: Skeleton) {
-        if (batch is TwoColorPolygonBatch) {
-            draw(batch as TwoColorPolygonBatch?, skeleton)
-            return
+        when (batch) {
+            is TwoColorPolygonBatch -> {
+                draw(batch, skeleton)
+                return
+            }
+            is PolygonSpriteBatch -> {
+                draw(batch, skeleton)
+                return
+            }
         }
-        if (batch is PolygonSpriteBatch) {
-            draw(batch as PolygonSpriteBatch?, skeleton)
-            return
-        }
+
         val vertexEffect = this.vertexEffect
         vertexEffect?.begin(skeleton)
 
@@ -108,7 +111,7 @@ class SkeletonRenderer {
                 val color = attachment.color
                 val slotColor = slot.color
                 var alpha = a * slotColor.a * color.a * 255f
-                val multiplier = if (premultipliedAlpha) alpha else 255
+                val multiplier = if (premultipliedAlpha) alpha else 255f
 
                 var slotBlendMode = slot.data.getBlendMode()
                 if (slotBlendMode != blendMode) {
@@ -181,9 +184,9 @@ class SkeletonRenderer {
         val premultipliedAlpha = this.premultipliedAlpha
         var blendMode: BlendMode? = null
         var verticesLength = 0
-        var vertices: FloatArray? = null
-        var uvs: FloatArray? = null
-        var triangles: ShortArray? = null
+        lateinit var vertices: FloatArray
+        lateinit var uvs: FloatArray
+        lateinit var triangles: ShortArray
         var color: Color? = null
         val skeletonColor = skeleton.color
         val r = skeletonColor.r
@@ -235,7 +238,7 @@ class SkeletonRenderer {
             if (texture != null) {
                 val slotColor = slot.color
                 var alpha = a * slotColor.a * color!!.a * 255f
-                val multiplier = if (premultipliedAlpha) alpha else 255
+                val multiplier = if (premultipliedAlpha) alpha else 255f
 
                 var slotBlendMode = slot.data.getBlendMode()
                 if (slotBlendMode != blendMode) {
@@ -326,9 +329,9 @@ class SkeletonRenderer {
         batch.setPremultipliedAlpha(premultipliedAlpha)
         var blendMode: BlendMode? = null
         var verticesLength = 0
-        var vertices: FloatArray? = null
-        var uvs: FloatArray? = null
-        var triangles: ShortArray? = null
+        lateinit var vertices: FloatArray
+        lateinit var uvs: FloatArray
+        lateinit var triangles: ShortArray
         var color: Color? = null
         val skeletonColor = skeleton.color
         val r = skeletonColor.r
@@ -380,7 +383,7 @@ class SkeletonRenderer {
             if (texture != null) {
                 val lightColor = slot.color
                 var alpha = a * lightColor.a * color!!.a * 255f
-                val multiplier = if (premultipliedAlpha) alpha else 255
+                val multiplier = if (premultipliedAlpha) alpha else 255f
 
                 var slotBlendMode = slot.data.getBlendMode()
                 if (slotBlendMode != blendMode) {
@@ -404,7 +407,7 @@ class SkeletonRenderer {
                         or (red * lightColor.r).toInt())
                 val darkColor = slot.darkColor
                 val dark = if (darkColor == null)
-                    0
+                    0f
                 else
                     NumberUtils.intToFloatColor((blue * darkColor.b).toInt() shl 16 //
                             or ((green * darkColor.g).toInt() shl 8 //
