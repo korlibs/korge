@@ -16,12 +16,6 @@
 
 package com.badlogic.gdx.utils
 
-import java.io.IOException
-import java.io.Writer
-import java.util.NoSuchElementException
-
-import com.badlogic.gdx.utils.JsonWriter.OutputType
-
 /** Container for a JSON object, array, string, double, long, boolean, or null.
  *
  *
@@ -244,8 +238,8 @@ class JsonValue : Iterable<JsonValue> {
     fun asString(): String? {
         when (type) {
             JsonValue.ValueType.stringValue -> return stringValue
-            JsonValue.ValueType.doubleValue -> return if (stringValue != null) stringValue else java.lang.Double.toString(doubleValue)
-            JsonValue.ValueType.longValue -> return if (stringValue != null) stringValue else java.lang.Long.toString(longValue)
+            JsonValue.ValueType.doubleValue -> return if (stringValue != null) stringValue else (doubleValue).toString()
+            JsonValue.ValueType.longValue -> return if (stringValue != null) stringValue else (longValue).toString()
             JsonValue.ValueType.booleanValue -> return if (longValue != 0L) "true" else "false"
             JsonValue.ValueType.nullValue -> return null
         }
@@ -257,7 +251,7 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asFloat(): Float {
         when (type) {
-            JsonValue.ValueType.stringValue -> return java.lang.Float.parseFloat(stringValue!!)
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toFloat()
             JsonValue.ValueType.doubleValue -> return doubleValue.toFloat()
             JsonValue.ValueType.longValue -> return longValue.toFloat()
             JsonValue.ValueType.booleanValue -> return (if (longValue != 0L) 1 else 0).toFloat()
@@ -270,7 +264,7 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asDouble(): Double {
         when (type) {
-            JsonValue.ValueType.stringValue -> return java.lang.Double.parseDouble(stringValue!!)
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toDouble()
             JsonValue.ValueType.doubleValue -> return doubleValue
             JsonValue.ValueType.longValue -> return longValue.toDouble()
             JsonValue.ValueType.booleanValue -> return (if (longValue != 0L) 1 else 0).toDouble()
@@ -283,7 +277,7 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asLong(): Long {
         when (type) {
-            JsonValue.ValueType.stringValue -> return java.lang.Long.parseLong(stringValue!!)
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toLong()
             JsonValue.ValueType.doubleValue -> return doubleValue.toLong()
             JsonValue.ValueType.longValue -> return longValue
             JsonValue.ValueType.booleanValue -> return (if (longValue != 0L) 1 else 0).toLong()
@@ -322,8 +316,8 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asByte(): Byte {
         when (type) {
-            JsonValue.ValueType.stringValue -> return java.lang.Byte.parseByte(stringValue!!)
-            JsonValue.ValueType.doubleValue -> return doubleValue.toByte()
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toByte()
+            JsonValue.ValueType.doubleValue -> return doubleValue.toInt().toByte()
             JsonValue.ValueType.longValue -> return longValue.toByte()
             JsonValue.ValueType.booleanValue -> return if (longValue != 0L) 1.toByte() else 0
         }
@@ -335,7 +329,7 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asShort(): Short {
         when (type) {
-            JsonValue.ValueType.stringValue -> return java.lang.Short.parseShort(stringValue!!)
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toShort()
             JsonValue.ValueType.doubleValue -> return doubleValue.toShort()
             JsonValue.ValueType.longValue -> return longValue.toShort()
             JsonValue.ValueType.booleanValue -> return if (longValue != 0L) 1.toShort() else 0
@@ -368,8 +362,8 @@ class JsonValue : Iterable<JsonValue> {
             val v: String?
             when (value.type) {
                 JsonValue.ValueType.stringValue -> v = value.stringValue
-                JsonValue.ValueType.doubleValue -> v = if (stringValue != null) stringValue else java.lang.Double.toString(value.doubleValue)
-                JsonValue.ValueType.longValue -> v = if (stringValue != null) stringValue else java.lang.Long.toString(value.longValue)
+                JsonValue.ValueType.doubleValue -> v = if (stringValue != null) stringValue else (value.doubleValue).toString()
+                JsonValue.ValueType.longValue -> v = if (stringValue != null) stringValue else (value.longValue).toString()
                 JsonValue.ValueType.booleanValue -> v = if (value.longValue != 0L) "true" else "false"
                 JsonValue.ValueType.nullValue -> v = null
                 else -> throw IllegalStateException("Value cannot be converted to string: " + value.type!!)
@@ -392,7 +386,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Float
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Float.parseFloat(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toFloat()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue.toFloat()
                 JsonValue.ValueType.longValue -> v = value.longValue.toFloat()
                 JsonValue.ValueType.booleanValue -> v = (if (value.longValue != 0L) 1 else 0).toFloat()
@@ -416,7 +410,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Double
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Double.parseDouble(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toDouble()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue
                 JsonValue.ValueType.longValue -> v = value.longValue.toDouble()
                 JsonValue.ValueType.booleanValue -> v = (if (value.longValue != 0L) 1 else 0).toDouble()
@@ -440,7 +434,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Long
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Long.parseLong(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toLong()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue.toLong()
                 JsonValue.ValueType.longValue -> v = value.longValue
                 JsonValue.ValueType.booleanValue -> v = (if (value.longValue != 0L) 1 else 0).toLong()
@@ -488,7 +482,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Boolean
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Boolean.parseBoolean(value.stringValue)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue).toBoolean()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue == 0.0
                 JsonValue.ValueType.longValue -> v = value.longValue == 0L
                 JsonValue.ValueType.booleanValue -> v = value.longValue != 0L
@@ -512,7 +506,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Byte
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Byte.parseByte(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toByte()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue.toByte()
                 JsonValue.ValueType.longValue -> v = value.longValue.toByte()
                 JsonValue.ValueType.booleanValue -> v = if (value.longValue != 0L) 1.toByte() else 0
@@ -536,7 +530,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Short
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = java.lang.Short.parseShort(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toShort()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue.toShort()
                 JsonValue.ValueType.longValue -> v = value.longValue.toShort()
                 JsonValue.ValueType.booleanValue -> v = if (value.longValue != 0L) 1.toShort() else 0
@@ -892,292 +886,12 @@ class JsonValue : Iterable<JsonValue> {
         type = ValueType.booleanValue
     }
 
-    fun toJson(outputType: OutputType): String? {
-        if (isValue) return asString()
-        val buffer = StringBuilder(512)
-        json(this, buffer, outputType)
-        return buffer.toString()
-    }
-
-    private fun json(`object`: JsonValue, buffer: StringBuilder, outputType: OutputType) {
-        if (`object`.isObject) {
-            if (`object`.child == null)
-                buffer.append("{}")
-            else {
-                val start = buffer.length
-                while (true) {
-                    buffer.append('{')
-                    val i = 0
-                    run {
-                        var child = `object`.child
-                        while (child != null) {
-                            buffer.append(outputType.quoteName(child.name!!))
-                            buffer.append(':')
-                            json(child, buffer, outputType)
-                            if (child.next != null) buffer.append(',')
-                            child = child.next
-                        }
-                    }
-                    break
-                }
-                buffer.append('}')
-            }
-        } else if (`object`.isArray) {
-            if (`object`.child == null)
-                buffer.append("[]")
-            else {
-                val start = buffer.length
-                while (true) {
-                    buffer.append('[')
-                    run {
-                        var child = `object`.child
-                        while (child != null) {
-                            json(child!!, buffer, outputType)
-                            if (child!!.next != null) buffer.append(',')
-                            child = child!!.next
-                        }
-                    }
-                    break
-                }
-                buffer.append(']')
-            }
-        } else if (`object`.isString) {
-            buffer.append(outputType.quoteValue(`object`.asString()))
-        } else if (`object`.isDouble) {
-            val doubleValue = `object`.asDouble()
-            val longValue = `object`.asLong()
-            buffer.append(if (doubleValue == longValue.toDouble()) longValue else doubleValue)
-        } else if (`object`.isLong) {
-            buffer.append(`object`.asLong())
-        } else if (`object`.isBoolean) {
-            buffer.append(`object`.asBoolean())
-        } else if (`object`.isNull) {
-            buffer.append("null")
-        } else
-            throw SerializationException("Unknown object type: $`object`")
-    }
-
     override fun iterator(): JsonIterator {
         return JsonIterator()
     }
 
     override fun toString(): String {
-        return if (isValue) if (name == null) asString() ?: "" else name + ": " + asString() else (if (name == null) "" else name!! + ": ") + prettyPrint(OutputType.minimal, 0)
-    }
-
-    /** Returns a human readable string representing the path from the root of the JSON object graph to this value.  */
-    fun trace(): String {
-        if (parent == null) {
-            if (type == ValueType.array) return "[]"
-            return if (type == ValueType.`object`) "{}" else ""
-        }
-        var trace: String
-        if (parent!!.type == ValueType.array) {
-            trace = "[]"
-            var i = 0
-            run {
-                var child = parent!!.child
-                while (child != null) {
-                    if (child === this) {
-                        trace = "[$i]"
-                        break
-                    }
-                    child = child.next
-                    i++
-                }
-            }
-        } else if (name!!.indexOf('.') != -1)
-            trace = ".\"" + name!!.replace("\"", "\\\"") + "\""
-        else
-            trace = '.' + name!!
-        return parent!!.trace() + trace
-    }
-
-    fun prettyPrint(outputType: OutputType, singleLineColumns: Int): String {
-        val settings = PrettyPrintSettings()
-        settings.outputType = outputType
-        settings.singleLineColumns = singleLineColumns
-        return prettyPrint(settings)
-    }
-
-    fun prettyPrint(settings: PrettyPrintSettings): String {
-        val buffer = StringBuilder(512)
-        prettyPrint(this, buffer, 0, settings)
-        return buffer.toString()
-    }
-
-    private fun prettyPrint(`object`: JsonValue, buffer: StringBuilder, indent: Int, settings: PrettyPrintSettings) {
-        val outputType = settings.outputType
-        if (`object`.isObject) {
-            if (`object`.child == null)
-                buffer.append("{}")
-            else {
-                var newLines = !isFlat(`object`)
-                val start = buffer.length
-                outer@ while (true) {
-                    buffer.append(if (newLines) "{\n" else "{ ")
-                    val i = 0
-                    var child = `object`.child
-                    while (child != null) {
-                        if (newLines) indent(indent, buffer)
-                        buffer.append(outputType!!.quoteName(child.name!!))
-                        buffer.append(": ")
-                        prettyPrint(child, buffer, indent + 1, settings)
-                        if ((!newLines || outputType != OutputType.minimal) && child.next != null) buffer.append(',')
-                        buffer.append(if (newLines) '\n' else ' ')
-                        if (!newLines && buffer.length - start > settings.singleLineColumns) {
-                            buffer.setLength(start)
-                            newLines = true
-                            continue@outer
-                        }
-                        child = child.next
-                    }
-                    break
-                }
-                if (newLines) indent(indent - 1, buffer)
-                buffer.append('}')
-            }
-        } else if (`object`.isArray) {
-            if (`object`.child == null)
-                buffer.append("[]")
-            else {
-                var newLines = !isFlat(`object`)
-                val wrap = settings.wrapNumericArrays || !isNumeric(`object`)
-                val start = buffer.length
-                outer@ while (true) {
-                    buffer.append(if (newLines) "[\n" else "[ ")
-                    var child = `object`.child
-                    while (child != null) {
-                        if (newLines) indent(indent, buffer)
-                        prettyPrint(child!!, buffer, indent + 1, settings)
-                        if ((!newLines || outputType != OutputType.minimal) && child!!.next != null) buffer.append(',')
-                        buffer.append(if (newLines) '\n' else ' ')
-                        if (wrap && !newLines && buffer.length - start > settings.singleLineColumns) {
-                            buffer.setLength(start)
-                            newLines = true
-                            continue@outer
-                        }
-                        child = child!!.next
-                    }
-                    break
-                }
-                if (newLines) indent(indent - 1, buffer)
-                buffer.append(']')
-            }
-        } else if (`object`.isString) {
-            buffer.append(outputType!!.quoteValue(`object`.asString()))
-        } else if (`object`.isDouble) {
-            val doubleValue = `object`.asDouble()
-            val longValue = `object`.asLong()
-            buffer.append(if (doubleValue == longValue.toDouble()) longValue else doubleValue)
-        } else if (`object`.isLong) {
-            buffer.append(`object`.asLong())
-        } else if (`object`.isBoolean) {
-            buffer.append(`object`.asBoolean())
-        } else if (`object`.isNull) {
-            buffer.append("null")
-        } else
-            throw SerializationException("Unknown object type: $`object`")
-    }
-
-    /** More efficient than [.prettyPrint] but [PrettyPrintSettings.singleLineColumns] and
-     * [PrettyPrintSettings.wrapNumericArrays] are not supported.  */
-    fun prettyPrint(outputType: OutputType, writer: Writer) {
-        val settings = PrettyPrintSettings()
-        settings.outputType = outputType
-        prettyPrint(this, writer, 0, settings)
-    }
-
-    private fun prettyPrint(`object`: JsonValue, writer: Writer, indent: Int, settings: PrettyPrintSettings) {
-        val outputType = settings.outputType
-        if (`object`.isObject) {
-            if (`object`.child == null)
-                writer.append("{}")
-            else {
-                val newLines = !isFlat(`object`) || `object`.size > 6
-                writer.append(if (newLines) "{\n" else "{ ")
-                val i = 0
-                run {
-                    var child = `object`.child
-                    while (child != null) {
-                        if (newLines) indent(indent, writer)
-                        writer.append(outputType!!.quoteName(child.name!!))
-                        writer.append(": ")
-                        prettyPrint(child, writer, indent + 1, settings)
-                        if ((!newLines || outputType != OutputType.minimal) && child.next != null) writer.append(',')
-                        writer.append(if (newLines) '\n' else ' ')
-                        child = child.next
-                    }
-                }
-                if (newLines) indent(indent - 1, writer)
-                writer.append('}')
-            }
-        } else if (`object`.isArray) {
-            if (`object`.child == null)
-                writer.append("[]")
-            else {
-                val newLines = !isFlat(`object`)
-                writer.append(if (newLines) "[\n" else "[ ")
-                val i = 0
-                run {
-                    var child = `object`.child
-                    while (child != null) {
-                        if (newLines) indent(indent, writer)
-                        prettyPrint(child!!, writer, indent + 1, settings)
-                        if ((!newLines || outputType != OutputType.minimal) && child!!.next != null) writer.append(',')
-                        writer.append(if (newLines) '\n' else ' ')
-                        child = child!!.next
-                    }
-                }
-                if (newLines) indent(indent - 1, writer)
-                writer.append(']')
-            }
-        } else if (`object`.isString) {
-            writer.append(outputType!!.quoteValue(`object`.asString()))
-        } else if (`object`.isDouble) {
-            val doubleValue = `object`.asDouble()
-            val longValue = `object`.asLong()
-            writer.append(java.lang.Double.toString(if (doubleValue == longValue.toDouble()) longValue.toDouble() else doubleValue))
-        } else if (`object`.isLong) {
-            writer.append(java.lang.Long.toString(`object`.asLong()))
-        } else if (`object`.isBoolean) {
-            writer.append(java.lang.Boolean.toString(`object`.asBoolean()))
-        } else if (`object`.isNull) {
-            writer.append("null")
-        } else
-            throw SerializationException("Unknown object type: $`object`")
-    }
-
-    private fun isFlat(`object`: JsonValue): Boolean {
-        run {
-            var child = `object`.child
-            while (child != null) {
-                if (child.isObject || child.isArray) return false
-                child = child.next
-            }
-        }
-        return true
-    }
-
-    private fun isNumeric(`object`: JsonValue): Boolean {
-        run {
-            var child = `object`.child
-            while (child != null) {
-                if (!child.isNumber) return false
-                child = child.next
-            }
-        }
-        return true
-    }
-
-    private fun indent(count: Int, buffer: StringBuilder) {
-        for (i in 0 until count)
-            buffer.append('\t')
-    }
-
-    private fun indent(count: Int, buffer: Writer) {
-        for (i in 0 until count)
-            buffer.append('\t')
+        return "JsonValue"
     }
 
     inner class JsonIterator : MutableIterator<JsonValue>, Iterable<JsonValue> {
@@ -1213,15 +927,5 @@ class JsonValue : Iterable<JsonValue> {
 
     enum class ValueType {
         `object`, array, stringValue, doubleValue, longValue, booleanValue, nullValue
-    }
-
-    class PrettyPrintSettings {
-        var outputType: OutputType? = null
-
-        /** If an object on a single line fits this many columns, it won't wrap.  */
-        var singleLineColumns: Int = 0
-
-        /** Arrays of floats won't wrap.  */
-        var wrapNumericArrays: Boolean = false
     }
 }

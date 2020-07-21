@@ -1,23 +1,20 @@
 package com.badlogic.gdx.files
 
-import java.io.*
-import java.net.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import kotlin.collections.toString
 
-class FileHandle(val url: URL) {
-    constructor(resourcePath: String, classLoader: ClassLoader = ClassLoader.getSystemClassLoader()) : this(
-        classLoader.getResource(resourcePath)
-    )
-
+class FileHandle(val filePath: String, val fileContent: ByteArray) {
     fun nameWithoutExtension(): String {
-        return url.file.substringBeforeLast('.')
+        return filePath.substringBeforeLast('.')
     }
 
-    fun read(@Suppress("UNUSED_PARAMETER") bufferSize: Int): ByteArray {
-        return url.readBytes()
+    fun read(bufferSize: Int = 512): ByteArray {
+        return fileContent
     }
 
-    fun reader(charset: String?): Reader {
-        TODO()
+    fun readAsString(): String {
+        return fileContent.toString(Charsets.UTF8)
     }
 
     fun pathWithoutExtension(): String? {
@@ -25,6 +22,10 @@ class FileHandle(val url: URL) {
     }
 
     fun extension(): String {
-        return url.file.substringAfterLast('.')
+        return filePath.substringAfterLast('.')
     }
+}
+
+suspend fun VfsFile.toFileHandle(): FileHandle {
+    return FileHandle(this.fullName, this.readAll())
 }

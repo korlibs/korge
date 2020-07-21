@@ -2,16 +2,18 @@ package com.esotericsoftware.spine
 
 import com.badlogic.gdx.files.*
 import com.badlogic.gdx.graphics.g2d.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import kotlin.test.*
 
 class SampleTest {
     @Test
     //@Ignore
-    fun test() {
-        val atlas = TextureAtlas(FileHandle("spineboy/spineboy-pma.atlas"))
+    fun test() = suspendTest {
+        val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].toFileHandle())
         val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
         json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.
-        val skeletonData = json.readSkeletonData(FileHandle("spineboy/spineboy-pro.skel"))
+        val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
 
         val skeleton = Skeleton(skeletonData) // Skeleton holds skeleton state (bone positions, slot attachments, etc).
         skeleton.setPosition(250f, 20f)

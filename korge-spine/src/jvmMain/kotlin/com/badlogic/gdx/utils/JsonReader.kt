@@ -19,13 +19,7 @@
 
 package com.badlogic.gdx.utils
 
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.Reader
-
-import com.badlogic.gdx.files.FileHandle
-import com.badlogic.gdx.utils.JsonValue.ValueType
+import com.badlogic.gdx.utils.JsonValue.*
 
 /** Lightweight JSON parser.<br></br>
  * <br></br>
@@ -44,53 +38,6 @@ class JsonReader {
     fun parse(json: String): JsonValue? {
         val data = json.toCharArray()
         return parse(data, 0, data.size)
-    }
-
-    fun parse(reader: Reader): JsonValue? {
-        try {
-            var data = CharArray(1024)
-            var offset = 0
-            while (true) {
-                val length = reader.read(data, offset, data.size - offset)
-                if (length == -1) break
-                if (length == 0) {
-                    val newData = CharArray(data.size * 2)
-                    System.arraycopy(data, 0, newData, 0, data.size)
-                    data = newData
-                } else
-                    offset += length
-            }
-            return parse(data, 0, offset)
-        } catch (ex: IOException) {
-            throw SerializationException(ex)
-        } finally {
-            try {
-                reader?.close()
-            } catch (e: Throwable) {
-            }
-        }
-    }
-
-    fun parse(input: InputStream): JsonValue? {
-        try {
-            return parse(InputStreamReader(input, "UTF-8"))
-        } catch (ex: IOException) {
-            throw SerializationException(ex)
-        } finally {
-            try {
-                input?.close()
-            } catch (e: Throwable) {
-            }
-        }
-    }
-
-    fun parse(file: FileHandle): JsonValue? {
-        try {
-            return parse(file.reader("UTF-8"))
-        } catch (ex: Exception) {
-            throw SerializationException("Error parsing file: $file", ex)
-        }
-
     }
 
     fun parse(data: CharArray, offset: Int, length: Int): JsonValue? {
@@ -241,16 +188,16 @@ class JsonReader {
                                                         }
                                                         if (couldBeDouble) {
                                                             try {
-                                                                if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                                number(name, java.lang.Double.parseDouble(value), value)
+                                                                if (debug) println("double: " + name + "=" + (value.toDouble()))
+                                                                number(name, (value.toDouble()), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
 
                                                         } else if (couldBeLong) {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                            if (debug) println("double: " + name + "=" + (value.toDouble()))
                                                             try {
-                                                                number(name, java.lang.Long.parseLong(value), value)
+                                                                number(name, (value).toLong(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
@@ -452,16 +399,16 @@ class JsonReader {
                                                         }
                                                         if (couldBeDouble) {
                                                             try {
-                                                                if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                                number(name, java.lang.Double.parseDouble(value), value)
+                                                                if (debug) println("double: " + name + "=" + (value).toDouble())
+                                                                number(name, (value).toDouble(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
 
                                                         } else if (couldBeLong) {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                            if (debug) println("double: " + name + "=" + (value).toDouble())
                                                             try {
-                                                                number(name, java.lang.Long.parseLong(value), value)
+                                                                number(name, (value).toLong(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
@@ -576,16 +523,16 @@ class JsonReader {
                                                         }
                                                         if (couldBeDouble) {
                                                             try {
-                                                                if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                                number(name, java.lang.Double.parseDouble(value), value)
+                                                                if (debug) println("double: " + name + "=" + (value).toDouble())
+                                                                number(name, (value).toDouble(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
 
                                                         } else if (couldBeLong) {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                            if (debug) println("double: " + name + "=" + (value).toDouble())
                                                             try {
-                                                                number(name, java.lang.Long.parseLong(value), value)
+                                                                number(name, (value).toLong(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
@@ -770,16 +717,16 @@ class JsonReader {
                                                         }
                                                         if (couldBeDouble) {
                                                             try {
-                                                                if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                                number(name, java.lang.Double.parseDouble(value), value)
+                                                                if (debug) println("double: " + name + "=" + (value).toDouble())
+                                                                number(name, (value).toDouble(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
 
                                                         } else if (couldBeLong) {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                            if (debug) println("double: " + name + "=" + (value).toDouble())
                                                             try {
-                                                                number(name, java.lang.Long.parseLong(value), value)
+                                                                number(name, (value).toLong(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
@@ -855,16 +802,16 @@ class JsonReader {
                                                         }
                                                         if (couldBeDouble) {
                                                             try {
-                                                                if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                                number(name, java.lang.Double.parseDouble(value), value)
+                                                                if (debug) println("double: " + name + "=" + (value).toDouble())
+                                                                number(name, (value).toDouble(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
 
                                                         } else if (couldBeLong) {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                            if (debug) println("double: " + name + "=" + (value).toDouble())
                                                             try {
-                                                                number(name, java.lang.Long.parseLong(value), value)
+                                                                number(name, (value).toLong(), value)
                                                                 break@outer
                                                             } catch (ignored: NumberFormatException) {
                                                             }
@@ -930,16 +877,16 @@ class JsonReader {
                                                     }
                                                     if (couldBeDouble) {
                                                         try {
-                                                            if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
-                                                            number(name, java.lang.Double.parseDouble(value), value)
+                                                            if (debug) println("double: " + name + "=" + (value).toDouble())
+                                                            number(name, (value).toDouble(), value)
                                                             break@outer
                                                         } catch (ignored: NumberFormatException) {
                                                         }
 
                                                     } else if (couldBeLong) {
-                                                        if (debug) println("double: " + name + "=" + java.lang.Double.parseDouble(value))
+                                                        if (debug) println("double: " + name + "=" + (value).toDouble())
                                                         try {
-                                                            number(name, java.lang.Long.parseLong(value), value)
+                                                            number(name, (value).toLong(), value)
                                                             break@outer
                                                         } catch (ignored: NumberFormatException) {
                                                         }

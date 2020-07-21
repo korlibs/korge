@@ -69,7 +69,7 @@ class SkeletonJson {
     }
 
     protected fun parse(file: FileHandle): JsonValue? {
-        return JsonReader().parse(file)
+        return JsonReader().parse(file.readAsString())
     }
 
     fun readSkeletonData(file: FileHandle): SkeletonData {

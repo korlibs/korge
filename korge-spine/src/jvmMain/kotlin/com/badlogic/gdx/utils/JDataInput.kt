@@ -1,7 +1,5 @@
 package com.badlogic.gdx.utils
 
-import java.io.*
-
 open class JDataInput(private val data: ByteArray) {
     private var n = 0
 
@@ -55,7 +53,7 @@ open class JDataInput(private val data: ByteArray) {
     fun readUnsignedByte(): Int {
         val i = read()
         if (i == -1) {
-            throw EOFException()
+            error("EOF")
         }
         return i
     }

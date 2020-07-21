@@ -66,7 +66,7 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
 
     /** @param parameter May be null.
      */
-    fun loadAsync(manager: AssetManager, fileName: String, file: FileHandle, parameter: SkeletonDataParameter?) {
+    suspend fun loadAsync(manager: AssetManager, fileName: String, file: FileHandle, parameter: SkeletonDataParameter?) {
         var scale = 1f
         var attachmentLoader: AttachmentLoader? = null
         if (parameter != null) {
