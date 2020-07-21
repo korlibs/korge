@@ -1,7 +1,7 @@
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.files.*
-import com.badlogic.gdx.graphics.*
+import com.esotericsoftware.spine.assets.*
+import com.esotericsoftware.spine.graphics.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*

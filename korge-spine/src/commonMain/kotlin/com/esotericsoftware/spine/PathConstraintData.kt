@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.JArray
 import kotlin.js.*
 
 /** Stores the setup pose for a [PathConstraint].

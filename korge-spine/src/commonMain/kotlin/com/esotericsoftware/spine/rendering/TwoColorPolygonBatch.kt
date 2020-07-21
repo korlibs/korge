@@ -29,13 +29,13 @@
 
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.Color
+import com.esotericsoftware.spine.graphics.Color
 import com.esotericsoftware.spine.rendering.Mesh.VertexDataType
 import com.esotericsoftware.spine.rendering.VertexAttributes.Usage
-import com.badlogic.gdx.graphics.TextureRegion
-import com.badlogic.gdx.math.Affine2
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Matrix4
+import com.esotericsoftware.spine.graphics.TextureRegion
+import com.esotericsoftware.spine.utils.Affine2
+import com.esotericsoftware.spine.utils.MathUtils
+import com.esotericsoftware.spine.utils.Matrix4
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 

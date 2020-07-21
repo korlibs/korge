@@ -29,14 +29,13 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.assets.AssetDescriptor
-import com.badlogic.gdx.assets.AssetLoaderParameters
-import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.assets.loaders.AsynchronousAssetLoader
-import com.badlogic.gdx.assets.loaders.FileHandleResolver
-import com.badlogic.gdx.files.FileHandle
-import com.badlogic.gdx.graphics.TextureAtlas
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.assets.AssetDescriptor
+import com.esotericsoftware.spine.assets.AssetLoaderParameters
+import com.esotericsoftware.spine.assets.AssetManager
+import com.esotericsoftware.spine.assets.AsynchronousAssetLoader
+import com.esotericsoftware.spine.assets.FileHandleResolver
+import com.esotericsoftware.spine.assets.FileHandle
+import com.esotericsoftware.spine.graphics.TextureAtlas
 
 import com.esotericsoftware.spine.SkeletonBinary
 import com.esotericsoftware.spine.SkeletonData

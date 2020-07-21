@@ -29,14 +29,14 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.files.*
-import com.badlogic.gdx.graphics.*
-import com.badlogic.gdx.utils.*
+import com.esotericsoftware.spine.assets.*
+import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.SkeletonJson.*
 import com.esotericsoftware.spine.attachments.*
+import com.esotericsoftware.spine.utils.*
 
 /** Loads skeleton data in the Spine binary format.
  *

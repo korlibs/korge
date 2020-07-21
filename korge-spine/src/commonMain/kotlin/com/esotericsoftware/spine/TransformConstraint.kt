@@ -29,14 +29,14 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.math.MathUtils.PI
-import com.badlogic.gdx.math.MathUtils.PI2
-import com.badlogic.gdx.math.MathUtils.atan2
-import com.badlogic.gdx.math.MathUtils.cos
-import com.badlogic.gdx.math.MathUtils.degRad
-import com.badlogic.gdx.math.MathUtils.sin
-import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.MathUtils.PI
+import com.esotericsoftware.spine.utils.MathUtils.PI2
+import com.esotericsoftware.spine.utils.MathUtils.atan2
+import com.esotericsoftware.spine.utils.MathUtils.cos
+import com.esotericsoftware.spine.utils.MathUtils.degRad
+import com.esotericsoftware.spine.utils.MathUtils.sin
+import com.esotericsoftware.spine.utils.Vector2
+import com.esotericsoftware.spine.utils.JArray
 
 /** Stores the current pose for a transform constraint. A transform constraint adjusts the world transform of the constrained
  * bones to match that of the target bone.

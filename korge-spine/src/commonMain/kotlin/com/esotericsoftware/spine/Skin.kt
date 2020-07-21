@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.OrderedMap
+import com.esotericsoftware.spine.utils.JArray
+import com.esotericsoftware.spine.utils.OrderedMap
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 

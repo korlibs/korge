@@ -29,7 +29,6 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
 import com.esotericsoftware.spine.Animation.Timeline
 import com.esotericsoftware.spine.AnimationState.AnimationStateListener
 

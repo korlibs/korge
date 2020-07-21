@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine.vertexeffects
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.math.Vector2
+import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.rendering.SkeletonRenderer.VertexEffect
 import kotlin.random.Random

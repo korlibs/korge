@@ -29,10 +29,9 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.*
-import com.badlogic.gdx.utils.Pool
-import com.badlogic.gdx.utils.Pool.*
+import com.esotericsoftware.spine.utils.Pool.*
 import com.esotericsoftware.spine.Animation.*
+import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import kotlin.js.*
 import kotlin.math.*
@@ -63,7 +62,7 @@ class AnimationState {
     var timeScale = 1f
     private var unkeyedState: Int = 0
 
-    internal val trackEntryPool: Pool<TrackEntry> = object : Pool<TrackEntry>() {
+    internal val trackEntryPool: com.esotericsoftware.spine.utils.Pool<TrackEntry> = object : com.esotericsoftware.spine.utils.Pool<TrackEntry>() {
         override fun newObject(): TrackEntry {
             return TrackEntry()
         }

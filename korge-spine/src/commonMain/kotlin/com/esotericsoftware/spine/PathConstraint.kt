@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
+import com.esotericsoftware.spine.utils.JArray
+import com.esotericsoftware.spine.utils.JFloatArray
 import com.esotericsoftware.spine.PathConstraintData.PositionMode
 import com.esotericsoftware.spine.PathConstraintData.RotateMode
 import com.esotericsoftware.spine.PathConstraintData.SpacingMode

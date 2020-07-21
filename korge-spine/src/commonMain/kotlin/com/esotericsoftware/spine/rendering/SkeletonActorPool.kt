@@ -29,9 +29,9 @@
 
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.Pool
+import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.utils.JArray
+import com.esotericsoftware.spine.utils.Pool
 import com.esotericsoftware.spine.AnimationState
 import com.esotericsoftware.spine.AnimationStateData
 import com.esotericsoftware.spine.Skeleton

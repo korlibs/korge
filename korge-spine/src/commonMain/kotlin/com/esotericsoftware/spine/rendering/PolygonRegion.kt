@@ -1,6 +1,6 @@
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.TextureRegion
+import com.esotericsoftware.spine.graphics.TextureRegion
 
 class PolygonRegion {
     val triangles: ShortArray

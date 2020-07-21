@@ -29,10 +29,10 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
+import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.utils.Vector2
+import com.esotericsoftware.spine.utils.JArray
+import com.esotericsoftware.spine.utils.JFloatArray
 
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment

@@ -29,9 +29,6 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.JShortArray
 import com.esotericsoftware.spine.Slot
 import com.esotericsoftware.spine.attachments.ClippingAttachment
 

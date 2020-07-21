@@ -29,10 +29,9 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.Pool
-import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.utils.JArray
+import com.esotericsoftware.spine.utils.JFloatArray
+import com.esotericsoftware.spine.utils.Pool
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
 
 /** Collects each visible [BoundingBoxAttachment] and computes the world vertices for its polygon. The polygon vertices are

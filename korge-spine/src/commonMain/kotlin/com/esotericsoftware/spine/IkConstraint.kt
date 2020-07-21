@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.JArray
 import com.esotericsoftware.spine.utils.SpineUtils.PI
 import com.esotericsoftware.spine.utils.SpineUtils.atan2
 import com.esotericsoftware.spine.utils.SpineUtils.cos

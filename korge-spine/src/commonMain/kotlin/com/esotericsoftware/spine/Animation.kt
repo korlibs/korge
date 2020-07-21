@@ -29,10 +29,10 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.*
 import com.esotericsoftware.spine.Animation.MixBlend.*
 import com.esotericsoftware.spine.Animation.MixDirection.*
 import com.esotericsoftware.spine.attachments.*
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
 import kotlin.math.*

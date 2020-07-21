@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.JArray
 
 /** Stores the setup pose and all of the stateless data for a skeleton.
  *

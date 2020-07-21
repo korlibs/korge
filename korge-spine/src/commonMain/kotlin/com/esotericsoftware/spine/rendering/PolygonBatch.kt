@@ -1,8 +1,8 @@
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.*
-import com.badlogic.gdx.math.Affine2
-import com.badlogic.gdx.math.Matrix4
+import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.utils.Affine2
+import com.esotericsoftware.spine.utils.Matrix4
 
 interface PolygonBatch : Batch {
 

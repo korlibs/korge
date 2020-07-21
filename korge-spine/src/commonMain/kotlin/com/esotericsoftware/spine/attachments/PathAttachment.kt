@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.badlogic.gdx.graphics.Color
+import com.esotericsoftware.spine.graphics.Color
 
 import com.esotericsoftware.spine.PathConstraint
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy

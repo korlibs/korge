@@ -29,8 +29,6 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.utils.*
-
 object SpineUtils {
     val PI = 3.1415927f
     val PI2 = PI * 2

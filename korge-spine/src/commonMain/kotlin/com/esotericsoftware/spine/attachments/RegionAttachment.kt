@@ -29,10 +29,10 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion
-import com.badlogic.gdx.graphics.TextureRegion
-import com.badlogic.gdx.math.MathUtils
+import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
+import com.esotericsoftware.spine.graphics.TextureRegion
+import com.esotericsoftware.spine.utils.MathUtils
 
 import com.esotericsoftware.spine.Bone
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy

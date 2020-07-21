@@ -1,7 +1,7 @@
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.*
-import com.badlogic.gdx.math.Vector2
+import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.utils.Vector2
 
 class ShapeRenderer {
     fun begin(filled: ShapeType?) {}

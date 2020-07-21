@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color
+import com.esotericsoftware.spine.graphics.Color
 
 /** Stores the setup pose for a [Slot].  */
 class SlotData(

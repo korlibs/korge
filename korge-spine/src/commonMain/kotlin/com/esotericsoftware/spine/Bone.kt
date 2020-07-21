@@ -29,19 +29,19 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.math.Matrix3.Companion.M00
-import com.badlogic.gdx.math.Matrix3.Companion.M01
-import com.badlogic.gdx.math.Matrix3.Companion.M02
-import com.badlogic.gdx.math.Matrix3.Companion.M10
-import com.badlogic.gdx.math.Matrix3.Companion.M11
-import com.badlogic.gdx.math.Matrix3.Companion.M12
-import com.badlogic.gdx.math.Matrix3.Companion.M20
-import com.badlogic.gdx.math.Matrix3.Companion.M21
-import com.badlogic.gdx.math.Matrix3.Companion.M22
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M00
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M01
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M02
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M10
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M11
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M12
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M20
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M21
+import com.esotericsoftware.spine.utils.Matrix3.Companion.M22
 
-import com.badlogic.gdx.math.Matrix3
-import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.Matrix3
+import com.esotericsoftware.spine.utils.Vector2
+import com.esotericsoftware.spine.utils.JArray
 
 import com.esotericsoftware.spine.BoneData.TransformMode
 import com.esotericsoftware.spine.utils.SpineUtils.PI

@@ -29,11 +29,6 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JBooleanArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.Pool
-import com.badlogic.gdx.utils.JShortArray
 import kotlin.math.*
 
 internal class Triangulator {

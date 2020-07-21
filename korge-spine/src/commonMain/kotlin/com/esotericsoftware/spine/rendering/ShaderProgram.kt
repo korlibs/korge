@@ -1,6 +1,6 @@
 package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.math.Matrix4
+import com.esotericsoftware.spine.utils.Matrix4
 
 class ShaderProgram(vertexShader: String?, fragmentShader: String?) {
     fun begin() {}

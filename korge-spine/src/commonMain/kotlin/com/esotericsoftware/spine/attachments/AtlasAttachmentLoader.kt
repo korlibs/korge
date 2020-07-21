@@ -31,7 +31,7 @@ package com.esotericsoftware.spine.attachments
 
 import com.esotericsoftware.spine.Skin
 
-import com.badlogic.gdx.graphics.TextureAtlas
+import com.esotericsoftware.spine.graphics.TextureAtlas
 
 /** An [AttachmentLoader] that configures attachments using texture regions from an [Atlas].
  *

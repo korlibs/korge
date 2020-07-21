@@ -29,8 +29,8 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.utils.JFloatArray
+import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.utils.JFloatArray
 
 import com.esotericsoftware.spine.Animation.DeformTimeline
 import com.esotericsoftware.spine.attachments.Attachment
