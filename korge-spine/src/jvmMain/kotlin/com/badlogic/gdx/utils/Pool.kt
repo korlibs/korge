@@ -27,9 +27,11 @@ abstract class Pool<T>
  * @param preFill Whether to pre-fill the pool with objects. The number of pre-filled objects will be equal to the initial
  * capacity.
  */
-@JvmOverloads constructor(initialCapacity: Int = 16,
-                          /** The maximum number of objects that will be pooled.  */
-                          val max: Int = Integer.MAX_VALUE, preFill: Boolean = false
+@JvmOverloads constructor(
+    initialCapacity: Int = 16,
+    /** The maximum number of objects that will be pooled.  */
+    val max: Int = Integer.MAX_VALUE,
+    preFill: Boolean = false
 ) {
     init {
         require(!(initialCapacity > max && preFill)) { "max must be larger than initialCapacity if preFill is set to true." }

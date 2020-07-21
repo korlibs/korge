@@ -29,18 +29,12 @@
 
 package com.esotericsoftware.spine
 
+import com.badlogic.gdx.utils.*
 import com.esotericsoftware.spine.Animation.MixBlend.*
 import com.esotericsoftware.spine.Animation.MixDirection.*
-
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.JIntSet
-
-import com.esotericsoftware.spine.attachments.Attachment
-import com.esotericsoftware.spine.attachments.VertexAttachment
+import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import com.soywiz.kds.*
 
 /** A simple container for a list of timelines and a name.  */
 class Animation(
@@ -51,7 +45,7 @@ class Animation(
     var duration: Float
 ) {
     lateinit internal var timelines: JArray<Timeline>
-    internal val timelineIDs = JIntSet()
+    internal val timelineIDs = IntSet()
 
     init {
         setTimelines(timelines)

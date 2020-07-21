@@ -20,6 +20,7 @@ class IntSet : MutableSet<Int> {
         }
     }
 
+    fun clear(maxCapacity: Int) = clear()
     override fun clear() = run { data.clear() }
     override fun add(element: Int): Boolean = data.set(element, Unit) == null
     override fun addAll(elements: Collection<Int>): Boolean = elements.any { add(it) }

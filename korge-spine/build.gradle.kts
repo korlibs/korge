@@ -16,4 +16,5 @@ kotlin {
 
 dependencies {
     //add("commonMainApi", project(":korgw"))
+    add("commonMainApi", project(":kds"))
 }

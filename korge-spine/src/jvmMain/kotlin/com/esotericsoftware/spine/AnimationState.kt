@@ -29,22 +29,11 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.Animation.RotateTimeline.*
-
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.JIntArray
-import com.badlogic.gdx.utils.JIntSet
+import com.badlogic.gdx.utils.*
 import com.badlogic.gdx.utils.Pool
-import com.badlogic.gdx.utils.Pool.Poolable
-
-import com.esotericsoftware.spine.Animation.AttachmentTimeline
-import com.esotericsoftware.spine.Animation.DrawOrderTimeline
-import com.esotericsoftware.spine.Animation.EventTimeline
-import com.esotericsoftware.spine.Animation.MixBlend
-import com.esotericsoftware.spine.Animation.MixDirection
-import com.esotericsoftware.spine.Animation.RotateTimeline
-import com.esotericsoftware.spine.Animation.Timeline
+import com.badlogic.gdx.utils.Pool.*
+import com.esotericsoftware.spine.Animation.*
+import com.soywiz.kds.*
 
 /** Applies animations over time, queues animations for later playback, mixes (crossfading) between animations, and applies
  * multiple animations on top of each other (layering).
@@ -60,7 +49,7 @@ class AnimationState {
     private val events = JArray<Event>()
     internal val listeners: JArray<AnimationStateListener> = JArray()
     private val queue = EventQueue()
-    private val propertyIDs = JIntSet()
+    private val propertyIDs = IntSet()
     internal var animationsChanged: Boolean = false
 
     /** Multiplier for the delta time when the animation state is updated, causing time for all animations and mixes to play slower
