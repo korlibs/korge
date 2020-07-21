@@ -440,8 +440,18 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         get() = m_particleSystem.m_bodyContactCount
 
 
-    constructor(gravity: Vec2, pool: IWorldPool = DefaultWorldPool(WORLD_POOL_SIZE, WORLD_POOL_CONTAINER_SIZE), strategy: BroadPhaseStrategy = DynamicTree()) : this(gravity, pool, DefaultBroadPhaseBuffer(strategy)) {
-    }
+    constructor(
+        gravity: Vec2,
+        pool: IWorldPool = DefaultWorldPool(WORLD_POOL_SIZE, WORLD_POOL_CONTAINER_SIZE),
+        strategy: BroadPhaseStrategy = DynamicTree()
+    ) : this(gravity, pool, DefaultBroadPhaseBuffer(strategy))
+
+    constructor(
+        gravityX: Number = 0f,
+        gravityY: Number = 9.8f,
+        pool: IWorldPool = DefaultWorldPool(WORLD_POOL_SIZE, WORLD_POOL_CONTAINER_SIZE),
+        strategy: BroadPhaseStrategy = DynamicTree()
+    ) : this(Vec2(gravityX.toFloat(), gravityY.toFloat()), pool, DefaultBroadPhaseBuffer(strategy))
 
     init {
         this.gravity.set(gravity)
@@ -1088,8 +1098,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         }
 
         // Size the island for the worst case.
-        island.init(bodyCount, m_contactManager.m_contactCount, jointCount,
-                m_contactManager.m_contactListener)
+        island.init(bodyCount, m_contactManager.m_contactCount, jointCount, m_contactManager.m_contactListener)
 
         // Clear all the island flags.
         run {
@@ -1271,8 +1280,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
     private fun solveTOI(step: TimeStep) {
 
         val island = toiIsland
-        island.init(2 * Settings.maxTOIContacts, Settings.maxTOIContacts, 0,
-                m_contactManager.m_contactListener)
+        island.init(2 * Settings.maxTOIContacts, Settings.maxTOIContacts, 0, m_contactManager.m_contactListener)
         if (m_stepComplete) {
             var b = bodyList
             while (b != null) {
@@ -1470,8 +1478,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                         // Only add static, kinematic, or bullet bodies.
                         val other = ce.other
-                        if (other!!.m_type === BodyType.DYNAMIC && body.isBullet == false
-                                && other!!.isBullet == false) {
+                        if (other!!.m_type === BodyType.DYNAMIC && body.isBullet == false && other!!.isBullet == false) {
                             ce = ce.next
                             continue
                         }
@@ -1690,8 +1697,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                 colorBuffer = system.particleColorBuffer
             }
             if (wireframe) {
-                m_debugDraw!!.drawParticlesWireframe(positionBuffer!!, particleRadius, colorBuffer!!,
-                        particleCount)
+                m_debugDraw!!.drawParticlesWireframe(positionBuffer!!, particleRadius, colorBuffer!!, particleCount)
             } else {
                 m_debugDraw!!.drawParticles(positionBuffer!!, particleRadius, colorBuffer!!, particleCount)
             }

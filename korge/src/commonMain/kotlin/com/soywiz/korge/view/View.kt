@@ -255,6 +255,7 @@ abstract class View internal constructor(
         }
 
     /** Local rotation in radians of this view */
+    @Deprecated("Use rotation instead")
     var rotationRadians: Double
         get() = rotation.radians
         set(v) {
@@ -262,6 +263,7 @@ abstract class View internal constructor(
         }
 
     /** Local rotation in degrees of this view */
+    @Deprecated("Use rotation instead")
     var rotationDegrees: Double
         get() = rotation.degrees
         set(v) {
