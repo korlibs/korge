@@ -457,7 +457,7 @@ class ObjectFloatMap<K>
         }
     }
 
-    open class MapIterator<K>(internal val map: ObjectFloatMap<K>) {
+    open class MapIterator<K>(@PublishedApi internal val map: ObjectFloatMap<K>) {
         var hasNext: Boolean = false
         internal var nextIndex: Int = 0
         internal var currentIndex: Int = 0
@@ -592,11 +592,12 @@ class ObjectFloatMap<K>
 
         /** Adds the remaining keys to the array.  */
         @JvmOverloads
-        fun toArray(array: JArray<K> = JArray(true, map.size)): JArray<K> {
+        fun toArray(array: JArray<K>): JArray<K> {
             while (hasNext)
                 array.add(next())
             return array
         }
+
     }
     /** Returns a new array containing the remaining keys.  */
 }
@@ -604,3 +605,7 @@ class ObjectFloatMap<K>
 /** Creates a new map with a load factor of 0.8.
  * @param initialCapacity If not a power of two, it is increased to the next nearest power of two.
  */
+
+inline fun <reified K> ObjectFloatMap.Keys<K>.toArray(): JArray<K> {
+    return toArray(JArray<K>(true, map.size))
+}

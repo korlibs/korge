@@ -1,25 +1,30 @@
 package com.badlogic.gdx.files
 
 import java.io.*
+import java.net.*
 
-class FileHandle {
+class FileHandle(val url: URL) {
+    constructor(resourcePath: String, classLoader: ClassLoader = ClassLoader.getSystemClassLoader()) : this(
+        classLoader.getResource(resourcePath)
+    )
+
     fun nameWithoutExtension(): String {
-        throw NotImplementedError()
+        return url.file.substringBeforeLast('.')
     }
 
-    fun read(i: Int): ByteArray {
-        return ByteArray(0)
+    fun read(@Suppress("UNUSED_PARAMETER") bufferSize: Int): ByteArray {
+        return url.readBytes()
     }
 
     fun reader(charset: String?): Reader {
-        throw NotImplementedError()
+        TODO()
     }
 
     fun pathWithoutExtension(): String? {
-        return null
+        TODO()
     }
 
     fun extension(): String? {
-        return null
+        TODO()
     }
 }

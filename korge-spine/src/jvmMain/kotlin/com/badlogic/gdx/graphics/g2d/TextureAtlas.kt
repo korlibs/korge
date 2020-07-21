@@ -1,13 +1,20 @@
 package com.badlogic.gdx.graphics.g2d
 
+import com.badlogic.gdx.files.*
+import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import java.lang.RuntimeException
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 
-class TextureAtlas {
-    fun findRegion(path: String?): AtlasRegion? = TODO()
+class TextureAtlas(val handle: FileHandle) {
+    private val dummyTexture = Texture()
+    private val dummyRegions = LinkedHashMap<String?, AtlasRegion>()
 
-    class AtlasRegion : TextureRegion() {
+    fun findRegion(path: String?): AtlasRegion? {
+        return dummyRegions.getOrPut(path) { AtlasRegion() }
+    }
+
+    inner class AtlasRegion : TextureRegion() {
         @JvmField
         var offsetX = 0f
         @JvmField
@@ -24,5 +31,7 @@ class TextureAtlas {
         var packedWidth = 0f
         @JvmField
         var degrees = 0
+
+        override val texture: Texture get() = this@TextureAtlas.dummyTexture
     }
 }

@@ -47,20 +47,19 @@ import java.util.NoSuchElementException
 class OrderedMap<K, V> : ObjectMap<K, V> {
     internal val keys: JArray<K>
 
-    constructor() {
-        keys = JArray()
-    }
-
-    constructor(initialCapacity: Int) : super(initialCapacity) {
-        keys = JArray(initialCapacity)
-    }
-
-    constructor(initialCapacity: Int, loadFactor: Float) : super(initialCapacity, loadFactor) {
-        keys = JArray(initialCapacity)
-    }
-
     constructor(map: OrderedMap<out K, out V>) : super(map) {
         keys = JArray(map.keys)
+    }
+
+    @PublishedApi
+    internal constructor(keys: JArray<K>, capacity: Int, loadFactor: Float) : super(capacity, loadFactor) {
+        this.keys = keys
+    }
+
+    companion object {
+        inline operator fun <reified K, V> invoke(initialCapacity: Int = 16, loadFactor: Float = 0.8f): OrderedMap<K, V> {
+            return OrderedMap<K, V>(JArray<K>(initialCapacity), initialCapacity, loadFactor)
+        }
     }
 
     override fun put(key: K, value: V?): V? {
@@ -304,10 +303,6 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             hasNext = false
             return array
         }
-
-        override fun toArray(): JArray<K> {
-            return toArray(JArray(true, keys.size - nextIndex))
-        }
     }
 
     class OrderedMapValues<V>(map: OrderedMap<*, V>) : Values<V>(map) {
@@ -350,10 +345,6 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             nextIndex = n
             hasNext = false
             return array
-        }
-
-        override fun toArray(): JArray<V?> {
-            return toArray(JArray(true, keys.size - nextIndex))
         }
     }
 }

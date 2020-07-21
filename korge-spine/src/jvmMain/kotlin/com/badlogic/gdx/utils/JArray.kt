@@ -29,7 +29,6 @@ import com.badlogic.gdx.utils.reflect.ArrayReflection
 class JArray<T> : Iterable<T> {
     /** Provides direct access to the underlying array. If the Array's generic type is not Object, this field may only be accessed
      * if the [JArray.JArray] constructor was used.  */
-    @JvmField
     var items: Array<T>
 
     @JvmField
@@ -44,18 +43,18 @@ class JArray<T> : Iterable<T> {
     val isEmpty: Boolean
         get() = size == 0
 
-    /** Creates an ordered array with the specified capacity.  */
-    constructor(capacity: Int) : this(true, capacity) {}
-
-    /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     * memory copy.
-     * @param capacity Any elements added beyond this will cause the backing array to be grown.
-     */
-    @JvmOverloads
-    constructor(ordered: Boolean = true, capacity: Int = 16) {
-        this.ordered = ordered
-        items = arrayOfNulls<Any>(capacity) as Array<T>
-    }
+    ///** Creates an ordered array with the specified capacity.  */
+    //constructor(capacity: Int) : this(true, capacity) {}
+    //
+    ///** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
+    // * memory copy.
+    // * @param capacity Any elements added beyond this will cause the backing array to be grown.
+    // */
+    //@JvmOverloads
+    //constructor(ordered: Boolean = true, capacity: Int = 16) {
+    //    this.ordered = ordered
+    //    items = arrayOfNulls<Any>(capacity) as Array<T>
+    //}
 
     /** Creates a new array with [.items] of the specified type.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
@@ -426,7 +425,7 @@ class JArray<T> : Iterable<T> {
     /** Sets the array size, leaving any values beyond the current size null.
      * @return [.items]
      */
-    fun setSize(newSize: Int): Array<T> {
+    inline fun setSize(newSize: Int): Array<T> {
         truncate(newSize)
         if (newSize > items.size) resize(Math.max(8, newSize))
         size = newSize
@@ -434,7 +433,8 @@ class JArray<T> : Iterable<T> {
     }
 
     /** Creates a new backing array with the specified size containing the current items.  */
-    protected fun resize(newSize: Int): Array<T> {
+    @PublishedApi
+    internal fun resize(newSize: Int): Array<T> {
         val items = this.items
         val newItems = ArrayReflection.newInstance(items.javaClass.componentType, newSize) as Array<T>
         System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
@@ -633,6 +633,26 @@ class JArray<T> : Iterable<T> {
     }// java.io.StringWriter lastAcquire = new java.io.StringWriter();
 
     companion object {
+        inline operator fun <reified T> invoke(capacity: Int = 16): JArray<T> {
+            return JArray<T>(true, capacity, Array<T>::class.java)
+        }
+
+        inline operator fun <reified T> invoke(ordered: Boolean = true, capacity: Int): JArray<T> {
+            return JArray<T>(ordered, capacity, Array<T>::class.java)
+        }
+
+        ///** Creates an ordered array with the specified capacity.  */
+        //constructor(capacity: Int) : this(true, capacity) {}
+        //
+        ///** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
+        // * memory copy.
+        // * @param capacity Any elements added beyond this will cause the backing array to be grown.
+        // */
+        //@JvmOverloads
+        //constructor(ordered: Boolean = true, capacity: Int = 16) {
+        //    this.ordered = ordered
+        //    items = arrayOfNulls<Any>(capacity) as Array<T>
+        //}
 
         /** @see .JArray
          */

@@ -3,28 +3,18 @@ package com.badlogic.gdx.graphics.g2d
 import com.badlogic.gdx.graphics.*
 
 open class TextureRegion {
-    val u: Float
-        get() {
-            throw NotImplementedError()
-        }
-    val v: Float
-        get() {
-            throw NotImplementedError()
-        }
-    val u2: Float
-        get() {
-            throw NotImplementedError()
-        }
-    val v2: Float
-        get() {
-            throw NotImplementedError()
-        }
-    val texture: Texture
-        get() {
-            throw NotImplementedError()
-        }
-    val regionWidth: Float
+    open val u: Float
         get() = 0f
-    val regionHeight: Float
+    open val v: Float
+        get() = 0f
+    open val u2: Float
+        get() = 0f
+    open val v2: Float
+        get() = 0f
+    open val texture: Texture
+        get() = TODO()
+    open val regionWidth: Float
+        get() = 0f
+    open val regionHeight: Float
         get() = 0f
 }

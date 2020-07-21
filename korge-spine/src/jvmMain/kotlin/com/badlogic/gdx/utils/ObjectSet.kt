@@ -424,14 +424,6 @@ class ObjectSet<T>
         override fun iterator(): ObjectSetIterator<K> {
             return this
         }
-
-        /** Adds the remaining values to the array.  */
-        @JvmOverloads
-        fun toArray(array: JArray<K> = JArray(true, set.size)): JArray<K> {
-            while (hasNext)
-                array.add(next())
-            return array
-        }
     }
 
     /** Returns a new array containing the remaining values.  */

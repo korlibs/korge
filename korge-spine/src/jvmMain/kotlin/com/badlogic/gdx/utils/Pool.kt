@@ -29,20 +29,17 @@ abstract class Pool<T>
  */
 @JvmOverloads constructor(initialCapacity: Int = 16,
                           /** The maximum number of objects that will be pooled.  */
-                          val max: Int = Integer.MAX_VALUE, preFill: Boolean = false) {
+                          val max: Int = Integer.MAX_VALUE, preFill: Boolean = false
+) {
+    init {
+        require(!(initialCapacity > max && preFill)) { "max must be larger than initialCapacity if preFill is set to true." }
+    }
+
     /** The highest number of free objects. Can be reset any time.  */
     @JvmField
     var peak: Int = 0
 
-    private val freeObjects: JArray<T>
-
-    /** The number of objects available to be obtained.  */
-    val free: Int
-        get() = freeObjects.size
-
-    init {
-        require(!(initialCapacity > max && preFill)) { "max must be larger than initialCapacity if preFill is set to true." }
-        freeObjects = JArray(false, initialCapacity)
+    private val freeObjects: ArrayList<T> = ArrayList<T>(initialCapacity).also { freeObjects ->
         if (preFill) {
             for (i in 0 until initialCapacity)
                 freeObjects.add(newObject())
@@ -50,12 +47,16 @@ abstract class Pool<T>
         }
     }
 
+    /** The number of objects available to be obtained.  */
+    val free: Int
+        get() = freeObjects.size
+
     protected abstract fun newObject(): T
 
     /** Returns an object from this pool. The object may be new (from [.newObject]) or reused (previously
      * [freed][.free]).  */
     open fun obtain(): T {
-        return if (freeObjects.size == 0) newObject() else freeObjects.pop()
+        return if (freeObjects.size == 0) newObject() else freeObjects.removeAt(freeObjects.size - 1)
     }
 
     /** Puts the specified object in the pool, making it eligible to be returned by [.obtain]. If the pool already contains

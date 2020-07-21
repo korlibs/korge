@@ -598,11 +598,6 @@ open class ObjectMap<K, V>
             return this
         }
 
-        /** Returns a new array containing the remaining values.  */
-        open fun toArray(): JArray<V?> {
-            return toArray(JArray(true, map.size))
-        }
-
         /** Adds the remaining values to the specified array.  */
         open fun toArray(array: JArray<V?>): JArray<V?> {
             while (hasNext)
@@ -629,11 +624,6 @@ open class ObjectMap<K, V>
 
         override fun iterator(): Keys<K> {
             return this
-        }
-
-        /** Returns a new array containing the remaining keys.  */
-        open fun toArray(): JArray<K> {
-            return toArray(JArray(true, map.size))
         }
 
         /** Adds the remaining keys to the array.  */

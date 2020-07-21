@@ -10,7 +10,7 @@ kotlin {
                 }
             }
         }
-        withJava()
+        //withJava()
     }
 }
 
