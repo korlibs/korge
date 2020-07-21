@@ -167,13 +167,13 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
     internal fun copyTo(attachment: VertexAttachment) {
         if (bones != null) {
             attachment.bones = IntArray(bones!!.size)
-            arraycopy(bones, 0, attachment.bones, 0, bones!!.size)
+            arraycopy(bones!!, 0, attachment.bones!!, 0, bones!!.size)
         } else
             attachment.bones = null
 
         if (vertices != null) {
             attachment.vertices = FloatArray(vertices!!.size)
-            arraycopy(vertices, 0, attachment.vertices, 0, vertices!!.size)
+            arraycopy(vertices!!, 0, attachment.vertices!!, 0, vertices!!.size)
         } else
             attachment.vertices = null
 

@@ -67,7 +67,7 @@ class AnimationStateData(
 
     /** Returns the mix duration to use when changing from the specified animation to the other, or the [.getDefaultMix] if
      * no mix duration has been set.  */
-    fun getMix(from: Animation, to: Animation): Float {
+    fun getMix(from: Animation?, to: Animation?): Float {
         tempKey.a1 = from
         tempKey.a2 = to
         return animationToMixTime[tempKey, defaultMix]

@@ -81,7 +81,7 @@ class BoneData {
 
     /** @param parent May be null.
      */
-    constructor(index: Int, name: String, parent: BoneData) {
+    constructor(index: Int, name: String, parent: BoneData?) {
         require(index >= 0) { "index must be >= 0." }
         this.index = index
         this.name = name

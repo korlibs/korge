@@ -56,8 +56,8 @@ class AnimationState {
     private var data: AnimationStateData? = null
 
     /** The list of tracks that currently have animations, which may contain null entries.  */
-    val tracks: JArray<TrackEntry> = JArray()
-    private val events = JArray()
+    val tracks: JArray<TrackEntry?> = JArray()
+    private val events = JArray<Event>()
     internal val listeners: JArray<AnimationStateListener> = JArray()
     private val queue = EventQueue()
     private val propertyIDs = JIntSet()
@@ -71,8 +71,8 @@ class AnimationState {
     var timeScale = 1f
     private var unkeyedState: Int = 0
 
-    internal val trackEntryPool: Pool<TrackEntry> = object : Pool() {
-        protected override fun newObject(): Any {
+    internal val trackEntryPool: Pool<TrackEntry> = object : Pool<TrackEntry>() {
+        override fun newObject(): TrackEntry {
             return TrackEntry()
         }
     }
@@ -118,7 +118,7 @@ class AnimationState {
                 val nextTime = current.trackLast - next.delay
                 if (nextTime >= 0) {
                     next.delay = 0f
-                    next.trackTime += if (current.timeScale == 0f) 0 else (nextTime / current.timeScale + delta) * next.timeScale
+                    next.trackTime += if (current.timeScale == 0f) 0f else (nextTime / current.timeScale + delta) * next.timeScale
                     current.trackTime += currentDelta
                     setCurrent(i, next, true)
                     while (next!!.mixingFrom != null) {
@@ -298,7 +298,7 @@ class AnimationState {
 
         if (blend == MixBlend.add) {
             for (i in 0 until timelineCount)
-                (timelines[i] as Timeline).apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out)
+                timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out)
         } else {
             val timelineMode = from.timelineMode.items
             val timelineHoldMix = from.timelineHoldMix.items
@@ -422,18 +422,18 @@ class AnimationState {
             }
         } else {
             r1 = if (blend == MixBlend.setup) bone.data.rotation else bone.rotation
-            if (time >= frames[frames.size - ENTRIES])
+            if (time >= frames[frames.size - RotateTimeline.ENTRIES])
             // Time is after last frame.
-                r2 = bone.data.rotation + frames[frames.size + PREV_ROTATION]
+                r2 = bone.data.rotation + frames[frames.size + RotateTimeline.PREV_ROTATION]
             else {
                 // Interpolate between the previous frame and the current frame.
-                val frame = Animation.binarySearch(frames, time, ENTRIES)
-                val prevRotation = frames[frame + PREV_ROTATION]
+                val frame = Animation.binarySearch(frames, time, RotateTimeline.ENTRIES)
+                val prevRotation = frames[frame + RotateTimeline.PREV_ROTATION]
                 val frameTime = frames[frame]
                 val percent = timeline.getCurvePercent((frame shr 1) - 1,
-                        1 - (time - frameTime) / (frames[frame + PREV_TIME] - frameTime))
+                        1 - (time - frameTime) / (frames[frame + RotateTimeline.PREV_TIME] - frameTime))
 
-                r2 = frames[frame + ROTATION] - prevRotation
+                r2 = frames[frame + RotateTimeline.ROTATION] - prevRotation
                 r2 -= ((16384 - (16384.499999999996 - r2 / 360).toInt()) * 360).toFloat()
                 r2 = prevRotation + r2 * percent + bone.data.rotation
                 r2 -= ((16384 - (16384.499999999996 - r2 / 360).toInt()) * 360).toFloat()
@@ -769,7 +769,7 @@ class AnimationState {
         entry.alpha = 1f
         entry.interruptAlpha = 1f
         entry.mixTime = 0f
-        entry.mixDuration = if (last == null) 0 else data!!.getMix(last.animation, animation)
+        entry.mixDuration = if (last == null) 0f else data!!.getMix(last.animation, animation)
         return entry
     }
 
@@ -1152,7 +1152,7 @@ class AnimationState {
     }
 
     internal inner class EventQueue {
-        private val objects = JArray()
+        private val objects = JArray<Any>()
         var drainDisabled: Boolean = false
 
         fun start(entry: TrackEntry) {

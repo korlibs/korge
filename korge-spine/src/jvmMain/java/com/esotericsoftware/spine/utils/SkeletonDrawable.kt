@@ -39,8 +39,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable
 /** A scene2d drawable that draws a skeleton. The animation state and skeleton must be updated each frame, or
  * [.update] called each frame.  */
 class SkeletonDrawable : BaseDrawable {
-    var renderer: SkeletonRenderer? = null
-    var skeleton: Skeleton? = null
+    lateinit var renderer: SkeletonRenderer
+    lateinit var skeleton: Skeleton
     lateinit var animationState: AnimationState
 
     /** If false, the blend function will be left as whatever [SkeletonRenderer.draw] set. This can reduce

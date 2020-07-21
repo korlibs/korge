@@ -41,7 +41,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
  * Spine Runtimes Guide.  */
 class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader {
 
-    override fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment {
+    override fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment? {
         val region = atlas.findRegion(path)
                 ?: throw RuntimeException("Region not found in atlas: $path (region attachment: $name)")
         val attachment = RegionAttachment(name)
@@ -49,7 +49,7 @@ class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader 
         return attachment
     }
 
-    override fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment {
+    override fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment? {
         val region = atlas.findRegion(path)
                 ?: throw RuntimeException("Region not found in atlas: $path (mesh attachment: $name)")
         val attachment = MeshAttachment(name)
@@ -57,19 +57,19 @@ class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader 
         return attachment
     }
 
-    override fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment {
+    override fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment? {
         return BoundingBoxAttachment(name)
     }
 
-    override fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment {
+    override fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment? {
         return ClippingAttachment(name)
     }
 
-    override fun newPathAttachment(skin: Skin, name: String): PathAttachment {
+    override fun newPathAttachment(skin: Skin, name: String): PathAttachment? {
         return PathAttachment(name)
     }
 
-    override fun newPointAttachment(skin: Skin, name: String): PointAttachment {
+    override fun newPointAttachment(skin: Skin, name: String): PointAttachment? {
         return PointAttachment(name)
     }
 }

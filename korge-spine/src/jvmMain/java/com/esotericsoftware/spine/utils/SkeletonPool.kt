@@ -33,22 +33,11 @@ import com.badlogic.gdx.utils.Pool
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.SkeletonData
 
-class SkeletonPool : Pool<Skeleton> {
-    private var skeletonData: SkeletonData? = null
+class SkeletonPool(
+    private var skeletonData: SkeletonData,
+    initialCapacity: Int = 16,
+    max: Int = Int.MAX_VALUE
+) : Pool<Skeleton>(initialCapacity, max) {
 
-    constructor(skeletonData: SkeletonData) {
-        this.skeletonData = skeletonData
-    }
-
-    constructor(skeletonData: SkeletonData, initialCapacity: Int) : super(initialCapacity) {
-        this.skeletonData = skeletonData
-    }
-
-    constructor(skeletonData: SkeletonData, initialCapacity: Int, max: Int) : super(initialCapacity, max) {
-        this.skeletonData = skeletonData
-    }
-
-    override fun newObject(): Skeleton {
-        return Skeleton(skeletonData)
-    }
+    override fun newObject(): Skeleton = Skeleton(skeletonData)
 }

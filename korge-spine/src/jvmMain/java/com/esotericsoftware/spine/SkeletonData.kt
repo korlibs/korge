@@ -129,7 +129,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findBone(boneName: String): BoneData? {
+    fun findBone(boneName: String?): BoneData? {
         val bones = this.bones
         var i = 0
         val n = bones.size
@@ -145,7 +145,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findSlot(slotName: String): SlotData? {
+    fun findSlot(slotName: String?): SlotData? {
         val slots = this.slots
         var i = 0
         val n = slots.size
@@ -161,7 +161,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findSkin(skinName: String): Skin? {
+    fun findSkin(skinName: String?): Skin? {
         for (skin in skins)
             if (skin.name == skinName) return skin
         return null
@@ -173,7 +173,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findEvent(eventDataName: String): EventData? {
+    fun findEvent(eventDataName: String?): EventData? {
         for (eventData in events)
             if (eventData.name == eventDataName) return eventData
         return null
@@ -199,7 +199,7 @@ class SkeletonData {
      * than to call it multiple times.
      * @return May be null.
      */
-    fun findIkConstraint(constraintName: String): IkConstraintData? {
+    fun findIkConstraint(constraintName: String?): IkConstraintData? {
         val ikConstraints = this.ikConstraints
         var i = 0
         val n = ikConstraints.size
@@ -215,7 +215,7 @@ class SkeletonData {
      * this method than to call it multiple times.
      * @return May be null.
      */
-    fun findTransformConstraint(constraintName: String): TransformConstraintData? {
+    fun findTransformConstraint(constraintName: String?): TransformConstraintData? {
         val transformConstraints = this.transformConstraints
         var i = 0
         val n = transformConstraints.size
@@ -231,7 +231,7 @@ class SkeletonData {
      * than to call it multiple times.
      * @return May be null.
      */
-    fun findPathConstraint(constraintName: String): PathConstraintData? {
+    fun findPathConstraint(constraintName: String?): PathConstraintData? {
         val pathConstraints = this.pathConstraints
         var i = 0
         val n = pathConstraints.size

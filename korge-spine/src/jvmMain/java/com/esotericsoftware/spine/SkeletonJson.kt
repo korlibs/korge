@@ -29,50 +29,15 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
-import com.badlogic.gdx.files.FileHandle
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.JIntArray
-import com.badlogic.gdx.utils.JsonReader
-import com.badlogic.gdx.utils.JsonValue
-import com.badlogic.gdx.utils.SerializationException
-
-import com.esotericsoftware.spine.Animation.AttachmentTimeline
-import com.esotericsoftware.spine.Animation.ColorTimeline
-import com.esotericsoftware.spine.Animation.CurveTimeline
-import com.esotericsoftware.spine.Animation.DeformTimeline
-import com.esotericsoftware.spine.Animation.DrawOrderTimeline
-import com.esotericsoftware.spine.Animation.EventTimeline
-import com.esotericsoftware.spine.Animation.IkConstraintTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintMixTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintPositionTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintSpacingTimeline
-import com.esotericsoftware.spine.Animation.RotateTimeline
-import com.esotericsoftware.spine.Animation.ScaleTimeline
-import com.esotericsoftware.spine.Animation.ShearTimeline
-import com.esotericsoftware.spine.Animation.Timeline
-import com.esotericsoftware.spine.Animation.TransformConstraintTimeline
-import com.esotericsoftware.spine.Animation.TranslateTimeline
-import com.esotericsoftware.spine.Animation.TwoColorTimeline
-import com.esotericsoftware.spine.BoneData.TransformMode
-import com.esotericsoftware.spine.PathConstraintData.PositionMode
-import com.esotericsoftware.spine.PathConstraintData.RotateMode
-import com.esotericsoftware.spine.PathConstraintData.SpacingMode
-import com.esotericsoftware.spine.attachments.AtlasAttachmentLoader
-import com.esotericsoftware.spine.attachments.Attachment
-import com.esotericsoftware.spine.attachments.AttachmentLoader
-import com.esotericsoftware.spine.attachments.AttachmentType
-import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
-import com.esotericsoftware.spine.attachments.ClippingAttachment
-import com.esotericsoftware.spine.attachments.MeshAttachment
-import com.esotericsoftware.spine.attachments.PathAttachment
-import com.esotericsoftware.spine.attachments.PointAttachment
-import com.esotericsoftware.spine.attachments.RegionAttachment
-import com.esotericsoftware.spine.attachments.VertexAttachment
+import com.badlogic.gdx.files.*
+import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g2d.*
+import com.badlogic.gdx.utils.*
+import com.esotericsoftware.spine.Animation.*
+import com.esotericsoftware.spine.BoneData.*
+import com.esotericsoftware.spine.PathConstraintData.*
+import com.esotericsoftware.spine.attachments.*
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** Loads skeleton data in the Spine JSON format.
  *
@@ -93,7 +58,7 @@ class SkeletonJson {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    private val linkedMeshes = JArray()
+    private val linkedMeshes = JArray<LinkedMesh>()
 
     constructor(atlas: TextureAtlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -118,8 +83,8 @@ class SkeletonJson {
         // Skeleton.
         val skeletonMap = root!!["skeleton"]
         if (skeletonMap != null) {
-            skeletonData.hash = skeletonMap.getString("hash", null!!)
-            skeletonData.version = skeletonMap.getString("spine", null!!)
+            skeletonData.hash = skeletonMap.getString("hash", null)
+            skeletonData.version = skeletonMap.getString("spine", null)
             if ("3.8.75" == skeletonData.version)
                 throw RuntimeException("Unsupported skeleton data, please export with a newer version of Spine.")
             skeletonData.x = skeletonMap.getFloat("x", 0f)
@@ -127,20 +92,20 @@ class SkeletonJson {
             skeletonData.width = skeletonMap.getFloat("width", 0f)
             skeletonData.height = skeletonMap.getFloat("height", 0f)
             skeletonData.fps = skeletonMap.getFloat("fps", 30f)
-            skeletonData.imagesPath = skeletonMap.getString("images", null!!)
-            skeletonData.audioPath = skeletonMap.getString("audio", null!!)
+            skeletonData.imagesPath = skeletonMap.getString("images", null)
+            skeletonData.audioPath = skeletonMap.getString("audio", null)
         }
 
         // Bones.
         var boneMap = root.getChild("bones")
         while (boneMap != null) {
             var parent: BoneData? = null
-            val parentName = boneMap.getString("parent", null!!)
+            val parentName = boneMap.getString("parent", null)
             if (parentName != null) {
                 parent = skeletonData.findBone(parentName)
                 if (parent == null) throw SerializationException("Parent bone not found: $parentName")
             }
-            val data = BoneData(skeletonData.bones.size, boneMap.getString("name"), parent)
+            val data = BoneData(skeletonData.bones.size, boneMap.getString("name")!!, parent)
             data.length = boneMap.getFloat("length", 0f) * scale
             data.x = boneMap.getFloat("x", 0f) * scale
             data.y = boneMap.getFloat("y", 0f) * scale
@@ -149,10 +114,10 @@ class SkeletonJson {
             data.scaleY = boneMap.getFloat("scaleY", 1f)
             data.shearX = boneMap.getFloat("shearX", 0f)
             data.shearY = boneMap.getFloat("shearY", 0f)
-            data.transformMode = TransformMode.valueOf(boneMap.getString("transform", TransformMode.normal.name))
+            data.transformMode = TransformMode.valueOf(boneMap.getString("transform", TransformMode.normal.name)!!)
             data.skinRequired = boneMap.getBoolean("skin", false)
 
-            val color = boneMap.getString("color", null!!)
+            val color = boneMap.getString("color", null)
             if (color != null) data.color.set(Color.valueOf(color))
 
             skeletonData.bones.add(data)
@@ -162,20 +127,20 @@ class SkeletonJson {
         // Slots.
         var slotMap = root.getChild("slots")
         while (slotMap != null) {
-            val slotName = slotMap.getString("name")
+            val slotName = slotMap.getString("name")!!
             val boneName = slotMap.getString("bone")
             val boneData = skeletonData.findBone(boneName)
                     ?: throw SerializationException("Slot bone not found: " + boneName!!)
             val data = SlotData(skeletonData.slots.size, slotName, boneData)
 
-            val color = slotMap.getString("color", null!!)
+            val color = slotMap.getString("color", null)
             if (color != null) data.color.set(Color.valueOf(color))
 
-            val dark = slotMap.getString("dark", null!!)
+            val dark = slotMap.getString("dark", null)
             if (dark != null) data.darkColor = Color.valueOf(dark)
 
-            data.attachmentName = slotMap.getString("attachment", null!!)
-            data.blendMode = BlendMode.valueOf(slotMap.getString("blend", BlendMode.normal.name))
+            data.attachmentName = slotMap.getString("attachment", null)
+            data.blendMode = BlendMode.valueOf(slotMap.getString("blend", BlendMode.normal.name)!!)
             skeletonData.slots.add(data)
             slotMap = slotMap.next
         }
@@ -184,7 +149,7 @@ class SkeletonJson {
         run {
             var constraintMap = root.getChild("ik")
             while (constraintMap != null) {
-                val data = IkConstraintData(constraintMap!!.getString("name"))
+                val data = IkConstraintData(constraintMap!!.getString("name")!!)
                 data.order = constraintMap!!.getInt("order", 0)
                 data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
@@ -196,9 +161,9 @@ class SkeletonJson {
                     entry = entry!!.next
                 }
 
-                val targetName = constraintMap!!.getString("target")
+                val targetName = constraintMap!!.getString("target")!!
                 data.target = skeletonData.findBone(targetName)
-                if (data.target == null) throw SerializationException("IK target bone not found: " + targetName!!)
+                    ?: throw SerializationException("IK target bone not found: " + targetName!!)
 
                 data.mix = constraintMap!!.getFloat("mix", 1f)
                 data.softness = constraintMap!!.getFloat("softness", 0f) * scale
@@ -216,7 +181,7 @@ class SkeletonJson {
         run {
             var constraintMap = root.getChild("transform")
             while (constraintMap != null) {
-                val data = TransformConstraintData(constraintMap!!.getString("name"))
+                val data = TransformConstraintData(constraintMap!!.getString("name")!!)
                 data.order = constraintMap!!.getInt("order", 0)
                 data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
@@ -230,7 +195,7 @@ class SkeletonJson {
 
                 val targetName = constraintMap!!.getString("target")
                 data.target = skeletonData.findBone(targetName)
-                if (data.target == null) throw SerializationException("Transform constraint target bone not found: " + targetName!!)
+                    ?: throw SerializationException("Transform constraint target bone not found: " + targetName!!)
 
                 data.local = constraintMap!!.getBoolean("local", false)
                 data.relative = constraintMap!!.getBoolean("relative", false)
@@ -255,7 +220,7 @@ class SkeletonJson {
         // Path constraints.
         var constraintMap = root.getChild("path")
         while (constraintMap != null) {
-            val data = PathConstraintData(constraintMap!!.getString("name"))
+            val data = PathConstraintData(constraintMap!!.getString("name")!!)
             data.order = constraintMap!!.getInt("order", 0)
             data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
@@ -267,13 +232,13 @@ class SkeletonJson {
                 entry = entry!!.next
             }
 
-            val targetName = constraintMap!!.getString("target")
+            val targetName = constraintMap!!.getString("target")!!
             data.target = skeletonData.findSlot(targetName)
-            if (data.target == null) throw SerializationException("Path target slot not found: " + targetName!!)
+                ?: throw SerializationException("Path target slot not found: " + targetName!!)
 
-            data.positionMode = PositionMode.valueOf(constraintMap!!.getString("positionMode", "percent"))
-            data.spacingMode = SpacingMode.valueOf(constraintMap!!.getString("spacingMode", "length"))
-            data.rotateMode = RotateMode.valueOf(constraintMap!!.getString("rotateMode", "tangent"))
+            data.positionMode = PositionMode.valueOf(constraintMap!!.getString("positionMode", "percent")!!)
+            data.spacingMode = SpacingMode.valueOf(constraintMap!!.getString("spacingMode", "length")!!)
+            data.rotateMode = RotateMode.valueOf(constraintMap!!.getString("rotateMode", "tangent")!!)
             data.offsetRotation = constraintMap!!.getFloat("rotation", 0f)
             data.position = constraintMap!!.getFloat("position", 0f)
             if (data.positionMode == PositionMode.fixed) data.position *= scale
@@ -289,7 +254,7 @@ class SkeletonJson {
         // Skins.
         var skinMap = root.getChild("skins")
         while (skinMap != null) {
-            val skin = Skin(skinMap.getString("name"))
+            val skin = Skin(skinMap.getString("name")!!)
             run {
                 var entry = skinMap!!.getChild("bones")
                 while (entry != null) {
@@ -334,7 +299,7 @@ class SkeletonJson {
                 while (entry != null) {
                     try {
                         val attachment = readAttachment(entry!!, skin, slot.index, entry!!.name, skeletonData)
-                        if (attachment != null) skin.setAttachment(slot.index, entry!!.name, attachment)
+                        if (attachment != null) skin.setAttachment(slot.index, entry!!.name!!, attachment)
                     } catch (ex: Throwable) {
                         throw SerializationException("Error reading attachment: " + entry!!.name + ", skin: " + skin, ex)
                     }
@@ -355,7 +320,7 @@ class SkeletonJson {
             val linkedMesh = linkedMeshes.get(i)
             val skin = (if (linkedMesh.skin == null) skeletonData.defaultSkin else skeletonData.findSkin(linkedMesh.skin))
                     ?: throw SerializationException("Skin not found: " + linkedMesh.skin!!)
-            val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent)
+            val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent!!)
                     ?: throw SerializationException("Parent mesh not found: " + linkedMesh.parent)
             linkedMesh.mesh.deformAttachment = if (linkedMesh.inheritDeform) parent as VertexAttachment else linkedMesh.mesh
             linkedMesh.mesh.parentMesh = parent as MeshAttachment
@@ -367,11 +332,11 @@ class SkeletonJson {
         // Events.
         var eventMap = root.getChild("events")
         while (eventMap != null) {
-            val data = EventData(eventMap.name)
+            val data = EventData(eventMap.name!!)
             data.int = eventMap.getInt("int", 0)
             data.float = eventMap.getFloat("float", 0f)
             data.stringValue = eventMap.getString("string", "")
-            data.audioPath = eventMap.getString("audio", null!!)
+            data.audioPath = eventMap.getString("audio", null)
             if (data.audioPath != null) {
                 data.volume = eventMap.getFloat("volume", 1f)
                 data.balance = eventMap.getFloat("balance", 0f)
@@ -384,7 +349,7 @@ class SkeletonJson {
         var animationMap = root.getChild("animations")
         while (animationMap != null) {
             try {
-                readAnimation(animationMap, animationMap.name, skeletonData)
+                readAnimation(animationMap, animationMap.name!!, skeletonData)
             } catch (ex: Throwable) {
                 throw SerializationException("Error reading animation: " + animationMap.name!!, ex)
             }
@@ -421,7 +386,7 @@ class SkeletonJson {
                 region.width = map.getFloat("width") * scale
                 region.height = map.getFloat("height") * scale
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) region.color.set(Color.valueOf(color))
 
                 region.updateOffset()
@@ -431,7 +396,7 @@ class SkeletonJson {
                 val box = attachmentLoader.newBoundingBoxAttachment(skin, name) ?: return null
                 readVertices(map, box, map.getInt("vertexCount") shl 1)
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) box.color.set(Color.valueOf(color))
                 return box
             }
@@ -440,16 +405,16 @@ class SkeletonJson {
                 val mesh = attachmentLoader.newMeshAttachment(skin, name, path) ?: return null
                 mesh.path = path
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) mesh.color.set(Color.valueOf(color))
 
                 mesh.width = map.getFloat("width", 0f) * scale
                 mesh.height = map.getFloat("height", 0f) * scale
 
-                val parent = map.getString("parent", null!!)
+                val parent = map.getString("parent", null)
                 if (parent != null) {
                     linkedMeshes
-                            .add(LinkedMesh(mesh, map.getString("skin", null!!), slotIndex, parent, map.getBoolean("deform", true)))
+                            .add(LinkedMesh(mesh, map.getString("skin", null), slotIndex, parent, map.getBoolean("deform", true)))
                     return mesh
                 }
 
@@ -480,7 +445,7 @@ class SkeletonJson {
                 }
                 path.lengths = lengths
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) path.color.set(Color.valueOf(color))
                 return path
             }
@@ -490,14 +455,14 @@ class SkeletonJson {
                 point.y = map.getFloat("y", 0f) * scale
                 point.rotation = map.getFloat("rotation", 0f)
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) point.color.set(Color.valueOf(color))
                 return point
             }
             AttachmentType.clipping -> {
                 val clip = attachmentLoader.newClippingAttachment(skin, name) ?: return null
 
-                val end = map.getString("end", null!!)
+                val end = map.getString("end", null)
                 if (end != null) {
                     val slot = skeletonData.findSlot(end)
                             ?: throw SerializationException("Clipping end slot not found: $end")
@@ -506,7 +471,7 @@ class SkeletonJson {
 
                 readVertices(map, clip, map.getInt("vertexCount") shl 1)
 
-                val color = map.getString("color", null!!)
+                val color = map.getString("color", null)
                 if (color != null) clip.color.set(Color.valueOf(color))
                 return clip
             }
@@ -549,9 +514,9 @@ class SkeletonJson {
         attachment.vertices = weights.toArray()
     }
 
-    private fun readAnimation(map: JsonValue, name: String?, skeletonData: SkeletonData) {
+    private fun readAnimation(map: JsonValue, name: String, skeletonData: SkeletonData) {
         val scale = this.scale
-        val timelines = JArray()
+        val timelines = JArray<Timeline>()
         var duration = 0f
 
         // Slot timelines.
@@ -570,7 +535,7 @@ class SkeletonJson {
                         var frameIndex = 0
                         var valueMap = timelineMap!!.child
                         while (valueMap != null) {
-                            timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name"))
+                            timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name")!!)
                             valueMap = valueMap!!.next
                         }
                         timelines.add(timeline)
@@ -785,7 +750,7 @@ class SkeletonJson {
                         ?: throw SerializationException("Slot not found: " + slotMap!!.name!!)
                 var timelineMap = slotMap!!.child
                 while (timelineMap != null) {
-                    val attachment = skin.getAttachment(slot.index, timelineMap!!.name) as VertexAttachment
+                    val attachment = skin.getAttachment(slot.index, timelineMap!!.name!!) as? VertexAttachment?
                             ?: throw SerializationException("Deform attachment not found: " + timelineMap!!.name!!)
                     val weighted = attachment.bones != null
                     val vertices = attachment.vertices
@@ -913,5 +878,11 @@ class SkeletonJson {
             timeline.setCurve(frameIndex, curve.asFloat(), map.getFloat("c2", 0f), map.getFloat("c3", 1f), map.getFloat("c4", 1f))
     }
 
-    internal class LinkedMesh(var mesh: MeshAttachment, var skin: String?, var slotIndex: Int, var parent: String, var inheritDeform: Boolean)
+    internal class LinkedMesh(
+        var mesh: MeshAttachment,
+        var skin: String?,
+        var slotIndex: Int,
+        var parent: String?,
+        var inheritDeform: Boolean
+    )
 }

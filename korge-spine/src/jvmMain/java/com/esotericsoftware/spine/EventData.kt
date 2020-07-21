@@ -40,7 +40,7 @@ class EventData(
     var int: Int = 0
     var float: Float = 0.toFloat()
     internal lateinit var stringValue: String
-    internal lateinit var audioPath: String
+    internal var audioPath: String? = null
     var volume: Float = 0.toFloat()
     var balance: Float = 0.toFloat()
 
@@ -50,11 +50,11 @@ class EventData(
             this.stringValue = stringValue
         }
 
-    fun getAudioPath(): String {
+    fun getAudioPath(): String? {
         return audioPath
     }
 
-    fun setAudioPath(audioPath: String) {
+    fun setAudioPath(audioPath: String?) {
         this.audioPath = audioPath
     }
 

@@ -589,9 +589,15 @@ class JsonValue : Iterable<JsonValue> {
     /** Finds the child with the specified name and returns it as a string. Returns defaultValue if not found.
      * @param defaultValue May be null.
      */
-    fun getString(name: String, defaultValue: String): String? {
+    fun getString(name: String, defaultValue: String?): String? {
         val child = get(name)
         return if (child == null || !child.isValue || child.isNull) defaultValue else child.asString()
+    }
+
+    @JvmName("getStringNotNull")
+    fun getString(name: String, defaultValue: String): String {
+        val child = get(name)
+        return if (child == null || !child.isValue || child.isNull) defaultValue else child.asString() ?: defaultValue
     }
 
     /** Finds the child with the specified name and returns it as a float. Returns defaultValue if not found.  */

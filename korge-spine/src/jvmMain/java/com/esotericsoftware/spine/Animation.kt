@@ -31,7 +31,6 @@ package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.Animation.MixBlend.*
 import com.esotericsoftware.spine.Animation.MixDirection.*
-import com.esotericsoftware.spine.utils.SpineUtils.*
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
@@ -41,6 +40,7 @@ import com.badlogic.gdx.utils.JIntSet
 
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.VertexAttachment
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** A simple container for a list of timelines and a name.  */
 class Animation(
@@ -50,7 +50,7 @@ class Animation(
     /** The duration of the animation in seconds, which is the highest time of all keys in the timeline.  */
     var duration: Float
 ) {
-    internal var timelines: JArray<Timeline>
+    lateinit internal var timelines: JArray<Timeline>
     internal val timelineIDs = JIntSet()
 
     init {
@@ -129,7 +129,7 @@ class Animation(
          * @param direction Indicates whether the timeline is mixing in or out. Used by timelines which perform instant transitions,
          * such as [DrawOrderTimeline] or [AttachmentTimeline], and other such as [ScaleTimeline].
          */
-        fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                   direction: MixDirection)
     }
 
@@ -306,27 +306,18 @@ class Animation(
     /** Changes a bone's local [Bone.getRotation].  */
     class RotateTimeline(frameCount: Int) : CurveTimeline(frameCount), BoneTimeline {
 
-        internal var boneIndex: Int = 0
+        /** The index of the bone in [Skeleton.getBones] that will be changed.  */
+        override var boneIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+            }
 
         /** The time in seconds and rotation in degrees for each key frame.  */
-        val frames: FloatArray // time, degrees, ...
+        val frames: FloatArray = FloatArray(frameCount shl 1) // time, degrees, ...
 
         override val propertyId: Int
             get() = (TimelineType.rotate.ordinal shl 24) + boneIndex
-
-        init {
-            frames = FloatArray(frameCount shl 1)
-        }
-
-        override fun setBoneIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.boneIndex = index
-        }
-
-        /** The index of the bone in [Skeleton.getBones] that will be changed.  */
-        override fun getBoneIndex(): Int {
-            return boneIndex
-        }
 
         /** Sets the time in seconds and the rotation in degrees for the specified key frame.  */
         fun setFrame(frameIndex: Int, time: Float, degrees: Float) {
@@ -336,7 +327,7 @@ class Animation(
             frames[frameIndex + ROTATION] = degrees
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -401,7 +392,12 @@ class Animation(
     /** Changes a bone's local [Bone.getX] and [Bone.getY].  */
     open class TranslateTimeline(frameCount: Int) : CurveTimeline(frameCount), BoneTimeline {
 
-        internal var boneIndex: Int = 0
+        /** The index of the bone in [Skeleton.getBones] that will be changed.  */
+        override var boneIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+            }
 
         /** The time in seconds, x, and y values for each key frame.  */
         val frames: FloatArray // time, x, y, ...
@@ -413,16 +409,6 @@ class Animation(
             frames = FloatArray(frameCount * ENTRIES)
         }
 
-        override fun setBoneIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.boneIndex = index
-        }
-
-        /** The index of the bone in [Skeleton.getBones] that will be changed.  */
-        override fun getBoneIndex(): Int {
-            return boneIndex
-        }
-
         /** Sets the time in seconds, x, and y values for the specified key frame.  */
         fun setFrame(frameIndex: Int, time: Float, x: Float, y: Float) {
             var frameIndex = frameIndex
@@ -432,7 +418,7 @@ class Animation(
             frames[frameIndex + Y] = y
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -502,7 +488,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.scale.ordinal shl 24) + boneIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -605,7 +591,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.shear.ordinal shl 24) + boneIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -663,7 +649,12 @@ class Animation(
     /** Changes a slot's [Slot.getColor].  */
     class ColorTimeline(frameCount: Int) : CurveTimeline(frameCount), SlotTimeline {
 
-        internal var slotIndex: Int = 0
+        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
+        override var slotIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+            }
 
         /** The time in seconds, red, green, blue, and alpha values for each key frame.  */
         val frames: FloatArray // time, r, g, b, a, ...
@@ -673,16 +664,6 @@ class Animation(
 
         init {
             frames = FloatArray(frameCount * ENTRIES)
-        }
-
-        override fun setSlotIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.slotIndex = index
-        }
-
-        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
-        override fun getSlotIndex(): Int {
-            return slotIndex
         }
 
         /** Sets the time in seconds, red, green, blue, and alpha for the specified key frame.  */
@@ -696,7 +677,7 @@ class Animation(
             frames[frameIndex + A] = a
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -770,7 +751,14 @@ class Animation(
     /** Changes a slot's [Slot.getColor] and [Slot.getDarkColor] for two color tinting.  */
     class TwoColorTimeline(frameCount: Int) : CurveTimeline(frameCount), SlotTimeline {
 
-        internal var slotIndex: Int = 0
+        /** The index of the slot in [Skeleton.getSlots] that will be changed. The [Slot.getDarkColor] must not be
+         * null.  */
+        override var slotIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+
+            }
 
         /** The time in seconds, red, green, blue, and alpha values for each key frame.  */
         val frames: FloatArray // time, r, g, b, a, r2, g2, b2, ...
@@ -780,17 +768,6 @@ class Animation(
 
         init {
             frames = FloatArray(frameCount * ENTRIES)
-        }
-
-        override fun setSlotIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.slotIndex = index
-        }
-
-        /** The index of the slot in [Skeleton.getSlots] that will be changed. The [Slot.getDarkColor] must not be
-         * null.  */
-        override fun getSlotIndex(): Int {
-            return slotIndex
         }
 
         /** Sets the time in seconds, light, and dark colors for the specified key frame.  */
@@ -807,7 +784,7 @@ class Animation(
             frames[frameIndex + B2] = b2
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -817,14 +794,14 @@ class Animation(
                 when (blend) {
                     setup -> {
                         slot.color.set(slot.data.color)
-                        slot.darkColor!!.set(slot.data.darkColor)
+                        slot.darkColor!!.set(slot.data.darkColor!!)
                         return
                     }
                     first -> {
                         val light = slot.color
                         val dark = slot.darkColor
                         val setupLight = slot.data.color
-                        val setupDark = slot.data.darkColor
+                        val setupDark = slot.data.darkColor!!
                         light.add((setupLight.r - light.r) * alpha, (setupLight.g - light.g) * alpha, (setupLight.b - light.b) * alpha,
                                 (setupLight.a - light.a) * alpha)
                         dark!!.add((setupDark.r - dark.r) * alpha, (setupDark.g - dark.g) * alpha, (setupDark.b - dark.b) * alpha, 0f)
@@ -879,7 +856,7 @@ class Animation(
                 val dark = slot.darkColor
                 if (blend == setup) {
                     light.set(slot.data.color)
-                    dark!!.set(slot.data.darkColor)
+                    dark!!.set(slot.data.darkColor!!)
                 }
                 light.add((r - light.r) * alpha, (g - light.g) * alpha, (b - light.b) * alpha, (a - light.a) * alpha)
                 dark!!.add((r2 - dark.r) * alpha, (g2 - dark.g) * alpha, (b2 - dark.b) * alpha, 0f)
@@ -933,12 +910,12 @@ class Animation(
             get() = frames.size
 
         /** Sets the time in seconds and the attachment name for the specified key frame.  */
-        fun setFrame(frameIndex: Int, time: Float, attachmentName: String) {
+        fun setFrame(frameIndex: Int, time: Float, attachmentName: String?) {
             frames[frameIndex] = time
             attachmentNames[frameIndex] = attachmentName
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -971,34 +948,24 @@ class Animation(
 
     /** Changes a slot's [Slot.getDeform] to deform a [VertexAttachment].  */
     class DeformTimeline(frameCount: Int) : CurveTimeline(frameCount), SlotTimeline {
-        internal var slotIndex: Int = 0
+        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
+        override var slotIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+            }
 
         /** The attachment that will be deformed.  */
-        var attachment: VertexAttachment
+        lateinit var attachment: VertexAttachment
 
         /** The time in seconds for each key frame.  */
-        val frames: FloatArray // time, ...
+        val frames: FloatArray = FloatArray(frameCount) // time, ...
 
         /** The vertices for each key frame.  */
-        val vertices: Array<FloatArray>
+        val vertices: Array<FloatArray> = arrayOfNulls<FloatArray>(frameCount) as Array<FloatArray>
 
         override val propertyId: Int
             get() = (TimelineType.deform.ordinal shl 27) + attachment.id + slotIndex
-
-        init {
-            frames = FloatArray(frameCount)
-            vertices = arrayOfNulls(frameCount)
-        }
-
-        override fun setSlotIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.slotIndex = index
-        }
-
-        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
-        override fun getSlotIndex(): Int {
-            return slotIndex
-        }
 
         /** Sets the time in seconds and the vertices for the specified key frame.
          * @param vertices Vertex positions for an unweighted VertexAttachment, or deform offsets if it has weights.
@@ -1008,7 +975,7 @@ class Animation(
             this.vertices[frameIndex] = vertices
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
             var alpha = alpha
             var blend = blend
@@ -1189,11 +1156,14 @@ class Animation(
 
     /** Fires an [Event] when specific animation times are reached.  */
     class EventTimeline(frameCount: Int) : Timeline {
+        init {
+            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
+        }
         /** The time in seconds for each key frame.  */
-        val frames: FloatArray // time, ...
+        val frames: FloatArray = FloatArray(frameCount) // time, ...
 
         /** The event for each key frame.  */
-        val events: Array<Event>
+        val events: Array<Event> = arrayOfNulls<Event>(frameCount) as Array<Event>
 
         override val propertyId: Int
             get() = TimelineType.event.ordinal shl 24
@@ -1201,12 +1171,6 @@ class Animation(
         /** The number of key frames for this timeline.  */
         val frameCount: Int
             get() = frames.size
-
-        init {
-            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
-            frames = FloatArray(frameCount)
-            events = arrayOfNulls(frameCount)
-        }
 
         /** Sets the time in seconds and the event for the specified key frame.  */
         fun setFrame(frameIndex: Int, event: Event) {
@@ -1251,11 +1215,14 @@ class Animation(
 
     /** Changes a skeleton's [Skeleton.getDrawOrder].  */
     class DrawOrderTimeline(frameCount: Int) : Timeline {
+        init {
+            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
+        }
         /** The time in seconds for each key frame.  */
-        val frames: FloatArray // time, ...
+        val frames: FloatArray = FloatArray(frameCount) // time, ...
 
         /** The draw order for each key frame. See [.setFrame].  */
-        val drawOrders: Array<IntArray>
+        val drawOrders: Array<IntArray?> = arrayOfNulls<IntArray>(frameCount)
 
         override val propertyId: Int
             get() = TimelineType.drawOrder.ordinal shl 24
@@ -1264,22 +1231,16 @@ class Animation(
         val frameCount: Int
             get() = frames.size
 
-        init {
-            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
-            frames = FloatArray(frameCount)
-            drawOrders = arrayOfNulls(frameCount)
-        }
-
         /** Sets the time in seconds and the draw order for the specified key frame.
          * @param drawOrder For each slot in [Skeleton.slots], the index of the new draw order. May be null to use setup pose
          * draw order.
          */
-        fun setFrame(frameIndex: Int, time: Float, drawOrder: IntArray) {
+        fun setFrame(frameIndex: Int, time: Float, drawOrder: IntArray?) {
             frames[frameIndex] = time
             drawOrders[frameIndex] = drawOrder
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val drawOrder = skeleton.drawOrder
@@ -1323,14 +1284,10 @@ class Animation(
         internal var ikConstraintIndex: Int = 0
 
         /** The time in seconds, mix, softness, bend direction, compress, and stretch for each key frame.  */
-        val frames: FloatArray // time, mix, softness, bendDirection, compress, stretch, ...
+        val frames: FloatArray = FloatArray(frameCount * ENTRIES) // time, mix, softness, bendDirection, compress, stretch, ...
 
         override val propertyId: Int
             get() = (TimelineType.ikConstraint.ordinal shl 24) + ikConstraintIndex
-
-        init {
-            frames = FloatArray(frameCount * ENTRIES)
-        }
 
         fun setIkConstraintIndex(index: Int) {
             require(index >= 0) { "index must be >= 0." }
@@ -1355,7 +1312,7 @@ class Animation(
             frames[frameIndex + STRETCH] = (if (stretch) 1 else 0).toFloat()
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.ikConstraints[ikConstraintIndex]
@@ -1460,14 +1417,10 @@ class Animation(
         internal var transformConstraintIndex: Int = 0
 
         /** The time in seconds, rotate mix, translate mix, scale mix, and shear mix for each key frame.  */
-        val frames: FloatArray // time, rotate mix, translate mix, scale mix, shear mix, ...
+        val frames: FloatArray = FloatArray(frameCount * ENTRIES) // time, rotate mix, translate mix, scale mix, shear mix, ...
 
         override val propertyId: Int
             get() = (TimelineType.transformConstraint.ordinal shl 24) + transformConstraintIndex
-
-        init {
-            frames = FloatArray(frameCount * ENTRIES)
-        }
 
         fun setTransformConstraintIndex(index: Int) {
             require(index >= 0) { "index must be >= 0." }
@@ -1490,7 +1443,7 @@ class Animation(
             frames[frameIndex + SHEAR] = shearMix
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.transformConstraints[transformConstraintIndex]
@@ -1576,14 +1529,10 @@ class Animation(
         internal var pathConstraintIndex: Int = 0
 
         /** The time in seconds and path constraint position for each key frame.  */
-        val frames: FloatArray // time, position, ...
+        val frames: FloatArray = FloatArray(frameCount * ENTRIES) // time, position, ...
 
         override val propertyId: Int
             get() = (TimelineType.pathConstraintPosition.ordinal shl 24) + pathConstraintIndex
-
-        init {
-            frames = FloatArray(frameCount * ENTRIES)
-        }
 
         fun setPathConstraintIndex(index: Int) {
             require(index >= 0) { "index must be >= 0." }
@@ -1603,7 +1552,7 @@ class Animation(
             frames[frameIndex + VALUE] = position
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]
@@ -1654,7 +1603,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.pathConstraintSpacing.ordinal shl 24) + pathConstraintIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]
@@ -1700,14 +1649,10 @@ class Animation(
         internal var pathConstraintIndex: Int = 0
 
         /** The time in seconds, rotate mix, and translate mix for each key frame.  */
-        val frames: FloatArray // time, rotate mix, translate mix, ...
+        val frames: FloatArray = FloatArray(frameCount * ENTRIES) // time, rotate mix, translate mix, ...
 
         override val propertyId: Int
             get() = (TimelineType.pathConstraintMix.ordinal shl 24) + pathConstraintIndex
-
-        init {
-            frames = FloatArray(frameCount * ENTRIES)
-        }
 
         fun setPathConstraintIndex(index: Int) {
             require(index >= 0) { "index must be >= 0." }
@@ -1728,7 +1673,7 @@ class Animation(
             frames[frameIndex + TRANSLATE] = translateMix
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: JArray<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]

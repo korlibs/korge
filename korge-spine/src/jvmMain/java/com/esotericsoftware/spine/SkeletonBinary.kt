@@ -95,7 +95,7 @@ class SkeletonBinary {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    private val linkedMeshes = JArray()
+    private val linkedMeshes = JArray<LinkedMesh>()
 
     constructor(atlas: TextureAtlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -114,9 +114,9 @@ class SkeletonBinary {
         val input = SkeletonInput(file)
         try {
             skeletonData.hash = input.readString()
-            if (skeletonData.hash.isEmpty()) skeletonData.hash = null
+            if (skeletonData.hash!!.isEmpty()) skeletonData.hash = null
             skeletonData.version = input.readString()
-            if (skeletonData.version.isEmpty()) skeletonData.version = null
+            if (skeletonData.version!!.isEmpty()) skeletonData.version = null
             if ("3.8.75" == skeletonData.version)
                 throw RuntimeException("Unsupported skeleton data, please export with a newer version of Spine.")
             skeletonData.x = input.readFloat()
@@ -129,136 +129,147 @@ class SkeletonBinary {
                 skeletonData.fps = input.readFloat()
 
                 skeletonData.imagesPath = input.readString()
-                if (skeletonData.imagesPath.isEmpty()) skeletonData.imagesPath = null
+                if (skeletonData.imagesPath!!.isEmpty()) skeletonData.imagesPath = null
 
                 skeletonData.audioPath = input.readString()
-                if (skeletonData.audioPath.isEmpty()) skeletonData.audioPath = null
+                if (skeletonData.audioPath!!.isEmpty()) skeletonData.audioPath = null
             }
 
-            val n: Int
-            var o: Array<Any>
+            var n: Int = 0
 
             // Strings.
-            input.strings = JArray(n = input.readInt(true))
-            o = input.strings!!.setSize(n)
-            for (i in 0 until n)
-                o[i] = input.readString()
+            run {
+                input.strings = JArray(input.readInt(true).also { n = it })
+                val o = input.strings!!.setSize(n)
+                for (i in 0 until n)
+                    o[i] = input.readString()!!
+            }
 
             // Bones.
-            o = skeletonData.bones.setSize(n = input.readInt(true))
-            for (i in 0 until n) {
-                val name = input.readString()
-                val parent = if (i == 0) null else skeletonData.bones[input.readInt(true)]
-                val data = BoneData(i, name, parent)
-                data.rotation = input.readFloat()
-                data.x = input.readFloat() * scale
-                data.y = input.readFloat() * scale
-                data.scaleX = input.readFloat()
-                data.scaleY = input.readFloat()
-                data.shearX = input.readFloat()
-                data.shearY = input.readFloat()
-                data.length = input.readFloat() * scale
-                data.transformMode = TransformMode.values[input.readInt(true)]
-                data.skinRequired = input.readBoolean()
-                if (nonessential) Color.rgba8888ToColor(data.color, input.readInt())
-                o[i] = data
+            run {
+                val o = skeletonData.bones.setSize(input.readInt(true).also { n = it })
+                for (i in 0 until n) {
+                    val name = input.readString()!!
+                    val parent = if (i == 0) null else skeletonData.bones[input.readInt(true)]
+                    val data = BoneData(i, name, parent)
+                    data.rotation = input.readFloat()
+                    data.x = input.readFloat() * scale
+                    data.y = input.readFloat() * scale
+                    data.scaleX = input.readFloat()
+                    data.scaleY = input.readFloat()
+                    data.shearX = input.readFloat()
+                    data.shearY = input.readFloat()
+                    data.length = input.readFloat() * scale
+                    data.transformMode = TransformMode.values[input.readInt(true)]
+                    data.skinRequired = input.readBoolean()
+                    if (nonessential) Color.rgba8888ToColor(data.color, input.readInt())
+                    o[i] = data
+                }
             }
 
             // Slots.
-            o = skeletonData.slots.setSize(n = input.readInt(true))
-            for (i in 0 until n) {
-                val slotName = input.readString()
-                val boneData = skeletonData.bones[input.readInt(true)]
-                val data = SlotData(i, slotName, boneData)
-                Color.rgba8888ToColor(data.color, input.readInt())
+            run {
+                val o = skeletonData.slots.setSize(input.readInt(true).also { n = it })
+                for (i in 0 until n) {
+                    val slotName = input.readString()!!
+                    val boneData = skeletonData.bones[input.readInt(true)]
+                    val data = SlotData(i, slotName, boneData)
+                    Color.rgba8888ToColor(data.color, input.readInt())
 
-                val darkColor = input.readInt()
-                if (darkColor != -1) Color.rgb888ToColor(data.darkColor = Color(), darkColor)
+                    val darkColor = input.readInt()
+                    if (darkColor != -1) Color.rgb888ToColor(Color().also { data.darkColor = it }, darkColor)
 
-                data.attachmentName = input.readStringRef()
-                data.blendMode = BlendMode.values[input.readInt(true)]
-                o[i] = data
+                    data.attachmentName = input.readStringRef()
+                    data.blendMode = BlendMode.values[input.readInt(true)]
+                    o[i] = data
+                }
             }
 
             // IK constraints.
-            o = skeletonData.ikConstraints.setSize(n = input.readInt(true))
             run {
-                var i = 0
-                val nn: Int
-                while (i < n) {
-                    val data = IkConstraintData(input.readString())
-                    data.order = input.readInt(true)
-                    data.skinRequired = input.readBoolean()
-                    val bones = data.bones.setSize(nn = input.readInt(true))
-                    for (ii in 0 until nn)
-                        bones[ii] = skeletonData.bones[input.readInt(true)]
-                    data.target = skeletonData.bones[input.readInt(true)]
-                    data.mix = input.readFloat()
-                    data.softness = input.readFloat() * scale
-                    data.bendDirection = input.readByte().toInt()
-                    data.compress = input.readBoolean()
-                    data.stretch = input.readBoolean()
-                    data.uniform = input.readBoolean()
-                    o[i] = data
-                    i++
+                val o = skeletonData.ikConstraints.setSize(input.readInt(true).also { n = it })
+                run {
+                    var i = 0
+                    var nn: Int
+                    while (i < n) {
+                        val data = IkConstraintData(input.readString()!!)
+                        data.order = input.readInt(true)
+                        data.skinRequired = input.readBoolean()
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
+                        for (ii in 0 until nn)
+                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                        data.target = skeletonData.bones[input.readInt(true)]
+                        data.mix = input.readFloat()
+                        data.softness = input.readFloat() * scale
+                        data.bendDirection = input.readByte().toInt()
+                        data.compress = input.readBoolean()
+                        data.stretch = input.readBoolean()
+                        data.uniform = input.readBoolean()
+                        o[i] = data
+                        i++
+                    }
                 }
             }
 
             // Transform constraints.
-            o = skeletonData.transformConstraints.setSize(n = input.readInt(true))
             run {
-                var i = 0
-                val nn: Int
-                while (i < n) {
-                    val data = TransformConstraintData(input.readString())
-                    data.order = input.readInt(true)
-                    data.skinRequired = input.readBoolean()
-                    val bones = data.bones.setSize(nn = input.readInt(true))
-                    for (ii in 0 until nn)
-                        bones[ii] = skeletonData.bones[input.readInt(true)]
-                    data.target = skeletonData.bones[input.readInt(true)]
-                    data.local = input.readBoolean()
-                    data.relative = input.readBoolean()
-                    data.offsetRotation = input.readFloat()
-                    data.offsetX = input.readFloat() * scale
-                    data.offsetY = input.readFloat() * scale
-                    data.offsetScaleX = input.readFloat()
-                    data.offsetScaleY = input.readFloat()
-                    data.offsetShearY = input.readFloat()
-                    data.rotateMix = input.readFloat()
-                    data.translateMix = input.readFloat()
-                    data.scaleMix = input.readFloat()
-                    data.shearMix = input.readFloat()
-                    o[i] = data
-                    i++
+                val o = skeletonData.transformConstraints.setSize(input.readInt(true).also { n = it })
+                run {
+                    var i = 0
+                    var nn: Int
+                    while (i < n) {
+                        val data = TransformConstraintData(input.readString()!!)
+                        data.order = input.readInt(true)
+                        data.skinRequired = input.readBoolean()
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
+                        for (ii in 0 until nn)
+                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                        data.target = skeletonData.bones[input.readInt(true)]
+                        data.local = input.readBoolean()
+                        data.relative = input.readBoolean()
+                        data.offsetRotation = input.readFloat()
+                        data.offsetX = input.readFloat() * scale
+                        data.offsetY = input.readFloat() * scale
+                        data.offsetScaleX = input.readFloat()
+                        data.offsetScaleY = input.readFloat()
+                        data.offsetShearY = input.readFloat()
+                        data.rotateMix = input.readFloat()
+                        data.translateMix = input.readFloat()
+                        data.scaleMix = input.readFloat()
+                        data.shearMix = input.readFloat()
+                        o[i] = data
+                        i++
+                    }
                 }
             }
 
             // Path constraints.
-            o = skeletonData.pathConstraints.setSize(n = input.readInt(true))
             run {
-                var i = 0
-                val nn: Int
-                while (i < n) {
-                    val data = PathConstraintData(input.readString())
-                    data.order = input.readInt(true)
-                    data.skinRequired = input.readBoolean()
-                    val bones = data.bones.setSize(nn = input.readInt(true))
-                    for (ii in 0 until nn)
-                        bones[ii] = skeletonData.bones[input.readInt(true)]
-                    data.target = skeletonData.slots[input.readInt(true)]
-                    data.positionMode = PositionMode.values[input.readInt(true)]
-                    data.spacingMode = SpacingMode.values[input.readInt(true)]
-                    data.rotateMode = RotateMode.values[input.readInt(true)]
-                    data.offsetRotation = input.readFloat()
-                    data.position = input.readFloat()
-                    if (data.positionMode == PositionMode.fixed) data.position *= scale
-                    data.spacing = input.readFloat()
-                    if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) data.spacing *= scale
-                    data.rotateMix = input.readFloat()
-                    data.translateMix = input.readFloat()
-                    o[i] = data
-                    i++
+                val o = skeletonData.pathConstraints.setSize(input.readInt(true).also { n = it })
+                run {
+                    var i = 0
+                    var nn: Int
+                    while (i < n) {
+                        val data = PathConstraintData(input.readString()!!)
+                        data.order = input.readInt(true)
+                        data.skinRequired = input.readBoolean()
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
+                        for (ii in 0 until nn)
+                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                        data.target = skeletonData.slots[input.readInt(true)]
+                        data.positionMode = PositionMode.values[input.readInt(true)]
+                        data.spacingMode = SpacingMode.values[input.readInt(true)]
+                        data.rotateMode = RotateMode.values[input.readInt(true)]
+                        data.offsetRotation = input.readFloat()
+                        data.position = input.readFloat()
+                        if (data.positionMode == PositionMode.fixed) data.position *= scale
+                        data.spacing = input.readFloat()
+                        if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) data.spacing *= scale
+                        data.rotateMix = input.readFloat()
+                        data.translateMix = input.readFloat()
+                        o[i] = data
+                        i++
+                    }
                 }
             }
 
@@ -272,9 +283,9 @@ class SkeletonBinary {
             // Skins.
             run {
                 var i = skeletonData.skins.size
-                o = skeletonData.skins.setSize(n = i + input.readInt(true))
+                val o = skeletonData.skins.setSize((i + input.readInt(true)).also { n = it })
                 while (i < n) {
-                    o[i] = readSkin(input, skeletonData, false, nonessential)
+                    o[i] = readSkin(input, skeletonData, false, nonessential)!!
                     i++
                 }
             }
@@ -285,7 +296,7 @@ class SkeletonBinary {
                 val linkedMesh = linkedMeshes.get(i)
                 val skin = (if (linkedMesh.skin == null) skeletonData.defaultSkin else skeletonData.findSkin(linkedMesh.skin))
                         ?: throw SerializationException("Skin not found: " + linkedMesh.skin!!)
-                val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent)
+                val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent!!)
                         ?: throw SerializationException("Parent mesh not found: " + linkedMesh.parent)
                 linkedMesh.mesh.deformAttachment = if (linkedMesh.inheritDeform) parent as VertexAttachment else linkedMesh.mesh
                 linkedMesh.mesh.parentMesh = parent as MeshAttachment
@@ -294,24 +305,28 @@ class SkeletonBinary {
             linkedMeshes.clear()
 
             // Events.
-            o = skeletonData.events.setSize(n = input.readInt(true))
-            for (i in 0 until n) {
-                val data = EventData(input.readStringRef())
-                data.int = input.readInt(false)
-                data.float = input.readFloat()
-                data.stringValue = input.readString()
-                data.audioPath = input.readString()
-                if (data.audioPath != null) {
-                    data.volume = input.readFloat()
-                    data.balance = input.readFloat()
+            run {
+                val o = skeletonData.events.setSize(input.readInt(true).also { n = it })
+                for (i in 0 until n) {
+                    val data = EventData(input.readStringRef()!!)
+                    data.int = input.readInt(false)
+                    data.float = input.readFloat()
+                    data.stringValue = input.readString()!!
+                    data.audioPath = input.readString()
+                    if (data.audioPath != null) {
+                        data.volume = input.readFloat()
+                        data.balance = input.readFloat()
+                    }
+                    o[i] = data
                 }
-                o[i] = data
             }
 
             // Animations.
-            o = skeletonData.animations.setSize(n = input.readInt(true))
-            for (i in 0 until n)
-                o[i] = readAnimation(input, input.readString(), skeletonData)
+            run {
+                val o = skeletonData.animations.setSize(input.readInt(true).also { n = it })
+                for (i in 0 until n)
+                    o[i] = readAnimation(input, input.readString(), skeletonData)
+            }
 
         } catch (ex: IOException) {
             throw SerializationException("Error reading skeleton file.", ex)
@@ -337,7 +352,7 @@ class SkeletonBinary {
             if (slotCount == 0) return null
             skin = Skin("default")
         } else {
-            skin = Skin(input.readStringRef())
+            skin = Skin(input.readStringRef()!!)
             val bones = skin.bones.setSize(input.readInt(true))
             run {
                 var i = 0
@@ -380,7 +395,7 @@ class SkeletonBinary {
             var ii = 0
             val nn = input.readInt(true)
             while (ii < nn) {
-                val name = input.readStringRef()
+                val name = input.readStringRef()!!
                 val attachment = readAttachment(input, skeletonData, skin, slotIndex, name, nonessential)
                 if (attachment != null) skin.setAttachment(slotIndex, name, attachment)
                 ii++
@@ -397,7 +412,7 @@ class SkeletonBinary {
         var name = input.readStringRef()
         if (name == null) name = attachmentName
 
-        val type = AttachmentType.values[input.readByte()]
+        val type = AttachmentType.values[input.readByte().toInt()]
         when (type) {
             AttachmentType.region -> {
                 var path = input.readStringRef()
@@ -411,7 +426,7 @@ class SkeletonBinary {
                 val color = input.readInt()
 
                 if (path == null) path = name
-                val region = attachmentLoader.newRegionAttachment(skin, name, path) ?: return null
+                val region = attachmentLoader.newRegionAttachment(skin, name!!, path!!) ?: return null
                 region.path = path
                 region.x = x * scale
                 region.y = y * scale
@@ -429,7 +444,7 @@ class SkeletonBinary {
                 val vertices = readVertices(input, vertexCount)
                 val color = if (nonessential) input.readInt() else 0
 
-                val box = attachmentLoader.newBoundingBoxAttachment(skin, name) ?: return null
+                val box = attachmentLoader.newBoundingBoxAttachment(skin, name!!) ?: return null
                 box.worldVerticesLength = vertexCount shl 1
                 box.vertices = vertices.vertices
                 box.bones = vertices.bones
@@ -454,7 +469,7 @@ class SkeletonBinary {
                 }
 
                 if (path == null) path = name
-                val mesh = attachmentLoader.newMeshAttachment(skin, name, path) ?: return null
+                val mesh = attachmentLoader.newMeshAttachment(skin, name!!, path!!) ?: return null
                 mesh.path = path
                 Color.rgba8888ToColor(mesh.color, color)
                 mesh.bones = vertices.bones
@@ -485,7 +500,7 @@ class SkeletonBinary {
                 }
 
                 if (path == null) path = name
-                val mesh = attachmentLoader.newMeshAttachment(skin, name, path) ?: return null
+                val mesh = attachmentLoader.newMeshAttachment(skin, name!!, path!!) ?: return null
                 mesh.path = path
                 Color.rgba8888ToColor(mesh.color, color)
                 if (nonessential) {
@@ -509,7 +524,7 @@ class SkeletonBinary {
                 }
                 val color = if (nonessential) input.readInt() else 0
 
-                val path = attachmentLoader.newPathAttachment(skin, name) ?: return null
+                val path = attachmentLoader.newPathAttachment(skin, name!!) ?: return null
                 path.closed = closed
                 path.constantSpeed = constantSpeed
                 path.worldVerticesLength = vertexCount shl 1
@@ -525,7 +540,7 @@ class SkeletonBinary {
                 val y = input.readFloat()
                 val color = if (nonessential) input.readInt() else 0
 
-                val point = attachmentLoader.newPointAttachment(skin, name) ?: return null
+                val point = attachmentLoader.newPointAttachment(skin, name!!) ?: return null
                 point.x = x * scale
                 point.y = y * scale
                 point.rotation = rotation
@@ -538,7 +553,7 @@ class SkeletonBinary {
                 val vertices = readVertices(input, vertexCount)
                 val color = if (nonessential) input.readInt() else 0
 
-                val clip = attachmentLoader.newClippingAttachment(skin, name) ?: return null
+                val clip = attachmentLoader.newClippingAttachment(skin, name!!) ?: return null
                 clip.endSlot = skeletonData.slots[endSlotIndex]
                 clip.worldVerticesLength = vertexCount shl 1
                 clip.vertices = vertices.vertices
@@ -598,7 +613,7 @@ class SkeletonBinary {
     }
 
     private fun readAnimation(input: SkeletonInput, name: String?, skeletonData: SkeletonData): Animation {
-        val timelines = JArray(32)
+        val timelines = JArray<Timeline>(32)
         val scale = this.scale
         var duration = 0f
 
@@ -806,7 +821,7 @@ class SkeletonBinary {
                         var iii = 0
                         val nnn = input.readInt(true)
                         while (iii < nnn) {
-                            val attachment = skin.getAttachment(slotIndex, input.readStringRef()) as VertexAttachment
+                            val attachment = skin.getAttachment(slotIndex, input.readStringRef()!!) as VertexAttachment
                             val weighted = attachment.bones != null
                             val vertices = attachment.vertices
                             val deformLength = if (weighted) vertices!!.size / 3 * 2 else vertices!!.size
@@ -900,7 +915,7 @@ class SkeletonBinary {
                     val event = Event(time, eventData)
                     event.int = input.readInt(false)
                     event.float = input.readFloat()
-                    event.stringValue = if (input.readBoolean()) input.readString() else eventData.stringValue
+                    event.stringValue = if (input.readBoolean()) input.readString()!! else eventData.stringValue
                     if (event.data.audioPath != null) {
                         event.volume = input.readFloat()
                         event.balance = input.readFloat()
@@ -915,12 +930,12 @@ class SkeletonBinary {
         }
 
         timelines.shrink()
-        return Animation(name, timelines, duration)
+        return Animation(name!!, timelines, duration)
     }
 
     @Throws(IOException::class)
     private fun readCurve(input: SkeletonInput, frameIndex: Int, timeline: CurveTimeline) {
-        when (input.readByte()) {
+        when (input.readByte().toInt()) {
             CURVE_STEPPED -> timeline.setStepped(frameIndex)
             CURVE_BEZIER -> setCurve(timeline, frameIndex, input.readFloat(), input.readFloat(), input.readFloat(), input.readFloat())
         }

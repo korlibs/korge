@@ -39,25 +39,25 @@ import com.esotericsoftware.spine.Skin
 interface AttachmentLoader {
     /** @return May be null to not load the attachment.
      */
-    fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment
+    fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment?
 
     /** @return May be null to not load the attachment.
      */
-    fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment
+    fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment?
 
     /** @return May be null to not load the attachment.
      */
-    fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment
+    fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment?
 
     /** @return May be null to not load the attachment.
      */
-    fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment
+    fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment?
 
     /** @return May be null to not load the attachment.
      */
-    fun newPathAttachment(skin: Skin, name: String): PathAttachment
+    fun newPathAttachment(skin: Skin, name: String): PathAttachment?
 
     /** @return May be null to not load the attachment.
      */
-    fun newPointAttachment(skin: Skin, name: String): PointAttachment
+    fun newPointAttachment(skin: Skin, name: String): PointAttachment?
 }

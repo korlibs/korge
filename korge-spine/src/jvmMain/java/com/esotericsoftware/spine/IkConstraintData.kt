@@ -38,7 +38,7 @@ import com.badlogic.gdx.utils.JArray
 class IkConstraintData(name: String) : ConstraintData(name) {
     /** The bones that are constrained by this IK constraint.  */
     val bones: JArray<BoneData> = JArray()
-    internal lateinit var target: BoneData
+    lateinit internal var target: BoneData
 
     /** Controls the bend direction of the IK bones, either 1 or -1.  */
     var bendDirection = 1

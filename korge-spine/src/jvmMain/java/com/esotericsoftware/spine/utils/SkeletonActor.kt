@@ -39,8 +39,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 
 /** A scene2d actor that draws a skeleton.  */
 class SkeletonActor : Actor {
-    var renderer: SkeletonRenderer? = null
-    var skeleton: Skeleton? = null
+    lateinit var renderer: SkeletonRenderer
+    lateinit var skeleton: Skeleton
     lateinit var animationState: AnimationState
 
     /** If false, the blend function will be left as whatever [SkeletonRenderer.draw] set. This can reduce
@@ -68,13 +68,13 @@ class SkeletonActor : Actor {
         val blendSrcAlpha = batch.blendSrcFuncAlpha
         val blendDstAlpha = batch.blendDstFuncAlpha
 
-        val color = skeleton!!.color
+        val color = skeleton.color
         val oldAlpha = color.a
-        skeleton!!.color.a *= parentAlpha
+        skeleton.color.a *= parentAlpha
 
-        skeleton!!.setPosition(x, y)
-        skeleton!!.updateWorldTransform()
-        renderer!!.draw(batch, skeleton)
+        skeleton.setPosition(x, y)
+        skeleton.updateWorldTransform()
+        renderer.draw(batch, skeleton)
 
         if (resetBlendFunction) batch.setBlendFunctionSeparate(blendSrc, blendDst, blendSrcAlpha, blendDstAlpha)
 

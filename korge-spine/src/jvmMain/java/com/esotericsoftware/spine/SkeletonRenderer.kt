@@ -185,7 +185,7 @@ class SkeletonRenderer {
         var blendMode: BlendMode? = null
         var verticesLength = 0
         lateinit var vertices: FloatArray
-        lateinit var uvs: FloatArray
+        var uvs: FloatArray? = null
         lateinit var triangles: ShortArray
         var color: Color? = null
         val skeletonColor = skeleton.color
@@ -221,7 +221,7 @@ class SkeletonRenderer {
                 vertices = this.vertices.setSize(verticesLength)
                 attachment.computeWorldVertices(slot, 0, count, vertices, 0, vertexSize)
                 triangles = attachment.triangles
-                texture = attachment.region.texture
+                texture = attachment.region!!.texture
                 uvs = attachment.uVs
                 color = attachment.color
 
@@ -259,7 +259,7 @@ class SkeletonRenderer {
                         or (r * slotColor.r * color.r * multiplier).toInt())
 
                 if (clipper.isClipping) {
-                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles!!.size, uvs, c, 0f, false)
+                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles.size, uvs!!, c, 0f, false)
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 5, c, 0f)
@@ -330,7 +330,7 @@ class SkeletonRenderer {
         var blendMode: BlendMode? = null
         var verticesLength = 0
         lateinit var vertices: FloatArray
-        lateinit var uvs: FloatArray
+        var uvs: FloatArray? = null
         lateinit var triangles: ShortArray
         var color: Color? = null
         val skeletonColor = skeleton.color
@@ -366,7 +366,7 @@ class SkeletonRenderer {
                 vertices = this.vertices.setSize(verticesLength)
                 attachment.computeWorldVertices(slot, 0, count, vertices, 0, vertexSize)
                 triangles = attachment.triangles
-                texture = attachment.region.texture
+                texture = attachment.region!!.texture
                 uvs = attachment.uVs
                 color = attachment.color
 
@@ -415,7 +415,7 @@ class SkeletonRenderer {
                             or (red * darkColor.r).toInt())
 
                 if (clipper.isClipping) {
-                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles!!.size, uvs, light, dark, true)
+                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles.size, uvs!!, light, dark, true)
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 6, light, dark)
