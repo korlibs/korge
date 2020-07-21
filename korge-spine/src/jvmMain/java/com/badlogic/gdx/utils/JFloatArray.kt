@@ -5,435 +5,466 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 
-package com.badlogic.gdx.utils;
+package com.badlogic.gdx.utils
 
-import java.util.Arrays;
+import java.util.Arrays
 
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.MathUtils
 
 /** A resizable, ordered or unordered float array. Avoids the boxing that occurs with ArrayList<Float>. If unordered, this class
  * avoids a memory copy when removing elements (the last element is moved to the removed element's position).
- * @author Nathan Sweet */
-public class JFloatArray {
-    public float[] items;
-    public int size;
-    public boolean ordered;
+ * @author Nathan Sweet
+</Float> */
+class JFloatArray {
+    @JvmField
+    var items: FloatArray
+    @JvmField
+    var size: Int = 0
+    @JvmField
+    var ordered: Boolean = false
 
-    /** Creates an ordered array with a capacity of 16. */
-    public JFloatArray() {
-        this(true, 16);
-    }
+    /** Returns true if the array is empty.  */
+    val isEmpty: Boolean
+        get() = size == 0
 
-    /** Creates an ordered array with the specified capacity. */
-    public JFloatArray(int capacity) {
-        this(true, capacity);
-    }
+    /** Creates an ordered array with the specified capacity.  */
+    constructor(capacity: Int) : this(true, capacity) {}
 
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     *           memory copy.
-     * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public JFloatArray(boolean ordered, int capacity) {
-        this.ordered = ordered;
-        items = new float[capacity];
+     * memory copy.
+     * @param capacity Any elements added beyond this will cause the backing array to be grown.
+     */
+    @JvmOverloads
+    constructor(ordered: Boolean = true, capacity: Int = 16) {
+        this.ordered = ordered
+        items = FloatArray(capacity)
     }
 
     /** Creates a new array containing the elements in the specific array. The new array will be ordered if the specific array is
      * ordered. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be
-     * grown. */
-    public JFloatArray(JFloatArray array) {
-        this.ordered = array.ordered;
-        size = array.size;
-        items = new float[size];
-        System.arraycopy(array.items, 0, items, 0, size);
+     * grown.  */
+    constructor(array: JFloatArray) {
+        this.ordered = array.ordered
+        size = array.size
+        items = FloatArray(size)
+        System.arraycopy(array.items, 0, items, 0, size)
     }
 
     /** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
-     * so any subsequent elements added will cause the backing array to be grown. */
-    public JFloatArray(float[] array) {
-        this(true, array, 0, array.length);
-    }
+     * so any subsequent elements added will cause the backing array to be grown.  */
+    constructor(array: FloatArray) : this(true, array, 0, array.size) {}
 
     /** Creates a new array containing the elements in the specified array. The capacity is set to the number of elements, so any
      * subsequent elements added will cause the backing array to be grown.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     *           memory copy. */
-    public JFloatArray(boolean ordered, float[] array, int startIndex, int count) {
-        this(ordered, count);
-        size = count;
-        System.arraycopy(array, startIndex, items, 0, count);
+     * memory copy.
+     */
+    constructor(ordered: Boolean, array: FloatArray, startIndex: Int, count: Int) : this(ordered, count) {
+        size = count
+        System.arraycopy(array, startIndex, items, 0, count)
     }
 
-    public void add (float value) {
-        float[] items = this.items;
-        if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size++] = value;
+    fun add(value: Float) {
+        var items = this.items
+        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size++] = value
     }
 
-    public void add (float value1, float value2) {
-        float[] items = this.items;
-        if (size + 1 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size] = value1;
-        items[size + 1] = value2;
-        size += 2;
+    fun add(value1: Float, value2: Float) {
+        var items = this.items
+        if (size + 1 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size] = value1
+        items[size + 1] = value2
+        size += 2
     }
 
-    public void add (float value1, float value2, float value3) {
-        float[] items = this.items;
-        if (size + 2 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size] = value1;
-        items[size + 1] = value2;
-        items[size + 2] = value3;
-        size += 3;
+    fun add(value1: Float, value2: Float, value3: Float) {
+        var items = this.items
+        if (size + 2 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size] = value1
+        items[size + 1] = value2
+        items[size + 2] = value3
+        size += 3
     }
 
-    public void add (float value1, float value2, float value3, float value4) {
-        float[] items = this.items;
-        if (size + 3 >= items.length) items = resize(Math.max(8, (int)(size * 1.8f))); // 1.75 isn't enough when size=5.
-        items[size] = value1;
-        items[size + 1] = value2;
-        items[size + 2] = value3;
-        items[size + 3] = value4;
-        size += 4;
+    fun add(value1: Float, value2: Float, value3: Float, value4: Float) {
+        var items = this.items
+        if (size + 3 >= items.size) items = resize(Math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
+        items[size] = value1
+        items[size + 1] = value2
+        items[size + 2] = value3
+        items[size + 3] = value4
+        size += 4
     }
 
-    public void addAll (JFloatArray array) {
-        addAll(array.items, 0, array.size);
+    fun addAll(array: JFloatArray) {
+        addAll(array.items, 0, array.size)
     }
 
-    public void addAll (JFloatArray array, int offset, int length) {
-        if (offset + length > array.size)
-            throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
-        addAll(array.items, offset, length);
+    fun addAll(array: JFloatArray, offset: Int, length: Int) {
+        require(offset + length <= array.size) { "offset + length must be <= size: " + offset + " + " + length + " <= " + array.size }
+        addAll(array.items, offset, length)
     }
 
-    public void addAll (float... array) {
-        addAll(array, 0, array.length);
+    fun addAll(vararg array: Float) {
+        addAll(array, 0, array.size)
     }
 
-    public void addAll (float[] array, int offset, int length) {
-        float[] items = this.items;
-        int sizeNeeded = size + length;
-        if (sizeNeeded > items.length) items = resize(Math.max(8, (int)(sizeNeeded * 1.75f)));
-        System.arraycopy(array, offset, items, size, length);
-        size += length;
+    fun addAll(array: FloatArray, offset: Int, length: Int) {
+        var items = this.items
+        val sizeNeeded = size + length
+        if (sizeNeeded > items.size) items = resize(Math.max(8, (sizeNeeded * 1.75f).toInt()))
+        System.arraycopy(array, offset, items, size, length)
+        size += length
     }
 
-    public float get (int index) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        return items[index];
+    operator fun get(index: Int): Float {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        return items[index]
     }
 
-    public void set (int index, float value) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        items[index] = value;
+    operator fun set(index: Int, value: Float) {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        items[index] = value
     }
 
-    public void incr (int index, float value) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        items[index] += value;
+    fun incr(index: Int, value: Float) {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        items[index] += value
     }
 
-    public void incr (float value) {
-        float[] items = this.items;
-        for (int i = 0, n = size; i < n; i++)
-            items[i] += value;
+    fun incr(value: Float) {
+        val items = this.items
+        var i = 0
+        val n = size
+        while (i < n) {
+            items[i] += value
+            i++
+        }
     }
 
-    public void mul (int index, float value) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        items[index] *= value;
+    fun mul(index: Int, value: Float) {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        items[index] *= value
     }
 
-    public void mul (float value) {
-        float[] items = this.items;
-        for (int i = 0, n = size; i < n; i++)
-            items[i] *= value;
+    fun mul(value: Float) {
+        val items = this.items
+        var i = 0
+        val n = size
+        while (i < n) {
+            items[i] *= value
+            i++
+        }
     }
 
-    public void insert (int index, float value) {
-        if (index > size) throw new IndexOutOfBoundsException("index can't be > size: " + index + " > " + size);
-        float[] items = this.items;
-        if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
+    fun insert(index: Int, value: Float) {
+        if (index > size) throw IndexOutOfBoundsException("index can't be > size: $index > $size")
+        var items = this.items
+        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
         if (ordered)
-            System.arraycopy(items, index, items, index + 1, size - index);
+            System.arraycopy(items, index, items, index + 1, size - index)
         else
-            items[size] = items[index];
-        size++;
-        items[index] = value;
+            items[size] = items[index]
+        size++
+        items[index] = value
     }
 
-    public void swap (int first, int second) {
-        if (first >= size) throw new IndexOutOfBoundsException("first can't be >= size: " + first + " >= " + size);
-        if (second >= size) throw new IndexOutOfBoundsException("second can't be >= size: " + second + " >= " + size);
-        float[] items = this.items;
-        float firstValue = items[first];
-        items[first] = items[second];
-        items[second] = firstValue;
+    fun swap(first: Int, second: Int) {
+        if (first >= size) throw IndexOutOfBoundsException("first can't be >= size: $first >= $size")
+        if (second >= size) throw IndexOutOfBoundsException("second can't be >= size: $second >= $size")
+        val items = this.items
+        val firstValue = items[first]
+        items[first] = items[second]
+        items[second] = firstValue
     }
 
-    public boolean contains (float value) {
-        int i = size - 1;
-        float[] items = this.items;
+    operator fun contains(value: Float): Boolean {
+        var i = size - 1
+        val items = this.items
         while (i >= 0)
-            if (items[i--] == value) return true;
-        return false;
+            if (items[i--] == value) return true
+        return false
     }
 
-    public int indexOf (float value) {
-        float[] items = this.items;
-        for (int i = 0, n = size; i < n; i++)
-            if (items[i] == value) return i;
-        return -1;
+    fun indexOf(value: Float): Int {
+        val items = this.items
+        var i = 0
+        val n = size
+        while (i < n) {
+            if (items[i] == value) return i
+            i++
+        }
+        return -1
     }
 
-    public int lastIndexOf (float value) {
-        float[] items = this.items;
-        for (int i = size - 1; i >= 0; i--)
-            if (items[i] == value) return i;
-        return -1;
+    fun lastIndexOf(value: Float): Int {
+        val items = this.items
+        for (i in size - 1 downTo 0)
+            if (items[i] == value) return i
+        return -1
     }
 
-    public boolean removeValue (float value) {
-        float[] items = this.items;
-        for (int i = 0, n = size; i < n; i++) {
+    fun removeValue(value: Float): Boolean {
+        val items = this.items
+        var i = 0
+        val n = size
+        while (i < n) {
             if (items[i] == value) {
-                removeIndex(i);
-                return true;
+                removeIndex(i)
+                return true
             }
+            i++
         }
-        return false;
+        return false
     }
 
-    /** Removes and returns the item at the specified index. */
-    public float removeIndex (int index) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        float[] items = this.items;
-        float value = items[index];
-        size--;
+    /** Removes and returns the item at the specified index.  */
+    fun removeIndex(index: Int): Float {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        val items = this.items
+        val value = items[index]
+        size--
         if (ordered)
-            System.arraycopy(items, index + 1, items, index, size - index);
+            System.arraycopy(items, index + 1, items, index, size - index)
         else
-            items[index] = items[size];
-        return value;
+            items[index] = items[size]
+        return value
     }
 
-    /** Removes the items between the specified indices, inclusive. */
-    public void removeRange (int start, int end) {
-        int n = size;
-        if (end >= n) throw new IndexOutOfBoundsException("end can't be >= size: " + end + " >= " + size);
-        if (start > end) throw new IndexOutOfBoundsException("start can't be > end: " + start + " > " + end);
-        int count = end - start + 1, lastIndex = n - count;
+    /** Removes the items between the specified indices, inclusive.  */
+    fun removeRange(start: Int, end: Int) {
+        val n = size
+        if (end >= n) throw IndexOutOfBoundsException("end can't be >= size: $end >= $size")
+        if (start > end) throw IndexOutOfBoundsException("start can't be > end: $start > $end")
+        val count = end - start + 1
+        val lastIndex = n - count
         if (ordered)
-            System.arraycopy(items, start + count, items, start, n - (start + count));
+            System.arraycopy(items, start + count, items, start, n - (start + count))
         else {
-            int i = Math.max(lastIndex, end + 1);
-            System.arraycopy(items, i, items, start, n - i);
+            val i = Math.max(lastIndex, end + 1)
+            System.arraycopy(items, i, items, start, n - i)
         }
-        size = n - count;
+        size = n - count
     }
 
     /** Removes from this array all of elements contained in the specified array.
-     * @return true if this array was modified. */
-    public boolean removeAll (JFloatArray array) {
-        int size = this.size;
-        int startSize = size;
-        float[] items = this.items;
-        for (int i = 0, n = array.size; i < n; i++) {
-            float item = array.get(i);
-            for (int ii = 0; ii < size; ii++) {
+     * @return true if this array was modified.
+     */
+    fun removeAll(array: JFloatArray): Boolean {
+        var size = this.size
+        val startSize = size
+        val items = this.items
+        var i = 0
+        val n = array.size
+        while (i < n) {
+            val item = array[i]
+            for (ii in 0 until size) {
                 if (item == items[ii]) {
-                    removeIndex(ii);
-                    size--;
-                    break;
+                    removeIndex(ii)
+                    size--
+                    break
                 }
             }
+            i++
         }
-        return size != startSize;
+        return size != startSize
     }
 
-    /** Removes and returns the last item. */
-    public float pop () {
-        return items[--size];
+    /** Removes and returns the last item.  */
+    fun pop(): Float {
+        return items[--size]
     }
 
-    /** Returns the last item. */
-    public float peek () {
-        return items[size - 1];
+    /** Returns the last item.  */
+    fun peek(): Float {
+        return items[size - 1]
     }
 
-    /** Returns the first item. */
-    public float first () {
-        if (size == 0) throw new IllegalStateException("Array is empty.");
-        return items[0];
+    /** Returns the first item.  */
+    fun first(): Float {
+        check(size != 0) { "Array is empty." }
+        return items[0]
     }
 
-    /** Returns true if the array has one or more items. */
-    public boolean notEmpty () {
-        return size > 0;
+    /** Returns true if the array has one or more items.  */
+    fun notEmpty(): Boolean {
+        return size > 0
     }
 
-    /** Returns true if the array is empty. */
-    public boolean isEmpty () {
-        return size == 0;
-    }
-
-    public void clear () {
-        size = 0;
+    fun clear() {
+        size = 0
     }
 
     /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
      * have been removed, or if it is known that more items will not be added.
-     * @return {@link #items} */
-    public float[] shrink () {
-        if (items.length != size) resize(size);
-        return items;
+     * @return [.items]
+     */
+    fun shrink(): FloatArray {
+        if (items.size != size) resize(size)
+        return items
     }
 
     /** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
      * items to avoid multiple backing array resizes.
-     * @return {@link #items} */
-    public float[] ensureCapacity (int additionalCapacity) {
-        if (additionalCapacity < 0) throw new IllegalArgumentException("additionalCapacity must be >= 0: " + additionalCapacity);
-        int sizeNeeded = size + additionalCapacity;
-        if (sizeNeeded > items.length) resize(Math.max(8, sizeNeeded));
-        return items;
+     * @return [.items]
+     */
+    fun ensureCapacity(additionalCapacity: Int): FloatArray {
+        require(additionalCapacity >= 0) { "additionalCapacity must be >= 0: $additionalCapacity" }
+        val sizeNeeded = size + additionalCapacity
+        if (sizeNeeded > items.size) resize(Math.max(8, sizeNeeded))
+        return items
     }
 
     /** Sets the array size, leaving any values beyond the current size undefined.
-     * @return {@link #items} */
-    public float[] setSize (int newSize) {
-        if (newSize < 0) throw new IllegalArgumentException("newSize must be >= 0: " + newSize);
-        if (newSize > items.length) resize(Math.max(8, newSize));
-        size = newSize;
-        return items;
+     * @return [.items]
+     */
+    fun setSize(newSize: Int): FloatArray {
+        require(newSize >= 0) { "newSize must be >= 0: $newSize" }
+        if (newSize > items.size) resize(Math.max(8, newSize))
+        size = newSize
+        return items
     }
 
-    protected float[] resize (int newSize) {
-        float[] newItems = new float[newSize];
-        float[] items = this.items;
-        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.length));
-        this.items = newItems;
-        return newItems;
+    protected fun resize(newSize: Int): FloatArray {
+        val newItems = FloatArray(newSize)
+        val items = this.items
+        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
+        this.items = newItems
+        return newItems
     }
 
-    public void sort () {
-        Arrays.sort(items, 0, size);
+    fun sort() {
+        Arrays.sort(items, 0, size)
     }
 
-    public void reverse () {
-        float[] items = this.items;
-        for (int i = 0, lastIndex = size - 1, n = size / 2; i < n; i++) {
-            int ii = lastIndex - i;
-            float temp = items[i];
-            items[i] = items[ii];
-            items[ii] = temp;
+    fun reverse() {
+        val items = this.items
+        var i = 0
+        val lastIndex = size - 1
+        val n = size / 2
+        while (i < n) {
+            val ii = lastIndex - i
+            val temp = items[i]
+            items[i] = items[ii]
+            items[ii] = temp
+            i++
         }
     }
 
-    public void shuffle () {
-        float[] items = this.items;
-        for (int i = size - 1; i >= 0; i--) {
-            int ii = MathUtils.random(i);
-            float temp = items[i];
-            items[i] = items[ii];
-            items[ii] = temp;
+    fun shuffle() {
+        val items = this.items
+        for (i in size - 1 downTo 0) {
+            val ii = MathUtils.random(i)
+            val temp = items[i]
+            items[i] = items[ii]
+            items[ii] = temp
         }
     }
 
     /** Reduces the size of the array to the specified size. If the array is already smaller than the specified size, no action is
-     * taken. */
-    public void truncate (int newSize) {
-        if (size > newSize) size = newSize;
+     * taken.  */
+    fun truncate(newSize: Int) {
+        if (size > newSize) size = newSize
     }
 
-    /** Returns a random item from the array, or zero if the array is empty. */
-    public float random () {
-        if (size == 0) return 0;
-        return items[MathUtils.random(0, size - 1)];
+    /** Returns a random item from the array, or zero if the array is empty.  */
+    fun random(): Float {
+        return if (size == 0) 0f else items[MathUtils.random(0, size - 1)]
     }
 
-    public float[] toArray () {
-        float[] array = new float[size];
-        System.arraycopy(items, 0, array, 0, size);
-        return array;
+    fun toArray(): FloatArray {
+        val array = FloatArray(size)
+        System.arraycopy(items, 0, array, 0, size)
+        return array
     }
 
-    public int hashCode () {
-        if (!ordered) return super.hashCode();
-        float[] items = this.items;
-        int h = 1;
-        for (int i = 0, n = size; i < n; i++)
-            h = h * 31 + NumberUtils.floatToRawIntBits(items[i]);
-        return h;
-    }
-
-    /** Returns false if either array is unordered. */
-    public boolean equals (Object object) {
-        if (object == this) return true;
-        if (!ordered) return false;
-        if (!(object instanceof JFloatArray)) return false;
-        JFloatArray array = (JFloatArray)object;
-        if (!array.ordered) return false;
-        int n = size;
-        if (n != array.size) return false;
-        float[] items1 = this.items, items2 = array.items;
-        for (int i = 0; i < n; i++)
-            if (items1[i] != items2[i]) return false;
-        return true;
-    }
-
-    /** Returns false if either array is unordered. */
-    public boolean equals (Object object, float epsilon) {
-        if (object == this) return true;
-        if (!(object instanceof JFloatArray)) return false;
-        JFloatArray array = (JFloatArray)object;
-        int n = size;
-        if (n != array.size) return false;
-        if (!ordered) return false;
-        if (!array.ordered) return false;
-        float[] items1 = this.items, items2 = array.items;
-        for (int i = 0; i < n; i++)
-            if (Math.abs(items1[i] - items2[i]) > epsilon) return false;
-        return true;
-    }
-
-    public String toString () {
-        if (size == 0) return "[]";
-        float[] items = this.items;
-        StringBuilder buffer = new StringBuilder(32);
-        buffer.append('[');
-        buffer.append(items[0]);
-        for (int i = 1; i < size; i++) {
-            buffer.append(", ");
-            buffer.append(items[i]);
+    override fun hashCode(): Int {
+        if (!ordered) return super.hashCode()
+        val items = this.items
+        var h = 1
+        var i = 0
+        val n = size
+        while (i < n) {
+            h = h * 31 + NumberUtils.floatToRawIntBits(items[i])
+            i++
         }
-        buffer.append(']');
-        return buffer.toString();
+        return h
     }
 
-    public String toString (String separator) {
-        if (size == 0) return "";
-        float[] items = this.items;
-        StringBuilder buffer = new StringBuilder(32);
-        buffer.append(items[0]);
-        for (int i = 1; i < size; i++) {
-            buffer.append(separator);
-            buffer.append(items[i]);
+    /** Returns false if either array is unordered.  */
+    override fun equals(`object`: Any?): Boolean {
+        if (`object` === this) return true
+        if (!ordered) return false
+        if (`object` !is JFloatArray) return false
+        val array = `object` as JFloatArray?
+        if (!array!!.ordered) return false
+        val n = size
+        if (n != array.size) return false
+        val items1 = this.items
+        val items2 = array.items
+        for (i in 0 until n)
+            if (items1[i] != items2[i]) return false
+        return true
+    }
+
+    /** Returns false if either array is unordered.  */
+    fun equals(`object`: Any, epsilon: Float): Boolean {
+        if (`object` === this) return true
+        if (`object` !is JFloatArray) return false
+        val n = size
+        if (n != `object`.size) return false
+        if (!ordered) return false
+        if (!`object`.ordered) return false
+        val items1 = this.items
+        val items2 = `object`.items
+        for (i in 0 until n)
+            if (Math.abs(items1[i] - items2[i]) > epsilon) return false
+        return true
+    }
+
+    override fun toString(): String {
+        if (size == 0) return "[]"
+        val items = this.items
+        val buffer = StringBuilder(32)
+        buffer.append('[')
+        buffer.append(items[0])
+        for (i in 1 until size) {
+            buffer.append(", ")
+            buffer.append(items[i])
         }
-        return buffer.toString();
+        buffer.append(']')
+        return buffer.toString()
     }
 
-    /** @see #JFloatArray(float[]) */
-    static public JFloatArray with (float... array) {
-        return new JFloatArray(array);
+    fun toString(separator: String): String {
+        if (size == 0) return ""
+        val items = this.items
+        val buffer = StringBuilder(32)
+        buffer.append(items[0])
+        for (i in 1 until size) {
+            buffer.append(separator)
+            buffer.append(items[i])
+        }
+        return buffer.toString()
+    }
+
+    companion object {
+
+        /** @see .JFloatArray
+         */
+        fun with(vararg array: Float): JFloatArray {
+            return JFloatArray(array)
+        }
     }
 }
+/** Creates an ordered array with a capacity of 16.  */
