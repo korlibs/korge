@@ -1,4 +1,4 @@
-package com.esotericsoftware.spine.rendering
+package com.esotericsoftware.spine.graphics
 
 class Texture {
     val width: Float

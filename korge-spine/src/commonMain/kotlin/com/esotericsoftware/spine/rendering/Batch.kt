@@ -1,6 +1,6 @@
 package com.esotericsoftware.spine.rendering
 
-import com.esotericsoftware.spine.rendering.*
+import com.esotericsoftware.spine.graphics.*
 
 interface Batch {
     fun begin() {}

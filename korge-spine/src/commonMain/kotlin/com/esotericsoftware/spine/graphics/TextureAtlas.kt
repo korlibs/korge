@@ -1,7 +1,6 @@
 package com.esotericsoftware.spine.graphics
 
 import com.esotericsoftware.spine.assets.*
-import com.esotericsoftware.spine.rendering.*
 
 class TextureAtlas(val handle: FileHandle) {
     private val dummyTexture = Texture()

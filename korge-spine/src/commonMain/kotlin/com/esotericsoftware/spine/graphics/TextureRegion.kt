@@ -1,7 +1,5 @@
 package com.esotericsoftware.spine.graphics
 
-import com.esotericsoftware.spine.rendering.*
-
 open class TextureRegion {
     open val u: Float
         get() = 0f
