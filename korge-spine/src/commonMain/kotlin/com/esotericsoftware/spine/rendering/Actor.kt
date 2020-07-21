@@ -1,4 +1,4 @@
-package com.badlogic.gdx.scenes.scene2d
+package com.esotericsoftware.spine.rendering
 
 open class Actor {
 

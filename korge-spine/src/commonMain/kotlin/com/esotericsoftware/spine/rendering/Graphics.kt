@@ -1,4 +1,4 @@
-package com.badlogic.gdx
+package com.esotericsoftware.spine.rendering
 
 class Graphics {
     val width: Float

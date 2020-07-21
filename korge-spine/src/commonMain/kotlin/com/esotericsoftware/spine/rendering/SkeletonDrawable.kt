@@ -27,14 +27,10 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine.utils
+package com.esotericsoftware.spine.rendering
 
 import com.esotericsoftware.spine.AnimationState
 import com.esotericsoftware.spine.Skeleton
-import com.esotericsoftware.spine.SkeletonRenderer
-
-import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable
 
 /** A scene2d drawable that draws a skeleton. The animation state and skeleton must be updated each frame, or
  * [.update] called each frame.  */

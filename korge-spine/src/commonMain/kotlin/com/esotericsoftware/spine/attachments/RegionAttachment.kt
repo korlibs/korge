@@ -30,8 +30,8 @@
 package com.esotericsoftware.spine.attachments
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.graphics.TextureRegion
 import com.badlogic.gdx.math.MathUtils
 
 import com.esotericsoftware.spine.Bone

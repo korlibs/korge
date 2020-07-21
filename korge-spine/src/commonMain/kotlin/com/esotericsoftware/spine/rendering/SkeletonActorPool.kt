@@ -27,23 +27,20 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine.utils
+package com.esotericsoftware.spine.rendering
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.utils.JArray
 import com.badlogic.gdx.utils.Pool
 import com.esotericsoftware.spine.AnimationState
-import com.esotericsoftware.spine.AnimationState.TrackEntry
 import com.esotericsoftware.spine.AnimationStateData
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.SkeletonData
-import com.esotericsoftware.spine.SkeletonRenderer
-import com.esotericsoftware.spine.Skin
 
 class SkeletonActorPool  constructor(
     private val renderer: SkeletonRenderer,
     internal var skeletonData: SkeletonData, internal var stateData: AnimationStateData,
-  initialCapacity: Int = 16, max: Int = Int.MAX_VALUE
+    initialCapacity: Int = 16, max: Int = Int.MAX_VALUE
 ) : Pool<SkeletonActor>(initialCapacity, max) {
     private val skeletonPool: Pool<Skeleton>
     private val statePool: Pool<AnimationState>

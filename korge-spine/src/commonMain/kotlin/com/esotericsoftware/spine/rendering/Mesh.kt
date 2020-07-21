@@ -1,8 +1,4 @@
-package com.badlogic.gdx.graphics
-
-import com.badlogic.gdx.graphics.Mesh.VertexDataType
-import com.badlogic.gdx.graphics.VertexAttribute
-import com.badlogic.gdx.graphics.glutils.ShaderProgram
+package com.esotericsoftware.spine.rendering
 
 class Mesh(vertexDataType: VertexDataType?, b: Boolean, maxVertices: Int, i: Int, a_position: VertexAttribute?, a_light: VertexAttribute?, a_dark: VertexAttribute?, a_texCoord0: VertexAttribute?) {
     fun setVertices(vertices: FloatArray?, i: Int, vertexIndex: Int) {}

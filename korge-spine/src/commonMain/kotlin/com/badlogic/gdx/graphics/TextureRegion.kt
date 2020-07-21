@@ -1,6 +1,6 @@
-package com.badlogic.gdx.graphics.g2d
+package com.badlogic.gdx.graphics
 
-import com.badlogic.gdx.graphics.*
+import com.esotericsoftware.spine.rendering.*
 
 open class TextureRegion {
     open val u: Float

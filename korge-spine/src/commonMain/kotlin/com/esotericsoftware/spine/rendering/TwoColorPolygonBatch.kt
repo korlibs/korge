@@ -27,26 +27,17 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine.utils
+package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Mesh
-import com.badlogic.gdx.graphics.Mesh.VertexDataType
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.VertexAttribute
-import com.badlogic.gdx.graphics.VertexAttributes.Usage
-import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.g2d.PolygonBatch
-import com.badlogic.gdx.graphics.g2d.PolygonRegion
-import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.graphics.glutils.ShaderProgram
+import com.esotericsoftware.spine.rendering.Mesh.VertexDataType
+import com.esotericsoftware.spine.rendering.VertexAttributes.Usage
+import com.badlogic.gdx.graphics.TextureRegion
 import com.badlogic.gdx.math.Affine2
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Matrix4
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
-import kotlin.jvm.*
 
 /** A batch that renders polygons and performs tinting using a light and dark color.
  *

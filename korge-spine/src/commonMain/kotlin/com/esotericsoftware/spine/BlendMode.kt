@@ -29,28 +29,11 @@
 
 package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.GL20
-
 /** Determines how images are blended with existing pixels when drawn.  */
-enum class BlendMode private constructor(internal var source: Int, internal var sourcePMA: Int, dest: Int) {
-    normal(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA), //
-    additive(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE), //
-    multiply(GL20.GL_DST_COLOR, GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA), //
-    screen(GL20.GL_ONE, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_COLOR);
-
-    var dest: Int = 0
-        internal set
-
-    init {
-        this.dest = dest
-    }
-
-    fun getSource(premultipliedAlpha: Boolean): Int {
-        return if (premultipliedAlpha) sourcePMA else source
-    }
+enum class BlendMode {
+    normal, additive, multiply, screen;
 
     companion object {
-
         val values = values()
     }
-}//
+}

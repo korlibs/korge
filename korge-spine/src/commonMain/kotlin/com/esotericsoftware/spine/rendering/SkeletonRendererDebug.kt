@@ -27,18 +27,13 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine
+package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.esotericsoftware.spine.rendering.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.JArray
 import com.badlogic.gdx.utils.JFloatArray
-import com.esotericsoftware.spine.attachments.Attachment
-import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
+import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.attachments.ClippingAttachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment

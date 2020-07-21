@@ -27,14 +27,12 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine
+package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch
+import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.JFloatArray
+import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.utils.NumberUtils
 
 import com.esotericsoftware.spine.attachments.ClippingAttachment
@@ -42,7 +40,6 @@ import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
 import com.esotericsoftware.spine.attachments.SkeletonAttachment
 import com.esotericsoftware.spine.utils.SkeletonClipping
-import com.esotericsoftware.spine.utils.TwoColorPolygonBatch
 
 class SkeletonRenderer {
 
@@ -524,4 +521,30 @@ class SkeletonRenderer {
     companion object {
         private val quadTriangles = shortArrayOf(0, 1, 2, 2, 3, 0)
     }
+}
+
+
+private fun BlendMode.getSource(premultipliedAlpha: Boolean): Int {
+    return if (premultipliedAlpha) sourcePMA else source
+}
+
+private val BlendMode.source: Int get() = when (this) {
+    BlendMode.normal -> GL20.GL_SRC_ALPHA
+    BlendMode.additive -> GL20.GL_SRC_ALPHA
+    BlendMode.multiply -> GL20.GL_DST_COLOR
+    BlendMode.screen -> GL20.GL_ONE
+}
+
+private val BlendMode.sourcePMA: Int get() = when (this) {
+    BlendMode.normal -> GL20.GL_ONE
+    BlendMode.additive -> GL20.GL_ONE
+    BlendMode.multiply -> GL20.GL_DST_COLOR
+    BlendMode.screen -> GL20.GL_ONE
+}
+
+private val BlendMode.dest: Int get() = when (this) {
+    BlendMode.normal -> GL20.GL_ONE_MINUS_SRC_ALPHA
+    BlendMode.additive -> GL20.GL_ONE
+    BlendMode.multiply -> GL20.GL_ONE_MINUS_SRC_ALPHA
+    BlendMode.screen -> GL20.GL_ONE_MINUS_SRC_COLOR
 }

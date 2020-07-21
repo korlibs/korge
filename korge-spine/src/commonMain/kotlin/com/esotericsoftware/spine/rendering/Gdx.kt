@@ -1,7 +1,4 @@
-package com.badlogic.gdx
-
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.GL30
+package com.esotericsoftware.spine.rendering
 
 object Gdx {
     var gl: GL20? = null

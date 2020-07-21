@@ -31,7 +31,6 @@ package com.esotericsoftware.spine
 
 import com.badlogic.gdx.files.*
 import com.badlogic.gdx.graphics.*
-import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.gdx.utils.*
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*

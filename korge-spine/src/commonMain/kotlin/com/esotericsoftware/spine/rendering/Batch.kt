@@ -1,6 +1,6 @@
-package com.badlogic.gdx.graphics.g2d
+package com.esotericsoftware.spine.rendering
 
-import com.badlogic.gdx.graphics.*
+import com.esotericsoftware.spine.rendering.*
 
 interface Batch {
     fun begin() {}

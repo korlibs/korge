@@ -1,4 +1,4 @@
-package com.badlogic.gdx.graphics
+package com.esotericsoftware.spine.rendering
 
 interface GL20 {
     fun glEnable(glBlend: Int)

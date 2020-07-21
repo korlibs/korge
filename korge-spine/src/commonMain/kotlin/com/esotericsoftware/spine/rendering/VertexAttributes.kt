@@ -1,4 +1,4 @@
-package com.badlogic.gdx.graphics
+package com.esotericsoftware.spine.rendering
 
 class VertexAttributes {
     object Usage {
