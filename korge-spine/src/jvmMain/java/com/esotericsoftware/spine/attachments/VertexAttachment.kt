@@ -29,13 +29,10 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
-import com.badlogic.gdx.utils.JFloatArray
-
 import com.esotericsoftware.spine.Bone
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.Slot
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** Base class for an attachment with vertices that are transformed by one or more bones and can be deformed by a slot's
  * [Slot.getDeform].  */
@@ -82,7 +79,7 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
         var count = count
         count = offset + (count shr 1) * stride
         val skeleton = slot.skeleton
-        val deformArray = slot.deform
+        val deformArray = slot.deform!!
         var vertices = this.vertices
         val bones = this.bones
         if (bones == null) {

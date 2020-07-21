@@ -29,11 +29,10 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
 import com.badlogic.gdx.graphics.Color
 
 import com.esotericsoftware.spine.PathConstraint
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** An attachment whose vertices make up a composite Bezier curve.
  *
@@ -41,7 +40,7 @@ import com.esotericsoftware.spine.PathConstraint
  * See [PathConstraint] and [Paths](http://esotericsoftware.com/spine-paths) in the Spine User Guide.  */
 class PathAttachment(name: String) : VertexAttachment(name) {
     /** The lengths along the path in the setup pose from the start of the path to the end of each Bezier curve.  */
-    var lengths: FloatArray
+    lateinit var lengths: FloatArray
 
     /** If true, the start and end knots are connected.  */
     var closed: Boolean = false

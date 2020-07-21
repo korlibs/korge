@@ -36,7 +36,7 @@ import com.esotericsoftware.spine.SlotData
 class ClippingAttachment(name: String) : VertexAttachment(name) {
     /** Clipping is performed between the clipping polygon's slot and the end slot. Returns -1 if clipping is done until the end of
      * the skeleton's rendering.  */
-    var endSlot: SlotData
+    lateinit var endSlot: SlotData
 
     // Nonessential.
     /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons

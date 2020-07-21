@@ -96,19 +96,19 @@ class SkeletonClipping {
         clippedTriangles.clear()
         var i = 0
         outer@ while (i < trianglesLength) {
-            var vertexOffset = triangles[i] shl 1
+            var vertexOffset = triangles[i].toInt() shl 1
             val x1 = vertices[vertexOffset]
             val y1 = vertices[vertexOffset + 1]
             val u1 = uvs[vertexOffset]
             val v1 = uvs[vertexOffset + 1]
 
-            vertexOffset = triangles[i + 1] shl 1
+            vertexOffset = triangles[i + 1].toInt() shl 1
             val x2 = vertices[vertexOffset]
             val y2 = vertices[vertexOffset + 1]
             val u2 = uvs[vertexOffset]
             val v2 = uvs[vertexOffset + 1]
 
-            vertexOffset = triangles[i + 2] shl 1
+            vertexOffset = triangles[i + 2].toInt() shl 1
             val x3 = vertices[vertexOffset]
             val y3 = vertices[vertexOffset + 1]
             val u3 = uvs[vertexOffset]
@@ -162,7 +162,7 @@ class SkeletonClipping {
                         clippedTrianglesItems[s + 2] = (index.toInt() + ii + 1).toShort()
                         s += 3
                     }
-                    index += (clipOutputCount + 1).toShort()
+                    index = (index + (clipOutputCount + 1).toShort()).toShort()
 
                 } else {
                     val clippedVerticesItems = clippedVertices.setSize(s + 3 * vertexSize)
@@ -209,7 +209,7 @@ class SkeletonClipping {
                     clippedTrianglesItems[s] = index
                     clippedTrianglesItems[s + 1] = (index + 1).toShort()
                     clippedTrianglesItems[s + 2] = (index + 2).toShort()
-                    index += 3
+                    index = (index + 3).toShort()
                     i += 3
                     continue@outer
                 }
