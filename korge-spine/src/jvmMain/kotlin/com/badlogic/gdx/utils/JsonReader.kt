@@ -64,7 +64,10 @@ class JsonReader : BaseJsonReader {
         } catch (ex: IOException) {
             throw SerializationException(ex)
         } finally {
-            StreamUtils.closeQuietly(reader)
+            try {
+                reader?.close()
+            } catch (e: Throwable) {
+            }
         }
     }
 
@@ -74,7 +77,10 @@ class JsonReader : BaseJsonReader {
         } catch (ex: IOException) {
             throw SerializationException(ex)
         } finally {
-            StreamUtils.closeQuietly(input)
+            try {
+                input?.close()
+            } catch (e: Throwable) {
+            }
         }
     }
 
