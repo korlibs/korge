@@ -41,7 +41,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
  *
  * See [Mesh attachments](http://esotericsoftware.com/spine-meshes) in the Spine User Guide.  */
 class MeshAttachment(name: String) : VertexAttachment(name) {
-    private var region: TextureRegion? = null
+    lateinit var region: TextureRegion
 
     /** The name of the texture region for this attachment.  */
     var path: String? = null
@@ -94,16 +94,6 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
 
     /** The height of the mesh's image. Available only when nonessential data was exported.  */
     var height: Float = 0.toFloat()
-
-    fun setRegion(region: TextureRegion?) {
-        requireNotNull(region) { "region cannot be null." }
-        this.region = region
-    }
-
-    fun getRegion(): TextureRegion {
-        checkNotNull(region) { "Region has not been set: $this" }
-        return region
-    }
 
     /** Calculates [.uvs] using [.regionUVs] and the [.region]. Must be called after changing the region UVs or
      * region.  */

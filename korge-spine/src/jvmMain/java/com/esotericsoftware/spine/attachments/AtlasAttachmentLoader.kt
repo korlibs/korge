@@ -39,11 +39,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
  *
  * See [Loading skeleton data](http://esotericsoftware.com/spine-loading-skeleton-data#JSON-and-binary-data) in the
  * Spine Runtimes Guide.  */
-class AtlasAttachmentLoader(private val atlas: TextureAtlas?) : AttachmentLoader {
-
-    init {
-        requireNotNull(atlas) { "atlas cannot be null." }
-    }
+class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader {
 
     override fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment {
         val region = atlas.findRegion(path)

@@ -29,14 +29,13 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.MathUtils
 
 import com.esotericsoftware.spine.Bone
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** An attachment that displays a textured quadrilateral.
  *
@@ -44,7 +43,33 @@ import com.esotericsoftware.spine.Bone
  * See [Region attachments](http://esotericsoftware.com/spine-regions) in the Spine User Guide.  */
 class RegionAttachment(name: String) : Attachment(name) {
 
-    private var region: TextureRegion? = null
+    private var _region: TextureRegion? = null
+
+    var region: TextureRegion
+        get() = _region ?: error("Region was not set before")
+        set(region) {
+            _region = region
+            val uvs = this.uVs
+            if (region is AtlasRegion && region.rotate) {
+                uvs[URX] = region.u
+                uvs[URY] = region.v2
+                uvs[BRX] = region.u
+                uvs[BRY] = region.v
+                uvs[BLX] = region.u2
+                uvs[BLY] = region.v
+                uvs[ULX] = region.u2
+                uvs[ULY] = region.v2
+            } else {
+                uvs[ULX] = region.u
+                uvs[ULY] = region.v2
+                uvs[URX] = region.u
+                uvs[URY] = region.v
+                uvs[BRX] = region.u2
+                uvs[BRY] = region.v
+                uvs[BLX] = region.u2
+                uvs[BLY] = region.v2
+            }
+        }
 
     /** The name of the texture region for this attachment.  */
     var path: String? = null
@@ -128,36 +153,6 @@ class RegionAttachment(name: String) : Attachment(name) {
         offset[URY] = localY2Cos + localX2Sin
         offset[BRX] = localX2Cos - localYSin
         offset[BRY] = localYCos + localX2Sin
-    }
-
-    fun setRegion(region: TextureRegion?) {
-        requireNotNull(region) { "region cannot be null." }
-        this.region = region
-        val uvs = this.uVs
-        if (region is AtlasRegion && region.rotate) {
-            uvs[URX] = region.u
-            uvs[URY] = region.v2
-            uvs[BRX] = region.u
-            uvs[BRY] = region.v
-            uvs[BLX] = region.u2
-            uvs[BLY] = region.v
-            uvs[ULX] = region.u2
-            uvs[ULY] = region.v2
-        } else {
-            uvs[ULX] = region.u
-            uvs[ULY] = region.v2
-            uvs[URX] = region.u
-            uvs[URY] = region.v
-            uvs[BRX] = region.u2
-            uvs[BRY] = region.v
-            uvs[BLX] = region.u2
-            uvs[BLY] = region.v2
-        }
-    }
-
-    fun getRegion(): TextureRegion {
-        checkNotNull(region) { "Region has not been set: $this" }
-        return region
     }
 
     /** Transforms the attachment's four vertices to world coordinates.

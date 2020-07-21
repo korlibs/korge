@@ -5,9 +5,7 @@ import java.lang.RuntimeException
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 
 class TextureAtlas {
-    fun findRegion(path: String?): AtlasRegion {
-        throw RuntimeException()
-    }
+    fun findRegion(path: String?): AtlasRegion? = TODO()
 
     class AtlasRegion : TextureRegion() {
         @JvmField
