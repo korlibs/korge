@@ -34,32 +34,27 @@ package com.esotericsoftware.spine
  *
  * See [Events](http://esotericsoftware.com/spine-events) in the Spine User Guide.  */
 class EventData(
-        /** The name of the event, which is unique across all events in the skeleton.  */
-        val name: String?) {
+    /** The name of the event, which is unique across all events in the skeleton.  */
+    val name: String
+) {
     var int: Int = 0
     var float: Float = 0.toFloat()
-    internal var stringValue: String
-    internal var audioPath: String
+    internal lateinit var stringValue: String
+    internal lateinit var audioPath: String
     var volume: Float = 0.toFloat()
     var balance: Float = 0.toFloat()
 
-    var string: String?
+    var string: String
         get() = stringValue
         set(stringValue) {
-            requireNotNull(stringValue) { "stringValue cannot be null." }
             this.stringValue = stringValue
         }
-
-    init {
-        requireNotNull(name) { "name cannot be null." }
-    }
 
     fun getAudioPath(): String {
         return audioPath
     }
 
-    fun setAudioPath(audioPath: String?) {
-        requireNotNull(audioPath) { "audioPath cannot be null." }
+    fun setAudioPath(audioPath: String) {
         this.audioPath = audioPath
     }
 

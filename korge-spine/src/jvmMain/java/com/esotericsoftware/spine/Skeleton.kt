@@ -38,6 +38,9 @@ import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
+import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 
 /** Stores the current pose for a skeleton.
  *
@@ -94,8 +97,7 @@ class Skeleton {
     val rootBone: Bone?
         get() = if (bones.size == 0) null else bones.first()
 
-    constructor(data: SkeletonData?) {
-        requireNotNull(data) { "data cannot be null." }
+    constructor(data: SkeletonData) {
         this.data = data
 
         bones = JArray(data.bones.size)
@@ -138,8 +140,7 @@ class Skeleton {
     }
 
     /** Copy constructor.  */
-    constructor(skeleton: Skeleton?) {
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(skeleton: Skeleton) {
         data = skeleton.data
 
         bones = JArray(skeleton.bones.size)
@@ -413,8 +414,7 @@ class Skeleton {
      *
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide.  */
-    fun updateWorldTransform(parent: Bone?) {
-        requireNotNull(parent) { "parent cannot be null." }
+    fun updateWorldTransform(parent: Bone) {
         // This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
         // before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
         // updateWorldTransform.
@@ -544,8 +544,7 @@ class Skeleton {
      * repeatedly.
      * @return May be null.
      */
-    fun findBone(boneName: String?): Bone? {
-        requireNotNull(boneName) { "boneName cannot be null." }
+    fun findBone(boneName: String): Bone? {
         val bones = this.bones
         var i = 0
         val n = bones.size
@@ -561,8 +560,7 @@ class Skeleton {
      * repeatedly.
      * @return May be null.
      */
-    fun findSlot(slotName: String?): Slot? {
-        requireNotNull(slotName) { "slotName cannot be null." }
+    fun findSlot(slotName: String): Slot? {
         val slots = this.slots
         var i = 0
         val n = slots.size
@@ -579,8 +577,7 @@ class Skeleton {
         return drawOrder
     }
 
-    fun setDrawOrder(drawOrder: JArray<Slot>?) {
-        requireNotNull(drawOrder) { "drawOrder cannot be null." }
+    fun setDrawOrder(drawOrder: JArray<Slot>) {
         this.drawOrder = drawOrder
     }
 
@@ -656,8 +653,7 @@ class Skeleton {
      * See [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.
      * @return May be null.
      */
-    fun getAttachment(slotIndex: Int, attachmentName: String?): Attachment? {
-        requireNotNull(attachmentName) { "attachmentName cannot be null." }
+    fun getAttachment(slotIndex: Int, attachmentName: String): Attachment? {
         if (skin != null) {
             val attachment = skin!!.getAttachment(slotIndex, attachmentName)
             if (attachment != null) return attachment
@@ -669,13 +665,12 @@ class Skeleton {
      * [.getAttachment], then setting the slot's [Slot.attachment].
      * @param attachmentName May be null to clear the slot's attachment.
      */
-    fun setAttachment(slotName: String?, attachmentName: String?) {
-        requireNotNull(slotName) { "slotName cannot be null." }
+    fun setAttachment(slotName: String, attachmentName: String?) {
         val slot = findSlot(slotName) ?: throw IllegalArgumentException("Slot not found: $slotName")
         var attachment: Attachment? = null
         if (attachmentName != null) {
             attachment = getAttachment(slot.data.index, attachmentName)
-            requireNotNull(attachment) { "Attachment not found: $attachmentName, for slot: $slotName" }
+                ?: error("Attachment not found: $attachmentName, for slot: $slotName")
         }
         slot.setAttachment(attachment)
     }
@@ -684,8 +679,7 @@ class Skeleton {
      * than to call it repeatedly.
      * @return May be null.
      */
-    fun findIkConstraint(constraintName: String?): IkConstraint? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findIkConstraint(constraintName: String): IkConstraint? {
         val ikConstraints = this.ikConstraints
         var i = 0
         val n = ikConstraints.size
@@ -701,8 +695,7 @@ class Skeleton {
      * this method than to call it repeatedly.
      * @return May be null.
      */
-    fun findTransformConstraint(constraintName: String?): TransformConstraint? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findTransformConstraint(constraintName: String): TransformConstraint? {
         val transformConstraints = this.transformConstraints
         var i = 0
         val n = transformConstraints.size
@@ -718,8 +711,7 @@ class Skeleton {
      * than to call it repeatedly.
      * @return May be null.
      */
-    fun findPathConstraint(constraintName: String?): PathConstraint? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findPathConstraint(constraintName: String): PathConstraint? {
         val pathConstraints = this.pathConstraints
         var i = 0
         val n = pathConstraints.size
@@ -736,10 +728,7 @@ class Skeleton {
      * @param size An output value, the width and height of the AABB.
      * @param temp Working memory to temporarily store attachments' computed world vertices.
      */
-    fun getBounds(offset: Vector2?, size: Vector2?, temp: JFloatArray?) {
-        requireNotNull(offset) { "offset cannot be null." }
-        requireNotNull(size) { "size cannot be null." }
-        requireNotNull(temp) { "temp cannot be null." }
+    fun getBounds(offset: Vector2, size: Vector2, temp: JFloatArray) {
         val drawOrder = this.drawOrder
         var minX = Integer.MAX_VALUE.toFloat()
         var minY = Integer.MAX_VALUE.toFloat()
@@ -789,8 +778,7 @@ class Skeleton {
     }
 
     /** A convenience method for setting the skeleton color. The color can also be set by modifying [.getColor].  */
-    fun setColor(color: Color?) {
-        requireNotNull(color) { "color cannot be null." }
+    fun setColor(color: Color) {
         this.color.set(color)
     }
 
@@ -811,6 +799,6 @@ class Skeleton {
     }
 
     override fun toString(): String {
-        return if (data.name != null) data.name else super.toString()
+        return if (data.name != null) data.name!! else super.toString()
     }
 }

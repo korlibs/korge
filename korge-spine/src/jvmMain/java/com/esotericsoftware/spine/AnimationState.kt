@@ -80,8 +80,7 @@ class AnimationState {
     /** Creates an uninitialized AnimationState. The animation state data must be set before use.  */
     constructor() {}
 
-    constructor(data: AnimationStateData?) {
-        requireNotNull(data) { "data cannot be null." }
+    constructor(data: AnimationStateData) {
         this.data = data
     }
 
@@ -184,8 +183,7 @@ class AnimationState {
      * skeletons to pose them identically.
      * @return True if any animations were applied.
      */
-    fun apply(skeleton: Skeleton?): Boolean {
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    fun apply(skeleton: Skeleton): Boolean {
         if (animationsChanged) animationsChanged()
 
         val events = this.events
@@ -600,9 +598,8 @@ class AnimationState {
      * @return A track entry to allow further customization of animation playback. References to the track entry must not be kept
      * after the [AnimationStateListener.dispose] event occurs.
      */
-    fun setAnimation(trackIndex: Int, animation: Animation?, loop: Boolean): TrackEntry {
+    fun setAnimation(trackIndex: Int, animation: Animation, loop: Boolean): TrackEntry {
         require(trackIndex >= 0) { "trackIndex must be >= 0." }
-        requireNotNull(animation) { "animation cannot be null." }
         var interrupt = true
         var current = expandToIndex(trackIndex)
         if (current != null) {
@@ -642,10 +639,9 @@ class AnimationState {
      * @return A track entry to allow further customization of animation playback. References to the track entry must not be kept
      * after the [AnimationStateListener.dispose] event occurs.
      */
-    fun addAnimation(trackIndex: Int, animation: Animation?, loop: Boolean, delay: Float): TrackEntry {
+    fun addAnimation(trackIndex: Int, animation: Animation, loop: Boolean, delay: Float): TrackEntry {
         var delay = delay
         require(trackIndex >= 0) { "trackIndex must be >= 0." }
-        requireNotNull(animation) { "animation cannot be null." }
 
         var last = expandToIndex(trackIndex)
         if (last != null) {
@@ -862,8 +858,7 @@ class AnimationState {
     }
 
     /** Adds a listener to receive events for all track entries.  */
-    fun addListener(listener: AnimationStateListener?) {
-        requireNotNull(listener) { "listener cannot be null." }
+    fun addListener(listener: AnimationStateListener) {
         listeners.add(listener)
     }
 
@@ -889,8 +884,7 @@ class AnimationState {
         return data
     }
 
-    fun setData(data: AnimationStateData?) {
-        requireNotNull(data) { "data cannot be null." }
+    fun setData(data: AnimationStateData) {
         this.data = data
     }
 
@@ -1108,8 +1102,7 @@ class AnimationState {
             return animation
         }
 
-        fun setAnimation(animation: Animation?) {
-            requireNotNull(animation) { "animation cannot be null." }
+        fun setAnimation(animation: Animation) {
             this.animation = animation
         }
 
@@ -1137,8 +1130,7 @@ class AnimationState {
             return mixBlend
         }
 
-        fun setMixBlend(mixBlend: MixBlend?) {
-            requireNotNull(mixBlend) { "mixBlend cannot be null." }
+        fun setMixBlend(mixBlend: MixBlend) {
             this.mixBlend = mixBlend
         }
 

@@ -59,8 +59,8 @@ class SkeletonBounds {
 
     /** The world vertices for the bounding box polygons.  */
     val polygons: JArray<JFloatArray> = JArray()
-    private val polygonPool = object : Pool() {
-        protected override fun newObject(): Any {
+    private val polygonPool = object : Pool<JFloatArray>() {
+        protected override fun newObject(): JFloatArray {
             return JFloatArray()
         }
     }
@@ -78,8 +78,7 @@ class SkeletonBounds {
      * @param updateAabb If true, the axis aligned bounding box containing all the polygons is computed. If false, the
      * SkeletonBounds AABB methods will always return true.
      */
-    fun update(skeleton: Skeleton?, updateAabb: Boolean) {
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    fun update(skeleton: Skeleton, updateAabb: Boolean) {
         val boundingBoxes = this.boundingBoxes
         val polygons = this.polygons
         val slots = skeleton.slots
@@ -168,8 +167,7 @@ class SkeletonBounds {
     }
 
     /** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds.  */
-    fun aabbIntersectsSkeleton(bounds: SkeletonBounds?): Boolean {
-        requireNotNull(bounds) { "bounds cannot be null." }
+    fun aabbIntersectsSkeleton(bounds: SkeletonBounds): Boolean {
         return minX < bounds.maxX && maxX > bounds.minX && minY < bounds.maxY && maxY > bounds.minY
     }
 
@@ -187,8 +185,7 @@ class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains the point.  */
-    fun containsPoint(polygon: JFloatArray?, x: Float, y: Float): Boolean {
-        requireNotNull(polygon) { "polygon cannot be null." }
+    fun containsPoint(polygon: JFloatArray, x: Float, y: Float): Boolean {
         val vertices = polygon.items
         val nn = polygon.size
 
@@ -223,8 +220,7 @@ class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains any part of the line segment.  */
-    fun intersectsSegment(polygon: JFloatArray?, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
-        requireNotNull(polygon) { "polygon cannot be null." }
+    fun intersectsSegment(polygon: JFloatArray, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
         val vertices = polygon.items
         val nn = polygon.size
 
@@ -254,8 +250,7 @@ class SkeletonBounds {
     }
 
     /** Returns the polygon for the specified bounding box, or null.  */
-    fun getPolygon(boundingBox: BoundingBoxAttachment?): JFloatArray? {
-        requireNotNull(boundingBox) { "boundingBox cannot be null." }
+    fun getPolygon(boundingBox: BoundingBoxAttachment): JFloatArray? {
         val index = boundingBoxes.indexOf(boundingBox, true)
         return if (index == -1) null else polygons[index]
     }

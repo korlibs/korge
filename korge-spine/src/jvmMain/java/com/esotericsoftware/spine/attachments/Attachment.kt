@@ -30,19 +30,11 @@
 package com.esotericsoftware.spine.attachments
 
 /** The base class for all attachments.  */
-abstract class Attachment(name: String?) {
+abstract class Attachment(
     /** The attachment's name.  */
     var name: String
-        internal set
-
-    init {
-        requireNotNull(name) { "name cannot be null." }
-        this.name = name
-    }
-
-    override fun toString(): String {
-        return name
-    }
+) {
+    override fun toString(): String = name
 
     /** Returns a copy of the attachment.  */
     abstract fun copy(): Attachment

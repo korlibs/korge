@@ -66,7 +66,7 @@ class SkeletonData {
      */
     /** @param defaultSkin May be null.
      */
-    var defaultSkin: Skin
+    lateinit var defaultSkin: Skin
 
     /** The skeleton's events.  */
     val events: JArray<EventData> = JArray()
@@ -101,13 +101,13 @@ class SkeletonData {
     /** The Spine version used to export the skeleton data, or null.  */
     /** @param version May be null.
      */
-    var version: String
+    var version: String? = null
     /** The skeleton data hash. This value will change if any of the skeleton data has changed.
      * @return May be null.
      */
     /** @param hash May be null.
      */
-    var hash: String
+    var hash: String? = null
 
     // Nonessential.
     /** The dopesheet FPS in Spine. Available only when nonessential data was exported.  */
@@ -117,20 +117,19 @@ class SkeletonData {
      */
     /** @param imagesPath May be null.
      */
-    var imagesPath: String
+    var imagesPath: String? = null
     /** The path to the audio directory as defined in Spine. Available only when nonessential data was exported.
      * @return May be null.
      */
     /** @param audioPath May be null.
      */
-    var audioPath: String
+    var audioPath: String? = null
 
     /** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
      * multiple times.
      * @return May be null.
      */
-    fun findBone(boneName: String?): BoneData? {
-        requireNotNull(boneName) { "boneName cannot be null." }
+    fun findBone(boneName: String): BoneData? {
         val bones = this.bones
         var i = 0
         val n = bones.size
@@ -146,8 +145,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findSlot(slotName: String?): SlotData? {
-        requireNotNull(slotName) { "slotName cannot be null." }
+    fun findSlot(slotName: String): SlotData? {
         val slots = this.slots
         var i = 0
         val n = slots.size
@@ -163,8 +161,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findSkin(skinName: String?): Skin? {
-        requireNotNull(skinName) { "skinName cannot be null." }
+    fun findSkin(skinName: String): Skin? {
         for (skin in skins)
             if (skin.name == skinName) return skin
         return null
@@ -176,8 +173,7 @@ class SkeletonData {
      * multiple times.
      * @return May be null.
      */
-    fun findEvent(eventDataName: String?): EventData? {
-        requireNotNull(eventDataName) { "eventDataName cannot be null." }
+    fun findEvent(eventDataName: String): EventData? {
         for (eventData in events)
             if (eventData.name == eventDataName) return eventData
         return null
@@ -187,8 +183,7 @@ class SkeletonData {
      * call it multiple times.
      * @return May be null.
      */
-    fun findAnimation(animationName: String?): Animation? {
-        requireNotNull(animationName) { "animationName cannot be null." }
+    fun findAnimation(animationName: String): Animation? {
         val animations = this.animations
         var i = 0
         val n = animations.size
@@ -204,8 +199,7 @@ class SkeletonData {
      * than to call it multiple times.
      * @return May be null.
      */
-    fun findIkConstraint(constraintName: String?): IkConstraintData? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findIkConstraint(constraintName: String): IkConstraintData? {
         val ikConstraints = this.ikConstraints
         var i = 0
         val n = ikConstraints.size
@@ -221,8 +215,7 @@ class SkeletonData {
      * this method than to call it multiple times.
      * @return May be null.
      */
-    fun findTransformConstraint(constraintName: String?): TransformConstraintData? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findTransformConstraint(constraintName: String): TransformConstraintData? {
         val transformConstraints = this.transformConstraints
         var i = 0
         val n = transformConstraints.size
@@ -238,8 +231,7 @@ class SkeletonData {
      * than to call it multiple times.
      * @return May be null.
      */
-    fun findPathConstraint(constraintName: String?): PathConstraintData? {
-        requireNotNull(constraintName) { "constraintName cannot be null." }
+    fun findPathConstraint(constraintName: String): PathConstraintData? {
         val pathConstraints = this.pathConstraints
         var i = 0
         val n = pathConstraints.size
@@ -251,7 +243,5 @@ class SkeletonData {
         return null
     }
 
-    override fun toString(): String {
-        return if (name != null) name else super.toString()
-    }
+    override fun toString(): String = name ?: super.toString()
 }

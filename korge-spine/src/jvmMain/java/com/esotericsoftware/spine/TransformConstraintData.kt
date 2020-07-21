@@ -77,8 +77,7 @@ class TransformConstraintData(name: String) : ConstraintData(name) {
         return target
     }
 
-    fun setTarget(target: BoneData?) {
-        requireNotNull(target) { "target cannot be null." }
+    fun setTarget(target: BoneData) {
         this.target = target
     }
 }

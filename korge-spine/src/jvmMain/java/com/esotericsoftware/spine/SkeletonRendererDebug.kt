@@ -68,14 +68,11 @@ class SkeletonRendererDebug {
         shapeRenderer = ShapeRenderer()
     }
 
-    constructor(shapes: ShapeRenderer?) {
-        requireNotNull(shapes) { "shapes cannot be null." }
+    constructor(shapes: ShapeRenderer) {
         this.shapeRenderer = shapes
     }
 
-    fun draw(skeleton: Skeleton?) {
-        requireNotNull(skeleton) { "skeleton cannot be null." }
-
+    fun draw(skeleton: Skeleton) {
         Gdx.gl!!.glEnable(GL20.GL_BLEND)
         val srcFunc = if (premultipliedAlpha) GL20.GL_ONE else GL20.GL_SRC_ALPHA
         Gdx.gl!!.glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA)

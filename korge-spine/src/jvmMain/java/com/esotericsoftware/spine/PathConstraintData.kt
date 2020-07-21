@@ -38,10 +38,10 @@ import com.badlogic.gdx.utils.JArray
 class PathConstraintData(name: String) : ConstraintData(name) {
     /** The bones that will be modified by this path constraint.  */
     val bones: JArray<BoneData> = JArray()
-    internal var target: SlotData
-    internal var positionMode: PositionMode
-    internal var spacingMode: SpacingMode
-    internal var rotateMode: RotateMode
+    internal lateinit var target: SlotData
+    internal lateinit var positionMode: PositionMode
+    internal lateinit var spacingMode: SpacingMode
+    internal lateinit var rotateMode: RotateMode
 
     /** An offset added to the constrained bone rotation.  */
     var offsetRotation: Float = 0.toFloat()
@@ -63,8 +63,7 @@ class PathConstraintData(name: String) : ConstraintData(name) {
         return target
     }
 
-    fun setTarget(target: SlotData?) {
-        requireNotNull(target) { "target cannot be null." }
+    fun setTarget(target: SlotData) {
         this.target = target
     }
 
@@ -73,8 +72,7 @@ class PathConstraintData(name: String) : ConstraintData(name) {
         return positionMode
     }
 
-    fun setPositionMode(positionMode: PositionMode?) {
-        requireNotNull(positionMode) { "positionMode cannot be null." }
+    fun setPositionMode(positionMode: PositionMode) {
         this.positionMode = positionMode
     }
 
@@ -83,8 +81,7 @@ class PathConstraintData(name: String) : ConstraintData(name) {
         return spacingMode
     }
 
-    fun setSpacingMode(spacingMode: SpacingMode?) {
-        requireNotNull(spacingMode) { "spacingMode cannot be null." }
+    fun setSpacingMode(spacingMode: SpacingMode) {
         this.spacingMode = spacingMode
     }
 
@@ -93,8 +90,7 @@ class PathConstraintData(name: String) : ConstraintData(name) {
         return rotateMode
     }
 
-    fun setRotateMode(rotateMode: RotateMode?) {
-        requireNotNull(rotateMode) { "rotateMode cannot be null." }
+    fun setRotateMode(rotateMode: RotateMode) {
         this.rotateMode = rotateMode
     }
 

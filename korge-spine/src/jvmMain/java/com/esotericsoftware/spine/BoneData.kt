@@ -41,7 +41,7 @@ class BoneData {
 
     /** @return May be null.
      */
-    val parent: BoneData
+    val parent: BoneData?
 
     /** The bone's length.  */
     var length: Float = 0.toFloat()
@@ -81,9 +81,8 @@ class BoneData {
 
     /** @param parent May be null.
      */
-    constructor(index: Int, name: String?, parent: BoneData) {
+    constructor(index: Int, name: String, parent: BoneData) {
         require(index >= 0) { "index must be >= 0." }
-        requireNotNull(name) { "name cannot be null." }
         this.index = index
         this.name = name
         this.parent = parent
@@ -92,8 +91,7 @@ class BoneData {
     /** Copy constructor.
      * @param parent May be null.
      */
-    constructor(bone: BoneData?, parent: BoneData) {
-        requireNotNull(bone) { "bone cannot be null." }
+    constructor(bone: BoneData, parent: BoneData) {
         index = bone.index
         name = bone.name
         this.parent = parent
@@ -122,8 +120,7 @@ class BoneData {
         return transformMode
     }
 
-    fun setTransformMode(transformMode: TransformMode?) {
-        requireNotNull(transformMode) { "transformMode cannot be null." }
+    fun setTransformMode(transformMode: TransformMode) {
         this.transformMode = transformMode
     }
 

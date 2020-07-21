@@ -61,9 +61,7 @@ class TransformConstraint : Updatable {
         internal set
     internal val temp = Vector2()
 
-    constructor(data: TransformConstraintData?, skeleton: Skeleton?) {
-        requireNotNull(data) { "data cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(data: TransformConstraintData, skeleton: Skeleton) {
         this.data = data
         rotateMix = data.rotateMix
         translateMix = data.translateMix
@@ -71,14 +69,12 @@ class TransformConstraint : Updatable {
         shearMix = data.shearMix
         bones = JArray(data.bones.size)
         for (boneData in data.bones)
-            bones.add(skeleton.findBone(boneData.name))
+            bones.add(skeleton.findBone(boneData.name)!!)
         target = skeleton.findBone(data.target.name)
     }
 
     /** Copy constructor.  */
-    constructor(constraint: TransformConstraint?, skeleton: Skeleton?) {
-        requireNotNull(constraint) { "constraint cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(constraint: TransformConstraint, skeleton: Skeleton) {
         data = constraint.data
         bones = JArray(constraint.bones.size)
         for (bone in constraint.bones)
@@ -355,8 +351,7 @@ class TransformConstraint : Updatable {
         return target
     }
 
-    fun setTarget(target: Bone?) {
-        requireNotNull(target) { "target cannot be null." }
+    fun setTarget(target: Bone) {
         this.target = target
     }
 

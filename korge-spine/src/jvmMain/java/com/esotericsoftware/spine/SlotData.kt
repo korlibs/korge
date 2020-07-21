@@ -33,12 +33,17 @@ import com.badlogic.gdx.graphics.Color
 
 /** Stores the setup pose for a [Slot].  */
 class SlotData(
-        /** The index of the slot in [Skeleton.getSlots].  */
-        val index: Int,
-        /** The name of the slot, which is unique across all slots in the skeleton.  */
-        val name: String?,
-        /** The bone this slot belongs to.  */
-        val boneData: BoneData?) {
+    /** The index of the slot in [Skeleton.getSlots].  */
+    val index: Int,
+    /** The name of the slot, which is unique across all slots in the skeleton.  */
+    val name: String,
+    /** The bone this slot belongs to.  */
+    val boneData: BoneData
+) {
+    init {
+        require(index >= 0) { "index must be >= 0." }
+    }
+
     /** The color used to tint the slot's attachment. If [.getDarkColor] is set, this is used as the light color for two
      * color tinting.  */
     val color = Color(1f, 1f, 1f, 1f)
@@ -46,26 +51,19 @@ class SlotData(
      * color's alpha is not used.  */
     /** @param darkColor May be null.
      */
-    var darkColor: Color
+    var darkColor: Color? = null
     /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible.  */
     /** @param attachmentName May be null.
      */
-    var attachmentName: String
-    internal var blendMode: BlendMode
-
-    init {
-        require(index >= 0) { "index must be >= 0." }
-        requireNotNull(name) { "name cannot be null." }
-        requireNotNull(boneData) { "boneData cannot be null." }
-    }
+    lateinit var attachmentName: String
+    lateinit internal var blendMode: BlendMode
 
     /** The blend mode for drawing the slot's attachment.  */
     fun getBlendMode(): BlendMode {
         return blendMode
     }
 
-    fun setBlendMode(blendMode: BlendMode?) {
-        requireNotNull(blendMode) { "blendMode cannot be null." }
+    fun setBlendMode(blendMode: BlendMode) {
         this.blendMode = blendMode
     }
 

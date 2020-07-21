@@ -44,15 +44,16 @@ import com.esotericsoftware.spine.attachments.VertexAttachment
 
 /** A simple container for a list of timelines and a name.  */
 class Animation(
-        /** The animation's name, which is unique across all animations in the skeleton.  */
-        val name: String?, timelines: JArray<Timeline>,
-        /** The duration of the animation in seconds, which is the highest time of all keys in the timeline.  */
-        var duration: Float) {
+    /** The animation's name, which is unique across all animations in the skeleton.  */
+    val name: String,
+    timelines: JArray<Timeline>,
+    /** The duration of the animation in seconds, which is the highest time of all keys in the timeline.  */
+    var duration: Float
+) {
     internal var timelines: JArray<Timeline>
     internal val timelineIDs = JIntSet()
 
     init {
-        requireNotNull(name) { "name cannot be null." }
         setTimelines(timelines)
     }
 
@@ -61,8 +62,7 @@ class Animation(
         return timelines
     }
 
-    fun setTimelines(timelines: JArray<Timeline>?) {
-        requireNotNull(timelines) { "timelines cannot be null." }
+    fun setTimelines(timelines: JArray<Timeline>) {
         this.timelines = timelines
 
         timelineIDs.clear()
@@ -82,11 +82,10 @@ class Animation(
      * @param loop If true, the animation repeats after [.getDuration].
      * @param events May be null to ignore fired events.
      */
-    fun apply(skeleton: Skeleton?, lastTime: Float, time: Float, loop: Boolean, events: JArray<Event>, alpha: Float,
+    fun apply(skeleton: Skeleton, lastTime: Float, time: Float, loop: Boolean, events: JArray<Event>, alpha: Float,
               blend: MixBlend, direction: MixDirection) {
         var lastTime = lastTime
         var time = time
-        requireNotNull(skeleton) { "skeleton cannot be null." }
 
         if (loop && duration != 0f) {
             time %= duration
@@ -103,7 +102,7 @@ class Animation(
     }
 
     override fun toString(): String {
-        return name
+        return name ?: ""
     }
 
     /** The interface for all timelines.  */
@@ -909,13 +908,22 @@ class Animation(
 
     /** Changes a slot's [Slot.getAttachment].  */
     class AttachmentTimeline(frameCount: Int) : SlotTimeline {
-        internal var slotIndex: Int = 0
+        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
+        override var slotIndex: Int = 0
+            set(index) {
+                require(index >= 0) { "index must be >= 0." }
+                field = index
+            }
+
+        init {
+            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
+        }
 
         /** The time in seconds for each key frame.  */
-        val frames: FloatArray // time, ...
+        val frames: FloatArray = FloatArray(frameCount) // time, ...
 
         /** The attachment name for each key frame. May contain null values to clear the attachment.  */
-        val attachmentNames: Array<String>
+        val attachmentNames: Array<String?> = arrayOfNulls(frameCount)
 
         override val propertyId: Int
             get() = (TimelineType.attachment.ordinal shl 24) + slotIndex
@@ -923,22 +931,6 @@ class Animation(
         /** The number of key frames for this timeline.  */
         val frameCount: Int
             get() = frames.size
-
-        init {
-            require(frameCount > 0) { "frameCount must be > 0: $frameCount" }
-            frames = FloatArray(frameCount)
-            attachmentNames = arrayOfNulls(frameCount)
-        }
-
-        override fun setSlotIndex(index: Int) {
-            require(index >= 0) { "index must be >= 0." }
-            this.slotIndex = index
-        }
-
-        /** The index of the slot in [Skeleton.getSlots] that will be changed.  */
-        override fun getSlotIndex(): Int {
-            return slotIndex
-        }
 
         /** Sets the time in seconds and the attachment name for the specified key frame.  */
         fun setFrame(frameIndex: Int, time: Float, attachmentName: String) {

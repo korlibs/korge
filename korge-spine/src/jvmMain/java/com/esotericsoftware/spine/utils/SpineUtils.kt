@@ -57,9 +57,7 @@ object SpineUtils {
         return Math.atan2(y.toDouble(), x.toDouble()).toFloat()
     }
 
-    fun arraycopy(src: Any?, srcPos: Int, dest: Any?, destPos: Int, length: Int) {
-        requireNotNull(src) { "src cannot be null." }
-        requireNotNull(dest) { "dest cannot be null." }
+    fun arraycopy(src: Any, srcPos: Int, dest: Any, destPos: Int, length: Int) {
         try {
             System.arraycopy(src, srcPos, dest, destPos, length)
         } catch (ex: ArrayIndexOutOfBoundsException) {

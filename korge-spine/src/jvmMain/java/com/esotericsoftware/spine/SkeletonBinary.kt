@@ -101,14 +101,11 @@ class SkeletonBinary {
         attachmentLoader = AtlasAttachmentLoader(atlas)
     }
 
-    constructor(attachmentLoader: AttachmentLoader?) {
-        requireNotNull(attachmentLoader) { "attachmentLoader cannot be null." }
+    constructor(attachmentLoader: AttachmentLoader) {
         this.attachmentLoader = attachmentLoader
     }
 
-    fun readSkeletonData(file: FileHandle?): SkeletonData {
-        requireNotNull(file) { "file cannot be null." }
-
+    fun readSkeletonData(file: FileHandle): SkeletonData {
         val scale = this.scale
 
         val skeletonData = SkeletonData()

@@ -44,6 +44,13 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.JArray
 
 import com.esotericsoftware.spine.BoneData.TransformMode
+import com.esotericsoftware.spine.utils.SpineUtils.PI
+import com.esotericsoftware.spine.utils.SpineUtils.atan2
+import com.esotericsoftware.spine.utils.SpineUtils.cos
+import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
+import com.esotericsoftware.spine.utils.SpineUtils.radDeg
+import com.esotericsoftware.spine.utils.SpineUtils.sin
+import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 
 /** Stores a bone's current pose.
  *
@@ -156,9 +163,7 @@ class Bone : Updatable {
 
     /** @param parent May be null.
      */
-    constructor(data: BoneData?, skeleton: Skeleton?, parent: Bone) {
-        requireNotNull(data) { "data cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(data: BoneData, skeleton: Skeleton, parent: Bone?) {
         this.data = data
         this.skeleton = skeleton
         this.parent = parent
@@ -168,9 +173,7 @@ class Bone : Updatable {
     /** Copy constructor. Does not copy the children bones.
      * @param parent May be null.
      */
-    constructor(bone: Bone?, skeleton: Skeleton?, parent: Bone) {
-        requireNotNull(bone) { "bone cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(bone: Bone, skeleton: Skeleton, parent: Bone?) {
         this.skeleton = skeleton
         this.parent = parent
         data = bone.data
@@ -194,7 +197,7 @@ class Bone : Updatable {
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide.  */
     @JvmOverloads
-    fun updateWorldTransform(x: Float = x, y: Float = y, rotation: Float = rotation, scaleX: Float = scaleX, scaleY: Float = scaleY, shearX: Float = shearX, shearY: Float = shearY) {
+    fun updateWorldTransform(x: Float = this.x, y: Float = this.y, rotation: Float = this.rotation, scaleX: Float = this.scaleX, scaleY: Float = this.scaleY, shearX: Float = this.shearX, shearY: Float = this.shearY) {
         ax = x
         ay = y
         arotation = rotation
@@ -385,8 +388,7 @@ class Bone : Updatable {
         }
     }
 
-    fun getWorldTransform(worldTransform: Matrix3?): Matrix3 {
-        requireNotNull(worldTransform) { "worldTransform cannot be null." }
+    fun getWorldTransform(worldTransform: Matrix3): Matrix3 {
         val `val` = worldTransform.`val`
         `val`[M00] = a
         `val`[M01] = b
@@ -401,8 +403,7 @@ class Bone : Updatable {
     }
 
     /** Transforms a point from world coordinates to the bone's local coordinates.  */
-    fun worldToLocal(world: Vector2?): Vector2 {
-        requireNotNull(world) { "world cannot be null." }
+    fun worldToLocal(world: Vector2): Vector2 {
         val invDet = 1 / (a * d - b * c)
         val x = world.x - worldX
         val y = world.y - worldY
@@ -412,8 +413,7 @@ class Bone : Updatable {
     }
 
     /** Transforms a point from the bone's local coordinates to world coordinates.  */
-    fun localToWorld(local: Vector2?): Vector2 {
-        requireNotNull(local) { "local cannot be null." }
+    fun localToWorld(local: Vector2): Vector2 {
         val x = local.x
         val y = local.y
         local.x = x * a + y * b + worldX

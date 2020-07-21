@@ -61,11 +61,7 @@ class Slot {
      *
      *
      * See [VertexAttachment.computeWorldVertices] and [DeformTimeline].  */
-    var deform: JFloatArray? = JFloatArray()
-        set(deform) {
-            requireNotNull(deform) { "deform cannot be null." }
-            field = deform
-        }
+    var deform: JFloatArray = JFloatArray()
 
     internal var attachmentState: Int = 0
 
@@ -73,9 +69,7 @@ class Slot {
     val skeleton: Skeleton
         get() = bone.skeleton
 
-    constructor(data: SlotData?, bone: Bone?) {
-        requireNotNull(data) { "data cannot be null." }
-        requireNotNull(bone) { "bone cannot be null." }
+    constructor(data: SlotData, bone: Bone) {
         this.data = data
         this.bone = bone
         darkColor = if (data.darkColor == null) null else Color()
@@ -83,16 +77,14 @@ class Slot {
     }
 
     /** Copy constructor.  */
-    constructor(slot: Slot?, bone: Bone?) {
-        requireNotNull(slot) { "slot cannot be null." }
-        requireNotNull(bone) { "bone cannot be null." }
+    constructor(slot: Slot, bone: Bone) {
         data = slot.data
         this.bone = bone
         color.set(slot.color)
         darkColor = if (slot.darkColor == null) null else Color(slot.darkColor)
         attachment = slot.attachment
         attachmentTime = slot.attachmentTime
-        this.deform!!.addAll(slot.deform!!)
+        this.deform.addAll(slot.deform)
     }
 
     /** The current attachment for the slot, or null if the slot has no attachment.  */

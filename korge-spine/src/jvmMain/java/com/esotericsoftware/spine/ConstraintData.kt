@@ -32,7 +32,8 @@ package com.esotericsoftware.spine
 /** The base class for all constraint datas.  */
 abstract class ConstraintData(
         /** The constraint's name, which is unique across all constraints in the skeleton of the same type.  */
-        val name: String?) {
+        val name: String
+) {
     /** The ordinal of this constraint for the order a skeleton's constraints will be applied by
      * [Skeleton.updateWorldTransform].  */
     var order: Int = 0
@@ -43,11 +44,7 @@ abstract class ConstraintData(
      */
     var skinRequired: Boolean = false
 
-    init {
-        requireNotNull(name) { "name cannot be null." }
-    }
-
     override fun toString(): String {
-        return name
+        return name ?: ""
     }
 }

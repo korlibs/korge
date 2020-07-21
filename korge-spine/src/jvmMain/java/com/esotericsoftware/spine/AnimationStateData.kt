@@ -35,16 +35,13 @@ import com.esotericsoftware.spine.AnimationState.TrackEntry
 /** Stores mix (crossfade) durations to be applied when [AnimationState] animations are changed.  */
 class AnimationStateData(
         /** The SkeletonData to look up animations when they are specified by name.  */
-        val skeletonData: SkeletonData?) {
+        val skeletonData: SkeletonData
+) {
     internal val animationToMixTime: ObjectFloatMap<Key> = ObjectFloatMap(51, 0.8f)
     internal val tempKey = Key()
 
     /** The mix duration to use when no mix duration has been defined between two animations.  */
     var defaultMix: Float = 0.toFloat()
-
-    init {
-        requireNotNull(skeletonData) { "skeletonData cannot be null." }
-    }
 
     /** Sets a mix duration by animation name.
      *
@@ -61,9 +58,7 @@ class AnimationStateData(
      *
      *
      * See [TrackEntry.mixDuration].  */
-    fun setMix(from: Animation?, to: Animation?, duration: Float) {
-        requireNotNull(from) { "from cannot be null." }
-        requireNotNull(to) { "to cannot be null." }
+    fun setMix(from: Animation, to: Animation, duration: Float) {
         val key = Key()
         key.a1 = from
         key.a2 = to
@@ -72,9 +67,7 @@ class AnimationStateData(
 
     /** Returns the mix duration to use when changing from the specified animation to the other, or the [.getDefaultMix] if
      * no mix duration has been set.  */
-    fun getMix(from: Animation?, to: Animation?): Float {
-        requireNotNull(from) { "from cannot be null." }
-        requireNotNull(to) { "to cannot be null." }
+    fun getMix(from: Animation, to: Animation): Float {
         tempKey.a1 = from
         tempKey.a2 = to
         return animationToMixTime[tempKey, defaultMix]

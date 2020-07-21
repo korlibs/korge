@@ -41,26 +41,22 @@ import com.esotericsoftware.spine.AnimationState.AnimationStateListener
  * AnimationStateListener [AnimationStateListener.event], and
  * [Events](http://esotericsoftware.com/spine-events) in the Spine User Guide.  */
 class Event(
-        /** The animation time this event was keyed.  */
-        val time: Float,
-        /** The events's setup pose data.  */
-        val data: EventData?) {
+    /** The animation time this event was keyed.  */
+    val time: Float,
+    /** The events's setup pose data.  */
+    val data: EventData
+) {
     var int: Int = 0
     var float: Float = 0.toFloat()
-    internal var stringValue: String
+    internal lateinit var stringValue: String
     var volume: Float = 0.toFloat()
     var balance: Float = 0.toFloat()
 
-    var string: String?
+    var string: String
         get() = stringValue
         set(stringValue) {
-            requireNotNull(stringValue) { "stringValue cannot be null." }
             this.stringValue = stringValue
         }
-
-    init {
-        requireNotNull(data) { "data cannot be null." }
-    }
 
     override fun toString(): String {
         return data.name

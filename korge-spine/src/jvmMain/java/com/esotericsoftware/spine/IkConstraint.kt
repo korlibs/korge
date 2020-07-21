@@ -48,7 +48,7 @@ class IkConstraint : Updatable {
 
     /** The bones that will be modified by this IK constraint.  */
     @JvmField
-    val bones: JArray<Bone?>
+    val bones: JArray<Bone>
 
     @JvmField
     internal var target: Bone? = null
@@ -77,9 +77,7 @@ class IkConstraint : Updatable {
     @JvmField
     internal var active: Boolean = false
 
-    constructor(data: IkConstraintData?, skeleton: Skeleton?) {
-        requireNotNull(data) { "data cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(data: IkConstraintData, skeleton: Skeleton) {
         this.data = data
         mix = data.mix
         softness = data.softness
@@ -89,14 +87,12 @@ class IkConstraint : Updatable {
 
         bones = JArray(data.bones.size)
         for (boneData in data.bones)
-            bones.add(skeleton.findBone(boneData.name))
+            bones.add(skeleton.findBone(boneData.name)!!)
         target = skeleton.findBone(data.target.name)
     }
 
     /** Copy constructor.  */
-    constructor(constraint: IkConstraint?, skeleton: Skeleton?) {
-        requireNotNull(constraint) { "constraint cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(constraint: IkConstraint, skeleton: Skeleton) {
         data = constraint.data
         bones = JArray(constraint.bones.size)
         for (bone in constraint.bones)
@@ -128,8 +124,7 @@ class IkConstraint : Updatable {
         return target
     }
 
-    fun setTarget(target: Bone?) {
-        requireNotNull(target) { "target cannot be null." }
+    fun setTarget(target: Bone) {
         this.target = target
     }
 
@@ -144,9 +139,7 @@ class IkConstraint : Updatable {
 
         /** Applies 1 bone IK. The target is specified in the world coordinate system.  */
         @JvmStatic
-        fun apply(bone: Bone?, targetX: Float, targetY: Float, compress: Boolean, stretch: Boolean, uniform: Boolean,
-                  alpha: Float) {
-            requireNotNull(bone) { "bone cannot be null." }
+        fun apply(bone: Bone, targetX: Float, targetY: Float, compress: Boolean, stretch: Boolean, uniform: Boolean, alpha: Float) {
             if (!bone.appliedValid) bone.updateAppliedTransform()
             val p = bone.parent!!
             val pa = p.a
@@ -214,10 +207,8 @@ class IkConstraint : Updatable {
          * @param child A direct descendant of the parent bone.
          */
         @JvmStatic
-        fun apply(parent: Bone?, child: Bone?, targetX: Float, targetY: Float, bendDir: Int, stretch: Boolean, softness: Float, alpha: Float) {
+        fun apply(parent: Bone, child: Bone, targetX: Float, targetY: Float, bendDir: Int, stretch: Boolean, softness: Float, alpha: Float) {
             var softness = softness
-            requireNotNull(parent) { "parent cannot be null." }
-            requireNotNull(child) { "child cannot be null." }
             if (alpha == 0f) {
                 child.updateWorldTransform()
                 return

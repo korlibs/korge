@@ -41,21 +41,20 @@ import com.esotericsoftware.spine.attachments.MeshAttachment
  * [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.  */
 class Skin(
         /** The skin's name, which is unique across all skins in the skeleton.  */
-        val name: String?) {
+        val name: String
+) {
     internal val attachments: OrderedMap<SkinEntry, SkinEntry> = OrderedMap()
     val bones: JArray<BoneData> = JArray()
     val constraints: JArray<ConstraintData> = JArray()
     private val lookup = SkinEntry()
 
     init {
-        requireNotNull(name) { "name cannot be null." }
         this.attachments.orderedKeys().ordered = false
     }
 
     /** Adds an attachment to the skin for the specified slot index and name.  */
-    fun setAttachment(slotIndex: Int, name: String, attachment: Attachment?) {
+    fun setAttachment(slotIndex: Int, name: String, attachment: Attachment) {
         require(slotIndex >= 0) { "slotIndex must be >= 0." }
-        requireNotNull(attachment) { "attachment cannot be null." }
         val newEntry = SkinEntry(slotIndex, name, attachment)
         val oldEntry = attachments.put(newEntry, newEntry)
         if (oldEntry != null) {
@@ -64,9 +63,7 @@ class Skin(
     }
 
     /** Adds all attachments, bones, and constraints from the specified skin to this skin.  */
-    fun addSkin(skin: Skin?) {
-        requireNotNull(skin) { "skin cannot be null." }
-
+    fun addSkin(skin: Skin) {
         for (data in skin.bones)
             if (!bones.contains(data, true)) bones.add(data)
 
@@ -79,9 +76,7 @@ class Skin(
 
     /** Adds all bones and constraints and copies of all attachments from the specified skin to this skin. Mesh attachments are not
      * copied, instead a new linked mesh is created. The attachment copies can be modified without affecting the originals.  */
-    fun copySkin(skin: Skin?) {
-        requireNotNull(skin) { "skin cannot be null." }
-
+    fun copySkin(skin: Skin) {
         for (data in skin.bones)
             if (!bones.contains(data, true)) bones.add(data)
 
@@ -117,9 +112,8 @@ class Skin(
     }
 
     /** Returns all attachments in this skin for the specified slot index.  */
-    fun getAttachments(slotIndex: Int, attachments: JArray<SkinEntry>?) {
+    fun getAttachments(slotIndex: Int, attachments: JArray<SkinEntry>) {
         require(slotIndex >= 0) { "slotIndex must be >= 0." }
-        requireNotNull(attachments) { "attachments cannot be null." }
         for (entry in this.attachments.keys())
             if (entry.slotIndex == slotIndex) attachments.add(entry)
     }
@@ -168,8 +162,7 @@ class Skin(
             this.attachment = attachment
         }
 
-        internal operator fun set(slotIndex: Int, name: String?) {
-            requireNotNull(name) { "name cannot be null." }
+        internal operator fun set(slotIndex: Int, name: String) {
             this.slotIndex = slotIndex
             this.name = name
             this.hashCode = name.hashCode() + slotIndex * 37

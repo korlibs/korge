@@ -49,7 +49,8 @@ class PathConstraint : Updatable {
 
     /** The bones that will be modified by this path constraint.  */
     val bones: JArray<Bone>
-    internal var target: Slot? = null
+
+    lateinit internal var target: Slot
 
     /** The position along the path.  */
     var position: Float = 0.toFloat()
@@ -73,14 +74,12 @@ class PathConstraint : Updatable {
     private val lengths = JFloatArray()
     private val segments = FloatArray(10)
 
-    constructor(data: PathConstraintData?, skeleton: Skeleton?) {
-        requireNotNull(data) { "data cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(data: PathConstraintData, skeleton: Skeleton) {
         this.data = data
         bones = JArray(data.bones.size)
         for (boneData in data.bones)
-            bones.add(skeleton.findBone(boneData.name))
-        target = skeleton.findSlot(data.target.name)
+            bones.add(skeleton.findBone(boneData.name)!!)
+        target = skeleton.findSlot(data.target.name)!!
         position = data.position
         spacing = data.spacing
         rotateMix = data.rotateMix
@@ -88,9 +87,7 @@ class PathConstraint : Updatable {
     }
 
     /** Copy constructor.  */
-    constructor(constraint: PathConstraint?, skeleton: Skeleton?) {
-        requireNotNull(constraint) { "constraint cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
+    constructor(constraint: PathConstraint, skeleton: Skeleton) {
         data = constraint.data
         bones = JArray(constraint.bones.size)
         for (bone in constraint.bones)
@@ -137,21 +134,21 @@ class PathConstraint : Updatable {
                 val bone = bones[i]
                 val setupLength = bone.data.length
                 if (setupLength < epsilon) {
-                    if (scale) lengths[i] = 0f
+                    if (scale) lengths!![i] = 0f
                     spaces[++i] = 0f
                 } else if (percentSpacing) {
                     if (scale) {
                         val x = setupLength * bone.a
                         val y = setupLength * bone.c
                         val length = Math.sqrt((x * x + y * y).toDouble()).toFloat()
-                        lengths[i] = length
+                        lengths!![i] = length
                     }
                     spaces[++i] = spacing
                 } else {
                     val x = setupLength * bone.a
                     val y = setupLength * bone.c
                     val length = Math.sqrt((x * x + y * y).toDouble()).toFloat()
-                    if (scale) lengths[i] = length
+                    if (scale) lengths!![i] = length
                     spaces[++i] = (if (lengthSpacing) setupLength + spacing else spacing) * length / setupLength
                 }
             }
@@ -564,8 +561,7 @@ class PathConstraint : Updatable {
         return target
     }
 
-    fun setTarget(target: Slot?) {
-        requireNotNull(target) { "target cannot be null." }
+    fun setTarget(target: Slot) {
         this.target = target
     }
 

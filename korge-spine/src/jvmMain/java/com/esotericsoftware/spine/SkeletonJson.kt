@@ -99,19 +99,15 @@ class SkeletonJson {
         attachmentLoader = AtlasAttachmentLoader(atlas)
     }
 
-    constructor(attachmentLoader: AttachmentLoader?) {
-        requireNotNull(attachmentLoader) { "attachmentLoader cannot be null." }
+    constructor(attachmentLoader: AttachmentLoader) {
         this.attachmentLoader = attachmentLoader
     }
 
-    protected fun parse(file: FileHandle?): JsonValue? {
-        requireNotNull(file) { "file cannot be null." }
+    protected fun parse(file: FileHandle): JsonValue? {
         return JsonReader().parse(file)
     }
 
-    fun readSkeletonData(file: FileHandle?): SkeletonData {
-        requireNotNull(file) { "file cannot be null." }
-
+    fun readSkeletonData(file: FileHandle): SkeletonData {
         val scale = this.scale
 
         val skeletonData = SkeletonData()

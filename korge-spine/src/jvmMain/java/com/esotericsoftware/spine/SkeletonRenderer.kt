@@ -72,7 +72,7 @@ class SkeletonRenderer {
      * This method may change the batch's [blending function][Batch.setBlendFunctionSeparate]. The
      * previous blend function is not restored, since that could result in unnecessary flushes, depending on what is rendered
      * next.  */
-    fun draw(batch: Batch?, skeleton: Skeleton?) {
+    fun draw(batch: Batch, skeleton: Skeleton) {
         if (batch is TwoColorPolygonBatch) {
             draw(batch as TwoColorPolygonBatch?, skeleton)
             return
@@ -81,9 +81,6 @@ class SkeletonRenderer {
             draw(batch as PolygonSpriteBatch?, skeleton)
             return
         }
-        requireNotNull(batch) { "batch cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
-
         val vertexEffect = this.vertexEffect
         vertexEffect?.begin(skeleton)
 
@@ -171,10 +168,7 @@ class SkeletonRenderer {
      * This method may change the batch's [blending function][Batch.setBlendFunctionSeparate]. The
      * previous blend function is not restored, since that could result in unnecessary flushes, depending on what is rendered
      * next.  */
-    fun draw(batch: PolygonSpriteBatch?, skeleton: Skeleton?) {
-        requireNotNull(batch) { "batch cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
-
+    fun draw(batch: PolygonSpriteBatch, skeleton: Skeleton) {
         val tempPosition = this.temp
         val tempUV = this.temp2
         val tempLight1 = this.temp3
@@ -318,10 +312,7 @@ class SkeletonRenderer {
      * This method may change the batch's [blending function][Batch.setBlendFunctionSeparate]. The
      * previous blend function is not restored, since that could result in unnecessary flushes, depending on what is rendered
      * next.  */
-    fun draw(batch: TwoColorPolygonBatch?, skeleton: Skeleton?) {
-        requireNotNull(batch) { "batch cannot be null." }
-        requireNotNull(skeleton) { "skeleton cannot be null." }
-
+    fun draw(batch: TwoColorPolygonBatch, skeleton: Skeleton) {
         val tempPosition = this.temp
         val tempUV = this.temp2
         val tempLight1 = this.temp3
