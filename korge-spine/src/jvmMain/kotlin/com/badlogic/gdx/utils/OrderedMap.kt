@@ -16,8 +16,6 @@
 
 package com.badlogic.gdx.utils
 
-import java.util.NoSuchElementException
-
 /** An [ObjectMap] that also stores keys in an [JArray] using the insertion order. Null keys are not allowed. No
  * allocation is done except when growing the table size.
  *
@@ -205,7 +203,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
 
     override fun toString(separator: String, braces: Boolean): String {
         if (size == 0) return if (braces) "{}" else ""
-        val buffer = java.lang.StringBuilder(32)
+        val buffer = StringBuilder(32)
         if (braces) buffer.append('{')
         val keys = this.keys
         var i = 0

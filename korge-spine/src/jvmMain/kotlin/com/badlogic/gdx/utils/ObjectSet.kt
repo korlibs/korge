@@ -16,11 +16,6 @@
 
 package com.badlogic.gdx.utils
 
-import java.util.Arrays
-import java.util.NoSuchElementException
-
-import com.badlogic.gdx.math.MathUtils
-
 /** An unordered set where the keys are objects. Null keys are not allowed. No allocation is done except when growing the table
  * size.
  *
@@ -80,7 +75,7 @@ class ObjectSet<T>
         val tableSize = tableSize(initialCapacity, loadFactor)
         threshold = (tableSize * loadFactor).toInt()
         mask = tableSize - 1
-        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
+        shift = mask.toLong().countLeadingZeroBits()
 
         keyTable = arrayOfNulls<Any>(tableSize) as Array<T>
     }
@@ -229,7 +224,7 @@ class ObjectSet<T>
     fun clear() {
         if (size == 0) return
         size = 0
-        Arrays.fill(keyTable, null)
+        (keyTable as Array<Any?>).fill(null)
     }
 
     operator fun contains(key: T): Boolean {
@@ -263,7 +258,7 @@ class ObjectSet<T>
         val oldCapacity = keyTable.size
         threshold = (newSize * loadFactor).toInt()
         mask = newSize - 1
-        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
+        shift = mask.toLong().countLeadingZeroBits()
         val oldKeyTable = keyTable
 
         keyTable = arrayOfNulls<Any>(newSize) as Array<T>
@@ -309,7 +304,7 @@ class ObjectSet<T>
 
     fun toString(separator: String): String {
         if (size == 0) return ""
-        val buffer = java.lang.StringBuilder(32)
+        val buffer = StringBuilder(32)
         val keyTable = this.keyTable
         var i = keyTable.size
         while (i-- > 0) {

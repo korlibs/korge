@@ -16,8 +16,6 @@
 
 package com.badlogic.gdx.utils
 
-import java.util.Arrays
-
 import com.badlogic.gdx.math.MathUtils
 
 /** A resizable, ordered or unordered short array. Avoids the boxing that occurs with ArrayList<Short>. If unordered, this class
@@ -348,30 +346,6 @@ class JShortArray {
         System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
         this.items = newItems
         return newItems
-    }
-
-    fun sort() {
-        Arrays.sort(items, 0, size)
-    }
-
-    fun reverse() {
-        val items = this.items
-        var i = 0
-        val lastIndex = size - 1
-        val n = size / 2
-        while (i < n) {
-            val ii = lastIndex - i
-            val temp = items[i]
-            items[i] = items[ii]
-            items[ii] = temp
-            i++
-        }
-    }
-
-    fun toArray(): ShortArray {
-        val array = ShortArray(size)
-        System.arraycopy(items, 0, array, 0, size)
-        return array
     }
 
     override fun hashCode(): Int {

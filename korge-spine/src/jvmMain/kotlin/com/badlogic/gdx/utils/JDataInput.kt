@@ -1,9 +1,6 @@
 package com.badlogic.gdx.utils
 
-import java.io.IOException
-import java.io.EOFException
-
-
+import java.io.*
 
 open class JDataInput(private val data: ByteArray) {
     private var n = 0

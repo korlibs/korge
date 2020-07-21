@@ -16,11 +16,7 @@
 
 package com.badlogic.gdx.utils
 
-import com.badlogic.gdx.utils.ObjectSet.Companion.with
 import com.badlogic.gdx.utils.ObjectSet.Companion.tableSize
-
-import java.util.Arrays
-import java.util.NoSuchElementException
 
 /** An unordered map where the keys and values are objects. Null keys are not allowed. No allocation is done except when growing
  * the table size.
@@ -87,7 +83,7 @@ open class ObjectMap<K, V>
         val tableSize = tableSize(initialCapacity, loadFactor)
         threshold = (tableSize * loadFactor).toInt()
         mask = tableSize - 1
-        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
+        shift = mask.toLong().countLeadingZeroBits()
 
         keyTable = arrayOfNulls<Any>(tableSize) as Array<K>
         valueTable = arrayOfNulls<Any>(tableSize) as Array<V?>
@@ -243,8 +239,8 @@ open class ObjectMap<K, V>
     open fun clear() {
         if (size == 0) return
         size = 0
-        Arrays.fill(keyTable, null)
-        Arrays.fill(valueTable, null)
+        (keyTable as Array<Any?>).fill(null)
+        (valueTable as Array<Any?>).fill(null)
     }
 
     /** Returns true if the specified value is in the map. Note this traverses the entire map and compares every value, which may
@@ -305,7 +301,7 @@ open class ObjectMap<K, V>
         val oldCapacity = keyTable.size
         threshold = (newSize * loadFactor).toInt()
         mask = newSize - 1
-        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
+        shift = mask.toLong().countLeadingZeroBits()
 
         val oldKeyTable = keyTable
         val oldValueTable = valueTable
@@ -391,7 +387,7 @@ open class ObjectMap<K, V>
 
     protected open fun toString(separator: String, braces: Boolean): String {
         if (size == 0) return if (braces) "{}" else ""
-        val buffer = java.lang.StringBuilder(32)
+        val buffer = StringBuilder(32)
         if (braces) buffer.append('{')
         val keyTable = this.keyTable
         val valueTable = this.valueTable
