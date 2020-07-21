@@ -19,7 +19,6 @@ package com.badlogic.gdx.math
 import java.io.Serializable
 
 import com.badlogic.gdx.utils.GdxRuntimeException
-import com.badlogic.gdx.utils.NumberUtils
 
 /** Encapsulates a 3D vector. Allows chaining operations by returning a reference to itself in all modification methods.
  * @author badlogicgames@gmail.com
@@ -605,9 +604,9 @@ class Vector3 : Serializable, Vector<Vector3> {
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + NumberUtils.floatToIntBits(x)
-        result = prime * result + NumberUtils.floatToIntBits(y)
-        result = prime * result + NumberUtils.floatToIntBits(z)
+        result = prime * result + x.toBits()
+        result = prime * result + y.toBits()
+        result = prime * result + z.toBits()
         return result
     }
 
@@ -616,9 +615,9 @@ class Vector3 : Serializable, Vector<Vector3> {
         if (obj == null) return false
         if (javaClass != obj.javaClass) return false
         val other = obj as Vector3?
-        if (NumberUtils.floatToIntBits(x) != NumberUtils.floatToIntBits(other!!.x)) return false
-        if (NumberUtils.floatToIntBits(y) != NumberUtils.floatToIntBits(other.y)) return false
-        return if (NumberUtils.floatToIntBits(z) != NumberUtils.floatToIntBits(other.z)) false else true
+        if (x.toBits() != other!!.x.toBits()) return false
+        if (y.toBits() != other.y.toBits()) return false
+        return if (z.toBits() != other.z.toBits()) false else true
     }
 
     override fun epsilonEquals(other: Vector3?, epsilon: Float): Boolean {

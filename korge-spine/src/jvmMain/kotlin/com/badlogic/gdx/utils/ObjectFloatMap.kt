@@ -314,7 +314,7 @@ class ObjectFloatMap<K>
         val n = keyTable.size
         while (i < n) {
             val key = keyTable[i]
-            if (key != null) h += key.hashCode() + NumberUtils.floatToRawIntBits(valueTable[i])
+            if (key != null) h += key.hashCode() + valueTable[i].toRawBits()
             i++
         }
         return h

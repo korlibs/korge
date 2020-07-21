@@ -395,7 +395,7 @@ class JFloatArray {
         var i = 0
         val n = size
         while (i < n) {
-            h = h * 31 + NumberUtils.floatToRawIntBits(items[i])
+            h = h * 31 + items[i].toRawBits()
             i++
         }
         return h

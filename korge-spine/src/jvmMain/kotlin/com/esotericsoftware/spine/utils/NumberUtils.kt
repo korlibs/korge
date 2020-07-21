@@ -14,49 +14,21 @@
  * limitations under the License.
  */
 
-package com.badlogic.gdx.utils
+package com.esotericsoftware.spine.utils
 
 object NumberUtils {
-    @JvmStatic
-    fun floatToIntBits(value: Float): Int {
-        return java.lang.Float.floatToIntBits(value)
-    }
-
-    @JvmStatic
-    fun floatToRawIntBits(value: Float): Int {
-        return java.lang.Float.floatToRawIntBits(value)
-    }
-
     /** Converts the color from a float ABGR encoding to an int ABGR encoding. The alpha is expanded from 0-254 in the float
      * encoding (see [.intToFloatColor]) to 0-255, which means converting from int to float and back to int can be
      * lossy.  */
     @JvmStatic
     fun floatToIntColor(value: Float): Int {
-        var intBits = java.lang.Float.floatToRawIntBits(value)
-        intBits = intBits or ((intBits.ushr(24) * (255f / 254f)).toInt() shl 24)
-        return intBits
+        val intBits = value.toRawBits()
+        return intBits or ((intBits.ushr(24) * (255f / 254f)).toInt() shl 24)
     }
 
     /** Encodes the ABGR int color as a float. The alpha is compressed to 0-254 to avoid using bits in the NaN range (see
      * [Float.intBitsToFloat] javadocs). Rendering which uses colors encoded as floats should expand the 0-254 back to
      * 0-255.  */
     @JvmStatic
-    fun intToFloatColor(value: Int): Float {
-        return java.lang.Float.intBitsToFloat(value and -0x1000001)
-    }
-
-    @JvmStatic
-    fun intBitsToFloat(value: Int): Float {
-        return java.lang.Float.intBitsToFloat(value)
-    }
-
-    @JvmStatic
-    fun doubleToLongBits(value: Double): Long {
-        return java.lang.Double.doubleToLongBits(value)
-    }
-
-    @JvmStatic
-    fun longBitsToDouble(value: Long): Double {
-        return java.lang.Double.longBitsToDouble(value)
-    }
+    fun intToFloatColor(value: Int): Float = Float.fromBits(value and -0x1000001)
 }

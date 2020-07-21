@@ -15,7 +15,7 @@
  */
 package com.badlogic.gdx.graphics
 
-import com.badlogic.gdx.utils.*
+import com.esotericsoftware.spine.utils.*
 
 /** A color class, holding the r, g, b and alpha component as floats in the range [0,1]. All methods perform clamping on the
  * internal values after execution.
@@ -265,10 +265,10 @@ class Color {
     }
 
     override fun hashCode(): Int {
-        var result = if (r != +0.0f) NumberUtils.floatToIntBits(r) else 0
-        result = 31 * result + if (g != +0.0f) NumberUtils.floatToIntBits(g) else 0
-        result = 31 * result + if (b != +0.0f) NumberUtils.floatToIntBits(b) else 0
-        result = 31 * result + if (a != +0.0f) NumberUtils.floatToIntBits(a) else 0
+        var result = if (r != +0.0f) r.toBits() else 0
+        result = 31 * result + if (g != +0.0f) g.toBits() else 0
+        result = 31 * result + if (b != +0.0f) b.toBits() else 0
+        result = 31 * result + if (a != +0.0f) a.toBits() else 0
         return result
     }
 

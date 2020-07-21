@@ -18,8 +18,6 @@ package com.badlogic.gdx.math
 
 import java.io.Serializable
 
-import com.badlogic.gdx.utils.NumberUtils
-
 /** A simple quaternion class.
  * @see [http://en.wikipedia.org/wiki/Quaternion](http://en.wikipedia.org/wiki/Quaternion)
  *
@@ -737,10 +735,10 @@ class Quaternion : Serializable {
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + NumberUtils.floatToRawIntBits(w)
-        result = prime * result + NumberUtils.floatToRawIntBits(x)
-        result = prime * result + NumberUtils.floatToRawIntBits(y)
-        result = prime * result + NumberUtils.floatToRawIntBits(z)
+        result = prime * result + w.toRawBits()
+        result = prime * result + x.toRawBits()
+        result = prime * result + y.toRawBits()
+        result = prime * result + z.toRawBits()
         return result
     }
 
@@ -755,10 +753,10 @@ class Quaternion : Serializable {
             return false
         }
         val other = obj as Quaternion?
-        return (NumberUtils.floatToRawIntBits(w) == NumberUtils.floatToRawIntBits(other!!.w)
-                && NumberUtils.floatToRawIntBits(x) == NumberUtils.floatToRawIntBits(other.x)
-                && NumberUtils.floatToRawIntBits(y) == NumberUtils.floatToRawIntBits(other.y)
-                && NumberUtils.floatToRawIntBits(z) == NumberUtils.floatToRawIntBits(other.z))
+        return (w.toRawBits() == other!!.w.toRawBits()
+                && x.toRawBits() == other.x.toRawBits()
+                && y.toRawBits() == other.y.toRawBits()
+                && z.toRawBits() == other.z.toRawBits())
     }
 
     /** Get the dot product between this and the other quaternion (commutative).
