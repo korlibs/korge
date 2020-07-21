@@ -79,7 +79,7 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
         if (attachmentLoader == null)
             attachmentLoader = AtlasAttachmentLoader(manager.get(file.pathWithoutExtension()!! + ".atlas", TextureAtlas::class.java))
 
-        if (file.extension()!!.equals("skel", ignoreCase = true)) {
+        if (file.extension().equals("skel", ignoreCase = true)) {
             val skeletonBinary = SkeletonBinary(attachmentLoader)
             skeletonBinary.scale = scale
             skeletonData = skeletonBinary.readSkeletonData(file)

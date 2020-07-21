@@ -24,7 +24,7 @@ class FileHandle(val url: URL) {
         TODO()
     }
 
-    fun extension(): String? {
-        TODO()
+    fun extension(): String {
+        return url.file.substringAfterLast('.')
     }
 }
