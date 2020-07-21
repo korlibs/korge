@@ -833,7 +833,6 @@ class AnimationState {
                         continue@outer
                     }
                     break
-                    next = next.mixingTo
                 }
                 timelineMode[i] = HOLD
             }

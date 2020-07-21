@@ -86,8 +86,10 @@ class IkConstraint : Updatable {
         stretch = data.stretch
 
         bones = JArray(data.bones.size)
-        for (boneData in data.bones)
-            bones.add(skeleton.findBone(boneData.name)!!)
+        for (boneData in data.bones.iterator()) {
+            val bone = skeleton.findBone(boneData.name)
+            bones.add(bone!!)
+        }
         target = skeleton.findBone(data.target.name)
     }
 

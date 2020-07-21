@@ -112,7 +112,7 @@ class SkeletonBinary {
 
             // Bones.
             run {
-                val o = skeletonData.bones.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.bones.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n) {
                     val name = input.readString()!!
                     val parent = if (i == 0) null else skeletonData.bones[input.readInt(true)]
@@ -134,7 +134,7 @@ class SkeletonBinary {
 
             // Slots.
             run {
-                val o = skeletonData.slots.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.slots.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n) {
                     val slotName = input.readString()!!
                     val boneData = skeletonData.bones[input.readInt(true)]
@@ -152,7 +152,7 @@ class SkeletonBinary {
 
             // IK constraints.
             run {
-                val o = skeletonData.ikConstraints.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.ikConstraints.setSize(input.readInt(true).also { n = it })
                 run {
                     var i = 0
                     var nn: Int
@@ -160,7 +160,7 @@ class SkeletonBinary {
                         val data = IkConstraintData(input.readString()!!)
                         data.order = input.readInt(true)
                         data.skinRequired = input.readBoolean()
-                        val bones = data.bones.setSize(input.readInt(true).also { nn = it }) as Array<Any>
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
                             bones[ii] = skeletonData.bones[input.readInt(true)]
                         data.target = skeletonData.bones[input.readInt(true)]
@@ -178,7 +178,7 @@ class SkeletonBinary {
 
             // Transform constraints.
             run {
-                val o = skeletonData.transformConstraints.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.transformConstraints.setSize(input.readInt(true).also { n = it })
                 run {
                     var i = 0
                     var nn: Int
@@ -186,7 +186,7 @@ class SkeletonBinary {
                         val data = TransformConstraintData(input.readString()!!)
                         data.order = input.readInt(true)
                         data.skinRequired = input.readBoolean()
-                        val bones = data.bones.setSize(input.readInt(true).also { nn = it }) as Array<Any>
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
                             bones[ii] = skeletonData.bones[input.readInt(true)]
                         data.target = skeletonData.bones[input.readInt(true)]
@@ -210,7 +210,7 @@ class SkeletonBinary {
 
             // Path constraints.
             run {
-                val o = skeletonData.pathConstraints.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.pathConstraints.setSize(input.readInt(true).also { n = it })
                 run {
                     var i = 0
                     var nn: Int
@@ -218,7 +218,7 @@ class SkeletonBinary {
                         val data = PathConstraintData(input.readString()!!)
                         data.order = input.readInt(true)
                         data.skinRequired = input.readBoolean()
-                        val bones = data.bones.setSize(input.readInt(true).also { nn = it }) as Array<Any> as Array<Any>
+                        val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
                             bones[ii] = skeletonData.bones[input.readInt(true)]
                         data.target = skeletonData.slots[input.readInt(true)]
@@ -248,7 +248,7 @@ class SkeletonBinary {
             // Skins.
             run {
                 var i = skeletonData.skins.size
-                val o = skeletonData.skins.setSize((i + input.readInt(true)).also { n = it }) as Array<Any>
+                val o = skeletonData.skins.setSize((i + input.readInt(true)).also { n = it })
                 while (i < n) {
                     o[i] = readSkin(input, skeletonData, false, nonessential)!!
                     i++
@@ -271,7 +271,7 @@ class SkeletonBinary {
 
             // Events.
             run {
-                val o = skeletonData.events.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.events.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n) {
                     val data = EventData(input.readStringRef()!!)
                     data.int = input.readInt(false)
@@ -288,7 +288,7 @@ class SkeletonBinary {
 
             // Animations.
             run {
-                val o = skeletonData.animations.setSize(input.readInt(true).also { n = it }) as Array<Any>
+                val o = skeletonData.animations.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n)
                     o[i] = readAnimation(input, input.readString(), skeletonData)
             }
@@ -318,7 +318,7 @@ class SkeletonBinary {
             skin = Skin("default")
         } else {
             skin = Skin(input.readStringRef()!!)
-            val bones = skin.bones.setSize(input.readInt(true)) as Array<Any>
+            val bones = skin.bones.setSize(input.readInt(true))
             run {
                 var i = 0
                 val n = skin.bones.size

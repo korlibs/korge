@@ -546,12 +546,9 @@ class Skeleton {
      */
     fun findBone(boneName: String): Bone? {
         val bones = this.bones
-        var i = 0
-        val n = bones.size
-        while (i < n) {
+        for (i in 0 until bones.size) {
             val bone = bones[i]
             if (bone.data.name == boneName) return bone
-            i++
         }
         return null
     }

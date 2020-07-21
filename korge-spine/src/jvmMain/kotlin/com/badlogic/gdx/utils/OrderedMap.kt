@@ -47,10 +47,6 @@ import java.util.NoSuchElementException
 class OrderedMap<K, V> : ObjectMap<K, V> {
     internal val keys: JArray<K>
 
-    constructor(map: OrderedMap<out K, out V>) : super(map) {
-        keys = JArray(map.keys)
-    }
-
     @PublishedApi
     internal constructor(keys: JArray<K>, capacity: Int, loadFactor: Float) : super(capacity, loadFactor) {
         this.keys = keys
