@@ -16,10 +16,6 @@
 
 package com.badlogic.gdx.utils
 
-import com.badlogic.gdx.math.MathUtils
-
-import java.util.BitSet
-
 /** A resizable, ordered or unordered boolean array. Avoids the boxing that occurs with ArrayList<Boolean>. It is less memory
  * efficient than [BitSet], except for very small sizes. It more CPU efficient than [BitSet], except for very large
  * sizes or if BitSet functionality such as and, or, xor, etc are needed. If unordered, this class avoids a memory copy when

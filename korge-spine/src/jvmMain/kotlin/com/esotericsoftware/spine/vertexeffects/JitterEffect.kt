@@ -30,13 +30,12 @@
 package com.esotericsoftware.spine.vertexeffects
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect
-import java.util.*
+import kotlin.random.Random
 
-class JitterEffect(private var x: Float, private var y: Float, val random: Random = Random()) : VertexEffect {
+class JitterEffect(private var x: Float, private var y: Float, val random: Random = Random) : VertexEffect {
 
     override fun begin(skeleton: Skeleton) {}
 

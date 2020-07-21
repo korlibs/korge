@@ -43,7 +43,6 @@ class JsonWriter(val writer: Writer) : Writer() {
         this.quoteLongValues = quoteLongValues
     }
 
-    @Throws(IOException::class)
     fun name(name: String): JsonWriter {
         check(!(current == null || current!!.array)) { "Current item must be an object." }
         if (!current!!.needsComma)
@@ -56,7 +55,6 @@ class JsonWriter(val writer: Writer) : Writer() {
         return this
     }
 
-    @Throws(IOException::class)
     fun `object`(): JsonWriter {
         requireCommaOrName()
         current = JsonObject(false)
@@ -64,7 +62,7 @@ class JsonWriter(val writer: Writer) : Writer() {
         return this
     }
 
-    @Throws(IOException::class)
+    
     fun array(): JsonWriter {
         requireCommaOrName()
         current = JsonObject(true)
@@ -72,7 +70,7 @@ class JsonWriter(val writer: Writer) : Writer() {
         return this
     }
 
-    @Throws(IOException::class)
+    
     fun value(value: Any): JsonWriter {
         var value = value
         if (quoteLongValues && (value is Long || value is Double || value is BigDecimal || value is BigInteger)) {
@@ -88,14 +86,14 @@ class JsonWriter(val writer: Writer) : Writer() {
     }
 
     /** Writes the specified JSON value, without quoting or escaping.  */
-    @Throws(IOException::class)
+    
     fun json(json: String): JsonWriter {
         requireCommaOrName()
         writer.write(json)
         return this
     }
 
-    @Throws(IOException::class)
+    
     private fun requireCommaOrName() {
         if (current == null) return
         if (current!!.array) {
@@ -109,28 +107,28 @@ class JsonWriter(val writer: Writer) : Writer() {
         }
     }
 
-    @Throws(IOException::class)
+    
     fun `object`(name: String): JsonWriter {
         return name(name).`object`()
     }
 
-    @Throws(IOException::class)
+    
     fun array(name: String): JsonWriter {
         return name(name).array()
     }
 
-    @Throws(IOException::class)
+    
     operator fun set(name: String, value: Any): JsonWriter {
         return name(name).value(value)
     }
 
     /** Writes the specified JSON value, without quoting or escaping.  */
-    @Throws(IOException::class)
+    
     fun json(name: String, json: String): JsonWriter {
         return name(name).json(json)
     }
 
-    @Throws(IOException::class)
+    
     fun pop(): JsonWriter {
         check(!named) { "Expected an object, array, or value since a name was set." }
         stack.pop().close()
@@ -138,24 +136,24 @@ class JsonWriter(val writer: Writer) : Writer() {
         return this
     }
 
-    @Throws(IOException::class)
+    
     override fun write(cbuf: CharArray, off: Int, len: Int) {
         writer.write(cbuf, off, len)
     }
 
-    @Throws(IOException::class)
+    
     override fun flush() {
         writer.flush()
     }
 
-    @Throws(IOException::class)
+    
     override fun close() {
         while (stack.size > 0)
             pop()
         writer.close()
     }
 
-    private inner class JsonObject @Throws(IOException::class)
+    private inner class JsonObject 
     internal constructor(internal val array: Boolean) {
         internal var needsComma: Boolean = false
 
@@ -163,7 +161,7 @@ class JsonWriter(val writer: Writer) : Writer() {
             writer.write((if (array) '[' else '{').toInt())
         }
 
-        @Throws(IOException::class)
+        
         internal fun close() {
             writer.write((if (array) ']' else '}').toInt())
         }

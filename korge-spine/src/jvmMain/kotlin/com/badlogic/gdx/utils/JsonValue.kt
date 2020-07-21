@@ -1082,14 +1082,12 @@ class JsonValue : Iterable<JsonValue> {
 
     /** More efficient than [.prettyPrint] but [PrettyPrintSettings.singleLineColumns] and
      * [PrettyPrintSettings.wrapNumericArrays] are not supported.  */
-    @Throws(IOException::class)
     fun prettyPrint(outputType: OutputType, writer: Writer) {
         val settings = PrettyPrintSettings()
         settings.outputType = outputType
         prettyPrint(this, writer, 0, settings)
     }
 
-    @Throws(IOException::class)
     private fun prettyPrint(`object`: JsonValue, writer: Writer, indent: Int, settings: PrettyPrintSettings) {
         val outputType = settings.outputType
         if (`object`.isObject) {
@@ -1177,7 +1175,6 @@ class JsonValue : Iterable<JsonValue> {
             buffer.append('\t')
     }
 
-    @Throws(IOException::class)
     private fun indent(count: Int, buffer: Writer) {
         for (i in 0 until count)
             buffer.append('\t')

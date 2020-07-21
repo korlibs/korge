@@ -16,8 +16,6 @@
 
 package com.badlogic.gdx.math
 
-import java.io.Serializable
-
 /** A simple quaternion class.
  * @see [http://en.wikipedia.org/wiki/Quaternion](http://en.wikipedia.org/wiki/Quaternion)
  *
@@ -30,7 +28,7 @@ data class Quaternion(
     var y: Float = 0f,
     var z: Float = 0f,
     var w: Float = 1f
-) : Serializable {
+) {
 
 
     /** Get the angle in radians of the rotation this quaternion represents. Does not normalize the quaternion. Use
@@ -250,7 +248,6 @@ data class Quaternion(
     }
 
     companion object {
-        private const val serialVersionUID = -7661875440774897168L
         private val tmp1 = Quaternion(0f, 0f, 0f, 0f)
         private val tmp2 = Quaternion(0f, 0f, 0f, 0f)
 

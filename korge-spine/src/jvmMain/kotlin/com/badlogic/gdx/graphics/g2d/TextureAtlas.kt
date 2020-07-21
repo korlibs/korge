@@ -2,9 +2,6 @@ package com.badlogic.gdx.graphics.g2d
 
 import com.badlogic.gdx.files.*
 import com.badlogic.gdx.graphics.*
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
-import java.lang.RuntimeException
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 
 class TextureAtlas(val handle: FileHandle) {
     private val dummyTexture = Texture()

@@ -16,8 +16,6 @@
 
 package com.badlogic.gdx.math
 
-import java.io.Serializable
-
 /** Encapsulates a [column major](http://en.wikipedia.org/wiki/Row-major_order#Column-major_order) 4 by 4 matrix. Like
  * the [Vector3] class it allows the chaining of methods by returning a reference to itself. For example:
  *
@@ -27,7 +25,7 @@ import java.io.Serializable
  *
  * @author badlogicgames@gmail.com
  */
-class Matrix4 : Serializable {
+class Matrix4 {
     @JvmField
     val `val` = FloatArray(16)
 
@@ -471,8 +469,6 @@ class Matrix4 : Serializable {
     }
 
     companion object {
-        private const val serialVersionUID = -2717655254359579617L
-
         /** XX: Typically the unrotated X component for scaling, also the cosine of the angle when rotated on the Y and/or Z axis. On
          * Vector3 multiplication this value is multiplied with the source X component and added to the target X component.  */
         const val M00 = 0

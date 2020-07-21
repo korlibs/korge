@@ -763,7 +763,7 @@ class AnimationState {
         entry.trackTime = 0f
         entry.trackLast = -1f
         entry.nextTrackLast = -1f
-        entry.trackEnd = java.lang.Float.MAX_VALUE
+        entry.trackEnd = Float.MAX_VALUE
         entry.timeScale = 1f
 
         entry.alpha = 1f

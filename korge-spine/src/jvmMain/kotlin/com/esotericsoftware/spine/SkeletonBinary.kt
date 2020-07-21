@@ -29,53 +29,15 @@
 
 package com.esotericsoftware.spine
 
-import java.io.EOFException
-import java.io.IOException
-
-import com.badlogic.gdx.files.FileHandle
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.utils.JArray
-import com.badlogic.gdx.utils.JDataInput
-import com.badlogic.gdx.utils.JFloatArray
-import com.badlogic.gdx.utils.JIntArray
-import com.badlogic.gdx.utils.SerializationException
-
-import com.esotericsoftware.spine.Animation.AttachmentTimeline
-import com.esotericsoftware.spine.Animation.ColorTimeline
-import com.esotericsoftware.spine.Animation.CurveTimeline
-import com.esotericsoftware.spine.Animation.DeformTimeline
-import com.esotericsoftware.spine.Animation.DrawOrderTimeline
-import com.esotericsoftware.spine.Animation.EventTimeline
-import com.esotericsoftware.spine.Animation.IkConstraintTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintMixTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintPositionTimeline
-import com.esotericsoftware.spine.Animation.PathConstraintSpacingTimeline
-import com.esotericsoftware.spine.Animation.RotateTimeline
-import com.esotericsoftware.spine.Animation.ScaleTimeline
-import com.esotericsoftware.spine.Animation.ShearTimeline
-import com.esotericsoftware.spine.Animation.Timeline
-import com.esotericsoftware.spine.Animation.TransformConstraintTimeline
-import com.esotericsoftware.spine.Animation.TranslateTimeline
-import com.esotericsoftware.spine.Animation.TwoColorTimeline
-import com.esotericsoftware.spine.BoneData.TransformMode
-import com.esotericsoftware.spine.PathConstraintData.PositionMode
-import com.esotericsoftware.spine.PathConstraintData.RotateMode
-import com.esotericsoftware.spine.PathConstraintData.SpacingMode
-import com.esotericsoftware.spine.SkeletonJson.LinkedMesh
-import com.esotericsoftware.spine.attachments.AtlasAttachmentLoader
-import com.esotericsoftware.spine.attachments.Attachment
-import com.esotericsoftware.spine.attachments.AttachmentLoader
-import com.esotericsoftware.spine.attachments.AttachmentType
-import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
-import com.esotericsoftware.spine.attachments.ClippingAttachment
-import com.esotericsoftware.spine.attachments.MeshAttachment
-import com.esotericsoftware.spine.attachments.PathAttachment
-import com.esotericsoftware.spine.attachments.PointAttachment
-import com.esotericsoftware.spine.attachments.RegionAttachment
-import com.esotericsoftware.spine.attachments.VertexAttachment
-import com.esotericsoftware.spine.utils.*
-import java.util.*
+import com.badlogic.gdx.files.*
+import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g2d.*
+import com.badlogic.gdx.utils.*
+import com.esotericsoftware.spine.Animation.*
+import com.esotericsoftware.spine.BoneData.*
+import com.esotericsoftware.spine.PathConstraintData.*
+import com.esotericsoftware.spine.SkeletonJson.*
+import com.esotericsoftware.spine.attachments.*
 
 /** Loads skeleton data in the Spine binary format.
  *
@@ -331,12 +293,12 @@ class SkeletonBinary {
                     o[i] = readAnimation(input, input.readString(), skeletonData)
             }
 
-        } catch (ex: IOException) {
+        } catch (ex: Throwable) {
             throw SerializationException("Error reading skeleton file.", ex)
         } finally {
             try {
                 input.close()
-            } catch (ignored: IOException) {
+            } catch (ignored: Throwable) {
             }
 
         }
@@ -345,7 +307,7 @@ class SkeletonBinary {
 
     /** @return May be null.
      */
-    @Throws(IOException::class)
+    
     private fun readSkin(input: SkeletonInput, skeletonData: SkeletonData, defaultSkin: Boolean, nonessential: Boolean): Skin? {
 
         val skin: Skin
@@ -407,7 +369,7 @@ class SkeletonBinary {
         return skin
     }
 
-    @Throws(IOException::class)
+    
     private fun readAttachment(input: SkeletonInput, skeletonData: SkeletonData, skin: Skin, slotIndex: Int,
                                attachmentName: String?, nonessential: Boolean): Attachment? {
         val scale = this.scale
@@ -568,7 +530,7 @@ class SkeletonBinary {
         return null
     }
 
-    @Throws(IOException::class)
+    
     private fun readVertices(input: SkeletonInput, vertexCount: Int): Vertices {
         val verticesLength = vertexCount shl 1
         val vertices = Vertices()
@@ -593,7 +555,6 @@ class SkeletonBinary {
         return vertices
     }
 
-    @Throws(IOException::class)
     private fun readFloatArray(input: SkeletonInput, n: Int, scale: Float): FloatArray {
         val array = FloatArray(n)
         if (scale == 1f) {
@@ -606,7 +567,6 @@ class SkeletonBinary {
         return array
     }
 
-    @Throws(IOException::class)
     private fun readShortArray(input: SkeletonInput): ShortArray {
         val n = input.readInt(true)
         val array = ShortArray(n)
@@ -928,7 +888,7 @@ class SkeletonBinary {
                 timelines.add(timeline)
                 duration = Math.max(duration, timeline.frames[eventCount - 1])
             }
-        } catch (ex: IOException) {
+        } catch (ex: Throwable) {
             throw SerializationException("Error reading skeleton file.", ex)
         }
 
@@ -936,7 +896,7 @@ class SkeletonBinary {
         return Animation(name!!, timelines, duration)
     }
 
-    @Throws(IOException::class)
+    
     private fun readCurve(input: SkeletonInput, frameIndex: Int, timeline: CurveTimeline) {
         when (input.readByte().toInt()) {
             CURVE_STEPPED -> timeline.setStepped(frameIndex)
@@ -959,13 +919,13 @@ class SkeletonBinary {
 
         /** @return May be null.
          */
-        @Throws(IOException::class)
+        
         fun readStringRef(): String? {
             val index = readInt(true)
             return if (index == 0) null else strings!![index - 1]
         }
 
-        @Throws(IOException::class)
+        
         fun readString(): String? {
             var byteCount = readInt(true)
             when (byteCount) {
@@ -980,7 +940,7 @@ class SkeletonBinary {
             while (i < byteCount) {
                 val b = read()
                 when (b shr 4) {
-                    -1 -> throw EOFException()
+                    -1 -> error("EOF")
                     12, 13 -> {
                         chars[charCount++] = (b and 0x1F shl 6 or (read() and 0x3F)).toChar()
                         i += 2

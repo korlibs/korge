@@ -15,7 +15,6 @@ open class JDataInput(private val data: ByteArray) {
         return data[n++].toInt() and 0xFF
     }
 
-    @Throws(IOException::class)
     fun close(): Unit {
     }
 

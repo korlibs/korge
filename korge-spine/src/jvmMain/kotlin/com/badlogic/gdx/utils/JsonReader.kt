@@ -33,7 +33,7 @@ import com.badlogic.gdx.utils.JsonValue.ValueType
  * methods to perform event driven parsing. When this is done, the parse methods will return null.
  * @author Nathan Sweet
  */
-class JsonReader : BaseJsonReader {
+class JsonReader {
 
     // line 337 "JsonReader.rl"
 
@@ -71,7 +71,7 @@ class JsonReader : BaseJsonReader {
         }
     }
 
-    override fun parse(input: InputStream): JsonValue? {
+    fun parse(input: InputStream): JsonValue? {
         try {
             return parse(InputStreamReader(input, "UTF-8"))
         } catch (ex: IOException) {
@@ -84,7 +84,7 @@ class JsonReader : BaseJsonReader {
         }
     }
 
-    override fun parse(file: FileHandle): JsonValue? {
+    fun parse(file: FileHandle): JsonValue? {
         try {
             return parse(file.reader("UTF-8"))
         } catch (ex: Exception) {

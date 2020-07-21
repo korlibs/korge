@@ -529,7 +529,7 @@ class PathConstraint : Updatable {
 
     private fun addCurvePosition(p: Float, x1: Float, y1: Float, cx1: Float, cy1: Float, cx2: Float, cy2: Float, x2: Float, y2: Float,
                                  out: FloatArray, o: Int, tangents: Boolean) {
-        if (p < epsilon || java.lang.Float.isNaN(p)) {
+        if (p < epsilon || p.isNaN()) {
             out[o] = x1
             out[o + 1] = y1
             out[o + 2] = Math.atan2((cy1 - y1).toDouble(), (cx1 - x1).toDouble()).toFloat()

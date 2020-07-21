@@ -17,14 +17,13 @@ package com.badlogic.gdx.math
 
 import com.badlogic.gdx.math.MathUtils.cosDeg
 import com.badlogic.gdx.math.MathUtils.sinDeg
-import java.io.Serializable
 
 /** A 3x3 [column major](http://en.wikipedia.org/wiki/Row-major_order#Column-major_order) matrix; useful for 2D
  * transforms.
  *
  * @author mzechner
  */
-class Matrix3 : Serializable {
+class Matrix3 {
     @JvmField
     val `val` = FloatArray(9)
 
@@ -551,7 +550,6 @@ class Matrix3 : Serializable {
     }
 
     companion object {
-        private const val serialVersionUID = 7907569533774959788L
         const val M00 = 0
         const val M01 = 3
         const val M02 = 6
