@@ -340,7 +340,7 @@ class ObjectSet<T>
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [ObjectSetIterator] constructor for nested or multithreaded iteration.  */
     override fun iterator(): ObjectSetIterator<T> {
-        if (Collections.allocateIterators) return ObjectSetIterator(this)
+        //if (Collections.allocateIterators) return ObjectSetIterator(this)
         if (iterator1 == null) {
             iterator1 = ObjectSetIterator(this)
             iterator2 = ObjectSetIterator(this)

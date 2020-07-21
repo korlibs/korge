@@ -153,7 +153,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [OrderedMapEntries] constructor for nested or multithreaded iteration.  */
     override fun entries(): Entries<K, V> {
-        if (Collections.allocateIterators) return OrderedMapEntries(this)
+        //if (Collections.allocateIterators) return OrderedMapEntries(this)
         if (entries1 == null) {
             entries1 = OrderedMapEntries(this)
             entries2 = OrderedMapEntries(this)
@@ -177,7 +177,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [OrderedMapValues] constructor for nested or multithreaded iteration.  */
     override fun values(): Values<V> {
-        if (Collections.allocateIterators) return OrderedMapValues(this)
+        //if (Collections.allocateIterators) return OrderedMapValues(this)
         if (values1 == null) {
             values1 = OrderedMapValues(this)
             values2 = OrderedMapValues(this)
@@ -201,7 +201,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [OrderedMapKeys] constructor for nested or multithreaded iteration.  */
     override fun keys(): Keys<K> {
-        if (Collections.allocateIterators) return OrderedMapKeys(this)
+        //if (Collections.allocateIterators) return OrderedMapKeys(this)
         if (keys1 == null) {
             keys1 = OrderedMapKeys(this)
             keys2 = OrderedMapKeys(this)

@@ -426,7 +426,7 @@ open class ObjectMap<K, V>
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [Entries] constructor for nested or multithreaded iteration.  */
     open fun entries(): Entries<K, V> {
-        if (Collections.allocateIterators) return Entries(this)
+        //if (Collections.allocateIterators) return Entries(this)
         if (entries1 == null) {
             entries1 = Entries(this)
             entries2 = Entries(this)
@@ -449,7 +449,7 @@ open class ObjectMap<K, V>
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [Values] constructor for nested or multithreaded iteration.  */
     open fun values(): Values<V> {
-        if (Collections.allocateIterators) return Values(this)
+        //if (Collections.allocateIterators) return Values(this)
         if (values1 == null) {
             values1 = Values(this)
             values2 = Values(this)
@@ -472,7 +472,7 @@ open class ObjectMap<K, V>
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [Keys] constructor for nested or multithreaded iteration.  */
     open fun keys(): Keys<K> {
-        if (Collections.allocateIterators) return Keys(this)
+        //if (Collections.allocateIterators) return Keys(this)
         if (keys1 == null) {
             keys1 = Keys(this)
             keys2 = Keys(this)

@@ -37,7 +37,6 @@ class JArray<T> : Iterable<T> {
     var ordered: Boolean = false
 
     private var iterable: ArrayIterable<*>? = null
-    private var predicateIterable: Predicate.PredicateIterable<T>? = null
 
     /** Returns true if the array is empty.  */
     val isEmpty: Boolean
@@ -458,7 +457,7 @@ class JArray<T> : Iterable<T> {
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [ArrayIterator] constructor for nested or multithreaded iteration.  */
     override fun iterator(): ArrayIterator<T> {
-        if (Collections.allocateIterators) return ArrayIterator(this, true)
+        //if (Collections.allocateIterators) return ArrayIterator(this, true)
         if (iterable == null) iterable = ArrayIterable(this)
         return iterable!!.iterator() as ArrayIterator<T>
     }
@@ -609,7 +608,7 @@ class JArray<T> : Iterable<T> {
         /** @see Collections.allocateIterators
          */
         override fun iterator(): ArrayIterator<T> {
-            if (Collections.allocateIterators) return ArrayIterator(array, allowRemove)
+            //if (Collections.allocateIterators) return ArrayIterator(array, allowRemove)
             // lastAcquire.getBuffer().setLength(0);
             // new Throwable().printStackTrace(new java.io.PrintWriter(lastAcquire));
             if (iterator1 == null) {

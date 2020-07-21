@@ -352,7 +352,7 @@ class JIntSet
      * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
      * Use the [IntSetIterator] constructor for nested or multithreaded iteration.  */
     operator fun iterator(): IntSetIterator {
-        if (Collections.allocateIterators) return IntSetIterator(this)
+        //if (Collections.allocateIterators) return IntSetIterator(this)
         if (iterator1 == null) {
             iterator1 = IntSetIterator(this)
             iterator2 = IntSetIterator(this)
