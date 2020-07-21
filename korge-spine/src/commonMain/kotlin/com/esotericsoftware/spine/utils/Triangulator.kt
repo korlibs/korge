@@ -34,6 +34,7 @@ import com.badlogic.gdx.utils.JBooleanArray
 import com.badlogic.gdx.utils.JFloatArray
 import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.utils.JShortArray
+import kotlin.math.*
 
 internal class Triangulator {
     private val convexPolygons = JArray<JFloatArray>()
@@ -78,7 +79,7 @@ internal class Triangulator {
 
         val triangles = this.triangles
         triangles.clear()
-        triangles.ensureCapacity(Math.max(0, vertexCount - 2) shl 2)
+        triangles.ensureCapacity(max(0, vertexCount - 2) shl 2)
 
         while (vertexCount > 3) {
             // Find ear tip.

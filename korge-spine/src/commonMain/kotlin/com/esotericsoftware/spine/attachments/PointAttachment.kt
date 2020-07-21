@@ -64,7 +64,7 @@ class PointAttachment(name: String) : Attachment(name) {
         val sin = sinDeg(rotation)
         val x = cos * bone.a + sin * bone.b
         val y = cos * bone.c + sin * bone.d
-        return Math.atan2(y.toDouble(), x.toDouble()).toFloat() * radDeg
+        return kotlin.math.atan2(y.toDouble(), x.toDouble()).toFloat() * radDeg
     }
 
     override fun copy(): Attachment {

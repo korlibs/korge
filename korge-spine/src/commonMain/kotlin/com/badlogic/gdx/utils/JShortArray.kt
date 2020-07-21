@@ -23,11 +23,11 @@ import com.badlogic.gdx.math.MathUtils
  * @author Nathan Sweet
 </Short> */
 class JShortArray {
-    @JvmField
+
     var items: ShortArray
-    @JvmField
+
     var size: Int = 0
-    @JvmField
+
     var ordered: Boolean = false
 
     /** Returns true if the array is empty.  */
@@ -41,7 +41,7 @@ class JShortArray {
      * memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown.
      */
-    @JvmOverloads
+
     constructor(ordered: Boolean = true, capacity: Int = 16) {
         this.ordered = ordered
         items = ShortArray(capacity)
@@ -54,7 +54,7 @@ class JShortArray {
         this.ordered = array.ordered
         size = array.size
         items = ShortArray(size)
-        System.arraycopy(array.items, 0, items, 0, size)
+        com.soywiz.kmem.arraycopy(array.items, 0, items, 0, size)
     }
 
     /** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
@@ -68,25 +68,25 @@ class JShortArray {
      */
     constructor(ordered: Boolean, array: ShortArray, startIndex: Int, count: Int) : this(ordered, count) {
         size = count
-        System.arraycopy(array, startIndex, items, 0, count)
+        com.soywiz.kmem.arraycopy(array, startIndex, items, 0, count)
     }
 
     /** Casts the specified value to short and adds it.  */
     fun add(value: Int) {
         var items = this.items
-        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size == items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size++] = value.toShort()
     }
 
     fun add(value: Short) {
         var items = this.items
-        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size == items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size++] = value
     }
 
     fun add(value1: Short, value2: Short) {
         var items = this.items
-        if (size + 1 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size + 1 >= items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size] = value1
         items[size + 1] = value2
         size += 2
@@ -94,7 +94,7 @@ class JShortArray {
 
     fun add(value1: Short, value2: Short, value3: Short) {
         var items = this.items
-        if (size + 2 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size + 2 >= items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size] = value1
         items[size + 1] = value2
         items[size + 2] = value3
@@ -103,7 +103,7 @@ class JShortArray {
 
     fun add(value1: Short, value2: Short, value3: Short, value4: Short) {
         var items = this.items
-        if (size + 3 >= items.size) items = resize(Math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
+        if (size + 3 >= items.size) items = resize(kotlin.math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
         items[size] = value1
         items[size + 1] = value2
         items[size + 2] = value3
@@ -127,8 +127,8 @@ class JShortArray {
     fun addAll(array: ShortArray, offset: Int, length: Int) {
         var items = this.items
         val sizeNeeded = size + length
-        if (sizeNeeded > items.size) items = resize(Math.max(8, (sizeNeeded * 1.75f).toInt()))
-        System.arraycopy(array, offset, items, size, length)
+        if (sizeNeeded > items.size) items = resize(kotlin.math.max(8, (sizeNeeded * 1.75f).toInt()))
+        com.soywiz.kmem.arraycopy(array, offset, items, size, length)
         size += length
     }
 
@@ -175,9 +175,9 @@ class JShortArray {
     fun insert(index: Int, value: Short) {
         if (index > size) throw IndexOutOfBoundsException("index can't be > size: $index > $size")
         var items = this.items
-        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size == items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         if (ordered)
-            System.arraycopy(items, index, items, index + 1, size - index)
+            com.soywiz.kmem.arraycopy(items, index, items, index + 1, size - index)
         else
             items[size] = items[index]
         size++
@@ -240,7 +240,7 @@ class JShortArray {
         val value = items[index]
         size--
         if (ordered)
-            System.arraycopy(items, index + 1, items, index, size - index)
+            com.soywiz.kmem.arraycopy(items, index + 1, items, index, size - index)
         else
             items[index] = items[size]
         return value
@@ -254,10 +254,10 @@ class JShortArray {
         val count = end - start + 1
         val lastIndex = n - count
         if (ordered)
-            System.arraycopy(items, start + count, items, start, n - (start + count))
+            com.soywiz.kmem.arraycopy(items, start + count, items, start, n - (start + count))
         else {
-            val i = Math.max(lastIndex, end + 1)
-            System.arraycopy(items, i, items, start, n - i)
+            val i = kotlin.math.max(lastIndex, end + 1)
+            com.soywiz.kmem.arraycopy(items, i, items, start, n - i)
         }
         size = n - count
     }
@@ -326,7 +326,7 @@ class JShortArray {
     fun ensureCapacity(additionalCapacity: Int): ShortArray {
         require(additionalCapacity >= 0) { "additionalCapacity must be >= 0: $additionalCapacity" }
         val sizeNeeded = size + additionalCapacity
-        if (sizeNeeded > items.size) resize(Math.max(8, sizeNeeded))
+        if (sizeNeeded > items.size) resize(kotlin.math.max(8, sizeNeeded))
         return items
     }
 
@@ -335,7 +335,7 @@ class JShortArray {
      */
     fun setSize(newSize: Int): ShortArray {
         require(newSize >= 0) { "newSize must be >= 0: $newSize" }
-        if (newSize > items.size) resize(Math.max(8, newSize))
+        if (newSize > items.size) resize(kotlin.math.max(8, newSize))
         size = newSize
         return items
     }
@@ -343,7 +343,7 @@ class JShortArray {
     protected fun resize(newSize: Int): ShortArray {
         val newItems = ShortArray(newSize)
         val items = this.items
-        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
+        com.soywiz.kmem.arraycopy(items, 0, newItems, 0, kotlin.math.min(size, newItems.size))
         this.items = newItems
         return newItems
     }

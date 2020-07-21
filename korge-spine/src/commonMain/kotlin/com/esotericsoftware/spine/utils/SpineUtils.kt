@@ -40,44 +40,44 @@ object SpineUtils {
     val degRad = degreesToRadians
 
     fun cosDeg(angle: Float): Float {
-        return Math.cos((angle * degRad).toDouble()).toFloat()
+        return kotlin.math.cos((angle * degRad).toDouble()).toFloat()
     }
 
     fun sinDeg(angle: Float): Float {
-        return Math.sin((angle * degRad).toDouble()).toFloat()
+        return kotlin.math.sin((angle * degRad).toDouble()).toFloat()
     }
 
     fun cos(angle: Float): Float {
-        return Math.cos(angle.toDouble()).toFloat()
+        return kotlin.math.cos(angle.toDouble()).toFloat()
     }
 
     fun sin(angle: Float): Float {
-        return Math.sin(angle.toDouble()).toFloat()
+        return kotlin.math.sin(angle.toDouble()).toFloat()
     }
 
     fun atan2(y: Float, x: Float): Float {
-        return Math.atan2(y.toDouble(), x.toDouble()).toFloat()
+        return kotlin.math.atan2(y.toDouble(), x.toDouble()).toFloat()
     }
 
     fun arraycopy(src: ByteArray, srcPos: Int, dest: ByteArray, destPos: Int, length: Int) {
         //src.copyInto(dest, destPos, srcPos, srcPos + length)
-        System.arraycopy(src, srcPos, dest, destPos, length)
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
     fun arraycopy(src: ShortArray, srcPos: Int, dest: ShortArray, destPos: Int, length: Int) {
-        System.arraycopy(src, srcPos, dest, destPos, length)
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
     fun arraycopy(src: IntArray, srcPos: Int, dest: IntArray, destPos: Int, length: Int) {
-        System.arraycopy(src, srcPos, dest, destPos, length)
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
     fun arraycopy(src: FloatArray, srcPos: Int, dest: FloatArray, destPos: Int, length: Int) {
-        System.arraycopy(src, srcPos, dest, destPos, length)
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
     fun <T> arraycopy(src: Array<T>, srcPos: Int, dest: Array<T>, destPos: Int, length: Int) {
-        System.arraycopy(src, srcPos, dest, destPos, length)
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
     fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {

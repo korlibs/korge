@@ -227,17 +227,17 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         override fun reset() {
             currentIndex = -1
             nextIndex = 0
-            hasNext = map.size > 0
+            hasNextProp = map.size > 0
         }
 
         override fun next(): Entry<K, V> {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             currentIndex = nextIndex
             entry.key = keys[nextIndex]
             entry.value = map.get(entry.key!!)
             nextIndex++
-            hasNext = nextIndex < map.size
+            hasNextProp = nextIndex < map.size
             return entry
         }
 
@@ -259,16 +259,16 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         override fun reset() {
             currentIndex = -1
             nextIndex = 0
-            hasNext = map.size > 0
+            hasNextProp = map.size > 0
         }
 
         override fun next(): K {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val key = keys[nextIndex]
             currentIndex = nextIndex
             nextIndex++
-            hasNext = nextIndex < map.size
+            hasNextProp = nextIndex < map.size
             return key
         }
 
@@ -282,7 +282,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         override fun toArray(array: JArray<K>): JArray<K> {
             array.addAll(keys, nextIndex, keys.size - nextIndex)
             nextIndex = keys.size
-            hasNext = false
+            hasNextProp = false
             return array
         }
     }
@@ -297,16 +297,16 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         override fun reset() {
             currentIndex = -1
             nextIndex = 0
-            hasNext = map.size > 0
+            hasNextProp = map.size > 0
         }
 
         override fun next(): V? {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val value = map.get(keys[nextIndex]!!)
             currentIndex = nextIndex
             nextIndex++
-            hasNext = nextIndex < map.size
+            hasNextProp = nextIndex < map.size
             return value
         }
 

@@ -1,5 +1,7 @@
 package com.badlogic.gdx.math
 
+import kotlin.math.*
+
 /** Utility and fast math functions.
  *
  *
@@ -30,27 +32,27 @@ object MathUtils {
 
     /** Returns the sine in radians from a lookup table. For optimal precision, use radians between -PI2 and PI2 (both
      * inclusive).  */
-    @JvmStatic
+
     fun sin(radians: Float): Float = SIN_TABLE[(radians * radToIndex).toInt() and SIN_MASK]
 
     /** Returns the cosine in radians from a lookup table. For optimal precision, use radians between -PI2 and PI2 (both
      * inclusive).  */
-    @JvmStatic
+
     fun cos(radians: Float): Float = SIN_TABLE[((radians + PI / 2) * radToIndex).toInt() and SIN_MASK]
 
     /** Returns the sine in degrees from a lookup table. For optimal precision, use radians between -360 and 360 (both
      * inclusive).  */
-    @JvmStatic
+
     fun sinDeg(degrees: Float): Float = SIN_TABLE[(degrees * degToIndex).toInt() and SIN_MASK]
 
     /** Returns the cosine in degrees from a lookup table. For optimal precision, use radians between -360 and 360 (both
      * inclusive).  */
-    @JvmStatic
+
     fun cosDeg(degrees: Float): Float = SIN_TABLE[((degrees + 90) * degToIndex).toInt() and SIN_MASK]
     // ---
-    /** Returns atan2 in radians, less accurate than Math.atan2 but may be faster. Average error of 0.00231 radians (0.1323
+    /** Returns atan2 in radians, less accurate than atan2 but may be faster. Average error of 0.00231 radians (0.1323
      * degrees), largest error of 0.00488 radians (0.2796 degrees).  */
-    @JvmStatic
+
     fun atan2(y: Float, x: Float): Float {
         if (x == 0f) {
             if (y > 0f) return PI / 2
@@ -58,7 +60,7 @@ object MathUtils {
         }
         val atan: Float
         val z = y / x
-        if (Math.abs(z) < 1f) {
+        if (abs(z) < 1f) {
             atan = z / (1f + 0.28f * z * z)
             return if (x < 0f) atan + (if (y < 0f) -PI else PI) else atan
         }
@@ -67,10 +69,10 @@ object MathUtils {
     }
 
     private val SIN_TABLE = FloatArray(SIN_COUNT).also { table ->
-        for (i in 0 until SIN_COUNT) table[i] = Math.sin((i + 0.5f) / SIN_COUNT * radFull.toDouble()).toFloat()
+        for (i in 0 until SIN_COUNT) table[i] = sin((i + 0.5f) / SIN_COUNT * radFull.toDouble()).toFloat()
         var i = 0
         while (i < 360) {
-            table[(i * degToIndex) as Int and SIN_MASK] = Math.sin(i * degreesToRadians.toDouble()).toFloat()
+            table[(i * degToIndex) as Int and SIN_MASK] = sin(i * degreesToRadians.toDouble()).toFloat()
             i += 90
         }
     }

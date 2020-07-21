@@ -159,12 +159,12 @@ class TransformConstraint : Updatable {
             }
 
             if (scaleMix > 0) {
-                var s = Math.sqrt((bone.a * bone.a + bone.c * bone.c).toDouble()).toFloat()
-                if (s != 0f) s = (s + (Math.sqrt((ta * ta + tc * tc).toDouble()).toFloat() - s + data.offsetScaleX) * scaleMix) / s
+                var s = kotlin.math.sqrt((bone.a * bone.a + bone.c * bone.c).toDouble()).toFloat()
+                if (s != 0f) s = (s + (kotlin.math.sqrt((ta * ta + tc * tc).toDouble()).toFloat() - s + data.offsetScaleX) * scaleMix) / s
                 bone.a *= s
                 bone.c *= s
-                s = Math.sqrt((bone.b * bone.b + bone.d * bone.d).toDouble()).toFloat()
-                if (s != 0f) s = (s + (Math.sqrt((tb * tb + td * td).toDouble()).toFloat() - s + data.offsetScaleY) * scaleMix) / s
+                s = kotlin.math.sqrt((bone.b * bone.b + bone.d * bone.d).toDouble()).toFloat()
+                if (s != 0f) s = (s + (kotlin.math.sqrt((tb * tb + td * td).toDouble()).toFloat() - s + data.offsetScaleY) * scaleMix) / s
                 bone.b *= s
                 bone.d *= s
                 modified = true
@@ -179,7 +179,7 @@ class TransformConstraint : Updatable {
                     r -= PI2
                 else if (r < -PI) r += PI2
                 r = by + (r + offsetShearY) * shearMix
-                val s = Math.sqrt((b * b + d * d).toDouble()).toFloat()
+                val s = kotlin.math.sqrt((b * b + d * d).toDouble()).toFloat()
                 bone.b = cos(r) * s
                 bone.d = sin(r) * s
                 modified = true
@@ -238,10 +238,10 @@ class TransformConstraint : Updatable {
             }
 
             if (scaleMix > 0) {
-                var s = (Math.sqrt((ta * ta + tc * tc).toDouble()).toFloat() - 1 + data.offsetScaleX) * scaleMix + 1
+                var s = (kotlin.math.sqrt((ta * ta + tc * tc).toDouble()).toFloat() - 1 + data.offsetScaleX) * scaleMix + 1
                 bone.a *= s
                 bone.c *= s
-                s = (Math.sqrt((tb * tb + td * td).toDouble()).toFloat() - 1 + data.offsetScaleY) * scaleMix + 1
+                s = (kotlin.math.sqrt((tb * tb + td * td).toDouble()).toFloat() - 1 + data.offsetScaleY) * scaleMix + 1
                 bone.b *= s
                 bone.d *= s
                 modified = true
@@ -255,7 +255,7 @@ class TransformConstraint : Updatable {
                 val b = bone.b
                 val d = bone.d
                 r = atan2(d, b) + (r - PI / 2 + offsetShearY) * shearMix
-                val s = Math.sqrt((b * b + d * d).toDouble()).toFloat()
+                val s = kotlin.math.sqrt((b * b + d * d).toDouble()).toFloat()
                 bone.b = cos(r) * s
                 bone.d = sin(r) * s
                 modified = true

@@ -35,6 +35,7 @@ import com.esotericsoftware.spine.Animation.MixDirection.*
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
+import kotlin.math.*
 
 /** A simple container for a list of timelines and a name.  */
 class Animation(
@@ -537,41 +538,41 @@ class Animation(
                         setup -> {
                             bx = bone.data.scaleX
                             by = bone.data.scaleY
-                            bone.scaleX = bx + (Math.abs(x) * Math.signum(bx) - bx) * alpha
-                            bone.scaleY = by + (Math.abs(y) * Math.signum(by) - by) * alpha
+                            bone.scaleX = bx + (kotlin.math.abs(x) * (bx.sign) - bx) * alpha
+                            bone.scaleY = by + (kotlin.math.abs(y) * (by.sign) - by) * alpha
                         }
                         first, replace -> {
                             bx = bone.scaleX
                             by = bone.scaleY
-                            bone.scaleX = bx + (Math.abs(x) * Math.signum(bx) - bx) * alpha
-                            bone.scaleY = by + (Math.abs(y) * Math.signum(by) - by) * alpha
+                            bone.scaleX = bx + (kotlin.math.abs(x) * (bx.sign) - bx) * alpha
+                            bone.scaleY = by + (kotlin.math.abs(y) * (by.sign) - by) * alpha
                         }
                         add -> {
                             bx = bone.scaleX
                             by = bone.scaleY
-                            bone.scaleX = bx + (Math.abs(x) * Math.signum(bx) - bone.data.scaleX) * alpha
-                            bone.scaleY = by + (Math.abs(y) * Math.signum(by) - bone.data.scaleY) * alpha
+                            bone.scaleX = bx + (kotlin.math.abs(x) * (bx.sign) - bone.data.scaleX) * alpha
+                            bone.scaleY = by + (kotlin.math.abs(y) * (by.sign) - bone.data.scaleY) * alpha
                         }
                     }
                 } else {
                     when (blend) {
                         setup -> {
-                            bx = Math.abs(bone.data.scaleX) * Math.signum(x)
-                            by = Math.abs(bone.data.scaleY) * Math.signum(y)
+                            bx = kotlin.math.abs(bone.data.scaleX) * (x.sign)
+                            by = kotlin.math.abs(bone.data.scaleY) * (y.sign)
                             bone.scaleX = bx + (x - bx) * alpha
                             bone.scaleY = by + (y - by) * alpha
                         }
                         first, replace -> {
-                            bx = Math.abs(bone.scaleX) * Math.signum(x)
-                            by = Math.abs(bone.scaleY) * Math.signum(y)
+                            bx = kotlin.math.abs(bone.scaleX) * (x.sign)
+                            by = kotlin.math.abs(bone.scaleY) * (y.sign)
                             bone.scaleX = bx + (x - bx) * alpha
                             bone.scaleY = by + (y - by) * alpha
                         }
                         add -> {
-                            bx = Math.signum(x)
-                            by = Math.signum(y)
-                            bone.scaleX = Math.abs(bone.scaleX) * bx + (x - Math.abs(bone.data.scaleX) * bx) * alpha
-                            bone.scaleY = Math.abs(bone.scaleY) * by + (y - Math.abs(bone.data.scaleY) * by) * alpha
+                            bx = (x.sign)
+                            by = (y.sign)
+                            bone.scaleX = kotlin.math.abs(bone.scaleX) * bx + (x - kotlin.math.abs(bone.data.scaleX) * bx) * alpha
+                            bone.scaleY = kotlin.math.abs(bone.scaleY) * by + (y - kotlin.math.abs(bone.data.scaleY) * by) * alpha
                         }
                     }
                 }
@@ -1182,7 +1183,7 @@ class Animation(
             val frameCount = frames.size
 
             if (lastTime > time) { // Fire events after last time for looped animations.
-                apply(skeleton, lastTime, Integer.MAX_VALUE.toFloat(), firedEvents, alpha, blend, direction)
+                apply(skeleton, lastTime, Int.MAX_VALUE.toFloat(), firedEvents, alpha, blend, direction)
                 lastTime = -1f
             } else if (lastTime >= frames[frameCount - 1])
             // Last time is after last frame.

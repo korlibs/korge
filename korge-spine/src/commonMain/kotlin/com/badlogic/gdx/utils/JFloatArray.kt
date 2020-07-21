@@ -21,11 +21,11 @@ package com.badlogic.gdx.utils
  * @author Nathan Sweet
 </Float> */
 class JFloatArray {
-    @JvmField
+
     var items: FloatArray
-    @JvmField
+
     var size: Int = 0
-    @JvmField
+
     var ordered: Boolean = false
 
     /** Returns true if the array is empty.  */
@@ -39,7 +39,7 @@ class JFloatArray {
      * memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown.
      */
-    @JvmOverloads
+
     constructor(ordered: Boolean = true, capacity: Int = 16) {
         this.ordered = ordered
         items = FloatArray(capacity)
@@ -52,7 +52,7 @@ class JFloatArray {
         this.ordered = array.ordered
         size = array.size
         items = FloatArray(size)
-        System.arraycopy(array.items, 0, items, 0, size)
+        com.soywiz.kmem.arraycopy(array.items, 0, items, 0, size)
     }
 
     /** Creates a new ordered array containing the elements in the specified array. The capacity is set to the number of elements,
@@ -66,18 +66,18 @@ class JFloatArray {
      */
     constructor(ordered: Boolean, array: FloatArray, startIndex: Int, count: Int) : this(ordered, count) {
         size = count
-        System.arraycopy(array, startIndex, items, 0, count)
+        com.soywiz.kmem.arraycopy(array, startIndex, items, 0, count)
     }
 
     fun add(value: Float) {
         var items = this.items
-        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size == items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size++] = value
     }
 
     fun add(value1: Float, value2: Float) {
         var items = this.items
-        if (size + 1 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size + 1 >= items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size] = value1
         items[size + 1] = value2
         size += 2
@@ -85,7 +85,7 @@ class JFloatArray {
 
     fun add(value1: Float, value2: Float, value3: Float) {
         var items = this.items
-        if (size + 2 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size + 2 >= items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         items[size] = value1
         items[size + 1] = value2
         items[size + 2] = value3
@@ -94,7 +94,7 @@ class JFloatArray {
 
     fun add(value1: Float, value2: Float, value3: Float, value4: Float) {
         var items = this.items
-        if (size + 3 >= items.size) items = resize(Math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
+        if (size + 3 >= items.size) items = resize(kotlin.math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
         items[size] = value1
         items[size + 1] = value2
         items[size + 2] = value3
@@ -118,8 +118,8 @@ class JFloatArray {
     fun addAll(array: FloatArray, offset: Int, length: Int) {
         var items = this.items
         val sizeNeeded = size + length
-        if (sizeNeeded > items.size) items = resize(Math.max(8, (sizeNeeded * 1.75f).toInt()))
-        System.arraycopy(array, offset, items, size, length)
+        if (sizeNeeded > items.size) items = resize(kotlin.math.max(8, (sizeNeeded * 1.75f).toInt()))
+        com.soywiz.kmem.arraycopy(array, offset, items, size, length)
         size += length
     }
 
@@ -166,9 +166,9 @@ class JFloatArray {
     fun insert(index: Int, value: Float) {
         if (index > size) throw IndexOutOfBoundsException("index can't be > size: $index > $size")
         var items = this.items
-        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        if (size == items.size) items = resize(kotlin.math.max(8, (size * 1.75f).toInt()))
         if (ordered)
-            System.arraycopy(items, index, items, index + 1, size - index)
+            com.soywiz.kmem.arraycopy(items, index, items, index + 1, size - index)
         else
             items[size] = items[index]
         size++
@@ -231,7 +231,7 @@ class JFloatArray {
         val value = items[index]
         size--
         if (ordered)
-            System.arraycopy(items, index + 1, items, index, size - index)
+            com.soywiz.kmem.arraycopy(items, index + 1, items, index, size - index)
         else
             items[index] = items[size]
         return value
@@ -245,10 +245,10 @@ class JFloatArray {
         val count = end - start + 1
         val lastIndex = n - count
         if (ordered)
-            System.arraycopy(items, start + count, items, start, n - (start + count))
+            com.soywiz.kmem.arraycopy(items, start + count, items, start, n - (start + count))
         else {
-            val i = Math.max(lastIndex, end + 1)
-            System.arraycopy(items, i, items, start, n - i)
+            val i = kotlin.math.max(lastIndex, end + 1)
+            com.soywiz.kmem.arraycopy(items, i, items, start, n - i)
         }
         size = n - count
     }
@@ -317,7 +317,7 @@ class JFloatArray {
     fun ensureCapacity(additionalCapacity: Int): FloatArray {
         require(additionalCapacity >= 0) { "additionalCapacity must be >= 0: $additionalCapacity" }
         val sizeNeeded = size + additionalCapacity
-        if (sizeNeeded > items.size) resize(Math.max(8, sizeNeeded))
+        if (sizeNeeded > items.size) resize(kotlin.math.max(8, sizeNeeded))
         return items
     }
 
@@ -326,7 +326,7 @@ class JFloatArray {
      */
     fun setSize(newSize: Int): FloatArray {
         require(newSize >= 0) { "newSize must be >= 0: $newSize" }
-        if (newSize > items.size) resize(Math.max(8, newSize))
+        if (newSize > items.size) resize(kotlin.math.max(8, newSize))
         size = newSize
         return items
     }
@@ -334,14 +334,14 @@ class JFloatArray {
     protected fun resize(newSize: Int): FloatArray {
         val newItems = FloatArray(newSize)
         val items = this.items
-        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
+        com.soywiz.kmem.arraycopy(items, 0, newItems, 0, kotlin.math.min(size, newItems.size))
         this.items = newItems
         return newItems
     }
 
     fun toArray(): FloatArray {
         val array = FloatArray(size)
-        System.arraycopy(items, 0, array, 0, size)
+        com.soywiz.kmem.arraycopy(items, 0, array, 0, size)
         return array
     }
 
@@ -385,7 +385,7 @@ class JFloatArray {
         val items1 = this.items
         val items2 = `object`.items
         for (i in 0 until n)
-            if (Math.abs(items1[i] - items2[i]) > epsilon) return false
+            if (kotlin.math.abs(items1[i] - items2[i]) > epsilon) return false
         return true
     }
 

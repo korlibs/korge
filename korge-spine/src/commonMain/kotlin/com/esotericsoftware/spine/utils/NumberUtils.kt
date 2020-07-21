@@ -20,7 +20,7 @@ object NumberUtils {
     /** Converts the color from a float ABGR encoding to an int ABGR encoding. The alpha is expanded from 0-254 in the float
      * encoding (see [.intToFloatColor]) to 0-255, which means converting from int to float and back to int can be
      * lossy.  */
-    @JvmStatic
+
     fun floatToIntColor(value: Float): Int {
         val intBits = value.toRawBits()
         return intBits or ((intBits.ushr(24) * (255f / 254f)).toInt() shl 24)
@@ -29,6 +29,6 @@ object NumberUtils {
     /** Encodes the ABGR int color as a float. The alpha is compressed to 0-254 to avoid using bits in the NaN range (see
      * [Float.intBitsToFloat] javadocs). Rendering which uses colors encoded as floats should expand the 0-254 back to
      * 0-255.  */
-    @JvmStatic
+
     fun intToFloatColor(value: Int): Float = Float.fromBits(value and -0x1000001)
 }

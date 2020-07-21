@@ -35,6 +35,7 @@ import com.badlogic.gdx.math.Vector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect
 import com.esotericsoftware.spine.utils.SpineUtils
+import kotlin.math.*
 
 class SwirlEffect(private var radius: Float) : VertexEffect {
     private var worldX: Float = 0.toFloat()
@@ -42,7 +43,7 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
     private var angle: Float = 0.toFloat()
     var interpolation: (Float) -> Float = { a ->
         val power = 2
-        Math.pow(a - 1.toDouble(), power.toDouble()).toFloat() * (if (power % 2 == 0) -1 else 1) + 1
+        (a - 1.toDouble()).pow(power.toDouble()).toFloat() * (if (power % 2 == 0) -1 else 1) + 1
     }
     private var centerX: Float = 0.toFloat()
     private var centerY: Float = 0.toFloat()
@@ -60,7 +61,7 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
     override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
         val x = position.x - worldX
         val y = position.y - worldY
-        val dist = Math.sqrt((x * x + y * y).toDouble()).toFloat()
+        val dist = kotlin.math.sqrt((x * x + y * y).toDouble()).toFloat()
         if (dist < radius) {
             val theta = interpolation.apply(0f, angle, (radius - dist) / radius)
             val cos = SpineUtils.cos(theta)

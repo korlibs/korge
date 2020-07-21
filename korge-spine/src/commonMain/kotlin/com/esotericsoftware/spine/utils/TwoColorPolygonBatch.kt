@@ -46,6 +46,7 @@ import com.badlogic.gdx.math.Affine2
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Matrix4
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import kotlin.jvm.*
 
 /** A batch that renders polygons and performs tinting using a light and dark color.
  *
@@ -124,7 +125,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
     override val isBlendingEnabled: Boolean
         get() = !blendingDisabled
 
-    @JvmOverloads
+
     constructor(size: Int = 2000) : this(size, size * 2) {
     }
 

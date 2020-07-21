@@ -34,6 +34,8 @@ import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.utils.Pool.*
 import com.esotericsoftware.spine.Animation.*
 import com.soywiz.kds.*
+import kotlin.js.*
+import kotlin.math.*
 
 /** Applies animations over time, queues animations for later playback, mixes (crossfading) between animations, and applies
  * multiple animations on top of each other (layering).
@@ -50,6 +52,7 @@ class AnimationState {
     internal val listeners: JArray<AnimationStateListener> = JArray()
     private val queue = EventQueue()
     private val propertyIDs = IntSet()
+    @JsName("animationsChangedProp")
     internal var animationsChanged: Boolean = false
 
     /** Multiplier for the delta time when the animation state is updated, causing time for all animations and mixes to play slower
@@ -320,7 +323,7 @@ class AnimationState {
                     -> {
                         timelineBlend = MixBlend.setup
                         val holdMix = timelineHoldMix[i]
-                        alpha = alphaHold * Math.max(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
+                        alpha = alphaHold * kotlin.math.max(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
                     }
                 }
                 from.totalAlpha += alpha
@@ -448,13 +451,13 @@ class AnimationState {
             val current = diff > 0
             var dir = lastTotal >= 0
             // Detect cross at 0 (not 180).
-            if (Math.signum(lastDiff) != Math.signum(diff) && Math.abs(lastDiff) <= 90) {
+            if ((lastDiff.sign) != (diff.sign) && kotlin.math.abs(lastDiff) <= 90) {
                 // A cross after a 360 rotation is a loop.
-                if (Math.abs(lastTotal) > 180) lastTotal += 360 * Math.signum(lastTotal)
+                if (kotlin.math.abs(lastTotal) > 180) lastTotal += 360 * (lastTotal.sign)
                 dir = current
             }
             total = diff + lastTotal - lastTotal % 360 // Store loops as part of lastTotal.
-            if (dir != current) total += 360 * Math.signum(lastTotal)
+            if (dir != current) total += 360 * (lastTotal.sign)
             timelinesRotation[i] = total
         }
         timelinesRotation[i + 1] = diff
@@ -562,7 +565,7 @@ class AnimationState {
 
             // Store the interrupted mix percentage.
             if (from.mixingFrom != null && from.mixDuration > 0)
-                current.interruptAlpha *= Math.min(1f, from.mixTime / from.mixDuration)
+                current.interruptAlpha *= kotlin.math.min(1f, from.mixTime / from.mixDuration)
 
             from.timelinesRotation.clear() // Reset rotation for mixing out, in case entry was mixed in.
         }
@@ -651,7 +654,7 @@ class AnimationState {
                     if (last.loop)
                         delay += duration * (1 + (last.trackTime / duration).toInt()) // Completion of next loop.
                     else
-                        delay += Math.max(duration, last.trackTime) // After duration, else next update.
+                        delay += kotlin.math.max(duration, last.trackTime) // After duration, else next update.
                     delay -= data!!.getMix(last.animation, animation)
                 } else
                     delay = last.trackTime // Next update.
@@ -1064,7 +1067,7 @@ class AnimationState {
                     val duration = animationEnd - animationStart
                     return if (duration == 0f) animationStart else trackTime % duration + animationStart
                 }
-                return Math.min(trackTime + animationStart, animationEnd)
+                return kotlin.math.min(trackTime + animationStart, animationEnd)
             }
 
         /** Returns true if at least one loop has been completed.

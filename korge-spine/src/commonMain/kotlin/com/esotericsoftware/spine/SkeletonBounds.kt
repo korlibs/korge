@@ -105,18 +105,18 @@ class SkeletonBounds {
         if (updateAabb)
             aabbCompute()
         else {
-            minX = Integer.MIN_VALUE.toFloat()
-            minY = Integer.MIN_VALUE.toFloat()
-            maxX = Integer.MAX_VALUE.toFloat()
-            maxY = Integer.MAX_VALUE.toFloat()
+            minX = Int.MIN_VALUE.toFloat()
+            minY = Int.MIN_VALUE.toFloat()
+            maxX = Int.MAX_VALUE.toFloat()
+            maxY = Int.MAX_VALUE.toFloat()
         }
     }
 
     private fun aabbCompute() {
-        var minX = Integer.MAX_VALUE.toFloat()
-        var minY = Integer.MAX_VALUE.toFloat()
-        var maxX = Integer.MIN_VALUE.toFloat()
-        var maxY = Integer.MIN_VALUE.toFloat()
+        var minX = Int.MAX_VALUE.toFloat()
+        var minY = Int.MAX_VALUE.toFloat()
+        var maxX = Int.MIN_VALUE.toFloat()
+        var maxY = Int.MIN_VALUE.toFloat()
         val polygons = this.polygons
         var i = 0
         val n = polygons.size
@@ -128,10 +128,10 @@ class SkeletonBounds {
             while (ii < nn) {
                 val x = vertices[ii]
                 val y = vertices[ii + 1]
-                minX = Math.min(minX, x)
-                minY = Math.min(minY, y)
-                maxX = Math.max(maxX, x)
-                maxY = Math.max(maxY, y)
+                minX = kotlin.math.min(minX, x)
+                minY = kotlin.math.min(minY, y)
+                maxX = kotlin.math.max(maxX, x)
+                maxY = kotlin.math.max(maxY, y)
                 ii += 2
             }
             i++

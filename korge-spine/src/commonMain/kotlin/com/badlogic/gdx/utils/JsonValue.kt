@@ -16,6 +16,9 @@
 
 package com.badlogic.gdx.utils
 
+import kotlin.js.*
+import kotlin.jvm.*
+
 /** Container for a JSON object, array, string, double, long, boolean, or null.
  *
  *
@@ -41,27 +44,27 @@ class JsonValue : Iterable<JsonValue> {
 
     /** @param name May be null.
      */
-    @JvmField
+
     var name: String? = null
 
     /** May be null.  */
-    @JvmField
+
     var child: JsonValue? = null
-    @JvmField
+
     var parent: JsonValue? = null
 
     /** May be null. When changing this field the parent [.size] may need to be changed.  */
     /** Sets the next sibling of this value. Does not change the parent [.size].
      * @param next May be null.
      */
-    @JvmField
+
     var next: JsonValue? = null
     /** Sets the next sibling of this value. Does not change the parent [.size].
      * @param prev May be null.
      */
-    @JvmField
+
     var prev: JsonValue? = null
-    @JvmField
+
     var size: Int = 0
 
     /** Returns true if there are not children in the array or object.  */
@@ -110,14 +113,6 @@ class JsonValue : Iterable<JsonValue> {
      */
     constructor(value: String) {
         set(value)
-    }
-
-    constructor(value: Double) {
-        set(value, null)
-    }
-
-    constructor(value: Long) {
-        set(value, null)
     }
 
     constructor(value: Double, stringValue: String) {
@@ -227,6 +222,7 @@ class JsonValue : Iterable<JsonValue> {
 
 
     @Deprecated("Use {@link #size} instead. Returns this number of children in the array or object. ")
+    @JsName("getSize")
     fun size(): Int {
         return size
     }
@@ -290,7 +286,7 @@ class JsonValue : Iterable<JsonValue> {
      */
     fun asInt(): Int {
         when (type) {
-            JsonValue.ValueType.stringValue -> return Integer.parseInt(stringValue!!)
+            JsonValue.ValueType.stringValue -> return (stringValue!!).toInt()
             JsonValue.ValueType.doubleValue -> return doubleValue.toInt()
             JsonValue.ValueType.longValue -> return longValue.toInt()
             JsonValue.ValueType.booleanValue -> return if (longValue != 0L) 1 else 0
@@ -458,7 +454,7 @@ class JsonValue : Iterable<JsonValue> {
         while (value != null) {
             val v: Int
             when (value.type) {
-                JsonValue.ValueType.stringValue -> v = Integer.parseInt(value.stringValue!!)
+                JsonValue.ValueType.stringValue -> v = (value.stringValue!!).toInt()
                 JsonValue.ValueType.doubleValue -> v = value.doubleValue.toInt()
                 JsonValue.ValueType.longValue -> v = value.longValue.toInt()
                 JsonValue.ValueType.booleanValue -> v = if (value.longValue != 0L) 1 else 0
@@ -798,6 +794,7 @@ class JsonValue : Iterable<JsonValue> {
     /** Returns the name for this object value.
      * @return May be null.
      */
+    @JsName("getName")
     fun name(): String? {
         return name
     }
@@ -805,6 +802,7 @@ class JsonValue : Iterable<JsonValue> {
     /** Returns the parent for this value.
      * @return May be null.
      */
+    @JsName("getParent")
     fun parent(): JsonValue? {
         return parent
     }
@@ -812,6 +810,7 @@ class JsonValue : Iterable<JsonValue> {
     /** Returns the first child for this object or array.
      * @return May be null.
      */
+    @JsName("getChild")
     fun child(): JsonValue? {
         return child
     }
@@ -845,6 +844,7 @@ class JsonValue : Iterable<JsonValue> {
     /** Returns the next sibling of this value.
      * @return May be null.
      */
+    @JsName("getNext")
     operator fun next(): JsonValue? {
         return next
     }
@@ -852,6 +852,7 @@ class JsonValue : Iterable<JsonValue> {
     /** Returns the previous sibling of this value.
      * @return May be null.
      */
+    @JsName("getPrev")
     fun prev(): JsonValue? {
         return prev
     }

@@ -32,7 +32,7 @@ class JArray<T> : Iterable<T> {
         }
         get() = items.size
 
-    @JvmField
+
     var ordered: Boolean = false
 
     /** Returns true if the array is empty.  */
@@ -46,7 +46,7 @@ class JArray<T> : Iterable<T> {
      * memory copy.
      * @param capacity Any elements added beyond this will cause the backing array to be grown.
      */
-    @JvmOverloads
+
     constructor(ordered: Boolean = true, capacity: Int = 16) {
         this.ordered = ordered
         items = ArrayList(capacity)
@@ -134,7 +134,7 @@ class JArray<T> : Iterable<T> {
      */
     fun setSize(newSize: Int): JArray<T> {
         truncate(newSize)
-        if (newSize > items.size) resize(Math.max(8, newSize))
+        if (newSize > items.size) resize(kotlin.math.max(8, newSize))
         return this
     }
 
@@ -196,7 +196,7 @@ class JArray<T> : Iterable<T> {
 
     companion object {
         fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {
-            System.arraycopy(src.items, srcPos, dest.items, destPos, length)
+            com.soywiz.kmem.arraycopy(src.items, srcPos, dest.items, destPos, length)
         }
     }
 

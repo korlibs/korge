@@ -42,7 +42,7 @@ class JitterEffect(private var x: Float, private var y: Float, val random: Rando
     private fun randomTriangular(min: Float, max: Float, mode: Float = (min + max) * 0.5f): Float {
         val u = random.nextFloat()
         val d = max - min
-        return if (u <= (mode - min) / d) min + Math.sqrt(u * d * (mode - min).toDouble()).toFloat() else max - Math.sqrt((1 - u) * d * (max - mode).toDouble()).toFloat()
+        return if (u <= (mode - min) / d) min + kotlin.math.sqrt(u * d * (mode - min).toDouble()).toFloat() else max - kotlin.math.sqrt((1 - u) * d * (max - mode).toDouble()).toFloat()
     }
 
     override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {

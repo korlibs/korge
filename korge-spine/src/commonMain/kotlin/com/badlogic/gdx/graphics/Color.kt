@@ -22,48 +22,23 @@ import com.esotericsoftware.spine.utils.*
  *
  * @author mzechner
  */
-class Color {
-    /** the red, green, blue and alpha components  */
-    @JvmField
-    var r = 0f
-    @JvmField
-    var g = 0f
-    @JvmField
-    var b = 0f
-    @JvmField
-    var a = 0f
-
-    /** Constructs a new Color with all components set to 0.  */
-    constructor() {}
-
-    /** @see .rgba8888ToColor
-     */
-    constructor(rgba8888: Int) {
-        rgba8888ToColor(this, rgba8888)
-    }
-
-    /** Constructor, sets the components of the color
-     *
-     * @param r the red component
-     * @param g the green component
-     * @param b the blue component
-     * @param a the alpha component
-     */
-    constructor(r: Float, g: Float, b: Float, a: Float) {
-        this.r = r
-        this.g = g
-        this.b = b
-        this.a = a
+data class Color(
+    var r: Float = 0f,
+    var g: Float = 0f,
+    var b: Float = 0f,
+    var a: Float = 0f
+) {
+    init {
         clamp()
     }
+
+    /** the red, green, blue and alpha components  */
 
     /** Constructs a new color using the given color
      *
      * @param color the color
      */
-    constructor(color: Color) {
-        set(color)
-    }
+    constructor(color: Color) : this(color.r, color.g, color.b, color.a)
 
     /** Sets this color to the given color.
      *
@@ -171,38 +146,6 @@ class Color {
         return clamp()
     }
 
-    /** Multiplies this Color's color components by the given ones.
-     *
-     * @param r Red component
-     * @param g Green component
-     * @param b Blue component
-     * @param a Alpha component
-     *
-     * @return this Color for chaining
-     */
-    fun mul(r: Float, g: Float, b: Float, a: Float): Color {
-        this.r *= r
-        this.g *= g
-        this.b *= b
-        this.a *= a
-        return clamp()
-    }
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val color = o as Color
-        return toIntBits() == color.toIntBits()
-    }
-
-    override fun hashCode(): Int {
-        var result = if (r != +0.0f) r.toBits() else 0
-        result = 31 * result + if (g != +0.0f) g.toBits() else 0
-        result = 31 * result + if (b != +0.0f) b.toBits() else 0
-        result = 31 * result + if (a != +0.0f) a.toBits() else 0
-        return result
-    }
-
     /** Packs the color components into a 32-bit integer with the format ABGR and then converts it to a float. Alpha is compressed
      * from 0-255 to 0-254 to avoid using float bits in the NaN range (see [NumberUtils.intToFloatColor]).
      * @return the packed color as a 32-bit float
@@ -221,24 +164,17 @@ class Color {
 
     /** Returns the color encoded as hex string with the format RRGGBBAA.  */
     override fun toString(): String {
-        var value = Integer
-            .toHexString((255 * r).toInt() shl 24 or ((255 * g).toInt() shl 16) or ((255 * b).toInt() shl 8) or (255 * a).toInt())
+        var value = "0x" + ((255 * r).toInt() shl 24 or ((255 * g).toInt() shl 16) or ((255 * b).toInt() shl 8) or (255 * a).toInt()).toString(16)
         while (value.length < 8) value = "0$value"
         return value
     }
 
     companion object {
-        @JvmField
         val WHITE = Color(1f, 1f, 1f, 1f)
-        @JvmField
-        val LIGHT_GRAY = Color(-0x40404001)
-        @JvmField
+        val LIGHT_GRAY = Color(.75f, .75f, .75f, 1f)
         val BLACK = Color(0f, 0f, 0f, 1f)
-
-        @JvmField
-        val GREEN = Color(0x00ff00ff)
-        @JvmField
-        val RED = Color(-0xffff01)
+        val GREEN = Color(0f, 1f, 0f, 1f)
+        val RED = Color(1f, 0f, 0f, 1f)
 
         /** Sets the specified color from a hex string with the format RRGGBBAA.
          * @see .toString
@@ -246,8 +182,6 @@ class Color {
         /** Returns a new color from a hex string with the format RRGGBBAA.
          * @see .toString
          */
-        @JvmOverloads
-        @JvmStatic
         fun valueOf(hex: String, color: Color = Color()): Color {
             var hex = hex
             hex = if (hex[0] == '#') hex.substring(1) else hex
@@ -258,7 +192,7 @@ class Color {
             return color
         }
 
-        @JvmStatic
+
         fun alpha(alpha: Float): Int {
             return (alpha * 255.0f).toInt()
         }
@@ -269,7 +203,7 @@ class Color {
          * @param color The Color to be modified.
          * @param value An integer color value in RGB888 format.
          */
-        @JvmStatic
+
         fun rgb888ToColor(color: Color, value: Int) {
             color.r = (value and 0x00ff0000 ushr 16) / 255f
             color.g = (value and 0x0000ff00 ushr 8) / 255f
@@ -282,7 +216,7 @@ class Color {
          * @param color The Color to be modified.
          * @param value An integer color value in RGBA8888 format.
          */
-        @JvmStatic
+
         fun rgba8888ToColor(color: Color, value: Int) {
             color.r = (value and -0x1000000 ushr 24) / 255f
             color.g = (value and 0x00ff0000 ushr 16) / 255f

@@ -148,7 +148,7 @@ class SkeletonRenderer {
                 continue
 
             } else if (attachment is MeshAttachment) {
-                throw RuntimeException(batch.javaClass.simpleName + " cannot render meshes, PolygonSpriteBatch or TwoColorPolygonBatch is required.")
+                throw RuntimeException(batch::class.simpleName + " cannot render meshes, PolygonSpriteBatch or TwoColorPolygonBatch is required.")
 
             } else if (attachment is SkeletonAttachment) {
                 val attachmentSkeleton = attachment.skeleton

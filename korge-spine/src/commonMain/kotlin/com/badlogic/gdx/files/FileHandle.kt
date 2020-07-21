@@ -2,7 +2,6 @@ package com.badlogic.gdx.files
 
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import kotlin.collections.toString
 
 class FileHandle(val filePath: String, val fileContent: ByteArray) {
     fun nameWithoutExtension(): String {

@@ -43,38 +43,38 @@ import com.esotericsoftware.spine.utils.SpineUtils.sin
  * See [IK constraints](http://esotericsoftware.com/spine-ik-constraints) in the Spine User Guide.  */
 class IkConstraint : Updatable {
     /** The IK constraint's setup pose data.  */
-    @JvmField
+
     val data: IkConstraintData
 
     /** The bones that will be modified by this IK constraint.  */
-    @JvmField
+
     val bones: JArray<Bone>
 
-    @JvmField
+
     internal var target: Bone? = null
 
     /** Controls the bend direction of the IK bones, either 1 or -1.  */
-    @JvmField
+
     var bendDirection: Int = 0
 
     /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it.  */
-    @JvmField
+
     var compress: Boolean = false
 
     /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
      * and the parent bone has local nonuniform scale, stretch is not applied.  */
-    @JvmField
+
     var stretch: Boolean = false
 
     /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
-    @JvmField
+
     var mix = 1f
 
     /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow.  */
-    @JvmField
+
     var softness: Float = 0.toFloat()
 
-    @JvmField
+
     internal var active: Boolean = false
 
     constructor(data: IkConstraintData, skeleton: Skeleton) {
@@ -140,7 +140,7 @@ class IkConstraint : Updatable {
     companion object {
 
         /** Applies 1 bone IK. The target is specified in the world coordinate system.  */
-        @JvmStatic
+
         fun apply(bone: Bone, targetX: Float, targetY: Float, compress: Boolean, stretch: Boolean, uniform: Boolean, alpha: Float) {
             if (!bone.appliedValid) bone.updateAppliedTransform()
             val p = bone.parent!!
@@ -157,7 +157,7 @@ class IkConstraint : Updatable {
                     ty = targetY - bone.worldY
                 }
                 BoneData.TransformMode.noRotationOrReflection -> {
-                    val s = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc)
+                    val s = kotlin.math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc)
                     val sa = pa / bone.skeleton.scaleX
                     val sc = pc / bone.skeleton.scaleY
                     pb = -sc * s * bone.skeleton.scaleX
@@ -195,7 +195,7 @@ class IkConstraint : Updatable {
                     }
                 }
                 val b = bone.data.length * sx
-                val dd = Math.sqrt((tx * tx + ty * ty).toDouble()).toFloat()
+                val dd = kotlin.math.sqrt((tx * tx + ty * ty).toDouble()).toFloat()
                 if (compress && dd < b || stretch && dd > b && b > 0.0001f) {
                     val s = (dd / b - 1) * alpha + 1
                     sx *= s
@@ -208,7 +208,7 @@ class IkConstraint : Updatable {
         /** Applies 2 bone IK. The target is specified in the world coordinate system.
          * @param child A direct descendant of the parent bone.
          */
-        @JvmStatic
+
         fun apply(parent: Bone, child: Bone, targetX: Float, targetY: Float, bendDir: Int, stretch: Boolean, softness: Float, alpha: Float) {
             var softness = softness
             if (alpha == 0f) {
@@ -268,7 +268,7 @@ class IkConstraint : Updatable {
             b = parent.b
             c = parent.c
             d = parent.d;
-            u = Math.abs(psx - psy) <= 0.0001f;
+            u = kotlin.math.abs(psx - psy) <= 0.0001f;
             if (!u) {
                 cy = 0f;
                 cwx = a * cx + parent.worldX;
@@ -288,7 +288,7 @@ class IkConstraint : Updatable {
             y = cwy - pp.worldY;
             dx = (x * d - y * b) * id - px
             dy = (y * a - x * c) * id - py
-            l1 = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+            l1 = kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
             l2 = child.data.length * csx
             if (l1 < 0.0001f) {
                 apply(parent, targetX, targetY, false, stretch, false, alpha);
@@ -302,10 +302,10 @@ class IkConstraint : Updatable {
             var dd = tx * tx + ty * ty;
             if (softness != 0f) {
                 softness *= psx * (csx + 1) / 2;
-                var td = Math.sqrt(dd.toDouble()).toFloat()
+                var td = kotlin.math.sqrt(dd.toDouble()).toFloat()
                 var sd = td - l1 - l2 * psx + softness;
                 if (sd > 0) {
-                    var p = Math.min(1f, sd / (softness * 2)) - 1;
+                    var p = kotlin.math.min(1f, sd / (softness * 2)) - 1;
                     p = (sd - softness * (1 - p * p)) / td;
                     tx -= p * tx;
                     ty -= p * ty;
@@ -320,9 +320,9 @@ class IkConstraint : Updatable {
                         cos = -1f;
                     else if (cos > 1) {
                         cos = 1f;
-                        if (stretch) sx *= (Math.sqrt(dd.toDouble()).toFloat() / (l1 + l2) - 1) * alpha + 1;
+                        if (stretch) sx *= (kotlin.math.sqrt(dd.toDouble()).toFloat() / (l1 + l2) - 1) * alpha + 1;
                     }
-                    a2 = Math.acos(cos.toDouble()).toFloat() * bendDir;
+                    a2 = kotlin.math.acos(cos.toDouble()).toFloat() * bendDir;
                     a = l1 + l2 * cos;
                     b = l2 * sin(a2);
                     a1 = atan2(ty * a - tx * b, tx * a + ty * b);
@@ -337,14 +337,14 @@ class IkConstraint : Updatable {
                     val c2 = bb-aa;
                     d = c1 * c1 - 4 * c2 * c;
                     if (d >= 0) {
-                        var q =Math.sqrt(d.toDouble()).toFloat();
+                        var q =kotlin.math.sqrt(d.toDouble()).toFloat();
                         if (c1 < 0) q = -q;
                         q = -(c1 + q) / 2;
                         val r0 = q / c2
                         val r1 = c / q;
-                        val r = if (Math.abs(r0) < Math.abs(r1)) r0 else r1;
+                        val r = if (kotlin.math.abs(r0) < kotlin.math.abs(r1)) r0 else r1;
                         if (r * r <= dd) {
-                            y = Math.sqrt((dd - r * r).toDouble()).toFloat() * bendDir;
+                            y = kotlin.math.sqrt((dd - r * r).toDouble()).toFloat() * bendDir;
                             a1 = ta - atan2(y, r);
                             a2 = atan2(y / psy, (r - l1) / psx);
                             break@outer;
@@ -360,7 +360,7 @@ class IkConstraint : Updatable {
                     var maxY = 0f;
                     c = -a * l1 / (aa - bb);
                     if (c >= -1 && c <= 1) {
-                        c = Math.acos(c.toDouble()).toFloat();
+                        c = kotlin.math.acos(c.toDouble()).toFloat();
                         x = a * cos(c) + l1;
                         y = b * sin(c);
                         d = x * x + y * y;

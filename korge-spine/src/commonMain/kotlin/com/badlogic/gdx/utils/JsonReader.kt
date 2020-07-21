@@ -20,6 +20,8 @@
 package com.badlogic.gdx.utils
 
 import com.badlogic.gdx.utils.JsonValue.*
+import com.soywiz.korio.lang.Charset.Companion.appendCodePoint
+import com.soywiz.korio.util.*
 
 /** Lightweight JSON parser.<br></br>
  * <br></br>
@@ -220,7 +222,7 @@ class JsonReader {
                                             startObject(name)
                                             if (top == stack.size) {
                                                 val newStack = IntArray(stack.size * 2)
-                                                System.arraycopy(stack, 0, newStack, 0, stack.size)
+                                                com.soywiz.kmem.arraycopy(stack, 0, newStack, 0, stack.size)
                                                 stack = newStack
                                             }
                                             stack[top++] = cs
@@ -245,7 +247,7 @@ class JsonReader {
                                             startArray(name)
                                             if (top == stack.size) {
                                                 val newStack = IntArray(stack.size * 2)
-                                                System.arraycopy(stack, 0, newStack, 0, stack.size)
+                                                com.soywiz.kmem.arraycopy(stack, 0, newStack, 0, stack.size)
                                                 stack = newStack
                                             }
                                             stack[top++] = cs
@@ -316,7 +318,7 @@ class JsonReader {
                                                 }
                                             }
                                             p--
-                                            while (Character.isSpace(data[p]))
+                                            while (data[p].isWhitespaceFast())
                                                 p--
                                         }
                                         8 ->
@@ -553,7 +555,7 @@ class JsonReader {
                                             startObject(name)
                                             if (top == stack.size) {
                                                 val newStack = IntArray(stack.size * 2)
-                                                System.arraycopy(stack, 0, newStack, 0, stack.size)
+                                                com.soywiz.kmem.arraycopy(stack, 0, newStack, 0, stack.size)
                                                 stack = newStack
                                             }
                                             stack[top++] = cs
@@ -574,7 +576,7 @@ class JsonReader {
                                             startArray(name)
                                             if (top == stack.size) {
                                                 val newStack = IntArray(stack.size * 2)
-                                                System.arraycopy(stack, 0, newStack, 0, stack.size)
+                                                com.soywiz.kmem.arraycopy(stack, 0, newStack, 0, stack.size)
                                                 stack = newStack
                                             }
                                             stack[top++] = cs
@@ -639,7 +641,7 @@ class JsonReader {
                                                 }
                                             }
                                             p--
-                                            while (Character.isSpace(data[p]))
+                                            while (data[p].isWhitespaceFast())
                                                 p--
                                         }
                                         8 -> {
@@ -924,9 +926,9 @@ class JsonReader {
             var lineNumber = 1
             for (i in 0 until p)
                 if (data[i] == '\n') lineNumber++
-            val start = Math.max(0, p - 32)
+            val start = kotlin.math.max(0, p - 32)
             throw SerializationException("Error parsing JSON on line " + lineNumber + " near: "
-                    + String(data, start, p - start) + "*ERROR*" + String(data, p, Math.min(64, length - p)), parseRuntimeEx)
+                    + String(data, start, p - start) + "*ERROR*" + String(data, p, kotlin.math.min(64, length - p)), parseRuntimeEx)
         } else if (elements.size != 0) {
             val element = elements.peek()
             elements.clear()
@@ -1015,7 +1017,7 @@ class JsonReader {
             if (i == length) break
             c = value[i++]
             if (c == 'u') {
-                buffer.append(Character.toChars(Integer.parseInt(value.substring(i, i + 4), 16)))
+                buffer.appendCodePoint(value.substring(i, i + 4).toInt(16))
                 i += 4
                 continue
             }

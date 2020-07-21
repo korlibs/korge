@@ -27,10 +27,10 @@ abstract class Pool<T>
  * @param preFill Whether to pre-fill the pool with objects. The number of pre-filled objects will be equal to the initial
  * capacity.
  */
-@JvmOverloads constructor(
+ constructor(
     initialCapacity: Int = 16,
     /** The maximum number of objects that will be pooled.  */
-    val max: Int = Integer.MAX_VALUE,
+    val max: Int = Int.MAX_VALUE,
     preFill: Boolean = false
 ) {
     init {
@@ -38,7 +38,7 @@ abstract class Pool<T>
     }
 
     /** The highest number of free objects. Can be reset any time.  */
-    @JvmField
+
     var peak: Int = 0
 
     private val freeObjects: ArrayList<T> = ArrayList<T>(initialCapacity).also { freeObjects ->
@@ -70,7 +70,7 @@ abstract class Pool<T>
         requireNotNull(`object`) { "object cannot be null." }
         if (freeObjects.size < max) {
             freeObjects.add(`object`)
-            peak = Math.max(peak, freeObjects.size)
+            peak = kotlin.math.max(peak, freeObjects.size)
         }
         reset(`object`)
     }
@@ -83,7 +83,7 @@ abstract class Pool<T>
     fun fill(size: Int) {
         for (i in 0 until size)
             if (freeObjects.size < max) freeObjects.add(newObject())
-        peak = Math.max(peak, freeObjects.size)
+        peak = kotlin.math.max(peak, freeObjects.size)
     }
 
     /** Called when an object is freed to clear the state of the object for possible later reuse. The default implementation calls
@@ -107,7 +107,7 @@ abstract class Pool<T>
             if (freeObjects.size < max) freeObjects.add(`object`)
             reset(`object`)
         }
-        peak = Math.max(peak, freeObjects.size)
+        peak = kotlin.math.max(peak, freeObjects.size)
     }
 
     /** Removes all free objects from this pool.  */

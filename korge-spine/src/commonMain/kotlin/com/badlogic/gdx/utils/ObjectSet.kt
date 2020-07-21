@@ -40,7 +40,7 @@ class ObjectSet<T>
  * growing the backing table.
  * @param initialCapacity If not a power of two, it is increased to the next nearest power of two.
  */
-@JvmOverloads constructor(initialCapacity: Int = 51, internal var loadFactor: Float = 0.8f) : Iterable<T> {
+ constructor(initialCapacity: Int = 51, internal var loadFactor: Float = 0.8f) : Iterable<T> {
     var size: Int = 0
 
     internal var keyTable: Array<T>
@@ -82,7 +82,7 @@ class ObjectSet<T>
 
     /** Creates a new set identical to the specified set.  */
     constructor(set: ObjectSet<out T>) : this((set.keyTable.size * set.loadFactor).toInt(), set.loadFactor) {
-        System.arraycopy(set.keyTable, 0, keyTable, 0, set.keyTable.size)
+        com.soywiz.kmem.arraycopy(set.keyTable as Array<Any>, 0, keyTable as Array<Any>, 0, set.keyTable.size)
         size = set.size
     }
 
@@ -344,7 +344,7 @@ class ObjectSet<T>
     }
 
     class ObjectSetIterator<K>(internal val set: ObjectSet<K>) : MutableIterable<K>, MutableIterator<K> {
-        var hasNext: Boolean = false
+        var hasNextProp: Boolean = false
         internal var nextIndex: Int = 0
         internal var currentIndex: Int = 0
         internal var valid = true
@@ -364,11 +364,11 @@ class ObjectSet<T>
             val n = set.keyTable.size
             while (++nextIndex < n) {
                 if (keyTable[nextIndex] != null) {
-                    hasNext = true
+                    hasNextProp = true
                     return
                 }
             }
-            hasNext = false
+            hasNextProp = false
         }
 
         override fun remove() {
@@ -394,11 +394,11 @@ class ObjectSet<T>
 
         override fun hasNext(): Boolean {
             if (!valid) error("#iterator() cannot be used nested.")
-            return hasNext
+            return hasNextProp
         }
 
         override fun next(): K {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val key = set.keyTable[nextIndex]
             currentIndex = nextIndex
@@ -414,19 +414,15 @@ class ObjectSet<T>
     /** Returns a new array containing the remaining values.  */
 
     companion object {
-
-        @JvmStatic
         fun <T> with(vararg array: T): ObjectSet<T> {
             val set = ObjectSet<T>()
             set.addAll(*array)
             return set
         }
 
-        @JvmStatic
-        @JvmName("tableSize")
         internal fun tableSize(capacity: Int, loadFactor: Float): Int {
             require(capacity >= 0) { "capacity must be >= 0: $capacity" }
-            val tableSize = nextPowerOfTwo(Math.max(2, Math.ceil((capacity / loadFactor).toDouble()).toInt()))
+            val tableSize = nextPowerOfTwo(kotlin.math.max(2, kotlin.math.ceil((capacity / loadFactor).toDouble()).toInt()))
             require(tableSize <= 1 shl 30) { "The required capacity is too large: $capacity" }
             return tableSize
         }

@@ -155,11 +155,11 @@ class Bone : Updatable {
 
     /** The magnitude (always positive) of the world scale X, calculated using [.a] and [.c].  */
     val worldScaleX: Float
-        get() = Math.sqrt((a * a + c * c).toDouble()).toFloat()
+        get() = kotlin.math.sqrt((a * a + c * c).toDouble()).toFloat()
 
     /** The magnitude (always positive) of the world scale Y, calculated using [.b] and [.d].  */
     val worldScaleY: Float
-        get() = Math.sqrt((b * b + d * d).toDouble()).toFloat()
+        get() = kotlin.math.sqrt((b * b + d * d).toDouble()).toFloat()
 
     /** @param parent May be null.
      */
@@ -196,7 +196,7 @@ class Bone : Updatable {
      *
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide.  */
-    @JvmOverloads
+
     fun updateWorldTransform(x: Float = this.x, y: Float = this.y, rotation: Float = this.rotation, scaleX: Float = this.scaleX, scaleY: Float = this.scaleY, shearX: Float = this.shearX, shearY: Float = this.shearY) {
         ax = x
         ay = y
@@ -253,7 +253,7 @@ class Bone : Updatable {
                 var s = pa * pa + pc * pc
                 val prx: Float
                 if (s > 0.0001f) {
-                    s = Math.abs(pa * pd - pb * pc) / s
+                    s = kotlin.math.abs(pa * pd - pb * pc) / s
                     pa /= skeleton.scaleX
                     pc /= skeleton.scaleY
                     pb = pc * s
@@ -280,11 +280,11 @@ class Bone : Updatable {
                 val sin = sinDeg(rotation)
                 var za = (pa * cos + pb * sin) / skeleton.scaleX
                 var zc = (pc * cos + pd * sin) / skeleton.scaleY
-                var s = Math.sqrt((za * za + zc * zc).toDouble()).toFloat()
+                var s = kotlin.math.sqrt((za * za + zc * zc).toDouble()).toFloat()
                 if (s > 0.00001f) s = 1 / s
                 za *= s
                 zc *= s
-                s = Math.sqrt((za * za + zc * zc).toDouble()).toFloat()
+                s = kotlin.math.sqrt((za * za + zc * zc).toDouble()).toFloat()
                 if (data.transformMode == TransformMode.noScale && pa * pd - pb * pc < 0 != (skeleton.scaleX < 0 != skeleton.scaleY < 0))
                     s = -s
                 val r = PI / 2 + atan2(zc, za)
@@ -350,8 +350,8 @@ class Bone : Updatable {
             ax = worldX
             ay = worldY
             arotation = atan2(c, a) * radDeg
-            ascaleX = Math.sqrt((a * a + c * c).toDouble()).toFloat()
-            ascaleY = Math.sqrt((b * b + d * d).toDouble()).toFloat()
+            ascaleX = kotlin.math.sqrt((a * a + c * c).toDouble()).toFloat()
+            ascaleY = kotlin.math.sqrt((b * b + d * d).toDouble()).toFloat()
             ashearX = 0f
             ashearY = atan2(a * b + c * d, a * d - b * c) * radDeg
             return
@@ -374,7 +374,7 @@ class Bone : Updatable {
         val rc = id * c - ic * a
         val rd = id * d - ic * b
         ashearX = 0f
-        ascaleX = Math.sqrt((ra * ra + rc * rc).toDouble()).toFloat()
+        ascaleX = kotlin.math.sqrt((ra * ra + rc * rc).toDouble()).toFloat()
         if (ascaleX > 0.0001f) {
             val det = ra * rd - rb * rc
             ascaleY = det / ascaleX
@@ -382,7 +382,7 @@ class Bone : Updatable {
             arotation = atan2(rc, ra) * radDeg
         } else {
             ascaleX = 0f
-            ascaleY = Math.sqrt((rb * rb + rd * rd).toDouble()).toFloat()
+            ascaleY = kotlin.math.sqrt((rb * rb + rd * rd).toDouble()).toFloat()
             ashearY = 0f
             arotation = 90 - atan2(rd, rb) * radDeg
         }

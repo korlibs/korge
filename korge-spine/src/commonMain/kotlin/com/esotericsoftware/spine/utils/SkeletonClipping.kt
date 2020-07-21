@@ -276,7 +276,7 @@ class SkeletonClipping {
                     val c0 = inputY2 - inputY
                     val c2 = inputX2 - inputX
                     val s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY)
-                    if (Math.abs(s) > 0.000001f) {
+                    if (kotlin.math.abs(s) > 0.000001f) {
                         val ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s
                         output.add(edgeX + (edgeX2 - edgeX) * ua)
                         output.add(edgeY + (edgeY2 - edgeY) * ua)
@@ -288,7 +288,7 @@ class SkeletonClipping {
                     val c0 = inputY2 - inputY
                     val c2 = inputX2 - inputX
                     val s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY)
-                    if (Math.abs(s) > 0.000001f) {
+                    if (kotlin.math.abs(s) > 0.000001f) {
                         val ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s
                         output.add(edgeX + (edgeX2 - edgeX) * ua)
                         output.add(edgeY + (edgeY2 - edgeY) * ua)

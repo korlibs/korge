@@ -33,6 +33,9 @@ import com.esotericsoftware.spine.Bone
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.Slot
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import com.soywiz.korio.concurrent.atomic.*
+import kotlin.jvm.*
+import kotlin.native.concurrent.*
 
 /** Base class for an attachment with vertices that are transformed by one or more bones and can be deformed by a slot's
  * [Slot.getDeform].  */
@@ -182,11 +185,8 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
     }
 
     companion object {
-        private var nextID: Int = 0
-
-        @Synchronized
-        private fun nextID(): Int {
-            return nextID++
-        }
+        @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
+        private var nextID = korAtomic(0)
+        private fun nextID(): Int = nextID.incrementAndGet() - 1
     }
 }

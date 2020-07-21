@@ -42,7 +42,7 @@ open class ObjectMap<K, V>
  * growing the backing table.
  * @param initialCapacity If not a power of two, it is increased to the next nearest power of two.
  */
-@JvmOverloads constructor(initialCapacity: Int = 51, internal var loadFactor: Float = 0.8f) : Iterable<ObjectMap.Entry<K, V>> {
+ constructor(initialCapacity: Int = 51, internal var loadFactor: Float = 0.8f) : Iterable<ObjectMap.Entry<K, V>> {
 
     var size: Int = 0
 
@@ -91,8 +91,8 @@ open class ObjectMap<K, V>
 
     /** Creates a new map identical to the specified map.  */
     constructor(map: ObjectMap<out K, out V>) : this((map.keyTable.size * map.loadFactor).toInt(), map.loadFactor) {
-        System.arraycopy(map.keyTable, 0, keyTable, 0, map.keyTable.size)
-        System.arraycopy(map.valueTable, 0, valueTable, 0, map.valueTable.size)
+        com.soywiz.kmem.arraycopy(map.keyTable, 0, keyTable, 0, map.keyTable.size)
+        com.soywiz.kmem.arraycopy(map.valueTable, 0, valueTable, 0, map.valueTable.size)
         size = map.size
     }
 
@@ -496,7 +496,7 @@ open class ObjectMap<K, V>
     }
 
     abstract class MapIterator<K, V, I>(internal val map: ObjectMap<K, V>) : MutableIterable<I>, MutableIterator<I> {
-        var hasNext: Boolean = false
+        var hasNextProp: Boolean = false
         internal var nextIndex: Int = 0
         internal var currentIndex: Int = 0
         internal var valid = true
@@ -516,11 +516,11 @@ open class ObjectMap<K, V>
             val n = keyTable.size
             while (++nextIndex < n) {
                 if (keyTable[nextIndex] != null) {
-                    hasNext = true
+                    hasNextProp = true
                     return
                 }
             }
-            hasNext = false
+            hasNextProp = false
         }
 
         override fun remove() {
@@ -553,7 +553,7 @@ open class ObjectMap<K, V>
 
         /** Note the same entry instance is returned each time this method is called.  */
         override fun next(): Entry<K, V> {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val keyTable = map.keyTable
             entry.key = keyTable[nextIndex]
@@ -565,7 +565,7 @@ open class ObjectMap<K, V>
 
         override fun hasNext(): Boolean {
             if (!valid) error("#iterator() cannot be used nested.")
-            return hasNext
+            return hasNextProp
         }
 
         override fun iterator(): Entries<K, V> {
@@ -577,12 +577,12 @@ open class ObjectMap<K, V>
 
         override fun hasNext(): Boolean {
             if (!valid) error("#iterator() cannot be used nested.")
-            return hasNext
+            return hasNextProp
         }
 
         
         override fun next(): V? {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val value = map.valueTable[nextIndex]
             currentIndex = nextIndex
@@ -599,11 +599,11 @@ open class ObjectMap<K, V>
 
         override fun hasNext(): Boolean {
             if (!valid) error("#iterator() cannot be used nested.")
-            return hasNext
+            return hasNextProp
         }
 
         override fun next(): K {
-            if (!hasNext) throw NoSuchElementException()
+            if (!hasNextProp) throw NoSuchElementException()
             if (!valid) error("#iterator() cannot be used nested.")
             val key = map.keyTable[nextIndex]
             currentIndex = nextIndex
@@ -617,7 +617,7 @@ open class ObjectMap<K, V>
 
         /** Adds the remaining keys to the array.  */
         open fun toArray(array: JArray<K>): JArray<K> {
-            while (hasNext)
+            while (hasNextProp)
                 array.add(next())
             return array
         }

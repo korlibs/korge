@@ -74,10 +74,10 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
             if (parameter.attachmentLoader != null)
                 attachmentLoader = parameter.attachmentLoader
             else if (parameter.atlasName != null)
-                attachmentLoader = AtlasAttachmentLoader(manager.get(parameter.atlasName, TextureAtlas::class.java))
+                attachmentLoader = AtlasAttachmentLoader(manager.get(parameter.atlasName, TextureAtlas::class))
         }
         if (attachmentLoader == null)
-            attachmentLoader = AtlasAttachmentLoader(manager.get(file.pathWithoutExtension()!! + ".atlas", TextureAtlas::class.java))
+            attachmentLoader = AtlasAttachmentLoader(manager.get(file.pathWithoutExtension()!! + ".atlas", TextureAtlas::class))
 
         if (file.extension().equals("skel", ignoreCase = true)) {
             val skeletonBinary = SkeletonBinary(attachmentLoader)
@@ -104,7 +104,7 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
         if (parameter == null) return null
         if (parameter.attachmentLoader != null) return null
         val dependencies = JArray<AssetDescriptor>()
-        dependencies.add(AssetDescriptor(parameter.atlasName, TextureAtlas::class.java))
+        dependencies.add(AssetDescriptor(parameter.atlasName, TextureAtlas::class))
         return dependencies
     }
 

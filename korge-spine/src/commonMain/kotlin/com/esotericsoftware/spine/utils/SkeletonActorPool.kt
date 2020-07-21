@@ -40,10 +40,10 @@ import com.esotericsoftware.spine.SkeletonData
 import com.esotericsoftware.spine.SkeletonRenderer
 import com.esotericsoftware.spine.Skin
 
-class SkeletonActorPool @JvmOverloads constructor(
+class SkeletonActorPool  constructor(
     private val renderer: SkeletonRenderer,
     internal var skeletonData: SkeletonData, internal var stateData: AnimationStateData,
-  initialCapacity: Int = 16, max: Int = Integer.MAX_VALUE
+  initialCapacity: Int = 16, max: Int = Int.MAX_VALUE
 ) : Pool<SkeletonActor>(initialCapacity, max) {
     private val skeletonPool: Pool<Skeleton>
     private val statePool: Pool<AnimationState>

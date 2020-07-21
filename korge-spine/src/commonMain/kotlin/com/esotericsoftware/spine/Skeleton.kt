@@ -41,6 +41,7 @@ import com.esotericsoftware.spine.attachments.RegionAttachment
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
+import kotlin.js.*
 
 /** Stores the current pose for a skeleton.
  *
@@ -68,6 +69,7 @@ class Skeleton {
     val pathConstraints: JArray<PathConstraint>
 
     /** The list of bones and constraints, sorted in the order they should be updated, as computed by [.updateCache].  */
+    @JsName("updateCacheProp")
     val updateCache: JArray<Updatable> = JArray()
     internal val updateCacheReset: JArray<Bone> = JArray()
     internal var skin: Skin? = null
@@ -727,10 +729,10 @@ class Skeleton {
      */
     fun getBounds(offset: Vector2, size: Vector2, temp: JFloatArray) {
         val drawOrder = this.drawOrder
-        var minX = Integer.MAX_VALUE.toFloat()
-        var minY = Integer.MAX_VALUE.toFloat()
-        var maxX = Integer.MIN_VALUE.toFloat()
-        var maxY = Integer.MIN_VALUE.toFloat()
+        var minX = Int.MAX_VALUE.toFloat()
+        var minY = Int.MAX_VALUE.toFloat()
+        var maxX = Int.MIN_VALUE.toFloat()
+        var maxY = Int.MIN_VALUE.toFloat()
         var i = 0
         val n = drawOrder.size
         while (i < n) {
@@ -756,10 +758,10 @@ class Skeleton {
                 while (ii < verticesLength) {
                     val x = vertices[ii]
                     val y = vertices[ii + 1]
-                    minX = Math.min(minX, x)
-                    minY = Math.min(minY, y)
-                    maxX = Math.max(maxX, x)
-                    maxY = Math.max(maxY, y)
+                    minX = kotlin.math.min(minX, x)
+                    minY = kotlin.math.min(minY, y)
+                    maxX = kotlin.math.max(maxX, x)
+                    maxY = kotlin.math.max(maxY, y)
                     ii += 2
                 }
             }

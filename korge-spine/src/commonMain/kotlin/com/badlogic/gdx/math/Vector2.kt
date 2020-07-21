@@ -41,8 +41,8 @@ data class Vector2(
      * @param radians the angle in radians
      */
     fun rotateRad(radians: Float): Vector2 {
-        val cos = Math.cos(radians.toDouble()).toFloat()
-        val sin = Math.sin(radians.toDouble()).toFloat()
+        val cos = kotlin.math.cos(radians.toDouble()).toFloat()
+        val sin = kotlin.math.sin(radians.toDouble()).toFloat()
 
         val newX = this.x * cos - this.y * sin
         val newY = this.x * sin + this.y * cos

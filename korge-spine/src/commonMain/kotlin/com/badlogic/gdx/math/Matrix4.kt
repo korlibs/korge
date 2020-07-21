@@ -16,6 +16,9 @@
 
 package com.badlogic.gdx.math
 
+import com.soywiz.kmem.*
+import kotlin.math.*
+
 /** Encapsulates a [column major](http://en.wikipedia.org/wiki/Row-major_order#Column-major_order) 4 by 4 matrix. Like
  * the [Vector3] class it allows the chaining of methods by returning a reference to itself. For example:
  *
@@ -26,7 +29,7 @@ package com.badlogic.gdx.math
  * @author badlogicgames@gmail.com
  */
 class Matrix4 {
-    @JvmField
+
     val `val` = FloatArray(16)
 
     /** @return the backing float array
@@ -50,7 +53,7 @@ class Matrix4 {
 
     /** Returns true if the value is zero (using the default tolerance as upper bound)  */
     private fun isZero(value: Float): Boolean {
-        return Math.abs(value) <= MathUtils.FLOAT_ROUNDING_ERROR
+        return abs(value) <= MathUtils.FLOAT_ROUNDING_ERROR
     }
 
 
@@ -58,25 +61,25 @@ class Matrix4 {
      */
     val scaleX: Float
         get() = if (isZero(values[M01]) && isZero(values[M02]))
-            Math.abs(values[M00])
+            abs(values[M00])
         else
-            Math.sqrt(scaleXSquared.toDouble()).toFloat()
+            sqrt(scaleXSquared.toDouble()).toFloat()
 
     /** @return the scale factor on the Y axis (non-negative)
      */
     val scaleY: Float
         get() = if (isZero(values[M10]) && isZero(values[M12]))
-            Math.abs(values[M11])
+            abs(values[M11])
         else
-            Math.sqrt(scaleYSquared.toDouble()).toFloat()
+            sqrt(scaleYSquared.toDouble()).toFloat()
 
     /** @return the scale factor on the X axis (non-negative)
      */
     val scaleZ: Float
         get() = if (isZero(values[M20]) && isZero(values[M21]))
-            Math.abs(values[M22])
+            abs(values[M22])
         else
-            Math.sqrt(scaleZSquared.toDouble()).toFloat()
+            sqrt(scaleZSquared.toDouble()).toFloat()
 
     /** Constructs an identity matrix  */
     constructor() {
@@ -102,7 +105,7 @@ class Matrix4 {
      * @return This matrix for the purpose of chaining methods together.
      */
     fun set(values: FloatArray): Matrix4 {
-        System.arraycopy(values, 0, this.values, 0, this.values.size)
+        arraycopy(values, 0, this.values, 0, this.values.size)
         return this
     }
 
@@ -678,9 +681,9 @@ class Matrix4 {
          * @param mata the first matrix.
          * @param matb the second matrix.
          */
-        external fun mul(mata: FloatArray, matb: FloatArray) /*-{ }-*/  /*
-		matrix4_mul(mata, matb);
-	*/
+        fun mul(mata: FloatArray, matb: FloatArray) {
+            TODO()
+        }
 
     }
 }

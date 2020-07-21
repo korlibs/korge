@@ -4,12 +4,13 @@ import com.badlogic.gdx.files.*
 import com.badlogic.gdx.graphics.g2d.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.util.*
 import kotlin.test.*
 
 class SampleTest {
     @Test
     //@Ignore
-    fun test() = suspendTest {
+    fun test() = suspendTest({ !OS.isJs }) {
         val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].toFileHandle())
         val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
         json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.

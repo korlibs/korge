@@ -30,6 +30,7 @@
 package com.esotericsoftware.spine
 
 import com.badlogic.gdx.utils.JArray
+import kotlin.js.*
 
 /** Stores the setup pose for a [PathConstraint].
  *
@@ -113,7 +114,7 @@ class PathConstraintData(name: String) : ConstraintData(name) {
      *
      * See [Spacing mode](http://esotericsoftware.com/spine-path-constraints#Spacing-mode) in the Spine User Guide.  */
     enum class SpacingMode {
-        length, fixed, percent;
+        @JsName("length2") length, fixed, percent;
 
 
         companion object {

@@ -37,7 +37,7 @@ data class Quaternion(
      * @return the angle in radians of the rotation
      */
     val angleRad: Float
-        get() = (2.0 * Math.acos((if (this.w > 1) this.w / len() else this.w).toDouble())).toFloat()
+        get() = (2.0 * kotlin.math.acos((if (this.w > 1) this.w / len() else this.w).toDouble())).toFloat()
 
     /** Get the angle in degrees of the rotation this quaternion represents. Use [.getAxisAngle] to get both the axis
      * and the angle of this rotation. Use [.getAngleAround] to get the angle around a specific axis.
@@ -82,7 +82,7 @@ data class Quaternion(
     /** @return the euclidean length of this quaternion
      */
     fun len(): Float {
-        return Math.sqrt((x * x + y * y + z * z + w * w).toDouble()).toFloat()
+        return kotlin.math.sqrt((x * x + y * y + z * z + w * w).toDouble()).toFloat()
     }
 
     override fun toString(): String {
@@ -101,7 +101,7 @@ data class Quaternion(
     fun nor(): Quaternion {
         var len = len2()
         if (len != 0f && !isEqual(len, 1f)) {
-            len = Math.sqrt(len.toDouble()).toFloat()
+            len = kotlin.math.sqrt(len.toDouble()).toFloat()
             w /= len
             x /= len
             y /= len
@@ -111,7 +111,7 @@ data class Quaternion(
     }
 
     private fun isEqual(a: Float, b: Float): Boolean {
-        return Math.abs(a - b) <= MathUtils.FLOAT_ROUNDING_ERROR
+        return kotlin.math.abs(a - b) <= MathUtils.FLOAT_ROUNDING_ERROR
     }
 
 
@@ -242,8 +242,8 @@ data class Quaternion(
         if (d == 0f) return idt()
         d = 1f / d
         val l_ang = if (radians < 0) MathUtils.PI2 - -radians % MathUtils.PI2 else radians % MathUtils.PI2
-        val l_sin = Math.sin((l_ang / 2).toDouble()).toFloat()
-        val l_cos = Math.cos((l_ang / 2).toDouble()).toFloat()
+        val l_sin = kotlin.math.sin((l_ang / 2).toDouble()).toFloat()
+        val l_cos = kotlin.math.cos((l_ang / 2).toDouble()).toFloat()
         return this.set(d * x * l_sin, d * y * l_sin, d * z * l_sin, l_cos).nor()
     }
 

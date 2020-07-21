@@ -140,14 +140,14 @@ class PathConstraint : Updatable {
                     if (scale) {
                         val x = setupLength * bone.a
                         val y = setupLength * bone.c
-                        val length = Math.sqrt((x * x + y * y).toDouble()).toFloat()
+                        val length = kotlin.math.sqrt((x * x + y * y).toDouble()).toFloat()
                         lengths!![i] = length
                     }
                     spaces[++i] = spacing
                 } else {
                     val x = setupLength * bone.a
                     val y = setupLength * bone.c
-                    val length = Math.sqrt((x * x + y * y).toDouble()).toFloat()
+                    val length = kotlin.math.sqrt((x * x + y * y).toDouble()).toFloat()
                     if (scale) lengths!![i] = length
                     spaces[++i] = (if (lengthSpacing) setupLength + spacing else spacing) * length / setupLength
                 }
@@ -183,7 +183,7 @@ class PathConstraint : Updatable {
             if (scale) {
                 val length = lengths!![i]
                 if (length >= epsilon) {
-                    val s = (Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat() / length - 1) * rotateMix + 1
+                    val s = (kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat() / length - 1) * rotateMix + 1
                     bone.a *= s
                     bone.c *= s
                 }
@@ -203,11 +203,11 @@ class PathConstraint : Updatable {
                 else if (spaces[i + 1] < epsilon)
                     r = positions[p + 2]
                 else
-                    r = Math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
-                r -= Math.atan2(c.toDouble(), a.toDouble()).toFloat()
+                    r = kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+                r -= kotlin.math.atan2(c.toDouble(), a.toDouble()).toFloat()
                 if (tip) {
-                    cos = Math.cos(r.toDouble()).toFloat()
-                    sin = Math.sin(r.toDouble()).toFloat()
+                    cos = kotlin.math.cos(r.toDouble()).toFloat()
+                    sin = kotlin.math.sin(r.toDouble()).toFloat()
                     val length = bone.data.length
                     boneX += (length * (cos * a - sin * c) - dx) * rotateMix
                     boneY += (length * (sin * a + cos * c) - dy) * rotateMix
@@ -219,8 +219,8 @@ class PathConstraint : Updatable {
                 //
                     r += SpineUtils.PI2
                 r *= rotateMix
-                cos = Math.cos(r.toDouble()).toFloat()
-                sin = Math.sin(r.toDouble()).toFloat()
+                cos = kotlin.math.cos(r.toDouble()).toFloat()
+                sin = kotlin.math.sin(r.toDouble()).toFloat()
                 bone.a = cos * a - sin * c
                 bone.b = cos * b - sin * d
                 bone.c = sin * a + cos * c
@@ -368,18 +368,18 @@ class PathConstraint : Updatable {
                 ddfy = tmpy * 2 + dddfy
                 dfx = (cx1 - x1) * 0.75f + tmpx + dddfx * 0.16666667f
                 dfy = (cy1 - y1) * 0.75f + tmpy + dddfy * 0.16666667f
-                pathLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                pathLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 dfx += ddfx
                 dfy += ddfy
                 ddfx += dddfx
                 ddfy += dddfy
-                pathLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                pathLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 dfx += ddfx
                 dfy += ddfy
-                pathLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                pathLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 dfx += ddfx + dddfx
                 dfy += ddfy + dddfy
-                pathLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                pathLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 curves[i] = pathLength
                 x1 = x2
                 y1 = y2
@@ -458,7 +458,7 @@ class PathConstraint : Updatable {
                 ddfy = tmpy * 2 + dddfy
                 dfx = (cx1 - x1) * 0.3f + tmpx + dddfx * 0.16666667f
                 dfy = (cy1 - y1) * 0.3f + tmpy + dddfy * 0.16666667f
-                curveLength = Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                curveLength = kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 segments[0] = curveLength
                 ii = 1
                 while (ii < 8) {
@@ -466,17 +466,17 @@ class PathConstraint : Updatable {
                     dfy += ddfy
                     ddfx += dddfx
                     ddfy += dddfy
-                    curveLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                    curveLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                     segments[ii] = curveLength
                     ii++
                 }
                 dfx += ddfx
                 dfy += ddfy
-                curveLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                curveLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 segments[8] = curveLength
                 dfx += ddfx + dddfx
                 dfy += ddfy + dddfy
-                curveLength += Math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
+                curveLength += kotlin.math.sqrt((dfx * dfx + dfy * dfy).toDouble()).toFloat()
                 segments[9] = curveLength
                 segment = 0
             }
@@ -510,9 +510,9 @@ class PathConstraint : Updatable {
         val y1 = temp[i + 1]
         val dx = temp[i + 2] - x1
         val dy = temp[i + 3] - y1
-        val r = Math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
-        out[o] = x1 + p * Math.cos(r.toDouble()).toFloat()
-        out[o + 1] = y1 + p * Math.sin(r.toDouble()).toFloat()
+        val r = kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+        out[o] = x1 + p * kotlin.math.cos(r.toDouble()).toFloat()
+        out[o + 1] = y1 + p * kotlin.math.sin(r.toDouble()).toFloat()
         out[o + 2] = r
     }
 
@@ -521,9 +521,9 @@ class PathConstraint : Updatable {
         val y1 = temp[i + 3]
         val dx = x1 - temp[i]
         val dy = y1 - temp[i + 1]
-        val r = Math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
-        out[o] = x1 + p * Math.cos(r.toDouble()).toFloat()
-        out[o + 1] = y1 + p * Math.sin(r.toDouble()).toFloat()
+        val r = kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+        out[o] = x1 + p * kotlin.math.cos(r.toDouble()).toFloat()
+        out[o + 1] = y1 + p * kotlin.math.sin(r.toDouble()).toFloat()
         out[o + 2] = r
     }
 
@@ -532,7 +532,7 @@ class PathConstraint : Updatable {
         if (p < epsilon || p.isNaN()) {
             out[o] = x1
             out[o + 1] = y1
-            out[o + 2] = Math.atan2((cy1 - y1).toDouble(), (cx1 - x1).toDouble()).toFloat()
+            out[o + 2] = kotlin.math.atan2((cy1 - y1).toDouble(), (cx1 - x1).toDouble()).toFloat()
             return
         }
         val tt = p * p
@@ -550,9 +550,9 @@ class PathConstraint : Updatable {
         out[o + 1] = y
         if (tangents) {
             if (p < 0.001f)
-                out[o + 2] = Math.atan2((cy1 - y1).toDouble(), (cx1 - x1).toDouble()).toFloat()
+                out[o + 2] = kotlin.math.atan2((cy1 - y1).toDouble(), (cx1 - x1).toDouble()).toFloat()
             else
-                out[o + 2] = Math.atan2((y - (y1 * uu + cy1 * ut * 2f + cy2 * tt)).toDouble(), (x - (x1 * uu + cx1 * ut * 2f + cx2 * tt)).toDouble()).toFloat()
+                out[o + 2] = kotlin.math.atan2((y - (y1 * uu + cy1 * ut * 2f + cy2 * tt)).toDouble(), (x - (x1 * uu + cx1 * ut * 2f + cx2 * tt)).toDouble()).toFloat()
         }
     }
 

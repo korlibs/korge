@@ -132,8 +132,8 @@ class RegionAttachment(name: String) : Attachment(name) {
         localX2 *= scaleX
         localY2 *= scaleY
         val rotation = rotation
-        val cos = Math.cos((MathUtils.degRad * rotation).toDouble()).toFloat()
-        val sin = Math.sin((MathUtils.degRad * rotation).toDouble()).toFloat()
+        val cos = kotlin.math.cos((MathUtils.degRad * rotation).toDouble()).toFloat()
+        val sin = kotlin.math.sin((MathUtils.degRad * rotation).toDouble()).toFloat()
         val x = x
         val y = y
         val localXCos = localX * cos + x

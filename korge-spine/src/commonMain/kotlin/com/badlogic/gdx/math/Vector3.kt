@@ -71,7 +71,7 @@ data class Vector3(
 
         /** @return The euclidean length
          */
-        fun len(x: Float, y: Float, z: Float): Float = Math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+        fun len(x: Float, y: Float, z: Float): Float = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
     }
 }
 /**
