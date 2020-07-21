@@ -634,11 +634,11 @@ class JArray<T> : Iterable<T> {
 
     companion object {
         inline operator fun <reified T> invoke(capacity: Int = 16): JArray<T> {
-            return JArray<T>(true, capacity, Array<T>::class.java)
+            return JArray<T>(true, capacity, T::class.java)
         }
 
         inline operator fun <reified T> invoke(ordered: Boolean = true, capacity: Int): JArray<T> {
-            return JArray<T>(ordered, capacity, Array<T>::class.java)
+            return JArray<T>(ordered, capacity, T::class.java)
         }
 
         ///** Creates an ordered array with the specified capacity.  */

@@ -48,14 +48,14 @@ class SkeletonData {
     // --- Bones.
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
-    val bones: JArray<BoneData> = JArray() // Ordered parents first.
+    val bones: JArray<BoneData> = JArray<BoneData>() // Ordered parents first.
     // --- Slots.
 
     /** The skeleton's slots.  */
-    val slots: JArray<SlotData> = JArray() // Setup pose draw order.
+    val slots: JArray<SlotData> = JArray<SlotData>() // Setup pose draw order.
 
     /** All skins, including the default skin.  */
-    val skins: JArray<Skin> = JArray()
+    val skins: JArray<Skin> = JArray<Skin>()
     // --- Skins.
 
     /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.

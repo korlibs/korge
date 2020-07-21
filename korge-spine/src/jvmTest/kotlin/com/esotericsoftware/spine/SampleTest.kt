@@ -6,7 +6,7 @@ import kotlin.test.*
 
 class SampleTest {
     @Test
-    @Ignore
+    //@Ignore
     fun test() {
         val atlas = TextureAtlas(FileHandle("spineboy/spineboy-pma.atlas"))
         val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
@@ -27,5 +27,10 @@ class SampleTest {
         state.setAnimation(0, "run", true)
         state.addAnimation(0, "jump", false, 2f) // Jump after 2 seconds.
         state.addAnimation(0, "run", true, 0f) // Run after the jump.
+
+        state.update(1f / 60f); // Update the animation time.
+
+        state.apply(skeleton); // Poses skeleton using current animations. This sets the bones' local SRT.
+        skeleton.updateWorldTransform(); // Uses the bones' local SRT to compute their world SRT.
     }
 }

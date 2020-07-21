@@ -97,7 +97,8 @@ class SkeletonBinary {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    private val linkedMeshes = JArray<LinkedMesh>()
+    //private val linkedMeshes = JArray<LinkedMesh>()
+    private val linkedMeshes by lazy { JArray<LinkedMesh>() }
 
     constructor(atlas: TextureAtlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
