@@ -78,7 +78,7 @@ class JIntSet
     init {
         require(!(loadFactor <= 0f || loadFactor >= 1f)) { "loadFactor must be > 0 and < 1: $loadFactor" }
 
-        val tableSize = tableSize(initialCapacity, loadFactor)
+        val tableSize = ObjectSet.tableSize(initialCapacity, loadFactor)
         threshold = (tableSize * loadFactor).toInt()
         mask = tableSize - 1
         shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
@@ -228,13 +228,13 @@ class JIntSet
      * instead.  */
     fun shrink(maximumCapacity: Int) {
         require(maximumCapacity >= 0) { "maximumCapacity must be >= 0: $maximumCapacity" }
-        val tableSize = tableSize(maximumCapacity, loadFactor)
+        val tableSize = ObjectSet.tableSize(maximumCapacity, loadFactor)
         if (keyTable.size > tableSize) resize(tableSize)
     }
 
     /** Clears the set and reduces the size of the backing arrays to be the specified capacity / loadFactor, if they are larger.  */
     fun clear(maximumCapacity: Int) {
-        val tableSize = tableSize(maximumCapacity, loadFactor)
+        val tableSize = ObjectSet.tableSize(maximumCapacity, loadFactor)
         if (keyTable.size <= tableSize) {
             clear()
             return
@@ -270,7 +270,7 @@ class JIntSet
     /** Increases the size of the backing array to accommodate the specified number of additional items / loadFactor. Useful before
      * adding many items to avoid multiple backing array resizes.  */
     fun ensureCapacity(additionalCapacity: Int) {
-        val tableSize = tableSize(size + additionalCapacity, loadFactor)
+        val tableSize = ObjectSet.tableSize(size + additionalCapacity, loadFactor)
         if (keyTable.size < tableSize) resize(tableSize)
     }
 

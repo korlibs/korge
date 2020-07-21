@@ -85,7 +85,7 @@ public class ObjectFloatMap<K> implements Iterable<ObjectFloatMap.Entry<K>> {
             throw new IllegalArgumentException("loadFactor must be > 0 and < 1: " + loadFactor);
         this.loadFactor = loadFactor;
 
-        int tableSize = tableSize(initialCapacity, loadFactor);
+        int tableSize = ObjectSet.tableSize(initialCapacity, loadFactor);
         threshold = (int)(tableSize * loadFactor);
         mask = tableSize - 1;
         shift = Long.numberOfLeadingZeros(mask);
@@ -280,7 +280,7 @@ public class ObjectFloatMap<K> implements Iterable<ObjectFloatMap.Entry<K>> {
     /** Increases the size of the backing array to accommodate the specified number of additional items / loadFactor. Useful before
      * adding many items to avoid multiple backing array resizes. */
     public void ensureCapacity (int additionalCapacity) {
-        int tableSize = tableSize(size + additionalCapacity, loadFactor);
+        int tableSize = ObjectSet.tableSize(size + additionalCapacity, loadFactor);
         if (keyTable.length < tableSize) resize(tableSize);
     }
 
