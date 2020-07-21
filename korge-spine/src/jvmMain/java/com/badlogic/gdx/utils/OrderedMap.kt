@@ -159,6 +159,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             entries1 = OrderedMapEntries(this)
             entries2 = OrderedMapEntries(this)
         }
+        val entries1 = entries1!!
         if (!entries1.valid) {
             entries1.reset()
             entries1.valid = true
@@ -182,6 +183,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             values1 = OrderedMapValues(this)
             values2 = OrderedMapValues(this)
         }
+        val values1 = values1!!
         if (!values1.valid) {
             values1.reset()
             values1.valid = true
@@ -205,6 +207,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             keys1 = OrderedMapKeys(this)
             keys2 = OrderedMapKeys(this)
         }
+        val keys1 = keys1!!
         if (!keys1.valid) {
             keys1.reset()
             keys1.valid = true
@@ -246,12 +249,12 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             hasNext = map.size > 0
         }
 
-        override fun next(): Entry<K, V>? {
+        override fun next(): Entry<K, V> {
             if (!hasNext) throw NoSuchElementException()
             if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
             currentIndex = nextIndex
             entry.key = keys[nextIndex]
-            entry.value = map.get(entry.key)
+            entry.value = map.get(entry.key!!)
             nextIndex++
             hasNext = nextIndex < map.size
             return entry
@@ -259,7 +262,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
 
         override fun remove() {
             check(currentIndex >= 0) { "next must be called before remove." }
-            map.remove(entry.key)
+            map.remove(entry.key!!)
             nextIndex--
             currentIndex = -1
         }
@@ -323,7 +326,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         override fun next(): V? {
             if (!hasNext) throw NoSuchElementException()
             if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
-            val value = map.get(keys[nextIndex])
+            val value = map.get(keys[nextIndex]!!)
             currentIndex = nextIndex
             nextIndex++
             hasNext = nextIndex < map.size
@@ -337,19 +340,19 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             currentIndex = -1
         }
 
-        override fun toArray(array: JArray<V>): JArray<V> {
+        override fun toArray(array: JArray<V?>): JArray<V?> {
             val n = keys.size
             array.ensureCapacity(n - nextIndex)
             val keys = this.keys.items
             for (i in nextIndex until n)
-                array.add(map.get(keys[i]))
+                array.add(map.get(keys[i]!!))
             currentIndex = n - 1
             nextIndex = n
             hasNext = false
             return array
         }
 
-        override fun toArray(): JArray<V> {
+        override fun toArray(): JArray<V?> {
             return toArray(JArray(true, keys.size - nextIndex))
         }
     }
