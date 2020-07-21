@@ -25,48 +25,29 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-/** The base class for all constraint datas. */
-abstract public class ConstraintData {
-	final String name;
-	int order;
-	boolean skinRequired;
+/** The base class for all constraint datas.  */
+abstract class ConstraintData(
+        /** The constraint's name, which is unique across all constraints in the skeleton of the same type.  */
+        val name: String?) {
+    /** The ordinal of this constraint for the order a skeleton's constraints will be applied by
+     * [Skeleton.updateWorldTransform].  */
+    var order: Int = 0
 
-	public ConstraintData (String name) {
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		this.name = name;
-	}
+    /** When true, [Skeleton.updateWorldTransform] only updates this constraint if the [Skeleton.getSkin] contains
+     * this constraint.
+     * @see Skin.getConstraints
+     */
+    var skinRequired: Boolean = false
 
-	/** The constraint's name, which is unique across all constraints in the skeleton of the same type. */
-	public String getName () {
-		return name;
-	}
+    init {
+        requireNotNull(name) { "name cannot be null." }
+    }
 
-	/** The ordinal of this constraint for the order a skeleton's constraints will be applied by
-	 * {@link Skeleton#updateWorldTransform()}. */
-	public int getOrder () {
-		return order;
-	}
-
-	public void setOrder (int order) {
-		this.order = order;
-	}
-
-	/** When true, {@link Skeleton#updateWorldTransform()} only updates this constraint if the {@link Skeleton#getSkin()} contains
-	 * this constraint.
-	 * @see Skin#getConstraints() */
-	public boolean getSkinRequired () {
-		return skinRequired;
-	}
-
-	public void setSkinRequired (boolean skinRequired) {
-		this.skinRequired = skinRequired;
-	}
-
-	public String toString () {
-		return name;
-	}
+    override fun toString(): String {
+        return name
+    }
 }

@@ -25,12 +25,16 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-public enum AttachmentType {
-	region, boundingbox, mesh, linkedmesh, path, point, clipping;
+enum class AttachmentType {
+    region, boundingbox, mesh, linkedmesh, path, point, clipping;
 
-	static public final AttachmentType[] values = values();
+
+    companion object {
+
+        val values = values()
+    }
 }

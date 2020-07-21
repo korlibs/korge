@@ -25,228 +25,238 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.JFloatArray;
-import com.badlogic.gdx.utils.Pool;
-import com.esotericsoftware.spine.attachments.Attachment;
-import com.esotericsoftware.spine.attachments.BoundingBoxAttachment;
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.JFloatArray
+import com.badlogic.gdx.utils.Pool
+import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
 
-/** Collects each visible {@link BoundingBoxAttachment} and computes the world vertices for its polygon. The polygon vertices are
- * provided along with convenience methods for doing hit detection. */
-public class SkeletonBounds {
-	private float minX, minY, maxX, maxY;
-	private JArray<BoundingBoxAttachment> boundingBoxes = new JArray();
-	private JArray<JFloatArray> polygons = new JArray();
-	private Pool<JFloatArray> polygonPool = new Pool() {
-		protected Object newObject () {
-			return new JFloatArray();
-		}
-	};
+/** Collects each visible [BoundingBoxAttachment] and computes the world vertices for its polygon. The polygon vertices are
+ * provided along with convenience methods for doing hit detection.  */
+class SkeletonBounds {
+    /** The left edge of the axis aligned bounding box.  */
+    var minX: Float = 0.toFloat()
+        private set
 
-	/** Clears any previous polygons, finds all visible bounding box attachments, and computes the world vertices for each bounding
-	 * box's polygon.
-	 * @param updateAabb If true, the axis aligned bounding box containing all the polygons is computed. If false, the
-	 *           SkeletonBounds AABB methods will always return true. */
-	public void update (Skeleton skeleton, boolean updateAabb) {
-		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
-		JArray<BoundingBoxAttachment> boundingBoxes = this.boundingBoxes;
-		JArray<JFloatArray> polygons = this.polygons;
-		JArray<Slot> slots = skeleton.slots;
-		int slotCount = slots.size;
+    /** The bottom edge of the axis aligned bounding box.  */
+    var minY: Float = 0.toFloat()
+        private set
 
-		boundingBoxes.clear();
-		polygonPool.freeAll(polygons);
-		polygons.clear();
+    /** The right edge of the axis aligned bounding box.  */
+    var maxX: Float = 0.toFloat()
+        private set
 
-		for (int i = 0; i < slotCount; i++) {
-			Slot slot = slots.get(i);
-			if (!slot.bone.active) continue;
-			Attachment attachment = slot.attachment;
-			if (attachment instanceof BoundingBoxAttachment) {
-				BoundingBoxAttachment boundingBox = (BoundingBoxAttachment)attachment;
-				boundingBoxes.add(boundingBox);
+    /** The top edge of the axis aligned bounding box.  */
+    var maxY: Float = 0.toFloat()
+        private set
 
-				JFloatArray polygon = polygonPool.obtain();
-				polygons.add(polygon);
-				boundingBox.computeWorldVertices(slot, 0, boundingBox.getWorldVerticesLength(),
-					polygon.setSize(boundingBox.getWorldVerticesLength()), 0, 2);
-			}
-		}
+    /** The visible bounding boxes.  */
+    val boundingBoxes: JArray<BoundingBoxAttachment> = JArray()
 
-		if (updateAabb)
-			aabbCompute();
-		else {
-			minX = Integer.MIN_VALUE;
-			minY = Integer.MIN_VALUE;
-			maxX = Integer.MAX_VALUE;
-			maxY = Integer.MAX_VALUE;
-		}
-	}
+    /** The world vertices for the bounding box polygons.  */
+    val polygons: JArray<JFloatArray> = JArray()
+    private val polygonPool = object : Pool() {
+        protected override fun newObject(): Any {
+            return JFloatArray()
+        }
+    }
 
-	private void aabbCompute () {
-		float minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-		JArray<JFloatArray> polygons = this.polygons;
-		for (int i = 0, n = polygons.size; i < n; i++) {
-			JFloatArray polygon = polygons.get(i);
-			float[] vertices = polygon.items;
-			for (int ii = 0, nn = polygon.size; ii < nn; ii += 2) {
-				float x = vertices[ii];
-				float y = vertices[ii + 1];
-				minX = Math.min(minX, x);
-				minY = Math.min(minY, y);
-				maxX = Math.max(maxX, x);
-				maxY = Math.max(maxY, y);
-			}
-		}
-		this.minX = minX;
-		this.minY = minY;
-		this.maxX = maxX;
-		this.maxY = maxY;
-	}
+    /** The width of the axis aligned bounding box.  */
+    val width: Float
+        get() = maxX - minX
 
-	/** Returns true if the axis aligned bounding box contains the point. */
-	public boolean aabbContainsPoint (float x, float y) {
-		return x >= minX && x <= maxX && y >= minY && y <= maxY;
-	}
+    /** The height of the axis aligned bounding box.  */
+    val height: Float
+        get() = maxY - minY
 
-	/** Returns true if the axis aligned bounding box intersects the line segment. */
-	public boolean aabbIntersectsSegment (float x1, float y1, float x2, float y2) {
-		float minX = this.minX;
-		float minY = this.minY;
-		float maxX = this.maxX;
-		float maxY = this.maxY;
-		if ((x1 <= minX && x2 <= minX) || (y1 <= minY && y2 <= minY) || (x1 >= maxX && x2 >= maxX) || (y1 >= maxY && y2 >= maxY))
-			return false;
-		float m = (y2 - y1) / (x2 - x1);
-		float y = m * (minX - x1) + y1;
-		if (y > minY && y < maxY) return true;
-		y = m * (maxX - x1) + y1;
-		if (y > minY && y < maxY) return true;
-		float x = (minY - y1) / m + x1;
-		if (x > minX && x < maxX) return true;
-		x = (maxY - y1) / m + x1;
-		if (x > minX && x < maxX) return true;
-		return false;
-	}
+    /** Clears any previous polygons, finds all visible bounding box attachments, and computes the world vertices for each bounding
+     * box's polygon.
+     * @param updateAabb If true, the axis aligned bounding box containing all the polygons is computed. If false, the
+     * SkeletonBounds AABB methods will always return true.
+     */
+    fun update(skeleton: Skeleton?, updateAabb: Boolean) {
+        requireNotNull(skeleton) { "skeleton cannot be null." }
+        val boundingBoxes = this.boundingBoxes
+        val polygons = this.polygons
+        val slots = skeleton.slots
+        val slotCount = slots.size
 
-	/** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds. */
-	public boolean aabbIntersectsSkeleton (SkeletonBounds bounds) {
-		if (bounds == null) throw new IllegalArgumentException("bounds cannot be null.");
-		return minX < bounds.maxX && maxX > bounds.minX && minY < bounds.maxY && maxY > bounds.minY;
-	}
+        boundingBoxes.clear()
+        polygonPool.freeAll(polygons)
+        polygons.clear()
 
-	/** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
-	 * efficient to only call this method if {@link #aabbContainsPoint(float, float)} returns true. */
-	public BoundingBoxAttachment containsPoint (float x, float y) {
-		JArray<JFloatArray> polygons = this.polygons;
-		for (int i = 0, n = polygons.size; i < n; i++)
-			if (containsPoint(polygons.get(i), x, y)) return boundingBoxes.get(i);
-		return null;
-	}
+        for (i in 0 until slotCount) {
+            val slot = slots[i]
+            if (!slot.bone.isActive) continue
+            val attachment = slot.attachment
+            if (attachment is BoundingBoxAttachment) {
+                boundingBoxes.add(attachment)
 
-	/** Returns true if the polygon contains the point. */
-	public boolean containsPoint (JFloatArray polygon, float x, float y) {
-		if (polygon == null) throw new IllegalArgumentException("polygon cannot be null.");
-		float[] vertices = polygon.items;
-		int nn = polygon.size;
+                val polygon = polygonPool.obtain()
+                polygons.add(polygon)
+                attachment.computeWorldVertices(slot, 0, attachment.worldVerticesLength,
+                        polygon.setSize(attachment.worldVerticesLength), 0, 2)
+            }
+        }
 
-		int prevIndex = nn - 2;
-		boolean inside = false;
-		for (int ii = 0; ii < nn; ii += 2) {
-			float vertexY = vertices[ii + 1];
-			float prevY = vertices[prevIndex + 1];
-			if ((vertexY < y && prevY >= y) || (prevY < y && vertexY >= y)) {
-				float vertexX = vertices[ii];
-				if (vertexX + (y - vertexY) / (prevY - vertexY) * (vertices[prevIndex] - vertexX) < x) inside = !inside;
-			}
-			prevIndex = ii;
-		}
-		return inside;
-	}
+        if (updateAabb)
+            aabbCompute()
+        else {
+            minX = Integer.MIN_VALUE.toFloat()
+            minY = Integer.MIN_VALUE.toFloat()
+            maxX = Integer.MAX_VALUE.toFloat()
+            maxY = Integer.MAX_VALUE.toFloat()
+        }
+    }
 
-	/** Returns the first bounding box attachment that contains any part of the line segment, or null. When doing many checks, it
-	 * is usually more efficient to only call this method if {@link #aabbIntersectsSegment(float, float, float, float)} returns
-	 * true. */
-	public BoundingBoxAttachment intersectsSegment (float x1, float y1, float x2, float y2) {
-		JArray<JFloatArray> polygons = this.polygons;
-		for (int i = 0, n = polygons.size; i < n; i++)
-			if (intersectsSegment(polygons.get(i), x1, y1, x2, y2)) return boundingBoxes.get(i);
-		return null;
-	}
+    private fun aabbCompute() {
+        var minX = Integer.MAX_VALUE.toFloat()
+        var minY = Integer.MAX_VALUE.toFloat()
+        var maxX = Integer.MIN_VALUE.toFloat()
+        var maxY = Integer.MIN_VALUE.toFloat()
+        val polygons = this.polygons
+        var i = 0
+        val n = polygons.size
+        while (i < n) {
+            val polygon = polygons[i]
+            val vertices = polygon.items
+            var ii = 0
+            val nn = polygon.size
+            while (ii < nn) {
+                val x = vertices[ii]
+                val y = vertices[ii + 1]
+                minX = Math.min(minX, x)
+                minY = Math.min(minY, y)
+                maxX = Math.max(maxX, x)
+                maxY = Math.max(maxY, y)
+                ii += 2
+            }
+            i++
+        }
+        this.minX = minX
+        this.minY = minY
+        this.maxX = maxX
+        this.maxY = maxY
+    }
 
-	/** Returns true if the polygon contains any part of the line segment. */
-	public boolean intersectsSegment (JFloatArray polygon, float x1, float y1, float x2, float y2) {
-		if (polygon == null) throw new IllegalArgumentException("polygon cannot be null.");
-		float[] vertices = polygon.items;
-		int nn = polygon.size;
+    /** Returns true if the axis aligned bounding box contains the point.  */
+    fun aabbContainsPoint(x: Float, y: Float): Boolean {
+        return x >= minX && x <= maxX && y >= minY && y <= maxY
+    }
 
-		float width12 = x1 - x2, height12 = y1 - y2;
-		float det1 = x1 * y2 - y1 * x2;
-		float x3 = vertices[nn - 2], y3 = vertices[nn - 1];
-		for (int ii = 0; ii < nn; ii += 2) {
-			float x4 = vertices[ii], y4 = vertices[ii + 1];
-			float det2 = x3 * y4 - y3 * x4;
-			float width34 = x3 - x4, height34 = y3 - y4;
-			float det3 = width12 * height34 - height12 * width34;
-			float x = (det1 * width34 - width12 * det2) / det3;
-			if (((x >= x3 && x <= x4) || (x >= x4 && x <= x3)) && ((x >= x1 && x <= x2) || (x >= x2 && x <= x1))) {
-				float y = (det1 * height34 - height12 * det2) / det3;
-				if (((y >= y3 && y <= y4) || (y >= y4 && y <= y3)) && ((y >= y1 && y <= y2) || (y >= y2 && y <= y1))) return true;
-			}
-			x3 = x4;
-			y3 = y4;
-		}
-		return false;
-	}
+    /** Returns true if the axis aligned bounding box intersects the line segment.  */
+    fun aabbIntersectsSegment(x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
+        val minX = this.minX
+        val minY = this.minY
+        val maxX = this.maxX
+        val maxY = this.maxY
+        if (x1 <= minX && x2 <= minX || y1 <= minY && y2 <= minY || x1 >= maxX && x2 >= maxX || y1 >= maxY && y2 >= maxY)
+            return false
+        val m = (y2 - y1) / (x2 - x1)
+        var y = m * (minX - x1) + y1
+        if (y > minY && y < maxY) return true
+        y = m * (maxX - x1) + y1
+        if (y > minY && y < maxY) return true
+        var x = (minY - y1) / m + x1
+        if (x > minX && x < maxX) return true
+        x = (maxY - y1) / m + x1
+        return if (x > minX && x < maxX) true else false
+    }
 
-	/** The left edge of the axis aligned bounding box. */
-	public float getMinX () {
-		return minX;
-	}
+    /** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds.  */
+    fun aabbIntersectsSkeleton(bounds: SkeletonBounds?): Boolean {
+        requireNotNull(bounds) { "bounds cannot be null." }
+        return minX < bounds.maxX && maxX > bounds.minX && minY < bounds.maxY && maxY > bounds.minY
+    }
 
-	/** The bottom edge of the axis aligned bounding box. */
-	public float getMinY () {
-		return minY;
-	}
+    /** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
+     * efficient to only call this method if [.aabbContainsPoint] returns true.  */
+    fun containsPoint(x: Float, y: Float): BoundingBoxAttachment? {
+        val polygons = this.polygons
+        var i = 0
+        val n = polygons.size
+        while (i < n) {
+            if (containsPoint(polygons[i], x, y)) return boundingBoxes[i]
+            i++
+        }
+        return null
+    }
 
-	/** The right edge of the axis aligned bounding box. */
-	public float getMaxX () {
-		return maxX;
-	}
+    /** Returns true if the polygon contains the point.  */
+    fun containsPoint(polygon: JFloatArray?, x: Float, y: Float): Boolean {
+        requireNotNull(polygon) { "polygon cannot be null." }
+        val vertices = polygon.items
+        val nn = polygon.size
 
-	/** The top edge of the axis aligned bounding box. */
-	public float getMaxY () {
-		return maxY;
-	}
+        var prevIndex = nn - 2
+        var inside = false
+        var ii = 0
+        while (ii < nn) {
+            val vertexY = vertices[ii + 1]
+            val prevY = vertices[prevIndex + 1]
+            if (vertexY < y && prevY >= y || prevY < y && vertexY >= y) {
+                val vertexX = vertices[ii]
+                if (vertexX + (y - vertexY) / (prevY - vertexY) * (vertices[prevIndex] - vertexX) < x) inside = !inside
+            }
+            prevIndex = ii
+            ii += 2
+        }
+        return inside
+    }
 
-	/** The width of the axis aligned bounding box. */
-	public float getWidth () {
-		return maxX - minX;
-	}
+    /** Returns the first bounding box attachment that contains any part of the line segment, or null. When doing many checks, it
+     * is usually more efficient to only call this method if [.aabbIntersectsSegment] returns
+     * true.  */
+    fun intersectsSegment(x1: Float, y1: Float, x2: Float, y2: Float): BoundingBoxAttachment? {
+        val polygons = this.polygons
+        var i = 0
+        val n = polygons.size
+        while (i < n) {
+            if (intersectsSegment(polygons[i], x1, y1, x2, y2)) return boundingBoxes[i]
+            i++
+        }
+        return null
+    }
 
-	/** The height of the axis aligned bounding box. */
-	public float getHeight () {
-		return maxY - minY;
-	}
+    /** Returns true if the polygon contains any part of the line segment.  */
+    fun intersectsSegment(polygon: JFloatArray?, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
+        requireNotNull(polygon) { "polygon cannot be null." }
+        val vertices = polygon.items
+        val nn = polygon.size
 
-	/** The visible bounding boxes. */
-	public JArray<BoundingBoxAttachment> getBoundingBoxes () {
-		return boundingBoxes;
-	}
+        val width12 = x1 - x2
+        val height12 = y1 - y2
+        val det1 = x1 * y2 - y1 * x2
+        var x3 = vertices[nn - 2]
+        var y3 = vertices[nn - 1]
+        var ii = 0
+        while (ii < nn) {
+            val x4 = vertices[ii]
+            val y4 = vertices[ii + 1]
+            val det2 = x3 * y4 - y3 * x4
+            val width34 = x3 - x4
+            val height34 = y3 - y4
+            val det3 = width12 * height34 - height12 * width34
+            val x = (det1 * width34 - width12 * det2) / det3
+            if ((x >= x3 && x <= x4 || x >= x4 && x <= x3) && (x >= x1 && x <= x2 || x >= x2 && x <= x1)) {
+                val y = (det1 * height34 - height12 * det2) / det3
+                if ((y >= y3 && y <= y4 || y >= y4 && y <= y3) && (y >= y1 && y <= y2 || y >= y2 && y <= y1)) return true
+            }
+            x3 = x4
+            y3 = y4
+            ii += 2
+        }
+        return false
+    }
 
-	/** The world vertices for the bounding box polygons. */
-	public JArray<JFloatArray> getPolygons () {
-		return polygons;
-	}
-
-	/** Returns the polygon for the specified bounding box, or null. */
-	public JFloatArray getPolygon (BoundingBoxAttachment boundingBox) {
-		if (boundingBox == null) throw new IllegalArgumentException("boundingBox cannot be null.");
-		int index = boundingBoxes.indexOf(boundingBox, true);
-		return index == -1 ? null : polygons.get(index);
-	}
+    /** Returns the polygon for the specified bounding box, or null.  */
+    fun getPolygon(boundingBox: BoundingBoxAttachment?): JFloatArray? {
+        requireNotNull(boundingBox) { "boundingBox cannot be null." }
+        val index = boundingBoxes.indexOf(boundingBox, true)
+        return if (index == -1) null else polygons[index]
+    }
 }

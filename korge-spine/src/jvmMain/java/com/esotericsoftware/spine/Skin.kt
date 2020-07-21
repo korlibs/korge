@@ -25,190 +25,169 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.OrderedMap;
-import com.esotericsoftware.spine.attachments.Attachment;
-import com.esotericsoftware.spine.attachments.MeshAttachment;
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.OrderedMap
+import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.attachments.MeshAttachment
 
 /** Stores attachments by slot index and attachment name.
- * <p>
- * See SkeletonData {@link SkeletonData#defaultSkin}, Skeleton {@link Skeleton#skin}, and
- * <a href="http://esotericsoftware.com/spine-runtime-skins">Runtime skins</a> in the Spine Runtimes Guide. */
-public class Skin {
-	final String name;
-	final OrderedMap<SkinEntry, SkinEntry> attachments = new OrderedMap();
-	final JArray<BoneData> bones = new JArray();
-	final JArray<ConstraintData> constraints = new JArray();
-	private final SkinEntry lookup = new SkinEntry();
+ *
+ *
+ * See SkeletonData [SkeletonData.defaultSkin], Skeleton [Skeleton.skin], and
+ * [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.  */
+class Skin(
+        /** The skin's name, which is unique across all skins in the skeleton.  */
+        val name: String?) {
+    internal val attachments: OrderedMap<SkinEntry, SkinEntry> = OrderedMap()
+    val bones: JArray<BoneData> = JArray()
+    val constraints: JArray<ConstraintData> = JArray()
+    private val lookup = SkinEntry()
 
-	public Skin (String name) {
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		this.name = name;
-		this.attachments.orderedKeys().ordered = false;
-	}
+    init {
+        requireNotNull(name) { "name cannot be null." }
+        this.attachments.orderedKeys().ordered = false
+    }
 
-	/** Adds an attachment to the skin for the specified slot index and name. */
-	public void setAttachment (int slotIndex, String name, Attachment attachment) {
-		if (slotIndex < 0) throw new IllegalArgumentException("slotIndex must be >= 0.");
-		if (attachment == null) throw new IllegalArgumentException("attachment cannot be null.");
-		SkinEntry newEntry = new SkinEntry(slotIndex, name, attachment);
-		SkinEntry oldEntry = attachments.put(newEntry, newEntry);
-		if (oldEntry != null) {
-			oldEntry.attachment = attachment;
-		}
-	}
+    /** Adds an attachment to the skin for the specified slot index and name.  */
+    fun setAttachment(slotIndex: Int, name: String, attachment: Attachment?) {
+        require(slotIndex >= 0) { "slotIndex must be >= 0." }
+        requireNotNull(attachment) { "attachment cannot be null." }
+        val newEntry = SkinEntry(slotIndex, name, attachment)
+        val oldEntry = attachments.put(newEntry, newEntry)
+        if (oldEntry != null) {
+            oldEntry.attachment = attachment
+        }
+    }
 
-	/** Adds all attachments, bones, and constraints from the specified skin to this skin. */
-	public void addSkin (Skin skin) {
-		if (skin == null) throw new IllegalArgumentException("skin cannot be null.");
+    /** Adds all attachments, bones, and constraints from the specified skin to this skin.  */
+    fun addSkin(skin: Skin?) {
+        requireNotNull(skin) { "skin cannot be null." }
 
-		for (BoneData data : skin.bones)
-			if (!bones.contains(data, true)) bones.add(data);
+        for (data in skin.bones)
+            if (!bones.contains(data, true)) bones.add(data)
 
-		for (ConstraintData data : skin.constraints)
-			if (!constraints.contains(data, true)) constraints.add(data);
+        for (data in skin.constraints)
+            if (!constraints.contains(data, true)) constraints.add(data)
 
-		for (SkinEntry entry : skin.attachments.keys())
-			setAttachment(entry.slotIndex, entry.name, entry.attachment);
-	}
+        for (entry in skin.attachments.keys())
+            setAttachment(entry.slotIndex, entry.name, entry.attachment)
+    }
 
-	/** Adds all bones and constraints and copies of all attachments from the specified skin to this skin. Mesh attachments are not
-	 * copied, instead a new linked mesh is created. The attachment copies can be modified without affecting the originals. */
-	public void copySkin (Skin skin) {
-		if (skin == null) throw new IllegalArgumentException("skin cannot be null.");
+    /** Adds all bones and constraints and copies of all attachments from the specified skin to this skin. Mesh attachments are not
+     * copied, instead a new linked mesh is created. The attachment copies can be modified without affecting the originals.  */
+    fun copySkin(skin: Skin?) {
+        requireNotNull(skin) { "skin cannot be null." }
 
-		for (BoneData data : skin.bones)
-			if (!bones.contains(data, true)) bones.add(data);
+        for (data in skin.bones)
+            if (!bones.contains(data, true)) bones.add(data)
 
-		for (ConstraintData data : skin.constraints)
-			if (!constraints.contains(data, true)) constraints.add(data);
+        for (data in skin.constraints)
+            if (!constraints.contains(data, true)) constraints.add(data)
 
-		for (SkinEntry entry : skin.attachments.keys()) {
-			if (entry.attachment instanceof MeshAttachment)
-				setAttachment(entry.slotIndex, entry.name, ((MeshAttachment)entry.attachment).newLinkedMesh());
-			else
-				setAttachment(entry.slotIndex, entry.name, entry.attachment != null ? entry.attachment.copy() : null);
-		}
-	}
+        for (entry in skin.attachments.keys()) {
+            if (entry.attachment is MeshAttachment)
+                setAttachment(entry.slotIndex, entry.name, (entry.attachment as MeshAttachment).newLinkedMesh())
+            else
+                setAttachment(entry.slotIndex, entry.name, if (entry.attachment != null) entry.attachment!!.copy() else null)
+        }
+    }
 
-	/** Returns the attachment for the specified slot index and name, or null. */
-	public Attachment getAttachment (int slotIndex, String name) {
-		if (slotIndex < 0) throw new IllegalArgumentException("slotIndex must be >= 0.");
-		lookup.set(slotIndex, name);
-		SkinEntry entry = attachments.get(lookup);
-		return entry != null ? entry.attachment : null;
-	}
+    /** Returns the attachment for the specified slot index and name, or null.  */
+    fun getAttachment(slotIndex: Int, name: String): Attachment? {
+        require(slotIndex >= 0) { "slotIndex must be >= 0." }
+        lookup[slotIndex] = name
+        val entry = attachments[lookup]
+        return entry?.attachment
+    }
 
-	/** Removes the attachment in the skin for the specified slot index and name, if any. */
-	public void removeAttachment (int slotIndex, String name) {
-		if (slotIndex < 0) throw new IllegalArgumentException("slotIndex must be >= 0.");
-		lookup.set(slotIndex, name);
-		attachments.remove(lookup);
-	}
+    /** Removes the attachment in the skin for the specified slot index and name, if any.  */
+    fun removeAttachment(slotIndex: Int, name: String) {
+        require(slotIndex >= 0) { "slotIndex must be >= 0." }
+        lookup[slotIndex] = name
+        attachments.remove(lookup)
+    }
 
-	/** Returns all attachments in this skin. */
-	public JArray<SkinEntry> getAttachments () {
-		return attachments.orderedKeys();
-	}
+    /** Returns all attachments in this skin.  */
+    fun getAttachments(): JArray<SkinEntry> {
+        return attachments.orderedKeys()
+    }
 
-	/** Returns all attachments in this skin for the specified slot index. */
-	public void getAttachments (int slotIndex, JArray<SkinEntry> attachments) {
-		if (slotIndex < 0) throw new IllegalArgumentException("slotIndex must be >= 0.");
-		if (attachments == null) throw new IllegalArgumentException("attachments cannot be null.");
-		for (SkinEntry entry : this.attachments.keys())
-			if (entry.slotIndex == slotIndex) attachments.add(entry);
-	}
+    /** Returns all attachments in this skin for the specified slot index.  */
+    fun getAttachments(slotIndex: Int, attachments: JArray<SkinEntry>?) {
+        require(slotIndex >= 0) { "slotIndex must be >= 0." }
+        requireNotNull(attachments) { "attachments cannot be null." }
+        for (entry in this.attachments.keys())
+            if (entry.slotIndex == slotIndex) attachments.add(entry)
+    }
 
-	/** Clears all attachments, bones, and constraints. */
-	public void clear () {
-		attachments.clear(1024);
-		bones.clear();
-		constraints.clear();
-	}
+    /** Clears all attachments, bones, and constraints.  */
+    fun clear() {
+        attachments.clear(1024)
+        bones.clear()
+        constraints.clear()
+    }
 
-	public JArray<BoneData> getBones () {
-		return bones;
-	}
+    override fun toString(): String {
+        return name
+    }
 
-	public JArray<ConstraintData> getConstraints () {
-		return constraints;
-	}
+    /** Attach each attachment in this skin if the corresponding attachment in the old skin is currently attached.  */
+    internal fun attachAll(skeleton: Skeleton, oldSkin: Skin) {
+        for (entry in oldSkin.attachments.keys()) {
+            val slotIndex = entry.slotIndex
+            val slot = skeleton.slots[slotIndex]
+            if (slot.attachment === entry.attachment) {
+                val attachment = getAttachment(slotIndex, entry.name)
+                if (attachment != null) slot.setAttachment(attachment)
+            }
+        }
+    }
 
-	/** The skin's name, which is unique across all skins in the skeleton. */
-	public String getName () {
-		return name;
-	}
+    /** Stores an entry in the skin consisting of the slot index, name, and attachment  */
+    class SkinEntry {
+        var slotIndex: Int = 0
+            internal set
 
-	public String toString () {
-		return name;
-	}
+        /** The name the attachment is associated with, equivalent to the skin placeholder name in the Spine editor.  */
+        var name: String
+            internal set
+        var attachment: Attachment? = null
+            internal set
+        private var hashCode: Int = 0
 
-	/** Attach each attachment in this skin if the corresponding attachment in the old skin is currently attached. */
-	void attachAll (Skeleton skeleton, Skin oldSkin) {
-		for (SkinEntry entry : oldSkin.attachments.keys()) {
-			int slotIndex = entry.slotIndex;
-			Slot slot = skeleton.slots.get(slotIndex);
-			if (slot.attachment == entry.attachment) {
-				Attachment attachment = getAttachment(slotIndex, entry.name);
-				if (attachment != null) slot.setAttachment(attachment);
-			}
-		}
-	}
+        internal constructor() {
+            set(0, "")
+        }
 
-	/** Stores an entry in the skin consisting of the slot index, name, and attachment **/
-	static public class SkinEntry {
-		int slotIndex;
-		String name;
-		Attachment attachment;
-		private int hashCode;
+        internal constructor(slotIndex: Int, name: String, attachment: Attachment) {
+            set(slotIndex, name)
+            this.attachment = attachment
+        }
 
-		SkinEntry () {
-			set(0, "");
-		}
+        internal operator fun set(slotIndex: Int, name: String?) {
+            requireNotNull(name) { "name cannot be null." }
+            this.slotIndex = slotIndex
+            this.name = name
+            this.hashCode = name.hashCode() + slotIndex * 37
+        }
 
-		SkinEntry (int slotIndex, String name, Attachment attachment) {
-			set(slotIndex, name);
-			this.attachment = attachment;
-		}
+        override fun hashCode(): Int {
+            return hashCode
+        }
 
-		void set (int slotIndex, String name) {
-			if (name == null) throw new IllegalArgumentException("name cannot be null.");
-			this.slotIndex = slotIndex;
-			this.name = name;
-			this.hashCode = name.hashCode() + slotIndex * 37;
-		}
+        override fun equals(`object`: Any?): Boolean {
+            if (`object` == null) return false
+            val other = `object` as SkinEntry?
+            if (slotIndex != other!!.slotIndex) return false
+            return if (name != other.name) false else true
+        }
 
-		public int getSlotIndex () {
-			return slotIndex;
-		}
-
-		/** The name the attachment is associated with, equivalent to the skin placeholder name in the Spine editor. */
-		public String getName () {
-			return name;
-		}
-
-		public Attachment getAttachment () {
-			return attachment;
-		}
-
-		public int hashCode () {
-			return hashCode;
-		}
-
-		public boolean equals (Object object) {
-			if (object == null) return false;
-			SkinEntry other = (SkinEntry)object;
-			if (slotIndex != other.slotIndex) return false;
-			if (!name.equals(other.name)) return false;
-			return true;
-		}
-
-		public String toString () {
-			return slotIndex + ":" + name;
-		}
-	}
+        override fun toString(): String {
+            return "$slotIndex:$name"
+        }
+    }
 }

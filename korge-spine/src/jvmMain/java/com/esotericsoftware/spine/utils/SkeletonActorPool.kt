@@ -25,106 +25,93 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.utils;
+package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.Pool;
-import com.esotericsoftware.spine.AnimationState;
-import com.esotericsoftware.spine.AnimationState.TrackEntry;
-import com.esotericsoftware.spine.AnimationStateData;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonData;
-import com.esotericsoftware.spine.SkeletonRenderer;
-import com.esotericsoftware.spine.Skin;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.Pool
+import com.esotericsoftware.spine.AnimationState
+import com.esotericsoftware.spine.AnimationState.TrackEntry
+import com.esotericsoftware.spine.AnimationStateData
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.SkeletonData
+import com.esotericsoftware.spine.SkeletonRenderer
+import com.esotericsoftware.spine.Skin
 
-public class SkeletonActorPool extends Pool<SkeletonActor> {
-	private SkeletonRenderer renderer;
-	SkeletonData skeletonData;
-	AnimationStateData stateData;
-	private final Pool<Skeleton> skeletonPool;
-	private final Pool<AnimationState> statePool;
-	private final JArray<SkeletonActor> obtained;
+class SkeletonActorPool @JvmOverloads constructor(private val renderer: SkeletonRenderer, internal var skeletonData: SkeletonData, internal var stateData: AnimationStateData,
+                                                  initialCapacity: Int = 16, max: Int = Integer.MAX_VALUE) : Pool<SkeletonActor>(initialCapacity, max) {
+    private val skeletonPool: Pool<Skeleton>
+    private val statePool: Pool<AnimationState>
+    val obtained: JArray<SkeletonActor>
 
-	public SkeletonActorPool (SkeletonRenderer renderer, SkeletonData skeletonData, AnimationStateData stateData) {
-		this(renderer, skeletonData, stateData, 16, Integer.MAX_VALUE);
-	}
+    init {
 
-	public SkeletonActorPool (SkeletonRenderer renderer, SkeletonData skeletonData, AnimationStateData stateData,
-		int initialCapacity, int max) {
-		super(initialCapacity, max);
+        obtained = JArray(false, initialCapacity)
 
-		this.renderer = renderer;
-		this.skeletonData = skeletonData;
-		this.stateData = stateData;
+        skeletonPool = object : Pool<Skeleton>(initialCapacity, max) {
+            override fun newObject(): Skeleton {
+                return Skeleton(this@SkeletonActorPool.skeletonData)
+            }
 
-		obtained = new JArray(false, initialCapacity);
+            override fun reset(skeleton: Skeleton) {
+                skeleton.color = Color.WHITE
+                skeleton.setScale(1f, 1f)
+                skeleton.skin = null
+                skeleton.skin = this@SkeletonActorPool.skeletonData.defaultSkin
+                skeleton.setToSetupPose()
+            }
+        }
 
-		skeletonPool = new Pool<Skeleton>(initialCapacity, max) {
-			protected Skeleton newObject () {
-				return new Skeleton(SkeletonActorPool.this.skeletonData);
-			}
+        statePool = object : Pool<AnimationState>(initialCapacity, max) {
+            override fun newObject(): AnimationState {
+                return AnimationState(this@SkeletonActorPool.stateData)
+            }
 
-			protected void reset (Skeleton skeleton) {
-				skeleton.setColor(Color.WHITE);
-				skeleton.setScale(1, 1);
-				skeleton.setSkin((Skin)null);
-				skeleton.setSkin(SkeletonActorPool.this.skeletonData.getDefaultSkin());
-				skeleton.setToSetupPose();
-			}
-		};
+            override fun reset(state: AnimationState) {
+                state.clearTracks()
+                state.clearListeners()
+            }
+        }
+    }
 
-		statePool = new Pool<AnimationState>(initialCapacity, max) {
-			protected AnimationState newObject () {
-				return new AnimationState(SkeletonActorPool.this.stateData);
-			}
+    /** Each obtained skeleton actor that is no longer playing an animation is removed from the stage and returned to the pool.  */
+    fun freeComplete() {
+        val obtained = this.obtained
+        outer@ for (i in obtained.size - 1 downTo 0) {
+            val actor = obtained[i]
+            val tracks = actor.animationState.tracks
+            var ii = 0
+            val nn = tracks.size
+            while (ii < nn) {
+                if (tracks[ii] != null) continue@outer
+                ii++
+            }
+            free(actor)
+        }
+    }
 
-			protected void reset (AnimationState state) {
-				state.clearTracks();
-				state.clearListeners();
-			}
-		};
-	}
+    override fun newObject(): SkeletonActor {
+        val actor = SkeletonActor()
+        actor.renderer = renderer
+        return actor
+    }
 
-	/** Each obtained skeleton actor that is no longer playing an animation is removed from the stage and returned to the pool. */
-	public void freeComplete () {
-		JArray<SkeletonActor> obtained = this.obtained;
-		outer:
-		for (int i = obtained.size - 1; i >= 0; i--) {
-			SkeletonActor actor = obtained.get(i);
-			JArray<TrackEntry> tracks = actor.state.getTracks();
-			for (int ii = 0, nn = tracks.size; ii < nn; ii++)
-				if (tracks.get(ii) != null) continue outer;
-			free(actor);
-		}
-	}
+    /** This pool keeps a reference to the obtained instance, so it should be returned to the pool via [.free]
+     * , [.freeAll] or [.freeComplete] to avoid leaking memory.  */
+    override fun obtain(): SkeletonActor {
+        val actor = super.obtain()
+        actor.skeleton = skeletonPool.obtain()
+        actor.animationState = statePool.obtain()
+        obtained.add(actor)
+        return actor
+    }
 
-	protected SkeletonActor newObject () {
-		SkeletonActor actor = new SkeletonActor();
-		actor.setRenderer(renderer);
-		return actor;
-	}
-
-	/** This pool keeps a reference to the obtained instance, so it should be returned to the pool via {@link #free(SkeletonActor)}
-	 * , {@link #freeAll(JArray)} or {@link #freeComplete()} to avoid leaking memory. */
-	public SkeletonActor obtain () {
-		SkeletonActor actor = super.obtain();
-		actor.setSkeleton(skeletonPool.obtain());
-		actor.setAnimationState(statePool.obtain());
-		obtained.add(actor);
-		return actor;
-	}
-
-	protected void reset (SkeletonActor actor) {
-		actor.remove();
-		obtained.removeValue(actor, true);
-		skeletonPool.free(actor.getSkeleton());
-		statePool.free(actor.getAnimationState());
-	}
-
-	public JArray<SkeletonActor> getObtained () {
-		return obtained;
-	}
+    override fun reset(actor: SkeletonActor) {
+        actor.remove()
+        obtained.removeValue(actor, true)
+        skeletonPool.free(actor.skeleton)
+        statePool.free(actor.animationState)
+    }
 }

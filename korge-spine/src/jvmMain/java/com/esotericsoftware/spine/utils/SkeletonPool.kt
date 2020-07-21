@@ -25,32 +25,30 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.utils;
+package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.utils.Pool;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonData;
+import com.badlogic.gdx.utils.Pool
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.SkeletonData
 
-public class SkeletonPool extends Pool<Skeleton> {
-	private SkeletonData skeletonData;
+class SkeletonPool : Pool<Skeleton> {
+    private var skeletonData: SkeletonData? = null
 
-	public SkeletonPool (SkeletonData skeletonData) {
-		this.skeletonData = skeletonData;
-	}
+    constructor(skeletonData: SkeletonData) {
+        this.skeletonData = skeletonData
+    }
 
-	public SkeletonPool (SkeletonData skeletonData, int initialCapacity) {
-		super(initialCapacity);
-		this.skeletonData = skeletonData;
-	}
+    constructor(skeletonData: SkeletonData, initialCapacity: Int) : super(initialCapacity) {
+        this.skeletonData = skeletonData
+    }
 
-	public SkeletonPool (SkeletonData skeletonData, int initialCapacity, int max) {
-		super(initialCapacity, max);
-		this.skeletonData = skeletonData;
-	}
+    constructor(skeletonData: SkeletonData, initialCapacity: Int, max: Int) : super(initialCapacity, max) {
+        this.skeletonData = skeletonData
+    }
 
-	protected Skeleton newObject () {
-		return new Skeleton(skeletonData);
-	}
+    override fun newObject(): Skeleton {
+        return Skeleton(skeletonData)
+    }
 }

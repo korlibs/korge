@@ -25,84 +25,51 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Color
 
-/** Stores the setup pose for a {@link Slot}. */
-public class SlotData {
-	final int index;
-	final String name;
-	final BoneData boneData;
-	final Color color = new Color(1, 1, 1, 1);
-	Color darkColor;
-	String attachmentName;
-	BlendMode blendMode;
+/** Stores the setup pose for a [Slot].  */
+class SlotData(
+        /** The index of the slot in [Skeleton.getSlots].  */
+        val index: Int,
+        /** The name of the slot, which is unique across all slots in the skeleton.  */
+        val name: String?,
+        /** The bone this slot belongs to.  */
+        val boneData: BoneData?) {
+    /** The color used to tint the slot's attachment. If [.getDarkColor] is set, this is used as the light color for two
+     * color tinting.  */
+    val color = Color(1f, 1f, 1f, 1f)
+    /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
+     * color's alpha is not used.  */
+    /** @param darkColor May be null.
+     */
+    var darkColor: Color
+    /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible.  */
+    /** @param attachmentName May be null.
+     */
+    var attachmentName: String
+    internal var blendMode: BlendMode
 
-	public SlotData (int index, String name, BoneData boneData) {
-		if (index < 0) throw new IllegalArgumentException("index must be >= 0.");
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		if (boneData == null) throw new IllegalArgumentException("boneData cannot be null.");
-		this.index = index;
-		this.name = name;
-		this.boneData = boneData;
-	}
+    init {
+        require(index >= 0) { "index must be >= 0." }
+        requireNotNull(name) { "name cannot be null." }
+        requireNotNull(boneData) { "boneData cannot be null." }
+    }
 
-	/** The index of the slot in {@link Skeleton#getSlots()}. */
-	public int getIndex () {
-		return index;
-	}
+    /** The blend mode for drawing the slot's attachment.  */
+    fun getBlendMode(): BlendMode {
+        return blendMode
+    }
 
-	/** The name of the slot, which is unique across all slots in the skeleton. */
-	public String getName () {
-		return name;
-	}
+    fun setBlendMode(blendMode: BlendMode?) {
+        requireNotNull(blendMode) { "blendMode cannot be null." }
+        this.blendMode = blendMode
+    }
 
-	/** The bone this slot belongs to. */
-	public BoneData getBoneData () {
-		return boneData;
-	}
-
-	/** The color used to tint the slot's attachment. If {@link #getDarkColor()} is set, this is used as the light color for two
-	 * color tinting. */
-	public Color getColor () {
-		return color;
-	}
-
-	/** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
-	 * color's alpha is not used. */
-	public Color getDarkColor () {
-		return darkColor;
-	}
-
-	/** @param darkColor May be null. */
-	public void setDarkColor (Color darkColor) {
-		this.darkColor = darkColor;
-	}
-
-	/** @param attachmentName May be null. */
-	public void setAttachmentName (String attachmentName) {
-		this.attachmentName = attachmentName;
-	}
-
-	/** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible. */
-	public String getAttachmentName () {
-		return attachmentName;
-	}
-
-	/** The blend mode for drawing the slot's attachment. */
-	public BlendMode getBlendMode () {
-		return blendMode;
-	}
-
-	public void setBlendMode (BlendMode blendMode) {
-		if (blendMode == null) throw new IllegalArgumentException("blendMode cannot be null.");
-		this.blendMode = blendMode;
-	}
-
-	public String toString () {
-		return name;
-	}
+    override fun toString(): String {
+        return name
+    }
 }

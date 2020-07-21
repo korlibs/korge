@@ -25,94 +25,48 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JArray
 
-/** Stores the setup pose for an {@link IkConstraint}.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-ik-constraints">IK constraints</a> in the Spine User Guide. */
-public class IkConstraintData extends ConstraintData {
-	final JArray<BoneData> bones = new JArray();
-	BoneData target;
-	int bendDirection = 1;
-	boolean compress, stretch, uniform;
-	float mix = 1, softness;
+/** Stores the setup pose for an [IkConstraint].
+ *
+ *
+ * See [IK constraints](http://esotericsoftware.com/spine-ik-constraints) in the Spine User Guide.  */
+class IkConstraintData(name: String) : ConstraintData(name) {
+    /** The bones that are constrained by this IK constraint.  */
+    val bones: JArray<BoneData> = JArray()
+    internal var target: BoneData
 
-	public IkConstraintData (String name) {
-		super(name);
-	}
+    /** Controls the bend direction of the IK bones, either 1 or -1.  */
+    var bendDirection = 1
 
-	/** The bones that are constrained by this IK constraint. */
-	public JArray<BoneData> getBones () {
-		return bones;
-	}
+    /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it.  */
+    var compress: Boolean = false
 
-	/** The bone that is the IK target. */
-	public BoneData getTarget () {
-		return target;
-	}
+    /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
+     * and the parent bone has local nonuniform scale, stretch is not applied.  */
+    var stretch: Boolean = false
 
-	public void setTarget (BoneData target) {
-		if (target == null) throw new IllegalArgumentException("target cannot be null.");
-		this.target = target;
-	}
+    /** When true, only a single bone is being constrained, and [.getCompress] or [.getStretch] is used, the bone
+     * is scaled on both the X and Y axes.  */
+    var uniform: Boolean = false
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
-	public float getMix () {
-		return mix;
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
+    var mix = 1f
 
-	public void setMix (float mix) {
-		this.mix = mix;
-	}
+    /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow.  */
+    var softness: Float = 0.toFloat()
 
-	/** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
-	public float getSoftness () {
-		return softness;
-	}
+    /** The bone that is the IK target.  */
+    fun getTarget(): BoneData {
+        return target
+    }
 
-	public void setSoftness (float softness) {
-		this.softness = softness;
-	}
-
-	/** Controls the bend direction of the IK bones, either 1 or -1. */
-	public int getBendDirection () {
-		return bendDirection;
-	}
-
-	public void setBendDirection (int bendDirection) {
-		this.bendDirection = bendDirection;
-	}
-
-	/** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
-	public boolean getCompress () {
-		return compress;
-	}
-
-	public void setCompress (boolean compress) {
-		this.compress = compress;
-	}
-
-	/** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
-	 * and the parent bone has local nonuniform scale, stretch is not applied. */
-	public boolean getStretch () {
-		return stretch;
-	}
-
-	public void setStretch (boolean stretch) {
-		this.stretch = stretch;
-	}
-
-	/** When true, only a single bone is being constrained, and {@link #getCompress()} or {@link #getStretch()} is used, the bone
-	 * is scaled on both the X and Y axes. */
-	public boolean getUniform () {
-		return uniform;
-	}
-
-	public void setUniform (boolean uniform) {
-		this.uniform = uniform;
-	}
+    fun setTarget(target: BoneData?) {
+        requireNotNull(target) { "target cannot be null." }
+        this.target = target
+    }
 }

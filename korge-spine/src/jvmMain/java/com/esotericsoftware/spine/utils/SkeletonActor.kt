@@ -25,89 +25,59 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.utils;
+package com.esotericsoftware.spine.utils
 
-import com.esotericsoftware.spine.AnimationState;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonRenderer;
+import com.esotericsoftware.spine.AnimationState
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.SkeletonRenderer
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.scenes.scene2d.Actor
 
-/** A scene2d actor that draws a skeleton. */
-public class SkeletonActor extends Actor {
-	private SkeletonRenderer renderer;
-	private Skeleton skeleton;
-	AnimationState state;
-	private boolean resetBlendFunction = true;
+/** A scene2d actor that draws a skeleton.  */
+class SkeletonActor : Actor {
+    var renderer: SkeletonRenderer? = null
+    var skeleton: Skeleton? = null
+    var animationState: AnimationState
 
-	/** Creates an uninitialized SkeletonActor. The renderer, skeleton, and animation state must be set before use. */
-	public SkeletonActor () {
-	}
+    /** If false, the blend function will be left as whatever [SkeletonRenderer.draw] set. This can reduce
+     * batch flushes in some cases, but means other rendering may need to first set the blend function. Default is true.  */
+    var resetBlendFunction = true
 
-	public SkeletonActor (SkeletonRenderer renderer, Skeleton skeleton, AnimationState state) {
-		this.renderer = renderer;
-		this.skeleton = skeleton;
-		this.state = state;
-	}
+    /** Creates an uninitialized SkeletonActor. The renderer, skeleton, and animation state must be set before use.  */
+    constructor() {}
 
-	public void act (float delta) {
-		state.update(delta);
-		state.apply(skeleton);
-		super.act(delta);
-	}
+    constructor(renderer: SkeletonRenderer, skeleton: Skeleton, state: AnimationState) {
+        this.renderer = renderer
+        this.skeleton = skeleton
+        this.animationState = state
+    }
 
-	public void draw (Batch batch, float parentAlpha) {
-		int blendSrc = batch.getBlendSrcFunc(), blendDst = batch.getBlendDstFunc();
-		int blendSrcAlpha = batch.getBlendSrcFuncAlpha(), blendDstAlpha = batch.getBlendDstFuncAlpha();
+    override fun act(delta: Float) {
+        animationState.update(delta)
+        animationState.apply(skeleton)
+        super.act(delta)
+    }
 
-		Color color = skeleton.getColor();
-		float oldAlpha = color.a;
-		skeleton.getColor().a *= parentAlpha;
+    fun draw(batch: Batch, parentAlpha: Float) {
+        val blendSrc = batch.blendSrcFunc
+        val blendDst = batch.blendDstFunc
+        val blendSrcAlpha = batch.blendSrcFuncAlpha
+        val blendDstAlpha = batch.blendDstFuncAlpha
 
-		skeleton.setPosition(getX(), getY());
-		skeleton.updateWorldTransform();
-		renderer.draw(batch, skeleton);
+        val color = skeleton!!.color
+        val oldAlpha = color.a
+        skeleton!!.color.a *= parentAlpha
 
-		if (resetBlendFunction) batch.setBlendFunctionSeparate(blendSrc, blendDst, blendSrcAlpha, blendDstAlpha);
+        skeleton!!.setPosition(x, y)
+        skeleton!!.updateWorldTransform()
+        renderer!!.draw(batch, skeleton)
 
-		color.a = oldAlpha;
-	}
+        if (resetBlendFunction) batch.setBlendFunctionSeparate(blendSrc, blendDst, blendSrcAlpha, blendDstAlpha)
 
-    public SkeletonRenderer getRenderer () {
-		return renderer;
-	}
-
-	public void setRenderer (SkeletonRenderer renderer) {
-		this.renderer = renderer;
-	}
-
-	public Skeleton getSkeleton () {
-		return skeleton;
-	}
-
-	public void setSkeleton (Skeleton skeleton) {
-		this.skeleton = skeleton;
-	}
-
-	public AnimationState getAnimationState () {
-		return state;
-	}
-
-	public void setAnimationState (AnimationState state) {
-		this.state = state;
-	}
-
-	public boolean getResetBlendFunction () {
-		return resetBlendFunction;
-	}
-
-	/** If false, the blend function will be left as whatever {@link SkeletonRenderer#draw(Batch, Skeleton)} set. This can reduce
-	 * batch flushes in some cases, but means other rendering may need to first set the blend function. Default is true. */
-	public void setResetBlendFunction (boolean resetBlendFunction) {
-		this.resetBlendFunction = resetBlendFunction;
-	}
+        color.a = oldAlpha
+    }
 }

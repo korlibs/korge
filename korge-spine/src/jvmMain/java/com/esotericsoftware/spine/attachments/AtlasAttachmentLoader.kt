@@ -25,57 +25,55 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.Skin;
+import com.esotericsoftware.spine.Skin
 
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 
-/** An {@link AttachmentLoader} that configures attachments using texture regions from an {@link Atlas}.
- * <p>
- * See <a href='http://esotericsoftware.com/spine-loading-skeleton-data#JSON-and-binary-data'>Loading skeleton data</a> in the
- * Spine Runtimes Guide. */
-@SuppressWarnings("javadoc")
-public class AtlasAttachmentLoader implements AttachmentLoader {
-	private TextureAtlas atlas;
+/** An [AttachmentLoader] that configures attachments using texture regions from an [Atlas].
+ *
+ *
+ * See [Loading skeleton data](http://esotericsoftware.com/spine-loading-skeleton-data#JSON-and-binary-data) in the
+ * Spine Runtimes Guide.  */
+class AtlasAttachmentLoader(private val atlas: TextureAtlas?) : AttachmentLoader {
 
-	public AtlasAttachmentLoader (TextureAtlas atlas) {
-		if (atlas == null) throw new IllegalArgumentException("atlas cannot be null.");
-		this.atlas = atlas;
-	}
+    init {
+        requireNotNull(atlas) { "atlas cannot be null." }
+    }
 
-	public RegionAttachment newRegionAttachment (Skin skin, String name, String path) {
-		AtlasRegion region = atlas.findRegion(path);
-		if (region == null) throw new RuntimeException("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-		RegionAttachment attachment = new RegionAttachment(name);
-		attachment.setRegion(region);
-		return attachment;
-	}
+    override fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment {
+        val region = atlas.findRegion(path)
+                ?: throw RuntimeException("Region not found in atlas: $path (region attachment: $name)")
+        val attachment = RegionAttachment(name)
+        attachment.region = region
+        return attachment
+    }
 
-	public MeshAttachment newMeshAttachment (Skin skin, String name, String path) {
-		AtlasRegion region = atlas.findRegion(path);
-		if (region == null) throw new RuntimeException("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-		MeshAttachment attachment = new MeshAttachment(name);
-		attachment.setRegion(region);
-		return attachment;
-	}
+    override fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment {
+        val region = atlas.findRegion(path)
+                ?: throw RuntimeException("Region not found in atlas: $path (mesh attachment: $name)")
+        val attachment = MeshAttachment(name)
+        attachment.region = region
+        return attachment
+    }
 
-	public BoundingBoxAttachment newBoundingBoxAttachment (Skin skin, String name) {
-		return new BoundingBoxAttachment(name);
-	}
+    override fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment {
+        return BoundingBoxAttachment(name)
+    }
 
-	public ClippingAttachment newClippingAttachment (Skin skin, String name) {
-		return new ClippingAttachment(name);
-	}
+    override fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment {
+        return ClippingAttachment(name)
+    }
 
-	public PathAttachment newPathAttachment (Skin skin, String name) {
-		return new PathAttachment(name);
-	}
+    override fun newPathAttachment(skin: Skin, name: String): PathAttachment {
+        return PathAttachment(name)
+    }
 
-	public PointAttachment newPointAttachment (Skin skin, String name) {
-		return new PointAttachment(name);
-	}
+    override fun newPointAttachment(skin: Skin, name: String): PointAttachment {
+        return PointAttachment(name)
+    }
 }

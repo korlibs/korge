@@ -25,169 +25,171 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.esotericsoftware.spine.utils.SpineUtils.*
 
-import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.utils.JFloatArray
 
-import com.esotericsoftware.spine.Bone;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.Slot;
+import com.esotericsoftware.spine.Bone
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.Slot
 
 /** Base class for an attachment with vertices that are transformed by one or more bones and can be deformed by a slot's
- * {@link Slot#getDeform()}. */
-abstract public class VertexAttachment extends Attachment {
-	static private int nextID;
+ * [Slot.getDeform].  */
+abstract class VertexAttachment(name: String) : Attachment(name) {
 
-	private final int id = (nextID() & 65535) << 11;
-	int[] bones;
-	float[] vertices;
-	int worldVerticesLength;
-	VertexAttachment deformAttachment = this;
+    /** Returns a unique ID for this attachment.  */
+    val id = nextID() and 65535 shl 11
+    /** The bones which affect the [.getVertices]. The array entries are, for each vertex, the number of bones affecting
+     * the vertex followed by that many bone indices, which is the index of the bone in [Skeleton.getBones]. Will be null
+     * if this attachment has no weights.  */
+    /** @param bones May be null if this attachment has no weights.
+     */
+    var bones: IntArray? = null
 
-	public VertexAttachment (String name) {
-		super(name);
-	}
+    /** The vertex positions in the bone's coordinate system. For a non-weighted attachment, the values are `x,y`
+     * entries for each vertex. For a weighted attachment, the values are `x,y,weight` entries for each bone affecting
+     * each vertex.  */
+    var vertices: FloatArray? = null
 
-	/** Transforms the attachment's local {@link #getVertices()} to world coordinates. If the slot's {@link Slot#getDeform()} is
-	 * not empty, it is used to deform the vertices.
-	 * <p>
-	 * See <a href="http://esotericsoftware.com/spine-runtime-skeletons#World-transforms">World transforms</a> in the Spine
-	 * Runtimes Guide.
-	 * @param start The index of the first {@link #getVertices()} value to transform. Each vertex has 2 values, x and y.
-	 * @param count The number of world vertex values to output. Must be <= {@link #getWorldVerticesLength()} - <code>start</code>.
-	 * @param worldVertices The output world vertices. Must have a length >= <code>offset</code> + <code>count</code> *
-	 *           <code>stride</code> / 2.
-	 * @param offset The <code>worldVertices</code> index to begin writing values.
-	 * @param stride The number of <code>worldVertices</code> entries between the value pairs written. */
-	public void computeWorldVertices (Slot slot, int start, int count, float[] worldVertices, int offset, int stride) {
-		count = offset + (count >> 1) * stride;
-		Skeleton skeleton = slot.getSkeleton();
-		JFloatArray deformArray = slot.getDeform();
-		float[] vertices = this.vertices;
-		int[] bones = this.bones;
-		if (bones == null) {
-			if (deformArray.size > 0) vertices = deformArray.items;
-			Bone bone = slot.getBone();
-			float x = bone.getWorldX(), y = bone.getWorldY();
-			float a = bone.getA(), b = bone.getB(), c = bone.getC(), d = bone.getD();
-			for (int v = start, w = offset; w < count; v += 2, w += stride) {
-				float vx = vertices[v], vy = vertices[v + 1];
-				worldVertices[w] = vx * a + vy * b + x;
-				worldVertices[w + 1] = vx * c + vy * d + y;
-			}
-			return;
-		}
-		int v = 0, skip = 0;
-		for (int i = 0; i < start; i += 2) {
-			int n = bones[v];
-			v += n + 1;
-			skip += n;
-		}
-		Object[] skeletonBones = skeleton.getBones().items;
-		if (deformArray.size == 0) {
-			for (int w = offset, b = skip * 3; w < count; w += stride) {
-				float wx = 0, wy = 0;
-				int n = bones[v++];
-				n += v;
-				for (; v < n; v++, b += 3) {
-					Bone bone = (Bone)skeletonBones[bones[v]];
-					float vx = vertices[b], vy = vertices[b + 1], weight = vertices[b + 2];
-					wx += (vx * bone.getA() + vy * bone.getB() + bone.getWorldX()) * weight;
-					wy += (vx * bone.getC() + vy * bone.getD() + bone.getWorldY()) * weight;
-				}
-				worldVertices[w] = wx;
-				worldVertices[w + 1] = wy;
-			}
-		} else {
-			float[] deform = deformArray.items;
-			for (int w = offset, b = skip * 3, f = skip << 1; w < count; w += stride) {
-				float wx = 0, wy = 0;
-				int n = bones[v++];
-				n += v;
-				for (; v < n; v++, b += 3, f += 2) {
-					Bone bone = (Bone)skeletonBones[bones[v]];
-					float vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1], weight = vertices[b + 2];
-					wx += (vx * bone.getA() + vy * bone.getB() + bone.getWorldX()) * weight;
-					wy += (vx * bone.getC() + vy * bone.getD() + bone.getWorldY()) * weight;
-				}
-				worldVertices[w] = wx;
-				worldVertices[w + 1] = wy;
-			}
-		}
-	}
+    /** The maximum number of world vertex values that can be output by
+     * [.computeWorldVertices] using the `count` parameter.  */
+    var worldVerticesLength: Int = 0
+    /** Deform keys for the deform attachment are also applied to this attachment.
+     * @return May be null if no deform keys should be applied.
+     */
+    /** @param deformAttachment May be null if no deform keys should be applied.
+     */
+    var deformAttachment = this
 
-	/** Deform keys for the deform attachment are also applied to this attachment.
-	 * @return May be null if no deform keys should be applied. */
-	public VertexAttachment getDeformAttachment () {
-		return deformAttachment;
-	}
+    /** Transforms the attachment's local [.getVertices] to world coordinates. If the slot's [Slot.getDeform] is
+     * not empty, it is used to deform the vertices.
+     *
+     *
+     * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
+     * Runtimes Guide.
+     * @param start The index of the first [.getVertices] value to transform. Each vertex has 2 values, x and y.
+     * @param count The number of world vertex values to output. Must be <= [.getWorldVerticesLength] - `start`.
+     * @param worldVertices The output world vertices. Must have a length >= `offset` + `count` *
+     * `stride` / 2.
+     * @param offset The `worldVertices` index to begin writing values.
+     * @param stride The number of `worldVertices` entries between the value pairs written.
+     */
+    fun computeWorldVertices(slot: Slot, start: Int, count: Int, worldVertices: FloatArray, offset: Int, stride: Int) {
+        var count = count
+        count = offset + (count shr 1) * stride
+        val skeleton = slot.skeleton
+        val deformArray = slot.deform
+        var vertices = this.vertices
+        val bones = this.bones
+        if (bones == null) {
+            if (deformArray.size > 0) vertices = deformArray.items
+            val bone = slot.bone
+            val x = bone.worldX
+            val y = bone.worldY
+            val a = bone.a
+            val b = bone.b
+            val c = bone.c
+            val d = bone.d
+            var v = start
+            var w = offset
+            while (w < count) {
+                val vx = vertices!![v]
+                val vy = vertices[v + 1]
+                worldVertices[w] = vx * a + vy * b + x
+                worldVertices[w + 1] = vx * c + vy * d + y
+                v += 2
+                w += stride
+            }
+            return
+        }
+        var v = 0
+        var skip = 0
+        var i = 0
+        while (i < start) {
+            val n = bones[v]
+            v += n + 1
+            skip += n
+            i += 2
+        }
+        val skeletonBones = skeleton.bones.items
+        if (deformArray.size == 0) {
+            var w = offset
+            var b = skip * 3
+            while (w < count) {
+                var wx = 0f
+                var wy = 0f
+                var n = bones[v++]
+                n += v
+                while (v < n) {
+                    val bone = skeletonBones[bones[v]] as Bone
+                    val vx = vertices!![b]
+                    val vy = vertices[b + 1]
+                    val weight = vertices[b + 2]
+                    wx += (vx * bone.a + vy * bone.b + bone.worldX) * weight
+                    wy += (vx * bone.c + vy * bone.d + bone.worldY) * weight
+                    v++
+                    b += 3
+                }
+                worldVertices[w] = wx
+                worldVertices[w + 1] = wy
+                w += stride
+            }
+        } else {
+            val deform = deformArray.items
+            var w = offset
+            var b = skip * 3
+            var f = skip shl 1
+            while (w < count) {
+                var wx = 0f
+                var wy = 0f
+                var n = bones[v++]
+                n += v
+                while (v < n) {
+                    val bone = skeletonBones[bones[v]] as Bone
+                    val vx = vertices!![b] + deform[f]
+                    val vy = vertices[b + 1] + deform[f + 1]
+                    val weight = vertices[b + 2]
+                    wx += (vx * bone.a + vy * bone.b + bone.worldX) * weight
+                    wy += (vx * bone.c + vy * bone.d + bone.worldY) * weight
+                    v++
+                    b += 3
+                    f += 2
+                }
+                worldVertices[w] = wx
+                worldVertices[w + 1] = wy
+                w += stride
+            }
+        }
+    }
 
-	/** @param deformAttachment May be null if no deform keys should be applied. */
-	public void setDeformAttachment (VertexAttachment deformAttachment) {
-		this.deformAttachment = deformAttachment;
-	}
+    /** Does not copy id (generated) or name (set on construction).  */
+    internal fun copyTo(attachment: VertexAttachment) {
+        if (bones != null) {
+            attachment.bones = IntArray(bones!!.size)
+            arraycopy(bones, 0, attachment.bones, 0, bones!!.size)
+        } else
+            attachment.bones = null
 
-	/** The bones which affect the {@link #getVertices()}. The array entries are, for each vertex, the number of bones affecting
-	 * the vertex followed by that many bone indices, which is the index of the bone in {@link Skeleton#getBones()}. Will be null
-	 * if this attachment has no weights. */
-	public int[] getBones () {
-		return bones;
-	}
+        if (vertices != null) {
+            attachment.vertices = FloatArray(vertices!!.size)
+            arraycopy(vertices, 0, attachment.vertices, 0, vertices!!.size)
+        } else
+            attachment.vertices = null
 
-	/** @param bones May be null if this attachment has no weights. */
-	public void setBones (int[] bones) {
-		this.bones = bones;
-	}
+        attachment.worldVerticesLength = worldVerticesLength
+        attachment.deformAttachment = deformAttachment
+    }
 
-	/** The vertex positions in the bone's coordinate system. For a non-weighted attachment, the values are <code>x,y</code>
-	 * entries for each vertex. For a weighted attachment, the values are <code>x,y,weight</code> entries for each bone affecting
-	 * each vertex. */
-	public float[] getVertices () {
-		return vertices;
-	}
+    companion object {
+        private var nextID: Int = 0
 
-	public void setVertices (float[] vertices) {
-		this.vertices = vertices;
-	}
-
-	/** The maximum number of world vertex values that can be output by
-	 * {@link #computeWorldVertices(Slot, int, int, float[], int, int)} using the <code>count</code> parameter. */
-	public int getWorldVerticesLength () {
-		return worldVerticesLength;
-	}
-
-	public void setWorldVerticesLength (int worldVerticesLength) {
-		this.worldVerticesLength = worldVerticesLength;
-	}
-
-	/** Returns a unique ID for this attachment. */
-	public int getId () {
-		return id;
-	}
-
-	/** Does not copy id (generated) or name (set on construction). **/
-	void copyTo (VertexAttachment attachment) {
-		if (bones != null) {
-			attachment.bones = new int[bones.length];
-			arraycopy(bones, 0, attachment.bones, 0, bones.length);
-		} else
-			attachment.bones = null;
-
-		if (vertices != null) {
-			attachment.vertices = new float[vertices.length];
-			arraycopy(vertices, 0, attachment.vertices, 0, vertices.length);
-		} else
-			attachment.vertices = null;
-
-		attachment.worldVerticesLength = worldVerticesLength;
-		attachment.deformAttachment = deformAttachment;
-	}
-
-	static private synchronized int nextID () {
-		return nextID++;
-	}
+        @Synchronized
+        private fun nextID(): Int {
+            return nextID++
+        }
+    }
 }

@@ -25,32 +25,39 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.Skin;
+import com.esotericsoftware.spine.Skin
 
 /** The interface which can be implemented to customize creating and populating attachments.
- * <p>
- * See <a href='http://esotericsoftware.com/spine-loading-skeleton-data#AttachmentLoader'>Loading skeleton data</a> in the Spine
- * Runtimes Guide. */
-public interface AttachmentLoader {
-	/** @return May be null to not load the attachment. */
-	public RegionAttachment newRegionAttachment (Skin skin, String name, String path);
+ *
+ *
+ * See [Loading skeleton data](http://esotericsoftware.com/spine-loading-skeleton-data#AttachmentLoader) in the Spine
+ * Runtimes Guide.  */
+interface AttachmentLoader {
+    /** @return May be null to not load the attachment.
+     */
+    fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment
 
-	/** @return May be null to not load the attachment. */
-	public MeshAttachment newMeshAttachment (Skin skin, String name, String path);
+    /** @return May be null to not load the attachment.
+     */
+    fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment
 
-	/** @return May be null to not load the attachment. */
-	public BoundingBoxAttachment newBoundingBoxAttachment (Skin skin, String name);
-	
-	/** @return May be null to not load the attachment. */
-	public ClippingAttachment newClippingAttachment (Skin skin, String name);
+    /** @return May be null to not load the attachment.
+     */
+    fun newBoundingBoxAttachment(skin: Skin, name: String): BoundingBoxAttachment
 
-	/** @return May be null to not load the attachment. */
-	public PathAttachment newPathAttachment (Skin skin, String name);
+    /** @return May be null to not load the attachment.
+     */
+    fun newClippingAttachment(skin: Skin, name: String): ClippingAttachment
 
-	/** @return May be null to not load the attachment. */
-	public PointAttachment newPointAttachment (Skin skin, String name);
+    /** @return May be null to not load the attachment.
+     */
+    fun newPathAttachment(skin: Skin, name: String): PathAttachment
+
+    /** @return May be null to not load the attachment.
+     */
+    fun newPointAttachment(skin: Skin, name: String): PointAttachment
 }

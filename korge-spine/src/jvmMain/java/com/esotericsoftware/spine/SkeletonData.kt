@@ -25,303 +25,233 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JArray
 
 /** Stores the setup pose and all of the stateless data for a skeleton.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-runtime-architecture#Data-objects">Data objects</a> in the Spine Runtimes
- * Guide. */
-public class SkeletonData {
-	String name;
-	final JArray<BoneData> bones = new JArray(); // Ordered parents first.
-	final JArray<SlotData> slots = new JArray(); // Setup pose draw order.
-	final JArray<Skin> skins = new JArray();
-	Skin defaultSkin;
-	final JArray<EventData> events = new JArray();
-	final JArray<Animation> animations = new JArray();
-	final JArray<IkConstraintData> ikConstraints = new JArray();
-	final JArray<TransformConstraintData> transformConstraints = new JArray();
-	final JArray<PathConstraintData> pathConstraints = new JArray();
-	float x, y, width, height;
-	String version, hash;
+ *
+ *
+ * See [Data objects](http://esotericsoftware.com/spine-runtime-architecture#Data-objects) in the Spine Runtimes
+ * Guide.  */
+class SkeletonData {
+    // ---
 
-	// Nonessential.
-	float fps = 30;
-	String imagesPath, audioPath;
+    /** The skeleton's name, which by default is the name of the skeleton data file, if possible.
+     * @return May be null.
+     */
+    /** @param name May be null.
+     */
+    var name: String? = null
+    // --- Bones.
 
-	// --- Bones.
+    /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
+    val bones: JArray<BoneData> = JArray() // Ordered parents first.
+    // --- Slots.
 
-	/** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-	public JArray<BoneData> getBones () {
-		return bones;
-	}
+    /** The skeleton's slots.  */
+    val slots: JArray<SlotData> = JArray() // Setup pose draw order.
 
-	/** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
-	 * multiple times.
-	 * @return May be null. */
-	public BoneData findBone (String boneName) {
-		if (boneName == null) throw new IllegalArgumentException("boneName cannot be null.");
-		JArray<BoneData> bones = this.bones;
-		for (int i = 0, n = bones.size; i < n; i++) {
-			BoneData bone = bones.get(i);
-			if (bone.name.equals(boneName)) return bone;
-		}
-		return null;
-	}
+    /** All skins, including the default skin.  */
+    val skins: JArray<Skin> = JArray()
+    // --- Skins.
 
-	// --- Slots.
+    /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
+     *
+     *
+     * See [Skeleton.getAttachment].
+     * @return May be null.
+     */
+    /** @param defaultSkin May be null.
+     */
+    var defaultSkin: Skin
 
-	/** The skeleton's slots. */
-	public JArray<SlotData> getSlots () {
-		return slots;
-	}
+    /** The skeleton's events.  */
+    val events: JArray<EventData> = JArray()
+    // --- Animations.
 
-	/** Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it
-	 * multiple times.
-	 * @return May be null. */
-	public SlotData findSlot (String slotName) {
-		if (slotName == null) throw new IllegalArgumentException("slotName cannot be null.");
-		JArray<SlotData> slots = this.slots;
-		for (int i = 0, n = slots.size; i < n; i++) {
-			SlotData slot = slots.get(i);
-			if (slot.name.equals(slotName)) return slot;
-		}
-		return null;
-	}
+    /** The skeleton's animations.  */
+    val animations: JArray<Animation> = JArray()
+    // --- IK constraints
 
-	// --- Skins.
+    /** The skeleton's IK constraints.  */
+    val ikConstraints: JArray<IkConstraintData> = JArray()
+    // --- Transform constraints
 
-	/** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
-	 * <p>
-	 * See {@link Skeleton#getAttachment(int, String)}.
-	 * @return May be null. */
-	public Skin getDefaultSkin () {
-		return defaultSkin;
-	}
+    /** The skeleton's transform constraints.  */
+    val transformConstraints: JArray<TransformConstraintData> = JArray()
+    // --- Path constraints
 
-	/** @param defaultSkin May be null. */
-	public void setDefaultSkin (Skin defaultSkin) {
-		this.defaultSkin = defaultSkin;
-	}
+    /** The skeleton's path constraints.  */
+    val pathConstraints: JArray<PathConstraintData> = JArray()
 
-	/** Finds a skin by comparing each skin's name. It is more efficient to cache the results of this method than to call it
-	 * multiple times.
-	 * @return May be null. */
-	public Skin findSkin (String skinName) {
-		if (skinName == null) throw new IllegalArgumentException("skinName cannot be null.");
-		for (Skin skin : skins)
-			if (skin.name.equals(skinName)) return skin;
-		return null;
-	}
+    /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose.  */
+    var x: Float = 0.toFloat()
 
-	/** All skins, including the default skin. */
-	public JArray<Skin> getSkins () {
-		return skins;
-	}
+    /** The Y coordinate of the skeleton's axis aligned bounding box in the setup pose.  */
+    var y: Float = 0.toFloat()
 
-	// --- Events.
+    /** The width of the skeleton's axis aligned bounding box in the setup pose.  */
+    var width: Float = 0.toFloat()
 
-	/** Finds an event by comparing each events's name. It is more efficient to cache the results of this method than to call it
-	 * multiple times.
-	 * @return May be null. */
-	public EventData findEvent (String eventDataName) {
-		if (eventDataName == null) throw new IllegalArgumentException("eventDataName cannot be null.");
-		for (EventData eventData : events)
-			if (eventData.name.equals(eventDataName)) return eventData;
-		return null;
-	}
+    /** The height of the skeleton's axis aligned bounding box in the setup pose.  */
+    var height: Float = 0.toFloat()
+    /** The Spine version used to export the skeleton data, or null.  */
+    /** @param version May be null.
+     */
+    var version: String
+    /** The skeleton data hash. This value will change if any of the skeleton data has changed.
+     * @return May be null.
+     */
+    /** @param hash May be null.
+     */
+    var hash: String
 
-	/** The skeleton's events. */
-	public JArray<EventData> getEvents () {
-		return events;
-	}
+    // Nonessential.
+    /** The dopesheet FPS in Spine. Available only when nonessential data was exported.  */
+    var fps = 30f
+    /** The path to the images directory as defined in Spine. Available only when nonessential data was exported.
+     * @return May be null.
+     */
+    /** @param imagesPath May be null.
+     */
+    var imagesPath: String
+    /** The path to the audio directory as defined in Spine. Available only when nonessential data was exported.
+     * @return May be null.
+     */
+    /** @param audioPath May be null.
+     */
+    var audioPath: String
 
-	// --- Animations.
+    /** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
+     * multiple times.
+     * @return May be null.
+     */
+    fun findBone(boneName: String?): BoneData? {
+        requireNotNull(boneName) { "boneName cannot be null." }
+        val bones = this.bones
+        var i = 0
+        val n = bones.size
+        while (i < n) {
+            val bone = bones[i]
+            if (bone.name == boneName) return bone
+            i++
+        }
+        return null
+    }
 
-	/** The skeleton's animations. */
-	public JArray<Animation> getAnimations () {
-		return animations;
-	}
+    /** Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it
+     * multiple times.
+     * @return May be null.
+     */
+    fun findSlot(slotName: String?): SlotData? {
+        requireNotNull(slotName) { "slotName cannot be null." }
+        val slots = this.slots
+        var i = 0
+        val n = slots.size
+        while (i < n) {
+            val slot = slots[i]
+            if (slot.name == slotName) return slot
+            i++
+        }
+        return null
+    }
 
-	/** Finds an animation by comparing each animation's name. It is more efficient to cache the results of this method than to
-	 * call it multiple times.
-	 * @return May be null. */
-	public Animation findAnimation (String animationName) {
-		if (animationName == null) throw new IllegalArgumentException("animationName cannot be null.");
-		JArray<Animation> animations = this.animations;
-		for (int i = 0, n = animations.size; i < n; i++) {
-			Animation animation = animations.get(i);
-			if (animation.name.equals(animationName)) return animation;
-		}
-		return null;
-	}
+    /** Finds a skin by comparing each skin's name. It is more efficient to cache the results of this method than to call it
+     * multiple times.
+     * @return May be null.
+     */
+    fun findSkin(skinName: String?): Skin? {
+        requireNotNull(skinName) { "skinName cannot be null." }
+        for (skin in skins)
+            if (skin.name == skinName) return skin
+        return null
+    }
 
-	// --- IK constraints
+    // --- Events.
 
-	/** The skeleton's IK constraints. */
-	public JArray<IkConstraintData> getIkConstraints () {
-		return ikConstraints;
-	}
+    /** Finds an event by comparing each events's name. It is more efficient to cache the results of this method than to call it
+     * multiple times.
+     * @return May be null.
+     */
+    fun findEvent(eventDataName: String?): EventData? {
+        requireNotNull(eventDataName) { "eventDataName cannot be null." }
+        for (eventData in events)
+            if (eventData.name == eventDataName) return eventData
+        return null
+    }
 
-	/** Finds an IK constraint by comparing each IK constraint's name. It is more efficient to cache the results of this method
-	 * than to call it multiple times.
-	 * @return May be null. */
-	public IkConstraintData findIkConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<IkConstraintData> ikConstraints = this.ikConstraints;
-		for (int i = 0, n = ikConstraints.size; i < n; i++) {
-			IkConstraintData constraint = ikConstraints.get(i);
-			if (constraint.name.equals(constraintName)) return constraint;
-		}
-		return null;
-	}
+    /** Finds an animation by comparing each animation's name. It is more efficient to cache the results of this method than to
+     * call it multiple times.
+     * @return May be null.
+     */
+    fun findAnimation(animationName: String?): Animation? {
+        requireNotNull(animationName) { "animationName cannot be null." }
+        val animations = this.animations
+        var i = 0
+        val n = animations.size
+        while (i < n) {
+            val animation = animations[i]
+            if (animation.name == animationName) return animation
+            i++
+        }
+        return null
+    }
 
-	// --- Transform constraints
+    /** Finds an IK constraint by comparing each IK constraint's name. It is more efficient to cache the results of this method
+     * than to call it multiple times.
+     * @return May be null.
+     */
+    fun findIkConstraint(constraintName: String?): IkConstraintData? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val ikConstraints = this.ikConstraints
+        var i = 0
+        val n = ikConstraints.size
+        while (i < n) {
+            val constraint = ikConstraints[i]
+            if (constraint.name == constraintName) return constraint
+            i++
+        }
+        return null
+    }
 
-	/** The skeleton's transform constraints. */
-	public JArray<TransformConstraintData> getTransformConstraints () {
-		return transformConstraints;
-	}
+    /** Finds a transform constraint by comparing each transform constraint's name. It is more efficient to cache the results of
+     * this method than to call it multiple times.
+     * @return May be null.
+     */
+    fun findTransformConstraint(constraintName: String?): TransformConstraintData? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val transformConstraints = this.transformConstraints
+        var i = 0
+        val n = transformConstraints.size
+        while (i < n) {
+            val constraint = transformConstraints[i]
+            if (constraint.name == constraintName) return constraint
+            i++
+        }
+        return null
+    }
 
-	/** Finds a transform constraint by comparing each transform constraint's name. It is more efficient to cache the results of
-	 * this method than to call it multiple times.
-	 * @return May be null. */
-	public TransformConstraintData findTransformConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<TransformConstraintData> transformConstraints = this.transformConstraints;
-		for (int i = 0, n = transformConstraints.size; i < n; i++) {
-			TransformConstraintData constraint = transformConstraints.get(i);
-			if (constraint.name.equals(constraintName)) return constraint;
-		}
-		return null;
-	}
+    /** Finds a path constraint by comparing each path constraint's name. It is more efficient to cache the results of this method
+     * than to call it multiple times.
+     * @return May be null.
+     */
+    fun findPathConstraint(constraintName: String?): PathConstraintData? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val pathConstraints = this.pathConstraints
+        var i = 0
+        val n = pathConstraints.size
+        while (i < n) {
+            val constraint = pathConstraints[i]
+            if (constraint.name == constraintName) return constraint
+            i++
+        }
+        return null
+    }
 
-	// --- Path constraints
-
-	/** The skeleton's path constraints. */
-	public JArray<PathConstraintData> getPathConstraints () {
-		return pathConstraints;
-	}
-
-	/** Finds a path constraint by comparing each path constraint's name. It is more efficient to cache the results of this method
-	 * than to call it multiple times.
-	 * @return May be null. */
-	public PathConstraintData findPathConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<PathConstraintData> pathConstraints = this.pathConstraints;
-		for (int i = 0, n = pathConstraints.size; i < n; i++) {
-			PathConstraintData constraint = pathConstraints.get(i);
-			if (constraint.name.equals(constraintName)) return constraint;
-		}
-		return null;
-	}
-
-	// ---
-
-	/** The skeleton's name, which by default is the name of the skeleton data file, if possible.
-	 * @return May be null. */
-	public String getName () {
-		return name;
-	}
-
-	/** @param name May be null. */
-	public void setName (String name) {
-		this.name = name;
-	}
-
-	/** The X coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-	public float getX () {
-		return x;
-	}
-
-	public void setX (float x) {
-		this.x = x;
-	}
-
-	/** The Y coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-	public float getY () {
-		return y;
-	}
-
-	public void setY (float y) {
-		this.y = y;
-	}
-
-	/** The width of the skeleton's axis aligned bounding box in the setup pose. */
-	public float getWidth () {
-		return width;
-	}
-
-	public void setWidth (float width) {
-		this.width = width;
-	}
-
-	/** The height of the skeleton's axis aligned bounding box in the setup pose. */
-	public float getHeight () {
-		return height;
-	}
-
-	public void setHeight (float height) {
-		this.height = height;
-	}
-
-	/** The Spine version used to export the skeleton data, or null. */
-	public String getVersion () {
-		return version;
-	}
-
-	/** @param version May be null. */
-	public void setVersion (String version) {
-		this.version = version;
-	}
-
-	/** The skeleton data hash. This value will change if any of the skeleton data has changed.
-	 * @return May be null. */
-	public String getHash () {
-		return hash;
-	}
-
-	/** @param hash May be null. */
-	public void setHash (String hash) {
-		this.hash = hash;
-	}
-
-	/** The path to the images directory as defined in Spine. Available only when nonessential data was exported.
-	 * @return May be null. */
-	public String getImagesPath () {
-		return imagesPath;
-	}
-
-	/** @param imagesPath May be null. */
-	public void setImagesPath (String imagesPath) {
-		this.imagesPath = imagesPath;
-	}
-
-	/** The path to the audio directory as defined in Spine. Available only when nonessential data was exported.
-	 * @return May be null. */
-	public String getAudioPath () {
-		return audioPath;
-	}
-
-	/** @param audioPath May be null. */
-	public void setAudioPath (String audioPath) {
-		this.audioPath = audioPath;
-	}
-
-	/** The dopesheet FPS in Spine. Available only when nonessential data was exported. */
-	public float getFps () {
-		return fps;
-	}
-
-	public void setFps (float fps) {
-		this.fps = fps;
-	}
-
-	public String toString () {
-		return name != null ? name : super.toString();
-	}
+    override fun toString(): String {
+        return if (name != null) name else super.toString()
+    }
 }

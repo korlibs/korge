@@ -25,45 +25,37 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.vertexeffects;
+package com.esotericsoftware.spine.vertexeffects
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector2
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect
 
-public class JitterEffect implements VertexEffect {
-	private float x, y;
+class JitterEffect(private var x: Float, private var y: Float) : VertexEffect {
 
-	public JitterEffect (float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
+    override fun begin(skeleton: Skeleton) {}
 
-	public void begin (Skeleton skeleton) {
-	}
+    override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
+        position.x += MathUtils.randomTriangular(-x, y)
+        position.y += MathUtils.randomTriangular(-x, y)
+    }
 
-	public void transform (Vector2 position, Vector2 uv, Color light, Color dark) {
-		position.x += MathUtils.randomTriangular(-x, y);
-		position.y += MathUtils.randomTriangular(-x, y);
-	}
+    override fun end() {}
 
-	public void end () {
-	}
+    fun setJitter(x: Float, y: Float) {
+        this.x = x
+        this.y = y
+    }
 
-	public void setJitter (float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
+    fun setJitterX(x: Float) {
+        this.x = x
+    }
 
-	public void setJitterX (float x) {
-		this.x = x;
-	}
-
-	public void setJitterY (float y) {
-		this.y = y;
-	}
+    fun setJitterY(y: Float) {
+        this.y = y
+    }
 }

@@ -25,81 +25,45 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-/** Stores the setup pose values for an {@link Event}.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-events">Events</a> in the Spine User Guide. */
-public class EventData {
-	final String name;
-	int intValue;
-	float floatValue;
-	String stringValue, audioPath;
-	float volume, balance;
+/** Stores the setup pose values for an [Event].
+ *
+ *
+ * See [Events](http://esotericsoftware.com/spine-events) in the Spine User Guide.  */
+class EventData(
+        /** The name of the event, which is unique across all events in the skeleton.  */
+        val name: String?) {
+    var int: Int = 0
+    var float: Float = 0.toFloat()
+    internal var stringValue: String
+    internal var audioPath: String
+    var volume: Float = 0.toFloat()
+    var balance: Float = 0.toFloat()
 
-	public EventData (String name) {
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		this.name = name;
-	}
+    var string: String?
+        get() = stringValue
+        set(stringValue) {
+            requireNotNull(stringValue) { "stringValue cannot be null." }
+            this.stringValue = stringValue
+        }
 
-	public int getInt () {
-		return intValue;
-	}
+    init {
+        requireNotNull(name) { "name cannot be null." }
+    }
 
-	public void setInt (int intValue) {
-		this.intValue = intValue;
-	}
+    fun getAudioPath(): String {
+        return audioPath
+    }
 
-	public float getFloat () {
-		return floatValue;
-	}
+    fun setAudioPath(audioPath: String?) {
+        requireNotNull(audioPath) { "audioPath cannot be null." }
+        this.audioPath = audioPath
+    }
 
-	public void setFloat (float floatValue) {
-		this.floatValue = floatValue;
-	}
-
-	public String getString () {
-		return stringValue;
-	}
-
-	public void setString (String stringValue) {
-		if (stringValue == null) throw new IllegalArgumentException("stringValue cannot be null.");
-		this.stringValue = stringValue;
-	}
-
-	public String getAudioPath () {
-		return audioPath;
-	}
-
-	public void setAudioPath (String audioPath) {
-		if (audioPath == null) throw new IllegalArgumentException("audioPath cannot be null.");
-		this.audioPath = audioPath;
-	}
-
-	public float getVolume () {
-		return volume;
-	}
-
-	public void setVolume (float volume) {
-		this.volume = volume;
-	}
-
-	public float getBalance () {
-		return balance;
-	}
-
-	public void setBalance (float balance) {
-		this.balance = balance;
-	}
-
-	/** The name of the event, which is unique across all events in the skeleton. */
-	public String getName () {
-		return name;
-	}
-
-	public String toString () {
-		return name;
-	}
+    override fun toString(): String {
+        return name
+    }
 }

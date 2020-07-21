@@ -25,307 +25,347 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.utils;
+package com.esotericsoftware.spine.utils
 
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.JFloatArray;
-import com.badlogic.gdx.utils.JShortArray;
-import com.esotericsoftware.spine.Slot;
-import com.esotericsoftware.spine.attachments.ClippingAttachment;
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.JFloatArray
+import com.badlogic.gdx.utils.JShortArray
+import com.esotericsoftware.spine.Slot
+import com.esotericsoftware.spine.attachments.ClippingAttachment
 
-public class SkeletonClipping {
-	private final Triangulator triangulator = new Triangulator();
-	private final JFloatArray clippingPolygon = new JFloatArray();
-	private final JFloatArray clipOutput = new JFloatArray(128);
-	private final JFloatArray clippedVertices = new JFloatArray(128);
-	private final JShortArray clippedTriangles = new JShortArray(128);
-	private final JFloatArray scratch = new JFloatArray();
+class SkeletonClipping {
+    private val triangulator = Triangulator()
+    private val clippingPolygon = JFloatArray()
+    private val clipOutput = JFloatArray(128)
+    val clippedVertices = JFloatArray(128)
+    val clippedTriangles = JShortArray(128)
+    private val scratch = JFloatArray()
 
-	private ClippingAttachment clipAttachment;
-	private JArray<JFloatArray> clippingPolygons;
+    private var clipAttachment: ClippingAttachment? = null
+    private var clippingPolygons: JArray<JFloatArray>? = null
 
-	public int clipStart (Slot slot, ClippingAttachment clip) {
-		if (clipAttachment != null) return 0;
-		int n = clip.getWorldVerticesLength();
-		if (n < 6) return 0;
-		clipAttachment = clip;
+    val isClipping: Boolean
+        get() = clipAttachment != null
 
-		float[] vertices = clippingPolygon.setSize(n);
-		clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-		makeClockwise(clippingPolygon);
-		JShortArray triangles = triangulator.triangulate(clippingPolygon);
-		clippingPolygons = triangulator.decompose(clippingPolygon, triangles);
-		for (JFloatArray polygon : clippingPolygons) {
-			makeClockwise(polygon);
-			polygon.add(polygon.items[0]);
-			polygon.add(polygon.items[1]);
-		}
-		return clippingPolygons.size;
-	}
+    fun clipStart(slot: Slot, clip: ClippingAttachment): Int {
+        if (clipAttachment != null) return 0
+        val n = clip.worldVerticesLength
+        if (n < 6) return 0
+        clipAttachment = clip
 
-	public void clipEnd (Slot slot) {
-		if (clipAttachment != null && clipAttachment.getEndSlot() == slot.getData()) clipEnd();
-	}
+        val vertices = clippingPolygon.setSize(n)
+        clip.computeWorldVertices(slot, 0, n, vertices, 0, 2)
+        makeClockwise(clippingPolygon)
+        val triangles = triangulator.triangulate(clippingPolygon)
+        clippingPolygons = triangulator.decompose(clippingPolygon, triangles)
+        for (polygon in clippingPolygons!!) {
+            makeClockwise(polygon)
+            polygon.add(polygon.items[0])
+            polygon.add(polygon.items[1])
+        }
+        return clippingPolygons!!.size
+    }
 
-	public void clipEnd () {
-		if (clipAttachment == null) return;
-		clipAttachment = null;
-		clippingPolygons = null;
-		clippedVertices.clear();
-		clippedTriangles.clear();
-		clippingPolygon.clear();
-	}
+    fun clipEnd(slot: Slot) {
+        if (clipAttachment != null && clipAttachment!!.endSlot === slot.data) clipEnd()
+    }
 
-	public boolean isClipping () {
-		return clipAttachment != null;
-	}
+    fun clipEnd() {
+        if (clipAttachment == null) return
+        clipAttachment = null
+        clippingPolygons = null
+        clippedVertices.clear()
+        clippedTriangles.clear()
+        clippingPolygon.clear()
+    }
 
-	public void clipTriangles (float[] vertices, int verticesLength, short[] triangles, int trianglesLength, float[] uvs,
-		float light, float dark, boolean twoColor) {
+    fun clipTriangles(vertices: FloatArray, verticesLength: Int, triangles: ShortArray, trianglesLength: Int, uvs: FloatArray,
+                      light: Float, dark: Float, twoColor: Boolean) {
 
-		JFloatArray clipOutput = this.clipOutput, clippedVertices = this.clippedVertices;
-		JShortArray clippedTriangles = this.clippedTriangles;
-		Object[] polygons = clippingPolygons.items;
-		int polygonsCount = clippingPolygons.size;
-		int vertexSize = twoColor ? 6 : 5;
+        val clipOutput = this.clipOutput
+        val clippedVertices = this.clippedVertices
+        val clippedTriangles = this.clippedTriangles
+        val polygons = clippingPolygons!!.items
+        val polygonsCount = clippingPolygons!!.size
+        val vertexSize = if (twoColor) 6 else 5
 
-		short index = 0;
-		clippedVertices.clear();
-		clippedTriangles.clear();
-		outer:
-		for (int i = 0; i < trianglesLength; i += 3) {
-			int vertexOffset = triangles[i] << 1;
-			float x1 = vertices[vertexOffset], y1 = vertices[vertexOffset + 1];
-			float u1 = uvs[vertexOffset], v1 = uvs[vertexOffset + 1];
+        var index: Short = 0
+        clippedVertices.clear()
+        clippedTriangles.clear()
+        var i = 0
+        outer@ while (i < trianglesLength) {
+            var vertexOffset = triangles[i] shl 1
+            val x1 = vertices[vertexOffset]
+            val y1 = vertices[vertexOffset + 1]
+            val u1 = uvs[vertexOffset]
+            val v1 = uvs[vertexOffset + 1]
 
-			vertexOffset = triangles[i + 1] << 1;
-			float x2 = vertices[vertexOffset], y2 = vertices[vertexOffset + 1];
-			float u2 = uvs[vertexOffset], v2 = uvs[vertexOffset + 1];
+            vertexOffset = triangles[i + 1] shl 1
+            val x2 = vertices[vertexOffset]
+            val y2 = vertices[vertexOffset + 1]
+            val u2 = uvs[vertexOffset]
+            val v2 = uvs[vertexOffset + 1]
 
-			vertexOffset = triangles[i + 2] << 1;
-			float x3 = vertices[vertexOffset], y3 = vertices[vertexOffset + 1];
-			float u3 = uvs[vertexOffset], v3 = uvs[vertexOffset + 1];
+            vertexOffset = triangles[i + 2] shl 1
+            val x3 = vertices[vertexOffset]
+            val y3 = vertices[vertexOffset + 1]
+            val u3 = uvs[vertexOffset]
+            val v3 = uvs[vertexOffset + 1]
 
-			for (int p = 0; p < polygonsCount; p++) {
-				int s = clippedVertices.size;
-				if (clip(x1, y1, x2, y2, x3, y3, (JFloatArray)polygons[p], clipOutput)) {
-					int clipOutputLength = clipOutput.size;
-					if (clipOutputLength == 0) continue;
-					float d0 = y2 - y3, d1 = x3 - x2, d2 = x1 - x3, d4 = y3 - y1;
-					float d = 1 / (d0 * d2 + d1 * (y1 - y3));
+            for (p in 0 until polygonsCount) {
+                var s = clippedVertices.size
+                if (clip(x1, y1, x2, y2, x3, y3, polygons[p], clipOutput)) {
+                    val clipOutputLength = clipOutput.size
+                    if (clipOutputLength == 0) continue
+                    val d0 = y2 - y3
+                    val d1 = x3 - x2
+                    val d2 = x1 - x3
+                    val d4 = y3 - y1
+                    val d = 1 / (d0 * d2 + d1 * (y1 - y3))
 
-					int clipOutputCount = clipOutputLength >> 1;
-					float[] clipOutputItems = clipOutput.items;
-					float[] clippedVerticesItems = clippedVertices.setSize(s + clipOutputCount * vertexSize);
-					for (int ii = 0; ii < clipOutputLength; ii += 2) {
-						float x = clipOutputItems[ii], y = clipOutputItems[ii + 1];
-						clippedVerticesItems[s] = x;
-						clippedVerticesItems[s + 1] = y;
-						clippedVerticesItems[s + 2] = light;
-						if (twoColor) {
-							clippedVerticesItems[s + 3] = dark;
-							s += 4;
-						} else
-							s += 3;
-						float c0 = x - x3, c1 = y - y3;
-						float a = (d0 * c0 + d1 * c1) * d;
-						float b = (d4 * c0 + d2 * c1) * d;
-						float c = 1 - a - b;
-						clippedVerticesItems[s] = u1 * a + u2 * b + u3 * c;
-						clippedVerticesItems[s + 1] = v1 * a + v2 * b + v3 * c;
-						s += 2;
-					}
+                    var clipOutputCount = clipOutputLength shr 1
+                    val clipOutputItems = clipOutput.items
+                    val clippedVerticesItems = clippedVertices.setSize(s + clipOutputCount * vertexSize)
+                    run {
+                        var ii = 0
+                        while (ii < clipOutputLength) {
+                            val x = clipOutputItems[ii]
+                            val y = clipOutputItems[ii + 1]
+                            clippedVerticesItems[s] = x
+                            clippedVerticesItems[s + 1] = y
+                            clippedVerticesItems[s + 2] = light
+                            if (twoColor) {
+                                clippedVerticesItems[s + 3] = dark
+                                s += 4
+                            } else
+                                s += 3
+                            val c0 = x - x3
+                            val c1 = y - y3
+                            val a = (d0 * c0 + d1 * c1) * d
+                            val b = (d4 * c0 + d2 * c1) * d
+                            val c = 1f - a - b
+                            clippedVerticesItems[s] = u1 * a + u2 * b + u3 * c
+                            clippedVerticesItems[s + 1] = v1 * a + v2 * b + v3 * c
+                            s += 2
+                            ii += 2
+                        }
+                    }
 
-					s = clippedTriangles.size;
-					short[] clippedTrianglesItems = clippedTriangles.setSize(s + 3 * (clipOutputCount - 2));
-					clipOutputCount--;
-					for (int ii = 1; ii < clipOutputCount; ii++) {
-						clippedTrianglesItems[s] = index;
-						clippedTrianglesItems[s + 1] = (short)(index + ii);
-						clippedTrianglesItems[s + 2] = (short)(index + ii + 1);
-						s += 3;
-					}
-					index += clipOutputCount + 1;
+                    s = clippedTriangles.size
+                    val clippedTrianglesItems = clippedTriangles.setSize(s + 3 * (clipOutputCount - 2))
+                    clipOutputCount--
+                    for (ii in 1 until clipOutputCount) {
+                        clippedTrianglesItems[s] = index
+                        clippedTrianglesItems[s + 1] = (index + ii).toShort()
+                        clippedTrianglesItems[s + 2] = (index.toInt() + ii + 1).toShort()
+                        s += 3
+                    }
+                    index += (clipOutputCount + 1).toShort()
 
-				} else {
-					float[] clippedVerticesItems = clippedVertices.setSize(s + 3 * vertexSize);
-					clippedVerticesItems[s] = x1;
-					clippedVerticesItems[s + 1] = y1;
-					clippedVerticesItems[s + 2] = light;
-					if (!twoColor) {
-						clippedVerticesItems[s + 3] = u1;
-						clippedVerticesItems[s + 4] = v1;
+                } else {
+                    val clippedVerticesItems = clippedVertices.setSize(s + 3 * vertexSize)
+                    clippedVerticesItems[s] = x1
+                    clippedVerticesItems[s + 1] = y1
+                    clippedVerticesItems[s + 2] = light
+                    if (!twoColor) {
+                        clippedVerticesItems[s + 3] = u1
+                        clippedVerticesItems[s + 4] = v1
 
-						clippedVerticesItems[s + 5] = x2;
-						clippedVerticesItems[s + 6] = y2;
-						clippedVerticesItems[s + 7] = light;
-						clippedVerticesItems[s + 8] = u2;
-						clippedVerticesItems[s + 9] = v2;
+                        clippedVerticesItems[s + 5] = x2
+                        clippedVerticesItems[s + 6] = y2
+                        clippedVerticesItems[s + 7] = light
+                        clippedVerticesItems[s + 8] = u2
+                        clippedVerticesItems[s + 9] = v2
 
-						clippedVerticesItems[s + 10] = x3;
-						clippedVerticesItems[s + 11] = y3;
-						clippedVerticesItems[s + 12] = light;
-						clippedVerticesItems[s + 13] = u3;
-						clippedVerticesItems[s + 14] = v3;
-					} else {
-						clippedVerticesItems[s + 3] = dark;
-						clippedVerticesItems[s + 4] = u1;
-						clippedVerticesItems[s + 5] = v1;
+                        clippedVerticesItems[s + 10] = x3
+                        clippedVerticesItems[s + 11] = y3
+                        clippedVerticesItems[s + 12] = light
+                        clippedVerticesItems[s + 13] = u3
+                        clippedVerticesItems[s + 14] = v3
+                    } else {
+                        clippedVerticesItems[s + 3] = dark
+                        clippedVerticesItems[s + 4] = u1
+                        clippedVerticesItems[s + 5] = v1
 
-						clippedVerticesItems[s + 6] = x2;
-						clippedVerticesItems[s + 7] = y2;
-						clippedVerticesItems[s + 8] = light;
-						clippedVerticesItems[s + 9] = dark;
-						clippedVerticesItems[s + 10] = u2;
-						clippedVerticesItems[s + 11] = v2;
+                        clippedVerticesItems[s + 6] = x2
+                        clippedVerticesItems[s + 7] = y2
+                        clippedVerticesItems[s + 8] = light
+                        clippedVerticesItems[s + 9] = dark
+                        clippedVerticesItems[s + 10] = u2
+                        clippedVerticesItems[s + 11] = v2
 
-						clippedVerticesItems[s + 12] = x3;
-						clippedVerticesItems[s + 13] = y3;
-						clippedVerticesItems[s + 14] = light;
-						clippedVerticesItems[s + 15] = dark;
-						clippedVerticesItems[s + 16] = u3;
-						clippedVerticesItems[s + 17] = v3;
-					}
+                        clippedVerticesItems[s + 12] = x3
+                        clippedVerticesItems[s + 13] = y3
+                        clippedVerticesItems[s + 14] = light
+                        clippedVerticesItems[s + 15] = dark
+                        clippedVerticesItems[s + 16] = u3
+                        clippedVerticesItems[s + 17] = v3
+                    }
 
-					s = clippedTriangles.size;
-					short[] clippedTrianglesItems = clippedTriangles.setSize(s + 3);
-					clippedTrianglesItems[s] = index;
-					clippedTrianglesItems[s + 1] = (short)(index + 1);
-					clippedTrianglesItems[s + 2] = (short)(index + 2);
-					index += 3;
-					continue outer;
-				}
-			}
-		}
-	}
+                    s = clippedTriangles.size
+                    val clippedTrianglesItems = clippedTriangles.setSize(s + 3)
+                    clippedTrianglesItems[s] = index
+                    clippedTrianglesItems[s + 1] = (index + 1).toShort()
+                    clippedTrianglesItems[s + 2] = (index + 2).toShort()
+                    index += 3
+                    i += 3
+                    continue@outer
+                }
+            }
+            i += 3
+        }
+    }
 
-	/** Clips the input triangle against the convex, clockwise clipping area. If the triangle lies entirely within the clipping
-	 * area, false is returned. The clipping area must duplicate the first vertex at the end of the vertices list. */
-	boolean clip (float x1, float y1, float x2, float y2, float x3, float y3, JFloatArray clippingArea, JFloatArray output) {
-		JFloatArray originalOutput = output;
-		boolean clipped = false;
+    /** Clips the input triangle against the convex, clockwise clipping area. If the triangle lies entirely within the clipping
+     * area, false is returned. The clipping area must duplicate the first vertex at the end of the vertices list.  */
+    internal fun clip(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, clippingArea: JFloatArray, output: JFloatArray): Boolean {
+        var output = output
+        val originalOutput = output
+        var clipped = false
 
-		// Avoid copy at the end.
-		JFloatArray input = null;
-		if (clippingArea.size % 4 >= 2) {
-			input = output;
-			output = scratch;
-		} else
-			input = scratch;
+        // Avoid copy at the end.
+        var input: JFloatArray? = null
+        if (clippingArea.size % 4 >= 2) {
+            input = output
+            output = scratch
+        } else
+            input = scratch
 
-		input.clear();
-		input.add(x1);
-		input.add(y1);
-		input.add(x2);
-		input.add(y2);
-		input.add(x3);
-		input.add(y3);
-		input.add(x1);
-		input.add(y1);
-		output.clear();
+        input.clear()
+        input.add(x1)
+        input.add(y1)
+        input.add(x2)
+        input.add(y2)
+        input.add(x3)
+        input.add(y3)
+        input.add(x1)
+        input.add(y1)
+        output.clear()
 
-		float[] clippingVertices = clippingArea.items;
-		int clippingVerticesLast = clippingArea.size - 4;
-		for (int i = 0;; i += 2) {
-			float edgeX = clippingVertices[i], edgeY = clippingVertices[i + 1];
-			float edgeX2 = clippingVertices[i + 2], edgeY2 = clippingVertices[i + 3];
-			float deltaX = edgeX - edgeX2, deltaY = edgeY - edgeY2;
+        val clippingVertices = clippingArea.items
+        val clippingVerticesLast = clippingArea.size - 4
+        var i = 0
+        while (true) {
+            val edgeX = clippingVertices[i]
+            val edgeY = clippingVertices[i + 1]
+            val edgeX2 = clippingVertices[i + 2]
+            val edgeY2 = clippingVertices[i + 3]
+            val deltaX = edgeX - edgeX2
+            val deltaY = edgeY - edgeY2
 
-			float[] inputVertices = input.items;
-			int inputVerticesLength = input.size - 2, outputStart = output.size;
-			for (int ii = 0; ii < inputVerticesLength; ii += 2) {
-				float inputX = inputVertices[ii], inputY = inputVertices[ii + 1];
-				float inputX2 = inputVertices[ii + 2], inputY2 = inputVertices[ii + 3];
-				boolean side2 = deltaX * (inputY2 - edgeY2) - deltaY * (inputX2 - edgeX2) > 0;
-				if (deltaX * (inputY - edgeY2) - deltaY * (inputX - edgeX2) > 0) {
-					if (side2) { // v1 inside, v2 inside
-						output.add(inputX2);
-						output.add(inputY2);
-						continue;
-					}
-					// v1 inside, v2 outside
-					float c0 = inputY2 - inputY, c2 = inputX2 - inputX;
-					float s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY);
-					if (Math.abs(s) > 0.000001f) {
-						float ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s;
-						output.add(edgeX + (edgeX2 - edgeX) * ua);
-						output.add(edgeY + (edgeY2 - edgeY) * ua);
-					} else {
-						output.add(edgeX);
-						output.add(edgeY);
-					}
-				} else if (side2) { // v1 outside, v2 inside
-					float c0 = inputY2 - inputY, c2 = inputX2 - inputX;
-					float s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY);
-					if (Math.abs(s) > 0.000001f) {
-						float ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s;
-						output.add(edgeX + (edgeX2 - edgeX) * ua);
-						output.add(edgeY + (edgeY2 - edgeY) * ua);
-					} else {
-						output.add(edgeX);
-						output.add(edgeY);
-					}
-					output.add(inputX2);
-					output.add(inputY2);
-				}
-				clipped = true;
-			}
+            val inputVertices = input!!.items
+            val inputVerticesLength = input.size - 2
+            val outputStart = output.size
+            var ii = 0
+            while (ii < inputVerticesLength) {
+                val inputX = inputVertices[ii]
+                val inputY = inputVertices[ii + 1]
+                val inputX2 = inputVertices[ii + 2]
+                val inputY2 = inputVertices[ii + 3]
+                val side2 = deltaX * (inputY2 - edgeY2) - deltaY * (inputX2 - edgeX2) > 0
+                if (deltaX * (inputY - edgeY2) - deltaY * (inputX - edgeX2) > 0) {
+                    if (side2) { // v1 inside, v2 inside
+                        output.add(inputX2)
+                        output.add(inputY2)
+                        ii += 2
+                        continue
+                    }
+                    // v1 inside, v2 outside
+                    val c0 = inputY2 - inputY
+                    val c2 = inputX2 - inputX
+                    val s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY)
+                    if (Math.abs(s) > 0.000001f) {
+                        val ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s
+                        output.add(edgeX + (edgeX2 - edgeX) * ua)
+                        output.add(edgeY + (edgeY2 - edgeY) * ua)
+                    } else {
+                        output.add(edgeX)
+                        output.add(edgeY)
+                    }
+                } else if (side2) { // v1 outside, v2 inside
+                    val c0 = inputY2 - inputY
+                    val c2 = inputX2 - inputX
+                    val s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY)
+                    if (Math.abs(s) > 0.000001f) {
+                        val ua = (c2 * (edgeY - inputY) - c0 * (edgeX - inputX)) / s
+                        output.add(edgeX + (edgeX2 - edgeX) * ua)
+                        output.add(edgeY + (edgeY2 - edgeY) * ua)
+                    } else {
+                        output.add(edgeX)
+                        output.add(edgeY)
+                    }
+                    output.add(inputX2)
+                    output.add(inputY2)
+                }
+                clipped = true
+                ii += 2
+            }
 
-			if (outputStart == output.size) { // All edges outside.
-				originalOutput.clear();
-				return true;
-			}
+            if (outputStart == output.size) { // All edges outside.
+                originalOutput.clear()
+                return true
+            }
 
-			output.add(output.items[0]);
-			output.add(output.items[1]);
+            output.add(output.items[0])
+            output.add(output.items[1])
 
-			if (i == clippingVerticesLast) break;
-			JFloatArray temp = output;
-			output = input;
-			output.clear();
-			input = temp;
-		}
+            if (i == clippingVerticesLast) break
+            val temp = output
+            output = input
+            output.clear()
+            input = temp
+            i += 2
+        }
 
-		if (originalOutput != output) {
-			originalOutput.clear();
-			originalOutput.addAll(output.items, 0, output.size - 2);
-		} else
-			originalOutput.setSize(originalOutput.size - 2);
+        if (originalOutput !== output) {
+            originalOutput.clear()
+            originalOutput.addAll(output.items, 0, output.size - 2)
+        } else
+            originalOutput.setSize(originalOutput.size - 2)
 
-		return clipped;
-	}
+        return clipped
+    }
 
-	public JFloatArray getClippedVertices () {
-		return clippedVertices;
-	}
+    companion object {
 
-	public JShortArray getClippedTriangles () {
-		return clippedTriangles;
-	}
+        internal fun makeClockwise(polygon: JFloatArray) {
+            val vertices = polygon.items
+            val verticeslength = polygon.size
 
-	static void makeClockwise (JFloatArray polygon) {
-		float[] vertices = polygon.items;
-		int verticeslength = polygon.size;
+            var area = vertices[verticeslength - 2] * vertices[1] - vertices[0] * vertices[verticeslength - 1]
+            var p1x: Float
+            var p1y: Float
+            var p2x: Float
+            var p2y: Float
+            run {
+                var i = 0
+                val n = verticeslength - 3
+                while (i < n) {
+                    p1x = vertices[i]
+                    p1y = vertices[i + 1]
+                    p2x = vertices[i + 2]
+                    p2y = vertices[i + 3]
+                    area += p1x * p2y - p2x * p1y
+                    i += 2
+                }
+            }
+            if (area < 0) return
 
-		float area = vertices[verticeslength - 2] * vertices[1] - vertices[0] * vertices[verticeslength - 1], p1x, p1y, p2x, p2y;
-		for (int i = 0, n = verticeslength - 3; i < n; i += 2) {
-			p1x = vertices[i];
-			p1y = vertices[i + 1];
-			p2x = vertices[i + 2];
-			p2y = vertices[i + 3];
-			area += p1x * p2y - p2x * p1y;
-		}
-		if (area < 0) return;
-
-		for (int i = 0, lastX = verticeslength - 2, n = verticeslength >> 1; i < n; i += 2) {
-			float x = vertices[i], y = vertices[i + 1];
-			int other = lastX - i;
-			vertices[i] = vertices[other];
-			vertices[i + 1] = vertices[other + 1];
-			vertices[other] = x;
-			vertices[other + 1] = y;
-		}
-	}
+            var i = 0
+            val lastX = verticeslength - 2
+            val n = verticeslength shr 1
+            while (i < n) {
+                val x = vertices[i]
+                val y = vertices[i + 1]
+                val other = lastX - i
+                vertices[i] = vertices[other]
+                vertices[i + 1] = vertices[other + 1]
+                vertices[other] = x
+                vertices[other + 1] = y
+                i += 2
+            }
+        }
+    }
 }

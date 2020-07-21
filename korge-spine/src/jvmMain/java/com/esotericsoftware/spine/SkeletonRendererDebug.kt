@@ -25,285 +25,357 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.JFloatArray;
-import com.esotericsoftware.spine.attachments.Attachment;
-import com.esotericsoftware.spine.attachments.BoundingBoxAttachment;
-import com.esotericsoftware.spine.attachments.ClippingAttachment;
-import com.esotericsoftware.spine.attachments.MeshAttachment;
-import com.esotericsoftware.spine.attachments.PathAttachment;
-import com.esotericsoftware.spine.attachments.PointAttachment;
-import com.esotericsoftware.spine.attachments.RegionAttachment;
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.JFloatArray
+import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
+import com.esotericsoftware.spine.attachments.ClippingAttachment
+import com.esotericsoftware.spine.attachments.MeshAttachment
+import com.esotericsoftware.spine.attachments.PathAttachment
+import com.esotericsoftware.spine.attachments.PointAttachment
+import com.esotericsoftware.spine.attachments.RegionAttachment
 
-public class SkeletonRendererDebug {
-	static private final Color boneLineColor = Color.RED;
-	static private final Color boneOriginColor = Color.GREEN;
-	static private final Color attachmentLineColor = new Color(0, 0, 1, 0.5f);
-	static private final Color triangleLineColor = new Color(1, 0.64f, 0, 0.5f); // ffa3007f
-	static private final Color aabbColor = new Color(0, 1, 0, 0.5f);
+class SkeletonRendererDebug {
 
-	private final ShapeRenderer shapes;
-	private boolean drawBones = true, drawRegionAttachments = true, drawBoundingBoxes = true, drawPoints = true;
-	private boolean drawMeshHull = true, drawMeshTriangles = true, drawPaths = true, drawClipping = true;
-	private final SkeletonBounds bounds = new SkeletonBounds();
-	private final JFloatArray vertices = new JFloatArray(32);
-	private float scale = 1;
-	private float boneWidth = 2;
-	private boolean premultipliedAlpha;
-	private final Vector2 temp1 = new Vector2(), temp2 = new Vector2();
+    val shapeRenderer: ShapeRenderer
+    private var drawBones = true
+    private var drawRegionAttachments = true
+    private var drawBoundingBoxes = true
+    private var drawPoints = true
+    private var drawMeshHull = true
+    private var drawMeshTriangles = true
+    private var drawPaths = true
+    private var drawClipping = true
+    private val bounds = SkeletonBounds()
+    private val vertices = JFloatArray(32)
+    private var scale = 1f
+    private val boneWidth = 2f
+    private var premultipliedAlpha: Boolean = false
+    private val temp1 = Vector2()
+    private val temp2 = Vector2()
 
-	public SkeletonRendererDebug () {
-		shapes = new ShapeRenderer();
-	}
+    constructor() {
+        shapeRenderer = ShapeRenderer()
+    }
 
-	public SkeletonRendererDebug (ShapeRenderer shapes) {
-		if (shapes == null) throw new IllegalArgumentException("shapes cannot be null.");
-		this.shapes = shapes;
-	}
+    constructor(shapes: ShapeRenderer?) {
+        requireNotNull(shapes) { "shapes cannot be null." }
+        this.shapeRenderer = shapes
+    }
 
-	public void draw (Skeleton skeleton) {
-		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
+    fun draw(skeleton: Skeleton?) {
+        requireNotNull(skeleton) { "skeleton cannot be null." }
 
-		Gdx.INSTANCE.getGl().glEnable(GL20.GL_BLEND);
-		int srcFunc = premultipliedAlpha ? GL20.GL_ONE : GL20.GL_SRC_ALPHA;
-		Gdx.INSTANCE.getGl().glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl!!.glEnable(GL20.GL_BLEND)
+        val srcFunc = if (premultipliedAlpha) GL20.GL_ONE else GL20.GL_SRC_ALPHA
+        Gdx.gl!!.glBlendFunc(srcFunc, GL20.GL_ONE_MINUS_SRC_ALPHA)
 
-		ShapeRenderer shapes = this.shapes;
-		JArray<Bone> bones = skeleton.getBones();
-		JArray<Slot> slots = skeleton.getSlots();
+        val shapes = this.shapeRenderer
+        val bones = skeleton.bones
+        val slots = skeleton.slots
 
-		shapes.begin(ShapeType.Filled);
+        shapes.begin(ShapeType.Filled)
 
-		if (drawBones) {
-			for (int i = 0, n = bones.size; i < n; i++) {
-				Bone bone = bones.get(i);
-				if (bone.parent == null || !bone.active) continue;
-				float length = bone.data.length, width = boneWidth;
-				if (length == 0) {
-					length = 8;
-					width /= 2;
-					shapes.setColor(boneOriginColor);
-				} else
-					shapes.setColor(boneLineColor);
-				float x = length * bone.a + bone.worldX;
-				float y = length * bone.c + bone.worldY;
-				shapes.rectLine(bone.worldX, bone.worldY, x, y, width * scale);
-			}
-			shapes.x(skeleton.getX(), skeleton.getY(), 4 * scale);
-		}
+        if (drawBones) {
+            var i = 0
+            val n = bones.size
+            while (i < n) {
+                val bone = bones[i]
+                if (bone.parent == null || !bone.isActive) {
+                    i++
+                    continue
+                }
+                var length = bone.data.length
+                var width = boneWidth
+                if (length == 0f) {
+                    length = 8f
+                    width /= 2f
+                    shapes.setColor(boneOriginColor)
+                } else
+                    shapes.setColor(boneLineColor)
+                val x = length * bone.a + bone.worldX
+                val y = length * bone.c + bone.worldY
+                shapes.rectLine(bone.worldX, bone.worldY, x, y, width * scale)
+                i++
+            }
+            shapes.x(skeleton.x, skeleton.y, 4 * scale)
+        }
 
-		if (drawPoints) {
-			shapes.setColor(boneOriginColor);
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (!(attachment instanceof PointAttachment)) continue;
-				PointAttachment point = (PointAttachment)attachment;
-				point.computeWorldPosition(slot.getBone(), temp1);
-				temp2.set(8, 0).rotate(point.computeWorldRotation(slot.getBone()));
-				shapes.rectLine(temp1, temp2, boneWidth / 2 * scale);
-			}
-		}
+        if (drawPoints) {
+            shapes.setColor(boneOriginColor)
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment !is PointAttachment) {
+                    i++
+                    continue
+                }
+                attachment.computeWorldPosition(slot.bone, temp1)
+                temp2.set(8f, 0f).rotate(attachment.computeWorldRotation(slot.bone))
+                shapes.rectLine(temp1, temp2, boneWidth / 2 * scale)
+                i++
+            }
+        }
 
-		shapes.end();
-		shapes.begin(ShapeType.Line);
+        shapes.end()
+        shapes.begin(ShapeType.Line)
 
-		if (drawRegionAttachments) {
-			shapes.setColor(attachmentLineColor);
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (attachment instanceof RegionAttachment) {
-					RegionAttachment region = (RegionAttachment)attachment;
-					float[] vertices = this.vertices.items;
-					region.computeWorldVertices(slot.getBone(), vertices, 0, 2);
-					shapes.line(vertices[0], vertices[1], vertices[2], vertices[3]);
-					shapes.line(vertices[2], vertices[3], vertices[4], vertices[5]);
-					shapes.line(vertices[4], vertices[5], vertices[6], vertices[7]);
-					shapes.line(vertices[6], vertices[7], vertices[0], vertices[1]);
-				}
-			}
-		}
+        if (drawRegionAttachments) {
+            shapes.setColor(attachmentLineColor)
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment is RegionAttachment) {
+                    val vertices = this.vertices.items
+                    attachment.computeWorldVertices(slot.bone, vertices, 0, 2)
+                    shapes.line(vertices[0], vertices[1], vertices[2], vertices[3])
+                    shapes.line(vertices[2], vertices[3], vertices[4], vertices[5])
+                    shapes.line(vertices[4], vertices[5], vertices[6], vertices[7])
+                    shapes.line(vertices[6], vertices[7], vertices[0], vertices[1])
+                }
+                i++
+            }
+        }
 
-		if (drawMeshHull || drawMeshTriangles) {
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (!(attachment instanceof MeshAttachment)) continue;
-				MeshAttachment mesh = (MeshAttachment)attachment;
-				float[] vertices = this.vertices.setSize(mesh.getWorldVerticesLength());
-				mesh.computeWorldVertices(slot, 0, mesh.getWorldVerticesLength(), vertices, 0, 2);
-				short[] triangles = mesh.getTriangles();
-				int hullLength = mesh.getHullLength();
-				if (drawMeshTriangles) {
-					shapes.setColor(triangleLineColor);
-					for (int ii = 0, nn = triangles.length; ii < nn; ii += 3) {
-						int v1 = triangles[ii] * 2, v2 = triangles[ii + 1] * 2, v3 = triangles[ii + 2] * 2;
-						shapes.triangle(vertices[v1], vertices[v1 + 1], //
-							vertices[v2], vertices[v2 + 1], //
-							vertices[v3], vertices[v3 + 1] //
-						);
-					}
-				}
-				if (drawMeshHull && hullLength > 0) {
-					shapes.setColor(attachmentLineColor);
-					float lastX = vertices[hullLength - 2], lastY = vertices[hullLength - 1];
-					for (int ii = 0, nn = hullLength; ii < nn; ii += 2) {
-						float x = vertices[ii], y = vertices[ii + 1];
-						shapes.line(x, y, lastX, lastY);
-						lastX = x;
-						lastY = y;
-					}
-				}
-			}
-		}
+        if (drawMeshHull || drawMeshTriangles) {
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment !is MeshAttachment) {
+                    i++
+                    continue
+                }
+                val vertices = this.vertices.setSize(attachment.worldVerticesLength)
+                attachment.computeWorldVertices(slot, 0, attachment.worldVerticesLength, vertices, 0, 2)
+                val triangles = attachment.triangles
+                val hullLength = attachment.hullLength
+                if (drawMeshTriangles) {
+                    shapes.setColor(triangleLineColor)
+                    var ii = 0
+                    val nn = triangles!!.size
+                    while (ii < nn) {
+                        val v1 = triangles[ii] * 2
+                        val v2 = triangles[ii + 1] * 2
+                        val v3 = triangles[ii + 2] * 2
+                        shapes.triangle(vertices[v1], vertices[v1 + 1], //
+                                vertices[v2], vertices[v2 + 1], //
+                                vertices[v3], vertices[v3 + 1] //
+                        )
+                        ii += 3
+                    }
+                }
+                if (drawMeshHull && hullLength > 0) {
+                    shapes.setColor(attachmentLineColor)
+                    var lastX = vertices[hullLength - 2]
+                    var lastY = vertices[hullLength - 1]
+                    var ii = 0
+                    while (ii < hullLength) {
+                        val x = vertices[ii]
+                        val y = vertices[ii + 1]
+                        shapes.line(x, y, lastX, lastY)
+                        lastX = x
+                        lastY = y
+                        ii += 2
+                    }
+                }
+                i++
+            }
+        }
 
-		if (drawBoundingBoxes) {
-			SkeletonBounds bounds = this.bounds;
-			bounds.update(skeleton, true);
-			shapes.setColor(aabbColor);
-			shapes.rect(bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-			JArray<JFloatArray> polygons = bounds.getPolygons();
-			JArray<BoundingBoxAttachment> boxes = bounds.getBoundingBoxes();
-			for (int i = 0, n = polygons.size; i < n; i++) {
-				JFloatArray polygon = polygons.get(i);
-				shapes.setColor(boxes.get(i).getColor());
-				shapes.polygon(polygon.items, 0, polygon.size);
-			}
-		}
+        if (drawBoundingBoxes) {
+            val bounds = this.bounds
+            bounds.update(skeleton, true)
+            shapes.setColor(aabbColor)
+            shapes.rect(bounds.minX, bounds.minY, bounds.width, bounds.height)
+            val polygons = bounds.polygons
+            val boxes = bounds.boundingBoxes
+            var i = 0
+            val n = polygons.size
+            while (i < n) {
+                val polygon = polygons[i]
+                shapes.setColor(boxes[i].color)
+                shapes.polygon(polygon.items, 0, polygon.size)
+                i++
+            }
+        }
 
-		if (drawClipping) {
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (!(attachment instanceof ClippingAttachment)) continue;
-				ClippingAttachment clip = (ClippingAttachment)attachment;
-				int nn = clip.getWorldVerticesLength();
-				float[] vertices = this.vertices.setSize(nn);
-				clip.computeWorldVertices(slot, 0, nn, vertices, 0, 2);
-				shapes.setColor(clip.getColor());
-				for (int ii = 2; ii < nn; ii += 2)
-					shapes.line(vertices[ii - 2], vertices[ii - 1], vertices[ii], vertices[ii + 1]);
-				shapes.line(vertices[0], vertices[1], vertices[nn - 2], vertices[nn - 1]);
-			}
-		}
+        if (drawClipping) {
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment !is ClippingAttachment) {
+                    i++
+                    continue
+                }
+                val nn = attachment.worldVerticesLength
+                val vertices = this.vertices.setSize(nn)
+                attachment.computeWorldVertices(slot, 0, nn, vertices, 0, 2)
+                shapes.setColor(attachment.color)
+                var ii = 2
+                while (ii < nn) {
+                    shapes.line(vertices[ii - 2], vertices[ii - 1], vertices[ii], vertices[ii + 1])
+                    ii += 2
+                }
+                shapes.line(vertices[0], vertices[1], vertices[nn - 2], vertices[nn - 1])
+                i++
+            }
+        }
 
-		if (drawPaths) {
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (!(attachment instanceof PathAttachment)) continue;
-				PathAttachment path = (PathAttachment)attachment;
-				int nn = path.getWorldVerticesLength();
-				float[] vertices = this.vertices.setSize(nn);
-				path.computeWorldVertices(slot, 0, nn, vertices, 0, 2);
-				Color color = path.getColor();
-				float x1 = vertices[2], y1 = vertices[3], x2 = 0, y2 = 0;
-				if (path.getClosed()) {
-					shapes.setColor(color);
-					float cx1 = vertices[0], cy1 = vertices[1], cx2 = vertices[nn - 2], cy2 = vertices[nn - 1];
-					x2 = vertices[nn - 4];
-					y2 = vertices[nn - 3];
-					shapes.curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, 32);
-					shapes.setColor(Color.LIGHT_GRAY);
-					shapes.line(x1, y1, cx1, cy1);
-					shapes.line(x2, y2, cx2, cy2);
-				}
-				nn -= 4;
-				for (int ii = 4; ii < nn; ii += 6) {
-					float cx1 = vertices[ii], cy1 = vertices[ii + 1], cx2 = vertices[ii + 2], cy2 = vertices[ii + 3];
-					x2 = vertices[ii + 4];
-					y2 = vertices[ii + 5];
-					shapes.setColor(color);
-					shapes.curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, 32);
-					shapes.setColor(Color.LIGHT_GRAY);
-					shapes.line(x1, y1, cx1, cy1);
-					shapes.line(x2, y2, cx2, cy2);
-					x1 = x2;
-					y1 = y2;
-				}
-			}
-		}
+        if (drawPaths) {
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment !is PathAttachment) {
+                    i++
+                    continue
+                }
+                var nn = attachment.worldVerticesLength
+                val vertices = this.vertices.setSize(nn)
+                attachment.computeWorldVertices(slot, 0, nn, vertices, 0, 2)
+                val color = attachment.color
+                var x1 = vertices[2]
+                var y1 = vertices[3]
+                var x2 = 0f
+                var y2 = 0f
+                if (attachment.closed) {
+                    shapes.setColor(color)
+                    val cx1 = vertices[0]
+                    val cy1 = vertices[1]
+                    val cx2 = vertices[nn - 2]
+                    val cy2 = vertices[nn - 1]
+                    x2 = vertices[nn - 4]
+                    y2 = vertices[nn - 3]
+                    shapes.curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, 32)
+                    shapes.setColor(Color.LIGHT_GRAY)
+                    shapes.line(x1, y1, cx1, cy1)
+                    shapes.line(x2, y2, cx2, cy2)
+                }
+                nn -= 4
+                var ii = 4
+                while (ii < nn) {
+                    val cx1 = vertices[ii]
+                    val cy1 = vertices[ii + 1]
+                    val cx2 = vertices[ii + 2]
+                    val cy2 = vertices[ii + 3]
+                    x2 = vertices[ii + 4]
+                    y2 = vertices[ii + 5]
+                    shapes.setColor(color)
+                    shapes.curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, 32)
+                    shapes.setColor(Color.LIGHT_GRAY)
+                    shapes.line(x1, y1, cx1, cy1)
+                    shapes.line(x2, y2, cx2, cy2)
+                    x1 = x2
+                    y1 = y2
+                    ii += 6
+                }
+                i++
+            }
+        }
 
-		shapes.end();
-		shapes.begin(ShapeType.Filled);
+        shapes.end()
+        shapes.begin(ShapeType.Filled)
 
-		if (drawBones) {
-			shapes.setColor(boneOriginColor);
-			for (int i = 0, n = bones.size; i < n; i++) {
-				Bone bone = bones.get(i);
-				if (!bone.active) continue;
-				shapes.circle(bone.worldX, bone.worldY, 3 * scale, 8);
-			}
-		}
+        if (drawBones) {
+            shapes.setColor(boneOriginColor)
+            var i = 0
+            val n = bones.size
+            while (i < n) {
+                val bone = bones[i]
+                if (!bone.isActive) {
+                    i++
+                    continue
+                }
+                shapes.circle(bone.worldX, bone.worldY, 3 * scale, 8)
+                i++
+            }
+        }
 
-		if (drawPoints) {
-			shapes.setColor(boneOriginColor);
-			for (int i = 0, n = slots.size; i < n; i++) {
-				Slot slot = slots.get(i);
-				Attachment attachment = slot.attachment;
-				if (!(attachment instanceof PointAttachment)) continue;
-				PointAttachment point = (PointAttachment)attachment;
-				point.computeWorldPosition(slot.getBone(), temp1);
-				shapes.circle(temp1.x, temp1.y, 3 * scale, 8);
-			}
-		}
+        if (drawPoints) {
+            shapes.setColor(boneOriginColor)
+            var i = 0
+            val n = slots.size
+            while (i < n) {
+                val slot = slots[i]
+                val attachment = slot.attachment
+                if (attachment !is PointAttachment) {
+                    i++
+                    continue
+                }
+                attachment.computeWorldPosition(slot.bone, temp1)
+                shapes.circle(temp1.x, temp1.y, 3 * scale, 8)
+                i++
+            }
+        }
 
-		shapes.end();
+        shapes.end()
 
-	}
+    }
 
-	public ShapeRenderer getShapeRenderer () {
-		return shapes;
-	}
+    fun setBones(bones: Boolean) {
+        this.drawBones = bones
+    }
 
-	public void setBones (boolean bones) {
-		this.drawBones = bones;
-	}
+    fun setScale(scale: Float) {
+        this.scale = scale
+    }
 
-	public void setScale (float scale) {
-		this.scale = scale;
-	}
+    fun setRegionAttachments(regionAttachments: Boolean) {
+        this.drawRegionAttachments = regionAttachments
+    }
 
-	public void setRegionAttachments (boolean regionAttachments) {
-		this.drawRegionAttachments = regionAttachments;
-	}
+    fun setBoundingBoxes(boundingBoxes: Boolean) {
+        this.drawBoundingBoxes = boundingBoxes
+    }
 
-	public void setBoundingBoxes (boolean boundingBoxes) {
-		this.drawBoundingBoxes = boundingBoxes;
-	}
+    fun setMeshHull(meshHull: Boolean) {
+        this.drawMeshHull = meshHull
+    }
 
-	public void setMeshHull (boolean meshHull) {
-		this.drawMeshHull = meshHull;
-	}
+    fun setMeshTriangles(meshTriangles: Boolean) {
+        this.drawMeshTriangles = meshTriangles
+    }
 
-	public void setMeshTriangles (boolean meshTriangles) {
-		this.drawMeshTriangles = meshTriangles;
-	}
+    fun setPaths(paths: Boolean) {
+        this.drawPaths = paths
+    }
 
-	public void setPaths (boolean paths) {
-		this.drawPaths = paths;
-	}
+    fun setPoints(points: Boolean) {
+        this.drawPoints = points
+    }
 
-	public void setPoints (boolean points) {
-		this.drawPoints = points;
-	}
+    fun setClipping(clipping: Boolean) {
+        this.drawClipping = clipping
+    }
 
-	public void setClipping (boolean clipping) {
-		this.drawClipping = clipping;
-	}
+    fun setPremultipliedAlpha(premultipliedAlpha: Boolean) {
+        this.premultipliedAlpha = premultipliedAlpha
+    }
 
-	public void setPremultipliedAlpha (boolean premultipliedAlpha) {
-		this.premultipliedAlpha = premultipliedAlpha;
-	}
+    companion object {
+        private val boneLineColor = Color.RED
+        private val boneOriginColor = Color.GREEN
+        private val attachmentLineColor = Color(0f, 0f, 1f, 0.5f)
+        private val triangleLineColor = Color(1f, 0.64f, 0f, 0.5f) // ffa3007f
+        private val aabbColor = Color(0f, 1f, 0f, 0.5f)
+    }
 }

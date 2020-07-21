@@ -25,86 +25,44 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
-import com.esotericsoftware.spine.Animation.Timeline;
-import com.esotericsoftware.spine.AnimationState.AnimationStateListener;
+import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.Animation.Timeline
+import com.esotericsoftware.spine.AnimationState.AnimationStateListener
 
-/** Stores the current pose values for an {@link Event}.
- * <p>
+/** Stores the current pose values for an [Event].
+ *
+ *
  * See Timeline
- * {@link Timeline#apply(Skeleton, float, float, JArray, float, com.esotericsoftware.spine.Animation.MixBlend, com.esotericsoftware.spine.Animation.MixDirection)},
- * AnimationStateListener {@link AnimationStateListener#event(com.esotericsoftware.spine.AnimationState.TrackEntry, Event)}, and
- * <a href="http://esotericsoftware.com/spine-events">Events</a> in the Spine User Guide. */
-public class Event {
-	final private EventData data;
-	int intValue;
-	float floatValue;
-	String stringValue;
-	float volume, balance;
-	final float time;
+ * [Timeline.apply],
+ * AnimationStateListener [AnimationStateListener.event], and
+ * [Events](http://esotericsoftware.com/spine-events) in the Spine User Guide.  */
+class Event(
+        /** The animation time this event was keyed.  */
+        val time: Float,
+        /** The events's setup pose data.  */
+        val data: EventData?) {
+    var int: Int = 0
+    var float: Float = 0.toFloat()
+    internal var stringValue: String
+    var volume: Float = 0.toFloat()
+    var balance: Float = 0.toFloat()
 
-	public Event (float time, EventData data) {
-		if (data == null) throw new IllegalArgumentException("data cannot be null.");
-		this.time = time;
-		this.data = data;
-	}
+    var string: String?
+        get() = stringValue
+        set(stringValue) {
+            requireNotNull(stringValue) { "stringValue cannot be null." }
+            this.stringValue = stringValue
+        }
 
-	public int getInt () {
-		return intValue;
-	}
+    init {
+        requireNotNull(data) { "data cannot be null." }
+    }
 
-	public void setInt (int intValue) {
-		this.intValue = intValue;
-	}
-
-	public float getFloat () {
-		return floatValue;
-	}
-
-	public void setFloat (float floatValue) {
-		this.floatValue = floatValue;
-	}
-
-	public String getString () {
-		return stringValue;
-	}
-
-	public void setString (String stringValue) {
-		if (stringValue == null) throw new IllegalArgumentException("stringValue cannot be null.");
-		this.stringValue = stringValue;
-	}
-
-	public float getVolume () {
-		return volume;
-	}
-
-	public void setVolume (float volume) {
-		this.volume = volume;
-	}
-
-	public float getBalance () {
-		return balance;
-	}
-
-	public void setBalance (float balance) {
-		this.balance = balance;
-	}
-
-	/** The animation time this event was keyed. */
-	public float getTime () {
-		return time;
-	}
-
-	/** The events's setup pose data. */
-	public EventData getData () {
-		return data;
-	}
-
-	public String toString () {
-		return data.name;
-	}
+    override fun toString(): String {
+        return data.name
+    }
 }

@@ -25,35 +25,32 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL20
 
-/** Determines how images are blended with existing pixels when drawn. */
-public enum BlendMode {
-	normal(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA), //
-	additive(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE), //
-	multiply(GL20.GL_DST_COLOR, GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA), //
-	screen(GL20.GL_ONE, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_COLOR), //
-	;
+/** Determines how images are blended with existing pixels when drawn.  */
+enum class BlendMode private constructor(internal var source: Int, internal var sourcePMA: Int, dest: Int) {
+    normal(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA), //
+    additive(GL20.GL_SRC_ALPHA, GL20.GL_ONE, GL20.GL_ONE), //
+    multiply(GL20.GL_DST_COLOR, GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA), //
+    screen(GL20.GL_ONE, GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_COLOR);
 
-	int source, sourcePMA, dest;
+    var dest: Int = 0
+        internal set
 
-	BlendMode (int source, int sourcePremultipledAlpha, int dest) {
-		this.source = source;
-		this.sourcePMA = sourcePremultipledAlpha;
-		this.dest = dest;
-	}
+    init {
+        this.dest = dest
+    }
 
-	public int getSource (boolean premultipliedAlpha) {
-		return premultipliedAlpha ? sourcePMA : source;
-	}
+    fun getSource(premultipliedAlpha: Boolean): Int {
+        return if (premultipliedAlpha) sourcePMA else source
+    }
 
-	public int getDest () {
-		return dest;
-	}
+    companion object {
 
-	static public final BlendMode[] values = values();
-}
+        val values = values()
+    }
+}//

@@ -25,129 +25,114 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.JFloatArray;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.utils.JFloatArray
 
-import com.esotericsoftware.spine.Animation.DeformTimeline;
-import com.esotericsoftware.spine.attachments.Attachment;
-import com.esotericsoftware.spine.attachments.VertexAttachment;
+import com.esotericsoftware.spine.Animation.DeformTimeline
+import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.attachments.VertexAttachment
 
-/** Stores a slot's current pose. Slots organize attachments for {@link Skeleton#drawOrder} purposes and provide a place to store
+/** Stores a slot's current pose. Slots organize attachments for [Skeleton.drawOrder] purposes and provide a place to store
  * state for an attachment. State cannot be stored in an attachment itself because attachments are stateless and may be shared
- * across multiple skeletons. */
-public class Slot {
-	final SlotData data;
-	final Bone bone;
-	final Color color = new Color(), darkColor;
-	Attachment attachment;
-	private float attachmentTime;
-	private JFloatArray deform = new JFloatArray();
+ * across multiple skeletons.  */
+class Slot {
+    /** The slot's setup pose data.  */
+    val data: SlotData
 
-	int attachmentState;
+    /** The bone this slot belongs to.  */
+    val bone: Bone
 
-	public Slot (SlotData data, Bone bone) {
-		if (data == null) throw new IllegalArgumentException("data cannot be null.");
-		if (bone == null) throw new IllegalArgumentException("bone cannot be null.");
-		this.data = data;
-		this.bone = bone;
-		darkColor = data.darkColor == null ? null : new Color();
-		setToSetupPose();
-	}
+    /** The color used to tint the slot's attachment. If [.getDarkColor] is set, this is used as the light color for two
+     * color tinting.  */
+    val color = Color()
 
-	/** Copy constructor. */
-	public Slot (Slot slot, Bone bone) {
-		if (slot == null) throw new IllegalArgumentException("slot cannot be null.");
-		if (bone == null) throw new IllegalArgumentException("bone cannot be null.");
-		data = slot.data;
-		this.bone = bone;
-		color.set(slot.color);
-		darkColor = slot.darkColor == null ? null : new Color(slot.darkColor);
-		attachment = slot.attachment;
-		attachmentTime = slot.attachmentTime;
-		deform.addAll(slot.deform);
-	}
+    /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
+     * color's alpha is not used.  */
+    val darkColor: Color?
+    internal var attachment: Attachment? = null
+    private var attachmentTime: Float = 0.toFloat()
 
-	/** The slot's setup pose data. */
-	public SlotData getData () {
-		return data;
-	}
+    /** Values to deform the slot's attachment. For an unweighted mesh, the entries are local positions for each vertex. For a
+     * weighted mesh, the entries are an offset for each vertex which will be added to the mesh's local vertex positions.
+     *
+     *
+     * See [VertexAttachment.computeWorldVertices] and [DeformTimeline].  */
+    var deform: JFloatArray? = JFloatArray()
+        set(deform) {
+            requireNotNull(deform) { "deform cannot be null." }
+            field = deform
+        }
 
-	/** The bone this slot belongs to. */
-	public Bone getBone () {
-		return bone;
-	}
+    internal var attachmentState: Int = 0
 
-	/** The skeleton this slot belongs to. */
-	public Skeleton getSkeleton () {
-		return bone.skeleton;
-	}
+    /** The skeleton this slot belongs to.  */
+    val skeleton: Skeleton
+        get() = bone.skeleton
 
-	/** The color used to tint the slot's attachment. If {@link #getDarkColor()} is set, this is used as the light color for two
-	 * color tinting. */
-	public Color getColor () {
-		return color;
-	}
+    constructor(data: SlotData?, bone: Bone?) {
+        requireNotNull(data) { "data cannot be null." }
+        requireNotNull(bone) { "bone cannot be null." }
+        this.data = data
+        this.bone = bone
+        darkColor = if (data.darkColor == null) null else Color()
+        setToSetupPose()
+    }
 
-	/** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
-	 * color's alpha is not used. */
-	public Color getDarkColor () {
-		return darkColor;
-	}
+    /** Copy constructor.  */
+    constructor(slot: Slot?, bone: Bone?) {
+        requireNotNull(slot) { "slot cannot be null." }
+        requireNotNull(bone) { "bone cannot be null." }
+        data = slot.data
+        this.bone = bone
+        color.set(slot.color)
+        darkColor = if (slot.darkColor == null) null else Color(slot.darkColor)
+        attachment = slot.attachment
+        attachmentTime = slot.attachmentTime
+        this.deform!!.addAll(slot.deform!!)
+    }
 
-	/** The current attachment for the slot, or null if the slot has no attachment. */
-	public Attachment getAttachment () {
-		return attachment;
-	}
+    /** The current attachment for the slot, or null if the slot has no attachment.  */
+    fun getAttachment(): Attachment? {
+        return attachment
+    }
 
-	/** Sets the slot's attachment and, if the attachment changed, resets {@link #attachmentTime} and clears {@link #deform}.
-	 * @param attachment May be null. */
-	public void setAttachment (Attachment attachment) {
-		if (this.attachment == attachment) return;
-		this.attachment = attachment;
-		attachmentTime = bone.skeleton.time;
-		deform.clear();
-	}
+    /** Sets the slot's attachment and, if the attachment changed, resets [.attachmentTime] and clears [.deform].
+     * @param attachment May be null.
+     */
+    fun setAttachment(attachment: Attachment?) {
+        if (this.attachment === attachment) return
+        this.attachment = attachment
+        attachmentTime = bone.skeleton.time
+        this.deform!!.clear()
+    }
 
-	/** The time that has elapsed since the last time the attachment was set or cleared. Relies on Skeleton
-	 * {@link Skeleton#time}. */
-	public float getAttachmentTime () {
-		return bone.skeleton.time - attachmentTime;
-	}
+    /** The time that has elapsed since the last time the attachment was set or cleared. Relies on Skeleton
+     * [Skeleton.time].  */
+    fun getAttachmentTime(): Float {
+        return bone.skeleton.time - attachmentTime
+    }
 
-	public void setAttachmentTime (float time) {
-		attachmentTime = bone.skeleton.time - time;
-	}
+    fun setAttachmentTime(time: Float) {
+        attachmentTime = bone.skeleton.time - time
+    }
 
-	/** Values to deform the slot's attachment. For an unweighted mesh, the entries are local positions for each vertex. For a
-	 * weighted mesh, the entries are an offset for each vertex which will be added to the mesh's local vertex positions.
-	 * <p>
-	 * See {@link VertexAttachment#computeWorldVertices(Slot, int, int, float[], int, int)} and {@link DeformTimeline}. */
-	public JFloatArray getDeform () {
-		return deform;
-	}
+    /** Sets this slot to the setup pose.  */
+    fun setToSetupPose() {
+        color.set(data.color)
+        darkColor?.set(data.darkColor)
+        if (data.attachmentName == null)
+            setAttachment(null)
+        else {
+            attachment = null
+            setAttachment(bone.skeleton.getAttachment(data.index, data.attachmentName))
+        }
+    }
 
-	public void setDeform (JFloatArray deform) {
-		if (deform == null) throw new IllegalArgumentException("deform cannot be null.");
-		this.deform = deform;
-	}
-
-	/** Sets this slot to the setup pose. */
-	public void setToSetupPose () {
-		color.set(data.color);
-		if (darkColor != null) darkColor.set(data.darkColor);
-		if (data.attachmentName == null)
-			setAttachment(null);
-		else {
-			attachment = null;
-			setAttachment(bone.skeleton.getAttachment(data.index, data.attachmentName));
-		}
-	}
-
-	public String toString () {
-		return data.name;
-	}
+    override fun toString(): String {
+        return data.name
+    }
 }

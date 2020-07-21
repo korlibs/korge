@@ -25,28 +25,25 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-/** The base class for all attachments. */
-abstract public class Attachment {
-	String name;
+/** The base class for all attachments.  */
+abstract class Attachment(name: String?) {
+    /** The attachment's name.  */
+    var name: String
+        internal set
 
-	public Attachment (String name) {
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		this.name = name;
-	}
+    init {
+        requireNotNull(name) { "name cannot be null." }
+        this.name = name
+    }
 
-	/** The attachment's name. */
-	public String getName () {
-		return name;
-	}
+    override fun toString(): String {
+        return name
+    }
 
-	public String toString () {
-		return name;
-	}
-
-	/** Returns a copy of the attachment. **/
-	abstract public Attachment copy ();
+    /** Returns a copy of the attachment.  */
+    abstract fun copy(): Attachment
 }

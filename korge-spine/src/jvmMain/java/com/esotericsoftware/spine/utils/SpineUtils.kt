@@ -25,48 +25,51 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.utils;
+package com.esotericsoftware.spine.utils
 
-public class SpineUtils {
-	static public final float PI = 3.1415927f;
-	static public final float PI2 = PI * 2;
-	static public final float radiansToDegrees = 180f / PI;
-	static public final float radDeg = radiansToDegrees;
-	static public final float degreesToRadians = PI / 180;
-	static public final float degRad = degreesToRadians;
+object SpineUtils {
+    val PI = 3.1415927f
+    val PI2 = PI * 2
+    val radiansToDegrees = 180f / PI
+    val radDeg = radiansToDegrees
+    val degreesToRadians = PI / 180
+    val degRad = degreesToRadians
 
-	public static float cosDeg (float angle) {
-		return (float)Math.cos(angle * degRad);
-	}
+    fun cosDeg(angle: Float): Float {
+        return Math.cos((angle * degRad).toDouble()).toFloat()
+    }
 
-	public static float sinDeg (float angle) {
-		return (float)Math.sin(angle * degRad);
-	}
+    fun sinDeg(angle: Float): Float {
+        return Math.sin((angle * degRad).toDouble()).toFloat()
+    }
 
-	public static float cos (float angle) {
-		return (float)Math.cos(angle);
-	}
+    fun cos(angle: Float): Float {
+        return Math.cos(angle.toDouble()).toFloat()
+    }
 
-	public static float sin (float angle) {
-		return (float)Math.sin(angle);
-	}
+    fun sin(angle: Float): Float {
+        return Math.sin(angle.toDouble()).toFloat()
+    }
 
-	public static float atan2 (float y, float x) {
-		return (float)Math.atan2(y, x);
-	}
+    fun atan2(y: Float, x: Float): Float {
+        return Math.atan2(y.toDouble(), x.toDouble()).toFloat()
+    }
 
-	static public void arraycopy (Object src, int srcPos, Object dest, int destPos, int length) {
-		if (src == null) throw new IllegalArgumentException("src cannot be null.");
-		if (dest == null) throw new IllegalArgumentException("dest cannot be null.");
-		try {
-			System.arraycopy(src, srcPos, dest, destPos, length);
-		} catch (ArrayIndexOutOfBoundsException ex) {
-			throw new ArrayIndexOutOfBoundsException( //
-				"Src: " + java.lang.reflect.Array.getLength(src) + ", " + srcPos //
-					+ ", dest: " + java.lang.reflect.Array.getLength(dest) + ", " + destPos //
-					+ ", count: " + length);
-		}
-	}
+    fun arraycopy(src: Any?, srcPos: Int, dest: Any?, destPos: Int, length: Int) {
+        requireNotNull(src) { "src cannot be null." }
+        requireNotNull(dest) { "dest cannot be null." }
+        try {
+            System.arraycopy(src, srcPos, dest, destPos, length)
+        } catch (ex: ArrayIndexOutOfBoundsException) {
+            throw ArrayIndexOutOfBoundsException( //
+                    "Src: " + java.lang.reflect.Array.getLength(src) + ", " + srcPos //
+
+                            + ", dest: " + java.lang.reflect.Array.getLength(dest) + ", " + destPos //
+
+                            + ", count: " + length)
+        }
+
+    }
 }

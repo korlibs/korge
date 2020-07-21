@@ -25,72 +25,44 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.esotericsoftware.spine.utils.SpineUtils.*
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Color
 
-import com.esotericsoftware.spine.PathConstraint;
+import com.esotericsoftware.spine.PathConstraint
 
 /** An attachment whose vertices make up a composite Bezier curve.
- * <p>
- * See {@link PathConstraint} and <a href="http://esotericsoftware.com/spine-paths">Paths</a> in the Spine User Guide. */
-public class PathAttachment extends VertexAttachment {
-	float[] lengths;
-	boolean closed, constantSpeed;
+ *
+ *
+ * See [PathConstraint] and [Paths](http://esotericsoftware.com/spine-paths) in the Spine User Guide.  */
+class PathAttachment(name: String) : VertexAttachment(name) {
+    /** The lengths along the path in the setup pose from the start of the path to the end of each Bezier curve.  */
+    var lengths: FloatArray
 
-	// Nonessential.
-	final Color color = new Color(1, 0.5f, 0, 1); // ff7f00ff
+    /** If true, the start and end knots are connected.  */
+    var closed: Boolean = false
 
-	public PathAttachment (String name) {
-		super(name);
-	}
+    /** If true, additional calculations are performed to make calculating positions along the path more accurate. If false, fewer
+     * calculations are performed but calculating positions along the path is less accurate.  */
+    var constantSpeed: Boolean = false
 
-	/** If true, the start and end knots are connected. */
-	public boolean getClosed () {
-		return closed;
-	}
+    // Nonessential.
+    /** The color of the path as it was in Spine. Available only when nonessential data was exported. Paths are not usually
+     * rendered at runtime.  */
+    val color = Color(1f, 0.5f, 0f, 1f) // ff7f00ff
 
-	public void setClosed (boolean closed) {
-		this.closed = closed;
-	}
-
-	/** If true, additional calculations are performed to make calculating positions along the path more accurate. If false, fewer
-	 * calculations are performed but calculating positions along the path is less accurate. */
-	public boolean getConstantSpeed () {
-		return constantSpeed;
-	}
-
-	public void setConstantSpeed (boolean constantSpeed) {
-		this.constantSpeed = constantSpeed;
-	}
-
-	/** The lengths along the path in the setup pose from the start of the path to the end of each Bezier curve. */
-	public float[] getLengths () {
-		return lengths;
-	}
-
-	public void setLengths (float[] lengths) {
-		this.lengths = lengths;
-	}
-
-	/** The color of the path as it was in Spine. Available only when nonessential data was exported. Paths are not usually
-	 * rendered at runtime. */
-	public Color getColor () {
-		return color;
-	}
-
-	public Attachment copy () {
-		PathAttachment copy = new PathAttachment(name);
-		copyTo(copy);
-		copy.lengths = new float[lengths.length];
-		arraycopy(lengths, 0, copy.lengths, 0, lengths.length);
-		copy.closed = closed;
-		copy.constantSpeed = constantSpeed;
-		copy.color.set(color);
-		return copy;
-	}
+    override fun copy(): Attachment {
+        val copy = PathAttachment(name)
+        copyTo(copy)
+        copy.lengths = FloatArray(lengths.size)
+        arraycopy(lengths, 0, copy.lengths, 0, lengths.size)
+        copy.closed = closed
+        copy.constantSpeed = constantSpeed
+        copy.color.set(color)
+        return copy
+    }
 }

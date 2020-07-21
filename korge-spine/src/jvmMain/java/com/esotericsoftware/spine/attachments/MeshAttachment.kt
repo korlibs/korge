@@ -25,251 +25,207 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.esotericsoftware.spine.utils.SpineUtils.*
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 
 /** An attachment that displays a textured mesh. A mesh has hull vertices and internal vertices within the hull. Holes are not
  * supported. Each vertex has UVs (texture coordinates) and triangles are used to map an image on to the mesh.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-meshes">Mesh attachments</a> in the Spine User Guide. */
-public class MeshAttachment extends VertexAttachment {
-	private TextureRegion region;
-	private String path;
-	private float[] regionUVs, uvs;
-	private short[] triangles;
-	private final Color color = new Color(1, 1, 1, 1);
-	private int hullLength;
-	private MeshAttachment parentMesh;
+ *
+ *
+ * See [Mesh attachments](http://esotericsoftware.com/spine-meshes) in the Spine User Guide.  */
+class MeshAttachment(name: String) : VertexAttachment(name) {
+    private var region: TextureRegion? = null
 
-	// Nonessential.
-	private short[] edges;
-	private float width, height;
+    /** The name of the texture region for this attachment.  */
+    var path: String? = null
+    /** The UV pair for each vertex, normalized within the texture region.  */
+    /** Sets the texture coordinates for the region. The values are u,v pairs for each vertex.  */
+    var regionUVs: FloatArray? = null
 
-	public MeshAttachment (String name) {
-		super(name);
-	}
+    /** The UV pair for each vertex, normalized within the entire texture.
+     *
+     *
+     * See [.updateUVs].  */
+    var uVs: FloatArray? = null
 
-	public void setRegion (TextureRegion region) {
-		if (region == null) throw new IllegalArgumentException("region cannot be null.");
-		this.region = region;
-	}
+    /** Triplets of vertex indices which describe the mesh's triangulation.  */
+    var triangles: ShortArray? = null
 
-	public TextureRegion getRegion () {
-		if (region == null) throw new IllegalStateException("Region has not been set: " + this);
-		return region;
-	}
+    /** The color to tint the mesh.  */
+    val color = Color(1f, 1f, 1f, 1f)
 
-	/** Calculates {@link #uvs} using {@link #regionUVs} and the {@link #region}. Must be called after changing the region UVs or
-	 * region. */
-	public void updateUVs () {
-		float[] regionUVs = this.regionUVs;
-		if (this.uvs == null || this.uvs.length != regionUVs.length) this.uvs = new float[regionUVs.length];
-		float[] uvs = this.uvs;
-		int n = uvs.length;
-		float u, v, width, height;
-		if (region instanceof AtlasRegion) {
-			u = region.getU();
-			v = region.getV();
-			AtlasRegion region = (AtlasRegion)this.region;
-			float textureWidth = region.getTexture().getWidth(), textureHeight = region.getTexture().getHeight();
-			switch (region.degrees) {
-			case 90:
-				u -= (region.originalHeight - region.offsetY - region.packedWidth) / textureWidth;
-				v -= (region.originalWidth - region.offsetX - region.packedHeight) / textureHeight;
-				width = region.originalHeight / textureWidth;
-				height = region.originalWidth / textureHeight;
-				for (int i = 0; i < n; i += 2) {
-					uvs[i] = u + regionUVs[i + 1] * width;
-					uvs[i + 1] = v + (1 - regionUVs[i]) * height;
-				}
-				return;
-			case 180:
-				u -= (region.originalWidth - region.offsetX - region.packedWidth) / textureWidth;
-				v -= region.offsetY / textureHeight;
-				width = region.originalWidth / textureWidth;
-				height = region.originalHeight / textureHeight;
-				for (int i = 0; i < n; i += 2) {
-					uvs[i] = u + (1 - regionUVs[i]) * width;
-					uvs[i + 1] = v + (1 - regionUVs[i + 1]) * height;
-				}
-				return;
-			case 270:
-				u -= region.offsetY / textureWidth;
-				v -= region.offsetX / textureHeight;
-				width = region.originalHeight / textureWidth;
-				height = region.originalWidth / textureHeight;
-				for (int i = 0; i < n; i += 2) {
-					uvs[i] = u + (1 - regionUVs[i + 1]) * width;
-					uvs[i + 1] = v + regionUVs[i] * height;
-				}
-				return;
-			}
-			u -= region.offsetX / textureWidth;
-			v -= (region.originalHeight - region.offsetY - region.packedHeight) / textureHeight;
-			width = region.originalWidth / textureWidth;
-			height = region.originalHeight / textureHeight;
-		} else if (region == null) {
-			u = v = 0;
-			width = height = 1;
-		} else {
-			u = region.getU();
-			v = region.getV();
-			width = region.getU2() - u;
-			height = region.getV2() - v;
-		}
-		for (int i = 0; i < n; i += 2) {
-			uvs[i] = u + regionUVs[i] * width;
-			uvs[i + 1] = v + regionUVs[i + 1] * height;
-		}
-	}
+    /** The number of entries at the beginning of [.vertices] that make up the mesh hull.  */
+    var hullLength: Int = 0
+    /** The parent mesh if this is a linked mesh, else null. A linked mesh shares the [.bones], [.vertices],
+     * [.regionUVs], [.triangles], [.hullLength], [.edges], [.width], and [.height] with the
+     * parent mesh, but may have a different [.name] or [.path] (and therefore a different texture).  */
+    /** @param parentMesh May be null.
+     */
+    var parentMesh: MeshAttachment? = null
+        set(parentMesh) {
+            field = parentMesh
+            if (parentMesh != null) {
+                bones = parentMesh.bones
+                vertices = parentMesh.vertices
+                regionUVs = parentMesh.regionUVs
+                triangles = parentMesh.triangles
+                hullLength = parentMesh.hullLength
+                worldVerticesLength = parentMesh.worldVerticesLength
+                edges = parentMesh.edges
+                width = parentMesh.width
+                height = parentMesh.height
+            }
+        }
 
-	/** Triplets of vertex indices which describe the mesh's triangulation. */
-	public short[] getTriangles () {
-		return triangles;
-	}
+    // Nonessential.
+    /** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
+     * nonessential data was exported. Triangulation is not performed at runtime.  */
+    var edges: ShortArray? = null
 
-	public void setTriangles (short[] triangles) {
-		this.triangles = triangles;
-	}
+    /** The width of the mesh's image. Available only when nonessential data was exported.  */
+    var width: Float = 0.toFloat()
 
-	/** The UV pair for each vertex, normalized within the texture region. */
-	public float[] getRegionUVs () {
-		return regionUVs;
-	}
+    /** The height of the mesh's image. Available only when nonessential data was exported.  */
+    var height: Float = 0.toFloat()
 
-	/** Sets the texture coordinates for the region. The values are u,v pairs for each vertex. */
-	public void setRegionUVs (float[] regionUVs) {
-		this.regionUVs = regionUVs;
-	}
+    fun setRegion(region: TextureRegion?) {
+        requireNotNull(region) { "region cannot be null." }
+        this.region = region
+    }
 
-	/** The UV pair for each vertex, normalized within the entire texture.
-	 * <p>
-	 * See {@link #updateUVs}. */
-	public float[] getUVs () {
-		return uvs;
-	}
+    fun getRegion(): TextureRegion {
+        checkNotNull(region) { "Region has not been set: $this" }
+        return region
+    }
 
-	public void setUVs (float[] uvs) {
-		this.uvs = uvs;
-	}
+    /** Calculates [.uvs] using [.regionUVs] and the [.region]. Must be called after changing the region UVs or
+     * region.  */
+    fun updateUVs() {
+        val regionUVs = this.regionUVs
+        if (this.uVs == null || this.uVs!!.size != regionUVs!!.size) this.uVs = FloatArray(regionUVs!!.size)
+        val uvs = this.uVs
+        val n = uvs!!.size
+        var u: Float
+        var v: Float
+        val width: Float
+        val height: Float
+        if (region is AtlasRegion) {
+            u = region!!.u
+            v = region!!.v
+            val region = this.region as AtlasRegion?
+            val textureWidth = region!!.texture.width
+            val textureHeight = region.texture.height
+            when (region.degrees) {
+                90 -> {
+                    u -= (region.originalHeight - region.offsetY - region.packedWidth) / textureWidth
+                    v -= (region.originalWidth - region.offsetX - region.packedHeight) / textureHeight
+                    width = region.originalHeight / textureWidth
+                    height = region.originalWidth / textureHeight
+                    run {
+                        var i = 0
+                        while (i < n) {
+                            uvs[i] = u + regionUVs[i + 1] * width
+                            uvs[i + 1] = v + (1 - regionUVs[i]) * height
+                            i += 2
+                        }
+                    }
+                    return
+                }
+                180 -> {
+                    u -= (region.originalWidth - region.offsetX - region.packedWidth) / textureWidth
+                    v -= region.offsetY / textureHeight
+                    width = region.originalWidth / textureWidth
+                    height = region.originalHeight / textureHeight
+                    run {
+                        var i = 0
+                        while (i < n) {
+                            uvs[i] = u + (1 - regionUVs[i]) * width
+                            uvs[i + 1] = v + (1 - regionUVs[i + 1]) * height
+                            i += 2
+                        }
+                    }
+                    return
+                }
+                270 -> {
+                    u -= region.offsetY / textureWidth
+                    v -= region.offsetX / textureHeight
+                    width = region.originalHeight / textureWidth
+                    height = region.originalWidth / textureHeight
+                    var i = 0
+                    while (i < n) {
+                        uvs[i] = u + (1 - regionUVs[i + 1]) * width
+                        uvs[i + 1] = v + regionUVs[i] * height
+                        i += 2
+                    }
+                    return
+                }
+            }
+            u -= region.offsetX / textureWidth
+            v -= (region.originalHeight - region.offsetY - region.packedHeight) / textureHeight
+            width = region.originalWidth / textureWidth
+            height = region.originalHeight / textureHeight
+        } else if (region == null) {
+            v = 0f
+            u = v
+            height = 1f
+            width = height
+        } else {
+            u = region!!.u
+            v = region!!.v
+            width = region!!.u2 - u
+            height = region!!.v2 - v
+        }
+        var i = 0
+        while (i < n) {
+            uvs[i] = u + regionUVs[i] * width
+            uvs[i + 1] = v + regionUVs[i + 1] * height
+            i += 2
+        }
+    }
 
-	/** The color to tint the mesh. */
-	public Color getColor () {
-		return color;
-	}
+    override fun copy(): Attachment {
+        if (this.parentMesh != null) return newLinkedMesh()
 
-	/** The name of the texture region for this attachment. */
-	public String getPath () {
-		return path;
-	}
+        val copy = MeshAttachment(name)
+        copy.region = region
+        copy.path = path
+        copy.color.set(color)
 
-	public void setPath (String path) {
-		this.path = path;
-	}
+        copyTo(copy)
+        copy.regionUVs = FloatArray(regionUVs!!.size)
+        arraycopy(regionUVs, 0, copy.regionUVs, 0, regionUVs!!.size)
+        copy.uVs = FloatArray(uVs!!.size)
+        arraycopy(uVs, 0, copy.uVs, 0, uVs!!.size)
+        copy.triangles = ShortArray(triangles!!.size)
+        arraycopy(triangles, 0, copy.triangles, 0, triangles!!.size)
+        copy.hullLength = hullLength
 
-	/** The number of entries at the beginning of {@link #vertices} that make up the mesh hull. */
-	public int getHullLength () {
-		return hullLength;
-	}
+        // Nonessential.
+        if (edges != null) {
+            copy.edges = ShortArray(edges!!.size)
+            arraycopy(edges, 0, copy.edges, 0, edges!!.size)
+        }
+        copy.width = width
+        copy.height = height
+        return copy
+    }
 
-	public void setHullLength (int hullLength) {
-		this.hullLength = hullLength;
-	}
-
-	public void setEdges (short[] edges) {
-		this.edges = edges;
-	}
-
-	/** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
-	 * nonessential data was exported. Triangulation is not performed at runtime. */
-	public short[] getEdges () {
-		return edges;
-	}
-
-	/** The width of the mesh's image. Available only when nonessential data was exported. */
-	public float getWidth () {
-		return width;
-	}
-
-	public void setWidth (float width) {
-		this.width = width;
-	}
-
-	/** The height of the mesh's image. Available only when nonessential data was exported. */
-	public float getHeight () {
-		return height;
-	}
-
-	public void setHeight (float height) {
-		this.height = height;
-	}
-
-	/** The parent mesh if this is a linked mesh, else null. A linked mesh shares the {@link #bones}, {@link #vertices},
-	 * {@link #regionUVs}, {@link #triangles}, {@link #hullLength}, {@link #edges}, {@link #width}, and {@link #height} with the
-	 * parent mesh, but may have a different {@link #name} or {@link #path} (and therefore a different texture). */
-	public MeshAttachment getParentMesh () {
-		return parentMesh;
-	}
-
-	/** @param parentMesh May be null. */
-	public void setParentMesh (MeshAttachment parentMesh) {
-		this.parentMesh = parentMesh;
-		if (parentMesh != null) {
-			bones = parentMesh.bones;
-			vertices = parentMesh.vertices;
-			regionUVs = parentMesh.regionUVs;
-			triangles = parentMesh.triangles;
-			hullLength = parentMesh.hullLength;
-			worldVerticesLength = parentMesh.worldVerticesLength;
-			edges = parentMesh.edges;
-			width = parentMesh.width;
-			height = parentMesh.height;
-		}
-	}
-
-	public Attachment copy () {
-		if (parentMesh != null) return newLinkedMesh();
-
-		MeshAttachment copy = new MeshAttachment(name);
-		copy.region = region;
-		copy.path = path;
-		copy.color.set(color);
-
-		copyTo(copy);
-		copy.regionUVs = new float[regionUVs.length];
-		arraycopy(regionUVs, 0, copy.regionUVs, 0, regionUVs.length);
-		copy.uvs = new float[uvs.length];
-		arraycopy(uvs, 0, copy.uvs, 0, uvs.length);
-		copy.triangles = new short[triangles.length];
-		arraycopy(triangles, 0, copy.triangles, 0, triangles.length);
-		copy.hullLength = hullLength;
-
-		// Nonessential.
-		if (edges != null) {
-			copy.edges = new short[edges.length];
-			arraycopy(edges, 0, copy.edges, 0, edges.length);
-		}
-		copy.width = width;
-		copy.height = height;
-		return copy;
-	}
-
-	/** Returns a new mesh with the {@link #parentMesh} set to this mesh's parent mesh, if any, else to this mesh. **/
-	public MeshAttachment newLinkedMesh () {
-		MeshAttachment mesh = new MeshAttachment(name);
-		mesh.region = region;
-		mesh.path = path;
-		mesh.color.set(color);
-		mesh.deformAttachment = deformAttachment;
-		mesh.setParentMesh(parentMesh != null ? parentMesh : this);
-		mesh.updateUVs();
-		return mesh;
-	}
+    /** Returns a new mesh with the [.parentMesh] set to this mesh's parent mesh, if any, else to this mesh.  */
+    fun newLinkedMesh(): MeshAttachment {
+        val mesh = MeshAttachment(name)
+        mesh.region = region
+        mesh.path = path
+        mesh.color.set(color)
+        mesh.deformAttachment = deformAttachment
+        mesh.parentMesh = if (this.parentMesh != null) this.parentMesh else this
+        mesh.updateUVs()
+        return mesh
+    }
 }

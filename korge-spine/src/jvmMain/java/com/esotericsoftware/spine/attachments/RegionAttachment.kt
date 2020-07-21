@@ -25,262 +25,211 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.esotericsoftware.spine.utils.SpineUtils.*
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.MathUtils
 
-import com.esotericsoftware.spine.Bone;
+import com.esotericsoftware.spine.Bone
 
 /** An attachment that displays a textured quadrilateral.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-regions">Region attachments</a> in the Spine User Guide. */
-public class RegionAttachment extends Attachment {
-	static public final int BLX = 0;
-	static public final int BLY = 1;
-	static public final int ULX = 2;
-	static public final int ULY = 3;
-	static public final int URX = 4;
-	static public final int URY = 5;
-	static public final int BRX = 6;
-	static public final int BRY = 7;
+ *
+ *
+ * See [Region attachments](http://esotericsoftware.com/spine-regions) in the Spine User Guide.  */
+class RegionAttachment(name: String) : Attachment(name) {
 
-	private TextureRegion region;
-	private String path;
-	private float x, y, scaleX = 1, scaleY = 1, rotation, width, height;
-	private final float[] uvs = new float[8];
-	private final float[] offset = new float[8];
-	private final Color color = new Color(1, 1, 1, 1);
+    private var region: TextureRegion? = null
 
-	public RegionAttachment (String name) {
-		super(name);
-	}
+    /** The name of the texture region for this attachment.  */
+    var path: String? = null
 
-	/** Calculates the {@link #offset} using the region settings. Must be called after changing region settings. */
-	public void updateOffset () {
-		float width = getWidth();
-		float height = getHeight();
-		float localX2 = width / 2;
-		float localY2 = height / 2;
-		float localX = -localX2;
-		float localY = -localY2;
-		if (region instanceof AtlasRegion) {
-			AtlasRegion region = (AtlasRegion)this.region;
-			localX += region.offsetX / region.originalWidth * width;
-			localY += region.offsetY / region.originalHeight * height;
-			if (region.rotate) {
-				localX2 -= (region.originalWidth - region.offsetX - region.packedHeight) / region.originalWidth * width;
-				localY2 -= (region.originalHeight - region.offsetY - region.packedWidth) / region.originalHeight * height;
-			} else {
-				localX2 -= (region.originalWidth - region.offsetX - region.packedWidth) / region.originalWidth * width;
-				localY2 -= (region.originalHeight - region.offsetY - region.packedHeight) / region.originalHeight * height;
-			}
-		}
-		float scaleX = getScaleX();
-		float scaleY = getScaleY();
-		localX *= scaleX;
-		localY *= scaleY;
-		localX2 *= scaleX;
-		localY2 *= scaleY;
-		float rotation = getRotation();
-		float cos = (float)Math.cos(MathUtils.degRad * rotation);
-		float sin = (float)Math.sin(MathUtils.degRad * rotation);
-		float x = getX();
-		float y = getY();
-		float localXCos = localX * cos + x;
-		float localXSin = localX * sin;
-		float localYCos = localY * cos + y;
-		float localYSin = localY * sin;
-		float localX2Cos = localX2 * cos + x;
-		float localX2Sin = localX2 * sin;
-		float localY2Cos = localY2 * cos + y;
-		float localY2Sin = localY2 * sin;
-		float[] offset = this.offset;
-		offset[BLX] = localXCos - localYSin;
-		offset[BLY] = localYCos + localXSin;
-		offset[ULX] = localXCos - localY2Sin;
-		offset[ULY] = localY2Cos + localXSin;
-		offset[URX] = localX2Cos - localY2Sin;
-		offset[URY] = localY2Cos + localX2Sin;
-		offset[BRX] = localX2Cos - localYSin;
-		offset[BRY] = localYCos + localX2Sin;
-	}
+    /** The local x translation.  */
+    var x: Float = 0.toFloat()
 
-	public void setRegion (TextureRegion region) {
-		if (region == null) throw new IllegalArgumentException("region cannot be null.");
-		this.region = region;
-		float[] uvs = this.uvs;
-		if (region instanceof AtlasRegion && ((AtlasRegion)region).rotate) {
-			uvs[URX] = region.getU();
-			uvs[URY] = region.getV2();
-			uvs[BRX] = region.getU();
-			uvs[BRY] = region.getV();
-			uvs[BLX] = region.getU2();
-			uvs[BLY] = region.getV();
-			uvs[ULX] = region.getU2();
-			uvs[ULY] = region.getV2();
-		} else {
-			uvs[ULX] = region.getU();
-			uvs[ULY] = region.getV2();
-			uvs[URX] = region.getU();
-			uvs[URY] = region.getV();
-			uvs[BRX] = region.getU2();
-			uvs[BRY] = region.getV();
-			uvs[BLX] = region.getU2();
-			uvs[BLY] = region.getV2();
-		}
-	}
+    /** The local y translation.  */
+    var y: Float = 0.toFloat()
 
-	public TextureRegion getRegion () {
-		if (region == null) throw new IllegalStateException("Region has not been set: " + this);
-		return region;
-	}
+    /** The local scaleX.  */
+    var scaleX = 1f
 
-	/** Transforms the attachment's four vertices to world coordinates.
-	 * <p>
-	 * See <a href="http://esotericsoftware.com/spine-runtime-skeletons#World-transforms">World transforms</a> in the Spine
-	 * Runtimes Guide.
-	 * @param worldVertices The output world vertices. Must have a length >= <code>offset</code> + 8.
-	 * @param offset The <code>worldVertices</code> index to begin writing values.
-	 * @param stride The number of <code>worldVertices</code> entries between the value pairs written. */
-	public void computeWorldVertices (Bone bone, float[] worldVertices, int offset, int stride) {
-		float[] vertexOffset = this.offset;
-		float x = bone.getWorldX(), y = bone.getWorldY();
-		float a = bone.getA(), b = bone.getB(), c = bone.getC(), d = bone.getD();
-		float offsetX, offsetY;
+    /** The local scaleY.  */
+    var scaleY = 1f
 
-		offsetX = vertexOffset[BRX];
-		offsetY = vertexOffset[BRY];
-		worldVertices[offset] = offsetX * a + offsetY * b + x; // br
-		worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
-		offset += stride;
+    /** The local rotation.  */
+    var rotation: Float = 0.toFloat()
 
-		offsetX = vertexOffset[BLX];
-		offsetY = vertexOffset[BLY];
-		worldVertices[offset] = offsetX * a + offsetY * b + x; // bl
-		worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
-		offset += stride;
+    /** The width of the region attachment in Spine.  */
+    var width: Float = 0.toFloat()
 
-		offsetX = vertexOffset[ULX];
-		offsetY = vertexOffset[ULY];
-		worldVertices[offset] = offsetX * a + offsetY * b + x; // ul
-		worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
-		offset += stride;
+    /** The height of the region attachment in Spine.  */
+    var height: Float = 0.toFloat()
+    val uVs = FloatArray(8)
 
-		offsetX = vertexOffset[URX];
-		offsetY = vertexOffset[URY];
-		worldVertices[offset] = offsetX * a + offsetY * b + x; // ur
-		worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
-	}
+    /** For each of the 4 vertices, a pair of `x,y` values that is the local position of the vertex.
+     *
+     *
+     * See [.updateOffset].  */
+    val offset = FloatArray(8)
 
-	/** For each of the 4 vertices, a pair of <code>x,y</code> values that is the local position of the vertex.
-	 * <p>
-	 * See {@link #updateOffset()}. */
-	public float[] getOffset () {
-		return offset;
-	}
+    /** The color to tint the region attachment.  */
+    val color = Color(1f, 1f, 1f, 1f)
 
-	public float[] getUVs () {
-		return uvs;
-	}
+    /** Calculates the [.offset] using the region settings. Must be called after changing region settings.  */
+    fun updateOffset() {
+        val width = width
+        val height = height
+        var localX2 = width / 2
+        var localY2 = height / 2
+        var localX = -localX2
+        var localY = -localY2
+        if (region is AtlasRegion) {
+            val region = this.region as AtlasRegion?
+            localX += region!!.offsetX / region.originalWidth * width
+            localY += region.offsetY / region.originalHeight * height
+            if (region.rotate) {
+                localX2 -= (region.originalWidth - region.offsetX - region.packedHeight) / region.originalWidth * width
+                localY2 -= (region.originalHeight - region.offsetY - region.packedWidth) / region.originalHeight * height
+            } else {
+                localX2 -= (region.originalWidth - region.offsetX - region.packedWidth) / region.originalWidth * width
+                localY2 -= (region.originalHeight - region.offsetY - region.packedHeight) / region.originalHeight * height
+            }
+        }
+        val scaleX = scaleX
+        val scaleY = scaleY
+        localX *= scaleX
+        localY *= scaleY
+        localX2 *= scaleX
+        localY2 *= scaleY
+        val rotation = rotation
+        val cos = Math.cos((MathUtils.degRad * rotation).toDouble()).toFloat()
+        val sin = Math.sin((MathUtils.degRad * rotation).toDouble()).toFloat()
+        val x = x
+        val y = y
+        val localXCos = localX * cos + x
+        val localXSin = localX * sin
+        val localYCos = localY * cos + y
+        val localYSin = localY * sin
+        val localX2Cos = localX2 * cos + x
+        val localX2Sin = localX2 * sin
+        val localY2Cos = localY2 * cos + y
+        val localY2Sin = localY2 * sin
+        val offset = this.offset
+        offset[BLX] = localXCos - localYSin
+        offset[BLY] = localYCos + localXSin
+        offset[ULX] = localXCos - localY2Sin
+        offset[ULY] = localY2Cos + localXSin
+        offset[URX] = localX2Cos - localY2Sin
+        offset[URY] = localY2Cos + localX2Sin
+        offset[BRX] = localX2Cos - localYSin
+        offset[BRY] = localYCos + localX2Sin
+    }
 
-	/** The local x translation. */
-	public float getX () {
-		return x;
-	}
+    fun setRegion(region: TextureRegion?) {
+        requireNotNull(region) { "region cannot be null." }
+        this.region = region
+        val uvs = this.uVs
+        if (region is AtlasRegion && region.rotate) {
+            uvs[URX] = region.u
+            uvs[URY] = region.v2
+            uvs[BRX] = region.u
+            uvs[BRY] = region.v
+            uvs[BLX] = region.u2
+            uvs[BLY] = region.v
+            uvs[ULX] = region.u2
+            uvs[ULY] = region.v2
+        } else {
+            uvs[ULX] = region.u
+            uvs[ULY] = region.v2
+            uvs[URX] = region.u
+            uvs[URY] = region.v
+            uvs[BRX] = region.u2
+            uvs[BRY] = region.v
+            uvs[BLX] = region.u2
+            uvs[BLY] = region.v2
+        }
+    }
 
-	public void setX (float x) {
-		this.x = x;
-	}
+    fun getRegion(): TextureRegion {
+        checkNotNull(region) { "Region has not been set: $this" }
+        return region
+    }
 
-	/** The local y translation. */
-	public float getY () {
-		return y;
-	}
+    /** Transforms the attachment's four vertices to world coordinates.
+     *
+     *
+     * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
+     * Runtimes Guide.
+     * @param worldVertices The output world vertices. Must have a length >= `offset` + 8.
+     * @param offset The `worldVertices` index to begin writing values.
+     * @param stride The number of `worldVertices` entries between the value pairs written.
+     */
+    fun computeWorldVertices(bone: Bone, worldVertices: FloatArray, offset: Int, stride: Int) {
+        var offset = offset
+        val vertexOffset = this.offset
+        val x = bone.worldX
+        val y = bone.worldY
+        val a = bone.a
+        val b = bone.b
+        val c = bone.c
+        val d = bone.d
+        var offsetX: Float
+        var offsetY: Float
 
-	public void setY (float y) {
-		this.y = y;
-	}
+        offsetX = vertexOffset[BRX]
+        offsetY = vertexOffset[BRY]
+        worldVertices[offset] = offsetX * a + offsetY * b + x // br
+        worldVertices[offset + 1] = offsetX * c + offsetY * d + y
+        offset += stride
 
-	/** The local scaleX. */
-	public float getScaleX () {
-		return scaleX;
-	}
+        offsetX = vertexOffset[BLX]
+        offsetY = vertexOffset[BLY]
+        worldVertices[offset] = offsetX * a + offsetY * b + x // bl
+        worldVertices[offset + 1] = offsetX * c + offsetY * d + y
+        offset += stride
 
-	public void setScaleX (float scaleX) {
-		this.scaleX = scaleX;
-	}
+        offsetX = vertexOffset[ULX]
+        offsetY = vertexOffset[ULY]
+        worldVertices[offset] = offsetX * a + offsetY * b + x // ul
+        worldVertices[offset + 1] = offsetX * c + offsetY * d + y
+        offset += stride
 
-	/** The local scaleY. */
-	public float getScaleY () {
-		return scaleY;
-	}
+        offsetX = vertexOffset[URX]
+        offsetY = vertexOffset[URY]
+        worldVertices[offset] = offsetX * a + offsetY * b + x // ur
+        worldVertices[offset + 1] = offsetX * c + offsetY * d + y
+    }
 
-	public void setScaleY (float scaleY) {
-		this.scaleY = scaleY;
-	}
+    override fun copy(): Attachment {
+        val copy = RegionAttachment(name)
+        copy.region = region
+        copy.path = path
+        copy.x = x
+        copy.y = y
+        copy.scaleX = scaleX
+        copy.scaleY = scaleY
+        copy.rotation = rotation
+        copy.width = width
+        copy.height = height
+        arraycopy(uVs, 0, copy.uVs, 0, 8)
+        arraycopy(offset, 0, copy.offset, 0, 8)
+        copy.color.set(color)
+        return copy
+    }
 
-	/** The local rotation. */
-	public float getRotation () {
-		return rotation;
-	}
-
-	public void setRotation (float rotation) {
-		this.rotation = rotation;
-	}
-
-	/** The width of the region attachment in Spine. */
-	public float getWidth () {
-		return width;
-	}
-
-	public void setWidth (float width) {
-		this.width = width;
-	}
-
-	/** The height of the region attachment in Spine. */
-	public float getHeight () {
-		return height;
-	}
-
-	public void setHeight (float height) {
-		this.height = height;
-	}
-
-	/** The color to tint the region attachment. */
-	public Color getColor () {
-		return color;
-	}
-
-	/** The name of the texture region for this attachment. */
-	public String getPath () {
-		return path;
-	}
-
-	public void setPath (String path) {
-		this.path = path;
-	}
-
-	public Attachment copy () {
-		RegionAttachment copy = new RegionAttachment(name);
-		copy.region = region;
-		copy.path = path;
-		copy.x = x;
-		copy.y = y;
-		copy.scaleX = scaleX;
-		copy.scaleY = scaleY;
-		copy.rotation = rotation;
-		copy.width = width;
-		copy.height = height;
-		arraycopy(uvs, 0, copy.uvs, 0, 8);
-		arraycopy(offset, 0, copy.offset, 0, 8);
-		copy.color.set(color);
-		return copy;
-	}
+    companion object {
+        val BLX = 0
+        val BLY = 1
+        val ULX = 2
+        val ULY = 3
+        val URX = 4
+        val URY = 5
+        val BRX = 6
+        val BRY = 7
+    }
 }

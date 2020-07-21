@@ -25,183 +25,120 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Color
 
-/** Stores the setup pose for a {@link Bone}. */
-public class BoneData {
-	final int index;
-	final String name;
-	final BoneData parent;
-	float length;
-	float x, y, rotation, scaleX = 1, scaleY = 1, shearX, shearY;
-	TransformMode transformMode = TransformMode.normal;
-	boolean skinRequired;
+/** Stores the setup pose for a [Bone].  */
+class BoneData {
+    /** The index of the bone in [Skeleton.getBones].  */
+    val index: Int
 
-	// Nonessential.
-	final Color color = new Color(0.61f, 0.61f, 0.61f, 1); // 9b9b9bff
+    /** The name of the bone, which is unique across all bones in the skeleton.  */
+    val name: String
 
-	/** @param parent May be null. */
-	public BoneData (int index, String name, BoneData parent) {
-		if (index < 0) throw new IllegalArgumentException("index must be >= 0.");
-		if (name == null) throw new IllegalArgumentException("name cannot be null.");
-		this.index = index;
-		this.name = name;
-		this.parent = parent;
-	}
+    /** @return May be null.
+     */
+    val parent: BoneData
 
-	/** Copy constructor.
-	 * @param parent May be null. */
-	public BoneData (BoneData bone, BoneData parent) {
-		if (bone == null) throw new IllegalArgumentException("bone cannot be null.");
-		index = bone.index;
-		name = bone.name;
-		this.parent = parent;
-		length = bone.length;
-		x = bone.x;
-		y = bone.y;
-		rotation = bone.rotation;
-		scaleX = bone.scaleX;
-		scaleY = bone.scaleY;
-		shearX = bone.shearX;
-		shearY = bone.shearY;
-	}
+    /** The bone's length.  */
+    var length: Float = 0.toFloat()
 
-	/** The index of the bone in {@link Skeleton#getBones()}. */
-	public int getIndex () {
-		return index;
-	}
+    /** The local x translation.  */
+    var x: Float = 0.toFloat()
 
-	/** The name of the bone, which is unique across all bones in the skeleton. */
-	public String getName () {
-		return name;
-	}
+    /** The local y translation.  */
+    var y: Float = 0.toFloat()
 
-	/** @return May be null. */
-	public BoneData getParent () {
-		return parent;
-	}
+    /** The local rotation.  */
+    var rotation: Float = 0.toFloat()
 
-	/** The bone's length. */
-	public float getLength () {
-		return length;
-	}
+    /** The local scaleX.  */
+    var scaleX = 1f
 
-	public void setLength (float length) {
-		this.length = length;
-	}
+    /** The local scaleY.  */
+    var scaleY = 1f
 
-	/** The local x translation. */
-	public float getX () {
-		return x;
-	}
+    /** The local shearX.  */
+    var shearX: Float = 0.toFloat()
 
-	public void setX (float x) {
-		this.x = x;
-	}
+    /** The local shearX.  */
+    var shearY: Float = 0.toFloat()
+    internal var transformMode = TransformMode.normal
 
-	/** The local y translation. */
-	public float getY () {
-		return y;
-	}
+    /** When true, [Skeleton.updateWorldTransform] only updates this bone if the [Skeleton.getSkin] contains this
+     * bone.
+     * @see Skin.getBones
+     */
+    var skinRequired: Boolean = false
 
-	public void setY (float y) {
-		this.y = y;
-	}
+    // Nonessential.
+    /** The color of the bone as it was in Spine. Available only when nonessential data was exported. Bones are not usually
+     * rendered at runtime.  */
+    val color = Color(0.61f, 0.61f, 0.61f, 1f) // 9b9b9bff
 
-	public void setPosition (float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
+    /** @param parent May be null.
+     */
+    constructor(index: Int, name: String?, parent: BoneData) {
+        require(index >= 0) { "index must be >= 0." }
+        requireNotNull(name) { "name cannot be null." }
+        this.index = index
+        this.name = name
+        this.parent = parent
+    }
 
-	/** The local rotation. */
-	public float getRotation () {
-		return rotation;
-	}
+    /** Copy constructor.
+     * @param parent May be null.
+     */
+    constructor(bone: BoneData?, parent: BoneData) {
+        requireNotNull(bone) { "bone cannot be null." }
+        index = bone.index
+        name = bone.name
+        this.parent = parent
+        length = bone.length
+        x = bone.x
+        y = bone.y
+        rotation = bone.rotation
+        scaleX = bone.scaleX
+        scaleY = bone.scaleY
+        shearX = bone.shearX
+        shearY = bone.shearY
+    }
 
-	public void setRotation (float rotation) {
-		this.rotation = rotation;
-	}
+    fun setPosition(x: Float, y: Float) {
+        this.x = x
+        this.y = y
+    }
 
-	/** The local scaleX. */
-	public float getScaleX () {
-		return scaleX;
-	}
+    fun setScale(scaleX: Float, scaleY: Float) {
+        this.scaleX = scaleX
+        this.scaleY = scaleY
+    }
 
-	public void setScaleX (float scaleX) {
-		this.scaleX = scaleX;
-	}
+    /** The transform mode for how parent world transforms affect this bone.  */
+    fun getTransformMode(): TransformMode {
+        return transformMode
+    }
 
-	/** The local scaleY. */
-	public float getScaleY () {
-		return scaleY;
-	}
+    fun setTransformMode(transformMode: TransformMode?) {
+        requireNotNull(transformMode) { "transformMode cannot be null." }
+        this.transformMode = transformMode
+    }
 
-	public void setScaleY (float scaleY) {
-		this.scaleY = scaleY;
-	}
+    override fun toString(): String {
+        return name
+    }
 
-	public void setScale (float scaleX, float scaleY) {
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
-	}
+    /** Determines how a bone inherits world transforms from parent bones.  */
+    enum class TransformMode {
+        normal, onlyTranslation, noRotationOrReflection, noScale, noScaleOrReflection;
 
-	/** The local shearX. */
-	public float getShearX () {
-		return shearX;
-	}
 
-	public void setShearX (float shearX) {
-		this.shearX = shearX;
-	}
+        companion object {
 
-	/** The local shearX. */
-	public float getShearY () {
-		return shearY;
-	}
-
-	public void setShearY (float shearY) {
-		this.shearY = shearY;
-	}
-
-	/** The transform mode for how parent world transforms affect this bone. */
-	public TransformMode getTransformMode () {
-		return transformMode;
-	}
-
-	public void setTransformMode (TransformMode transformMode) {
-		if (transformMode == null) throw new IllegalArgumentException("transformMode cannot be null.");
-		this.transformMode = transformMode;
-	}
-
-	/** When true, {@link Skeleton#updateWorldTransform()} only updates this bone if the {@link Skeleton#getSkin()} contains this
-	 * bone.
-	 * @see Skin#getBones() */
-	public boolean getSkinRequired () {
-		return skinRequired;
-	}
-
-	public void setSkinRequired (boolean skinRequired) {
-		this.skinRequired = skinRequired;
-	}
-
-	/** The color of the bone as it was in Spine. Available only when nonessential data was exported. Bones are not usually
-	 * rendered at runtime. */
-	public Color getColor () {
-		return color;
-	}
-
-	public String toString () {
-		return name;
-	}
-
-	/** Determines how a bone inherits world transforms from parent bones. */
-	static public enum TransformMode {
-		normal, onlyTranslation, noRotationOrReflection, noScale, noScaleOrReflection;
-
-		static public final TransformMode[] values = TransformMode.values();
-	}
+            val values = TransformMode.values()
+        }
+    }
 }

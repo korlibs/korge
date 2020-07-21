@@ -25,756 +25,792 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.utils.JArray
+import com.badlogic.gdx.utils.JFloatArray
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.JArray;
-import com.badlogic.gdx.utils.JFloatArray;
-
-import com.esotericsoftware.spine.Skin.SkinEntry;
-import com.esotericsoftware.spine.attachments.Attachment;
-import com.esotericsoftware.spine.attachments.MeshAttachment;
-import com.esotericsoftware.spine.attachments.PathAttachment;
-import com.esotericsoftware.spine.attachments.RegionAttachment;
+import com.esotericsoftware.spine.attachments.Attachment
+import com.esotericsoftware.spine.attachments.MeshAttachment
+import com.esotericsoftware.spine.attachments.PathAttachment
+import com.esotericsoftware.spine.attachments.RegionAttachment
 
 /** Stores the current pose for a skeleton.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-runtime-architecture#Instance-objects">Instance objects</a> in the Spine
- * Runtimes Guide. */
-public class Skeleton {
-	final SkeletonData data;
-	final JArray<Bone> bones;
-	final JArray<Slot> slots;
-	JArray<Slot> drawOrder;
-	final JArray<IkConstraint> ikConstraints;
-	final JArray<TransformConstraint> transformConstraints;
-	final JArray<PathConstraint> pathConstraints;
-	final JArray<Updatable> updateCache = new JArray();
-	final JArray<Bone> updateCacheReset = new JArray();
-	Skin skin;
-	final Color color;
-	float time;
-	float scaleX = 1, scaleY = 1;
-	float x, y;
-
-	public Skeleton (SkeletonData data) {
-		if (data == null) throw new IllegalArgumentException("data cannot be null.");
-		this.data = data;
-
-		bones = new JArray(data.bones.size);
-		for (BoneData boneData : data.bones) {
-			Bone bone;
-			if (boneData.parent == null)
-				bone = new Bone(boneData, this, null);
-			else {
-				Bone parent = bones.get(boneData.parent.index);
-				bone = new Bone(boneData, this, parent);
-				parent.children.add(bone);
-			}
-			bones.add(bone);
-		}
-
-		slots = new JArray(data.slots.size);
-		drawOrder = new JArray(data.slots.size);
-		for (SlotData slotData : data.slots) {
-			Bone bone = bones.get(slotData.boneData.index);
-			Slot slot = new Slot(slotData, bone);
-			slots.add(slot);
-			drawOrder.add(slot);
-		}
-
-		ikConstraints = new JArray(data.ikConstraints.size);
-		for (IkConstraintData ikConstraintData : data.ikConstraints)
-			ikConstraints.add(new IkConstraint(ikConstraintData, this));
-
-		transformConstraints = new JArray(data.transformConstraints.size);
-		for (TransformConstraintData transformConstraintData : data.transformConstraints)
-			transformConstraints.add(new TransformConstraint(transformConstraintData, this));
-
-		pathConstraints = new JArray(data.pathConstraints.size);
-		for (PathConstraintData pathConstraintData : data.pathConstraints)
-			pathConstraints.add(new PathConstraint(pathConstraintData, this));
-
-		color = new Color(1, 1, 1, 1);
-
-		updateCache();
-	}
-
-	/** Copy constructor. */
-	public Skeleton (Skeleton skeleton) {
-		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
-		data = skeleton.data;
-
-		bones = new JArray(skeleton.bones.size);
-		for (Bone bone : skeleton.bones) {
-			Bone newBone;
-			if (bone.parent == null)
-				newBone = new Bone(bone, this, null);
-			else {
-				Bone parent = bones.get(bone.parent.data.index);
-				newBone = new Bone(bone, this, parent);
-				parent.children.add(newBone);
-			}
-			bones.add(newBone);
-		}
-
-		slots = new JArray(skeleton.slots.size);
-		for (Slot slot : skeleton.slots) {
-			Bone bone = bones.get(slot.bone.data.index);
-			slots.add(new Slot(slot, bone));
-		}
-
-		drawOrder = new JArray(slots.size);
-		for (Slot slot : skeleton.drawOrder)
-			drawOrder.add(slots.get(slot.data.index));
-
-		ikConstraints = new JArray(skeleton.ikConstraints.size);
-		for (IkConstraint ikConstraint : skeleton.ikConstraints)
-			ikConstraints.add(new IkConstraint(ikConstraint, this));
-
-		transformConstraints = new JArray(skeleton.transformConstraints.size);
-		for (TransformConstraint transformConstraint : skeleton.transformConstraints)
-			transformConstraints.add(new TransformConstraint(transformConstraint, this));
-
-		pathConstraints = new JArray(skeleton.pathConstraints.size);
-		for (PathConstraint pathConstraint : skeleton.pathConstraints)
-			pathConstraints.add(new PathConstraint(pathConstraint, this));
-
-		skin = skeleton.skin;
-		color = new Color(skeleton.color);
-		time = skeleton.time;
-		scaleX = skeleton.scaleX;
-		scaleY = skeleton.scaleY;
-
-		updateCache();
-	}
-
-	/** Caches information about bones and constraints. Must be called if the {@link #getSkin()} is modified or if bones,
-	 * constraints, or weighted path attachments are added or removed. */
-	public void updateCache () {
-		JArray<Updatable> updateCache = this.updateCache;
-		updateCache.clear();
-		updateCacheReset.clear();
-
-		int boneCount = bones.size;
-		Object[] bones = this.bones.items;
-		for (int i = 0; i < boneCount; i++) {
-			Bone bone = (Bone)bones[i];
-			bone.sorted = bone.data.skinRequired;
-			bone.active = !bone.sorted;
-		}
-		if (skin != null) {
-			Object[] skinBones = skin.bones.items;
-			for (int i = 0, n = skin.bones.size; i < n; i++) {
-				Bone bone = (Bone)bones[((BoneData)skinBones[i]).index];
-				do {
-					bone.sorted = false;
-					bone.active = true;
-					bone = bone.parent;
-				} while (bone != null);
-			}
-		}
-
-		int ikCount = ikConstraints.size, transformCount = transformConstraints.size, pathCount = pathConstraints.size;
-		Object[] ikConstraints = this.ikConstraints.items;
-		Object[] transformConstraints = this.transformConstraints.items;
-		Object[] pathConstraints = this.pathConstraints.items;
-		int constraintCount = ikCount + transformCount + pathCount;
-		outer:
-		for (int i = 0; i < constraintCount; i++) {
-			for (int ii = 0; ii < ikCount; ii++) {
-				IkConstraint constraint = (IkConstraint)ikConstraints[ii];
-				if (constraint.data.order == i) {
-					sortIkConstraint(constraint);
-					continue outer;
-				}
-			}
-			for (int ii = 0; ii < transformCount; ii++) {
-				TransformConstraint constraint = (TransformConstraint)transformConstraints[ii];
-				if (constraint.data.order == i) {
-					sortTransformConstraint(constraint);
-					continue outer;
-				}
-			}
-			for (int ii = 0; ii < pathCount; ii++) {
-				PathConstraint constraint = (PathConstraint)pathConstraints[ii];
-				if (constraint.data.order == i) {
-					sortPathConstraint(constraint);
-					continue outer;
-				}
-			}
-		}
-
-		for (int i = 0; i < boneCount; i++)
-			sortBone((Bone)bones[i]);
-	}
-
-	private void sortIkConstraint (IkConstraint constraint) {
-		constraint.active = constraint.target.active
-			&& (!constraint.data.skinRequired || (skin != null && skin.constraints.contains(constraint.data, true)));
-		if (!constraint.active) return;
-
-		Bone target = constraint.target;
-		sortBone(target);
-
-		JArray<Bone> constrained = constraint.bones;
-		Bone parent = constrained.first();
-		sortBone(parent);
-
-		if (constrained.size > 1) {
-			Bone child = constrained.peek();
-			if (!updateCache.contains(child, true)) updateCacheReset.add(child);
-		}
-
-		updateCache.add(constraint);
-
-		sortReset(parent.children);
-		constrained.peek().sorted = true;
-	}
-
-	private void sortPathConstraint (PathConstraint constraint) {
-		constraint.active = constraint.target.bone.active
-			&& (!constraint.data.skinRequired || (skin != null && skin.constraints.contains(constraint.data, true)));
-		if (!constraint.active) return;
-
-		Slot slot = constraint.target;
-		int slotIndex = slot.getData().index;
-		Bone slotBone = slot.bone;
-		if (skin != null) sortPathConstraintAttachment(skin, slotIndex, slotBone);
-		if (data.defaultSkin != null && data.defaultSkin != skin)
-			sortPathConstraintAttachment(data.defaultSkin, slotIndex, slotBone);
-
-		Attachment attachment = slot.attachment;
-		if (attachment instanceof PathAttachment) sortPathConstraintAttachment(attachment, slotBone);
-
-		JArray<Bone> constrained = constraint.bones;
-		int boneCount = constrained.size;
-		for (int i = 0; i < boneCount; i++)
-			sortBone(constrained.get(i));
-
-		updateCache.add(constraint);
-
-		for (int i = 0; i < boneCount; i++)
-			sortReset(constrained.get(i).children);
-		for (int i = 0; i < boneCount; i++)
-			constrained.get(i).sorted = true;
-	}
-
-	private void sortTransformConstraint (TransformConstraint constraint) {
-		constraint.active = constraint.target.active
-			&& (!constraint.data.skinRequired || (skin != null && skin.constraints.contains(constraint.data, true)));
-		if (!constraint.active) return;
-
-		sortBone(constraint.target);
-
-		JArray<Bone> constrained = constraint.bones;
-		int boneCount = constrained.size;
-		if (constraint.data.local) {
-			for (int i = 0; i < boneCount; i++) {
-				Bone child = constrained.get(i);
-				sortBone(child.parent);
-				if (!updateCache.contains(child, true)) updateCacheReset.add(child);
-			}
-		} else {
-			for (int i = 0; i < boneCount; i++)
-				sortBone(constrained.get(i));
-		}
-
-		updateCache.add(constraint);
-
-		for (int i = 0; i < boneCount; i++)
-			sortReset(constrained.get(i).children);
-		for (int i = 0; i < boneCount; i++)
-			constrained.get(i).sorted = true;
-	}
-
-	private void sortPathConstraintAttachment (Skin skin, int slotIndex, Bone slotBone) {
-		for (SkinEntry entry : skin.attachments.keys())
-			if (entry.getSlotIndex() == slotIndex) sortPathConstraintAttachment(entry.getAttachment(), slotBone);
-	}
-
-	private void sortPathConstraintAttachment (Attachment attachment, Bone slotBone) {
-		if (!(attachment instanceof PathAttachment)) return;
-		int[] pathBones = ((PathAttachment)attachment).getBones();
-		if (pathBones == null)
-			sortBone(slotBone);
-		else {
-			JArray<Bone> bones = this.bones;
-			for (int i = 0, n = pathBones.length; i < n;) {
-				int nn = pathBones[i++];
-				nn += i;
-				while (i < nn)
-					sortBone(bones.get(pathBones[i++]));
-			}
-		}
-	}
-
-	private void sortBone (Bone bone) {
-		if (bone.sorted) return;
-		Bone parent = bone.parent;
-		if (parent != null) sortBone(parent);
-		bone.sorted = true;
-		updateCache.add(bone);
-	}
-
-	private void sortReset (JArray<Bone> bones) {
-		for (int i = 0, n = bones.size; i < n; i++) {
-			Bone bone = bones.get(i);
-			if (!bone.active) continue;
-			if (bone.sorted) sortReset(bone.children);
-			bone.sorted = false;
-		}
-	}
-
-	/** Updates the world transform for each bone and applies all constraints.
-	 * <p>
-	 * See <a href="http://esotericsoftware.com/spine-runtime-skeletons#World-transforms">World transforms</a> in the Spine
-	 * Runtimes Guide. */
-	public void updateWorldTransform () {
-		// This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
-		// before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
-		// updateWorldTransform.
-		JArray<Bone> updateCacheReset = this.updateCacheReset;
-		for (int i = 0, n = updateCacheReset.size; i < n; i++) {
-			Bone bone = updateCacheReset.get(i);
-			bone.ax = bone.x;
-			bone.ay = bone.y;
-			bone.arotation = bone.rotation;
-			bone.ascaleX = bone.scaleX;
-			bone.ascaleY = bone.scaleY;
-			bone.ashearX = bone.shearX;
-			bone.ashearY = bone.shearY;
-			bone.appliedValid = true;
-		}
-		JArray<Updatable> updateCache = this.updateCache;
-		for (int i = 0, n = updateCache.size; i < n; i++)
-			updateCache.get(i).update();
-	}
-
-	/** Temporarily sets the root bone as a child of the specified bone, then updates the world transform for each bone and applies
-	 * all constraints.
-	 * <p>
-	 * See <a href="http://esotericsoftware.com/spine-runtime-skeletons#World-transforms">World transforms</a> in the Spine
-	 * Runtimes Guide. */
-	public void updateWorldTransform (Bone parent) {
-		if (parent == null) throw new IllegalArgumentException("parent cannot be null.");
-		// This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
-		// before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
-		// updateWorldTransform.
-		JArray<Bone> updateCacheReset = this.updateCacheReset;
-		for (int i = 0, n = updateCacheReset.size; i < n; i++) {
-			Bone bone = updateCacheReset.get(i);
-			bone.ax = bone.x;
-			bone.ay = bone.y;
-			bone.arotation = bone.rotation;
-			bone.ascaleX = bone.scaleX;
-			bone.ascaleY = bone.scaleY;
-			bone.ashearX = bone.shearX;
-			bone.ashearY = bone.shearY;
-			bone.appliedValid = true;
-		}
-
-		// Apply the parent bone transform to the root bone. The root bone always inherits scale, rotation and reflection.
-		Bone rootBone = getRootBone();
-		float pa = parent.a, pb = parent.b, pc = parent.c, pd = parent.d;
-		rootBone.worldX = pa * x + pb * y + parent.worldX;
-		rootBone.worldY = pc * x + pd * y + parent.worldY;
-
-		float rotationY = rootBone.rotation + 90 + rootBone.shearY;
-		float la = cosDeg(rootBone.rotation + rootBone.shearX) * rootBone.scaleX;
-		float lb = cosDeg(rotationY) * rootBone.scaleY;
-		float lc = sinDeg(rootBone.rotation + rootBone.shearX) * rootBone.scaleX;
-		float ld = sinDeg(rotationY) * rootBone.scaleY;
-		rootBone.a = (pa * la + pb * lc) * scaleX;
-		rootBone.b = (pa * lb + pb * ld) * scaleX;
-		rootBone.c = (pc * la + pd * lc) * scaleY;
-		rootBone.d = (pc * lb + pd * ld) * scaleY;
-
-		// Update everything except root bone.
-		JArray<Updatable> updateCache = this.updateCache;
-		for (int i = 0, n = updateCache.size; i < n; i++) {
-			Updatable updatable = updateCache.get(i);
-			if (updatable != rootBone) updatable.update();
-		}
-	}
-
-	/** Sets the bones, constraints, slots, and draw order to their setup pose values. */
-	public void setToSetupPose () {
-		setBonesToSetupPose();
-		setSlotsToSetupPose();
-	}
-
-	/** Sets the bones and constraints to their setup pose values. */
-	public void setBonesToSetupPose () {
-		JArray<Bone> bones = this.bones;
-		for (int i = 0, n = bones.size; i < n; i++)
-			bones.get(i).setToSetupPose();
-
-		JArray<IkConstraint> ikConstraints = this.ikConstraints;
-		for (int i = 0, n = ikConstraints.size; i < n; i++) {
-			IkConstraint constraint = ikConstraints.get(i);
-			constraint.mix = constraint.data.mix;
-			constraint.softness = constraint.data.softness;
-			constraint.bendDirection = constraint.data.bendDirection;
-			constraint.compress = constraint.data.compress;
-			constraint.stretch = constraint.data.stretch;
-		}
-
-		JArray<TransformConstraint> transformConstraints = this.transformConstraints;
-		for (int i = 0, n = transformConstraints.size; i < n; i++) {
-			TransformConstraint constraint = transformConstraints.get(i);
-			TransformConstraintData data = constraint.data;
-			constraint.rotateMix = data.rotateMix;
-			constraint.translateMix = data.translateMix;
-			constraint.scaleMix = data.scaleMix;
-			constraint.shearMix = data.shearMix;
-		}
-
-		JArray<PathConstraint> pathConstraints = this.pathConstraints;
-		for (int i = 0, n = pathConstraints.size; i < n; i++) {
-			PathConstraint constraint = pathConstraints.get(i);
-			PathConstraintData data = constraint.data;
-			constraint.position = data.position;
-			constraint.spacing = data.spacing;
-			constraint.rotateMix = data.rotateMix;
-			constraint.translateMix = data.translateMix;
-		}
-	}
-
-	/** Sets the slots and draw order to their setup pose values. */
-	public void setSlotsToSetupPose () {
-		JArray<Slot> slots = this.slots;
-		arraycopy(slots.items, 0, drawOrder.items, 0, slots.size);
-		for (int i = 0, n = slots.size; i < n; i++)
-			slots.get(i).setToSetupPose();
-	}
-
-	/** The skeleton's setup pose data. */
-	public SkeletonData getData () {
-		return data;
-	}
-
-	/** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-	public JArray<Bone> getBones () {
-		return bones;
-	}
-
-	/** The list of bones and constraints, sorted in the order they should be updated, as computed by {@link #updateCache()}. */
-	public JArray<Updatable> getUpdateCache () {
-		return updateCache;
-	}
-
-	/** Returns the root bone, or null. */
-	public Bone getRootBone () {
-		if (bones.size == 0) return null;
-		return bones.first();
-	}
-
-	/** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
-	 * repeatedly.
-	 * @return May be null. */
-	public Bone findBone (String boneName) {
-		if (boneName == null) throw new IllegalArgumentException("boneName cannot be null.");
-		JArray<Bone> bones = this.bones;
-		for (int i = 0, n = bones.size; i < n; i++) {
-			Bone bone = bones.get(i);
-			if (bone.data.name.equals(boneName)) return bone;
-		}
-		return null;
-	}
-
-	/** The skeleton's slots. */
-	public JArray<Slot> getSlots () {
-		return slots;
-	}
-
-	/** Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it
-	 * repeatedly.
-	 * @return May be null. */
-	public Slot findSlot (String slotName) {
-		if (slotName == null) throw new IllegalArgumentException("slotName cannot be null.");
-		JArray<Slot> slots = this.slots;
-		for (int i = 0, n = slots.size; i < n; i++) {
-			Slot slot = slots.get(i);
-			if (slot.data.name.equals(slotName)) return slot;
-		}
-		return null;
-	}
-
-	/** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order. */
-	public JArray<Slot> getDrawOrder () {
-		return drawOrder;
-	}
-
-	public void setDrawOrder (JArray<Slot> drawOrder) {
-		if (drawOrder == null) throw new IllegalArgumentException("drawOrder cannot be null.");
-		this.drawOrder = drawOrder;
-	}
-
-	/** The skeleton's current skin.
-	 * @return May be null. */
-	public Skin getSkin () {
-		return skin;
-	}
-
-	/** Sets a skin by name.
-	 * <p>
-	 * See {@link #setSkin(Skin)}. */
-	public void setSkin (String skinName) {
-		Skin skin = data.findSkin(skinName);
-		if (skin == null) throw new IllegalArgumentException("Skin not found: " + skinName);
-		setSkin(skin);
-	}
-
-	/** Sets the skin used to look up attachments before looking in the {@link SkeletonData#getDefaultSkin() default skin}. If the
-	 * skin is changed, {@link #updateCache()} is called.
-	 * <p>
-	 * Attachments from the new skin are attached if the corresponding attachment from the old skin was attached. If there was no
-	 * old skin, each slot's setup mode attachment is attached from the new skin.
-	 * <p>
-	 * After changing the skin, the visible attachments can be reset to those attached in the setup pose by calling
-	 * {@link #setSlotsToSetupPose()}. Also, often {@link AnimationState#apply(Skeleton)} is called before the next time the
-	 * skeleton is rendered to allow any attachment keys in the current animation(s) to hide or show attachments from the new skin.
-	 * @param newSkin May be null. */
-	public void setSkin (Skin newSkin) {
-		if (newSkin == skin) return;
-		if (newSkin != null) {
-			if (skin != null)
-				newSkin.attachAll(this, skin);
-			else {
-				JArray<Slot> slots = this.slots;
-				for (int i = 0, n = slots.size; i < n; i++) {
-					Slot slot = slots.get(i);
-					String name = slot.data.attachmentName;
-					if (name != null) {
-						Attachment attachment = newSkin.getAttachment(i, name);
-						if (attachment != null) slot.setAttachment(attachment);
-					}
-				}
-			}
-		}
-		skin = newSkin;
-		updateCache();
-	}
-
-	/** Finds an attachment by looking in the {@link #skin} and {@link SkeletonData#defaultSkin} using the slot name and attachment
-	 * name.
-	 * <p>
-	 * See {@link #getAttachment(int, String)}.
-	 * @return May be null. */
-	public Attachment getAttachment (String slotName, String attachmentName) {
-		SlotData slot = data.findSlot(slotName);
-		if (slot == null) throw new IllegalArgumentException("Slot not found: " + slotName);
-		return getAttachment(slot.getIndex(), attachmentName);
-	}
-
-	/** Finds an attachment by looking in the {@link #skin} and {@link SkeletonData#defaultSkin} using the slot index and
-	 * attachment name. First the skin is checked and if the attachment was not found, the default skin is checked.
-	 * <p>
-	 * See <a href="http://esotericsoftware.com/spine-runtime-skins">Runtime skins</a> in the Spine Runtimes Guide.
-	 * @return May be null. */
-	public Attachment getAttachment (int slotIndex, String attachmentName) {
-		if (attachmentName == null) throw new IllegalArgumentException("attachmentName cannot be null.");
-		if (skin != null) {
-			Attachment attachment = skin.getAttachment(slotIndex, attachmentName);
-			if (attachment != null) return attachment;
-		}
-		if (data.defaultSkin != null) return data.defaultSkin.getAttachment(slotIndex, attachmentName);
-		return null;
-	}
-
-	/** A convenience method to set an attachment by finding the slot with {@link #findSlot(String)}, finding the attachment with
-	 * {@link #getAttachment(int, String)}, then setting the slot's {@link Slot#attachment}.
-	 * @param attachmentName May be null to clear the slot's attachment. */
-	public void setAttachment (String slotName, String attachmentName) {
-		if (slotName == null) throw new IllegalArgumentException("slotName cannot be null.");
-		Slot slot = findSlot(slotName);
-		if (slot == null) throw new IllegalArgumentException("Slot not found: " + slotName);
-		Attachment attachment = null;
-		if (attachmentName != null) {
-			attachment = getAttachment(slot.data.index, attachmentName);
-			if (attachment == null)
-				throw new IllegalArgumentException("Attachment not found: " + attachmentName + ", for slot: " + slotName);
-		}
-		slot.setAttachment(attachment);
-	}
-
-	/** The skeleton's IK constraints. */
-	public JArray<IkConstraint> getIkConstraints () {
-		return ikConstraints;
-	}
-
-	/** Finds an IK constraint by comparing each IK constraint's name. It is more efficient to cache the results of this method
-	 * than to call it repeatedly.
-	 * @return May be null. */
-	public IkConstraint findIkConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<IkConstraint> ikConstraints = this.ikConstraints;
-		for (int i = 0, n = ikConstraints.size; i < n; i++) {
-			IkConstraint ikConstraint = ikConstraints.get(i);
-			if (ikConstraint.data.name.equals(constraintName)) return ikConstraint;
-		}
-		return null;
-	}
-
-	/** The skeleton's transform constraints. */
-	public JArray<TransformConstraint> getTransformConstraints () {
-		return transformConstraints;
-	}
-
-	/** Finds a transform constraint by comparing each transform constraint's name. It is more efficient to cache the results of
-	 * this method than to call it repeatedly.
-	 * @return May be null. */
-	public TransformConstraint findTransformConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<TransformConstraint> transformConstraints = this.transformConstraints;
-		for (int i = 0, n = transformConstraints.size; i < n; i++) {
-			TransformConstraint constraint = transformConstraints.get(i);
-			if (constraint.data.name.equals(constraintName)) return constraint;
-		}
-		return null;
-	}
-
-	/** The skeleton's path constraints. */
-	public JArray<PathConstraint> getPathConstraints () {
-		return pathConstraints;
-	}
-
-	/** Finds a path constraint by comparing each path constraint's name. It is more efficient to cache the results of this method
-	 * than to call it repeatedly.
-	 * @return May be null. */
-	public PathConstraint findPathConstraint (String constraintName) {
-		if (constraintName == null) throw new IllegalArgumentException("constraintName cannot be null.");
-		JArray<PathConstraint> pathConstraints = this.pathConstraints;
-		for (int i = 0, n = pathConstraints.size; i < n; i++) {
-			PathConstraint constraint = pathConstraints.get(i);
-			if (constraint.data.name.equals(constraintName)) return constraint;
-		}
-		return null;
-	}
-
-	/** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose.
-	 * @param offset An output value, the distance from the skeleton origin to the bottom left corner of the AABB.
-	 * @param size An output value, the width and height of the AABB.
-	 * @param temp Working memory to temporarily store attachments' computed world vertices. */
-	public void getBounds (Vector2 offset, Vector2 size, JFloatArray temp) {
-		if (offset == null) throw new IllegalArgumentException("offset cannot be null.");
-		if (size == null) throw new IllegalArgumentException("size cannot be null.");
-		if (temp == null) throw new IllegalArgumentException("temp cannot be null.");
-		JArray<Slot> drawOrder = this.drawOrder;
-		float minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-		for (int i = 0, n = drawOrder.size; i < n; i++) {
-			Slot slot = drawOrder.get(i);
-			if (!slot.bone.active) continue;
-			int verticesLength = 0;
-			float[] vertices = null;
-			Attachment attachment = slot.attachment;
-			if (attachment instanceof RegionAttachment) {
-				verticesLength = 8;
-				vertices = temp.setSize(8);
-				((RegionAttachment)attachment).computeWorldVertices(slot.getBone(), vertices, 0, 2);
-			} else if (attachment instanceof MeshAttachment) {
-				MeshAttachment mesh = (MeshAttachment)attachment;
-				verticesLength = mesh.getWorldVerticesLength();
-				vertices = temp.setSize(verticesLength);
-				mesh.computeWorldVertices(slot, 0, verticesLength, vertices, 0, 2);
-			}
-			if (vertices != null) {
-				for (int ii = 0; ii < verticesLength; ii += 2) {
-					float x = vertices[ii], y = vertices[ii + 1];
-					minX = Math.min(minX, x);
-					minY = Math.min(minY, y);
-					maxX = Math.max(maxX, x);
-					maxY = Math.max(maxY, y);
-				}
-			}
-		}
-		offset.set(minX, minY);
-		size.set(maxX - minX, maxY - minY);
-	}
-
-	/** The color to tint all the skeleton's attachments. */
-	public Color getColor () {
-		return color;
-	}
-
-	/** A convenience method for setting the skeleton color. The color can also be set by modifying {@link #getColor()}. */
-	public void setColor (Color color) {
-		if (color == null) throw new IllegalArgumentException("color cannot be null.");
-		this.color.set(color);
-	}
-
-	/** Scales the entire skeleton on the X axis. This affects all bones, even if the bone's transform mode disallows scale
-	 * inheritance. */
-	public float getScaleX () {
-		return scaleX;
-	}
-
-	public void setScaleX (float scaleX) {
-		this.scaleX = scaleX;
-	}
-
-	/** Scales the entire skeleton on the Y axis. This affects all bones, even if the bone's transform mode disallows scale
-	 * inheritance. */
-	public float getScaleY () {
-		return scaleY;
-	}
-
-	public void setScaleY (float scaleY) {
-		this.scaleY = scaleY;
-	}
-
-	public void setScale (float scaleX, float scaleY) {
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
-	}
-
-	/** Sets the skeleton X position, which is added to the root bone worldX position. */
-	public float getX () {
-		return x;
-	}
-
-	public void setX (float x) {
-		this.x = x;
-	}
-
-	/** Sets the skeleton Y position, which is added to the root bone worldY position. */
-	public float getY () {
-		return y;
-	}
-
-	public void setY (float y) {
-		this.y = y;
-	}
-
-	/** Sets the skeleton X and Y position, which is added to the root bone worldX and worldY position. */
-	public void setPosition (float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
-
-	/** Returns the skeleton's time. This can be used for tracking, such as with Slot {@link Slot#getAttachmentTime()}.
-	 * <p>
-	 * See {@link #update(float)}. */
-	public float getTime () {
-		return time;
-	}
-
-	public void setTime (float time) {
-		this.time = time;
-	}
-
-	/** Increments the skeleton's {@link #time}. */
-	public void update (float delta) {
-		time += delta;
-	}
-
-	public String toString () {
-		return data.name != null ? data.name : super.toString();
-	}
+ *
+ *
+ * See [Instance objects](http://esotericsoftware.com/spine-runtime-architecture#Instance-objects) in the Spine
+ * Runtimes Guide.  */
+class Skeleton {
+    /** The skeleton's setup pose data.  */
+    val data: SkeletonData
+
+    /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
+    val bones: JArray<Bone>
+
+    /** The skeleton's slots.  */
+    val slots: JArray<Slot>
+    internal var drawOrder: JArray<Slot>
+
+    /** The skeleton's IK constraints.  */
+    val ikConstraints: JArray<IkConstraint>
+
+    /** The skeleton's transform constraints.  */
+    val transformConstraints: JArray<TransformConstraint>
+
+    /** The skeleton's path constraints.  */
+    val pathConstraints: JArray<PathConstraint>
+
+    /** The list of bones and constraints, sorted in the order they should be updated, as computed by [.updateCache].  */
+    val updateCache: JArray<Updatable> = JArray()
+    internal val updateCacheReset: JArray<Bone> = JArray()
+    internal var skin: Skin? = null
+    internal val color: Color
+
+    /** Returns the skeleton's time. This can be used for tracking, such as with Slot [Slot.getAttachmentTime].
+     *
+     *
+     * See [.update].  */
+    var time: Float = 0.toFloat()
+
+    /** Scales the entire skeleton on the X axis. This affects all bones, even if the bone's transform mode disallows scale
+     * inheritance.  */
+    var scaleX = 1f
+
+    /** Scales the entire skeleton on the Y axis. This affects all bones, even if the bone's transform mode disallows scale
+     * inheritance.  */
+    var scaleY = 1f
+
+    /** Sets the skeleton X position, which is added to the root bone worldX position.  */
+    var x: Float = 0.toFloat()
+
+    /** Sets the skeleton Y position, which is added to the root bone worldY position.  */
+    var y: Float = 0.toFloat()
+
+    /** Returns the root bone, or null.  */
+    val rootBone: Bone?
+        get() = if (bones.size == 0) null else bones.first()
+
+    constructor(data: SkeletonData?) {
+        requireNotNull(data) { "data cannot be null." }
+        this.data = data
+
+        bones = JArray(data.bones.size)
+        for (boneData in data.bones) {
+            val bone: Bone
+            if (boneData.parent == null)
+                bone = Bone(boneData, this, null)
+            else {
+                val parent = bones[boneData.parent.index]
+                bone = Bone(boneData, this, parent)
+                parent.children.add(bone)
+            }
+            bones.add(bone)
+        }
+
+        slots = JArray(data.slots.size)
+        drawOrder = JArray(data.slots.size)
+        for (slotData in data.slots) {
+            val bone = bones[slotData.boneData.index]
+            val slot = Slot(slotData, bone)
+            slots.add(slot)
+            drawOrder.add(slot)
+        }
+
+        ikConstraints = JArray(data.ikConstraints.size)
+        for (ikConstraintData in data.ikConstraints)
+            ikConstraints.add(IkConstraint(ikConstraintData, this))
+
+        transformConstraints = JArray(data.transformConstraints.size)
+        for (transformConstraintData in data.transformConstraints)
+            transformConstraints.add(TransformConstraint(transformConstraintData, this))
+
+        pathConstraints = JArray(data.pathConstraints.size)
+        for (pathConstraintData in data.pathConstraints)
+            pathConstraints.add(PathConstraint(pathConstraintData, this))
+
+        color = Color(1f, 1f, 1f, 1f)
+
+        updateCache()
+    }
+
+    /** Copy constructor.  */
+    constructor(skeleton: Skeleton?) {
+        requireNotNull(skeleton) { "skeleton cannot be null." }
+        data = skeleton.data
+
+        bones = JArray(skeleton.bones.size)
+        for (bone in skeleton.bones) {
+            val newBone: Bone
+            if (bone.parent == null)
+                newBone = Bone(bone, this, null)
+            else {
+                val parent = bones[bone.parent.data.index]
+                newBone = Bone(bone, this, parent)
+                parent.children.add(newBone)
+            }
+            bones.add(newBone)
+        }
+
+        slots = JArray(skeleton.slots.size)
+        for (slot in skeleton.slots) {
+            val bone = bones[slot.bone.data.index]
+            slots.add(Slot(slot, bone))
+        }
+
+        drawOrder = JArray(slots.size)
+        for (slot in skeleton.drawOrder)
+            drawOrder.add(slots[slot.data.index])
+
+        ikConstraints = JArray(skeleton.ikConstraints.size)
+        for (ikConstraint in skeleton.ikConstraints)
+            ikConstraints.add(IkConstraint(ikConstraint, this))
+
+        transformConstraints = JArray(skeleton.transformConstraints.size)
+        for (transformConstraint in skeleton.transformConstraints)
+            transformConstraints.add(TransformConstraint(transformConstraint, this))
+
+        pathConstraints = JArray(skeleton.pathConstraints.size)
+        for (pathConstraint in skeleton.pathConstraints)
+            pathConstraints.add(PathConstraint(pathConstraint, this))
+
+        skin = skeleton.skin
+        color = Color(skeleton.color)
+        time = skeleton.time
+        scaleX = skeleton.scaleX
+        scaleY = skeleton.scaleY
+
+        updateCache()
+    }
+
+    /** Caches information about bones and constraints. Must be called if the [.getSkin] is modified or if bones,
+     * constraints, or weighted path attachments are added or removed.  */
+    fun updateCache() {
+        val updateCache = this.updateCache
+        updateCache.clear()
+        updateCacheReset.clear()
+
+        val boneCount = bones.size
+        val bones = this.bones.items
+        for (i in 0 until boneCount) {
+            val bone = bones[i]
+            bone.sorted = bone.data.skinRequired
+            bone.isActive = !bone.sorted
+        }
+        if (skin != null) {
+            val skinBones = skin!!.bones.items
+            var i = 0
+            val n = skin!!.bones.size
+            while (i < n) {
+                var bone: Bone? = bones[(skinBones[i] as BoneData).index]
+                do {
+                    bone!!.sorted = false
+                    bone.isActive = true
+                    bone = bone.parent
+                } while (bone != null)
+                i++
+            }
+        }
+
+        val ikCount = ikConstraints.size
+        val transformCount = transformConstraints.size
+        val pathCount = pathConstraints.size
+        val ikConstraints = this.ikConstraints.items
+        val transformConstraints = this.transformConstraints.items
+        val pathConstraints = this.pathConstraints.items
+        val constraintCount = ikCount + transformCount + pathCount
+        outer@ for (i in 0 until constraintCount) {
+            for (ii in 0 until ikCount) {
+                val constraint = ikConstraints[ii]
+                if (constraint.data.order == i) {
+                    sortIkConstraint(constraint)
+                    continue@outer
+                }
+            }
+            for (ii in 0 until transformCount) {
+                val constraint = transformConstraints[ii]
+                if (constraint.data.order == i) {
+                    sortTransformConstraint(constraint)
+                    continue@outer
+                }
+            }
+            for (ii in 0 until pathCount) {
+                val constraint = pathConstraints[ii]
+                if (constraint.data.order == i) {
+                    sortPathConstraint(constraint)
+                    continue@outer
+                }
+            }
+        }
+
+        for (i in 0 until boneCount)
+            sortBone(bones[i])
+    }
+
+    private fun sortIkConstraint(constraint: IkConstraint) {
+        constraint.active = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        if (!constraint.active) return
+
+        val target = constraint.target
+        sortBone(target!!)
+
+        val constrained = constraint.bones
+        val parent = constrained.first()
+        sortBone(parent)
+
+        if (constrained.size > 1) {
+            val child = constrained.peek()
+            if (!updateCache.contains(child, true)) updateCacheReset.add(child)
+        }
+
+        updateCache.add(constraint)
+
+        sortReset(parent.children)
+        constrained.peek().sorted = true
+    }
+
+    private fun sortPathConstraint(constraint: PathConstraint) {
+        constraint.isActive = constraint.target!!.bone.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        if (!constraint.isActive) return
+
+        val slot = constraint.target
+        val slotIndex = slot!!.data.index
+        val slotBone = slot.bone
+        if (skin != null) sortPathConstraintAttachment(skin!!, slotIndex, slotBone)
+        if (data.defaultSkin != null && data.defaultSkin !== skin)
+            sortPathConstraintAttachment(data.defaultSkin, slotIndex, slotBone)
+
+        val attachment = slot.attachment
+        if (attachment is PathAttachment) sortPathConstraintAttachment(attachment, slotBone)
+
+        val constrained = constraint.bones
+        val boneCount = constrained.size
+        for (i in 0 until boneCount)
+            sortBone(constrained[i])
+
+        updateCache.add(constraint)
+
+        for (i in 0 until boneCount)
+            sortReset(constrained[i].children)
+        for (i in 0 until boneCount)
+            constrained[i].sorted = true
+    }
+
+    private fun sortTransformConstraint(constraint: TransformConstraint) {
+        constraint.isActive = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        if (!constraint.isActive) return
+
+        sortBone(constraint.target!!)
+
+        val constrained = constraint.bones
+        val boneCount = constrained.size
+        if (constraint.data.local) {
+            for (i in 0 until boneCount) {
+                val child = constrained[i]
+                sortBone(child.parent!!)
+                if (!updateCache.contains(child, true)) updateCacheReset.add(child)
+            }
+        } else {
+            for (i in 0 until boneCount)
+                sortBone(constrained[i])
+        }
+
+        updateCache.add(constraint)
+
+        for (i in 0 until boneCount)
+            sortReset(constrained[i].children)
+        for (i in 0 until boneCount)
+            constrained[i].sorted = true
+    }
+
+    private fun sortPathConstraintAttachment(skin: Skin, slotIndex: Int, slotBone: Bone) {
+        for (entry in skin.attachments.keys())
+            if (entry.slotIndex == slotIndex) sortPathConstraintAttachment(entry.attachment, slotBone)
+    }
+
+    private fun sortPathConstraintAttachment(attachment: Attachment?, slotBone: Bone) {
+        if (attachment !is PathAttachment) return
+        val pathBones = attachment.bones
+        if (pathBones == null)
+            sortBone(slotBone)
+        else {
+            val bones = this.bones
+            var i = 0
+            val n = pathBones.size
+            while (i < n) {
+                var nn = pathBones[i++]
+                nn += i
+                while (i < nn)
+                    sortBone(bones[pathBones[i++]])
+            }
+        }
+    }
+
+    private fun sortBone(bone: Bone) {
+        if (bone.sorted) return
+        val parent = bone.parent
+        if (parent != null) sortBone(parent)
+        bone.sorted = true
+        updateCache.add(bone)
+    }
+
+    private fun sortReset(bones: JArray<Bone>) {
+        var i = 0
+        val n = bones.size
+        while (i < n) {
+            val bone = bones[i]
+            if (!bone.isActive) {
+                i++
+                continue
+            }
+            if (bone.sorted) sortReset(bone.children)
+            bone.sorted = false
+            i++
+        }
+    }
+
+    /** Updates the world transform for each bone and applies all constraints.
+     *
+     *
+     * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
+     * Runtimes Guide.  */
+    fun updateWorldTransform() {
+        // This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
+        // before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
+        // updateWorldTransform.
+        val updateCacheReset = this.updateCacheReset
+        run {
+            var i = 0
+            val n = updateCacheReset.size
+            while (i < n) {
+                val bone = updateCacheReset[i]
+                bone.ax = bone.x
+                bone.ay = bone.y
+                bone.arotation = bone.rotation
+                bone.ascaleX = bone.scaleX
+                bone.ascaleY = bone.scaleY
+                bone.ashearX = bone.shearX
+                bone.ashearY = bone.shearY
+                bone.appliedValid = true
+                i++
+            }
+        }
+        val updateCache = this.updateCache
+        var i = 0
+        val n = updateCache.size
+        while (i < n) {
+            updateCache[i].update()
+            i++
+        }
+    }
+
+    /** Temporarily sets the root bone as a child of the specified bone, then updates the world transform for each bone and applies
+     * all constraints.
+     *
+     *
+     * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
+     * Runtimes Guide.  */
+    fun updateWorldTransform(parent: Bone?) {
+        requireNotNull(parent) { "parent cannot be null." }
+        // This partial update avoids computing the world transform for constrained bones when 1) the bone is not updated
+        // before the constraint, 2) the constraint only needs to access the applied local transform, and 3) the constraint calls
+        // updateWorldTransform.
+        val updateCacheReset = this.updateCacheReset
+        run {
+            var i = 0
+            val n = updateCacheReset.size
+            while (i < n) {
+                val bone = updateCacheReset[i]
+                bone.ax = bone.x
+                bone.ay = bone.y
+                bone.arotation = bone.rotation
+                bone.ascaleX = bone.scaleX
+                bone.ascaleY = bone.scaleY
+                bone.ashearX = bone.shearX
+                bone.ashearY = bone.shearY
+                bone.appliedValid = true
+                i++
+            }
+        }
+
+        // Apply the parent bone transform to the root bone. The root bone always inherits scale, rotation and reflection.
+        val rootBone = rootBone
+        val pa = parent.a
+        val pb = parent.b
+        val pc = parent.c
+        val pd = parent.d
+        rootBone!!.worldX = pa * x + pb * y + parent.worldX
+        rootBone.worldY = pc * x + pd * y + parent.worldY
+
+        val rotationY = rootBone.rotation + 90f + rootBone.shearY
+        val la = cosDeg(rootBone.rotation + rootBone.shearX) * rootBone.scaleX
+        val lb = cosDeg(rotationY) * rootBone.scaleY
+        val lc = sinDeg(rootBone.rotation + rootBone.shearX) * rootBone.scaleX
+        val ld = sinDeg(rotationY) * rootBone.scaleY
+        rootBone.a = (pa * la + pb * lc) * scaleX
+        rootBone.b = (pa * lb + pb * ld) * scaleX
+        rootBone.c = (pc * la + pd * lc) * scaleY
+        rootBone.d = (pc * lb + pd * ld) * scaleY
+
+        // Update everything except root bone.
+        val updateCache = this.updateCache
+        var i = 0
+        val n = updateCache.size
+        while (i < n) {
+            val updatable = updateCache[i]
+            if (updatable !== rootBone) updatable.update()
+            i++
+        }
+    }
+
+    /** Sets the bones, constraints, slots, and draw order to their setup pose values.  */
+    fun setToSetupPose() {
+        setBonesToSetupPose()
+        setSlotsToSetupPose()
+    }
+
+    /** Sets the bones and constraints to their setup pose values.  */
+    fun setBonesToSetupPose() {
+        val bones = this.bones
+        run {
+            var i = 0
+            val n = bones.size
+            while (i < n) {
+                bones[i].setToSetupPose()
+                i++
+            }
+        }
+
+        val ikConstraints = this.ikConstraints
+        run {
+            var i = 0
+            val n = ikConstraints.size
+            while (i < n) {
+                val constraint = ikConstraints[i]
+                constraint.mix = constraint.data.mix
+                constraint.softness = constraint.data.softness
+                constraint.bendDirection = constraint.data.bendDirection
+                constraint.compress = constraint.data.compress
+                constraint.stretch = constraint.data.stretch
+                i++
+            }
+        }
+
+        val transformConstraints = this.transformConstraints
+        run {
+            var i = 0
+            val n = transformConstraints.size
+            while (i < n) {
+                val constraint = transformConstraints[i]
+                val data = constraint.data
+                constraint.rotateMix = data.rotateMix
+                constraint.translateMix = data.translateMix
+                constraint.scaleMix = data.scaleMix
+                constraint.shearMix = data.shearMix
+                i++
+            }
+        }
+
+        val pathConstraints = this.pathConstraints
+        var i = 0
+        val n = pathConstraints.size
+        while (i < n) {
+            val constraint = pathConstraints[i]
+            val data = constraint.data
+            constraint.position = data.position
+            constraint.spacing = data.spacing
+            constraint.rotateMix = data.rotateMix
+            constraint.translateMix = data.translateMix
+            i++
+        }
+    }
+
+    /** Sets the slots and draw order to their setup pose values.  */
+    fun setSlotsToSetupPose() {
+        val slots = this.slots
+        arraycopy(slots.items, 0, drawOrder.items, 0, slots.size)
+        var i = 0
+        val n = slots.size
+        while (i < n) {
+            slots[i].setToSetupPose()
+            i++
+        }
+    }
+
+    /** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
+     * repeatedly.
+     * @return May be null.
+     */
+    fun findBone(boneName: String?): Bone? {
+        requireNotNull(boneName) { "boneName cannot be null." }
+        val bones = this.bones
+        var i = 0
+        val n = bones.size
+        while (i < n) {
+            val bone = bones[i]
+            if (bone.data.name == boneName) return bone
+            i++
+        }
+        return null
+    }
+
+    /** Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it
+     * repeatedly.
+     * @return May be null.
+     */
+    fun findSlot(slotName: String?): Slot? {
+        requireNotNull(slotName) { "slotName cannot be null." }
+        val slots = this.slots
+        var i = 0
+        val n = slots.size
+        while (i < n) {
+            val slot = slots[i]
+            if (slot.data.name == slotName) return slot
+            i++
+        }
+        return null
+    }
+
+    /** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order.  */
+    fun getDrawOrder(): JArray<Slot> {
+        return drawOrder
+    }
+
+    fun setDrawOrder(drawOrder: JArray<Slot>?) {
+        requireNotNull(drawOrder) { "drawOrder cannot be null." }
+        this.drawOrder = drawOrder
+    }
+
+    /** The skeleton's current skin.
+     * @return May be null.
+     */
+    fun getSkin(): Skin? {
+        return skin
+    }
+
+    /** Sets a skin by name.
+     *
+     *
+     * See [.setSkin].  */
+    fun setSkin(skinName: String) {
+        val skin = data.findSkin(skinName) ?: throw IllegalArgumentException("Skin not found: $skinName")
+        setSkin(skin)
+    }
+
+    /** Sets the skin used to look up attachments before looking in the [default skin][SkeletonData.getDefaultSkin]. If the
+     * skin is changed, [.updateCache] is called.
+     *
+     *
+     * Attachments from the new skin are attached if the corresponding attachment from the old skin was attached. If there was no
+     * old skin, each slot's setup mode attachment is attached from the new skin.
+     *
+     *
+     * After changing the skin, the visible attachments can be reset to those attached in the setup pose by calling
+     * [.setSlotsToSetupPose]. Also, often [AnimationState.apply] is called before the next time the
+     * skeleton is rendered to allow any attachment keys in the current animation(s) to hide or show attachments from the new skin.
+     * @param newSkin May be null.
+     */
+    fun setSkin(newSkin: Skin?) {
+        if (newSkin === skin) return
+        if (newSkin != null) {
+            if (skin != null)
+                newSkin.attachAll(this, skin!!)
+            else {
+                val slots = this.slots
+                var i = 0
+                val n = slots.size
+                while (i < n) {
+                    val slot = slots[i]
+                    val name = slot.data.attachmentName
+                    if (name != null) {
+                        val attachment = newSkin.getAttachment(i, name)
+                        if (attachment != null) slot.setAttachment(attachment)
+                    }
+                    i++
+                }
+            }
+        }
+        skin = newSkin
+        updateCache()
+    }
+
+    /** Finds an attachment by looking in the [.skin] and [SkeletonData.defaultSkin] using the slot name and attachment
+     * name.
+     *
+     *
+     * See [.getAttachment].
+     * @return May be null.
+     */
+    fun getAttachment(slotName: String, attachmentName: String): Attachment? {
+        val slot = data.findSlot(slotName) ?: throw IllegalArgumentException("Slot not found: $slotName")
+        return getAttachment(slot.index, attachmentName)
+    }
+
+    /** Finds an attachment by looking in the [.skin] and [SkeletonData.defaultSkin] using the slot index and
+     * attachment name. First the skin is checked and if the attachment was not found, the default skin is checked.
+     *
+     *
+     * See [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.
+     * @return May be null.
+     */
+    fun getAttachment(slotIndex: Int, attachmentName: String?): Attachment? {
+        requireNotNull(attachmentName) { "attachmentName cannot be null." }
+        if (skin != null) {
+            val attachment = skin!!.getAttachment(slotIndex, attachmentName)
+            if (attachment != null) return attachment
+        }
+        return if (data.defaultSkin != null) data.defaultSkin.getAttachment(slotIndex, attachmentName) else null
+    }
+
+    /** A convenience method to set an attachment by finding the slot with [.findSlot], finding the attachment with
+     * [.getAttachment], then setting the slot's [Slot.attachment].
+     * @param attachmentName May be null to clear the slot's attachment.
+     */
+    fun setAttachment(slotName: String?, attachmentName: String?) {
+        requireNotNull(slotName) { "slotName cannot be null." }
+        val slot = findSlot(slotName) ?: throw IllegalArgumentException("Slot not found: $slotName")
+        var attachment: Attachment? = null
+        if (attachmentName != null) {
+            attachment = getAttachment(slot.data.index, attachmentName)
+            requireNotNull(attachment) { "Attachment not found: $attachmentName, for slot: $slotName" }
+        }
+        slot.setAttachment(attachment)
+    }
+
+    /** Finds an IK constraint by comparing each IK constraint's name. It is more efficient to cache the results of this method
+     * than to call it repeatedly.
+     * @return May be null.
+     */
+    fun findIkConstraint(constraintName: String?): IkConstraint? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val ikConstraints = this.ikConstraints
+        var i = 0
+        val n = ikConstraints.size
+        while (i < n) {
+            val ikConstraint = ikConstraints[i]
+            if (ikConstraint.data.name == constraintName) return ikConstraint
+            i++
+        }
+        return null
+    }
+
+    /** Finds a transform constraint by comparing each transform constraint's name. It is more efficient to cache the results of
+     * this method than to call it repeatedly.
+     * @return May be null.
+     */
+    fun findTransformConstraint(constraintName: String?): TransformConstraint? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val transformConstraints = this.transformConstraints
+        var i = 0
+        val n = transformConstraints.size
+        while (i < n) {
+            val constraint = transformConstraints[i]
+            if (constraint.data.name == constraintName) return constraint
+            i++
+        }
+        return null
+    }
+
+    /** Finds a path constraint by comparing each path constraint's name. It is more efficient to cache the results of this method
+     * than to call it repeatedly.
+     * @return May be null.
+     */
+    fun findPathConstraint(constraintName: String?): PathConstraint? {
+        requireNotNull(constraintName) { "constraintName cannot be null." }
+        val pathConstraints = this.pathConstraints
+        var i = 0
+        val n = pathConstraints.size
+        while (i < n) {
+            val constraint = pathConstraints[i]
+            if (constraint.data.name == constraintName) return constraint
+            i++
+        }
+        return null
+    }
+
+    /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose.
+     * @param offset An output value, the distance from the skeleton origin to the bottom left corner of the AABB.
+     * @param size An output value, the width and height of the AABB.
+     * @param temp Working memory to temporarily store attachments' computed world vertices.
+     */
+    fun getBounds(offset: Vector2?, size: Vector2?, temp: JFloatArray?) {
+        requireNotNull(offset) { "offset cannot be null." }
+        requireNotNull(size) { "size cannot be null." }
+        requireNotNull(temp) { "temp cannot be null." }
+        val drawOrder = this.drawOrder
+        var minX = Integer.MAX_VALUE.toFloat()
+        var minY = Integer.MAX_VALUE.toFloat()
+        var maxX = Integer.MIN_VALUE.toFloat()
+        var maxY = Integer.MIN_VALUE.toFloat()
+        var i = 0
+        val n = drawOrder.size
+        while (i < n) {
+            val slot = drawOrder[i]
+            if (!slot.bone.isActive) {
+                i++
+                continue
+            }
+            var verticesLength = 0
+            var vertices: FloatArray? = null
+            val attachment = slot.attachment
+            if (attachment is RegionAttachment) {
+                verticesLength = 8
+                vertices = temp.setSize(8)
+                attachment.computeWorldVertices(slot.bone, vertices, 0, 2)
+            } else if (attachment is MeshAttachment) {
+                verticesLength = attachment.worldVerticesLength
+                vertices = temp.setSize(verticesLength)
+                attachment.computeWorldVertices(slot, 0, verticesLength, vertices, 0, 2)
+            }
+            if (vertices != null) {
+                var ii = 0
+                while (ii < verticesLength) {
+                    val x = vertices[ii]
+                    val y = vertices[ii + 1]
+                    minX = Math.min(minX, x)
+                    minY = Math.min(minY, y)
+                    maxX = Math.max(maxX, x)
+                    maxY = Math.max(maxY, y)
+                    ii += 2
+                }
+            }
+            i++
+        }
+        offset[minX] = minY
+        size[maxX - minX] = maxY - minY
+    }
+
+    /** The color to tint all the skeleton's attachments.  */
+    fun getColor(): Color {
+        return color
+    }
+
+    /** A convenience method for setting the skeleton color. The color can also be set by modifying [.getColor].  */
+    fun setColor(color: Color?) {
+        requireNotNull(color) { "color cannot be null." }
+        this.color.set(color)
+    }
+
+    fun setScale(scaleX: Float, scaleY: Float) {
+        this.scaleX = scaleX
+        this.scaleY = scaleY
+    }
+
+    /** Sets the skeleton X and Y position, which is added to the root bone worldX and worldY position.  */
+    fun setPosition(x: Float, y: Float) {
+        this.x = x
+        this.y = y
+    }
+
+    /** Increments the skeleton's [.time].  */
+    fun update(delta: Float) {
+        time += delta
+    }
+
+    override fun toString(): String {
+        return if (data.name != null) data.name else super.toString()
+    }
 }

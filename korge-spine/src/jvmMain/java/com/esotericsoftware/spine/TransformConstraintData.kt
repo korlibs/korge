@@ -25,144 +25,60 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JArray
 
-/** Stores the setup pose for a {@link TransformConstraint}.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-transform-constraints">Transform constraints</a> in the Spine User Guide. */
-public class TransformConstraintData extends ConstraintData {
-	final JArray<BoneData> bones = new JArray();
-	BoneData target;
-	float rotateMix, translateMix, scaleMix, shearMix;
-	float offsetRotation, offsetX, offsetY, offsetScaleX, offsetScaleY, offsetShearY;
-	boolean relative, local;
+/** Stores the setup pose for a [TransformConstraint].
+ *
+ *
+ * See [Transform constraints](http://esotericsoftware.com/spine-transform-constraints) in the Spine User Guide.  */
+class TransformConstraintData(name: String) : ConstraintData(name) {
+    /** The bones that will be modified by this transform constraint.  */
+    val bones: JArray<BoneData> = JArray()
+    internal var target: BoneData
 
-	public TransformConstraintData (String name) {
-		super(name);
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
+    var rotateMix: Float = 0.toFloat()
 
-	/** The bones that will be modified by this transform constraint. */
-	public JArray<BoneData> getBones () {
-		return bones;
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained translations.  */
+    var translateMix: Float = 0.toFloat()
 
-	/** The target bone whose world transform will be copied to the constrained bones. */
-	public BoneData getTarget () {
-		return target;
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained scales.  */
+    var scaleMix: Float = 0.toFloat()
 
-	public void setTarget (BoneData target) {
-		if (target == null) throw new IllegalArgumentException("target cannot be null.");
-		this.target = target;
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained shears.  */
+    var shearMix: Float = 0.toFloat()
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
-	public float getRotateMix () {
-		return rotateMix;
-	}
+    /** An offset added to the constrained bone rotation.  */
+    var offsetRotation: Float = 0.toFloat()
 
-	public void setRotateMix (float rotateMix) {
-		this.rotateMix = rotateMix;
-	}
+    /** An offset added to the constrained bone X translation.  */
+    var offsetX: Float = 0.toFloat()
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained translations. */
-	public float getTranslateMix () {
-		return translateMix;
-	}
+    /** An offset added to the constrained bone Y translation.  */
+    var offsetY: Float = 0.toFloat()
 
-	public void setTranslateMix (float translateMix) {
-		this.translateMix = translateMix;
-	}
+    /** An offset added to the constrained bone scaleX.  */
+    var offsetScaleX: Float = 0.toFloat()
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained scales. */
-	public float getScaleMix () {
-		return scaleMix;
-	}
+    /** An offset added to the constrained bone scaleY.  */
+    var offsetScaleY: Float = 0.toFloat()
 
-	public void setScaleMix (float scaleMix) {
-		this.scaleMix = scaleMix;
-	}
+    /** An offset added to the constrained bone shearY.  */
+    var offsetShearY: Float = 0.toFloat()
+    var relative: Boolean = false
+    var local: Boolean = false
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained shears. */
-	public float getShearMix () {
-		return shearMix;
-	}
+    /** The target bone whose world transform will be copied to the constrained bones.  */
+    fun getTarget(): BoneData {
+        return target
+    }
 
-	public void setShearMix (float shearMix) {
-		this.shearMix = shearMix;
-	}
-
-	/** An offset added to the constrained bone rotation. */
-	public float getOffsetRotation () {
-		return offsetRotation;
-	}
-
-	public void setOffsetRotation (float offsetRotation) {
-		this.offsetRotation = offsetRotation;
-	}
-
-	/** An offset added to the constrained bone X translation. */
-	public float getOffsetX () {
-		return offsetX;
-	}
-
-	public void setOffsetX (float offsetX) {
-		this.offsetX = offsetX;
-	}
-
-	/** An offset added to the constrained bone Y translation. */
-	public float getOffsetY () {
-		return offsetY;
-	}
-
-	public void setOffsetY (float offsetY) {
-		this.offsetY = offsetY;
-	}
-
-	/** An offset added to the constrained bone scaleX. */
-	public float getOffsetScaleX () {
-		return offsetScaleX;
-	}
-
-	public void setOffsetScaleX (float offsetScaleX) {
-		this.offsetScaleX = offsetScaleX;
-	}
-
-	/** An offset added to the constrained bone scaleY. */
-	public float getOffsetScaleY () {
-		return offsetScaleY;
-	}
-
-	public void setOffsetScaleY (float offsetScaleY) {
-		this.offsetScaleY = offsetScaleY;
-	}
-
-	/** An offset added to the constrained bone shearY. */
-	public float getOffsetShearY () {
-		return offsetShearY;
-	}
-
-	public void setOffsetShearY (float offsetShearY) {
-		this.offsetShearY = offsetShearY;
-	}
-
-	public boolean getRelative () {
-		return relative;
-	}
-
-	public void setRelative (boolean relative) {
-		this.relative = relative;
-	}
-
-	public boolean getLocal () {
-		return local;
-	}
-
-	public void setLocal (boolean local) {
-		this.local = local;
-	}
+    fun setTarget(target: BoneData?) {
+        requireNotNull(target) { "target cannot be null." }
+        this.target = target
+    }
 }

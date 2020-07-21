@@ -25,73 +25,64 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.vertexeffects;
+package com.esotericsoftware.spine.vertexeffects
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect;
-import com.esotericsoftware.spine.utils.SpineUtils;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.Vector2
+import com.esotericsoftware.spine.Skeleton
+import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect
+import com.esotericsoftware.spine.utils.SpineUtils
 
-public class SwirlEffect implements VertexEffect {
-	private float worldX, worldY, radius, angle;
-	private Interpolation interpolation = Interpolation.pow2Out;
-	private float centerX, centerY;
+class SwirlEffect(private var radius: Float) : VertexEffect {
+    private var worldX: Float = 0.toFloat()
+    private var worldY: Float = 0.toFloat()
+    private var angle: Float = 0.toFloat()
+    var interpolation: Interpolation = Interpolation.pow2Out
+    private var centerX: Float = 0.toFloat()
+    private var centerY: Float = 0.toFloat()
 
-	public SwirlEffect (float radius) {
-		this.radius = radius;
-	}
+    override fun begin(skeleton: Skeleton) {
+        worldX = skeleton.x + centerX
+        worldY = skeleton.y + centerY
+    }
 
-	public void begin (Skeleton skeleton) {
-		worldX = skeleton.getX() + centerX;
-		worldY = skeleton.getY() + centerY;
-	}
+    override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
+        val x = position.x - worldX
+        val y = position.y - worldY
+        val dist = Math.sqrt((x * x + y * y).toDouble()).toFloat()
+        if (dist < radius) {
+            val theta = interpolation.apply(0f, angle, (radius - dist) / radius)
+            val cos = SpineUtils.cos(theta)
+            val sin = SpineUtils.sin(theta)
+            position.x = cos * x - sin * y + worldX
+            position.y = sin * x + cos * y + worldY
+        }
+    }
 
-	public void transform (Vector2 position, Vector2 uv, Color light, Color dark) {
-		float x = position.x - worldX;
-		float y = position.y - worldY;
-		float dist = (float)Math.sqrt(x * x + y * y);
-		if (dist < radius) {
-			float theta = interpolation.apply(0, angle, (radius - dist) / radius);
-			float cos = SpineUtils.cos(theta), sin = SpineUtils.sin(theta);
-			position.x = cos * x - sin * y + worldX;
-			position.y = sin * x + cos * y + worldY;
-		}
-	}
+    override fun end() {}
 
-	public void end () {
-	}
+    fun setRadius(radius: Float) {
+        this.radius = radius
+    }
 
-	public void setRadius (float radius) {
-		this.radius = radius;
-	}
+    fun setCenter(centerX: Float, centerY: Float) {
+        this.centerX = centerX
+        this.centerY = centerY
+    }
 
-	public void setCenter (float centerX, float centerY) {
-		this.centerX = centerX;
-		this.centerY = centerY;
-	}
+    fun setCenterX(centerX: Float) {
+        this.centerX = centerX
+    }
 
-	public void setCenterX (float centerX) {
-		this.centerX = centerX;
-	}
+    fun setCenterY(centerY: Float) {
+        this.centerY = centerY
+    }
 
-	public void setCenterY (float centerY) {
-		this.centerY = centerY;
-	}
-
-	public void setAngle (float degrees) {
-		this.angle = degrees * MathUtils.degRad;
-	}
-
-	public Interpolation getInterpolation () {
-		return interpolation;
-	}
-
-	public void setInterpolation (Interpolation interpolation) {
-		this.interpolation = interpolation;
-	}
+    fun setAngle(degrees: Float) {
+        this.angle = degrees * MathUtils.degRad
+    }
 }

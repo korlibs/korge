@@ -25,94 +25,84 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import com.badlogic.gdx.utils.ObjectFloatMap;
-import com.esotericsoftware.spine.AnimationState.TrackEntry;
+import com.badlogic.gdx.utils.ObjectFloatMap
+import com.esotericsoftware.spine.AnimationState.TrackEntry
 
-/** Stores mix (crossfade) durations to be applied when {@link AnimationState} animations are changed. */
-public class AnimationStateData {
-	final SkeletonData skeletonData;
-	final ObjectFloatMap<Key> animationToMixTime = new ObjectFloatMap(51, 0.8f);
-	final Key tempKey = new Key();
-	float defaultMix;
+/** Stores mix (crossfade) durations to be applied when [AnimationState] animations are changed.  */
+class AnimationStateData(
+        /** The SkeletonData to look up animations when they are specified by name.  */
+        val skeletonData: SkeletonData?) {
+    internal val animationToMixTime: ObjectFloatMap<Key> = ObjectFloatMap(51, 0.8f)
+    internal val tempKey = Key()
 
-	public AnimationStateData (SkeletonData skeletonData) {
-		if (skeletonData == null) throw new IllegalArgumentException("skeletonData cannot be null.");
-		this.skeletonData = skeletonData;
-	}
+    /** The mix duration to use when no mix duration has been defined between two animations.  */
+    var defaultMix: Float = 0.toFloat()
 
-	/** The SkeletonData to look up animations when they are specified by name. */
-	public SkeletonData getSkeletonData () {
-		return skeletonData;
-	}
+    init {
+        requireNotNull(skeletonData) { "skeletonData cannot be null." }
+    }
 
-	/** Sets a mix duration by animation name.
-	 * <p>
-	 * See {@link #setMix(Animation, Animation, float)}. */
-	public void setMix (String fromName, String toName, float duration) {
-		Animation from = skeletonData.findAnimation(fromName);
-		if (from == null) throw new IllegalArgumentException("Animation not found: " + fromName);
-		Animation to = skeletonData.findAnimation(toName);
-		if (to == null) throw new IllegalArgumentException("Animation not found: " + toName);
-		setMix(from, to, duration);
-	}
+    /** Sets a mix duration by animation name.
+     *
+     *
+     * See [.setMix].  */
+    fun setMix(fromName: String, toName: String, duration: Float) {
+        val from = skeletonData.findAnimation(fromName)
+                ?: throw IllegalArgumentException("Animation not found: $fromName")
+        val to = skeletonData.findAnimation(toName) ?: throw IllegalArgumentException("Animation not found: $toName")
+        setMix(from, to, duration)
+    }
 
-	/** Sets the mix duration when changing from the specified animation to the other.
-	 * <p>
-	 * See {@link TrackEntry#mixDuration}. */
-	public void setMix (Animation from, Animation to, float duration) {
-		if (from == null) throw new IllegalArgumentException("from cannot be null.");
-		if (to == null) throw new IllegalArgumentException("to cannot be null.");
-		Key key = new Key();
-		key.a1 = from;
-		key.a2 = to;
-		animationToMixTime.put(key, duration);
-	}
+    /** Sets the mix duration when changing from the specified animation to the other.
+     *
+     *
+     * See [TrackEntry.mixDuration].  */
+    fun setMix(from: Animation?, to: Animation?, duration: Float) {
+        requireNotNull(from) { "from cannot be null." }
+        requireNotNull(to) { "to cannot be null." }
+        val key = Key()
+        key.a1 = from
+        key.a2 = to
+        animationToMixTime.put(key, duration)
+    }
 
-	/** Returns the mix duration to use when changing from the specified animation to the other, or the {@link #getDefaultMix()} if
-	 * no mix duration has been set. */
-	public float getMix (Animation from, Animation to) {
-		if (from == null) throw new IllegalArgumentException("from cannot be null.");
-		if (to == null) throw new IllegalArgumentException("to cannot be null.");
-		tempKey.a1 = from;
-		tempKey.a2 = to;
-		return animationToMixTime.get(tempKey, defaultMix);
-	}
+    /** Returns the mix duration to use when changing from the specified animation to the other, or the [.getDefaultMix] if
+     * no mix duration has been set.  */
+    fun getMix(from: Animation?, to: Animation?): Float {
+        requireNotNull(from) { "from cannot be null." }
+        requireNotNull(to) { "to cannot be null." }
+        tempKey.a1 = from
+        tempKey.a2 = to
+        return animationToMixTime[tempKey, defaultMix]
+    }
 
-	/** The mix duration to use when no mix duration has been defined between two animations. */
-	public float getDefaultMix () {
-		return defaultMix;
-	}
+    internal class Key {
+        var a1: Animation? = null
+        var a2: Animation? = null
 
-	public void setDefaultMix (float defaultMix) {
-		this.defaultMix = defaultMix;
-	}
+        override fun hashCode(): Int {
+            return 31 * (31 + a1!!.hashCode()) + a2!!.hashCode()
+        }
 
-	static class Key {
-		Animation a1, a2;
+        override fun equals(obj: Any?): Boolean {
+            if (this === obj) return true
+            if (obj == null) return false
+            val other = obj as Key?
+            if (a1 == null) {
+                if (other!!.a1 != null) return false
+            } else if (a1 != other!!.a1) return false
+            if (a2 == null) {
+                if (other.a2 != null) return false
+            } else if (a2 != other.a2) return false
+            return true
+        }
 
-		public int hashCode () {
-			return 31 * (31 + a1.hashCode()) + a2.hashCode();
-		}
-
-		public boolean equals (Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			Key other = (Key)obj;
-			if (a1 == null) {
-				if (other.a1 != null) return false;
-			} else if (!a1.equals(other.a1)) return false;
-			if (a2 == null) {
-				if (other.a2 != null) return false;
-			} else if (!a2.equals(other.a2)) return false;
-			return true;
-		}
-
-		public String toString () {
-			return a1.name + "->" + a2.name;
-		}
-	}
+        override fun toString(): String {
+            return a1!!.name + "->" + a2!!.name
+        }
+    }
 }

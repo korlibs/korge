@@ -29,9 +29,12 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
 import com.badlogic.gdx.utils.JArray
+import com.esotericsoftware.spine.utils.SpineUtils.PI
+import com.esotericsoftware.spine.utils.SpineUtils.atan2
+import com.esotericsoftware.spine.utils.SpineUtils.cos
+import com.esotericsoftware.spine.utils.SpineUtils.radDeg
+import com.esotericsoftware.spine.utils.SpineUtils.sin
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.
@@ -45,7 +48,7 @@ class IkConstraint : Updatable {
 
     /** The bones that will be modified by this IK constraint.  */
     @JvmField
-    val bones: JArray<Bone>
+    val bones: JArray<Bone?>
 
     @JvmField
     internal var target: Bone? = null
@@ -97,7 +100,7 @@ class IkConstraint : Updatable {
         data = constraint.data
         bones = JArray(constraint.bones.size)
         for (bone in constraint.bones)
-            bones.add(skeleton.bones[bone.data.index])
+            bones.add(skeleton.bones[bone!!.data.index])
         target = skeleton.bones[constraint.target!!.data.index]
         mix = constraint.mix
         softness = constraint.softness
@@ -130,12 +133,11 @@ class IkConstraint : Updatable {
         this.target = target
     }
 
-    override fun isActive(): Boolean {
-        return active
-    }
+    override val isActive: Boolean
+        get() = active
 
     override fun toString(): String {
-        return data.name
+        return data.name ?: ""
     }
 
     companion object {
@@ -146,7 +148,7 @@ class IkConstraint : Updatable {
                   alpha: Float) {
             requireNotNull(bone) { "bone cannot be null." }
             if (!bone.appliedValid) bone.updateAppliedTransform()
-            val p = bone.parent
+            val p = bone.parent!!
             val pa = p.a
             var pb = p.b
             val pc = p.c
@@ -283,7 +285,7 @@ class IkConstraint : Updatable {
                 cwx = a * cx + b * cy + parent.worldX;
                 cwy = c * cx + d * cy + parent.worldY;
             }
-            var pp = parent.parent;
+            var pp = parent.parent!!
             a = pp.a;
             b = pp.b;
             c = pp.c;

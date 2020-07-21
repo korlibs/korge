@@ -25,17 +25,18 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-/** The interface for items updated by {@link Skeleton#updateWorldTransform()}. */
-public interface Updatable {
-	public void update ();
+/** The interface for items updated by [Skeleton.updateWorldTransform].  */
+interface Updatable {
 
-	/** Returns false when this item has not been updated because a skin is required and the {@link Skeleton#getSkin() active skin}
-	 * does not contain this item.
-	 * @see Skin#getBones()
-	 * @see Skin#getConstraints() */
-	public boolean isActive ();
+    /** Returns false when this item has not been updated because a skin is required and the [active skin][Skeleton.getSkin]
+     * does not contain this item.
+     * @see Skin.getBones
+     * @see Skin.getConstraints
+     */
+    val isActive: Boolean
+    fun update()
 }

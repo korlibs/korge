@@ -25,82 +25,54 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import static com.badlogic.gdx.math.MathUtils.cosDeg;
-import static com.badlogic.gdx.math.MathUtils.radDeg;
-import static com.badlogic.gdx.math.MathUtils.sinDeg;
+import com.badlogic.gdx.math.MathUtils.cosDeg
+import com.badlogic.gdx.math.MathUtils.radDeg
+import com.badlogic.gdx.math.MathUtils.sinDeg
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Vector2;
-import com.esotericsoftware.spine.Bone;
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Vector2
+import com.esotericsoftware.spine.Bone
 
 /** An attachment which is a single point and a rotation. This can be used to spawn projectiles, particles, etc. A bone can be
  * used in similar ways, but a PointAttachment is slightly less expensive to compute and can be hidden, shown, and placed in a
  * skin.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-point-attachments">Point Attachments</a> in the Spine User Guide. */
-public class PointAttachment extends Attachment {
-	float x, y, rotation;
+ *
+ *
+ * See [Point Attachments](http://esotericsoftware.com/spine-point-attachments) in the Spine User Guide.  */
+class PointAttachment(name: String) : Attachment(name) {
+    var x: Float = 0.toFloat()
+    var y: Float = 0.toFloat()
+    var rotation: Float = 0.toFloat()
 
-	// Nonessential.
-	final Color color = new Color(0.9451f, 0.9451f, 0, 1); // f1f100ff
+    // Nonessential.
+    /** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
+     * are not usually rendered at runtime.  */
+    val color = Color(0.9451f, 0.9451f, 0f, 1f) // f1f100ff
 
-	public PointAttachment (String name) {
-		super(name);
-	}
+    fun computeWorldPosition(bone: Bone, point: Vector2): Vector2 {
+        point.x = x * bone.a + y * bone.b + bone.worldX
+        point.y = x * bone.c + y * bone.d + bone.worldY
+        return point
+    }
 
-	public float getX () {
-		return x;
-	}
+    fun computeWorldRotation(bone: Bone): Float {
+        val cos = cosDeg(rotation)
+        val sin = sinDeg(rotation)
+        val x = cos * bone.a + sin * bone.b
+        val y = cos * bone.c + sin * bone.d
+        return Math.atan2(y.toDouble(), x.toDouble()).toFloat() * radDeg
+    }
 
-	public void setX (float x) {
-		this.x = x;
-	}
-
-	public float getY () {
-		return y;
-	}
-
-	public void setY (float y) {
-		this.y = y;
-	}
-
-	public float getRotation () {
-		return rotation;
-	}
-
-	public void setRotation (float rotation) {
-		this.rotation = rotation;
-	}
-
-	/** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
-	 * are not usually rendered at runtime. */
-	public Color getColor () {
-		return color;
-	}
-
-	public Vector2 computeWorldPosition (Bone bone, Vector2 point) {
-		point.x = x * bone.getA() + y * bone.getB() + bone.getWorldX();
-		point.y = x * bone.getC() + y * bone.getD() + bone.getWorldY();
-		return point;
-	}
-
-	public float computeWorldRotation (Bone bone) {
-		float cos = cosDeg(rotation), sin = sinDeg(rotation);
-		float x = cos * bone.getA() + sin * bone.getB();
-		float y = cos * bone.getC() + sin * bone.getD();
-		return (float)Math.atan2(y, x) * radDeg;
-	}
-
-	public Attachment copy () {
-		PointAttachment copy = new PointAttachment(name);
-		copy.x = x;
-		copy.y = y;
-		copy.rotation = rotation;
-		copy.color.set(color);
-		return copy;
-	}
+    override fun copy(): Attachment {
+        val copy = PointAttachment(name)
+        copy.x = x
+        copy.y = y
+        copy.rotation = rotation
+        copy.color.set(color)
+        return copy
+    }
 }

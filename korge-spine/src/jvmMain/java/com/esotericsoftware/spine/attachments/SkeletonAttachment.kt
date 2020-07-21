@@ -25,33 +25,23 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine.attachments;
+package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.Skeleton;
+import com.esotericsoftware.spine.Skeleton
 
-/** Attachment that displays a skeleton. */
-public class SkeletonAttachment extends Attachment {
-	private Skeleton skeleton;
+/** Attachment that displays a skeleton.  */
+class SkeletonAttachment(name: String) : Attachment(name) {
+    /** @return May return null.
+     */
+    /** @param skeleton May be null.
+     */
+    var skeleton: Skeleton? = null
 
-	public SkeletonAttachment (String name) {
-		super(name);
-	}
-
-	/** @return May return null. */
-	public Skeleton getSkeleton () {
-		return skeleton;
-	}
-
-	/** @param skeleton May be null. */
-	public void setSkeleton (Skeleton skeleton) {
-		this.skeleton = skeleton;
-	}
-
-	public Attachment copy () {
-		SkeletonAttachment copy = new SkeletonAttachment(name);
-		copy.skeleton = skeleton;
-		return copy;
-	}
+    override fun copy(): Attachment {
+        val copy = SkeletonAttachment(name)
+        copy.skeleton = skeleton
+        return copy
+    }
 }
