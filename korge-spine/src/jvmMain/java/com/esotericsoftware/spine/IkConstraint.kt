@@ -25,348 +25,387 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ */
 
-package com.esotericsoftware.spine;
+package com.esotericsoftware.spine
 
-import static com.esotericsoftware.spine.utils.SpineUtils.*;
+import com.esotericsoftware.spine.utils.SpineUtils.*
 
-import com.badlogic.gdx.utils.JArray;
+import com.badlogic.gdx.utils.JArray
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.
- * <p>
- * See <a href="http://esotericsoftware.com/spine-ik-constraints">IK constraints</a> in the Spine User Guide. */
-public class IkConstraint implements Updatable {
-	final IkConstraintData data;
-	final JArray<Bone> bones;
-	Bone target;
-	int bendDirection;
-	boolean compress, stretch;
-	float mix = 1, softness;
+ *
+ *
+ * See [IK constraints](http://esotericsoftware.com/spine-ik-constraints) in the Spine User Guide.  */
+class IkConstraint : Updatable {
+    /** The IK constraint's setup pose data.  */
+    @JvmField
+    val data: IkConstraintData
 
-	boolean active;
+    /** The bones that will be modified by this IK constraint.  */
+    @JvmField
+    val bones: JArray<Bone>
 
-	public IkConstraint (IkConstraintData data, Skeleton skeleton) {
-		if (data == null) throw new IllegalArgumentException("data cannot be null.");
-		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
-		this.data = data;
-		mix = data.mix;
-		softness = data.softness;
-		bendDirection = data.bendDirection;
-		compress = data.compress;
-		stretch = data.stretch;
+    @JvmField
+    internal var target: Bone? = null
 
-		bones = new JArray(data.bones.size);
-		for (BoneData boneData : data.bones)
-			bones.add(skeleton.findBone(boneData.name));
-		target = skeleton.findBone(data.target.name);
-	}
+    /** Controls the bend direction of the IK bones, either 1 or -1.  */
+    @JvmField
+    var bendDirection: Int = 0
 
-	/** Copy constructor. */
-	public IkConstraint (IkConstraint constraint, Skeleton skeleton) {
-		if (constraint == null) throw new IllegalArgumentException("constraint cannot be null.");
-		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
-		data = constraint.data;
-		bones = new JArray(constraint.bones.size);
-		for (Bone bone : constraint.bones)
-			bones.add(skeleton.bones.get(bone.data.index));
-		target = skeleton.bones.get(constraint.target.data.index);
-		mix = constraint.mix;
-		softness = constraint.softness;
-		bendDirection = constraint.bendDirection;
-		compress = constraint.compress;
-		stretch = constraint.stretch;
-	}
+    /** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it.  */
+    @JvmField
+    var compress: Boolean = false
 
-	/** Applies the constraint to the constrained bones. */
-	public void apply () {
-		update();
-	}
+    /** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
+     * and the parent bone has local nonuniform scale, stretch is not applied.  */
+    @JvmField
+    var stretch: Boolean = false
 
-	public void update () {
-		Bone target = this.target;
-		JArray<Bone> bones = this.bones;
-		switch (bones.size) {
-		case 1:
-			apply(bones.first(), target.worldX, target.worldY, compress, stretch, data.uniform, mix);
-			break;
-		case 2:
-			apply(bones.first(), bones.get(1), target.worldX, target.worldY, bendDirection, stretch, softness, mix);
-			break;
-		}
-	}
+    /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
+    @JvmField
+    var mix = 1f
 
-	/** The bones that will be modified by this IK constraint. */
-	public JArray<Bone> getBones () {
-		return bones;
-	}
+    /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow.  */
+    @JvmField
+    var softness: Float = 0.toFloat()
 
-	/** The bone that is the IK target. */
-	public Bone getTarget () {
-		return target;
-	}
+    @JvmField
+    internal var active: Boolean = false
 
-	public void setTarget (Bone target) {
-		if (target == null) throw new IllegalArgumentException("target cannot be null.");
-		this.target = target;
-	}
+    constructor(data: IkConstraintData?, skeleton: Skeleton?) {
+        requireNotNull(data) { "data cannot be null." }
+        requireNotNull(skeleton) { "skeleton cannot be null." }
+        this.data = data
+        mix = data.mix
+        softness = data.softness
+        bendDirection = data.bendDirection
+        compress = data.compress
+        stretch = data.stretch
 
-	/** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations. */
-	public float getMix () {
-		return mix;
-	}
+        bones = JArray(data.bones.size)
+        for (boneData in data.bones)
+            bones.add(skeleton.findBone(boneData.name))
+        target = skeleton.findBone(data.target.name)
+    }
 
-	public void setMix (float mix) {
-		this.mix = mix;
-	}
+    /** Copy constructor.  */
+    constructor(constraint: IkConstraint?, skeleton: Skeleton?) {
+        requireNotNull(constraint) { "constraint cannot be null." }
+        requireNotNull(skeleton) { "skeleton cannot be null." }
+        data = constraint.data
+        bones = JArray(constraint.bones.size)
+        for (bone in constraint.bones)
+            bones.add(skeleton.bones[bone.data.index])
+        target = skeleton.bones[constraint.target!!.data.index]
+        mix = constraint.mix
+        softness = constraint.softness
+        bendDirection = constraint.bendDirection
+        compress = constraint.compress
+        stretch = constraint.stretch
+    }
 
-	/** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
-	public float getSoftness () {
-		return softness;
-	}
+    /** Applies the constraint to the constrained bones.  */
+    fun apply() {
+        update()
+    }
 
-	public void setSoftness (float softness) {
-		this.softness = softness;
-	}
+    override fun update() {
+        val target = this.target
+        val bones = this.bones
+        when (bones.size) {
+            1 -> apply(bones.first(), target!!.worldX, target.worldY, compress, stretch, data.uniform, mix)
+            2 -> apply(bones.first(), bones[1], target!!.worldX, target.worldY, bendDirection, stretch, softness, mix)
+        }
+    }
 
-	/** Controls the bend direction of the IK bones, either 1 or -1. */
-	public int getBendDirection () {
-		return bendDirection;
-	}
+    /** The bone that is the IK target.  */
+    fun getTarget(): Bone? {
+        return target
+    }
 
-	public void setBendDirection (int bendDirection) {
-		this.bendDirection = bendDirection;
-	}
+    fun setTarget(target: Bone?) {
+        requireNotNull(target) { "target cannot be null." }
+        this.target = target
+    }
 
-	/** When true and only a single bone is being constrained, if the target is too close, the bone is scaled to reach it. */
-	public boolean getCompress () {
-		return compress;
-	}
+    override fun isActive(): Boolean {
+        return active
+    }
 
-	public void setCompress (boolean compress) {
-		this.compress = compress;
-	}
+    override fun toString(): String {
+        return data.name
+    }
 
-	/** When true, if the target is out of range, the parent bone is scaled to reach it. If more than one bone is being constrained
-	 * and the parent bone has local nonuniform scale, stretch is not applied. */
-	public boolean getStretch () {
-		return stretch;
-	}
+    companion object {
 
-	public void setStretch (boolean stretch) {
-		this.stretch = stretch;
-	}
+        /** Applies 1 bone IK. The target is specified in the world coordinate system.  */
+        @JvmStatic
+        fun apply(bone: Bone?, targetX: Float, targetY: Float, compress: Boolean, stretch: Boolean, uniform: Boolean,
+                  alpha: Float) {
+            requireNotNull(bone) { "bone cannot be null." }
+            if (!bone.appliedValid) bone.updateAppliedTransform()
+            val p = bone.parent
+            val pa = p.a
+            var pb = p.b
+            val pc = p.c
+            var pd = p.d
+            var rotationIK = -bone.ashearX - bone.arotation
+            var tx: Float
+            var ty: Float
+            when (bone.data.transformMode) {
+                BoneData.TransformMode.onlyTranslation -> {
+                    tx = targetX - bone.worldX
+                    ty = targetY - bone.worldY
+                }
+                BoneData.TransformMode.noRotationOrReflection -> {
+                    val s = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc)
+                    val sa = pa / bone.skeleton.scaleX
+                    val sc = pc / bone.skeleton.scaleY
+                    pb = -sc * s * bone.skeleton.scaleX
+                    pd = sa * s * bone.skeleton.scaleY
+                    rotationIK += atan2(sc, sa) * radDeg
+                    val x = targetX - p.worldX
+                    val y = targetY - p.worldY
+                    val d = pa * pd - pb * pc
+                    tx = (x * pd - y * pb) / d - bone.ax
+                    ty = (y * pa - x * pc) / d - bone.ay
+                }
+                // Fall through.
+                else -> {
+                    val x = targetX - p.worldX
+                    val y = targetY - p.worldY
+                    val d = pa * pd - pb * pc
+                    tx = (x * pd - y * pb) / d - bone.ax
+                    ty = (y * pa - x * pc) / d - bone.ay
+                }
+            }
+            rotationIK += atan2(ty, tx) * radDeg
+            if (bone.ascaleX < 0) rotationIK += 180f
+            if (rotationIK > 180)
+                rotationIK -= 360f
+            else if (rotationIK < -180)
+            //
+                rotationIK += 360f
+            var sx = bone.ascaleX
+            var sy = bone.ascaleY
+            if (compress || stretch) {
+                when (bone.data.transformMode) {
+                    BoneData.TransformMode.noScale, BoneData.TransformMode.noScaleOrReflection -> {
+                        tx = targetX - bone.worldX
+                        ty = targetY - bone.worldY
+                    }
+                }
+                val b = bone.data.length * sx
+                val dd = Math.sqrt((tx * tx + ty * ty).toDouble()).toFloat()
+                if (compress && dd < b || stretch && dd > b && b > 0.0001f) {
+                    val s = (dd / b - 1) * alpha + 1
+                    sx *= s
+                    if (uniform) sy *= s
+                }
+            }
+            bone.updateWorldTransform(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, sx, sy, bone.ashearX, bone.ashearY)
+        }
 
-	public boolean isActive () {
-		return active;
-	}
+        /** Applies 2 bone IK. The target is specified in the world coordinate system.
+         * @param child A direct descendant of the parent bone.
+         */
+        @JvmStatic
+        fun apply(parent: Bone?, child: Bone?, targetX: Float, targetY: Float, bendDir: Int, stretch: Boolean, softness: Float, alpha: Float) {
+            var softness = softness
+            requireNotNull(parent) { "parent cannot be null." }
+            requireNotNull(child) { "child cannot be null." }
+            if (alpha == 0f) {
+                child.updateWorldTransform()
+                return
+            }
+            if (!parent.appliedValid) parent.updateAppliedTransform()
+            if (!child.appliedValid) child.updateAppliedTransform()
+            val px = parent.ax
+            val py = parent.ay
+            var psx = parent.ascaleX
+            var sx = psx
+            var psy = parent.ascaleY
+            var csx = child.ascaleX
+            val os1: Int
+            val os2: Int
+            var s2: Int
+            if (psx < 0) {
+                psx = -psx
+                os1 = 180
+                s2 = -1
+            } else {
+                os1 = 0
+                s2 = 1
+            }
+            if (psy < 0) {
+                psy = -psy
+                s2 = -s2
+            }
+            if (csx < 0) {
+                csx = -csx
+                os2 = 180
+            } else
+                os2 = 0
 
-	/** The IK constraint's setup pose data. */
-	public IkConstraintData getData () {
-		return data;
-	}
+            var cx = 0f
+            var cy = 0f
+            var cwx = 0f
+            var cwy = 0f
+            var a = 0f
+            var b = 0f
+            var c = 0f
+            var d = 0f
+            var u = false
+            var id = 0f
+            var x = 0f
+            var y = 0f
+            var dx = 0f
+            var dy = 0f
+            var l1 = 0f
+            var l2 = 0f
+            var a1 = 0f
+            var a2 = 0f
 
-	public String toString () {
-		return data.name;
-	}
+            cx = child.ax
+            a = parent.a
+            b = parent.b
+            c = parent.c
+            d = parent.d;
+            u = Math.abs(psx - psy) <= 0.0001f;
+            if (!u) {
+                cy = 0f;
+                cwx = a * cx + parent.worldX;
+                cwy = c * cx + parent.worldY;
+            } else {
+                cy = child.ay;
+                cwx = a * cx + b * cy + parent.worldX;
+                cwy = c * cx + d * cy + parent.worldY;
+            }
+            var pp = parent.parent;
+            a = pp.a;
+            b = pp.b;
+            c = pp.c;
+            d = pp.d;
+            id = 1 / (a * d - b * c)
+            x = cwx - pp.worldX
+            y = cwy - pp.worldY;
+            dx = (x * d - y * b) * id - px
+            dy = (y * a - x * c) * id - py
+            l1 = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+            l2 = child.data.length * csx
+            if (l1 < 0.0001f) {
+                apply(parent, targetX, targetY, false, stretch, false, alpha);
+                child.updateWorldTransform(cx, cy, 0f, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
+                return;
+            }
+            x = targetX - pp.worldX;
+            y = targetY - pp.worldY;
+            var tx = (x * d - y * b) * id - px
+            var ty = (y * a - x * c) * id - py;
+            var dd = tx * tx + ty * ty;
+            if (softness != 0f) {
+                softness *= psx * (csx + 1) / 2;
+                var td = Math.sqrt(dd.toDouble()).toFloat()
+                var sd = td - l1 - l2 * psx + softness;
+                if (sd > 0) {
+                    var p = Math.min(1f, sd / (softness * 2)) - 1;
+                    p = (sd - softness * (1 - p * p)) / td;
+                    tx -= p * tx;
+                    ty -= p * ty;
+                    dd = tx * tx + ty * ty;
+                }
+            }
+            outer@ while (true) {
+                if (u) {
+                    l2 *= psx;
+                    var cos =(dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+                    if (cos < -1)
+                        cos = -1f;
+                    else if (cos > 1) {
+                        cos = 1f;
+                        if (stretch) sx *= (Math.sqrt(dd.toDouble()).toFloat() / (l1 + l2) - 1) * alpha + 1;
+                    }
+                    a2 = Math.acos(cos.toDouble()).toFloat() * bendDir;
+                    a = l1 + l2 * cos;
+                    b = l2 * sin(a2);
+                    a1 = atan2(ty * a - tx * b, tx * a + ty * b);
+                } else {
+                    a = psx * l2;
+                    b = psy * l2;
+                    val aa = a * a
+                    val bb = b * b
+                    val ta = atan2(ty, tx);
+                    c = bb * l1 * l1 + aa * dd - aa * bb;
+                    val c1 = - 2 * bb * l1
+                    val c2 = bb-aa;
+                    d = c1 * c1 - 4 * c2 * c;
+                    if (d >= 0) {
+                        var q =Math.sqrt(d.toDouble()).toFloat();
+                        if (c1 < 0) q = -q;
+                        q = -(c1 + q) / 2;
+                        val r0 = q / c2
+                        val r1 = c / q;
+                        val r = if (Math.abs(r0) < Math.abs(r1)) r0 else r1;
+                        if (r * r <= dd) {
+                            y = Math.sqrt((dd - r * r).toDouble()).toFloat() * bendDir;
+                            a1 = ta - atan2(y, r);
+                            a2 = atan2(y / psy, (r - l1) / psx);
+                            break@outer;
+                        }
+                    }
+                    var minAngle = PI
+                    var minX = l1-a
+                    var minDist = minX * minX
+                    var minY = 0f;
+                    var maxAngle = 0f
+                    var maxX = l1+a
+                    var maxDist = maxX * maxX
+                    var maxY = 0f;
+                    c = -a * l1 / (aa - bb);
+                    if (c >= -1 && c <= 1) {
+                        c = Math.acos(c.toDouble()).toFloat();
+                        x = a * cos(c) + l1;
+                        y = b * sin(c);
+                        d = x * x + y * y;
+                        if (d < minDist) {
+                            minAngle = c;
+                            minDist = d;
+                            minX = x;
+                            minY = y;
+                        }
+                        if (d > maxDist) {
+                            maxAngle = c;
+                            maxDist = d;
+                            maxX = x;
+                            maxY = y;
+                        }
+                    }
+                    if (dd <= (minDist + maxDist) / 2) {
+                        a1 = ta - atan2(minY * bendDir, minX);
+                        a2 = minAngle * bendDir;
+                    } else {
+                        a1 = ta - atan2(maxY * bendDir, maxX);
+                        a2 = maxAngle * bendDir;
+                    }
+                }
+                break@outer
+            }
 
-	/** Applies 1 bone IK. The target is specified in the world coordinate system. */
-	static public void apply (Bone bone, float targetX, float targetY, boolean compress, boolean stretch, boolean uniform,
-		float alpha) {
-		if (bone == null) throw new IllegalArgumentException("bone cannot be null.");
-		if (!bone.appliedValid) bone.updateAppliedTransform();
-		Bone p = bone.parent;
-		float pa = p.a, pb = p.b, pc = p.c, pd = p.d;
-		float rotationIK = -bone.ashearX - bone.arotation, tx, ty;
-		switch (bone.data.transformMode) {
-		case onlyTranslation:
-			tx = targetX - bone.worldX;
-			ty = targetY - bone.worldY;
-			break;
-		case noRotationOrReflection:
-			float s = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
-			float sa = pa / bone.skeleton.scaleX;
-			float sc = pc / bone.skeleton.scaleY;
-			pb = -sc * s * bone.skeleton.scaleX;
-			pd = sa * s * bone.skeleton.scaleY;
-			rotationIK += atan2(sc, sa) * radDeg;
-			// Fall through.
-		default:
-			float x = targetX - p.worldX, y = targetY - p.worldY;
-			float d = pa * pd - pb * pc;
-			tx = (x * pd - y * pb) / d - bone.ax;
-			ty = (y * pa - x * pc) / d - bone.ay;
-		}
-		rotationIK += atan2(ty, tx) * radDeg;
-		if (bone.ascaleX < 0) rotationIK += 180;
-		if (rotationIK > 180)
-			rotationIK -= 360;
-		else if (rotationIK < -180) //
-			rotationIK += 360;
-		float sx = bone.ascaleX, sy = bone.ascaleY;
-		if (compress || stretch) {
-			switch (bone.data.transformMode) {
-			case noScale:
-			case noScaleOrReflection:
-				tx = targetX - bone.worldX;
-				ty = targetY - bone.worldY;
-			}
-			float b = bone.data.length * sx, dd = (float)Math.sqrt(tx * tx + ty * ty);
-			if ((compress && dd < b) || (stretch && dd > b) && b > 0.0001f) {
-				float s = (dd / b - 1) * alpha + 1;
-				sx *= s;
-				if (uniform) sy *= s;
-			}
-		}
-		bone.updateWorldTransform(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, sx, sy, bone.ashearX, bone.ashearY);
-	}
-
-	/** Applies 2 bone IK. The target is specified in the world coordinate system.
-	 * @param child A direct descendant of the parent bone. */
-	static public void apply (Bone parent, Bone child, float targetX, float targetY, int bendDir, boolean stretch, float softness,
-		float alpha) {
-		if (parent == null) throw new IllegalArgumentException("parent cannot be null.");
-		if (child == null) throw new IllegalArgumentException("child cannot be null.");
-		if (alpha == 0) {
-			child.updateWorldTransform();
-			return;
-		}
-		if (!parent.appliedValid) parent.updateAppliedTransform();
-		if (!child.appliedValid) child.updateAppliedTransform();
-		float px = parent.ax, py = parent.ay, psx = parent.ascaleX, sx = psx, psy = parent.ascaleY, csx = child.ascaleX;
-		int os1, os2, s2;
-		if (psx < 0) {
-			psx = -psx;
-			os1 = 180;
-			s2 = -1;
-		} else {
-			os1 = 0;
-			s2 = 1;
-		}
-		if (psy < 0) {
-			psy = -psy;
-			s2 = -s2;
-		}
-		if (csx < 0) {
-			csx = -csx;
-			os2 = 180;
-		} else
-			os2 = 0;
-		float cx = child.ax, cy, cwx, cwy, a = parent.a, b = parent.b, c = parent.c, d = parent.d;
-		boolean u = Math.abs(psx - psy) <= 0.0001f;
-		if (!u) {
-			cy = 0;
-			cwx = a * cx + parent.worldX;
-			cwy = c * cx + parent.worldY;
-		} else {
-			cy = child.ay;
-			cwx = a * cx + b * cy + parent.worldX;
-			cwy = c * cx + d * cy + parent.worldY;
-		}
-		Bone pp = parent.parent;
-		a = pp.a;
-		b = pp.b;
-		c = pp.c;
-		d = pp.d;
-		float id = 1 / (a * d - b * c), x = cwx - pp.worldX, y = cwy - pp.worldY;
-		float dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
-		float l1 = (float)Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
-		if (l1 < 0.0001f) {
-			apply(parent, targetX, targetY, false, stretch, false, alpha);
-			child.updateWorldTransform(cx, cy, 0, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
-			return;
-		}
-		x = targetX - pp.worldX;
-		y = targetY - pp.worldY;
-		float tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
-		float dd = tx * tx + ty * ty;
-		if (softness != 0) {
-			softness *= psx * (csx + 1) / 2;
-			float td = (float)Math.sqrt(dd), sd = td - l1 - l2 * psx + softness;
-			if (sd > 0) {
-				float p = Math.min(1, sd / (softness * 2)) - 1;
-				p = (sd - softness * (1 - p * p)) / td;
-				tx -= p * tx;
-				ty -= p * ty;
-				dd = tx * tx + ty * ty;
-			}
-		}
-		outer:
-		if (u) {
-			l2 *= psx;
-			float cos = (dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
-			if (cos < -1)
-				cos = -1;
-			else if (cos > 1) {
-				cos = 1;
-				if (stretch) sx *= ((float)Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
-			}
-			a2 = (float)Math.acos(cos) * bendDir;
-			a = l1 + l2 * cos;
-			b = l2 * sin(a2);
-			a1 = atan2(ty * a - tx * b, tx * a + ty * b);
-		} else {
-			a = psx * l2;
-			b = psy * l2;
-			float aa = a * a, bb = b * b, ta = atan2(ty, tx);
-			c = bb * l1 * l1 + aa * dd - aa * bb;
-			float c1 = -2 * bb * l1, c2 = bb - aa;
-			d = c1 * c1 - 4 * c2 * c;
-			if (d >= 0) {
-				float q = (float)Math.sqrt(d);
-				if (c1 < 0) q = -q;
-				q = -(c1 + q) / 2;
-				float r0 = q / c2, r1 = c / q;
-				float r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
-				if (r * r <= dd) {
-					y = (float)Math.sqrt(dd - r * r) * bendDir;
-					a1 = ta - atan2(y, r);
-					a2 = atan2(y / psy, (r - l1) / psx);
-					break outer;
-				}
-			}
-			float minAngle = PI, minX = l1 - a, minDist = minX * minX, minY = 0;
-			float maxAngle = 0, maxX = l1 + a, maxDist = maxX * maxX, maxY = 0;
-			c = -a * l1 / (aa - bb);
-			if (c >= -1 && c <= 1) {
-				c = (float)Math.acos(c);
-				x = a * cos(c) + l1;
-				y = b * sin(c);
-				d = x * x + y * y;
-				if (d < minDist) {
-					minAngle = c;
-					minDist = d;
-					minX = x;
-					minY = y;
-				}
-				if (d > maxDist) {
-					maxAngle = c;
-					maxDist = d;
-					maxX = x;
-					maxY = y;
-				}
-			}
-			if (dd <= (minDist + maxDist) / 2) {
-				a1 = ta - atan2(minY * bendDir, minX);
-				a2 = minAngle * bendDir;
-			} else {
-				a1 = ta - atan2(maxY * bendDir, maxX);
-				a2 = maxAngle * bendDir;
-			}
-		}
-		float os = atan2(cy, cx) * s2;
-		float rotation = parent.arotation;
-		a1 = (a1 - os) * radDeg + os1 - rotation;
-		if (a1 > 180)
-			a1 -= 360;
-		else if (a1 < -180) a1 += 360;
-		parent.updateWorldTransform(px, py, rotation + a1 * alpha, sx, parent.ascaleY, 0, 0);
-		rotation = child.arotation;
-		a2 = ((a2 + os) * radDeg - child.ashearX) * s2 + os2 - rotation;
-		if (a2 > 180)
-			a2 -= 360;
-		else if (a2 < -180) a2 += 360;
-		child.updateWorldTransform(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
-	}
+            val os = atan2(cy, cx) * s2
+            var rotation = parent.arotation
+            a1 = (a1 - os) * radDeg + os1 - rotation
+            if (a1 > 180)
+                a1 -= 360f
+            else if (a1 < -180) a1 += 360f
+            parent.updateWorldTransform(px, py, rotation + a1 * alpha, sx, parent.ascaleY, 0f, 0f)
+            rotation = child.arotation
+            a2 = ((a2 + os) * radDeg - child.ashearX) * s2 + os2 - rotation
+            if (a2 > 180)
+                a2 -= 360f
+            else if (a2 < -180) a2 += 360f
+            child.updateWorldTransform(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY)
+        }
+    }
 }
