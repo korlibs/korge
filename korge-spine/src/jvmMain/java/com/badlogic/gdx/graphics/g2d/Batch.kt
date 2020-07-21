@@ -8,17 +8,13 @@ interface Batch {
     @JvmDefault
     fun end() {}
     @JvmDefault
-    val blendSrcFunc: Int
-        get() = 0
+    var blendSrcFunc: Int
     @JvmDefault
-    val blendDstFunc: Int
-        get() = 0
+    var blendDstFunc: Int
     @JvmDefault
-    val blendSrcFuncAlpha: Int
-        get() = 0
+    var blendSrcFuncAlpha: Int
     @JvmDefault
-    val blendDstFuncAlpha: Int
-        get() = 0
+    var blendDstFuncAlpha: Int
 
     @JvmDefault
     fun setBlendFunctionSeparate(blendSrc: Int, blendDst: Int, blendSrcAlpha: Int, blendDstAlpha: Int) {}

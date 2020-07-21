@@ -68,7 +68,7 @@ class Skeleton {
     val updateCache: JArray<Updatable> = JArray()
     internal val updateCacheReset: JArray<Bone> = JArray()
     internal var skin: Skin? = null
-    internal val color: Color
+    internal var color: Color
 
     /** Returns the skeleton's time. This can be used for tracking, such as with Slot [Slot.getAttachmentTime].
      *

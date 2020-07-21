@@ -36,20 +36,20 @@ import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.utils.JShortArray
 
 internal class Triangulator {
-    private val convexPolygons = JArray()
-    private val convexPolygonsIndices = JArray()
+    private val convexPolygons = JArray<JFloatArray>()
+    private val convexPolygonsIndices = JArray<JShortArray>()
 
     private val indicesArray = JShortArray()
     private val isConcaveArray = JBooleanArray()
     private val triangles = JShortArray()
 
-    private val polygonPool = object : Pool() {
-        protected override fun newObject(): JFloatArray {
+    private val polygonPool = object : Pool<JFloatArray>() {
+        override fun newObject(): JFloatArray {
             return JFloatArray(16)
         }
     }
 
-    private val polygonIndicesPool = object : Pool() {
+    private val polygonIndicesPool = object : Pool<JShortArray>() {
         protected override fun newObject(): JShortArray {
             return JShortArray(16)
         }
@@ -63,7 +63,7 @@ internal class Triangulator {
         indicesArray.clear()
         val indices = indicesArray.setSize(vertexCount)
         for (i in 0 until vertexCount)
-            indices[i] = i
+            indices[i] = i.toShort()
 
         val isConcaveArray = this.isConcaveArray
         val isConcave = isConcaveArray.setSize(vertexCount)
@@ -85,32 +85,35 @@ internal class Triangulator {
             var previous = vertexCount - 1
             var i = 0
             var next = 1
-            while (true) {
-                outer@ if (!isConcave[i]) {
-                    val p1 = indices[previous] shl 1
-                    val p2 = indices[i] shl 1
-                    val p3 = indices[next] shl 1
-                    val p1x = vertices[p1]
-                    val p1y = vertices[p1 + 1]
-                    val p2x = vertices[p2]
-                    val p2y = vertices[p2 + 1]
-                    val p3x = vertices[p3]
-                    val p3y = vertices[p3 + 1]
-                    var ii = (next + 1) % vertexCount
-                    while (ii != previous) {
-                        if (!isConcave[ii]) {
-                            ii = (ii + 1) % vertexCount
-                            continue
-                        }
-                        val v = indices[ii] shl 1
-                        val vx = vertices[v]
-                        val vy = vertices[v + 1]
-                        if (positiveArea(p3x, p3y, p1x, p1y, vx, vy)) {
-                            if (positiveArea(p1x, p1y, p2x, p2y, vx, vy)) {
-                                if (positiveArea(p2x, p2y, p3x, p3y, vx, vy)) break@outer
+            outer2@while (true) {
+                outer@ while (true) {
+                    if (!isConcave[i]) {
+                        val p1 = indices[previous].toInt() shl 1
+                        val p2 = indices[i].toInt() shl 1
+                        val p3 = indices[next].toInt() shl 1
+                        val p1x = vertices[p1]
+                        val p1y = vertices[p1 + 1]
+                        val p2x = vertices[p2]
+                        val p2y = vertices[p2 + 1]
+                        val p3x = vertices[p3]
+                        val p3y = vertices[p3 + 1]
+                        var ii = (next + 1) % vertexCount
+                        while (ii != previous) {
+                            if (!isConcave[ii]) {
+                                ii = (ii + 1) % vertexCount
+                                continue@outer2
                             }
+                            val v = indices[ii].toInt() shl 1
+                            val vx = vertices[v]
+                            val vy = vertices[v + 1]
+                            if (positiveArea(p3x, p3y, p1x, p1y, vx, vy)) {
+                                if (positiveArea(p1x, p1y, p2x, p2y, vx, vy)) {
+                                    if (positiveArea(p2x, p2y, p3x, p3y, vx, vy)) break@outer
+                                }
+                            }
+                            ii = (ii + 1) % vertexCount
                         }
-                        ii = (ii + 1) % vertexCount
+                        break@outer2
                     }
                     break
                 }
@@ -176,9 +179,9 @@ internal class Triangulator {
             var i = 0
             val n = triangles.size
             while (i < n) {
-                val t1 = trianglesItems[i] shl 1
-                val t2 = trianglesItems[i + 1] shl 1
-                val t3 = trianglesItems[i + 2] shl 1
+                val t1 = trianglesItems[i].toInt() shl 1
+                val t2 = trianglesItems[i + 1].toInt() shl 1
+                val t3 = trianglesItems[i + 2].toInt() shl 1
                 val x1 = vertices[t1]
                 val y1 = vertices[t1 + 1]
                 val x2 = vertices[t2]
@@ -319,9 +322,9 @@ internal class Triangulator {
     }
 
     private fun isConcave(index: Int, vertexCount: Int, vertices: FloatArray, indices: ShortArray): Boolean {
-        val previous = indices[(vertexCount + index - 1) % vertexCount] shl 1
-        val current = indices[index] shl 1
-        val next = indices[(index + 1) % vertexCount] shl 1
+        val previous = indices[(vertexCount + index - 1) % vertexCount].toInt() shl 1
+        val current = indices[index].toInt() shl 1
+        val next = indices[(index + 1) % vertexCount].toInt() shl 1
         return !positiveArea(vertices[previous], vertices[previous + 1], vertices[current], vertices[current + 1], vertices[next],
                 vertices[next + 1])
     }

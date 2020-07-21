@@ -41,7 +41,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 class SkeletonActor : Actor {
     var renderer: SkeletonRenderer? = null
     var skeleton: Skeleton? = null
-    var animationState: AnimationState
+    lateinit var animationState: AnimationState
 
     /** If false, the blend function will be left as whatever [SkeletonRenderer.draw] set. This can reduce
      * batch flushes in some cases, but means other rendering may need to first set the blend function. Default is true.  */

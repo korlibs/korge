@@ -29,8 +29,6 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.esotericsoftware.spine.utils.SpineUtils.*
-
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
@@ -48,6 +46,7 @@ import com.badlogic.gdx.math.Affine2
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.utils.NumberUtils
+import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** A batch that renders polygons and performs tinting using a light and dark color.
  *
@@ -80,32 +79,17 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
     private val combinedMatrix = Matrix4()
     private var blendingDisabled: Boolean = false
     private val defaultShader: ShaderProgram
-    private var shader: ShaderProgram? = null
+    private var _shader: ShaderProgram? = null
     private var vertexIndex: Int = 0
     private var triangleIndex: Int = 0
     private var lastTexture: Texture? = null
     private var invTexWidth = 0f
     private var invTexHeight = 0f
     override var isDrawing: Boolean = false
-        private set(value: Boolean) {
-            super.isDrawing = value
-        }
     override var blendSrcFunc = GL20.GL_SRC_ALPHA
-        private set(value: Int) {
-            super.blendSrcFunc = value
-        }
     override var blendDstFunc = GL20.GL_ONE_MINUS_SRC_ALPHA
-        private set(value: Int) {
-            super.blendDstFunc = value
-        }
     override var blendSrcFuncAlpha = GL20.GL_SRC_ALPHA
-        private set(value: Int) {
-            super.blendSrcFuncAlpha = value
-        }
     override var blendDstFuncAlpha = GL20.GL_ONE_MINUS_SRC_ALPHA
-        private set(value: Int) {
-            super.blendDstFuncAlpha = value
-        }
     private var premultipliedAlpha: Boolean = false
 
     override var color: Color? = Color(1f, 1f, 1f, 1f)
@@ -145,6 +129,23 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
     constructor(size: Int = 2000) : this(size, size * 2) {
     }
 
+    override var shader: ShaderProgram?
+        get() = _shader
+        /** Flushes the batch if the shader was changed.  */
+        set(newShader) {
+            if (_shader == newShader) return
+            if (isDrawing) {
+                flush()
+                _shader!!.end()
+            }
+            _shader = newShader ?: defaultShader
+            if (isDrawing) {
+                _shader!!.begin()
+                setupMatrices()
+            }
+        }
+
+
     init {
         // 32767 is max vertex index.
         require(maxVertices <= 32767) { "Can't have more than 32767 vertices per batch: $maxTriangles" }
@@ -160,7 +161,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         vertices = FloatArray(maxVertices * 6)
         triangles = ShortArray(maxTriangles * 3)
         defaultShader = createDefaultShader()
-        shader = defaultShader
+        _shader = defaultShader
         this.projectionMatrix!!.setToOrtho2D(0f, 0f, Gdx.graphics!!.width, Gdx.graphics!!.height)
     }
 
@@ -857,7 +858,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
             triangles[triangleIndex + 4] = (vertex + 3).toShort()
             triangles[triangleIndex + 5] = vertex
             triangleIndex += 6
-            vertex += 4
+            vertex = (vertex + 4).toShort()
         }
         this.triangleIndex = triangleIndex
 
@@ -894,7 +895,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
                 triangles[triangleIndex + 4] = (vertex + 3).toShort()
                 triangles[triangleIndex + 5] = vertex
                 triangleIndex += 6
-                vertex += 4
+                vertex = (vertex + 4).toShort()
             }
         }
         this.triangleIndex = triangleIndex
@@ -1400,24 +1401,6 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         lastTexture = texture
         invTexWidth = 1.0f / texture.width
         invTexHeight = 1.0f / texture.height
-    }
-
-    /** Flushes the batch if the shader was changed.  */
-    override fun setShader(newShader: ShaderProgram?) {
-        if (shader == newShader) return
-        if (isDrawing) {
-            flush()
-            shader!!.end()
-        }
-        shader = newShader ?: defaultShader
-        if (isDrawing) {
-            shader!!.begin()
-            setupMatrices()
-        }
-    }
-
-    override fun getShader(): ShaderProgram? {
-        return shader
     }
 
     /** Flushes the batch if the blend function was changed.  */
