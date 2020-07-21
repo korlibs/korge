@@ -5,644 +5,652 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 
-package com.badlogic.gdx.utils;
+package com.badlogic.gdx.utils
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.Arrays
+import java.util.NoSuchElementException
 
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.reflect.ArrayReflection;
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.utils.reflect.ArrayReflection
 
 /** A resizable, ordered or unordered array of objects. If unordered, this class avoids a memory copy when removing elements (the
  * last element is moved to the removed element's position).
- * @author Nathan Sweet */
-public class JArray<T> implements Iterable<T> {
+ * @author Nathan Sweet
+ */
+class JArray<T> : Iterable<T> {
     /** Provides direct access to the underlying array. If the Array's generic type is not Object, this field may only be accessed
-     * if the {@link JArray#JArray(boolean, int, Class)} constructor was used. */
-    public T[] items;
+     * if the [JArray.JArray] constructor was used.  */
+    @JvmField
+    var items: Array<T>
 
-    public int size;
-    public boolean ordered;
+    @JvmField
+    var size: Int = 0
+    @JvmField
+    var ordered: Boolean = false
 
-    private ArrayIterable iterable;
-    private Predicate.PredicateIterable<T> predicateIterable;
+    private var iterable: ArrayIterable<*>? = null
+    private var predicateIterable: Predicate.PredicateIterable<T>? = null
 
-    /** Creates an ordered array with a capacity of 16. */
-    public JArray() {
-        this(true, 16);
-    }
+    /** Returns true if the array is empty.  */
+    val isEmpty: Boolean
+        get() = size == 0
 
-    /** Creates an ordered array with the specified capacity. */
-    public JArray(int capacity) {
-        this(true, capacity);
-    }
+    /** Creates an ordered array with the specified capacity.  */
+    constructor(capacity: Int) : this(true, capacity) {}
 
     /** @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     *           memory copy.
-     * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public JArray(boolean ordered, int capacity) {
-        this.ordered = ordered;
-        items = (T[])new Object[capacity];
+     * memory copy.
+     * @param capacity Any elements added beyond this will cause the backing array to be grown.
+     */
+    @JvmOverloads
+    constructor(ordered: Boolean = true, capacity: Int = 16) {
+        this.ordered = ordered
+        items = arrayOfNulls<Any>(capacity) as Array<T>
     }
 
-    /** Creates a new array with {@link #items} of the specified type.
+    /** Creates a new array with [.items] of the specified type.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     *           memory copy.
-     * @param capacity Any elements added beyond this will cause the backing array to be grown. */
-    public JArray(boolean ordered, int capacity, Class arrayType) {
-        this.ordered = ordered;
-        items = (T[])ArrayReflection.newInstance(arrayType, capacity);
+     * memory copy.
+     * @param capacity Any elements added beyond this will cause the backing array to be grown.
+     */
+    constructor(ordered: Boolean, capacity: Int, arrayType: Class<*>) {
+        this.ordered = ordered
+        items = ArrayReflection.newInstance(arrayType, capacity) as Array<T>
     }
 
-    /** Creates an ordered array with {@link #items} of the specified type and a capacity of 16. */
-    public JArray(Class arrayType) {
-        this(true, 16, arrayType);
-    }
+    /** Creates an ordered array with [.items] of the specified type and a capacity of 16.  */
+    constructor(arrayType: Class<*>) : this(true, 16, arrayType) {}
 
     /** Creates a new array containing the elements in the specified array. The new array will have the same type of backing array
      * and will be ordered if the specified array is ordered. The capacity is set to the number of elements, so any subsequent
-     * elements added will cause the backing array to be grown. */
-    public JArray(JArray<? extends T> array) {
-        this(array.ordered, array.size, array.items.getClass().getComponentType());
-        size = array.size;
-        System.arraycopy(array.items, 0, items, 0, size);
+     * elements added will cause the backing array to be grown.  */
+    constructor(array: JArray<out T>) : this(array.ordered, array.size, array.items.javaClass.componentType) {
+        size = array.size
+        System.arraycopy(array.items, 0, items, 0, size)
     }
 
     /** Creates a new ordered array containing the elements in the specified array. The new array will have the same type of
      * backing array. The capacity is set to the number of elements, so any subsequent elements added will cause the backing array
-     * to be grown. */
-    public JArray(T[] array) {
-        this(true, array, 0, array.length);
-    }
+     * to be grown.  */
+    constructor(array: Array<T>) : this(true, array, 0, array.size) {}
 
     /** Creates a new array containing the elements in the specified array. The new array will have the same type of backing array.
      * The capacity is set to the number of elements, so any subsequent elements added will cause the backing array to be grown.
      * @param ordered If false, methods that remove elements may change the order of other elements in the array, which avoids a
-     *           memory copy. */
-    public JArray(boolean ordered, T[] array, int start, int count) {
-        this(ordered, count, array.getClass().getComponentType());
-        size = count;
-        System.arraycopy(array, start, items, 0, size);
+     * memory copy.
+     */
+    constructor(ordered: Boolean, array: Array<T>, start: Int, count: Int) : this(ordered, count, array.javaClass.componentType) {
+        size = count
+        System.arraycopy(array, start, items, 0, size)
     }
 
-    public void add (T value) {
-        T[] items = this.items;
-        if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size++] = value;
+    fun add(value: T) {
+        var items = this.items
+        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size++] = value
     }
 
-    public void add (T value1, T value2) {
-        T[] items = this.items;
-        if (size + 1 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size] = value1;
-        items[size + 1] = value2;
-        size += 2;
+    fun add(value1: T, value2: T) {
+        var items = this.items
+        if (size + 1 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size] = value1
+        items[size + 1] = value2
+        size += 2
     }
 
-    public void add (T value1, T value2, T value3) {
-        T[] items = this.items;
-        if (size + 2 >= items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
-        items[size] = value1;
-        items[size + 1] = value2;
-        items[size + 2] = value3;
-        size += 3;
+    fun add(value1: T, value2: T, value3: T) {
+        var items = this.items
+        if (size + 2 >= items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
+        items[size] = value1
+        items[size + 1] = value2
+        items[size + 2] = value3
+        size += 3
     }
 
-    public void add (T value1, T value2, T value3, T value4) {
-        T[] items = this.items;
-        if (size + 3 >= items.length) items = resize(Math.max(8, (int)(size * 1.8f))); // 1.75 isn't enough when size=5.
-        items[size] = value1;
-        items[size + 1] = value2;
-        items[size + 2] = value3;
-        items[size + 3] = value4;
-        size += 4;
+    fun add(value1: T, value2: T, value3: T, value4: T) {
+        var items = this.items
+        if (size + 3 >= items.size) items = resize(Math.max(8, (size * 1.8f).toInt())) // 1.75 isn't enough when size=5.
+        items[size] = value1
+        items[size + 1] = value2
+        items[size + 2] = value3
+        items[size + 3] = value4
+        size += 4
     }
 
-    public void addAll (JArray<? extends T> array) {
-        addAll(array.items, 0, array.size);
+    fun addAll(array: JArray<out T>) {
+        addAll(array.items, 0, array.size)
     }
 
-    public void addAll (JArray<? extends T> array, int start, int count) {
-        if (start + count > array.size)
-            throw new IllegalArgumentException("start + count must be <= size: " + start + " + " + count + " <= " + array.size);
-        addAll(array.items, start, count);
+    fun addAll(array: JArray<out T>, start: Int, count: Int) {
+        require(start + count <= array.size) { "start + count must be <= size: " + start + " + " + count + " <= " + array.size }
+        addAll(array.items, start, count)
     }
 
-    public void addAll (T... array) {
-        addAll(array, 0, array.length);
+    fun addAll(vararg array: T) {
+        addAll(array, 0, array.size)
     }
 
-    public void addAll (T[] array, int start, int count) {
-        T[] items = this.items;
-        int sizeNeeded = size + count;
-        if (sizeNeeded > items.length) items = resize(Math.max(8, (int)(sizeNeeded * 1.75f)));
-        System.arraycopy(array, start, items, size, count);
-        size += count;
+    fun addAll(array: Array<out T>, start: Int, count: Int) {
+        var items = this.items
+        val sizeNeeded = size + count
+        if (sizeNeeded > items.size) items = resize(Math.max(8, (sizeNeeded * 1.75f).toInt()))
+        System.arraycopy(array, start, items, size, count)
+        size += count
     }
 
-    public T get (int index) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        return items[index];
+    operator fun get(index: Int): T {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        return items[index]
     }
 
-    public void set (int index, T value) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        items[index] = value;
+    operator fun set(index: Int, value: T) {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        items[index] = value
     }
 
-    public void insert (int index, T value) {
-        if (index > size) throw new IndexOutOfBoundsException("index can't be > size: " + index + " > " + size);
-        T[] items = this.items;
-        if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
+    fun insert(index: Int, value: T) {
+        if (index > size) throw IndexOutOfBoundsException("index can't be > size: $index > $size")
+        var items = this.items
+        if (size == items.size) items = resize(Math.max(8, (size * 1.75f).toInt()))
         if (ordered)
-            System.arraycopy(items, index, items, index + 1, size - index);
+            System.arraycopy(items, index, items, index + 1, size - index)
         else
-            items[size] = items[index];
-        size++;
-        items[index] = value;
+            items[size] = items[index]
+        size++
+        items[index] = value
     }
 
-    public void swap (int first, int second) {
-        if (first >= size) throw new IndexOutOfBoundsException("first can't be >= size: " + first + " >= " + size);
-        if (second >= size) throw new IndexOutOfBoundsException("second can't be >= size: " + second + " >= " + size);
-        T[] items = this.items;
-        T firstValue = items[first];
-        items[first] = items[second];
-        items[second] = firstValue;
+    fun swap(first: Int, second: Int) {
+        if (first >= size) throw IndexOutOfBoundsException("first can't be >= size: $first >= $size")
+        if (second >= size) throw IndexOutOfBoundsException("second can't be >= size: $second >= $size")
+        val items = this.items
+        val firstValue = items[first]
+        items[first] = items[second]
+        items[second] = firstValue
     }
 
     /** Returns true if this array contains the specified value.
      * @param value May be null.
-     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used. */
-    public boolean contains (@Null T value, boolean identity) {
-        T[] items = this.items;
-        int i = size - 1;
+     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+     */
+    fun contains(@Null value: T?, identity: Boolean): Boolean {
+        val items = this.items
+        var i = size - 1
         if (identity || value == null) {
             while (i >= 0)
-                if (items[i--] == value) return true;
+                if (items[i--] === value) return true
         } else {
             while (i >= 0)
-                if (value.equals(items[i--])) return true;
+                if (value == items[i--]) return true
         }
-        return false;
+        return false
     }
 
     /** Returns true if this array contains all the specified values.
      * @param values May contains nulls.
-     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used. */
-    public boolean containsAll (JArray<? extends T> values, boolean identity) {
-        T[] items = values.items;
-        for (int i = 0, n = values.size; i < n; i++)
-            if (!contains(items[i], identity)) return false;
-        return true;
+     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+     */
+    fun containsAll(values: JArray<out T>, identity: Boolean): Boolean {
+        val items = values.items
+        var i = 0
+        val n = values.size
+        while (i < n) {
+            if (!contains(items[i], identity)) return false
+            i++
+        }
+        return true
     }
 
     /** Returns true if this array contains any the specified values.
      * @param values May contains nulls.
-     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used. */
-    public boolean containsAny (JArray<? extends T> values, boolean identity) {
-        T[] items = values.items;
-        for (int i = 0, n = values.size; i < n; i++)
-            if (contains(items[i], identity)) return true;
-        return false;
+     * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
+     */
+    fun containsAny(values: JArray<out T>, identity: Boolean): Boolean {
+        val items = values.items
+        var i = 0
+        val n = values.size
+        while (i < n) {
+            if (contains(items[i], identity)) return true
+            i++
+        }
+        return false
     }
 
     /** Returns the index of first occurrence of value in the array, or -1 if no such value exists.
      * @param value May be null.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
-     * @return An index of first occurrence of value in array or -1 if no such value exists */
-    public int indexOf (@Null T value, boolean identity) {
-        T[] items = this.items;
+     * @return An index of first occurrence of value in array or -1 if no such value exists
+     */
+    fun indexOf(@Null value: T?, identity: Boolean): Int {
+        val items = this.items
         if (identity || value == null) {
-            for (int i = 0, n = size; i < n; i++)
-                if (items[i] == value) return i;
+            var i = 0
+            val n = size
+            while (i < n) {
+                if (items[i] === value) return i
+                i++
+            }
         } else {
-            for (int i = 0, n = size; i < n; i++)
-                if (value.equals(items[i])) return i;
+            var i = 0
+            val n = size
+            while (i < n) {
+                if (value == items[i]) return i
+                i++
+            }
         }
-        return -1;
+        return -1
     }
 
     /** Returns an index of last occurrence of value in array or -1 if no such value exists. Search is started from the end of an
      * array.
      * @param value May be null.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
-     * @return An index of last occurrence of value in array or -1 if no such value exists */
-    public int lastIndexOf (@Null T value, boolean identity) {
-        T[] items = this.items;
+     * @return An index of last occurrence of value in array or -1 if no such value exists
+     */
+    fun lastIndexOf(@Null value: T?, identity: Boolean): Int {
+        val items = this.items
         if (identity || value == null) {
-            for (int i = size - 1; i >= 0; i--)
-                if (items[i] == value) return i;
+            for (i in size - 1 downTo 0)
+                if (items[i] === value) return i
         } else {
-            for (int i = size - 1; i >= 0; i--)
-                if (value.equals(items[i])) return i;
+            for (i in size - 1 downTo 0)
+                if (value == items[i]) return i
         }
-        return -1;
+        return -1
     }
 
     /** Removes the first instance of the specified value in the array.
      * @param value May be null.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
-     * @return true if value was found and removed, false otherwise */
-    public boolean removeValue (@Null T value, boolean identity) {
-        T[] items = this.items;
+     * @return true if value was found and removed, false otherwise
+     */
+    fun removeValue(@Null value: T?, identity: Boolean): Boolean {
+        val items = this.items
         if (identity || value == null) {
-            for (int i = 0, n = size; i < n; i++) {
-                if (items[i] == value) {
-                    removeIndex(i);
-                    return true;
+            var i = 0
+            val n = size
+            while (i < n) {
+                if (items[i] === value) {
+                    removeIndex(i)
+                    return true
                 }
+                i++
             }
         } else {
-            for (int i = 0, n = size; i < n; i++) {
-                if (value.equals(items[i])) {
-                    removeIndex(i);
-                    return true;
+            var i = 0
+            val n = size
+            while (i < n) {
+                if (value == items[i]) {
+                    removeIndex(i)
+                    return true
                 }
+                i++
             }
         }
-        return false;
+        return false
     }
 
-    /** Removes and returns the item at the specified index. */
-    public T removeIndex (int index) {
-        if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
-        T[] items = this.items;
-        T value = items[index];
-        size--;
+    /** Removes and returns the item at the specified index.  */
+    fun removeIndex(index: Int): T {
+        if (index >= size) throw IndexOutOfBoundsException("index can't be >= size: $index >= $size")
+        val items = this.items as Array<T?>
+        val value = this.items[index]
+        size--
         if (ordered)
-            System.arraycopy(items, index + 1, items, index, size - index);
+            System.arraycopy(items, index + 1, items, index, size - index)
         else
-            items[index] = items[size];
-        items[size] = null;
-        return value;
+            items[index] = items[size]
+        items[size] = null
+        return value
     }
 
-    /** Removes the items between the specified indices, inclusive. */
-    public void removeRange (int start, int end) {
-        int n = size;
-        if (end >= n) throw new IndexOutOfBoundsException("end can't be >= size: " + end + " >= " + size);
-        if (start > end) throw new IndexOutOfBoundsException("start can't be > end: " + start + " > " + end);
-        T[] items = this.items;
-        int count = end - start + 1, lastIndex = n - count;
+    /** Removes the items between the specified indices, inclusive.  */
+    fun removeRange(start: Int, end: Int) {
+        val n = size
+        if (end >= n) throw IndexOutOfBoundsException("end can't be >= size: $end >= $size")
+        if (start > end) throw IndexOutOfBoundsException("start can't be > end: $start > $end")
+        val items = this.items as Array<T?>
+        val count = end - start + 1
+        val lastIndex = n - count
         if (ordered)
-            System.arraycopy(items, start + count, items, start, n - (start + count));
+            System.arraycopy(items, start + count, items, start, n - (start + count))
         else {
-            int i = Math.max(lastIndex, end + 1);
-            System.arraycopy(items, i, items, start, n - i);
+            val i = Math.max(lastIndex, end + 1)
+            System.arraycopy(items, i, items, start, n - i)
         }
-        for (int i = lastIndex; i < n; i++)
-            items[i] = null;
-        size = n - count;
+        for (i in lastIndex until n)
+            items[i] = null
+        size = n - count
     }
 
     /** Removes from this array all of elements contained in the specified array.
      * @param identity True to use ==, false to use .equals().
-     * @return true if this array was modified. */
-    public boolean removeAll (JArray<? extends T> array, boolean identity) {
-        int size = this.size;
-        int startSize = size;
-        T[] items = this.items;
+     * @return true if this array was modified.
+     */
+    fun removeAll(array: JArray<out T>, identity: Boolean): Boolean {
+        var size = this.size
+        val startSize = size
+        val items = this.items
         if (identity) {
-            for (int i = 0, n = array.size; i < n; i++) {
-                T item = array.get(i);
-                for (int ii = 0; ii < size; ii++) {
-                    if (item == items[ii]) {
-                        removeIndex(ii);
-                        size--;
-                        break;
+            var i = 0
+            val n = array.size
+            while (i < n) {
+                val item = array[i]
+                for (ii in 0 until size) {
+                    if (item === items[ii]) {
+                        removeIndex(ii)
+                        size--
+                        break
                     }
                 }
+                i++
             }
         } else {
-            for (int i = 0, n = array.size; i < n; i++) {
-                T item = array.get(i);
-                for (int ii = 0; ii < size; ii++) {
-                    if (item.equals(items[ii])) {
-                        removeIndex(ii);
-                        size--;
-                        break;
+            var i = 0
+            val n = array.size
+            while (i < n) {
+                val item = array[i]
+                for (ii in 0 until size) {
+                    if (item == items[ii]) {
+                        removeIndex(ii)
+                        size--
+                        break
                     }
                 }
+                i++
             }
         }
-        return size != startSize;
+        return size != startSize
     }
 
-    /** Removes and returns the last item. */
-    public T pop () {
-        if (size == 0) throw new IllegalStateException("Array is empty.");
-        --size;
-        T item = items[size];
-        items[size] = null;
-        return item;
+    /** Removes and returns the last item.  */
+    fun pop(): T {
+        check(size != 0) { "Array is empty." }
+        --size
+        val item = items[size]
+        (items as Array<T?>)[size] = null
+        return item
     }
 
-    /** Returns the last item. */
-    public T peek () {
-        if (size == 0) throw new IllegalStateException("Array is empty.");
-        return items[size - 1];
+    /** Returns the last item.  */
+    fun peek(): T {
+        check(size != 0) { "Array is empty." }
+        return items[size - 1]
     }
 
-    /** Returns the first item. */
-    public T first () {
-        if (size == 0) throw new IllegalStateException("Array is empty.");
-        return items[0];
+    /** Returns the first item.  */
+    fun first(): T {
+        check(size != 0) { "Array is empty." }
+        return items[0]
     }
 
-    /** Returns true if the array has one or more items. */
-    public boolean notEmpty () {
-        return size > 0;
+    /** Returns true if the array has one or more items.  */
+    fun notEmpty(): Boolean {
+        return size > 0
     }
 
-    /** Returns true if the array is empty. */
-    public boolean isEmpty () {
-        return size == 0;
-    }
-
-    public void clear () {
-        Arrays.fill(items, null);
-        size = 0;
+    fun clear() {
+        Arrays.fill(items, null)
+        size = 0
     }
 
     /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
      * have been removed, or if it is known that more items will not be added.
-     * @return {@link #items} */
-    public T[] shrink () {
-        if (items.length != size) resize(size);
-        return items;
+     * @return [.items]
+     */
+    fun shrink(): Array<T> {
+        if (items.size != size) resize(size)
+        return items
     }
 
     /** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
      * items to avoid multiple backing array resizes.
-     * @return {@link #items} */
-    public T[] ensureCapacity (int additionalCapacity) {
-        if (additionalCapacity < 0) throw new IllegalArgumentException("additionalCapacity must be >= 0: " + additionalCapacity);
-        int sizeNeeded = size + additionalCapacity;
-        if (sizeNeeded > items.length) resize(Math.max(8, sizeNeeded));
-        return items;
+     * @return [.items]
+     */
+    fun ensureCapacity(additionalCapacity: Int): Array<T> {
+        require(additionalCapacity >= 0) { "additionalCapacity must be >= 0: $additionalCapacity" }
+        val sizeNeeded = size + additionalCapacity
+        if (sizeNeeded > items.size) resize(Math.max(8, sizeNeeded))
+        return items
     }
 
     /** Sets the array size, leaving any values beyond the current size null.
-     * @return {@link #items} */
-    public T[] setSize (int newSize) {
-        truncate(newSize);
-        if (newSize > items.length) resize(Math.max(8, newSize));
-        size = newSize;
-        return items;
+     * @return [.items]
+     */
+    fun setSize(newSize: Int): Array<T> {
+        truncate(newSize)
+        if (newSize > items.size) resize(Math.max(8, newSize))
+        size = newSize
+        return items
     }
 
-    /** Creates a new backing array with the specified size containing the current items. */
-    protected T[] resize (int newSize) {
-        T[] items = this.items;
-        T[] newItems = (T[])ArrayReflection.newInstance(items.getClass().getComponentType(), newSize);
-        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.length));
-        this.items = newItems;
-        return newItems;
+    /** Creates a new backing array with the specified size containing the current items.  */
+    protected fun resize(newSize: Int): Array<T> {
+        val items = this.items
+        val newItems = ArrayReflection.newInstance(items.javaClass.componentType, newSize) as Array<T>
+        System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
+        this.items = newItems
+        return newItems
     }
 
-    public void shuffle () {
-        T[] items = this.items;
-        for (int i = size - 1; i >= 0; i--) {
-            int ii = MathUtils.random(i);
-            T temp = items[i];
-            items[i] = items[ii];
-            items[ii] = temp;
+    fun shuffle() {
+        val items = this.items
+        for (i in size - 1 downTo 0) {
+            val ii = MathUtils.random(i)
+            val temp = items[i]
+            items[i] = items[ii]
+            items[ii] = temp
         }
     }
 
     /** Returns an iterator for the items in the array. Remove is supported.
-     * <p>
-     * If {@link Collections#allocateIterators} is false, the same iterator instance is returned each time this method is called.
-     * Use the {@link ArrayIterator} constructor for nested or multithreaded iteration. */
-    public ArrayIterator<T> iterator () {
-        if (Collections.allocateIterators) return new ArrayIterator(this, true);
-        if (iterable == null) iterable = new ArrayIterable(this);
-        return iterable.iterator();
-    }
-
-    /** Returns an iterable for the selected items in the array. Remove is supported, but not between hasNext() and next().
-     * <p>
-     * If {@link Collections#allocateIterators} is false, the same iterable instance is returned each time this method is called.
-     * Use the {@link Predicate.PredicateIterable} constructor for nested or multithreaded iteration. */
-    public Iterable<T> select (Predicate<T> predicate) {
-        if (Collections.allocateIterators) return new Predicate.PredicateIterable<T>(this, predicate);
-        if (predicateIterable == null)
-            predicateIterable = new Predicate.PredicateIterable<T>(this, predicate);
-        else
-            predicateIterable.set(this, predicate);
-        return predicateIterable;
+     *
+     *
+     * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
+     * Use the [ArrayIterator] constructor for nested or multithreaded iteration.  */
+    override fun iterator(): ArrayIterator<T> {
+        if (Collections.allocateIterators) return ArrayIterator(this, true)
+        if (iterable == null) iterable = ArrayIterable(this)
+        return iterable!!.iterator() as ArrayIterator<T>
     }
 
     /** Reduces the size of the array to the specified size. If the array is already smaller than the specified size, no action is
-     * taken. */
-    public void truncate (int newSize) {
-        if (newSize < 0) throw new IllegalArgumentException("newSize must be >= 0: " + newSize);
-        if (size <= newSize) return;
-        for (int i = newSize; i < size; i++)
-            items[i] = null;
-        size = newSize;
+     * taken.  */
+    fun truncate(newSize: Int) {
+        require(newSize >= 0) { "newSize must be >= 0: $newSize" }
+        if (size <= newSize) return
+        val items = this.items as Array<T?>
+        for (i in newSize until size)
+            items[i] = null
+        size = newSize
     }
 
-    /** Returns a random item from the array, or null if the array is empty. */
-    public @Null T random () {
-        if (size == 0) return null;
-        return items[MathUtils.random(0, size - 1)];
+    /** Returns a random item from the array, or null if the array is empty.  */
+    @Null
+    fun random(): T? {
+        return if (size == 0) null else items[MathUtils.random(0, size - 1)]
     }
 
-    /** Returns the items as an array. Note the array is typed, so the {@link #JArray(Class)} constructor must have been used.
-     * Otherwise use {@link #toArray(Class)} to specify the array type. */
-    public T[] toArray () {
-        return (T[])toArray(items.getClass().getComponentType());
+    /** Returns the items as an array. Note the array is typed, so the [.JArray] constructor must have been used.
+     * Otherwise use [.toArray] to specify the array type.  */
+    fun toArray(): Array<T> {
+        return toArray(items.javaClass.componentType) as Array<T>
     }
 
-    public <V> V[] toArray (Class<V> type) {
-        V[] result = (V[])ArrayReflection.newInstance(type, size);
-        System.arraycopy(items, 0, result, 0, size);
-        return result;
+    fun <V> toArray(type: Class<V>): Array<V> {
+        val result = ArrayReflection.newInstance(type, size) as Array<V>
+        System.arraycopy(items, 0, result, 0, size)
+        return result
     }
 
-    public int hashCode () {
-        if (!ordered) return super.hashCode();
-        Object[] items = this.items;
-        int h = 1;
-        for (int i = 0, n = size; i < n; i++) {
-            h *= 31;
-            Object item = items[i];
-            if (item != null) h += item.hashCode();
+    override fun hashCode(): Int {
+        if (!ordered) return super.hashCode()
+        val items = this.items
+        var h = 1
+        var i = 0
+        val n = size
+        while (i < n) {
+            h *= 31
+            val item = items[i]
+            if (item != null) h += item.hashCode()
+            i++
         }
-        return h;
+        return h
     }
 
-    /** Returns false if either array is unordered. */
-    public boolean equals (Object object) {
-        if (object == this) return true;
-        if (!ordered) return false;
-        if (!(object instanceof JArray)) return false;
-        JArray array = (JArray)object;
-        if (!array.ordered) return false;
-        int n = size;
-        if (n != array.size) return false;
-        Object[] items1 = this.items, items2 = array.items;
-        for (int i = 0; i < n; i++) {
-            Object o1 = items1[i], o2 = items2[i];
-            if (!(o1 == null ? o2 == null : o1.equals(o2))) return false;
+    /** Returns false if either array is unordered.  */
+    override fun equals(`object`: Any?): Boolean {
+        if (`object` === this) return true
+        if (!ordered) return false
+        if (`object` !is JArray<*>) return false
+        val array = `object` as JArray<*>?
+        if (!array!!.ordered) return false
+        val n = size
+        if (n != array.size) return false
+        val items1 = this.items
+        val items2 = array.items
+        for (i in 0 until n) {
+            val o1 = items1[i]
+            val o2 = items2[i]
+            if (!(if (o1 == null) o2 == null else o1 == o2)) return false
         }
-        return true;
+        return true
     }
 
-    /** Uses == for comparison of each item. Returns false if either array is unordered. */
-    public boolean equalsIdentity (Object object) {
-        if (object == this) return true;
-        if (!ordered) return false;
-        if (!(object instanceof JArray)) return false;
-        JArray array = (JArray)object;
-        if (!array.ordered) return false;
-        int n = size;
-        if (n != array.size) return false;
-        Object[] items1 = this.items, items2 = array.items;
-        for (int i = 0; i < n; i++)
-            if (items1[i] != items2[i]) return false;
-        return true;
+    /** Uses == for comparison of each item. Returns false if either array is unordered.  */
+    fun equalsIdentity(`object`: Any): Boolean {
+        if (`object` === this) return true
+        if (!ordered) return false
+        if (`object` !is JArray<*>) return false
+        if (!`object`.ordered) return false
+        val n = size
+        if (n != `object`.size) return false
+        val items1 = this.items
+        val items2 = `object`.items
+        for (i in 0 until n)
+            if (items1[i] !== items2[i]) return false
+        return true
     }
 
-    public String toString () {
-        if (size == 0) return "[]";
-        T[] items = this.items;
-        StringBuilder buffer = new StringBuilder(32);
-        buffer.append('[');
-        buffer.append(items[0]);
-        for (int i = 1; i < size; i++) {
-            buffer.append(", ");
-            buffer.append(items[i]);
+    override fun toString(): String {
+        if (size == 0) return "[]"
+        val items = this.items
+        val buffer = StringBuilder(32)
+        buffer.append('[')
+        buffer.append(items[0])
+        for (i in 1 until size) {
+            buffer.append(", ")
+            buffer.append(items[i])
         }
-        buffer.append(']');
-        return buffer.toString();
+        buffer.append(']')
+        return buffer.toString()
     }
 
-    public String toString (String separator) {
-        if (size == 0) return "";
-        T[] items = this.items;
-        StringBuilder buffer = new StringBuilder(32);
-        buffer.append(items[0]);
-        for (int i = 1; i < size; i++) {
-            buffer.append(separator);
-            buffer.append(items[i]);
+    fun toString(separator: String): String {
+        if (size == 0) return ""
+        val items = this.items
+        val buffer = StringBuilder(32)
+        buffer.append(items[0])
+        for (i in 1 until size) {
+            buffer.append(separator)
+            buffer.append(items[i])
         }
-        return buffer.toString();
+        return buffer.toString()
     }
 
-    /** @see #JArray(Class) */
-    static public <T> JArray<T> of (Class<T> arrayType) {
-        return new JArray(arrayType);
-    }
+    class ArrayIterator<T> @JvmOverloads constructor(private val array: JArray<T>, private val allowRemove: Boolean = true) : MutableIterator<T>, MutableIterable<T> {
+        internal var index: Int = 0
+        internal var valid = true
 
-    /** @see #JArray(boolean, int, Class) */
-    static public <T> JArray<T> of (boolean ordered, int capacity, Class<T> arrayType) {
-        return new JArray(ordered, capacity, arrayType);
-    }
-
-    /** @see #JArray(Object[]) */
-    static public <T> JArray<T> with (T... array) {
-        return new JArray(array);
-    }
-
-    static public class ArrayIterator<T> implements Iterator<T>, Iterable<T> {
-        private final JArray<T> array;
-        private final boolean allowRemove;
-        int index;
-        boolean valid = true;
-
-// ArrayIterable<T> iterable;
-
-        public ArrayIterator (JArray<T> array) {
-            this(array, true);
-        }
-
-        public ArrayIterator (JArray<T> array, boolean allowRemove) {
-            this.array = array;
-            this.allowRemove = allowRemove;
-        }
-
-        public boolean hasNext () {
+        override fun hasNext(): Boolean {
             if (!valid) {
-// System.out.println(iterable.lastAcquire);
-                throw new GdxRuntimeException("#iterator() cannot be used nested.");
+                // System.out.println(iterable.lastAcquire);
+                throw GdxRuntimeException("#iterator() cannot be used nested.")
             }
-            return index < array.size;
+            return index < array.size
         }
 
-        public T next () {
-            if (index >= array.size) throw new NoSuchElementException(String.valueOf(index));
+        override fun next(): T {
+            if (index >= array.size) throw NoSuchElementException(index.toString())
             if (!valid) {
-// System.out.println(iterable.lastAcquire);
-                throw new GdxRuntimeException("#iterator() cannot be used nested.");
+                // System.out.println(iterable.lastAcquire);
+                throw GdxRuntimeException("#iterator() cannot be used nested.")
             }
-            return array.items[index++];
+            return array.items[index++]
         }
 
-        public void remove () {
-            if (!allowRemove) throw new GdxRuntimeException("Remove not allowed.");
-            index--;
-            array.removeIndex(index);
+        override fun remove() {
+            if (!allowRemove) throw GdxRuntimeException("Remove not allowed.")
+            index--
+            array.removeIndex(index)
         }
 
-        public void reset () {
-            index = 0;
+        fun reset() {
+            index = 0
         }
 
-        public ArrayIterator<T> iterator () {
-            return this;
+        override fun iterator(): ArrayIterator<T> {
+            return this
         }
-    }
+    }// ArrayIterable<T> iterable;
 
-    static public class ArrayIterable<T> implements Iterable<T> {
-        private final JArray<T> array;
-        private final boolean allowRemove;
-        private ArrayIterator iterator1, iterator2;
+    class ArrayIterable<T> @JvmOverloads constructor(private val array: JArray<T>, private val allowRemove: Boolean = true) : Iterable<T> {
+        private var iterator1: ArrayIterator<*>? = null
+        private var iterator2: ArrayIterator<*>? = null
 
-// java.io.StringWriter lastAcquire = new java.io.StringWriter();
-
-        public ArrayIterable (JArray<T> array) {
-            this(array, true);
-        }
-
-        public ArrayIterable (JArray<T> array, boolean allowRemove) {
-            this.array = array;
-            this.allowRemove = allowRemove;
-        }
-
-        /** @see Collections#allocateIterators */
-        public ArrayIterator<T> iterator () {
-            if (Collections.allocateIterators) return new ArrayIterator(array, allowRemove);
-// lastAcquire.getBuffer().setLength(0);
-// new Throwable().printStackTrace(new java.io.PrintWriter(lastAcquire));
+        /** @see Collections.allocateIterators
+         */
+        override fun iterator(): ArrayIterator<T> {
+            if (Collections.allocateIterators) return ArrayIterator(array, allowRemove)
+            // lastAcquire.getBuffer().setLength(0);
+            // new Throwable().printStackTrace(new java.io.PrintWriter(lastAcquire));
             if (iterator1 == null) {
-                iterator1 = new ArrayIterator(array, allowRemove);
-                iterator2 = new ArrayIterator(array, allowRemove);
-// iterator1.iterable = this;
-// iterator2.iterable = this;
+                iterator1 = ArrayIterator(array, allowRemove)
+                iterator2 = ArrayIterator(array, allowRemove)
+                // iterator1.iterable = this;
+                // iterator2.iterable = this;
             }
-            if (!iterator1.valid) {
-                iterator1.index = 0;
-                iterator1.valid = true;
-                iterator2.valid = false;
-                return iterator1;
+            if (!iterator1!!.valid) {
+                iterator1!!.index = 0
+                iterator1!!.valid = true
+                iterator2!!.valid = false
+                return iterator1 as ArrayIterator<T>
             }
-            iterator2.index = 0;
-            iterator2.valid = true;
-            iterator1.valid = false;
-            return iterator2;
+            iterator2!!.index = 0
+            iterator2!!.valid = true
+            iterator1!!.valid = false
+            return iterator2 as ArrayIterator<T>
+        }
+    }// java.io.StringWriter lastAcquire = new java.io.StringWriter();
+
+    companion object {
+
+        /** @see .JArray
+         */
+        fun <T> of(arrayType: Class<T>): JArray<T> {
+            return JArray(arrayType)
+        }
+
+        /** @see .JArray
+         */
+        fun <T> of(ordered: Boolean, capacity: Int, arrayType: Class<T>): JArray<T> {
+            return JArray(ordered, capacity, arrayType)
+        }
+
+        /** @see .JArray
+         */
+        fun <T> with(vararg array: T): JArray<T> {
+            return JArray(array) as JArray<T>
         }
     }
 }
+/** Creates an ordered array with a capacity of 16.  */

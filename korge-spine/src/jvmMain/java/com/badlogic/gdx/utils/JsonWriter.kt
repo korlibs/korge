@@ -60,7 +60,7 @@ class JsonWriter(val writer: Writer) : Writer() {
     fun `object`(): JsonWriter {
         requireCommaOrName()
         current = JsonObject(false)
-        stack.add(current)
+        stack.add(current!!)
         return this
     }
 
@@ -68,7 +68,7 @@ class JsonWriter(val writer: Writer) : Writer() {
     fun array(): JsonWriter {
         requireCommaOrName()
         current = JsonObject(true)
-        stack.add(current)
+        stack.add(current!!)
         return this
     }
 
