@@ -87,7 +87,7 @@ class SkeletonClipping {
         val clipOutput = this.clipOutput
         val clippedVertices = this.clippedVertices
         val clippedTriangles = this.clippedTriangles
-        val polygons = clippingPolygons!!.items
+        val polygons = clippingPolygons!!
         val polygonsCount = clippingPolygons!!.size
         val vertexSize = if (twoColor) 6 else 5
 

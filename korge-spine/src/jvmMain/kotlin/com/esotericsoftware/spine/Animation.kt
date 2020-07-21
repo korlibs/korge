@@ -1240,13 +1240,13 @@ class Animation(
             val drawOrder = skeleton.drawOrder
             val slots = skeleton.slots
             if (direction == out) {
-                if (blend == setup) arraycopy(slots.items, 0, drawOrder.items, 0, slots.size)
+                if (blend == setup) arraycopy(slots, 0, drawOrder, 0, slots.size)
                 return
             }
 
             val frames = this.frames
             if (time < frames[0]) { // Time is before first frame.
-                if (blend == setup || blend == first) arraycopy(slots.items, 0, drawOrder.items, 0, slots.size)
+                if (blend == setup || blend == first) arraycopy(slots, 0, drawOrder, 0, slots.size)
                 return
             }
 
@@ -1259,7 +1259,7 @@ class Animation(
 
             val drawOrderToSetupIndex = drawOrders[frame]
             if (drawOrderToSetupIndex == null)
-                arraycopy(slots.items, 0, drawOrder.items, 0, slots.size)
+                arraycopy(slots, 0, drawOrder, 0, slots.size)
             else {
                 var i = 0
                 val n = drawOrderToSetupIndex.size

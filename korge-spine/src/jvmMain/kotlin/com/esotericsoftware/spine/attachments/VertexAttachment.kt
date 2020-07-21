@@ -112,7 +112,7 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
             skip += n
             i += 2
         }
-        val skeletonBones = skeleton.bones.items
+        val skeletonBones = skeleton.bones
         if (deformArray.size == 0) {
             var w = offset
             var b = skip * 3

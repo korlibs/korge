@@ -203,7 +203,7 @@ class AnimationState {
                 val animationLast = current.animationLast
                 val animationTime = current.animationTime
                 val timelineCount = current.animation!!.timelines.size
-                val timelines = current.animation!!.timelines.items
+                val timelines = current.animation!!.timelines
                 if (i == 0 && mix == 1f || blend == MixBlend.add) {
                     for (ii in 0 until timelineCount) {
                         val timeline = timelines[ii]
@@ -243,7 +243,7 @@ class AnimationState {
         // subsequent timelines see any deform, but the subsequent timelines don't set an attachment (eg they are also mixing out or
         // the time is before the first key).
         val setupState = unkeyedState + SETUP
-        val slots = skeleton.slots.items
+        val slots = skeleton.slots
         var i = 0
         val n = skeleton.slots.size
         while (i < n) {
@@ -281,7 +281,7 @@ class AnimationState {
         val animationLast = from.animationLast
         val animationTime = from.animationTime
         val timelineCount = from.animation!!.timelines.size
-        val timelines = from.animation!!.timelines.items
+        val timelines = from.animation!!.timelines
         val alphaHold = from.alpha * to.interruptAlpha
         val alphaMix = alphaHold * (1 - mix)
 
@@ -289,8 +289,8 @@ class AnimationState {
             for (i in 0 until timelineCount)
                 timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out)
         } else {
-            val timelineMode = from.timelineMode.items
-            val timelineHoldMix = from.timelineHoldMix.items
+            val timelineMode = from.timelineMode
+            val timelineHoldMix = from.timelineHoldMix
 
             val firstFrame = from.timelinesRotation.size != timelineCount shl 1
             if (firstFrame) from.timelinesRotation.setSize(timelineCount shl 1)
@@ -797,7 +797,7 @@ class AnimationState {
 
     private fun computeHold(entry: TrackEntry) {
         val to = entry.mixingTo
-        val timelines = entry.animation!!.timelines.items
+        val timelines = entry.animation!!.timelines
         val timelinesCount = entry.animation!!.timelines.size
         val timelineMode = entry.timelineMode.setSize(timelinesCount)
         entry.timelineHoldMix.clear()

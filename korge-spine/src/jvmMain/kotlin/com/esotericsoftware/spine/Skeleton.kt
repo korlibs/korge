@@ -195,14 +195,14 @@ class Skeleton {
         updateCacheReset.clear()
 
         val boneCount = bones.size
-        val bones = this.bones.items
+        val bones = this.bones
         for (i in 0 until boneCount) {
             val bone = bones[i]
             bone.sorted = bone.data.skinRequired
             bone.isActive = !bone.sorted
         }
         if (skin != null) {
-            val skinBones = skin!!.bones.items
+            val skinBones = skin!!.bones
             var i = 0
             val n = skin!!.bones.size
             while (i < n) {
@@ -219,9 +219,9 @@ class Skeleton {
         val ikCount = ikConstraints.size
         val transformCount = transformConstraints.size
         val pathCount = pathConstraints.size
-        val ikConstraints = this.ikConstraints.items
-        val transformConstraints = this.transformConstraints.items
-        val pathConstraints = this.pathConstraints.items
+        val ikConstraints = this.ikConstraints
+        val transformConstraints = this.transformConstraints
+        val pathConstraints = this.pathConstraints
         val constraintCount = ikCount + transformCount + pathCount
         outer@ for (i in 0 until constraintCount) {
             for (ii in 0 until ikCount) {
@@ -531,7 +531,7 @@ class Skeleton {
     /** Sets the slots and draw order to their setup pose values.  */
     fun setSlotsToSetupPose() {
         val slots = this.slots
-        arraycopy(slots.items, 0, drawOrder.items, 0, slots.size)
+        arraycopy(slots, 0, drawOrder, 0, slots.size)
         var i = 0
         val n = slots.size
         while (i < n) {

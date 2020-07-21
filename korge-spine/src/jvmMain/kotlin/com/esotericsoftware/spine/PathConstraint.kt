@@ -121,7 +121,7 @@ class PathConstraint : Updatable {
         val scale = rotateMode == RotateMode.chainScale
         val boneCount = this.bones.size
         val spacesCount = if (tangents) boneCount else boneCount + 1
-        val bones = this.bones.items
+        val bones = this.bones
         val spaces = this.spaces.setSize(spacesCount)
         var lengths: FloatArray? = null
         val spacing = this.spacing

@@ -29,6 +29,8 @@
 
 package com.esotericsoftware.spine.utils
 
+import com.badlogic.gdx.utils.*
+
 object SpineUtils {
     val PI = 3.1415927f
     val PI2 = PI * 2
@@ -76,5 +78,9 @@ object SpineUtils {
 
     fun <T> arraycopy(src: Array<T>, srcPos: Int, dest: Array<T>, destPos: Int, length: Int) {
         System.arraycopy(src, srcPos, dest, destPos, length)
+    }
+
+    fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {
+        System.arraycopy(src.items, srcPos, dest.items, destPos, length)
     }
 }
