@@ -407,13 +407,13 @@ class ObjectSet<T>
         }
 
         override fun hasNext(): Boolean {
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             return hasNext
         }
 
         override fun next(): K {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val key = set.keyTable[nextIndex]
             currentIndex = nextIndex
             findNextIndex()
@@ -440,9 +440,21 @@ class ObjectSet<T>
         @JvmName("tableSize")
         internal fun tableSize(capacity: Int, loadFactor: Float): Int {
             require(capacity >= 0) { "capacity must be >= 0: $capacity" }
-            val tableSize = MathUtils.nextPowerOfTwo(Math.max(2, Math.ceil((capacity / loadFactor).toDouble()).toInt()))
+            val tableSize = nextPowerOfTwo(Math.max(2, Math.ceil((capacity / loadFactor).toDouble()).toInt()))
             require(tableSize <= 1 shl 30) { "The required capacity is too large: $capacity" }
             return tableSize
+        }
+
+        private fun nextPowerOfTwo(value: Int): Int {
+            var value = value
+            if (value == 0) return 1
+            value--
+            value = value or (value shr 1)
+            value = value or (value shr 2)
+            value = value or (value shr 4)
+            value = value or (value shr 8)
+            value = value or (value shr 16)
+            return value + 1
         }
     }
 }

@@ -441,16 +441,6 @@ class JArray<T> : Iterable<T> {
         return newItems
     }
 
-    fun shuffle() {
-        val items = this.items
-        for (i in size - 1 downTo 0) {
-            val ii = MathUtils.random(i)
-            val temp = items[i]
-            items[i] = items[ii]
-            items[ii] = temp
-        }
-    }
-
     /** Returns an iterator for the items in the array. Remove is supported.
      *
      *
@@ -471,11 +461,6 @@ class JArray<T> : Iterable<T> {
         for (i in newSize until size)
             items[i] = null
         size = newSize
-    }
-
-    /** Returns a random item from the array, or null if the array is empty.  */
-    fun random(): T? {
-        return if (size == 0) null else items[MathUtils.random(0, size - 1)]
     }
 
     /** Returns the items as an array. Note the array is typed, so the [.JArray] constructor must have been used.
@@ -572,7 +557,7 @@ class JArray<T> : Iterable<T> {
         override fun hasNext(): Boolean {
             if (!valid) {
                 // System.out.println(iterable.lastAcquire);
-                throw GdxRuntimeException("#iterator() cannot be used nested.")
+                error("#iterator() cannot be used nested.")
             }
             return index < array.size
         }
@@ -581,13 +566,13 @@ class JArray<T> : Iterable<T> {
             if (index >= array.size) throw NoSuchElementException(index.toString())
             if (!valid) {
                 // System.out.println(iterable.lastAcquire);
-                throw GdxRuntimeException("#iterator() cannot be used nested.")
+                error("#iterator() cannot be used nested.")
             }
             return array.items[index++]
         }
 
         override fun remove() {
-            if (!allowRemove) throw GdxRuntimeException("Remove not allowed.")
+            if (!allowRemove) error("Remove not allowed.")
             index--
             array.removeIndex(index)
         }

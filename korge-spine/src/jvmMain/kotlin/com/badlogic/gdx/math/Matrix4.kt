@@ -50,10 +50,16 @@ class Matrix4 : Serializable {
     val scaleZSquared: Float
         get() = values[M20] * values[M20] + values[M21] * values[M21] + values[M22] * values[M22]
 
+    /** Returns true if the value is zero (using the default tolerance as upper bound)  */
+    private fun isZero(value: Float): Boolean {
+        return Math.abs(value) <= MathUtils.FLOAT_ROUNDING_ERROR
+    }
+
+
     /** @return the scale factor on the X axis (non-negative)
      */
     val scaleX: Float
-        get() = if (MathUtils.isZero(values[M01]) && MathUtils.isZero(values[M02]))
+        get() = if (isZero(values[M01]) && isZero(values[M02]))
             Math.abs(values[M00])
         else
             Math.sqrt(scaleXSquared.toDouble()).toFloat()
@@ -61,7 +67,7 @@ class Matrix4 : Serializable {
     /** @return the scale factor on the Y axis (non-negative)
      */
     val scaleY: Float
-        get() = if (MathUtils.isZero(values[M10]) && MathUtils.isZero(values[M12]))
+        get() = if (isZero(values[M10]) && isZero(values[M12]))
             Math.abs(values[M11])
         else
             Math.sqrt(scaleYSquared.toDouble()).toFloat()
@@ -69,7 +75,7 @@ class Matrix4 : Serializable {
     /** @return the scale factor on the X axis (non-negative)
      */
     val scaleZ: Float
-        get() = if (MathUtils.isZero(values[M20]) && MathUtils.isZero(values[M21]))
+        get() = if (isZero(values[M20]) && isZero(values[M21]))
             Math.abs(values[M22])
         else
             Math.sqrt(scaleZSquared.toDouble()).toFloat()

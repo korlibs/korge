@@ -17,7 +17,6 @@ package com.badlogic.gdx.math
 
 import com.badlogic.gdx.math.MathUtils.cosDeg
 import com.badlogic.gdx.math.MathUtils.sinDeg
-import com.badlogic.gdx.utils.GdxRuntimeException
 import java.io.Serializable
 
 /** A 3x3 [column major](http://en.wikipedia.org/wiki/Row-major_order#Column-major_order) matrix; useful for 2D
@@ -271,11 +270,10 @@ class Matrix3 : Serializable {
 
     /** Inverts this matrix given that the determinant is != 0.
      * @return This matrix for the purpose of chaining operations.
-     * @throws GdxRuntimeException if the matrix is singular (not invertible)
      */
     fun inv(): Matrix3 {
         val det = det()
-        if (det == 0f) throw GdxRuntimeException("Can't invert a singular matrix")
+        if (det == 0f) error("Can't invert a singular matrix")
         val inv_det = 1.0f / det
         val tmp = tmp
         val `val` = `val`

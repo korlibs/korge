@@ -34,14 +34,21 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.SkeletonRenderer.VertexEffect
+import java.util.*
 
-class JitterEffect(private var x: Float, private var y: Float) : VertexEffect {
+class JitterEffect(private var x: Float, private var y: Float, val random: Random = Random()) : VertexEffect {
 
     override fun begin(skeleton: Skeleton) {}
 
+    private fun randomTriangular(min: Float, max: Float, mode: Float = (min + max) * 0.5f): Float {
+        val u = random.nextFloat()
+        val d = max - min
+        return if (u <= (mode - min) / d) min + Math.sqrt(u * d * (mode - min).toDouble()).toFloat() else max - Math.sqrt((1 - u) * d * (max - mode).toDouble()).toFloat()
+    }
+
     override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
-        position.x += MathUtils.randomTriangular(-x, y)
-        position.y += MathUtils.randomTriangular(-x, y)
+        position.x += randomTriangular(-x, y)
+        position.y += randomTriangular(-x, y)
     }
 
     override fun end() {}

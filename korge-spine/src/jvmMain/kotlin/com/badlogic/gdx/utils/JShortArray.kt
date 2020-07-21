@@ -368,27 +368,6 @@ class JShortArray {
         }
     }
 
-    fun shuffle() {
-        val items = this.items
-        for (i in size - 1 downTo 0) {
-            val ii = MathUtils.random(i)
-            val temp = items[i]
-            items[i] = items[ii]
-            items[ii] = temp
-        }
-    }
-
-    /** Reduces the size of the array to the specified size. If the array is already smaller than the specified size, no action is
-     * taken.  */
-    fun truncate(newSize: Int) {
-        if (size > newSize) size = newSize
-    }
-
-    /** Returns a random item from the array, or zero if the array is empty.  */
-    fun random(): Short {
-        return if (size == 0) 0 else items[MathUtils.random(0, size - 1)]
-    }
-
     fun toArray(): ShortArray {
         val array = ShortArray(size)
         System.arraycopy(items, 0, array, 0, size)

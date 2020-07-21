@@ -271,7 +271,7 @@ class Animation(
         /** Returns the interpolated percentage for the specified key frame and linear percentage.  */
         fun getCurvePercent(frameIndex: Int, percent: Float): Float {
             var percent = percent
-            percent = MathUtils.clamp(percent, 0f, 1f)
+            percent = percent.coerceIn(0f, 1f)
             val curves = this.curves
             var i = frameIndex * BEZIER_SIZE
             val type = curves[i]

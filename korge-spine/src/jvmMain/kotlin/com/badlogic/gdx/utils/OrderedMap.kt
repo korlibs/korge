@@ -250,7 +250,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
 
         override fun next(): Entry<K, V> {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             currentIndex = nextIndex
             entry.key = keys[nextIndex]
             entry.value = map.get(entry.key!!)
@@ -282,7 +282,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
 
         override fun next(): K {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val key = keys[nextIndex]
             currentIndex = nextIndex
             nextIndex++
@@ -320,7 +320,7 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
 
         override fun next(): V? {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val value = map.get(keys[nextIndex]!!)
             currentIndex = nextIndex
             nextIndex++

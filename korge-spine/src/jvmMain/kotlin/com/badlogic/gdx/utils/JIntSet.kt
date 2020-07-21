@@ -426,7 +426,7 @@ class JIntSet
 
         operator fun next(): Int {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val key = if (nextIndex == INDEX_ZERO) 0 else set.keyTable[nextIndex]
             currentIndex = nextIndex
             findNextIndex()

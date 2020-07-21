@@ -558,7 +558,7 @@ open class ObjectMap<K, V>
         /** Note the same entry instance is returned each time this method is called.  */
         override fun next(): Entry<K, V> {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val keyTable = map.keyTable
             entry.key = keyTable[nextIndex]
             entry.value = map.valueTable[nextIndex]
@@ -568,7 +568,7 @@ open class ObjectMap<K, V>
         }
 
         override fun hasNext(): Boolean {
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             return hasNext
         }
 
@@ -580,14 +580,14 @@ open class ObjectMap<K, V>
     open class Values<V>(map: ObjectMap<*, V>) : MapIterator<Any, V, V?>(map as ObjectMap<Any, V>) {
 
         override fun hasNext(): Boolean {
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             return hasNext
         }
 
         
         override fun next(): V? {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val value = map.valueTable[nextIndex]
             currentIndex = nextIndex
             findNextIndex()
@@ -609,13 +609,13 @@ open class ObjectMap<K, V>
     open class Keys<K>(map: ObjectMap<K, *>) : MapIterator<K, Any, K>(map as ObjectMap<K, Any>) {
 
         override fun hasNext(): Boolean {
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             return hasNext
         }
 
         override fun next(): K {
             if (!hasNext) throw NoSuchElementException()
-            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            if (!valid) error("#iterator() cannot be used nested.")
             val key = map.keyTable[nextIndex]
             currentIndex = nextIndex
             findNextIndex()

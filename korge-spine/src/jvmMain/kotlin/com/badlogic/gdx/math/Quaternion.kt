@@ -102,7 +102,7 @@ data class Quaternion(
      */
     fun nor(): Quaternion {
         var len = len2()
-        if (len != 0f && !MathUtils.isEqual(len, 1f)) {
+        if (len != 0f && !isEqual(len, 1f)) {
             len = Math.sqrt(len.toDouble()).toFloat()
             w /= len
             x /= len
@@ -111,6 +111,11 @@ data class Quaternion(
         }
         return this
     }
+
+    private fun isEqual(a: Float, b: Float): Boolean {
+        return Math.abs(a - b) <= MathUtils.FLOAT_ROUNDING_ERROR
+    }
+
 
     /** Conjugate the quaternion.
      *
