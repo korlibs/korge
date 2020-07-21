@@ -309,24 +309,6 @@ class Matrix3 : Serializable {
         return this
     }
 
-    /** Copies the values from the provided affine matrix to this matrix. The last row is set to (0, 0, 1).
-     * @param affine The affine matrix to copy.
-     * @return This matrix for the purposes of chaining.
-     */
-    fun set(affine: Affine2): Matrix3 {
-        val `val` = `val`
-        `val`[M00] = affine.m00
-        `val`[M10] = affine.m10
-        `val`[M20] = 0f
-        `val`[M01] = affine.m01
-        `val`[M11] = affine.m11
-        `val`[M21] = 0f
-        `val`[M02] = affine.m02
-        `val`[M12] = affine.m12
-        `val`[M22] = 1f
-        return this
-    }
-
     /** Sets this 3x3 matrix to the top left 3x3 corner of the provided 4x4 matrix.
      * @param mat The matrix whose top left corner will be copied. This matrix will not be modified.
      * @return This matrix for the purpose of chaining operations.

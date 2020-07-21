@@ -30,7 +30,6 @@
 package com.esotericsoftware.spine.vertexeffects
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.esotericsoftware.spine.Skeleton
@@ -41,9 +40,17 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
     private var worldX: Float = 0.toFloat()
     private var worldY: Float = 0.toFloat()
     private var angle: Float = 0.toFloat()
-    var interpolation: Interpolation = Interpolation.pow2Out
+    var interpolation: (Float) -> Float = { a ->
+        val power = 2
+        Math.pow(a - 1.toDouble(), power.toDouble()).toFloat() * (if (power % 2 == 0) -1 else 1) + 1
+    }
     private var centerX: Float = 0.toFloat()
     private var centerY: Float = 0.toFloat()
+
+    fun ((Float) -> Float).apply(start: Float, end: Float, a: Float): Float {
+        return start + (end - start) * this(a)
+    }
+
 
     override fun begin(skeleton: Skeleton) {
         worldX = skeleton.x + centerX

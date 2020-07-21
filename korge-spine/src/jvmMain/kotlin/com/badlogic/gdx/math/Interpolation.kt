@@ -17,20 +17,6 @@ package com.badlogic.gdx.math
 
 import com.badlogic.gdx.math.MathUtils.cos
 import com.badlogic.gdx.math.MathUtils.sin
-import com.badlogic.gdx.math.Interpolation
-import com.badlogic.gdx.math.Interpolation.Elastic
-import com.badlogic.gdx.math.Interpolation.BounceOut
-import com.badlogic.gdx.math.Interpolation.PowIn
-import com.badlogic.gdx.math.Interpolation.PowOut
-import com.badlogic.gdx.math.Interpolation.ExpIn
-import com.badlogic.gdx.math.Interpolation.ExpOut
-import com.badlogic.gdx.math.Interpolation.ElasticIn
-import com.badlogic.gdx.math.Interpolation.ElasticOut
-import com.badlogic.gdx.math.Interpolation.Swing
-import com.badlogic.gdx.math.Interpolation.SwingIn
-import com.badlogic.gdx.math.Interpolation.SwingOut
-import com.badlogic.gdx.math.Interpolation.Bounce
-import com.badlogic.gdx.math.Interpolation.BounceIn
 
 /** Takes a linear value in the range of 0-1 and outputs a (usually) non-linear, interpolated value.
  * @author Nathan Sweet
