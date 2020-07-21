@@ -77,18 +77,6 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
         return null
     }
 
-    fun <T : K> putAll(map: OrderedMap<T, out V>) {
-        ensureCapacity(map.size)
-        val keys = map.keys.items
-        var i = 0
-        val n = map.keys.size
-        while (i < n) {
-            val key = keys[i]
-            put(key, map.get(key))
-            i++
-        }
-    }
-
     override fun remove(key: K): V? {
         keys.removeValue(key, false)
         return super.remove(key)
@@ -333,18 +321,6 @@ class OrderedMap<K, V> : ObjectMap<K, V> {
             (map as OrderedMap<*, *>).removeIndex(currentIndex)
             nextIndex = currentIndex
             currentIndex = -1
-        }
-
-        override fun toArray(array: JArray<V?>): JArray<V?> {
-            val n = keys.size
-            array.ensureCapacity(n - nextIndex)
-            val keys = this.keys.items
-            for (i in nextIndex until n)
-                array.add(map.get(keys[i]!!))
-            currentIndex = n - 1
-            nextIndex = n
-            hasNext = false
-            return array
         }
     }
 }

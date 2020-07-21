@@ -597,13 +597,6 @@ open class ObjectMap<K, V>
         override fun iterator(): Values<V> {
             return this
         }
-
-        /** Adds the remaining values to the specified array.  */
-        open fun toArray(array: JArray<V?>): JArray<V?> {
-            while (hasNext)
-                array.add(next())
-            return array
-        }
     }
 
     open class Keys<K>(map: ObjectMap<K, *>) : MapIterator<K, Any, K>(map as ObjectMap<K, Any>) {

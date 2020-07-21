@@ -26,7 +26,7 @@ import java.util.NoSuchElementException
 class JArray<T> : Iterable<T> {
     /** Provides direct access to the underlying array. If the Array's generic type is not Object, this field may only be accessed
      * if the [JArray.JArray] constructor was used.  */
-    var items: Array<T>
+    private var items: Array<T>
 
     @JvmField
     var size: Int = 0
@@ -421,7 +421,7 @@ class JArray<T> : Iterable<T> {
     /** Sets the array size, leaving any values beyond the current size null.
      * @return [.items]
      */
-    inline fun setSize(newSize: Int): Array<T> {
+    fun setSize(newSize: Int): Array<T> {
         truncate(newSize)
         if (newSize > items.size) resize(Math.max(8, newSize))
         size = newSize
@@ -651,6 +651,11 @@ class JArray<T> : Iterable<T> {
         fun <T> with(vararg array: T): JArray<T> {
             return JArray(array) as JArray<T>
         }
+
+        fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {
+            System.arraycopy(src.items, srcPos, dest.items, destPos, length)
+        }
     }
+
 }
 /** Creates an ordered array with a capacity of 16.  */

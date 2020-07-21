@@ -135,15 +135,6 @@ class ObjectSet<T>
         return true
     }
 
-    fun addAll(array: JArray<out T>) {
-        addAll(array.items, 0, array.size)
-    }
-
-    fun addAll(array: JArray<out T>, offset: Int, length: Int) {
-        require(offset + length <= array.size) { "offset + length must be <= size: " + offset + " + " + length + " <= " + array.size }
-        addAll(array.items, offset, length)
-    }
-
     fun addAll(vararg array: T): Boolean {
         return addAll(array, 0, array.size)
     }

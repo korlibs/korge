@@ -81,6 +81,6 @@ object SpineUtils {
     }
 
     fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {
-        System.arraycopy(src.items, srcPos, dest.items, destPos, length)
+        JArray.arraycopy(src, srcPos, dest, destPos, length)
     }
 }
