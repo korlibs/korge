@@ -1,5 +1,6 @@
 package com.soywiz.korge.atlas
 
+import com.soywiz.kds.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.serialization.xml.*
@@ -126,5 +127,82 @@ data class AtlasInfo(
                 version = "1.0"
             ))
         }
-	}
+
+        fun loadText(content: String): AtlasInfo {
+            val r = ListReader(content.lines())
+            var pageImage: Any? = null
+
+            fun String.intPair(): Point {
+                val list = this.split(',', limit = 2)
+                return Point(list.first().trim().toInt(), list.last().trim().toInt())
+            }
+
+            fun String.keyValue(): Pair<String, String> {
+                val list = this.split(':', limit = 2)
+                return list.first().trim().toLowerCase() to list.last().trim()
+            }
+
+            fun String.filter(): Boolean {
+                return when (this.toLowerCase()) {
+                    "nearest" -> false
+                    "linear" -> true
+                    "mipmap" -> true
+                    "mipmapnearestnearest" -> false
+                    "mipmaplinearnearest" -> false
+                    "mipmapnearestlinear" -> false
+                    "mipmaplinearlinear" -> false
+                    else -> false
+                }
+            }
+
+            while (r.hasMore) {
+                val line = r.read().trim()
+                if (line.isEmpty()) {
+                    if (r.eof) break
+
+                    val fileName = r.read().trim()
+                    var size = Point(0, 0)
+                    var format = "rgba8888"
+                    var filterMin = false
+                    var filterMag = false
+                    var repeatX = false
+                    var repeatY = false
+                    while (r.hasMore && r.peek().contains(':')) {
+                        val (key, value) = r.read().trim().keyValue()
+                        when (key) {
+                            "size" -> size = value.intPair()
+                            "format" -> format = value
+                            "filter" -> {
+                                val filter = value.split(",").map { it.trim().toLowerCase() }
+                                filterMin = filter.first().filter()
+                                filterMag = filter.last().filter()
+                            }
+                            "repeat" -> {
+                                repeatX = value.contains('x')
+                                repeatY = value.contains('y')
+                            }
+                        }
+                    }
+                } else {
+                    val name = line
+                    var rotate = false
+                    var xy = Point()
+                    var size = Point()
+                    var orig = Point()
+                    var offset = Point()
+                    while (r.hasMore && r.peek().contains(':')) {
+                        val (key, value) = r.read().trim().keyValue()
+                        when (key) {
+                            "rotate" -> rotate = value.toBoolean()
+                            "xy" -> xy = value.intPair()
+                            "size" -> size = value.intPair()
+                            "orig" -> orig = value.intPair()
+                            "offset" -> offset = value.intPair()
+                        }
+                    }
+                }
+            }
+            TODO()
+        }
+    }
 }

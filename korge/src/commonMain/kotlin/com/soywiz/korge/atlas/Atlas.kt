@@ -28,6 +28,7 @@ suspend fun VfsFile.readAtlas(): Atlas {
     val info = when {
         content.startsWith("{") -> AtlasInfo.loadJsonSpriter(content)
         content.startsWith("<") -> AtlasInfo.loadXml(content)
+        content.startsWith('\n') -> AtlasInfo.loadText(content)
         else -> error("Unexpected atlas starting with '${content.firstOrNull()}'")
     }
     val folder = this.parent
