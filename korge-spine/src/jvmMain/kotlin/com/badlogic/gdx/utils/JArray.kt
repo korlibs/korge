@@ -19,9 +19,6 @@ package com.badlogic.gdx.utils
 import java.util.Arrays
 import java.util.NoSuchElementException
 
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.utils.reflect.ArrayReflection
-
 /** A resizable, ordered or unordered array of objects. If unordered, this class avoids a memory copy when removing elements (the
  * last element is moved to the removed element's position).
  * @author Nathan Sweet
@@ -62,7 +59,7 @@ class JArray<T> : Iterable<T> {
      */
     constructor(ordered: Boolean, capacity: Int, arrayType: Class<*>) {
         this.ordered = ordered
-        items = ArrayReflection.newInstance(arrayType, capacity) as Array<T>
+        items = java.lang.reflect.Array.newInstance(arrayType, capacity) as Array<T>
     }
 
     /** Creates an ordered array with [.items] of the specified type and a capacity of 16.  */
@@ -435,7 +432,7 @@ class JArray<T> : Iterable<T> {
     @PublishedApi
     internal fun resize(newSize: Int): Array<T> {
         val items = this.items
-        val newItems = ArrayReflection.newInstance(items.javaClass.componentType, newSize) as Array<T>
+        val newItems = java.lang.reflect.Array.newInstance(items.javaClass.componentType, newSize) as Array<T>
         System.arraycopy(items, 0, newItems, 0, Math.min(size, newItems.size))
         this.items = newItems
         return newItems
@@ -470,7 +467,7 @@ class JArray<T> : Iterable<T> {
     }
 
     fun <V> toArray(type: Class<V>): Array<V> {
-        val result = ArrayReflection.newInstance(type, size) as Array<V>
+        val result = java.lang.reflect.Array.newInstance(type, size) as Array<V>
         System.arraycopy(items, 0, result, 0, size)
         return result
     }

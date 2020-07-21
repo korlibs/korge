@@ -57,17 +57,24 @@ object SpineUtils {
         return Math.atan2(y.toDouble(), x.toDouble()).toFloat()
     }
 
-    fun arraycopy(src: Any, srcPos: Int, dest: Any, destPos: Int, length: Int) {
-        try {
-            System.arraycopy(src, srcPos, dest, destPos, length)
-        } catch (ex: ArrayIndexOutOfBoundsException) {
-            throw ArrayIndexOutOfBoundsException( //
-                    "Src: " + java.lang.reflect.Array.getLength(src) + ", " + srcPos //
+    fun arraycopy(src: ByteArray, srcPos: Int, dest: ByteArray, destPos: Int, length: Int) {
+        //src.copyInto(dest, destPos, srcPos, srcPos + length)
+        System.arraycopy(src, srcPos, dest, destPos, length)
+    }
 
-                            + ", dest: " + java.lang.reflect.Array.getLength(dest) + ", " + destPos //
+    fun arraycopy(src: ShortArray, srcPos: Int, dest: ShortArray, destPos: Int, length: Int) {
+        System.arraycopy(src, srcPos, dest, destPos, length)
+    }
 
-                            + ", count: " + length)
-        }
+    fun arraycopy(src: IntArray, srcPos: Int, dest: IntArray, destPos: Int, length: Int) {
+        System.arraycopy(src, srcPos, dest, destPos, length)
+    }
 
+    fun arraycopy(src: FloatArray, srcPos: Int, dest: FloatArray, destPos: Int, length: Int) {
+        System.arraycopy(src, srcPos, dest, destPos, length)
+    }
+
+    fun <T> arraycopy(src: Array<T>, srcPos: Int, dest: Array<T>, destPos: Int, length: Int) {
+        System.arraycopy(src, srcPos, dest, destPos, length)
     }
 }
