@@ -5,434 +5,458 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ */
 
-package com.badlogic.gdx.utils;
+package com.badlogic.gdx.utils
 
-import static com.badlogic.gdx.utils.ObjectSet.*;
+import com.badlogic.gdx.utils.ObjectSet.*
 
-import java.util.Arrays;
-import java.util.NoSuchElementException;
+import java.util.Arrays
+import java.util.NoSuchElementException
 
 /** An unordered set where the items are unboxed ints. No allocation is done except when growing the table size.
- * <p>
+ *
+ *
  * This class performs fast contains and remove (typically O(1), worst case O(n) but that is rare in practice). Add may be
  * slightly slower, depending on hash collisions. Hashcodes are rehashed to reduce collisions and the need to resize. Load factors
  * greater than 0.91 greatly increase the chances to resize to the next higher POT size.
- * <p>
+ *
+ *
  * Unordered sets and maps are not designed to provide especially fast iteration. Iteration is faster with OrderedSet and
  * OrderedMap.
- * <p>
+ *
+ *
  * This implementation uses linear probing with the backward shift algorithm for removal. Hashcodes are rehashed using Fibonacci
- * hashing, instead of the more common power-of-two mask, to better distribute poor hashCodes (see <a href=
- * "https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/">Malte
- * Skarupke's blog post</a>). Linear probing continues to work even when all hashCodes collide, just more slowly.
+ * hashing, instead of the more common power-of-two mask, to better distribute poor hashCodes (see [Malte
+ * Skarupke's blog post](https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/)). Linear probing continues to work even when all hashCodes collide, just more slowly.
  * @author Nathan Sweet
- * @author Tommy Ettinger */
-public class JIntSet {
-    public int size;
+ * @author Tommy Ettinger
+ */
+class JIntSet
+/** Creates a new set with the specified initial capacity and load factor. This set will hold initialCapacity items before
+ * growing the backing table.
+ * @param initialCapacity If not a power of two, it is increased to the next nearest power of two.
+ */
+@JvmOverloads constructor(initialCapacity: Int = 51, private val loadFactor: Float = 0.8f) {
+    @JvmField
+    var size: Int = 0
 
-    int[] keyTable;
-    boolean hasZeroValue;
+    internal var keyTable: IntArray
+    internal var hasZeroValue: Boolean = false
+    private var threshold: Int = 0
 
-    private final float loadFactor;
-    private int threshold;
-
-    /** Used by {@link #place(int)} to bit shift the upper bits of a {@code long} into a usable range (&gt;= 0 and &lt;=
-     * {@link #mask}). The shift can be negative, which is convenient to match the number of bits in mask: if mask is a 7-bit
+    /** Used by [.place] to bit shift the upper bits of a `long` into a usable range (&gt;= 0 and &lt;=
+     * [.mask]). The shift can be negative, which is convenient to match the number of bits in mask: if mask is a 7-bit
      * number, a shift of -7 shifts the upper 7 bits into the lowest 7 positions. This class sets the shift &gt; 32 and &lt; 64,
      * which if used with an int will still move the upper bits of an int to the lower bits due to Java's implicit modulus on
      * shifts.
-     * <p>
-     * {@link #mask} can also be used to mask the low bits of a number, which may be faster for some hashcodes, if
-     * {@link #place(int)} is overridden. */
-    protected int shift;
+     *
+     *
+     * [.mask] can also be used to mask the low bits of a number, which may be faster for some hashcodes, if
+     * [.place] is overridden.  */
+    protected var shift: Int = 0
 
     /** A bitmask used to confine hashcodes to the size of the table. Must be all 1 bits in its low positions, ie a power of two
-     * minus 1. If {@link #place(int)} is overriden, this can be used instead of {@link #shift} to isolate usable bits of a
-     * hash. */
-    protected int mask;
+     * minus 1. If [.place] is overriden, this can be used instead of [.shift] to isolate usable bits of a
+     * hash.  */
+    protected var mask: Int = 0
 
-    private IntSetIterator iterator1, iterator2;
+    private var iterator1: IntSetIterator? = null
+    private var iterator2: IntSetIterator? = null
 
-    /** Creates a new set with an initial capacity of 51 and a load factor of 0.8. */
-    public JIntSet() {
-        this(51, 0.8f);
+    /** Returns true if the set is empty.  */
+    val isEmpty: Boolean
+        get() = size == 0
+
+    init {
+        require(!(loadFactor <= 0f || loadFactor >= 1f)) { "loadFactor must be > 0 and < 1: $loadFactor" }
+
+        val tableSize = tableSize(initialCapacity, loadFactor)
+        threshold = (tableSize * loadFactor).toInt()
+        mask = tableSize - 1
+        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
+
+        keyTable = IntArray(tableSize)
     }
 
-    /** Creates a new set with a load factor of 0.8.
-     * @param initialCapacity If not a power of two, it is increased to the next nearest power of two. */
-    public JIntSet(int initialCapacity) {
-        this(initialCapacity, 0.8f);
+    /** Creates a new set identical to the specified set.  */
+    constructor(set: JIntSet) : this((set.keyTable.size * set.loadFactor).toInt(), set.loadFactor) {
+        System.arraycopy(set.keyTable, 0, keyTable, 0, set.keyTable.size)
+        size = set.size
+        hasZeroValue = set.hasZeroValue
     }
 
-    /** Creates a new set with the specified initial capacity and load factor. This set will hold initialCapacity items before
-     * growing the backing table.
-     * @param initialCapacity If not a power of two, it is increased to the next nearest power of two. */
-    public JIntSet(int initialCapacity, float loadFactor) {
-        if (loadFactor <= 0f || loadFactor >= 1f)
-            throw new IllegalArgumentException("loadFactor must be > 0 and < 1: " + loadFactor);
-        this.loadFactor = loadFactor;
-
-        int tableSize = tableSize(initialCapacity, loadFactor);
-        threshold = (int)(tableSize * loadFactor);
-        mask = tableSize - 1;
-        shift = Long.numberOfLeadingZeros(mask);
-
-        keyTable = new int[tableSize];
-    }
-
-    /** Creates a new set identical to the specified set. */
-    public JIntSet(JIntSet set) {
-        this((int)(set.keyTable.length * set.loadFactor), set.loadFactor);
-        System.arraycopy(set.keyTable, 0, keyTable, 0, set.keyTable.length);
-        size = set.size;
-        hasZeroValue = set.hasZeroValue;
-    }
-
-    /** Returns an index >= 0 and <= {@link #mask} for the specified {@code item}.
-     * <p>
-     * The default implementation uses Fibonacci hashing on the item's {@link Object#hashCode()}: the hashcode is multiplied by a
+    /** Returns an index >= 0 and <= [.mask] for the specified `item`.
+     *
+     *
+     * The default implementation uses Fibonacci hashing on the item's [Object.hashCode]: the hashcode is multiplied by a
      * long constant (2 to the 64th, divided by the golden ratio) then the uppermost bits are shifted into the lowest positions to
      * obtain an index in the desired range. Multiplication by a long may be slower than int (eg on GWT) but greatly improves
      * rehashing, allowing even very poor hashcodes, such as those that only differ in their upper bits, to be used without high
      * collision rates. Fibonacci hashing has increased collision rates when all or most hashcodes are multiples of larger
-     * Fibonacci numbers (see <a href=
-     * "https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/">Malte
-     * Skarupke's blog post</a>).
-     * <p>
+     * Fibonacci numbers (see [Malte
+ * Skarupke's blog post](https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/)).
+     *
+     *
      * This method can be overriden to customizing hashing. This may be useful eg in the unlikely event that most hashcodes are
      * Fibonacci numbers, if keys provide poor or incorrect hashcodes, or to simplify hashing if keys provide high quality
-     * hashcodes and don't need Fibonacci hashing: {@code return item.hashCode() & mask;} */
-    protected int place (int item) {
-        return (int)(item * 0x9E3779B97F4A7C15L >>> shift);
+     * hashcodes and don't need Fibonacci hashing: `return item.hashCode() & mask;`  */
+    protected fun place(item: Int): Int {
+        return (item * -0x61c8864680b583ebL).ushr(shift).toInt()
     }
 
     /** Returns the index of the key if already present, else -(index + 1) for the next empty index. This can be overridden in this
-     * pacakge to compare for equality differently than {@link Object#equals(Object)}. */
-    private int locateKey (int key) {
-        int[] keyTable = this.keyTable;
-        for (int i = place(key);; i = i + 1 & mask) {
-            int other = keyTable[i];
-            if (other == 0) return -(i + 1); // Empty space is available.
-            if (other == key) return i; // Same key was found.
+     * pacakge to compare for equality differently than [Object.equals].  */
+    private fun locateKey(key: Int): Int {
+        val keyTable = this.keyTable
+        var i = place(key)
+        while (true) {
+            val other = keyTable[i]
+            if (other == 0) return -(i + 1) // Empty space is available.
+            if (other == key) return i // Same key was found.
+            i = i + 1 and mask
         }
     }
 
-    /** Returns true if the key was not already in the set. */
-    public boolean add (int key) {
+    /** Returns true if the key was not already in the set.  */
+    fun add(key: Int): Boolean {
         if (key == 0) {
-            if (hasZeroValue) return false;
-            hasZeroValue = true;
-            size++;
-            return true;
+            if (hasZeroValue) return false
+            hasZeroValue = true
+            size++
+            return true
         }
-        int i = locateKey(key);
-        if (i >= 0) return false; // Existing key was found.
-        i = -(i + 1); // Empty space was found.
-        keyTable[i] = key;
-        if (++size >= threshold) resize(keyTable.length << 1);
-        return true;
+        var i = locateKey(key)
+        if (i >= 0) return false // Existing key was found.
+        i = -(i + 1) // Empty space was found.
+        keyTable[i] = key
+        if (++size >= threshold) resize(keyTable.size shl 1)
+        return true
     }
 
-    public void addAll (JIntArray array) {
-        addAll(array.items, 0, array.size);
+    fun addAll(array: JIntArray) {
+        addAll(array.items, 0, array.size)
     }
 
-    public void addAll (JIntArray array, int offset, int length) {
-        if (offset + length > array.size)
-            throw new IllegalArgumentException("offset + length must be <= size: " + offset + " + " + length + " <= " + array.size);
-        addAll(array.items, offset, length);
+    fun addAll(array: JIntArray, offset: Int, length: Int) {
+        require(offset + length <= array.size) { "offset + length must be <= size: " + offset + " + " + length + " <= " + array.size }
+        addAll(array.items, offset, length)
     }
 
-    public void addAll (int... array) {
-        addAll(array, 0, array.length);
+    fun addAll(vararg array: Int) {
+        addAll(array, 0, array.size)
     }
 
-    public void addAll (int[] array, int offset, int length) {
-        ensureCapacity(length);
-        for (int i = offset, n = i + length; i < n; i++)
-            add(array[i]);
-    }
-
-    public void addAll (JIntSet set) {
-        ensureCapacity(set.size);
-        if (set.hasZeroValue) add(0);
-        int[] keyTable = set.keyTable;
-        for (int i = 0, n = keyTable.length; i < n; i++) {
-            int key = keyTable[i];
-            if (key != 0) add(key);
+    fun addAll(array: IntArray, offset: Int, length: Int) {
+        ensureCapacity(length)
+        var i = offset
+        val n = i + length
+        while (i < n) {
+            add(array[i])
+            i++
         }
     }
 
-    /** Skips checks for existing keys, doesn't increment size, doesn't need to handle key 0. */
-    private void addResize (int key) {
-        int[] keyTable = this.keyTable;
-        for (int i = place(key);; i = (i + 1) & mask) {
+    fun addAll(set: JIntSet) {
+        ensureCapacity(set.size)
+        if (set.hasZeroValue) add(0)
+        val keyTable = set.keyTable
+        var i = 0
+        val n = keyTable.size
+        while (i < n) {
+            val key = keyTable[i]
+            if (key != 0) add(key)
+            i++
+        }
+    }
+
+    /** Skips checks for existing keys, doesn't increment size, doesn't need to handle key 0.  */
+    private fun addResize(key: Int) {
+        val keyTable = this.keyTable
+        var i = place(key)
+        while (true) {
             if (keyTable[i] == 0) {
-                keyTable[i] = key;
-                return;
+                keyTable[i] = key
+                return
             }
+            i = i + 1 and mask
         }
     }
 
-    /** Returns true if the key was removed. */
-    public boolean remove (int key) {
+    /** Returns true if the key was removed.  */
+    fun remove(key: Int): Boolean {
+        var key = key
         if (key == 0) {
-            if (!hasZeroValue) return false;
-            hasZeroValue = false;
-            size--;
-            return true;
+            if (!hasZeroValue) return false
+            hasZeroValue = false
+            size--
+            return true
         }
 
-        int i = locateKey(key);
-        if (i < 0) return false;
-        int[] keyTable = this.keyTable;
-        int mask = this.mask, next = i + 1 & mask;
-        while ((key = keyTable[next]) != 0) {
-            int placement = place(key);
-            if ((next - placement & mask) > (i - placement & mask)) {
-                keyTable[i] = key;
-                i = next;
+        var i = locateKey(key)
+        if (i < 0) return false
+        val keyTable = this.keyTable
+        val mask = this.mask
+        var next = i + 1 and mask
+        while ((keyTable[next].also { key = it }) != 0) {
+            val placement = place(key)
+            if (next - placement and mask > i - placement and mask) {
+                keyTable[i] = key
+                i = next
             }
-            next = next + 1 & mask;
+            next = next + 1 and mask
         }
-        keyTable[i] = 0;
-        size--;
-        return true;
+        keyTable[i] = 0
+        size--
+        return true
     }
 
-    /** Returns true if the set has one or more items. */
-    public boolean notEmpty () {
-        return size > 0;
-    }
-
-    /** Returns true if the set is empty. */
-    public boolean isEmpty () {
-        return size == 0;
+    /** Returns true if the set has one or more items.  */
+    fun notEmpty(): Boolean {
+        return size > 0
     }
 
     /** Reduces the size of the backing arrays to be the specified capacity / loadFactor, or less. If the capacity is already less,
      * nothing is done. If the set contains more items than the specified capacity, the next highest power of two capacity is used
-     * instead. */
-    public void shrink (int maximumCapacity) {
-        if (maximumCapacity < 0) throw new IllegalArgumentException("maximumCapacity must be >= 0: " + maximumCapacity);
-        int tableSize = tableSize(maximumCapacity, loadFactor);
-        if (keyTable.length > tableSize) resize(tableSize);
+     * instead.  */
+    fun shrink(maximumCapacity: Int) {
+        require(maximumCapacity >= 0) { "maximumCapacity must be >= 0: $maximumCapacity" }
+        val tableSize = tableSize(maximumCapacity, loadFactor)
+        if (keyTable.size > tableSize) resize(tableSize)
     }
 
-    /** Clears the set and reduces the size of the backing arrays to be the specified capacity / loadFactor, if they are larger. */
-    public void clear (int maximumCapacity) {
-        int tableSize = tableSize(maximumCapacity, loadFactor);
-        if (keyTable.length <= tableSize) {
-            clear();
-            return;
+    /** Clears the set and reduces the size of the backing arrays to be the specified capacity / loadFactor, if they are larger.  */
+    fun clear(maximumCapacity: Int) {
+        val tableSize = tableSize(maximumCapacity, loadFactor)
+        if (keyTable.size <= tableSize) {
+            clear()
+            return
         }
-        size = 0;
-        hasZeroValue = false;
-        resize(tableSize);
+        size = 0
+        hasZeroValue = false
+        resize(tableSize)
     }
 
-    public void clear () {
-        if (size == 0) return;
-        size = 0;
-        Arrays.fill(keyTable, 0);
-        hasZeroValue = false;
+    fun clear() {
+        if (size == 0) return
+        size = 0
+        Arrays.fill(keyTable, 0)
+        hasZeroValue = false
     }
 
-    public boolean contains (int key) {
-        if (key == 0) return hasZeroValue;
-        return locateKey(key) >= 0;
+    operator fun contains(key: Int): Boolean {
+        return if (key == 0) hasZeroValue else locateKey(key) >= 0
     }
 
-    public int first () {
-        if (hasZeroValue) return 0;
-        int[] keyTable = this.keyTable;
-        for (int i = 0, n = keyTable.length; i < n; i++)
-            if (keyTable[i] != 0) return keyTable[i];
-        throw new IllegalStateException("IntSet is empty.");
+    fun first(): Int {
+        if (hasZeroValue) return 0
+        val keyTable = this.keyTable
+        var i = 0
+        val n = keyTable.size
+        while (i < n) {
+            if (keyTable[i] != 0) return keyTable[i]
+            i++
+        }
+        throw IllegalStateException("IntSet is empty.")
     }
 
     /** Increases the size of the backing array to accommodate the specified number of additional items / loadFactor. Useful before
-     * adding many items to avoid multiple backing array resizes. */
-    public void ensureCapacity (int additionalCapacity) {
-        int tableSize = tableSize(size + additionalCapacity, loadFactor);
-        if (keyTable.length < tableSize) resize(tableSize);
+     * adding many items to avoid multiple backing array resizes.  */
+    fun ensureCapacity(additionalCapacity: Int) {
+        val tableSize = tableSize(size + additionalCapacity, loadFactor)
+        if (keyTable.size < tableSize) resize(tableSize)
     }
 
-    private void resize (int newSize) {
-        int oldCapacity = keyTable.length;
-        threshold = (int)(newSize * loadFactor);
-        mask = newSize - 1;
-        shift = Long.numberOfLeadingZeros(mask);
+    private fun resize(newSize: Int) {
+        val oldCapacity = keyTable.size
+        threshold = (newSize * loadFactor).toInt()
+        mask = newSize - 1
+        shift = java.lang.Long.numberOfLeadingZeros(mask.toLong())
 
-        int[] oldKeyTable = keyTable;
+        val oldKeyTable = keyTable
 
-        keyTable = new int[newSize];
+        keyTable = IntArray(newSize)
 
         if (size > 0) {
-            for (int i = 0; i < oldCapacity; i++) {
-                int key = oldKeyTable[i];
-                if (key != 0) addResize(key);
+            for (i in 0 until oldCapacity) {
+                val key = oldKeyTable[i]
+                if (key != 0) addResize(key)
             }
         }
     }
 
-    public int hashCode () {
-        int h = size;
-        int[] keyTable = this.keyTable;
-        for (int i = 0, n = keyTable.length; i < n; i++) {
-            int key = keyTable[i];
-            if (key != 0) h += key;
+    override fun hashCode(): Int {
+        var h = size
+        val keyTable = this.keyTable
+        var i = 0
+        val n = keyTable.size
+        while (i < n) {
+            val key = keyTable[i]
+            if (key != 0) h += key
+            i++
         }
-        return h;
+        return h
     }
 
-    public boolean equals (Object obj) {
-        if (!(obj instanceof JIntSet)) return false;
-        JIntSet other = (JIntSet)obj;
-        if (other.size != size) return false;
-        if (other.hasZeroValue != hasZeroValue) return false;
-        int[] keyTable = this.keyTable;
-        for (int i = 0, n = keyTable.length; i < n; i++)
-            if (keyTable[i] != 0 && !other.contains(keyTable[i])) return false;
-        return true;
+    override fun equals(obj: Any?): Boolean {
+        if (obj !is JIntSet) return false
+        val other = obj as JIntSet?
+        if (other!!.size != size) return false
+        if (other.hasZeroValue != hasZeroValue) return false
+        val keyTable = this.keyTable
+        var i = 0
+        val n = keyTable.size
+        while (i < n) {
+            if (keyTable[i] != 0 && !other.contains(keyTable[i])) return false
+            i++
+        }
+        return true
     }
 
-    public String toString () {
-        if (size == 0) return "[]";
-        java.lang.StringBuilder buffer = new java.lang.StringBuilder(32);
-        buffer.append('[');
-        int[] keyTable = this.keyTable;
-        int i = keyTable.length;
+    override fun toString(): String {
+        if (size == 0) return "[]"
+        val buffer = java.lang.StringBuilder(32)
+        buffer.append('[')
+        val keyTable = this.keyTable
+        var i = keyTable.size
         if (hasZeroValue)
-            buffer.append("0");
+            buffer.append("0")
         else {
             while (i-- > 0) {
-                int key = keyTable[i];
-                if (key == 0) continue;
-                buffer.append(key);
-                break;
+                val key = keyTable[i]
+                if (key == 0) continue
+                buffer.append(key)
+                break
             }
         }
         while (i-- > 0) {
-            int key = keyTable[i];
-            if (key == 0) continue;
-            buffer.append(", ");
-            buffer.append(key);
+            val key = keyTable[i]
+            if (key == 0) continue
+            buffer.append(", ")
+            buffer.append(key)
         }
-        buffer.append(']');
-        return buffer.toString();
+        buffer.append(']')
+        return buffer.toString()
     }
 
     /** Returns an iterator for the keys in the set. Remove is supported.
-     * <p>
-     * If {@link Collections#allocateIterators} is false, the same iterator instance is returned each time this method is called.
-     * Use the {@link IntSetIterator} constructor for nested or multithreaded iteration. */
-    public IntSetIterator iterator () {
-        if (Collections.allocateIterators) return new IntSetIterator(this);
+     *
+     *
+     * If [Collections.allocateIterators] is false, the same iterator instance is returned each time this method is called.
+     * Use the [IntSetIterator] constructor for nested or multithreaded iteration.  */
+    operator fun iterator(): IntSetIterator {
+        if (Collections.allocateIterators) return IntSetIterator(this)
         if (iterator1 == null) {
-            iterator1 = new IntSetIterator(this);
-            iterator2 = new IntSetIterator(this);
+            iterator1 = IntSetIterator(this)
+            iterator2 = IntSetIterator(this)
         }
-        if (!iterator1.valid) {
-            iterator1.reset();
-            iterator1.valid = true;
-            iterator2.valid = false;
-            return iterator1;
+        if (!iterator1!!.valid) {
+            iterator1!!.reset()
+            iterator1!!.valid = true
+            iterator2!!.valid = false
+            return iterator1!!
         }
-        iterator2.reset();
-        iterator2.valid = true;
-        iterator1.valid = false;
-        return iterator2;
+        iterator2!!.reset()
+        iterator2!!.valid = true
+        iterator1!!.valid = false
+        return iterator2!!
     }
 
-    static public JIntSet with (int... array) {
-        JIntSet set = new JIntSet();
-        set.addAll(array);
-        return set;
-    }
+    class IntSetIterator(internal val set: JIntSet) {
 
-    static public class IntSetIterator {
-        static private final int INDEX_ILLEGAL = -2, INDEX_ZERO = -1;
+        var hasNext: Boolean = false
+        internal var nextIndex: Int = 0
+        internal var currentIndex: Int = 0
+        internal var valid = true
 
-        public boolean hasNext;
-
-        final JIntSet set;
-        int nextIndex, currentIndex;
-        boolean valid = true;
-
-        public IntSetIterator (JIntSet set) {
-            this.set = set;
-            reset();
+        init {
+            reset()
         }
 
-        public void reset () {
-            currentIndex = INDEX_ILLEGAL;
-            nextIndex = INDEX_ZERO;
+        fun reset() {
+            currentIndex = INDEX_ILLEGAL
+            nextIndex = INDEX_ZERO
             if (set.hasZeroValue)
-                hasNext = true;
+                hasNext = true
             else
-                findNextIndex();
+                findNextIndex()
         }
 
-        void findNextIndex () {
-            int[] keyTable = set.keyTable;
-            for (int n = keyTable.length; ++nextIndex < n;) {
+        internal fun findNextIndex() {
+            val keyTable = set.keyTable
+            val n = keyTable.size
+            while (++nextIndex < n) {
                 if (keyTable[nextIndex] != 0) {
-                    hasNext = true;
-                    return;
+                    hasNext = true
+                    return
                 }
             }
-            hasNext = false;
+            hasNext = false
         }
 
-        public void remove () {
-            int i = currentIndex;
+        fun remove() {
+            var i = currentIndex
             if (i == INDEX_ZERO && set.hasZeroValue) {
-                set.hasZeroValue = false;
-            } else if (i < 0) {
-                throw new IllegalStateException("next must be called before remove.");
-            } else {
-                int[] keyTable = set.keyTable;
-                int mask = set.mask, next = i + 1 & mask, key;
-                while ((key = keyTable[next]) != 0) {
-                    int placement = set.place(key);
-                    if ((next - placement & mask) > (i - placement & mask)) {
-                        keyTable[i] = key;
-                        i = next;
+                set.hasZeroValue = false
+            } else check(i >= 0) { "next must be called before remove." }
+                val keyTable = set.keyTable
+                val mask = set.mask
+                var next = i + 1 and mask
+                var key: Int
+                while ((keyTable[next].also { key = it }) != 0) {
+                    val placement = set.place(key)
+                    if (next - placement and mask > i - placement and mask) {
+                        keyTable[i] = key
+                        i = next
                     }
-                    next = next + 1 & mask;
+                    next = next + 1 and mask
                 }
-                keyTable[i] = 0;
-                if (i != currentIndex) --nextIndex;
-            }
-            currentIndex = INDEX_ILLEGAL;
-            set.size--;
+                keyTable[i] = 0
+                if (i != currentIndex) --nextIndex
+            currentIndex = INDEX_ILLEGAL
+            set.size--
         }
 
-        public int next () {
-            if (!hasNext) throw new NoSuchElementException();
-            if (!valid) throw new GdxRuntimeException("#iterator() cannot be used nested.");
-            int key = nextIndex == INDEX_ZERO ? 0 : set.keyTable[nextIndex];
-            currentIndex = nextIndex;
-            findNextIndex();
-            return key;
+        operator fun next(): Int {
+            if (!hasNext) throw NoSuchElementException()
+            if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
+            val key = if (nextIndex == INDEX_ZERO) 0 else set.keyTable[nextIndex]
+            currentIndex = nextIndex
+            findNextIndex()
+            return key
         }
 
-        /** Returns a new array containing the remaining keys. */
-        public JIntArray toArray () {
-            JIntArray array = new JIntArray(true, set.size);
+        /** Returns a new array containing the remaining keys.  */
+        fun toArray(): JIntArray {
+            val array = JIntArray(true, set.size)
             while (hasNext)
-                array.add(next());
-            return array;
+                array.add(next())
+            return array
+        }
+
+        companion object {
+            private val INDEX_ILLEGAL = -2
+            private val INDEX_ZERO = -1
+        }
+    }
+
+    companion object {
+
+        fun with(vararg array: Int): JIntSet {
+            val set = JIntSet()
+            set.addAll(*array)
+            return set
         }
     }
 }
+/** Creates a new set with an initial capacity of 51 and a load factor of 0.8.  */
+/** Creates a new set with a load factor of 0.8.
+ * @param initialCapacity If not a power of two, it is increased to the next nearest power of two.
+ */
