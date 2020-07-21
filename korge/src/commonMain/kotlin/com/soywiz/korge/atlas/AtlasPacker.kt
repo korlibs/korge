@@ -59,8 +59,8 @@ object AtlasPacker {
                     val r = it.rectWithBorder
                     val rect = Rectangle(r.x.toInt() + 2, r.y.toInt() + 2, bmp.width, bmp.height).toInt()
                     val filename = it.originalSlice.name
-                    AtlasInfo.Entry(
-                        filename = filename,
+                    AtlasInfo.Region(
+                        name = filename,
                         frame = AtlasInfo.Rect(rect.x, rect.y, rect.width, rect.height),
                         rotated = false,
                         sourceSize = AtlasInfo.Size(rect.width, rect.height),

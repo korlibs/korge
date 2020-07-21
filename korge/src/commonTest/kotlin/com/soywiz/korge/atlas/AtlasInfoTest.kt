@@ -19,7 +19,7 @@ class AtlasInfoTest {
         assertEquals(Size(1021, 1003), atlas.size.size)
 
         val firstFrame = atlas.frames.first()
-        assertEquals("arms/forearm_jump_0.png", atlas.frames.map { it.filename }.first())
+        assertEquals("arms/forearm_jump_0.png", atlas.frames.map { it.name }.first())
         assertEquals(Rectangle(993, 319, 28, 41), firstFrame.frame.rect)
         assertEquals(Size(55, 47), firstFrame.sourceSize.size)
         assertEquals(Rectangle(7, 8, 28, 41), firstFrame.spriteSourceSize.rect)

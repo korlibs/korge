@@ -12,7 +12,7 @@ class SampleTest {
     @Test
     //@Ignore
     fun test() = suspendTest({ !OS.isJs }) {
-        //resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
+        val atlas2 = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
         val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].toFileHandle())
         val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
         json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.

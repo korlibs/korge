@@ -8,14 +8,27 @@ import com.soywiz.korma.geom.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AtlasInfo.Factory::class)
+// @TODO: Move to KorIM
 data class AtlasInfo(
-	val frames: List<Entry>,
-	val meta: Meta
+    val meta: Meta,
+	val pages: List<Page>
 ) {
-    val framesMap = frames.associateBy { it.filename }
+    val frames = pages.flatMap { it.regions }
+    val framesMap = frames.associateBy { it.name }
+
+    constructor(
+        frames: List<Region>,
+        meta: Meta,
+    ) : this(meta, listOf(Page(
+        meta.image,
+        meta.size,
+        meta.format,
+        true, true,
+        false, false, frames
+    )))
 
 	data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
-		val rect get() = Rectangle(x, y, w, h)
+        val rect get() = Rectangle(x, y, w, h)
 	}
 
 	data class Size(val w: Int, val h: Int) {
@@ -35,14 +48,30 @@ data class AtlasInfo(
 		}
 	}
 
-	data class Entry(
-        val filename: String,
-		val frame: Rect,
-		val rotated: Boolean,
-		val sourceSize: Size,
-		val spriteSourceSize: Rect,
-		val trimmed: Boolean
+    data class Page(
+        val fileName: String,
+        var size: Size,
+        var format: String,
+        var filterMin: Boolean,
+        var filterMag: Boolean,
+        var repeatX: Boolean,
+        var repeatY: Boolean,
+        val regions: List<Region>
+    )
+
+	data class Region(
+        val name: String,
+        val frame: Rect,
+        val rotated: Boolean,
+        val sourceSize: Size,
+        val spriteSourceSize: Rect,
+        val trimmed: Boolean,
+        val orig: Point = Point(),
+        val offset: Point = Point(),
 	) {
+        // @TODO: Renemae to path or name
+        val filename get() = name
+
 		fun applyRotation() = if (rotated) {
 			this.copy(
 				frame = frame.copy(w = frame.h, h = frame.w),
@@ -68,8 +97,8 @@ data class AtlasInfo(
 	companion object {
 		private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
 		private fun Any?.toSize() = KDynamic(this) { Size(it["w"].int, it["h"].int) }
-        private fun KDynamic.createEntry(name: String, it: Any?) = Entry(
-            filename = name,
+        private fun KDynamic.createEntry(name: String, it: Any?) = Region(
+            name = name,
             frame = it["frame"].toRect(),
             rotated = it["rotated"].bool,
             sourceSize = it["sourceSize"].toSize(),
@@ -101,7 +130,7 @@ data class AtlasInfo(
 					}
 				)
 			}
-			return info.copy(frames = info.frames.map { it.applyRotation() })
+			return info.copy(pages = info.pages.map { it.copy(regions = it.regions.map { it.apply {  } }) })
 		}
 
         fun loadXml(content: String): AtlasInfo {
@@ -110,8 +139,8 @@ data class AtlasInfo(
 
             return AtlasInfo( (xml.children("SubTexture") + xml.children("sprite")).map {
                 val rect = Rect(it.int("x"), it.int("y"), it.intNull("width") ?: it.int("w"), it.intNull("height") ?: it.int("h"))
-                Entry(
-                    filename = it.strNull("name") ?: it.str("n"),
+                Region(
+                    name = it.strNull("name") ?: it.str("n"),
                     frame = rect,
                     rotated = false,
                     sourceSize = Size(rect.w, rect.h),
@@ -132,10 +161,11 @@ data class AtlasInfo(
             val r = ListReader(content.lines())
             var pageImage: Any? = null
 
-            fun String.intPair(): Point {
+            fun String.point(): Point {
                 val list = this.split(',', limit = 2)
                 return Point(list.first().trim().toInt(), list.last().trim().toInt())
             }
+            fun String.size(): Size = point().let { Size(it.x.toInt(), it.y.toInt()) }
 
             fun String.keyValue(): Pair<String, String> {
                 val list = this.split(':', limit = 2)
@@ -155,13 +185,16 @@ data class AtlasInfo(
                 }
             }
 
+            var currentEntryList = arrayListOf<Region>()
+            val pages = arrayListOf<Page>()
+
             while (r.hasMore) {
                 val line = r.read().trim()
                 if (line.isEmpty()) {
                     if (r.eof) break
 
                     val fileName = r.read().trim()
-                    var size = Point(0, 0)
+                    var size = Size(0, 0)
                     var format = "rgba8888"
                     var filterMin = false
                     var filterMag = false
@@ -170,7 +203,7 @@ data class AtlasInfo(
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
                         when (key) {
-                            "size" -> size = value.intPair()
+                            "size" -> size = value.size()
                             "format" -> format = value
                             "filter" -> {
                                 val filter = value.split(",").map { it.trim().toLowerCase() }
@@ -183,26 +216,31 @@ data class AtlasInfo(
                             }
                         }
                     }
+                    currentEntryList = arrayListOf<Region>()
+                    pages.add(Page(fileName, size, format, filterMin, filterMag, repeatX, repeatY, currentEntryList))
                 } else {
                     val name = line
                     var rotate = false
                     var xy = Point()
-                    var size = Point()
+                    var size = AtlasInfo.Size(0, 0)
                     var orig = Point()
                     var offset = Point()
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
                         when (key) {
                             "rotate" -> rotate = value.toBoolean()
-                            "xy" -> xy = value.intPair()
-                            "size" -> size = value.intPair()
-                            "orig" -> orig = value.intPair()
-                            "offset" -> offset = value.intPair()
+                            "xy" -> xy = value.point()
+                            "size" -> size = value.size()
+                            "orig" -> orig = value.point()
+                            "offset" -> offset = value.point()
                         }
                     }
+                    val rect = Rect(xy.x.toInt(), xy.y.toInt(), size.w, size.h)
+                    currentEntryList.add(Region(name, rect, rotate, size, rect, false, orig, offset))
                 }
             }
-            TODO()
+            val firstPage = pages.first()
+            return AtlasInfo(Meta("unknown", firstPage.format, firstPage.fileName, 1.0, firstPage.size, "1.0"), pages)
         }
     }
 }

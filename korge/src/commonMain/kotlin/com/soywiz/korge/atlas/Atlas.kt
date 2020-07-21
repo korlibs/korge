@@ -1,19 +1,31 @@
 package com.soywiz.korge.atlas
 
-import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 
-class Atlas(val info: AtlasInfo, val texture: BitmapSlice<Bitmap>) {
-    inner class Entry(val info: AtlasInfo.Entry) {
+// @TODO: Move to KorIM
+class Atlas(val info: AtlasInfo, val textures: Map<String, BitmapSlice<Bitmap>>) {
+    constructor(info: AtlasInfo, texture: BitmapSlice<Bitmap>) : this(info, mapOf(info.pages.first().fileName to texture))
+
+    val texture get() = textures.values.first()
+
+    inner class Entry(val info: AtlasInfo.Region, val page: AtlasInfo.Page) {
+        val texture = textures[page.fileName]
+            ?: error("Can't find '${page.fileName}' in ${textures.keys}")
         val slice = texture.slice(info.frame.rect).let {
-            BitmapSlice(it.bmp, it.bounds, info.filename, info.rotated)
+            BitmapSlice(it.bmp, it.bounds, info.name, info.rotated)
         }
-        val filename get() = info.filename
+        val name get() = info.name
+        // @TODO: Use name instead
+        val filename get() = info.name
     }
 
-	val entries = info.frames.map { Entry(it) }
+	val entries = info.pages.flatMap { page ->
+        page.regions.map { frame ->
+            Entry(frame, page)
+        }
+    }
     val entriesMap = entries.associateBy { it.filename }
 
     fun tryGetEntryByName(name: String): Entry? = entriesMap[name]
@@ -21,8 +33,6 @@ class Atlas(val info: AtlasInfo, val texture: BitmapSlice<Bitmap>) {
 	operator fun get(name: String): BmpSlice = tryGet(name) ?: error("Can't find '$name' it atlas")
 }
 
-@Deprecated("")
-suspend fun VfsFile.readAtlas(views: Views): Atlas = readAtlas()
 suspend fun VfsFile.readAtlas(): Atlas {
     val content = this.readString()
     val info = when {
@@ -32,6 +42,6 @@ suspend fun VfsFile.readAtlas(): Atlas {
         else -> error("Unexpected atlas starting with '${content.firstOrNull()}'")
     }
     val folder = this.parent
-    val atlasTex = folder[info.image].readBitmapSlice()
-    return Atlas(info, atlasTex)
+    val textures = info.pages.associate { it.fileName to folder[it.fileName].readBitmapSlice() }
+    return Atlas(info, textures)
 }
