@@ -1,5 +1,6 @@
 package com.soywiz.korge.atlas
 
+import com.soywiz.korim.atlas.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*

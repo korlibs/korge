@@ -1,13 +1,11 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.atlas.AtlasPacker
+import com.soywiz.korim.atlas.AtlasPacker
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.binpack.*
 import kotlin.collections.set
 
 data class BitmapWithScale(val bitmap: Bitmap, val scale: Double, val bounds: Rectangle) : Extra by Extra.Mixin() {

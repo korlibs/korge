@@ -1,4 +1,4 @@
-package com.soywiz.korge.atlas
+package com.soywiz.korim.atlas
 
 import com.soywiz.kds.*
 import com.soywiz.korio.dynamic.*
@@ -11,7 +11,7 @@ import com.soywiz.korma.geom.*
 // @TODO: Move to KorIM
 data class AtlasInfo(
     val meta: Meta,
-	val pages: List<Page>
+    val pages: List<Page>
 ) {
     val frames = pages.flatMap { it.regions }
     val framesMap = frames.associateBy { it.name }
@@ -36,12 +36,12 @@ data class AtlasInfo(
 	}
 
 	data class Meta(
-		val app: String,
-		val format: String,
-		val image: String,
-		val scale: Double,
-		val size: Size,
-		val version: String
+        val app: String,
+        val format: String,
+        val image: String,
+        val scale: Double,
+        val size: Size,
+        val version: String
 	) {
 		companion object {
 			val VERSION = "1.0.0"
@@ -222,7 +222,7 @@ data class AtlasInfo(
                     val name = line
                     var rotate = false
                     var xy = Point()
-                    var size = AtlasInfo.Size(0, 0)
+                    var size = Size(0, 0)
                     var orig = Point()
                     var offset = Point()
                     while (r.hasMore && r.peek().contains(':')) {

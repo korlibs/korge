@@ -1,4 +1,4 @@
-package com.soywiz.korge.atlas
+package com.soywiz.korim.atlas
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*

@@ -1,23 +1,16 @@
 package com.soywiz.korge.atlas
 
-import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.korge.resources.ResourceProcessor
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.encode
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.stringifyTyped
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.binpack.BinPacker
-import kotlinx.coroutines.channels.toList
 
 open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	companion object : AtlasResourceProcessor()

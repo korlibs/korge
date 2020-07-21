@@ -2,7 +2,7 @@ package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.assets.*
 import com.esotericsoftware.spine.graphics.*
-import com.soywiz.korge.atlas.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*

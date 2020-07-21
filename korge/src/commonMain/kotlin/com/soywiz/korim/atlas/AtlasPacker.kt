@@ -1,14 +1,12 @@
-package com.soywiz.korge.atlas
+package com.soywiz.korim.atlas
 
 import com.soywiz.kmem.nextPowerOfTwo
-import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
 import kotlin.jvm.JvmName
 
-@KorgeExperimental
 // @TODO: Move to KorIM
 object AtlasPacker {
     data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BitmapSlice<Bitmap32>, val rectWithBorder: Rectangle, val rect: Rectangle)

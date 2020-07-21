@@ -2,7 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.kmem.umod
-import com.soywiz.korge.atlas.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
