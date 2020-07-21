@@ -4,7 +4,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 
-// @TODO: Move to KorIM
 class Atlas(val info: AtlasInfo, val textures: Map<String, BitmapSlice<Bitmap>>) {
     constructor(info: AtlasInfo, texture: BitmapSlice<Bitmap>) : this(info, mapOf(info.pages.first().fileName to texture))
 

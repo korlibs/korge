@@ -7,7 +7,6 @@ import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
 import kotlin.jvm.JvmName
 
-// @TODO: Move to KorIM
 object AtlasPacker {
     data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BitmapSlice<Bitmap32>, val rectWithBorder: Rectangle, val rect: Rectangle)
 

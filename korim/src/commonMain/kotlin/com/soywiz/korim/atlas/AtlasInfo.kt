@@ -8,7 +8,6 @@ import com.soywiz.korma.geom.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AtlasInfo.Factory::class)
-// @TODO: Move to KorIM
 data class AtlasInfo(
     val meta: Meta,
     val pages: List<Page>
