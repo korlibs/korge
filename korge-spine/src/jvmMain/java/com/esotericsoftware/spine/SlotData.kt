@@ -55,7 +55,7 @@ class SlotData(
     /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible.  */
     /** @param attachmentName May be null.
      */
-    lateinit var attachmentName: String
+    var attachmentName: String? = null
     lateinit internal var blendMode: BlendMode
 
     /** The blend mode for drawing the slot's attachment.  */

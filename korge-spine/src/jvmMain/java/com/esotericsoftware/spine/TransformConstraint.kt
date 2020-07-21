@@ -29,6 +29,12 @@
 
 package com.esotericsoftware.spine
 
+import com.badlogic.gdx.math.MathUtils.PI
+import com.badlogic.gdx.math.MathUtils.PI2
+import com.badlogic.gdx.math.MathUtils.atan2
+import com.badlogic.gdx.math.MathUtils.cos
+import com.badlogic.gdx.math.MathUtils.degRad
+import com.badlogic.gdx.math.MathUtils.sin
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.JArray
 

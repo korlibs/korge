@@ -38,7 +38,7 @@ import com.badlogic.gdx.utils.JArray
 class TransformConstraintData(name: String) : ConstraintData(name) {
     /** The bones that will be modified by this transform constraint.  */
     val bones: JArray<BoneData> = JArray()
-    internal var target: BoneData
+    internal lateinit var target: BoneData
 
     /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
     var rotateMix: Float = 0.toFloat()

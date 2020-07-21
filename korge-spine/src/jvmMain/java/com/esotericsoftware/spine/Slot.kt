@@ -115,12 +115,12 @@ class Slot {
     /** Sets this slot to the setup pose.  */
     fun setToSetupPose() {
         color.set(data.color)
-        darkColor?.set(data.darkColor)
+        darkColor?.set(data.darkColor!!)
         if (data.attachmentName == null)
             setAttachment(null)
         else {
             attachment = null
-            setAttachment(bone.skeleton.getAttachment(data.index, data.attachmentName))
+            setAttachment(bone.skeleton.getAttachment(data.index, data.attachmentName!!))
         }
     }
 

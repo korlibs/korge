@@ -71,7 +71,7 @@ class Skin(
             if (!constraints.contains(data, true)) constraints.add(data)
 
         for (entry in skin.attachments.keys())
-            setAttachment(entry.slotIndex, entry.name, entry.attachment)
+            setAttachment(entry.slotIndex, entry.name, entry.attachment!!)
     }
 
     /** Adds all bones and constraints and copies of all attachments from the specified skin to this skin. Mesh attachments are not
@@ -87,7 +87,7 @@ class Skin(
             if (entry.attachment is MeshAttachment)
                 setAttachment(entry.slotIndex, entry.name, (entry.attachment as MeshAttachment).newLinkedMesh())
             else
-                setAttachment(entry.slotIndex, entry.name, if (entry.attachment != null) entry.attachment!!.copy() else null)
+                setAttachment(entry.slotIndex, entry.name, entry.attachment?.copy() ?: error("Cannot be null (verify)"))
         }
     }
 
@@ -147,7 +147,7 @@ class Skin(
             internal set
 
         /** The name the attachment is associated with, equivalent to the skin placeholder name in the Spine editor.  */
-        var name: String
+        lateinit var name: String
             internal set
         var attachment: Attachment? = null
             internal set
