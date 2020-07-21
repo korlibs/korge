@@ -181,7 +181,7 @@ class JArray<T> : Iterable<T> {
      * @param value May be null.
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
      */
-    fun contains(@Null value: T?, identity: Boolean): Boolean {
+    fun contains(value: T?, identity: Boolean): Boolean {
         val items = this.items
         var i = size - 1
         if (identity || value == null) {
@@ -229,7 +229,7 @@ class JArray<T> : Iterable<T> {
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
      * @return An index of first occurrence of value in array or -1 if no such value exists
      */
-    fun indexOf(@Null value: T?, identity: Boolean): Int {
+    fun indexOf(value: T?, identity: Boolean): Int {
         val items = this.items
         if (identity || value == null) {
             var i = 0
@@ -255,7 +255,7 @@ class JArray<T> : Iterable<T> {
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
      * @return An index of last occurrence of value in array or -1 if no such value exists
      */
-    fun lastIndexOf(@Null value: T?, identity: Boolean): Int {
+    fun lastIndexOf(value: T?, identity: Boolean): Int {
         val items = this.items
         if (identity || value == null) {
             for (i in size - 1 downTo 0)
@@ -272,7 +272,7 @@ class JArray<T> : Iterable<T> {
      * @param identity If true, == comparison will be used. If false, .equals() comparison will be used.
      * @return true if value was found and removed, false otherwise
      */
-    fun removeValue(@Null value: T?, identity: Boolean): Boolean {
+    fun removeValue(value: T?, identity: Boolean): Boolean {
         val items = this.items
         if (identity || value == null) {
             var i = 0
@@ -475,7 +475,6 @@ class JArray<T> : Iterable<T> {
     }
 
     /** Returns a random item from the array, or null if the array is empty.  */
-    @Null
     fun random(): T? {
         return if (size == 0) null else items[MathUtils.random(0, size - 1)]
     }

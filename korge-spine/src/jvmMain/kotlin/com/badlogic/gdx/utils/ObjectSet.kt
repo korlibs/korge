@@ -245,7 +245,6 @@ class ObjectSet<T>
         return locateKey(key) >= 0
     }
 
-    @Null
     operator fun get(key: T): T? {
         val i = locateKey(key)
         return if (i < 0) null else keyTable[i]

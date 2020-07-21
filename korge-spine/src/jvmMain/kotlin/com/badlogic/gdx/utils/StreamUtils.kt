@@ -72,7 +72,7 @@ object StreamUtils {
     @Throws(IOException::class)
     @JvmOverloads
     @JvmStatic
-    fun copyStreamToString(input: InputStream, estimatedSize: Int = input.available(), @Null charset: String? = null): String {
+    fun copyStreamToString(input: InputStream, estimatedSize: Int = input.available(), charset: String? = null): String {
         val reader = if (charset == null) InputStreamReader(input) else InputStreamReader(input, charset)
         val writer = StringWriter(Math.max(0, estimatedSize))
         val buffer = CharArray(DEFAULT_BUFFER_SIZE)

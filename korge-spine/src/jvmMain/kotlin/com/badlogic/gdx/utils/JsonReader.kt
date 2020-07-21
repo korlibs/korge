@@ -989,7 +989,7 @@ class JsonReader : BaseJsonReader {
 
     /** @param name May be null.
      */
-    private fun addChild(@Null name: String?, child: JsonValue) {
+    private fun addChild(name: String?, child: JsonValue) {
         child.name = name
         if (current == null) {
             current = child
@@ -1011,7 +1011,7 @@ class JsonReader : BaseJsonReader {
 
     /** @param name May be null.
      */
-    protected fun startObject(@Null name: String?) {
+    protected fun startObject(name: String?) {
         val value = JsonValue(ValueType.`object`)
         if (current != null) addChild(name, value)
         elements.add(value)
@@ -1020,7 +1020,7 @@ class JsonReader : BaseJsonReader {
 
     /** @param name May be null.
      */
-    protected fun startArray(@Null name: String?) {
+    protected fun startArray(name: String?) {
         val value = JsonValue(ValueType.array)
         if (current != null) addChild(name, value)
         elements.add(value)

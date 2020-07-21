@@ -134,8 +134,8 @@ open class ObjectMap<K, V>
     }
 
     /** Returns the old value associated with the specified key, or null.  */
-    @Null
-    open fun put(key: K, @Null value: V?): V? {
+    
+    open fun put(key: K,  value: V?): V? {
         var i = locateKey(key)
         if (i >= 0) { // Existing key was found.
             val oldValue = valueTable[i]
@@ -164,7 +164,7 @@ open class ObjectMap<K, V>
     }
 
     /** Skips checks for existing keys, doesn't increment size.  */
-    private fun putResize(key: K, @Null value: V?) {
+    private fun putResize(key: K,  value: V?) {
         val keyTable = this.keyTable
         var i = place(key)
         while (true) {
@@ -178,19 +178,19 @@ open class ObjectMap<K, V>
     }
 
     /** Returns the value for the specified key, or null if the key is not in the map.  */
-    @Null
+    
     operator fun <T : K> get(key: T): V? {
         val i = locateKey(key)
         return if (i < 0) null else valueTable[i]
     }
 
     /** Returns the value for the specified key, or the default value if the key is not in the map.  */
-    operator fun get(key: K, @Null defaultValue: V?): V? {
+    operator fun get(key: K,  defaultValue: V?): V? {
         val i = locateKey(key)
         return if (i < 0) defaultValue else valueTable[i]
     }
 
-    @Null
+    
     open fun remove(key: K): V? {
         var key = key
         var i = locateKey(key)
@@ -252,7 +252,7 @@ open class ObjectMap<K, V>
      * @param identity If true, uses == to compare the specified value with values in the map. If false, uses
      * [.equals].
      */
-    fun containsValue(@Null value: Any?, identity: Boolean): Boolean {
+    fun containsValue( value: Any?, identity: Boolean): Boolean {
         val valueTable = this.valueTable
         if (value == null) {
             val keyTable = this.keyTable
@@ -277,8 +277,8 @@ open class ObjectMap<K, V>
      * @param identity If true, uses == to compare the specified value with values in the map. If false, uses
      * [.equals].
      */
-    @Null
-    fun findKey(@Null value: Any?, identity: Boolean): K? {
+    
+    fun findKey( value: Any?, identity: Boolean): K? {
         val valueTable = this.valueTable
         if (value == null) {
             val keyTable = this.keyTable
@@ -364,7 +364,7 @@ open class ObjectMap<K, V>
     }
 
     /** Uses == for comparison of each value.  */
-    fun equalsIdentity(@Null obj: Any?): Boolean {
+    fun equalsIdentity( obj: Any?): Boolean {
         if (obj === this) return true
         if (obj !is ObjectMap<*, *>) return false
         if (obj.size != size) return false
@@ -491,7 +491,7 @@ open class ObjectMap<K, V>
 
     class Entry<K, V> {
         var key: K? = null
-        @Null
+        
         var value: V? = null
 
         override fun toString(): String {
@@ -584,7 +584,7 @@ open class ObjectMap<K, V>
             return hasNext
         }
 
-        @Null
+        
         override fun next(): V? {
             if (!hasNext) throw NoSuchElementException()
             if (!valid) throw GdxRuntimeException("#iterator() cannot be used nested.")
