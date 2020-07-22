@@ -35,6 +35,7 @@ suspend fun main() = Korge(width = 800, height = 800, bgcolor = Colors["#2b2b2b"
 
     // Add view
     container {
+        speed = 2.0
         position(400, 500)
         skeletonView(skeleton, state)
         solidRect(10.0, 10.0, Colors.RED).centered
