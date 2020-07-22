@@ -9,7 +9,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.file.std.*
 
 suspend fun main() = Korge(width = 800, height = 800, bgcolor = Colors["#2b2b2b"]) {
-    val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
+    val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas(asumePremultiplied = true)
     //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
     val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)
 
@@ -35,8 +35,10 @@ suspend fun main() = Korge(width = 800, height = 800, bgcolor = Colors["#2b2b2b"
 
     // Add view
     container {
-        speed = 2.0
-        position(400, 500)
+        //speed = 2.0
+        speed = 0.5
+        scale(2.0)
+        position(400, 800)
         skeletonView(skeleton, state)
         solidRect(10.0, 10.0, Colors.RED).centered
     }

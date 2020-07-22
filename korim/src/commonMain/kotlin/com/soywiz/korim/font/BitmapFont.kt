@@ -222,7 +222,7 @@ private suspend fun readBitmapFontTxt(
 			line.startsWith("page") -> {
 				val id = map["id"]?.toInt() ?: 0
 				val file = map["file"]?.unquote() ?: error("page without file")
-				textures[id] = fntFile.parent[file].readBitmapSlice(imageFormat)
+				textures[id] = fntFile.parent[file].readBitmapSlice()
 			}
 			line.startsWith("common ") -> {
 				lineHeight = map["lineHeight"]?.toDoubleOrNull() ?: 16.0
@@ -283,7 +283,7 @@ private suspend fun readBitmapFontXml(
 		val id = page.int("id")
 		val file = page.str("file")
 		val texFile = fntFile.parent[file]
-		val tex = texFile.readBitmapSlice(imageFormat)
+		val tex = texFile.readBitmapSlice()
 		textures[id] = tex
 	}
 

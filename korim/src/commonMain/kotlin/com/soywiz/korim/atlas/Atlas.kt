@@ -32,7 +32,7 @@ class Atlas(val info: AtlasInfo, val textures: Map<String, BitmapSlice<Bitmap>>)
 	operator fun get(name: String): BmpSlice = tryGet(name) ?: error("Can't find '$name' it atlas")
 }
 
-suspend fun VfsFile.readAtlas(): Atlas {
+suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
     val content = this.readString()
     val info = when {
         content.startsWith("{") -> AtlasInfo.loadJsonSpriter(content)
@@ -41,6 +41,10 @@ suspend fun VfsFile.readAtlas(): Atlas {
         else -> error("Unexpected atlas starting with '${content.firstOrNull()}'")
     }
     val folder = this.parent
-    val textures = info.pages.associate { it.fileName to folder[it.fileName].readBitmapSlice() }
+    val textures = info.pages.associate {
+        it.fileName to folder[it.fileName].readBitmapSlice(premultiplied = !asumePremultiplied).also {
+            if (asumePremultiplied) it.bmp.asumePremultiplied()
+        }
+    }
     return Atlas(info, textures)
 }

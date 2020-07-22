@@ -119,7 +119,7 @@ suspend fun VfsFile.readBitmap(
     else -> formats.decode(this.read(), props.copy(filename = this.baseName))
 }
 
-suspend fun VfsFile.readBitmapSlice(formats: ImageFormat = RegisteredImageFormats): BitmapSlice<Bitmap> = readBitmapOptimized().slice()
+suspend fun VfsFile.readBitmapSlice(premultiplied: Boolean = true): BitmapSlice<Bitmap> = readBitmapOptimized(premultiplied = premultiplied).slice()
 
 var nativeImageLoadingEnabled = true
 

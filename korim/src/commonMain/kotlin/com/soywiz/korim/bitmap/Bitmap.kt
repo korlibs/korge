@@ -216,3 +216,8 @@ fun <T : Bitmap> T.checkMatchDimensions(other: T): T {
 
 /** Enable or disable mipmap generation for this [Bitmap] (Not used directly by KorIM, but KorGE) */
 fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
+
+
+fun <T : Bitmap> T.asumePremultiplied(): T = this.apply {
+    this.premultiplied = true
+}
