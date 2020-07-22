@@ -40,10 +40,6 @@ class JsonValue {
     private var doubleValue: Double = 0.toDouble()
     var name: String? = null
     var children: List<JsonValue>? = null
-    @Deprecated("")
-    var child: JsonValue? = null
-    @Deprecated("")
-    var next: JsonValue? = null
     val size: Int get() = children?.size ?: 0
     val isString: Boolean get() = type == ValueType.stringValue
     val isNull: Boolean get() = type == ValueType.nullValue
@@ -51,6 +47,11 @@ class JsonValue {
 
     constructor(type: ValueType) {
         this.type = type
+    }
+
+    constructor(type: ValueType, children: List<JsonValue>) {
+        this.type = type
+        this.children = children
     }
 
     constructor(value: String) {
@@ -65,20 +66,11 @@ class JsonValue {
         set(value)
     }
 
-    operator fun get(index: Int): JsonValue? {
-        var index = index
-        var current = child
-        while (current != null && index > 0) {
-            index--
-            current = current.next
-        }
-        return current
-    }
+    operator fun get(index: Int): JsonValue? = children?.getOrNull(index)
 
     operator fun get(name: String): JsonValue? {
-        var current = child
-        while (current != null && (current.name == null || !current.name!!.equals(name, ignoreCase = true))) current = current.next
-        return current
+        fastForEach { if (it.name?.equals(name, ignoreCase = true) == true) return it }
+        return null
     }
 
     fun getSure(name: String): JsonValue = get(name) ?: throw IllegalArgumentException("Named value not found: $name")
@@ -134,9 +126,6 @@ class JsonValue {
         var i = 0
         fastForEach { array[i++] = it.asInt().toShort() }
     }
-
-    @Deprecated("")
-    fun getChild(name: String): JsonValue? = get(name)?.child
 
     private inline fun <T> getAny(name: String, defaultValue: T, convert: (value: JsonValue) -> T): T {
         val child = get(name)
@@ -200,42 +189,16 @@ class JsonValue {
     }
 
     companion object {
-        private fun List<JsonValue>.populateSiblingsReferences(parent: JsonValue): JsonValue {
-            parent.child = this.getOrNull(0)
-            //parent.size = this.size
-            for (n in 0 until size) {
-                val child = this[n]
-                child.next = this.getOrNull(n + 1)
-            }
-            parent.children = this
-            return parent
-        }
-
-        fun fromPrimitiveTree(value: Any?, parent: JsonValue? = null, name: String? = null): JsonValue {
-            return when (value) {
-                null -> JsonValue(ValueType.nullValue)
-                is String -> JsonValue(value)
-                is Boolean -> JsonValue(value)
-                is Number -> JsonValue(value.toDouble(), value.toString())
-                is List<*> -> {
-                    JsonValue(ValueType.array).also { array ->
-                        value.map { fromPrimitiveTree(it, array) }.populateSiblingsReferences(array)
-                    }
-                }
-                is Map<*, *> -> {
-                    JsonValue(ValueType.`object`).also { mapJsonValue ->
-                        value.map {
-                            val key = it.key as String
-                            fromPrimitiveTree(it.value, mapJsonValue, key)
-                        }.populateSiblingsReferences(mapJsonValue)
-                    }
-                }
-                else -> {
-                    TODO()
-                }
-            }.also {
-                it.name = name
-            }
+        fun fromPrimitiveTree(value: Any?, name: String? = null): JsonValue = when (value) {
+            null -> JsonValue(ValueType.nullValue)
+            is String -> JsonValue(value)
+            is Boolean -> JsonValue(value)
+            is Number -> JsonValue(value.toDouble(), value.toString())
+            is List<*> -> JsonValue(ValueType.array, value.map { fromPrimitiveTree(it) })
+            is Map<*, *> -> JsonValue(ValueType.`object`, value.map { fromPrimitiveTree(it.value, it.key as String) })
+            else -> TODO()
+        }.also {
+            it.name = name
         }
     }
 }
