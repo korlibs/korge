@@ -539,7 +539,7 @@ class SkeletonBinary {
             return vertices
         }
         val weights = FloatArrayList(verticesLength * 3 * 3)
-        val bonesArray = JIntArray(verticesLength * 3)
+        val bonesArray = IntArrayList(verticesLength * 3)
         for (i in 0 until vertexCount) {
             val boneCount = input.readInt(true)
             bonesArray.add(boneCount)

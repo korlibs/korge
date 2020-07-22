@@ -8,12 +8,19 @@ fun FloatArrayList.setSize(size: Int): FloatArray {
     return this.data
 }
 fun FloatArrayList.toArray() = this.toFloatArray()
+
 fun FloatArrayList.addAll(array: FloatArray, offset: Int = 0, size: Int = array.size - offset) { add(array, offset, size) }
 fun FloatArrayList.addAll(array: FloatArrayList, offset: Int = 0, size: Int = array.size - offset) { add(array.data, offset, size) }
+fun BooleanArrayList.setSize(size: Int) {
+    this.size = size
+}
+
+
+//////////////////
+
+val IntArrayList.items get() = this.data
 fun IntArrayList.setSize(size: Int): IntArray {
     this.size = size
     return this.data
 }
-fun BooleanArrayList.setSize(size: Int) {
-    this.size = size
-}
+fun IntArrayList.toArray() = this.toIntArray()

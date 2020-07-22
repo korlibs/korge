@@ -495,7 +495,7 @@ class SkeletonJson {
             return
         }
         val weights = FloatArrayList(verticesLength * 3 * 3)
-        val bones = JIntArray(verticesLength * 3)
+        val bones = IntArrayList(verticesLength * 3)
         var i = 0
         val n = vertices.size
         while (i < n) {

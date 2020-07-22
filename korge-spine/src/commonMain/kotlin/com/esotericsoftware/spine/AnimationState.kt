@@ -1048,7 +1048,7 @@ class AnimationState {
         internal var totalAlpha: Float = 0.toFloat()
         internal var mixBlend = MixBlend.replace
 
-        internal val timelineMode = JIntArray()
+        internal val timelineMode = IntArrayList()
         internal val timelineHoldMix: JArray<TrackEntry> = JArray()
         internal val timelinesRotation = FloatArrayList()
 
