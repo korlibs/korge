@@ -114,7 +114,7 @@ class SkeletonJson {
             data.scaleY = boneMap.getFloat("scaleY", 1f)
             data.shearX = boneMap.getFloat("shearX", 0f)
             data.shearY = boneMap.getFloat("shearY", 0f)
-            data.transformMode = TransformMode.valueOf(boneMap.getString("transform", TransformMode.normal.name)!!)
+            data.transformMode = TransformMode.valueOf(boneMap.getStringNotNull("transform", TransformMode.normal.name)!!)
             data.skinRequired = boneMap.getBoolean("skin", false)
 
             val color = boneMap.getString("color", null)
@@ -138,7 +138,7 @@ class SkeletonJson {
             if (dark != null) data.darkColor = Color.valueOf(dark)
 
             data.attachmentName = slotMap.getString("attachment", null)
-            data.blendMode = BlendMode.valueOf(slotMap.getString("blend", BlendMode.normal.name)!!)
+            data.blendMode = BlendMode.valueOf(slotMap.getStringNotNull("blend", BlendMode.normal.name)!!)
             skeletonData.slots.add(data)
         }
 
@@ -222,9 +222,9 @@ class SkeletonJson {
             data.target = skeletonData.findSlot(targetName)
                 ?: error("Path target slot not found: " + targetName!!)
 
-            data.positionMode = PositionMode.valueOf(constraintMap!!.getString("positionMode", "percent")!!)
-            data.spacingMode = SpacingMode.valueOf(constraintMap!!.getString("spacingMode", "length")!!)
-            data.rotateMode = RotateMode.valueOf(constraintMap!!.getString("rotateMode", "tangent")!!)
+            data.positionMode = PositionMode.valueOf(constraintMap!!.getStringNotNull("positionMode", "percent")!!)
+            data.spacingMode = SpacingMode.valueOf(constraintMap!!.getStringNotNull("spacingMode", "length")!!)
+            data.rotateMode = RotateMode.valueOf(constraintMap!!.getStringNotNull("rotateMode", "tangent")!!)
             data.offsetRotation = constraintMap!!.getFloat("rotation", 0f)
             data.position = constraintMap!!.getFloat("position", 0f)
             if (data.positionMode == PositionMode.fixed) data.position *= scale
@@ -304,7 +304,7 @@ class SkeletonJson {
             val data = EventData(eventMap.name!!)
             data.int = eventMap.getInt("int", 0)
             data.float = eventMap.getFloat("float", 0f)
-            data.stringValue = eventMap.getString("string", "")
+            data.stringValue = eventMap.getStringNotNull("string", "")
             data.audioPath = eventMap.getString("audio", null)
             if (data.audioPath != null) {
                 data.volume = eventMap.getFloat("volume", 1f)
@@ -334,13 +334,13 @@ class SkeletonJson {
     private fun readAttachment(map: JsonValue, skin: Skin, slotIndex: Int, name: String?, skeletonData: SkeletonData): Attachment? {
         var name = name
         val scale = this.scale
-        name = map.getString("name", name!!)
+        name = map.getStringNotNull("name", name!!)
 
-        val type = map.getString("type", AttachmentType.region.name)
+        val type = map.getStringNotNull("type", AttachmentType.region.name)
 
         when (AttachmentType.valueOf(type)) {
             AttachmentType.region -> {
-                val path = map.getString("path", name!!)
+                val path = map.getStringNotNull("path", name!!)
                 val region = attachmentLoader.newRegionAttachment(skin, name, path) ?: return null
                 region.path = path
                 region.x = map.getFloat("x", 0f) * scale
@@ -366,7 +366,7 @@ class SkeletonJson {
                 return box
             }
             AttachmentType.mesh, AttachmentType.linkedmesh -> {
-                val path = map.getString("path", name!!)
+                val path = map.getStringNotNull("path", name!!)
                 val mesh = attachmentLoader.newMeshAttachment(skin, name, path) ?: return null
                 mesh.path = path
 
@@ -779,7 +779,7 @@ class SkeletonJson {
                 val event = Event(eventMap.getFloat("time", 0f), eventData)
                 event.int = eventMap.getInt("int", eventData.int)
                 event.float = eventMap.getFloat("float", eventData.float)
-                event.stringValue = eventMap.getString("string", eventData.stringValue)
+                event.stringValue = eventMap.getStringNotNull("string", eventData.stringValue)
                 if (event.data.audioPath != null) {
                     event.volume = eventMap.getFloat("volume", eventData.volume)
                     event.balance = eventMap.getFloat("balance", eventData.balance)

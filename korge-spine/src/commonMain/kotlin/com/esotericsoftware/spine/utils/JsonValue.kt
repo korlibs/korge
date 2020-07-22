@@ -101,16 +101,10 @@ class JsonValue {
         return if (child == null || !child.isValue || child.isNull) defaultValue else convert(child)
     }
 
-    fun getString(name: String, defaultValue: String?): String? {
-        val child = get(name)
-        return if (child == null || !child.isValue || child.isNull) defaultValue else child.asString()
-    }
+    fun getString(name: String, defaultValue: String?): String? = getAny(name, defaultValue) { it.asString() }
 
     @JvmName("getStringNotNull")
-    fun getString(name: String, defaultValue: String): String {
-        val child = get(name)
-        return if (child == null || !child.isValue || child.isNull) defaultValue else child.asString() ?: defaultValue
-    }
+    fun getStringNotNull(name: String, defaultValue: String): String = getAny(name, defaultValue) { it?.asString()?: defaultValue }
 
     /** Finds the child with the specified name and returns it as a float. Returns defaultValue if not found.  */
     fun getFloat(name: String, defaultValue: Float): Float {
