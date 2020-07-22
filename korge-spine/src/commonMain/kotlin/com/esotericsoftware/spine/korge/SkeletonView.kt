@@ -121,7 +121,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     //setBlendFunction(ctx, blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
                 }
 
-                val c = NumberUtils.intToFloatColor(alpha.toInt() shl 24 //
+                val c = Color.intToFloatColor(alpha.toInt() shl 24 //
                     or ((b * slotColor.b * color.b * multiplier).toInt() shl 16) //
                     or ((g * slotColor.g * color.g * multiplier).toInt() shl 8) //
                     or (r * slotColor.r * color.r * multiplier).toInt())
@@ -134,7 +134,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     draw(ctx, texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.items, 0, clippedTriangles.size, vertexSize)
                 } else {
                     if (vertexEffect != null) {
-                        tempLight1.set(NumberUtils.floatToIntColor(c))
+                        tempLight1.set(Color.floatToIntColor(c))
                         tempDark1.set(0)
                         var v = 0
                         var u = 0
@@ -187,8 +187,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         val tempLight2 = this.temp5
         val tempDark2 = this.temp6
         val vertexEffect = this.vertexEffect
-        tempLight1.set(NumberUtils.floatToIntColor(light))
-        tempDark1.set(NumberUtils.floatToIntColor(dark))
+        tempLight1.set(Color.floatToIntColor(light))
+        tempDark1.set(Color.floatToIntColor(dark))
         if (stride == 5) {
             var v = 0
             while (v < verticesLength) {

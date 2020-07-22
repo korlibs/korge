@@ -113,7 +113,7 @@ data class Color(
      */
     fun toFloatBits(): Float {
         val color = (255 * a).toInt() shl 24 or ((255 * b).toInt() shl 16) or ((255 * g).toInt() shl 8) or (255 * r).toInt()
-        return NumberUtils.intToFloatColor(color)
+        return intToFloatColor(color)
     }
 
     /** Returns the color encoded as hex string with the format RRGGBBAA.  */
@@ -124,11 +124,20 @@ data class Color(
     }
 
     companion object {
-        val WHITE = Color(1f, 1f, 1f, 1f)
-        val LIGHT_GRAY = Color(.75f, .75f, .75f, 1f)
-        val BLACK = Color(0f, 0f, 0f, 1f)
-        val GREEN = Color(0f, 1f, 0f, 1f)
-        val RED = Color(1f, 0f, 0f, 1f)
+        /** Converts the color from a float ABGR encoding to an int ABGR encoding. The alpha is expanded from 0-254 in the float
+         * encoding (see [.intToFloatColor]) to 0-255, which means converting from int to float and back to int can be
+         * lossy.  */
+
+        fun floatToIntColor(value: Float): Int {
+            val intBits = value.toRawBits()
+            return intBits or ((intBits.ushr(24) * (255f / 254f)).toInt() shl 24)
+        }
+
+        /** Encodes the ABGR int color as a float. The alpha is compressed to 0-254 to avoid using bits in the NaN range (see
+         * [Float.intBitsToFloat] javadocs). Rendering which uses colors encoded as floats should expand the 0-254 back to
+         * 0-255.  */
+
+        fun intToFloatColor(value: Int): Float = Float.fromBits(value and -0x1000001)
 
         /** Sets the specified color from a hex string with the format RRGGBBAA.
          * @see .toString
