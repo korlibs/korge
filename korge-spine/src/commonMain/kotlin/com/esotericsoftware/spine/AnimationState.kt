@@ -549,7 +549,7 @@ class AnimationState {
 
     private fun setCurrent(index: Int, current: TrackEntry, interrupt: Boolean) {
         val from = expandToIndex(index)
-        tracks[index] = current
+        tracks.set(index, current)
 
         if (from != null) {
             if (interrupt) queue.interrupt(from)
@@ -826,7 +826,7 @@ class AnimationState {
                     }
                     if (next.mixDuration > 0) {
                         timelineMode[i] = HOLD_MIX
-                        timelineHoldMix[i] = next
+                        timelineHoldMix.set(i, next)
                         continue@outer
                     }
                     break

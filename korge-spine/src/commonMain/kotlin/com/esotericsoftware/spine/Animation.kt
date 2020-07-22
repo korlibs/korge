@@ -1265,7 +1265,7 @@ class Animation(
                 var i = 0
                 val n = drawOrderToSetupIndex.size
                 while (i < n) {
-                    drawOrder[i] = slots[drawOrderToSetupIndex[i]]
+                    drawOrder.set(i, slots[drawOrderToSetupIndex[i]])
                     i++
                 }
             }

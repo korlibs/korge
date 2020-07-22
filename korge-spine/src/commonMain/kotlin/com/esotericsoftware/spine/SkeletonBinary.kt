@@ -107,7 +107,7 @@ class SkeletonBinary {
                 input.strings = JArray<String>(input.readInt(true).also { n = it })
                 val o = input.strings!!.setSize(n)
                 for (i in 0 until n)
-                    o[i] = input.readString()!!
+                    o.set(i, input.readString()!!)
             }
 
             // Bones.
@@ -128,7 +128,7 @@ class SkeletonBinary {
                     data.transformMode = TransformMode.values[input.readInt(true)]
                     data.skinRequired = input.readBoolean()
                     if (nonessential) Color.rgba8888ToColor(data.color, input.readInt())
-                    o[i] = data
+                    o.set(i, data)
                 }
             }
 
@@ -146,7 +146,7 @@ class SkeletonBinary {
 
                     data.attachmentName = input.readStringRef()
                     data.blendMode = BlendMode.values[input.readInt(true)]
-                    o[i] = data
+                    o.set(i, data)
                 }
             }
 
@@ -162,7 +162,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                            bones.set(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.bones[input.readInt(true)]
                         data.mix = input.readFloat()
                         data.softness = input.readFloat() * scale
@@ -170,7 +170,7 @@ class SkeletonBinary {
                         data.compress = input.readBoolean()
                         data.stretch = input.readBoolean()
                         data.uniform = input.readBoolean()
-                        o[i] = data
+                        o.set(i, data)
                         i++
                     }
                 }
@@ -188,7 +188,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                            bones.set(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.bones[input.readInt(true)]
                         data.local = input.readBoolean()
                         data.relative = input.readBoolean()
@@ -202,7 +202,7 @@ class SkeletonBinary {
                         data.translateMix = input.readFloat()
                         data.scaleMix = input.readFloat()
                         data.shearMix = input.readFloat()
-                        o[i] = data
+                        o.set(i, data)
                         i++
                     }
                 }
@@ -220,7 +220,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones[ii] = skeletonData.bones[input.readInt(true)]
+                            bones.set(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.slots[input.readInt(true)]
                         data.positionMode = PositionMode.values[input.readInt(true)]
                         data.spacingMode = SpacingMode.values[input.readInt(true)]
@@ -232,7 +232,7 @@ class SkeletonBinary {
                         if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) data.spacing *= scale
                         data.rotateMix = input.readFloat()
                         data.translateMix = input.readFloat()
-                        o[i] = data
+                        o.set(i, data)
                         i++
                     }
                 }
@@ -250,7 +250,7 @@ class SkeletonBinary {
                 var i = skeletonData.skins.size
                 val o = skeletonData.skins.setSize((i + input.readInt(true)).also { n = it })
                 while (i < n) {
-                    o[i] = readSkin(input, skeletonData, false, nonessential)!!
+                    o.set(i, readSkin(input, skeletonData, false, nonessential)!!)
                     i++
                 }
             }
@@ -282,7 +282,7 @@ class SkeletonBinary {
                         data.volume = input.readFloat()
                         data.balance = input.readFloat()
                     }
-                    o[i] = data
+                    o.set(i, data)
                 }
             }
 
@@ -290,7 +290,7 @@ class SkeletonBinary {
             run {
                 val o = skeletonData.animations.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n)
-                    o[i] = readAnimation(input, input.readString(), skeletonData)
+                    o.set(i, readAnimation(input, input.readString(), skeletonData))
             }
 
         } catch (ex: Throwable) {
@@ -323,7 +323,7 @@ class SkeletonBinary {
                 var i = 0
                 val n = skin.bones.size
                 while (i < n) {
-                    bones[i] = skeletonData.bones[input.readInt(true)]
+                    bones.set(i, skeletonData.bones[input.readInt(true)])
                     i++
                 }
             }
