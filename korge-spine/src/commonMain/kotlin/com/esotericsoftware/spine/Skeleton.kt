@@ -734,7 +734,7 @@ class Skeleton {
      * @param size An output value, the width and height of the AABB.
      * @param temp Working memory to temporarily store attachments' computed world vertices.
      */
-    fun getBounds(offset: Vector2, size: Vector2, temp: FloatArrayList) {
+    fun getBounds(offset: SpineVector2, size: SpineVector2, temp: FloatArrayList) {
         val drawOrder = this.drawOrder
         var minX = Int.MAX_VALUE.toFloat()
         var minY = Int.MAX_VALUE.toFloat()

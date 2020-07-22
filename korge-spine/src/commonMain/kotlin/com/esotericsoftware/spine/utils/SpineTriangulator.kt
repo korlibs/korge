@@ -32,7 +32,7 @@ package com.esotericsoftware.spine.utils
 import com.soywiz.kds.*
 import kotlin.math.*
 
-internal class Triangulator {
+internal class SpineTriangulator {
     private val convexPolygons = ArrayList<FloatArrayList>()
     private val convexPolygonsIndices = ArrayList<ShortArrayList>()
 

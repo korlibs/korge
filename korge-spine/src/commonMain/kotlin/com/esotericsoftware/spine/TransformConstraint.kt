@@ -35,7 +35,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.atan2
 import com.esotericsoftware.spine.utils.SpineUtils.cos
 import com.esotericsoftware.spine.utils.SpineUtils.degRad
 import com.esotericsoftware.spine.utils.SpineUtils.sin
-import com.esotericsoftware.spine.utils.Vector2
+import com.esotericsoftware.spine.utils.SpineVector2
 import com.soywiz.kds.iterators.*
 
 /** Stores the current pose for a transform constraint. A transform constraint adjusts the world transform of the constrained
@@ -65,7 +65,7 @@ class TransformConstraint : Updatable {
 
     override var isActive: Boolean = false
         internal set
-    internal val temp = Vector2()
+    internal val temp = SpineVector2()
 
     constructor(data: TransformConstraintData, skeleton: Skeleton) {
         this.data = data

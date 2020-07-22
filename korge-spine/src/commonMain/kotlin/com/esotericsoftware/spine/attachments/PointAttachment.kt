@@ -34,7 +34,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.radDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 
 import com.esotericsoftware.spine.graphics.Color
-import com.esotericsoftware.spine.utils.Vector2
+import com.esotericsoftware.spine.utils.SpineVector2
 import com.esotericsoftware.spine.Bone
 
 /** An attachment which is a single point and a rotation. This can be used to spawn projectiles, particles, etc. A bone can be
@@ -53,7 +53,7 @@ class PointAttachment(name: String) : Attachment(name) {
      * are not usually rendered at runtime.  */
     val color = Color(0.9451f, 0.9451f, 0f, 1f) // f1f100ff
 
-    fun computeWorldPosition(bone: Bone, point: Vector2): Vector2 {
+    fun computeWorldPosition(bone: Bone, point: SpineVector2): SpineVector2 {
         point.x = x * bone.a + y * bone.b + bone.worldX
         point.y = x * bone.c + y * bone.d + bone.worldY
         return point

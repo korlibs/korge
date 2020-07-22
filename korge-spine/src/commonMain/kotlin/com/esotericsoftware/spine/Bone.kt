@@ -387,7 +387,7 @@ class Bone : Updatable {
     }
 
     /** Transforms a point from world coordinates to the bone's local coordinates.  */
-    fun worldToLocal(world: Vector2): Vector2 {
+    fun worldToLocal(world: SpineVector2): SpineVector2 {
         val invDet = 1 / (a * d - b * c)
         val x = world.x - worldX
         val y = world.y - worldY
@@ -397,7 +397,7 @@ class Bone : Updatable {
     }
 
     /** Transforms a point from the bone's local coordinates to world coordinates.  */
-    fun localToWorld(local: Vector2): Vector2 {
+    fun localToWorld(local: SpineVector2): SpineVector2 {
         val x = local.x
         val y = local.y
         local.x = x * a + y * b + worldX

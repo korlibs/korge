@@ -36,8 +36,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     /** @param vertexEffect May be null.
      */
     var vertexEffect: VertexEffect? = null
-    private val temp = Vector2()
-    private val temp2 = Vector2()
+    private val temp = SpineVector2()
+    private val temp2 = SpineVector2()
     private val temp3 = Color()
     private val temp4 = Color()
     private val temp5 = Color()

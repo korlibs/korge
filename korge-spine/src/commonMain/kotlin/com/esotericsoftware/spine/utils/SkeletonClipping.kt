@@ -35,7 +35,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 
 class SkeletonClipping {
-    private val triangulator = Triangulator()
+    private val triangulator = SpineTriangulator()
     private val clippingPolygon = FloatArrayList()
     private val clipOutput = FloatArrayList(128)
     val clippedVertices = FloatArrayList(128)

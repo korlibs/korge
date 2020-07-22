@@ -8,7 +8,7 @@ import com.esotericsoftware.spine.utils.*
 interface VertexEffect {
     fun begin(skeleton: Skeleton)
 
-    fun transform(position: Vector2, uv: Vector2, color: Color, darkColor: Color)
+    fun transform(position: SpineVector2, uv: SpineVector2, color: Color, darkColor: Color)
 
     fun end()
 }
