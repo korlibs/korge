@@ -1,12 +1,14 @@
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.assets.*
-import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.korge.*
-import com.soywiz.korge.render.*
+import com.soywiz.korge.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.atlas.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import kotlin.test.*
 
@@ -14,10 +16,9 @@ class SampleTest {
     @Test
     //@Ignore
     fun test() = suspendTest({ !OS.isJs }) {
-        val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())
-        val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
-        json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.
-        val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
+        val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
+        //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
+        val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)
 
         val skeleton = Skeleton(skeletonData) // Skeleton holds skeleton state (bone positions, slot attachments, etc).
         skeleton.setPosition(250f, 20f)
@@ -34,10 +35,10 @@ class SampleTest {
         state.addAnimation(0, "jump", false, 2f) // Jump after 2 seconds.
         state.addAnimation(0, "run", true, 0f) // Run after the jump.
 
-        state.update(1f / 60f); // Update the animation time.
+        state.update(1f / 60f) // Update the animation time.
 
-        state.apply(skeleton); // Poses skeleton using current animations. This sets the bones' local SRT.
-        skeleton.updateWorldTransform(); // Uses the bones' local SRT to compute their world SRT.
+        state.apply(skeleton) // Poses skeleton using current animations. This sets the bones' local SRT.
+        skeleton.updateWorldTransform() // Uses the bones' local SRT to compute their world SRT.
         val view = SkeletonView(skeleton, state)
         val log = testRenderContext {
             view.render(it)

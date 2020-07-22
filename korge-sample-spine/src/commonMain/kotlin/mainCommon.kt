@@ -1,7 +1,6 @@
 package common
 
 import com.esotericsoftware.spine.*
-import com.esotericsoftware.spine.assets.*
 import com.esotericsoftware.spine.korge.*
 import com.soywiz.korge.*
 import com.soywiz.korge.view.*
@@ -10,11 +9,9 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.file.std.*
 
 suspend fun main() = Korge(width = 800, height = 800, bgcolor = Colors["#2b2b2b"]) {
-    //val json = SkeletonBinary(TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())) // This loads skeleton JSON data, which is stateless.
-    val json = SkeletonJson(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()) // This loads skeleton JSON data, which is stateless.
-    json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.
-    //val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
-    val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.json"].toFileHandle())
+    val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
+    //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
+    val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)
 
     val skeleton = Skeleton(skeletonData) // Skeleton holds skeleton state (bone positions, slot attachments, etc).
     //skeleton.setPosition(250f, 20f)

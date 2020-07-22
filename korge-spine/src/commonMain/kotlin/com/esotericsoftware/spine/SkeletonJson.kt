@@ -39,6 +39,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
 
 /** Loads skeleton data in the Spine JSON format.
@@ -70,17 +71,15 @@ class SkeletonJson {
         this.attachmentLoader = attachmentLoader
     }
 
-    private fun parse(file: FileHandle): SpineJsonValue? {
-        return SpineJsonValue.fromPrimitiveTree(Json.parse(file.readAsString()))
-    }
+    suspend fun readSkeletonData(file: VfsFile): SkeletonData = readSkeletonData(file.readString(), file.fullName)
 
-    fun readSkeletonData(file: FileHandle): SkeletonData {
+    fun readSkeletonData(fileContent: String, fileName: String): SkeletonData {
         val scale = this.scale
 
         val skeletonData = SkeletonData()
-        skeletonData.name = file.nameWithoutExtension()
+        skeletonData.name = PathInfo(fileName).baseNameWithoutExtension
 
-        val root = parse(file)
+        val root = SpineJsonValue.fromPrimitiveTree(Json.parse(fileContent))
 
         // Skeleton.
         val skeletonMap = root!!["skeleton"]
@@ -811,3 +810,6 @@ class SkeletonJson {
         var inheritDeform: Boolean
     )
 }
+
+suspend fun VfsFile.readSkeletonJson(atlas: Atlas, scale: Float = 1f): SkeletonData
+    = SkeletonJson(atlas).also { it.scale = scale }.readSkeletonData(this)

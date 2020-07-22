@@ -39,6 +39,7 @@ import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 
 /** Loads skeleton data in the Spine binary format.
  *
@@ -71,11 +72,13 @@ class SkeletonBinary {
         this.attachmentLoader = attachmentLoader
     }
 
-    fun readSkeletonData(file: FileHandle): SkeletonData {
+    suspend fun readSkeletonData(file: VfsFile): SkeletonData = readSkeletonData(file.readAll(), file.fullName)
+
+    fun readSkeletonData(file: ByteArray, fileName: String = "unknown"): SkeletonData {
         val scale = this.scale
 
         val skeletonData = SkeletonData()
-        skeletonData.name = file.nameWithoutExtension()
+        skeletonData.name = PathInfo(fileName).baseNameWithoutExtension
 
         val input = SkeletonInput(file)
         try {
@@ -928,8 +931,6 @@ class SkeletonBinary {
     }
 
     internal class SkeletonInput(val data: ByteArray) {
-        constructor(file: FileHandle) : this(file.read(512))
-
         private var n = 0
 
         fun read(): Int {
@@ -1064,3 +1065,6 @@ class SkeletonBinary {
         private val tempColor2 = RGBAf()
     }
 }
+
+suspend fun VfsFile.readSkeletonBinary(atlas: Atlas, scale: Float = 1f): SkeletonData
+    = SkeletonBinary(atlas).also { it.scale = scale }.readSkeletonData(this)
