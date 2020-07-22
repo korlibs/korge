@@ -484,124 +484,112 @@ class SkeletonJson {
 
         // Slot timelines.
         run {
-            var slotMap = map.getChild("slots")
-            while (slotMap != null) {
+            map.get("slots")?.fastForEach { slotMap ->
                 val slot = skeletonData.findSlot(slotMap!!.name)
                         ?: error("Slot not found: " + slotMap!!.name!!)
-                var timelineMap = slotMap!!.child
-                while (timelineMap != null) {
+                slotMap?.fastForEach { timelineMap ->
                     val timelineName = timelineMap!!.name
-                    if (timelineName == "attachment") {
-                        val timeline = AttachmentTimeline(timelineMap!!.size)
-                        timeline.slotIndex = slot.index
+                    when (timelineName) {
+                        "attachment" -> {
+                            val timeline = AttachmentTimeline(timelineMap!!.size)
+                            timeline.slotIndex = slot.index
 
-                        var frameIndex = 0
-                        var valueMap = timelineMap!!.child
-                        while (valueMap != null) {
-                            timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name"))
-                            valueMap = valueMap!!.next
+                            var frameIndex = 0
+                            timelineMap!!?.fastForEach { valueMap ->
+                                timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name"))
+                            }
+                            timelines.add(timeline)
+                            duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+
                         }
-                        timelines.add(timeline)
-                        duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+                        "color" -> {
+                            val timeline = ColorTimeline(timelineMap!!.size)
+                            timeline.slotIndex = slot.index
 
-                    } else if (timelineName == "color") {
-                        val timeline = ColorTimeline(timelineMap!!.size)
-                        timeline.slotIndex = slot.index
+                            var frameIndex = 0
+                            timelineMap?.fastForEach { valueMap ->
+                                val color = Color.valueOf(valueMap!!.getString("color")!!)
+                                timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), color.r, color.g, color.b, color.a)
+                                readCurve(valueMap!!, timeline, frameIndex)
+                                frameIndex++
+                            }
+                            timelines.add(timeline)
+                            duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * ColorTimeline.ENTRIES])
 
-                        var frameIndex = 0
-                        var valueMap = timelineMap!!.child
-                        while (valueMap != null) {
-                            val color = Color.valueOf(valueMap!!.getString("color")!!)
-                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), color.r, color.g, color.b, color.a)
-                            readCurve(valueMap!!, timeline, frameIndex)
-                            frameIndex++
-                            valueMap = valueMap!!.next
                         }
-                        timelines.add(timeline)
-                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * ColorTimeline.ENTRIES])
+                        "twoColor" -> {
+                            val timeline = TwoColorTimeline(timelineMap!!.size)
+                            timeline.slotIndex = slot.index
 
-                    } else if (timelineName == "twoColor") {
-                        val timeline = TwoColorTimeline(timelineMap!!.size)
-                        timeline.slotIndex = slot.index
-
-                        var frameIndex = 0
-                        var valueMap = timelineMap!!.child
-                        while (valueMap != null) {
-                            val light = Color.valueOf(valueMap!!.getString("light")!!)
-                            val dark = Color.valueOf(valueMap!!.getString("dark")!!)
-                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), light.r, light.g, light.b, light.a, dark.r, dark.g,
+                            var frameIndex = 0
+                            timelineMap?.fastForEach { valueMap ->
+                                val light = Color.valueOf(valueMap!!.getString("light")!!)
+                                val dark = Color.valueOf(valueMap!!.getString("dark")!!)
+                                timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), light.r, light.g, light.b, light.a, dark.r, dark.g,
                                     dark.b)
-                            readCurve(valueMap!!, timeline, frameIndex)
-                            frameIndex++
-                            valueMap = valueMap!!.next
-                        }
-                        timelines.add(timeline)
-                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TwoColorTimeline.ENTRIES])
+                                readCurve(valueMap!!, timeline, frameIndex)
+                                frameIndex++
+                            }
+                            timelines.add(timeline)
+                            duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TwoColorTimeline.ENTRIES])
 
-                    } else
-                        throw RuntimeException("Invalid timeline type for a slot: " + timelineName + " (" + slotMap!!.name + ")")
-                    timelineMap = timelineMap!!.next
+                        }
+                        else -> throw RuntimeException("Invalid timeline type for a slot: " + timelineName + " (" + slotMap!!.name + ")")
+                    }
                 }
-                slotMap = slotMap!!.next
             }
         }
 
         // Bone timelines.
-        var boneMap = map.getChild("bones")
-        while (boneMap != null) {
-            val bone = skeletonData.findBone(boneMap.name)
-                    ?: error("Bone not found: " + boneMap.name!!)
-            var timelineMap = boneMap.child
-            while (timelineMap != null) {
+        map.get("bones")?.fastForEach { boneMap ->
+            val bone = skeletonData.findBone(boneMap.name) ?: error("Bone not found: " + boneMap.name!!)
+            boneMap.fastForEach { timelineMap ->
                 val timelineName = timelineMap!!.name
-                if (timelineName == "rotate") {
-                    val timeline = RotateTimeline(timelineMap!!.size)
-                    timeline.boneIndex = bone.index
+                when (timelineName) {
+                    "rotate" -> {
+                        val timeline = RotateTimeline(timelineMap!!.size)
+                        timeline.boneIndex = bone.index
 
-                    var frameIndex = 0
-                    var valueMap = timelineMap!!.child
-                    while (valueMap != null) {
-                        timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("angle", 0f))
-                        readCurve(valueMap!!, timeline, frameIndex)
-                        frameIndex++
-                        valueMap = valueMap!!.next
+                        var frameIndex = 0
+                        timelineMap?.fastForEach { valueMap ->
+                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("angle", 0f))
+                            readCurve(valueMap!!, timeline, frameIndex)
+                            frameIndex++
+                        }
+                        timelines.add(timeline)
+                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * RotateTimeline.ENTRIES])
+
                     }
-                    timelines.add(timeline)
-                    duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * RotateTimeline.ENTRIES])
+                    "translate", "scale", "shear" -> {
+                        val timeline: TranslateTimeline
+                        var timelineScale = 1f
+                        var defaultValue = 0f
+                        if (timelineName == "scale") {
+                            timeline = ScaleTimeline(timelineMap!!.size)
+                            defaultValue = 1f
+                        } else if (timelineName == "shear")
+                            timeline = ShearTimeline(timelineMap!!.size)
+                        else {
+                            timeline = TranslateTimeline(timelineMap!!.size)
+                            timelineScale = scale
+                        }
+                        timeline.boneIndex = bone.index
 
-                } else if (timelineName == "translate" || timelineName == "scale" || timelineName == "shear") {
-                    val timeline: TranslateTimeline
-                    var timelineScale = 1f
-                    var defaultValue = 0f
-                    if (timelineName == "scale") {
-                        timeline = ScaleTimeline(timelineMap!!.size)
-                        defaultValue = 1f
-                    } else if (timelineName == "shear")
-                        timeline = ShearTimeline(timelineMap!!.size)
-                    else {
-                        timeline = TranslateTimeline(timelineMap!!.size)
-                        timelineScale = scale
+                        var frameIndex = 0
+                        timelineMap?.fastForEach { valueMap ->
+                            val x = valueMap!!.getFloat("x", defaultValue)
+                            val y = valueMap!!.getFloat("y", defaultValue)
+                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), x * timelineScale, y * timelineScale)
+                            readCurve(valueMap!!, timeline, frameIndex)
+                            frameIndex++
+                        }
+                        timelines.add(timeline)
+                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TranslateTimeline.ENTRIES])
+
                     }
-                    timeline.boneIndex = bone.index
-
-                    var frameIndex = 0
-                    var valueMap = timelineMap!!.child
-                    while (valueMap != null) {
-                        val x = valueMap!!.getFloat("x", defaultValue)
-                        val y = valueMap!!.getFloat("y", defaultValue)
-                        timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), x * timelineScale, y * timelineScale)
-                        readCurve(valueMap!!, timeline, frameIndex)
-                        frameIndex++
-                        valueMap = valueMap!!.next
-                    }
-                    timelines.add(timeline)
-                    duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TranslateTimeline.ENTRIES])
-
-                } else
-                    throw RuntimeException("Invalid timeline type for a bone: " + timelineName + " (" + boneMap.name + ")")
-                timelineMap = timelineMap!!.next
+                    else -> throw RuntimeException("Invalid timeline type for a bone: " + timelineName + " (" + boneMap.name + ")")
+                }
             }
-            boneMap = boneMap.next
         }
 
         // IK constraint timelines.
