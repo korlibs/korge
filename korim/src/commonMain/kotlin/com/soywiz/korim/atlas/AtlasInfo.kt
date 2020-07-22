@@ -30,8 +30,8 @@ data class AtlasInfo(
         val rect get() = Rectangle(x, y, w, h)
 	}
 
-	data class Size(val w: Int, val h: Int) {
-		val size get() = com.soywiz.korma.geom.Size(w, h)
+	data class Size(val width: Int, val height: Int) {
+		val size get() = com.soywiz.korma.geom.Size(width, height)
 	}
 
 	data class Meta(
@@ -234,7 +234,10 @@ data class AtlasInfo(
                             "offset" -> offset = value.point()
                         }
                     }
-                    val rect = Rect(xy.x.toInt(), xy.y.toInt(), size.w, size.h)
+                    if (rotate) {
+                        size = Size(size.height, size.width)
+                    }
+                    val rect = Rect(xy.x.toInt(), xy.y.toInt(), size.width, size.height)
                     currentEntryList.add(Region(name, rect, rotate, size, rect, false, orig, offset))
                 }
             }
