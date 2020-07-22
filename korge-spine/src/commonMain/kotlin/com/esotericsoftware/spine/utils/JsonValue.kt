@@ -41,9 +41,7 @@ class JsonValue {
     var name: String? = null
     var children: List<JsonValue>? = null
     var child: JsonValue? = null
-    var parent: JsonValue? = null
     var next: JsonValue? = null
-    var prev: JsonValue? = null
     val size: Int get() = children?.size ?: 0
     val isString: Boolean get() = type == ValueType.stringValue
     val isNull: Boolean get() = type == ValueType.nullValue
@@ -204,8 +202,6 @@ class JsonValue {
             //parent.size = this.size
             for (n in 0 until size) {
                 val child = this[n]
-                child.parent = parent
-                child.prev = this.getOrNull(n - 1)
                 child.next = this.getOrNull(n + 1)
             }
             parent.children = this
@@ -235,7 +231,6 @@ class JsonValue {
                     TODO()
                 }
             }.also {
-                it.parent = parent
                 it.name = name
             }
         }

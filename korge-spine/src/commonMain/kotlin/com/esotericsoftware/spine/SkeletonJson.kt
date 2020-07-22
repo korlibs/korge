@@ -98,8 +98,7 @@ class SkeletonJson {
         }
 
         // Bones.
-        var boneMap = root.getChild("bones")
-        while (boneMap != null) {
+        root["bones"]?.fastForEach { boneMap ->
             var parent: BoneData? = null
             val parentName = boneMap.getString("parent", null)
             if (parentName != null) {
@@ -122,12 +121,10 @@ class SkeletonJson {
             if (color != null) data.color.set(Color.valueOf(color))
 
             skeletonData.bones.add(data)
-            boneMap = boneMap.next
         }
 
         // Slots.
-        var slotMap = root.getChild("slots")
-        while (slotMap != null) {
+        root.get("slots")?.fastForEach { slotMap ->
             val slotName = slotMap.getString("name")!!
             val boneName = slotMap.getString("bone")
             val boneData = skeletonData.findBone(boneName)
@@ -143,7 +140,6 @@ class SkeletonJson {
             data.attachmentName = slotMap.getString("attachment", null)
             data.blendMode = BlendMode.valueOf(slotMap.getString("blend", BlendMode.normal.name)!!)
             skeletonData.slots.add(data)
-            slotMap = slotMap.next
         }
 
         // IK constraints.
