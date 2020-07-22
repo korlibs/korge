@@ -29,6 +29,7 @@
 
 package com.esotericsoftware.spine.utils
 
+import com.soywiz.kds.*
 import kotlin.math.*
 
 internal class Triangulator {
@@ -39,17 +40,8 @@ internal class Triangulator {
     private val isConcaveArray = JBooleanArray()
     private val triangles = JShortArray()
 
-    private val polygonPool = object : Pool<JFloatArray>() {
-        override fun newObject(): JFloatArray {
-            return JFloatArray(16)
-        }
-    }
-
-    private val polygonIndicesPool = object : Pool<JShortArray>() {
-        protected override fun newObject(): JShortArray {
-            return JShortArray(16)
-        }
-    }
+    private val polygonPool = Pool { JFloatArray(16) }
+    private val polygonIndicesPool = Pool() { JShortArray(16) }
 
     fun triangulate(verticesArray: JFloatArray): JShortArray {
         val vertices = verticesArray.items

@@ -29,10 +29,9 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
-import com.esotericsoftware.spine.utils.JFloatArray
-import com.esotericsoftware.spine.utils.Pool
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
+import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.*
 
 /** Collects each visible [BoundingBoxAttachment] and computes the world vertices for its polygon. The polygon vertices are
  * provided along with convenience methods for doing hit detection.  */
@@ -58,11 +57,7 @@ class SkeletonBounds {
 
     /** The world vertices for the bounding box polygons.  */
     val polygons: JArray<JFloatArray> = JArray()
-    private val polygonPool = object : Pool<JFloatArray>() {
-        protected override fun newObject(): JFloatArray {
-            return JFloatArray()
-        }
-    }
+    private val polygonPool = Pool { JFloatArray() }
 
     /** The width of the axis aligned bounding box.  */
     val width: Float
@@ -94,7 +89,7 @@ class SkeletonBounds {
             if (attachment is BoundingBoxAttachment) {
                 boundingBoxes.add(attachment)
 
-                val polygon = polygonPool.obtain()
+                val polygon = polygonPool.alloc()
                 polygons.add(polygon)
                 attachment.computeWorldVertices(slot, 0, attachment.worldVerticesLength,
                         polygon.setSize(attachment.worldVerticesLength), 0, 2)

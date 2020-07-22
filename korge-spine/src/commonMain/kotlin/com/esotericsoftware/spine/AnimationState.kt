@@ -29,7 +29,6 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.Pool.*
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
@@ -62,11 +61,7 @@ class AnimationState {
     var timeScale = 1f
     private var unkeyedState: Int = 0
 
-    internal val trackEntryPool: com.esotericsoftware.spine.utils.Pool<TrackEntry> = object : com.esotericsoftware.spine.utils.Pool<TrackEntry>() {
-        override fun newObject(): TrackEntry {
-            return TrackEntry()
-        }
-    }
+    internal val trackEntryPool: Pool<TrackEntry> = Pool.fromPoolable { TrackEntry() }
 
     /** Creates an uninitialized AnimationState. The animation state data must be set before use.  */
     constructor() {}
@@ -735,7 +730,7 @@ class AnimationState {
     /** @param last May be null.
      */
     private fun trackEntry(trackIndex: Int, animation: Animation, loop: Boolean, last: TrackEntry?): TrackEntry {
-        val entry = trackEntryPool.obtain()
+        val entry = trackEntryPool.alloc()
         entry.trackIndex = trackIndex
         entry.animation = animation
         entry.loop = loop
@@ -899,7 +894,7 @@ class AnimationState {
      *
      *
      * References to a track entry must not be kept after the [AnimationStateListener.dispose] event occurs.  */
-    class TrackEntry : Poolable {
+    class TrackEntry : Pool.Poolable {
         internal var animation: Animation? = null
 
         /** The animation queued to start after this animation, or null. `next` makes up a linked list.  */
