@@ -69,8 +69,8 @@ class SkeletonJson {
         this.attachmentLoader = attachmentLoader
     }
 
-    protected fun parse(file: FileHandle): JsonValue? {
-        return JsonValue.fromPrimitiveTree(Json.parse(file.readAsString()))
+    private fun parse(file: FileHandle): SpineJsonValue? {
+        return SpineJsonValue.fromPrimitiveTree(Json.parse(file.readAsString()))
     }
 
     fun readSkeletonData(file: FileHandle): SkeletonData {
@@ -331,7 +331,7 @@ class SkeletonJson {
         return skeletonData
     }
 
-    private fun readAttachment(map: JsonValue, skin: Skin, slotIndex: Int, name: String?, skeletonData: SkeletonData): Attachment? {
+    private fun readAttachment(map: SpineJsonValue, skin: Skin, slotIndex: Int, name: String?, skeletonData: SkeletonData): Attachment? {
         var name = name
         val scale = this.scale
         name = map.getStringNotNull("name", name!!)
@@ -442,7 +442,7 @@ class SkeletonJson {
         return null
     }
 
-    private fun readVertices(map: JsonValue, attachment: VertexAttachment, verticesLength: Int) {
+    private fun readVertices(map: SpineJsonValue, attachment: VertexAttachment, verticesLength: Int) {
         attachment.worldVerticesLength = verticesLength
         val vertices = map.require("vertices").asFloatArray()
         if (verticesLength == vertices.size) {
@@ -477,7 +477,7 @@ class SkeletonJson {
         attachment.vertices = weights.toArray()
     }
 
-    private fun readAnimation(map: JsonValue, name: String, skeletonData: SkeletonData) {
+    private fun readAnimation(map: SpineJsonValue, name: String, skeletonData: SkeletonData) {
         val scale = this.scale
         val timelines = ArrayList<Timeline>()
         var duration = 0f
@@ -794,7 +794,7 @@ class SkeletonJson {
         skeletonData.animations.add(Animation(name, timelines, duration))
     }
 
-    internal fun readCurve(map: JsonValue, timeline: CurveTimeline, frameIndex: Int) {
+    internal fun readCurve(map: SpineJsonValue, timeline: CurveTimeline, frameIndex: Int) {
         val curve = map["curve"] ?: return
         if (curve.isString)
             timeline.setStepped(frameIndex)
