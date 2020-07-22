@@ -29,10 +29,9 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
+import com.esotericsoftware.spine.SpineRegion
 
 import com.esotericsoftware.spine.Bone
-import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.korim.color.*
@@ -43,9 +42,9 @@ import com.soywiz.korim.color.*
  * See [Region attachments](http://esotericsoftware.com/spine-regions) in the Spine User Guide.  */
 class RegionAttachment(name: String) : Attachment(name) {
 
-    private var _region: TextureAtlas.AtlasRegion? = null
+    private var _region: SpineRegion? = null
 
-    var region: TextureAtlas.AtlasRegion
+    var region: SpineRegion
         get() = _region ?: error("Region was not set before")
         set(region) {
             _region = region
@@ -113,8 +112,8 @@ class RegionAttachment(name: String) : Attachment(name) {
         var localY2 = height / 2
         var localX = -localX2
         var localY = -localY2
-        if (region is AtlasRegion) {
-            val region = this.region as AtlasRegion?
+        if (region is SpineRegion) {
+            val region = this.region as SpineRegion?
             localX += region!!.offsetX / region.originalWidth * width
             localY += region.offsetY / region.originalHeight * height
             if (region.rotate) {

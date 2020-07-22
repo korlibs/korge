@@ -29,8 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.*
-import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
+import com.esotericsoftware.spine.SpineRegion
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.korim.color.*
 
@@ -40,7 +39,7 @@ import com.soywiz.korim.color.*
  *
  * See [Mesh attachments](http://esotericsoftware.com/spine-meshes) in the Spine User Guide.  */
 class MeshAttachment(name: String) : VertexAttachment(name) {
-    var region: TextureAtlas.AtlasRegion? = null
+    var region: SpineRegion? = null
 
     /** The name of the texture region for this attachment.  */
     var path: String? = null
@@ -105,10 +104,10 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
         var v: Float
         val width: Float
         val height: Float
-        if (region is AtlasRegion) {
+        if (region is SpineRegion) {
             u = region!!.u
             v = region!!.v
-            val region = this.region as AtlasRegion?
+            val region = this.region as SpineRegion?
             val textureWidth = region!!.texture.width
             val textureHeight = region.texture.height
             when (region.degrees) {

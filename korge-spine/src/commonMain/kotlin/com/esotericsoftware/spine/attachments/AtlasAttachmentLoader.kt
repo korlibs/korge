@@ -29,19 +29,26 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.Skin
+import com.esotericsoftware.spine.*
 
-import com.esotericsoftware.spine.graphics.TextureAtlas
+import com.soywiz.korim.atlas.*
 
 /** An [AttachmentLoader] that configures attachments using texture regions from an [Atlas].
  *
  *
  * See [Loading skeleton data](http://esotericsoftware.com/spine-loading-skeleton-data#JSON-and-binary-data) in the
  * Spine Runtimes Guide.  */
-class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader {
+class AtlasAttachmentLoader(private val atlas: Atlas) : AttachmentLoader {
+    private val regions = HashMap<String, SpineRegion>()
 
+    private fun findRegion(path: String): SpineRegion? {
+        return regions.getOrPut(path) {
+            val entry = atlas.tryGetEntryByName(path) ?: error("Can't find '$path' in atlas")
+            SpineRegion(entry)
+        }
+    }
     override fun newRegionAttachment(skin: Skin, name: String, path: String): RegionAttachment? {
-        val region = atlas.findRegion(path)
+        val region = findRegion(path)
                 ?: throw RuntimeException("Region not found in atlas: $path (region attachment: $name)")
         val attachment = RegionAttachment(name)
         attachment.region = region
@@ -49,7 +56,7 @@ class AtlasAttachmentLoader(private val atlas: TextureAtlas) : AttachmentLoader 
     }
 
     override fun newMeshAttachment(skin: Skin, name: String, path: String): MeshAttachment? {
-        val region = atlas.findRegion(path)
+        val region = findRegion(path)
                 ?: throw RuntimeException("Region not found in atlas: $path (mesh attachment: $name)")
         val attachment = MeshAttachment(name)
         attachment.region = region

@@ -35,13 +35,13 @@ import com.esotericsoftware.spine.assets.AssetManager
 import com.esotericsoftware.spine.assets.AsynchronousAssetLoader
 import com.esotericsoftware.spine.assets.FileHandleResolver
 import com.esotericsoftware.spine.assets.FileHandle
-import com.esotericsoftware.spine.graphics.TextureAtlas
 
 import com.esotericsoftware.spine.SkeletonBinary
 import com.esotericsoftware.spine.SkeletonData
 import com.esotericsoftware.spine.SkeletonJson
 import com.esotericsoftware.spine.attachments.AtlasAttachmentLoader
 import com.esotericsoftware.spine.attachments.AttachmentLoader
+import com.soywiz.korim.atlas.*
 
 /** An asset loader to create and load skeleton data. The data file is assumed to be binary if it ends with `.skel`,
  * otherwise JSON is assumed. The [SkeletonDataParameter] can provide a texture atlas name or an [AttachmentLoader].
@@ -73,10 +73,10 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
             if (parameter.attachmentLoader != null)
                 attachmentLoader = parameter.attachmentLoader
             else if (parameter.atlasName != null)
-                attachmentLoader = AtlasAttachmentLoader(manager.get(parameter.atlasName, TextureAtlas::class))
+                attachmentLoader = AtlasAttachmentLoader(manager.get(parameter.atlasName, Atlas::class))
         }
         if (attachmentLoader == null)
-            attachmentLoader = AtlasAttachmentLoader(manager.get(file.pathWithoutExtension()!! + ".atlas", TextureAtlas::class))
+            attachmentLoader = AtlasAttachmentLoader(manager.get(file.pathWithoutExtension()!! + ".atlas", Atlas::class))
 
         if (file.extension().equals("skel", ignoreCase = true)) {
             val skeletonBinary = SkeletonBinary(attachmentLoader)
@@ -103,7 +103,7 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
         if (parameter == null) return null
         if (parameter.attachmentLoader != null) return null
         val dependencies = ArrayList<AssetDescriptor>()
-        dependencies.add(AssetDescriptor(parameter.atlasName, TextureAtlas::class))
+        dependencies.add(AssetDescriptor(parameter.atlasName, Atlas::class))
         return dependencies
     }
 

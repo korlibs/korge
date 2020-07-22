@@ -5,11 +5,11 @@ import com.esotericsoftware.spine.BlendMode
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.effect.*
 import com.soywiz.korim.color.RGBAf
-import com.esotericsoftware.spine.graphics.Texture
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
@@ -76,7 +76,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                 i++
                 continue
             }
-            var texture: Texture? = null
+            var texture: Bitmap? = null
             val vertexSize = if (clipper.isClipping) 2 else 5
             val attachment = slot.attachment
             if (attachment is RegionAttachment) {
@@ -235,13 +235,13 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     //private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
     //}
 
-    private fun draw(ctx: RenderContext, texture: Texture, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
+    private fun draw(ctx: RenderContext, texture: Bitmap, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
         val batch = ctx.batch
         //ctx.flush()
 
         val vertexCount = verticesCount / vertexSize
 
-        batch.setStateFast(texture.bmp, true, blendMode.factors, null)
+        batch.setStateFast(texture, true, blendMode.factors, null)
         batch.ensure(trianglesCount, vertexCount)
 
         val transform = this.globalMatrix

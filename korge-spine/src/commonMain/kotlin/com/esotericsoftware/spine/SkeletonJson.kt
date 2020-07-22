@@ -30,7 +30,6 @@
 package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.assets.*
-import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
@@ -38,6 +37,7 @@ import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.serialization.json.*
 
@@ -62,7 +62,7 @@ class SkeletonJson {
         }
     private val linkedMeshes = ArrayList<LinkedMesh>()
 
-    constructor(atlas: TextureAtlas) {
+    constructor(atlas: Atlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
     }
 
