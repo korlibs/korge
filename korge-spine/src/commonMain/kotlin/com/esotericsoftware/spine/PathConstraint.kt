@@ -238,7 +238,7 @@ class PathConstraint : Updatable {
                                        percentSpacing: Boolean): FloatArray {
         val target = this.target
         var position = this.position
-        val spaces = this.spaces.items
+        val spaces = this.spaces.data
         val out = this.positions.setSize(spacesCount * 3 + 2)
         val world: FloatArray
         val closed = path.closed

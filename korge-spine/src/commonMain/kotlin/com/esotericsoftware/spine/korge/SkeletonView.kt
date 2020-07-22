@@ -80,7 +80,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
             val attachment = slot.attachment
             if (attachment is RegionAttachment) {
                 verticesLength = vertexSize shl 2
-                vertices = this.vertices.items
+                vertices = this.vertices.data
                 attachment.computeWorldVertices(slot.bone, vertices, 0, vertexSize)
                 triangles = quadTriangles
                 texture = attachment.region.texture
@@ -131,9 +131,9 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     clipper.clipTriangles(vertices, verticesLength, triangles, triangles.size, uvs!!, c, 0f, false)
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
-                    if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 5, c, 0f)
+                    if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, 0f)
                     // @TODO: Remove clippedTriangles.toArray() so it doesn't allocate
-                    draw(ctx, texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
+                    draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
                 } else {
                     if (vertexEffect != null) {
                         tempLight1.set(Color.floatToIntColor(c))

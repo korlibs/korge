@@ -79,7 +79,7 @@ class SkeletonBounds {
         val slotCount = slots.size
 
         boundingBoxes.clear()
-        polygonPool.freeAll(polygons)
+        polygonPool.free(polygons)
         polygons.clear()
 
         for (i in 0 until slotCount) {
@@ -116,7 +116,7 @@ class SkeletonBounds {
         val n = polygons.size
         while (i < n) {
             val polygon = polygons[i]
-            val vertices = polygon.items
+            val vertices = polygon.data
             var ii = 0
             val nn = polygon.size
             while (ii < nn) {
@@ -180,7 +180,7 @@ class SkeletonBounds {
 
     /** Returns true if the polygon contains the point.  */
     fun containsPoint(polygon: FloatArrayList, x: Float, y: Float): Boolean {
-        val vertices = polygon.items
+        val vertices = polygon.data
         val nn = polygon.size
 
         var prevIndex = nn - 2
@@ -215,7 +215,7 @@ class SkeletonBounds {
 
     /** Returns true if the polygon contains any part of the line segment.  */
     fun intersectsSegment(polygon: FloatArrayList, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
-        val vertices = polygon.items
+        val vertices = polygon.data
         val nn = polygon.size
 
         val width12 = x1 - x2

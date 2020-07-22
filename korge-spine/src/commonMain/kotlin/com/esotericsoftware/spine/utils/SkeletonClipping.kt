@@ -61,8 +61,8 @@ class SkeletonClipping {
         clippingPolygons = triangulator.decompose(clippingPolygon, triangles)
         clippingPolygons!!.fastForEach { polygon ->
             makeClockwise(polygon)
-            polygon.add(polygon.items[0])
-            polygon.add(polygon.items[1])
+            polygon.add(polygon.data[0])
+            polygon.add(polygon.data[1])
         }
         return clippingPolygons!!.size
     }
@@ -125,7 +125,7 @@ class SkeletonClipping {
                     val d = 1 / (d0 * d2 + d1 * (y1 - y3))
 
                     var clipOutputCount = clipOutputLength shr 1
-                    val clipOutputItems = clipOutput.items
+                    val clipOutputItems = clipOutput.data
                     val clippedVerticesItems = clippedVertices.setSize(s + clipOutputCount * vertexSize)
                     run {
                         var ii = 0
@@ -244,7 +244,7 @@ class SkeletonClipping {
         input.add(y1)
         output.clear()
 
-        val clippingVertices = clippingArea.items
+        val clippingVertices = clippingArea.data
         val clippingVerticesLast = clippingArea.size - 4
         var i = 0
         while (true) {
@@ -255,7 +255,7 @@ class SkeletonClipping {
             val deltaX = edgeX - edgeX2
             val deltaY = edgeY - edgeY2
 
-            val inputVertices = input!!.items
+            val inputVertices = input!!.data
             val inputVerticesLength = input.size - 2
             val outputStart = output.size
             var ii = 0
@@ -308,8 +308,8 @@ class SkeletonClipping {
                 return true
             }
 
-            output.add(output.items[0])
-            output.add(output.items[1])
+            output.add(output.data[0])
+            output.add(output.data[1])
 
             if (i == clippingVerticesLast) break
             val temp = output
@@ -321,7 +321,7 @@ class SkeletonClipping {
 
         if (originalOutput !== output) {
             originalOutput.clear()
-            originalOutput.addAll(output.items, 0, output.size - 2)
+            originalOutput.add(output.data, 0, output.size - 2)
         } else
             originalOutput.setSize(originalOutput.size - 2)
 
@@ -331,7 +331,7 @@ class SkeletonClipping {
     companion object {
 
         internal fun makeClockwise(polygon: FloatArrayList) {
-            val vertices = polygon.items
+            val vertices = polygon.data
             val verticeslength = polygon.size
 
             var area = vertices[verticeslength - 2] * vertices[1] - vertices[0] * vertices[verticeslength - 1]

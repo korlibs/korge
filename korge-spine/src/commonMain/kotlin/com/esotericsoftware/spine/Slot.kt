@@ -85,7 +85,7 @@ class Slot {
         darkColor = if (slot.darkColor == null) null else Color(slot.darkColor)
         attachment = slot.attachment
         attachmentTime = slot.attachmentTime
-        this.deform.addAll(slot.deform)
+        this.deform.add(slot.deform)
     }
 
     /** The current attachment for the slot, or null if the slot has no attachment.  */

@@ -272,14 +272,14 @@ class Skeleton {
         sortBone(parent)
 
         if (constrained.size > 1) {
-            val child = constrained.peek()
+            val child = constrained.last()
             if (!updateCache.containsIdentity(child)) updateCacheReset.add(child)
         }
 
         updateCache.add(constraint)
 
         sortReset(parent.children)
-        constrained.peek().sorted = true
+        constrained.last().sorted = true
     }
 
     private fun sortPathConstraint(constraint: PathConstraint) {

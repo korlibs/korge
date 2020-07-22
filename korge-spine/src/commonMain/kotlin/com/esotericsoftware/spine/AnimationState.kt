@@ -210,11 +210,11 @@ class AnimationState {
                             (timeline as Timeline).apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.`in`)
                     }
                 } else {
-                    val timelineMode = current.timelineMode.items
+                    val timelineMode = current.timelineMode.data
 
                     val firstFrame = current.timelinesRotation.size != timelineCount shl 1
                     if (firstFrame) current.timelinesRotation.setSize(timelineCount shl 1)
-                    val timelinesRotation = current.timelinesRotation.items
+                    val timelinesRotation = current.timelinesRotation.data
 
                     for (ii in 0 until timelineCount) {
                         val timeline = timelines[ii] as Timeline
@@ -291,7 +291,7 @@ class AnimationState {
 
             val firstFrame = from.timelinesRotation.size != timelineCount shl 1
             if (firstFrame) from.timelinesRotation.setSize(timelineCount shl 1)
-            val timelinesRotation = from.timelinesRotation.items
+            val timelinesRotation = from.timelinesRotation.data
 
             from.totalAlpha = 0f
             for (i in 0 until timelineCount) {

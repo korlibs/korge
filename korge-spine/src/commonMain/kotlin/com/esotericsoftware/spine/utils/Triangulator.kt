@@ -44,7 +44,7 @@ internal class Triangulator {
     private val polygonIndicesPool = Pool() { ShortArrayList(16) }
 
     fun triangulate(verticesArray: FloatArrayList): ShortArrayList {
-        val vertices = verticesArray.items
+        val vertices = verticesArray.data
         var vertexCount = verticesArray.size shr 1
 
         val indicesArray = this.indicesArray
@@ -145,20 +145,20 @@ internal class Triangulator {
     }
 
     fun decompose(verticesArray: FloatArrayList, triangles: ShortArrayList): ArrayList<FloatArrayList> {
-        val vertices = verticesArray.items
+        val vertices = verticesArray.data
 
         val convexPolygons = this.convexPolygons
-        polygonPool.freeAll(convexPolygons)
+        polygonPool.free(convexPolygons)
         convexPolygons.clear()
 
         val convexPolygonsIndices = this.convexPolygonsIndices
-        polygonIndicesPool.freeAll(convexPolygonsIndices)
+        polygonIndicesPool.free(convexPolygonsIndices)
         convexPolygonsIndices.clear()
 
-        var polygonIndices = polygonIndicesPool.obtain()
+        var polygonIndices = polygonIndicesPool.alloc()
         polygonIndices.clear()
 
-        var polygon = polygonPool.obtain()
+        var polygon = polygonPool.alloc()
         polygon.clear()
 
         // Merge subsequent triangles if they form a triangle fan.
@@ -183,7 +183,7 @@ internal class Triangulator {
                 var merged = false
                 if (fanBaseIndex == t1) {
                     val o = polygon.size - 4
-                    val p = polygon.items
+                    val p = polygon.data
                     val winding1 = winding(p[o], p[o + 1], p[o + 2], p[o + 3], x3, y3)
                     val winding2 = winding(x3, y3, p[0], p[1], p[2], p[3])
                     if (winding1 == lastWinding && winding2 == lastWinding) {
@@ -203,7 +203,7 @@ internal class Triangulator {
                         polygonPool.free(polygon)
                         polygonIndicesPool.free(polygonIndices)
                     }
-                    polygon = polygonPool.obtain()
+                    polygon = polygonPool.alloc()
                     polygon.clear()
                     polygon.add(x1)
                     polygon.add(y1)
@@ -211,7 +211,7 @@ internal class Triangulator {
                     polygon.add(y2)
                     polygon.add(x3)
                     polygon.add(y3)
-                    polygonIndices = polygonIndicesPool.obtain()
+                    polygonIndices = polygonIndicesPool.alloc()
                     polygonIndices.clear()
                     polygonIndices.add(t1.toShort())
                     polygonIndices.add(t2.toShort())
@@ -243,7 +243,7 @@ internal class Triangulator {
 
                 polygon = convexPolygons.get(i)
                 val o = polygon.size - 4
-                val p = polygon.items
+                val p = polygon.data
                 var prevPrevX = p[o]
                 var prevPrevY = p[o + 1]
                 var prevX = p[o + 2]

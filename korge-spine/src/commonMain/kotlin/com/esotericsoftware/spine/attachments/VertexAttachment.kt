@@ -87,7 +87,7 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
         var vertices = this.vertices
         val bones = this.bones
         if (bones == null) {
-            if (deformArray.size > 0) vertices = deformArray.items
+            if (deformArray.size > 0) vertices = deformArray.data
             val bone = slot.bone
             val x = bone.worldX
             val y = bone.worldY
@@ -140,7 +140,7 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
                 w += stride
             }
         } else {
-            val deform = deformArray.items
+            val deform = deformArray.data
             var w = offset
             var b = skip * 3
             var f = skip shl 1

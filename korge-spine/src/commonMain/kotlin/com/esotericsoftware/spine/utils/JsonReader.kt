@@ -158,7 +158,7 @@ class JsonReader {
                                                     if (debug) println("name: $value")
                                                     names.add(value)
                                                 } else {
-                                                    val name = if (names.size > 0) names.pop() else null
+                                                    val name = if (names.size > 0) names.removeLast() else null
                                                     if (stringIsUnquoted) {
                                                         if (value == "true") {
                                                             if (debug) println("boolean: $name=true")
@@ -218,7 +218,7 @@ class JsonReader {
                                         2 ->
                                             // line 181 "JsonReader.rl"
                                         {
-                                            val name = if (names.size > 0) names.pop() else null
+                                            val name = if (names.size > 0) names.removeLast() else null
                                             if (debug) println("startObject: " + name!!)
                                             startObject(name)
                                             if (top == stack.size) {
@@ -243,7 +243,7 @@ class JsonReader {
                                         4 ->
                                             // line 192 "JsonReader.rl"
                                         {
-                                            val name = if (names.size > 0) names.pop() else null
+                                            val name = if (names.size > 0) names.removeLast() else null
                                             if (debug) println("startArray: " + name!!)
                                             startArray(name)
                                             if (top == stack.size) {
@@ -369,7 +369,7 @@ class JsonReader {
                                                     if (debug) println("name: $value")
                                                     names.add(value)
                                                 } else {
-                                                    val name = if (names.size > 0) names.pop() else null
+                                                    val name = if (names.size > 0) names.removeLast() else null
                                                     if (stringIsUnquoted) {
                                                         if (value == "true") {
                                                             if (debug) println("boolean: $name=true")
@@ -493,7 +493,7 @@ class JsonReader {
                                                     if (debug) println("name: $value")
                                                     names.add(value)
                                                 } else {
-                                                    val name = if (names.size > 0) names.pop() else null
+                                                    val name = if (names.size > 0) names.removeLast() else null
                                                     if (stringIsUnquoted) {
                                                         if (value == "true") {
                                                             if (debug) println("boolean: $name=true")
@@ -551,7 +551,7 @@ class JsonReader {
                                             s = p
                                         }
                                         2 -> {
-                                            val name = if (names.size > 0) names.pop() else null
+                                            val name = if (names.size > 0) names.removeLast() else null
                                             if (debug) println("startObject: " + name!!)
                                             startObject(name)
                                             if (top == stack.size) {
@@ -572,7 +572,7 @@ class JsonReader {
                                             if (true) continue@_goto
                                         }
                                         4 -> {
-                                            val name = if (names.size > 0) names.pop() else null
+                                            val name = if (names.size > 0) names.removeLast() else null
                                             if (debug) println("startArray: " + name!!)
                                             startArray(name)
                                             if (top == stack.size) {
@@ -687,7 +687,7 @@ class JsonReader {
                                                     if (debug) println("name: $value")
                                                     names.add(value)
                                                 } else {
-                                                    val name = if (names.size > 0) names.pop() else null
+                                                    val name = if (names.size > 0) names.removeLast() else null
                                                     if (stringIsUnquoted) {
                                                         if (value == "true") {
                                                             if (debug) println("boolean: $name=true")
@@ -772,7 +772,7 @@ class JsonReader {
                                                     if (debug) println("name: $value")
                                                     names.add(value)
                                                 } else {
-                                                    val name = if (names.size > 0) names.pop() else null
+                                                    val name = if (names.size > 0) names.removeLast() else null
                                                     if (stringIsUnquoted) {
                                                         if (value == "true") {
                                                             if (debug) println("boolean: $name=true")
@@ -847,7 +847,7 @@ class JsonReader {
                                                 if (debug) println("name: $value")
                                                 names.add(value)
                                             } else {
-                                                val name = if (names.size > 0) names.pop() else null
+                                                val name = if (names.size > 0) names.removeLast() else null
                                                 if (stringIsUnquoted) {
                                                     if (value == "true") {
                                                         if (debug) println("boolean: $name=true")
@@ -931,7 +931,7 @@ class JsonReader {
             throw RuntimeException("Error parsing JSON on line " + lineNumber + " near: "
                     + String(data, start, p - start) + "*ERROR*" + String(data, p, min(64, length - p)), parseRuntimeEx)
         } else if (elements.size != 0) {
-            val element = elements.peek()
+            val element = elements.last()
             elements.clear()
             if (element != null && element!!.isObject)
                 error("Error parsing JSON, unmatched brace.")
@@ -955,7 +955,7 @@ class JsonReader {
             if (current!!.size == 0)
                 current!!.child = child
             else {
-                val last = lastChild.pop()
+                val last = lastChild.removeLast()
                 last.next = child
                 child.prev = last
             }
@@ -984,9 +984,9 @@ class JsonReader {
     }
 
     protected fun pop() {
-        root = elements.pop()
-        if (current!!.size > 0) lastChild.pop()
-        current = if (elements.size > 0) elements.peek() else null
+        root = elements.removeLast()
+        if (current!!.size > 0) lastChild.removeLast()
+        current = if (elements.size > 0) elements.last() else null
     }
 
     protected fun string(name: String?, value: String?) {
