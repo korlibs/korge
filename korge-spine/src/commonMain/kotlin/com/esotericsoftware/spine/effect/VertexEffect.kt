@@ -1,4 +1,4 @@
-package com.esotericsoftware.spine.rendering
+package com.esotericsoftware.spine.effect
 
 import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.graphics.*

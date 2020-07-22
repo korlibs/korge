@@ -3,6 +3,7 @@ package com.esotericsoftware.spine.korge
 import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.BlendMode
 import com.esotericsoftware.spine.attachments.*
+import com.esotericsoftware.spine.effect.*
 import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.graphics.Texture
 import com.esotericsoftware.spine.rendering.*

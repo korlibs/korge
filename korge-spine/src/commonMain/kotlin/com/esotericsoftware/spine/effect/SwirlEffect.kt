@@ -27,40 +27,68 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.esotericsoftware.spine.rendering
+package com.esotericsoftware.spine.effect
 
 import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.utils.MathUtils
 import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.Skeleton
-import kotlin.random.Random
+import com.esotericsoftware.spine.utils.SpineUtils
+import kotlin.math.*
 
-class JitterEffect(private var x: Float, private var y: Float, val random: Random = Random) : VertexEffect {
+class SwirlEffect(private var radius: Float) : VertexEffect {
+    private var worldX: Float = 0.toFloat()
+    private var worldY: Float = 0.toFloat()
+    private var angle: Float = 0.toFloat()
+    var interpolation: (Float) -> Float = { a ->
+        val power = 2
+        (a - 1.toDouble()).pow(power.toDouble()).toFloat() * (if (power % 2 == 0) -1 else 1) + 1
+    }
+    private var centerX: Float = 0.toFloat()
+    private var centerY: Float = 0.toFloat()
 
-    override fun begin(skeleton: Skeleton) {}
+    fun ((Float) -> Float).apply(start: Float, end: Float, a: Float): Float {
+        return start + (end - start) * this(a)
+    }
 
-    private fun randomTriangular(min: Float, max: Float, mode: Float = (min + max) * 0.5f): Float {
-        val u = random.nextFloat()
-        val d = max - min
-        return if (u <= (mode - min) / d) min + kotlin.math.sqrt(u * d * (mode - min).toDouble()).toFloat() else max - kotlin.math.sqrt((1 - u) * d * (max - mode).toDouble()).toFloat()
+    override fun begin(skeleton: Skeleton) {
+        worldX = skeleton.x + centerX
+        worldY = skeleton.y + centerY
     }
 
     override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
-        position.x += randomTriangular(-x, y)
-        position.y += randomTriangular(-x, y)
+        val x = position.x - worldX
+        val y = position.y - worldY
+        val dist = sqrt((x * x + y * y).toDouble()).toFloat()
+        if (dist < radius) {
+            val theta = interpolation.apply(0f, angle, (radius - dist) / radius)
+            val cos = SpineUtils.cos(theta)
+            val sin = SpineUtils.sin(theta)
+            position.x = cos * x - sin * y + worldX
+            position.y = sin * x + cos * y + worldY
+        }
     }
 
     override fun end() {}
 
-    fun setJitter(x: Float, y: Float) {
-        this.x = x
-        this.y = y
+    fun setRadius(radius: Float) {
+        this.radius = radius
     }
 
-    fun setJitterX(x: Float) {
-        this.x = x
+    fun setCenter(centerX: Float, centerY: Float) {
+        this.centerX = centerX
+        this.centerY = centerY
     }
 
-    fun setJitterY(y: Float) {
-        this.y = y
+    fun setCenterX(centerX: Float) {
+        this.centerX = centerX
+    }
+
+    fun setCenterY(centerY: Float) {
+        this.centerY = centerY
+    }
+
+    fun setAngle(degrees: Float) {
+        this.angle = degrees * MathUtils.degRad
     }
 }

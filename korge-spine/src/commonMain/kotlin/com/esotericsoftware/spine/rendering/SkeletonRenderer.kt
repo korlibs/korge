@@ -39,6 +39,7 @@ import com.esotericsoftware.spine.attachments.ClippingAttachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
 import com.esotericsoftware.spine.attachments.SkeletonAttachment
+import com.esotericsoftware.spine.effect.*
 import com.esotericsoftware.spine.utils.SkeletonClipping
 
 class SkeletonRenderer {
