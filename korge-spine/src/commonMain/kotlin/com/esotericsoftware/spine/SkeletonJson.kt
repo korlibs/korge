@@ -680,16 +680,11 @@ class SkeletonJson {
         }
 
         // Deform timelines.
-        var deformMap = map.getChild("deform")
-        while (deformMap != null) {
-            val skin = skeletonData.findSkin(deformMap.name)
-                    ?: error("Skin not found: " + deformMap.name!!)
-            var slotMap = deformMap.child
-            while (slotMap != null) {
-                val slot = skeletonData.findSlot(slotMap!!.name)
-                        ?: error("Slot not found: " + slotMap!!.name!!)
-                var timelineMap = slotMap!!.child
-                while (timelineMap != null) {
+        map["deform"]?.fastForEach { deformMap ->
+            val skin = skeletonData.findSkin(deformMap.name) ?: error("Skin not found: " + deformMap.name!!)
+            deformMap.fastForEach { slotMap ->
+                val slot = skeletonData.findSlot(slotMap!!.name) ?: error("Slot not found: " + slotMap!!.name!!)
+                slotMap!!.fastForEach { timelineMap ->
                     val attachment = skin.getAttachment(slot.index, timelineMap!!.name!!) as? VertexAttachment?
                             ?: error("Deform attachment not found: " + timelineMap!!.name!!)
                     val weighted = attachment.bones != null
@@ -701,8 +696,7 @@ class SkeletonJson {
                     timeline.attachment = attachment
 
                     var frameIndex = 0
-                    var valueMap = timelineMap!!.child
-                    while (valueMap != null) {
+                    timelineMap!!.fastForEach { valueMap ->
                         val deform: FloatArray
                         val verticesValue = valueMap!!["vertices"]
                         if (verticesValue == null)
@@ -728,15 +722,11 @@ class SkeletonJson {
                         timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), deform)
                         readCurve(valueMap!!, timeline, frameIndex)
                         frameIndex++
-                        valueMap = valueMap!!.next
                     }
                     timelines.add(timeline)
                     duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
-                    timelineMap = timelineMap!!.next
                 }
-                slotMap = slotMap!!.next
             }
-            deformMap = deformMap.next
         }
 
         // Draw order timeline.
@@ -746,8 +736,7 @@ class SkeletonJson {
             val timeline = DrawOrderTimeline(drawOrdersMap.size)
             val slotCount = skeletonData.slots.size
             var frameIndex = 0
-            var drawOrderMap = drawOrdersMap.child
-            while (drawOrderMap != null) {
+            drawOrdersMap.fastForEach { drawOrderMap ->
                 var drawOrder: IntArray? = null
                 val offsets = drawOrderMap["offsets"]
                 if (offsets != null) {
@@ -757,8 +746,7 @@ class SkeletonJson {
                     val unchanged = IntArray(slotCount - offsets.size)
                     var originalIndex = 0
                     var unchangedIndex = 0
-                    var offsetMap = offsets.child
-                    while (offsetMap != null) {
+                    offsets.fastForEach { offsetMap ->
                         val slot = skeletonData.findSlot(offsetMap.getString("slot"))
                                 ?: error("Slot not found: " + offsetMap.getString("slot")!!)
 // Collect unchanged items.
@@ -766,7 +754,6 @@ class SkeletonJson {
                             unchanged[unchangedIndex++] = originalIndex++
                         // Set changed items.
                         drawOrder[originalIndex + offsetMap.getInt("offset")] = originalIndex++
-                        offsetMap = offsetMap.next
                     }
                     // Collect remaining unchanged items.
                     while (originalIndex < slotCount)
@@ -776,7 +763,6 @@ class SkeletonJson {
                         if (drawOrder[i] == -1) drawOrder[i] = unchanged[--unchangedIndex]
                 }
                 timeline.setFrame(frameIndex++, drawOrderMap.getFloat("time", 0f), drawOrder)
-                drawOrderMap = drawOrderMap.next
             }
             timelines.add(timeline)
             duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
@@ -787,8 +773,7 @@ class SkeletonJson {
         if (eventsMap != null) {
             val timeline = EventTimeline(eventsMap.size)
             var frameIndex = 0
-            var eventMap = eventsMap.child
-            while (eventMap != null) {
+            eventsMap.fastForEach { eventMap ->
                 val eventData = skeletonData.findEvent(eventMap.getString("name"))
                         ?: error("Event not found: " + eventMap.getString("name")!!)
                 val event = Event(eventMap.getFloat("time", 0f), eventData)
@@ -800,7 +785,6 @@ class SkeletonJson {
                     event.balance = eventMap.getFloat("balance", eventData.balance)
                 }
                 timeline.setFrame(frameIndex++, event)
-                eventMap = eventMap.next
             }
             timelines.add(timeline)
             duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
