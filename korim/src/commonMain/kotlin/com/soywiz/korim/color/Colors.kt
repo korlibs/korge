@@ -327,7 +327,8 @@ object Colors {
 			}
 			else -> {
 				val col = colorsByName[str.toLowerCase()]
-				if (col == null && errorOnDefault) error("Unsupported color '$str'")
+                //error("Unsupported color '$str'")
+                if (col == null && errorOnDefault) return get("#$str", default)
 				return col ?: default
 			}
 		}

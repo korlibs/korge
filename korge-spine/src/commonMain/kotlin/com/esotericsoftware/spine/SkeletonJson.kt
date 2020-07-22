@@ -118,7 +118,7 @@ class SkeletonJson {
             data.skinRequired = boneMap.getBoolean("skin", false)
 
             val color = boneMap.getString("color", null)
-            if (color != null) data.color.set(Color.valueOf(color))
+            if (color != null) data.color.setTo(RGBAf.valueOf(color))
 
             skeletonData.bones.add(data)
         }
@@ -132,10 +132,10 @@ class SkeletonJson {
             val data = SlotData(skeletonData.slots.size, slotName, boneData)
 
             val color = slotMap.getString("color", null)
-            if (color != null) data.color.set(Color.valueOf(color))
+            if (color != null) data.color.setTo(RGBAf.valueOf(color))
 
             val dark = slotMap.getString("dark", null)
-            if (dark != null) data.darkColor = Color.valueOf(dark)
+            if (dark != null) data.darkColor = RGBAf.valueOf(dark)
 
             data.attachmentName = slotMap.getString("attachment", null)
             data.blendMode = BlendMode.valueOf(slotMap.getStringNotNull("blend", BlendMode.normal.name)!!)
@@ -352,7 +352,7 @@ class SkeletonJson {
                 region.height = map.getFloat("height") * scale
 
                 val color = map.getString("color", null)
-                if (color != null) region.color.set(Color.valueOf(color))
+                if (color != null) region.color.setTo(RGBAf.valueOf(color))
 
                 region.updateOffset()
                 return region
@@ -362,7 +362,7 @@ class SkeletonJson {
                 readVertices(map, box, map.getInt("vertexCount") shl 1)
 
                 val color = map.getString("color", null)
-                if (color != null) box.color.set(Color.valueOf(color))
+                if (color != null) box.color.setTo(RGBAf.valueOf(color))
                 return box
             }
             AttachmentType.mesh, AttachmentType.linkedmesh -> {
@@ -371,7 +371,7 @@ class SkeletonJson {
                 mesh.path = path
 
                 val color = map.getString("color", null)
-                if (color != null) mesh.color.set(Color.valueOf(color))
+                if (color != null) mesh.color.setTo(RGBAf.valueOf(color))
 
                 mesh.width = map.getFloat("width", 0f) * scale
                 mesh.height = map.getFloat("height", 0f) * scale
@@ -409,7 +409,7 @@ class SkeletonJson {
                 path.lengths = lengths
 
                 val color = map.getString("color", null)
-                if (color != null) path.color.set(Color.valueOf(color))
+                if (color != null) path.color.setTo(RGBAf.valueOf(color))
                 return path
             }
             AttachmentType.point -> {
@@ -419,7 +419,7 @@ class SkeletonJson {
                 point.rotation = map.getFloat("rotation", 0f)
 
                 val color = map.getString("color", null)
-                if (color != null) point.color.set(Color.valueOf(color))
+                if (color != null) point.color.setTo(RGBAf.valueOf(color))
                 return point
             }
             AttachmentType.clipping -> {
@@ -435,7 +435,7 @@ class SkeletonJson {
                 readVertices(map, clip, map.getInt("vertexCount") shl 1)
 
                 val color = map.getString("color", null)
-                if (color != null) clip.color.set(Color.valueOf(color))
+                if (color != null) clip.color.setTo(RGBAf.valueOf(color))
                 return clip
             }
         }
@@ -508,7 +508,7 @@ class SkeletonJson {
 
                             var frameIndex = 0
                             timelineMap?.fastForEach { valueMap ->
-                                val color = Color.valueOf(valueMap!!.getString("color")!!)
+                                val color = RGBAf.valueOf(valueMap!!.getString("color")!!)
                                 timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), color.r, color.g, color.b, color.a)
                                 readCurve(valueMap!!, timeline, frameIndex)
                                 frameIndex++
@@ -523,8 +523,8 @@ class SkeletonJson {
 
                             var frameIndex = 0
                             timelineMap?.fastForEach { valueMap ->
-                                val light = Color.valueOf(valueMap!!.getString("light")!!)
-                                val dark = Color.valueOf(valueMap!!.getString("dark")!!)
+                                val light = RGBAf.valueOf(valueMap!!.getString("light")!!)
+                                val dark = RGBAf.valueOf(valueMap!!.getString("dark")!!)
                                 timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), light.r, light.g, light.b, light.a, dark.r, dark.g,
                                     dark.b)
                                 readCurve(valueMap!!, timeline, frameIndex)

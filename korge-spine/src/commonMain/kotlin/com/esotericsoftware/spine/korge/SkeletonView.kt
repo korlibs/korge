@@ -4,12 +4,13 @@ import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.BlendMode
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.effect.*
-import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.graphics.Texture
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
     = SkeletonView(skeleton, animationState).addTo(this, block)
@@ -38,10 +39,10 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     var vertexEffect: VertexEffect? = null
     private val temp = SpineVector2()
     private val temp2 = SpineVector2()
-    private val temp3 = Color()
-    private val temp4 = Color()
-    private val temp5 = Color()
-    private val temp6 = Color()
+    private val temp3 = RGBAf()
+    private val temp4 = RGBAf()
+    private val temp5 = RGBAf()
+    private val temp6 = RGBAf()
 
     private fun renderSkeleton(ctx: RenderContext, skeleton: Skeleton) {
         val tempPosition = this.temp
@@ -59,7 +60,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         lateinit var vertices: FloatArray
         var uvs: FloatArray? = null
         lateinit var triangles: ShortArray
-        var color: Color? = null
+        var color: RGBAf? = null
         val skeletonColor = skeleton.color
         val r = skeletonColor.r
         val g = skeletonColor.g
@@ -122,33 +123,35 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     //setBlendFunction(ctx, blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
                 }
 
-                val c = Color.intToFloatColor(alpha.toInt() shl 24 //
-                    or ((b * slotColor.b * color.b * multiplier).toInt() shl 16) //
-                    or ((g * slotColor.g * color.g * multiplier).toInt() shl 8) //
-                    or (r * slotColor.r * color.r * multiplier).toInt())
+                val c = RGBA(
+                    (r * slotColor.r * color.r * multiplier).toInt(),
+                    (g * slotColor.g * color.g * multiplier).toInt(),
+                    (b * slotColor.b * color.b * multiplier).toInt(),
+                    alpha.toInt()
+                )
 
                 if (clipper.isClipping) {
-                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles.size, uvs!!, c, 0f, false)
+                    clipper.clipTriangles(vertices, verticesLength, triangles, triangles.size, uvs!!, c, Colors.BLACK, false)
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
-                    if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, 0f)
+                    if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, Colors.BLACK)
                     // @TODO: Remove clippedTriangles.toArray() so it doesn't allocate
                     draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
                 } else {
                     if (vertexEffect != null) {
-                        tempLight1.set(Color.floatToIntColor(c))
-                        tempDark1.set(0)
+                        tempLight1.setTo(c)
+                        tempDark1.setTo(Colors.BLACK)
                         var v = 0
                         var u = 0
                         while (v < verticesLength) {
                             tempPosition.x = vertices!![v]
                             tempPosition.y = vertices[v + 1]
-                            tempLight2.set(tempLight1)
-                            tempDark2.set(tempDark1)
+                            tempLight2.setTo(tempLight1)
+                            tempDark2.setTo(tempDark1)
                             tempUV.x = uvs!![u]
                             tempUV.y = uvs[u + 1]
                             vertexEffect.transform(tempPosition, tempUV, tempLight2, tempDark2)
-                            vertices[v] = tempPosition.x
+                            vertices[v + 0] = tempPosition.x
                             vertices[v + 1] = tempPosition.y
                             vertices[v + 2] = tempLight2.toFloatBits()
                             vertices[v + 3] = tempUV.x
@@ -160,7 +163,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                         var v = 0
                         var u = 0
                         while (v < verticesLength) {
-                            vertices[v + 2] = c
+                            vertices[v + 2] = Float.fromBits(c.value)
                             vertices[v + 3] = uvs!![u]
                             vertices[v + 4] = uvs[u + 1]
                             v += 5
@@ -181,7 +184,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         vertexEffect?.end()
     }
 
-    private fun applyVertexEffect(vertices: FloatArray, verticesLength: Int, stride: Int, light: Float, dark: Float) {
+    private fun applyVertexEffect(vertices: FloatArray, verticesLength: Int, stride: Int, light: RGBA, dark: RGBA) {
         val tempPosition = this.temp
         val tempUV = this.temp2
         val tempLight1 = this.temp3
@@ -189,8 +192,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         val tempLight2 = this.temp5
         val tempDark2 = this.temp6
         val vertexEffect = this.vertexEffect
-        tempLight1.set(Color.floatToIntColor(light))
-        tempDark1.set(Color.floatToIntColor(dark))
+        tempLight1.setTo(light)
+        tempDark1.setTo(dark)
         if (stride == 5) {
             var v = 0
             while (v < verticesLength) {
@@ -198,8 +201,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                 tempPosition.y = vertices[v + 1]
                 tempUV.x = vertices[v + 3]
                 tempUV.y = vertices[v + 4]
-                tempLight2.set(tempLight1)
-                tempDark2.set(tempDark1)
+                tempLight2.setTo(tempLight1)
+                tempDark2.setTo(tempDark1)
                 vertexEffect!!.transform(tempPosition, tempUV, tempLight2, tempDark2)
                 vertices[v] = tempPosition.x
                 vertices[v + 1] = tempPosition.y
@@ -215,8 +218,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                 tempPosition.y = vertices[v + 1]
                 tempUV.x = vertices[v + 4]
                 tempUV.y = vertices[v + 5]
-                tempLight2.set(tempLight1)
-                tempDark2.set(tempDark1)
+                tempLight2.setTo(tempLight1)
+                tempDark2.setTo(tempDark1)
                 vertexEffect!!.transform(tempPosition, tempUV, tempLight2, tempDark2)
                 vertices[v] = tempPosition.x
                 vertices[v + 1] = tempPosition.y
@@ -264,6 +267,9 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
 
         //batch.flush()
     }
+
+    @Deprecated("We shouldn't do this")
+    private fun RGBAf.toFloatBits(): Float = Float.fromBits(this.rgba.value)
 
     companion object {
         private val quadTriangles = shortArrayOf(0, 1, 2, 2, 3, 0)

@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.SkeletonBounds
 
 /** An attachment with vertices that make up a polygon. Can be used for hit detection, creating physics bodies, spawning particle
@@ -42,12 +42,12 @@ class BoundingBoxAttachment(name: String) : VertexAttachment(name) {
     // Nonessential.
     /** The color of the bounding box as it was in Spine. Available only when nonessential data was exported. Bounding boxes are
      * not usually rendered at runtime.  */
-    val color = Color(0.38f, 0.94f, 0f, 1f) // 60f000ff
+    val color = RGBAf(0.38f, 0.94f, 0f, 1f) // 60f000ff
 
     override fun copy(): Attachment {
         val copy = BoundingBoxAttachment(name)
         copyTo(copy)
-        copy.color.set(color)
+        copy.color.setTo(color)
         return copy
     }
 }

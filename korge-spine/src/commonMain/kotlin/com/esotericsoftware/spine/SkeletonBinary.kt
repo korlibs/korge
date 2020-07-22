@@ -127,7 +127,7 @@ class SkeletonBinary {
                     data.length = input.readFloat() * scale
                     data.transformMode = TransformMode.values[input.readInt(true)]
                     data.skinRequired = input.readBoolean()
-                    if (nonessential) Color.rgba8888ToColor(data.color, input.readInt())
+                    if (nonessential) rgba8888ToColor(data.color, input.readInt())
                     o.setAndGrow(i, data)
                 }
             }
@@ -139,10 +139,10 @@ class SkeletonBinary {
                     val slotName = input.readString()!!
                     val boneData = skeletonData.bones[input.readInt(true)]
                     val data = SlotData(i, slotName, boneData)
-                    Color.rgba8888ToColor(data.color, input.readInt())
+                    rgba8888ToColor(data.color, input.readInt())
 
                     val darkColor = input.readInt()
-                    if (darkColor != -1) Color.rgb888ToColor(Color().also { data.darkColor = it }, darkColor)
+                    if (darkColor != -1) rgb888ToColor(RGBAf().also { data.darkColor = it }, darkColor)
 
                     data.attachmentName = input.readStringRef()
                     data.blendMode = BlendMode.values[input.readInt(true)]
@@ -305,6 +305,19 @@ class SkeletonBinary {
         return skeletonData
     }
 
+    private fun rgb888ToColor(color: RGBAf, value: Int) {
+        color.r = (value and 0x00ff0000 ushr 16) / 255f
+        color.g = (value and 0x0000ff00 ushr 8) / 255f
+        color.b = (value and 0x000000ff) / 255f
+    }
+
+    private fun rgba8888ToColor(color: RGBAf, value: Int) {
+        color.r = (value and -0x1000000 ushr 24) / 255f
+        color.g = (value and 0x00ff0000 ushr 16) / 255f
+        color.b = (value and 0x0000ff00 ushr 8) / 255f
+        color.a = (value and 0x000000ff) / 255f
+    }
+
     /** @return May be null.
      */
     
@@ -400,7 +413,7 @@ class SkeletonBinary {
                 region.rotation = rotation
                 region.width = width * scale
                 region.height = height * scale
-                Color.rgba8888ToColor(region.color, color)
+                rgba8888ToColor(region.color, color)
                 region.updateOffset()
                 return region
             }
@@ -413,7 +426,7 @@ class SkeletonBinary {
                 box.worldVerticesLength = vertexCount shl 1
                 box.vertices = vertices.vertices
                 box.bones = vertices.bones
-                if (nonessential) Color.rgba8888ToColor(box.color, color)
+                if (nonessential) rgba8888ToColor(box.color, color)
                 return box
             }
             AttachmentType.mesh -> {
@@ -436,7 +449,7 @@ class SkeletonBinary {
                 if (path == null) path = name
                 val mesh = attachmentLoader.newMeshAttachment(skin, name!!, path!!) ?: return null
                 mesh.path = path
-                Color.rgba8888ToColor(mesh.color, color)
+                rgba8888ToColor(mesh.color, color)
                 mesh.bones = vertices.bones
                 mesh.vertices = vertices.vertices
                 mesh.worldVerticesLength = vertexCount shl 1
@@ -467,7 +480,7 @@ class SkeletonBinary {
                 if (path == null) path = name
                 val mesh = attachmentLoader.newMeshAttachment(skin, name!!, path!!) ?: return null
                 mesh.path = path
-                Color.rgba8888ToColor(mesh.color, color)
+                rgba8888ToColor(mesh.color, color)
                 if (nonessential) {
                     mesh.width = width * scale
                     mesh.height = height * scale
@@ -496,7 +509,7 @@ class SkeletonBinary {
                 path.vertices = vertices.vertices
                 path.bones = vertices.bones
                 path.lengths = lengths
-                if (nonessential) Color.rgba8888ToColor(path.color, color)
+                if (nonessential) rgba8888ToColor(path.color, color)
                 return path
             }
             AttachmentType.point -> {
@@ -509,7 +522,7 @@ class SkeletonBinary {
                 point.x = x * scale
                 point.y = y * scale
                 point.rotation = rotation
-                if (nonessential) Color.rgba8888ToColor(point.color, color)
+                if (nonessential) rgba8888ToColor(point.color, color)
                 return point
             }
             AttachmentType.clipping -> {
@@ -523,7 +536,7 @@ class SkeletonBinary {
                 clip.worldVerticesLength = vertexCount shl 1
                 clip.vertices = vertices.vertices
                 clip.bones = vertices.bones
-                if (nonessential) Color.rgba8888ToColor(clip.color, color)
+                if (nonessential) rgba8888ToColor(clip.color, color)
                 return clip
             }
         }
@@ -606,7 +619,7 @@ class SkeletonBinary {
                                 timeline.slotIndex = slotIndex
                                 for (frameIndex in 0 until frameCount) {
                                     val time = input.readFloat()
-                                    Color.rgba8888ToColor(tempColor1, input.readInt())
+                                    rgba8888ToColor(tempColor1, input.readInt())
                                     timeline.setFrame(frameIndex, time, tempColor1.r, tempColor1.g, tempColor1.b, tempColor1.a)
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
@@ -618,8 +631,8 @@ class SkeletonBinary {
                                 timeline.slotIndex = slotIndex
                                 for (frameIndex in 0 until frameCount) {
                                     val time = input.readFloat()
-                                    Color.rgba8888ToColor(tempColor1, input.readInt())
-                                    Color.rgb888ToColor(tempColor2, input.readInt())
+                                    rgba8888ToColor(tempColor1, input.readInt())
+                                    rgb888ToColor(tempColor2, input.readInt())
                                     timeline.setFrame(frameIndex, time, tempColor1.r, tempColor1.g, tempColor1.b, tempColor1.a, tempColor2.r,
                                             tempColor2.g, tempColor2.b)
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
@@ -1046,7 +1059,7 @@ class SkeletonBinary {
         val CURVE_STEPPED = 1
         val CURVE_BEZIER = 2
 
-        private val tempColor1 = Color()
-        private val tempColor2 = Color()
+        private val tempColor1 = RGBAf()
+        private val tempColor2 = RGBAf()
     }
 }

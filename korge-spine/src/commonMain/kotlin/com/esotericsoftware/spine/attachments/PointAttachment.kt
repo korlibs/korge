@@ -33,7 +33,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.radDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.utils.SpineVector2
 import com.esotericsoftware.spine.Bone
 
@@ -51,7 +51,7 @@ class PointAttachment(name: String) : Attachment(name) {
     // Nonessential.
     /** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
      * are not usually rendered at runtime.  */
-    val color = Color(0.9451f, 0.9451f, 0f, 1f) // f1f100ff
+    val color = RGBAf(0.9451f, 0.9451f, 0f, 1f) // f1f100ff
 
     fun computeWorldPosition(bone: Bone, point: SpineVector2): SpineVector2 {
         point.x = x * bone.a + y * bone.b + bone.worldX
@@ -72,7 +72,7 @@ class PointAttachment(name: String) : Attachment(name) {
         copy.x = x
         copy.y = y
         copy.rotation = rotation
-        copy.color.set(color)
+        copy.color.setTo(color)
         return copy
     }
 }

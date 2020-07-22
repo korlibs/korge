@@ -29,12 +29,11 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 
 import com.esotericsoftware.spine.Animation.DeformTimeline
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.VertexAttachment
-import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 
 /** Stores a slot's current pose. Slots organize attachments for [Skeleton.drawOrder] purposes and provide a place to store
@@ -49,11 +48,11 @@ class Slot {
 
     /** The color used to tint the slot's attachment. If [.getDarkColor] is set, this is used as the light color for two
      * color tinting.  */
-    val color = Color()
+    val color = RGBAf()
 
     /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
      * color's alpha is not used.  */
-    val darkColor: Color?
+    val darkColor: RGBAf?
     internal var attachment: Attachment? = null
     private var attachmentTime: Float = 0.toFloat()
 
@@ -73,7 +72,7 @@ class Slot {
     constructor(data: SlotData, bone: Bone) {
         this.data = data
         this.bone = bone
-        darkColor = if (data.darkColor == null) null else Color()
+        darkColor = if (data.darkColor == null) null else RGBAf()
         setToSetupPose()
     }
 
@@ -81,8 +80,8 @@ class Slot {
     constructor(slot: Slot, bone: Bone) {
         data = slot.data
         this.bone = bone
-        color.set(slot.color)
-        darkColor = if (slot.darkColor == null) null else Color(slot.darkColor)
+        color.setTo(slot.color)
+        darkColor = if (slot.darkColor == null) null else RGBAf(slot.darkColor)
         attachment = slot.attachment
         attachmentTime = slot.attachmentTime
         this.deform.add(slot.deform)
@@ -115,8 +114,8 @@ class Slot {
 
     /** Sets this slot to the setup pose.  */
     fun setToSetupPose() {
-        color.set(data.color)
-        darkColor?.set(data.darkColor!!)
+        color.setTo(data.color)
+        darkColor?.setTo(data.darkColor!!)
         if (data.attachmentName == null)
             setAttachment(null)
         else {

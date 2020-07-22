@@ -102,7 +102,7 @@ class RegionAttachment(name: String) : Attachment(name) {
     val offset = FloatArray(8)
 
     /** The color to tint the region attachment.  */
-    val color = Color(1f, 1f, 1f, 1f)
+    val color = RGBAf(1f, 1f, 1f, 1f)
 
     /** Calculates the [.offset] using the region settings. Must be called after changing region settings.  */
     fun updateOffset() {
@@ -212,7 +212,7 @@ class RegionAttachment(name: String) : Attachment(name) {
         copy.height = height
         arraycopy(uVs, 0, copy.uVs, 0, 8)
         arraycopy(offset, 0, copy.offset, 0, 8)
-        copy.color.set(color)
+        copy.color.setTo(color)
         return copy
     }
 

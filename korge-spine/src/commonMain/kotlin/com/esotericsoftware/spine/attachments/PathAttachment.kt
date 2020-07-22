@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 
 import com.esotericsoftware.spine.PathConstraint
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
@@ -52,7 +52,7 @@ class PathAttachment(name: String) : VertexAttachment(name) {
     // Nonessential.
     /** The color of the path as it was in Spine. Available only when nonessential data was exported. Paths are not usually
      * rendered at runtime.  */
-    val color = Color(1f, 0.5f, 0f, 1f) // ff7f00ff
+    val color = RGBAf(1f, 0.5f, 0f, 1f) // ff7f00ff
 
     override fun copy(): Attachment {
         val copy = PathAttachment(name)
@@ -61,7 +61,7 @@ class PathAttachment(name: String) : VertexAttachment(name) {
         arraycopy(lengths, 0, copy.lengths, 0, lengths.size)
         copy.closed = closed
         copy.constantSpeed = constantSpeed
-        copy.color.set(color)
+        copy.color.setTo(color)
         return copy
     }
 }

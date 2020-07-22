@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 
 /** Stores the setup pose for a [Bone].  */
 class BoneData {
@@ -77,7 +77,7 @@ class BoneData {
     // Nonessential.
     /** The color of the bone as it was in Spine. Available only when nonessential data was exported. Bones are not usually
      * rendered at runtime.  */
-    val color = Color(0.61f, 0.61f, 0.61f, 1f) // 9b9b9bff
+    val color = RGBAf(0.61f, 0.61f, 0.61f, 1f) // 9b9b9bff
 
     /** @param parent May be null.
      */

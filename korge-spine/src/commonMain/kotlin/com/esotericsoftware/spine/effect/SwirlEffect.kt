@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.effect
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.utils.SpineVector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.utils.SpineUtils
@@ -55,7 +55,7 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
         worldY = skeleton.y + centerY
     }
 
-    override fun transform(position: SpineVector2, uv: SpineVector2, light: Color, dark: Color) {
+    override fun transform(position: SpineVector2, uv: SpineVector2, light: RGBAf, dark: RGBAf) {
         val x = position.x - worldX
         val y = position.y - worldY
         val dist = sqrt((x * x + y * y).toDouble()).toFloat()

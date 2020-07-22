@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.SlotData
 
 /** An attachment with vertices that make up a polygon used for clipping the rendering of other attachments.  */
@@ -41,13 +41,13 @@ class ClippingAttachment(name: String) : VertexAttachment(name) {
     // Nonessential.
     /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons
      * are not usually rendered at runtime.  */
-    val color = Color(0.2275f, 0.2275f, 0.8078f, 1f) // ce3a3aff
+    val color = RGBAf(0.2275f, 0.2275f, 0.8078f, 1f) // ce3a3aff
 
     override fun copy(): Attachment {
         val copy = ClippingAttachment(name)
         copyTo(copy)
         copy.endSlot = endSlot
-        copy.color.set(color)
+        copy.color.setTo(color)
         return copy
     }
 }

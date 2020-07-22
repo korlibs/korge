@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 
 /** Stores the setup pose for a [Slot].  */
 class SlotData(
@@ -46,12 +46,12 @@ class SlotData(
 
     /** The color used to tint the slot's attachment. If [.getDarkColor] is set, this is used as the light color for two
      * color tinting.  */
-    val color = Color(1f, 1f, 1f, 1f)
+    val color = RGBAf(1f, 1f, 1f, 1f)
     /** The dark color used to tint the slot's attachment for two color tinting, or null if two color tinting is not used. The dark
      * color's alpha is not used.  */
     /** @param darkColor May be null.
      */
-    var darkColor: Color? = null
+    var darkColor: RGBAf? = null
     /** The name of the attachment that is visible for this slot in the setup pose, or null if no attachment is visible.  */
     /** @param attachmentName May be null.
      */

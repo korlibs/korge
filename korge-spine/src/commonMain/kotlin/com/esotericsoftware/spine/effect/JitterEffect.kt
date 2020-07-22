@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.effect
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 import com.esotericsoftware.spine.utils.SpineVector2
 import com.esotericsoftware.spine.Skeleton
 import kotlin.random.Random
@@ -43,7 +43,7 @@ class JitterEffect(private var x: Float, private var y: Float, val random: Rando
         return if (u <= (mode - min) / d) min + kotlin.math.sqrt(u * d * (mode - min).toDouble()).toFloat() else max - kotlin.math.sqrt((1 - u) * d * (max - mode).toDouble()).toFloat()
     }
 
-    override fun transform(position: SpineVector2, uv: SpineVector2, light: Color, dark: Color) {
+    override fun transform(position: SpineVector2, uv: SpineVector2, light: RGBAf, dark: RGBAf) {
         position.x += randomTriangular(-x, y)
         position.y += randomTriangular(-x, y)
     }

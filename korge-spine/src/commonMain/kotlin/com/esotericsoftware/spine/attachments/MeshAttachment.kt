@@ -57,7 +57,7 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
     lateinit var triangles: ShortArray
 
     /** The color to tint the mesh.  */
-    val color = Color(1f, 1f, 1f, 1f)
+    val color = RGBAf(1f, 1f, 1f, 1f)
 
     /** The number of entries at the beginning of [.vertices] that make up the mesh hull.  */
     var hullLength: Int = 0
@@ -184,7 +184,7 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
         val copy = MeshAttachment(name)
         copy.region = region
         copy.path = path
-        copy.color.set(color)
+        copy.color.setTo(color)
 
         copyTo(copy)
         copy.regionUVs = FloatArray(regionUVs.size)
@@ -210,7 +210,7 @@ class MeshAttachment(name: String) : VertexAttachment(name) {
         val mesh = MeshAttachment(name)
         mesh.region = region
         mesh.path = path
-        mesh.color.set(color)
+        mesh.color.setTo(color)
         mesh.deformAttachment = deformAttachment
         mesh.parentMesh = if (this.parentMesh != null) this.parentMesh else this
         mesh.updateUVs()

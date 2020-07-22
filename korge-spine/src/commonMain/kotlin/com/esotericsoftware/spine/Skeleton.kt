@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.RGBAf
 
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
@@ -73,7 +73,7 @@ class Skeleton {
     val updateCache: ArrayList<Updatable> = ArrayList()
     internal val updateCacheReset: ArrayList<Bone> = ArrayList()
     internal var skin: Skin? = null
-    internal var color: Color
+    internal var color: RGBAf
 
     /** Returns the skeleton's time. This can be used for tracking, such as with Slot [Slot.getAttachmentTime].
      *
@@ -139,7 +139,7 @@ class Skeleton {
             pathConstraints.add(PathConstraint(pathConstraintData, this))
         }
 
-        color = Color(1f, 1f, 1f, 1f)
+        color = RGBAf(1f, 1f, 1f, 1f)
 
         updateCache()
     }
@@ -188,7 +188,7 @@ class Skeleton {
         }
 
         skin = skeleton.skin
-        color = Color(skeleton.color)
+        color = RGBAf(skeleton.color)
         time = skeleton.time
         scaleX = skeleton.scaleX
         scaleY = skeleton.scaleY
@@ -779,13 +779,13 @@ class Skeleton {
     }
 
     /** The color to tint all the skeleton's attachments.  */
-    fun getColor(): Color {
+    fun getColor(): RGBAf {
         return color
     }
 
     /** A convenience method for setting the skeleton color. The color can also be set by modifying [.getColor].  */
-    fun setColor(color: Color) {
-        this.color.set(color)
+    fun setColor(color: RGBAf) {
+        this.color.setTo(color)
     }
 
     fun setScale(scaleX: Float, scaleY: Float) {

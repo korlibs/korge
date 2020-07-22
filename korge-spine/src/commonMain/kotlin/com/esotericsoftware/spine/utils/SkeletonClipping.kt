@@ -33,6 +33,7 @@ import com.esotericsoftware.spine.Slot
 import com.esotericsoftware.spine.attachments.ClippingAttachment
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.korim.color.*
 
 class SkeletonClipping {
     private val triangulator = SpineTriangulator()
@@ -80,8 +81,12 @@ class SkeletonClipping {
         clippingPolygon.clear()
     }
 
-    fun clipTriangles(vertices: FloatArray, verticesLength: Int, triangles: ShortArray, trianglesLength: Int, uvs: FloatArray,
-                      light: Float, dark: Float, twoColor: Boolean) {
+    fun clipTriangles(
+        vertices: FloatArray, verticesLength: Int, triangles: ShortArray, trianglesLength: Int, uvs: FloatArray,
+        light: RGBA, dark: RGBA, twoColor: Boolean
+    ) {
+        val light = Float.fromBits(light.value)
+        val dark = Float.fromBits(dark.value)
 
         val clipOutput = this.clipOutput
         val clippedVertices = this.clippedVertices

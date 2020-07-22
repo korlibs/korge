@@ -683,7 +683,7 @@ class Animation(
             if (time < frames[0]) { // Time is before first frame.
                 when (blend) {
                     setup -> {
-                        slot.color.set(slot.data.color)
+                        slot.color.setTo(slot.data.color)
                         return
                     }
                     first -> {
@@ -723,10 +723,10 @@ class Animation(
                 a += (frames[frame + A] - a) * percent
             }
             if (alpha == 1f)
-                slot.color[r, g, b] = a
+                slot.color.setTo(r, g, b, a)
             else {
                 val color = slot.color
-                if (blend == setup) color.set(slot.data.color)
+                if (blend == setup) color.setTo(slot.data.color)
                 color.add((r - color.r) * alpha, (g - color.g) * alpha, (b - color.b) * alpha, (a - color.a) * alpha)
             }
         }
@@ -790,8 +790,8 @@ class Animation(
             if (time < frames[0]) { // Time is before first frame.
                 when (blend) {
                     setup -> {
-                        slot.color.set(slot.data.color)
-                        slot.darkColor!!.set(slot.data.darkColor!!)
+                        slot.color.setTo(slot.data.color)
+                        slot.darkColor!!.setTo(slot.data.darkColor!!)
                         return
                     }
                     first -> {
@@ -846,14 +846,14 @@ class Animation(
                 b2 += (frames[frame + B2] - b2) * percent
             }
             if (alpha == 1f) {
-                slot.color[r, g, b] = a
-                slot.darkColor!![r2, g2, b2] = 1f
+                slot.color.setTo(r, g, b, a)
+                slot.darkColor!!.setTo(r2, g2, b2, 1f)
             } else {
                 val light = slot.color
                 val dark = slot.darkColor
                 if (blend == setup) {
-                    light.set(slot.data.color)
-                    dark!!.set(slot.data.darkColor!!)
+                    light.setTo(slot.data.color)
+                    dark!!.setTo(slot.data.darkColor!!)
                 }
                 light.add((r - light.r) * alpha, (g - light.g) * alpha, (b - light.b) * alpha, (a - light.a) * alpha)
                 dark!!.add((r2 - dark.r) * alpha, (g2 - dark.g) * alpha, (b2 - dark.b) * alpha, 0f)
