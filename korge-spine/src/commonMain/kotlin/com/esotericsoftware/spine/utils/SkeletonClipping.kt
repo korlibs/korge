@@ -32,6 +32,7 @@ package com.esotericsoftware.spine.utils
 import com.esotericsoftware.spine.Slot
 import com.esotericsoftware.spine.attachments.ClippingAttachment
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 
 class SkeletonClipping {
     private val triangulator = Triangulator()
@@ -42,7 +43,7 @@ class SkeletonClipping {
     private val scratch = FloatArrayList()
 
     private var clipAttachment: ClippingAttachment? = null
-    private var clippingPolygons: JArray<FloatArrayList>? = null
+    private var clippingPolygons: ArrayList<FloatArrayList>? = null
 
     val isClipping: Boolean
         get() = clipAttachment != null
@@ -58,7 +59,7 @@ class SkeletonClipping {
         makeClockwise(clippingPolygon)
         val triangles = triangulator.triangulate(clippingPolygon)
         clippingPolygons = triangulator.decompose(clippingPolygon, triangles)
-        for (polygon in clippingPolygons!!) {
+        clippingPolygons!!.fastForEach { polygon ->
             makeClockwise(polygon)
             polygon.add(polygon.items[0])
             polygon.add(polygon.items[1])

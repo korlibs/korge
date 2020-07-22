@@ -29,12 +29,12 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
 import com.esotericsoftware.spine.utils.SpineUtils.PI
 import com.esotericsoftware.spine.utils.SpineUtils.atan2
 import com.esotericsoftware.spine.utils.SpineUtils.cos
 import com.esotericsoftware.spine.utils.SpineUtils.radDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sin
+import com.soywiz.kds.iterators.*
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.
@@ -48,7 +48,7 @@ class IkConstraint : Updatable {
 
     /** The bones that will be modified by this IK constraint.  */
 
-    val bones: JArray<Bone>
+    val bones: ArrayList<Bone>
 
 
     internal var target: Bone? = null
@@ -85,8 +85,8 @@ class IkConstraint : Updatable {
         compress = data.compress
         stretch = data.stretch
 
-        bones = JArray(data.bones.size)
-        for (boneData in data.bones.iterator()) {
+        bones = ArrayList(data.bones.size)
+        data.bones.fastForEach { boneData ->
             val bone = skeleton.findBone(boneData.name)
             bones.add(bone!!)
         }
@@ -96,9 +96,10 @@ class IkConstraint : Updatable {
     /** Copy constructor.  */
     constructor(constraint: IkConstraint, skeleton: Skeleton) {
         data = constraint.data
-        bones = JArray(constraint.bones.size)
-        for (bone in constraint.bones)
+        bones = ArrayList(constraint.bones.size)
+        constraint.bones.fastForEach { bone ->
             bones.add(skeleton.bones[bone!!.data.index])
+        }
         target = skeleton.bones[constraint.target!!.data.index]
         mix = constraint.mix
         softness = constraint.softness

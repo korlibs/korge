@@ -120,7 +120,7 @@ object SpineUtils {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun <T> arraycopy(src: JArray<T>, srcPos: Int, dest: JArray<T>, destPos: Int, length: Int) {
-        com.soywiz.kmem.arraycopy(src.items, srcPos, dest.items, destPos, length)
+    fun <T> arraycopy(src: ArrayList<T>, srcPos: Int, dest: ArrayList<T>, destPos: Int, length: Int) {
+        com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 }

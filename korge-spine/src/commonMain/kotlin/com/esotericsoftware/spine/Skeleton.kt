@@ -40,6 +40,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import kotlin.js.*
 
 /** Stores the current pose for a skeleton.
@@ -52,25 +53,25 @@ class Skeleton {
     val data: SkeletonData
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
-    val bones: JArray<Bone>
+    val bones: ArrayList<Bone>
 
     /** The skeleton's slots.  */
-    val slots: JArray<Slot>
-    internal var drawOrder: JArray<Slot>
+    val slots: ArrayList<Slot>
+    internal var drawOrder: ArrayList<Slot>
 
     /** The skeleton's IK constraints.  */
-    val ikConstraints: JArray<IkConstraint>
+    val ikConstraints: ArrayList<IkConstraint>
 
     /** The skeleton's transform constraints.  */
-    val transformConstraints: JArray<TransformConstraint>
+    val transformConstraints: ArrayList<TransformConstraint>
 
     /** The skeleton's path constraints.  */
-    val pathConstraints: JArray<PathConstraint>
+    val pathConstraints: ArrayList<PathConstraint>
 
     /** The list of bones and constraints, sorted in the order they should be updated, as computed by [.updateCache].  */
     @JsName("updateCacheProp")
-    val updateCache: JArray<Updatable> = JArray()
-    internal val updateCacheReset: JArray<Bone> = JArray()
+    val updateCache: ArrayList<Updatable> = ArrayList()
+    internal val updateCacheReset: ArrayList<Bone> = ArrayList()
     internal var skin: Skin? = null
     internal var color: Color
 
@@ -101,8 +102,8 @@ class Skeleton {
     constructor(data: SkeletonData) {
         this.data = data
 
-        bones = JArray(data.bones.size)
-        for (boneData in data.bones) {
+        bones = ArrayList(data.bones.size)
+        data.bones.fastForEach { boneData ->
             val bone: Bone
             if (boneData.parent == null)
                 bone = Bone(boneData, this, null)
@@ -114,26 +115,29 @@ class Skeleton {
             bones.add(bone)
         }
 
-        slots = JArray(data.slots.size)
-        drawOrder = JArray(data.slots.size)
-        for (slotData in data.slots) {
+        slots = ArrayList(data.slots.size)
+        drawOrder = ArrayList(data.slots.size)
+        data.slots.fastForEach { slotData ->
             val bone = bones[slotData.boneData.index]
             val slot = Slot(slotData, bone)
             slots.add(slot)
             drawOrder.add(slot)
         }
 
-        ikConstraints = JArray(data.ikConstraints.size)
-        for (ikConstraintData in data.ikConstraints)
+        ikConstraints = ArrayList(data.ikConstraints.size)
+        data.ikConstraints.fastForEach { ikConstraintData ->
             ikConstraints.add(IkConstraint(ikConstraintData, this))
+        }
 
-        transformConstraints = JArray(data.transformConstraints.size)
-        for (transformConstraintData in data.transformConstraints)
+        transformConstraints = ArrayList(data.transformConstraints.size)
+        data.transformConstraints.fastForEach { transformConstraintData ->
             transformConstraints.add(TransformConstraint(transformConstraintData, this))
+        }
 
-        pathConstraints = JArray(data.pathConstraints.size)
-        for (pathConstraintData in data.pathConstraints)
+        pathConstraints = ArrayList(data.pathConstraints.size)
+        data.pathConstraints.fastForEach { pathConstraintData ->
             pathConstraints.add(PathConstraint(pathConstraintData, this))
+        }
 
         color = Color(1f, 1f, 1f, 1f)
 
@@ -144,8 +148,8 @@ class Skeleton {
     constructor(skeleton: Skeleton) {
         data = skeleton.data
 
-        bones = JArray(skeleton.bones.size)
-        for (bone in skeleton.bones) {
+        bones = ArrayList(skeleton.bones.size)
+        skeleton.bones.fastForEach { bone ->
             val newBone: Bone
             if (bone.parent == null)
                 newBone = Bone(bone, this, null)
@@ -157,27 +161,31 @@ class Skeleton {
             bones.add(newBone)
         }
 
-        slots = JArray(skeleton.slots.size)
-        for (slot in skeleton.slots) {
+        slots = ArrayList(skeleton.slots.size)
+        skeleton.slots.fastForEach { slot ->
             val bone = bones[slot.bone.data.index]
             slots.add(Slot(slot, bone))
         }
 
-        drawOrder = JArray(slots.size)
-        for (slot in skeleton.drawOrder)
+        drawOrder = ArrayList(slots.size)
+        skeleton.drawOrder.fastForEach { slot ->
             drawOrder.add(slots[slot.data.index])
+        }
 
-        ikConstraints = JArray(skeleton.ikConstraints.size)
-        for (ikConstraint in skeleton.ikConstraints)
+        ikConstraints = ArrayList(skeleton.ikConstraints.size)
+        skeleton.ikConstraints.fastForEach { ikConstraint ->
             ikConstraints.add(IkConstraint(ikConstraint, this))
+        }
 
-        transformConstraints = JArray(skeleton.transformConstraints.size)
-        for (transformConstraint in skeleton.transformConstraints)
+        transformConstraints = ArrayList(skeleton.transformConstraints.size)
+        skeleton.transformConstraints.fastForEach { transformConstraint ->
             transformConstraints.add(TransformConstraint(transformConstraint, this))
+        }
 
-        pathConstraints = JArray(skeleton.pathConstraints.size)
-        for (pathConstraint in skeleton.pathConstraints)
+        pathConstraints = ArrayList(skeleton.pathConstraints.size)
+        skeleton.pathConstraints.fastForEach { pathConstraint ->
             pathConstraints.add(PathConstraint(pathConstraint, this))
+        }
 
         skin = skeleton.skin
         color = Color(skeleton.color)
@@ -359,7 +367,7 @@ class Skeleton {
         updateCache.add(bone)
     }
 
-    private fun sortReset(bones: JArray<Bone>) {
+    private fun sortReset(bones: ArrayList<Bone>) {
         var i = 0
         val n = bones.size
         while (i < n) {
@@ -571,11 +579,11 @@ class Skeleton {
     }
 
     /** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order.  */
-    fun getDrawOrder(): JArray<Slot> {
+    fun getDrawOrder(): ArrayList<Slot> {
         return drawOrder
     }
 
-    fun setDrawOrder(drawOrder: JArray<Slot>) {
+    fun setDrawOrder(drawOrder: ArrayList<Slot>) {
         this.drawOrder = drawOrder
     }
 

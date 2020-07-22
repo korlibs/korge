@@ -58,7 +58,7 @@ class SkeletonJson {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    private val linkedMeshes = JArray<LinkedMesh>()
+    private val linkedMeshes = ArrayList<LinkedMesh>()
 
     constructor(atlas: TextureAtlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -516,7 +516,7 @@ class SkeletonJson {
 
     private fun readAnimation(map: JsonValue, name: String, skeletonData: SkeletonData) {
         val scale = this.scale
-        val timelines = JArray<Timeline>()
+        val timelines = ArrayList<Timeline>()
         var duration = 0f
 
         // Slot timelines.

@@ -35,6 +35,7 @@ import com.esotericsoftware.spine.PathConstraintData.SpacingMode
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 
 /** Stores the current pose for a path constraint. A path constraint adjusts the rotation, translation, and scale of the
  * constrained bones so they follow a [PathAttachment].
@@ -47,7 +48,7 @@ class PathConstraint : Updatable {
     val data: PathConstraintData
 
     /** The bones that will be modified by this path constraint.  */
-    val bones: JArray<Bone>
+    val bones: ArrayList<Bone>
 
     lateinit internal var target: Slot
 
@@ -75,9 +76,10 @@ class PathConstraint : Updatable {
 
     constructor(data: PathConstraintData, skeleton: Skeleton) {
         this.data = data
-        bones = JArray(data.bones.size)
-        for (boneData in data.bones)
+        bones = ArrayList(data.bones.size)
+        data.bones.fastForEach { boneData ->
             bones.add(skeleton.findBone(boneData.name)!!)
+        }
         target = skeleton.findSlot(data.target.name)!!
         position = data.position
         spacing = data.spacing
@@ -88,9 +90,10 @@ class PathConstraint : Updatable {
     /** Copy constructor.  */
     constructor(constraint: PathConstraint, skeleton: Skeleton) {
         data = constraint.data
-        bones = JArray(constraint.bones.size)
-        for (bone in constraint.bones)
+        bones = ArrayList(constraint.bones.size)
+        constraint.bones.fastForEach { bone ->
             bones.add(skeleton.bones[bone.data.index])
+        }
         target = skeleton.slots[constraint.target!!.data.index]
         position = constraint.position
         spacing = constraint.spacing

@@ -29,9 +29,10 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
+import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.iterators.*
 
 /** Stores attachments by slot index and attachment name.
  *
@@ -43,8 +44,8 @@ class Skin(
         val name: String
 ) {
     internal val attachments: LinkedHashMap<SkinEntry, SkinEntry> = LinkedHashMap()
-    val bones: JArray<BoneData> = JArray()
-    val constraints: JArray<ConstraintData> = JArray()
+    val bones: ArrayList<BoneData> = ArrayList()
+    val constraints: ArrayList<ConstraintData> = ArrayList()
     private val lookup = SkinEntry()
 
     /** Adds an attachment to the skin for the specified slot index and name.  */
@@ -59,11 +60,13 @@ class Skin(
 
     /** Adds all attachments, bones, and constraints from the specified skin to this skin.  */
     fun addSkin(skin: Skin) {
-        for (data in skin.bones)
+        skin.bones.fastForEach { data ->
             if (!bones.contains(data, true)) bones.add(data)
+        }
 
-        for (data in skin.constraints)
+        skin.constraints.fastForEach { data ->
             if (!constraints.contains(data, true)) constraints.add(data)
+        }
 
         for (entry in skin.attachments.keys)
             setAttachment(entry.slotIndex, entry.name, entry.attachment!!)
@@ -72,11 +75,13 @@ class Skin(
     /** Adds all bones and constraints and copies of all attachments from the specified skin to this skin. Mesh attachments are not
      * copied, instead a new linked mesh is created. The attachment copies can be modified without affecting the originals.  */
     fun copySkin(skin: Skin) {
-        for (data in skin.bones)
+        skin.bones.fastForEach { data ->
             if (!bones.contains(data, true)) bones.add(data)
+        }
 
-        for (data in skin.constraints)
+        skin.constraints.fastForEach { data ->
             if (!constraints.contains(data, true)) constraints.add(data)
+        }
 
         for (entry in skin.attachments.keys) {
             if (entry.attachment is MeshAttachment)
@@ -107,7 +112,7 @@ class Skin(
     }
 
     /** Returns all attachments in this skin for the specified slot index.  */
-    fun getAttachments(slotIndex: Int, attachments: JArray<SkinEntry>) {
+    fun getAttachments(slotIndex: Int, attachments: ArrayList<SkinEntry>) {
         require(slotIndex >= 0) { "slotIndex must be >= 0." }
         for (entry in this.attachments.keys)
             if (entry.slotIndex == slotIndex) attachments.add(entry)

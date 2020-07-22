@@ -59,8 +59,8 @@ class SkeletonBinary {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    //private val linkedMeshes = JArray<LinkedMesh>()
-    private val linkedMeshes by lazy { JArray<LinkedMesh>() }
+    //private val linkedMeshes = ArrayList<LinkedMesh>()
+    private val linkedMeshes by lazy { ArrayList<LinkedMesh>() }
 
     constructor(atlas: TextureAtlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -104,10 +104,10 @@ class SkeletonBinary {
 
             // Strings.
             run {
-                input.strings = JArray<String>(input.readInt(true).also { n = it })
+                input.strings = ArrayList<String>(input.readInt(true).also { n = it })
                 val o = input.strings!!.setSize(n)
                 for (i in 0 until n)
-                    o.set(i, input.readString()!!)
+                    o.setAndGrow(i, input.readString()!!)
             }
 
             // Bones.
@@ -128,7 +128,7 @@ class SkeletonBinary {
                     data.transformMode = TransformMode.values[input.readInt(true)]
                     data.skinRequired = input.readBoolean()
                     if (nonessential) Color.rgba8888ToColor(data.color, input.readInt())
-                    o.set(i, data)
+                    o.setAndGrow(i, data)
                 }
             }
 
@@ -146,7 +146,7 @@ class SkeletonBinary {
 
                     data.attachmentName = input.readStringRef()
                     data.blendMode = BlendMode.values[input.readInt(true)]
-                    o.set(i, data)
+                    o.setAndGrow(i, data)
                 }
             }
 
@@ -162,7 +162,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones.set(ii, skeletonData.bones[input.readInt(true)])
+                            bones.setAndGrow(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.bones[input.readInt(true)]
                         data.mix = input.readFloat()
                         data.softness = input.readFloat() * scale
@@ -170,7 +170,7 @@ class SkeletonBinary {
                         data.compress = input.readBoolean()
                         data.stretch = input.readBoolean()
                         data.uniform = input.readBoolean()
-                        o.set(i, data)
+                        o.setAndGrow(i, data)
                         i++
                     }
                 }
@@ -188,7 +188,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones.set(ii, skeletonData.bones[input.readInt(true)])
+                            bones.setAndGrow(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.bones[input.readInt(true)]
                         data.local = input.readBoolean()
                         data.relative = input.readBoolean()
@@ -202,7 +202,7 @@ class SkeletonBinary {
                         data.translateMix = input.readFloat()
                         data.scaleMix = input.readFloat()
                         data.shearMix = input.readFloat()
-                        o.set(i, data)
+                        o.setAndGrow(i, data)
                         i++
                     }
                 }
@@ -220,7 +220,7 @@ class SkeletonBinary {
                         data.skinRequired = input.readBoolean()
                         val bones = data.bones.setSize(input.readInt(true).also { nn = it })
                         for (ii in 0 until nn)
-                            bones.set(ii, skeletonData.bones[input.readInt(true)])
+                            bones.setAndGrow(ii, skeletonData.bones[input.readInt(true)])
                         data.target = skeletonData.slots[input.readInt(true)]
                         data.positionMode = PositionMode.values[input.readInt(true)]
                         data.spacingMode = SpacingMode.values[input.readInt(true)]
@@ -232,7 +232,7 @@ class SkeletonBinary {
                         if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) data.spacing *= scale
                         data.rotateMix = input.readFloat()
                         data.translateMix = input.readFloat()
-                        o.set(i, data)
+                        o.setAndGrow(i, data)
                         i++
                     }
                 }
@@ -250,7 +250,7 @@ class SkeletonBinary {
                 var i = skeletonData.skins.size
                 val o = skeletonData.skins.setSize((i + input.readInt(true)).also { n = it })
                 while (i < n) {
-                    o.set(i, readSkin(input, skeletonData, false, nonessential)!!)
+                    o.setAndGrow(i, readSkin(input, skeletonData, false, nonessential)!!)
                     i++
                 }
             }
@@ -282,7 +282,7 @@ class SkeletonBinary {
                         data.volume = input.readFloat()
                         data.balance = input.readFloat()
                     }
-                    o.set(i, data)
+                    o.setAndGrow(i, data)
                 }
             }
 
@@ -290,7 +290,7 @@ class SkeletonBinary {
             run {
                 val o = skeletonData.animations.setSize(input.readInt(true).also { n = it })
                 for (i in 0 until n)
-                    o.set(i, readAnimation(input, input.readString(), skeletonData))
+                    o.setAndGrow(i, readAnimation(input, input.readString(), skeletonData))
             }
 
         } catch (ex: Throwable) {
@@ -323,7 +323,7 @@ class SkeletonBinary {
                 var i = 0
                 val n = skin.bones.size
                 while (i < n) {
-                    bones.set(i, skeletonData.bones[input.readInt(true)])
+                    bones.setAndGrow(i, skeletonData.bones[input.readInt(true)])
                     i++
                 }
             }
@@ -576,7 +576,7 @@ class SkeletonBinary {
     }
 
     private fun readAnimation(input: SkeletonInput, name: String?, skeletonData: SkeletonData): Animation {
-        val timelines = JArray<Timeline>(32)
+        val timelines = ArrayList<Timeline>(32)
         val scale = this.scale
         var duration = 0f
 
@@ -915,7 +915,7 @@ class SkeletonBinary {
 
     internal class SkeletonInput(file: FileHandle) : JDataInput(file.read(512)) {
         private var chars = CharArray(32)
-        var strings: JArray<String>? = null
+        var strings: ArrayList<String>? = null
 
         /** @return May be null.
          */

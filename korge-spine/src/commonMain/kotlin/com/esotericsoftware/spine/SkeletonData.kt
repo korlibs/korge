@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
+import com.soywiz.kds.iterators.*
 
 /** Stores the setup pose and all of the stateless data for a skeleton.
  *
@@ -48,14 +48,14 @@ class SkeletonData {
     // --- Bones.
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
-    val bones: JArray<BoneData> = JArray<BoneData>() // Ordered parents first.
+    val bones: ArrayList<BoneData> = ArrayList<BoneData>() // Ordered parents first.
     // --- Slots.
 
     /** The skeleton's slots.  */
-    val slots: JArray<SlotData> = JArray<SlotData>() // Setup pose draw order.
+    val slots: ArrayList<SlotData> = ArrayList<SlotData>() // Setup pose draw order.
 
     /** All skins, including the default skin.  */
-    val skins: JArray<Skin> = JArray<Skin>()
+    val skins: ArrayList<Skin> = ArrayList<Skin>()
     // --- Skins.
 
     /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
@@ -69,23 +69,23 @@ class SkeletonData {
     lateinit var defaultSkin: Skin
 
     /** The skeleton's events.  */
-    val events: JArray<EventData> = JArray()
+    val events: ArrayList<EventData> = ArrayList()
     // --- Animations.
 
     /** The skeleton's animations.  */
-    val animations: JArray<Animation> = JArray()
+    val animations: ArrayList<Animation> = ArrayList()
     // --- IK constraints
 
     /** The skeleton's IK constraints.  */
-    val ikConstraints: JArray<IkConstraintData> = JArray()
+    val ikConstraints: ArrayList<IkConstraintData> = ArrayList()
     // --- Transform constraints
 
     /** The skeleton's transform constraints.  */
-    val transformConstraints: JArray<TransformConstraintData> = JArray()
+    val transformConstraints: ArrayList<TransformConstraintData> = ArrayList()
     // --- Path constraints
 
     /** The skeleton's path constraints.  */
-    val pathConstraints: JArray<PathConstraintData> = JArray()
+    val pathConstraints: ArrayList<PathConstraintData> = ArrayList()
 
     /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose.  */
     var x: Float = 0.toFloat()
@@ -162,8 +162,9 @@ class SkeletonData {
      * @return May be null.
      */
     fun findSkin(skinName: String?): Skin? {
-        for (skin in skins)
+        skins.fastForEach { skin ->
             if (skin.name == skinName) return skin
+        }
         return null
     }
 
@@ -174,8 +175,9 @@ class SkeletonData {
      * @return May be null.
      */
     fun findEvent(eventDataName: String?): EventData? {
-        for (eventData in events)
+        events.fastForEach { eventData ->
             if (eventData.name == eventDataName) return eventData
+        }
         return null
     }
 

@@ -29,15 +29,13 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
-
 /** Stores the setup pose for an [IkConstraint].
  *
  *
  * See [IK constraints](http://esotericsoftware.com/spine-ik-constraints) in the Spine User Guide.  */
 class IkConstraintData(name: String) : ConstraintData(name) {
     /** The bones that are constrained by this IK constraint.  */
-    val bones: JArray<BoneData> = JArray()
+    val bones: ArrayList<BoneData> = ArrayList()
     lateinit internal var target: BoneData
 
     /** Controls the bend direction of the IK bones, either 1 or -1.  */

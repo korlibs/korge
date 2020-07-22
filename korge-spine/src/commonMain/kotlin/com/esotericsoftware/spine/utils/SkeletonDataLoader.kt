@@ -99,10 +99,10 @@ class SkeletonDataLoader(resolver: FileHandleResolver) : AsynchronousAssetLoader
 
     /** @param parameter May be null.
      */
-    fun getDependencies(fileName: String, file: FileHandle, parameter: SkeletonDataParameter?): JArray<AssetDescriptor>? {
+    fun getDependencies(fileName: String, file: FileHandle, parameter: SkeletonDataParameter?): ArrayList<AssetDescriptor>? {
         if (parameter == null) return null
         if (parameter.attachmentLoader != null) return null
-        val dependencies = JArray<AssetDescriptor>()
+        val dependencies = ArrayList<AssetDescriptor>()
         dependencies.add(AssetDescriptor(parameter.atlasName, TextureAtlas::class))
         return dependencies
     }

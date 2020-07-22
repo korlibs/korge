@@ -57,7 +57,7 @@ class Bone : Updatable {
     val parent: Bone?
 
     /** The immediate children of this bone.  */
-    val children: JArray<Bone> = JArray()
+    val children: ArrayList<Bone> = ArrayList()
     // -- Local transform
 
     /** The local x translation.  */

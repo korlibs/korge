@@ -34,8 +34,8 @@ class JsonReader {
 
     // line 337 "JsonReader.rl"
 
-    private val elements = JArray<JsonValue>(8)
-    private val lastChild = JArray<JsonValue>(8)
+    private val elements = ArrayList<JsonValue>(8)
+    private val lastChild = ArrayList<JsonValue>(8)
     private var root: JsonValue? = null
     private var current: JsonValue? = null
     fun parse(json: String): JsonValue? {
@@ -50,7 +50,7 @@ class JsonReader {
         var stack = IntArray(4)
 
         var s = 0
-        val names = JArray<String>(8)
+        val names = ArrayList<String>(8)
         var needsUnescape = false
         var stringIsName = false
         var stringIsUnquoted = false

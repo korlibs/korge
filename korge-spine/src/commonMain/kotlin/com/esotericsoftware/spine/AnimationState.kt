@@ -45,9 +45,9 @@ class AnimationState {
     private var data: AnimationStateData? = null
 
     /** The list of tracks that currently have animations, which may contain null entries.  */
-    val tracks: JArray<TrackEntry?> = JArray()
-    private val events = JArray<Event>()
-    internal val listeners: JArray<AnimationStateListener> = JArray()
+    val tracks: ArrayList<TrackEntry?> = ArrayList()
+    private val events = ArrayList<Event>()
+    internal val listeners: ArrayList<AnimationStateListener> = ArrayList()
     private val queue = EventQueue()
     private val propertyIDs = IntSet()
     @JsName("animationsChangedProp")
@@ -116,7 +116,7 @@ class AnimationState {
                 }
             } else if (current.trackLast >= current.trackEnd && current.mixingFrom == null) {
                 // Clear the track when there is no next entry, the track end time is reached, and there is no mixingFrom.
-                tracks.set(i, null)
+                tracks.setAndGrow(i, null)
                 queue.end(current)
                 disposeNext(current)
                 continue
@@ -542,14 +542,14 @@ class AnimationState {
             entry = from
         }
 
-        tracks.set(current.trackIndex, null)
+        tracks.setAndGrow(current.trackIndex, null)
 
         queue.drain()
     }
 
     private fun setCurrent(index: Int, current: TrackEntry, interrupt: Boolean) {
         val from = expandToIndex(index)
-        tracks.set(index, current)
+        tracks.setAndGrow(index, current)
 
         if (from != null) {
             if (interrupt) queue.interrupt(from)
@@ -591,7 +591,7 @@ class AnimationState {
         if (current != null) {
             if (current.nextTrackLast == -1f) {
                 // Don't mix from an entry that was never applied.
-                tracks.set(trackIndex, current.mixingFrom)
+                tracks.setAndGrow(trackIndex, current.mixingFrom)
                 queue.interrupt(current)
                 queue.end(current)
                 disposeNext(current)
@@ -723,7 +723,7 @@ class AnimationState {
     private fun expandToIndex(index: Int): TrackEntry? {
         if (index < tracks.size) return tracks[index]
         tracks.ensureCapacity(index - tracks.size + 1)
-        tracks.size = index + 1
+        tracks.setSize(index + 1)
         return null
     }
 
@@ -826,7 +826,7 @@ class AnimationState {
                     }
                     if (next.mixDuration > 0) {
                         timelineMode[i] = HOLD_MIX
-                        timelineHoldMix.set(i, next)
+                        timelineHoldMix.setAndGrow(i, next)
                         continue@outer
                     }
                     break
@@ -1049,7 +1049,7 @@ class AnimationState {
         internal var mixBlend = MixBlend.replace
 
         internal val timelineMode = IntArrayList()
-        internal val timelineHoldMix: JArray<TrackEntry> = JArray()
+        internal val timelineHoldMix: ArrayList<TrackEntry> = ArrayList()
         internal val timelinesRotation = FloatArrayList()
 
         /** Uses [.getTrackTime] to compute the `animationTime`, which is between [.getAnimationStart]
@@ -1137,7 +1137,7 @@ class AnimationState {
     }
 
     internal inner class EventQueue {
-        private val objects = JArray<Any>()
+        private val objects = ArrayList<Any>()
         var drainDisabled: Boolean = false
 
         fun start(entry: TrackEntry) {
@@ -1285,7 +1285,7 @@ class AnimationState {
     }
 
     companion object {
-        private val emptyAnimation = Animation("<empty>", JArray(0), 0f)
+        private val emptyAnimation = Animation("<empty>", ArrayList(0), 0f)
 
         /** 1) A previously applied timeline has set this property.<br></br>
          * Result: Mix from the current pose to the timeline pose.  */
