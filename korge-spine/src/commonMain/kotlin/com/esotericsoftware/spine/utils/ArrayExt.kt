@@ -10,3 +10,10 @@ fun FloatArrayList.setSize(size: Int): FloatArray {
 fun FloatArrayList.toArray() = this.toFloatArray()
 fun FloatArrayList.addAll(array: FloatArray, offset: Int = 0, size: Int = array.size - offset) { add(array, offset, size) }
 fun FloatArrayList.addAll(array: FloatArrayList, offset: Int = 0, size: Int = array.size - offset) { add(array.data, offset, size) }
+fun IntArrayList.setSize(size: Int): IntArray {
+    this.size = size
+    return this.data
+}
+fun BooleanArrayList.setSize(size: Int) {
+    this.size = size
+}

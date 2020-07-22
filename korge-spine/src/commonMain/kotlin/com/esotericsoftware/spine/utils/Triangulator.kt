@@ -37,7 +37,7 @@ internal class Triangulator {
     private val convexPolygonsIndices = JArray<JShortArray>()
 
     private val indicesArray = JShortArray()
-    private val isConcaveArray = JBooleanArray()
+    private val isConcaveArray = BooleanArrayList()
     private val triangles = JShortArray()
 
     private val polygonPool = Pool { FloatArrayList(16) }
@@ -54,7 +54,8 @@ internal class Triangulator {
             indices[i] = i.toShort()
 
         val isConcaveArray = this.isConcaveArray
-        val isConcave = isConcaveArray.setSize(vertexCount)
+        isConcaveArray.setSize(vertexCount)
+        val isConcave = isConcaveArray
         run {
             var i = 0
             val n = vertexCount
