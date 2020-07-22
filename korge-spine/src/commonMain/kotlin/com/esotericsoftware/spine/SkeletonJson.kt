@@ -144,18 +144,15 @@ class SkeletonJson {
 
         // IK constraints.
         run {
-            var constraintMap = root.getChild("ik")
-            while (constraintMap != null) {
+            root.get("ik")?.fastForEach { constraintMap ->
                 val data = IkConstraintData(constraintMap!!.getString("name")!!)
                 data.order = constraintMap!!.getInt("order", 0)
                 data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
-                var entry = constraintMap!!.getChild("bones")
-                while (entry != null) {
+                constraintMap!!.get("bones")?.fastForEach { entry ->
                     val bone = skeletonData.findBone(entry!!.asString())
-                            ?: error("IK bone not found: " + entry!!)
+                        ?: error("IK bone not found: " + entry!!)
                     data.bones.add(bone)
-                    entry = entry!!.next
                 }
 
                 val targetName = constraintMap!!.getString("target")!!
@@ -170,24 +167,20 @@ class SkeletonJson {
                 data.uniform = constraintMap!!.getBoolean("uniform", false)
 
                 skeletonData.ikConstraints.add(data)
-                constraintMap = constraintMap!!.next
             }
         }
 
         // Transform constraints.
         run {
-            var constraintMap = root.getChild("transform")
-            while (constraintMap != null) {
+            root["transform"]?.fastForEach { constraintMap ->
                 val data = TransformConstraintData(constraintMap!!.getString("name")!!)
                 data.order = constraintMap!!.getInt("order", 0)
                 data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
-                var entry = constraintMap!!.getChild("bones")
-                while (entry != null) {
+                constraintMap!!.get("bones")?.fastForEach { entry ->
                     val bone = skeletonData.findBone(entry!!.asString())
                             ?: error("Transform constraint bone not found: " + entry!!)
                     data.bones.add(bone)
-                    entry = entry!!.next
                 }
 
                 val targetName = constraintMap!!.getString("target")
@@ -210,23 +203,19 @@ class SkeletonJson {
                 data.shearMix = constraintMap!!.getFloat("shearMix", 1f)
 
                 skeletonData.transformConstraints.add(data)
-                constraintMap = constraintMap!!.next
             }
         }
 
         // Path constraints.
-        var constraintMap = root.getChild("path")
-        while (constraintMap != null) {
+        root["path"]?.fastForEach { constraintMap ->
             val data = PathConstraintData(constraintMap!!.getString("name")!!)
             data.order = constraintMap!!.getInt("order", 0)
             data.skinRequired = constraintMap!!.getBoolean("skin", false)
 
-            var entry = constraintMap!!.getChild("bones")
-            while (entry != null) {
+            constraintMap!!["bones"]?.fastForEach { entry ->
                 val bone = skeletonData.findBone(entry!!.asString())
                         ?: error("Path bone not found: " + entry!!)
                 data.bones.add(bone)
-                entry = entry!!.next
             }
 
             val targetName = constraintMap!!.getString("target")!!
@@ -245,69 +234,53 @@ class SkeletonJson {
             data.translateMix = constraintMap!!.getFloat("translateMix", 1f)
 
             skeletonData.pathConstraints.add(data)
-            constraintMap = constraintMap!!.next
         }
 
         // Skins.
-        var skinMap = root.getChild("skins")
-        while (skinMap != null) {
+        root.get("skins")?.fastForEach { skinMap ->
             val skin = Skin(skinMap.getString("name")!!)
             run {
-                var entry = skinMap!!.getChild("bones")
-                while (entry != null) {
+                skinMap!!.get("bones")?.fastForEach { entry ->
                     val bone = skeletonData.findBone(entry!!.asString())
                             ?: error("Skin bone not found: " + entry!!)
                     skin.bones.add(bone)
-                    entry = entry!!.next
                 }
             }
             run {
-                var entry = skinMap!!.getChild("ik")
-                while (entry != null) {
+                skinMap!!.get("ik")?.fastForEach { entry ->
                     val constraint = skeletonData.findIkConstraint(entry!!.asString())
                             ?: error("Skin IK constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
-                    entry = entry!!.next
                 }
             }
             run {
-                var entry = skinMap!!.getChild("transform")
-                while (entry != null) {
+                skinMap!!.get("transform")?.fastForEach { entry ->
                     val constraint = skeletonData.findTransformConstraint(entry!!.asString())
                             ?: error("Skin transform constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
-                    entry = entry!!.next
                 }
             }
             run {
-                var entry = skinMap!!.getChild("path")
-                while (entry != null) {
+                skinMap!!.get("path")?.fastForEach { entry ->
                     val constraint = skeletonData.findPathConstraint(entry!!.asString())
                             ?: error("Skin path constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
-                    entry = entry!!.next
                 }
             }
-            var slotEntry = skinMap.getChild("attachments")
-            while (slotEntry != null) {
+            skinMap.get("attachments")?.fastForEach { slotEntry ->
                 val slot = skeletonData.findSlot(slotEntry.name)
                         ?: error("Slot not found: " + slotEntry.name!!)
-                var entry = slotEntry.child
-                while (entry != null) {
+                slotEntry?.fastForEach { entry ->
                     try {
                         val attachment = readAttachment(entry!!, skin, slot.index, entry!!.name, skeletonData)
                         if (attachment != null) skin.setAttachment(slot.index, entry!!.name!!, attachment)
                     } catch (ex: Throwable) {
                         throw RuntimeException("Error reading attachment: " + entry!!.name + ", skin: " + skin, ex)
                     }
-
-                    entry = entry!!.next
                 }
-                slotEntry = slotEntry.next
             }
             skeletonData.skins.add(skin)
             if (skin.name == "default") skeletonData.defaultSkin = skin
-            skinMap = skinMap.next
         }
 
         // Linked meshes.
