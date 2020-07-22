@@ -29,21 +29,8 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M00
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M01
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M02
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M10
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M11
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M12
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M20
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M21
-import com.esotericsoftware.spine.utils.Matrix3.Companion.M22
-
-import com.esotericsoftware.spine.utils.Matrix3
-import com.esotericsoftware.spine.utils.Vector2
-import com.esotericsoftware.spine.utils.JArray
-
-import com.esotericsoftware.spine.BoneData.TransformMode
+import com.esotericsoftware.spine.BoneData.*
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.PI
 import com.esotericsoftware.spine.utils.SpineUtils.atan2
 import com.esotericsoftware.spine.utils.SpineUtils.cos
@@ -51,6 +38,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.radDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sin
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
+import com.soywiz.korma.geom.*
 
 /** Stores a bone's current pose.
  *
@@ -388,17 +376,13 @@ class Bone : Updatable {
         }
     }
 
-    fun getWorldTransform(worldTransform: Matrix3): Matrix3 {
-        val `val` = worldTransform.`val`
-        `val`[M00] = a
-        `val`[M01] = b
-        `val`[M10] = c
-        `val`[M11] = d
-        `val`[M02] = worldX
-        `val`[M12] = worldY
-        `val`[M20] = 0f
-        `val`[M21] = 0f
-        `val`[M22] = 1f
+    fun getWorldTransform(worldTransform: Matrix3D): Matrix3D {
+        // @TODO: Ensure this is right
+        worldTransform.setRows3x3(
+            a, b, worldX,
+            c, d, worldY,
+            0f, 0f, 1f
+        )
         return worldTransform
     }
 

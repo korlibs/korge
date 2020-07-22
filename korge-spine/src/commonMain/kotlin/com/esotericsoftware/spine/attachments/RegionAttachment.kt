@@ -30,10 +30,10 @@
 package com.esotericsoftware.spine.attachments
 
 import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
-import com.esotericsoftware.spine.utils.MathUtils
 
 import com.esotericsoftware.spine.Bone
 import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** An attachment that displays a textured quadrilateral.
@@ -131,8 +131,8 @@ class RegionAttachment(name: String) : Attachment(name) {
         localX2 *= scaleX
         localY2 *= scaleY
         val rotation = rotation
-        val cos = kotlin.math.cos((MathUtils.degRad * rotation).toDouble()).toFloat()
-        val sin = kotlin.math.sin((MathUtils.degRad * rotation).toDouble()).toFloat()
+        val cos = kotlin.math.cos((SpineUtils.degRad * rotation).toDouble()).toFloat()
+        val sin = kotlin.math.sin((SpineUtils.degRad * rotation).toDouble()).toFloat()
         val x = x
         val y = y
         val localXCos = localX * cos + x

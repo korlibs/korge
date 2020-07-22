@@ -29,9 +29,9 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.utils.MathUtils.cosDeg
-import com.esotericsoftware.spine.utils.MathUtils.radDeg
-import com.esotericsoftware.spine.utils.MathUtils.sinDeg
+import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
+import com.esotericsoftware.spine.utils.SpineUtils.radDeg
+import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 
 import com.esotericsoftware.spine.graphics.Color
 import com.esotericsoftware.spine.utils.Vector2

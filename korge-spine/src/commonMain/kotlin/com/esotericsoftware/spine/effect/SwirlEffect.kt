@@ -30,7 +30,6 @@
 package com.esotericsoftware.spine.effect
 
 import com.esotericsoftware.spine.graphics.Color
-import com.esotericsoftware.spine.utils.MathUtils
 import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.utils.SpineUtils
@@ -89,6 +88,6 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
     }
 
     fun setAngle(degrees: Float) {
-        this.angle = degrees * MathUtils.degRad
+        this.angle = degrees * SpineUtils.degRad
     }
 }

@@ -29,12 +29,12 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.MathUtils.PI
-import com.esotericsoftware.spine.utils.MathUtils.PI2
-import com.esotericsoftware.spine.utils.MathUtils.atan2
-import com.esotericsoftware.spine.utils.MathUtils.cos
-import com.esotericsoftware.spine.utils.MathUtils.degRad
-import com.esotericsoftware.spine.utils.MathUtils.sin
+import com.esotericsoftware.spine.utils.SpineUtils.PI
+import com.esotericsoftware.spine.utils.SpineUtils.PI2
+import com.esotericsoftware.spine.utils.SpineUtils.atan2
+import com.esotericsoftware.spine.utils.SpineUtils.cos
+import com.esotericsoftware.spine.utils.SpineUtils.degRad
+import com.esotericsoftware.spine.utils.SpineUtils.sin
 import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.utils.JArray
 
