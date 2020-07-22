@@ -30,7 +30,6 @@
 package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.utils.JArray
-import com.esotericsoftware.spine.utils.OrderedMap
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 
@@ -43,14 +42,10 @@ class Skin(
         /** The skin's name, which is unique across all skins in the skeleton.  */
         val name: String
 ) {
-    internal val attachments: OrderedMap<SkinEntry, SkinEntry> = OrderedMap()
+    internal val attachments: LinkedHashMap<SkinEntry, SkinEntry> = LinkedHashMap()
     val bones: JArray<BoneData> = JArray()
     val constraints: JArray<ConstraintData> = JArray()
     private val lookup = SkinEntry()
-
-    init {
-        this.attachments.orderedKeys().ordered = false
-    }
 
     /** Adds an attachment to the skin for the specified slot index and name.  */
     fun setAttachment(slotIndex: Int, name: String, attachment: Attachment) {
@@ -70,7 +65,7 @@ class Skin(
         for (data in skin.constraints)
             if (!constraints.contains(data, true)) constraints.add(data)
 
-        for (entry in skin.attachments.keys())
+        for (entry in skin.attachments.keys)
             setAttachment(entry.slotIndex, entry.name, entry.attachment!!)
     }
 
@@ -83,7 +78,7 @@ class Skin(
         for (data in skin.constraints)
             if (!constraints.contains(data, true)) constraints.add(data)
 
-        for (entry in skin.attachments.keys()) {
+        for (entry in skin.attachments.keys) {
             if (entry.attachment is MeshAttachment)
                 setAttachment(entry.slotIndex, entry.name, (entry.attachment as MeshAttachment).newLinkedMesh())
             else
@@ -107,20 +102,21 @@ class Skin(
     }
 
     /** Returns all attachments in this skin.  */
-    fun getAttachments(): JArray<SkinEntry> {
-        return attachments.orderedKeys()
+    fun getAttachments(): Set<SkinEntry> {
+        return attachments.keys
     }
 
     /** Returns all attachments in this skin for the specified slot index.  */
     fun getAttachments(slotIndex: Int, attachments: JArray<SkinEntry>) {
         require(slotIndex >= 0) { "slotIndex must be >= 0." }
-        for (entry in this.attachments.keys())
+        for (entry in this.attachments.keys)
             if (entry.slotIndex == slotIndex) attachments.add(entry)
     }
 
     /** Clears all attachments, bones, and constraints.  */
     fun clear() {
-        attachments.clear(1024)
+        //attachments.clear(1024)
+        attachments.clear()
         bones.clear()
         constraints.clear()
     }
@@ -131,7 +127,7 @@ class Skin(
 
     /** Attach each attachment in this skin if the corresponding attachment in the old skin is currently attached.  */
     internal fun attachAll(skeleton: Skeleton, oldSkin: Skin) {
-        for (entry in oldSkin.attachments.keys()) {
+        for (entry in oldSkin.attachments.keys) {
             val slotIndex = entry.slotIndex
             val slot = skeleton.slots[slotIndex]
             if (slot.attachment === entry.attachment) {

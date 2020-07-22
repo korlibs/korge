@@ -330,7 +330,7 @@ class Skeleton {
     }
 
     private fun sortPathConstraintAttachment(skin: Skin, slotIndex: Int, slotBone: Bone) {
-        for (entry in skin.attachments.keys())
+        for (entry in skin.attachments.keys)
             if (entry.slotIndex == slotIndex) sortPathConstraintAttachment(entry.attachment, slotBone)
     }
 
