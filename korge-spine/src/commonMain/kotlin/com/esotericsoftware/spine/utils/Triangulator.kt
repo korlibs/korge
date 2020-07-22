@@ -34,22 +34,23 @@ import kotlin.math.*
 
 internal class Triangulator {
     private val convexPolygons = JArray<FloatArrayList>()
-    private val convexPolygonsIndices = JArray<JShortArray>()
+    private val convexPolygonsIndices = JArray<ShortArrayList>()
 
-    private val indicesArray = JShortArray()
+    private val indicesArray = ShortArrayList()
     private val isConcaveArray = BooleanArrayList()
-    private val triangles = JShortArray()
+    private val triangles = ShortArrayList()
 
     private val polygonPool = Pool { FloatArrayList(16) }
-    private val polygonIndicesPool = Pool() { JShortArray(16) }
+    private val polygonIndicesPool = Pool() { ShortArrayList(16) }
 
-    fun triangulate(verticesArray: FloatArrayList): JShortArray {
+    fun triangulate(verticesArray: FloatArrayList): ShortArrayList {
         val vertices = verticesArray.items
         var vertexCount = verticesArray.size shr 1
 
         val indicesArray = this.indicesArray
         indicesArray.clear()
-        val indices = indicesArray.setSize(vertexCount)
+        indicesArray.setSize(vertexCount)
+        val indices = indicesArray
         for (i in 0 until vertexCount)
             indices[i] = i.toShort()
 
@@ -143,7 +144,7 @@ internal class Triangulator {
         return triangles
     }
 
-    fun decompose(verticesArray: FloatArrayList, triangles: JShortArray): JArray<FloatArrayList> {
+    fun decompose(verticesArray: FloatArrayList, triangles: ShortArrayList): JArray<FloatArrayList> {
         val vertices = verticesArray.items
 
         val convexPolygons = this.convexPolygons
@@ -163,7 +164,7 @@ internal class Triangulator {
         // Merge subsequent triangles if they form a triangle fan.
         var fanBaseIndex = -1
         var lastWinding = 0
-        val trianglesItems = triangles.items
+        val trianglesItems = triangles
         run {
             var i = 0
             val n = triangles.size
@@ -188,7 +189,7 @@ internal class Triangulator {
                     if (winding1 == lastWinding && winding2 == lastWinding) {
                         polygon.add(x3)
                         polygon.add(y3)
-                        polygonIndices.add(t3)
+                        polygonIndices.add(t3.toShort())
                         merged = true
                     }
                 }
@@ -212,9 +213,9 @@ internal class Triangulator {
                     polygon.add(y3)
                     polygonIndices = polygonIndicesPool.obtain()
                     polygonIndices.clear()
-                    polygonIndices.add(t1)
-                    polygonIndices.add(t2)
-                    polygonIndices.add(t3)
+                    polygonIndices.add(t1.toShort())
+                    polygonIndices.add(t2.toShort())
+                    polygonIndices.add(t3.toShort())
                     lastWinding = winding(x1, y1, x2, y2, x3, y3)
                     fanBaseIndex = t1
                 }
@@ -283,7 +284,7 @@ internal class Triangulator {
                         otherIndices.clear()
                         polygon.add(x3)
                         polygon.add(y3)
-                        polygonIndices.add(otherLastIndex)
+                        polygonIndices.add(otherLastIndex.toShort())
                         prevPrevX = prevX
                         prevPrevY = prevY
                         prevX = x3
@@ -310,7 +311,7 @@ internal class Triangulator {
         return convexPolygons
     }
 
-    private fun isConcave(index: Int, vertexCount: Int, vertices: FloatArray, indices: ShortArray): Boolean {
+    private fun isConcave(index: Int, vertexCount: Int, vertices: FloatArray, indices: ShortArrayList): Boolean {
         val previous = indices[(vertexCount + index - 1) % vertexCount].toInt() shl 1
         val current = indices[index].toInt() shl 1
         val next = indices[(index + 1) % vertexCount].toInt() shl 1

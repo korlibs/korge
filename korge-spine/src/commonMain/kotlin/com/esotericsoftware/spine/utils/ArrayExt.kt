@@ -3,10 +3,13 @@ package com.esotericsoftware.spine.utils
 import com.soywiz.kds.*
 
 val FloatArrayList.items get() = this.data
-fun FloatArrayList.setSize(size: Int): FloatArray {
-    this.size = size
-    return this.data
-}
+val IntArrayList.items get() = this.data
+//val ShortArrayList.items get() = this.data
+
+fun FloatArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
+fun IntArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
+fun ShortArrayList.setSize(size: Int) = run { this.size = size }.let { this }
+
 fun FloatArrayList.toArray() = this.toFloatArray()
 
 fun FloatArrayList.addAll(array: FloatArray, offset: Int = 0, size: Int = array.size - offset) { add(array, offset, size) }
@@ -18,9 +21,5 @@ fun BooleanArrayList.setSize(size: Int) {
 
 //////////////////
 
-val IntArrayList.items get() = this.data
-fun IntArrayList.setSize(size: Int): IntArray {
-    this.size = size
-    return this.data
-}
 fun IntArrayList.toArray() = this.toIntArray()
+fun ShortArrayList.toArray(): ShortArray = ShortArray(size) { this[it] }

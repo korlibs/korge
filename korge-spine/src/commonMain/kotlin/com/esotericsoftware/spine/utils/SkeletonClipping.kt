@@ -38,7 +38,7 @@ class SkeletonClipping {
     private val clippingPolygon = FloatArrayList()
     private val clipOutput = FloatArrayList(128)
     val clippedVertices = FloatArrayList(128)
-    val clippedTriangles = JShortArray(128)
+    val clippedTriangles = ShortArrayList(128)
     private val scratch = FloatArrayList()
 
     private var clipAttachment: ClippingAttachment? = null
@@ -152,7 +152,8 @@ class SkeletonClipping {
                     }
 
                     s = clippedTriangles.size
-                    val clippedTrianglesItems = clippedTriangles.setSize(s + 3 * (clipOutputCount - 2))
+                    clippedTriangles.setSize(s + 3 * (clipOutputCount - 2))
+                    val clippedTrianglesItems = clippedTriangles
                     clipOutputCount--
                     for (ii in 1 until clipOutputCount) {
                         clippedTrianglesItems[s] = index

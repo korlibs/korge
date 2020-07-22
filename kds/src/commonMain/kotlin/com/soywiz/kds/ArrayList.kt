@@ -30,7 +30,7 @@ class IntArrayList(capacity: Int = 7) : List<Int> {
         add(other)
     }
 
-    private fun ensure(count: Int) {
+    fun ensure(count: Int) {
         if (length + count > data.size) {
             data = data.copyOf(kotlin.math.max(length + count, data.size * 3)) as IntArray
         }

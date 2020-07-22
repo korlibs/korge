@@ -132,7 +132,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.items, clippedVertices.size, 5, c, 0f)
-                    draw(ctx, texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.items, 0, clippedTriangles.size, vertexSize)
+                    // @TODO: Remove clippedTriangles.toArray() so it doesn't allocate
+                    draw(ctx, texture, clippedVertices.items, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
                 } else {
                     if (vertexEffect != null) {
                         tempLight1.set(Color.floatToIntColor(c))
