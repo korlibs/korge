@@ -300,8 +300,7 @@ class SkeletonJson {
         linkedMeshes.clear()
 
         // Events.
-        var eventMap = root.getChild("events")
-        while (eventMap != null) {
+        root.get("events")?.fastForEach { eventMap ->
             val data = EventData(eventMap.name!!)
             data.int = eventMap.getInt("int", 0)
             data.float = eventMap.getFloat("float", 0f)
@@ -312,19 +311,15 @@ class SkeletonJson {
                 data.balance = eventMap.getFloat("balance", 0f)
             }
             skeletonData.events.add(data)
-            eventMap = eventMap.next
         }
 
         // Animations.
-        var animationMap = root.getChild("animations")
-        while (animationMap != null) {
-            //try {
+        root.get("animations")?.fastForEach { animationMap ->
+            try {
                 readAnimation(animationMap, animationMap.name!!, skeletonData)
-            //} catch (ex: Throwable) {
-            //    throw RuntimeException("Error reading animation: " + animationMap.name!!, ex)
-            //}
-
-            animationMap = animationMap.next
+            } catch (ex: Throwable) {
+                throw RuntimeException("Error reading animation: " + animationMap.name!!, ex)
+            }
         }
 
         skeletonData.bones.shrink()
@@ -408,10 +403,8 @@ class SkeletonJson {
 
                 val lengths = FloatArray(vertexCount / 3)
                 var i = 0
-                var curves = map.require("lengths").child
-                while (curves != null) {
+                map.require("lengths")?.fastForEach { curves ->
                     lengths[i++] = curves.asFloat() * scale
-                    curves = curves.next
                 }
                 path.lengths = lengths
 
