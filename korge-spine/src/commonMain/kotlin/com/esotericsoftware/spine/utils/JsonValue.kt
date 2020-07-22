@@ -40,7 +40,9 @@ class JsonValue {
     private var doubleValue: Double = 0.toDouble()
     var name: String? = null
     var children: List<JsonValue>? = null
+    @Deprecated("")
     var child: JsonValue? = null
+    @Deprecated("")
     var next: JsonValue? = null
     val size: Int get() = children?.size ?: 0
     val isString: Boolean get() = type == ValueType.stringValue
@@ -133,6 +135,7 @@ class JsonValue {
         fastForEach { array[i++] = it.asInt().toShort() }
     }
 
+    @Deprecated("")
     fun getChild(name: String): JsonValue? = get(name)?.child
 
     private inline fun <T> getAny(name: String, defaultValue: T, convert: (value: JsonValue) -> T): T {

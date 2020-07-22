@@ -594,100 +594,89 @@ class SkeletonJson {
 
         // IK constraint timelines.
         run {
-            var constraintMap = map.getChild("ik")
-            while (constraintMap != null) {
+            map.get("ik")?.fastForEach { constraintMap ->
                 val constraint = skeletonData.findIkConstraint(constraintMap!!.name)
                 val timeline = IkConstraintTimeline(constraintMap!!.size)
                 timeline.ikConstraintIndex = skeletonData.ikConstraints.indexOfIdentity(constraint)
                 var frameIndex = 0
-                var valueMap = constraintMap!!.child
-                while (valueMap != null) {
-                    timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("mix", 1f),
-                            valueMap!!.getFloat("softness", 0f) * scale, if (valueMap!!.getBoolean("bendPositive", true)) 1 else -1,
-                            valueMap!!.getBoolean("compress", false), valueMap!!.getBoolean("stretch", false))
+                constraintMap!!.fastForEach { valueMap ->
+                    timeline.setFrame(
+                        frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("mix", 1f),
+                        valueMap!!.getFloat("softness", 0f) * scale, if (valueMap!!.getBoolean("bendPositive", true)) 1 else -1,
+                        valueMap!!.getBoolean("compress", false), valueMap!!.getBoolean("stretch", false)
+                    )
                     readCurve(valueMap!!, timeline, frameIndex)
                     frameIndex++
-                    valueMap = valueMap!!.next
                 }
                 timelines.add(timeline)
                 duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * IkConstraintTimeline.ENTRIES])
-                constraintMap = constraintMap!!.next
             }
         }
 
         // Transform constraint timelines.
         run {
-            var constraintMap = map.getChild("transform")
-            while (constraintMap != null) {
+            map["transform"]?.fastForEach { constraintMap ->
                 val constraint = skeletonData.findTransformConstraint(constraintMap!!.name)
                 val timeline = TransformConstraintTimeline(constraintMap!!.size)
                 timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOfIdentity(constraint)
                 var frameIndex = 0
-                var valueMap = constraintMap!!.child
-                while (valueMap != null) {
+                constraintMap?.fastForEach { valueMap ->
                     timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("rotateMix", 1f),
                             valueMap!!.getFloat("translateMix", 1f), valueMap!!.getFloat("scaleMix", 1f), valueMap!!.getFloat("shearMix", 1f))
                     readCurve(valueMap!!, timeline, frameIndex)
                     frameIndex++
-                    valueMap = valueMap!!.next
                 }
                 timelines.add(timeline)
                 duration = kotlin.math.max(duration,
                         timeline.frames[(timeline.frameCount - 1) * TransformConstraintTimeline.ENTRIES])
-                constraintMap = constraintMap!!.next
             }
         }
 
         // Path constraint timelines.
-        var constraintMap = map.getChild("path")
-        while (constraintMap != null) {
+        map["path"]?.fastForEach { constraintMap ->
             val data = skeletonData.findPathConstraint(constraintMap!!.name)
                     ?: error("Path constraint not found: " + constraintMap!!.name!!)
             val index = skeletonData.pathConstraints.indexOfIdentity(data)
-            var timelineMap = constraintMap!!.child
-            while (timelineMap != null) {
+            constraintMap!!.fastForEach { timelineMap ->
                 val timelineName = timelineMap!!.name
-                if (timelineName == "position" || timelineName == "spacing") {
-                    val timeline: PathConstraintPositionTimeline
-                    var timelineScale = 1f
-                    if (timelineName == "spacing") {
-                        timeline = PathConstraintSpacingTimeline(timelineMap!!.size)
-                        if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) timelineScale = scale
-                    } else {
-                        timeline = PathConstraintPositionTimeline(timelineMap!!.size)
-                        if (data.positionMode == PositionMode.fixed) timelineScale = scale
-                    }
-                    timeline.pathConstraintIndex = index
-                    var frameIndex = 0
-                    var valueMap = timelineMap!!.child
-                    while (valueMap != null) {
-                        timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat(timelineName, 0f) * timelineScale)
-                        readCurve(valueMap!!, timeline, frameIndex)
-                        frameIndex++
-                        valueMap = valueMap!!.next
-                    }
-                    timelines.add(timeline)
-                    duration = kotlin.math.max(duration,
+                when (timelineName) {
+                    "position", "spacing" -> {
+                        val timeline: PathConstraintPositionTimeline
+                        var timelineScale = 1f
+                        if (timelineName == "spacing") {
+                            timeline = PathConstraintSpacingTimeline(timelineMap!!.size)
+                            if (data.spacingMode == SpacingMode.length || data.spacingMode == SpacingMode.fixed) timelineScale = scale
+                        } else {
+                            timeline = PathConstraintPositionTimeline(timelineMap!!.size)
+                            if (data.positionMode == PositionMode.fixed) timelineScale = scale
+                        }
+                        timeline.pathConstraintIndex = index
+                        var frameIndex = 0
+                        timelineMap?.fastForEach { valueMap ->
+                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat(timelineName, 0f) * timelineScale)
+                            readCurve(valueMap!!, timeline, frameIndex)
+                            frameIndex++
+                        }
+                        timelines.add(timeline)
+                        duration = kotlin.math.max(duration,
                             timeline.frames[(timeline.frameCount - 1) * PathConstraintPositionTimeline.ENTRIES])
-                } else if (timelineName == "mix") {
-                    val timeline = PathConstraintMixTimeline(timelineMap!!.size)
-                    timeline.pathConstraintIndex = index
-                    var frameIndex = 0
-                    var valueMap = timelineMap!!.child
-                    while (valueMap != null) {
-                        timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("rotateMix", 1f),
-                                valueMap!!.getFloat("translateMix", 1f))
-                        readCurve(valueMap!!, timeline, frameIndex)
-                        frameIndex++
-                        valueMap = valueMap!!.next
                     }
-                    timelines.add(timeline)
-                    duration = kotlin.math.max(duration,
+                    "mix" -> {
+                        val timeline = PathConstraintMixTimeline(timelineMap!!.size)
+                        timeline.pathConstraintIndex = index
+                        var frameIndex = 0
+                        timelineMap!!.fastForEach { valueMap ->
+                            timeline.setFrame(frameIndex, valueMap!!.getFloat("time", 0f), valueMap!!.getFloat("rotateMix", 1f),
+                                valueMap!!.getFloat("translateMix", 1f))
+                            readCurve(valueMap!!, timeline, frameIndex)
+                            frameIndex++
+                        }
+                        timelines.add(timeline)
+                        duration = kotlin.math.max(duration,
                             timeline.frames[(timeline.frameCount - 1) * PathConstraintMixTimeline.ENTRIES])
+                    }
                 }
-                timelineMap = timelineMap!!.next
             }
-            constraintMap = constraintMap!!.next
         }
 
         // Deform timelines.
