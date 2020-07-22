@@ -29,7 +29,6 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.assets.*
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
