@@ -849,7 +849,7 @@ class AnimationState {
 
     /** Removes the listener added with [.addListener].  */
     fun removeListener(listener: AnimationStateListener) {
-        listeners.removeValue(listener, true)
+        listeners.removeValueIdentity(listener)
     }
 
     /** Removes all listeners added with [.addListener].  */

@@ -245,7 +245,7 @@ class SkeletonBounds {
 
     /** Returns the polygon for the specified bounding box, or null.  */
     fun getPolygon(boundingBox: BoundingBoxAttachment): FloatArrayList? {
-        val index = boundingBoxes.indexOf(boundingBox, true)
+        val index = boundingBoxes.indexOfIdentity(boundingBox)
         return if (index == -1) null else polygons[index]
     }
 }

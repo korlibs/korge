@@ -33,22 +33,19 @@ fun <T> ArrayList<T>.setAndGrow(index: Int, value: T) {
     this[index] = value
 }
 
-fun <T> ArrayList<T>.indexOf(value: T?, identity: Boolean): Int {
-    if (identity) {
-        fastForEachWithIndex { index, current -> if (current === value) return index }
-        return -1
-    } else {
-        return indexOf(value)
-    }
+fun <T> ArrayList<T>.indexOfIdentity(value: T?): Int {
+    fastForEachWithIndex { index, current -> if (current === value) return index }
+    return -1
 }
-fun <T> ArrayList<T>.contains(value: T?, identity: Boolean): Boolean = indexOf(value, identity) >= 0
-fun <T> ArrayList<T>.removeValue(value: T?, identity: Boolean): Boolean {
-    val index = indexOf(value, identity)
+fun <T> ArrayList<T>.removeValueIdentity(value: T?): Boolean {
+    val index = indexOfIdentity(value)
     val found = index >= 0
-    if (found) removeIndex(index)
+    if (found) removeAt(index)
     return found
 }
-fun <T> ArrayList<T>.removeIndex(index: Int): T = removeAt(index)
+fun <T> ArrayList<T>.containsIdentity(value: T?): Boolean = indexOfIdentity(value) >= 0
+
+@Deprecated("", ReplaceWith("removeLast()"))
 fun <T> ArrayList<T>.pop(): T = removeLast()
 fun <T> ArrayList<T>.peek(): T = last()
 fun <T> ArrayList<T>.shrink() = run { if (size != size) resize(size) }

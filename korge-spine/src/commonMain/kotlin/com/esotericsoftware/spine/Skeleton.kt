@@ -261,7 +261,7 @@ class Skeleton {
     }
 
     private fun sortIkConstraint(constraint: IkConstraint) {
-        constraint.active = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        constraint.active = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.containsIdentity(constraint.data))
         if (!constraint.active) return
 
         val target = constraint.target
@@ -273,7 +273,7 @@ class Skeleton {
 
         if (constrained.size > 1) {
             val child = constrained.peek()
-            if (!updateCache.contains(child, true)) updateCacheReset.add(child)
+            if (!updateCache.containsIdentity(child)) updateCacheReset.add(child)
         }
 
         updateCache.add(constraint)
@@ -283,7 +283,7 @@ class Skeleton {
     }
 
     private fun sortPathConstraint(constraint: PathConstraint) {
-        constraint.isActive = constraint.target!!.bone.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        constraint.isActive = constraint.target!!.bone.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.containsIdentity(constraint.data))
         if (!constraint.isActive) return
 
         val slot = constraint.target
@@ -310,7 +310,7 @@ class Skeleton {
     }
 
     private fun sortTransformConstraint(constraint: TransformConstraint) {
-        constraint.isActive = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.contains(constraint.data, true))
+        constraint.isActive = constraint.target!!.isActive && (!constraint.data.skinRequired || skin != null && skin!!.constraints.containsIdentity(constraint.data))
         if (!constraint.isActive) return
 
         sortBone(constraint.target!!)
@@ -321,7 +321,7 @@ class Skeleton {
             for (i in 0 until boneCount) {
                 val child = constrained[i]
                 sortBone(child.parent!!)
-                if (!updateCache.contains(child, true)) updateCacheReset.add(child)
+                if (!updateCache.containsIdentity(child)) updateCacheReset.add(child)
             }
         } else {
             for (i in 0 until boneCount)

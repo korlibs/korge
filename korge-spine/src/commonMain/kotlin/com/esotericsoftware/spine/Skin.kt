@@ -61,11 +61,11 @@ class Skin(
     /** Adds all attachments, bones, and constraints from the specified skin to this skin.  */
     fun addSkin(skin: Skin) {
         skin.bones.fastForEach { data ->
-            if (!bones.contains(data, true)) bones.add(data)
+            if (!bones.containsIdentity(data)) bones.add(data)
         }
 
         skin.constraints.fastForEach { data ->
-            if (!constraints.contains(data, true)) constraints.add(data)
+            if (!constraints.containsIdentity(data)) constraints.add(data)
         }
 
         for (entry in skin.attachments.keys)
@@ -76,11 +76,11 @@ class Skin(
      * copied, instead a new linked mesh is created. The attachment copies can be modified without affecting the originals.  */
     fun copySkin(skin: Skin) {
         skin.bones.fastForEach { data ->
-            if (!bones.contains(data, true)) bones.add(data)
+            if (!bones.containsIdentity(data)) bones.add(data)
         }
 
         skin.constraints.fastForEach { data ->
-            if (!constraints.contains(data, true)) constraints.add(data)
+            if (!constraints.containsIdentity(data)) constraints.add(data)
         }
 
         for (entry in skin.attachments.keys) {

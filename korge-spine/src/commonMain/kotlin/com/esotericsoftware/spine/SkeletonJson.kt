@@ -647,7 +647,7 @@ class SkeletonJson {
             while (constraintMap != null) {
                 val constraint = skeletonData.findIkConstraint(constraintMap!!.name)
                 val timeline = IkConstraintTimeline(constraintMap!!.size)
-                timeline.ikConstraintIndex = skeletonData.ikConstraints.indexOf(constraint, true)
+                timeline.ikConstraintIndex = skeletonData.ikConstraints.indexOfIdentity(constraint)
                 var frameIndex = 0
                 var valueMap = constraintMap!!.child
                 while (valueMap != null) {
@@ -670,7 +670,7 @@ class SkeletonJson {
             while (constraintMap != null) {
                 val constraint = skeletonData.findTransformConstraint(constraintMap!!.name)
                 val timeline = TransformConstraintTimeline(constraintMap!!.size)
-                timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOf(constraint, true)
+                timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOfIdentity(constraint)
                 var frameIndex = 0
                 var valueMap = constraintMap!!.child
                 while (valueMap != null) {
@@ -692,7 +692,7 @@ class SkeletonJson {
         while (constraintMap != null) {
             val data = skeletonData.findPathConstraint(constraintMap!!.name)
                     ?: error("Path constraint not found: " + constraintMap!!.name!!)
-            val index = skeletonData.pathConstraints.indexOf(data, true)
+            val index = skeletonData.pathConstraints.indexOfIdentity(data)
             var timelineMap = constraintMap!!.child
             while (timelineMap != null) {
                 val timelineName = timelineMap!!.name

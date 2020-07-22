@@ -301,9 +301,9 @@ internal class Triangulator {
         for (i in convexPolygons.size - 1 downTo 0) {
             polygon = convexPolygons.get(i)
             if (polygon.size == 0) {
-                convexPolygons.removeIndex(i)
+                convexPolygons.removeAt(i)
                 polygonPool.free(polygon)
-                polygonIndices = convexPolygonsIndices.removeIndex(i)
+                polygonIndices = convexPolygonsIndices.removeAt(i)
                 polygonIndicesPool.free(polygonIndices)
             }
         }
