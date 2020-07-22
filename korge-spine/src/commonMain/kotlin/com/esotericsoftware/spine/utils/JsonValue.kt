@@ -45,26 +45,16 @@ class JsonValue {
     val isNull: Boolean get() = type == ValueType.nullValue
     val isValue: Boolean get() = type == ValueType.stringValue || type == ValueType.doubleValue || type == ValueType.booleanValue || type == ValueType.nullValue
 
-    constructor(type: ValueType) {
-        this.type = type
-    }
+    constructor(type: ValueType) { this.type = type }
 
     constructor(type: ValueType, children: List<JsonValue>) {
         this.type = type
         this.children = children
     }
 
-    constructor(value: String) {
-        set(value)
-    }
-
-    constructor(value: Double, stringValue: String) {
-        set(value, stringValue)
-    }
-
-    constructor(value: Boolean) {
-        set(value)
-    }
+    constructor(value: String) { set(value) }
+    constructor(value: Double, stringValue: String) { set(value, stringValue) }
+    constructor(value: Boolean) { set(value) }
 
     operator fun get(index: Int): JsonValue? = children?.getOrNull(index)
 
@@ -74,22 +64,10 @@ class JsonValue {
     }
 
     fun getSure(name: String): JsonValue = get(name) ?: throw IllegalArgumentException("Named value not found: $name")
-
     fun has(name: String): Boolean = get(name) != null
-
-    inline fun fastForEach(block: (value: JsonValue) -> Unit) {
-        children?.fastForEach(block)
-        //var current = child
-        //while (current != null) {
-        //    block(current)
-        //    current = current.next
-        //}
-    }
-
+    inline fun fastForEach(block: (value: JsonValue) -> Unit) = run { children?.fastForEach(block) }
     fun require(name: String): JsonValue {
-        fastForEach { current ->
-            if (current.name?.equals(name, ignoreCase = true) == true) return current
-        }
+        fastForEach { current -> if (current.name?.equals(name, ignoreCase = true) == true) return current }
         error("Child not found with name: $name")
     }
 
@@ -110,22 +88,13 @@ class JsonValue {
     fun asFloat(): Float = asDouble().toFloat()
     fun asInt(): Int = asDouble().toInt()
     fun asBoolean(): Boolean = asDouble() != 0.0
+    fun checkArray() = check(type == ValueType.array) { "Value is not an array: " + type!! }
 
-    fun checkArray() {
-        check(type == ValueType.array) { "Value is not an array: " + type!! }
-    }
+    private inline fun <T> asAnyArray(new: (size: Int) -> T, set: (array: T, index: Int, value: JsonValue) -> Unit): T =
+        checkArray().let { new(size).also { array -> children?.fastForEachWithIndex { index, value -> set(array, index, value) } } }
 
-    fun asFloatArray(): FloatArray = FloatArray(size).also { array ->
-        checkArray()
-        var i = 0
-        fastForEach { array[i++] = it.asFloat() }
-    }
-
-    fun asShortArray(): ShortArray = ShortArray(size).also { array ->
-        checkArray()
-        var i = 0
-        fastForEach { array[i++] = it.asInt().toShort() }
-    }
+    fun asFloatArray(): FloatArray = asAnyArray({ FloatArray(it) }, { array, index, value -> array[index] = value.asFloat() })
+    fun asShortArray(): ShortArray = asAnyArray({ ShortArray(it) }, { array, index, value -> array[index] = value.asInt().toShort() })
 
     private inline fun <T> getAny(name: String, defaultValue: T, convert: (value: JsonValue) -> T): T {
         val child = get(name)
