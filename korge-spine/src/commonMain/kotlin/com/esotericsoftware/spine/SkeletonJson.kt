@@ -38,6 +38,7 @@ import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.serialization.json.*
 
 /** Loads skeleton data in the Spine JSON format.

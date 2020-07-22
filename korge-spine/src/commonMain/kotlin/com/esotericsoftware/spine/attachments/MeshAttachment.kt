@@ -32,6 +32,7 @@ package com.esotericsoftware.spine.attachments
 import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import com.soywiz.korim.color.*
 
 /** An attachment that displays a textured mesh. A mesh has hull vertices and internal vertices within the hull. Holes are not
  * supported. Each vertex has UVs (texture coordinates) and triangles are used to map an image on to the mesh.

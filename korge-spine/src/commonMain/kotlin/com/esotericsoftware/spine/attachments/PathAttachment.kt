@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.RGBAf
+import com.soywiz.korim.color.RGBAf
 
 import com.esotericsoftware.spine.PathConstraint
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy

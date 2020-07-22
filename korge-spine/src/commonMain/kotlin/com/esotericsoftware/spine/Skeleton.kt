@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.graphics.RGBAf
+import com.soywiz.korim.color.RGBAf
 
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment

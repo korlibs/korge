@@ -4,7 +4,7 @@ import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.BlendMode
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.effect.*
-import com.esotericsoftware.spine.graphics.RGBAf
+import com.soywiz.korim.color.RGBAf
 import com.esotericsoftware.spine.graphics.Texture
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*

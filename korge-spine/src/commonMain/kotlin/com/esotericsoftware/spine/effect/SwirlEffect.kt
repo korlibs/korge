@@ -29,7 +29,7 @@
 
 package com.esotericsoftware.spine.effect
 
-import com.esotericsoftware.spine.graphics.RGBAf
+import com.soywiz.korim.color.RGBAf
 import com.esotericsoftware.spine.utils.SpineVector2
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.utils.SpineUtils
