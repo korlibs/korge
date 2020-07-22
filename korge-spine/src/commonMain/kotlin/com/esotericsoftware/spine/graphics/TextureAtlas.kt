@@ -6,7 +6,7 @@ import com.soywiz.korma.geom.*
 
 class TextureAtlas(val atlas: Atlas) {
     private val regions = HashMap<String, AtlasRegion>()
-    private val textures = HashMap<BmpSlice, Texture>()
+    private val textures = HashMap<Bitmap, Texture>()
 
     fun findRegion(path: String): AtlasRegion? {
         return regions.getOrPut(path) {
@@ -17,21 +17,22 @@ class TextureAtlas(val atlas: Atlas) {
 
     inner class AtlasRegion(val entry: Atlas.Entry) {
         val bmpSlice = entry.slice
-        val texture = textures.getOrPut(bmpSlice) { Texture(bmpSlice) }
+        val bmp = bmpSlice.bmp
+        val texture = textures.getOrPut(bmp) { Texture(bmp) }
 
         val u: Float = bmpSlice.tl_x
         val v: Float = bmpSlice.tl_y
         val u2: Float = bmpSlice.br_x
         val v2: Float = bmpSlice.br_y
-        val regionWidth: Float get() = bmpSlice.width.toFloat()
-        val regionHeight: Float get() = bmpSlice.height.toFloat()
-        var offsetX = 0f
-        var offsetY = 0f
-        var originalWidth = bmpSlice.width.toFloat()
-        var originalHeight = bmpSlice.height.toFloat()
-        var rotate = bmpSlice.rotated
-        var packedHeight = 0f
-        var packedWidth = 0f
-        var degrees = bmpSlice.rotatedAngle
+        //val regionWidth: Float get() = bmpSlice.width.toFloat()
+        //val regionHeight: Float get() = bmpSlice.height.toFloat()
+        var offsetX = entry.info.offset.x.toFloat()
+        var offsetY = entry.info.offset.y.toFloat()
+        var originalWidth = entry.info.orig.w.toFloat()
+        var originalHeight = entry.info.orig.h.toFloat()
+        var rotate = entry.info.rotated
+        var packedHeight = entry.info.sourceSize.w.toFloat()
+        var packedWidth = entry.info.sourceSize.h.toFloat()
+        var degrees = if (entry.info.rotated) 90 else 0
     }
 }

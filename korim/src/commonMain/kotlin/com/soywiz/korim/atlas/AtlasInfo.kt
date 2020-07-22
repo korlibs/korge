@@ -65,7 +65,7 @@ data class AtlasInfo(
         val sourceSize: Size,
         val spriteSourceSize: Rect,
         val trimmed: Boolean,
-        val orig: Point = Point(),
+        val orig: Size = Size(0, 0),
         val offset: Point = Point(),
 	) {
         // @TODO: Renemae to path or name
@@ -222,7 +222,7 @@ data class AtlasInfo(
                     var rotate = false
                     var xy = Point()
                     var size = Size(0, 0)
-                    var orig = Point()
+                    var orig = Size(0, 0)
                     var offset = Point()
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
@@ -230,7 +230,7 @@ data class AtlasInfo(
                             "rotate" -> rotate = value.toBoolean()
                             "xy" -> xy = value.point()
                             "size" -> size = value.size()
-                            "orig" -> orig = value.point()
+                            "orig" -> orig = value.size()
                             "offset" -> offset = value.point()
                         }
                     }

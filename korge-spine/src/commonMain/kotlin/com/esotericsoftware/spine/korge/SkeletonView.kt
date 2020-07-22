@@ -10,6 +10,9 @@ import com.esotericsoftware.spine.utils.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 
+inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
+    = SkeletonView(skeleton, animationState).addTo(this, block)
+
 class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) : View() {
     init {
         addUpdater { delta ->
@@ -19,7 +22,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        skeleton.setPosition(x.toFloat(), y.toFloat())
+        skeleton.setPosition(0f, 0f)
         skeleton.updateWorldTransform()
         renderSkeleton(ctx, skeleton)
     }
@@ -152,59 +155,29 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                             u += 2
                         }
                     } else {
-                        var v = 2
+                        var v = 0
                         var u = 0
                         while (v < verticesLength) {
-                            vertices[v] = c
-                            vertices[v + 1] = uvs!![u]
-                            vertices[v + 2] = uvs[u + 1]
+                            vertices[v + 2] = c
+                            vertices[v + 3] = uvs!![u]
+                            vertices[v + 4] = uvs[u + 1]
                             v += 5
                             u += 2
                         }
                     }
                     draw(ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size, vertexSize)
                 }
+
+                //break // @TODO: Remove this
             }
 
             clipper.clipEnd(slot)
             i++
+
         }
         clipper.clipEnd()
         vertexEffect?.end()
     }
-
-    private fun draw(ctx: RenderContext, texture: Texture, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
-        val batch = ctx.batch
-        ctx.flush()
-
-        val vertexCount = verticesCount / vertexSize
-
-        batch.setStateFast(texture.bmp, true, blendMode.factors, null)
-        batch.ensure(trianglesCount, vertexCount)
-
-        for (n in 0 until trianglesCount) {
-            batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
-        }
-        if (vertexSize == 5) {
-            val colorMul = this.colorMul
-            val colorAdd = this.colorAdd
-            for (n in 0 until vertexCount) {
-                val x = verticesData[verticesOffset + n * vertexSize + 0]
-                val y = verticesData[verticesOffset + n * vertexSize + 1]
-                val u = verticesData[verticesOffset + n * vertexSize + 3]
-                val v = verticesData[verticesOffset + n * vertexSize + 4]
-                batch.addVertex(x, y, u, v, colorMul, colorAdd)
-            }
-        } else {
-            TODO()
-        }
-
-        batch.flush()
-    }
-
-    private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
-    }
-
 
     private fun applyVertexEffect(vertices: FloatArray, verticesLength: Int, stride: Int, light: Float, dark: Float) {
         val tempPosition = this.temp
@@ -252,6 +225,42 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                 v += stride
             }
         }
+    }
+
+    private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
+    }
+
+    private fun draw(ctx: RenderContext, texture: Texture, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
+        val batch = ctx.batch
+        //ctx.flush()
+
+        val vertexCount = verticesCount / vertexSize
+
+        batch.setStateFast(texture.bmp, true, blendMode.factors, null)
+        batch.ensure(trianglesCount, vertexCount)
+
+        val transform = this.globalMatrix
+
+        for (n in 0 until trianglesCount) {
+            batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
+        }
+        if (vertexSize == 5) {
+            val colorMul = this.colorMul
+            val colorAdd = this.colorAdd
+            for (n in 0 until vertexCount) {
+                val x = verticesData[verticesOffset + n * vertexSize + 0]
+                val y = -verticesData[verticesOffset + n * vertexSize + 1]
+                val u = verticesData[verticesOffset + n * vertexSize + 3]
+                val v = verticesData[verticesOffset + n * vertexSize + 4]
+                val realX = transform.transformXf(x, y)
+                val realY = transform.transformYf(x, y)
+                batch.addVertex(realX, realY, u, v, colorMul, colorAdd)
+            }
+        } else {
+            TODO()
+        }
+
+        //batch.flush()
     }
 
     companion object {
