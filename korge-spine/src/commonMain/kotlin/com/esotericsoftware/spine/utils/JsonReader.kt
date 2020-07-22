@@ -928,17 +928,17 @@ class JsonReader {
             for (i in 0 until p)
                 if (data[i] == '\n') lineNumber++
             val start = kotlin.math.max(0, p - 32)
-            throw SerializationException("Error parsing JSON on line " + lineNumber + " near: "
+            throw RuntimeException("Error parsing JSON on line " + lineNumber + " near: "
                     + String(data, start, p - start) + "*ERROR*" + String(data, p, min(64, length - p)), parseRuntimeEx)
         } else if (elements.size != 0) {
             val element = elements.peek()
             elements.clear()
             if (element != null && element!!.isObject)
-                throw SerializationException("Error parsing JSON, unmatched brace.")
+                error("Error parsing JSON, unmatched brace.")
             else
-                throw SerializationException("Error parsing JSON, unmatched bracket.")
+                error("Error parsing JSON, unmatched bracket.")
         } else if (parseRuntimeEx != null) {
-            throw SerializationException("Error parsing JSON: " + String(data), parseRuntimeEx)
+            throw RuntimeException("Error parsing JSON: " + String(data), parseRuntimeEx)
         }
         return root
     }
@@ -1030,7 +1030,7 @@ class JsonReader {
                 'n' -> c = '\n'
                 'r' -> c = '\r'
                 't' -> c = '\t'
-                else -> throw SerializationException("Illegal escaped character: \\$c")
+                else -> error("Illegal escaped character: \\$c")
             }
             buffer.append(c)
         }

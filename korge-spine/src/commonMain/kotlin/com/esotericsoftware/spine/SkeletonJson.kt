@@ -102,7 +102,7 @@ class SkeletonJson {
             val parentName = boneMap.getString("parent", null)
             if (parentName != null) {
                 parent = skeletonData.findBone(parentName)
-                if (parent == null) throw SerializationException("Parent bone not found: $parentName")
+                if (parent == null) error("Parent bone not found: $parentName")
             }
             val data = BoneData(skeletonData.bones.size, boneMap.getString("name")!!, parent)
             data.length = boneMap.getFloat("length", 0f) * scale
@@ -129,7 +129,7 @@ class SkeletonJson {
             val slotName = slotMap.getString("name")!!
             val boneName = slotMap.getString("bone")
             val boneData = skeletonData.findBone(boneName)
-                    ?: throw SerializationException("Slot bone not found: " + boneName!!)
+                    ?: error("Slot bone not found: " + boneName!!)
             val data = SlotData(skeletonData.slots.size, slotName, boneData)
 
             val color = slotMap.getString("color", null)
@@ -155,14 +155,14 @@ class SkeletonJson {
                 var entry = constraintMap!!.getChild("bones")
                 while (entry != null) {
                     val bone = skeletonData.findBone(entry!!.asString())
-                            ?: throw SerializationException("IK bone not found: " + entry!!)
+                            ?: error("IK bone not found: " + entry!!)
                     data.bones.add(bone)
                     entry = entry!!.next
                 }
 
                 val targetName = constraintMap!!.getString("target")!!
                 data.target = skeletonData.findBone(targetName)
-                    ?: throw SerializationException("IK target bone not found: " + targetName!!)
+                    ?: error("IK target bone not found: " + targetName!!)
 
                 data.mix = constraintMap!!.getFloat("mix", 1f)
                 data.softness = constraintMap!!.getFloat("softness", 0f) * scale
@@ -187,14 +187,14 @@ class SkeletonJson {
                 var entry = constraintMap!!.getChild("bones")
                 while (entry != null) {
                     val bone = skeletonData.findBone(entry!!.asString())
-                            ?: throw SerializationException("Transform constraint bone not found: " + entry!!)
+                            ?: error("Transform constraint bone not found: " + entry!!)
                     data.bones.add(bone)
                     entry = entry!!.next
                 }
 
                 val targetName = constraintMap!!.getString("target")
                 data.target = skeletonData.findBone(targetName)
-                    ?: throw SerializationException("Transform constraint target bone not found: " + targetName!!)
+                    ?: error("Transform constraint target bone not found: " + targetName!!)
 
                 data.local = constraintMap!!.getBoolean("local", false)
                 data.relative = constraintMap!!.getBoolean("relative", false)
@@ -226,14 +226,14 @@ class SkeletonJson {
             var entry = constraintMap!!.getChild("bones")
             while (entry != null) {
                 val bone = skeletonData.findBone(entry!!.asString())
-                        ?: throw SerializationException("Path bone not found: " + entry!!)
+                        ?: error("Path bone not found: " + entry!!)
                 data.bones.add(bone)
                 entry = entry!!.next
             }
 
             val targetName = constraintMap!!.getString("target")!!
             data.target = skeletonData.findSlot(targetName)
-                ?: throw SerializationException("Path target slot not found: " + targetName!!)
+                ?: error("Path target slot not found: " + targetName!!)
 
             data.positionMode = PositionMode.valueOf(constraintMap!!.getString("positionMode", "percent")!!)
             data.spacingMode = SpacingMode.valueOf(constraintMap!!.getString("spacingMode", "length")!!)
@@ -258,7 +258,7 @@ class SkeletonJson {
                 var entry = skinMap!!.getChild("bones")
                 while (entry != null) {
                     val bone = skeletonData.findBone(entry!!.asString())
-                            ?: throw SerializationException("Skin bone not found: " + entry!!)
+                            ?: error("Skin bone not found: " + entry!!)
                     skin.bones.add(bone)
                     entry = entry!!.next
                 }
@@ -267,7 +267,7 @@ class SkeletonJson {
                 var entry = skinMap!!.getChild("ik")
                 while (entry != null) {
                     val constraint = skeletonData.findIkConstraint(entry!!.asString())
-                            ?: throw SerializationException("Skin IK constraint not found: " + entry!!)
+                            ?: error("Skin IK constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
                     entry = entry!!.next
                 }
@@ -276,7 +276,7 @@ class SkeletonJson {
                 var entry = skinMap!!.getChild("transform")
                 while (entry != null) {
                     val constraint = skeletonData.findTransformConstraint(entry!!.asString())
-                            ?: throw SerializationException("Skin transform constraint not found: " + entry!!)
+                            ?: error("Skin transform constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
                     entry = entry!!.next
                 }
@@ -285,7 +285,7 @@ class SkeletonJson {
                 var entry = skinMap!!.getChild("path")
                 while (entry != null) {
                     val constraint = skeletonData.findPathConstraint(entry!!.asString())
-                            ?: throw SerializationException("Skin path constraint not found: " + entry!!)
+                            ?: error("Skin path constraint not found: " + entry!!)
                     skin.constraints.add(constraint)
                     entry = entry!!.next
                 }
@@ -293,14 +293,14 @@ class SkeletonJson {
             var slotEntry = skinMap.getChild("attachments")
             while (slotEntry != null) {
                 val slot = skeletonData.findSlot(slotEntry.name)
-                        ?: throw SerializationException("Slot not found: " + slotEntry.name!!)
+                        ?: error("Slot not found: " + slotEntry.name!!)
                 var entry = slotEntry.child
                 while (entry != null) {
                     try {
                         val attachment = readAttachment(entry!!, skin, slot.index, entry!!.name, skeletonData)
                         if (attachment != null) skin.setAttachment(slot.index, entry!!.name!!, attachment)
                     } catch (ex: Throwable) {
-                        throw SerializationException("Error reading attachment: " + entry!!.name + ", skin: " + skin, ex)
+                        throw RuntimeException("Error reading attachment: " + entry!!.name + ", skin: " + skin, ex)
                     }
 
                     entry = entry!!.next
@@ -318,9 +318,9 @@ class SkeletonJson {
         while (i < n) {
             val linkedMesh = linkedMeshes.get(i)
             val skin = (if (linkedMesh.skin == null) skeletonData.defaultSkin else skeletonData.findSkin(linkedMesh.skin))
-                    ?: throw SerializationException("Skin not found: " + linkedMesh.skin!!)
+                    ?: error("Skin not found: " + linkedMesh.skin!!)
             val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent!!)
-                    ?: throw SerializationException("Parent mesh not found: " + linkedMesh.parent)
+                    ?: error("Parent mesh not found: " + linkedMesh.parent)
             linkedMesh.mesh.deformAttachment = if (linkedMesh.inheritDeform) parent as VertexAttachment else linkedMesh.mesh
             linkedMesh.mesh.parentMesh = parent as MeshAttachment
             linkedMesh.mesh.updateUVs()
@@ -350,7 +350,7 @@ class SkeletonJson {
             try {
                 readAnimation(animationMap, animationMap.name!!, skeletonData)
             } catch (ex: Throwable) {
-                throw SerializationException("Error reading animation: " + animationMap.name!!, ex)
+                throw RuntimeException("Error reading animation: " + animationMap.name!!, ex)
             }
 
             animationMap = animationMap.next
@@ -464,7 +464,7 @@ class SkeletonJson {
                 val end = map.getString("end", null)
                 if (end != null) {
                     val slot = skeletonData.findSlot(end)
-                            ?: throw SerializationException("Clipping end slot not found: $end")
+                            ?: error("Clipping end slot not found: $end")
                     clip.endSlot = slot
                 }
 
@@ -523,7 +523,7 @@ class SkeletonJson {
             var slotMap = map.getChild("slots")
             while (slotMap != null) {
                 val slot = skeletonData.findSlot(slotMap!!.name)
-                        ?: throw SerializationException("Slot not found: " + slotMap!!.name!!)
+                        ?: error("Slot not found: " + slotMap!!.name!!)
                 var timelineMap = slotMap!!.child
                 while (timelineMap != null) {
                     val timelineName = timelineMap!!.name
@@ -586,7 +586,7 @@ class SkeletonJson {
         var boneMap = map.getChild("bones")
         while (boneMap != null) {
             val bone = skeletonData.findBone(boneMap.name)
-                    ?: throw SerializationException("Bone not found: " + boneMap.name!!)
+                    ?: error("Bone not found: " + boneMap.name!!)
             var timelineMap = boneMap.child
             while (timelineMap != null) {
                 val timelineName = timelineMap!!.name
@@ -690,7 +690,7 @@ class SkeletonJson {
         var constraintMap = map.getChild("path")
         while (constraintMap != null) {
             val data = skeletonData.findPathConstraint(constraintMap!!.name)
-                    ?: throw SerializationException("Path constraint not found: " + constraintMap!!.name!!)
+                    ?: error("Path constraint not found: " + constraintMap!!.name!!)
             val index = skeletonData.pathConstraints.indexOf(data, true)
             var timelineMap = constraintMap!!.child
             while (timelineMap != null) {
@@ -742,15 +742,15 @@ class SkeletonJson {
         var deformMap = map.getChild("deform")
         while (deformMap != null) {
             val skin = skeletonData.findSkin(deformMap.name)
-                    ?: throw SerializationException("Skin not found: " + deformMap.name!!)
+                    ?: error("Skin not found: " + deformMap.name!!)
             var slotMap = deformMap.child
             while (slotMap != null) {
                 val slot = skeletonData.findSlot(slotMap!!.name)
-                        ?: throw SerializationException("Slot not found: " + slotMap!!.name!!)
+                        ?: error("Slot not found: " + slotMap!!.name!!)
                 var timelineMap = slotMap!!.child
                 while (timelineMap != null) {
                     val attachment = skin.getAttachment(slot.index, timelineMap!!.name!!) as? VertexAttachment?
-                            ?: throw SerializationException("Deform attachment not found: " + timelineMap!!.name!!)
+                            ?: error("Deform attachment not found: " + timelineMap!!.name!!)
                     val weighted = attachment.bones != null
                     val vertices = attachment.vertices
                     val deformLength = if (weighted) vertices!!.size / 3 * 2 else vertices!!.size
@@ -819,7 +819,7 @@ class SkeletonJson {
                     var offsetMap = offsets.child
                     while (offsetMap != null) {
                         val slot = skeletonData.findSlot(offsetMap.getString("slot"))
-                                ?: throw SerializationException("Slot not found: " + offsetMap.getString("slot")!!)
+                                ?: error("Slot not found: " + offsetMap.getString("slot")!!)
 // Collect unchanged items.
                         while (originalIndex != slot.index)
                             unchanged[unchangedIndex++] = originalIndex++
@@ -849,7 +849,7 @@ class SkeletonJson {
             var eventMap = eventsMap.child
             while (eventMap != null) {
                 val eventData = skeletonData.findEvent(eventMap.getString("name"))
-                        ?: throw SerializationException("Event not found: " + eventMap.getString("name")!!)
+                        ?: error("Event not found: " + eventMap.getString("name")!!)
                 val event = Event(eventMap.getFloat("time", 0f), eventData)
                 event.int = eventMap.getInt("int", eventData.int)
                 event.float = eventMap.getFloat("float", eventData.float)

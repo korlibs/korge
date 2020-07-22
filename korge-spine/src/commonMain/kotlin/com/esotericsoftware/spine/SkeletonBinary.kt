@@ -259,9 +259,9 @@ class SkeletonBinary {
             for (i in 0 until n) {
                 val linkedMesh = linkedMeshes.get(i)
                 val skin = (if (linkedMesh.skin == null) skeletonData.defaultSkin else skeletonData.findSkin(linkedMesh.skin))
-                        ?: throw SerializationException("Skin not found: " + linkedMesh.skin!!)
+                        ?: error("Skin not found: " + linkedMesh.skin!!)
                 val parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent!!)
-                        ?: throw SerializationException("Parent mesh not found: " + linkedMesh.parent)
+                        ?: error("Parent mesh not found: " + linkedMesh.parent)
                 linkedMesh.mesh.deformAttachment = if (linkedMesh.inheritDeform) parent as VertexAttachment else linkedMesh.mesh
                 linkedMesh.mesh.parentMesh = parent as MeshAttachment
                 linkedMesh.mesh.updateUVs()
@@ -293,7 +293,7 @@ class SkeletonBinary {
             }
 
         } catch (ex: Throwable) {
-            throw SerializationException("Error reading skeleton file.", ex)
+            throw RuntimeException("Error reading skeleton file.", ex)
         } finally {
             try {
                 input.close()
@@ -888,7 +888,7 @@ class SkeletonBinary {
                 duration = kotlin.math.max(duration, timeline.frames[eventCount - 1])
             }
         } catch (ex: Throwable) {
-            throw SerializationException("Error reading skeleton file.", ex)
+            throw RuntimeException("Error reading skeleton file.", ex)
         }
 
         timelines.shrink()
