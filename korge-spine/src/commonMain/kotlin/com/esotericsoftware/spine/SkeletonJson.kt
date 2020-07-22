@@ -38,6 +38,7 @@ import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
+import com.soywiz.korio.serialization.json.*
 
 /** Loads skeleton data in the Spine JSON format.
  *
@@ -69,7 +70,7 @@ class SkeletonJson {
     }
 
     protected fun parse(file: FileHandle): JsonValue? {
-        return JsonReader().parse(file.readAsString())
+        return JsonValue.fromPrimitiveTree(Json.parse(file.readAsString()))
     }
 
     fun readSkeletonData(file: FileHandle): SkeletonData {
@@ -348,11 +349,11 @@ class SkeletonJson {
         // Animations.
         var animationMap = root.getChild("animations")
         while (animationMap != null) {
-            try {
+            //try {
                 readAnimation(animationMap, animationMap.name!!, skeletonData)
-            } catch (ex: Throwable) {
-                throw RuntimeException("Error reading animation: " + animationMap.name!!, ex)
-            }
+            //} catch (ex: Throwable) {
+            //    throw RuntimeException("Error reading animation: " + animationMap.name!!, ex)
+            //}
 
             animationMap = animationMap.next
         }
@@ -535,7 +536,7 @@ class SkeletonJson {
                         var frameIndex = 0
                         var valueMap = timelineMap!!.child
                         while (valueMap != null) {
-                            timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name")!!)
+                            timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name"))
                             valueMap = valueMap!!.next
                         }
                         timelines.add(timeline)

@@ -17,10 +17,11 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
 suspend fun main() = Korge(width = 800, height = 800, bgcolor = Colors["#2b2b2b"]) {
-    val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())
-    val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
+    //val json = SkeletonBinary(TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())) // This loads skeleton JSON data, which is stateless.
+    val json = SkeletonJson(TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())) // This loads skeleton JSON data, which is stateless.
     json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.
-    val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
+    //val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
+    val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.json"].toFileHandle())
 
     val skeleton = Skeleton(skeletonData) // Skeleton holds skeleton state (bone positions, slot attachments, etc).
     //skeleton.setPosition(250f, 20f)
