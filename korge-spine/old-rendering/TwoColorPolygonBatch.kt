@@ -31,8 +31,8 @@
 package com.esotericsoftware.spine.rendering
 
 import com.esotericsoftware.spine.graphics.*
-import com.esotericsoftware.spine.rendering.Mesh.VertexDataType
-import com.esotericsoftware.spine.rendering.VertexAttributes.Usage
+import Mesh.VertexDataType
+import VertexAttributes.Usage
 import com.esotericsoftware.spine.utils.Affine2
 import com.esotericsoftware.spine.utils.MathUtils
 import com.esotericsoftware.spine.utils.Matrix4

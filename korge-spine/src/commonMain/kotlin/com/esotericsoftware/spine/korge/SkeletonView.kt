@@ -6,7 +6,6 @@ import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.effect.*
 import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.graphics.Texture
-import com.esotericsoftware.spine.rendering.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -119,7 +118,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                         alpha = 0f
                     }
                     blendMode = slotBlendMode
-                    setBlendFunction(ctx, blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
+                    //setBlendFunction(ctx, blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
                 }
 
                 val c = NumberUtils.intToFloatColor(alpha.toInt() shl 24 //
@@ -228,8 +227,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         }
     }
 
-    private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
-    }
+    //private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
+    //}
 
     private fun draw(ctx: RenderContext, texture: Texture, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
         val batch = ctx.batch
