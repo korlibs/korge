@@ -29,12 +29,11 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.Color
 import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
-import com.esotericsoftware.spine.graphics.TextureRegion
 import com.esotericsoftware.spine.utils.MathUtils
 
 import com.esotericsoftware.spine.Bone
+import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** An attachment that displays a textured quadrilateral.
@@ -43,14 +42,14 @@ import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
  * See [Region attachments](http://esotericsoftware.com/spine-regions) in the Spine User Guide.  */
 class RegionAttachment(name: String) : Attachment(name) {
 
-    private var _region: TextureRegion? = null
+    private var _region: TextureAtlas.AtlasRegion? = null
 
-    var region: TextureRegion
+    var region: TextureAtlas.AtlasRegion
         get() = _region ?: error("Region was not set before")
         set(region) {
             _region = region
             val uvs = this.uVs
-            if (region is AtlasRegion && region.rotate) {
+            if (region.rotate) {
                 uvs[URX] = region.u
                 uvs[URY] = region.v2
                 uvs[BRX] = region.u

@@ -2,6 +2,8 @@ package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.assets.*
 import com.esotericsoftware.spine.graphics.*
+import com.esotericsoftware.spine.korge.*
+import com.soywiz.korge.render.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
@@ -12,8 +14,7 @@ class SampleTest {
     @Test
     //@Ignore
     fun test() = suspendTest({ !OS.isJs }) {
-        val atlas2 = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
-        val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].toFileHandle())
+        val atlas = TextureAtlas(resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas())
         val json = SkeletonBinary(atlas) // This loads skeleton JSON data, which is stateless.
         json.scale = 0.6f // Load the skeleton at 60% the size it was in Spine.
         val skeletonData = json.readSkeletonData(resourcesVfs["spineboy/spineboy-pro.skel"].toFileHandle())
@@ -37,5 +38,10 @@ class SampleTest {
 
         state.apply(skeleton); // Poses skeleton using current animations. This sets the bones' local SRT.
         skeleton.updateWorldTransform(); // Uses the bones' local SRT to compute their world SRT.
+        val view = SkeletonView(skeleton, state)
+        val log = testRenderContext {
+            view.render(it)
+        }
+        //println(log)
     }
 }

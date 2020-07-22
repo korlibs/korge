@@ -1,10 +1,9 @@
 package com.esotericsoftware.spine.graphics
 
-class Texture {
-    val width: Float
-        get() = 0f
-    val height: Float
-        get() = 0f
+import com.soywiz.korim.bitmap.*
 
+class Texture(val bmp: BmpSlice) {
+    val width: Float = bmp.width.toFloat()
+    val height: Float = bmp.height.toFloat()
     fun bind() {}
 }

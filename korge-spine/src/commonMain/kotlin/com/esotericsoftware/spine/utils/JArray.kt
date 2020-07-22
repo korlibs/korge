@@ -32,6 +32,13 @@ class JArray<T> : Iterable<T> {
         }
         get() = items.size
 
+    inline fun fastForEach(block: (T) -> Unit) {
+        var n = 0
+        while (n < size) {
+            block(this[n])
+            n++
+        }
+    }
 
     var ordered: Boolean = false
 

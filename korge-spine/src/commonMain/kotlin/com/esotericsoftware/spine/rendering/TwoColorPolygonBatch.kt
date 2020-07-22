@@ -27,6 +27,7 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
 package com.esotericsoftware.spine.rendering
 
 import com.esotericsoftware.spine.graphics.*
@@ -905,11 +906,11 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         this.vertexIndex = idx
     }
 
-    override fun draw(region: TextureRegion?, x: Float, y: Float) {
+    override fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float) {
         draw(region, x, y, region!!.regionWidth, region.regionHeight)
     }
 
-    override fun draw(region: TextureRegion?, x: Float, y: Float, width: Float, height: Float) {
+    override fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, width: Float, height: Float) {
         check(isDrawing) { "begin must be called before draw." }
 
         val triangles = this.triangles
@@ -972,7 +973,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         this.vertexIndex = idx
     }
 
-    override fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float,
+    override fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float,
                       scaleX: Float, scaleY: Float, rotation: Float) {
         check(isDrawing) { "begin must be called before draw." }
 
@@ -1108,7 +1109,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         this.vertexIndex = idx
     }
 
-    override fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float,
+    override fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float,
                       scaleX: Float, scaleY: Float, rotation: Float, clockwise: Boolean) {
         check(isDrawing) { "begin must be called before draw." }
 
@@ -1267,7 +1268,7 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         this.vertexIndex = idx
     }
 
-    override fun draw(region: TextureRegion?, width: Float, height: Float, transform: Affine2?) {
+    override fun draw(region: TextureAtlas.AtlasRegion?, width: Float, height: Float, transform: Affine2?) {
         check(isDrawing) { "begin must be called before draw." }
 
         val triangles = this.triangles
@@ -1488,3 +1489,4 @@ class TwoColorPolygonBatch(maxVertices: Int, maxTriangles: Int) : PolygonBatch {
         internal val SPRITE_SIZE = 4 * VERTEX_SIZE
     }
 }
+*/

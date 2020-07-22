@@ -26,7 +26,7 @@ private val logger = Logger("BatchBuilder2D")
  * Then the engine will call [flush] when required, automatically once the buffer is filled, at the end of the frame, or when [RenderContext.flush] is executed
  * by other renderers.
  */
-class BatchBuilder2D(
+class BatchBuilder2D constructor(
     @KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
@@ -34,6 +34,7 @@ class BatchBuilder2D(
      */
     val maxQuads: Int = 4096
 ) {
+    val texManager = ctx.agBitmapTextureManager
     constructor(ag: AG, maxQuads: Int = 512) : this(RenderContext(ag), maxQuads)
     val ag: AG = ctx.ag
 	init {
@@ -57,7 +58,8 @@ class BatchBuilder2D(
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
-	private var vertexCount = 0
+	var vertexCount = 0
+        private set
 	private var vertexPos = 0
 	private var indexPos = 0
 	private var currentTex: AG.Texture? = null
@@ -142,7 +144,7 @@ class BatchBuilder2D(
     }
 
 	// @TODO: copy data from TexturedVertexArray
-	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
+	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
 		vertices.setAlignedFloat32(vertexPos++, y)
 		vertices.setAlignedFloat32(vertexPos++, u)
@@ -152,11 +154,15 @@ class BatchBuilder2D(
 		vertexCount++
 	}
 
-	private fun addIndex(idx: Int) {
+	fun addIndex(idx: Int) {
 		indices.setAlignedInt16(indexPos++, idx.toShort())
 	}
 
-	private fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
+    fun addIndexRelative(idx: Int) {
+        indices.setAlignedInt16(indexPos++, (vertexCount + idx).toShort())
+    }
+
+	fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
 		addIndex(i0)
 		addIndex(i1)
 		addIndex(i2)
@@ -239,7 +245,7 @@ class BatchBuilder2D(
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
 	}
 
-	private fun ensure(indices: Int, vertices: Int) {
+	fun ensure(indices: Int, vertices: Int) {
 		if (!checkAvailable(indices, vertices)) flush()
 		if (!checkAvailable(indices, vertices)) error("Too much vertices")
 	}
@@ -262,6 +268,14 @@ class BatchBuilder2D(
 			currentProgram = program
 		}
 	}
+
+    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program)
+    }
+
+    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program)
+    }
 
     /**
      * Draws/buffers a 9-patch image with the texture [tex] at [x], [y] with the total size of [width] and [height].

@@ -68,16 +68,20 @@ class SkeletonRenderer {
      * next.  */
     fun draw(batch: Batch, skeleton: Skeleton) {
         when (batch) {
+            /*
             is TwoColorPolygonBatch -> {
                 draw(batch, skeleton)
                 return
             }
+             */
             is PolygonSpriteBatch -> {
                 draw(batch, skeleton)
                 return
             }
         }
 
+        TODO()
+        /*
         val vertexEffect = this.vertexEffect
         vertexEffect?.begin(skeleton)
 
@@ -90,14 +94,10 @@ class SkeletonRenderer {
         val b = skeletonColor.b
         val a = skeletonColor.a
         val drawOrder = skeleton.drawOrder
-        var i = 0
-        val n = drawOrder.size
-        while (i < n) {
-            val slot = drawOrder[i]
+        drawOrder.fastForEach { slot ->
             if (!slot.bone.isActive) {
                 clipper.clipEnd(slot)
-                i++
-                continue
+                return
             }
             val attachment = slot.attachment
             if (attachment is RegionAttachment) {
@@ -114,16 +114,13 @@ class SkeletonRenderer {
                         alpha = 0f
                     }
                     blendMode = slotBlendMode
-                    batch.setBlendFunction(blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
+                    batch.setBlendFunction(blendMode!!.getSource(premultipliedAlpha), blendMode!!.dest)
                 }
 
                 val c = NumberUtils.intToFloatColor(alpha.toInt() shl 24 //
-
-                        or ((b * slotColor.b * color.b * multiplier).toInt() shl 16) //
-
-                        or ((g * slotColor.g * color.g * multiplier).toInt() shl 8) //
-
-                        or (r * slotColor.r * color.r * multiplier).toInt())
+                    or ((b * slotColor.b * color.b * multiplier).toInt() shl 16) //
+                    or ((g * slotColor.g * color.g * multiplier).toInt() shl 8) //
+                    or (r * slotColor.r * color.r * multiplier).toInt())
                 val uvs = attachment.uVs
                 var u = 0
                 var v = 2
@@ -141,22 +138,20 @@ class SkeletonRenderer {
 
             } else if (attachment is ClippingAttachment) {
                 clipper.clipStart(slot, attachment)
-                i++
-                continue
-
+                return
             } else if (attachment is MeshAttachment) {
                 throw RuntimeException(batch::class.simpleName + " cannot render meshes, PolygonSpriteBatch or TwoColorPolygonBatch is required.")
-
             } else if (attachment is SkeletonAttachment) {
                 val attachmentSkeleton = attachment.skeleton
                 if (attachmentSkeleton != null) draw(batch, attachmentSkeleton)
             }
 
             clipper.clipEnd(slot)
-            i++
         }
+
         clipper.clipEnd()
         vertexEffect?.end()
+         */
     }
 
     /** Renders the specified skeleton, including meshes, but without two color tinting.
@@ -245,11 +240,8 @@ class SkeletonRenderer {
                 }
 
                 val c = NumberUtils.intToFloatColor(alpha.toInt() shl 24 //
-
                         or ((b * slotColor.b * color.b * multiplier).toInt() shl 16) //
-
                         or ((g * slotColor.g * color.g * multiplier).toInt() shl 8) //
-
                         or (r * slotColor.r * color.r * multiplier).toInt())
 
                 if (clipper.isClipping) {
@@ -303,6 +295,7 @@ class SkeletonRenderer {
         vertexEffect?.end()
     }
 
+    /*
     /** Renders the specified skeleton, including meshes and two color tinting.
      *
      *
@@ -460,6 +453,7 @@ class SkeletonRenderer {
         clipper.clipEnd()
         vertexEffect?.end()
     }
+     */
 
     private fun applyVertexEffect(vertices: FloatArray, verticesLength: Int, stride: Int, light: Float, dark: Float) {
         val tempPosition = this.temp
@@ -509,42 +503,7 @@ class SkeletonRenderer {
         }
     }
 
-    /** Modifies the skeleton or vertex positions, UVs, or colors during rendering.  */
-    interface VertexEffect {
-        fun begin(skeleton: Skeleton)
-
-        fun transform(position: Vector2, uv: Vector2, color: Color, darkColor: Color)
-
-        fun end()
-    }
-
     companion object {
         private val quadTriangles = shortArrayOf(0, 1, 2, 2, 3, 0)
     }
-}
-
-
-private fun BlendMode.getSource(premultipliedAlpha: Boolean): Int {
-    return if (premultipliedAlpha) sourcePMA else source
-}
-
-private val BlendMode.source: Int get() = when (this) {
-    BlendMode.normal -> GL20.GL_SRC_ALPHA
-    BlendMode.additive -> GL20.GL_SRC_ALPHA
-    BlendMode.multiply -> GL20.GL_DST_COLOR
-    BlendMode.screen -> GL20.GL_ONE
-}
-
-private val BlendMode.sourcePMA: Int get() = when (this) {
-    BlendMode.normal -> GL20.GL_ONE
-    BlendMode.additive -> GL20.GL_ONE
-    BlendMode.multiply -> GL20.GL_DST_COLOR
-    BlendMode.screen -> GL20.GL_ONE
-}
-
-private val BlendMode.dest: Int get() = when (this) {
-    BlendMode.normal -> GL20.GL_ONE_MINUS_SRC_ALPHA
-    BlendMode.additive -> GL20.GL_ONE
-    BlendMode.multiply -> GL20.GL_ONE_MINUS_SRC_ALPHA
-    BlendMode.screen -> GL20.GL_ONE_MINUS_SRC_COLOR
 }

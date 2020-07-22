@@ -33,7 +33,6 @@ import com.esotericsoftware.spine.graphics.Color
 import com.esotericsoftware.spine.utils.MathUtils
 import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.Skeleton
-import com.esotericsoftware.spine.rendering.SkeletonRenderer.VertexEffect
 import com.esotericsoftware.spine.utils.SpineUtils
 import kotlin.math.*
 
@@ -61,7 +60,7 @@ class SwirlEffect(private var radius: Float) : VertexEffect {
     override fun transform(position: Vector2, uv: Vector2, light: Color, dark: Color) {
         val x = position.x - worldX
         val y = position.y - worldY
-        val dist = kotlin.math.sqrt((x * x + y * y).toDouble()).toFloat()
+        val dist = sqrt((x * x + y * y).toDouble()).toFloat()
         if (dist < radius) {
             val theta = interpolation.apply(0f, angle, (radius - dist) / radius)
             val cos = SpineUtils.cos(theta)

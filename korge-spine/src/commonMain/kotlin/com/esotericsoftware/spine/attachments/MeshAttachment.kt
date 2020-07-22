@@ -29,9 +29,8 @@
 
 package com.esotericsoftware.spine.attachments
 
-import com.esotericsoftware.spine.graphics.Color
+import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.graphics.TextureAtlas.AtlasRegion
-import com.esotericsoftware.spine.graphics.TextureRegion
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 
 /** An attachment that displays a textured mesh. A mesh has hull vertices and internal vertices within the hull. Holes are not
@@ -40,7 +39,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
  *
  * See [Mesh attachments](http://esotericsoftware.com/spine-meshes) in the Spine User Guide.  */
 class MeshAttachment(name: String) : VertexAttachment(name) {
-    var region: TextureRegion? = null
+    var region: TextureAtlas.AtlasRegion? = null
 
     /** The name of the texture region for this attachment.  */
     var path: String? = null

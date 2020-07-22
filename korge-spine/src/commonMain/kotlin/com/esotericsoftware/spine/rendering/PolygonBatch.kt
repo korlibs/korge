@@ -29,15 +29,15 @@ interface PolygonBatch : Batch {
 
     fun draw(texture: Texture?, x: Float, y: Float, width: Float, height: Float) {}
 
-    fun draw(region: TextureRegion?, x: Float, y: Float) {}
+    fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float) {}
 
-    fun draw(region: TextureRegion?, x: Float, y: Float, width: Float, height: Float) {}
+    fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, width: Float, height: Float) {}
 
-    fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float) {}
+    fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float) {}
 
-    fun draw(region: TextureRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float, clockwise: Boolean) {}
+    fun draw(region: TextureAtlas.AtlasRegion?, x: Float, y: Float, originX: Float, originY: Float, width: Float, height: Float, scaleX: Float, scaleY: Float, rotation: Float, clockwise: Boolean) {}
 
-    fun draw(region: TextureRegion?, width: Float, height: Float, transform: Affine2?) {}
+    fun draw(region: TextureAtlas.AtlasRegion?, width: Float, height: Float, transform: Affine2?) {}
 
     fun flush() {}
 

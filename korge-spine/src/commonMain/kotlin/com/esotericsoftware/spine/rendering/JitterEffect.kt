@@ -32,7 +32,6 @@ package com.esotericsoftware.spine.rendering
 import com.esotericsoftware.spine.graphics.Color
 import com.esotericsoftware.spine.utils.Vector2
 import com.esotericsoftware.spine.Skeleton
-import com.esotericsoftware.spine.rendering.SkeletonRenderer.VertexEffect
 import kotlin.random.Random
 
 class JitterEffect(private var x: Float, private var y: Float, val random: Random = Random) : VertexEffect {
