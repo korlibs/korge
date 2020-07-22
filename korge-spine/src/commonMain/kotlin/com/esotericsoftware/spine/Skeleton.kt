@@ -30,17 +30,16 @@
 package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.graphics.Color
-import com.esotericsoftware.spine.utils.Vector2
-import com.esotericsoftware.spine.utils.JArray
-import com.esotericsoftware.spine.utils.JFloatArray
 
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
+import com.soywiz.kds.*
 import kotlin.js.*
 
 /** Stores the current pose for a skeleton.
@@ -727,7 +726,7 @@ class Skeleton {
      * @param size An output value, the width and height of the AABB.
      * @param temp Working memory to temporarily store attachments' computed world vertices.
      */
-    fun getBounds(offset: Vector2, size: Vector2, temp: JFloatArray) {
+    fun getBounds(offset: Vector2, size: Vector2, temp: FloatArrayList) {
         val drawOrder = this.drawOrder
         var minX = Int.MAX_VALUE.toFloat()
         var minY = Int.MAX_VALUE.toFloat()

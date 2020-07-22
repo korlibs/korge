@@ -37,6 +37,7 @@ import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
+import com.soywiz.kds.*
 
 /** Loads skeleton data in the Spine JSON format.
  *
@@ -493,7 +494,7 @@ class SkeletonJson {
             attachment.vertices = vertices
             return
         }
-        val weights = JFloatArray(verticesLength * 3 * 3)
+        val weights = FloatArrayList(verticesLength * 3 * 3)
         val bones = JIntArray(verticesLength * 3)
         var i = 0
         val n = vertices.size

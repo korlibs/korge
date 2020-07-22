@@ -32,6 +32,7 @@ package com.esotericsoftware.spine.attachments
 import com.esotericsoftware.spine.Bone
 import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.Slot
+import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.korio.concurrent.atomic.*
 import kotlin.jvm.*

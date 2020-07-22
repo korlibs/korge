@@ -37,6 +37,7 @@ import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.SkeletonJson.*
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.*
 
 /** Loads skeleton data in the Spine binary format.
  *
@@ -537,7 +538,7 @@ class SkeletonBinary {
             vertices.vertices = readFloatArray(input, verticesLength, this.scale)
             return vertices
         }
-        val weights = JFloatArray(verticesLength * 3 * 3)
+        val weights = FloatArrayList(verticesLength * 3 * 3)
         val bonesArray = JIntArray(verticesLength * 3)
         for (i in 0 until vertexCount) {
             val boneCount = input.readInt(true)

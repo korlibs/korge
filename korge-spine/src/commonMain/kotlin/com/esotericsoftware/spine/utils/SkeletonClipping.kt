@@ -31,17 +31,18 @@ package com.esotericsoftware.spine.utils
 
 import com.esotericsoftware.spine.Slot
 import com.esotericsoftware.spine.attachments.ClippingAttachment
+import com.soywiz.kds.*
 
 class SkeletonClipping {
     private val triangulator = Triangulator()
-    private val clippingPolygon = JFloatArray()
-    private val clipOutput = JFloatArray(128)
-    val clippedVertices = JFloatArray(128)
+    private val clippingPolygon = FloatArrayList()
+    private val clipOutput = FloatArrayList(128)
+    val clippedVertices = FloatArrayList(128)
     val clippedTriangles = JShortArray(128)
-    private val scratch = JFloatArray()
+    private val scratch = FloatArrayList()
 
     private var clipAttachment: ClippingAttachment? = null
-    private var clippingPolygons: JArray<JFloatArray>? = null
+    private var clippingPolygons: JArray<FloatArrayList>? = null
 
     val isClipping: Boolean
         get() = clipAttachment != null
@@ -217,13 +218,13 @@ class SkeletonClipping {
 
     /** Clips the input triangle against the convex, clockwise clipping area. If the triangle lies entirely within the clipping
      * area, false is returned. The clipping area must duplicate the first vertex at the end of the vertices list.  */
-    internal fun clip(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, clippingArea: JFloatArray, output: JFloatArray): Boolean {
+    internal fun clip(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, clippingArea: FloatArrayList, output: FloatArrayList): Boolean {
         var output = output
         val originalOutput = output
         var clipped = false
 
         // Avoid copy at the end.
-        var input: JFloatArray? = null
+        var input: FloatArrayList? = null
         if (clippingArea.size % 4 >= 2) {
             input = output
             output = scratch
@@ -327,7 +328,7 @@ class SkeletonClipping {
 
     companion object {
 
-        internal fun makeClockwise(polygon: JFloatArray) {
+        internal fun makeClockwise(polygon: FloatArrayList) {
             val vertices = polygon.items
             val verticeslength = polygon.size
 

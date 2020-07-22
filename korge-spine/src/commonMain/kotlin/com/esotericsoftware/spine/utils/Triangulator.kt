@@ -33,17 +33,17 @@ import com.soywiz.kds.*
 import kotlin.math.*
 
 internal class Triangulator {
-    private val convexPolygons = JArray<JFloatArray>()
+    private val convexPolygons = JArray<FloatArrayList>()
     private val convexPolygonsIndices = JArray<JShortArray>()
 
     private val indicesArray = JShortArray()
     private val isConcaveArray = JBooleanArray()
     private val triangles = JShortArray()
 
-    private val polygonPool = Pool { JFloatArray(16) }
+    private val polygonPool = Pool { FloatArrayList(16) }
     private val polygonIndicesPool = Pool() { JShortArray(16) }
 
-    fun triangulate(verticesArray: JFloatArray): JShortArray {
+    fun triangulate(verticesArray: FloatArrayList): JShortArray {
         val vertices = verticesArray.items
         var vertexCount = verticesArray.size shr 1
 
@@ -142,7 +142,7 @@ internal class Triangulator {
         return triangles
     }
 
-    fun decompose(verticesArray: JFloatArray, triangles: JShortArray): JArray<JFloatArray> {
+    fun decompose(verticesArray: FloatArrayList, triangles: JShortArray): JArray<FloatArrayList> {
         val vertices = verticesArray.items
 
         val convexPolygons = this.convexPolygons

@@ -7,6 +7,7 @@ import com.esotericsoftware.spine.effect.*
 import com.esotericsoftware.spine.graphics.*
 import com.esotericsoftware.spine.graphics.Texture
 import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 
@@ -28,7 +29,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     }
 
     var premultipliedAlpha: Boolean = false
-    private val vertices = JFloatArray(32)
+    private val vertices = FloatArrayList(32)
     private val clipper = SkeletonClipping()
     /** @return May be null.
      */

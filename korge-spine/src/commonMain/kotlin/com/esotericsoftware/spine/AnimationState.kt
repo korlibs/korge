@@ -1050,7 +1050,7 @@ class AnimationState {
 
         internal val timelineMode = JIntArray()
         internal val timelineHoldMix: JArray<TrackEntry> = JArray()
-        internal val timelinesRotation = JFloatArray()
+        internal val timelinesRotation = FloatArrayList()
 
         /** Uses [.getTrackTime] to compute the `animationTime`, which is between [.getAnimationStart]
          * and [.getAnimationEnd]. When the `trackTime` is 0, the `animationTime` is equal to the

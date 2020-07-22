@@ -56,8 +56,8 @@ class SkeletonBounds {
     val boundingBoxes: JArray<BoundingBoxAttachment> = JArray()
 
     /** The world vertices for the bounding box polygons.  */
-    val polygons: JArray<JFloatArray> = JArray()
-    private val polygonPool = Pool { JFloatArray() }
+    val polygons: JArray<FloatArrayList> = JArray()
+    private val polygonPool = Pool { FloatArrayList() }
 
     /** The width of the axis aligned bounding box.  */
     val width: Float
@@ -179,7 +179,7 @@ class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains the point.  */
-    fun containsPoint(polygon: JFloatArray, x: Float, y: Float): Boolean {
+    fun containsPoint(polygon: FloatArrayList, x: Float, y: Float): Boolean {
         val vertices = polygon.items
         val nn = polygon.size
 
@@ -214,7 +214,7 @@ class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains any part of the line segment.  */
-    fun intersectsSegment(polygon: JFloatArray, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
+    fun intersectsSegment(polygon: FloatArrayList, x1: Float, y1: Float, x2: Float, y2: Float): Boolean {
         val vertices = polygon.items
         val nn = polygon.size
 
@@ -244,7 +244,7 @@ class SkeletonBounds {
     }
 
     /** Returns the polygon for the specified bounding box, or null.  */
-    fun getPolygon(boundingBox: BoundingBoxAttachment): JFloatArray? {
+    fun getPolygon(boundingBox: BoundingBoxAttachment): FloatArrayList? {
         val index = boundingBoxes.indexOf(boundingBox, true)
         return if (index == -1) null else polygons[index]
     }

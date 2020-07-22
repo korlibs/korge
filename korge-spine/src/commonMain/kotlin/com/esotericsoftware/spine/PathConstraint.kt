@@ -29,13 +29,12 @@
 
 package com.esotericsoftware.spine
 
-import com.esotericsoftware.spine.utils.JArray
-import com.esotericsoftware.spine.utils.JFloatArray
 import com.esotericsoftware.spine.PathConstraintData.PositionMode
 import com.esotericsoftware.spine.PathConstraintData.RotateMode
 import com.esotericsoftware.spine.PathConstraintData.SpacingMode
 import com.esotericsoftware.spine.attachments.PathAttachment
-import com.esotericsoftware.spine.utils.SpineUtils
+import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.*
 
 /** Stores the current pose for a path constraint. A path constraint adjusts the rotation, translation, and scale of the
  * constrained bones so they follow a [PathAttachment].
@@ -67,11 +66,11 @@ class PathConstraint : Updatable {
     override var isActive: Boolean = false
         internal set
 
-    private val spaces = JFloatArray()
-    private val positions = JFloatArray()
-    private val world = JFloatArray()
-    private val curves = JFloatArray()
-    private val lengths = JFloatArray()
+    private val spaces = FloatArrayList()
+    private val positions = FloatArrayList()
+    private val world = FloatArrayList()
+    private val curves = FloatArrayList()
+    private val lengths = FloatArrayList()
     private val segments = FloatArray(10)
 
     constructor(data: PathConstraintData, skeleton: Skeleton) {
