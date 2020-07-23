@@ -96,6 +96,7 @@ data class PatternDateFormat @JvmOverloads constructor(
             "SSSSSS" -> """(\d{6})"""
             "SSSSSSS" -> """(\d{7})"""
             "SSSSSSSS" -> """(\d{8})"""
+            "SSSSSSSSS" -> """(\d{9})"""
             "X", "XX", "XXX", "x", "xx", "xxx" -> """([\w:\+\-]+)"""
             "a" -> """(\w+)"""
             " " -> """(\s+)"""
@@ -154,13 +155,13 @@ data class PatternDateFormat @JvmOverloads constructor(
                 "m", "mm" -> utc.minutes.padded(nlen)
                 "s", "ss" -> utc.seconds.padded(nlen)
 
-                "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS" -> {
+                "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS", "SSSSSSSSS" -> {
                     val milli = utc.milliseconds
                     val base10length = log10(utc.milliseconds.toDouble()).toInt() + 1
                     if (base10length > name.length) {
                         (milli.toDouble() * 10.0.pow(-1 * (base10length - name.length))).toInt()
                     } else {
-                        "${milli.padded(3)}00000".substr(0, name.length)
+                        "${milli.padded(3)}000000".substr(0, name.length)
                     }
                 }
                 "X", "XX", "XXX", "x", "xx", "xxx" -> {
@@ -237,7 +238,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                 }
                 "m", "mm" -> minute = value.toInt()
                 "s", "ss" -> second = value.toInt()
-                "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS" -> {
+                "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS", "SSSSSSSSS" -> {
                     val base10length = log10(value.toDouble()).toInt() + 1
                     millisecond = if (base10length > 3) {
                         // only precision to millisecond supported, ignore the rest. ex: 9999999 => 999"

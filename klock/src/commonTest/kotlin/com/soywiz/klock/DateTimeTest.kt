@@ -418,4 +418,12 @@ class DateTimeTest {
         assertEquals(str1, DateTime.parse(str1).format(DateFormat.FORMAT1))
         assertEquals(str2, DateTime.parse(str2).format(DateFormat.FORMAT2))
     }
+
+    @Test
+    fun testIssue131() {
+        assertEquals(
+            "2020-07-23T12:30:52.999000000Z",
+            DateTime(1595507452999L).format("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ")
+        )
+    }
 }
