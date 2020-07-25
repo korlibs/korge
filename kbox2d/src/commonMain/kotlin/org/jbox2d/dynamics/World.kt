@@ -563,10 +563,10 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         val b = Body(def, this)
 
         // add to world doubly linked list
-        b.m_prev = null
+        b.prev = null
         b.m_next = bodyList
         if (bodyList != null) {
-            bodyList!!.m_prev = b
+            bodyList!!.prev = b
         }
         bodyList = b
         ++bodyCount
@@ -632,12 +632,12 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         body.m_fixtureCount = 0
 
         // Remove world body list.
-        if (body.m_prev != null) {
-            body.m_prev!!.m_next = body.m_next
+        if (body.prev != null) {
+            body.prev!!.m_next = body.m_next
         }
 
         if (body.m_next != null) {
-            body.m_next!!.m_prev = body.m_prev
+            body.m_next!!.prev = body.prev
         }
 
         if (body == bodyList) {
@@ -665,32 +665,32 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         val j = Joint.create(this, def)
 
         // Connect to the world list.
-        j!!.m_prev = null
-        j.m_next = jointList
+        j!!.prev = null
+        j.next = jointList
         if (jointList != null) {
-            jointList!!.m_prev = j
+            jointList!!.prev = j
         }
         jointList = j
         ++jointCount
 
         // Connect to the bodies' doubly linked lists.
-        j.m_edgeA.joint = j
-        j.m_edgeA.other = j.getBodyB()
-        j.m_edgeA.prev = null
-        j.m_edgeA.next = j.getBodyA()!!.m_jointList
-        if (j.getBodyA()!!.m_jointList != null) {
-            j.getBodyA()!!.m_jointList!!.prev = j.m_edgeA
+        j.edgeA.joint = j
+        j.edgeA.other = j.bodyB
+        j.edgeA.prev = null
+        j.edgeA.next = j.bodyA!!.m_jointList
+        if (j.bodyA!!.m_jointList != null) {
+            j.bodyA!!.m_jointList!!.prev = j.edgeA
         }
-        j.getBodyA()!!.m_jointList = j.m_edgeA
+        j.bodyA!!.m_jointList = j.edgeA
 
-        j.m_edgeB.joint = j
-        j.m_edgeB.other = j.getBodyA()
-        j.m_edgeB.prev = null
-        j.m_edgeB.next = j.getBodyB()!!.m_jointList
-        if (j.getBodyB()!!.m_jointList != null) {
-            j.getBodyB()!!.m_jointList!!.prev = j.m_edgeB
+        j.edgeB.joint = j
+        j.edgeB.other = j.bodyA
+        j.edgeB.prev = null
+        j.edgeB.next = j.bodyB!!.m_jointList
+        if (j.bodyB!!.m_jointList != null) {
+            j.bodyB!!.m_jointList!!.prev = j.edgeB
         }
-        j.getBodyB()!!.m_jointList = j.m_edgeB
+        j.bodyB!!.m_jointList = j.edgeB
 
         val bodyA = def.bodyA
         val bodyB = def.bodyB
@@ -729,57 +729,57 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         val collideConnected = j!!.getCollideConnected()
 
         // Remove from the doubly linked list.
-        if (j.m_prev != null) {
-            j.m_prev!!.m_next = j.m_next
+        if (j.prev != null) {
+            j.prev!!.next = j.next
         }
 
-        if (j.m_next != null) {
-            j.m_next!!.m_prev = j.m_prev
+        if (j.next != null) {
+            j.next!!.prev = j.prev
         }
 
         if (j === jointList) {
-            jointList = j.m_next
+            jointList = j.next
         }
 
         // Disconnect from island graph.
-        val bodyA = j.getBodyA()
-        val bodyB = j.getBodyB()
+        val bodyA = j.bodyA
+        val bodyB = j.bodyB
 
         // Wake up connected bodies.
         bodyA!!.isAwake = true
         bodyB!!.isAwake = true
 
         // Remove from body 1.
-        if (j.m_edgeA.prev != null) {
-            j.m_edgeA.prev!!.next = j.m_edgeA.next
+        if (j.edgeA.prev != null) {
+            j.edgeA.prev!!.next = j.edgeA.next
         }
 
-        if (j.m_edgeA.next != null) {
-            j.m_edgeA.next!!.prev = j.m_edgeA.prev
+        if (j.edgeA.next != null) {
+            j.edgeA.next!!.prev = j.edgeA.prev
         }
 
-        if (j.m_edgeA == bodyA.m_jointList) {
-            bodyA.m_jointList = j.m_edgeA.next
+        if (j.edgeA == bodyA.m_jointList) {
+            bodyA.m_jointList = j.edgeA.next
         }
 
-        j.m_edgeA.prev = null
-        j.m_edgeA.next = null
+        j.edgeA.prev = null
+        j.edgeA.next = null
 
         // Remove from body 2
-        if (j.m_edgeB.prev != null) {
-            j.m_edgeB.prev!!.next = j.m_edgeB.next
+        if (j.edgeB.prev != null) {
+            j.edgeB.prev!!.next = j.edgeB.next
         }
 
-        if (j.m_edgeB.next != null) {
-            j.m_edgeB.next!!.prev = j.m_edgeB.prev
+        if (j.edgeB.next != null) {
+            j.edgeB.next!!.prev = j.edgeB.prev
         }
 
-        if (j.m_edgeB == bodyB.m_jointList) {
-            bodyB.m_jointList = j.m_edgeB.next
+        if (j.edgeB == bodyB.m_jointList) {
+            bodyB.m_jointList = j.edgeB.next
         }
 
-        j.m_edgeB.prev = null
-        j.m_edgeB.next = null
+        j.edgeB.prev = null
+        j.edgeB.next = null
 
         Joint.destroy(j)
 
@@ -881,8 +881,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
     fun clearForces() {
         var body = bodyList
         while (body != null) {
-            body.m_force.setZero()
-            body.m_torque = 0.0f
+            body.force.setZero()
+            body.torque = 0.0f
             body = body.getNext()
         }
     }
@@ -902,10 +902,10 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         if (flags and DebugDraw.e_shapeBit != 0) {
             var b = bodyList
             while (b != null) {
-                xf.set(b.getTransform())
+                xf.set(b.transform)
                 var f = b.getFixtureList()
                 while (f != null) {
-                    if (b.isActive == false) {
+                    if (!b.isActive) {
                         color.set(0.5f, 0.5f, 0.3f)
                         drawShape(f, xf, color, wireframe)
                     } else if (b.type === BodyType.STATIC) {
@@ -914,7 +914,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     } else if (b.type === BodyType.KINEMATIC) {
                         color.set(0.5f, 0.5f, 0.9f)
                         drawShape(f, xf, color, wireframe)
-                    } else if (b.isAwake == false) {
+                    } else if (!b.isAwake) {
                         color.set(0.5f, 0.5f, 0.5f)
                         drawShape(f, xf, color, wireframe)
                     } else {
@@ -932,7 +932,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             var j = jointList
             while (j != null) {
                 drawJoint(j)
-                j = j.getNext()
+                j = j.next
             }
         }
 
@@ -954,7 +954,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
             var b = bodyList
             while (b != null) {
-                if (b.isActive == false) {
+                if (!b.isActive) {
                     b = b.getNext()
                     continue
                 }
@@ -982,7 +982,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         if (flags and DebugDraw.e_centerOfMassBit != 0) {
             var b = bodyList
             while (b != null) {
-                xf.set(b.getTransform())
+                xf.set(b.transform)
                 xf.p.set(b.worldCenter)
                 m_debugDraw!!.drawTransform(xf)
                 b = b.getNext()
@@ -1092,7 +1092,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         run {
             var b = bodyList
             while (b != null) {
-                b!!.m_xf0.set(b!!.m_xf)
+                b!!.xf0.set(b!!.xf)
                 b = b!!.m_next
             }
         }
@@ -1104,7 +1104,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         run {
             var b = bodyList
             while (b != null) {
-                b!!.m_flags = b!!.m_flags and Body.e_islandFlag.inv()
+                b!!.flags = b!!.flags and Body.e_islandFlag.inv()
                 b = b!!.m_next
             }
         }
@@ -1115,8 +1115,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         }
         var j = jointList
         while (j != null) {
-            j.m_islandFlag = false
-            j = j.m_next
+            j.islandFlag = false
+            j = j.next
         }
 
         // Build and simulate all awake islands.
@@ -1126,7 +1126,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         }
         var seed = bodyList
         while (seed != null) {
-            if (seed.m_flags and Body.e_islandFlag == Body.e_islandFlag) {
+            if (seed.flags and Body.e_islandFlag == Body.e_islandFlag) {
                 seed = seed.m_next
                 continue
             }
@@ -1146,7 +1146,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             island.clear()
             var stackCount = 0
             stack[stackCount++] = seed
-            seed.m_flags = seed.m_flags or Body.e_islandFlag
+            seed.flags = seed.flags or Body.e_islandFlag
 
             // Perform a depth first search (DFS) on the constraint graph.
             while (stackCount > 0) {
@@ -1195,21 +1195,21 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val other = ce.other
 
                     // Was the other body already added to this island?
-                    if (other!!.m_flags and Body.e_islandFlag == Body.e_islandFlag) {
+                    if (other!!.flags and Body.e_islandFlag == Body.e_islandFlag) {
                         ce = ce.next
                         continue
                     }
 
                     assert(stackCount < stackSize)
                     stack[stackCount++] = other
-                    other.m_flags = other.m_flags or Body.e_islandFlag
+                    other.flags = other.flags or Body.e_islandFlag
                     ce = ce.next
                 }
 
                 // Search all joints connect to this body.
                 var je = b.m_jointList
                 while (je != null) {
-                    if (je.joint!!.m_islandFlag == true) {
+                    if (je.joint!!.islandFlag == true) {
                         je = je.next
                         continue
                     }
@@ -1223,16 +1223,16 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     }
 
                     island.add(je.joint!!)
-                    je.joint!!.m_islandFlag = true
+                    je.joint!!.islandFlag = true
 
-                    if (other.m_flags and Body.e_islandFlag == Body.e_islandFlag) {
+                    if (other.flags and Body.e_islandFlag == Body.e_islandFlag) {
                         je = je.next
                         continue
                     }
 
                     assert(stackCount < stackSize)
                     stack[stackCount++] = other
-                    other.m_flags = other.m_flags or Body.e_islandFlag
+                    other.flags = other.flags or Body.e_islandFlag
                     je = je.next
                 }
             }
@@ -1243,7 +1243,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                 // Allow static bodies to participate in other islands.
                 val b = island.m_bodies!![i]
                 if (b.type === BodyType.STATIC) {
-                    b.m_flags = b.m_flags and Body.e_islandFlag.inv()
+                    b.flags = b.flags and Body.e_islandFlag.inv()
                 }
             }
             seed = seed.m_next
@@ -1257,7 +1257,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         var b = bodyList
         while (b != null) {
             // If a body was not in an island then it did not move.
-            if (b!!.m_flags and Body.e_islandFlag == 0) {
+            if (b!!.flags and Body.e_islandFlag == 0) {
                 b = b!!.getNext()
                 continue
             }
@@ -1284,8 +1284,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         if (m_stepComplete) {
             var b = bodyList
             while (b != null) {
-                b.m_flags = b.m_flags and Body.e_islandFlag.inv()
-                b.m_sweep.alpha0 = 0.0f
+                b.flags = b.flags and Body.e_islandFlag.inv()
+                b.sweep.alpha0 = 0.0f
                 b = b.m_next
             }
 
@@ -1336,8 +1336,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val bA = fA.getBody()
                     val bB = fB.getBody()
 
-                    val typeA = bA!!.m_type
-                    val typeB = bB!!.m_type
+                    val typeA = bA!!._type
+                    val typeB = bB!!._type
                     assert(typeA === BodyType.DYNAMIC || typeB === BodyType.DYNAMIC)
 
                     val activeA = bA.isAwake && typeA !== BodyType.STATIC
@@ -1360,14 +1360,14 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                     // Compute the TOI for this contact.
                     // Put the sweeps onto the same time interval.
-                    var alpha0 = bA.m_sweep.alpha0
+                    var alpha0 = bA.sweep.alpha0
 
-                    if (bA.m_sweep.alpha0 < bB.m_sweep.alpha0) {
-                        alpha0 = bB.m_sweep.alpha0
-                        bA.m_sweep.advance(alpha0)
-                    } else if (bB.m_sweep.alpha0 < bA.m_sweep.alpha0) {
-                        alpha0 = bA.m_sweep.alpha0
-                        bB.m_sweep.advance(alpha0)
+                    if (bA.sweep.alpha0 < bB.sweep.alpha0) {
+                        alpha0 = bB.sweep.alpha0
+                        bA.sweep.advance(alpha0)
+                    } else if (bB.sweep.alpha0 < bA.sweep.alpha0) {
+                        alpha0 = bA.sweep.alpha0
+                        bB.sweep.advance(alpha0)
                     }
 
                     assert(alpha0 < 1.0f)
@@ -1379,8 +1379,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val input = toiInput
                     input.proxyA.set(fA.getShape()!!, indexA)
                     input.proxyB.set(fB.getShape()!!, indexB)
-                    input.sweepA.set(bA.m_sweep)
-                    input.sweepB.set(bB.m_sweep)
+                    input.sweepA.set(bA.sweep)
+                    input.sweepB.set(bB.sweep)
                     input.tMax = 1.0f
 
                     pool.timeOfImpact.timeOfImpact(toiOutput, input)
@@ -1417,8 +1417,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             val bA = fA!!.getBody()
             val bB = fB!!.getBody()
 
-            backup1.set(bA!!.m_sweep)
-            backup2.set(bB!!.m_sweep)
+            backup1.set(bA!!.sweep)
+            backup2.set(bB!!.sweep)
 
             bA.advance(minAlpha)
             bB.advance(minAlpha)
@@ -1432,8 +1432,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             if (minContact.isEnabled == false || minContact.isTouching == false) {
                 // Restore the sweeps.
                 minContact.isEnabled = false
-                bA.m_sweep.set(backup1)
-                bB.m_sweep.set(backup2)
+                bA.sweep.set(backup1)
+                bB.sweep.set(backup2)
                 bA.synchronizeTransform()
                 bB.synchronizeTransform()
                 continue
@@ -1448,8 +1448,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             island.add(bB)
             island.add(minContact)
 
-            bA.m_flags = bA.m_flags or Body.e_islandFlag
-            bB.m_flags = bB.m_flags or Body.e_islandFlag
+            bA.flags = bA.flags or Body.e_islandFlag
+            bB.flags = bB.flags or Body.e_islandFlag
             minContact.m_flags = minContact.m_flags or Contact.ISLAND_FLAG
 
             // Get contacts on bodyA and bodyB.
@@ -1457,7 +1457,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             tempBodies[1] = bB
             for (i in 0..1) {
                 val body = tempBodies[i]!!
-                if (body.m_type === BodyType.DYNAMIC) {
+                if (body._type === BodyType.DYNAMIC) {
                     var ce = body.m_contactList
                     while (ce != null) {
                         if (island.m_bodyCount == island.m_bodyCapacity) {
@@ -1478,7 +1478,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                         // Only add static, kinematic, or bullet bodies.
                         val other = ce.other
-                        if (other!!.m_type === BodyType.DYNAMIC && body.isBullet == false && other!!.isBullet == false) {
+                        if (other!!._type === BodyType.DYNAMIC && body.isBullet == false && other!!.isBullet == false) {
                             ce = ce.next
                             continue
                         }
@@ -1492,8 +1492,8 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                         }
 
                         // Tentatively advance the body to the TOI.
-                        backup1.set(other!!.m_sweep)
-                        if (other.m_flags and Body.e_islandFlag == 0) {
+                        backup1.set(other!!.sweep)
+                        if (other.flags and Body.e_islandFlag == 0) {
                             other.advance(minAlpha)
                         }
 
@@ -1502,7 +1502,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                         // Was the contact disabled by the user?
                         if (contact.isEnabled == false) {
-                            other.m_sweep.set(backup1)
+                            other.sweep.set(backup1)
                             other.synchronizeTransform()
                             ce = ce.next
                             continue
@@ -1510,7 +1510,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                         // Are there contact points?
                         if (contact.isTouching == false) {
-                            other.m_sweep.set(backup1)
+                            other.sweep.set(backup1)
                             other.synchronizeTransform()
                             ce = ce.next
                             continue
@@ -1521,15 +1521,15 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                         island.add(contact)
 
                         // Has the other body already been added to the island?
-                        if (other.m_flags and Body.e_islandFlag != 0) {
+                        if (other.flags and Body.e_islandFlag != 0) {
                             ce = ce.next
                             continue
                         }
 
                         // Add the other body to the island.
-                        other.m_flags = other.m_flags or Body.e_islandFlag
+                        other.flags = other.flags or Body.e_islandFlag
 
-                        if (other.m_type !== BodyType.STATIC) {
+                        if (other._type !== BodyType.STATIC) {
                             other.isAwake = true
                         }
 
@@ -1545,14 +1545,14 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             subStep.positionIterations = 20
             subStep.velocityIterations = step.velocityIterations
             subStep.warmStarting = false
-            island.solveTOI(subStep, bA.m_islandIndex, bB.m_islandIndex)
+            island.solveTOI(subStep, bA.islandIndex, bB.islandIndex)
 
             // Reset island flags and synchronize broad-phase proxies.
             for (i in 0 until island.m_bodyCount) {
                 val body = island.m_bodies!![i]
-                body.m_flags = body.m_flags and Body.e_islandFlag.inv()
+                body.flags = body.flags and Body.e_islandFlag.inv()
 
-                if (body.m_type !== BodyType.DYNAMIC) {
+                if (body._type !== BodyType.DYNAMIC) {
                     continue
                 }
 
@@ -1578,10 +1578,10 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
     }
 
     private fun drawJoint(joint: Joint) {
-        val bodyA = joint.getBodyA()
-        val bodyB = joint.getBodyB()
-        val xf1 = bodyA!!.getTransform()
-        val xf2 = bodyB!!.getTransform()
+        val bodyA = joint.bodyA
+        val bodyB = joint.bodyB
+        val xf1 = bodyA!!.transform
+        val xf2 = bodyB!!.transform
         val x1 = xf1.p
         val x2 = xf2.p
         val p1 = pool.popVec2()
@@ -1591,7 +1591,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
         color.set(0.5f, 0.8f, 0.8f)
 
-        when (joint.getType()) {
+        when (joint.type) {
             // TODO djm write after writing joints
             JointType.DISTANCE -> m_debugDraw!!.drawSegment(p1, p2, color)
 
@@ -1620,14 +1620,14 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                 val circle = fixture.getShape() as CircleShape?
 
                 // Vec2 center = Mul(xf, circle.m_p);
-                Transform.mulToOutUnsafe(xf, circle!!.m_p, center)
-                val radius = circle.m_radius
+                Transform.mulToOutUnsafe(xf, circle!!.p, center)
+                val radius = circle.radius
                 xf.q.getXAxis(axis)
 
                 if (fixture.userData != null && fixture.userData == LIQUID_INT) {
                     val b = fixture.getBody()
-                    liquidOffset.set(b!!.m_linearVelocity)
-                    val linVelLength = b.m_linearVelocity.length()
+                    liquidOffset.set(b!!._linearVelocity)
+                    val linVelLength = b._linearVelocity.length()
                     if (averageLinearVel == -1f) {
                         averageLinearVel = linVelLength
                     } else {
@@ -1648,13 +1648,13 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
             ShapeType.POLYGON -> {
                 val poly = fixture.getShape() as PolygonShape?
-                val vertexCount = poly!!.m_count
+                val vertexCount = poly!!.count
                 assert(vertexCount <= Settings.maxPolygonVertices)
                 val vertices = tlvertices[Settings.maxPolygonVertices]
 
                 for (i in 0 until vertexCount) {
                     // vertices[i] = Mul(xf, poly.m_vertices[i]);
-                    Transform.mulToOutUnsafe(xf, poly.m_vertices[i], vertices[i])
+                    Transform.mulToOutUnsafe(xf, poly.vertices[i], vertices[i])
                 }
                 if (wireframe) {
                     m_debugDraw!!.drawPolygon(vertices, vertexCount, color)
@@ -1664,14 +1664,14 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             }
             ShapeType.EDGE -> {
                 val edge = fixture.getShape() as EdgeShape?
-                Transform.mulToOutUnsafe(xf, edge!!.m_vertex1, v1)
-                Transform.mulToOutUnsafe(xf, edge.m_vertex2, v2)
+                Transform.mulToOutUnsafe(xf, edge!!.vertex1, v1)
+                Transform.mulToOutUnsafe(xf, edge.vertex2, v2)
                 m_debugDraw!!.drawSegment(v1, v2, color)
             }
             ShapeType.CHAIN -> {
                 val chain = fixture.getShape() as ChainShape?
-                val count = chain!!.m_count
-                val vertices = chain.m_vertices
+                val count = chain!!.count
+                val vertices = chain.vertices
 
                 Transform.mulToOutUnsafe(xf, vertices!![0], v1)
                 for (i in 1 until count) {

@@ -38,8 +38,8 @@ class MotorJoint(pool: IWorldPool, def: MotorJointDef) : Joint(pool, def) {
     var linearOffset = Vec2()
         set(linearOffset) {
             if (linearOffset.x != this.linearOffset.x || linearOffset.y != this.linearOffset.y) {
-                m_bodyA!!.isAwake = true
-                m_bodyB!!.isAwake = true
+                bodyA!!.isAwake = true
+                bodyB!!.isAwake = true
                 this.linearOffset.set(linearOffset)
             }
         }
@@ -76,8 +76,8 @@ class MotorJoint(pool: IWorldPool, def: MotorJointDef) : Joint(pool, def) {
         get() = m_angularOffset
         set(angularOffset) {
             if (angularOffset != m_angularOffset) {
-                m_bodyA!!.isAwake = true
-                m_bodyB!!.isAwake = true
+                bodyA!!.isAwake = true
+                bodyB!!.isAwake = true
                 m_angularOffset = angularOffset
             }
         }
@@ -115,11 +115,11 @@ class MotorJoint(pool: IWorldPool, def: MotorJointDef) : Joint(pool, def) {
     }
 
     override fun getAnchorA(out: Vec2) {
-        out.set(m_bodyA!!.position)
+        out.set(bodyA!!.position)
     }
 
     override fun getAnchorB(out: Vec2) {
-        out.set(m_bodyB!!.position)
+        out.set(bodyB!!.position)
     }
 
     override fun getReactionForce(inv_dt: Float, out: Vec2) {
@@ -138,14 +138,14 @@ class MotorJoint(pool: IWorldPool, def: MotorJointDef) : Joint(pool, def) {
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterA.set(m_bodyA!!.m_sweep.localCenter)
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassA = m_bodyA!!.m_invMass
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIA = m_bodyA!!.m_invI
-        m_invIB = m_bodyB!!.m_invI
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterA.set(bodyA!!.sweep.localCenter)
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassA = bodyA!!.m_invMass
+        m_invMassB = bodyB!!.m_invMass
+        m_invIA = bodyA!!.m_invI
+        m_invIB = bodyB!!.m_invI
 
         val cA = data.positions!![m_indexA].c
         val aA = data.positions!![m_indexA].a

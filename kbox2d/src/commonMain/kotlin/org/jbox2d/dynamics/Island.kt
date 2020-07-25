@@ -258,22 +258,22 @@ class Island {
         // Integrate velocities and apply damping. Initialize the body state.
         for (i in 0 until m_bodyCount) {
             val b = m_bodies!![i]
-            val bm_sweep = b.m_sweep
+            val bm_sweep = b.sweep
             val c = bm_sweep.c
             val a = bm_sweep.a
-            val v = b.m_linearVelocity
-            var w = b.m_angularVelocity
+            val v = b._linearVelocity
+            var w = b._angularVelocity
 
             // Store positions for continuous collision.
             bm_sweep.c0.set(bm_sweep.c)
             bm_sweep.a0 = bm_sweep.a
 
-            if (b.m_type === BodyType.DYNAMIC) {
+            if (b._type === BodyType.DYNAMIC) {
                 // Integrate velocities.
                 // v += h * (b.m_gravityScale * gravity + b.m_invMass * b.m_force);
-                v.x += h * (b.m_gravityScale * gravity.x + b.m_invMass * b.m_force.x)
-                v.y += h * (b.m_gravityScale * gravity.y + b.m_invMass * b.m_force.y)
-                w += h * b.m_invI * b.m_torque
+                v.x += h * (b.m_gravityScale * gravity.x + b.m_invMass * b.force.x)
+                v.y += h * (b.m_gravityScale * gravity.y + b.m_invMass * b.force.y)
+                w += h * b.m_invI * b.torque
 
                 // Apply damping.
                 // ODE: dv/dt + c * v = 0
@@ -394,12 +394,12 @@ class Island {
         // Copy state buffers back to the bodies
         for (i in 0 until m_bodyCount) {
             val body = m_bodies!![i]
-            body.m_sweep.c.x = m_positions!![i].c.x
-            body.m_sweep.c.y = m_positions!![i].c.y
-            body.m_sweep.a = m_positions!![i].a
-            body.m_linearVelocity.x = m_velocities!![i].v.x
-            body.m_linearVelocity.y = m_velocities!![i].v.y
-            body.m_angularVelocity = m_velocities!![i].w
+            body.sweep.c.x = m_positions!![i].c.x
+            body.sweep.c.y = m_positions!![i].c.y
+            body.sweep.a = m_positions!![i].a
+            body._linearVelocity.x = m_velocities!![i].v.x
+            body._linearVelocity.y = m_velocities!![i].v.y
+            body._angularVelocity = m_velocities!![i].w
             body.synchronizeTransform()
         }
 
@@ -419,9 +419,9 @@ class Island {
                     continue
                 }
 
-                if (b.m_flags and Body.e_autoSleepFlag == 0
-                        || b.m_angularVelocity * b.m_angularVelocity > angTolSqr
-                        || Vec2.dot(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr) {
+                if (b.flags and Body.e_autoSleepFlag == 0
+                        || b._angularVelocity * b._angularVelocity > angTolSqr
+                        || Vec2.dot(b._linearVelocity, b._linearVelocity) > linTolSqr) {
                     b.m_sleepTime = 0.0f
                     minSleepTime = 0.0f
                 } else {
@@ -445,12 +445,12 @@ class Island {
 
         // Initialize the body state.
         for (i in 0 until m_bodyCount) {
-            m_positions!![i].c.x = m_bodies!![i].m_sweep.c.x
-            m_positions!![i].c.y = m_bodies!![i].m_sweep.c.y
-            m_positions!![i].a = m_bodies!![i].m_sweep.a
-            m_velocities!![i].v.x = m_bodies!![i].m_linearVelocity.x
-            m_velocities!![i].v.y = m_bodies!![i].m_linearVelocity.y
-            m_velocities!![i].w = m_bodies!![i].m_angularVelocity
+            m_positions!![i].c.x = m_bodies!![i].sweep.c.x
+            m_positions!![i].c.y = m_bodies!![i].sweep.c.y
+            m_positions!![i].a = m_bodies!![i].sweep.a
+            m_velocities!![i].v.x = m_bodies!![i]._linearVelocity.x
+            m_velocities!![i].v.y = m_bodies!![i]._linearVelocity.y
+            m_velocities!![i].w = m_bodies!![i]._angularVelocity
         }
 
         toiSolverDef.contacts = m_contacts
@@ -501,11 +501,11 @@ class Island {
         // #endif
 
         // Leap of faith to new safe state.
-        m_bodies!![toiIndexA].m_sweep.c0.x = m_positions!![toiIndexA].c.x
-        m_bodies!![toiIndexA].m_sweep.c0.y = m_positions!![toiIndexA].c.y
-        m_bodies!![toiIndexA].m_sweep.a0 = m_positions!![toiIndexA].a
-        m_bodies!![toiIndexB].m_sweep.c0.set(m_positions!![toiIndexB].c)
-        m_bodies!![toiIndexB].m_sweep.a0 = m_positions!![toiIndexB].a
+        m_bodies!![toiIndexA].sweep.c0.x = m_positions!![toiIndexA].c.x
+        m_bodies!![toiIndexA].sweep.c0.y = m_positions!![toiIndexA].c.y
+        m_bodies!![toiIndexA].sweep.a0 = m_positions!![toiIndexA].a
+        m_bodies!![toiIndexB].sweep.c0.set(m_positions!![toiIndexB].c)
+        m_bodies!![toiIndexB].sweep.a0 = m_positions!![toiIndexB].a
 
         // No warm starting is needed for TOI events because warm
         // starting impulses were applied in the discrete solver.
@@ -556,12 +556,12 @@ class Island {
 
             // Sync bodies
             val body = m_bodies!![i]
-            body.m_sweep.c.x = c.x
-            body.m_sweep.c.y = c.y
-            body.m_sweep.a = a
-            body.m_linearVelocity.x = v.x
-            body.m_linearVelocity.y = v.y
-            body.m_angularVelocity = w
+            body.sweep.c.x = c.x
+            body.sweep.c.y = c.y
+            body.sweep.a = a
+            body._linearVelocity.x = v.x
+            body._linearVelocity.y = v.y
+            body._angularVelocity = w
             body.synchronizeTransform()
         }
 
@@ -570,7 +570,7 @@ class Island {
 
     fun add(body: Body) {
         assert(m_bodyCount < m_bodyCapacity)
-        body.m_islandIndex = m_bodyCount
+        body.islandIndex = m_bodyCount
         m_bodies!![m_bodyCount] = body
         ++m_bodyCount
     }

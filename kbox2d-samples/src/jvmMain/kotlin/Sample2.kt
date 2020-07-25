@@ -54,7 +54,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My
         }
         view4.registerBodyWithFixture(
             type = BodyType.DYNAMIC,
-            shape = CircleShape().apply { m_radius = 2f },
+            shape = CircleShape(2.0),
             density = 22f,
             friction = 3f,
         )

@@ -14,6 +14,6 @@ inline fun WorldRef.forEachJoint(callback: (joint: Joint) -> Unit) {
     var node = world.jointList
     while (node != null) {
         callback(node)
-        node = node.m_next
+        node = node.next
     }
 }

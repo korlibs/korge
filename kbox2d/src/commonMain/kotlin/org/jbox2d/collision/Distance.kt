@@ -504,40 +504,40 @@ class Distance(val stats: Stats = Stats()) {
             when (shape.getType()) {
                 ShapeType.CIRCLE -> {
                     val circle = shape as CircleShape
-                    m_vertices[0].set(circle.m_p)
+                    m_vertices[0].set(circle.p)
                     vertexCount = 1
-                    m_radius = circle.m_radius
+                    m_radius = circle.radius
                 }
                 ShapeType.POLYGON -> {
                     val poly = shape as PolygonShape
-                    vertexCount = poly.m_count
-                    m_radius = poly.m_radius
+                    vertexCount = poly.count
+                    m_radius = poly.radius
                     for (i in 0 until vertexCount) {
-                        m_vertices[i].set(poly.m_vertices[i])
+                        m_vertices[i].set(poly.vertices[i])
                     }
                 }
                 ShapeType.CHAIN -> {
                     val chain = shape as ChainShape
-                    assert(0 <= index && index < chain.m_count)
+                    assert(0 <= index && index < chain.count)
 
-                    m_buffer[0] = chain.m_vertices!![index]
-                    if (index + 1 < chain.m_count) {
-                        m_buffer[1] = chain.m_vertices!![index + 1]
+                    m_buffer[0] = chain.vertices!![index]
+                    if (index + 1 < chain.count) {
+                        m_buffer[1] = chain.vertices!![index + 1]
                     } else {
-                        m_buffer[1] = chain.m_vertices!![0]
+                        m_buffer[1] = chain.vertices!![0]
                     }
 
                     m_vertices[0].set(m_buffer[0])
                     m_vertices[1].set(m_buffer[1])
                     vertexCount = 2
-                    m_radius = chain.m_radius
+                    m_radius = chain.radius
                 }
                 ShapeType.EDGE -> {
                     val edge = shape as EdgeShape
-                    m_vertices[0].set(edge.m_vertex1)
-                    m_vertices[1].set(edge.m_vertex2)
+                    m_vertices[0].set(edge.vertex1)
+                    m_vertices[1].set(edge.vertex2)
                     vertexCount = 2
-                    m_radius = edge.m_radius
+                    m_radius = edge.radius
                 }
                 else -> assert(false)
             }

@@ -185,8 +185,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
      */
     val jointSpeed: Float
         get() {
-            val bA = m_bodyA
-            val bB = m_bodyB
+            val bA = bodyA
+            val bB = bodyB
 
             val temp = pool.popVec2()
             val rA = pool.popVec2()
@@ -198,22 +198,22 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
             val temp2 = pool.popVec2()
             val temp3 = pool.popVec2()
 
-            temp.set(m_localAnchorA).subLocal(bA!!.m_sweep.localCenter)
-            Rot.mulToOutUnsafe(bA.m_xf.q, temp, rA)
+            temp.set(m_localAnchorA).subLocal(bA!!.sweep.localCenter)
+            Rot.mulToOutUnsafe(bA.xf.q, temp, rA)
 
-            temp.set(m_localAnchorB).subLocal(bB!!.m_sweep.localCenter)
-            Rot.mulToOutUnsafe(bB.m_xf.q, temp, rB)
+            temp.set(m_localAnchorB).subLocal(bB!!.sweep.localCenter)
+            Rot.mulToOutUnsafe(bB.xf.q, temp, rB)
 
-            p1.set(bA.m_sweep.c).addLocal(rA)
-            p2.set(bB.m_sweep.c).addLocal(rB)
+            p1.set(bA.sweep.c).addLocal(rA)
+            p2.set(bB.sweep.c).addLocal(rB)
 
             d.set(p2).subLocal(p1)
-            Rot.mulToOutUnsafe(bA.m_xf.q, m_localXAxisA, axis)
+            Rot.mulToOutUnsafe(bA.xf.q, m_localXAxisA, axis)
 
-            val vA = bA.m_linearVelocity
-            val vB = bB.m_linearVelocity
-            val wA = bA.m_angularVelocity
-            val wB = bB.m_angularVelocity
+            val vA = bA._linearVelocity
+            val vB = bB._linearVelocity
+            val wA = bA._angularVelocity
+            val wB = bB._angularVelocity
 
 
             Vec2.crossToOutUnsafe(wA, axis, temp)
@@ -233,9 +233,9 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
             val pA = pool.popVec2()
             val pB = pool.popVec2()
             val axis = pool.popVec2()
-            m_bodyA!!.getWorldPointToOut(m_localAnchorA, pA)
-            m_bodyB!!.getWorldPointToOut(m_localAnchorB, pB)
-            m_bodyA!!.getWorldVectorToOutUnsafe(m_localXAxisA, axis)
+            bodyA!!.getWorldPointToOut(m_localAnchorA, pA)
+            bodyB!!.getWorldPointToOut(m_localAnchorB, pB)
+            bodyA!!.getWorldVectorToOutUnsafe(m_localXAxisA, axis)
             pB.subLocal(pA)
             val translation = Vec2.dot(pB, axis)
             pool.pushVec2(3)
@@ -255,8 +255,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
     var motorSpeed: Float
         get() = m_motorSpeed
         set(speed) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_motorSpeed = speed
         }
 
@@ -268,8 +268,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
     var maxMotorForce: Float
         get() = m_maxMotorForce
         set(force) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_maxMotorForce = force
         }
 
@@ -295,11 +295,11 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
     }
 
     override fun getAnchorA(argOut: Vec2) {
-        m_bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
+        bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
     }
 
     override fun getReactionForce(inv_dt: Float, argOut: Vec2) {
@@ -320,8 +320,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
      */
     fun enableLimit(flag: Boolean) {
         if (flag != isLimitEnabled) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             isLimitEnabled = flag
             m_impulse.z = 0.0f
         }
@@ -336,8 +336,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
     fun setLimits(lower: Float, upper: Float) {
         assert(lower <= upper)
         if (lower != lowerLimit || upper != upperLimit) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             lowerLimit = lower
             upperLimit = upper
             m_impulse.z = 0.0f
@@ -350,8 +350,8 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
      * @param flag
      */
     fun enableMotor(flag: Boolean) {
-        m_bodyA!!.isAwake = true
-        m_bodyB!!.isAwake = true
+        bodyA!!.isAwake = true
+        bodyB!!.isAwake = true
         isMotorEnabled = flag
     }
 
@@ -366,14 +366,14 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterA.set(m_bodyA!!.m_sweep.localCenter)
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassA = m_bodyA!!.m_invMass
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIA = m_bodyA!!.m_invI
-        m_invIB = m_bodyB!!.m_invI
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterA.set(bodyA!!.sweep.localCenter)
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassA = bodyA!!.m_invMass
+        m_invMassB = bodyB!!.m_invMass
+        m_invIA = bodyA!!.m_invI
+        m_invIB = bodyB!!.m_invI
 
         val cA = data.positions!![m_indexA].c
         val aA = data.positions!![m_indexA].a

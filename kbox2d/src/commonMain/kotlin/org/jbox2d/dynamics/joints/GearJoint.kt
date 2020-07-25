@@ -123,8 +123,8 @@ class GearJoint(argWorldPool: IWorldPool, def: GearJointDef) : Joint(argWorldPoo
 
     init {
 
-        m_typeA = joint1!!._type
-        m_typeB = joint2!!._type
+        m_typeA = joint1!!.type
+        m_typeB = joint2!!.type
 
         assert(m_typeA === JointType.REVOLUTE || m_typeA === JointType.PRISMATIC)
         assert(m_typeB === JointType.REVOLUTE || m_typeB === JointType.PRISMATIC)
@@ -134,14 +134,14 @@ class GearJoint(argWorldPool: IWorldPool, def: GearJointDef) : Joint(argWorldPoo
 
         // TODO_ERIN there might be some problem with the joint edges in Joint.
 
-        m_bodyC = joint1.m_bodyA!!
-        m_bodyA = joint1.m_bodyB
+        m_bodyC = joint1.bodyA!!
+        bodyA = joint1.bodyB
 
         // Get geometry of joint1
-        val xfA = m_bodyA!!.m_xf
-        val aA = m_bodyA!!.m_sweep.a
-        val xfC = m_bodyC.m_xf
-        val aC = m_bodyC.m_sweep.a
+        val xfA = bodyA!!.xf
+        val aA = bodyA!!.sweep.a
+        val xfC = m_bodyC.xf
+        val aC = m_bodyC.sweep.a
 
         if (m_typeA === JointType.REVOLUTE) {
             val revolute = def.joint1 as RevoluteJoint?
@@ -168,14 +168,14 @@ class GearJoint(argWorldPool: IWorldPool, def: GearJointDef) : Joint(argWorldPoo
             pool.pushVec2(2)
         }
 
-        m_bodyD = joint2.m_bodyA!!
-        m_bodyB = joint2.m_bodyB
+        m_bodyD = joint2.bodyA!!
+        bodyB = joint2.bodyB
 
         // Get geometry of joint2
-        val xfB = m_bodyB!!.m_xf
-        val aB = m_bodyB!!.m_sweep.a
-        val xfD = m_bodyD.m_xf
-        val aD = m_bodyD.m_sweep.a
+        val xfB = bodyB!!.xf
+        val aB = bodyB!!.sweep.a
+        val xfD = m_bodyD.xf
+        val aD = m_bodyD.sweep.a
 
         if (m_typeB === JointType.REVOLUTE) {
             val revolute = def.joint2 as RevoluteJoint?
@@ -210,11 +210,11 @@ class GearJoint(argWorldPool: IWorldPool, def: GearJointDef) : Joint(argWorldPoo
     }
 
     override fun getAnchorA(argOut: Vec2) {
-        m_bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
+        bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
     }
 
     override fun getReactionForce(inv_dt: Float, argOut: Vec2) {
@@ -228,20 +228,20 @@ class GearJoint(argWorldPool: IWorldPool, def: GearJointDef) : Joint(argWorldPoo
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_indexC = m_bodyC.m_islandIndex
-        m_indexD = m_bodyD.m_islandIndex
-        m_lcA.set(m_bodyA!!.m_sweep.localCenter)
-        m_lcB.set(m_bodyB!!.m_sweep.localCenter)
-        m_lcC.set(m_bodyC.m_sweep.localCenter)
-        m_lcD.set(m_bodyD.m_sweep.localCenter)
-        m_mA = m_bodyA!!.m_invMass
-        m_mB = m_bodyB!!.m_invMass
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_indexC = m_bodyC.islandIndex
+        m_indexD = m_bodyD.islandIndex
+        m_lcA.set(bodyA!!.sweep.localCenter)
+        m_lcB.set(bodyB!!.sweep.localCenter)
+        m_lcC.set(m_bodyC.sweep.localCenter)
+        m_lcD.set(m_bodyD.sweep.localCenter)
+        m_mA = bodyA!!.m_invMass
+        m_mB = bodyB!!.m_invMass
         m_mC = m_bodyC.m_invMass
         m_mD = m_bodyD.m_invMass
-        m_iA = m_bodyA!!.m_invI
-        m_iB = m_bodyB!!.m_invI
+        m_iA = bodyA!!.m_invI
+        m_iB = bodyB!!.m_invI
         m_iC = m_bodyC.m_invI
         m_iD = m_bodyD.m_invI
 

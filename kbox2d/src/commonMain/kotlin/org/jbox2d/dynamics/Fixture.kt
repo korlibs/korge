@@ -217,7 +217,7 @@ class Fixture : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
      * @return
      */
     fun testPoint(p: Vec2): Boolean {
-        return m_shape!!.testPoint(m_body!!.m_xf, p)
+        return m_shape!!.testPoint(m_body!!.xf, p)
     }
 
     /**
@@ -229,7 +229,7 @@ class Fixture : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
      * @param input
      */
     fun raycast(output: RayCastOutput, input: RayCastInput, childIndex: Int): Boolean {
-        return m_shape!!.raycast(output, input, m_body!!.m_xf, childIndex)
+        return m_shape!!.raycast(output, input, m_body!!.xf, childIndex)
     }
 
     /**
@@ -260,7 +260,7 @@ class Fixture : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
      * @return distance
      */
     fun computeDistance(p: Vec2, childIndex: Int, normalOut: Vec2): Float {
-        return m_shape!!.computeDistanceToOut(m_body!!.getTransform(), p, childIndex, normalOut)
+        return m_shape!!.computeDistanceToOut(m_body!!.transform, p, childIndex, normalOut)
     }
 
     // We need separation create/destroy functions from the constructor/destructor because

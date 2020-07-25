@@ -31,62 +31,47 @@ import org.jbox2d.internal.*
 import org.jbox2d.pooling.*
 import org.jbox2d.userdata.*
 
-// updated to rev 100
 /**
  * The base joint class. Joints are used to constrain two bodies together in various fashions. Some
  * joints also feature limits and motors.
  *
  * @author Daniel Murphy
  */
-abstract class Joint
-// Cache here per time step to reduce cache misses.
-// final Vec2 m_localCenterA, m_localCenterB;
-// float m_invMassA, m_invIA;
-// float m_invMassB, m_invIB;
-
-protected constructor( protected var pool: IWorldPool, def: JointDef) : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
+abstract class Joint protected constructor(
+    // Cache here per time step to reduce cache misses.
+    protected var pool: IWorldPool,
+    def: JointDef
+) : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
 
     /**
      * get the type of the concrete joint.
      *
      * @return
      */
+    val type: JointType
 
-    val _type: JointType
+    var prev: Joint? = null
 
-    fun getType() = _type
-
-
-    var m_prev: Joint? = null
     /**
      * get the next joint the world joint list.
      */
+    var next: Joint? = null
 
-    var m_next: Joint? = null
+    var edgeA: JointEdge
+    var edgeB: JointEdge
 
-    fun getNext() = m_next
-
-
-    var m_edgeA: JointEdge
-
-    var m_edgeB: JointEdge
     /**
      * get the first body attached to this joint.
      */
+    var bodyA: Body? = null
 
-    var m_bodyA: Body? = null
-    fun getBodyA() = m_bodyA
     /**
      * get the second body attached to this joint.
-     *
-     * @return
      */
+    var bodyB: Body? = null
 
-    var m_bodyB: Body? = null
-    fun getBodyB() = m_bodyB
+    var islandFlag: Boolean = false
 
-
-    var m_islandFlag: Boolean = false
     /**
      * Get collide connected. Note: modifying the collide connect flag won't work correctly because
      * the flag is only checked when fixture AABBs begin to overlap.
@@ -96,45 +81,36 @@ protected constructor( protected var pool: IWorldPool, def: JointDef) : Box2dTyp
 
     fun getCollideConnected() = _collideConnected
 
-    /**
-     * get the user data pointer.
-     */
-    /**
-     * Set the user data pointer.
-     */
-
     var userData: Any? = null
 
     /**
      * Short-cut function to determine if either body is inactive.
-     *
-     * @return
      */
     val isActive: Boolean
-        get() = m_bodyA!!.isActive && m_bodyB!!.isActive
+        get() = bodyA!!.isActive && bodyB!!.isActive
 
     init {
         assert(def.bodyA !== def.bodyB)
-        _type = def.type
-        m_prev = null
-        m_next = null
-        m_bodyA = def.bodyA
-        m_bodyB = def.bodyB
+        this.type = def.type
+        prev = null
+        next = null
+        bodyA = def.bodyA
+        bodyB = def.bodyB
         _collideConnected = def.collideConnected
-        m_islandFlag = false
+        islandFlag = false
         userData = def.userData
 
-        m_edgeA = JointEdge()
-        m_edgeA.joint = null
-        m_edgeA.other = null
-        m_edgeA.prev = null
-        m_edgeA.next = null
+        edgeA = JointEdge()
+        edgeA.joint = null
+        edgeA.other = null
+        edgeA.prev = null
+        edgeA.next = null
 
-        m_edgeB = JointEdge()
-        m_edgeB.joint = null
-        m_edgeB.other = null
-        m_edgeB.prev = null
-        m_edgeB.next = null
+        edgeB = JointEdge()
+        edgeB.joint = null
+        edgeB.other = null
+        edgeB.prev = null
+        edgeB.next = null
 
         // m_localCenterA = new Vec2();
         // m_localCenterB = new Vec2();
@@ -142,31 +118,21 @@ protected constructor( protected var pool: IWorldPool, def: JointDef) : Box2dTyp
 
     /**
      * get the anchor point on bodyA in world coordinates.
-     *
-     * @return
      */
     abstract fun getAnchorA(out: Vec2)
 
     /**
      * get the anchor point on bodyB in world coordinates.
-     *
-     * @return
      */
     abstract fun getAnchorB(out: Vec2)
 
     /**
      * get the reaction force on body2 at the joint anchor in Newtons.
-     *
-     * @param inv_dt
-     * @return
      */
     abstract fun getReactionForce(inv_dt: Float, out: Vec2)
 
     /**
      * get the reaction torque on body2 in N*m.
-     *
-     * @param inv_dt
-     * @return
      */
     abstract fun getReactionTorque(inv_dt: Float): Float
 

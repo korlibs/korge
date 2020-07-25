@@ -11,7 +11,7 @@ import org.jbox2d.userdata.*
 import kotlin.math.*
 
 inline fun Container.worldView(
-    world: World = World(Vec2(0f, 10f)),
+    world: World = World(Vec2(0f, 9.8f)),
     velocityIterations: Int = 6,
     positionIterations: Int = 2,
     callback: @ViewDslMarker WorldView.() -> Unit = {}
@@ -69,14 +69,14 @@ class WorldView(
         when (shape) {
             is ChainShape -> Unit
             is PolygonShape -> {
-                renderPoints(ctx, body, shape.m_count) { n ->
+                renderPoints(ctx, body, shape.count) { n ->
                     shape.getVertex(n)
                 }
             }
             is EdgeShape -> Unit
             is CircleShape -> {
                 val npoints = 64
-                val radius = shape.m_radius
+                val radius = shape.radius
                 renderPoints(ctx, body, npoints) { n ->
                     getCirclePoint(radius, n.toFloat() / (npoints - 1), tempVec0)
                 }
@@ -166,15 +166,15 @@ class WorldView(
      * Creates a [PolygonShape] as a box with the specified [width] and [height]
      */
     inline fun BoxShape(width: Number, height: Number) = PolygonShape().apply {
-        m_count = 4
-        m_vertices[0].set(0, 0)
-        m_vertices[1].set(width, 0)
-        m_vertices[2].set(width, height)
-        m_vertices[3].set(0, height)
-        m_normals[0].set(0.0f, -1.0f)
-        m_normals[1].set(1.0f, 0.0f)
-        m_normals[2].set(0.0f, 1.0f)
-        m_normals[3].set(-1.0f, 0.0f)
-        m_centroid.setZero()
+        count = 4
+        vertices[0].set(0, 0)
+        vertices[1].set(width, 0)
+        vertices[2].set(width, height)
+        vertices[3].set(0, height)
+        normals[0].set(0.0f, -1.0f)
+        normals[1].set(1.0f, 0.0f)
+        normals[2].set(0.0f, 1.0f)
+        normals[3].set(-1.0f, 0.0f)
+        centroid.setZero()
     }
 }

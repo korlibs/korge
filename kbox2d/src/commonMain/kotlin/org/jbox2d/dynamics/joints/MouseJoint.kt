@@ -45,8 +45,8 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
     private val m_localAnchorB = Vec2()
     var target = Vec2()
         set(target) {
-            if (m_bodyB!!.isAwake == false) {
-                m_bodyB!!.isAwake = true
+            if (bodyB!!.isAwake == false) {
+                bodyB!!.isAwake = true
             }
             this.target.set(target)
         }
@@ -81,7 +81,7 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
         assert(def.dampingRatio >= 0)
 
         target.set(def.target)
-        Transform.mulTransToOutUnsafe(m_bodyB!!.m_xf, target, m_localAnchorB)
+        Transform.mulTransToOutUnsafe(bodyB!!.xf, target, m_localAnchorB)
 
         maxForce = def.maxForce
         m_impulse.setZero()
@@ -98,7 +98,7 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
     }
 
     override fun getReactionForce(invDt: Float, argOut: Vec2) {
@@ -110,10 +110,10 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIB = m_bodyB!!.m_invI
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassB = bodyB!!.m_invMass
+        m_invIB = bodyB!!.m_invI
 
         val cB = data.positions!![m_indexB].c
         val aB = data.positions!![m_indexB].a
@@ -124,7 +124,7 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
 
         qB.setRadians(aB)
 
-        val mass = m_bodyB!!.m_mass
+        val mass = bodyB!!.m_mass
 
         // Frequency
         val omega = 2.0f * MathUtils.PI * frequency

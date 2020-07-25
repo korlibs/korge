@@ -105,8 +105,8 @@ class WheelJoint(argPool: IWorldPool, def: WheelJointDef) : Joint(argPool, def) 
 
     val jointTranslation: Float
         get() {
-            val b1 = m_bodyA
-            val b2 = m_bodyB
+            val b1 = bodyA
+            val b2 = bodyB
 
             val p1 = pool.popVec2()
             val p2 = pool.popVec2()
@@ -122,21 +122,21 @@ class WheelJoint(argPool: IWorldPool, def: WheelJointDef) : Joint(argPool, def) 
         }
 
     val jointSpeed: Float
-        get() = m_bodyA!!.m_angularVelocity - m_bodyB!!.m_angularVelocity
+        get() = bodyA!!._angularVelocity - bodyB!!._angularVelocity
 
     var motorSpeed: Float
         get() = m_motorSpeed
         set(speed) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_motorSpeed = speed
         }
 
     var maxMotorTorque: Float
         get() = m_maxMotorTorque
         set(torque) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_maxMotorTorque = torque
         }
 
@@ -164,11 +164,11 @@ class WheelJoint(argPool: IWorldPool, def: WheelJointDef) : Joint(argPool, def) 
     }
 
     override fun getAnchorA(argOut: Vec2) {
-        m_bodyA!!.getWorldPointToOut(localAnchorA, argOut)
+        bodyA!!.getWorldPointToOut(localAnchorA, argOut)
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(localAnchorB, argOut)
     }
 
     override fun getReactionForce(inv_dt: Float, argOut: Vec2) {
@@ -183,8 +183,8 @@ class WheelJoint(argPool: IWorldPool, def: WheelJointDef) : Joint(argPool, def) 
     }
 
     fun enableMotor(flag: Boolean) {
-        m_bodyA!!.isAwake = true
-        m_bodyB!!.isAwake = true
+        bodyA!!.isAwake = true
+        bodyB!!.isAwake = true
         isMotorEnabled = flag
     }
 
@@ -193,14 +193,14 @@ class WheelJoint(argPool: IWorldPool, def: WheelJointDef) : Joint(argPool, def) 
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterA.set(m_bodyA!!.m_sweep.localCenter)
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassA = m_bodyA!!.m_invMass
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIA = m_bodyA!!.m_invI
-        m_invIB = m_bodyB!!.m_invI
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterA.set(bodyA!!.sweep.localCenter)
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassA = bodyA!!.m_invMass
+        m_invMassB = bodyB!!.m_invMass
+        m_invIA = bodyA!!.m_invI
+        m_invIB = bodyB!!.m_invI
 
         val mA = m_invMassA
         val mB = m_invMassB
