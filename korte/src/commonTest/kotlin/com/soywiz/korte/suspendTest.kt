@@ -22,6 +22,8 @@ fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
                 continuation.also { suspendCount++ }
         }
 
+        private val unitInstance get() = Unit
+
         override fun resumeWith(result: Result<T?>) {
             val exception = result.exceptionOrNull()
             if (exception != null) {
@@ -29,8 +31,8 @@ fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
                 completed = true
                 println(exception)
             } else {
-                val value = result.getOrThrow()
-                val rvalue = value ?: (Unit as T)
+                //val value =
+                val rvalue = result.getOrThrow() ?: (unitInstance as T)
                 rresult = rvalue
                 completed = true
             }

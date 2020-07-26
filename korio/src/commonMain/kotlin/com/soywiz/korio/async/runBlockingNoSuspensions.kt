@@ -23,6 +23,8 @@ fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
 			override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) = continuation.resume(Unit)
 		}
 
+        private val unitInstance get() = Unit
+
 		override fun resumeWith(result: Result<T?>) {
 			val exception = result.exceptionOrNull()
 			if (exception != null) {
@@ -31,9 +33,7 @@ fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
 				//println("COMPLETED WITH EXCEPTION: exception=$exception")
 				exception.printStackTrace()
 			} else {
-				val value = result.getOrThrow()
-				val rvalue = value
-					?: (Unit as T) // @TODO: Kotlin-js BUG returns undefined instead of Unit! In runBlockingNoSuspensions { uncompress(i.toAsyncInputStream(), o.toAsyncOutputStream()) }
+				val rvalue = result.getOrThrow() ?: (unitInstance as T) // @TODO: Kotlin-js BUG returns undefined instead of Unit! In runBlockingNoSuspensions { uncompress(i.toAsyncInputStream(), o.toAsyncOutputStream()) }
 				//if (rvalue == null) error("ERROR: unexpected completed value=$value, rvalue=$rvalue, suspendCount=$suspendCount")
 				rresult = rvalue
 				completed = true
