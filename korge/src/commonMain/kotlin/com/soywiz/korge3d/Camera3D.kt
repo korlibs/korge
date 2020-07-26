@@ -9,7 +9,7 @@ abstract class Camera3D : View3D() {
 	private var height: Double = 0.0
 	protected var dirty = true
 
-	protected inline fun dirty(cond: () -> Boolean = { true }, callback: () -> Unit) {
+	protected inline fun dirty(cond: () -> Boolean, callback: () -> Unit) {
 		if (cond()) {
 			this.dirty = true
 			callback()

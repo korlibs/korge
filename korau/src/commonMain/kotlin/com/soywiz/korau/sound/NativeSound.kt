@@ -61,7 +61,7 @@ open class NativeSoundProvider {
 		return createSound(WAV.encodeToByteArray(data), streaming, name = name)
 	}
 
-    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: suspend () -> Unit = {}): NativeSound {
+    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): NativeSound {
         //println("STREAM.RATE:" + stream.rate)
         //println("STREAM.CHANNELS:" + stream.channels)
         val coroutineContext = coroutineContext
@@ -108,7 +108,7 @@ open class NativeSoundProvider {
                             stream.close()
                         }
                         playing = false
-                        onComplete()
+                        onComplete?.invoke()
                     }
                 }
                 fun close() {

@@ -674,7 +674,8 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
     inline
-	fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit = { }) {
+	fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit) {
+    //fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: ((tex: Texture) -> Unit)? = null) {
 		val rb = renderBuffers.alloc()
 		frameRenderBuffers += rb
 		val oldRenderBuffer = currentRenderBuffer
@@ -702,7 +703,7 @@ abstract class AG : Extra by Extra.Mixin() {
         renderToTexture(bmp.width, bmp.height, {
             render()
             readColor(bmp)
-        })
+        }, {})
     }
 
 
