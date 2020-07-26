@@ -3,7 +3,8 @@ import java.net.URLClassLoader
 plugins {
 	java
 	//kotlin("multiplatform") version "1.4-M2"
-	kotlin("multiplatform") version "1.4-M3"
+	//kotlin("multiplatform") version "1.4-M3"
+    kotlin("multiplatform") version "1.4.0-rc"
 }
 
 allprojects {
@@ -16,7 +17,7 @@ allprojects {
 
 val kotlinVersion: String by project
 val isKotlinDev = kotlinVersion.contains("-release")
-val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
+val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M") || kotlinVersion.contains("-rc")
 
 allprojects {
 
@@ -34,6 +35,11 @@ allprojects {
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
+// Required by RC
+kotlin {
+    jvm { }
+}
+
 subprojects {
 	apply(plugin = "kotlin-multiplatform")
 	apply(plugin = "maven-publish")
@@ -46,8 +52,8 @@ subprojects {
 				kotlinOptions.jvmTarget = "1.8"
 			}
 		}
-		//js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
-		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.LEGACY) {
+		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+		//js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.LEGACY) {
 			browser {
 				//binaries.executable()
 				/*
