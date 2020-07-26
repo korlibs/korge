@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-GRADLE_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process" ./gradlew $*
+./gradlew --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.parallel=false $*
