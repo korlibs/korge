@@ -30,16 +30,17 @@ class JsPlatformAudioOutput(coroutineContext: CoroutineContext, val freq: Int) :
 	private val nchannels = 2
 	private val deques = Array(nchannels) { FloatArrayDeque() }
 
-	private fun process(e: AudioProcessingEvent) {
-		val outChannels = Array(e.outputBuffer.numberOfChannels) { e.outputBuffer.getChannelData(it) }
+    private fun process(e: AudioProcessingEvent) {
+		//val outChannels = Array(e.outputBuffer.numberOfChannels) { e.outputBuffer.getChannelData(it) }
+        val outChannels = Array(e.outputBuffer.numberOfChannels) { e.outputBuffer.getChannelData(it) }
 		var hasData = true
 
 		if (!document.asDynamic().hidden) {
 			for (channel in 0 until nchannels) {
 				val deque = deques[channel]
 				val outChannel = outChannels[channel]
-				val read = deque.read(outChannel.unsafeCast<FloatArray>())
-				if (read < outChannel.length) hasData = false
+				val read = deque.read(outChannel)
+				if (read < outChannel.size) hasData = false
 			}
 		}
 

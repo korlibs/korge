@@ -334,7 +334,8 @@ external interface AudioBuffer {
 	val sampleRate: Int
 	fun copyFromChannel(destination: Float32Array, channelNumber: Int, startInChannel: Double?): Unit
 	fun copyToChannel(source: Float32Array, channelNumber: Int, startInChannel: Double?): Unit
-	fun getChannelData(channel: Int): Float32Array
+	//fun getChannelData(channel: Int): Float32Array
+    fun getChannelData(channel: Int): FloatArray
 }
 
 external interface AudioNode {
