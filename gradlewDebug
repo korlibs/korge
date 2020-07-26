@@ -1,2 +1,3 @@
 #!/usr/bin/env sh
+./gradlew --stop
 ./gradlew --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.parallel=false $*
