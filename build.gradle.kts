@@ -1,11 +1,13 @@
+import org.gradle.kotlin.dsl.kotlin
 import java.net.URLClassLoader
+import java.io.File
 
 plugins {
 	java
 	//kotlin("multiplatform") version "1.4-M2"
 	//kotlin("multiplatform") version "1.4-M3"
-    //kotlin("multiplatform") version "1.4.0-rc"
-    kotlin("multiplatform")
+    kotlin("multiplatform") version "1.4.0-rc"
+    //kotlin("multiplatform")
 }
 
 allprojects {
@@ -88,138 +90,82 @@ subprojects {
 		//         kotlin-native
 		//    nonNative: [js, jvmAndroid]
 		sourceSets {
-			val commonMain by getting {
-				dependencies {
-					implementation(kotlin("stdlib-common"))
-				}
-			}
-			val commonTest by getting {
-				dependencies {
-					implementation(kotlin("test-common"))
-					implementation(kotlin("test-annotations-common"))
-				}
-			}
 
-			val concurrentMain by creating {
-				dependsOn(commonMain)
-			}
-			val concurrentTest by creating {
-				dependsOn(commonTest)
-			}
+            data class PairSourceSet(val main: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet, val test: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet) {
+                fun get(test: Boolean) = if (test) this.test else this.main
+                fun dependsOn(other: PairSourceSet) {
+                    main.dependsOn(other.main)
+                    test.dependsOn(other.test)
+                }
+            }
 
-			val nonNativeCommonMain by creating {
-				dependsOn(commonMain)
-			}
-			val nonNativeCommonTest by creating {
-				dependsOn(commonTest)
-			}
-
-			val nonJsMain by creating {
-				dependsOn(commonMain)
-			}
-			val nonJsTest by creating {
-				dependsOn(commonTest)
-			}
-
-			val nonJvmMain by creating {
-				dependsOn(commonMain)
-			}
-			val nonJvmTest by creating {
-				dependsOn(commonTest)
-			}
-
-			val jvmAndroidMain by creating {
-				dependsOn(commonMain)
-			}
-			val jvmAndroidTest by creating {
-				dependsOn(commonTest)
-			}
-
-			// Default source set for JVM-specific sources and dependencies:
-			val jvmMain by getting {
-				dependsOn(concurrentMain)
-				dependsOn(nonNativeCommonMain)
-				dependsOn(nonJsMain)
-				dependsOn(jvmAndroidMain)
-				dependencies {
-					implementation(kotlin("stdlib-jdk8"))
-				}
-			}
-			// JVM-specific tests and their dependencies:
-			val jvmTest by getting {
-				dependsOn(concurrentTest)
-				dependsOn(nonNativeCommonTest)
-				dependsOn(nonJsTest)
-				dependsOn(jvmAndroidTest)
-				dependencies {
-					implementation(kotlin("test-junit"))
-				}
-			}
-
-			val jsMain by getting {
-				dependsOn(commonMain)
-				dependsOn(nonNativeCommonMain)
-				dependsOn(nonJvmMain)
-				dependencies {
-					implementation(kotlin("stdlib-js"))
-				}
-			}
-			val jsTest by getting {
-				dependsOn(commonTest)
-				dependsOn(nonNativeCommonTest)
-				dependsOn(nonJvmTest)
-				dependencies {
-					implementation(kotlin("test-js"))
-				}
-			}
-
-			if (doEnableKotlinNative) {
-				val nativeCommonMain by creating { dependsOn(concurrentMain) }
-				val nativeCommonTest by creating { dependsOn(concurrentTest) }
-
-				val nativePosixMain by creating { dependsOn(nativeCommonMain) }
-				val nativePosixTest by creating { dependsOn(nativeCommonTest) }
-
-				val nativePosixNonAppleMain by creating { dependsOn(nativePosixMain) }
-				val nativePosixNonAppleTest by creating { dependsOn(nativePosixTest) }
-
-				val linuxX64Main by getting {
-					dependsOn(commonMain)
-					dependsOn(nativeCommonMain)
-					dependsOn(nativePosixMain)
-					dependsOn(nativePosixNonAppleMain)
-					dependsOn(nonJvmMain)
-					dependsOn(nonJsMain)
-					dependencies {
-				
-					}
-				}
-				val linuxX64Test by getting {
-					dependsOn(commonTest)
-					dependsOn(nativeCommonTest)
-					dependsOn(nativePosixTest)
-					dependsOn(nativePosixNonAppleTest)
-					dependsOn(nonJvmTest)
-					dependsOn(nonJsTest)
-					dependencies {
-					}
-				}
-
-                val mingwX64Main by getting {
-                    dependsOn(commonMain)
-                    dependsOn(nativeCommonMain)
-                    dependsOn(nonJvmMain)
-                    dependsOn(nonJsMain)
-                    dependencies {
-
+            fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+                val main = maybeCreate("${name}Main").apply { block(false) }
+                val test = maybeCreate("${name}Test").apply { block(true) }
+                return PairSourceSet(main, test).also {
+                    for (dependency in dependencies) {
+                        it.dependsOn(dependency)
                     }
                 }
-                val mingwX64Test by getting {
-                    dependsOn(commonTest)
-                    dependsOn(nativeCommonTest)
-                    dependsOn(nonJvmTest)
-                    dependsOn(nonJsTest)
-                    dependencies {
+            }
+
+            val common = createPairSourceSet("common") { test ->
+                dependencies {
+                    if (test) {
+                        implementation(kotlin("test-common"))
+                        implementation(kotlin("test-annotations-common"))
+                    } else {
+                        implementation(kotlin("stdlib-common"))
+                    }
+                }
+            }
+
+            val concurrent = createPairSourceSet("concurrent", common)
+            val nonNativeCommon = createPairSourceSet("nonNativeCommon", common)
+            val nonJs = createPairSourceSet("nonJs", common)
+            val nonJvm = createPairSourceSet("nonJvm", common)
+            val jvmAndroid = createPairSourceSet("jvmAndroid", common)
+
+            // Default source set for JVM-specific sources and dependencies:
+            // JVM-specific tests and their dependencies:
+            val jvm = createPairSourceSet("jvm", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
+                dependencies {
+                    if (test) {
+                        implementation(kotlin("test-junit"))
+                    } else {
+                        implementation(kotlin("stdlib-jdk8"))
+                    }
+                }
+            }
+
+            val js = createPairSourceSet("js", common, nonNativeCommon, nonJvm) { test ->
+                dependencies {
+                    if (test) {
+                        implementation(kotlin("test-js"))
+                    } else {
+                        implementation(kotlin("stdlib-js"))
+                    }
+                }
+            }
+
+			if (doEnableKotlinNative) {
+                val nativeCommon = createPairSourceSet("nativeCommon", concurrent)
+                val nativeDesktop = createPairSourceSet("nativeDesktop", concurrent)
+                val nativePosix = createPairSourceSet("nativePosix", nativeCommon)
+                val nativePosixNonApple = createPairSourceSet("nativePosixNonApple", nativePosix)
+
+                for (target in listOf(linuxX64(), mingwX64())) {
+                    val isLinux = target == linuxX64()
+                    val isWin = target == mingwX64()
+                    val isDesktop = isLinux || isWin
+
+                    val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
+                    if (isDesktop) {
+                        native.dependsOn(nativeDesktop)
+                    }
+                    if (isLinux) {
+                        native.dependsOn(nativePosix)
+                        native.dependsOn(nativePosixNonApple)
                     }
                 }
 			}
@@ -227,6 +173,36 @@ subprojects {
 	}
 }
 
+
+open class KorgeJavaExec : JavaExec() {
+    private val jvmCompilation by lazy { project.kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*> }
+    private val mainJvmCompilation by lazy { jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation }
+
+    @get:InputFiles
+    val korgeClassPath by lazy {
+        mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+    }
+
+    init {
+        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+        val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
+
+        doFirst {
+            if (useZgc) {
+                println("Using ZGC")
+            }
+        }
+
+        if (useZgc) {
+            jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
+        }
+        project.afterEvaluate {
+            //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
+            classpath = korgeClassPath
+        }
+    }
+
+}
 
 subprojects {
 
@@ -238,7 +214,7 @@ subprojects {
         // @TODO: Move to KorGE plugin
         project.tasks {
             val jvmMainClasses by getting
-            val runJvm by creating(com.soywiz.korlibs.plugin.gradle.tasks.KorgeJavaExec::class) {
+            val runJvm by creating(KorgeJavaExec::class) {
                 group = "run"
                 main = "MainKt"
             }
@@ -283,7 +259,42 @@ subprojects {
                     }
                 }
 
-                for (target in listOf(linuxX64(), mingwX64())) {
+                val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
+                //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
+                //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
+                sourceSets.getByName("nativeCommonMain") { kotlin.srcDir(nativeDesktopFolder) }
+
+                val createEntryPointAdaptorNativeDesktop = tasks.create("createEntryPointAdaptorNativeDesktop") {
+                    val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
+
+                    outputs.file(mainEntrypointFile)
+
+                    // @TODO: Determine the package of the main file
+                    doLast {
+                        mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
+                            package entrypoint
+
+                            import kotlinx.coroutines.*
+                            import main
+
+                            fun main(args: Array<String>) {
+                                runBlocking {
+                                    main()
+                                }
+                            }
+                        """.trimIndent())
+                    }
+                }
+
+                val nativeDesktopTargets = listOf(linuxX64(), mingwX64())
+                val allNativeTargets = nativeDesktopTargets
+
+                //for (target in nativeDesktopTargets) {
+                    //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
+                //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
+                //}
+
+                for (target in allNativeTargets) {
                     for (binary in target.binaries) {
                         val compilation = binary.compilation
                         val copyResourcesTask = tasks.create("copyResources${target.name.capitalize()}${binary.name.capitalize()}", Copy::class) {
@@ -301,13 +312,14 @@ subprojects {
 
                         //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
                         binary.linkTask.dependsOn(copyResourcesTask)
+                        binary.compilation.compileKotlinTask.dependsOn(createEntryPointAdaptorNativeDesktop)
                     }
                 }
             }
         }
 
         project.tasks {
-            val runJvm by getting(com.soywiz.korlibs.plugin.gradle.tasks.KorgeJavaExec::class)
+            val runJvm by getting(KorgeJavaExec::class)
             val jvmMainClasses by getting(Task::class)
 
             //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
