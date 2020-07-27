@@ -74,6 +74,7 @@ subprojects {
 		}
 		if (doEnableKotlinNative) {
 			linuxX64()
+            mingwX64()
 		}
 
 		// common
@@ -202,6 +203,24 @@ subprojects {
 					dependencies {
 					}
 				}
+
+                val mingwX64Main by getting {
+                    dependsOn(commonMain)
+                    dependsOn(nativeCommonMain)
+                    dependsOn(nonJvmMain)
+                    dependsOn(nonJsMain)
+                    dependencies {
+
+                    }
+                }
+                val mingwX64Test by getting {
+                    dependsOn(commonTest)
+                    dependsOn(nativeCommonTest)
+                    dependsOn(nonJvmTest)
+                    dependsOn(nonJsTest)
+                    dependencies {
+                    }
+                }
 			}
 		}
 	}
@@ -287,6 +306,13 @@ subprojects {
             }
             if (doEnableKotlinNative) {
                 linuxX64 {
+                    binaries {
+                        executable {
+                            entryPoint("entrypoint.main")
+                        }
+                    }
+                }
+                mingwX64 {
                     binaries {
                         executable {
                             entryPoint("entrypoint.main")

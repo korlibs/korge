@@ -268,5 +268,5 @@ class KmlGlNative : KmlGl() {
     }
 }
 
-// Rgression. The original ptr: COpaquePointer? can be null
+// Regresion. The original ptr: COpaquePointer? can be null
 typealias PFNGLVERTEXATTRIBPOINTERPROCFixed = CPointer<CFunction<(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, ptr: COpaquePointer?) -> Unit>>

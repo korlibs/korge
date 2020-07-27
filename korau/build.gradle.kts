@@ -7,7 +7,7 @@ if (doEnableKotlinNative) {
 	kotlin {
 		linuxX64().compilations["main"].cinterops { maybeCreate("linux_OpenAL") }
 		mingwX64().compilations["main"].cinterops { maybeCreate("win32_winmm") }
-		for (target in listOf(linuxX64())) {
+		for (target in listOf(linuxX64(), mingwX64())) {
 			target.compilations["main"].cinterops {
 				maybeCreate("minimp3")
 				maybeCreate("stb_vorbis")

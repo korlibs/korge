@@ -85,6 +85,11 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
     return scaleLinear(scaleX, scaleY)
 }
 
+@ThreadLocal
+var setSwapInterval = false
+@ThreadLocal
+var swapIntervalEXT: CPointer<CFunction<(Int) -> Unit>>? = null
+
 class WindowsGameWindow : EventLoopGameWindow() {
     val agNativeComponent = Any()
     var hwnd: HWND? = null
@@ -196,11 +201,6 @@ class WindowsGameWindow : EventLoopGameWindow() {
         dispatchReshapeEvent(0, 0, width, height)
         render(doUpdate = false)
     }
-
-    @ThreadLocal
-    var setSwapInterval = false
-    @ThreadLocal
-    var swapIntervalEXT: CPointer<CFunction<(Int) -> Unit>>? = null
 
     override fun doInitRender() {
         if (hwnd == null || glRenderContext == null) return

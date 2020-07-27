@@ -263,6 +263,9 @@ class KmlGlNative : KmlGl() {
 		val glVertexAttrib3fv: PFNGLVERTEXATTRIB3FVPROC by lazy { wglGetProcAddressAny("glVertexAttrib3fv").reinterpret2<PFNGLVERTEXATTRIB3FVPROC>() }
 		val glVertexAttrib4f: PFNGLVERTEXATTRIB4FPROC by lazy { wglGetProcAddressAny("glVertexAttrib4f").reinterpret2<PFNGLVERTEXATTRIB4FPROC>() }
 		val glVertexAttrib4fv: PFNGLVERTEXATTRIB4FVPROC by lazy { wglGetProcAddressAny("glVertexAttrib4fv").reinterpret2<PFNGLVERTEXATTRIB4FVPROC>() }
-		val glVertexAttribPointer: PFNGLVERTEXATTRIBPOINTERPROC by lazy { wglGetProcAddressAny("glVertexAttribPointer").reinterpret2<PFNGLVERTEXATTRIBPOINTERPROC>() }
+        val glVertexAttribPointer: PFNGLVERTEXATTRIBPOINTERPROCFixed by lazy { wglGetProcAddressAny("glVertexAttribPointer").reinterpret2<PFNGLVERTEXATTRIBPOINTERPROCFixed>() }
 	}
 }
+
+// Regresion. The original ptr: COpaquePointer? can be null
+typealias PFNGLVERTEXATTRIBPOINTERPROCFixed = CPointer<CFunction<(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, ptr: COpaquePointer?) -> Unit>>
