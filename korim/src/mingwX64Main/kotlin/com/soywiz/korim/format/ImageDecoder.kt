@@ -3,6 +3,7 @@ package com.soywiz.korim.format
 import com.soywiz.korio.async.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.*
 import kotlinx.cinterop.*
 import platform.posix.*
@@ -15,6 +16,7 @@ private val ImageIOWorker by lazy { Worker.start() }
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
     override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage {
         data class Info(val data: ByteArray, val premultiplied: Boolean)
+        initGdiPlusOnce()
         return wrapNative(
             ImageIOWorker.execute(
                 TransferMode.SAFE,
@@ -27,7 +29,6 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
                         val height = alloc<FloatVar>()
                         val pimage = allocArray<COpaquePointerVar>(1)
 
-                        initGdiPlusOnce()
                         data.usePinned { datap ->
                             val pdata = datap.addressOf(0)
                             val pstream = SHCreateMemStream(pdata.reinterpret(), data.size.convert())!!
@@ -89,10 +90,9 @@ private fun argbToAbgr(col: Int): Int {
         ((col shr 16) and 0xFF) // Swap B
 }
 
-private var initializedGdiPlus = false
+private var initializedGdiPlus = korAtomic(false)
 private fun initGdiPlusOnce() {
-    if (initializedGdiPlus) return
-    initializedGdiPlus = true
+    if (!initializedGdiPlus.compareAndSet(expect = false, update = true)) return
     memScoped {
         val ptoken = allocArray<ULONG_PTRVar>(1)
         val si = alloc<GdiplusStartupInput>().apply {
