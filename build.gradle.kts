@@ -254,6 +254,11 @@ open class KorgeJavaExec : JavaExec() {
 }
 
 subprojects {
+
+    fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String {
+        return "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+    }
+
     if (project.path.startsWith(":samples:")) {
         // @TODO: Move to KorGE plugin
         project.tasks {
@@ -305,7 +310,9 @@ subprojects {
 
                 for (target in listOf(linuxX64(), mingwX64())) {
                     for (binary in target.binaries) {
+                        val compilation = binary.compilation
                         val copyResourcesTask = tasks.create("copyResources${target.name.capitalize()}${binary.name.capitalize()}", Copy::class) {
+                            dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
                             group = "resources"
                             val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
                             val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
@@ -316,6 +323,8 @@ subprojects {
                             from(sourceSet.dependsOn.map { it.resources })
                             into(binary.outputDirectory)
                         }
+
+                        //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
                         binary.linkTask.dependsOn(copyResourcesTask)
                     }
                 }
@@ -330,7 +339,7 @@ subprojects {
                     val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
                     processedResourcesFolder.mkdirs()
                     compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                    val processResourcesKorge = create("korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}") {
+                    val processResourcesKorge = create(getKorgeProcessResourcesTaskName(target, compilation)) {
                         dependsOn(jvmMainClasses)
                         doLast {
                             URLClassLoader(runJvm.classpath.toList().map { it.toURL() }.toTypedArray(), project::class.java.classLoader).use { classLoader ->
@@ -349,8 +358,13 @@ subprojects {
                         }
                     }
                     //println(compilation.compileKotlinTask.name)
-                    compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
-                    //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
+                    //println(compilation.compileKotlinTask.name)
+                    //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
+                    if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
+                        compilation.compileKotlinTask.dependsOn(processResourcesKorge)
+                    } else {
+                        compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
+                    }
                     //println(compilation.output.allOutputs.toList())
                     //println("$target - $compilation")
 
