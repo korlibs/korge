@@ -3,6 +3,7 @@ package com.soywiz.korgw.awt
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.klock.hr.hrSeconds
+import com.soywiz.kmem.*
 import com.soywiz.korag.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
@@ -378,14 +379,58 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                     MouseEvent.MOUSE_RELEASED -> com.soywiz.korev.MouseEvent.Type.UP
                     else -> com.soywiz.korev.MouseEvent.Type.MOVE
                 }
-                val id = 0
-                val x = e.x
-                val y = e.y
                 val button = MouseButton[e.button - 1]
                 val factor = frameScaleFactor
-                val sx = x * factor
-                val sy = y * factor
-                dispatchSimpleMouseEvent(ev, id, sx.toInt(), sy.toInt(), button, simulateClickOnUp = false)
+                val sx = e.x * factor
+                val sy = e.y * factor
+                val modifiers = e.modifiersEx
+                dispatchMouseEvent(
+                    type = ev,
+                    id = 0,
+                    x = sx.toInt(),
+                    y = sy.toInt(),
+                    button = button,
+                    buttons = 0,
+                    scrollDeltaX = 0.0,
+                    scrollDeltaY = 0.0,
+                    scrollDeltaZ = 0.0,
+                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
+                    isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
+                    isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
+                    scaleCoords = false,
+                    simulateClickOnUp = false
+                )
+            }
+        }
+
+        fun handleMouseWheelEvent(e: MouseWheelEvent) {
+            queue {
+                val ev = com.soywiz.korev.MouseEvent.Type.SCROLL
+                val button = MouseButton[8]
+                val factor = frameScaleFactor
+                val sx = e.x * factor
+                val sy = e.y * factor
+                val modifiers = e.modifiersEx
+                //TODO: check this on linux and macos
+                val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
+                dispatchMouseEvent(
+                    type = ev,
+                    id = 0,
+                    x = sx.toInt(),
+                    y = sy.toInt(),
+                    button = button,
+                    buttons = 0,
+                    scrollDeltaX = 0.0,
+                    scrollDeltaY = scrollDelta,
+                    scrollDeltaZ = 0.0,
+                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
+                    isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
+                    isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
+                    scaleCoords = false,
+                    simulateClickOnUp = false
+                )
             }
         }
 
@@ -403,7 +448,6 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                 val key = AwtKeyMap[e.keyCode] ?: Key.UNKNOWN
                 dispatchKeyEvent(ev, id, char, key, keyCode)
             }
-
         }
 
         frame.contentPane.addMouseMotionListener(object : MouseMotionAdapter() {
@@ -419,8 +463,9 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
             override fun mouseClicked(e: MouseEvent) = handleMouseEvent(e)
             override fun mouseExited(e: MouseEvent) = handleMouseEvent(e)
             override fun mousePressed(e: MouseEvent) = handleMouseEvent(e)
-            override fun mouseWheelMoved(e: MouseWheelEvent) = handleMouseEvent(e)
         })
+
+        frame.addMouseWheelListener { e -> handleMouseWheelEvent(e) }
 
         frame.addKeyListener(object : KeyAdapter() {
             override fun keyTyped(e: KeyEvent) = handleKeyEvent(e)
