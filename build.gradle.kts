@@ -254,7 +254,7 @@ open class KorgeJavaExec : JavaExec() {
 }
 
 subprojects {
-    if (project.name.startsWith("korge-hello-world") || project.name.startsWith("korge-sample")) {
+    if (project.path.startsWith(":samples")) {
         // @TODO: Move to KorGE plugin
         project.tasks {
             val jvmMainClasses by getting

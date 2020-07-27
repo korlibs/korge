@@ -48,5 +48,5 @@ include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
 
-include(":korge-hello-world")
-include(":korge-sample-spine")
+include(":samples:hello-world")
+include(":samples:spine")
