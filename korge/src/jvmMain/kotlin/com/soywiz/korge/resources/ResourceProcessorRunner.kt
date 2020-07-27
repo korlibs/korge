@@ -13,7 +13,7 @@ object ResourceProcessorRunner {
 	val logger = Logger.getLogger("ResourceProcessorRunner")
 
 	@JvmStatic
-	fun run(classLoader: ClassLoader, foldersMain: List<String>, outputMain: String, foldersTest: List<String>, outputTest: String) {
+	fun run(classLoader: ClassLoader, foldersMain: List<String>, outputMain: String, kind: String) {
 		logger.info("ResourceProcessorRunner:")
 		logger.info("Free memory: ${Runtime.getRuntime().freeMemory()}")
 		logger.info("Resource Processors:")
@@ -30,8 +30,8 @@ object ResourceProcessorRunner {
 			logger.info(" - $plugin")
 		}
 		runBlocking {
-			handle("Main", foldersMain, outputMain, processors)
-			handle("Test", foldersTest, outputTest, processors)
+			handle(kind, foldersMain, outputMain, processors)
+			//handle("Test", foldersTest, outputTest, processors)
 		}
 	}
 
