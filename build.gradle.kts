@@ -285,6 +285,15 @@ subprojects {
                     binaries.executable()
                 }
             }
+            if (doEnableKotlinNative) {
+                linuxX64 {
+                    binaries {
+                        executable {
+                            entryPoint("entrypoint.main")
+                        }
+                    }
+                }
+            }
         }
 
     }
