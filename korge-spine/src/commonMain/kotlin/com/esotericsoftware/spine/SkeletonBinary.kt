@@ -1042,6 +1042,9 @@ class SkeletonBinary {
         }
     }
 
+    private val tempColor1 = RGBAf()
+    private val tempColor2 = RGBAf()
+
     companion object {
         val BONE_ROTATE = 0
         val BONE_TRANSLATE = 1
@@ -1059,9 +1062,6 @@ class SkeletonBinary {
         val CURVE_LINEAR = 0
         val CURVE_STEPPED = 1
         val CURVE_BEZIER = 2
-
-        private val tempColor1 = RGBAf()
-        private val tempColor2 = RGBAf()
     }
 }
 

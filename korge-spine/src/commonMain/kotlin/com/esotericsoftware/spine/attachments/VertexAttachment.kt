@@ -186,8 +186,13 @@ abstract class VertexAttachment(name: String) : Attachment(name) {
     }
 
     companion object {
-        @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
-        private var nextID = korAtomic(0)
-        private fun nextID(): Int = nextID.incrementAndGet() - 1
+        //private fun nextID(): Int = nextID.incrementAndGet() - 1
+        private fun nextID(): Int = nextID++
     }
 }
+
+// @TODO: Do this properly.
+@Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
+@ThreadLocal
+//private var nextID = korAtomic(0)
+private var nextID = 0
