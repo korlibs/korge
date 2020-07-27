@@ -3,6 +3,7 @@ package com.soywiz.korgw.awt
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.klock.hr.hrSeconds
+import com.soywiz.kmem.*
 import com.soywiz.korag.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
@@ -393,11 +394,11 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                     scrollDeltaX = 0.0,
                     scrollDeltaY = 0.0,
                     scrollDeltaZ = 0.0,
-                    isShiftDown = modifiers and MouseEvent.SHIFT_DOWN_MASK == MouseEvent.SHIFT_DOWN_MASK,
-                    isCtrlDown = modifiers and MouseEvent.CTRL_DOWN_MASK == MouseEvent.CTRL_DOWN_MASK,
-                    isAltDown = modifiers and MouseEvent.ALT_DOWN_MASK == MouseEvent.ALT_DOWN_MASK,
-                    isMetaDown = modifiers and MouseEvent.META_DOWN_MASK == MouseEvent.META_DOWN_MASK,
-                    scaleCoords = false,
+                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
+                    isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
+                    isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
+                    scaleCoords = false,`
                     simulateClickOnUp = false
                 )
             }
@@ -423,10 +424,10 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                     scrollDeltaX = 0.0,
                     scrollDeltaY = scrollDelta,
                     scrollDeltaZ = 0.0,
-                    isShiftDown = modifiers and MouseEvent.SHIFT_DOWN_MASK == MouseEvent.SHIFT_DOWN_MASK,
-                    isCtrlDown = modifiers and MouseEvent.CTRL_DOWN_MASK == MouseEvent.CTRL_DOWN_MASK,
-                    isAltDown = modifiers and MouseEvent.ALT_DOWN_MASK == MouseEvent.ALT_DOWN_MASK,
-                    isMetaDown = modifiers and MouseEvent.META_DOWN_MASK == MouseEvent.META_DOWN_MASK,
+                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
+                    isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
+                    isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
                     scaleCoords = false,
                     simulateClickOnUp = false
                 )
