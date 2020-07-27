@@ -114,7 +114,7 @@ data class AtlasInfo(
                             // Hash-based
                             is Map<*, *> -> frames.keys.map { createEntry(it.str, frames[it.str]) }
                             // Array-based
-                            else -> frames.list.map { createEntry(it["filename"].str, it) }
+                            else -> frames.list.map { createEntry(it["name"]?.str ?: it["filename"]?.str ?: "unknown", it) }
                         }
 					},
 					it["meta"].let {

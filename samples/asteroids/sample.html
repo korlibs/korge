@@ -1,0 +1,24 @@
+<html>
+<body style="background: #333;">
+<canvas id="canvas" width="512" height="512"></canvas>
+<script>
+const canvas = document.querySelector("#canvas")
+const ctx = canvas.getContext('2d')
+const shipSize = 24;
+const asteroidSize = shipSize * 2
+//ctx.lineWidth = asteroidSize * 0.05
+ctx.lineWidth = 0.05
+ctx.strokeStyle = 'white'
+ctx.lineCap = 'round'
+ctx.scale(asteroidSize, asteroidSize)
+ctx.moveTo(0.0, 0.5)
+ctx.lineTo(0.2, 0.0)
+ctx.lineTo(0.7, 0.0)
+ctx.lineTo(1.0, 0.5)
+ctx.lineTo(0.7, 1.0)
+ctx.lineTo(0.3, 1.0)
+ctx.closePath()
+ctx.stroke()
+</script>
+</body>
+</html>

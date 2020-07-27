@@ -48,5 +48,6 @@ include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
 
-include(":samples:hello-world")
-include(":samples:spine")
+for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
+    include(":samples:${sample.name}")
+}

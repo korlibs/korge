@@ -29,7 +29,8 @@ class Atlas(val info: AtlasInfo, val textures: Map<String, BitmapSlice<Bitmap>>)
 
     fun tryGetEntryByName(name: String): Entry? = entriesMap[name]
     fun tryGet(name: String): BmpSlice? = tryGetEntryByName(name)?.slice
-	operator fun get(name: String): BmpSlice = tryGet(name) ?: error("Can't find '$name' it atlas")
+	operator fun get(name: String): BmpSlice = tryGet(name)
+        ?: error("Can't find '$name' it atlas")
 }
 
 suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
