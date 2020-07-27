@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.kotlin
+import org.jetbrains.kotlin.gradle.plugin.*
 import java.net.URLClassLoader
 import java.io.File
 
@@ -38,6 +39,11 @@ allprojects {
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
+val KotlinTarget.isLinux get() = this.name == "linuxX64"
+val KotlinTarget.isWin get() = this.name == "mingwX64"
+val KotlinTarget.isMacos get() = this.name == "macosX64"
+val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
+
 // Required by RC
 kotlin {
     jvm { }
@@ -67,6 +73,7 @@ subprojects {
 		if (doEnableKotlinNative) {
 			linuxX64()
             mingwX64()
+            macosX64()
 		}
 
 		// common
@@ -142,19 +149,21 @@ subprojects {
                 val nativeDesktop = createPairSourceSet("nativeDesktop", concurrent)
                 val nativePosix = createPairSourceSet("nativePosix", nativeCommon)
                 val nativePosixNonApple = createPairSourceSet("nativePosixNonApple", nativePosix)
+                val nativePosixApple = createPairSourceSet("nativePosixApple", nativePosix)
 
-                for (target in listOf(linuxX64(), mingwX64())) {
-                    val isLinux = target == linuxX64()
-                    val isWin = target == mingwX64()
-                    val isDesktop = isLinux || isWin
-
+                for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
                     val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
-                    if (isDesktop) {
+                    if (target.isDesktop) {
                         native.dependsOn(nativeDesktop)
                     }
-                    if (isLinux) {
+                    if (target.isLinux || target.isMacos) {
                         native.dependsOn(nativePosix)
+                    }
+                    if (target.isLinux) {
                         native.dependsOn(nativePosixNonApple)
+                    }
+                    if (target.isMacos) {
+                        native.dependsOn(nativePosixApple)
                     }
                 }
 			}
@@ -239,17 +248,12 @@ samples {
             }
         }
         if (doEnableKotlinNative) {
-            linuxX64 {
-                binaries {
-                    executable {
-                        entryPoint("entrypoint.main")
-                    }
-                }
-            }
-            mingwX64 {
-                binaries {
-                    executable {
-                        entryPoint("entrypoint.main")
+            for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
+                target.apply {
+                    binaries {
+                        executable {
+                            entryPoint("entrypoint.main")
+                        }
                     }
                 }
             }
@@ -281,7 +285,7 @@ samples {
                 }
             }
 
-            val nativeDesktopTargets = listOf(linuxX64(), mingwX64())
+            val nativeDesktopTargets = listOf(linuxX64(), mingwX64(), macosX64())
             val allNativeTargets = nativeDesktopTargets
 
             //for (target in nativeDesktopTargets) {

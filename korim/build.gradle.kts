@@ -2,7 +2,7 @@ val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 if (doEnableKotlinNative) {
 	kotlin {
-		for (target in listOf(linuxX64(), mingwX64())) {
+		for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
 			target.compilations["main"].cinterops { maybeCreate("stb_image") }
 		}
 	}
