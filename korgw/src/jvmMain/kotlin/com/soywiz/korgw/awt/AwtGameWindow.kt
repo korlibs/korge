@@ -382,7 +382,24 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                 val factor = frameScaleFactor
                 val sx = e.x * factor
                 val sy = e.y * factor
-                dispatchSimpleMouseEvent(ev, 0, sx.toInt(), sy.toInt(), button, simulateClickOnUp = false)
+                val modifiers = e.modifiersEx
+                dispatchMouseEvent(
+                    type = ev,
+                    id = 0,
+                    x = sx.toInt(),
+                    y = sy.toInt(),
+                    button = button,
+                    buttons = 0,
+                    scrollDeltaX = 0.0,
+                    scrollDeltaY = 0.0,
+                    scrollDeltaZ = 0.0,
+                    isShiftDown = modifiers and MouseEvent.SHIFT_DOWN_MASK == MouseEvent.SHIFT_DOWN_MASK,
+                    isCtrlDown = modifiers and MouseEvent.CTRL_DOWN_MASK == MouseEvent.CTRL_DOWN_MASK,
+                    isAltDown = modifiers and MouseEvent.ALT_DOWN_MASK == MouseEvent.ALT_DOWN_MASK,
+                    isMetaDown = modifiers and MouseEvent.META_DOWN_MASK == MouseEvent.META_DOWN_MASK,
+                    scaleCoords = false,
+                    simulateClickOnUp = false
+                )
             }
         }
 
