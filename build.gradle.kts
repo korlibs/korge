@@ -56,21 +56,10 @@ subprojects {
 			}
 		}
 		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
-		//js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.LEGACY) {
 			browser {
-				//binaries.executable()
-				/*
-				webpackTask {
-					cssSupport.enabled = true
-				}
-				runTask {
-					cssSupport.enabled = true
-				}
-				*/
 				testTask {
 					useKarma {
 						useChromeHeadless()
-						//webpackConfig.cssSupport.enabled = true
 					}
 				}
 			}
@@ -201,179 +190,183 @@ open class KorgeJavaExec : JavaExec() {
             classpath = korgeClassPath
         }
     }
-
 }
 
-subprojects {
+fun Project.samples(block: Project.() -> Unit) {
+    subprojects {
+        if (project.path.startsWith(":samples:")) {
+            block()
+        }
+    }
+}
 
-    fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String {
-        return "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
+    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+
+
+samples {
+
+    // @TODO: Move to KorGE plugin
+    project.tasks {
+        val jvmMainClasses by getting
+        val runJvm by creating(KorgeJavaExec::class) {
+            group = "run"
+            main = "MainKt"
+        }
+        val runJs by creating {
+            group = "run"
+            dependsOn("jsBrowserDevelopmentRun")
+        }
+
+        //val jsRun by creating { dependsOn("jsBrowserDevelopmentRun") } // Already available
+        val jvmRun by creating {
+            group = "run"
+            dependsOn(runJvm)
+        }
+        //val run by getting(JavaExec::class)
+
+        //val processResources by getting {
+        //	dependsOn(processResourcesKorge)
+        //}
     }
 
-    if (project.path.startsWith(":samples:")) {
-        // @TODO: Move to KorGE plugin
-        project.tasks {
-            val jvmMainClasses by getting
-            val runJvm by creating(KorgeJavaExec::class) {
-                group = "run"
-                main = "MainKt"
-            }
-            val runJs by creating {
-                group = "run"
-                dependsOn("jsBrowserDevelopmentRun")
-            }
-
-            //val jsRun by creating { dependsOn("jsBrowserDevelopmentRun") } // Already available
-            val jvmRun by creating {
-                group = "run"
-                dependsOn(runJvm)
-            }
-            //val run by getting(JavaExec::class)
-
-            //val processResources by getting {
-            //	dependsOn(processResourcesKorge)
-            //}
+    kotlin {
+        jvm {
         }
-
-        kotlin {
-            jvm {
+        js {
+            browser {
+                binaries.executable()
             }
-            js {
-                browser {
-                    binaries.executable()
-                }
-            }
-            if (doEnableKotlinNative) {
-                linuxX64 {
-                    binaries {
-                        executable {
-                            entryPoint("entrypoint.main")
-                        }
+        }
+        if (doEnableKotlinNative) {
+            linuxX64 {
+                binaries {
+                    executable {
+                        entryPoint("entrypoint.main")
                     }
                 }
-                mingwX64 {
-                    binaries {
-                        executable {
-                            entryPoint("entrypoint.main")
-                        }
+            }
+            mingwX64 {
+                binaries {
+                    executable {
+                        entryPoint("entrypoint.main")
                     }
                 }
+            }
 
-                val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
-                //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
-                //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
-                sourceSets.getByName("nativeCommonMain") { kotlin.srcDir(nativeDesktopFolder) }
+            val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
+            //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
+            //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
+            sourceSets.getByName("nativeCommonMain") { kotlin.srcDir(nativeDesktopFolder) }
 
-                val createEntryPointAdaptorNativeDesktop = tasks.create("createEntryPointAdaptorNativeDesktop") {
-                    val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
+            val createEntryPointAdaptorNativeDesktop = tasks.create("createEntryPointAdaptorNativeDesktop") {
+                val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
 
-                    outputs.file(mainEntrypointFile)
+                outputs.file(mainEntrypointFile)
 
-                    // @TODO: Determine the package of the main file
+                // @TODO: Determine the package of the main file
+                doLast {
+                    mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
+                        package entrypoint
+
+                        import kotlinx.coroutines.*
+                        import main
+
+                        fun main(args: Array<String>) {
+                            runBlocking {
+                                main()
+                            }
+                        }
+                    """.trimIndent())
+                }
+            }
+
+            val nativeDesktopTargets = listOf(linuxX64(), mingwX64())
+            val allNativeTargets = nativeDesktopTargets
+
+            //for (target in nativeDesktopTargets) {
+                //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
+            //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
+            //}
+
+            for (target in allNativeTargets) {
+                for (binary in target.binaries) {
+                    val compilation = binary.compilation
+                    val copyResourcesTask = tasks.create("copyResources${target.name.capitalize()}${binary.name.capitalize()}", Copy::class) {
+                        dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
+                        group = "resources"
+                        val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
+                        val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
+                        val compilation = if (isTest) target.compilations["test"] else target.compilations["main"]
+                        //target.compilations.first().allKotlinSourceSets
+                        val sourceSet = compilation.defaultSourceSet
+                        from(sourceSet.resources)
+                        from(sourceSet.dependsOn.map { it.resources })
+                        into(binary.outputDirectory)
+                    }
+
+                    //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
+                    binary.linkTask.dependsOn(copyResourcesTask)
+                    binary.compilation.compileKotlinTask.dependsOn(createEntryPointAdaptorNativeDesktop)
+                }
+            }
+        }
+    }
+
+    project.tasks {
+        val runJvm by getting(KorgeJavaExec::class)
+        val jvmMainClasses by getting(Task::class)
+
+        //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
+        //    dependsOn(jvmMainClasses)
+        //    afterEvaluate {
+        //        from(runJvm.korgeClassPath.toList().map { if (it.extension == "jar") zipTree(it) else it })
+        //    }
+        //    into(File(project.buildDir, "korgeProcessedResources/classes"))
+        //}
+
+        for (target in kotlin.targets) {
+            for (compilation in target.compilations) {
+                val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
+                compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
+                val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
+                    //dependsOn(prepareResourceProcessingClasses)
+                    dependsOn(jvmMainClasses)
+
                     doLast {
-                        mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
-                            package entrypoint
-
-                            import kotlinx.coroutines.*
-                            import main
-
-                            fun main(args: Array<String>) {
-                                runBlocking {
-                                    main()
-                                }
+                        processedResourcesFolder.mkdirs()
+                        //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                        URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                            val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                            val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
+                            //println(folders)
+                            try {
+                                clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
+                            } catch (e: java.lang.reflect.InvocationTargetException) {
+                                val re = (e.targetException ?: e)
+                                re.printStackTrace()
+                                System.err.println(re.toString())
                             }
-                        """.trimIndent())
-                    }
-                }
-
-                val nativeDesktopTargets = listOf(linuxX64(), mingwX64())
-                val allNativeTargets = nativeDesktopTargets
-
-                //for (target in nativeDesktopTargets) {
-                    //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
-                //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
-                //}
-
-                for (target in allNativeTargets) {
-                    for (binary in target.binaries) {
-                        val compilation = binary.compilation
-                        val copyResourcesTask = tasks.create("copyResources${target.name.capitalize()}${binary.name.capitalize()}", Copy::class) {
-                            dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
-                            group = "resources"
-                            val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
-                            val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
-                            val compilation = if (isTest) target.compilations["test"] else target.compilations["main"]
-                            //target.compilations.first().allKotlinSourceSets
-                            val sourceSet = compilation.defaultSourceSet
-                            from(sourceSet.resources)
-                            from(sourceSet.dependsOn.map { it.resources })
-                            into(binary.outputDirectory)
                         }
-
-                        //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
-                        binary.linkTask.dependsOn(copyResourcesTask)
-                        binary.compilation.compileKotlinTask.dependsOn(createEntryPointAdaptorNativeDesktop)
+                        System.gc()
                     }
                 }
+                //println(compilation.compileKotlinTask.name)
+                //println(compilation.compileKotlinTask.name)
+                //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
+                //println(compilation.compileKotlinTask)
+                //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
+                if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
+                    compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
+                } else {
+                    compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
+                    getByName("runJvm").dependsOn(korgeProcessedResources)
+
+                }
+                //println(compilation.output.allOutputs.toList())
+                //println("$target - $compilation")
+
             }
         }
-
-        project.tasks {
-            val runJvm by getting(KorgeJavaExec::class)
-            val jvmMainClasses by getting(Task::class)
-
-            //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
-            //    dependsOn(jvmMainClasses)
-            //    afterEvaluate {
-            //        from(runJvm.korgeClassPath.toList().map { if (it.extension == "jar") zipTree(it) else it })
-            //    }
-            //    into(File(project.buildDir, "korgeProcessedResources/classes"))
-            //}
-
-            for (target in kotlin.targets) {
-                for (compilation in target.compilations) {
-                    val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
-                    compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                    val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
-                        //dependsOn(prepareResourceProcessingClasses)
-                        dependsOn(jvmMainClasses)
-
-                        doLast {
-                            processedResourcesFolder.mkdirs()
-                            //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                            URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                                val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                                val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
-                                //println(folders)
-                                try {
-                                    clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
-                                } catch (e: java.lang.reflect.InvocationTargetException) {
-                                    val re = (e.targetException ?: e)
-                                    re.printStackTrace()
-                                    System.err.println(re.toString())
-                                }
-                            }
-                            System.gc()
-                        }
-                    }
-                    //println(compilation.compileKotlinTask.name)
-                    //println(compilation.compileKotlinTask.name)
-                    //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
-                    //println(compilation.compileKotlinTask)
-                    //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
-                    if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
-                        compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
-                    } else {
-                        compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
-                        getByName("runJvm").dependsOn(korgeProcessedResources)
-
-                    }
-                    //println(compilation.output.allOutputs.toList())
-                    //println("$target - $compilation")
-
-                }
-            }
-        }
-
     }
 }
