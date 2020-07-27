@@ -4,7 +4,8 @@ plugins {
 	java
 	//kotlin("multiplatform") version "1.4-M2"
 	//kotlin("multiplatform") version "1.4-M3"
-    kotlin("multiplatform") version "1.4.0-rc"
+    //kotlin("multiplatform") version "1.4.0-rc"
+    kotlin("multiplatform")
 }
 
 allprojects {
@@ -226,33 +227,6 @@ subprojects {
 	}
 }
 
-open class KorgeJavaExec : JavaExec() {
-    val jvmCompilation by lazy { project.kotlin.targets["jvm"].compilations as NamedDomainObjectSet<*> }
-    val mainJvmCompilation by lazy { jvmCompilation["main"] as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation }
-    val korgeClassPath by lazy {
-        mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
-    }
-
-    init {
-        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
-        val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
-
-        doFirst {
-            if (useZgc) {
-                println("Using ZGC")
-            }
-        }
-
-        if (useZgc) {
-            jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
-        }
-        project.afterEvaluate {
-            //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
-            classpath = korgeClassPath
-
-        }
-    }
-}
 
 subprojects {
 
@@ -264,7 +238,7 @@ subprojects {
         // @TODO: Move to KorGE plugin
         project.tasks {
             val jvmMainClasses by getting
-            val runJvm by creating(KorgeJavaExec::class) {
+            val runJvm by creating(com.soywiz.korlibs.plugin.gradle.tasks.KorgeJavaExec::class) {
                 group = "run"
                 main = "MainKt"
             }
@@ -333,7 +307,7 @@ subprojects {
         }
 
         project.tasks {
-            val runJvm by getting(KorgeJavaExec::class)
+            val runJvm by getting(com.soywiz.korlibs.plugin.gradle.tasks.KorgeJavaExec::class)
             val jvmMainClasses by getting(Task::class)
 
             //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
