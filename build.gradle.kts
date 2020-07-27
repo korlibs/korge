@@ -342,7 +342,7 @@ subprojects {
                     val processResourcesKorge = create(getKorgeProcessResourcesTaskName(target, compilation)) {
                         dependsOn(jvmMainClasses)
                         doLast {
-                            URLClassLoader(runJvm.classpath.toList().map { it.toURL() }.toTypedArray(), project::class.java.classLoader).use { classLoader ->
+                            URLClassLoader(runJvm.classpath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
                                 val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
                                 val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
                                 //println(folders)
