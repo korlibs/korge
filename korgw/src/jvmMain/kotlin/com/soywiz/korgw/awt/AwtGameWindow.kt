@@ -398,7 +398,7 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
                     isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
                     isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
-                    scaleCoords = false,`
+                    scaleCoords = false,
                     simulateClickOnUp = false
                 )
             }
