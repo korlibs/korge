@@ -10,14 +10,14 @@ import com.soywiz.korio.serialization.json.*
 suspend fun VfsFile.readDbAtlas(factory: KorgeDbFactory): TextureAtlasData {
 	val jsonFile = this
 	val tex = jsonFile.readString()
-	val texInfo = Json.parse(tex)!!
+	val texInfo = Json.parse(tex, Json.Context(optimizedNumericLists = true))!!
 	val imageFile = jsonFile.parent[KDynamic { texInfo["imagePath"].str }]
 	val image = imageFile.readBitmapOptimized().mipmaps()
-	return factory.parseTextureAtlasData(Json.parse(tex)!!, image)
+	return factory.parseTextureAtlasData(Json.parse(tex, Json.Context(optimizedNumericLists = true))!!, image)
 }
 
 suspend fun VfsFile.readDbSkeleton(factory: KorgeDbFactory): DragonBonesData {
-	val ske = Json.parse(this.readString())!!
+	val ske = Json.parse(this.readString(), Json.Context(optimizedNumericLists = true))!!
 	return factory.parseDragonBonesData(ske) ?: error("Can't load skeleton $this")
 }
 

@@ -1,11 +1,13 @@
 package com.soywiz.korio.serialization.json
 
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import kotlin.collections.set
 
 object Json {
-	fun parse(s: String): Any? = parse(StrReader(s))
+	fun parse(s: String, context: Context = Context.DEFAULT): Any? = parse(StrReader(s), context)
 	fun stringify(obj: Any?, pretty: Boolean = false) = when {
 		pretty -> Indenter().apply { stringifyPretty(obj, this) }.toString(doIndent = true, indentChunk = "\t")
 		else -> StringBuilder().apply { stringify(obj, this) }.toString()
@@ -15,27 +17,47 @@ object Json {
 		fun encodeToJson(b: StringBuilder)
 	}
 
-	fun parse(s: StrReader): Any? = when (val ic = s.skipSpaces().read()) {
+    class Context(val optimizedNumericLists: Boolean) {
+        companion object {
+            val DEFAULT = Context(optimizedNumericLists = false)
+        }
+    }
+
+	fun parse(s: StrReader, context: Context = Context.DEFAULT): Any? = when (val ic = s.skipSpaces().read()) {
 		'{' -> LinkedHashMap<String, Any?>().apply {
 			obj@ while (true) {
 				when (s.skipSpaces().read()) {
 					'}' -> break@obj; ',' -> continue@obj; else -> s.unread()
 				}
-				val key = parse(s) as String
+				val key = parse(s, context) as String
 				s.skipSpaces().expect(':')
-				val value = parse(s)
+				val value = parse(s, context)
 				this[key] = value
 			}
 		}
-		'[' -> arrayListOf<Any?>().apply {
-			array@ while (true) {
-				when (s.skipSpaces().read()) {
-					']' -> break@array; ',' -> continue@array; else -> s.unread()
-				}
-				val item = parse(s)
-				this += item
-			}
-		}
+		'[' -> {
+            var out: ArrayList<Any?>? = null
+            var outNumber: DoubleArrayList? = null
+            array@ while (true) {
+                when (s.skipSpaces().read()) {
+                    ']' -> break@array; ',' -> continue@array; else -> s.unread()
+                }
+                if (out == null && context.optimizedNumericLists && s.peek() in '0'..'9') {
+                    if (outNumber == null) {
+                        outNumber = DoubleArrayList()
+                    }
+                    outNumber.add(parseNumber(s))
+                } else {
+                    if (out == null) out = arrayListOf()
+                    if (outNumber != null) {
+                        outNumber.fastForEach { out.add(it) }
+                        outNumber = null
+                    }
+                    out.add(parse(s, context))
+                }
+            }
+            outNumber ?: out ?: arrayListOf<Any?>()
+        }
 		//'-', '+', in '0'..'9' -> { // @TODO: Kotlin native doesn't optimize char ranges
 		'-', '+', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
 			s.unread()

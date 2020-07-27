@@ -297,7 +297,7 @@ abstract class DataParser(val pool: BaseObjectPool) {
 		}
 
 		fun parseDragonBonesDataJson(data: String, scale: Double = 1.0, pool: BaseObjectPool = BaseObjectPool()): DragonBonesData? {
-			return ObjectDataParser(pool).parseDragonBonesData(Json.parse(data), scale)
+			return ObjectDataParser(pool).parseDragonBonesData(Json.parse(data, Json.Context(optimizedNumericLists = true)), scale)
 		}
 	}
 
