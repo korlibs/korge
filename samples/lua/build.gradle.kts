@@ -1,4 +1,4 @@
 dependencies {
     add("commonMainApi", project(":korge"))
-    add("commonMainApi", project(":korge-box2d"))
+    add("commonMainApi", project(":luak"))
 }

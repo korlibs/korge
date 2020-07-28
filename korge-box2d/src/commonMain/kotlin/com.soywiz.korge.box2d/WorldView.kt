@@ -17,6 +17,14 @@ inline fun Container.worldView(
     callback: @ViewDslMarker WorldView.() -> Unit = {}
 ): WorldView = WorldView(world, velocityIterations, positionIterations).addTo(this, callback)
 
+inline fun Container.worldView(
+    gravityX: Double = 0.0,
+    gravityY: Double = 9.8,
+    velocityIterations: Int = 6,
+    positionIterations: Int = 2,
+    callback: @ViewDslMarker WorldView.() -> Unit = {}
+): WorldView = WorldView(World(Vec2(gravityX.toFloat(), gravityY.toFloat())), velocityIterations, positionIterations).addTo(this, callback)
+
 class WorldView(
     override val world: World,
     var velocityIterations: Int = 6,
