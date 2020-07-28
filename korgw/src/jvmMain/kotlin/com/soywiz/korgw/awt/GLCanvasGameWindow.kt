@@ -1,6 +1,5 @@
 package com.soywiz.korgw.awt
 
-import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import java.awt.*
 

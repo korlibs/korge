@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.util.rgba
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -21,6 +22,7 @@ import java.awt.*
 import java.beans.*
 import java.io.*
 import javax.swing.*
+import javax.swing.plaf.metal.MetalLookAndFeel
 
 data class KorgeFileToEdit(val file: VfsFile)
 
@@ -48,7 +50,7 @@ open class KorgeBaseKorgeFileEditor(
         val canvas = canvas!!
         canvas?.minimumSize = Dimension(64, 64)
         panel.add(canvas)
-        println("[A] ${Thread.currentThread()}")
+        //println("[A] ${Thread.currentThread()}")
         Thread {
             runBlocking {
                 /*
@@ -67,16 +69,18 @@ open class KorgeBaseKorgeFileEditor(
                 println("[H] ${Thread.currentThread()}")
                  */
                 gameWindow = GLCanvasGameWindow(canvas)
-                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!, scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
-                    println("[F] ${Thread.currentThread()}")
+                //val controlRgba = MetalLookAndFeel.getCurrentTheme().control.rgba()
+                val controlRgba = panel.background.rgba()
+                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!, scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false, bgcolor = controlRgba) {
+                    //println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
                     val container = sceneContainer(views)
                     container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
-                    println("[G] ${Thread.currentThread()}")
+                    //println("[G] ${Thread.currentThread()}")
                 }
             }
         }.start()
-        println("[I] ${Thread.currentThread()}")
+        //println("[I] ${Thread.currentThread()}")
 		panel
 	}
 

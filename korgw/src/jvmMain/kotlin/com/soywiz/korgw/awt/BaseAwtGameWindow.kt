@@ -4,29 +4,18 @@ import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
-import com.soywiz.korgw.internal.*
-import com.soywiz.korgw.internal.MicroDynamic
-import com.soywiz.korgw.internal.MicroDynamic.invoke
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
-import com.soywiz.korgw.win32.*
-import com.soywiz.korgw.x11.*
-import com.soywiz.korim.awt.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.*
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.*
 import com.sun.jna.*
-import com.sun.jna.platform.unix.*
-import com.sun.jna.platform.win32.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
-import java.lang.reflect.*
 import java.net.*
 import javax.swing.*
 
@@ -63,7 +52,6 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         ctx?.useContext(g) {
             ctx?.swapInterval(1)
-
 
             val gl = ag.gl
             val factor = frameScaleFactor

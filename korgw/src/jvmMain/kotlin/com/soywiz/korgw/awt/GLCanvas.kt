@@ -12,28 +12,43 @@ open class GLCanvas(val checkGl: Boolean = true) : Canvas(), Closeable {
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
 
+    override fun getGraphicsConfiguration(): GraphicsConfiguration {
+        return super.getGraphicsConfiguration()
+    }
+
+    override fun addNotify() {
+        super.addNotify()
+        close()
+    }
+
+    override fun removeNotify() {
+        super.removeNotify()
+        close()
+    }
+
+    override fun reshape(x: Int, y: Int, width: Int, height: Int) {
+        super.reshape(x, y, width, height)
+        repaint()
+    }
+
     override fun update(g: Graphics) {
         paint(g)
     }
 
     override fun paint(g: Graphics) {
-        val componentId = Native.getComponentID(this)
-        if (ctxComponentId != componentId) {
-            close()
-        }
-        var lost = false
+        //val componentId = Native.getComponentID(this)
+        //if (ctxComponentId != componentId) {
+        //    close()
+        //}
         if (ctx == null) {
-            ctxComponentId = componentId
+            //ctxComponentId = componentId
             ctx = glContextFromComponent(this)
-            lost = true
+            ag.contextLost()
         }
-        ctx?.useContext {
-            if (lost) {
-                ag.contextLost()
-            }
-            render(gl, g)
-        }
+        //println("--------------")
+        render(gl, g)
     }
+
 
     override fun close() {
         ctx?.dispose()

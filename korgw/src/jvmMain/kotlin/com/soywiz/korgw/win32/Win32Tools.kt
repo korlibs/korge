@@ -128,6 +128,7 @@ class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = fals
     }
 
     override fun makeCurrent() {
+        //println("makeCurrent")
         Win32.wglMakeCurrent(hDC, hRC)
     }
 
@@ -136,6 +137,7 @@ class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = fals
     }
 
     override fun swapBuffers() {
+        //println("swapBuffers")
         Win32.glFlush()
         Win32.SwapBuffers(hDC)
         //Thread.sleep(16L)
