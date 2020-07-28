@@ -9,7 +9,6 @@ import com.intellij.util.ui.*
 import com.intellij.xdebugger.frame.*
 import com.soywiz.korim.awt.*
 import com.sun.jdi.*
-import org.intellij.images.editor.impl.*
 import java.awt.*
 import javax.swing.*
 
@@ -94,7 +93,8 @@ class KorimBitmapDebugNodeRenderer
 			val g = image.createGraphics()
 			icon.paintIcon(null, g, 0, 0)
 			g.dispose()
-			return ImageEditorManagerImpl.createImageEditorUI(image)
+            @Suppress("INACCESSIBLE_TYPE")
+            return org.intellij.images.editor.impl.ImageEditorManagerImpl.createImageEditorUI(image)
 		}
 	}
 }

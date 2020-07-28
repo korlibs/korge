@@ -18,6 +18,7 @@ fun ObjectReference.debugToLocalInstanceViaSerialization(thread: ThreadReference
 	return this.debugSerialize(thread).debugDeserialize()
 }
 
+inline fun <reified T> Value?.instanceOf(): Boolean = this?.type()?.instanceOf<T>() ?: false
 inline fun <reified T> Type?.instanceOf(): Boolean = instanceOf(T::class.java)
 fun Type?.instanceOf(clazz: Class<*>): Boolean = instanceOf(clazz.name)
 
