@@ -44,6 +44,10 @@ abstract class BaseAwtGameWindow : GameWindow() {
     }
 
     fun framePaint(g: Graphics) {
+        //println("framePaint")
+
+        ag.isGlAvailable = true
+
         if (fvsync) {
             EventQueue.invokeLater {
                 //println("repaint!")
@@ -59,6 +63,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         ctx?.useContext(g) {
             ctx?.swapInterval(1)
+
 
             val gl = ag.gl
             val factor = frameScaleFactor
@@ -160,26 +165,25 @@ abstract class BaseAwtGameWindow : GameWindow() {
     var displayLinkLock: java.lang.Object? = null
     var displayLink: Pointer? = Pointer.NULL
 
-    val displayLinkCallback by lazy {
-        object : DisplayLinkCallback {
-            override fun callback(
-                displayLink: Pointer?,
-                inNow: Pointer?,
-                inOutputTime: Pointer?,
-                flagsIn: Pointer?,
-                flagsOut: Pointer?,
-                userInfo: Pointer?
-            ): Int {
-                displayLinkLock?.let { displayLock ->
-                    synchronized(displayLock) {
-                        displayLock.notify()
-                    }
+    // @TODO: by lazy // but maybe causing issues with the intellij plugin?
+    val displayLinkCallback = object : DisplayLinkCallback {
+        override fun callback(
+            displayLink: Pointer?,
+            inNow: Pointer?,
+            inOutputTime: Pointer?,
+            flagsIn: Pointer?,
+            flagsOut: Pointer?,
+            userInfo: Pointer?
+        ): Int {
+            displayLinkLock?.let { displayLock ->
+                synchronized(displayLock) {
+                    displayLock.notify()
                 }
-                return 0
             }
-        }.also {
-            Native.setCallbackThreadInitializer(it, CallbackThreadInitializer(false, false, "DisplayLink"))
+            return 0
         }
+    }.also {
+        Native.setCallbackThreadInitializer(it, CallbackThreadInitializer(false, false, "DisplayLink"))
     }
 
     open fun loopInitialization() {
@@ -355,15 +359,27 @@ abstract class BaseAwtGameWindow : GameWindow() {
             println("NOT Using DisplayLink")
         }
 
+        println("running: ${Thread.currentThread()}")
         while (running) {
             if (fvsync) {
                 Thread.sleep(1L)
             } else {
+                //println("running[a]")
                 component.repaint()
+                //executePending()
+                //println("running[b]")
                 when {
-                    ctx?.supportsSwapInterval() == true -> Unit // Do nothing. Already waited for vsync
-                    displayLock != null -> synchronized(displayLock) { displayLock.wait(100L) }
+                    //ctx?.supportsSwapInterval() == true -> {
+                    false -> {
+                        //println("running[ba]")
+                        Unit
+                    } // Do nothing. Already waited for vsync
+                    displayLock != null -> {
+                        //println("running[bc]")
+                        synchronized(displayLock) { displayLock.wait(100L) }
+                    }
                     else -> {
+                        //println("running[bb]")
                         val nanos = System.nanoTime()
                         val frameTimeNanos = (1.0 / fps.toDouble()).hrSeconds.nanosecondsInt
                         val delayNanos = frameTimeNanos - (nanos % frameTimeNanos)
@@ -376,10 +392,12 @@ abstract class BaseAwtGameWindow : GameWindow() {
                         //println(System.nanoTime())
                     }
                 }
+                //println("running[c]")
                 //val end = PerformanceCounter.hr
                 //println((end - start).timeSpan)
             }
         }
+        println("completed. running=$running")
         //timer.stop()
 
         if (OS.isMac && displayLink != Pointer.NULL) {

@@ -6,8 +6,8 @@ import com.sun.jna.*
 import com.sun.jna.platform.unix.*
 import java.awt.*
 
-open class GLCanvas(val checkGl: Boolean = false) : Canvas() {
-    val ag: AwtAg = AwtAg(this, checkGl)
+open class GLCanvas(val checkGl: Boolean = true) : Canvas() {
+    val ag: AwtAg by lazy { AwtAg(this, checkGl) }
     val d by lazy { X.XOpenDisplay(null) ?: error("Can't open main display") }
     val screen by lazy { X.XDefaultScreen(d) }
     val drawableId by lazy { Native.getComponentID(this) }

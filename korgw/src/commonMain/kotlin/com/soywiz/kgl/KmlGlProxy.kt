@@ -1454,7 +1454,12 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) 
     init {
         //println("CheckErrorsKmlGlProxy")
     }
-	override fun after(name: String, params: String, result: String): Unit {
+
+    override fun before(name: String, params: String) {
+        super.before(name, params)
+    }
+
+    override fun after(name: String, params: String, result: String): Unit {
         do {
             val error = parent.getError()
             if (error != NO_ERROR) {

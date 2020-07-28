@@ -6,11 +6,19 @@ import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korag.*
+import com.soywiz.korge.*
+import com.soywiz.korge.intellij.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
+import com.soywiz.korgw.awt.*
+import com.soywiz.korinject.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import kotlinx.coroutines.*
 import java.awt.*
 import java.beans.*
+import java.io.*
 import javax.swing.*
 
 data class KorgeFileToEdit(val file: VfsFile)
@@ -28,57 +36,48 @@ open class KorgeBaseKorgeFileEditor(
 	var disposed = false
 	var ag: AG? = null
 	var views: Views? = null
+    var gameWindow: GameWindow? = null
 
 	val component by lazy {
 		componentsCreated++
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
-		/*
-		Korge(config = Korge.Config()) {
-
-		}
-		 */
-		/*
-		println("KorgeParticleFileEditor[1]")
-		val ag = AGAwt()
-		this.ag = ag
-		ag.glcanvas.minimumSize = Dimension(64, 64)
-		//ag.glcanvas.size = Dimension(64, 64)
-		//panel.add(JLabel("HELLO"))
-		panel.add(ag.glcanvas)
-
-		val injector = AsyncInjector()
-			//.mapSingleton { UISkin(get(), get()) }
-			//.mapSingleton { UIFactory() }
-			.mapPrototype { KorgeBaseFileEditorProvider.EditorModule.EditorScene(get(), get()) }
-		//.jvmAutomapping()
-
-		injector.mapInstance(KorgeFileToEdit(virtualFile.toVfs()))
-
-		ag.onReady.then {
-			EventLoop {
-				try {
-					Korge.test(
-						Korge.Config(
-							module,
-							container = ag,
-							injector = injector,
-							trace = false,
-							constructedViews = { views = it })
-					)
-				} finally {
-					if (disposed) dispose()
-				}
-			}
-		}
-		*/
-
+        val canvas = GLCanvas()
+        canvas.minimumSize = Dimension(64, 64)
+        panel.add(canvas)
+        println("[A] ${Thread.currentThread()}")
+        Thread {
+            runBlocking {
+                /*
+                println("[B] ${Thread.currentThread()}")
+                val korge = GLCanvasKorge(canvas)
+                println("[D] ${Thread.currentThread()}")
+                this@KorgeBaseKorgeFileEditor.korge = korge
+                println("[E] ${Thread.currentThread()}")
+                korge.launchInContext {
+                    println("[F] ${Thread.currentThread()}")
+                    injector.jvmAutomapping()
+                    val container = sceneContainer(views)
+                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
+                    println("[G] ${Thread.currentThread()}")
+                }
+                println("[H] ${Thread.currentThread()}")
+                 */
+                gameWindow = GLCanvasGameWindow(canvas)
+                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!) {
+                    println("[F] ${Thread.currentThread()}")
+                    injector.jvmAutomapping()
+                    val container = sceneContainer(views)
+                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
+                    println("[G] ${Thread.currentThread()}")
+                }
+            }
+        }.start()
+        println("[I] ${Thread.currentThread()}")
 		panel
 	}
 
-	override fun getComponent(): JComponent {
-		return component
-	}
+	override fun getComponent(): JComponent = component
 
 	override fun dispose() {
 		componentsCreated--
@@ -92,6 +91,7 @@ open class KorgeBaseKorgeFileEditor(
 		ag?.dispose()
 		ag = null
 		disposed = true
+        gameWindow?.close()
 		System.gc()
 	}
 

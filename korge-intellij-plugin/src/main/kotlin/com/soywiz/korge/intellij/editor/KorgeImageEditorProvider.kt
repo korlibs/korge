@@ -4,7 +4,6 @@ import com.intellij.diff.util.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.vfs.*
-import com.soywiz.korge.intellij.imageformat.KRA
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*

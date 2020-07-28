@@ -264,18 +264,38 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     }
 
     fun frame(doUpdate: Boolean, startTime: HRTimeSpan = PerformanceCounter.hr) {
+        frameRender(doUpdate)
+        if (doUpdate) {
+            frameUpdate(startTime)
+        }
+    }
+
+    fun frameRender(doUpdate: Boolean) {
         try {
             ag.onRender(ag)
-            dispatchRenderEvent(update = doUpdate)
-            if (doUpdate) {
-                val elapsed = PerformanceCounter.hr - startTime
-                val available = counterTimePerFrame - elapsed
-                coroutineDispatcher.executePending(available)
-            }
+            dispatchRenderEvent(update = false)
         } catch (e: Throwable) {
-            println("ERROR GameWindow.frame:")
+            println("ERROR GameWindow.frameRender:")
             println(e)
         }
+    }
+
+    private var lastTime = PerformanceCounter.hr
+    fun frameUpdate(startTime: HRTimeSpan = lastTime) {
+        try {
+            val now = PerformanceCounter.hr
+            val elapsed = now - startTime
+            lastTime = now
+            val available = counterTimePerFrame - elapsed
+            coroutineDispatcher.executePending(available)
+        } catch (e: Throwable) {
+            println("ERROR GameWindow.frameRender:")
+            println(e)
+        }
+    }
+
+    fun executePending() {
+        coroutineDispatcher.executePending()
     }
 
     fun dispatchInitEvent() = dispatch(initEvent)
@@ -416,6 +436,10 @@ open class EventLoopGameWindow : GameWindow() {
         doInitRender()
         frame(doUpdate, lastRenderTime)
         doSwapBuffers()
+    }
+    fun update() {
+        lastRenderTime = PerformanceCounter.hr
+        frameUpdate(lastRenderTime)
     }
 
     fun sleepNextFrame() {

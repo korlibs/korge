@@ -6,6 +6,7 @@ import java.awt.*
 
 class GLCanvasGameWindow(val canvas: GLCanvas) : BaseAwtGameWindow() {
     init {
+        canvas.ag.isGlAvailable = false
         canvas.defaultRenderer = { gl, g ->
             framePaint(g)
         }
