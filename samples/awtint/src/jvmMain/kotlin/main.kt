@@ -1,20 +1,23 @@
 import com.soywiz.kgl.*
+import com.soywiz.klock.*
+import com.soywiz.korge.*
+import com.soywiz.korge.animate.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
 import com.soywiz.korgw.awt.*
-import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.x11.*
-import com.sun.jna.*
-import com.sun.jna.platform.*
-import com.sun.jna.platform.unix.*
-import com.sun.jna.ptr.*
-import sun.java2d.opengl.*
-import sun.java2d.x11.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.interpolation.*
+import kotlinx.coroutines.*
 import java.awt.*
+import java.awt.Graphics
 import javax.swing.*
 import java.awt.event.*
+import java.io.*
+import kotlin.coroutines.*
 import kotlin.system.*
-//import sun.awt.X11ComponentPeer
-//import sun.awt.AWTAccessor
-//import sun.awt.AWTAccessor.ComponentAccessor
 
 fun main() {
     val f = object : Frame("hello") {
@@ -30,23 +33,16 @@ fun main() {
     }
 
     var color = 0f
-    val label1 = object : GLCanvas() {
-        override fun render(gl: KmlGl) {
-            gl.clearColor(0f, color, 0f, 1f)
-            color += 0.01f
-            gl.clear(X11KmlGl.COLOR_BUFFER_BIT)
-        }
+    val canvas = object : GLCanvas() {
+        //override fun render(gl: KmlGl, g: Graphics) {
+        //    gl.clearColor(0f, color, 0f, 1f)
+        //    color += 0.01f
+        //    gl.clear(X11KmlGl.COLOR_BUFFER_BIT)
+        //}
     }
-    f.add(label1)
+    f.add(canvas)
 
-    Timer(100, object : ActionListener {
-        override fun actionPerformed(e: ActionEvent?) {
-            //println("FRAME!")
-            label1.repaint()
-        }
-    }).start()
-
-    f.setSize(300, 100)
+    f.size = Dimension(512, 512)
     f.isVisible = true
     f.setLocationRelativeTo(null)
     f.addWindowListener(object : WindowAdapter() {
@@ -54,4 +50,29 @@ fun main() {
             exitProcess(0)
         }
     })
+
+    //launchImmediately(Dispatchers.Unconfined) {
+    runBlocking {
+        println("[1]")
+        val korge = GLCanvasKorge(canvas)
+        println("[2]")
+        launchImmediately {
+            korge.executeInContext {
+                val rect = solidRect(50, 50, Colors.BLUE)
+                rect.mouse {
+                    click {
+                        println("CLICKED!")
+                    }
+                }
+                animate {  }
+                tween(rect::x[400])
+                //views.gameWindow.exit()
+            }
+        }
+        println("[3]")
+        delay(0.5.seconds)
+        korge.close()
+    }
+
+    //Timer(100) { canvas.repaint() }.start()
 }
