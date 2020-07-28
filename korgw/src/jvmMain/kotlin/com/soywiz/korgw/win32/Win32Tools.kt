@@ -89,8 +89,8 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
     return scaleLinear(scaleX, scaleY)
 }
 
-class Win32OpenglContext(val hWnd: WinDef.HWND, val doubleBuffered: Boolean = false) : BaseOpenglContext {
-    val hDC = Win32.GetDC(hWnd)
+class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = false) : BaseOpenglContext {
+    constructor(hWnd: WinDef.HWND, doubleBuffered: Boolean = false) : this(Win32.GetDC(hWnd), doubleBuffered)
 
     val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference()
 

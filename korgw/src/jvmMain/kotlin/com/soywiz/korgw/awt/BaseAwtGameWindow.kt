@@ -88,16 +88,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //Toolkit.getDefaultToolkit().sync();
     }
 
-    private fun getDisplayScalingFactor(component: Component): Double {
-        val device = (component.graphicsConfiguration?.device ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice)
-        val getScaleFactorMethod: Method? = try { device.javaClass.getMethod("getScaleFactor") } catch (e: Throwable) { null }
-        return if (getScaleFactorMethod != null) {
-            val scale: Any = getScaleFactorMethod.invoke(device)
-            ((scale as? Number)?.toDouble()) ?: 1.0
-        } else {
-            (component.graphicsConfiguration ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration).defaultTransform.scaleX
-        }
-    }
+
 
     val frameScaleFactor: Double get() = run {
         getDisplayScalingFactor(component)

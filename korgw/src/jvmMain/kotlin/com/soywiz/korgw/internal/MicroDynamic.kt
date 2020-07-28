@@ -1,9 +1,8 @@
 package com.soywiz.korgw.internal
 
-import com.soywiz.korio.util.allDeclaredMethods
 import java.lang.reflect.Modifier
 
-// @TODO: Use DynamicJvm from Korio once updated to >= 1.9.4
+// @TODO: Use DynamicJvm from KorIO once updated to >= 1.9.4
 internal object MicroDynamic {
     inline operator fun <T> invoke(block: MicroDynamic.() -> T): T = block(this)
     fun getClass(fqname: String) = try { Class.forName(fqname) } catch (e: Throwable) { null }

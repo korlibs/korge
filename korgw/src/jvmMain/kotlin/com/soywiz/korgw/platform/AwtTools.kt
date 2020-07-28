@@ -1,5 +1,6 @@
 package com.soywiz.korgw.platform
 
+import com.soywiz.korgw.internal.MicroDynamic
 import java.awt.*
 import java.lang.reflect.*
 
@@ -31,8 +32,14 @@ private fun <T> Class<T>.getFieldOrNull(name: String): Field? =
 
 fun Component.awtGetPeer(): Any {
     //Class.forName("AWTAccessor")
-    return sun.awt.AWTAccessor.getComponentAccessor()?.getPeer(this) ?: Unit
-/*
+    try {
+        return MicroDynamic {
+            getClass("sun.awt.AWTAccessor").invoke("getComponentAccessor").invoke("getPeer", this@awtGetPeer) ?: Unit
+        }
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
+
     val method = this.javaClass.getMethodOrNull("getPeer")
     if (method != null) {
         method.isAccessible = true
@@ -44,7 +51,6 @@ fun Component.awtGetPeer(): Any {
         return field.get(this)
     }
     error("Can't get peer from Frame")
- */
 }
 
 fun Component.awtNativeHandle(): Long {

@@ -1,38 +1,14 @@
 package com.soywiz.korgw.awt
 
-import com.soywiz.klock.hr.hrSeconds
-import com.soywiz.kmem.*
-import com.soywiz.korev.Key
-import com.soywiz.korev.MouseButton
-import com.soywiz.korgw.GameWindow
 import com.soywiz.korgw.internal.MicroDynamic
-import com.soywiz.korgw.osx.CoreGraphics
-import com.soywiz.korgw.osx.DisplayLinkCallback
 import com.soywiz.korgw.platform.*
-import com.soywiz.korgw.win32.Win32OpenglContext
-import com.soywiz.korgw.x11.X
-import com.soywiz.korgw.x11.X11OpenglContext
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.std.localVfs
-import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.OS
-import com.sun.jna.CallbackThreadInitializer
-import com.sun.jna.Memory
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import com.sun.jna.platform.unix.X11
-import com.sun.jna.platform.win32.WinDef
 import java.awt.*
 import java.awt.Toolkit.getDefaultToolkit
 import java.awt.event.*
-import java.lang.reflect.Method
-import java.net.URI
-import javax.swing.JFileChooser
 import javax.swing.JFrame
-import javax.swing.JOptionPane
 
 
 class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
@@ -55,54 +31,7 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
 
     override fun ensureContext() {
         if (ctx == null) {
-            ctx = when {
-                OS.isMac -> {
-                    val utils = Class.forName("sun.java2d.opengl.OGLUtilities")
-                    val invokeWithOGLContextCurrentMethod = utils.getDeclaredMethod(
-                        "invokeWithOGLContextCurrent",
-                        Graphics::class.java, Runnable::class.java
-                    )
-                    invokeWithOGLContextCurrentMethod.isAccessible = true
-
-                    //var timeSinceLast = 0L
-                    object : BaseOpenglContext {
-                        override val scaleFactor: Double get() = frameScaleFactor
-
-                        override fun useContext(obj: Any?, action: Runnable) {
-                            invokeWithOGLContextCurrentMethod.invoke(null, obj as Graphics, action)
-                        }
-                        override fun makeCurrent() = Unit
-                        override fun releaseCurrent() = Unit
-                        override fun swapBuffers() = Unit
-                    }
-                }
-                OS.isWindows -> Win32OpenglContext(
-                    WinDef.HWND(Native.getComponentPointer(frame)),
-                    doubleBuffered = true
-                )
-                else -> {
-                    try {
-                        val d = X.XOpenDisplay(null)
-                        val displayName = X.XDisplayString(d);
-                        //println("displayName: $displayName")
-                        val src = X.XDefaultScreen(d)
-                        X.XSynchronize(d, true)
-                        val contentWindow = frame.awtGetPeer().reflective().dynamicInvoke("getContentWindow") as Long
-                        val win = X11.Window(contentWindow)
-                        //val drawableId = Native.getWindowID(frame)
-                        //val drawable = X11.Drawable(drawableId)
-                        //val winRef = X11.WindowByReference()
-                        //val p = Array(6) { IntByReference() }
-                        //X.XGetGeometry(d, drawable, winRef, p[0], p[1], p[2], p[3], p[4], p[5])
-                        //val win = winRef.value
-                        //println("winId: $winId")
-                        X11OpenglContext(d, win, src)
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                        throw e
-                    }
-                }
-            }
+            ctx = glContextFromComponent(frame)
         }
     }
 
