@@ -18,7 +18,6 @@ import org.jbox2d.dynamics.TimeStep
 import org.jbox2d.dynamics.World
 import org.jbox2d.internal.*
 import org.jbox2d.particle.VoronoiDiagram.VoronoiDiagramCallback
-import kotlin.experimental.and
 
 class ParticleSystem(internal var m_world: World) {
 
@@ -805,12 +804,12 @@ class ParticleSystem(internal var m_world: World) {
             val m = contact.mass
             val n = contact.normal
             val p = m_positionBuffer.data!![a]
-            val tempX = p.x - b!!.m_sweep.c.x
-            val tempY = p.y - b!!.m_sweep.c.y
+            val tempX = p.x - b!!.sweep.c.x
+            val tempY = p.y - b!!.sweep.c.y
             val velA = m_velocityBuffer.data!![a]
             // getLinearVelocityFromWorldPointToOut, with -= velA
-            val vx = -b!!.m_angularVelocity * tempY + b!!.m_linearVelocity.x - velA.x
-            val vy = b!!.m_angularVelocity * tempX + b!!.m_linearVelocity.y - velA.y
+            val vx = -b!!._angularVelocity * tempY + b!!._linearVelocity.x - velA.x
+            val vy = b!!._angularVelocity * tempX + b!!._linearVelocity.y - velA.y
             // done
             val vn = vx * n.x + vy * n.y
             if (vn < 0) {
@@ -1016,10 +1015,10 @@ class ParticleSystem(internal var m_world: World) {
                 val m = contact.mass
                 val p = m_positionBuffer.data!![a]
                 val va = m_velocityBuffer.data!![a]
-                val tempX = p.x - b!!.m_sweep.c.x
-                val tempY = p.y - b!!.m_sweep.c.y
-                val vx = -b!!.m_angularVelocity * tempY + b!!.m_linearVelocity.x - va.x
-                val vy = b!!.m_angularVelocity * tempX + b!!.m_linearVelocity.y - va.y
+                val tempX = p.x - b!!.sweep.c.x
+                val tempY = p.y - b!!.sweep.c.y
+                val vx = -b!!._angularVelocity * tempY + b!!._linearVelocity.x - va.x
+                val vy = b!!._angularVelocity * tempX + b!!._linearVelocity.y - va.y
                 val f = tempVec
                 val pInvMass = particleInvMass
                 f.x = viscousStrength * m * w * vx
@@ -1931,8 +1930,8 @@ class ParticleSystem(internal var m_world: World) {
                             && ap.y <= aabbupperBoundy) {
                         val av = system!!.m_velocityBuffer.data!![a]
                         val temp = tempVec
-                        Transform.mulTransToOutUnsafe(body!!.m_xf0, ap, temp)
-                        Transform.mulToOutUnsafe(body.m_xf, temp, input.p1)
+                        Transform.mulTransToOutUnsafe(body!!.xf0, ap, temp)
+                        Transform.mulToOutUnsafe(body.xf, temp, input.p1)
                         input.p2.x = ap.x + step!!.dt * av.x
                         input.p2.y = ap.y + step!!.dt * av.y
                         input.maxFraction = 1f

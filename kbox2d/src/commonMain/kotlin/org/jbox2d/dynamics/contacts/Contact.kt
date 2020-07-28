@@ -181,8 +181,8 @@ abstract class Contact protected constructor( protected val pool: IWorldPool) {
         val shapeA = m_fixtureA!!.m_shape
         val shapeB = m_fixtureB!!.m_shape
 
-        worldManifold.initialize(m_manifold, bodyA!!.m_xf, shapeA!!.m_radius,
-                bodyB!!.m_xf, shapeB!!.m_radius)
+        worldManifold.initialize(m_manifold, bodyA!!.xf, shapeA!!.radius,
+                bodyB!!.xf, shapeB!!.radius)
     }
 
     fun resetFriction() {
@@ -218,8 +218,8 @@ abstract class Contact protected constructor( protected val pool: IWorldPool) {
 
         val bodyA = m_fixtureA!!.m_body!!
         val bodyB = m_fixtureB!!.m_body!!
-        val xfA = bodyA.m_xf
-        val xfB = bodyB.m_xf
+        val xfA = bodyA.xf
+        val xfB = bodyB.xf
         // log.debug("TransformA: "+xfA);
         // log.debug("TransformB: "+xfB);
 

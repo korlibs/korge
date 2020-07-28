@@ -87,11 +87,11 @@ class FrictionJoint(argWorldPool: IWorldPool, def: FrictionJointDef) : Joint(arg
     }
 
     override fun getAnchorA(argOut: Vec2) {
-        m_bodyA!!.getWorldPointToOut(localAnchorA, argOut)
+        bodyA!!.getWorldPointToOut(localAnchorA, argOut)
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(localAnchorB, argOut)
     }
 
     override fun getReactionForce(inv_dt: Float, argOut: Vec2) {
@@ -106,14 +106,14 @@ class FrictionJoint(argWorldPool: IWorldPool, def: FrictionJointDef) : Joint(arg
      * @see org.jbox2d.dynamics.joints.Joint.initVelocityConstraints
      */
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterA.set(m_bodyA!!.m_sweep.localCenter)
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassA = m_bodyA!!.m_invMass
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIA = m_bodyA!!.m_invI
-        m_invIB = m_bodyB!!.m_invI
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterA.set(bodyA!!.sweep.localCenter)
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassA = bodyA!!.m_invMass
+        m_invMassB = bodyB!!.m_invMass
+        m_invIA = bodyA!!.m_invI
+        m_invIB = bodyB!!.m_invI
 
         val aA = data.positions!![m_indexA].a
         val vA = data.velocities!![m_indexA].v

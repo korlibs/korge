@@ -41,7 +41,7 @@ abstract class Shape(private val m_type: ShapeType) {
      *
      * @return
      */
-    var m_radius: Float = 0f
+    var radius: Float = 0f
 
     /**
      * Get the type of this shape. You can use this to down cast to the concrete shape.

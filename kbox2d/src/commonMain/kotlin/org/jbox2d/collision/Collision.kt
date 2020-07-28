@@ -119,8 +119,8 @@ class Collision(private val pool: IWorldPool) {
         // float distSqr = d.x * d.x + d.y * d.y;
 
         // after inline:
-        val circle1p = circle1.m_p
-        val circle2p = circle2.m_p
+        val circle1p = circle1.p
+        val circle2p = circle2.p
         val pAx = xfA.q.c * circle1p.x - xfA.q.s * circle1p.y + xfA.p.x
         val pAy = xfA.q.s * circle1p.x + xfA.q.c * circle1p.y + xfA.p.y
         val pBx = xfB.q.c * circle2p.x - xfB.q.s * circle2p.y + xfB.p.x
@@ -130,7 +130,7 @@ class Collision(private val pool: IWorldPool) {
         val distSqr = dx * dx + dy * dy
         // end inline
 
-        val radius = circle1.m_radius + circle2.m_radius
+        val radius = circle1.radius + circle2.radius
         if (distSqr > radius * radius) {
             return
         }
@@ -167,7 +167,7 @@ class Collision(private val pool: IWorldPool) {
         // final float cLocalx = cLocal.x;
         // final float cLocaly = cLocal.y;
         // after inline:
-        val circlep = circle.m_p
+        val circlep = circle.p
         val xfBq = xfB.q
         val xfAq = xfA.q
         val cx = xfBq.c * circlep.x - xfBq.s * circlep.y + xfB.p.x
@@ -181,11 +181,11 @@ class Collision(private val pool: IWorldPool) {
         // Find the min separating edge.
         var normalIndex = 0
         var separation = -Float.MAX_VALUE
-        val radius = polygon.m_radius + circle.m_radius
-        val vertexCount = polygon.m_count
+        val radius = polygon.radius + circle.radius
+        val vertexCount = polygon.count
         var s: Float
-        val vertices = polygon.m_vertices
-        val normals = polygon.m_normals
+        val vertices = polygon.vertices
+        val normals = polygon.normals
 
         for (i in 0 until vertexCount) {
             // before inline
@@ -349,11 +349,11 @@ class Collision(private val pool: IWorldPool) {
      */
     fun findMaxSeparation(results: EdgeResults, poly1: PolygonShape,
                           xf1: Transform, poly2: PolygonShape, xf2: Transform) {
-        val count1 = poly1.m_count
-        val count2 = poly2.m_count
-        val n1s = poly1.m_normals
-        val v1s = poly1.m_vertices
-        val v2s = poly2.m_vertices
+        val count1 = poly1.count
+        val count2 = poly2.count
+        val n1s = poly1.normals
+        val v1s = poly1.vertices
+        val v2s = poly2.vertices
 
         Transform.mulTransToOutUnsafe(xf2, xf1, xf, poolVec2)
         val xfq = xf.q
@@ -387,12 +387,12 @@ class Collision(private val pool: IWorldPool) {
 
     fun findIncidentEdge(c: Array<ClipVertex>, poly1: PolygonShape,
                          xf1: Transform, edge1: Int, poly2: PolygonShape, xf2: Transform) {
-        val count1 = poly1.m_count
-        val normals1 = poly1.m_normals
+        val count1 = poly1.count
+        val normals1 = poly1.normals
 
-        val count2 = poly2.m_count
-        val vertices2 = poly2.m_vertices
-        val normals2 = poly2.m_normals
+        val count2 = poly2.count
+        val vertices2 = poly2.vertices
+        val normals2 = poly2.normals
 
         assert(0 <= edge1 && edge1 < count1)
 
@@ -472,7 +472,7 @@ class Collision(private val pool: IWorldPool) {
         // The normal points from 1 to 2
 
         manifold.pointCount = 0
-        val totalRadius = polyA.m_radius + polyB.m_radius
+        val totalRadius = polyA.radius + polyB.radius
 
         findMaxSeparation(results1, polyA, xfA, polyB, xfB)
         if (results1.separation > totalRadius) {
@@ -513,8 +513,8 @@ class Collision(private val pool: IWorldPool) {
 
         findIncidentEdge(incidentEdge, poly1, xf1, edge1, poly2, xf2)
 
-        val count1 = poly1.m_count
-        val vertices1 = poly1.m_vertices
+        val count1 = poly1.count
+        val vertices1 = poly1.vertices
 
         val iv1 = edge1
         val iv2 = if (edge1 + 1 < count1) edge1 + 1 else 0
@@ -616,18 +616,18 @@ class Collision(private val pool: IWorldPool) {
 
         // Compute circle in frame of edge
         // Vec2 Q = MulT(xfA, Mul(xfB, circleB.m_p));
-        Transform.mulToOutUnsafe(xfB, circleB.m_p, temp)
+        Transform.mulToOutUnsafe(xfB, circleB.p, temp)
         Transform.mulTransToOutUnsafe(xfA, temp, Q)
 
-        val A = edgeA.m_vertex1
-        val B = edgeA.m_vertex2
+        val A = edgeA.vertex1
+        val B = edgeA.vertex2
         e.set(B).subLocal(A)
 
         // Barycentric coordinates
         val u = Vec2.dot(e, temp.set(B).subLocal(Q))
         val v = Vec2.dot(e, temp.set(Q).subLocal(A))
 
-        val radius = edgeA.m_radius + circleB.m_radius
+        val radius = edgeA.radius + circleB.radius
 
         // ContactFeature cf;
         cf.indexB = 0
@@ -643,8 +643,8 @@ class Collision(private val pool: IWorldPool) {
             }
 
             // Is there an edge connected to A?
-            if (edgeA.m_hasVertex0) {
-                val A1 = edgeA.m_vertex0
+            if (edgeA.hasVertex0) {
+                val A1 = edgeA.vertex0
                 val B1 = A
                 e1.set(B1).subLocal(A1)
                 val u1 = Vec2.dot(e1, temp.set(B1).subLocal(Q))
@@ -663,7 +663,7 @@ class Collision(private val pool: IWorldPool) {
             manifold.localPoint.set(P)
             // manifold.points[0].id.key = 0;
             manifold.points[0].id.set(cf)
-            manifold.points[0].localPoint.set(circleB.m_p)
+            manifold.points[0].localPoint.set(circleB.p)
             return
         }
 
@@ -677,8 +677,8 @@ class Collision(private val pool: IWorldPool) {
             }
 
             // Is there an edge connected to B?
-            if (edgeA.m_hasVertex3) {
-                val B2 = edgeA.m_vertex3
+            if (edgeA.hasVertex3) {
+                val B2 = edgeA.vertex3
                 val A2 = B
                 val e2 = e1
                 e2.set(B2).subLocal(A2)
@@ -698,7 +698,7 @@ class Collision(private val pool: IWorldPool) {
             manifold.localPoint.set(P)
             // manifold.points[0].id.key = 0;
             manifold.points[0].id.set(cf)
-            manifold.points[0].localPoint.set(circleB.m_p)
+            manifold.points[0].localPoint.set(circleB.p)
             return
         }
 
@@ -730,7 +730,7 @@ class Collision(private val pool: IWorldPool) {
         manifold.localPoint.set(A)
         // manifold.points[0].id.key = 0;
         manifold.points[0].id.set(cf)
-        manifold.points[0].localPoint.set(circleB.m_p)
+        manifold.points[0].localPoint.set(circleB.p)
     }
 
     fun collideEdgeAndPolygon(manifold: Manifold, edgeA: EdgeShape, xfA: Transform,
@@ -880,15 +880,15 @@ class Collision(private val pool: IWorldPool) {
                     polygonB: PolygonShape, xfB: Transform) {
 
             Transform.mulTransToOutUnsafe(xfA, xfB, m_xf, poolVec2)
-            Transform.mulToOutUnsafe(m_xf, polygonB.m_centroid, m_centroidB)
+            Transform.mulToOutUnsafe(m_xf, polygonB.centroid, m_centroidB)
 
-            m_v0 = edgeA.m_vertex0
-            m_v1 = edgeA.m_vertex1
-            m_v2 = edgeA.m_vertex2
-            m_v3 = edgeA.m_vertex3
+            m_v0 = edgeA.vertex0
+            m_v1 = edgeA.vertex1
+            m_v2 = edgeA.vertex2
+            m_v3 = edgeA.vertex3
 
-            val hasVertex0 = edgeA.m_hasVertex0
-            val hasVertex3 = edgeA.m_hasVertex3
+            val hasVertex0 = edgeA.hasVertex0
+            val hasVertex3 = edgeA.hasVertex3
 
             edge1.set(m_v2).subLocal(m_v1)
             edge1.normalize()
@@ -1080,10 +1080,10 @@ class Collision(private val pool: IWorldPool) {
             }
 
             // Get polygonB in frameA
-            m_polygonB.count = polygonB.m_count
-            for (i in 0 until polygonB.m_count) {
-                Transform.mulToOutUnsafe(m_xf, polygonB.m_vertices[i], m_polygonB.vertices[i])
-                Rot.mulToOutUnsafe(m_xf.q, polygonB.m_normals[i], m_polygonB.normals[i])
+            m_polygonB.count = polygonB.count
+            for (i in 0 until polygonB.count) {
+                Transform.mulToOutUnsafe(m_xf, polygonB.vertices[i], m_polygonB.vertices[i])
+                Rot.mulToOutUnsafe(m_xf.q, polygonB.normals[i], m_polygonB.normals[i])
             }
 
             m_radius = 2.0f * Settings.polygonRadius
@@ -1213,8 +1213,8 @@ class Collision(private val pool: IWorldPool) {
                 manifold.localNormal.set(rf.normal)
                 manifold.localPoint.set(rf.v1)
             } else {
-                manifold.localNormal.set(polygonB.m_normals[rf.i1])
-                manifold.localPoint.set(polygonB.m_vertices[rf.i1])
+                manifold.localNormal.set(polygonB.normals[rf.i1])
+                manifold.localPoint.set(polygonB.vertices[rf.i1])
             }
 
             var pointCount = 0

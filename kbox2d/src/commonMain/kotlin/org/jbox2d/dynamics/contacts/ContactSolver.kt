@@ -128,8 +128,8 @@ class ContactSolver {
             val fixtureB = contact.m_fixtureB
             val shapeA = fixtureA!!.getShape()
             val shapeB = fixtureB!!.getShape()
-            val radiusA = shapeA!!.m_radius
-            val radiusB = shapeB!!.m_radius
+            val radiusA = shapeA!!.radius
+            val radiusB = shapeB!!.radius
             val bodyA = fixtureA.getBody()
             val bodyB = fixtureB.getBody()
             val manifold = contact.getManifold()
@@ -141,8 +141,8 @@ class ContactSolver {
             vc.friction = contact.m_friction
             vc.restitution = contact.m_restitution
             vc.tangentSpeed = contact.m_tangentSpeed
-            vc.indexA = bodyA!!.m_islandIndex
-            vc.indexB = bodyB!!.m_islandIndex
+            vc.indexA = bodyA!!.islandIndex
+            vc.indexB = bodyB!!.islandIndex
             vc.invMassA = bodyA.m_invMass
             vc.invMassB = bodyB.m_invMass
             vc.invIA = bodyA.m_invI
@@ -153,12 +153,12 @@ class ContactSolver {
             vc.normalMass.setZero()
 
             val pc = m_positionConstraints[i]
-            pc.indexA = bodyA.m_islandIndex
-            pc.indexB = bodyB.m_islandIndex
+            pc.indexA = bodyA.islandIndex
+            pc.indexB = bodyB.islandIndex
             pc.invMassA = bodyA.m_invMass
             pc.invMassB = bodyB.m_invMass
-            pc.localCenterA.set(bodyA.m_sweep.localCenter)
-            pc.localCenterB.set(bodyB.m_sweep.localCenter)
+            pc.localCenterA.set(bodyA.sweep.localCenter)
+            pc.localCenterB.set(bodyB.sweep.localCenter)
             pc.invIA = bodyA.m_invI
             pc.invIB = bodyB.m_invI
             pc.localNormal.set(manifold.localNormal)

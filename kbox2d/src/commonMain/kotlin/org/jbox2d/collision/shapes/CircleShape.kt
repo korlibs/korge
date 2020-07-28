@@ -36,12 +36,9 @@ import org.jbox2d.internal.*
 /**
  * A circle shape.
  */
-class CircleShape : Shape(ShapeType.CIRCLE) {
-    companion object {
-        operator fun invoke(radius: Number): CircleShape = CircleShape().also { it.m_radius = radius.toFloat() }
-    }
+class CircleShape() : Shape(ShapeType.CIRCLE) {
 
-    val m_p: Vec2 = Vec2()
+    val p: Vec2 = Vec2()
 
     /**
      * Get the vertex count.
@@ -50,11 +47,15 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
      */
     val vertexCount: Int get() = 1
 
+    constructor(radius: Number) : this() {
+        this.radius = radius.toFloat()
+    }
+
     override fun clone(): Shape {
         val shape = CircleShape()
-        shape.m_p.x = m_p.x
-        shape.m_p.y = m_p.y
-        shape.m_radius = m_radius
+        shape.p.x = p.x
+        shape.p.y = p.y
+        shape.radius = radius
         return shape
     }
 
@@ -74,7 +75,7 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
      * @param d
      * @return
      */
-    fun getSupportVertex(d: Vec2): Vec2 = m_p
+    fun getSupportVertex(d: Vec2): Vec2 = p
 
     /**
      * Get a vertex by index.
@@ -84,7 +85,7 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
      */
     fun getVertex(index: Int): Vec2 {
         assert(index == 0)
-        return m_p
+        return p
     }
 
     override fun testPoint(transform: Transform, p: Vec2): Boolean {
@@ -95,22 +96,22 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
         // return Vec2.dot(d, d) <= m_radius * m_radius;
         val q = transform.q
         val tp = transform.p
-        val centerx = -(q.c * m_p.x - q.s * m_p.y + tp.x - p.x)
-        val centery = -(q.s * m_p.x + q.c * m_p.y + tp.y - p.y)
+        val centerx = -(q.c * this.p.x - q.s * this.p.y + tp.x - p.x)
+        val centery = -(q.s * this.p.x + q.c * this.p.y + tp.y - p.y)
 
-        return centerx * centerx + centery * centery <= m_radius * m_radius
+        return centerx * centerx + centery * centery <= radius * radius
     }
 
     override fun computeDistanceToOut(xf: Transform, p: Vec2, childIndex: Int, normalOut: Vec2): Float {
         val xfq = xf.q
-        val centerx = xfq.c * m_p.x - xfq.s * m_p.y + xf.p.x
-        val centery = xfq.s * m_p.x + xfq.c * m_p.y + xf.p.y
+        val centerx = xfq.c * this.p.x - xfq.s * this.p.y + xf.p.x
+        val centery = xfq.s * this.p.x + xfq.c * this.p.y + xf.p.y
         val dx = p.x - centerx
         val dy = p.y - centery
         val d1 = MathUtils.sqrt(dx * dx + dy * dy)
         normalOut.x = dx * 1 / d1
         normalOut.y = dy * 1 / d1
-        return d1 - m_radius
+        return d1 - radius
     }
 
     // Collision Detection in Interactive 3D Environments by Gino van den Bergen
@@ -129,13 +130,13 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
 
         // Rot.mulToOutUnsafe(transform.q, m_p, position);
         // position.addLocal(transform.p);
-        val positionx = tq.c * m_p.x - tq.s * m_p.y + tp.x
-        val positiony = tq.s * m_p.x + tq.c * m_p.y + tp.y
+        val positionx = tq.c * p.x - tq.s * p.y + tp.x
+        val positiony = tq.s * p.x + tq.c * p.y + tp.y
 
         val sx = inputp1.x - positionx
         val sy = inputp1.y - positiony
         // final float b = Vec2.dot(s, s) - m_radius * m_radius;
-        val b = sx * sx + sy * sy - m_radius * m_radius
+        val b = sx * sx + sy * sy - radius * radius
 
         // Solve quadratic equation.
         val rx = inputp2.x - inputp1.x
@@ -170,22 +171,22 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
     override fun computeAABB(aabb: AABB, transform: Transform, childIndex: Int) {
         val tq = transform.q
         val tp = transform.p
-        val px = tq.c * m_p.x - tq.s * m_p.y + tp.x
-        val py = tq.s * m_p.x + tq.c * m_p.y + tp.y
+        val px = tq.c * p.x - tq.s * p.y + tp.x
+        val py = tq.s * p.x + tq.c * p.y + tp.y
 
-        aabb.lowerBound.x = px - m_radius
-        aabb.lowerBound.y = py - m_radius
-        aabb.upperBound.x = px + m_radius
-        aabb.upperBound.y = py + m_radius
+        aabb.lowerBound.x = px - radius
+        aabb.lowerBound.y = py - radius
+        aabb.upperBound.x = px + radius
+        aabb.upperBound.y = py + radius
     }
 
     override fun computeMass(massData: MassData, density: Float) {
-        massData.mass = density * Settings.PI * m_radius * m_radius
-        massData.center.x = m_p.x
-        massData.center.y = m_p.y
+        massData.mass = density * Settings.PI * radius * radius
+        massData.center.x = p.x
+        massData.center.y = p.y
 
         // inertia about the local origin
         // massData.I = massData.mass * (0.5f * m_radius * m_radius + Vec2.dot(m_p, m_p));
-        massData.I = massData.mass * (0.5f * m_radius * m_radius + (m_p.x * m_p.x + m_p.y * m_p.y))
+        massData.I = massData.mass * (0.5f * radius * radius + (p.x * p.x + p.y * p.y))
     }
 }

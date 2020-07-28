@@ -46,7 +46,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * Local position of the shape centroid in parent body frame.
      */
 
-    val m_centroid = Vec2()
+    val centroid = Vec2()
 
     /**
      * The vertices of the shape. Note: use getVertexCount(), not m_vertices.length, to get number of
@@ -54,7 +54,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      */
     /** Get the vertices in local coordinates.  */
 
-    val m_vertices: Array<Vec2> = Array(Settings.maxPolygonVertices) { Vec2() }
+    val vertices: Array<Vec2> = Array(Settings.maxPolygonVertices) { Vec2() }
 
     /**
      * The normals of the shape. Note: use getVertexCount(), not m_normals.length, to get number of
@@ -62,7 +62,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      */
     /** Get the edge normal vectors. There is one for each vertex.  */
 
-    val m_normals: Array<Vec2> = Array(Settings.maxPolygonVertices) { Vec2() }
+    val normals: Array<Vec2> = Array(Settings.maxPolygonVertices) { Vec2() }
 
     /**
      * Number of active vertices in the shape.
@@ -73,7 +73,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * @return
      */
 
-    var m_count: Int = 0
+    var count: Int = 0
 
     // pooling
     private val pool1 = Vec2()
@@ -83,19 +83,19 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
     private val poolt1 = Transform()
 
     init {
-        m_radius = Settings.polygonRadius
-        m_centroid.setZero()
+        radius = Settings.polygonRadius
+        centroid.setZero()
     }
 
     override fun clone(): Shape {
         val shape = PolygonShape()
-        shape.m_centroid.set(this.m_centroid)
-        for (i in shape.m_normals.indices) {
-            shape.m_normals[i].set(m_normals[i])
-            shape.m_vertices[i].set(m_vertices[i])
+        shape.centroid.set(this.centroid)
+        for (i in shape.normals.indices) {
+            shape.normals[i].set(normals[i])
+            shape.vertices[i].set(vertices[i])
         }
-        shape.m_radius = this.m_radius
-        shape.m_count = this.m_count
+        shape.radius = this.radius
+        shape.count = this.count
         return shape
     }
 
@@ -208,31 +208,31 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             }
         }
 
-        this.m_count = m
+        this.count = m
 
         // Copy vertices.
-        for (i in 0 until m_count) {
-            if (m_vertices[i] == null) {
-                m_vertices[i] = Vec2()
+        for (i in 0 until count) {
+            if (vertices[i] == null) {
+                vertices[i] = Vec2()
             }
-            m_vertices[i].set(ps[hull[i]]!!)
+            vertices[i].set(ps[hull[i]]!!)
         }
 
         val edge = pool1
 
         // Compute normals. Ensure the edges have non-zero length.
-        for (i in 0 until m_count) {
+        for (i in 0 until count) {
             val i1 = i
-            val i2 = if (i + 1 < m_count) i + 1 else 0
-            edge.set(m_vertices[i2]).subLocal(m_vertices[i1])
+            val i2 = if (i + 1 < count) i + 1 else 0
+            edge.set(vertices[i2]).subLocal(vertices[i1])
 
             assert(edge.lengthSquared() > Settings.EPSILON * Settings.EPSILON)
-            Vec2.crossToOutUnsafe(edge, 1f, m_normals[i])
-            m_normals[i].normalize()
+            Vec2.crossToOutUnsafe(edge, 1f, normals[i])
+            normals[i].normalize()
         }
 
         // Compute the polygon centroid.
-        computeCentroidToOut(m_vertices, m_count, m_centroid)
+        computeCentroidToOut(vertices, count, centroid)
     }
 
     /**
@@ -242,16 +242,16 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * @param hy the half-height.
      */
     fun setAsBox(hx: Float, hy: Float) {
-        m_count = 4
-        m_vertices[0].set(-hx, -hy)
-        m_vertices[1].set(hx, -hy)
-        m_vertices[2].set(hx, hy)
-        m_vertices[3].set(-hx, hy)
-        m_normals[0].set(0.0f, -1.0f)
-        m_normals[1].set(1.0f, 0.0f)
-        m_normals[2].set(0.0f, 1.0f)
-        m_normals[3].set(-1.0f, 0.0f)
-        m_centroid.setZero()
+        count = 4
+        vertices[0].set(-hx, -hy)
+        vertices[1].set(hx, -hy)
+        vertices[2].set(hx, hy)
+        vertices[3].set(-hx, hy)
+        normals[0].set(0.0f, -1.0f)
+        normals[1].set(1.0f, 0.0f)
+        normals[2].set(0.0f, 1.0f)
+        normals[3].set(-1.0f, 0.0f)
+        centroid.setZero()
     }
 
     /**
@@ -263,25 +263,25 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * @param angleRadians the rotation of the box in local coordinates.
      */
     fun setAsBoxRadians(hx: Float, hy: Float, center: Vec2, angleRadians: Float) {
-        m_count = 4
-        m_vertices[0].set(-hx, -hy)
-        m_vertices[1].set(hx, -hy)
-        m_vertices[2].set(hx, hy)
-        m_vertices[3].set(-hx, hy)
-        m_normals[0].set(0.0f, -1.0f)
-        m_normals[1].set(1.0f, 0.0f)
-        m_normals[2].set(0.0f, 1.0f)
-        m_normals[3].set(-1.0f, 0.0f)
-        m_centroid.set(center)
+        count = 4
+        vertices[0].set(-hx, -hy)
+        vertices[1].set(hx, -hy)
+        vertices[2].set(hx, hy)
+        vertices[3].set(-hx, hy)
+        normals[0].set(0.0f, -1.0f)
+        normals[1].set(1.0f, 0.0f)
+        normals[2].set(0.0f, 1.0f)
+        normals[3].set(-1.0f, 0.0f)
+        centroid.set(center)
 
         val xf = poolt1
         xf.p.set(center)
         xf.q.setRadians(angleRadians)
 
         // Transform vertices and normals.
-        for (i in 0 until m_count) {
-            Transform.mulToOut(xf, m_vertices[i], m_vertices[i])
-            Rot.mulToOut(xf.q, m_normals[i], m_normals[i])
+        for (i in 0 until count) {
+            Transform.mulToOut(xf, vertices[i], vertices[i])
+            Rot.mulToOut(xf.q, normals[i], normals[i])
         }
     }
 
@@ -306,15 +306,15 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         if (m_debug) {
             println("--testPoint debug--")
             println("Vertices: ")
-            for (i in 0 until m_count) {
-                println(m_vertices[i])
+            for (i in 0 until count) {
+                println(vertices[i])
             }
             println("pLocal: $pLocalx, $pLocaly")
         }
 
-        for (i in 0 until m_count) {
-            val vertex = m_vertices[i]
-            val normal = m_normals[i]
+        for (i in 0 until count) {
+            val vertex = vertices[i]
+            val normal = normals[i]
             tempx = pLocalx - vertex.x
             tempy = pLocaly - vertex.y
             val dot = normal.x * tempx + normal.y * tempy
@@ -329,7 +329,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
     override fun computeAABB(aabb: AABB, xf: Transform, childIndex: Int) {
         val lower = aabb.lowerBound
         val upper = aabb.upperBound
-        val v1 = m_vertices[0]
+        val v1 = vertices[0]
         val xfqc = xf.q.c
         val xfqs = xf.q.s
         val xfpx = xf.p.x
@@ -339,8 +339,8 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         upper.x = lower.x
         upper.y = lower.y
 
-        for (i in 1 until m_count) {
-            val v2 = m_vertices[i]
+        for (i in 1 until count) {
+            val v2 = vertices[i]
             // Vec2 v = Mul(xf, m_vertices[i]);
             val vx = xfqc * v2.x - xfqs * v2.y + xfpx
             val vy = xfqs * v2.x + xfqc * v2.y + xfpy
@@ -350,10 +350,10 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             upper.y = if (upper.y > vy) upper.y else vy
         }
 
-        lower.x -= m_radius
-        lower.y -= m_radius
-        upper.x += m_radius
-        upper.y += m_radius
+        lower.x -= radius
+        lower.y -= radius
+        upper.x += radius
+        upper.y += radius
     }
 
     /**
@@ -363,8 +363,8 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * @return
      */
     fun getVertex(index: Int): Vec2 {
-        assert(0 <= index && index < m_count)
-        return m_vertices[index]
+        assert(0 <= index && index < count)
+        return vertices[index]
     }
 
     override fun computeDistanceToOut(xf: Transform, p: Vec2, childIndex: Int, normalOut: Vec2): Float {
@@ -379,9 +379,9 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         var normalForMaxDistanceX = pLocalx
         var normalForMaxDistanceY = pLocaly
 
-        for (i in 0 until m_count) {
-            val vertex = m_vertices[i]
-            val normal = m_normals[i]
+        for (i in 0 until count) {
+            val vertex = vertices[i]
+            val normal = normals[i]
             tx = pLocalx - vertex.x
             ty = pLocaly - vertex.y
             val dot = normal.x * tx + normal.y * ty
@@ -397,8 +397,8 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             var minDistanceX = normalForMaxDistanceX
             var minDistanceY = normalForMaxDistanceY
             var minDistance2 = maxDistance * maxDistance
-            for (i in 0 until m_count) {
-                val vertex = m_vertices[i]
+            for (i in 0 until count) {
+                val vertex = vertices[i]
                 val distanceVecX = pLocalx - vertex.x
                 val distanceVecY = pLocaly - vertex.y
                 val distance2 = distanceVecX * distanceVecX + distanceVecY * distanceVecY
@@ -448,9 +448,9 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
 
         var index = -1
 
-        for (i in 0 until m_count) {
-            val normal = m_normals[i]
-            val vertex = m_vertices[i]
+        for (i in 0 until count) {
+            val normal = normals[i]
+            val vertex = vertices[i]
             // p = p1 + a * d
             // dot(normal, p - v) = 0
             // dot(normal, p1 - v) + a * dot(normal, d) = 0
@@ -491,7 +491,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         if (index >= 0) {
             output.fraction = lower
             // normal = Mul(xf.R, m_normals[index]);
-            val normal = m_normals[index]
+            val normal = normals[index]
             val out = output.normal
             out.x = xfqc * normal.x - xfqs * normal.y
             out.y = xfqs * normal.x + xfqc * normal.y
@@ -565,7 +565,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         //
         // The rest of the derivation is handled by computer algebra.
 
-        assert(m_count >= 3)
+        assert(count >= 3)
 
         val center = pool1
         center.setZero()
@@ -577,20 +577,20 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         val s = pool2
         s.setZero()
         // This code would put the reference point inside the polygon.
-        for (i in 0 until m_count) {
-            s.addLocal(m_vertices[i])
+        for (i in 0 until count) {
+            s.addLocal(vertices[i])
         }
-        s.mulLocal(1.0f / m_count)
+        s.mulLocal(1.0f / count)
 
         val k_inv3 = 1.0f / 3.0f
 
         val e1 = pool3
         val e2 = pool4
 
-        for (i in 0 until m_count) {
+        for (i in 0 until count) {
             // Triangle vertices.
-            e1.set(m_vertices[i]).subLocal(s)
-            e2.set(s).negateLocal().addLocal(if (i + 1 < m_count) m_vertices[i + 1] else m_vertices[0])
+            e1.set(vertices[i]).subLocal(s)
+            e2.set(s).negateLocal().addLocal(if (i + 1 < count) vertices[i + 1] else vertices[0])
 
             val D = Vec2.cross(e1, e2)
 
@@ -633,18 +633,18 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
      * @return
      */
     fun validate(): Boolean {
-        for (i in 0 until m_count) {
+        for (i in 0 until count) {
             val i1 = i
-            val i2 = if (i < m_count - 1) i1 + 1 else 0
-            val p = m_vertices[i1]
-            val e = pool1.set(m_vertices[i2]).subLocal(p)
+            val i2 = if (i < count - 1) i1 + 1 else 0
+            val p = vertices[i1]
+            val e = pool1.set(vertices[i2]).subLocal(p)
 
-            for (j in 0 until m_count) {
+            for (j in 0 until count) {
                 if (j == i1 || j == i2) {
                     continue
                 }
 
-                val v = pool2.set(m_vertices[j]).subLocal(p)
+                val v = pool2.set(vertices[j]).subLocal(p)
                 val c = Vec2.cross(e, v)
                 if (c < 0.0f) {
                     return false
@@ -657,12 +657,12 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
 
     /** Get the centroid and apply the supplied transform.  */
     fun centroid(xf: Transform): Vec2 {
-        return Transform.mul(xf, m_centroid)
+        return Transform.mul(xf, centroid)
     }
 
     /** Get the centroid and apply the supplied transform.  */
     fun centroidToOut(xf: Transform, out: Vec2): Vec2 {
-        Transform.mulToOutUnsafe(xf, m_centroid, out)
+        Transform.mulToOutUnsafe(xf, centroid, out)
         return out
     }
 

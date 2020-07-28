@@ -108,7 +108,7 @@ class ConstantVolumeJoint(
         var area = 0.0f
         for (i in bodies.indices) {
             val next = if (i == bodies.size - 1) 0 else i + 1
-            area += positions[bodies[i].m_islandIndex].c.x * positions[bodies[next].m_islandIndex].c.y - positions[bodies[next].m_islandIndex].c.x * positions[bodies[i].m_islandIndex].c.y
+            area += positions[bodies[i].islandIndex].c.x * positions[bodies[next].islandIndex].c.y - positions[bodies[next].islandIndex].c.x * positions[bodies[i].islandIndex].c.y
         }
         area *= .5f
         return area
@@ -118,8 +118,8 @@ class ConstantVolumeJoint(
         var perimeter = 0.0f
         for (i in bodies.indices) {
             val next = if (i == bodies.size - 1) 0 else i + 1
-            val dx = positions!![bodies[next].m_islandIndex].c.x - positions[bodies[i].m_islandIndex].c.x
-            val dy = positions[bodies[next].m_islandIndex].c.y - positions[bodies[i].m_islandIndex].c.y
+            val dx = positions!![bodies[next].islandIndex].c.x - positions[bodies[i].islandIndex].c.x
+            val dy = positions[bodies[next].islandIndex].c.y - positions[bodies[i].islandIndex].c.y
             var dist = MathUtils.sqrt(dx * dx + dy * dy)
             if (dist < Settings.EPSILON) {
                 dist = 1.0f
@@ -146,8 +146,8 @@ class ConstantVolumeJoint(
             if (normSqrd > Settings.linearSlop * Settings.linearSlop) {
                 done = false
             }
-            positions!![bodies[next].m_islandIndex].c.x += delta.x
-            positions!![bodies[next].m_islandIndex].c.y += delta.y
+            positions!![bodies[next].islandIndex].c.x += delta.x
+            positions!![bodies[next].islandIndex].c.y += delta.y
             // bodies[next].m_linearVelocity.x += delta.x * step.inv_dt;
             // bodies[next].m_linearVelocity.y += delta.y * step.inv_dt;
         }
@@ -165,8 +165,8 @@ class ConstantVolumeJoint(
         for (i in bodies.indices) {
             val prev = if (i == 0) bodies.size - 1 else i - 1
             val next = if (i == bodies.size - 1) 0 else i + 1
-            d[i].set(positions!![bodies[next].m_islandIndex].c)
-            d[i].subLocal(positions[bodies[prev].m_islandIndex].c)
+            d[i].set(positions!![bodies[next].islandIndex].c)
+            d[i].subLocal(positions[bodies[prev].islandIndex].c)
         }
 
         if (step.step!!.warmStarting) {
@@ -177,8 +177,8 @@ class ConstantVolumeJoint(
             // Settings.maxLinearCorrection);
             // m_impulse = lambda;
             for (i in bodies.indices) {
-                velocities!![bodies[i].m_islandIndex].v.x += bodies[i].m_invMass * d[i].y * .5f * m_impulse
-                velocities!![bodies[i].m_islandIndex].v.y += bodies[i].m_invMass * -d[i].x * .5f * m_impulse
+                velocities!![bodies[i].islandIndex].v.x += bodies[i].m_invMass * d[i].y * .5f * m_impulse
+                velocities!![bodies[i].islandIndex].v.y += bodies[i].m_invMass * -d[i].x * .5f * m_impulse
             }
         } else {
             m_impulse = 0.0f
@@ -200,10 +200,10 @@ class ConstantVolumeJoint(
         for (i in bodies.indices) {
             val prev = if (i == 0) bodies.size - 1 else i - 1
             val next = if (i == bodies.size - 1) 0 else i + 1
-            d[i].set(positions!![bodies[next].m_islandIndex].c)
-            d[i].subLocal(positions[bodies[prev].m_islandIndex].c)
+            d[i].set(positions!![bodies[next].islandIndex].c)
+            d[i].subLocal(positions[bodies[prev].islandIndex].c)
             dotMassSum += d[i].lengthSquared() / bodies[i].m_mass
-            crossMassSum += Vec2.cross(velocities!![bodies[i].m_islandIndex].v, d[i])
+            crossMassSum += Vec2.cross(velocities!![bodies[i].islandIndex].v, d[i])
         }
         val lambda = -2.0f * crossMassSum / dotMassSum
         // System.out.println(crossMassSum + " " +dotMassSum);
@@ -212,8 +212,8 @@ class ConstantVolumeJoint(
         m_impulse += lambda
         // System.out.println(m_impulse);
         for (i in bodies.indices) {
-            velocities!![bodies[i].m_islandIndex].v.x += bodies[i].m_invMass * d[i].y * .5f * lambda
-            velocities!![bodies[i].m_islandIndex].v.y += bodies[i].m_invMass * -d[i].x * .5f * lambda
+            velocities!![bodies[i].islandIndex].v.x += bodies[i].m_invMass * d[i].y * .5f * lambda
+            velocities!![bodies[i].islandIndex].v.y += bodies[i].m_invMass * -d[i].x * .5f * lambda
         }
     }
 

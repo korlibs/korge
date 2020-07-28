@@ -103,9 +103,9 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
 
     val jointAngleRadians: Float
         get() {
-            val b1 = m_bodyA
-            val b2 = m_bodyB
-            return b2!!.m_sweep.a - b1!!.m_sweep.a - m_referenceAngleRadians
+            val b1 = bodyA
+            val b2 = bodyB
+            return b2!!.sweep.a - b1!!.sweep.a - m_referenceAngleRadians
         }
 
     val jointAngleDegrees: Float get() = jointAngleRadians * MathUtils.RAD2DEG
@@ -114,24 +114,24 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
 
     val jointSpeed: Float
         get() {
-            val b1 = m_bodyA
-            val b2 = m_bodyB
-            return b2!!.m_angularVelocity - b1!!.m_angularVelocity
+            val b1 = bodyA
+            val b2 = bodyB
+            return b2!!._angularVelocity - b1!!._angularVelocity
         }
 
     var motorSpeed: Float
         get() = m_motorSpeed
         set(speed) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_motorSpeed = speed
         }
 
     var maxMotorTorque: Float
         get() = m_maxMotorTorque
         set(torque) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_maxMotorTorque = torque
         }
 
@@ -152,14 +152,14 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
     }
 
     override fun initVelocityConstraints(data: SolverData) {
-        m_indexA = m_bodyA!!.m_islandIndex
-        m_indexB = m_bodyB!!.m_islandIndex
-        m_localCenterA.set(m_bodyA!!.m_sweep.localCenter)
-        m_localCenterB.set(m_bodyB!!.m_sweep.localCenter)
-        m_invMassA = m_bodyA!!.m_invMass
-        m_invMassB = m_bodyB!!.m_invMass
-        m_invIA = m_bodyA!!.m_invI
-        m_invIB = m_bodyB!!.m_invI
+        m_indexA = bodyA!!.islandIndex
+        m_indexB = bodyB!!.islandIndex
+        m_localCenterA.set(bodyA!!.sweep.localCenter)
+        m_localCenterB.set(bodyB!!.sweep.localCenter)
+        m_invMassA = bodyA!!.m_invMass
+        m_invMassB = bodyB!!.m_invMass
+        m_invIA = bodyA!!.m_invI
+        m_invIB = bodyB!!.m_invI
 
         // Vec2 cA = data.positions[m_indexA].c;
         val aA = data.positions!![m_indexA].a
@@ -491,11 +491,11 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
     }
 
     override fun getAnchorA(argOut: Vec2) {
-        m_bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
+        bodyA!!.getWorldPointToOut(m_localAnchorA, argOut)
     }
 
     override fun getAnchorB(argOut: Vec2) {
-        m_bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
+        bodyB!!.getWorldPointToOut(m_localAnchorB, argOut)
     }
 
     override fun getReactionForce(inv_dt: Float, argOut: Vec2) {
@@ -507,8 +507,8 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
     }
 
     fun enableMotor(flag: Boolean) {
-        m_bodyA!!.isAwake = true
-        m_bodyB!!.isAwake = true
+        bodyA!!.isAwake = true
+        bodyB!!.isAwake = true
         isMotorEnabled = flag
     }
 
@@ -518,8 +518,8 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
 
     fun enableLimit(flag: Boolean) {
         if (flag != isLimitEnabled) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             isLimitEnabled = flag
             m_impulse.z = 0.0f
         }
@@ -528,8 +528,8 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
     fun setLimits(lower: Float, upper: Float) {
         assert(lower <= upper)
         if (lower != lowerLimit || upper != upperLimit) {
-            m_bodyA!!.isAwake = true
-            m_bodyB!!.isAwake = true
+            bodyA!!.isAwake = true
+            bodyB!!.isAwake = true
             m_impulse.z = 0.0f
             lowerLimit = lower
             upperLimit = upper

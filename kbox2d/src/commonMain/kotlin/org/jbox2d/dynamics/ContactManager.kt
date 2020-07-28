@@ -28,7 +28,6 @@ import org.jbox2d.callbacks.ContactListener
 import org.jbox2d.callbacks.PairCallback
 import org.jbox2d.collision.broadphase.BroadPhase
 import org.jbox2d.dynamics.contacts.Contact
-import org.jbox2d.dynamics.contacts.ContactEdge
 
 /**
  * Delegate of World.
@@ -247,8 +246,8 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
                 c.m_flags = c.m_flags and Contact.FILTER_FLAG.inv()
             }
 
-            val activeA = bodyA!!.isAwake && bodyA.m_type !== BodyType.STATIC
-            val activeB = bodyB!!.isAwake && bodyB.m_type !== BodyType.STATIC
+            val activeA = bodyA!!.isAwake && bodyA._type !== BodyType.STATIC
+            val activeB = bodyB!!.isAwake && bodyB._type !== BodyType.STATIC
 
             // At least one body must be awake and it must be dynamic or kinematic.
             if (activeA == false && activeB == false) {
