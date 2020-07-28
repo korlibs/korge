@@ -3,6 +3,23 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import java.net.URLClassLoader
 import java.io.File
 
+buildscript {
+    val kotlinVersion: String by project
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven { url = uri("https://plugins.gradle.org/m2/") }
+        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+    }
+    dependencies {
+        //classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
+        //classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
+        classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
+    }
+}
+
 plugins {
 	java
 	//kotlin("multiplatform") version "1.4-M2"
@@ -13,7 +30,10 @@ plugins {
 
 allprojects {
 	repositories {
+        mavenLocal()
 		mavenCentral()
+        jcenter()
+        google()
 		maven("https://dl.bintray.com/kotlin/kotlin-eap")
 		maven("https://kotlin.bintray.com/kotlinx")
 	}
@@ -24,7 +44,6 @@ val isKotlinDev = kotlinVersion.contains("-release")
 val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M") || kotlinVersion.contains("-rc")
 
 allprojects {
-
 	repositories {
 		mavenCentral()
 		jcenter()
@@ -50,125 +69,127 @@ kotlin {
 }
 
 subprojects {
-	apply(plugin = "kotlin-multiplatform")
-	apply(plugin = "maven-publish")
+    if (project.name != "korge-intellij-plugin") {
+        apply(plugin = "kotlin-multiplatform")
+        apply(plugin = "maven-publish")
 
-	group = "com.soywiz.korlibs.${project.name}"
+        group = "com.soywiz.korlibs.${project.name}"
 
-	kotlin {
-		jvm {
-			compilations.all {
-				kotlinOptions.jvmTarget = "1.8"
-			}
-		}
-		js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
-			browser {
-				testTask {
-					useKarma {
-						useChromeHeadless()
-					}
-				}
-			}
-		}
-		if (doEnableKotlinNative) {
-			linuxX64()
-            mingwX64()
-            macosX64()
-		}
-
-		// common
-		//    js
-		//    concurrent // non-js
-		//      jvmAndroid
-		//         android
-		//         jvm
-		//      native
-		//         kotlin-native
-		//    nonNative: [js, jvmAndroid]
-		sourceSets {
-
-            data class PairSourceSet(val main: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet, val test: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet) {
-                fun get(test: Boolean) = if (test) this.test else this.main
-                fun dependsOn(other: PairSourceSet) {
-                    main.dependsOn(other.main)
-                    test.dependsOn(other.test)
+        kotlin {
+            jvm {
+                compilations.all {
+                    kotlinOptions.jvmTarget = "1.8"
                 }
             }
-
-            fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
-                val main = maybeCreate("${name}Main").apply { block(false) }
-                val test = maybeCreate("${name}Test").apply { block(true) }
-                return PairSourceSet(main, test).also {
-                    for (dependency in dependencies) {
-                        it.dependsOn(dependency)
+            js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+                browser {
+                    testTask {
+                        useKarma {
+                            useChromeHeadless()
+                        }
                     }
                 }
             }
+            if (doEnableKotlinNative) {
+                linuxX64()
+                mingwX64()
+                macosX64()
+            }
 
-            val common = createPairSourceSet("common") { test ->
-                dependencies {
-                    if (test) {
-                        implementation(kotlin("test-common"))
-                        implementation(kotlin("test-annotations-common"))
-                    } else {
-                        implementation(kotlin("stdlib-common"))
+            // common
+            //    js
+            //    concurrent // non-js
+            //      jvmAndroid
+            //         android
+            //         jvm
+            //      native
+            //         kotlin-native
+            //    nonNative: [js, jvmAndroid]
+            sourceSets {
+
+                data class PairSourceSet(val main: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet, val test: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet) {
+                    fun get(test: Boolean) = if (test) this.test else this.main
+                    fun dependsOn(other: PairSourceSet) {
+                        main.dependsOn(other.main)
+                        test.dependsOn(other.test)
+                    }
+                }
+
+                fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+                    val main = maybeCreate("${name}Main").apply { block(false) }
+                    val test = maybeCreate("${name}Test").apply { block(true) }
+                    return PairSourceSet(main, test).also {
+                        for (dependency in dependencies) {
+                            it.dependsOn(dependency)
+                        }
+                    }
+                }
+
+                val common = createPairSourceSet("common") { test ->
+                    dependencies {
+                        if (test) {
+                            implementation(kotlin("test-common"))
+                            implementation(kotlin("test-annotations-common"))
+                        } else {
+                            implementation(kotlin("stdlib-common"))
+                        }
+                    }
+                }
+
+                val concurrent = createPairSourceSet("concurrent", common)
+                val nonNativeCommon = createPairSourceSet("nonNativeCommon", common)
+                val nonJs = createPairSourceSet("nonJs", common)
+                val nonJvm = createPairSourceSet("nonJvm", common)
+                val jvmAndroid = createPairSourceSet("jvmAndroid", common)
+
+                // Default source set for JVM-specific sources and dependencies:
+                // JVM-specific tests and their dependencies:
+                val jvm = createPairSourceSet("jvm", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
+                    dependencies {
+                        if (test) {
+                            implementation(kotlin("test-junit"))
+                        } else {
+                            implementation(kotlin("stdlib-jdk8"))
+                        }
+                    }
+                }
+
+                val js = createPairSourceSet("js", common, nonNativeCommon, nonJvm) { test ->
+                    dependencies {
+                        if (test) {
+                            implementation(kotlin("test-js"))
+                        } else {
+                            implementation(kotlin("stdlib-js"))
+                        }
+                    }
+                }
+
+                if (doEnableKotlinNative) {
+                    val nativeCommon = createPairSourceSet("nativeCommon", concurrent)
+                    val nativeDesktop = createPairSourceSet("nativeDesktop", concurrent)
+                    val nativePosix = createPairSourceSet("nativePosix", nativeCommon)
+                    val nativePosixNonApple = createPairSourceSet("nativePosixNonApple", nativePosix)
+                    val nativePosixApple = createPairSourceSet("nativePosixApple", nativePosix)
+
+                    for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
+                        val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
+                        if (target.isDesktop) {
+                            native.dependsOn(nativeDesktop)
+                        }
+                        if (target.isLinux || target.isMacos) {
+                            native.dependsOn(nativePosix)
+                        }
+                        if (target.isLinux) {
+                            native.dependsOn(nativePosixNonApple)
+                        }
+                        if (target.isMacos) {
+                            native.dependsOn(nativePosixApple)
+                        }
                     }
                 }
             }
-
-            val concurrent = createPairSourceSet("concurrent", common)
-            val nonNativeCommon = createPairSourceSet("nonNativeCommon", common)
-            val nonJs = createPairSourceSet("nonJs", common)
-            val nonJvm = createPairSourceSet("nonJvm", common)
-            val jvmAndroid = createPairSourceSet("jvmAndroid", common)
-
-            // Default source set for JVM-specific sources and dependencies:
-            // JVM-specific tests and their dependencies:
-            val jvm = createPairSourceSet("jvm", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
-                dependencies {
-                    if (test) {
-                        implementation(kotlin("test-junit"))
-                    } else {
-                        implementation(kotlin("stdlib-jdk8"))
-                    }
-                }
-            }
-
-            val js = createPairSourceSet("js", common, nonNativeCommon, nonJvm) { test ->
-                dependencies {
-                    if (test) {
-                        implementation(kotlin("test-js"))
-                    } else {
-                        implementation(kotlin("stdlib-js"))
-                    }
-                }
-            }
-
-			if (doEnableKotlinNative) {
-                val nativeCommon = createPairSourceSet("nativeCommon", concurrent)
-                val nativeDesktop = createPairSourceSet("nativeDesktop", concurrent)
-                val nativePosix = createPairSourceSet("nativePosix", nativeCommon)
-                val nativePosixNonApple = createPairSourceSet("nativePosixNonApple", nativePosix)
-                val nativePosixApple = createPairSourceSet("nativePosixApple", nativePosix)
-
-                for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
-                    val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
-                    if (target.isDesktop) {
-                        native.dependsOn(nativeDesktop)
-                    }
-                    if (target.isLinux || target.isMacos) {
-                        native.dependsOn(nativePosix)
-                    }
-                    if (target.isLinux) {
-                        native.dependsOn(nativePosixNonApple)
-                    }
-                    if (target.isMacos) {
-                        native.dependsOn(nativePosixApple)
-                    }
-                }
-			}
-		}
-	}
+        }
+    }
 }
 
 

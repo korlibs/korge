@@ -1,0 +1,14 @@
+#!/bin/bash
+touch $PWD/local.linux.properties
+HOME=`echo ~` docker run --rm -it \
+	-v "$PWD:/work:delegated" \
+	-v "$PWD/local.linux.properties:/work/local.properties:delegated" \
+	-v "$HOME/.m2:/home/user/.m2:delegated" \
+	-v "$HOME/.gradle:/home/user/.gradle-host:cached" \
+	-v "gradlew_gradle_linux:/home/user/.gradle:delegated" \
+	-v "gradlew_konan_linux:/home/user/.konan:delegated" \
+	soywiz/kotlin-native-win:android \
+	/bin/bash -c "cp -f /home/user/.gradle-host/gradle.properties /home/user/.gradle/gradle.properties 2> /dev/null; ./gradlew --no-daemon $*"
+
+#	-e BINTRAY_API_KEY="$BINTRAY_API_KEY" \
+#	-e BINTRAY_USER="$BINTRAY_USER" \

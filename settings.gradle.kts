@@ -47,6 +47,7 @@ include(":korge-admob")
 include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
+include(":korge-intellij-plugin")
 
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
     include(":samples:${sample.name}")

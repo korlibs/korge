@@ -1,0 +1,13 @@
+The KorGE IntelliJ plugin license:
+----------------------------------
+
+This part of the intellij plugin project is free and open source,
+but we reserve the right to have a private fork adding new features
+including the ones available here only available to the sponsors
+of the project temporarily or permanently but with the possibility
+to reach the public version eventually.
+
+If you contribute to this project you accept that your contributions
+will be available in that private fork too that will be the plugin
+published into the IntelliJ Plugin Store but your contributions will
+be free to everyone.

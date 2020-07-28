@@ -1,0 +1,195 @@
+<idea-plugin>
+	<!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
+	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+	<idea-version since-build="193.825" />
+	<id>com.soywiz.korge.korge-intellij-plugin</id>
+
+	<name>Korge</name>
+	<version>1.12.2.2</version>
+	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
+
+	<description><![CDATA[
+	Supports the Korge Game Engine, providing a project wizard, and tools.
+	]]></description>
+
+	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>1.12.2.2</h3>
+		<ul>
+			<li>Updated versions: Korge 1.12.2.2, Kotlin 1.3.72.</li>
+		</ul>
+		<h3>1.11.3.0</h3>
+		<ul>
+			<li>Updated versions: Korge 1.11.3.0, Kotlin 1.3.71.</li>
+			<li>Partial/Incomplete preview of tilemap editor.</li>
+		</ul>
+		<h3>1.10.2.0</h3>
+		<ul>
+			<li>Updated versions: Korge 1.10.2.0, Kotlin 1.3.70, Gradle 6.2.2, Kotlin DSL.</li>
+			<li>Adobe Photoshop PSD and KRA preview.</li>
+			<li>Fixed an issue with registered extension types.</li>
+		</ul>
+		<h3>1.5.6.1</h3>
+		<ul>
+			<li>Initial rudimentary tilemap viewer (can't edit yet).</li>
+			<li>Mark .tsx files as XML tilesets to prevent be marked as errors.</li>
+		</ul>
+		<h3>1.5.0e</h3>
+		<ul>
+			<li>Supports previewing Bitmap, BmpSlice, Image and Context2d.Drawable when debugging with the JVM.</li>
+		</ul>
+		<h3>1.5.0d</h3>
+		<ul>
+			<li>New project wizard using an updatable template.</li>
+			<li>Do not how Create New Korge Scene on non-Korge projects.</li>
+			<li>Bump korge to 1.5.0d.</li>
+		</ul>
+		<h3>1.4.3</h3>
+		<ul>
+			<li>Fixed compatibility with the IntelliJ platform due to dependency on Java plugin.</li>
+			<li>Bump versions.</li>
+		</ul>
+		<h3>1.4.2</h3>
+		<ul>
+			<li>Fixed compatibility with the IntelliJ platform due to dependency on Java plugin.</li>
+			<li>Fixed version scheme to match the one from Korge.</li>
+		</ul>
+		<h3>1.3.40c</h3>
+		<ul>
+			<li>Updated Korge to 1.3.40c.</li>
+			<li>New wizard.</li>
+		</ul>
+		<h3>0.11.0</h3>
+		<ul>
+			<li>Updated Korge to 0.11.0.</li>
+		</ul>
+		<h3>0.10.0</h3>
+		<ul>
+			<li>Updated Korge to 0.10.0.</li>
+			<li>Fixed lip images</li>
+			<li>Allow generating resources even when genresources folder doesn't exists</li>
+		</ul>
+		<h3>0.9.1</h3>
+		<ul>
+			<li>Fixed context-loss when previewing files using Korge.</li>
+			<li>Added lots more peview files</li>
+		</ul>
+		<h3>0.8.5</h3>
+		<ul>
+			<li>First version. Buggy. Uncomplete.</li>
+		</ul>
+		]]>
+	</change-notes>
+
+	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+	<!-- uncomment to enable plugin in all products
+    -->
+	<!--
+	<depends>com.intellij.modules.lang</depends>
+	<depends>org.jetbrains.kotlin</depends>
+	<depends>com.intellij.gradle</depends>
+	<depends>org.jetbrains.idea.maven</depends>
+	-->
+	<depends>org.jetbrains.plugins.gradle</depends>
+	<depends>com.intellij.modules.java</depends>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<!-- Add your extensions here -->
+		<stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
+        <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
+		<fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeBothFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeHiddenFileEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.tiled.TiledMapEditorProvider"/>
+		<fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeImageEditorProvider"/>
+		<!--
+		<fileTypeDetector implementation="com.soywiz.korge.intellij.KorgeFileTypeDetector"></fileTypeDetector>
+		<fileTypeRegistrator implementation="com.soywiz.korge.intellij.KorgeFileTypeRegistrator"></fileTypeRegistrator>
+		<fileTypeFactory implementation="com.soywiz.korge.intellij.KorgeFileTypeFactory"/>
+		-->
+
+		<fileType name="KORGE_ANI"   implementationClass="com.soywiz.korge.intellij.filetype.KorgeAniFileType"   fieldName="INSTANCE" language="KORGE_ANI"   extensions="swf;ani"    />
+		<fileType name="KORGE_AUDIO" implementationClass="com.soywiz.korge.intellij.filetype.KorgeAudioFileType" fieldName="INSTANCE" language="KORGE_AUDIO" extensions="wav;mp3;ogg"/>
+		<fileType name="KORGE_TMX"   implementationClass="com.soywiz.korge.intellij.filetype.TmxFileType"        fieldName="INSTANCE" language="KORGE_TMX"   extensions="tmx"        />
+		<fileType name="KORGE_TSX"   implementationClass="com.soywiz.korge.intellij.filetype.TsxFileType"        fieldName="INSTANCE" language="KORGE_TSX"   extensions="tsx"        />
+		<fileType name="KORGE_PEX"   implementationClass="com.soywiz.korge.intellij.filetype.PexFileType"        fieldName="INSTANCE" language="KORGE_PEX"   extensions="pex"        />
+		<fileType name="KORGE_SCML"  implementationClass="com.soywiz.korge.intellij.filetype.ScmlFileType"       fieldName="INSTANCE" language="KORGE_SCML"  extensions="scml"       />
+		<fileType name="KORGE_SCON"  implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"       fieldName="INSTANCE" language="KORGE_SCON"  extensions="scon"       />
+		<fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
+
+		<fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
+
+        <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.TmxParserDefinition" language="KORGE_TMX" />
+
+		<!-- Completions -->
+		<completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>
+
+		<!--
+		<framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
+		-->
+		<moduleType id="KORGE" implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType" />
+
+		<internalFileTemplate name="KorgeScene"/>
+
+		<applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
+
+		<debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBitmapDebugNodeRenderer" />
+
+		<referenceInjector implementation="com.soywiz.korge.intellij.references.ResourceReferenceInjector" />
+
+	</extensions>
+
+	<actions>
+		<group id="Korge" popup="true" text="_Korge" icon="/com/soywiz/korge/intellij/icon/korge.png">
+			<add-to-group group-id="ToolsMenu" anchor="last"/>
+			<action class="com.soywiz.korge.intellij.KorgeBuildResourcesAction" text="_Build Resources Now"
+					icon="/com/soywiz/korge/intellij/icon/korge.png" id="KorgeBuildResourcesAction">
+			</action>
+
+			<separator/>
+
+			<action class="com.soywiz.korge.intellij.actions.KorgeSponsorAction" text="_Sponsor"
+					icon="/com/soywiz/korge/intellij/icon/sponsor.png" id="KorgeSponsorAction">
+			</action>
+			<action class="com.soywiz.korge.intellij.actions.KorgeDocumentationAction" text="_Documentation"
+					icon="/com/soywiz/korge/intellij/icon/help.png" id="KorgeDocumentationAction">
+			</action>
+		</group>
+
+		<group id="KorgeNew">
+			<add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
+
+			<separator/>
+
+			<action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
+			<action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
+
+			<separator/>
+		</group>
+
+		<!-- Not necessary, since we have ...Show bitmap -->
+		<!--
+		<group id="Korge.JavaDebuggerActions">
+			<action id="Debugger.ShowKorimBitmap" class="com.soywiz.korge.intellij.debug.actions.ShowKorimBitmapAction" text="Show _Bitmap" icon="/com/soywiz/korge/intellij/icon/korge.png">
+				<keyboard-shortcut first-keystroke="control shift v" keymap="$default"/>
+				<mouse-shortcut keymap="$default" keystroke="alt button1" />
+				<mouse-shortcut keymap="$default" keystroke="doubleClick button1"  />
+				<add-to-group group-id="XDebugger.ValueGroup" anchor="last"/>
+				<add-to-group group-id="JavaDebuggerActions" anchor="last"/>
+			</action>
+		</group>
+		-->
+
+	</actions>
+
+
+	<!-- Do not use so plugin can be loaded without IDE restart -->
+	<!--
+	<application-components>
+		<component>
+			<implementation-class>com.soywiz.korge.intellij.KorgeInitializerComponent</implementation-class>
+		</component>
+	</application-components>
+	-->
+
+</idea-plugin>
