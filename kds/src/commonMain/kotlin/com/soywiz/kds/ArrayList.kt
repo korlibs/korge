@@ -10,7 +10,7 @@ import com.soywiz.kds.internal.*
  * Int growable ArrayList without boxing.
  */
 @Suppress("UNCHECKED_CAST")
-class IntArrayList(capacity: Int = 7) : List<Int> {
+class IntArrayList(capacity: Int = 7) : Collection<Int> {
     companion object
     var data: IntArray = IntArray(capacity) as IntArray; private set
     internal val capacity: Int get() = data.size
@@ -57,8 +57,7 @@ class IntArrayList(capacity: Int = 7) : List<Int> {
     fun add(values: IntArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Int>) = run { for (v in values) add(v) }
 
-    @Deprecated("Try to use getAt instead to prevent boxing", ReplaceWith("getAt(index)"))
-    override operator fun get(index: Int): Int = getAt(index)
+    operator fun get(index: Int): Int = getAt(index)
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Int = data[index]
@@ -139,12 +138,12 @@ class IntArrayList(capacity: Int = 7) : List<Int> {
 
     // List interface
 
-    override fun indexOf(element: Int): Int = indexOf(element, 0, size)
-    override fun lastIndexOf(element: Int): Int = lastIndexOf(element, 0, size)
+    fun indexOf(element: Int): Int = indexOf(element, 0, size)
+    fun lastIndexOf(element: Int): Int = lastIndexOf(element, 0, size)
 
-    override fun listIterator(): ListIterator<Int> = listIterator(0)
-    override fun listIterator(index: Int): ListIterator<Int> = data.take(length).listIterator(index)
-    override fun subList(fromIndex: Int, toIndex: Int): List<Int> = data.asList().subList(fromIndex, toIndex)
+    fun listIterator(): ListIterator<Int> = listIterator(0)
+    fun listIterator(index: Int): ListIterator<Int> = data.take(length).listIterator(index)
+    fun subList(fromIndex: Int, toIndex: Int): List<Int> = data.asList().subList(fromIndex, toIndex)
 
     // Data
     override fun hashCode(): Int = data.contentHashCode(0, size)
@@ -173,7 +172,7 @@ fun intArrayListOf(vararg values: Int) = IntArrayList(*values)
  * Double growable ArrayList without boxing.
  */
 @Suppress("UNCHECKED_CAST")
-class DoubleArrayList(capacity: Int = 7) : List<Double> {
+class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
     companion object
     var data: DoubleArray = DoubleArray(capacity) as DoubleArray; private set
     internal val capacity: Int get() = data.size
@@ -220,8 +219,7 @@ class DoubleArrayList(capacity: Int = 7) : List<Double> {
     fun add(values: DoubleArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Double>) = run { for (v in values) add(v) }
 
-    @Deprecated("Try to use getAt instead to prevent boxing", ReplaceWith("getAt(index)"))
-    override operator fun get(index: Int): Double = getAt(index)
+    operator fun get(index: Int): Double = getAt(index)
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Double = data[index]
@@ -302,12 +300,12 @@ class DoubleArrayList(capacity: Int = 7) : List<Double> {
 
     // List interface
 
-    override fun indexOf(element: Double): Int = indexOf(element, 0, size)
-    override fun lastIndexOf(element: Double): Int = lastIndexOf(element, 0, size)
+    fun indexOf(element: Double): Int = indexOf(element, 0, size)
+    fun lastIndexOf(element: Double): Int = lastIndexOf(element, 0, size)
 
-    override fun listIterator(): ListIterator<Double> = listIterator(0)
-    override fun listIterator(index: Int): ListIterator<Double> = data.take(length).listIterator(index)
-    override fun subList(fromIndex: Int, toIndex: Int): List<Double> = data.asList().subList(fromIndex, toIndex)
+    fun listIterator(): ListIterator<Double> = listIterator(0)
+    fun listIterator(index: Int): ListIterator<Double> = data.take(length).listIterator(index)
+    fun subList(fromIndex: Int, toIndex: Int): List<Double> = data.asList().subList(fromIndex, toIndex)
 
     // Data
     override fun hashCode(): Int = data.contentHashCode(0, size)
@@ -336,7 +334,7 @@ fun doubleArrayListOf(vararg values: Double) = DoubleArrayList(*values)
  * Float growable ArrayList without boxing.
  */
 @Suppress("UNCHECKED_CAST")
-class FloatArrayList(capacity: Int = 7) : List<Float> {
+class FloatArrayList(capacity: Int = 7) : Collection<Float> {
     companion object
     var data: FloatArray = FloatArray(capacity) as FloatArray; private set
     internal val capacity: Int get() = data.size
@@ -383,8 +381,7 @@ class FloatArrayList(capacity: Int = 7) : List<Float> {
     fun add(values: FloatArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Float>) = run { for (v in values) add(v) }
 
-    @Deprecated("Try to use getAt instead to prevent boxing", ReplaceWith("getAt(index)"))
-    override operator fun get(index: Int): Float = getAt(index)
+    operator fun get(index: Int): Float = getAt(index)
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Float = data[index]
@@ -465,12 +462,12 @@ class FloatArrayList(capacity: Int = 7) : List<Float> {
 
     // List interface
 
-    override fun indexOf(element: Float): Int = indexOf(element, 0, size)
-    override fun lastIndexOf(element: Float): Int = lastIndexOf(element, 0, size)
+    fun indexOf(element: Float): Int = indexOf(element, 0, size)
+    fun lastIndexOf(element: Float): Int = lastIndexOf(element, 0, size)
 
-    override fun listIterator(): ListIterator<Float> = listIterator(0)
-    override fun listIterator(index: Int): ListIterator<Float> = data.take(length).listIterator(index)
-    override fun subList(fromIndex: Int, toIndex: Int): List<Float> = data.asList().subList(fromIndex, toIndex)
+    fun listIterator(): ListIterator<Float> = listIterator(0)
+    fun listIterator(index: Int): ListIterator<Float> = data.take(length).listIterator(index)
+    fun subList(fromIndex: Int, toIndex: Int): List<Float> = data.asList().subList(fromIndex, toIndex)
 
     // Data
     override fun hashCode(): Int = data.contentHashCode(0, size)
