@@ -22,7 +22,6 @@ for (file in rootDir.listFiles()) {
 }
 */
 include(":kbox2d")
-include(":kbox2d-samples")
 include(":kbignum")
 include(":klock")
 include(":klogger")

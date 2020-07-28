@@ -12,23 +12,22 @@ import org.jbox2d.userdata.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
     box2dWorldView(gravityY = 100.0) {
-        solidRect(20, 20, Colors.RED).position(100, 100).centered.rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
-        solidRect(20, 20, Colors.RED).position(109, 75).centered.registerBody(dynamic = true)
-        solidRect(20, 20, Colors.RED).position(93, 50).centered.rotation((-15).degrees).registerBody(dynamic = true)
-        solidRect(400, 100, Colors.WHITE).position(100, 300).centered.registerBody(dynamic = false, friction = 0.2)
+        solidRect(20, 20, Colors.RED).position(100, 100).rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
+        solidRect(20, 20, Colors.RED).position(109, 75).registerBody(dynamic = true)
+        solidRect(20, 20, Colors.RED).position(93, 50).rotation((-15).degrees).registerBody(dynamic = true)
+        solidRect(400, 100, Colors.WHITE).position(0, 300).registerBody(dynamic = false, friction = 0.2)
     }
 
     val world2 = box2dWorldView(gravityY = 100.0) {
         position(400, 0)
-        solidRect(20, 20, Colors.RED).position(150, 100).centered.rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
-        solidRect(20, 20, Colors.RED).position(109, 75).centered.registerBody(dynamic = true)
-        solidRect(20, 20, Colors.RED).position(93, 50).centered.rotation((-15).degrees).registerBody(dynamic = true)
-        solidRect(400, 100, Colors.WHITE).position(100, 300).centered.registerBody(dynamic = false, friction = 0.2)
+        solidRect(20, 20, Colors.RED).position(150, 100).rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
+        solidRect(20, 20, Colors.RED).position(109, 75).registerBody(dynamic = true)
+        solidRect(20, 20, Colors.RED).position(93, 50).rotation((-15).degrees).registerBody(dynamic = true)
+        solidRect(400, 100, Colors.WHITE).position(0, 300).registerBody(dynamic = false, friction = 0.2)
     }
 
     world2.apply {
-        solidRect(20, 20, Colors.RED).position(150, 100).centered.rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
-
+        solidRect(20, 20, Colors.RED).position(150, 100).rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
     }
 }
 
@@ -54,7 +53,7 @@ class NewWorldView(override val world: World, val velocityIterations: Int, val p
     }
 
     fun <T : View> T.registerBody(
-        density: Number = 0.5f,
+        density: Number = 0.0f,
         friction: Number = 0.2f,
         dynamic: Boolean = true
     ): T = this.apply {
@@ -220,6 +219,17 @@ inline fun Body.fixture(callback: FixtureDef.() -> Unit): Body = this.also { cre
 /**
  * Creates a [PolygonShape] as a box with the specified [width] and [height]
  */
-inline fun BoxShape(width: Number, height: Number) = PolygonShape().apply { setAsBox(width.toFloat() / 2, height.toFloat() / 2) }
+inline fun BoxShape(width: Number, height: Number) = PolygonShape().apply {
+    count = 4
+    vertices[0].set(0, 0)
+    vertices[1].set(width, 0)
+    vertices[2].set(width, height)
+    vertices[3].set(0, height)
+    normals[0].set(0.0f, -1.0f)
+    normals[1].set(1.0f, 0.0f)
+    normals[2].set(0.0f, 1.0f)
+    normals[3].set(-1.0f, 0.0f)
+    centroid.setZero()
+}
 
 inline fun BodyDef.setPosition(x: Number, y: Number) = position.set(x.toFloat(), y.toFloat())

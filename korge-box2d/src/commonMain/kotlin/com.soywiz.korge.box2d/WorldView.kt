@@ -128,7 +128,6 @@ class WorldView(
 
     /** Shortcut to create a simple [Body] to this [World] with the specified properties */
     inline fun <T : View> T.registerBodyWithFixture(
-        angle: Angle = 0.degrees,
         angularVelocity: Number = 0.0,
         linearVelocityX: Number = 0.0,
         linearVelocityY: Number = 0.0,
@@ -147,7 +146,7 @@ class WorldView(
     ): T {
         val body = createBody {
             this.type = type
-            this.angle = angle
+            this.angle = rotation
             this.angularVelocity = angularVelocity.toFloat()
             this.position.set(x.toFloat(), y.toFloat())
             this.linearVelocity.set(linearVelocityX.toFloat(), linearVelocityY.toFloat())
