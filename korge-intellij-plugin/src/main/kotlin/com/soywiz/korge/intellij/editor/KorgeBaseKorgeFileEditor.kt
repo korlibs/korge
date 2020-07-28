@@ -15,6 +15,7 @@ import com.soywiz.korgw.awt.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.beans.*
@@ -37,13 +38,15 @@ open class KorgeBaseKorgeFileEditor(
 	var ag: AG? = null
 	var views: Views? = null
     var gameWindow: GameWindow? = null
+    var canvas: GLCanvas? = null
 
 	val component by lazy {
 		componentsCreated++
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
-        val canvas = GLCanvas()
-        canvas.minimumSize = Dimension(64, 64)
+        canvas = GLCanvas()
+        val canvas = canvas!!
+        canvas?.minimumSize = Dimension(64, 64)
         panel.add(canvas)
         println("[A] ${Thread.currentThread()}")
         Thread {
@@ -64,7 +67,7 @@ open class KorgeBaseKorgeFileEditor(
                 println("[H] ${Thread.currentThread()}")
                  */
                 gameWindow = GLCanvasGameWindow(canvas)
-                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!) {
+                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!, scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
                     println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
                     val container = sceneContainer(views)
@@ -92,6 +95,7 @@ open class KorgeBaseKorgeFileEditor(
 		ag = null
 		disposed = true
         gameWindow?.close()
+        canvas?.close()
 		System.gc()
 	}
 

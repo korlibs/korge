@@ -98,4 +98,10 @@ class X11OpenglContext(val d: X11.Display?, val w: X11.Drawable?, val scr: Int, 
         val drawable = X.glXGetCurrentDrawable()
         getSwapInterval()?.callback(dpy, drawable, value)
     }
+
+    override fun dispose() {
+        if (glc != null) {
+            X.glXDestroyContext(d, glc)
+        }
+    }
 }

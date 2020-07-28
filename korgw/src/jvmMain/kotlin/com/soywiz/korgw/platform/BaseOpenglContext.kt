@@ -1,6 +1,8 @@
 package com.soywiz.korgw.platform
 
-interface BaseOpenglContext {
+import com.soywiz.korio.lang.*
+
+interface BaseOpenglContext : Disposable {
     val scaleFactor: Double get() = 1.0
     fun useContext(obj: Any?, action: Runnable) {
         makeCurrent()
@@ -20,6 +22,8 @@ interface BaseOpenglContext {
     fun supportsSwapInterval(): Boolean = false
     fun swapInterval(value: Int) {
     }
+
+    override fun dispose() = Unit
 }
 
 object DummyOpenglContext : BaseOpenglContext {

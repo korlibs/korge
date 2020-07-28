@@ -615,6 +615,7 @@ internal interface GL : INativeGL, Library {
     fun glXChooseVisual(display: X11.Display?, screen: Int, attribList: IntArray): XVisualInfo?
     fun glXChooseVisual(display: X11.Display?, screen: Int, attribList: Pointer): XVisualInfo?
     fun glXCreateContext(display: X11.Display?, vis: XVisualInfo?, shareList: GLXContext?, direct: Boolean): GLXContext?
+    fun glXDestroyContext(display: X11.Display?, context: GLXContext?): Unit
     fun glXMakeCurrent(display: X11.Display?, drawable: X11.Drawable?, ctx: GLXContext?): Boolean
     fun glXMakeContextCurrent(display: X11.Display?, draw: X11.Drawable?, read: X11.Drawable?, ctx: GLXContext?): Boolean
     fun glXSwapBuffers(display: X11.Display?, drawable: X11.Drawable?)
