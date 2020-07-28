@@ -20,7 +20,7 @@ class TweenComponent(
         override val view: View,
         private val vs: List<V2<*>>,
         val time: HRTimeSpan = HRTimeSpan.NIL,
-        val easing: Easing = Easing.LINEAR,
+        val easing: Easing = DEFAULT_EASING,
         val callback: (Double) -> Unit,
         val c: CancellableContinuation<Unit>
 ) : UpdateComponentV2 {
@@ -93,8 +93,8 @@ private val emptyCallback: (Double) -> Unit = {}
 
 suspend fun View?.tween(
 	vararg vs: V2<*>,
-	time: TimeSpan,
-	easing: Easing = Easing.LINEAR,
+	time: TimeSpan = DEFAULT_TIME,
+	easing: Easing = DEFAULT_EASING,
 	callback: (Double) -> Unit = emptyCallback
 ): Unit {
 	if (this != null) {
@@ -113,42 +113,48 @@ suspend fun View?.tween(
 	}
 }
 
+@PublishedApi
+internal val DEFAULT_EASING = Easing.EASE_IN_OUT_QUAD
+
+@PublishedApi
+internal val DEFAULT_TIME = 1.seconds
+
 suspend fun View?.tweenAsync(
 	vararg vs: V2<*>,
-	time: TimeSpan,
-	easing: Easing = Easing.LINEAR,
+	time: TimeSpan = DEFAULT_TIME,
+	easing: Easing = DEFAULT_EASING,
 	callback: (Double) -> Unit = emptyCallback
 ) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
 
 fun View?.tweenAsync(
 	vararg vs: V2<*>,
 	coroutineContext: CoroutineContext,
-	time: TimeSpan,
-	easing: Easing = Easing.LINEAR,
+	time: TimeSpan = DEFAULT_TIME,
+	easing: Easing = DEFAULT_EASING,
 	callback: (Double) -> Unit = emptyCallback
 ) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
 
-suspend fun View.show(time: TimeSpan, easing: Easing = Easing.LINEAR) =
+suspend fun View.show(time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 	tween(this::alpha[1.0], time = time, easing = easing) { this.visible = true }
 
-suspend fun View.hide(time: TimeSpan, easing: Easing = Easing.LINEAR) =
+suspend fun View.hide(time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 	tween(this::alpha[0.0], time = time, easing = easing)
 
-suspend inline fun View.moveTo(x: Double, y: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::x[x], this::y[y], time = time, easing = easing)
-suspend inline fun View.moveBy(dx: Double, dy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
-suspend inline fun View.scaleTo(sx: Double, sy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
+suspend inline fun View.moveTo(x: Double, y: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[x], this::y[y], time = time, easing = easing)
+suspend inline fun View.moveBy(dx: Double, dy: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
+suspend inline fun View.scaleTo(sx: Double, sy: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
 
 @Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.moveTo(x: Number, y: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+suspend inline fun View.moveTo(x: Number, y: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = moveTo(x.toDouble(), y.toDouble(), time, easing)
 @Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.moveBy(dx: Number, dy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = moveBy(dx.toDouble(), dy.toDouble(), time, easing)
+suspend inline fun View.moveBy(dx: Number, dy: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = moveBy(dx.toDouble(), dy.toDouble(), time, easing)
 @Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.scaleTo(sx: Number, sy: Number, time: TimeSpan, easing: Easing = Easing.LINEAR) = scaleTo(sx.toDouble(), sy.toDouble(), time, easing)
+suspend inline fun View.scaleTo(sx: Number, sy: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = scaleTo(sx.toDouble(), sy.toDouble(), time, easing)
 
-suspend inline fun View.rotateTo(deg: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) =
+suspend inline fun View.rotateTo(deg: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 	tween(this::rotationRadians[deg.radians], time = time, easing = easing)
 
-suspend inline fun View.rotateBy(ddeg: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) =
+suspend inline fun View.rotateBy(ddeg: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 	tween(this::rotationRadians[this.rotationRadians + ddeg.radians], time = time, easing = easing)
 
 @Suppress("UNCHECKED_CAST")
