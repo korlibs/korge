@@ -517,6 +517,7 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 	}
 
 	val maxAlignment = alignments.max() ?: 1
+    /** Size in bytes for each vertex */
 	val totalSize: Int = run { layoutSize ?: _lastPos.nextAlignedTo(maxAlignment) }
 
 	override fun toString(): String = "VertexLayout[${myattr.map { it.name }.joinToString(", ")}]"

@@ -5,7 +5,10 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 /** Creates/gets a [DebugLineRenderContext] associated to [this] [RenderContext] */
 val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.PropertyThis<RenderContext, DebugLineRenderContext> { DebugLineRenderContext(this) }
@@ -31,20 +34,24 @@ class DebugLineRenderContext(
 
     private val ag: AG = ctx.ag
 
+    var color: RGBA = Colors.YELLOW
+
     @KorgeInternal
-    val LAYOUT = VertexLayout(DefaultShaders.a_Pos)
+    val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
 
     @KorgeInternal
     val VERTEX = VertexShader {
         DefaultShaders.apply {
             SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
+            SET(v_Col, a_Col)
         }
     }
 
     @KorgeInternal
     val FRAGMENT = FragmentShader {
         DefaultShaders.apply {
-            out set vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit)
+            //out set vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit)
+            out set v_Col
         }
     }
 
@@ -73,6 +80,22 @@ class DebugLineRenderContext(
         }
         addVertex(x0, y0)
         addVertex(x1, y1)
+    }
+
+    fun drawVector(path: VectorPath) {
+        var lastX = 0.0
+        var lastY = 0.0
+        path.emitPoints2 { x, y, move ->
+            if (!move) {
+                line(lastX, lastY, x, y)
+            }
+            lastX = x
+            lastY = y
+        }
+    }
+
+    fun drawVector(block: VectorBuilder.() -> Unit) {
+        drawVector(VectorPath().apply(block))
     }
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
@@ -112,8 +135,20 @@ class DebugLineRenderContext(
     }
 
     private fun addVertex(x: Float, y: Float) {
-        vertices.setAlignedFloat32(vertexPos++, x)
-        vertices.setAlignedFloat32(vertexPos++, y)
+        vertices.setAlignedFloat32(vertexPos + 0, x)
+        vertices.setAlignedFloat32(vertexPos + 1, y)
+        vertices.setAlignedInt32(vertexPos + 2, color.value)
+        vertexPos += LAYOUT.totalSize / Int.SIZE_BYTES
         vertexCount++
+    }
+
+    inline fun color(color: RGBA, block: () -> Unit) {
+        val oldColor = this.color
+        this.color = color
+        try {
+            block()
+        } finally {
+            this.color = oldColor
+        }
     }
 }

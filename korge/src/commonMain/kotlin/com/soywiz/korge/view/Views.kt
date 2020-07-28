@@ -144,6 +144,10 @@ class Views constructor(
 	var debugViews = false
 	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
 
+    fun addDebugRenderer(block: Views.(RenderContext) -> Unit) {
+        debugHandlers.add(block)
+    }
+
 	var lastTime = timeProvider.now()
 
     private val tempViews: ArrayList<View> = arrayListOf()
