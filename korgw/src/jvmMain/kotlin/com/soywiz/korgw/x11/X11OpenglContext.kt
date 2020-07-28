@@ -7,7 +7,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.platform.unix.*
 
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
-class X11OpenglContext(val d: X11.Display?, val w: X11.Window?, val scr: Int, val vi: XVisualInfo? = chooseVisuals(d, scr), val doubleBuffered: Boolean = true) : BaseOpenglContext {
+class X11OpenglContext(val d: X11.Display?, val w: X11.Drawable?, val scr: Int, val vi: XVisualInfo? = chooseVisuals(d, scr), val doubleBuffered: Boolean = true) : BaseOpenglContext {
     companion object {
         fun chooseVisuals(d: X11.Display?, scr: Int = X.XDefaultScreen(d)): XVisualInfo? {
             val attrsList = listOf(
@@ -16,6 +16,7 @@ class X11OpenglContext(val d: X11.Display?, val w: X11.Window?, val scr: Int, va
                 intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, X11.None),
                 intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 16, X11.None),
                 intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, X11.None),
+                //intArrayOf(GLX_RENDER_TYPE, GLX.GLX_RGBA_TYPE), // default
                 intArrayOf(GLX_RGBA, X11.None),
                 intArrayOf(X11.None)
             )
@@ -60,6 +61,8 @@ class X11OpenglContext(val d: X11.Display?, val w: X11.Window?, val scr: Int, va
 
     override fun makeCurrent() {
         val result = X.glXMakeCurrent(d, w, glc)
+        //X.glXMakeContextCurrent(d, w, w, glc)
+        //glXMakeContextCurrent()
         //println("makeCurrent: $result")
     }
 

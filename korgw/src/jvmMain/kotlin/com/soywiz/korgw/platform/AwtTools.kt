@@ -1,8 +1,25 @@
 package com.soywiz.korgw.platform
 
-import java.awt.Component
-import java.lang.reflect.Field
-import java.lang.reflect.Method
+import java.awt.*
+import java.lang.reflect.*
+
+inline class ReflectiveAccessor(val instance: Any?) {
+    val clazz get() = if (instance != null) instance::class.java else null
+    fun dynamicInvoke(methodName: String, vararg args: Any?): Any? {
+        if (instance == null) return ReflectiveAccessor(null)
+        val method = clazz?.getMethodOrNullNoArgs(methodName) ?: return null
+        if (!method.isAccessible) {
+            method.isAccessible = true;
+        }
+        return method?.invoke(instance, *args)
+    }
+}
+
+fun Any?.reflective() = ReflectiveAccessor(this)
+
+private fun <T> Class<T>.getMethodOrNullNoArgs(name: String): Method? =
+    runCatching { declaredMethods?.first { it.name == name } }.getOrNull()
+        ?: superclass?.getMethodOrNullNoArgs(name)
 
 private fun <T> Class<T>.getMethodOrNull(name: String, vararg args: Class<*>): Method? =
     runCatching { getDeclaredMethod(name, *args) }.getOrNull()
@@ -13,6 +30,9 @@ private fun <T> Class<T>.getFieldOrNull(name: String): Field? =
         ?: superclass?.getFieldOrNull(name)
 
 fun Component.awtGetPeer(): Any {
+    //Class.forName("AWTAccessor")
+    return sun.awt.AWTAccessor.getComponentAccessor()?.getPeer(this) ?: Unit
+/*
     val method = this.javaClass.getMethodOrNull("getPeer")
     if (method != null) {
         method.isAccessible = true
@@ -24,6 +44,7 @@ fun Component.awtGetPeer(): Any {
         return field.get(this)
     }
     error("Can't get peer from Frame")
+ */
 }
 
 fun Component.awtNativeHandle(): Long {

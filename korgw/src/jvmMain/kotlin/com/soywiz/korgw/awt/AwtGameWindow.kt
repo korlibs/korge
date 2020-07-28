@@ -12,7 +12,7 @@ import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.osx.CoreGraphics
 import com.soywiz.korgw.osx.DisplayLinkCallback
 import com.soywiz.korgw.osx.MacKmlGL
-import com.soywiz.korgw.platform.BaseOpenglContext
+import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.Win32KmlGl
 import com.soywiz.korgw.win32.Win32OpenglContext
 import com.soywiz.korgw.x11.X
@@ -31,6 +31,7 @@ import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.platform.win32.WinDef
+import com.sun.jna.ptr.*
 import java.awt.*
 import java.awt.Toolkit.getDefaultToolkit
 import java.awt.event.*
@@ -153,11 +154,26 @@ class AwtGameWindow(val checkGl: Boolean) : GameWindow() {
                         doubleBuffered = true
                     )
                     else -> {
-                        val d = X.XOpenDisplay(null)
-                        val src = X.XDefaultScreen(d)
-                        val winId = Native.getWindowID(frame)
-                        //println("winId: $winId")
-                        X11OpenglContext(d, X11.Window(winId), src)
+                        try {
+                            val d = X.XOpenDisplay(null)
+                            val displayName = X.XDisplayString(d);
+                            //println("displayName: $displayName")
+                            val src = X.XDefaultScreen(d)
+                            X.XSynchronize(d, true)
+                            val contentWindow = frame.awtGetPeer().reflective().dynamicInvoke("getContentWindow") as Long
+                            val win = X11.Window(contentWindow)
+                            //val drawableId = Native.getWindowID(frame)
+                            //val drawable = X11.Drawable(drawableId)
+                            //val winRef = X11.WindowByReference()
+                            //val p = Array(6) { IntByReference() }
+                            //X.XGetGeometry(d, drawable, winRef, p[0], p[1], p[2], p[3], p[4], p[5])
+                            //val win = winRef.value
+                            //println("winId: $winId")
+                            X11OpenglContext(d, win, src)
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                            throw e
+                        }
                     }
                 }
             }

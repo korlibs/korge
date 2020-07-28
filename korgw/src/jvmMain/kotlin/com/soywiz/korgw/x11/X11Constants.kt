@@ -7,6 +7,7 @@ import com.soywiz.korgw.platform.KStructure
 import com.soywiz.korgw.platform.NativeKgl
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11
+import com.sun.jna.ptr.*
 
 
 typealias XVisualInfo = Pointer
@@ -577,7 +578,7 @@ internal class MyXMotionEvent(p: Pointer? = null) : KStructure(p) {
     var same_screen by int()
 }
 
-internal object X :
+object X :
     X11Impl by Native.load(System.getenv("X11LIB_PATH") ?: "libX11", X11Impl::class.java),
     GL by Native.load(System.getenv("GLLIB_PATH") ?: "libGL", GL::class.java)
 
@@ -598,9 +599,14 @@ internal interface X11Impl : X11 {
     fun XStoreName(display: X11.Display?, w: X11.Window?, window_name: String)
     fun XSetIconName(display: X11.Display?, w: X11.Window?, window_name: String)
     fun XLookupKeysym(e: X11.XEvent?, i: Int): Int
+    fun XDisplayString(display: X11.Display?): String?
+    fun XSynchronize(display: X11.Display?, value: Boolean)
 }
 
 internal interface GL : INativeGL, Library {
+    fun glXQueryDrawable(dpy: X11.Display, draw: X11.Drawable?, attribute: Int, value: IntByReference): Int
+    fun glXQueryContext(dpy: X11.Display, ctx: GLXContext?, attribute: Int, value: Pointer): Int
+
     //fun glClearColor(r: Float, g: Float, b: Float, a: Float)
     //fun glClear(flags: Int)
     //fun glGetString(id: Int): String
@@ -609,8 +615,9 @@ internal interface GL : INativeGL, Library {
     fun glXChooseVisual(display: X11.Display?, screen: Int, attribList: IntArray): XVisualInfo?
     fun glXChooseVisual(display: X11.Display?, screen: Int, attribList: Pointer): XVisualInfo?
     fun glXCreateContext(display: X11.Display?, vis: XVisualInfo?, shareList: GLXContext?, direct: Boolean): GLXContext?
-    fun glXMakeCurrent(display: X11.Display?, drawable: X11.Window?, ctx: GLXContext?): Boolean
-    fun glXSwapBuffers(display: X11.Display?, drawable: X11.Window?)
+    fun glXMakeCurrent(display: X11.Display?, drawable: X11.Drawable?, ctx: GLXContext?): Boolean
+    fun glXMakeContextCurrent(display: X11.Display?, draw: X11.Drawable?, read: X11.Drawable?, ctx: GLXContext?): Boolean
+    fun glXSwapBuffers(display: X11.Display?, drawable: X11.Drawable?)
     fun glXGetProcAddress(name: String): Pointer
     fun glXGetCurrentDrawable(): Pointer
     fun glXGetCurrentDisplay(): X11.Display?
@@ -637,5 +644,6 @@ internal interface GL : INativeGL, Library {
     }
 }
 
-internal object X11KmlGl : NativeKgl(X)
+//internal object X11KmlGl : NativeKgl(X)
 
+object X11KmlGl : NativeKgl(X)

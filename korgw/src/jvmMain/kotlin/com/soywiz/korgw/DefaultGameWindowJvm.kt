@@ -35,7 +35,7 @@ actual fun CreateDefaultGameWindow(): GameWindow {
 
     return when (engine) {
         "default" -> when {
-            OS.isLinux -> X11GameWindow(checkGl)
+            //OS.isLinux -> X11GameWindow(checkGl)
             else -> AwtGameWindow(checkGl)
         }
         "jna" -> when {
@@ -48,7 +48,8 @@ actual fun CreateDefaultGameWindow(): GameWindow {
                     }
                 }
             }
-            OS.isLinux -> X11GameWindow(checkGl)
+            //OS.isLinux -> X11GameWindow(checkGl)
+            OS.isLinux -> AwtGameWindow(checkGl)
             //OS.isWindows -> com.soywiz.korgw.win32.Win32GameWindow()
             OS.isWindows -> AwtGameWindow(checkGl)
             else -> X11GameWindow(checkGl)
