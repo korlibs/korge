@@ -83,6 +83,9 @@ subprojects {
             }
             js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                 browser {
+                    compilations.all {
+                        kotlinOptions.sourceMap = true
+                    }
                     testTask {
                         useKarma {
                             useChromeHeadless()

@@ -349,18 +349,18 @@ class BrowserGameWindow : GameWindow() {
     }
 }
 
-private external class JsArray<T> {
+private external interface JsArray<T> {
     val length: Int
 }
 
 private inline operator fun <T> JsArray<T>.get(index: Int): T = this.asDynamic()[index]
 
-private external class JsGamepadButton {
+private external interface JsGamepadButton {
     val value: Double
     val pressed: Boolean
 }
 
-private external class JsGamePad {
+private external interface JsGamePad {
     val axes: JsArray<Double>
     val buttons: JsArray<JsGamepadButton>
     val connected: Boolean
@@ -370,7 +370,8 @@ private external class JsGamePad {
     val timestamp: Double
 }
 
-private external class JsGamepadEvent : Event {
+@JsName("GamepadEvent")
+private external interface JsGamepadEvent {
     val gamepad: JsGamePad
 }
 

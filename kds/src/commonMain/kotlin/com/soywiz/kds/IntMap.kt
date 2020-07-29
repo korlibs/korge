@@ -150,43 +150,44 @@ class IntMap<T> private constructor(private var nbits: Int, private val loadFact
 
     data class Entry<T>(var key: Int, var value: T?)
 
-    val keys get() = KeyIterable()
-    val values get() = ValueIterable()
-    val entries get() = EntryIterable()
+    val keys get() = KeyIterable(this)
+    val values get() = ValueIterable<T>(this)
+    val entries get() = EntryIterable<T>(this)
 
-    val pooledKeys get() = KeyIterable()
-    val pooledValues get() = ValueIterable()
-    val pooledEntries get() = EntryIterable()
+    val pooledKeys get() = KeyIterable(this)
+    val pooledValues get() = ValueIterable<T>(this)
+    val pooledEntries get() = EntryIterable<T>(this)
 
-    inner class KeyIterable() : Iterable<Int> {
-        override operator fun iterator() = KeyIterator()
+    // @TODO: Not inner class because JS IR bug: https://youtrack.jetbrains.com/issue/KT-40686
+    class KeyIterable<T>(val map: IntMap<T>) : Iterable<Int> {
+        override operator fun iterator() = KeyIterator<T>(Iterator<T>(map))
     }
 
-    inner class ValueIterable() : Iterable<T> {
-        override operator fun iterator() = ValueIterator()
+    class ValueIterable<T>(val map: IntMap<T>) : Iterable<T> {
+        override operator fun iterator() = ValueIterator<T>(Iterator<T>(map))
     }
 
-    inner class EntryIterable() : Iterable<Entry<T>> {
-        override operator fun iterator() = EntryIterator()
+    class EntryIterable<T>(val map: IntMap<T>) : Iterable<Entry<T>> {
+        override operator fun iterator() = EntryIterator<T>(Iterator<T>(map))
     }
 
-    inner class KeyIterator(private val it: Iterator = Iterator()) : kotlin.collections.Iterator<Int> {
+    class KeyIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<Int> {
         override operator fun hasNext() = it.hasNext()
         override operator fun next() = it.nextKey()
     }
 
-    inner class ValueIterator(private val it: Iterator = Iterator()) : kotlin.collections.Iterator<T> {
+    class ValueIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<T> {
         override operator fun hasNext() = it.hasNext()
         override operator fun next() = it.nextValue()!!
     }
 
-    inner class EntryIterator(private val it: Iterator = Iterator()) : kotlin.collections.Iterator<Entry<T>> {
+    class EntryIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<Entry<T>> {
         override operator fun hasNext() = it.hasNext()
         override operator fun next() = it.nextEntry().copy() as Entry<T>
     }
 
-    inner class Iterator {
-        private var index: Int = if (hasZero) ZERO_INDEX else nextNonEmptyIndex(_keys, 0)
+    class Iterator<T>(val map: IntMap<T>) {
+        private var index: Int = if (map.hasZero) ZERO_INDEX else nextNonEmptyIndex(map._keys, 0)
         private var entry = Entry<T?>(0, null)
 
         fun hasNext() = index != EOF
@@ -203,13 +204,13 @@ class IntMap<T> private constructor(private var nbits: Int, private val loadFact
 
         private fun currentKey(): Int = when (index) {
             ZERO_INDEX, EOF -> 0
-            else -> _keys[index]
+            else -> map._keys[index]
         }
 
         private fun currentValue(): T? = when (index) {
-            ZERO_INDEX -> zeroValue
+            ZERO_INDEX -> map.zeroValue
             EOF -> null
-            else -> _values[index]
+            else -> map._values[index]
         }
 
         private fun nextNonEmptyIndex(keys: IntArray, offset: Int): Int {
@@ -218,7 +219,7 @@ class IntMap<T> private constructor(private var nbits: Int, private val loadFact
         }
 
         private fun next() {
-            if (index != EOF) index = nextNonEmptyIndex(_keys, if (index == ZERO_INDEX) 0 else (index + 1))
+            if (index != EOF) index = nextNonEmptyIndex(map._keys, if (index == ZERO_INDEX) 0 else (index + 1))
         }
     }
 
