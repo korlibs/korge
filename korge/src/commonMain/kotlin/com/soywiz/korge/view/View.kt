@@ -1136,12 +1136,11 @@ abstract class View internal constructor(
     }
 
     fun getConcatMatrix(target: View, inclusive: Boolean, out: Matrix = Matrix()): Matrix {
-        if (View.commonAncestor(this, target) != null) {
-            out.multiply(this.globalMatrix, target.globalMatrixInv)
-            //out.identity()
-            //out.identity()
-        } else {
-            out.identity()
+        when {
+            target === parent -> out.copyFrom(this.localMatrix)
+            target === this -> out.identity()
+            View.commonAncestor(this, target) != null -> out.multiply(this.globalMatrix, target.globalMatrixInv)
+            else -> out.identity()
         }
         if (inclusive) {
             out.premultiply(target.localMatrix)
@@ -1160,6 +1159,7 @@ abstract class View internal constructor(
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
     private val boundsTemp = Matrix()
+    private val bb = BoundsBuilder()
 
     fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
         return getBounds(target, true, out)
@@ -1170,11 +1170,11 @@ abstract class View internal constructor(
     }
 
     fun getBounds(target: View? = this, doAnchoring: Boolean, out: Rectangle = Rectangle()): Rectangle {
-        //val concat = (parent ?: this).getConcatMatrix(target ?: this)
-        val concat = this.getConcatMatrix(target ?: this, boundsTemp)
-        val bb = BoundsBuilder()
-
         getLocalBounds(doAnchoring, out)
+
+        if (target === parent) {
+            return out
+        }
 
         val p1x = out.left
         val p1y = out.top
@@ -1188,6 +1188,10 @@ abstract class View internal constructor(
         val p4x = out.left
         val p4y = out.bottom
 
+        //val concat = (parent ?: this).getConcatMatrix(target ?: this)
+        val concat = this.getConcatMatrix(target ?: this, boundsTemp)
+
+        bb.reset()
         bb.add(concat.fastTransformX(p1x, p1y), concat.fastTransformY(p1x, p1y))
         bb.add(concat.fastTransformX(p2x, p2y), concat.fastTransformY(p2x, p2y))
         bb.add(concat.fastTransformX(p3x, p3y), concat.fastTransformY(p3x, p3y))

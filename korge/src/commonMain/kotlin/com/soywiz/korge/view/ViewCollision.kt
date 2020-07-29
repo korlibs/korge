@@ -80,7 +80,7 @@ fun View.collidesWithShape(otherList: List<View>): Boolean = collidesWith(otherL
 
 inline fun <reified T : View> Container.findCollision(subject: View): T? = findCollision(subject) { it is T && it != subject } as T?
 
-fun Container.findCollision(subject: View, kind: CollisionKind = CollisionKind.GLOBAL_RECT,matcher: (View) -> Boolean): View? {
+fun Container.findCollision(subject: View, kind: CollisionKind = CollisionKind.GLOBAL_RECT, matcher: (View) -> Boolean): View? {
     var collides: View? = null
     this.foreachDescendant {
         if (matcher(it)) {
