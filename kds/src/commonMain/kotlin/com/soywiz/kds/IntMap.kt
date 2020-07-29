@@ -4,7 +4,7 @@ package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
 
-class IntMap<T> private constructor(private var nbits: Int, private val loadFactor: Double) {
+class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double) {
     constructor(loadFactor: Double = 0.75) : this(4, loadFactor)
 
     companion object {
@@ -119,7 +119,7 @@ class IntMap<T> private constructor(private var nbits: Int, private val loadFact
         }
     }
 
-    fun getOrPut(key: Int, callback: () -> T): T {
+    inline fun getOrPut(key: Int, callback: () -> T): T {
         val res = get(key)
         if (res == null) set(key, callback())
         return get(key)!!
@@ -150,41 +150,13 @@ class IntMap<T> private constructor(private var nbits: Int, private val loadFact
 
     data class Entry<T>(var key: Int, var value: T?)
 
-    val keys get() = KeyIterable(this)
-    val values get() = ValueIterable<T>(this)
-    val entries get() = EntryIterable<T>(this)
+    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey()} ) } }
+    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue()} ) } }
+    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry()} ) } }
 
-    val pooledKeys get() = KeyIterable(this)
-    val pooledValues get() = ValueIterable<T>(this)
-    val pooledEntries get() = EntryIterable<T>(this)
-
-    // @TODO: Not inner class because JS IR bug: https://youtrack.jetbrains.com/issue/KT-40686
-    class KeyIterable<T>(val map: IntMap<T>) : Iterable<Int> {
-        override operator fun iterator() = KeyIterator<T>(Iterator<T>(map))
-    }
-
-    class ValueIterable<T>(val map: IntMap<T>) : Iterable<T> {
-        override operator fun iterator() = ValueIterator<T>(Iterator<T>(map))
-    }
-
-    class EntryIterable<T>(val map: IntMap<T>) : Iterable<Entry<T>> {
-        override operator fun iterator() = EntryIterator<T>(Iterator<T>(map))
-    }
-
-    class KeyIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<Int> {
-        override operator fun hasNext() = it.hasNext()
-        override operator fun next() = it.nextKey()
-    }
-
-    class ValueIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<T> {
-        override operator fun hasNext() = it.hasNext()
-        override operator fun next() = it.nextValue()!!
-    }
-
-    class EntryIterator<T>(private val it: Iterator<T>) : kotlin.collections.Iterator<Entry<T>> {
-        override operator fun hasNext() = it.hasNext()
-        override operator fun next() = it.nextEntry().copy() as Entry<T>
-    }
+    val pooledKeys get() = keys
+    val pooledValues get() = values
+    val pooledEntries get() = entries
 
     class Iterator<T>(val map: IntMap<T>) {
         private var index: Int = if (map.hasZero) ZERO_INDEX else nextNonEmptyIndex(map._keys, 0)
@@ -275,6 +247,7 @@ fun <T> Map<Int, T>.toIntMap(): IntMap<T> {
     return out
 }
 
+/*
 class IntFloatMap {
     @PublishedApi
     internal val i = IntIntMap()
@@ -330,8 +303,9 @@ class IntFloatMap {
         return out
     }
 }
+*/
 
-class IntIntMap private constructor(private var nbits: Int, private val loadFactor: Double) {
+class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double) {
     constructor(loadFactor: Double = 0.75) : this(4, loadFactor)
 
     companion object {
@@ -456,40 +430,13 @@ class IntIntMap private constructor(private var nbits: Int, private val loadFact
 
     data class Entry(var key: Int, var value: Int)
 
-    val keys get() = KeyIterable(this)
-    val values get() = ValueIterable(this)
-    val entries get() = EntryIterable(this)
+    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey()} ) } }
+    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue()} ) } }
+    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry()} ) } }
 
-    val pooledKeys get() = KeyIterable(this)
-    val pooledValues get() = ValueIterable(this)
-    val pooledEntries get() = EntryIterable(this)
-
-    class KeyIterable(val map: IntIntMap) {
-        operator fun iterator() = KeyIterator(Iterator(map))
-    }
-
-    class ValueIterable(val map: IntIntMap) {
-        operator fun iterator() = ValueIterator(Iterator(map))
-    }
-
-    class EntryIterable(val map: IntIntMap) {
-        operator fun iterator() = EntryIterator(Iterator(map))
-    }
-
-    class KeyIterator(private val it: Iterator) {
-        operator fun hasNext() = it.hasNext()
-        operator fun next() = it.nextKey()
-    }
-
-    class ValueIterator(private val it: Iterator) {
-        operator fun hasNext() = it.hasNext()
-        operator fun next() = it.nextValue()
-    }
-
-    class EntryIterator(private val it: Iterator) {
-        operator fun hasNext() = it.hasNext()
-        operator fun next() = it.nextEntry().copy()
-    }
+    val pooledKeys get() = keys
+    val pooledValues get() = values
+    val pooledEntries get() = entries
 
     class Iterator(val map: IntIntMap) {
         private var index: Int = if (map.hasZero) ZERO_INDEX else nextNonEmptyIndex(map._keys, 0)
