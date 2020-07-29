@@ -268,6 +268,48 @@ samples {
                 binaries.executable()
             }
         }
+
+        tasks.getByName("jsProcessResources", Task::class).apply {
+            //println(this.outputs.files.toList())
+            doLast {
+                val targetDir = this.outputs.files.first()
+                val jsMainCompilation = kotlin.js().compilations["main"]!!
+                val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+                val resourcesFolders = jsMainCompilation.allKotlinSourceSets
+                    .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                //println("jsFile: $jsFile")
+                //println("resourcesFolders: $resourcesFolders")
+                fun readTextFile(name: String): String {
+                    for (folder in resourcesFolders) {
+                        val file = File(folder, name)?.takeIf { it.exists() } ?: continue
+                        return file.readText()
+                    }
+                    return ClassLoader.getSystemResourceAsStream(name)?.readBytes()?.toString(Charsets.UTF_8)
+                        ?: error("We cannot find suitable '$name'")
+                }
+
+                val indexTemplateHtml = readTextFile("index.v2.template.html")
+                val customCss = readTextFile("custom-styles.template.css")
+                val customHtmlHead = readTextFile("custom-html-head.template.html")
+                val customHtmlBody = readTextFile("custom-html-body.template.html")
+
+                println(File(targetDir, "index.html"))
+
+                File(targetDir, "index.html").writeText(
+                    groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
+                        mapOf(
+                            "OUTPUT" to jsFile,
+                            //"TITLE" to korge.name,
+                            "TITLE" to "TODO",
+                            "CUSTOM_CSS" to customCss,
+                            "CUSTOM_HTML_HEAD" to customHtmlHead,
+                            "CUSTOM_HTML_BODY" to customHtmlBody
+                        )
+                    ).toString()
+                )
+            }
+        }
+
         if (doEnableKotlinNative) {
             for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
                 target.apply {
