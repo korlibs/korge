@@ -6,7 +6,7 @@ import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.textButton
-import com.soywiz.korge.view.Text
+import com.soywiz.korge.view.*
 import com.soywiz.korim.vector.ShapeRasterizerMethod
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -28,8 +28,10 @@ suspend fun Scene.swfAnimationEditor(file: VfsFile) {
     }
 
     if (animationLibrary != null) {
-        views.setVirtualSize(animationLibrary.width, animationLibrary.height)
-        sceneView += animationLibrary.createMainTimeLine()
+        val container = sceneView.fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
+            this += animationLibrary.createMainTimeLine()
+        }
+        container.repositionOnResize(views)
     }
 
     sceneView.textButton(text = "Masks").apply {
