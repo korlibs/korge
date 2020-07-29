@@ -26,10 +26,10 @@ class BoundsBuilder {
     }
 
     fun add(x: Double, y: Double): BoundsBuilder {
-        xmin = kotlin.math.min(xmin, x)
-        xmax = kotlin.math.max(xmax, x)
-        ymin = kotlin.math.min(ymin, y)
-        ymax = kotlin.math.max(ymax, y)
+        if (x < xmin) xmin = x
+        if (x > xmax) xmax = x
+        if (y < ymin) ymin = y
+        if (y > ymax) ymax = y
         npoints++
         //println("add($x, $y) -> ($xmin,$ymin)-($xmax,$ymax)")
         return this
