@@ -456,43 +456,43 @@ class IntIntMap private constructor(private var nbits: Int, private val loadFact
 
     data class Entry(var key: Int, var value: Int)
 
-    val keys get() = KeyIterable()
-    val values get() = ValueIterable()
-    val entries get() = EntryIterable()
+    val keys get() = KeyIterable(this)
+    val values get() = ValueIterable(this)
+    val entries get() = EntryIterable(this)
 
-    val pooledKeys get() = KeyIterable()
-    val pooledValues get() = ValueIterable()
-    val pooledEntries get() = EntryIterable()
+    val pooledKeys get() = KeyIterable(this)
+    val pooledValues get() = ValueIterable(this)
+    val pooledEntries get() = EntryIterable(this)
 
-    inner class KeyIterable() {
-        operator fun iterator() = KeyIterator()
+    class KeyIterable(val map: IntIntMap) {
+        operator fun iterator() = KeyIterator(Iterator(map))
     }
 
-    inner class ValueIterable() {
-        operator fun iterator() = ValueIterator()
+    class ValueIterable(val map: IntIntMap) {
+        operator fun iterator() = ValueIterator(Iterator(map))
     }
 
-    inner class EntryIterable() {
-        operator fun iterator() = EntryIterator()
+    class EntryIterable(val map: IntIntMap) {
+        operator fun iterator() = EntryIterator(Iterator(map))
     }
 
-    inner class KeyIterator(private val it: Iterator = Iterator()) {
+    class KeyIterator(private val it: Iterator) {
         operator fun hasNext() = it.hasNext()
         operator fun next() = it.nextKey()
     }
 
-    inner class ValueIterator(private val it: Iterator = Iterator()) {
+    class ValueIterator(private val it: Iterator) {
         operator fun hasNext() = it.hasNext()
         operator fun next() = it.nextValue()
     }
 
-    inner class EntryIterator(private val it: Iterator = Iterator()) {
+    class EntryIterator(private val it: Iterator) {
         operator fun hasNext() = it.hasNext()
         operator fun next() = it.nextEntry().copy()
     }
 
-    inner class Iterator {
-        private var index: Int = if (hasZero) ZERO_INDEX else nextNonEmptyIndex(_keys, 0)
+    class Iterator(val map: IntIntMap) {
+        private var index: Int = if (map.hasZero) ZERO_INDEX else nextNonEmptyIndex(map._keys, 0)
         private var entry = Entry(0, 0)
 
         fun hasNext() = index != EOF
@@ -509,13 +509,13 @@ class IntIntMap private constructor(private var nbits: Int, private val loadFact
 
         private fun currentKey(): Int = when (index) {
             ZERO_INDEX, EOF -> 0
-            else -> _keys[index]
+            else -> map._keys[index]
         }
 
         private fun currentValue(): Int = when (index) {
-            ZERO_INDEX -> zeroValue
+            ZERO_INDEX -> map.zeroValue
             EOF -> 0
-            else -> _values[index]
+            else -> map._values[index]
         }
 
         private fun nextNonEmptyIndex(keys: IntArray, offset: Int): Int {
@@ -524,7 +524,7 @@ class IntIntMap private constructor(private var nbits: Int, private val loadFact
         }
 
         private fun next() {
-            if (index != EOF) index = nextNonEmptyIndex(_keys, if (index == ZERO_INDEX) 0 else (index + 1))
+            if (index != EOF) index = nextNonEmptyIndex(map._keys, if (index == ZERO_INDEX) 0 else (index + 1))
         }
     }
 
