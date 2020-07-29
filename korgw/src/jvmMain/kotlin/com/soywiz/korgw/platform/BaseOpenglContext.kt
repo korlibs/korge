@@ -8,9 +8,8 @@ import com.soywiz.korio.util.OS
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.platform.win32.WinDef
-import java.awt.Component
-import java.awt.Graphics
-import java.awt.GraphicsEnvironment
+import sun.awt.*
+import java.awt.*
 import java.lang.reflect.Method
 
 interface BaseOpenglContext : Disposable {
@@ -85,8 +84,13 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
             try {
                 val display = X.XOpenDisplay(null)
                 val screen = X.XDefaultScreen(display)
-                val componentId = Native.getComponentID(c)
-                X11OpenglContext(display, X11.Drawable(componentId), screen, doubleBuffered = true)
+                if (c is Frame) {
+                    val contentWindow = c.awtGetPeer().reflective().dynamicInvoke("getContentWindow") as Long
+                    X11OpenglContext(display, X11.Drawable(contentWindow), screen, doubleBuffered = true)
+                } else {
+                    val componentId = Native.getComponentID(c)
+                    X11OpenglContext(display, X11.Drawable(componentId), screen, doubleBuffered = true)
+                }
             } catch (e: Throwable) {
                 e.printStackTrace()
                 throw e

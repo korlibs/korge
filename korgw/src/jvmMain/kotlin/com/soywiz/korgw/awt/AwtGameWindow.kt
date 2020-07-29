@@ -45,8 +45,9 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
             ignoreRepaint = true
             setBounds(0, 0, 640, 480)
             val frame = this
-            val dim = getDefaultToolkit().screenSize
-            frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
+            frame.setLocationRelativeTo(null)
+            //val dim = getDefaultToolkit().screenSize
+            //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
             if (OS.isMac) {
                 //rootPane.putClientProperty("apple.awt.fullscreenable", true)
