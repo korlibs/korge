@@ -105,3 +105,23 @@ open class KraFileType : UserBinaryFileType() {
 
 	override fun getIcon(): Icon? = KorgeIcons.KRITA
 }
+
+open class SpineSkeletonFileType : UserBinaryFileType() {
+    companion object {
+        @JvmField val INSTANCE = SpineSkeletonFileType()
+    }
+    override fun getName(): String = "SKEL"
+    override fun getDescription(): String = "Spine Skeleton File"
+
+    override fun getIcon(): Icon? = KorgeIcons.SPINE
+}
+
+open class DragonbonesSkeletonFileType : UserBinaryFileType() {
+    companion object {
+        @JvmField val INSTANCE = DragonbonesSkeletonFileType()
+    }
+    override fun getName(): String = "DBBIN"
+    override fun getDescription(): String = "Dragonbones Skeleton File"
+
+    override fun getIcon(): Icon? = KorgeIcons.DRAGONBONES
+}

@@ -59,6 +59,8 @@ dependencies {
 	//implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
     implementation(project(":korge"))
     implementation(project(":korge-swf"))
+    implementation(project(":korge-dragonbones"))
+    implementation(project(":korge-spine"))
 	implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
 	//implementation("javax.xml.bind:jaxb-api:2.3.1")

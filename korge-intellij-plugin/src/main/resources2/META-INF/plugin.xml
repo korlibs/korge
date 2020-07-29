@@ -173,6 +173,9 @@
         <fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
 
         <fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
+        <fileType name="SKEL"   implementationClass="com.soywiz.korge.intellij.filetype.SpineSkeletonFileType"        fieldName="INSTANCE"   extensions="skel"        />
+        <fileType name="DBBIN"   implementationClass="com.soywiz.korge.intellij.filetype.DragonbonesSkeletonFileType"        fieldName="INSTANCE"   extensions="dbbin"        />
+
 
         <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.TmxParserDefinition" language="KORGE_TMX" />
 

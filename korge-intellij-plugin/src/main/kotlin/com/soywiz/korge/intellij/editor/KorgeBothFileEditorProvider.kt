@@ -13,6 +13,7 @@ class KorgeBothFileEditorProvider : KorgeBaseFileEditorProvider() {
 			name.endsWith(".pex", ignoreCase = true) -> true
 			//name.endsWith(".tmx", ignoreCase = true) -> true
 			name.endsWith(".scml", ignoreCase = true) -> true
+            name.endsWith("_ske.json", ignoreCase = true) -> true
 			else -> false
 		}
 	}

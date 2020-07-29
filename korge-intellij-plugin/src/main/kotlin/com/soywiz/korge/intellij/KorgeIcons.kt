@@ -13,4 +13,6 @@ object KorgeIcons {
 	val SPRITER by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/spriter.png") }
 	val SOUND by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/sound.png") }
 	val ATLAS by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/atlas.png") }
+    val SPINE by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/spine.png") }
+    val DRAGONBONES by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/dragonbones.png") }
 }

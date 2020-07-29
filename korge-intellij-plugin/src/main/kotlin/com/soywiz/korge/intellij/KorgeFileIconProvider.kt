@@ -25,6 +25,7 @@ class KorgeFileIconProvider : FileIconProvider {
 			file.name.endsWith(".ogg", ignoreCase = true) -> KorgeIcons.SOUND
 
 			file.name.endsWith(".atlas", ignoreCase = true) -> KorgeIcons.ATLAS
+            file.name.endsWith(".skel", ignoreCase = true) -> KorgeIcons.SPINE
 			else -> null
 		}
 	}

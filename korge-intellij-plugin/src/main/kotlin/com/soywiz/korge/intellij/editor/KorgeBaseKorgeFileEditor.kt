@@ -24,7 +24,7 @@ import java.io.*
 import javax.swing.*
 import javax.swing.plaf.metal.MetalLookAndFeel
 
-data class KorgeFileToEdit(val file: VfsFile)
+data class KorgeFileToEdit(val file: VfsFile, val awtComponent: Component)
 
 open class KorgeBaseKorgeFileEditor(
 	val project: Project,
@@ -71,15 +71,25 @@ open class KorgeBaseKorgeFileEditor(
                 gameWindow = GLCanvasGameWindow(canvas)
                 //val controlRgba = MetalLookAndFeel.getCurrentTheme().control.rgba()
                 val controlRgba = panel.background.rgba()
-                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow!!, scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false, bgcolor = controlRgba) {
+                Korge(
+                    width = 640, height = 480,
+                    virtualWidth = 640, virtualHeight = 480,
+                    gameWindow = gameWindow!!,
+                    scaleMode = ScaleMode.NO_SCALE,
+                    //scaleMode = ScaleMode.SHOW_ALL,
+                    scaleAnchor = Anchor.TOP_LEFT,
+                    clipBorders = false,
+                    bgcolor = controlRgba,
+                    debug = false
+                ) {
                     //println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
                     val container = sceneContainer(views)
-                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
+                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs(), panel))
                     //println("[G] ${Thread.currentThread()}")
                 }
             }
-        }.start()
+        }.also { it.isDaemon = true }.start()
         //println("[I] ${Thread.currentThread()}")
 		panel
 	}

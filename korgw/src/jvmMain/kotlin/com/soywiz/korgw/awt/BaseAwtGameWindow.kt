@@ -63,7 +63,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
             //println("RENDER[1]")
 
             //println("FACTOR: $factor, nonScaledWidth=$nonScaledWidth, nonScaledHeight=$nonScaledHeight, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight")
-            gl.viewport(0, 0, scaledWidth.toInt(), scaledHeight.toInt())
+            gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
             //gl.clearColor(.2f, .4f, .9f, 1f)
             gl.clearColor(.3f, .3f, .3f, 1f)
             gl.clear(gl.COLOR_BUFFER_BIT)
@@ -135,8 +135,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
         dispatchReshapeEvent(
             component.x,
             component.y,
-            (contentComponent.width * factor).toInt(),
-            (contentComponent.height * factor).toInt()
+            (contentComponent.width * factor).toInt().coerceAtLeast(1),
+            (contentComponent.height * factor).toInt().coerceAtLeast(1)
         )
     }
 

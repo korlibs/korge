@@ -1,6 +1,7 @@
 package com.soywiz.korge.dragonbones
 
 import com.dragonbones.model.*
+import com.soywiz.kmem.MemBufferWrap
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.dynamic.*
@@ -17,12 +18,16 @@ suspend fun VfsFile.readDbAtlas(factory: KorgeDbFactory): TextureAtlasData {
 }
 
 suspend fun VfsFile.readDbSkeleton(factory: KorgeDbFactory): DragonBonesData {
-	val ske = Json.parse(this.readString(), Json.Context(optimizedNumericLists = true))!!
-	return factory.parseDragonBonesData(ske) ?: error("Can't load skeleton $this")
+    val ske = when {
+        this.extensionLC.endsWith("json") -> Json.parse(this.readString(), Json.Context(optimizedNumericLists = true))!!
+        this.extensionLC.endsWith("dbbin") -> MemBufferWrap(this.readBytes())
+        else -> error("Unsupported DragonBones skeleton ${this.baseName} : ${this.extension}")
+    }
+    return factory.parseDragonBonesData(ske) ?: error("Can't load skeleton $this")
 }
 
 suspend fun VfsFile.readDbSkeletonAndAtlas(factory: KorgeDbFactory): DragonBonesData {
-	val atlas = this.parent[this.baseName.replace("_ske", "_tex")].readDbAtlas(factory)
+	val atlas = this.parent[this.baseName.replace("_ske", "_tex").replace(".dbbin", ".json")].readDbAtlas(factory)
 	val skel = this.readDbSkeleton(factory)
 	return skel
 }

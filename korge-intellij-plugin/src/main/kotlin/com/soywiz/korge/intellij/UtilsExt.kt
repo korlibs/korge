@@ -55,7 +55,7 @@ fun runInUiThread(callback: () -> Unit) {
 fun runBackgroundTaskGlobal(callback: () -> Unit) {
 	Thread {
 		callback()
-	}.start()
+	}.also { it.isDaemon = true }.start()
 }
 
 fun Project.runBackgroundTaskWithProgress(callback: (ProgressIndicator) -> Unit) {

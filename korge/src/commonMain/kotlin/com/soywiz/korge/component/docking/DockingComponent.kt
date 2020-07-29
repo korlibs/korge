@@ -16,15 +16,19 @@ class DockingComponent(override val view: View, var anchor: Anchor, var scaleMod
 
     init {
         view.deferWithViews { views ->
-            resized(views, views.actualWidth, views.actualHeight)
+            resized(views, views.actualVirtualWidth, views.actualVirtualHeight)
         }
     }
 
     override fun resized(views: Views, width: Int, height: Int) {
+        //println(views.actualVirtualWidth)
         view.position(
-            views.actualVirtualLeft.toDouble() + (views.actualVirtualWidth) * anchor.sx,
-            views.actualVirtualTop.toDouble() + (views.actualVirtualHeight) * anchor.sy
+            views.actualVirtualWidth * anchor.sx,
+            views.actualVirtualHeight * anchor.sy
         )
+        // @TODO: This is not working? why?
+        //view.alignX(views.stage, anchor.sx, true)
+        //view.alignY(views.stage, anchor.sy, true)
         if (scaleMode != ScaleMode.NO_SCALE) {
             actualVirtualSize.setTo(views.actualVirtualWidth, views.actualVirtualHeight)
             val size = scaleMode.invoke(initialViewSize, actualVirtualSize, targetSize)
