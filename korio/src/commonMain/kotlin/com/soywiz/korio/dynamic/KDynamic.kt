@@ -9,6 +9,10 @@ internal expect object DynamicInternal {
 	fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any?
 }
 
+private fun String.toIntSafe(radix: Int = 10) = this.toIntOrNull(radix)
+private fun String.toDoubleSafe() = this.toDoubleOrNull()
+private fun String.toLongSafe(radix: Int = 10) = this.toLongOrNull(radix)
+
 open class KDynamic {
 	companion object : KDynamic() {
 		inline operator fun <T> invoke(callback: KDynamic.() -> T): T = callback(KDynamic)
@@ -50,7 +54,7 @@ open class KDynamic {
 		null -> 0
 		is Boolean -> if (this) 1 else 0
 		is Number -> this
-		is String -> (this.toIntOrNull() ?: this.toDoubleOrNull() ?: 0) as Number
+		is String -> this.toIntSafe() ?: this.toDoubleSafe() ?: 0
 		else -> 0
 	}
 
@@ -85,31 +89,31 @@ open class KDynamic {
 
 	fun Any?.toIntOrNull(): Int? = when (this) {
 		is Number -> toInt()
-		is String -> this.toIntOrNull(10)
+		is String -> toIntSafe()
 		else -> null
 	}
 
 	fun Any?.toLongOrNull(): Long? = when (this) {
 		is Number -> toLong()
-		is String -> toLongOrNull(10)
+		is String -> toLongSafe()
 		else -> null
 	}
 
 	fun Any?.toDoubleOrNull(): Double? = when (this) {
 		is Number -> toDouble()
-		is String -> this.toDouble()
+		is String -> toDoubleSafe()
 		else -> null
 	}
 
 	fun Any?.toIntDefault(default: Int = 0): Int = when (this) {
 		is Number -> toInt()
-		is String -> toIntOrNull(10) ?: default
+		is String -> toIntSafe(10) ?: default
 		else -> default
 	}
 
 	fun Any?.toLongDefault(default: Long = 0L): Long = when (this) {
 		is Number -> toLong()
-		is String -> toLongOrNull(10) ?: default
+		is String -> toLongSafe(10) ?: default
 		else -> default
 	}
 
