@@ -26,6 +26,7 @@ class KorgeFileIconProvider : FileIconProvider {
 
 			file.name.endsWith(".atlas", ignoreCase = true) -> KorgeIcons.ATLAS
             file.name.endsWith(".skel", ignoreCase = true) -> KorgeIcons.SPINE
+            file.name.endsWith("_ske.json", ignoreCase = true) -> KorgeIcons.DRAGONBONES
 			else -> null
 		}
 	}

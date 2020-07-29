@@ -28,18 +28,23 @@ suspend fun Scene.spineEditor(file: VfsFile) {
     val skeleton = Skeleton(skeletonData)
     val stateData = AnimationStateData(skeletonData)
     val state = AnimationState(stateData)
-    state.setAnimation(0, "run", true)
+
+    state.setAnimation(0, skeleton.data.animations.last().name, true)
     //skeleton.setPosition(250f, 20f)
     state.apply(skeleton) // Poses skeleton using current animations. This sets the bones' local SRT.
     //skeleton.updateWorldTransform() // Uses the bones' local SRT to compute their world SRT.
-    sceneView.skeletonView(skeleton, state)
+    val skeletonView = sceneView.skeletonView(skeleton, state)
+
+    skeletonView.repositionOnResize(views)
+
+    /*
     sceneView.container {
         //speed = 2.0
         speed = 0.5
         //speed = 1.0
         scale(1.0)
         position(400, 800)
-        skeletonView(skeleton, state)
         //solidRect(10.0, 10.0, Colors.RED).centered
     }
+    */
 }

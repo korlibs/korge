@@ -11,6 +11,8 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Rectangle
 
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
     = SkeletonView(skeleton, animationState).addTo(this, block)
@@ -26,7 +28,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     override fun renderInternal(ctx: RenderContext) {
         skeleton.setPosition(0f, 0f)
         skeleton.updateWorldTransform()
-        renderSkeleton(ctx, skeleton)
+        renderSkeleton(ctx, skeleton, null)
     }
 
     var premultipliedAlpha: Boolean = false
@@ -44,7 +46,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     private val temp5 = RGBAf()
     private val temp6 = RGBAf()
 
-    private fun renderSkeleton(ctx: RenderContext, skeleton: Skeleton) {
+    private fun renderSkeleton(ctx: RenderContext?, skeleton: Skeleton, bb: BoundsBuilder?) {
         val tempPosition = this.temp
         val tempUV = this.temp2
         val tempLight1 = this.temp3
@@ -105,7 +107,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
 
             } else if (attachment is SkeletonAttachment) {
                 val attachmentSkeleton = attachment.skeleton
-                if (attachmentSkeleton != null) renderSkeleton(ctx, attachmentSkeleton)
+                if (attachmentSkeleton != null) renderSkeleton(ctx, attachmentSkeleton, bb)
             }
 
             if (texture != null) {
@@ -136,7 +138,9 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, Colors.BLACK)
                     // @TODO: Remove clippedTriangles.toArray() so it doesn't allocate
-                    draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
+                    if (ctx != null) {
+                        draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
+                    }
                 } else {
                     if (vertexEffect != null) {
                         tempLight1.setTo(c)
@@ -170,7 +174,19 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                             u += 2
                         }
                     }
-                    draw(ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size, vertexSize)
+                    if (ctx != null) {
+                        draw(ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size, vertexSize)
+                    }
+                    if (bb != null) {
+                        val vertexCount = verticesLength / vertexSize
+                        for (n in 0 until vertexCount) {
+                            val index = n * vertexSize
+                            val x = vertices[index + 0]
+                            val y = vertices[index + 1]
+                            //println("Point($x, $y)")
+                            bb.add(x, -y)
+                        }
+                    }
                 }
 
                 //break // @TODO: Remove this
@@ -266,6 +282,16 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
         }
 
         //batch.flush()
+    }
+
+    private val bb = BoundsBuilder()
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        bb.reset()
+        skeleton.setPosition(0f, 0f)
+        skeleton.updateWorldTransform()
+        renderSkeleton(null, skeleton, bb)
+        bb.getBounds(out)
     }
 
     @Deprecated("We shouldn't do this")

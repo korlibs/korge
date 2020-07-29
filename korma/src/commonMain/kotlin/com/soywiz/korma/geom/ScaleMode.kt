@@ -46,6 +46,8 @@ class ScaleMode(
             if (c == 0) iw * s else ih * s
         }
 
+        val FIT get() = SHOW_ALL
+
         val EXACT = ScaleMode { c, iw, ih, cw, ch ->
             if (c == 0) cw else ch
         }

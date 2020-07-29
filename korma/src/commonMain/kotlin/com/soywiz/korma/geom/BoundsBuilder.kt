@@ -35,8 +35,14 @@ class BoundsBuilder {
         return this
     }
 
-    fun add(x: Double, y: Double, transform :Matrix): BoundsBuilder =
+    fun add(x: Double, y: Double, transform: Matrix): BoundsBuilder =
         add(transform.transformX(x, y), transform.transformY(x, y))
+
+    fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
+    fun add(x: Float, y: Float, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+
+    fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
+    fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
 
     fun getBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? = if (npoints == 0) null else out.setBounds(xmin, ymin, xmax, ymax)
 

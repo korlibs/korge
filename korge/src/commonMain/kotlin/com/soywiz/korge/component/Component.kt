@@ -217,6 +217,23 @@ interface ResizeComponent : Component {
      * Includes the [Views] singleton. [width],[height] are [Views.nativeWidth],[Views.nativeHeight].
      */
     fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
+
+    companion object {
+        operator fun invoke(view: View, block: Views.(width: Int, height: Int) -> Unit): ResizeComponent =
+            object : ResizeComponent {
+                override val view: View = view
+                override fun resized(views: Views, width: Int, height: Int) {
+                    block(views, width, height)
+                }
+            }
+    }
+}
+
+fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
+    if (firstTrigger) {
+        deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }
+    }
+    addComponent(ResizeComponent(this, block))
 }
 
 /*
