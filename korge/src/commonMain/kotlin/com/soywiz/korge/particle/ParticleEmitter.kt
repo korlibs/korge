@@ -1,5 +1,6 @@
 package com.soywiz.korge.particle
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korge.view.*
@@ -18,7 +19,9 @@ import kotlin.random.*
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(ParticleEmitter.Factory::class)
 class ParticleEmitter() {
-	enum class Type { GRAVITY, RADIAL }
+	enum class Type(val index: Int) {
+        GRAVITY(0), RADIAL(1)
+    }
 
 	var texture: BmpSlice? = null
 	var sourcePosition = Point()
@@ -63,6 +66,22 @@ class ParticleEmitter() {
 			this.timeUntilStop = time
 		}
 
+    companion object {
+        val blendFactorMap = mapOf(
+            0 to AG.BlendFactor.ZERO,
+            1 to AG.BlendFactor.ONE,
+            0x300 to AG.BlendFactor.SOURCE_COLOR,
+            0x301 to AG.BlendFactor.ONE_MINUS_SOURCE_COLOR,
+            0x302 to AG.BlendFactor.SOURCE_ALPHA,
+            0x303 to AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA,
+            0x304 to AG.BlendFactor.DESTINATION_ALPHA,
+            0x305 to AG.BlendFactor.ONE_MINUS_DESTINATION_ALPHA,
+            0x306 to AG.BlendFactor.DESTINATION_COLOR,
+            0x307 to AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR,
+        )
+        val blendFactorMapReversed = blendFactorMap.flip()
+    }
+
 	suspend fun load(file: VfsFile): ParticleEmitter {
 		val particleXml = file.readXml()
 
@@ -72,19 +91,7 @@ class ParticleEmitter() {
 		particleXml.allChildrenNoComments.fastForEach { item ->
 			fun point() = Point(item.double("x"), item.double("y"))
 			fun scalar() = item.double("value")
-			fun blendFactor() = when (scalar().toInt()) {
-				0 -> AG.BlendFactor.ZERO
-				1 -> AG.BlendFactor.ONE
-				0x300 -> AG.BlendFactor.SOURCE_COLOR
-				0x301 -> AG.BlendFactor.ONE_MINUS_SOURCE_COLOR
-				0x302 -> AG.BlendFactor.SOURCE_ALPHA
-				0x303 -> AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA
-				0x304 -> AG.BlendFactor.DESTINATION_ALPHA
-				0x305 -> AG.BlendFactor.ONE_MINUS_DESTINATION_ALPHA
-				0x306 -> AG.BlendFactor.DESTINATION_COLOR
-				0x307 -> AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR
-				else -> AG.BlendFactor.ONE
-			}
+			fun blendFactor() = blendFactorMap[scalar().toInt()] ?: AG.BlendFactor.ONE
 
 			fun angle() = Angle.degreesToRadians(item.double("value"))
 			fun color(): RGBAf =

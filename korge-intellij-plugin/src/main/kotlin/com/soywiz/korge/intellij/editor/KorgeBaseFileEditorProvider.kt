@@ -29,7 +29,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 		project: com.intellij.openapi.project.Project,
 		virtualFile: com.intellij.openapi.vfs.VirtualFile
 	): com.intellij.openapi.fileEditor.FileEditor {
-        val fileToEdit = KorgeFileToEdit(virtualFile.toVfs())
+        val fileToEdit = KorgeFileToEdit(virtualFile)
 		return KorgeBaseKorgeFileEditor(project, virtualFile, createModule(fileToEdit), "Preview")
 	}
 
@@ -51,7 +51,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
             "skel" -> createModule(null) { spineEditor(file) }
             "tmx" -> createModule(null) { tiledMapEditor(file) }
             "svg" -> createModule(null) {  sceneView += Image(file.readBitmapSlice()) }
-            "pex" -> particleEmiterEditor(file)
+            "pex" -> particleEmiterEditor(file, fileToEdit.originalFile)
             "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
             "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
             else -> createModule(null) { }

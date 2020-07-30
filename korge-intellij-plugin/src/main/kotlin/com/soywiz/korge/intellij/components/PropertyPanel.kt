@@ -157,6 +157,15 @@ fun EditableNode.toComponent(indentation: Int = 0): Component {
     }
 }
 
+fun EditableNode.getAllBaseEditableProperty(): List<BaseEditableProperty<*>> {
+    return when (this) {
+        is EditableSection -> this.list.flatMap { it.getAllBaseEditableProperty() }
+        is EditableNodeList -> this.list.flatMap { it.getAllBaseEditableProperty() }
+        is BaseEditableProperty<*> -> listOf(this)
+        else -> TODO()
+    }
+}
+
 interface EditableNode {
 }
 
@@ -170,39 +179,36 @@ class EditableSection(val title: String, val list: List<EditableNode>) : Editabl
     constructor(title: String, block: MutableList<EditableNode>.() -> Unit) : this(title, ArrayList<EditableNode>().apply(block))
 }
 
-data class EditableEnumerableProperty<T : Any>(
-    val name: String,
-    val clazz: KClass<T>,
-    val initialValue: T,
-    val supportedValues: Set<T>
-) : EditableNode {
+abstract class BaseEditableProperty<T : Any>(initialValue: T) : EditableNode {
+    abstract val name: String
+    abstract val clazz: KClass<T>
     val onChange = Signal<T>()
     //var prev: T = initialValue
     var value: T = initialValue
         set(newValue) {
             //this.prev = this.value
-            onChange(newValue)
-            field = newValue
+            if (field != newValue) {
+                onChange(newValue)
+                field = newValue
+            }
         }
 }
 
+data class EditableEnumerableProperty<T : Any>(
+    override val name: String,
+    override val clazz: KClass<T>,
+    val initialValue: T,
+    val supportedValues: Set<T>
+) : BaseEditableProperty<T>(initialValue)
+
 data class EditableNumericProperty<T : Number>(
-    val name: String,
-    val clazz: KClass<T>,
+    override val name: String,
+    override val clazz: KClass<T>,
     val initialValue: T,
     val minimumValue: T? = null,
     val maximumValue: T? = null,
     val step: T? = null
-) : EditableNode {
-    val onChange = Signal<T>()
-    //var prev: T = initialValue
-    var value: T = initialValue
-        set(newValue) {
-            //this.prev = this.value
-            onChange(newValue)
-            field = newValue
-        }
-}
+) : BaseEditableProperty<T>(initialValue)
 
 class Section(val indentation: Int, val title: String, val components: List<Component>) : JPanel() {
     val header: SectionHeader = SectionHeader(title, indentation, true).apply {
@@ -268,9 +274,11 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
 
     val stringToType = editProp.supportedValues.associateBy { it.toString() }.toCaseInsensitiveMap()
 
-    fun updateValue(value: T) {
-        editProp.value = value
-        valueTextField.text = value.toString()
+    fun updateValue(value: T?) {
+        if (value != null) {
+            editProp.value = value
+            valueTextField.text = value.toString()
+        }
     }
 
     init {
@@ -287,7 +295,7 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
 }
 class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
-    var value = editProp.value.toDouble()
+    var value = editProp.value?.toDouble() ?: 0.0
     val minimum = editProp.minimumValue?.toDouble() ?: -10000.0
     val maximum = editProp.maximumValue?.toDouble() ?: +10000.0
     val length = maximum - minimum

@@ -10,7 +10,7 @@ class RGBAf(
     private var _a: Float = 1f
 ) {
     init {
-        // @TODO: should we do this?
+        // @TODO: We cannot do clamping here since we use this class for ParticleEmitter with variance (potential negative values)
         //clamp()
     }
 

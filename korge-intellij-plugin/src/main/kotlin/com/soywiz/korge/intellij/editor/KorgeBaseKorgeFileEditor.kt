@@ -28,7 +28,9 @@ import javax.swing.*
 import javax.swing.plaf.metal.MetalLookAndFeel
 import kotlin.reflect.*
 
-data class KorgeFileToEdit(val file: VfsFile)
+data class KorgeFileToEdit(val originalFile: VirtualFile) {
+    val file: VfsFile = originalFile.toVfs()
+}
 
 open class KorgeBaseKorgeFileEditor(
 	val project: Project,
@@ -97,7 +99,7 @@ open class KorgeBaseKorgeFileEditor(
                     module.apply {
                         injector.configure()
                     }
-                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
+                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile))
                     //println("[G] ${Thread.currentThread()}")
                 }
             }

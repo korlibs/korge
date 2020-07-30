@@ -6,6 +6,9 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 
+fun VfsFileFromData(data: ByteArray, ext: String = "bin") = MemoryVfsMix(mapOf("file.$ext" to data))["file.$ext"]
+fun VfsFileFromData(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8) = MemoryVfsMix(mapOf("file.$ext" to data), charset = charset)["file.$ext"]
+
 fun MemoryVfs(items: Map<String, AsyncStream> = LinkedHashMap(), caseSensitive: Boolean = true): VfsFile {
 	val vfs = NodeVfs(caseSensitive)
 	for ((path, stream) in items) {
