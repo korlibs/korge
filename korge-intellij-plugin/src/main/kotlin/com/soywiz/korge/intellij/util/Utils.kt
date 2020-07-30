@@ -109,9 +109,16 @@ fun Project.backgroundTask(
 
 inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
 	//return ApplicationManager.getApplication().runWriteAction(Computable { runnable() })
-	return WriteAction.computeAndWait<T, Throwable> {
-		runnable()
-	}
+    //TransactionGuard.getInstance().assertWriteSafeContext(ModalityState.NON_MODAL)
+    //WriteAction.computeAndWait()
+    //WriteAction.computeAndWait<T, Throwable> {
+    //return com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.defaultModalityState()) {
+    return WriteAction.computeAndWait<T, Throwable> {
+        com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.current()) {
+            runnable()
+            //}
+        }
+    }
 }
 
 val <T> JComboBox<T>.selected get() = selectedItem as T

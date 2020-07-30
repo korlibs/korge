@@ -52,9 +52,11 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 			context.setMatrix(globalMatrix)
 
 			simulator.particles.fastForEach { p ->
-				val scale = p.scale
-				context.multiplyColor = p.color
-				context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale)
+                if (p.alive) {
+                    val scale = p.scale
+                    context.multiplyColor = p.color
+                    context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale)
+                }
 			}
 		}
 	}

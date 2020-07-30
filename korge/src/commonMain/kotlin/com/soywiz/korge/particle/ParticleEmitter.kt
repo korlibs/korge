@@ -323,7 +323,9 @@ class ParticleEmitter() {
 			}
 
 			particles.fastForEach { p ->
-				advance(p, time)
+                if (p.alive) {
+                    advance(p, time)
+                }
 			}
 		}
 	}
