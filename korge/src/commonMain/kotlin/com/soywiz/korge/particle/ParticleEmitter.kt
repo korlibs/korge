@@ -19,15 +19,15 @@ class ParticleEmitter() {
 	enum class Type { GRAVITY, RADIAL }
 
 	var texture: BmpSlice? = null
-	var sourcePosition = IPoint()
-	var sourcePositionVariance = IPoint()
+	var sourcePosition = Point()
+	var sourcePositionVariance = Point()
 	var speed = 0.0
 	var speedVariance = 0.0
 	var lifeSpan = 0.0
 	var lifespanVariance = 0.0
 	var angle = 0.0
 	var angleVariance = 0.0
-	var gravity = IPoint()
+	var gravity = Point()
 	var radialAcceleration = 0.0
 	var tangentialAcceleration = 0.0
 	var radialAccelVariance = 0.0
@@ -67,7 +67,7 @@ class ParticleEmitter() {
 		var blendFuncDestination = AG.BlendFactor.ONE
 
 		particleXml.allChildrenNoComments.fastForEach { item ->
-			fun point() = IPoint(item.double("x"), item.double("y"))
+			fun point() = Point(item.double("x"), item.double("y"))
 			fun scalar() = item.double("value")
 			fun blendFactor() = when (scalar().toInt()) {
 				0 -> AG.BlendFactor.ZERO

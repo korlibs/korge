@@ -60,8 +60,8 @@ fun Styled<out Container>.slider(min: Int = 0, max: Int = 100, value: Int = (max
 }
 
 fun <E : Any> Styled<out Container>.list(items: List<E> = listOf(), block: @UIDslMarker Styled<JList<E>>.() -> Unit = {}) {
-	val list = JList<E>(Vector(items.toMutableList())).also { block(it.styled) }
-	val listScroller = JScrollPane()
+	val list = JBList<E>(Vector(items.toMutableList())).also { block(it.styled) }
+	val listScroller = JBScrollPane()
 	listScroller.setViewportView(list);
 	listScroller.styled.delegate = list.styled
 	//listScroller.add(list)
@@ -169,6 +169,9 @@ val Number.percentage get() = (this.toDouble() / 100.0).ratio
 private val styledWeakMap = WeakHashMap<Component, Styled<Component>>()
 
 val <T : Component> T.styled: Styled<T> get() = styledWeakMap.getOrPut(this) { Styled(this) } as Styled<T>
+fun <T : Component> T.styled(block: Styled<T>.() -> Unit): Styled<T> = styled.apply(block)
+
+fun createRootStyled() = JPanel(BorderLayout()).styled
 
 class Styled<T : Component> constructor(val component: T) {
 	var preferred: MUnit2 = MUnit2(MUnit.Auto, MUnit.Auto)
@@ -187,9 +190,15 @@ class Styled<T : Component> constructor(val component: T) {
 		set(value) = run { preferred = preferred.copy( height = value) }
 
 	fun fill() {
-		width = FILL
-		height = FILL
+        fillWidth()
+		fillHeight()
 	}
+    fun fillWidth() {
+        width = FILL
+    }
+    fun fillHeight() {
+        height = FILL
+    }
 
 	var minWidth: MUnit = 0.pt
 	var minHeight: MUnit = 0.pt
@@ -199,6 +208,14 @@ class Styled<T : Component> constructor(val component: T) {
 	var margin: MUnit = 0.pt
 
 	internal var temp: Int = 0
+}
+
+fun Styled<out Container>.add(child: Component) {
+    component.add(child)
+}
+
+fun Styled<out Container>.add(child: Styled<*>) {
+    component.add(child.component)
 }
 
 enum class Direction {

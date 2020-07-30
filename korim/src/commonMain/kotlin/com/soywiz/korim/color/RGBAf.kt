@@ -11,7 +11,7 @@ class RGBAf(
 ) {
     init {
         // @TODO: should we do this?
-        clamp()
+        //clamp()
     }
 
     constructor(color: RGBAf) : this(color.r, color.g, color.b, color.a)

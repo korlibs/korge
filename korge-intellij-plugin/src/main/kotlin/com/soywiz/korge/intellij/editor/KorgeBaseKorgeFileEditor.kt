@@ -8,7 +8,10 @@ import com.intellij.openapi.vfs.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.components.*
+import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.rgba
+import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -23,15 +26,20 @@ import java.beans.*
 import java.io.*
 import javax.swing.*
 import javax.swing.plaf.metal.MetalLookAndFeel
+import kotlin.reflect.*
 
-data class KorgeFileToEdit(val file: VfsFile, val awtComponent: Component)
+data class KorgeFileToEdit(val file: VfsFile)
 
 open class KorgeBaseKorgeFileEditor(
 	val project: Project,
 	val virtualFile: VirtualFile,
-	val module: Module,
+	val module: EditorModule,
 	val _name: String
 ) : com.intellij.diff.util.FileEditorBase() {
+    abstract class EditorModule() : Module() {
+        open val editableNode: EditableNode? = null
+    }
+
 	companion object {
 		var componentsCreated = 0
 	}
@@ -85,13 +93,24 @@ open class KorgeBaseKorgeFileEditor(
                     //println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
                     val container = sceneContainer(views)
-                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs(), panel))
+                    views.setVirtualSize(panel.width, panel.height)
+                    module.apply {
+                        injector.configure()
+                    }
+                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
                     //println("[G] ${Thread.currentThread()}")
                 }
             }
         }.also { it.isDaemon = true }.start()
         //println("[I] ${Thread.currentThread()}")
-		panel
+        val editableNode = module.editableNode
+        if (editableNode != null) {
+            createRootStyled().apply {
+                createPropertyPanelWithEditor(panel, editableNode)
+            }.component
+        } else {
+            panel
+        }
 	}
 
 	override fun getComponent(): JComponent = component

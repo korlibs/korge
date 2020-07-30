@@ -1,6 +1,9 @@
 package com.soywiz.korge.intellij.editor
 
+import com.intellij.execution.console.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
@@ -26,27 +29,46 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 		project: com.intellij.openapi.project.Project,
 		virtualFile: com.intellij.openapi.vfs.VirtualFile
 	): com.intellij.openapi.fileEditor.FileEditor {
-		return KorgeBaseKorgeFileEditor(project, virtualFile, EditorModule, "Preview")
+        val fileToEdit = KorgeFileToEdit(virtualFile.toVfs())
+		return KorgeBaseKorgeFileEditor(project, virtualFile, createModule(fileToEdit), "Preview")
 	}
+
+    open fun createModule(fileToEdit: KorgeFileToEdit): KorgeBaseKorgeFileEditor.EditorModule {
+        val file = fileToEdit.file
+
+        val computedExtension = when {
+            file.baseName.endsWith("_ske.json") -> "dbbin"
+            else -> file.extensionLC
+        }
+
+        val obj = PropertyPanelSample.MyObject()
+        val node = EditableNodeList {
+            add(EditableSection("Position", obj::x.toEditableProperty(), obj::y.toEditableProperty()))
+            add(EditableSection("Color", obj::red.toEditableProperty(), obj::blue.toEditableProperty(), obj::green.toEditableProperty()))
+        }
+        return when (computedExtension) {
+            "dbbin" -> createModule(null) { dragonBonesEditor(file) }
+            "skel" -> createModule(null) { spineEditor(file) }
+            "tmx" -> createModule(null) { tiledMapEditor(file) }
+            "svg" -> createModule(null) {  sceneView += Image(file.readBitmapSlice()) }
+            "pex" -> particleEmiterEditor(file)
+            "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
+            "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
+            else -> createModule(null) { }
+        }
+    }
 
 	override fun getEditorTypeId(): String = this::class.java.name
 
-	object EditorModule : Module() {
-		override val mainScene: KClass<out Scene> = EditorScene::class
-
-		override suspend fun AsyncInjector.configure() {
-			get<ResourcesRoot>().mount("/", pluginResurcesVfs.root)
-		}
-	}
+    data class BlockToExecute(val block: suspend Scene.() -> Unit)
 
     @Prototype
     class EditorScene(
-        val fileToEdit: KorgeFileToEdit
+        val fileToEdit: KorgeFileToEdit,
+        val blockToExecute: BlockToExecute
     ) : Scene() {
 
         override suspend fun Container.sceneMain() {
-            views.setVirtualSize(fileToEdit.awtComponent.width, fileToEdit.awtComponent.height)
-
             val loading = text("Loading...", color = Colors.WHITE).apply {
                 //format = Html.Format(align = Html.Alignment.CENTER)
                 //x = views.virtualWidth * 0.5
@@ -60,31 +82,9 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
             //val frame = uiFrameView.frame
 
             delayFrame()
-            val file = fileToEdit.file
-
-            val computedExtension = when {
-                file.baseName.endsWith("_ske.json") -> "dbbin"
-                else -> file.extensionLC
-            }
 
             try {
-                when (computedExtension) {
-                    "dbbin" -> dragonBonesEditor(file)
-                    "skel" -> spineEditor(file)
-                    "tmx" -> tiledMapEditor(file)
-                    "svg" -> run { sceneView += Image(file.readBitmapSlice()) }
-                    //"scml" -> {
-                    //	val spriterLibrary = file.readSpriterLibrary(views)
-                    //	val spriterView = spriterLibrary.create(spriterLibrary.entityNames.first()).apply {
-                    //		x = views.virtualWidth * 0.5
-                    //		y = views.virtualHeight * 0.5
-                    //	}
-                    //	sceneView += spriterView
-                    //}
-                    "pex" -> particleEmiterEditor(file)
-                    "wav", "mp3", "ogg", "lipsync" -> audioFileEditor(file)
-                    "swf", "ani" -> swfAnimationEditor(file)
-                }
+                blockToExecute.block(this@EditorScene)
             } catch (e: Throwable) {
                 sceneView.text("Error: ${e.message}").centerOnStage()
                 e.printStackTrace()
@@ -99,7 +99,7 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
                 onClick {
                     views.launchImmediately {
                         //views.gameWindow.openFileDialog(LocalVfs(file.absolutePath))
-                        println("OPEN: ${file.absolutePath}")
+                        println("OPEN: ${fileToEdit.file.absolutePath}")
                     }
                 }
                 Unit
@@ -107,8 +107,16 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 
             Unit
         }
+    }
+}
 
-
-
+fun createModule(editableNode: EditableNode?, block: suspend Scene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
+    return object : KorgeBaseKorgeFileEditor.EditorModule() {
+        override val editableNode: EditableNode? get() = editableNode
+        override val mainScene: KClass<out Scene> = KorgeBaseFileEditorProvider.EditorScene::class
+        override suspend fun AsyncInjector.configure() {
+            get<ResourcesRoot>().mount("/", KorgeBaseFileEditorProvider.pluginResurcesVfs.root)
+            mapInstance(KorgeBaseFileEditorProvider.BlockToExecute(block))
+        }
     }
 }
