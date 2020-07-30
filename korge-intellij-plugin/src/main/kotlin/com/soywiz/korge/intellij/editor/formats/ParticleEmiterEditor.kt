@@ -140,14 +140,6 @@ fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
             }
         }
 
-        sceneView.textButton(text = "Particle").apply {
-            width = 80.0
-            height = 24.0
-            x = 0.0
-            y = 0.0
-            onClick {
-            }
-        }
         sceneView += particle.create(0.0, 0.0).dockedTo(Anchor.MIDDLE_CENTER)
     }
 }

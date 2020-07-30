@@ -86,20 +86,6 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
             }
             sceneView -= loading
 
-            sceneView.textButton(text = "Open").apply {
-                width = 80.0
-                height = 24.0
-                x = views.virtualWidth - width
-                y = 0.0
-                onClick {
-                    views.launchImmediately {
-                        //views.gameWindow.openFileDialog(LocalVfs(file.absolutePath))
-                        println("OPEN: ${fileToEdit.file.absolutePath}")
-                    }
-                }
-                Unit
-            }
-
             Unit
         }
     }
