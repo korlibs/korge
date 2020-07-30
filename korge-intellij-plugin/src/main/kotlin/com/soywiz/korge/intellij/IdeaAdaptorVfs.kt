@@ -1,9 +1,13 @@
 package com.soywiz.korge.intellij
 
+import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.stream.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import java.io.*
 
@@ -16,6 +20,36 @@ fun VirtualFile.toVfs(): VfsFile {
 	//return File(URI(url)).toVfs()
 
 	return File(url).toVfs()
+}
+
+fun VirtualFile.toTextualVfs(): VfsFile {
+    val virtualFile = this
+    val file = virtualFile.toVfs()
+    val ref = DocumentReferenceManager.getInstance().create(this)
+
+    val documentFile = (object : Vfs() {
+        override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
+            if (mode.write) error("Unsupported")
+            return (ref.document?.text ?: "").toByteArray(Charsets.UTF_8).openAsync()
+        }
+
+        override suspend fun put(path: String, content: AsyncInputStream, attributes: List<Attribute>): Long {
+            val byteArray = content.readAll()
+            runWriteAction {
+                ref.document?.setText(byteArray.toString(Charsets.UTF_8))
+            }
+            return byteArray.size.toLong()
+        }
+    })[virtualFile.canonicalPath ?: virtualFile.name]
+
+    return runBlocking {
+        MountableVfs {
+            mount("/", file.root)
+            if (ref.document != null) {
+                mount(file.path, documentFile)
+            }
+        }[file.path]
+    }
 }
 
 val VirtualFile.root: VirtualFile get() = this.parent?.root ?: this

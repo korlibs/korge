@@ -4,6 +4,7 @@ import com.intellij.openapi.command.undo.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.util.*
@@ -11,28 +12,18 @@ import com.soywiz.korge.particle.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 
-fun particleEmiterEditor(file: VfsFile, originalFile: VirtualFile): KorgeBaseKorgeFileEditor.EditorModule {
-    val ref = DocumentReferenceManager.getInstance().create(originalFile)
-    fun save(text: String) {
-        ref.document?.let { doc ->
-            runWriteAction {
-                //run {
-                println("DOCUMENT SET TEXT")
-                doc.setText(text)
-            }
-        }
-    }
+fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
+    val particle = runBlocking { file.readParticle() }
 
-    val particle = runBlocking { VfsFileFromData(ref.document?.text ?: "").readParticle() }
-
-    fun save() {
-        save(buildXml("particleEmitterConfig") {
+    suspend fun save() {
+        file.writeString(buildXml("particleEmitterConfig") {
             fun nodeValue(name: String, value: Any?) {
                 node(name, "value" to value)
             }
@@ -143,7 +134,9 @@ fun particleEmiterEditor(file: VfsFile, originalFile: VirtualFile): KorgeBaseKor
         sceneView.addUpdater {
             if (doSave) {
                 doSave = false
-                save()
+                launchImmediately {
+                    save()
+                }
             }
         }
 

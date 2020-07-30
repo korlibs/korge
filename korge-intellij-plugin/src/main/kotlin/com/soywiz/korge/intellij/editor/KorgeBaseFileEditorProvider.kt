@@ -41,17 +41,12 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
             else -> file.extensionLC
         }
 
-        val obj = PropertyPanelSample.MyObject()
-        val node = EditableNodeList {
-            add(EditableSection("Position", obj::x.toEditableProperty(), obj::y.toEditableProperty()))
-            add(EditableSection("Color", obj::red.toEditableProperty(), obj::blue.toEditableProperty(), obj::green.toEditableProperty()))
-        }
         return when (computedExtension) {
             "dbbin" -> createModule(null) { dragonBonesEditor(file) }
             "skel" -> createModule(null) { spineEditor(file) }
             "tmx" -> createModule(null) { tiledMapEditor(file) }
             "svg" -> createModule(null) {  sceneView += Image(file.readBitmapSlice()) }
-            "pex" -> particleEmiterEditor(file, fileToEdit.originalFile)
+            "pex" -> particleEmiterEditor(file)
             "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
             "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
             else -> createModule(null) { }

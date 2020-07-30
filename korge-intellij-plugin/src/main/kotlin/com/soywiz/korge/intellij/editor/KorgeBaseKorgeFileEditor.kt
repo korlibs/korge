@@ -29,7 +29,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel
 import kotlin.reflect.*
 
 data class KorgeFileToEdit(val originalFile: VirtualFile) {
-    val file: VfsFile = originalFile.toVfs()
+    val file: VfsFile = originalFile.toTextualVfs()
 }
 
 open class KorgeBaseKorgeFileEditor(
