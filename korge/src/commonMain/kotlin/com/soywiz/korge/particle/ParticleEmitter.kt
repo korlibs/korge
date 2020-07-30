@@ -7,8 +7,10 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.random.*
 import kotlin.math.*
 import kotlin.random.*
@@ -88,7 +90,18 @@ class ParticleEmitter() {
 				RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 
 			when (item.name.toLowerCase()) {
-				"texture" -> texture = file.parent[item.str("name")].readBitmapSlice()
+				"texture" -> {
+                    try {
+                        texture = file.parent[item.str("name")].readBitmapSlice()
+                    } catch (e: FileNotFoundException) {
+                        texture = Bitmap32(64, 64).context2d {
+                            fill(createRadialGradient(32.0, 32.0, 0.0, 32.0, 32.0, 32.0)
+                                .addColorStop(0.0, Colors.WHITE)
+                                .addColorStop(0.4, Colors.WHITE)
+                                .addColorStop(1.0, Colors.TRANSPARENT_WHITE)) { circle(32.0, 32.0, 30.0) }
+                        }.slice()
+                    }
+                }
 				"sourceposition" -> sourcePosition = point()
 				"sourcepositionvariance" -> sourcePositionVariance = point()
 				"speed" -> speed = scalar()

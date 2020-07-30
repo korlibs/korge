@@ -7,11 +7,11 @@ import com.intellij.psi.*
 import com.soywiz.korge.intellij.*
 
 class NewTiledMap : CreateFileFromTemplateAction(
-	"Tiled Map",
-	"Creates new .tmx Tile Map",
-	KorgeIcons.TILED
+	"Particle Emitter",
+	"Creates new .pex Particle Emitter",
+	KorgeIcons.PARTICLE
 ), DumbAware {
-	override fun getActionName(directory: PsiDirectory?, newName: String, templateName: String?): String = "Tiled Map"
+	override fun getActionName(directory: PsiDirectory?, newName: String, templateName: String?): String = "Particle Emitter"
 
 	override fun isAvailable(dataContext: DataContext): Boolean = dataContext.project?.korge?.containsKorge ?: false
 
@@ -21,11 +21,13 @@ class NewTiledMap : CreateFileFromTemplateAction(
 		builder: CreateFileFromTemplateDialog.Builder
 	) {
 		builder
-			.setTitle("New Tiled Map")
-			.addKind("TileMap", KorgeIcons.TILED, "TiledMap")
+			.setTitle("New Particle Emitter")
+			.addKind("ParticleEmitter", KorgeIcons.PARTICLE, "ParticleEmitter")
 	}
 
 	//override fun createFileFromTemplate(name: String?, template: FileTemplate?, dir: PsiDirectory?): PsiFile? {
 	//	return createFile(name, "KorgeScene.kt", dir)
 	//}
 }
+
+

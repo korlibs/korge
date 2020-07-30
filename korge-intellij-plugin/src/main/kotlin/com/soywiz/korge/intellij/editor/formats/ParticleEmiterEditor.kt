@@ -30,7 +30,7 @@ fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         ))
         add(EditableSection("Lifespan",
             particle::lifeSpan.toEditableProperty(0.0, 10.0),
-            particle::lifespanVariance.toEditableProperty(0.0, 10.0),
+            particle::lifespanVariance.toEditableProperty(-10.0, 10.0),
             particle::duration.toEditableProperty(-10.0, 10.0),
         ))
         add(EditableSection("Gravity", particle.gravity.editableNodes()))
@@ -47,21 +47,21 @@ fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         add(EditableSection("End Color", particle.endColor.editableNodes()))
         add(EditableSection("End Color Variance", particle.endColor.editableNodes(variance = true)))
         add(EditableSection("Max particles", particle::maxParticles.toEditableProperty(1, 20000)))
-        add(EditableSection("Start Size", particle::startSize.toEditableProperty(1.0, 1000.0), particle::startSizeVariance.toEditableProperty(1.0, 1000.0)))
-        add(EditableSection("End Size", particle::endSize.toEditableProperty(1.0, 1000.0), particle::endSizeVariance.toEditableProperty(1.0, 1000.0)))
+        add(EditableSection("Start Size", particle::startSize.toEditableProperty(1.0, 1000.0), particle::startSizeVariance.toEditableProperty(-1000.0, 1000.0)))
+        add(EditableSection("End Size", particle::endSize.toEditableProperty(1.0, 1000.0), particle::endSizeVariance.toEditableProperty(-1000.0, 1000.0)))
         add(EditableSection("Radius",
             particle::minRadius.toEditableProperty(0.0, 1000.0),
-            particle::minRadiusVariance.toEditableProperty(0.0, 1000.0),
+            particle::minRadiusVariance.toEditableProperty(-1000.0, 1000.0),
             particle::maxRadius.toEditableProperty(0.0, 1000.0),
-            particle::maxRadiusVariance.toEditableProperty(0.0, 1000.0),
+            particle::maxRadiusVariance.toEditableProperty(-1000.0, 1000.0),
         ))
         add(EditableSection("Rotate",
             particle::rotatePerSecond.toEditableProperty(0.0, 1000.0),
-            particle::rotatePerSecondVariance.toEditableProperty(0.0, 1000.0),
+            particle::rotatePerSecondVariance.toEditableProperty(-1000.0, 1000.0),
             particle::rotationStart.toEditableProperty(0.0, 1000.0),
-            particle::rotationStartVariance.toEditableProperty(0.0, 1000.0),
+            particle::rotationStartVariance.toEditableProperty(-1000.0, 1000.0),
             particle::rotationEnd.toEditableProperty(0.0, 1000.0),
-            particle::rotationEndVariance.toEditableProperty(0.0, 1000.0),
+            particle::rotationEndVariance.toEditableProperty(-1000.0, 1000.0),
         ))
         //add(EditableSection("Emitter Type", particle::emitterType.) // @TODO
         //add(EditableSection("Blend Factors", particle::blendFactors.) // @TODO

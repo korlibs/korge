@@ -128,6 +128,7 @@
 
             <action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
             <action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
+            <action id="Korge.NewFile.ParticleEmitter" class="com.soywiz.korge.intellij.createnew.NewParticleEmitter"/>
 
             <separator/>
         </group>
