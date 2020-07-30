@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korag.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -31,17 +32,23 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 		while (anyAlive) waitFrame()
 	}
 
+    private var cachedBlending = AG.Blending.NORMAL
+
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 		//ctx.flush()
+
+        if (cachedBlending.srcRGB != emitter.blendFuncSource || cachedBlending.dstRGB != emitter.blendFuncDestination) {
+            cachedBlending = AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination)
+        }
 
 		val context = ctx.ctx2d
 		val texture = emitter.texture ?: return
 		val cx = texture.width * 0.5
 		val cy = texture.height * 0.5
 		context.keep {
-			context.blendFactors = emitter.blendFactors
+			context.blendFactors = cachedBlending
 			context.setMatrix(globalMatrix)
 
 			simulator.particles.fastForEach { p ->

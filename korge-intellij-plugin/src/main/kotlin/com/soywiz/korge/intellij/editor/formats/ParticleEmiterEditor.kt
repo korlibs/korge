@@ -20,6 +20,8 @@ fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     val particle = runBlocking { file.readParticle() }
 
     return createModule(EditableNodeList {
+        add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty()))
+        add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(), particle::blendFuncDestination.toEditableProperty()))
         add(EditableSection("Angle",
             particle::angle.toEditableProperty(0.0, 360.0, 0.0, kotlin.math.PI * 2),
             particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, kotlin.math.PI * 2)
@@ -63,8 +65,6 @@ fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
             particle::rotationEnd.toEditableProperty(0.0, 1000.0),
             particle::rotationEndVariance.toEditableProperty(-1000.0, 1000.0),
         ))
-        //add(EditableSection("Emitter Type", particle::emitterType.) // @TODO
-        //add(EditableSection("Blend Factors", particle::blendFactors.) // @TODO
     }) {
         sceneView.textButton(text = "Particle").apply {
             width = 80.0

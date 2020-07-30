@@ -1,16 +1,11 @@
 package com.soywiz.korge.intellij.components
 
-import com.intellij.ui.components.*
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korge.intellij.editor.tiled.*
-import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
@@ -19,6 +14,11 @@ import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.jvm.*
 import kotlin.system.*
+
+//typealias MyJScrollPane = JScrollPane
+//typealias MyJComboBox<T> = JComboBox<T>
+typealias MyJScrollPane = com.intellij.ui.components.JBScrollPane
+typealias MyJComboBox<T> = com.intellij.openapi.ui.ComboBox<T>
 
 fun Styled<out Container>.createPropertyPanelWithEditor(
     editor: Component,
@@ -58,7 +58,7 @@ fun com.soywiz.korma.geom.Point.editableNodes() = listOf(
     this::y.toEditableProperty(-1000.0, +1000.0)
 )
 
-class PropertyPanel(val rootNode: EditableNode) : JBScrollPane(JPanel().apply {
+class PropertyPanel(val rootNode: EditableNode) : MyJScrollPane(JPanel().apply {
     this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
 }, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED) {
     val contentPane = viewport.view as JPanel
@@ -114,6 +114,21 @@ fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null
     }
 }
 
+fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
+    name: String? = null
+): EditableEnumerableProperty<T> {
+    val prop = this
+    val clazz = this.returnType.jvmErasure as KClass<T>
+    return EditableEnumerableProperty<T>(
+        name = name ?: this.name,
+        clazz = clazz,
+        initialValue = prop.get(),
+        supportedValues = clazz.java.enumConstants.toSet() as Set<T>
+    ).also {
+        it.onChange { prop.set(it) }
+    }
+}
+
 annotation class IntSupportedRange(val min: Int, val max: Int)
 annotation class DoubleSupportedRange(val min: Double, val max: Double)
 
@@ -133,6 +148,9 @@ fun EditableNode.toComponent(indentation: Int = 0): Component {
         is EditableNumericProperty<*> -> {
             EditableNumberValue(this, indentation)
         }
+        is EditableEnumerableProperty<*> -> {
+            EditableListValue(this as EditableEnumerableProperty<Any>, indentation)
+        }
         else -> {
             TODO()
         }
@@ -150,6 +168,22 @@ class EditableNodeList(val list: List<EditableNode>) : EditableNode {
 class EditableSection(val title: String, val list: List<EditableNode>) : EditableNode {
     constructor(title: String, vararg list: EditableNode) : this(title, list.toList())
     constructor(title: String, block: MutableList<EditableNode>.() -> Unit) : this(title, ArrayList<EditableNode>().apply(block))
+}
+
+data class EditableEnumerableProperty<T : Any>(
+    val name: String,
+    val clazz: KClass<T>,
+    val initialValue: T,
+    val supportedValues: Set<T>
+) : EditableNode {
+    val onChange = Signal<T>()
+    //var prev: T = initialValue
+    var value: T = initialValue
+        set(newValue) {
+            //this.prev = this.value
+            onChange(newValue)
+            field = newValue
+        }
 }
 
 data class EditableNumericProperty<T : Number>(
@@ -228,6 +262,29 @@ class SectionBody(components: List<Component>) : JPanel() {
     }
 }
 
+class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+    val FULL_CHANGE_WIDTH = 200
+    lateinit var valueTextField: EditableLabel
+
+    val stringToType = editProp.supportedValues.associateBy { it.toString() }.toCaseInsensitiveMap()
+
+    fun updateValue(value: T) {
+        editProp.value = value
+        valueTextField.text = value.toString()
+    }
+
+    init {
+        //preferredSize = Dimension(1024, 32)
+        maximumSize = Dimension(1024, 32)
+        add(JLabel(editProp.name).apply {
+            this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
+        })
+        add(EditableLabel("", stringToType.keys) {
+            updateValue(stringToType[it] ?: editProp.value)
+        }.also { valueTextField = it })
+        updateValue(editProp.value)
+    }
+}
 class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     var value = editProp.value.toDouble()
@@ -289,12 +346,12 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
     }
 }
 
-class EditableLabel(initialText: String, val textChanged: (String) -> Unit) : JPanel(BorderLayout()) {
+class EditableLabel(initialText: String, val supportedValues: Set<String>? = null, val textChanged: (String) -> Unit) : JPanel(BorderLayout()) {
     val panel = this
     val label: JLabel = JLabel(initialText).apply {
         this.border = CompoundBorder(this.border, EmptyBorder(10, 10, 10, 10))
         addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) = useTextField()
+            override fun mouseClicked(e: MouseEvent) = startEditing()
         })
     }
 
@@ -305,36 +362,58 @@ class EditableLabel(initialText: String, val textChanged: (String) -> Unit) : JP
         addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 when (e.keyCode) {
-                    KeyEvent.VK_ENTER -> useLabel()
+                    KeyEvent.VK_ENTER -> stopEditing()
                     else -> super.keyPressed(e)
                 }
             }
         })
         addFocusListener(object : FocusAdapter() {
             override fun focusGained(e: FocusEvent) = selectAll()
-            override fun focusLost(e: FocusEvent) = useLabel()
+            override fun focusLost(e: FocusEvent) = stopEditing()
         })
     }
 
-    fun useTextField() {
-        panel.removeAll()
-        panel.add(textField, BorderLayout.CENTER)
-        panel.revalidate()
-        panel.repaint()
-        textField.requestFocus()
+    val comboBox: MyJComboBox<String> = MyJComboBox((supportedValues ?: setOf()).toTypedArray()).apply {
+        this.border = CompoundBorder(this.border, EmptyBorder(0, 2, 0, 2))
+        //this.border = EmptyBorder(8, 8, 8, 8)
+        addItemListener {
+            //stopEditing()
+            synchronizeEditText()
+        }
+        addFocusListener(object : FocusAdapter() {
+            override fun focusGained(e: FocusEvent) = this@apply.showPopup()
+            override fun focusLost(e: FocusEvent) = stopEditing()
+        })
     }
 
-    fun useLabelNoChangeText() {
+    val editComponent: JComponent = if (supportedValues != null) comboBox else textField
+
+    fun synchronizeEditText() {
+        val editText = when (editComponent) {
+            is JTextField -> editComponent.text
+            is MyJComboBox<*> -> editComponent.selectedItem.toString()
+            else -> TODO("editComponent: $editComponent")
+        }
+        if (label.text != editText) {
+            label.text = editText
+            textChanged(editText)
+        }
+    }
+
+    fun startEditing() {
+        panel.removeAll()
+        panel.add(editComponent, BorderLayout.CENTER)
+        panel.revalidate()
+        panel.repaint()
+        editComponent.requestFocus()
+    }
+
+    fun stopEditing() {
         panel.removeAll()
         panel.add(label, BorderLayout.CENTER)
         panel.revalidate()
         panel.repaint()
-    }
-
-    fun useLabel() {
-        useLabelNoChangeText()
-        label.text = textField.text
-        textChanged(textField.text)
+        synchronizeEditText()
     }
 
     var text: String
@@ -342,10 +421,14 @@ class EditableLabel(initialText: String, val textChanged: (String) -> Unit) : JP
         set(value) {
             if (this.components.firstOrNull() != label) {
                 //useLabelNoChangeText()
-                useLabel()
+                stopEditing()
             }
             label.text = value
-            textField.text = value
+            when (editComponent) {
+                is JTextField -> editComponent.text = value
+                is MyJComboBox<*> -> editComponent.selectedItem = value
+                else -> TODO("editComponent: $editComponent")
+            }
         }
 
     init {
@@ -354,7 +437,7 @@ class EditableLabel(initialText: String, val textChanged: (String) -> Unit) : JP
         //add(textField, BorderLayout.CENTER)
         addFocusListener(object : FocusAdapter() {
             override fun focusGained(e: FocusEvent) {
-                useTextField()
+                startEditing()
             }
 
             override fun focusLost(e: FocusEvent) {
@@ -374,6 +457,7 @@ object PropertyPanelSample {
         val obj = MyObject()
 
         val rootSection = EditableNodeList {
+            add(EditableSection("Enum", obj::z.toEditableProperty()))
             add(EditableSection("Position", obj::x.toEditableProperty(), obj::y.toEditableProperty()))
             add(EditableSection("Color", obj::red.toEditableProperty(), obj::blue.toEditableProperty(), obj::green.toEditableProperty()))
         }
@@ -404,7 +488,11 @@ object PropertyPanelSample {
         })
     }
 
+    enum class MyEnum { A, B, C }
+
     class MyObject {
+        var z: MyEnum = MyEnum.A
+
         @Suppress("UnusedUnaryOperator")
         @DoubleSupportedRange(-1.0, +1.0)
         var x: Double = 0.0

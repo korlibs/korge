@@ -51,7 +51,8 @@ class ParticleEmitter() {
 	var minRadiusVariance = 0.0
 	var rotatePerSecond = 0.0
 	var rotatePerSecondVariance = 0.0
-	var blendFactors = BlendMode.NORMAL.factors
+    var blendFuncSource = AG.BlendFactor.ONE
+    var blendFuncDestination = AG.BlendFactor.ONE
 	var rotationStart = 0.0
 	var rotationStartVariance = 0.0
 	var rotationEnd = 0.0
@@ -65,8 +66,8 @@ class ParticleEmitter() {
 	suspend fun load(file: VfsFile): ParticleEmitter {
 		val particleXml = file.readXml()
 
-		var blendFuncSource = AG.BlendFactor.ONE
-		var blendFuncDestination = AG.BlendFactor.ONE
+		//var blendFuncSource = AG.BlendFactor.ONE
+		//var blendFuncDestination = AG.BlendFactor.ONE
 
 		particleXml.allChildrenNoComments.fastForEach { item ->
 			fun point() = Point(item.double("x"), item.double("y"))
@@ -144,8 +145,6 @@ class ParticleEmitter() {
 				"rotationendvariance" -> rotationEndVariance = angle()
 			}
 		}
-
-		blendFactors = AG.Blending(blendFuncSource, blendFuncDestination)
         return this
 	}
 
