@@ -365,6 +365,7 @@ class Bitmap32(
     //override fun hashCode(): Int = (width * 31 + height) + data.ints.contentHashCode() + premultiplied.toInt()
 
     companion object {
+        operator fun invoke(width: Int, height: Int, premultiplied: Boolean) = Bitmap32(width, height, Colors.TRANSPARENT_BLACK, premultiplied)
         operator fun invoke(width: Int, height: Int, premultiplied: Boolean = false, generator: (x: Int, y: Int) -> RGBA): Bitmap32 {
             return Bitmap32(width, height, RgbaArray(width * height).also {
                 var n = 0

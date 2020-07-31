@@ -162,6 +162,7 @@ data class Matrix(
     }
 
     fun premultiply(m: Matrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
+    fun postmultiply(m: Matrix) = multiply(this, m)
 
     fun premultiply(la: Double, lb: Double, lc: Double, ld: Double, ltx: Double, lty: Double): Matrix = setTo(
         la * a + lb * c,

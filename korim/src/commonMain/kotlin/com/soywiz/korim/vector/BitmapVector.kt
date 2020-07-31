@@ -25,8 +25,9 @@ class BitmapVector(
         if (width >= 4096 || height >= 4096) error("Bitmap is too big")
     }
 
-    val nativeImage: NativeImage by lazy {
+    val nativeImage: Bitmap by lazy {
         NativeImage(width, height, premultiplied).context2d(antialiasing) {
+        //Bitmap32(width, height, premultiplied).context2d(antialiasing) {
             scale(scale, scale)
             translate(-bounds.x, -bounds.y)
             drawShape(shape, rasterizerMethod)

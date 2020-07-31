@@ -291,6 +291,11 @@ data class Point(
         this.setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
     override fun toString(): String = "(${x.niceStr}, ${y.niceStr})"
+
+    fun rotate(rotation: Angle, out: Point = Point()): Point {
+        val newAngle = Angle.between(0.0, 0.0, this.x, this.y) + rotation
+        return out.setToPolar(newAngle, this.length)
+    }
 }
 
 

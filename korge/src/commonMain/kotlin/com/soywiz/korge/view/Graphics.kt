@@ -198,6 +198,11 @@ open class Graphics @JvmOverloads constructor(
 
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
+    fun shape(shape: Shape) {
+        shapes += shape
+        currentPath = graphicsPathPool.alloc()
+        shapeVersion++
+    }
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
     inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
 

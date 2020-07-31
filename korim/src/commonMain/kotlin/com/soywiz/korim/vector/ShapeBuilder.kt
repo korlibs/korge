@@ -11,7 +11,7 @@ import com.soywiz.korma.geom.vector.*
 
 inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape = ShapeBuilder(width, height).apply(builder).buildShape()
 
-class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), Drawable {
+open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), Drawable {
     override val rendererWidth: Int = width ?: 256
     override val rendererHeight: Int = height ?: 256
 
