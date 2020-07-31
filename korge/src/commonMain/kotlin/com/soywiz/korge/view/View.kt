@@ -1172,9 +1172,7 @@ abstract class View internal constructor(
     fun getBounds(target: View? = this, doAnchoring: Boolean, out: Rectangle = Rectangle()): Rectangle {
         getLocalBounds(doAnchoring, out)
 
-        if (target === parent) {
-            return out
-        }
+        if (target === parent && localMatrix.isIdentity()) return out
 
         val p1x = out.left
         val p1y = out.top

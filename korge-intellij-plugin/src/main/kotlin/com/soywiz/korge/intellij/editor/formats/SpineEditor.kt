@@ -57,10 +57,17 @@ suspend fun spineEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     //        //state.setAnimation(0, it, true)
     //    }
     //}
+    val animationSpeed = EditableNumericProperty("animationSpeed", Double::class, 1.0, 0.01, 10.0).apply {
+        this.onChange {
+            vSkeletonView?.speed = it
+            stateData.defaultMix
+            //state.setAnimation(0, it, true)
+        }
+    }
 
     return createModule(EditableNodeList {
-        //add(EditableSection("Animation", animation1Property, animation2Property, blendingFactor))
-        add(EditableSection("Animation", animation1Property))
+        //add(EditableSection("Animation", animation1Property, animation2Property, blendingFactor, animationSpeed))
+        add(EditableSection("Animation", animation1Property, animationSpeed))
     }) {
         state.setAnimation(0, defaultAnimationName, true)
         //skeleton.setPosition(250f, 20f)

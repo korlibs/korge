@@ -8,6 +8,8 @@ import com.soywiz.korge.view.scale
 import com.soywiz.korma.geom.*
 
 open class RepositionResult(val view: View, val views: Views) {
+    //val originalMatrix = view.localMatrix.copy()
+    val originalMatrix = Matrix()
     var localBounds: Rectangle = Rectangle()
     var initialSize: Size = Size()
 
@@ -19,8 +21,8 @@ open class RepositionResult(val view: View, val views: Views) {
 
     fun refreshBounds() {
         val oldMatrix = view.localMatrix.copy()
-        view.localMatrix = Matrix()
-        localBounds = view.getLocalBounds()
+        view.localMatrix = originalMatrix
+        view.getLocalBoundsInternal(localBounds)
         view.localMatrix = oldMatrix
         forceBounds(localBounds)
     }
@@ -42,6 +44,7 @@ open class RepositionResult(val view: View, val views: Views) {
         view.onStageResized(firstTrigger = false) { width, height ->
             reposition()
         }
+        println("Initial View.pos: ${view.pos}")
         refreshBounds()
     }
 }

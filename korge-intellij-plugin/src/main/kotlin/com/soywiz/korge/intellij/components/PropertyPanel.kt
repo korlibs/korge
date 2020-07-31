@@ -29,7 +29,8 @@ fun Styled<out Container>.createPropertyPanelWithEditor(
         horizontalStack {
             fill()
             verticalStack {
-                minWidth = 32.pt
+                //minWidth = 32.pt
+                minWidth = 360.pt
                 fill()
                 add(editor.styled {
                     fill()

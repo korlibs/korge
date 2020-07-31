@@ -134,51 +134,17 @@ open class KorgeBaseKorgeFileEditor(
 		System.gc()
 	}
 
-	override fun isModified(): Boolean {
-		return false
-	}
-
-	override fun getName(): String {
-		return _name
-	}
-
-	override fun addPropertyChangeListener(p0: PropertyChangeListener) {
-	}
-
-	override fun removePropertyChangeListener(p0: PropertyChangeListener) {
-	}
-
-	override fun setState(p0: FileEditorState) {
-	}
-
-	override fun getPreferredFocusedComponent(): JComponent? {
-		return component
-	}
-
-	override fun <T : Any?> getUserData(p0: Key<T>): T? {
-		return null
-	}
-
-	override fun selectNotify() {
-	}
-
-	override fun <T : Any?> putUserData(p0: Key<T>, p1: T?) {
-	}
-
-	override fun getCurrentLocation(): FileEditorLocation? {
-		return null
-	}
-
-	override fun deselectNotify() {
-		//TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-	}
-
-	override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
-		return null
-		//TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-	}
-
-	override fun isValid(): Boolean {
-		return true
-	}
+	override fun isModified(): Boolean = false
+	override fun getName(): String = _name
+	override fun addPropertyChangeListener(p0: PropertyChangeListener) = Unit
+	override fun removePropertyChangeListener(p0: PropertyChangeListener) = Unit
+	override fun setState(p0: FileEditorState) = Unit
+	override fun getPreferredFocusedComponent(): JComponent? = component
+	override fun <T : Any?> getUserData(p0: Key<T>): T? = null
+	override fun selectNotify() = Unit
+	override fun <T : Any?> putUserData(p0: Key<T>, p1: T?) = Unit
+	override fun getCurrentLocation(): FileEditorLocation? = null
+	override fun deselectNotify() = Unit
+	override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
+	override fun isValid(): Boolean = true
 }

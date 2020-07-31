@@ -186,6 +186,8 @@ data class Matrix(
 
     fun identity() = setTo(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
+    fun isIdentity() = getType() == Type.IDENTITY
+
     fun invert(matrixToInvert: Matrix = this): Matrix {
         val src = matrixToInvert
         val dst = this
