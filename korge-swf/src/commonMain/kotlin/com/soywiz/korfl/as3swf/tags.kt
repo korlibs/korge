@@ -1123,9 +1123,6 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		var j = 0
 		val exportShape = SWFShape()
 		val numEdges: Int = startEdges.records.size
-		if (startEdges.records.size != endEdges.records.size) {
-			TODO("Not implemented different startEdges.records.size(${startEdges.records.size}) != endEdges.records.size(${endEdges.records.size})")
-		}
 		for (i in 0 until numEdges) {
 			var startRecord = startEdges.records[i]
 			// Ignore start records that are style change records and don't have moveTo
