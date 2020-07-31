@@ -127,7 +127,7 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
 		}
 	}
 
-	override fun create(width: Int, height: Int): NativeImage {
+	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		return HtmlNativeImage(HtmlCanvas.createCanvas(width, height))
 	}
 

@@ -376,24 +376,22 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 			}
 			ShapeRasterizerMethod.X1, ShapeRasterizerMethod.X2, ShapeRasterizerMethod.X4 -> {
 				val scale = rasterizerMethod.scale
-				val newBi = NativeImage(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt())
-				val bi = newBi.getContext2d(antialiasing = false)
-				//val bi = Context2d(AwtContext2dRender(newBi, antialiasing = true))
-				//val oldLineScale = bi.lineScale
-				//try {
-				bi.scale(scale, scale)
-				bi.transform(state.transform)
-				bi.draw(shape)
-				val renderBi = when (rasterizerMethod) {
-					ShapeRasterizerMethod.X1 -> newBi
-					ShapeRasterizerMethod.X2 -> newBi.mipmap(1)
-					ShapeRasterizerMethod.X4 -> newBi.mipmap(2)
-					else -> newBi
-				}
-				keepTransform {
-					setTransform(Matrix())
-					this.rendererDrawImage(renderBi, 0.0, 0.0)
-				}
+                val oldState = state
+				val newBi = NativeImage(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false).context2d(antialiased = false) {
+                    scale(scale, scale)
+                    transform(oldState.transform)
+                    draw(shape)
+                }
+                val renderBi = when (rasterizerMethod) {
+                    ShapeRasterizerMethod.X1 -> newBi
+                    ShapeRasterizerMethod.X2 -> newBi.mipmap(1)
+                    ShapeRasterizerMethod.X4 -> newBi.mipmap(2)
+                    else -> newBi
+                }
+                keepTransform {
+                    setTransform(Matrix())
+                    this.rendererDrawImage(renderBi, 0.0, 0.0)
+                }
 				//} finally {
 				//	bi.lineScale = oldLineScale
 				//}

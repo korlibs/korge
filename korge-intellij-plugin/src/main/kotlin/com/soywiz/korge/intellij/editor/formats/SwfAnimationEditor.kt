@@ -23,7 +23,9 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             context, defaultConfig = SWFExportConfig(
             mipmaps = false,
             antialiasing = true,
+            //rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.X1,
             rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.X4,
+            //rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.NONE,
             exportScale = 1.0,
             exportPaths = false
         )

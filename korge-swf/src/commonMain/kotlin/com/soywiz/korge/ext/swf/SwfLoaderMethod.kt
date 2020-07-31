@@ -6,7 +6,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -672,14 +671,17 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 								BitmapFormat.BIT_8 -> {
 									val ncolors = it.bitmapColorTableSize
 									val s = FastByteArrayInputStream(uncompressedData)
+                                    //println("FastByteArrayInputStream(uncompressedData): size=${uncompressedData.size}, alpha=${it.hasAlpha}, width=${it.actualWidth}, height=${it.actualHeight}, ncolors=$ncolors")
 									val clut = if (it.hasAlpha) {
 										(0 until ncolors).map { s.readS32LE() }.toIntArray()
 									} else {
 										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24LE() }.toIntArray()
 									}
-									val pixels = s.readBytes(it.actualWidth * it.actualHeight)
+                                    val nbytes = it.actualWidth * it.actualHeight
+									val pixels = s.readBytes(nbytes.coerceAtMost(s.available))
+                                    val rpixels = if (pixels.size < nbytes) pixels.copyOf(nbytes) else pixels
 
-									val bmp = Bitmap8(it.actualWidth, it.actualHeight, pixels, RgbaArray(clut))
+									val bmp = Bitmap8(it.actualWidth, it.actualHeight, rpixels, RgbaArray(clut))
 									fbmp = bmp
 								}
 								BitmapFormat.BIT_15 -> {
