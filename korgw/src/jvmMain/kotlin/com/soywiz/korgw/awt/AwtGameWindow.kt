@@ -131,8 +131,13 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
         contentComponent.setSize(width, height)
         contentComponent.preferredSize = Dimension(width, height)
         frame.pack()
-        val dim = Toolkit.getDefaultToolkit().screenSize
-        component.setLocation(dim.width / 2 - component.size.width / 2, dim.height / 2 - component.size.height / 2)
+        val component = this.component
+        //val dim = Toolkit.getDefaultToolkit().screenSize
+        //component.setLocation(dim.width / 2 - component.size.width / 2, dim.height / 2 - component.size.height / 2)
+        if (component is Window) {
+            component.setLocationRelativeTo(null)
+        }
+        //component.setlo
     }
 
     override val component: Component get() = frame
