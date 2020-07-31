@@ -89,16 +89,14 @@ internal class SpineTriangulator {
                         val p3y = vertices[p3 + 1]
                         var ii = (next + 1) % vertexCount
                         while (ii != previous) {
-                            if (!isConcave[ii]) {
-                                ii = (ii + 1) % vertexCount
-                                continue@outer2
-                            }
-                            val v = indices[ii].toInt() shl 1
-                            val vx = vertices[v]
-                            val vy = vertices[v + 1]
-                            if (positiveArea(p3x, p3y, p1x, p1y, vx, vy)) {
-                                if (positiveArea(p1x, p1y, p2x, p2y, vx, vy)) {
-                                    if (positiveArea(p2x, p2y, p3x, p3y, vx, vy)) break@outer
+                            if (isConcave[ii]) {
+                                val v = indices[ii].toInt() shl 1
+                                val vx = vertices[v]
+                                val vy = vertices[v + 1]
+                                if (positiveArea(p3x, p3y, p1x, p1y, vx, vy)) {
+                                    if (positiveArea(p1x, p1y, p2x, p2y, vx, vy)) {
+                                        if (positiveArea(p2x, p2y, p3x, p3y, vx, vy)) break@outer
+                                    }
                                 }
                             }
                             ii = (ii + 1) % vertexCount
