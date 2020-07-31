@@ -13,8 +13,22 @@ inline fun Container.particleEmitter(
 	callback: ParticleEmitterView.() -> Unit = {}
 ) = ParticleEmitterView(emitter, emitterPos).addTo(this, callback)
 
+suspend fun Container.attachParticleAndWait(
+    particle: ParticleEmitter,
+    x: Double,
+    y: Double,
+    time: Int = 1000,
+    speed: Double = 1.0
+) {
+    val p = particle.create(x, y, time)
+    p.speed = speed
+    this += p
+    p.waitComplete()
+    this -= p
+}
+
 class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View() {
-	val simulator = ParticleEmitter.Simulator(emitter, emitterPos)
+	val simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
 	var timeUntilStop by simulator::timeUntilStop.redirected()
 	val emitterPos by simulator::emitterPos.redirected()
