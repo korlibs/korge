@@ -25,8 +25,15 @@ class ParticleEmitterSimulator(
     fun init(particle: Particle, initialization: Boolean): Particle {
         val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance).coerceAtLeast(0.001)
 
-        particle.currentTime = 0.0
         particle.totalTime = lifespan.coerceAtLeast(0.0)
+
+        if (initialization) {
+            val ratio = particle.index.toDouble() / emitter.maxParticles.toDouble()
+            particle.currentTime = -(emitter.lifeSpan + emitter.lifespanVariance.absoluteValue) * ratio
+            //println(particle.currentTime)
+        } else {
+            particle.currentTime = 0.0
+        }
 
         val emitterX = emitterPos.x
         val emitterY = emitterPos.y
