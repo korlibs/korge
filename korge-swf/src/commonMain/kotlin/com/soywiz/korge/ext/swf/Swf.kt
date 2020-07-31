@@ -46,6 +46,12 @@ suspend fun VfsFile.readSWF(context: AnLibrary.Context, config: SWFExportConfig?
 var AnLibrary.swfExportConfig by Extra.Property { SWFExportConfig() }
 
 suspend fun VfsFile.readSWF(
+    views: Views,
+    defaultConfig: SWFExportConfig = SWFExportConfig(),
+    atlasPacking: Boolean? = null
+): AnLibrary = readSWF(AnLibrary.Context(views), defaultConfig.copy(atlasPacking = atlasPacking ?: defaultConfig.atlasPacking))
+
+suspend fun VfsFile.readSWF(
     context: AnLibrary.Context,
     content: ByteArray? = null,
     defaultConfig: SWFExportConfig = SWFExportConfig()
