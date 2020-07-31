@@ -11,7 +11,7 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
-suspend fun VfsFile.readParticle(): ParticleEmitter {
+suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     val file = this
     val emitter = ParticleEmitter()
     val particleXml = file.readXml()
