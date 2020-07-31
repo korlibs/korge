@@ -22,7 +22,7 @@ import kotlin.math.*
  * @TODO: It would be possible to emulate using another texture with distances + colors
  * @TODO: But probably no worth
  */
-class SWFShapeRasterizer(
+class SWFShapeExporter(
 	val swf: SWF,
 	val debug: Boolean,
 	val bounds: Rectangle,
@@ -58,33 +58,26 @@ class SWFShapeRasterizer(
 	val actualBoundsWidth = (realBoundsWidth * actualScale).toInt()
 	val actualBoundsHeight = (realBoundsHeight * actualScale).toInt()
 
-	var cshape = CompoundShape(listOf())
-	val shapes = arrayListOf<Shape>()
+	private var cshape = CompoundShape(listOf())
+    private val shapes = arrayListOf<Shape>()
 
-	val actualShape by lazy {
+	val actualShape: CompoundShape by lazy {
 		export(if (debug) LoggerShapeExporter(this) else this)
 		//this.dshape.export(if (debug) LoggerShapeExporter(this) else this)
 		cshape
 	}
 
-	val image by lazy {
-		val image = NativeImage(actualBoundsWidth, actualBoundsHeight)
-        //val image = Bitmap32(actualBoundsWidth, actualBoundsHeight)
-		val ctx = image.getContext2d(antialiasing = antialiasing)
-		ctx.scale(actualScale, actualScale)
-		ctx.translate(-bounds.x, -bounds.y)
-		//ctx.lineScaleHack *= 20.0
-		//ctx.lineScaleHack *= requestScale
-		//ctx.lineScaleHack *= 1.0
-		//ctx.lineScaleHack *= 2.0
-
-        //println("drawShape[$charId]: rasterizerMethod=$rasterizerMethod, actualScale=$actualScale, bounds=$bounds: ${actualShape.toExtString()}")
-
-		ctx.drawShape(actualShape, rasterizerMethod)
-
-		//println(actualShape.toSvg(scale = 1.0 / 20.0).toOuterXmlIndented())
-
-		image
+	val image: Bitmap by lazy {
+        BitmapVector(
+            shape = actualShape,
+            bounds = bounds,
+            scale = actualScale,
+            rasterizerMethod = rasterizerMethod,
+            antialiasing = antialiasing,
+            width = actualBoundsWidth,
+            height = actualBoundsHeight,
+            premultiplied = true
+        )
 	}
 	val imageWithScale by lazy {
 		BitmapWithScale(image, actualScale, bounds)
@@ -167,12 +160,8 @@ class SWFShapeRasterizer(
 		return when (type) {
 			GradientType.LINEAR -> GradientPaint(
 				GradientKind.LINEAR,
-				-1.0,
-				0.0,
-				0.0,
-				+1.0,
-				0.0,
-				0.0,
+				-1.0, 0.0, 0.0,
+				+1.0, 0.0, 0.0,
 				aratios,
 				acolors,
 				spreadMethod.toCtx(),
@@ -181,12 +170,8 @@ class SWFShapeRasterizer(
 			)
 			GradientType.RADIAL -> GradientPaint(
 				GradientKind.RADIAL,
-				focalPointRatio,
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				1.0,
+				focalPointRatio, 0.0, 0.0,
+                0.0, 0.0, 1.0,
 				aratios,
 				acolors,
 				spreadMethod.toCtx(),
@@ -209,14 +194,8 @@ class SWFShapeRasterizer(
 		flush()
 		drawingFill = true
 		fillStyle = createGradientPaint(
-			type,
-			colors,
-			alphas,
-			ratios,
-			matrix,
-			spreadMethod,
-			interpolationMethod,
-			focalPointRatio
+			type, colors, alphas, ratios,
+			matrix, spreadMethod, interpolationMethod, focalPointRatio
 		)
 	}
 

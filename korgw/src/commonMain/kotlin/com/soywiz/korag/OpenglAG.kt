@@ -8,6 +8,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.JvmOverloads
@@ -653,9 +654,9 @@ abstract class AGOpengl : AG() {
                     @Suppress("USELESS_CAST")
                     return mem
                 }
-                is Bitmap32 -> {
+                else -> {
                     val abmp: Bitmap32 =
-                        if (premultiplied) bmp.premultipliedIfRequired() else bmp.depremultipliedIfRequired()
+                        if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
                     //println("BMP: Bitmap32")
                     //val abmp: Bitmap32 = bmp
                     val mem = FBuffer(abmp.area * 4)
@@ -663,7 +664,6 @@ abstract class AGOpengl : AG() {
                     @Suppress("USELESS_CAST")
                     return mem
                 }
-                else -> unsupported()
             }
         }
 
@@ -676,6 +676,11 @@ abstract class AGOpengl : AG() {
                 gl.RGBA
             } else {
                 gl.LUMINANCE
+            }
+
+            val bmp = when (bmp) {
+                is BitmapVector -> bmp.nativeImage
+                else -> bmp
             }
 
             when (bmp) {

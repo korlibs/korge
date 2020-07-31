@@ -29,6 +29,10 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(-1, "")
 
+class AnSymbolButton(id: Int, name: String?) : AnSymbol(id, name) {
+
+}
+
 class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) :
 	AnSymbol(id, name) {
 	private val nativeSoundCache = AsyncOnce<NativeSound>()

@@ -37,13 +37,13 @@ class Bitmap32(
 
     override fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
         if (dst !is Bitmap32) return super.copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)
-		val src = this
-		val srcArray = src.data
-		val dstArray = dst.data
-		for (y in 0 until height) {
-			arraycopy(srcArray.ints, src.index(srcX, srcY + y), dstArray.ints, dst.index(dstX, dstY + y), width)
-		}
-	}
+        val src = this
+        val srcArray = src.data
+        val dstArray = dst.data
+        for (y in 0 until height) {
+            arraycopy(srcArray.ints, src.index(srcX, srcY + y), dstArray.ints, dst.index(dstX, dstY + y), width)
+        }
+    }
 
     operator fun set(x: Int, y: Int, color: RGBA) = run { data[index(x, y)] = color }
 	operator fun get(x: Int, y: Int): RGBA = data[index(x, y)]

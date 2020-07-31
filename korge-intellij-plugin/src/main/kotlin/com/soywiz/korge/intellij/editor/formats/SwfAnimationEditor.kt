@@ -27,7 +27,8 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.X4,
             //rasterizerMethod = com.soywiz.korim.vector.ShapeRasterizerMethod.NONE,
             exportScale = 1.0,
-            exportPaths = false
+            exportPaths = false,
+            atlasPacking = false
         )
         )
         "ani" -> file.readAni(context)

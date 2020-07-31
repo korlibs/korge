@@ -50,7 +50,12 @@ class FastByteArrayInputStream(val ba: ByteArray, var offset: Int = 0) {
 	fun readF64BE() = increment(8) { ba.readF64BE(offset) }
 
 	// Bytes
-	fun readBytes(count: Int) = increment(count) { ba.readByteArray(offset, count) }
+    fun read(data: ByteArray, offset: Int = 0, count: Int = data.size - offset) = increment(count) {
+        val readCount = count.coerceAtMost(available)
+        arraycopy(this.ba, this.offset, data, offset, readCount)
+        readCount
+    }
+    fun readBytes(count: Int) = increment(count) { ba.readByteArray(offset, count) }
 
 	// Arrays
 	fun readShortArrayLE(count: Int): ShortArray = increment(count * 2) { ba.readShortArrayLE(offset, count) }

@@ -367,7 +367,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     }
 
     fun drawShape(
-		shape: Shape,
+		shape: Drawable,
 		rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4
 	) {
 		when (rasterizerMethod) {

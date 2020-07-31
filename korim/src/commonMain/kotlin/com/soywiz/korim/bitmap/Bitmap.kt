@@ -110,7 +110,7 @@ abstract class Bitmap(
         copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)
     }
 
-	protected open fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
+	open fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
 		for (y in 0 until height) {
             readPixelsUnsafe(srcX, srcY + y, width, 1, tempRgba, 0)
             dst.writePixelsUnsafe(dstX, dstY + y, width, 1, tempRgba, 0)

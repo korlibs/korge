@@ -26,25 +26,30 @@ suspend fun List<BitmapWithScale>.toAtlas(context: AnLibrary.Context, mipmaps: B
 suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
     context: AnLibrary.Context,
     maxTextureSide: Int,
-    mipmaps: Boolean
+    mipmaps: Boolean,
+    atlasPacking: Boolean
 ): Map<T, TextureWithBitmapSlice> {
-    val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
-    val out = LinkedHashMap<T, TextureWithBitmapSlice>()
-    //println("NUMBER OF ATLAS: ${atlas.atlases.map { "" + it.tex.width + "x" + it.tex.height  }}")
-    for (at in atlas.atlases) {
-        val texture = at.tex.slice()
-        for (item in at.packedItems) {
-            val ibmp = item.item.value
-            val rect2 = item.rect
-            out[item.item.key] = TextureWithBitmapSlice(
-                texture = texture.slice(rect2),
-                bitmapSlice = item.slice,
-                scale = ibmp.scale,
-                bounds = ibmp.bounds
-            )
+    if (atlasPacking) {
+        val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
+        val out = LinkedHashMap<T, TextureWithBitmapSlice>()
+        //println("NUMBER OF ATLAS: ${atlas.atlases.map { "" + it.tex.width + "x" + it.tex.height  }}")
+        for (at in atlas.atlases) {
+            val texture = at.tex.slice()
+            for (item in at.packedItems) {
+                val ibmp = item.item.value
+                val rect2 = item.rect
+                out[item.item.key] = TextureWithBitmapSlice(
+                    texture = texture.slice(rect2),
+                    bitmapSlice = item.slice,
+                    scale = ibmp.scale,
+                    bounds = ibmp.bounds
+                )
+            }
         }
+        return out
+    } else {
+        return this.entries.associate { it.key to TextureWithBitmapSlice(it.value.bitmap.slice(), it.value.bitmap.slice(), it.value.scale, it.value.bounds) }
     }
-    return out
     //val borderSize = 4
     /*
     val borderSize = 8

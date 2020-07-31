@@ -83,33 +83,35 @@ class SymbolAnalyzeInfo(val characterId: Int) {
 	}
 }
 
-class SWFShapeRasterizerRequest(
+fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: GraphicsPath = GraphicsPath()): SWFShapeExporter {
+    val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
+    //val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
+    //println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
+    return SWFShapeExporter(
+        swf,
+        config.debug,
+        this.shapeBounds.rect,
+        { this.export(it) },
+        rasterizerMethod = config.rasterizerMethod,
+        antialiasing = config.antialiasing,
+        //requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
+        requestScale = config.exportScale * adaptiveScaling,
+        minSide = config.minShapeSide,
+        maxSide = config.maxShapeSide,
+        path = path,
+        charId = this.characterId
+    )
+}
+
+class SWFShapeRasterizerRequest constructor(
 	val swf: SWF,
-	val charId: Int,
-	val shapeBounds: Rectangle,
-	val export: (ShapeExporter) -> Unit,
+    val tag: TagDefineShape,
 	val config: SWFExportConfig
 ) {
+    val charId: Int get () = tag.characterId
+    val shapeBounds: Rectangle get() = tag.shapeBounds.rect
 	val path = GraphicsPath()
-	fun getRasterizer(maxScale: Double): SWFShapeRasterizer {
-		val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
-		//val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
-		//println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
-		return SWFShapeRasterizer(
-			swf,
-			config.debug,
-			shapeBounds,
-			export,
-			rasterizerMethod = config.rasterizerMethod,
-			antialiasing = config.antialiasing,
-			//requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
-			requestScale = config.exportScale * adaptiveScaling,
-			minSide = config.minShapeSide,
-			maxSide = config.maxShapeSide,
-			path = path,
-            charId = charId
-		)
-	}
+	fun getShapeExporter(maxScale: Double): SWFShapeExporter = tag.getShapeExporter(swf, config, maxScale, path)
 }
 
 class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfig) {
@@ -241,7 +243,10 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					for (action in frame.actions) {
 						when (action) {
 							is MySwfFrame.Action.Goto -> {
-								info.subtimeline.nextState = frameInfos[action.frame0].stateName
+                                if (action.frame0 >= frameInfos.size) {
+                                    println("ERROR: action.frame0 >= frameInfos.size :: ${action.frame0} >= ${frameInfos.size}")
+                                }
+								info.subtimeline.nextState = frameInfos.getOrNull(action.frame0)?.stateName
 							}
 							is MySwfFrame.Action.Stop -> {
 								info.subtimeline.nextStatePlay = false
@@ -348,7 +353,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		}
 	}
 
-	suspend private fun processAs3Actions() {
+	private fun processAs3Actions() {
 		for ((className, tagId) in classNameToTagId) {
 			lib.symbolsById[tagId].name = className
 			val type = classNameToTypes[className] ?: continue
@@ -412,12 +417,12 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 	}
 
 
-	suspend private fun generateTextures() {
+	private suspend fun generateTextures() {
 		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
 
 		for ((shape, rasterizerRequest) in shapesToPopulate) {
 			val info = analyzerInfo(rasterizerRequest.charId)
-			val rasterizer = rasterizerRequest.getRasterizer(info.globalScaleBounds.max)
+			val rasterizer = rasterizerRequest.getShapeExporter(info.globalScaleBounds.max)
 			itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
 		}
 
@@ -436,7 +441,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				}
 				val bounds = bb.bb.getBounds()
 				//bb.bb.add()
-				val rasterizer = SWFShapeRasterizer(
+				val rasterizer = SWFShapeExporter(
 					swf, config.debug, bounds,
 					{
 						try {
@@ -459,7 +464,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 			}
 		}
 
-		for ((processor, texture) in itemsInAtlas.toAtlas(context, config.maxTextureSide, config.mipmaps)) processor(texture)
+		for ((processor, texture) in itemsInAtlas.toAtlas(context, config.maxTextureSide, config.mipmaps, config.atlasPacking)) processor(texture)
+        //for ((processor, texture) in itemsInAtlas) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -488,6 +494,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt())
 	}
 
+    var pathsArePostScript = false
 	val symbols = arrayListOf<AnSymbol>()
 
 	fun registerBitmap(charId: Int, bmp: Bitmap, name: String? = null) {
@@ -628,6 +635,15 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				is TagJPEGTables -> {
 					println("Unhandled tag: $it")
 				}
+                is TagPathsArePostScript -> {
+                    pathsArePostScript = true
+                }
+                is TagDefineButton -> {
+                    symbols += AnSymbolButton(it.characterId, it.name)
+                }
+                is TagDefineButton2 -> {
+                    symbols += AnSymbolButton(it.characterId, it.name)
+                }
 				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
 					it as IDefinitionTag
@@ -678,8 +694,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24LE() }.toIntArray()
 									}
                                     val nbytes = it.actualWidth * it.actualHeight
-									val pixels = s.readBytes(nbytes.coerceAtMost(s.available))
-                                    val rpixels = if (pixels.size < nbytes) pixels.copyOf(nbytes) else pixels
+                                    val rpixels = ByteArray(nbytes)
+                                    s.read(rpixels, 0, nbytes)
 
 									val bmp = Bitmap8(it.actualWidth, it.actualHeight, rpixels, RgbaArray(clut))
 									fbmp = bmp
@@ -710,16 +726,9 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				}
 				is TagDefineShape -> {
 					val tag = it
-					val rasterizerRequest = SWFShapeRasterizerRequest(
-						swf,
-						tag.characterId,
-						tag.shapeBounds.rect,
-						{ tag.export(it) },
-						config
-					)
+					val rasterizerRequest = SWFShapeRasterizerRequest(swf, tag, config)
 					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
-					val symbol =
-						AnSymbolShape(it.characterId, null, rasterizerRequest.shapeBounds, null, rasterizerRequest.path)
+					val symbol = AnSymbolShape(it.characterId, null, rasterizerRequest.shapeBounds, null, rasterizerRequest.path)
 					symbol.tagDefineShape = it
 					symbols += symbol
 					shapesToPopulate += symbol to rasterizerRequest

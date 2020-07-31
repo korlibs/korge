@@ -28,7 +28,8 @@ data class SWFExportConfig(
 	val maxTextureSide: Int = 4096,
 	val exportPaths: Boolean = false,
 	val adaptiveScaling: Boolean = true,
-	val smoothInterpolation: Boolean = true
+	val smoothInterpolation: Boolean = true,
+    val atlasPacking: Boolean = true
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config =
