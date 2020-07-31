@@ -28,6 +28,7 @@ import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.dragonbones.internal.fastForEach
+import com.dragonbones.parser.ObjectDataParser.Companion.intArrayList
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -74,12 +75,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		internal val Any?.doubleArrayList: DoubleArrayList get() {
 			if (this is DoubleArray) return DoubleArrayList(*this)
 			if (this is DoubleArrayList) return this
+            if (this is DoubleArrayList) return this.toDoubleList()
 			if (this is List<*>) return DoubleArrayList(*this.map { (it as Number).toDouble() }.toDoubleArray())
 			error("Can't cast '$this' to doubleArrayList")
 		}
 		internal val Any?.intArrayList: IntArrayList get() {
 			if (this is IntArray) return IntArrayList(*this)
 			if (this is IntArrayList) return this
+            if (this is DoubleArrayList) return this.toIntArrayList()
 			if (this is List<*>) return IntArrayList(*this.map { (it as Number).toInt() }.toIntArray())
 			error("Can't '$this' cast to intArrayList")
 		}

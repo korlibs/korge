@@ -1,5 +1,7 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.iterators.*
+
 inline fun IntRange.toIntList(): IntArrayList = IntArrayList(this.endInclusive - this.start).also { for (v in this.start .. this.endInclusive) it.add(v) }
 
 inline fun Iterable<Int>.toIntList(): IntArrayList = IntArrayList().also { for (v in this) it.add(v) }
@@ -63,3 +65,15 @@ fun DoubleArrayList.reverse(start: Int = 0, end: Int = size)
 
 fun FloatArrayList.reverse(start: Int = 0, end: Int = size)
     = FloatArrayListSortOps.reverse(this, start, end - 1)
+
+fun DoubleArrayList.toIntArrayList(): IntArrayList {
+    val out = IntArrayList(this.size)
+    this.fastForEach { out.add(it.toInt()) }
+    return out
+}
+
+fun IntArrayList.toIntArrayList(): DoubleArrayList {
+    val out = DoubleArrayList(this.size)
+    this.fastForEach { out.add(it.toDouble()) }
+    return out
+}

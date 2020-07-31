@@ -51,8 +51,6 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
         }
     }
 
-
-
     override fun getPolicy(): FileEditorPolicy = myPolicy
 
 	override fun createEditor(
