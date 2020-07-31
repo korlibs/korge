@@ -72,15 +72,22 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
         }
 
         return runBlocking {
-            when (computedExtension) {
-                "dbbin" -> createModule(null) { dragonBonesEditor(file) }
-                "skel" -> spineEditor(file)
-                "tmx" -> createModule(null) { tiledMapEditor(file) }
-                "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
-                "pex" -> particleEmiterEditor(file)
-                "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
-                "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
-                else -> createModule(null) { }
+            try {
+                when (computedExtension) {
+                    "dbbin" -> dragonBonesEditor(file)
+                    "skel" -> spineEditor(file)
+                    "tmx" -> createModule(null) { tiledMapEditor(file) }
+                    "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
+                    "pex" -> particleEmiterEditor(file)
+                    "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
+                    "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
+                    else -> createModule(null) { }
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                createModule(null) {
+                    sceneView.text("Error: ${e.message}").centerOnStage()
+                }
             }
         }
     }

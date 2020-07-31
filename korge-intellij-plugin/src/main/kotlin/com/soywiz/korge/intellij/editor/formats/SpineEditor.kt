@@ -60,7 +60,6 @@ suspend fun spineEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     val animationSpeed = EditableNumericProperty("animationSpeed", Double::class, 1.0, 0.01, 10.0).apply {
         this.onChange {
             vSkeletonView?.speed = it
-            stateData.defaultMix
             //state.setAnimation(0, it, true)
         }
     }

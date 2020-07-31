@@ -1,38 +1,37 @@
 package com.soywiz.korge.intellij.editor.formats
 
-import com.soywiz.korge.component.ResizeComponent
-import com.soywiz.korge.component.docking.dockedTo
-import com.soywiz.korge.component.onStageResized
-import com.soywiz.korge.dragonbones.KorgeDbFactory
-import com.soywiz.korge.dragonbones.readDbSkeletonAndAtlas
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.textButton
-import com.soywiz.korge.view.*
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
+import com.esotericsoftware.spine.ext.*
+import com.soywiz.korge.dragonbones.*
+import com.soywiz.korge.intellij.components.*
+import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korio.file.*
 
-suspend fun Scene.dragonBonesEditor(file: VfsFile) {
-    sceneView.textButton(text = "Dragonbones").apply {
-        width = 80.0
-        height = 24.0
-        x = 0.0
-        y = 0.0
-        onClick {
-        }
-    }
+suspend fun dragonBonesEditor(file: VfsFile) : KorgeBaseKorgeFileEditor.EditorModule {
     val factory = KorgeDbFactory()
     val skeleton = file.readDbSkeletonAndAtlas(factory)
-    val armatureDisplay = factory.buildArmatureDisplay(skeleton.armatureNames.first())!!
+    val armature = skeleton.armatureNames.first()
+    val armatureDisplay = factory.buildArmatureDisplay(armature)!!
+    val animationNames = armatureDisplay.animation.animationNames.toSet()
+    val defaultAnimationName = when {
+        "idle" in animationNames -> "idle"
+        else -> animationNames.first()
+    }
 
-    //armatureDisplay.animation.play("walk")
-    println(armatureDisplay.animation.animationNames)
-    //armatureDisplay.animation.play("jump")
-    armatureDisplay.animation.play(armatureDisplay.animation.animationNames.first())
+    val animation1Property = EditableEnumerableProperty("animation1", String::class, defaultAnimationName, animationNames.toSet()).apply {
+        this.onChange { animationName ->
+            armatureDisplay.animation.play(animationName)
+        }
+    }
 
-    armatureDisplay.repositionOnResize(views)
+    return createModule(EditableNodeList {
+        add(EditableSection("Animation", animation1Property, armatureDisplay::speed.toEditableProperty(0.01, 10.0)))
+    }) {
+        //println(armatureDisplay.animation.animationNames)
 
-    sceneView += armatureDisplay
+        armatureDisplay.animation.play(defaultAnimationName)
+
+        armatureDisplay.repositionOnResize(views)
+
+        sceneView += armatureDisplay
+    }
 }
