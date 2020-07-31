@@ -13,6 +13,12 @@ import com.sun.jna.ptr.*
 typealias XVisualInfo = Pointer
 typealias GLXContext = Pointer
 
+// https://www.khronos.org/registry/OpenGL/api/GL/glxext.h
+
+internal const val GLX_RENDER_TYPE                  = 0x8011
+internal const val GLX_RGBA_TYPE                    = 0x8014
+internal const val GLX_RGBA_BIT                     = 0x00000001
+
 internal const val GLX_RGBA = 4
 internal const val GLX_RED_SIZE	= 8
 internal const val GLX_GREEN_SIZE = 9
