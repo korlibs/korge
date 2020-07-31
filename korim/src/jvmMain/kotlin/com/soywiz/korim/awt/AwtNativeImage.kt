@@ -257,7 +257,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
             val t1 = AffineTransform()
             t1.concatenate(transform)
             t1.concatenate(this.transform.toAwt())
-            println("Transformed paint: ${this.transform} --- $transform")
+            //println("Transformed paint: ${this.transform} --- $transform")
             //t1.preConcatenate(this.transform.toAwt())
             //t1.preConcatenate(transform)
 
@@ -269,7 +269,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                     val colors = pairs.map { it.second }.toTypedArray()
                     val defaultColor = colors.firstOrNull() ?: Color.PINK
 
-                    println("    - Gradient: ${Point2D.Double(this.x0, this.y0)} --- ${Point2D.Double(this.x1, this.y1)}")
+                    //println("    - Gradient: ${Point2D.Double(this.x0, this.y0)} --- ${Point2D.Double(this.x1, this.y1)}")
 
                     when (this.kind) {
                         GradientKind.LINEAR -> {
