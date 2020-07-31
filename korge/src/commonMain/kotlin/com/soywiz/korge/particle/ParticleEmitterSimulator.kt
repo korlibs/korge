@@ -94,6 +94,10 @@ class ParticleEmitterSimulator(
 
         if (particle.currentTime < 0.0) return
 
+        if (!particle.alive && emitting) {
+            init(particle, false)
+        }
+
         when (emitter.emitterType) {
             ParticleEmitter.Type.RADIAL -> {
                 particle.emitRotation += particle.emitRotationDelta * elapsedTime
@@ -131,8 +135,6 @@ class ParticleEmitterSimulator(
         particle.colorG += (particle.colorGdelta * elapsedTime).toFloat()
         particle.colorB += (particle.colorBdelta * elapsedTime).toFloat()
         particle.colorA += (particle.colorAdelta * elapsedTime).toFloat()
-
-        if (!particle.alive && emitting) init(particle, false)
     }
 
     fun simulate(time: Double) {
