@@ -124,81 +124,51 @@ class SWFShapeExporter(
 		fillStyle = ColorPaint(decodeSWFColor(color, alpha))
 	}
 
-	private fun createGradientPaint(
-		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
-		matrix2: Matrix,
-		spreadMethod: GradientSpreadMode,
-		interpolationMethod: GradientInterpolationMode,
-		focalPointRatio: Double
-	): GradientPaint {
+    private fun createGradientPaint(
+        type: GradientType,
+        colors: List<Int>,
+        alphas: List<Double>,
+        ratios: List<Int>,
+        matrix: Matrix,
+        spreadMethod: GradientSpreadMode,
+        interpolationMethod: GradientInterpolationMode,
+        focalPointRatio: Double
+    ): GradientPaint {
+        val aratios = DoubleArrayList(*ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
+        val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).value }.toIntArray())
 
-		//val matrix = Matrix()
-		//matrix.copyFrom(matrix2)
+        val m2 = Matrix()
+        m2.copyFrom(matrix)
 
-        //val m2 = Matrix()
-        //m2.copyFrom(matrix2)
-
-        val gradientBox = SWFGradientBox.fromMatrix(matrix2)
-
-        //m2.pretranslate(-0.5, -0.5)
-        //m2.pretranslate(-0.5, -0.5)
-        //m2.scale(1 / (20.0))
-        //m2.pretranslate(-4.7 / m2.a, 0.0)
-        //m2.prescale(1638.4 / 2.0, 1638.4 / 2.0)
+        m2.pretranslate(-0.5, -0.5)
+        m2.prescale(1638.4 / 2.0, 1638.4 / 2.0)
 
         val imethod = when (interpolationMethod) {
             GradientInterpolationMode.NORMAL -> GradientInterpolationMethod.NORMAL
             GradientInterpolationMode.LINEAR -> GradientInterpolationMethod.LINEAR
         }
 
-
-        val x0 = gradientBox.tx
-        val y0 = gradientBox.ty
-        val r0 = 0.0
-
-        // WRONG
-        val x1 = gradientBox.tx + gradientBox.width * gradientBox.rotation.cosine
-        val y1 = gradientBox.ty + gradientBox.height * gradientBox.rotation.sine
-        val r1 = 0.0
-
-        val gradient = when (type) {
+        return when (type) {
             GradientType.LINEAR -> GradientPaint(
                 GradientKind.LINEAR,
-                x0, y0, r0,
-                x1, y1, r1,
-                interpolationMethod = imethod
+                -1.0, 0.0, 0.0,
+                +1.0, 0.0, 0.0,
+                aratios, acolors,
+                spreadMethod.toCtx(),
+                m2,
+                imethod
             )
-            GradientType.RADIAL -> {
-                val x = (x0 + x1) / 2
-                val y = (y0 + y1) / 2
-                GradientPaint(
-                    GradientKind.RADIAL,
-                    x, y, 0.0,
-                    x, y, gradientBox.width,
-                    interpolationMethod = imethod
-                )
-            }
+            GradientType.RADIAL -> GradientPaint(
+                GradientKind.RADIAL,
+                focalPointRatio, 0.0, 0.0,
+                0.0, 0.0, 1.0,
+                aratios, acolors,
+                spreadMethod.toCtx(),
+                m2,
+                imethod
+            )
         }
-        //val gradient = GradientPaint.fromGradientBox(kind, gradientBox.width, gradientBox.height, gradientBox.rotation, gradientBox.tx, gradientBox.ty)
-        //    .copy(interpolationMethod = imethod)
-        for (n in 0 until colors.size) {
-            val ratio = ratios[n].toDouble() / 255.0
-            val color = decodeSWFColor(colors[n], alphas[n])
-            gradient.addColorStop(ratio, color)
-        }
-
-        //val finalGradient = gradient.applyMatrix(m2)
-        val finalGradient = gradient
-        //val finalGradient = gradient
-
-        //println("GRADIENT: ${gradient.getRatioAt(167.0, 64.0)} ${gradient.getRatioAt(250.0, 64.0)} ${gradient.getRatioAt(336.0, 64.0)}")
-        //println("      - $m2")
-        //println("      - ${finalGradient.untransformedGradientMatrix}")
-        return finalGradient
-	}
+    }
 
 	override fun beginGradientFill(
 		type: GradientType,

@@ -15,8 +15,8 @@ import com.soywiz.korma.geom.vector.*
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "SWF", bgcolor = Colors.DARKGREY) {
     //val swf = resourcesVfs["dog.swf"].readSWF(views, atlasPacking = false)
     //val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
-    //val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
-    val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
+    val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
+    //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
     //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
 
     this += swf.createMainTimeLine()
