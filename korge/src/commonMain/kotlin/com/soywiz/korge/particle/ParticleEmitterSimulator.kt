@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 import kotlin.random.*
@@ -11,8 +12,8 @@ class ParticleEmitterSimulator(
     val seed: Long = Random.nextLong()
 ) {
     val random = Random(seed)
-    var totalElapsedTime = 0
-    var timeUntilStop = Int.MAX_VALUE
+    var totalElapsedTime = 0.seconds
+    var timeUntilStop = TimeSpan.NIL
     var emitting = true
     val textureWidth = emitter.texture?.width ?: 16
     val particles = List(emitter.maxParticles) { init(Particle(it), true) }
@@ -92,11 +93,18 @@ class ParticleEmitterSimulator(
         val elapsedTime = if (restTime > _elapsedTime) _elapsedTime else restTime
         particle.currentTime += elapsedTime
 
+        //if (particle.index == 0) {
+            //println("currentTime=${particle.currentTime}, totalTime=${particle.totalTime}, emitting=$emitting, elapsedTime=$elapsedTime, alive=${particle.alive}")
+            //3.253971163270661, 3.253971163270661, false
+        //}
+
         if (particle.currentTime < 0.0) return
 
         if (!particle.alive && emitting) {
             init(particle, false)
         }
+
+        if (!particle.alive) return
 
         when (emitter.emitterType) {
             ParticleEmitter.Type.RADIAL -> {
@@ -137,15 +145,16 @@ class ParticleEmitterSimulator(
         particle.colorA += (particle.colorAdelta * elapsedTime).toFloat()
     }
 
-    fun simulate(time: Double) {
-        totalElapsedTime += (time * 1000.0).toInt()
-
-        if (totalElapsedTime >= timeUntilStop) {
-            emitting = false
+    fun simulate(time: TimeSpan) {
+        if (emitting) {
+            totalElapsedTime += time
+            if (timeUntilStop != TimeSpan.NIL && totalElapsedTime >= timeUntilStop) emitting = false
         }
+        particles.fastForEach { p -> advance(p, time.seconds) }
+    }
 
-        particles.fastForEach { p ->
-            advance(p, time)
-        }
+    fun restart() {
+        totalElapsedTime = 0.seconds
+        emitting = true
     }
 }

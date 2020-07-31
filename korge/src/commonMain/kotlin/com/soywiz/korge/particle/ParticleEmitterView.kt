@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
@@ -10,14 +11,15 @@ import com.soywiz.korma.geom.*
 
 inline fun Container.particleEmitter(
 	emitter: ParticleEmitter, emitterPos: IPoint = IPoint(),
+    time: TimeSpan = TimeSpan.NIL,
 	callback: ParticleEmitterView.() -> Unit = {}
-) = ParticleEmitterView(emitter, emitterPos).addTo(this, callback)
+) = ParticleEmitterView(emitter, emitterPos).apply { this.timeUntilStop = time }.addTo(this, callback)
 
 suspend fun Container.attachParticleAndWait(
     particle: ParticleEmitter,
     x: Double,
     y: Double,
-    time: Int = 1000,
+    time: TimeSpan = TimeSpan.NIL,
     speed: Double = 1.0
 ) {
     val p = particle.create(x, y, time)
@@ -38,9 +40,13 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 
 	init {
 		addUpdater { dt ->
-			simulator.simulate(dt.seconds)
+			simulator.simulate(dt)
 		}
 	}
+
+    fun restart() {
+        simulator.restart()
+    }
 
 	suspend fun waitComplete() {
 		while (anyAlive) waitFrame()

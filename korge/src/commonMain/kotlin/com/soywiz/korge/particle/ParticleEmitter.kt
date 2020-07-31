@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -52,7 +53,7 @@ class ParticleEmitter() {
 	var rotationEnd = 0.0
 	var rotationEndVariance = 0.0
 
-	fun create(x: Double = 0.0, y: Double = 0.0, time: Int = Int.MAX_VALUE): ParticleEmitterView =
+	fun create(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView =
 		ParticleEmitterView(this, IPoint(x, y)).apply {
 			this.timeUntilStop = time
 		}
