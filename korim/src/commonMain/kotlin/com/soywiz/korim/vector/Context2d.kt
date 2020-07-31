@@ -378,7 +378,8 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 				val scale = rasterizerMethod.scale
                 val oldState = state
 				val newBi = NativeImage(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false).context2d(antialiased = false) {
-                    scale(scale, scale)
+                //val newBi = Bitmap32(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false).context2d(antialiased = false) {
+                    scale(scale)
                     transform(oldState.transform)
                     draw(shape)
                 }

@@ -254,8 +254,10 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 	fun com.soywiz.korim.vector.paint.Paint.toAwtUnsafe(transform: AffineTransform): java.awt.Paint = when (this) {
         is ColorPaint -> convertColor(this.color)
         is TransformedPaint -> {
-            val t1 = AffineTransform(this.transform.toAwt())
+            val t1 = AffineTransform()
             t1.concatenate(transform)
+            t1.concatenate(this.transform.toAwt())
+            println("Transformed paint: ${this.transform} --- $transform")
             //t1.preConcatenate(this.transform.toAwt())
             //t1.preConcatenate(transform)
 
@@ -266,6 +268,8 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                     val stops = pairs.map { it.first }.toFloatArray()
                     val colors = pairs.map { it.second }.toTypedArray()
                     val defaultColor = colors.firstOrNull() ?: Color.PINK
+
+                    println("    - Gradient: ${Point2D.Double(this.x0, this.y0)} --- ${Point2D.Double(this.x1, this.y1)}")
 
                     when (this.kind) {
                         GradientKind.LINEAR -> {
@@ -319,7 +323,10 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             xform: AffineTransform?,
                             hints: RenderingHints?
                         ): PaintContext {
-                            val out = xform ?: AffineTransform()
+                            val out = AffineTransform()
+                            if (xform != null) {
+                                out.concatenate(xform)
+                            }
                             out.concatenate(t1)
                             return super.createContext(cm, deviceBounds, userBounds, out, this@AwtContext2dRender.hints)
                         }

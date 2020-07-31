@@ -315,11 +315,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		ctx.globalAlpha = state.globalAlpha
         ctx.globalCompositeOperation = state.globalCompositeOperation.toJsStr()
 		setFont(state.font, state.fontSize)
-        //state.transform.let { t -> ctx.setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty) } // @NOTE: Points are already transformed, so this shouldn't be executed
 		if (fill) {
 			ctx.fillStyle = state.fillStyle.toJsStr()
 		} else {
-			ctx.lineWidth = state.scaledLineWidth
+            ctx.lineWidth = state.lineWidth
 			ctx.lineJoin = when (state.lineJoin) {
 				LineJoin.BEVEL -> CanvasLineJoin.BEVEL
 				LineJoin.MITER -> CanvasLineJoin.MITER
@@ -337,6 +336,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	private fun transformPaint(paint: Paint) {
 		if (paint is TransformedPaint) {
 			val m = paint.transform
+            //println("Transformed paint: $m")
 			ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
 		}
 	}
@@ -372,8 +372,11 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				close = { ctx.closePath() }
 			)
 
+            val m = state.transform
+            ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
 			if (fill) {
 				transformPaint(state.fillStyle)
+                //println("       - Gadient: ${}")
 				ctx.fill(state.path.winding.toCanvasFillRule())
 				//println("fill: $s")
 			} else {

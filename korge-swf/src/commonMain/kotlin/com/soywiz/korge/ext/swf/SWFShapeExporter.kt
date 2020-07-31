@@ -194,9 +194,9 @@ class SWFShapeExporter(
         val finalGradient = gradient
         //val finalGradient = gradient
 
-        println("GRADIENT: ${gradient.getRatioAt(167.0, 64.0)} ${gradient.getRatioAt(250.0, 64.0)} ${gradient.getRatioAt(336.0, 64.0)}")
+        //println("GRADIENT: ${gradient.getRatioAt(167.0, 64.0)} ${gradient.getRatioAt(250.0, 64.0)} ${gradient.getRatioAt(336.0, 64.0)}")
         //println("      - $m2")
-        println("      - ${finalGradient.untransformedGradientMatrix}")
+        //println("      - ${finalGradient.untransformedGradientMatrix}")
         return finalGradient
 	}
 

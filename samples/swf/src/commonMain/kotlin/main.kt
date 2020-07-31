@@ -2,6 +2,7 @@ import com.soywiz.korge.*
 import com.soywiz.korge.ext.swf.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
@@ -13,11 +14,19 @@ import com.soywiz.korma.geom.vector.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "SWF", bgcolor = Colors.DARKGREY) {
     //val swf = resourcesVfs["dog.swf"].readSWF(views, atlasPacking = false)
-    val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
-    //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
+    //val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
+    //val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
+    val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
     //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
 
     this += swf.createMainTimeLine()
+
+    //image(NativeImage(512, 512).context2d {
+    //    rect(20, 20, 150, 100)
+    //    scale(1.5, 1.5)
+    //    fill(LinearGradientPaint(90, 0, 170, 0).addColorStop(0.0, Colors.DARKGREEN).addColorStop(1.0, Colors.RED))
+    //})
+
 
     /*
     graphics {
