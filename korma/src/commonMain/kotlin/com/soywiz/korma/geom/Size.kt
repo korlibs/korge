@@ -24,6 +24,8 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
         inline operator fun invoke(width: Number, height: Number): Size = Size(Point(width, height))
     }
 
+    fun copy() = Size(p.copy())
+
     override val size: Size get() = this
 
     override var width: Double

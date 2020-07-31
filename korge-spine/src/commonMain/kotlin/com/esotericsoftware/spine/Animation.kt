@@ -79,7 +79,7 @@ class Animation(
      * @param loop If true, the animation repeats after [.getDuration].
      * @param events May be null to ignore fired events.
      */
-    fun apply(skeleton: Skeleton, lastTime: Float, time: Float, loop: Boolean, events: ArrayList<Event>, alpha: Float,
+    fun apply(skeleton: Skeleton, lastTime: Float, time: Float, loop: Boolean, events: ArrayList<Event>?, alpha: Float,
               blend: MixBlend, direction: MixDirection) {
         var lastTime = lastTime
         var time = time

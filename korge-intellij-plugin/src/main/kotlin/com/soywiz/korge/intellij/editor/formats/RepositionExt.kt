@@ -5,14 +5,25 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.*
 
-fun View.repositionOnResize(views: Views) {
-    val view = this
-    val localBounds = view.getLocalBounds()
-    val initialSize = localBounds.size
+open class RepositionResult(val view: View, val views: Views) {
+    var localBounds: Rectangle = Rectangle()
+    var initialSize: Size = Size()
+
+    fun forceBounds(bounds: Rectangle) {
+        localBounds = bounds.copy()
+        initialSize = bounds.size.copy()
+        reposition()
+    }
+
+    fun refreshBounds() {
+        val oldMatrix = view.localMatrix.copy()
+        view.localMatrix = Matrix()
+        localBounds = view.getLocalBounds()
+        view.localMatrix = oldMatrix
+        forceBounds(localBounds)
+    }
 
     fun reposition() {
         val outRect = Rectangle(0, 0, views.actualVirtualWidth, views.actualVirtualHeight).place(initialSize, Anchor.MIDDLE_CENTER, ScaleMode.SHOW_ALL)
@@ -27,8 +38,14 @@ fun View.repositionOnResize(views: Views) {
         println("repositionOnResize.scale: $scaleX,$scaleY")
     }
 
-    view.onStageResized(firstTrigger = false) { width, height ->
-        reposition()
+    init {
+        view.onStageResized(firstTrigger = false) { width, height ->
+            reposition()
+        }
+        refreshBounds()
     }
-    reposition()
+}
+
+fun View.repositionOnResize(views: Views): RepositionResult {
+    return RepositionResult(this, views)
 }
