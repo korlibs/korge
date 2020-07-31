@@ -262,10 +262,10 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
 
         val transform = this.globalMatrix
 
-        for (n in 0 until trianglesCount) {
-            batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
-        }
         if (vertexSize == 5) {
+            for (n in 0 until trianglesCount) {
+                batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
+            }
             val colorMul = this.colorMul
             val colorAdd = this.colorAdd
             for (n in 0 until vertexCount) {
@@ -278,7 +278,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                 batch.addVertex(realX, realY, u, v, colorMul, colorAdd)
             }
         } else {
-            TODO()
+            //TODO()
+            println("TODO: clipping")
         }
 
         //batch.flush()
