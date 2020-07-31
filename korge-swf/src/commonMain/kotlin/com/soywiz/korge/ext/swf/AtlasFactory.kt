@@ -1,6 +1,7 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korim.atlas.AtlasPacker
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -14,7 +15,7 @@ data class BitmapWithScale(val bitmap: Bitmap, val scale: Double, val bounds: Re
 }
 
 /*
-suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<TextureWithBitmapSlice> {
+suspend fun List<BitmapWithScale>.toAtlas(context: AnLibrary.Context, mipmaps: Boolean): List<TextureWithBitmapSlice> {
 	return this.map {
 		TextureWithBitmapSlice(views.texture(it.bitmap), it.bitmap.slice(RectangleInt(0, 0, it.bitmap.width, it.bitmap.height)), it.scale)
 	}
@@ -23,9 +24,9 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 
 
 suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
-	views: Views,
-	maxTextureSide: Int,
-	mipmaps: Boolean
+    context: AnLibrary.Context,
+    maxTextureSide: Int,
+    mipmaps: Boolean
 ): Map<T, TextureWithBitmapSlice> {
     val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
     val out = LinkedHashMap<T, TextureWithBitmapSlice>()

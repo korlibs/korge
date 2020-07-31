@@ -16,14 +16,16 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.coroutines.*
 
-suspend fun VfsFile.readAni(views: Views, content: FastByteArrayInputStream? = null): AnLibrary {
+suspend fun VfsFile.readAni(context: AnLibrary.Context, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()),
-		views,
+	return AnLibraryDeserializer.read(
+        content ?: FastByteArrayInputStream(this.readBytes()),
+        context.copy(coroutineContext = coroutineContext),
 		externalReaders = AnLibraryDeserializer.ExternalReaders(
 			atlasReader = { index ->
-				file.withExtension("ani.$index.png").readBitmapOptimized(views.imageFormats)
+				file.withExtension("ani.$index.png").readBitmapOptimized(context.imageFormats)
 			},
 			readSound = { index ->
 				file.withExtension("ani.$index.mp3").readSound()
@@ -37,17 +39,17 @@ object AnLibraryDeserializer {
 		val readSound: suspend (index: Int) -> NativeSound
 	)
 
-	suspend fun read(s: ByteArray, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		FastByteArrayInputStream(s).readLibrary(views, externalReaders)
+	suspend fun read(s: ByteArray, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		FastByteArrayInputStream(s).readLibrary(context, externalReaders)
 
-	suspend fun read(s: SyncStream, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		FastByteArrayInputStream(s.readAll()).readLibrary(views, externalReaders)
+	suspend fun read(s: SyncStream, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		FastByteArrayInputStream(s.readAll()).readLibrary(context, externalReaders)
 
-	suspend fun read(s: FastByteArrayInputStream, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		s.readLibrary(views, externalReaders)
+	suspend fun read(s: FastByteArrayInputStream, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		s.readLibrary(context, externalReaders)
 
-	suspend private fun FastByteArrayInputStream.readLibrary(
-		views: Views,
+	private suspend fun FastByteArrayInputStream.readLibrary(
+        context: AnLibrary.Context,
 		externalReaders: ExternalReaders
 	): AnLibrary {
 		val magic = readStringz(8)
@@ -61,7 +63,7 @@ object AnLibraryDeserializer {
 		val mipmaps = fileFlags.extract(0)
 		val smoothInterpolation = !fileFlags.extract(1)
 
-		val library = AnLibrary(views, width, height, 1000.0 / msPerFrame).apply {
+		val library = AnLibrary(context, width, height, 1000.0 / msPerFrame).apply {
 			this.defaultSmoothing = smoothInterpolation
 		}
 

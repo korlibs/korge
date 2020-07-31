@@ -209,8 +209,8 @@ var RenderContext.stencilIndex by Extra.Property { 0 }
 
 class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	//var firstUpdateSingleFrame = false
-	val library: AnLibrary = view.library
-	val views = library.views
+	val library: AnLibrary get() = view.library
+	val context get() = library.context
 	var currentTime = 0
 	var currentStateName: String? = null
 	var currentSubtimeline: AnSymbolMovieClipSubTimeline? = null
@@ -293,13 +293,8 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			//println(" Action: $action")
 			when (action) {
 				is AnPlaySoundAction -> {
-
-
-					library.views.asyncImmediately {
-						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
-						if (data != null) {
-							data.play()
-						}
+                    launchImmediately(library.context.coroutineContext) {
+						(library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()?.play()
 					}
 					//println("play sound!")
 				}

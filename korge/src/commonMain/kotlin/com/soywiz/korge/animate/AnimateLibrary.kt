@@ -9,12 +9,14 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import kotlin.collections.set
+import kotlin.coroutines.*
 
 open class AnSymbol(
 	val id: Int = -1,
@@ -276,7 +278,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 			when {
 				(s.readString(8) == AniFile.MAGIC) -> KorgeFileLoader("ani") { content, views ->
 					this.readAni(
-						views,
+                        AnLibrary.Context(views),
 						content = content
 					)
 				}
@@ -288,7 +290,16 @@ val Views.animateLibraryLoaders by Extra.Property {
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AnLibrary.Factory::class)
-class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+    data class Context(
+        val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        val imageFormats: ImageFormat = RegisteredImageFormats,
+    ) {
+        companion object {
+            operator fun invoke(views: Views) = Context(views.coroutineContext, views.imageFormats)
+        }
+    }
+
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: RGBA = Colors.WHITE

@@ -113,7 +113,7 @@ class SWFShapeRasterizerRequest(
 	}
 }
 
-class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
+class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfig) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
 	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
@@ -131,7 +131,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
 		val bounds = swf.frameSize.rect
-		lib = AnLibrary(views, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
+		lib = AnLibrary(context, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
 		for (symbol in symbols) lib.addSymbol(symbol)
 		processAs3Actions()
@@ -460,7 +460,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 			}
 		}
 
-		for ((processor, texture) in itemsInAtlas.toAtlas(views, config.maxTextureSide, config.mipmaps)) processor(texture)
+		for ((processor, texture) in itemsInAtlas.toAtlas(context, config.maxTextureSide, config.mipmaps)) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -637,7 +637,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						is TagDefineBitsJPEG2 -> {
 							val bitsData = it.bitmapData.cloneToNewByteArray()
 							val nativeBitmap = try {
-								bitsData.openAsync().readBitmap(views.imageFormats)
+								bitsData.openAsync().readBitmap(context.imageFormats)
 							} catch (e: Throwable) {
 								e.printStackTrace()
 								Bitmap32(1, 1)

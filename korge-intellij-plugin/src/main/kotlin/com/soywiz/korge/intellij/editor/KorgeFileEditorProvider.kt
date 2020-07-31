@@ -78,7 +78,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
                     "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
                     "pex" -> particleEmiterEditor(file)
                     "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
-                    "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
+                    "swf", "ani" -> swfAnimationEditor(file)
                     else -> createModule(null) { }
                 }
             } catch (e: Throwable) {

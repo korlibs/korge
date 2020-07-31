@@ -133,51 +133,26 @@ fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
 annotation class IntSupportedRange(val min: Int, val max: Int)
 annotation class DoubleSupportedRange(val min: Double, val max: Double)
 
-fun EditableNode.toComponent(indentation: Int = 0): Component {
-    return when (this) {
-        is EditableSection -> {
-            Section(indentation, this.title, this.list.map { it.toComponent(indentation + 1) })
-        }
-        is EditableNodeList -> {
-            JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                for (item in this@toComponent.list) {
-                    add(item.toComponent())
-                }
-            }
-        }
-        is EditableNumericProperty<*> -> {
-            EditableNumberValue(this, indentation)
-        }
-        is EditableEnumerableProperty<*> -> {
-            EditableListValue(this as EditableEnumerableProperty<Any>, indentation)
-        }
-        else -> {
-            TODO()
-        }
-    }
-}
-
-fun EditableNode.getAllBaseEditableProperty(): List<BaseEditableProperty<*>> {
-    return when (this) {
-        is EditableSection -> this.list.flatMap { it.getAllBaseEditableProperty() }
-        is EditableNodeList -> this.list.flatMap { it.getAllBaseEditableProperty() }
-        is BaseEditableProperty<*> -> listOf(this)
-        else -> TODO()
-    }
-}
-
 interface EditableNode {
+    fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>>
+    fun toComponent(indentation: Int = 0): Component
 }
 
 class EditableNodeList(val list: List<EditableNode>) : EditableNode {
     constructor(vararg list: EditableNode) : this(list.toList())
     constructor(block: MutableList<EditableNode>.() -> Unit) : this(ArrayList<EditableNode>().apply(block))
+    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
+    override fun toComponent(indentation: Int): Component = JPanel().also {
+        it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+        for (item in list) it.add(item.toComponent())
+    }
 }
 
 class EditableSection(val title: String, val list: List<EditableNode>) : EditableNode {
     constructor(title: String, vararg list: EditableNode) : this(title, list.toList())
     constructor(title: String, block: MutableList<EditableNode>.() -> Unit) : this(title, ArrayList<EditableNode>().apply(block))
+    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
+    override fun toComponent(indentation: Int): Component = Section(indentation, this.title, this.list.map { it.toComponent(indentation + 1) })
 }
 
 abstract class BaseEditableProperty<T : Any>(initialValue: T) : EditableNode {
@@ -193,6 +168,20 @@ abstract class BaseEditableProperty<T : Any>(initialValue: T) : EditableNode {
                 field = newValue
             }
         }
+
+    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf(this)
+}
+
+data class InformativeProperty<T : Any>(
+    val name: String,
+    val value: T
+) : EditableNode {
+    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
+    override fun toComponent(indentation: Int): Component = JPanel(GridLayout(1, 2)).also {
+        it.maximumSize = Dimension(1024, 32)
+        it.add(JLabel(name).also { it.border = CompoundBorder(it.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10)) })
+        it.add(JLabel(value.toString()).also { it.border = CompoundBorder(it.border, EmptyBorder(10, 10, 10, 10)) })
+    }
 }
 
 data class EditableEnumerableProperty<T : Any>(
@@ -200,7 +189,9 @@ data class EditableEnumerableProperty<T : Any>(
     override val clazz: KClass<T>,
     val initialValue: T,
     val supportedValues: Set<T>
-) : BaseEditableProperty<T>(initialValue)
+) : BaseEditableProperty<T>(initialValue) {
+    override fun toComponent(indentation: Int): Component = EditableListValue(this as EditableEnumerableProperty<Any>, indentation)
+}
 
 data class EditableNumericProperty<T : Number>(
     override val name: String,
@@ -209,7 +200,9 @@ data class EditableNumericProperty<T : Number>(
     val minimumValue: T? = null,
     val maximumValue: T? = null,
     val step: T? = null
-) : BaseEditableProperty<T>(initialValue)
+) : BaseEditableProperty<T>(initialValue) {
+    override fun toComponent(indentation: Int): Component = EditableNumberValue(this, indentation)
+}
 
 class Section(val indentation: Int, val title: String, val components: List<Component>) : JPanel() {
     val header: SectionHeader = SectionHeader(title, indentation, true).apply {
