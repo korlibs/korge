@@ -137,9 +137,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, Colors.BLACK)
-                    // @TODO: Remove clippedTriangles.toArray() so it doesn't allocate
                     if (ctx != null) {
-                        draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, vertexSize)
+                        draw(ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size)
                     }
                 } else {
                     if (vertexEffect != null) {
@@ -175,7 +174,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
                         }
                     }
                     if (ctx != null) {
-                        draw(ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size, vertexSize)
+                        draw(ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size)
                     }
                     if (bb != null) {
                         val vertexCount = verticesLength / vertexSize
@@ -251,10 +250,11 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
     //private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
     //}
 
-    private fun draw(ctx: RenderContext, texture: Bitmap, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, vertexSize: Int) {
+    private fun draw(ctx: RenderContext, texture: Bitmap, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int) {
         val batch = ctx.batch
         //ctx.flush()
 
+        val vertexSize = 5
         val vertexCount = verticesCount / vertexSize
 
         batch.setStateFast(texture, true, blendMode.factors, null)
@@ -262,24 +262,19 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState) :
 
         val transform = this.globalMatrix
 
-        if (vertexSize == 5) {
-            for (n in 0 until trianglesCount) {
-                batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
-            }
-            val colorMul = this.colorMul
-            val colorAdd = this.colorAdd
-            for (n in 0 until vertexCount) {
-                val x = verticesData[verticesOffset + n * vertexSize + 0]
-                val y = -verticesData[verticesOffset + n * vertexSize + 1]
-                val u = verticesData[verticesOffset + n * vertexSize + 3]
-                val v = verticesData[verticesOffset + n * vertexSize + 4]
-                val realX = transform.transformXf(x, y)
-                val realY = transform.transformYf(x, y)
-                batch.addVertex(realX, realY, u, v, colorMul, colorAdd)
-            }
-        } else {
-            //TODO()
-            println("TODO: clipping")
+        for (n in 0 until trianglesCount) {
+            batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
+        }
+        val colorMul = this.colorMul
+        val colorAdd = this.colorAdd
+        for (n in 0 until vertexCount) {
+            val x = verticesData[verticesOffset + n * vertexSize + 0]
+            val y = -verticesData[verticesOffset + n * vertexSize + 1]
+            val u = verticesData[verticesOffset + n * vertexSize + 3]
+            val v = verticesData[verticesOffset + n * vertexSize + 4]
+            val realX = transform.transformXf(x, y)
+            val realY = transform.transformYf(x, y)
+            batch.addVertex(realX, realY, u, v, colorMul, colorAdd)
         }
 
         //batch.flush()
