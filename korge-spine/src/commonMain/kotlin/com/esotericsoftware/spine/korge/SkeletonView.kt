@@ -8,7 +8,6 @@ import com.soywiz.korim.color.RGBAf
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -57,6 +56,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
     private val temp4 = RGBAf()
     private val temp5 = RGBAf()
     private val temp6 = RGBAf()
+
+    private var currentSpineBlendMode: BlendMode? = null
 
     private fun renderSkeleton(ctx: RenderContext?, skeleton: Skeleton, bb: BoundsBuilder?) {
         val tempPosition = this.temp
@@ -134,7 +135,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                         alpha = 0f
                     }
                     blendMode = slotBlendMode
-                    //setBlendFunction(ctx, blendMode!!.getSource(premultipliedAlpha), blendMode.dest)
+                    currentSpineBlendMode = blendMode
                 }
 
                 val c = RGBA(
@@ -149,7 +150,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                     val clippedVertices = clipper.clippedVertices
                     val clippedTriangles = clipper.clippedTriangles
                     if (vertexEffect != null) applyVertexEffect(clippedVertices.data, clippedVertices.size, 5, c, Colors.BLACK)
-                    draw(bb, ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size)
+                    draw(bb, ctx, texture, clippedVertices.data, 0, clippedVertices.size, clippedTriangles.toArray(), 0, clippedTriangles.size, currentSpineBlendMode)
                 } else {
                     if (vertexEffect != null) {
                         tempLight1.setTo(c)
@@ -183,7 +184,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                             u += 2
                         }
                     }
-                    draw(bb, ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size)
+                    draw(bb, ctx, texture, vertices, 0, verticesLength, triangles, 0, triangles.size, currentSpineBlendMode)
                 }
 
                 //break // @TODO: Remove this
@@ -245,10 +246,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
         }
     }
 
-    //private fun setBlendFunction(ctx: RenderContext, source: Int, dest: Int) {
-    //}
-
-    private fun draw(bb: BoundsBuilder?, ctx: RenderContext?, texture: Bitmap, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int) {
+    private fun draw(bb: BoundsBuilder?, ctx: RenderContext?, texture: Bitmap, verticesData: FloatArray, verticesOffset: Int, verticesCount: Int, triangle: ShortArray, trianglesOffset: Int, trianglesCount: Int, blendMode: BlendMode?) {
         val vertexSize = 5
         val vertexCount = verticesCount / vertexSize
         if (bb != null) {
@@ -264,7 +262,15 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
             val batch = ctx.batch
             //ctx.flush()
 
-            batch.setStateFast(texture, true, blendMode.factors, null)
+            val viewBlendMode = when (blendMode) {
+                BlendMode.normal -> com.soywiz.korge.view.BlendMode.NORMAL
+                BlendMode.additive -> com.soywiz.korge.view.BlendMode.ADD
+                BlendMode.multiply -> com.soywiz.korge.view.BlendMode.MULTIPLY
+                BlendMode.screen -> com.soywiz.korge.view.BlendMode.SCREEN
+                null -> this.blendMode
+            }
+
+            batch.setStateFast(texture, true, viewBlendMode.factors, null)
             batch.ensure(trianglesCount, vertexCount)
 
             val transform = this.globalMatrix
