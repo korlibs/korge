@@ -33,25 +33,28 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		val files = atlasFolder.listRecursiveSimple { it.extensionLC == "png" || it.extensionLC == "jpg" }
 		//println("atlasFiles=$files")
 
-		val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
+        if (files.isNotEmpty()) {
 
-		val outputImageFile = outputFile.withCompoundExtension("atlas.png")
+            val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
 
-		//println("outputImageFile=$outputImageFile")
+            val outputImageFile = outputFile.withCompoundExtension("atlas.png")
 
-        val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
-        val atlas = atlases.atlases.first()
+            //println("outputImageFile=$outputImageFile")
 
-		outputImageFile.write(
-			PNG.encode(atlas.tex, ImageEncodingProps(filename = "file.png", quality = 1.0))
-		)
+            val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
+            val atlas = atlases.atlases.first()
 
-		//println(Json.stringify(atlasInfo, pretty = true))
+            outputImageFile.write(
+                PNG.encode(atlas.tex, ImageEncodingProps(filename = "file.png", quality = 1.0))
+            )
 
-		outputFile.withCompoundExtension("atlas.json")
-			.writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
+            //println(Json.stringify(atlasInfo, pretty = true))
 
-		//Atlas.Factory()
-		//println(files)
+            outputFile.withCompoundExtension("atlas.json")
+                .writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
+
+            //Atlas.Factory()
+            //println(files)
+        }
 	}
 }
