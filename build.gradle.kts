@@ -406,6 +406,9 @@ samples {
                     doLast {
                         processedResourcesFolder.mkdirs()
                         //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+
+
+                        /*
                         URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
                             val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
                             val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
@@ -419,6 +422,7 @@ samples {
                             }
                         }
                         System.gc()
+                         */
                     }
                 }
                 //println(compilation.compileKotlinTask.name)
