@@ -23,6 +23,7 @@ class ParticleEmitter() {
         GRAVITY(0), RADIAL(1)
     }
 
+    var textureName: String? = null
 	var texture: BmpSlice? = null
 	var sourcePosition = Point()
 	var sourcePositionVariance = Point()
@@ -80,80 +81,9 @@ class ParticleEmitter() {
             0x307 to AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR,
         )
         val blendFactorMapReversed = blendFactorMap.flip()
+        val typeMap = Type.values().associateBy { it.index }
+        val typeMapReversed = typeMap.flip()
     }
-
-	suspend fun load(file: VfsFile): ParticleEmitter {
-		val particleXml = file.readXml()
-
-		//var blendFuncSource = AG.BlendFactor.ONE
-		//var blendFuncDestination = AG.BlendFactor.ONE
-
-		particleXml.allChildrenNoComments.fastForEach { item ->
-			fun point() = Point(item.double("x"), item.double("y"))
-			fun scalar() = item.double("value")
-			fun blendFactor() = blendFactorMap[scalar().toInt()] ?: AG.BlendFactor.ONE
-
-			fun angle() = Angle.degreesToRadians(item.double("value"))
-			fun color(): RGBAf =
-				RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
-
-			when (item.name.toLowerCase()) {
-				"texture" -> {
-                    try {
-                        texture = file.parent[item.str("name")].readBitmapSlice()
-                    } catch (e: FileNotFoundException) {
-                        texture = Bitmap32(64, 64).context2d {
-                            fill(createRadialGradient(32.0, 32.0, 0.0, 32.0, 32.0, 32.0)
-                                .addColorStop(0.0, Colors.WHITE)
-                                .addColorStop(0.4, Colors.WHITE)
-                                .addColorStop(1.0, Colors.TRANSPARENT_WHITE)) { circle(32.0, 32.0, 30.0) }
-                        }.slice()
-                    }
-                }
-				"sourceposition" -> sourcePosition = point()
-				"sourcepositionvariance" -> sourcePositionVariance = point()
-				"speed" -> speed = scalar()
-				"speedvariance" -> speedVariance = scalar()
-				"particlelifespan" -> lifeSpan = scalar()
-				"particlelifespanvariance" -> lifespanVariance = scalar()
-				"angle" -> angle = angle()
-				"anglevariance" -> angleVariance = angle()
-				"gravity" -> gravity = point()
-				"radialacceleration" -> radialAcceleration = scalar()
-				"tangentialacceleration" -> tangentialAcceleration = scalar()
-				"radialaccelvariance" -> radialAccelVariance = scalar()
-				"tangentialaccelvariance" -> tangentialAccelVariance = scalar()
-				"startcolor" -> startColor = color()
-				"startcolorvariance" -> startColorVariance = color()
-				"finishcolor" -> endColor = color()
-				"finishcolorvariance" -> endColorVariance = color()
-				"maxparticles" -> maxParticles = scalar().toInt()
-				"startparticlesize" -> startSize = scalar()
-				"startparticlesizevariance" -> startSizeVariance = scalar()
-				"finishparticlesize" -> endSize = scalar()
-				"finishparticlesizevariance" -> endSizeVariance = scalar()
-				"duration" -> duration = scalar()
-				"emittertype" -> emitterType =
-					when (scalar().toInt()) { 0 -> Type.GRAVITY
-						; 1 -> Type.RADIAL
-						; else -> Type.GRAVITY
-						; }
-				"maxradius" -> maxRadius = scalar()
-				"maxradiusvariance" -> maxRadiusVariance = scalar()
-				"minradius" -> minRadius = scalar()
-				"minradiusvariance" -> minRadiusVariance = scalar()
-				"rotatepersecond" -> rotatePerSecond = scalar()
-				"rotatepersecondvariance" -> rotatePerSecondVariance = scalar()
-				"blendfuncsource" -> blendFuncSource = blendFactor()
-				"blendfuncdestination" -> blendFuncDestination = blendFactor()
-				"rotationstart" -> rotationStart = angle()
-				"rotationstartvariance" -> rotationStartVariance = angle()
-				"rotationend" -> rotationEnd = angle()
-				"rotationendvariance" -> rotationEndVariance = angle()
-			}
-		}
-        return this
-	}
 
 	data class Particle(
 		var x: Double = 0.0,
@@ -203,19 +133,18 @@ class ParticleEmitter() {
 		var timeUntilStop = Int.MAX_VALUE
 		var emitting = true
 		val textureWidth = emitter.texture?.width ?: 16
-		val particles = (0 until emitter.maxParticles).map { init(Particle()) }
+		val particles = List(emitter.maxParticles) { init(Particle()) }
 		val aliveCount: Int get() = particles.count { it.alive }
 		val anyAlive: Boolean get() = aliveCount > 0
 
-		private fun randomVariance(base: Double, variance: Double): Double {
-			return base + variance * (random.nextDouble() * 2.0 - 1.0)
-		}
+		private fun randomVariance(base: Double, variance: Double): Double =
+            base + variance * (random.nextDouble() * 2.0 - 1.0)
 
 		fun init(particle: Particle): Particle {
-			val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance)
+			val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance).coerceAtLeast(0.001)
 
 			particle.currentTime = 0.0
-			particle.totalTime = max(0.0, lifespan)
+			particle.totalTime = lifespan.coerceAtLeast(0.0)
 
 			val emitterX = emitterPos.x
 			val emitterY = emitterPos.y
@@ -240,8 +169,8 @@ class ParticleEmitter() {
 			particle.tangentialAcceleration =
 					randomVariance(emitter.tangentialAcceleration, emitter.tangentialAccelVariance)
 
-			val startSize = max(0.1, randomVariance(emitter.startSize, emitter.startSizeVariance))
-			val endSize = max(0.1, randomVariance(emitter.endSize, emitter.endSizeVariance))
+			val startSize = randomVariance(emitter.startSize, emitter.startSizeVariance).coerceAtLeast(0.1)
+			val endSize = randomVariance(emitter.endSize, emitter.endSizeVariance).coerceAtLeast(0.1)
 			particle.scale = startSize / textureWidth
 			particle.scaleDelta = ((endSize - startSize) / lifespan) / textureWidth
 
@@ -284,7 +213,7 @@ class ParticleEmitter() {
 				Type.GRAVITY -> {
 					val distanceX = particle.x - particle.startX
 					val distanceY = particle.y - particle.startY
-					val distanceScalar = max(0.01, sqrt(distanceX * distanceX + distanceY * distanceY))
+					val distanceScalar = sqrt(distanceX * distanceX + distanceY * distanceY).coerceAtLeast(0.01)
 					var radialX = distanceX / distanceScalar
 					var radialY = distanceY / distanceScalar
 					var tangentialX = radialX
@@ -323,15 +252,12 @@ class ParticleEmitter() {
 			}
 
 			particles.fastForEach { p ->
-                if (p.alive) {
-                    advance(p, time)
-                }
+                advance(p, time)
 			}
 		}
 	}
 }
 
-suspend fun VfsFile.readParticle(): ParticleEmitter = ParticleEmitter().load(this)
 
 suspend fun Container.attachParticleAndWait(
 	particle: ParticleEmitter,

@@ -154,8 +154,7 @@
         <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
         <fileIconProvider implementation="com.soywiz.korge.intellij.KorgeFileIconProvider"/>
-        <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeBothFileEditorProvider"/>
-        <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeHiddenFileEditorProvider"/>
+        <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeFileEditorProvider"/>
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.tiled.TiledMapEditorProvider"/>
         <fileEditorProvider implementation="com.soywiz.korge.intellij.editor.KorgeImageEditorProvider"/>
         <!--

@@ -1,29 +1,59 @@
 package com.soywiz.korge.intellij.editor
 
-import com.intellij.execution.console.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.intellij.*
+import com.intellij.openapi.fileEditor.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
-import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import kotlinx.coroutines.*
 import kotlin.reflect.*
 
-abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider, com.intellij.openapi.project.DumbAware {
+open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider, com.intellij.openapi.project.DumbAware {
 	companion object {
-		val pluginClassLoader by lazy { KorgeBaseFileEditorProvider::class.java.classLoader }
+		val pluginClassLoader by lazy { KorgeFileEditorProvider::class.java.classLoader }
 		//val pluginResurcesVfs by lazy { resourcesVfs(pluginClassLoader) }
 		val pluginResurcesVfs by lazy { resourcesVfs }
 	}
+
+    var myPolicy: FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
+
+    override fun accept(
+        project: com.intellij.openapi.project.Project,
+        virtualFile: com.intellij.openapi.vfs.VirtualFile
+    ): Boolean {
+        val name = virtualFile.name
+        return when {
+            ////////
+            name.endsWith(".svg", ignoreCase = true) -> true
+            name.endsWith(".pex", ignoreCase = true) -> true
+            name.endsWith(".scml", ignoreCase = true) -> true
+            name.endsWith("_ske.json", ignoreCase = true) -> true
+            ////////
+            name.endsWith(".swf", ignoreCase = true) -> true
+            name.endsWith(".ani", ignoreCase = true) -> true
+            name.endsWith(".voice.wav", ignoreCase = true) -> true
+            name.endsWith(".voice.mp3", ignoreCase = true) -> true
+            name.endsWith(".voice.ogg", ignoreCase = true) -> true
+            name.endsWith(".voice.lipsync", ignoreCase = true) -> true
+            name.endsWith(".wav", ignoreCase = true) -> true
+            name.endsWith(".mp3", ignoreCase = true) -> true
+            name.endsWith(".ogg", ignoreCase = true) -> true
+            name.endsWith(".dbbin", ignoreCase = true) -> true
+            name.endsWith(".skel", ignoreCase = true) -> true
+            else -> false
+        }
+    }
+
+
+
+    override fun getPolicy(): FileEditorPolicy = myPolicy
 
 	override fun createEditor(
 		project: com.intellij.openapi.project.Project,
@@ -41,15 +71,17 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
             else -> file.extensionLC
         }
 
-        return when (computedExtension) {
-            "dbbin" -> createModule(null) { dragonBonesEditor(file) }
-            "skel" -> createModule(null) { spineEditor(file) }
-            "tmx" -> createModule(null) { tiledMapEditor(file) }
-            "svg" -> createModule(null) {  sceneView += Image(file.readBitmapSlice()) }
-            "pex" -> particleEmiterEditor(file)
-            "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
-            "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
-            else -> createModule(null) { }
+        return runBlocking {
+            when (computedExtension) {
+                "dbbin" -> createModule(null) { dragonBonesEditor(file) }
+                "skel" -> spineEditor(file)
+                "tmx" -> createModule(null) { tiledMapEditor(file) }
+                "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
+                "pex" -> particleEmiterEditor(file)
+                "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
+                "swf", "ani" -> createModule(null) { swfAnimationEditor(file) }
+                else -> createModule(null) { }
+            }
         }
     }
 
@@ -94,10 +126,10 @@ abstract class KorgeBaseFileEditorProvider : com.intellij.openapi.fileEditor.Fil
 fun createModule(editableNode: EditableNode?, block: suspend Scene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
     return object : KorgeBaseKorgeFileEditor.EditorModule() {
         override val editableNode: EditableNode? get() = editableNode
-        override val mainScene: KClass<out Scene> = KorgeBaseFileEditorProvider.EditorScene::class
+        override val mainScene: KClass<out Scene> = KorgeFileEditorProvider.EditorScene::class
         override suspend fun AsyncInjector.configure() {
-            get<ResourcesRoot>().mount("/", KorgeBaseFileEditorProvider.pluginResurcesVfs.root)
-            mapInstance(KorgeBaseFileEditorProvider.BlockToExecute(block))
+            get<ResourcesRoot>().mount("/", KorgeFileEditorProvider.pluginResurcesVfs.root)
+            mapInstance(KorgeFileEditorProvider.BlockToExecute(block))
         }
     }
 }

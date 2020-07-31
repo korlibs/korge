@@ -23,8 +23,8 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 	val anyAlive by simulator::anyAlive.redirected()
 
 	init {
-		addUpdatable { dtMs ->
-			simulator.simulate(dtMs.toDouble() / 1000.0)
+		addUpdater { dt ->
+			simulator.simulate(dt.seconds)
 		}
 	}
 

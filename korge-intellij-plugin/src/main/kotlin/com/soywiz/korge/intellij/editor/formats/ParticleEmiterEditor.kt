@@ -19,8 +19,8 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 
-fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
-    val particle = runBlocking { file.readParticle() }
+suspend fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
+    val particle = file.readParticle()
 
     suspend fun save() {
         file.writeString(buildXml("particleEmitterConfig") {

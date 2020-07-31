@@ -3,13 +3,11 @@ package com.soywiz.korge.intellij.editor.formats
 import com.soywiz.korau.sound.readSound
 import com.soywiz.korge.animate.AnSimpleAnimation
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.intellij.editor.KorgeBaseFileEditorProvider
+import com.soywiz.korge.intellij.editor.KorgeFileEditorProvider
 import com.soywiz.korge.lipsync.Voice
 import com.soywiz.korge.lipsync.readVoice
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.textButton
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.async.launchImmediately
@@ -19,7 +17,7 @@ import com.soywiz.korma.geom.Anchor
 import kotlinx.coroutines.Job
 
 private suspend fun getLipTexture(char: Char) =
-    runCatching { KorgeBaseFileEditorProvider.pluginResurcesVfs["/com/soywiz/korge/intellij/lips/lisa-$char.png"].readBitmapSlice() }.getOrNull()
+    runCatching { KorgeFileEditorProvider.pluginResurcesVfs["/com/soywiz/korge/intellij/lips/lisa-$char.png"].readBitmapSlice() }.getOrNull()
         ?: Bitmaps.transparent
 
 suspend fun Scene.audioFileEditor(file: VfsFile) {
