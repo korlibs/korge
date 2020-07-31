@@ -1,0 +1,88 @@
+<profiles>
+	<profile version="1.0" name="Predeterminado" current="true">
+		<PublishFormatProperties enabled="true">
+			<defaultNames>1</defaultNames>
+			<jpeg>0</jpeg>
+			<oam>0</oam>
+			<jpegDefaultName>1</jpegDefaultName>
+			<oamDefaultName>1</oamDefaultName>
+			<jpegFileName>Sin título 2.jpg</jpegFileName>
+			<oamFileName>Sin título 2.oam</oamFileName>
+			<publishFormat id="BBC1F406-65F2-4219-9304-FA48C7549E44">0</publishFormat>
+			<publishFormat id="C6B9CB0C-C6DC-4FBC-9805-93E9EB37A444">1</publishFormat>
+		</PublishFormatProperties>
+		<PublishJpegProperties enabled="true">
+			<Width>550</Width>
+			<Height>400</Height>
+			<Progressive>0</Progressive>
+			<DPI>4718592</DPI>
+			<Size>0</Size>
+			<Quality>80</Quality>
+			<MatchMovieDim>1</MatchMovieDim>
+		</PublishJpegProperties>
+		<PublishOamProperties enabled="true">
+			<Width>550</Width>
+			<Height>400</Height>
+			<CurrentFramePNG>1</CurrentFramePNG>
+			<CustomPNG>0</CustomPNG>
+			<PNGFilePath></PNGFilePath>
+			<Transparency>0</Transparency>
+		</PublishOamProperties>
+		<PublishProperties id="BBC1F406-65F2-4219-9304-FA48C7549E44" name="SVG Image" otf="true" enabled="true">
+			<Property name="copy">true</Property>
+			<Property name="default">true</Property>
+			<Property name="embed">false</Property>
+			<Property name="filename">Untitled-1.svg</Property>
+			<Property name="imagesPath">images</Property>
+			<Property name="includeHiddenLayers">true</Property>
+			<Property name="version">0.1</Property>
+		</PublishProperties>
+		<PublishProperties id="C6B9CB0C-C6DC-4FBC-9805-93E9EB37A444" name="JavaScript/HTML" otf="true" enabled="true">
+			<Property name="SiteUrl"></Property>
+			<Property name="bitDepth">8</Property>
+			<Property name="centerOption">2</Property>
+			<Property name="centerStage">false</Property>
+			<Property name="compactPaths">true</Property>
+			<Property name="componentsPath">components/</Property>
+			<Property name="createjsNS">createjs</Property>
+			<Property name="default">true</Property>
+			<Property name="embedJS">false</Property>
+			<Property name="exportAsSpritesheet">true</Property>
+			<Property name="exportHTML">true</Property>
+			<Property name="exportImages">true</Property>
+			<Property name="exportImagesToFolder">true</Property>
+			<Property name="exportLibs">true</Property>
+			<Property name="exportLibsToFolder">true</Property>
+			<Property name="exportSounds">true</Property>
+			<Property name="exportSoundsToFolder">true</Property>
+			<Property name="filename">Untitled-1</Property>
+			<Property name="frameBounds">false</Property>
+			<Property name="hostedLibs">true</Property>
+			<Property name="imageFormat">0</Property>
+			<Property name="imagesNS">images</Property>
+			<Property name="imagesPath">images/</Property>
+			<Property name="includeHiddenLayers">true</Property>
+			<Property name="includePreloader">false</Property>
+			<Property name="jpegBackground">#FFFFFF</Property>
+			<Property name="jpegMaxSheetHeight">8192</Property>
+			<Property name="jpegMaxSheetWidth">8192</Property>
+			<Property name="libNS">lib</Property>
+			<Property name="libraryPath">libs/</Property>
+			<Property name="loop">true</Property>
+			<Property name="makeResponsive">false</Property>
+			<Property name="optimizeExport">true</Property>
+			<Property name="pngBackground">#00000000</Property>
+			<Property name="pngMaxSheetHeight">8192</Property>
+			<Property name="pngMaxSheetWidth">8192</Property>
+			<Property name="preloaderName">Predeterminado</Property>
+			<Property name="quality">80</Property>
+			<Property name="responsiveOption">2</Property>
+			<Property name="scaleOption">0</Property>
+			<Property name="scaleStage">false</Property>
+			<Property name="soundsPath">sounds/</Property>
+			<Property name="templateTitle">Default Template</Property>
+			<Property name="version">0.1</Property>
+			<Property name="webfontEmbedCode">null</Property>
+		</PublishProperties>
+	</profile>
+</profiles>
