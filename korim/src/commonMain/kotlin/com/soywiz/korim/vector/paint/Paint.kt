@@ -69,6 +69,22 @@ data class GradientPaint(
 
     val numberOfStops get() = stops.size
 
+    companion object {
+        fun identity(kind: GradientKind) = GradientPaint(kind, 0.0, 0.0, 0.0, if (kind == GradientKind.RADIAL) 0.0 else 1.0, 0.0, 1.0, transform = Matrix())
+
+        fun gradientBoxMatrix(width: Double, height: Double, rotation: Angle, tx: Double, ty: Double, out: Matrix = Matrix()): Matrix {
+            out.identity()
+            out.pretranslate(tx + width / 2, ty + height / 2)
+            out.prescale(width / 2, height / 2)
+            out.prerotate(rotation)
+            return out
+        }
+
+        fun fromGradientBox(kind: GradientKind, width: Double, height: Double, rotation: Angle, tx: Double, ty: Double): GradientPaint {
+            return identity(kind).copy(transform = gradientBoxMatrix(width, height, rotation, tx, ty))
+        }
+    }
+
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)
 
@@ -78,11 +94,16 @@ data class GradientPaint(
         return this
     }
 
-    val gradientMatrix = Matrix().apply {
+    val untransformedGradientMatrix = Matrix().apply {
         translate(-x0, -y0)
-        scale(1.0 / Point.distance(x0, y0, x1, y1).clamp(1.0, 16000.0))
+        val scale = 1.0 / Point.distance(x0, y0, x1, y1).clamp(1.0, 16000.0)
+        scale(scale, scale)
         rotate(-Angle.between(x0, y0, x1, y1))
-        premultiply(transform)
+    }
+
+    val gradientMatrix = Matrix().apply {
+        copyFrom(untransformedGradientMatrix)
+        postmultiply(transform)
     }
 
     val gradientMatrixInv = gradientMatrix.inverted()
@@ -104,6 +125,7 @@ data class GradientPaint(
             1.0 - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale
         }
         else -> {
+            //println("gradientMatrix.transformX($x, $y): ${gradientMatrix.transformX(x, y)}")
             gradientMatrix.transformX(x, y)
         }
     })
@@ -116,10 +138,10 @@ data class GradientPaint(
         kind,
         m.transformX(x0, y0),
         m.transformY(x0, y0),
-        r0,
+        r0 * m.transformX(1.0, 0.0),
         m.transformX(x1, y1),
         m.transformY(x1, y1),
-        r1,
+        r1 * m.transformX(1.0, 0.0),
         DoubleArrayList(stops),
         IntArrayList(colors),
         cycle,
@@ -165,6 +187,6 @@ class BitmapPaint(
     ) : this(bitmap, transform, if (repeat) CycleMethod.REPEAT else CycleMethod.NO_CYCLE, if (repeat) CycleMethod.REPEAT else CycleMethod.NO_CYCLE, smooth)
 
     val bmp32 = bitmap.toBMP32()
-    //override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(m, this.transform))
-    override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(this.transform, m))
+    override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(m, this.transform))
+    //override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(this.transform, m))
 }

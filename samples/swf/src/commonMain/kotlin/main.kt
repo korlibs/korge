@@ -15,9 +15,11 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "SW
     //val swf = resourcesVfs["dog.swf"].readSWF(views, atlasPacking = false)
     val swf = resourcesVfs["test1.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
     //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X4), false)
+    //val swf = resourcesVfs["test4.swf"].readSWF(views, SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.NONE), false)
 
     this += swf.createMainTimeLine()
 
+    /*
     graphics {
         //fill(LinearGradientPaint(0.0, 0.0, 200.0, 0.0, transform = Matrix().pretranslate(50.0, 0.0).scale(1.0)).addColorStop(0.3, Colors.RED).addColorStop(0.7, Colors.BLUE)) {
         fill(GradientPaint.fromGradientBox(GradientKind.RADIAL, 50.0, 100.0, 0.degrees, 25.0, 0.0).addColorStop(0.0, Colors.GREEN).addColorStop(1.0, Colors.BLUE)) {
@@ -29,6 +31,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "SW
             rect(100.0, 100.0, 100.0, 100.0)
         }
     }
+     */
 
     /*
     val bmp = resourcesVfs["korge.png"].readBitmapOptimized().toBMP32().scaled(96, 96)
