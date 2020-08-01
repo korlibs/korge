@@ -738,7 +738,7 @@ abstract class AGOpengl : AG() {
         private val GL_UNPACK_SWAP_BYTES = 0x0CF0
         fun prepareTexImage2D() {
             if (linux) {
-                println("prepareTexImage2D")
+                //println("prepareTexImage2D")
                 //gl.pixelStorei(GL_UNPACK_LSB_FIRST, gl.TRUE)
                 gl.pixelStorei(GL_UNPACK_LSB_FIRST, gl.FALSE)
                 gl.pixelStorei(GL_UNPACK_SWAP_BYTES, gl.TRUE)

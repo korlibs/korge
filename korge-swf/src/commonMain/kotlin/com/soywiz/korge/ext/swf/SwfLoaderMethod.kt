@@ -135,7 +135,11 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		lib = AnLibrary(context, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
 		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
 		for (symbol in symbols) lib.addSymbol(symbol)
-		processAs3Actions()
+        try {
+            processAs3Actions()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
 		generateActualTimelines()
 		lib.processSymbolNames()
 		generateTextures()
