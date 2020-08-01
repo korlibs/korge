@@ -36,7 +36,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
     }
 
     var repositionResult: RepositionResult? = null
-    var container: Container? = null
+    val container: Container = Container()
     val symbolNames = animationLibrary.symbolsById.mapNotNull { it.name }
     val defaultSymbolName = when {
         "MainTimeLine" in symbolNames -> "MainTimeLine"
@@ -61,12 +61,14 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         add(EditableSection("SWF",
             InformativeProperty("name", file.baseName),
             InformativeProperty("size", "${animationLibrary?.width}x${animationLibrary?.height}"),
+            container::speed.toEditableProperty(0.05, 10.0),
             symbolProperty,
         ))
     }) {
 
         //container = sceneView.fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
-        container = sceneView.container {
+        sceneView += container
+        container.apply {
             fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
                 this += animationLibrary.createMainTimeLine()
             }
