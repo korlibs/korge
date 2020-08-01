@@ -118,6 +118,12 @@ abstract class AG : Extra by Extra.Mixin() {
 		var x: Int, var y: Int,
 		var width: Int, var height: Int
 	) {
+        val rect: Rectangle = Rectangle()
+            get() {
+                field.setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+                return field
+            }
+
 		val top get() = y
 		val left get() = x
 		val right get() = x + width

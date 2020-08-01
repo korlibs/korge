@@ -37,7 +37,7 @@ abstract class AGOpengl : AG() {
         super.setViewport(x, y, width, height)
         //println("setViewport: $x, $y, $width, $height")
         if (isGlAvailable) {
-            gl.viewport(x, y, width, height)
+            //gl.viewport(x, y, width, height)
         }
     }
 
@@ -176,6 +176,24 @@ abstract class AGOpengl : AG() {
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
+    var forcedScissor: Rectangle? = null
+    private val finalScissor = Rectangle()
+
+    fun applyScissorState(scissor: AG.Scissor? = null) {
+        finalScissor.setTo(-16000, -16000, +32000, +32000)
+        if (scissor != null) finalScissor.intersection(scissor.rect, finalScissor)
+        val forcedScissor = this.forcedScissor
+        if (forcedScissor != null) finalScissor.intersection(forcedScissor, finalScissor)
+
+        if (forcedScissor != null || scissor != null) {
+            gl.enable(gl.SCISSOR_TEST)
+            gl.scissor(finalScissor.x.toInt(), (backHeight - finalScissor.y - finalScissor.height).toInt(), (finalScissor.width).toInt(), finalScissor.height.toInt())
+        } else {
+            gl.disable(gl.SCISSOR_TEST)
+        }
+
+    }
+
     override fun draw(batch: Batch) {
         val vertices = batch.vertices
         val program = batch.program
@@ -194,12 +212,8 @@ abstract class AGOpengl : AG() {
         val vattrs = vertexLayout.attributes
         val vattrspos = vertexLayout.attributePositions
 
-        if (scissor != null) {
-            gl.enable(gl.SCISSOR_TEST)
-            gl.scissor(scissor.x, backHeight - scissor.y - scissor.height, scissor.width, scissor.height)
-        } else {
-            gl.disable(gl.SCISSOR_TEST)
-        }
+        //finalScissor.setTo(0, 0, backWidth, backHeight)
+        applyScissorState(scissor)
 
         var useExternalSampler = false
         for (n in 0 until uniforms.uniforms.size) {
@@ -558,7 +572,8 @@ abstract class AGOpengl : AG() {
     ) {
         //println("CLEAR: $color, $depth")
         var bits = 0
-        gl.disable(gl.SCISSOR_TEST)
+        applyScissorState(null)
+        //gl.disable(gl.SCISSOR_TEST)
         if (clearColor) {
             bits = bits or gl.COLOR_BUFFER_BIT
             gl.clearColor(color.rf, color.gf, color.bf, color.af)

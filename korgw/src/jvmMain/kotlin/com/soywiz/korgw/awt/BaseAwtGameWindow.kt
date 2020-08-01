@@ -1,5 +1,6 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.kgl.*
 import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
@@ -50,7 +51,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //GL.glClearColor(1f, 0f, 0f, 1f)
         //GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        ctx?.useContext(g) {
+        ctx?.useContext(g, ag) { info ->
             ctx?.swapInterval(1)
 
             val gl = ag.gl
@@ -62,8 +63,25 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
             //println("RENDER[1]")
 
-            //println("FACTOR: $factor, nonScaledWidth=$nonScaledWidth, nonScaledHeight=$nonScaledHeight, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight")
-            gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
+            val viewport = info.viewport
+            val scissor = info.scissors
+            gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
+            if (scissor != null) {
+                //ag.forcedScissor = info.scissors
+                //gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
+                //println("SCISSOR: $scissor")
+            }
+            if (viewport != null) {
+                //println("FACTOR: $factor, nonScaledWidth=$nonScaledWidth, nonScaledHeight=$nonScaledHeight, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight")
+                //gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
+            } else {
+                //gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
+            }
+
+            println(viewport)
+
+            //gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
+
             //gl.clearColor(.2f, .4f, .9f, 1f)
             gl.clearColor(.3f, .3f, .3f, 1f)
             gl.clear(gl.COLOR_BUFFER_BIT)

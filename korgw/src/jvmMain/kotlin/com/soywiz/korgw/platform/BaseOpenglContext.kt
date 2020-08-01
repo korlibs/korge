@@ -1,23 +1,36 @@
 package com.soywiz.korgw.platform
 
+import com.soywiz.korag.*
+import com.soywiz.korgw.awt.*
 import com.soywiz.korgw.win32.Win32OpenglContext
 import com.soywiz.korgw.x11.X
 import com.soywiz.korgw.x11.X11OpenglContext
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.OS
+import com.soywiz.korma.awt.*
+import com.soywiz.korma.geom.Rectangle
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.platform.win32.WinDef
 import sun.awt.*
 import java.awt.*
 import java.lang.reflect.Method
+import java.security.*
 
 interface BaseOpenglContext : Disposable {
     val scaleFactor: Double get() = 1.0
-    fun useContext(obj: Any?, action: Runnable) {
+    class ContextInfo(
+        val scissors: com.soywiz.korma.geom.Rectangle? = null,
+        val viewport: com.soywiz.korma.geom.Rectangle? = null
+    ) {
+        companion object {
+            val DEFAULT = ContextInfo()
+        }
+    }
+    fun useContext(obj: Any?, ag: AG, action: (ContextInfo) -> Unit) {
         makeCurrent()
         try {
-            action.run()
+            action(ContextInfo.DEFAULT)
         } finally {
             swapBuffers()
             releaseCurrent()
@@ -54,22 +67,58 @@ object DummyOpenglContext : BaseOpenglContext {
     }
 }
 
+private inline fun <T : Any> privilegedAction(crossinline block: () -> T): T {
+    var result: T? = null
+    AccessController.doPrivileged(PrivilegedAction {
+        result = block()
+    })
+    return result!!
+}
+
 fun glContextFromComponent(c: Component): BaseOpenglContext {
     return when {
         OS.isMac -> {
-            val utils = Class.forName("sun.java2d.opengl.OGLUtilities")
-            val invokeWithOGLContextCurrentMethod = utils.getDeclaredMethod(
-                "invokeWithOGLContextCurrent",
-                Graphics::class.java, Runnable::class.java
-            )
-            invokeWithOGLContextCurrentMethod.isAccessible = true
+            val utils = privilegedAction { Class.forName("sun.java2d.opengl.OGLUtilities") }
+            //println(utils.declaredMethods.map { it.name })
+            val invokeWithOGLContextCurrentMethod = privilegedAction {
+                utils.getDeclaredMethod("invokeWithOGLContextCurrent", Graphics::class.java, Runnable::class.java).also { it.isAccessible = true }
+            }
+            val isQueueFlusherThread = privilegedAction {
+                utils.getDeclaredMethod("isQueueFlusherThread").also { it.isAccessible = true }
+            }
+            val getOGLViewport = privilegedAction {
+                utils.getDeclaredMethod("getOGLViewport", Graphics::class.java, Integer.TYPE, Integer.TYPE).also { it.isAccessible = true }
+            }
+            val getOGLScissorBox = privilegedAction {
+                utils.getDeclaredMethod("getOGLScissorBox", Graphics::class.java).also { it.isAccessible = true }
+            }
+            val getOGLSurfaceIdentifier = privilegedAction {
+                utils.getDeclaredMethod("getOGLSurfaceIdentifier", Graphics::class.java).also { it.isAccessible = true }
+            }
+            val getOGLSurfaceType = privilegedAction {
+                utils.getDeclaredMethod("getOGLSurfaceType", Graphics::class.java).also { it.isAccessible = true }
+            }
 
             //var timeSinceLast = 0L
             object : BaseOpenglContext {
                 override val scaleFactor: Double get() = getDisplayScalingFactor(c)
 
-                override fun useContext(obj: Any?, action: Runnable) {
-                    invokeWithOGLContextCurrentMethod.invoke(null, obj as Graphics, action)
+                val info = BaseOpenglContext.ContextInfo(
+                    Rectangle(), Rectangle()
+                )
+                override fun useContext(obj: Any?, ag: AG, action: (BaseOpenglContext.ContextInfo) -> Unit) {
+                    val g = obj as Graphics
+                    invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
+                        val viewport = getOGLViewport.invoke(null, g, c.width, c.height) as java.awt.Rectangle
+                        val scissorBox = getOGLScissorBox(null, g) as java.awt.Rectangle
+                        //println("scissorBox: $scissorBox")
+                        //println("viewport: $viewport")
+                        info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                        info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
+                        //println("viewport: $viewport, $scissorBox")
+                        //println(g.clipBounds)
+                        action(info)
+                    })
                 }
                 override fun makeCurrent() = Unit
                 override fun releaseCurrent() = Unit

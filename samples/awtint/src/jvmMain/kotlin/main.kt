@@ -43,11 +43,11 @@ fun main() {
         //}
     }
     f.contentPane.layout = GridLayout(2, 2)
-    f.add(canvas)
     f.add(JButton("hello"))
+    f.add(canvas)
     f.add(JButton("world"))
     f.add(JButton("nice"))
-    //f.add(JButton("nice"))
+    //f.add(JButton("test"))
 
     f.size = Dimension(512, 512)
     f.isVisible = true
@@ -77,8 +77,8 @@ fun main() {
             }
         }
         println("[3]")
-        delay(0.5.seconds)
-        korge.close()
+        //delay(0.5.seconds)
+        //korge.close()
     }
 
     //Timer(100) { canvas.repaint() }.start()

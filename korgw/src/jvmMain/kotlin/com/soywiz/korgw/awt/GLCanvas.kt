@@ -56,10 +56,12 @@ open class GLCanvas(val checkGl: Boolean = true) : Canvas(), Closeable {
     }
 
     var defaultRenderer: (gl: KmlGl, g: Graphics) -> Unit = { gl, g ->
-        ctx?.useContext(g) {
+        /*
+        ctx?.useContext(g, ag) {
             gl.clearColor(0f, 0f, 0f, 1f)
             gl.clear(gl.COLOR_BUFFER_BIT)
         }
+         */
     }
 
     open fun render(gl: KmlGl, g: Graphics) {

@@ -150,3 +150,7 @@ interface IKmlGl {
 	fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Int): Unit
 	fun viewport(x: Int, y: Int, width: Int, height: Int): Unit
 }
+
+fun IKmlGl.enableDisable(cap: Int, enable: Boolean) {
+    if (enable) enable(cap) else disable(cap)
+}
