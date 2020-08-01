@@ -22,7 +22,7 @@ import kotlin.system.*
 import java.awt.Dimension
 
 fun main() {
-    val f = object : Frame("hello") {
+    val f = object : JFrame("hello") {
         override fun update(g: Graphics) {
             paint(g)
         }
@@ -42,7 +42,12 @@ fun main() {
         //    gl.clear(X11KmlGl.COLOR_BUFFER_BIT)
         //}
     }
+    f.contentPane.layout = GridLayout(2, 2)
     f.add(canvas)
+    f.add(JButton("hello"))
+    f.add(JButton("world"))
+    f.add(JButton("nice"))
+    //f.add(JButton("nice"))
 
     f.size = Dimension(512, 512)
     f.isVisible = true
