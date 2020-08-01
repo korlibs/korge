@@ -246,7 +246,10 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			//this.firstUpdateSingleFrame = true
 			update(0)
 			onChangeState(name)
-		}
+		} else {
+            println("Can't find state with name '$name' : ${symbol.states.keys}")
+        }
+        //println("gotoAndRunning: running=$running, name=$name, time=$time")
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
 
@@ -577,6 +580,11 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		update()
 	}
 
+    fun playAndStop(name: String) {
+        timelineRunner.gotoAndStop(name)
+        update()
+    }
+
 	suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
@@ -639,8 +647,11 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		if (timelineRunner.running && (firstUpdate || !singleFrame)) {
 			firstUpdate = false
 			timelineRunner.update(dtMs * 1000)
+            //println("Updating ${dtMs * 1000}")
 			update()
-		}
+		} else {
+            //println("Not updating")
+        }
 	}
 
 	override fun toString(): String = super.toString() + ":symbol=" + symbol

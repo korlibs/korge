@@ -357,6 +357,8 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 	fun getBitmap(id: Int) = (symbolsById[id] as AnSymbolBitmap).bmp
 	fun getBitmap(name: String) = (symbolsByName[name] as AnSymbolBitmap).bmp
 
+    val mainTimeLineInfo: AnSymbolMovieClip get() = symbolsById[0] as AnSymbolMovieClip
+
 	fun createMainTimeLine() = createMovieClip(0)
 }
 
