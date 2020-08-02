@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.config
 
 import com.intellij.openapi.components.*
+import com.intellij.openapi.project.*
 import com.intellij.util.xmlb.*
 import com.soywiz.klock.*
 import com.soywiz.korge.intellij.*
@@ -11,7 +12,7 @@ import java.net.*
 	name = "KorgeGlobalSettings",
 	storages = [Storage("korge.xml")]
 )
-open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings> {
+open class KorgeGlobalSettings : PersistentStateComponent<KorgeGlobalSettings>, DumbAware {
 	var cachedTemplateLastRefreshTime: Long = 0L
 	var cachedTemplateString: String? = null
 

@@ -331,7 +331,7 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
                     val deltaAbsolute = dx.absoluteValue.toDouble().convertRange(0.toDouble(), +FULL_CHANGE_WIDTH.toDouble(), 0.0, length)
                     val adjustedDeltaAbsolute = if (length > FULL_CHANGE_WIDTH) deltaAbsolute.pow(0.75) else deltaAbsolute
                     val delta = adjustedDeltaAbsolute.withSign(dx.sign)
-                    println("(startValue=$startValue, dx=$dx, delta=$delta, minimum=$minimum, maximum=$maximum, FULL_CHANGE_WIDTH=$FULL_CHANGE_WIDTH)")
+                    //println("(startValue=$startValue, dx=$dx, delta=$delta, minimum=$minimum, maximum=$maximum, FULL_CHANGE_WIDTH=$FULL_CHANGE_WIDTH)")
                     updateValue(startValue + delta)
                 }
             })

@@ -133,8 +133,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		swf = SWF().loadBytes(data)
 		val bounds = swf.frameSize.rect
 		lib = AnLibrary(context, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
-		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
-		for (symbol in symbols) lib.addSymbol(symbol)
+        parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
+        for (symbol in symbols) lib.addSymbol(symbol)
         try {
             processAs3Actions()
         } catch (e: Throwable) {
@@ -512,7 +512,15 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 
 	var spritesById = hashMapOf<Int, AnSymbolMovieClip>()
 
-	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
+    suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
+        try {
+            parseMovieClipInternal(tags, mc)
+        } catch (e: Throwable) {
+
+        }
+    }
+
+	private suspend fun parseMovieClipInternal(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 		symbols += mc
 
 		val swfTimeline = mc.swfTimeline
@@ -646,7 +654,10 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
                     symbols += AnSymbolButton(it.characterId, it.name)
                 }
                 is TagDefineButton2 -> {
-                    symbols += AnSymbolButton(it.characterId, it.name)
+                    symbols += AnSymbolVideo(it.characterId, it.name)
+                }
+                is TagDefineVideoStream -> {
+                    symbols += AnSymbolVideo(it.characterId, it.name)
                 }
 				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
@@ -859,6 +870,10 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				}
 				is TagEnd -> {
 				}
+                is IDefinitionTag -> {
+                    println("Unhandled tag $it")
+                    error("Can't continue without handling th define tag $it")
+                }
 				else -> {
 					println("Unhandled tag $it")
 				}

@@ -30,7 +30,9 @@ open class AnSymbol(
 object AnSymbolEmpty : AnSymbol(-1, "")
 
 class AnSymbolButton(id: Int, name: String?) : AnSymbol(id, name) {
+}
 
+class AnSymbolVideo(id: Int, name: String?) : AnSymbol(id, name) {
 }
 
 class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) :
@@ -344,7 +346,7 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 
 	fun AnElement.findFirstTexture(): BmpSlice? = this.symbol.findFirstTexture()
 
-	fun create(id: Int) = if (id < 0) TODO() else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
+	fun create(id: Int) = if (id < 0) TODO("id=$id") else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
 	fun createShape(id: Int) = create(id) as AnShape
 	fun createMovieClip(id: Int) = create(id) as AnMovieClip
 	fun getTexture(id: Int) = create(id).findFirstTexture()
