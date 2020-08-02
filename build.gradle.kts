@@ -63,9 +63,18 @@ val KotlinTarget.isWin get() = this.name == "mingwX64"
 val KotlinTarget.isMacos get() = this.name == "macosX64"
 val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 
+val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
+
 // Required by RC
 kotlin {
     jvm { }
+}
+
+fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+    return when {
+        isWindows -> listOf(linuxX64())
+        else -> listOf(linuxX64(), mingwX64(), macosX64())
+    }
 }
 
 subprojects {
@@ -96,9 +105,7 @@ subprojects {
                 }
             }
             if (doEnableKotlinNative) {
-                linuxX64()
-                mingwX64()
-                macosX64()
+                nativeTargets()
             }
 
             // common
@@ -176,7 +183,7 @@ subprojects {
                     val nativePosixNonApple = createPairSourceSet("nativePosixNonApple", nativePosix)
                     val nativePosixApple = createPairSourceSet("nativePosixApple", nativePosix)
 
-                    for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
+                    for (target in nativeTargets()) {
                         val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
                         if (target.isDesktop) {
                             native.dependsOn(nativeDesktop)
@@ -316,7 +323,7 @@ samples {
         }
 
         if (doEnableKotlinNative) {
-            for (target in listOf(linuxX64(), mingwX64(), macosX64())) {
+            for (target in nativeTargets()) {
                 target.apply {
                     binaries {
                         executable {
@@ -353,7 +360,7 @@ samples {
                 }
             }
 
-            val nativeDesktopTargets = listOf(linuxX64(), mingwX64(), macosX64())
+            val nativeDesktopTargets = nativeTargets()
             val allNativeTargets = nativeDesktopTargets
 
             //for (target in nativeDesktopTargets) {
