@@ -80,7 +80,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
 subprojects {
     if (project.name != "korge-intellij-plugin") {
         apply(plugin = "kotlin-multiplatform")
-        if (!project.path.startsWith(":samples:")) {
+        if (!project.path.startsWith(":samples")) {
             apply(plugin = "maven-publish")
         }
 
