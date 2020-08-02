@@ -85,7 +85,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 gl.clear(gl.COLOR_BUFFER_BIT)
                 */
 
-                //println("-- $scissor, $viewport, ${g.width}, ${g.height}")
+                //println("-- viewport=$viewport, scissors=$scissor")
 
                 ag.mainRenderBuffer.scissor(scissor)
                 if (viewport != null) {

@@ -17,6 +17,7 @@ import sun.awt.*
 import java.awt.*
 import java.lang.reflect.Method
 import java.security.*
+import javax.swing.*
 
 interface BaseOpenglContext : Disposable {
     val scaleFactor: Double get() = 1.0
@@ -111,12 +112,18 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                 override fun useContext(obj: Any?, ag: AG, action: (BaseOpenglContext.ContextInfo) -> Unit) {
                     val g = obj as Graphics
                     invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
-                        val viewport = getOGLViewport.invoke(null, g, c.width, c.height) as java.awt.Rectangle
+                        val factor = getDisplayScalingFactor(c)
+                        val window = SwingUtilities.getWindowAncestor(c)
+                        val viewport = getOGLViewport.invoke(null, g, (c.width * factor).toInt(), (c.height * factor).toInt()) as java.awt.Rectangle
+                        //val viewport = getOGLViewport.invoke(null, g, window.width.toInt(), window.height.toInt()) as java.awt.Rectangle
                         val scissorBox = getOGLScissorBox(null, g) as java.awt.Rectangle
                         //println("scissorBox: $scissorBox")
                         //println("viewport: $viewport")
+                        //info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
                         info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                        info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
+                        //info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
+                        info.viewport?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                        //info.viewport?.setTo(scissorBox.x, scissorBox.y)
                         //println("viewport: $viewport, $scissorBox")
                         //println(g.clipBounds)
                         action(info)
