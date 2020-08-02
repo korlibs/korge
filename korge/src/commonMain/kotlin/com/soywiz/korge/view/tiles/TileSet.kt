@@ -19,6 +19,8 @@ class TileSet(
 
 	operator fun get(index: Int): BmpSlice? = textures.getOrNull(index)
 
+    fun clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
+
 	companion object {
 		operator fun invoke(textureMap: Map<Int, BmpSlice?>): TileSet {
 			val maxKey = textureMap.keys.max() ?: 0

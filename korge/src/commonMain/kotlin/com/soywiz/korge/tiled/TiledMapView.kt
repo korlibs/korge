@@ -14,25 +14,24 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
 	init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {
-                is TiledMap.Layer.Patterns -> tileMap(layer.map, tiledMap.tileset)
+                is TiledMap.Layer.Tiles -> tileMap(layer.map, tiledMap.tilesets)
                 is TiledMap.Layer.Image -> image(layer.image)
                 is TiledMap.Layer.Objects -> {
                     container {
                         for (obj in layer.objects) {
-                            val info = obj.info
-                            val bounds = info.bounds
-                            val gid = obj.info.gid
+                            val bounds = obj.bounds
+                            val gid = obj.gid
                             //println("ID:${obj.id} : ${obj::class}")
                             var shouldShow = showShapes
-                            val view: View = when (obj) {
-                                is TiledMap.Layer.Objects.PPoint -> {
+                            val view: View = when (val type = obj.objectType) {
+                                is TiledMap.Object.Type.PPoint -> {
                                     solidRect(1.0, 1.0, Colors.WHITE)
                                 }
-                                is TiledMap.Layer.Objects.Ellipse -> {
+                                is TiledMap.Object.Type.Ellipse -> {
                                     ellipse(bounds.width / 2, bounds.height / 2)
                                     //solidRect(bounds.width, bounds.width, Colors.RED)
                                 }
-                                is TiledMap.Layer.Objects.Rect -> {
+                                is TiledMap.Object.Type.Rectangle -> {
                                     if (gid != null) {
                                         val tileTex = this@TiledMapView.tiledMap.tileset[gid] ?: Bitmaps.transparent
                                         //println("tileTex[gid=$gid]: $tileTex!")
@@ -43,10 +42,27 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
                                         solidRect(bounds.width, bounds.height, Colors.WHITE)
                                     }
                                 }
-                                is TiledMap.Layer.Objects.Poly -> graphics {
+                                is TiledMap.Object.Type.Polygon -> graphics {
                                     fill(Colors.WHITE) {
                                         var first = true
-                                        for (point in obj.points) {
+                                        var firstPoint: Point? = null
+                                        for (point in type.points) {
+                                            if (first) {
+                                                first = false
+                                                firstPoint = point
+                                                moveTo(point.x, point.y)
+                                            } else {
+                                                lineTo(point.x, point.y)
+                                            }
+                                        }
+                                        firstPoint?.let { lineTo(it.x, it.y) }
+                                        close()
+                                    }
+                                }
+                                is TiledMap.Object.Type.Polyline -> graphics {
+                                    fill(Colors.WHITE) {
+                                        var first = true
+                                        for (point in type.points) {
                                             if (first) {
                                                 first = false
                                                 moveTo(point.x, point.y)
@@ -57,18 +73,17 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
                                         close()
                                     }
                                 }
-                                else -> {
-                                    println("WARNING: Unsupported tiled object $obj")
-                                    dummyView()
+                                is TiledMap.Object.Type.Text -> {
+                                    TODO("Unsupported tiled object $obj")
                                 }
                             }
                             view
                                 .visible(shouldShow)
-                                .name(info.name.takeIf { it.isNotEmpty() })
+                                .name(obj.name.takeIf { it.isNotEmpty() })
                                 .xy(bounds.x, bounds.y)
-                                .rotation(info.rotation.degrees)
-                                .also { it.addProp("type", info.type) }
-                                .also { it.addProps(info.objprops) }
+                                .rotation(obj.rotation.degrees)
+                                .also { it.addProp("type", obj.type) }
+                                .also { it.addProps(obj.properties) }
                         }
                     }
                 }

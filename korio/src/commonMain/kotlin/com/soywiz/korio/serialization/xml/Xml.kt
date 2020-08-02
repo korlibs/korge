@@ -157,6 +157,7 @@ data class Xml(
 	fun int(name: String, defaultValue: Int = 0): Int = this.attributesLC[name]?.toIntOrNull() ?: defaultValue
 	fun long(name: String, defaultValue: Long = 0): Long = this.attributesLC[name]?.toLongOrNull() ?: defaultValue
 	fun str(name: String, defaultValue: String = ""): String = this.attributesLC[name] ?: defaultValue
+    fun uint(name: String, defaultValue: UInt = 0u): UInt = this.attributesLC[name]?.toUIntOrNull() ?: defaultValue
 
 	fun doubleNull(name: String): Double? = this.attributesLC[name]?.toDoubleOrNull()
 	fun floatNull(name: String): Float? = this.attributesLC[name]?.toFloatOrNull()

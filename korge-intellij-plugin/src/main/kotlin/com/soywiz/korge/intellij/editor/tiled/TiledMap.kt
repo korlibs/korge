@@ -11,7 +11,6 @@ import kotlin.collections.LinkedHashMap
 
 class TiledMapData(
 	var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,
-	//TODO: support render order
 	var renderOrder: TiledMap.RenderOrder = TiledMap.RenderOrder.RIGHT_DOWN,
 	var compressionLevel: Int = -1,
 	var width: Int = 0,
@@ -107,28 +106,28 @@ data class TileData(
 }
 
 data class TileSetData(
-	val name: String,
-	val firstgid: Int,
-	val tileWidth: Int,
-	val tileHeight: Int,
-	val tileCount: Int,
-	val spacing: Int,
-	val margin: Int,
-	val columns: Int,
-	val image: TiledMap.Image?,
-	val tileOffsetX: Int = 0,
-	val tileOffsetY: Int = 0,
-	val grid: TiledMap.Grid? = null,
-	val tilesetSource: String? = null,
-	val objectAlignment: TiledMap.ObjectAlignment = TiledMap.ObjectAlignment.UNSPECIFIED,
-	val terrains: List<TerrainData> = listOf(),
-	val wangsets: List<WangSet> = listOf(),
-	val tiles: List<TileData> = listOf(),
-	val properties: Map<String, TiledMap.Property> = mapOf()
+    val name: String,
+    val firstgid: Int,
+    val tileWidth: Int,
+    val tileHeight: Int,
+    val tileCount: Int,
+    val spacing: Int,
+    val margin: Int,
+    val columns: Int,
+    val image: TiledMap.Image?,
+    val tileOffsetX: Int = 0,
+    val tileOffsetY: Int = 0,
+    val grid: TiledMap.Grid? = null,
+    val tilesetSource: String? = null,
+    val objectAlignment: TiledMap.ObjectAlignment = TiledMap.ObjectAlignment.UNSPECIFIED,
+    val terrains: List<TerrainData> = listOf(),
+    val wangsets: List<WangSet> = listOf(),
+    val tiles: List<TileData> = listOf(),
+    val properties: Map<String, TiledMap.Property> = mapOf()
 ) {
-	val width: Int get() = image?.width ?: 0
-	val height: Int get() = image?.height ?: 0
-	fun clone() = copy()
+    val width: Int get() = image?.width ?: 0
+    val height: Int get() = image?.height ?: 0
+    fun clone() = copy()
 }
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
