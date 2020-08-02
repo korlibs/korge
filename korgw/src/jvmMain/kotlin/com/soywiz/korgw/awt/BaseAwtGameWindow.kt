@@ -30,7 +30,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
     abstract val contentComponent: Component
     private var lastFactor = 0.0
 
-    val window by lazy { SwingUtilities.getWindowAncestor(component) }
+    val window by lazy { SwingUtilities.getWindowAncestor(component) ?: (component as Frame) }
 
     protected open fun ensureContext() {
     }
@@ -87,19 +87,29 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
                 //println("-- viewport=$viewport, scissors=$scissor")
 
-                ag.mainRenderBuffer.scissor(scissor)
-                if (viewport != null) {
-                    //val window = SwingUtilities.getWindowAncestor(contentComponent)
-                    //println("window=${window.width}x${window.height} : factor=$factor")
+                if (component is JFrame) {
+                    //println("component.width: ${contentComponent.width}x${contentComponent.height}")
                     ag.mainRenderBuffer.setSize(
-                        viewport.x, viewport.y, viewport.width, viewport.height,
-                        (window.width * factor).toInt(),
-                        (window.height * factor).toInt(),
+                        0, 0, (contentComponent.width * factor).toInt(), (contentComponent.height * factor).toInt(),
                     )
                 } else {
-                    ag.mainRenderBuffer.setSize(
-                        0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
-                    )
+                    ag.mainRenderBuffer.scissor(scissor)
+                    if (viewport != null) {
+                        //val window = SwingUtilities.getWindowAncestor(contentComponent)
+                        //println("window=${window.width}x${window.height} : factor=$factor")
+
+                        val frame: Component = (window as? JFrame)?.contentPane ?: window
+
+                        ag.mainRenderBuffer.setSize(
+                            viewport.x, viewport.y, viewport.width, viewport.height,
+                            (frame.width * factor).toInt(),
+                            (frame.height * factor).toInt(),
+                        )
+                    } else {
+                        ag.mainRenderBuffer.setSize(
+                            0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
+                        )
+                    }
                 }
 
                 //println(gl.getString(gl.VERSION))
