@@ -220,7 +220,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	val onEvent = Signal<String>()
 
 	var running = true
-		private set(value) {
+		internal set(value) {
 			field = value
 			if (!value) {
 				onStop(Unit)
@@ -255,6 +255,12 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 
 	fun gotoAndPlay(name: String, time: Int = 0) = gotoAndRunning(true, name, time)
 	fun gotoAndStop(name: String, time: Int = 0) = gotoAndRunning(false, name, time)
+
+    var ratio: Double
+        get() = currentTime.toDouble() / currentStateTotalTime.toDouble()
+        set(value) {
+            currentTime = (value.clamp01() * currentStateTotalTime).toInt()
+        }
 
 	fun update(time: Int) {
 		//println("Update[1]: $currentTime")
@@ -585,7 +591,20 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
-	suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
+    fun stop() {
+        //println("stop")
+        timelineRunner.running = false
+        update()
+    }
+
+    override var ratio: Double
+        get() = timelineRunner.ratio
+        set(value) {
+            //println("set ratio: $value")
+            timelineRunner.ratio = value
+        }
+
+    suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 

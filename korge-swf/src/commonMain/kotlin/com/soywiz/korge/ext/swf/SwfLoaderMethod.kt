@@ -647,6 +647,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				is TagJPEGTables -> {
 					println("Unhandled tag: $it")
 				}
+                /*
                 is TagPathsArePostScript -> {
                     pathsArePostScript = true
                 }
@@ -659,6 +660,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
                 is TagDefineVideoStream -> {
                     symbols += AnSymbolVideo(it.characterId, it.name)
                 }
+                */
 				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
 					it as IDefinitionTag
@@ -871,8 +873,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				is TagEnd -> {
 				}
                 is IDefinitionTag -> {
-                    println("Unhandled tag $it")
-                    error("Can't continue without handling th define tag $it")
+                    println("Unhandled tag $it - Can't continue without handling th define tag $it")
+                    //error("Can't continue without handling th define tag $it")
                 }
 				else -> {
 					println("Unhandled tag $it")

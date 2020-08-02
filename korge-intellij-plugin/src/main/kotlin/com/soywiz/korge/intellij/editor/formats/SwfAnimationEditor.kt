@@ -42,12 +42,14 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
 
     val stateKeys = animationLibrary.mainTimeLineInfo.states.keys
     var mainTimeLine: AnMovieClip? = null
+    var currentView: View? = null
 
     val symbolProperty = EditableEnumerableProperty("symbol", String::class, defaultSymbolName, symbolNames.toSet()).apply {
         this.onChange { symbolName ->
             views?.launchAsap {
                 container.removeChildren()
                 val childView: View = if (symbolName == "MainTimeLine") animationLibrary.createMainTimeLine() else (animationLibrary.create(symbolName) as View)
+                currentView = childView
                 val element = childView as AnElement
                 if (element.symbol.id == 0) {
                     container.addChild(FixedSizeContainer(animationLibrary.width.toDouble(), animationLibrary.height.toDouble()).also { it.addChild(childView) })
@@ -80,6 +82,19 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             }
         }
     }
+
+    val gotoAndStopRatioProperty = EditableNumericProperty<Double>("stopAt", Double::class, 0.0, 0.0, 1.0).apply {
+        this.onChange { ratio ->
+            views?.launchAsap {
+                //val state = animationLibrary.mainTimeLineInfo.states[frameName]
+                //mainTimeLine?.timelineRunner?.currentStateName
+                (currentView as? AnMovieClip?)?.stop()
+                currentView?.ratio = ratio
+                //mainTimeLine?.playAndStop()
+            }
+        }
+    }
+
     return createModule(EditableNodeList {
         //add(EditableSection("Animation", animation1Property, animation2Property, blendingFactor, animationSpeed))
         add(EditableSection("SWF",
@@ -89,6 +104,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             symbolProperty,
             gotoAndPlayProperty,
             gotoAndStopProperty,
+            gotoAndStopRatioProperty,
         ))
     }) {
         views = this.views
@@ -98,6 +114,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         container.apply {
             fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
                 mainTimeLine = animationLibrary.createMainTimeLine()
+                currentView = mainTimeLine
                 this += mainTimeLine
             }
         }
