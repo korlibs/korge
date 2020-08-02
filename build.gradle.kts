@@ -71,7 +71,9 @@ kotlin {
 subprojects {
     if (project.name != "korge-intellij-plugin") {
         apply(plugin = "kotlin-multiplatform")
-        apply(plugin = "maven-publish")
+        if (!project.path.startsWith(":samples:")) {
+            apply(plugin = "maven-publish")
+        }
 
         group = "com.soywiz.korlibs.${project.name}"
 
