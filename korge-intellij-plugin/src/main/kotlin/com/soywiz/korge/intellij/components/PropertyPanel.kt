@@ -295,6 +295,7 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
         add(JLabel(editProp.name).apply {
             this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
             size = Dimension(128, 32)
+            maximumSize = Dimension(128, 32)
         })
         add(EditableLabel("", stringToType.keys) {
             updateValue(stringToType[it] ?: editProp.value)
@@ -331,6 +332,7 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
         add(JLabel(editProp.name).apply {
             this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
             size = Dimension(128, 32)
+            maximumSize = Dimension(128, 32)
             //this.isOpaque = true
             //this.background = Color.RED
             this.cursor = Cursor(Cursor.E_RESIZE_CURSOR)

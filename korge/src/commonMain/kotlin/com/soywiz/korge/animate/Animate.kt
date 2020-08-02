@@ -374,9 +374,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val maskPopDepths = BooleanArray(totalDepths + 10) { false }
 	val viewUids = Array(totalUids) {
 		val info = symbol.uidInfo[it]
-		val view = library.create(info.characterId) as View
-		view.addProps(info.extraProps)
-		view
+        if (info.characterId == symbol.id) error("Recursive detection")
+		(library.create(info.characterId) as View).also { it.addProps(info.extraProps) }
 	}
 	var firstUpdate = true
 	var smoothing = library.defaultSmoothing
