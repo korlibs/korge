@@ -40,50 +40,68 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         else -> symbolNames.first()
     }
 
-    val stateKeys = animationLibrary.mainTimeLineInfo.states.keys
     var mainTimeLine: AnMovieClip? = null
     var currentView: View? = null
 
-    val symbolProperty = EditableEnumerableProperty("symbol", String::class, defaultSymbolName, symbolNames.toSet()).apply {
+    lateinit var gotoAndPlayProperty: EditableEnumerableProperty<String>
+    lateinit var gotoAndStopProperty: EditableEnumerableProperty<String>
+    lateinit var ratioProperty: EditableNumericProperty<Double>
+    lateinit var symbolProperty: EditableEnumerableProperty<String>
+
+    fun selectSymbol(symbolName: String) {
+        container.removeChildren()
+        val childView: View = if (symbolName == "MainTimeLine") animationLibrary.createMainTimeLine() else (animationLibrary.create(symbolName) as View)
+        currentView = childView
+        val element = childView as AnElement
+        if (element.symbol.id == 0) {
+            container.addChild(FixedSizeContainer(animationLibrary.width.toDouble(), animationLibrary.height.toDouble()).also { it.addChild(childView) })
+            mainTimeLine = childView as AnMovieClip
+        } else {
+            container.addChild(childView)
+            mainTimeLine = null
+        }
+
+        val movieClip = currentView as? AnMovieClip
+        if (movieClip != null) {
+            val stateKeys = movieClip.stateNames
+            val supportedFrameNames = (listOf("__start") + stateKeys).toSet()
+            gotoAndPlayProperty.updateSupportedValues(supportedFrameNames)
+            gotoAndStopProperty.updateSupportedValues(supportedFrameNames)
+        }
+
+        repositionResult?.refreshBounds()
+    }
+
+    symbolProperty = EditableEnumerableProperty("symbol", String::class, defaultSymbolName, symbolNames.toSet()).apply {
         this.onChange { symbolName ->
             views?.launchAsap {
-                container.removeChildren()
-                val childView: View = if (symbolName == "MainTimeLine") animationLibrary.createMainTimeLine() else (animationLibrary.create(symbolName) as View)
-                currentView = childView
-                val element = childView as AnElement
-                if (element.symbol.id == 0) {
-                    container.addChild(FixedSizeContainer(animationLibrary.width.toDouble(), animationLibrary.height.toDouble()).also { it.addChild(childView) })
-                    mainTimeLine = childView as AnMovieClip
-                } else {
-                    container.addChild(childView)
-                    mainTimeLine = null
-                }
-                repositionResult?.refreshBounds()
+                selectSymbol(symbolName)
             }
         }
     }
 
-    val gotoAndPlayProperty = EditableEnumerableProperty("gotoAndPlay", String::class, "__start", (listOf("__start") + stateKeys).toSet()).apply {
+
+    gotoAndPlayProperty = EditableEnumerableProperty("gotoAndPlay", String::class, "__start", setOf()).apply {
         this.onChange { frameName ->
             views?.launchAsap {
                 //val state = animationLibrary.mainTimeLineInfo.states[frameName]
                 //mainTimeLine?.timelineRunner?.currentStateName
-                mainTimeLine?.play(frameName)
+                (currentView as? AnMovieClip?)?.play(frameName)
             }
         }
     }
 
-    val gotoAndStopProperty = EditableEnumerableProperty("gotoAndStop", String::class, "__start", (listOf("__start") + stateKeys).toSet()).apply {
+    gotoAndStopProperty = EditableEnumerableProperty("gotoAndStop", String::class, "__start", setOf()).apply {
         this.onChange { frameName ->
             views?.launchAsap {
                 //val state = animationLibrary.mainTimeLineInfo.states[frameName]
                 //mainTimeLine?.timelineRunner?.currentStateName
-                mainTimeLine?.playAndStop(frameName)
+                (currentView as? AnMovieClip?)?.playAndStop(frameName)
             }
         }
     }
 
-    val ratioProperty = EditableNumericProperty<Double>("ratio", Double::class, 0.0, 0.0, 1.0).apply {
+    ratioProperty = EditableNumericProperty<Double>("ratio", Double::class, 0.0, 0.0, 1.0).apply {
         this.onChange { ratio ->
             views?.launchAsap {
                 //val state = animationLibrary.mainTimeLineInfo.states[frameName]
@@ -111,13 +129,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
 
         //container = sceneView.fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
         sceneView += container
-        container.apply {
-            fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
-                mainTimeLine = animationLibrary.createMainTimeLine()
-                currentView = mainTimeLine
-                this += mainTimeLine
-            }
-        }
+        selectSymbol("MainTimeLine")
         repositionResult = container.repositionOnResize(this.views)
 
         /*

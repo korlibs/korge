@@ -8,8 +8,10 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import java.awt.*
 import java.awt.event.*
+import java.util.*
 import javax.swing.*
 import javax.swing.border.*
+import kotlin.collections.ArrayList
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.jvm.*
@@ -188,8 +190,15 @@ data class EditableEnumerableProperty<T : Any>(
     override val name: String,
     override val clazz: KClass<T>,
     val initialValue: T,
-    val supportedValues: Set<T>
+    var supportedValues: Set<T>
 ) : BaseEditableProperty<T>(initialValue) {
+    val onUpdateSupportedValues = Signal<Set<T>>()
+
+    fun updateSupportedValues(set: Set<T>) {
+        supportedValues = set
+        onUpdateSupportedValues(set)
+    }
+
     override fun toComponent(indentation: Int): Component = EditableListValue(this as EditableEnumerableProperty<Any>, indentation)
 }
 
@@ -266,7 +275,11 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
     val FULL_CHANGE_WIDTH = 200
     lateinit var valueTextField: EditableLabel
 
-    val stringToType = editProp.supportedValues.associateBy { it.toString() }.toCaseInsensitiveMap()
+    var stringToType: Map<String, T> = mapOf()
+
+    fun updateStringToType() {
+        stringToType = editProp.supportedValues.associateBy { it.toString() }.toCaseInsensitiveMap()
+    }
 
     fun updateValue(value: T?) {
         if (value != null) {
@@ -276,14 +289,20 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
     }
 
     init {
+        updateStringToType()
         //preferredSize = Dimension(1024, 32)
         maximumSize = Dimension(1024, 32)
         add(JLabel(editProp.name).apply {
             this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
+            size = Dimension(128, 32)
         })
         add(EditableLabel("", stringToType.keys) {
             updateValue(stringToType[it] ?: editProp.value)
         }.also { valueTextField = it })
+        editProp.onUpdateSupportedValues {
+            updateStringToType()
+            valueTextField.supportedValues = it.map { it.toString() }.toSet()
+        }
         updateValue(editProp.value)
     }
 }
@@ -311,6 +330,7 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
         maximumSize = Dimension(1024, 32)
         add(JLabel(editProp.name).apply {
             this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
+            size = Dimension(128, 32)
             //this.isOpaque = true
             //this.background = Color.RED
             this.cursor = Cursor(Cursor.E_RESIZE_CURSOR)
@@ -348,7 +368,15 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
     }
 }
 
-class EditableLabel(initialText: String, val supportedValues: Set<String>? = null, val textChanged: (String) -> Unit) : JPanel(BorderLayout()) {
+class EditableLabel(initialText: String, supportedValues: Set<String>? = null, val textChanged: (String) -> Unit) : JPanel(BorderLayout()) {
+    var supportedValues: Set<String>? = supportedValues
+        set(value) {
+            field = value
+            if (value != null) {
+                comboBox.model = DefaultComboBoxModel(Vector(value.toList()))
+            }
+        }
+
     val panel = this
     val label: JLabel = JLabel(initialText).apply {
         this.border = CompoundBorder(this.border, EmptyBorder(10, 10, 10, 10))
@@ -393,7 +421,7 @@ class EditableLabel(initialText: String, val supportedValues: Set<String>? = nul
     fun synchronizeEditText() {
         val editText = when (editComponent) {
             is JTextField -> editComponent.text
-            is MyJComboBox<*> -> editComponent.selectedItem.toString()
+            is MyJComboBox<*> -> editComponent.selectedItem?.toString() ?: ""
             else -> TODO("editComponent: $editComponent")
         }
         if (label.text != editText) {
