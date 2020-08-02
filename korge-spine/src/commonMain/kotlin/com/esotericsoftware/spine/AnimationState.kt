@@ -32,6 +32,7 @@ package com.esotericsoftware.spine
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import kotlin.js.*
 import kotlin.math.*
 

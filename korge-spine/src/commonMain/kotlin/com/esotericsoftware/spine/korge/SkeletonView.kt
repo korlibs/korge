@@ -7,7 +7,9 @@ import com.esotericsoftware.spine.effect.*
 import com.soywiz.korim.color.RGBAf
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -27,8 +29,31 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
         }
     }
 
+    override var ratio: Double = 0.0
+        set(value) {
+            field = value
+            running = false
+            animationState?.tracks?.filterNotNull()?.fastForEach {
+                //println("TRACK: it.trackTime=${it.trackTime}, value=${value}, it.animationTime=${it.animationTime}")
+
+                it.trackTime = value.clamp01().convertRange(0.0, 1.0, it.animationStart.toDouble(), it.animationEnd.toDouble() - 0.01).toFloat()
+            }
+        }
+
+    var running = true
+
+    fun play() {
+        running = true
+    }
+
+    fun stop() {
+        running = false
+    }
+
     fun update(delta: TimeSpan) {
-        animationState?.update(delta.seconds.toFloat())
+        if (running) {
+            animationState?.update(delta.seconds.toFloat())
+        }
         animationState?.apply(skeleton)
     }
 

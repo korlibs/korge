@@ -590,6 +590,12 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
+    fun play() {
+        //println("stop")
+        timelineRunner.running = true
+        update()
+    }
+
     fun stop() {
         //println("stop")
         timelineRunner.running = false

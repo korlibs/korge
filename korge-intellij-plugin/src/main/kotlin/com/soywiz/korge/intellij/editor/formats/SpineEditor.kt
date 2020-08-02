@@ -41,6 +41,7 @@ suspend fun spineEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         this.onChange { animationName ->
             val animation = skeletonData.findAnimation(animationName)
             if (animation != null) {
+                vSkeletonView?.play()
                 state.setAnimation(0, animation, true)
                 reposition?.forceBounds(animation.getAnimationMaxBounds(skeleton.data))
             }
@@ -59,14 +60,25 @@ suspend fun spineEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     //}
     val animationSpeed = EditableNumericProperty("animationSpeed", Double::class, 1.0, 0.01, 10.0).apply {
         this.onChange {
+            vSkeletonView?.play()
             vSkeletonView?.speed = it
             //state.setAnimation(0, it, true)
         }
     }
 
+    val animationRatio = EditableNumericProperty("animationRatio", Double::class, 1.0, 0.00, 1.0).apply {
+        this.onChange {
+            vSkeletonView?.ratio = it
+            //state.setAnimation(0, it, true)
+        }
+    }
+
+    val playButton = EditableButtonProperty("play") { vSkeletonView?.play() }
+    val stopButton = EditableButtonProperty("stop") { vSkeletonView?.stop() }
+
     return createModule(EditableNodeList {
         //add(EditableSection("Animation", animation1Property, animation2Property, blendingFactor, animationSpeed))
-        add(EditableSection("Animation", animation1Property, animationSpeed))
+        add(EditableSection("Animation", animation1Property, animationSpeed, animationRatio, playButton, stopButton))
     }) {
         state.setAnimation(0, defaultAnimationName, true)
         //skeleton.setPosition(250f, 20f)

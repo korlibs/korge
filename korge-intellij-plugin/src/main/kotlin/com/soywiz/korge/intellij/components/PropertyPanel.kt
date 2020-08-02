@@ -136,7 +136,7 @@ annotation class IntSupportedRange(val min: Int, val max: Int)
 annotation class DoubleSupportedRange(val min: Double, val max: Double)
 
 interface EditableNode {
-    fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>>
+    fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
     fun toComponent(indentation: Int = 0): Component
 }
 
@@ -211,6 +211,17 @@ data class EditableNumericProperty<T : Number>(
     val step: T? = null
 ) : BaseEditableProperty<T>(initialValue) {
     override fun toComponent(indentation: Int): Component = EditableNumberValue(this, indentation)
+}
+
+data class EditableButtonProperty(
+    val title: String,
+    val callback: () -> Unit
+) : EditableNode {
+    override fun toComponent(indentation: Int): Component = JButton(title).apply {
+        addActionListener {
+            callback()
+        }
+    }
 }
 
 class Section(val indentation: Int, val title: String, val components: List<Component>) : JPanel() {

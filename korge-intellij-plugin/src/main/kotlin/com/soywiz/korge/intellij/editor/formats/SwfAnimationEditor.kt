@@ -113,6 +113,9 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         }
     }
 
+    val playButton = EditableButtonProperty("play") { (currentView as? AnMovieClip?)?.play() }
+    val stopButton = EditableButtonProperty("stop") { (currentView as? AnMovieClip?)?.stop() }
+
     return createModule(EditableNodeList {
         //add(EditableSection("Animation", animation1Property, animation2Property, blendingFactor, animationSpeed))
         add(EditableSection("SWF",
@@ -123,6 +126,8 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             gotoAndPlayProperty,
             gotoAndStopProperty,
             ratioProperty,
+            playButton,
+            stopButton,
         ))
     }) {
         views = this.views
