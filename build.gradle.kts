@@ -72,7 +72,7 @@ kotlin {
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
-        isWindows -> listOf(linuxX64())
+        isWindows -> listOf(mingwX64())
         else -> listOf(linuxX64(), mingwX64(), macosX64())
     }
 }
