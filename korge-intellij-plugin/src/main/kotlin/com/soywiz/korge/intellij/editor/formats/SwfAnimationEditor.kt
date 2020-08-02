@@ -83,7 +83,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         }
     }
 
-    val gotoAndStopRatioProperty = EditableNumericProperty<Double>("stopAt", Double::class, 0.0, 0.0, 1.0).apply {
+    val ratioProperty = EditableNumericProperty<Double>("ratio", Double::class, 0.0, 0.0, 1.0).apply {
         this.onChange { ratio ->
             views?.launchAsap {
                 //val state = animationLibrary.mainTimeLineInfo.states[frameName]
@@ -104,7 +104,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
             symbolProperty,
             gotoAndPlayProperty,
             gotoAndStopProperty,
-            gotoAndStopRatioProperty,
+            ratioProperty,
         ))
     }) {
         views = this.views
