@@ -33,34 +33,43 @@ abstract class AGOpengl : AG() {
 
     override fun createBuffer(kind: Buffer.Kind): Buffer = GlBuffer(kind)
 
-    override fun setViewport(x: Int, y: Int, width: Int, height: Int) {
-        super.setViewport(x, y, width, height)
-        //println("setViewport: $x, $y, $width, $height")
-        if (isGlAvailable) {
-            //gl.viewport(x, y, width, height)
-        }
-    }
-
     open fun setSwapInterval(value: Int) {
         //gl.swapInterval = 0
     }
 
-    var backBufferTextureBinding2d: Int = 0
-    var backBufferRenderBufferBinding: Int = 0
-    var backBufferFrameBufferBinding: Int = 0
-
-    override fun unsetBackBuffer(width: Int, height: Int) {
-        backBufferTextureBinding2d = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
-        backBufferRenderBufferBinding = gl.getIntegerv(gl.RENDERBUFFER_BINDING)
-        backBufferFrameBufferBinding = gl.getIntegerv(gl.FRAMEBUFFER_BINDING)
+    private fun setViewport(buffer: BaseRenderBuffer) {
+        gl.viewport(buffer.x, buffer.y, buffer.width, buffer.height)
+        //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
-    override fun setBackBuffer(width: Int, height: Int) {
-        gl.bindTexture(gl.TEXTURE_2D, backBufferTextureBinding2d)
-        gl.bindRenderbuffer(gl.RENDERBUFFER, backBufferRenderBufferBinding)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, backBufferFrameBufferBinding)
-        setViewport(0, 0, width, height)
+    override fun createMainRenderBuffer(): BaseRenderBufferImpl {
+        var backBufferTextureBinding2d: Int = 0
+        var backBufferRenderBufferBinding: Int = 0
+        var backBufferFrameBufferBinding: Int = 0
+
+        return object : BaseRenderBufferImpl() {
+            override fun init() {
+                backBufferTextureBinding2d = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
+                backBufferRenderBufferBinding = gl.getIntegerv(gl.RENDERBUFFER_BINDING)
+                backBufferFrameBufferBinding = gl.getIntegerv(gl.FRAMEBUFFER_BINDING)
+            }
+
+            override fun set() {
+                setViewport(this)
+                gl.bindTexture(gl.TEXTURE_2D, backBufferTextureBinding2d)
+                gl.bindRenderbuffer(gl.RENDERBUFFER, backBufferRenderBufferBinding)
+                gl.bindFramebuffer(gl.FRAMEBUFFER, backBufferFrameBufferBinding)
+            }
+
+            override fun unset() {
+                backBufferTextureBinding2d = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
+                backBufferRenderBufferBinding = gl.getIntegerv(gl.RENDERBUFFER_BINDING)
+                backBufferFrameBufferBinding = gl.getIntegerv(gl.FRAMEBUFFER_BINDING)
+            }
+        }
     }
+
+    fun createGlState() = KmlGlState(gl)
 
     var lastRenderContextId = 0
 
@@ -74,33 +83,31 @@ abstract class AGOpengl : AG() {
         val framebuffer = FBuffer(4)
 
         override fun set() {
+            setViewport(this)
             //val width = this.width.nextPowerOfTwo
             //val height = this.height.nextPowerOfTwo
-            gl.apply {
-                if (dirty) {
-                    dirty = false
-                    setSwapInterval(0)
+            if (dirty) {
+                dirty = false
+                setSwapInterval(0)
 
-                    if (cachedVersion != contextVersion) {
-                        cachedVersion = contextVersion
-                        genRenderbuffers(1, depth)
-                        genFramebuffers(1, framebuffer)
-                    }
-
-                    bindTexture(TEXTURE_2D, ftex.tex)
-                    texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
-                    texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
-                    texImage2D(TEXTURE_2D, 0, RGBA, width, height, 0, RGBA, UNSIGNED_BYTE, null)
-                    bindTexture(TEXTURE_2D, 0)
-                    bindRenderbuffer(RENDERBUFFER, depth.getInt(0))
-                    renderbufferStorage(RENDERBUFFER, DEPTH_COMPONENT16, width, height)
+                if (cachedVersion != contextVersion) {
+                    cachedVersion = contextVersion
+                    gl.genRenderbuffers(1, depth)
+                    gl.genFramebuffers(1, framebuffer)
                 }
 
-                bindFramebuffer(FRAMEBUFFER, framebuffer.getInt(0))
-                framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, ftex.tex, 0)
-                framebufferRenderbuffer(FRAMEBUFFER, DEPTH_ATTACHMENT, RENDERBUFFER, depth.getInt(0))
-                setViewport(0, 0, width, height)
+                gl.bindTexture(gl.TEXTURE_2D, ftex.tex)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+                gl.bindTexture(gl.TEXTURE_2D, 0)
+                gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
             }
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.getInt(0))
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ftex.tex, 0)
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth.getInt(0))
         }
 
         override fun close() {
@@ -176,22 +183,33 @@ abstract class AGOpengl : AG() {
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
-    var forcedScissor: Rectangle? = null
-    private val finalScissor = Rectangle()
+    private val finalScissorBL = Rectangle()
+    private val tempRect = Rectangle()
 
     fun applyScissorState(scissor: AG.Scissor? = null) {
-        finalScissor.setTo(-16000, -16000, +32000, +32000)
-        if (scissor != null) finalScissor.intersection(scissor.rect, finalScissor)
-        val forcedScissor = this.forcedScissor
-        if (forcedScissor != null) finalScissor.intersection(forcedScissor, finalScissor)
-
-        if (forcedScissor != null || scissor != null) {
-            gl.enable(gl.SCISSOR_TEST)
-            gl.scissor(finalScissor.x.toInt(), (backHeight - finalScissor.y - finalScissor.height).toInt(), (finalScissor.width).toInt(), finalScissor.height.toInt())
-        } else {
-            gl.disable(gl.SCISSOR_TEST)
+        val currentRenderBuffer = this.currentRenderBuffer!!
+        var realScissors: Rectangle? = finalScissorBL
+        realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
+        if (scissor != null) {
+            tempRect.setTo(currentRenderBuffer.x + scissor.x, (realBackHeight - scissor.y - scissor.height), (scissor.width), scissor.height)
+            realScissors = realScissors?.intersection(tempRect, realScissors)
         }
 
+        //println("currentRenderBuffer: $currentRenderBuffer")
+
+        val renderBufferScissor = currentRenderBuffer.scissor
+        if (renderBufferScissor != null) {
+            realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
+        }
+
+        //println("finalScissorBL: $finalScissorBL, renderBufferScissor: $renderBufferScissor")
+
+        gl.enable(gl.SCISSOR_TEST)
+        if (realScissors != null) {
+            gl.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
+        } else {
+            gl.scissor(0, 0, 0, 0)
+        }
     }
 
     override fun draw(batch: Batch) {

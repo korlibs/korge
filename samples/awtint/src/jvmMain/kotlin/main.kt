@@ -42,11 +42,17 @@ fun main() {
         //    gl.clear(X11KmlGl.COLOR_BUFFER_BIT)
         //}
     }
-    f.contentPane.layout = GridLayout(2, 2)
-    f.add(JButton("hello"))
-    f.add(canvas)
-    f.add(JButton("world"))
-    f.add(JButton("nice"))
+    //if (true) {
+    if (false) {
+        f.contentPane.layout = GridLayout(1, 1)
+        f.add(canvas)
+    } else {
+        f.contentPane.layout = GridLayout(2, 2)
+        f.add(JButton("hello"))
+        f.add(canvas)
+        f.add(JButton("world"))
+        f.add(JButton("nice"))
+    }
     //f.add(JButton("test"))
 
     f.size = Dimension(512, 512)
@@ -61,7 +67,7 @@ fun main() {
     //launchImmediately(Dispatchers.Unconfined) {
     runBlocking {
         println("[1]")
-        val korge = GLCanvasKorge(canvas)
+        val korge = GLCanvasKorge(canvas, 512, 512)
         println("[2]")
         launchImmediately {
             korge.executeInContext {

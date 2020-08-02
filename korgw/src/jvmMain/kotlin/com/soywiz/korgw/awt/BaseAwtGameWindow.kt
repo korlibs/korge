@@ -30,6 +30,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
     abstract val contentComponent: Component
     private var lastFactor = 0.0
 
+    val window by lazy { SwingUtilities.getWindowAncestor(component) }
+
     protected open fun ensureContext() {
     }
 
@@ -51,45 +53,74 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //GL.glClearColor(1f, 0f, 0f, 1f)
         //GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
+        val state = ag.createGlState()
+
         ctx?.useContext(g, ag) { info ->
-            ctx?.swapInterval(1)
+            state.keep {
+                ctx?.swapInterval(1)
 
-            val gl = ag.gl
-            val factor = frameScaleFactor
-            if (lastFactor != factor) {
-                lastFactor = factor
-                dispatchReshapeEvent()
+                val g = g as Graphics2D
+                val gl = ag.gl
+                val factor = frameScaleFactor
+                if (lastFactor != factor) {
+                    lastFactor = factor
+                    reshaped = true
+                }
+
+                //println("RENDER[1]")
+
+                val viewport = info.viewport
+                val scissor = info.scissors
+                /*
+                gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
+                if (scissor != null) {
+                    gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
+                }
+                if (viewport != null) {
+                    gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
+                } else {
+                    gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
+                }
+                gl.clearColor(.3f, .3f, .3f, 1f)
+                gl.clear(gl.COLOR_BUFFER_BIT)
+                */
+
+                //println("-- $scissor, $viewport, ${g.width}, ${g.height}")
+
+                ag.mainRenderBuffer.scissor(scissor)
+                if (viewport != null) {
+                    //val window = SwingUtilities.getWindowAncestor(contentComponent)
+                    //println("window=${window.width}x${window.height} : factor=$factor")
+                    ag.mainRenderBuffer.setSize(
+                        viewport.x, viewport.y, viewport.width, viewport.height,
+                        (window.width * factor).toInt(),
+                        (window.height * factor).toInt(),
+                    )
+                } else {
+                    ag.mainRenderBuffer.setSize(
+                        0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
+                    )
+                }
+
+                //println(gl.getString(gl.VERSION))
+                //println(gl.versionString)
+                if (reshaped) {
+                    reshaped = false
+                    println("RESHAPED!")
+                    dispatchReshapeEventEx(
+                        ag.mainRenderBuffer.x,
+                        ag.mainRenderBuffer.y,
+                        ag.mainRenderBuffer.width,
+                        ag.mainRenderBuffer.height,
+                        ag.mainRenderBuffer.fullWidth,
+                        ag.mainRenderBuffer.fullHeight,
+                    )
+                }
+
+                frame()
+                gl.flush()
+                gl.finish()
             }
-
-            //println("RENDER[1]")
-
-            val viewport = info.viewport
-            val scissor = info.scissors
-            gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
-            if (scissor != null) {
-                //ag.forcedScissor = info.scissors
-                //gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
-                //println("SCISSOR: $scissor")
-            }
-            if (viewport != null) {
-                //println("FACTOR: $factor, nonScaledWidth=$nonScaledWidth, nonScaledHeight=$nonScaledHeight, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight")
-                //gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
-            } else {
-                //gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
-            }
-
-            println(viewport)
-
-            //gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
-
-            //gl.clearColor(.2f, .4f, .9f, 1f)
-            gl.clearColor(.3f, .3f, .3f, 1f)
-            gl.clear(gl.COLOR_BUFFER_BIT)
-            //println(gl.getString(gl.VERSION))
-            //println(gl.versionString)
-            frame()
-            gl.flush()
-            gl.finish()
         }
         //Toolkit.getDefaultToolkit().sync();
     }
@@ -189,6 +220,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
     open fun frameDispose() {
     }
 
+    var reshaped = false
+
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
             entry()
@@ -202,9 +235,15 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         component.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
+                //window.invalidate()
+                //SwingUtilities.updateComponentTreeUI(window)
+                reshaped = true
+                //window.repaint()
                 queue {
-                    dispatchReshapeEvent()
+                    //window.revalidate()
+                    //println("repaint")
                     component.repaint()
+                    //EventQueue.invokeLater { SwingUtilities.updateComponentTreeUI(window) }
                 }
             }
         })

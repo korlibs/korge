@@ -272,8 +272,11 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     fun frameRender(doUpdate: Boolean) {
         try {
-            ag.onRender(ag)
-            dispatchRenderEvent(update = false)
+            ag.mainRenderBuffer.init()
+            ag.setRenderBufferTemporally(ag.mainRenderBuffer) {
+                ag.onRender(ag)
+                dispatchRenderEvent(update = false)
+            }
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
@@ -310,7 +313,11 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     fun dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(fullScreenEvent.also { it.fullscreen = fullscreen })
 
     fun dispatchReshapeEvent(x: Int, y: Int, width: Int, height: Int) {
-        ag.resized(width, height)
+        dispatchReshapeEventEx(x, y, width, height, width, height)
+    }
+
+    fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+        ag.resized(x, y, width, height, fullWidth, fullHeight)
         dispatch(reshapeEvent.apply {
             this.x = x
             this.y = y

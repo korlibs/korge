@@ -6,7 +6,12 @@ import com.soywiz.korio.async.*
 import kotlinx.coroutines.*
 import java.io.*
 
-class GLCanvasKorge private constructor(val canvas: GLCanvas, val dummy: Boolean) : Closeable {
+class GLCanvasKorge private constructor(
+    val dummy: Boolean,
+    val canvas: GLCanvas,
+    val virtualWidth: Int?,
+    val virtualHeight: Int?
+) : Closeable {
     val gameWindow = GLCanvasGameWindow(canvas)
     lateinit var stage: Stage
     val views get() = stage.views
@@ -21,7 +26,7 @@ class GLCanvasKorge private constructor(val canvas: GLCanvas, val dummy: Boolean
             println("GLCanvasKorge.init[b]: ${Thread.currentThread()}")
             runBlocking {
                 println("GLCanvasKorge.init[c]: ${Thread.currentThread()}")
-                Korge(width = canvas.width, height = canvas.height, gameWindow = gameWindow) {
+                Korge(width = canvas.width, height = canvas.height, virtualWidth = virtualWidth ?: canvas.width, virtualHeight = virtualHeight ?: canvas.height, gameWindow = gameWindow) {
                     println("GLCanvasKorge.init[d]: ${Thread.currentThread()}")
                     //println("[A]")
                     this@GLCanvasKorge.stage = this@Korge
@@ -55,8 +60,8 @@ class GLCanvasKorge private constructor(val canvas: GLCanvas, val dummy: Boolean
     }
 
     companion object {
-        suspend operator fun invoke(canvas: GLCanvas): GLCanvasKorge {
-            return GLCanvasKorge(canvas, false).apply { init() }
+        suspend operator fun invoke(canvas: GLCanvas, virtualWidth: Int? = null, virtualHeight: Int? = null): GLCanvasKorge {
+            return GLCanvasKorge(true, canvas, virtualWidth, virtualHeight).apply { init() }
         }
     }
 }

@@ -69,33 +69,25 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
 	open fun resized(width: Int, height: Int) {
-		//println("ag.resized($width, $height)")
-		//printStackTrace()
-		mainRenderBuffer.setSize(width, height)
-		setViewport(0, 0, width, height)
+		mainRenderBuffer.setSize(0, 0, width, height, width, height)
 	}
 
-	open fun dispose() {
+    open fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+        mainRenderBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
+    }
+
+    open fun dispose() {
 	}
 
-	val viewport = intArrayOf(0, 0, 640, 480)
+    // On MacOS components, this will be the size of the component
+	open val backWidth: Int get() = mainRenderBuffer.width
+	open val backHeight: Int get() = mainRenderBuffer.height
 
-	open val backWidth: Int get() = viewport[2]
-	open val backHeight: Int get() = viewport[3]
+    // On MacOS components, this will be the full size of the window
+    val realBackWidth get() = mainRenderBuffer.fullWidth
+    val realBackHeight get() = mainRenderBuffer.fullHeight
 
-	protected fun getViewport(out: IntArray): IntArray {
-		arraycopy(this.viewport, 0, out, 0, 4)
-		return out
-	}
-
-	open fun setViewport(x: Int, y: Int, width: Int, height: Int) {
-		viewport[0] = x
-		viewport[1] = y
-		viewport[2] = width
-		viewport[3] = height
-	}
-
-	protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
+	//protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
 	enum class BlendEquation {
 		ADD, SUBTRACT, REVERSE_SUBTRACT
@@ -578,32 +570,49 @@ abstract class AG : Extra by Extra.Mixin() {
 	val renderBuffers = Pool<RenderBuffer>() { createRenderBuffer() }
 
 	interface BaseRenderBuffer {
+        val x: Int
+        val y: Int
 		val width: Int
 		val height: Int
-		fun setSize(width: Int, height: Int)
+        val fullWidth: Int
+        val fullHeight: Int
+        val scissor: RectangleInt?
+        fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height)
+        fun init() = Unit
+		fun set() = Unit
         fun unset() = Unit
-		fun set()
+        fun scissor(scissor: RectangleInt?)
 	}
 
-	val mainRenderBuffer = object : BaseRenderBuffer {
-		override var width = 128
-		override var height = 128
+    open class BaseRenderBufferImpl : BaseRenderBuffer {
+        override var x = 0
+        override var y = 0
+        override var width = 128
+        override var height = 128
+        override var fullWidth = 128
+        override var fullHeight = 128
+        private val _scissor = RectangleInt()
+        override var scissor: RectangleInt? = null
 
-		override fun setSize(width: Int, height: Int) {
-			this.width = width
-			this.height = height
-		}
-
-        override fun unset() {
-            unsetBackBuffer(width, height)
+        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+            this.x = x
+            this.y = y
+            this.width = width
+            this.height = height
+            this.fullWidth = fullWidth
+            this.fullHeight = fullHeight
         }
 
-        override fun set() {
-			setBackBuffer(width, height)
-		}
-	}
+        override fun scissor(scissor: RectangleInt?) {
+            this.scissor = scissor?.let { _scissor.setTo(it) }
+        }
+    }
 
-	open inner class RenderBuffer : Closeable, BaseRenderBuffer {
+	val mainRenderBuffer: BaseRenderBuffer = createMainRenderBuffer()
+
+    open fun createMainRenderBuffer() = BaseRenderBufferImpl()
+
+	open inner class RenderBuffer : Closeable, BaseRenderBufferImpl() {
 		open val id: Int = -1
 		private var cachedTexVersion = -1
 		private var _tex: Texture? = null
@@ -617,16 +626,12 @@ abstract class AG : Extra by Extra.Mixin() {
 				return _tex!!
 			}
 
-		override var width = 0
-		override var height = 0
-
 		protected var dirty = false
 
-		override fun setSize(width: Int, height: Int) {
-			this.width = width
-			this.height = height
-			dirty = true
-		}
+        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+            super.setSize(x, y, width, height, fullWidth, fullHeight)
+            dirty = true
+        }
 
 		override fun set(): Unit = Unit
 		fun readBitmap(bmp: Bitmap32) = this@AG.readColor(bmp)
@@ -655,9 +660,9 @@ abstract class AG : Extra by Extra.Mixin() {
 	) = Unit
 
 	@PublishedApi
-	internal var currentRenderBuffer: BaseRenderBuffer = mainRenderBuffer
+	internal var currentRenderBuffer: BaseRenderBuffer? = null
 
-	val renderingToTexture get() = currentRenderBuffer !== mainRenderBuffer
+	val renderingToTexture get() = currentRenderBuffer !== mainRenderBuffer && currentRenderBuffer !== null
 
 	inline fun backupTexture(tex: Texture?, callback: () -> Unit) {
 		if (tex != null) {
@@ -679,14 +684,13 @@ abstract class AG : Extra by Extra.Mixin() {
 		}
 	}
 
-    inline
-	fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit) {
+    inline fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit) {
     //fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: ((tex: Texture) -> Unit)? = null) {
 		val rb = renderBuffers.alloc()
 		frameRenderBuffers += rb
 		val oldRenderBuffer = currentRenderBuffer
 
-		rb.setSize(width, height)
+		rb.setSize(0, 0, width, height, width, height)
 		setRenderBuffer(rb)
 
 		try {
@@ -712,19 +716,12 @@ abstract class AG : Extra by Extra.Mixin() {
         }, {})
     }
 
-
-    fun setRenderBuffer(renderBuffer: BaseRenderBuffer): BaseRenderBuffer {
+    fun setRenderBuffer(renderBuffer: BaseRenderBuffer?): BaseRenderBuffer? {
 		val old = currentRenderBuffer
-        currentRenderBuffer.unset()
+        currentRenderBuffer?.unset()
 		currentRenderBuffer = renderBuffer
-		renderBuffer.set()
+		renderBuffer?.set()
 		return old
-	}
-
-    open fun unsetBackBuffer(width: Int, height: Int) {
-    }
-
-    open fun setBackBuffer(width: Int, height: Int) {
 	}
 
 	open fun readColor(bitmap: Bitmap32): Unit = TODO()

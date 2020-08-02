@@ -8,6 +8,7 @@ import com.soywiz.korgw.x11.X11OpenglContext
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.awt.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Rectangle
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
@@ -20,8 +21,8 @@ import java.security.*
 interface BaseOpenglContext : Disposable {
     val scaleFactor: Double get() = 1.0
     class ContextInfo(
-        val scissors: com.soywiz.korma.geom.Rectangle? = null,
-        val viewport: com.soywiz.korma.geom.Rectangle? = null
+        val scissors: com.soywiz.korma.geom.RectangleInt? = null,
+        val viewport: com.soywiz.korma.geom.RectangleInt? = null
     ) {
         companion object {
             val DEFAULT = ContextInfo()
@@ -99,13 +100,14 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                 utils.getDeclaredMethod("getOGLSurfaceType", Graphics::class.java).also { it.isAccessible = true }
             }
 
+            val info = BaseOpenglContext.ContextInfo(
+                RectangleInt(), RectangleInt()
+            )
+
             //var timeSinceLast = 0L
             object : BaseOpenglContext {
                 override val scaleFactor: Double get() = getDisplayScalingFactor(c)
 
-                val info = BaseOpenglContext.ContextInfo(
-                    Rectangle(), Rectangle()
-                )
                 override fun useContext(obj: Any?, ag: AG, action: (BaseOpenglContext.ContextInfo) -> Unit) {
                     val g = obj as Graphics
                     invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
