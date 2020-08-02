@@ -3,9 +3,10 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
+import kotlin.contracts.*
 
-class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double) {
-    constructor(loadFactor: Double = 0.75) : this(4, loadFactor)
+class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean = false) {
+    constructor(loadFactor: Double = 0.75) : this(4, loadFactor, true)
 
     companion object {
         @PublishedApi
@@ -201,6 +202,7 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         return EOF
     }
 
+    @OptIn(ExperimentalContracts::class)
     inline fun fastKeyForEach(callback: (key: Int) -> Unit) {
         var index: Int = if (hasZero) ZERO_INDEX else nextNonEmptyIndex(_keys, 0)
         while (index != EOF) {
@@ -220,6 +222,7 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         fastKeyForEach { callback(it, this[it]) }
     }
 
+    @OptIn(ExperimentalContracts::class)
     inline fun fastValueForEach(callback: (value: T) -> Unit): Unit {
         fastKeyForEach { callback(this[it]!!) }
     }
@@ -238,12 +241,39 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         fastForEachNullable { key, value -> out += key.hashCode() + value.hashCode() }
         return out
     }
+
+    fun putAll(other: IntMap<T>) {
+        other.fastForEach { key, value ->
+            this[key] = value
+        }
+    }
+
+    fun firstKey(): Int {
+        fastKeyForEach { return it }
+        error("firstKey on empty IntMap")
+    }
+
+    fun firstValue(): T {
+        fastValueForEach { return it }
+        error("firstValue on empty IntMap")
+    }
+
+    fun clone(): IntMap<T> = IntMap<T>(nbits, loadFactor).also { it.putAll(this) }
 }
 
 
 fun <T> Map<Int, T>.toIntMap(): IntMap<T> {
     val out = IntMap<T>()
     for ((k, v) in this) out[k] = v
+    return out
+}
+
+fun <T> Iterable<T>.associateByInt(block: (index: Int, value: T) -> Int): IntMap<T> {
+    var n = 0
+    val out = IntMap<T>()
+    for (it in this) {
+        out[block(n++, it)] = it
+    }
     return out
 }
 

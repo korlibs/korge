@@ -368,7 +368,7 @@ class TiledMap constructor(
 	)
 }
 
-private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
+//private fun TileSet.clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
 
 inline val Iterable<TiledMap.Layer>.tiles get() = this.filterIsInstance<TiledMap.Layer.Tiles>()
 inline val Iterable<TiledMap.Layer>.images get() = this.filterIsInstance<TiledMap.Layer.Image>()

@@ -11,11 +11,12 @@ inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true
 	TiledMapView(tiledMap, showShapes).addTo(this, callback)
 
 class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Container() {
+    val tileset = TileSet(tiledMap.tilesets.map { it.tileset })
 	init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {
-                is TiledMap.Layer.Tiles -> tileMap(layer.map, tiledMap.tilesets)
-                is TiledMap.Layer.Image -> image(layer.image)
+                is TiledMap.Layer.Tiles -> tileMap(layer.map, tileset)
+                //is TiledMap.Layer.Image -> image(layer.image)
                 is TiledMap.Layer.Objects -> {
                     container {
                         for (obj in layer.objects) {
@@ -33,7 +34,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Contain
                                 }
                                 is TiledMap.Object.Type.Rectangle -> {
                                     if (gid != null) {
-                                        val tileTex = this@TiledMapView.tiledMap.tileset[gid] ?: Bitmaps.transparent
+                                        val tileTex = tileset[gid] ?: Bitmaps.transparent
                                         //println("tileTex[gid=$gid]: $tileTex!")
                                         shouldShow = true
                                         image(tileTex)

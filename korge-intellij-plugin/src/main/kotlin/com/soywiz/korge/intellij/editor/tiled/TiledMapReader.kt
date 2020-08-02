@@ -77,7 +77,7 @@ suspend fun TileSetData.toTiledSet(
 				tileset.spacing,
 				tileset.margin
 			)
-			TileSet(slices, tileset.tileWidth, tileset.tileHeight, bmp)
+			TileSet(slices, tileset.tileWidth, tileset.tileHeight)
 		} else {
 			// No separation between tiles: create a new Bitmap adding that separation
 			val bitmaps = TileSet.extractBitmaps(

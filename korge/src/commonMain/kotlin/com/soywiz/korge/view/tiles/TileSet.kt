@@ -1,5 +1,7 @@
 package com.soywiz.korge.view.tiles
 
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -9,25 +11,36 @@ import com.soywiz.korio.async.*
 import kotlin.math.*
 
 class TileSet(
-	val textures: List<BmpSlice?>,
-	val width: Int,
-	val height: Int,
-	val base: Bitmap = textures.filterNotNull().firstOrNull()?.bmp ?: Bitmaps.transparent.bmp
+    val texturesMap: IntMap<BmpSlice>,
+	//val textures: List<BmpSlice?>,
+	val width: Int = texturesMap.firstValue().width,
+	val height: Int = texturesMap.firstValue().height
 ) {
-    val hasMultipleBaseBitmaps = textures.any { it != null && it.bmp != base }
+    val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmp else texturesMap.firstValue().bmp }
+    val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it != null && it.bmp != base } }
+    val textures by lazy { Array<BmpSlice?>(texturesMap.keys.max() ?: 0) { texturesMap[it] } }
 	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
 
 	operator fun get(index: Int): BmpSlice? = textures.getOrNull(index)
 
-    fun clone(): TileSet = TileSet(this.textures, this.width, this.height, this.base)
+    fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
-		operator fun invoke(textureMap: Map<Int, BmpSlice?>): TileSet {
-			val maxKey = textureMap.keys.max() ?: 0
-			val textures = (0..maxKey).map { textureMap[it] }
-			val firstTexture = textures.first() ?: Bitmaps.transparent
-			return TileSet(textures, firstTexture.width, firstTexture.height, firstTexture.bmp)
-		}
+		operator fun invoke(textureMap: Map<Int, out BmpSlice>): TileSet = TileSet(textureMap.toIntMap())
+
+        operator fun invoke(tileSets: List<out TileSet>): TileSet {
+            val map = IntMap<BmpSlice>()
+            tileSets.fastForEach { tileSet ->
+                map.putAll(tileSet.texturesMap)
+            }
+            return TileSet(map)
+        }
+
+        operator fun invoke(tiles: List<out BmpSlice>, width: Int, height: Int): TileSet {
+            val map = IntMap<BmpSlice>()
+            tiles.fastForEachWithIndex { index, value -> map[index] = value }
+            return TileSet(map, width, height)
+        }
 
 		operator fun invoke(
 			base: BitmapSlice<Bitmap>,
@@ -36,14 +49,15 @@ class TileSet(
 			columns: Int = -1,
 			totalTiles: Int = -1
 		): TileSet {
-			val out = arrayListOf<BitmapSlice<Bitmap>>()
+			val out = IntMap<BmpSlice>()
 			val rows = base.height / tileHeight
 			val actualColumns = if (columns < 0) base.width / tileWidth else columns
 			val actualTotalTiles = if (totalTiles < 0) rows * actualColumns else totalTiles
+            var n = 0
 
 			complete@ for (y in 0 until rows) {
 				for (x in 0 until actualColumns) {
-					out += base.sliceWithSize(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+					out[n++] = base.sliceWithSize(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
 					if (out.size >= actualTotalTiles) break@complete
 				}
 			}
@@ -92,7 +106,7 @@ class TileSet(
 			mipmaps: Boolean = false
 		): TileSet {
 			check(bitmaps.all { it.width == tilewidth && it.height == tileheight })
-			if (bitmaps.isEmpty()) return TileSet(listOf(), tilewidth, tileheight)
+			if (bitmaps.isEmpty()) return TileSet(IntMap(), tilewidth, tileheight)
 
 			//sqrt(bitmaps.size.toDouble()).toIntCeil() * tilewidth
 
@@ -104,12 +118,13 @@ class TileSet(
 			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
 
 			val out = Bitmap32(expectedSide, expectedSide).mipmaps(mipmaps)
-			val texs = arrayListOf<BmpSlice>()
+			val texs = IntMap<BmpSlice>()
 
 			val columns = (out.width / btilewidth)
 
 			lateinit var tex: Bitmap
 			//val tex = views.texture(out, mipmaps = mipmaps)
+            var nn = 0
 			for (m in 0 until 2) {
 				for (n in 0 until bitmaps.size) {
 					val y = n / columns
@@ -119,7 +134,7 @@ class TileSet(
 					if (m == 0) {
 						out.putWithBorder(px, py, bitmaps[n], border)
 					} else {
-						texs += tex.sliceWithSize(px, py, tilewidth, tileheight)
+						texs[nn++] = tex.sliceWithSize(px, py, tilewidth, tileheight)
 					}
 				}
 				if (m == 0) {
@@ -127,7 +142,7 @@ class TileSet(
 				}
 			}
 
-			return TileSet(texs, tilewidth, tileheight, tex)
+			return TileSet(texs, tilewidth, tileheight)
 		}
 	}
 }
