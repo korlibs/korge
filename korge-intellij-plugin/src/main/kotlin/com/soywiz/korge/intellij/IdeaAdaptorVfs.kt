@@ -25,7 +25,7 @@ fun VirtualFile.toVfs(): VfsFile {
 fun VirtualFile.toTextualVfs(): VfsFile {
     val virtualFile = this
     val file = virtualFile.toVfs()
-    val ref = DocumentReferenceManager.getInstance().create(this)
+    val ref: DocumentReference = runWriteAction { DocumentReferenceManager.getInstance().create(virtualFile) }
 
     val documentFile = (object : Vfs() {
         override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {

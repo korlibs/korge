@@ -1467,7 +1467,7 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) 
                 if (throwException) {
                     throw RuntimeException("glError: $error ${parent.getErrorString(error)} calling $name($params) = $result")
                 } else {
-                    printStackTrace()
+                    printStackTrace("glError: $error ${parent.getErrorString(error)} calling $name($params) = $result")
                 }
             }
         } while (error != NO_ERROR)

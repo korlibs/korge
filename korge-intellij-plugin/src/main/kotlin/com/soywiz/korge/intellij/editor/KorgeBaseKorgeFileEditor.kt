@@ -61,6 +61,7 @@ open class KorgeBaseKorgeFileEditor(
         canvas?.minimumSize = Dimension(64, 64)
         panel.add(canvas)
         //println("[A] ${Thread.currentThread()}")
+        val fileToEdit = KorgeFileToEdit(virtualFile)
         Thread {
             runBlocking {
                 /*
@@ -99,7 +100,7 @@ open class KorgeBaseKorgeFileEditor(
                     module.apply {
                         injector.configure()
                     }
-                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile))
+                    container.changeTo(module.mainScene, fileToEdit)
                     //println("[G] ${Thread.currentThread()}")
                 }
             }

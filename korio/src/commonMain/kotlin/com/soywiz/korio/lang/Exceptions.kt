@@ -42,8 +42,8 @@ inline fun <R> runIgnoringExceptions(show: Boolean = false, action: () -> R): R?
 
 expect fun Throwable.printStackTrace()
 
-fun printStackTrace() {
-	Exception("printStackTrace").printStackTrace()
+fun printStackTrace(msg: String = "printStackTrace") {
+	Exception(msg).printStackTrace()
 }
 
 expect fun enterDebugger(): Unit

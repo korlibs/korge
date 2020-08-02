@@ -149,8 +149,11 @@ interface IKmlGl {
 	fun vertexAttrib4fv(index: Int, v: FBuffer): Unit
 	fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Int): Unit
 	fun viewport(x: Int, y: Int, width: Int, height: Int): Unit
+    fun enableDisable(cap: Int, enable: Boolean) {
+        if (enable) enable(cap) else disable(cap)
+    }
+    fun enableDisableVertexAttribArray(index: Int, enable: Boolean) {
+        if (enable) enableVertexAttribArray(index) else disableVertexAttribArray(index)
+    }
 }
 
-fun IKmlGl.enableDisable(cap: Int, enable: Boolean) {
-    if (enable) enable(cap) else disable(cap)
-}

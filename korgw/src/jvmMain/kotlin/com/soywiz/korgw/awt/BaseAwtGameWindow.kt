@@ -106,7 +106,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 //println(gl.versionString)
                 if (reshaped) {
                     reshaped = false
-                    println("RESHAPED!")
+                    //println("RESHAPED!")
                     dispatchReshapeEventEx(
                         ag.mainRenderBuffer.x,
                         ag.mainRenderBuffer.y,

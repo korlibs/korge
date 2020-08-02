@@ -13,6 +13,8 @@ fun KmlGl.getProgramiv(program: Int, type: Int): Int =
 fun KmlGl.getBooleanv(pname: Int): Boolean = fbuffer(4) { getBooleanv(pname, it); it[0] != 0 }
 fun KmlGl.getFloatv(pname: Int): Float = fbuffer(4) { getFloatv(pname, it); it.getFloat(0) }
 fun KmlGl.getIntegerv(pname: Int): Int = fbuffer(4) { getIntegerv(pname, it); it.getInt(0) }
+fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = fbuffer(4) { getVertexAttribiv(index, pname, it); it.getInt(0) }
+
 
 private inline fun KmlGl.getInfoLog(
 	obj: Int,

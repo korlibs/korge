@@ -1,6 +1,7 @@
 package com.soywiz.kgl
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 
 class KmlGlState(val gl: KmlGl) {
     val enabledList = listOf(
@@ -18,6 +19,17 @@ class KmlGlState(val gl: KmlGl) {
     val stencilBackWriteMask = FBuffer(4)
     val textureBinding2D = FBuffer(4)
     val currentProgram = FBuffer(4)
+    val MAX_ATTRIB by lazy { gl.getIntegerv(gl.MAX_VERTEX_ATTRIBS) }
+    val vertexAttribEnabled by lazy { BooleanArray(MAX_ATTRIB) }
+    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribType by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+
+    private val temp = FBuffer(64)
+    private var arrayBufferBinding: Int = 0
+    private var elementArrayBufferBinding: Int = 0
 
     fun save() {
         saveEnable()
@@ -30,6 +42,21 @@ class KmlGlState(val gl: KmlGl) {
         gl.getIntegerv(gl.STENCIL_BACK_WRITEMASK, stencilBackWriteMask)
         gl.getIntegerv(gl.TEXTURE_BINDING_2D, textureBinding2D)
         gl.getIntegerv(gl.CURRENT_PROGRAM, currentProgram)
+        //println("maxAttribs: $maxAttribs")
+        for (n in 0 until MAX_ATTRIB) {
+            //println(gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED))
+            vertexAttribEnabled[n] = gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED) != 0
+            if (vertexAttribEnabled[n]) {
+                //println("$n: ${vertexAttribEnabled[n]}")
+                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_SIZE, vertexAttribSize[n])
+                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_TYPE, vertexAttribType[n])
+                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED, vertexAttribNormal[n])
+                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_STRIDE, vertexAttribStride[n])
+                gl.getVertexAttribPointerv(n, gl.VERTEX_ATTRIB_ARRAY_POINTER, vertexAttribPointer[n])
+            }
+        }
+        arrayBufferBinding = gl.getIntegerv(gl.ARRAY_BUFFER_BINDING)
+        elementArrayBufferBinding = gl.getIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING)
     }
 
     fun saveEnable() = run { for (n in enabledList.indices) enabledArray[n] = gl.isEnabled(enabledList[n]) }
@@ -46,6 +73,44 @@ class KmlGlState(val gl: KmlGl) {
         gl.clearStencil(clearStencil.i32[0])
         gl.bindTexture(gl.TEXTURE_2D, textureBinding2D.i32[0])
         gl.useProgram(currentProgram.i32[0])
+        //gl.bindAttribLocation()
+        for (n in 0 until MAX_ATTRIB) {
+            gl.enableDisableVertexAttribArray(n, vertexAttribEnabled[n])
+            if (vertexAttribEnabled[n]) {
+                // @TODO: Could be a non-zero pointer which would have 64 bits
+                val ptr = vertexAttribPointer[n].getAlignedInt32(0)
+                gl.vertexAttribPointer(
+                    n,
+                    vertexAttribSize[n].i32[0],
+                    vertexAttribType[n].i32[0],
+                    vertexAttribNormal[n].i32[0] != 0,
+                    vertexAttribStride[n].i32[0],
+                    ptr
+                )
+            }
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, arrayBufferBinding)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementArrayBufferBinding)
+
+        /*
+        gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+        gl.blendFuncSeparate(
+            blending.srcRGB.toGl(), blending.dstRGB.toGl(),
+            blending.srcA.toGl(), blending.dstA.toGl()
+        )
+        gl.frontFace(if (renderState.frontFace == AG.FrontFace.CW) gl.CW else gl.CCW)
+        gl.depthRangef(renderState.depthNear, renderState.depthFar)
+        gl.lineWidth(renderState.lineWidth)
+        gl.depthFunc(renderState.depthFunc.toGl())
+        gl.stencilFunc(stencil.compareMode.toGl(), stencil.referenceValue, stencil.readMask)
+        gl.stencilOp(
+            stencil.actionOnDepthFail.toGl(),
+            stencil.actionOnDepthPassStencilFail.toGl(),
+            stencil.actionOnBothPass.toGl()
+        )
+        gl.stencilMask(stencil.writeMask)
+        gl.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
+        */
 
         //println("restored!")
     }

@@ -47,11 +47,16 @@ fun main() {
         f.contentPane.layout = GridLayout(1, 1)
         f.add(canvas)
     } else {
-        f.contentPane.layout = GridLayout(2, 2)
-        f.add(JButton("hello"))
+        f.contentPane.layout = GridLayout(3, 3)
+        f.add(JButton("1"))
+        f.add(JButton("2"))
+        f.add(JButton("3"))
+        f.add(JButton("4"))
         f.add(canvas)
-        f.add(JButton("world"))
-        f.add(JButton("nice"))
+        f.add(JButton("6"))
+        f.add(JButton("7"))
+        f.add(JButton("8"))
+        f.add(JButton("9"))
     }
     //f.add(JButton("test"))
 

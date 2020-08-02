@@ -191,7 +191,8 @@ abstract class AGOpengl : AG() {
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
         if (scissor != null) {
-            tempRect.setTo(currentRenderBuffer.x + scissor.x, (realBackHeight - scissor.y - scissor.height), (scissor.width), scissor.height)
+
+            tempRect.setTo(currentRenderBuffer.x + scissor.x, ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)), (scissor.width), scissor.height)
             realScissors = realScissors?.intersection(tempRect, realScissors)
         }
 

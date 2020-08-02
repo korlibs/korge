@@ -83,7 +83,7 @@ class KmlGlCached(parent: KmlGl) : KmlGlFastProxy(parent) {
 	}
 
 	private val enables = Array<Boolean?>(1024) { null }
-	private fun enableDisable(cap: Int, enable: Boolean) {
+	private fun enableDisablePriv(cap: Int, enable: Boolean) {
 		val index = cap - BLEND
 		if (index !in enables.indices) return
 		if (enables[index] != enable) {
@@ -96,8 +96,8 @@ class KmlGlCached(parent: KmlGl) : KmlGlFastProxy(parent) {
 		}
 	}
 
-	override fun enable(cap: Int) = enableDisable(cap, true)
-	override fun disable(cap: Int) = enableDisable(cap, false)
+	override fun enable(cap: Int) = enableDisablePriv(cap, true)
+	override fun disable(cap: Int) = enableDisablePriv(cap, false)
 
 	private val lastScissor = CachedInt4(-1, -1, -1, -1)
 	override fun scissor(x: Int, y: Int, width: Int, height: Int) {
