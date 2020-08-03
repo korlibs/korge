@@ -91,6 +91,7 @@
 	<depends>org.jetbrains.idea.maven</depends>
 	-->
 	<depends>org.jetbrains.plugins.gradle</depends>
+    <depends>org.jetbrains.kotlin</depends>
 	<depends>com.intellij.modules.java</depends>
     <depends>com.intellij.platform.images</depends>
 
@@ -150,6 +151,8 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
+        <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator" />
+
         <!-- Add your extensions here -->
         <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->

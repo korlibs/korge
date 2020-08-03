@@ -76,7 +76,7 @@ val globalProps = properties
 
 extensions.getByType<org.jetbrains.intellij.IntelliJPluginExtension>().apply {
 	//version = "IC-2019.3"; setPlugins("gradle", "java")
-    version = "IC-2020.2"; setPlugins("gradle", "java", "platform-images")
+    version = "IC-2020.2"; setPlugins("gradle", "java", "platform-images", "Kotlin")
 
 	//version = "IC-2019.3"; setPlugins("gradle")
 	//version = "IC-2019.3"; setPlugins("gradle", "java", "Kotlin")
