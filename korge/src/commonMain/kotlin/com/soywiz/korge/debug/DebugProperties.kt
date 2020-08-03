@@ -1,5 +1,6 @@
 package com.soywiz.korge.debug
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -7,19 +8,26 @@ import kotlin.jvm.*
 import kotlin.reflect.*
 
 sealed class EditableNode {
-    open fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
+    open val allBaseEditableProperty: List<BaseEditableProperty<*>> get() = listOf()
+    open fun synchronizeProperties() {
+        allBaseEditableProperty.fastForEach {
+            if (it !== this@EditableNode) {
+                it.synchronizeProperties()
+            }
+        }
+    }
 }
 
 class EditableNodeList(val list: List<EditableNode>) : EditableNode() {
     constructor(vararg list: EditableNode) : this(list.toList())
     constructor(block: MutableList<EditableNode>.() -> Unit) : this(ArrayList<EditableNode>().apply(block))
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
+    override val allBaseEditableProperty: List<BaseEditableProperty<*>> = this.list.flatMap { it.allBaseEditableProperty }
 }
 
 class EditableSection(val title: String, val list: List<EditableNode>) : EditableNode() {
     constructor(title: String, vararg list: EditableNode) : this(title, list.toList())
     constructor(title: String, block: MutableList<EditableNode>.() -> Unit) : this(title, ArrayList<EditableNode>().apply(block))
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
+    override val allBaseEditableProperty: List<BaseEditableProperty<*>> = this.list.flatMap { it.allBaseEditableProperty }
 }
 
 abstract class BaseEditableProperty<T : Any>(
@@ -37,8 +45,8 @@ abstract class BaseEditableProperty<T : Any>(
         onChange(newValue)
     }
 
-    fun synchronizeValue() {
-        updateValue(value)
+    override fun synchronizeProperties() {
+        onChange(value)
     }
 
     var value: T
@@ -50,14 +58,14 @@ abstract class BaseEditableProperty<T : Any>(
             }
         }
 
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf(this)
+    override val allBaseEditableProperty: List<BaseEditableProperty<*>> = listOf(this)
 }
 
 data class InformativeProperty<T : Any>(
     val name: String,
     val value: T
 ) : EditableNode() {
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
+    override val allBaseEditableProperty: List<BaseEditableProperty<*>> = listOf()
 }
 
 data class EditableEnumerableProperty<T : Any>(

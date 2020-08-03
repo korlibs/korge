@@ -70,16 +70,14 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
         })
         val nodeTree = EditableNodeList(nodes)
-        val propertyList = nodeTree.getAllBaseEditableProperty()
+        val propertyList = nodeTree.allBaseEditableProperty
         var updating = false
         propertyList.fastForEach { property ->
             property.onChange {
                 if (!updating) {
                     try {
                         updating = true
-                        propertyList.fastForEach { property ->
-                            (property as BaseEditableProperty<Any>).onChange(property.getValue())
-                        }
+                        nodeTree.synchronizeProperties()
                         view.stage?.views?.debugSaveView(view)
                     } finally {
                         updating = false
