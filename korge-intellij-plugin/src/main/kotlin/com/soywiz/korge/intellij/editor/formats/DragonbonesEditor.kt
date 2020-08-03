@@ -1,9 +1,8 @@
 package com.soywiz.korge.intellij.editor.formats
 
-import com.soywiz.korge.awt.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korio.file.*
 
 suspend fun dragonBonesEditor(file: VfsFile) : KorgeBaseKorgeFileEditor.EditorModule {
@@ -17,21 +16,10 @@ suspend fun dragonBonesEditor(file: VfsFile) : KorgeBaseKorgeFileEditor.EditorMo
         else -> animationNames.first()
     }
 
-    val animation1Property = EditableEnumerableProperty("animation1", String::class, defaultAnimationName, animationNames.toSet()).apply {
-        this.onChange { animationName ->
-            armatureDisplay.animation.play(animationName)
-        }
-    }
-
-    return createModule(EditableNodeList {
-        add(EditableSection("Animation", animation1Property, armatureDisplay::speed.toEditableProperty(0.01, 10.0)))
-    }) {
-        //println(armatureDisplay.animation.animationNames)
-
+    return createModule {
         armatureDisplay.animation.play(defaultAnimationName)
-
         armatureDisplay.repositionOnResize(views)
-
         sceneView += armatureDisplay
+        views.debugHightlightView(armatureDisplay)
     }
 }

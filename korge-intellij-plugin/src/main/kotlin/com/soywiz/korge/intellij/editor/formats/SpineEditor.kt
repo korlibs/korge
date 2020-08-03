@@ -3,9 +3,8 @@ package com.soywiz.korge.intellij.editor.formats
 import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.ext.*
 import com.esotericsoftware.spine.korge.*
-import com.soywiz.korge.awt.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korim.atlas.readAtlas
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName

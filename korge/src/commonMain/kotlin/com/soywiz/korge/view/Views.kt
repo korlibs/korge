@@ -351,6 +351,12 @@ class Views constructor(
         println("debugHightlightView: $viewToHightlight")
         debugHighlighters(viewToHightlight)
     }
+
+    val debugSavedHandlers = Signal<View?>()
+
+    fun debugSaveView(viewToHightlight: View?) {
+        debugSavedHandlers(viewToHightlight)
+    }
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {

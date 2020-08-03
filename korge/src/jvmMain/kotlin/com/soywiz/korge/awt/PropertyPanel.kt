@@ -53,17 +53,6 @@ fun Styled<out Container>.createPropertyPanelWithEditor(
     }
 }
 
-fun RGBAf.editableNodes(variance: Boolean = false) = listOf(
-    this::rd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "red"),
-    this::gd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "green"),
-    this::bd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "blue"),
-    this::ad.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "alpha")
-)
-fun com.soywiz.korma.geom.Point.editableNodes() = listOf(
-    this::x.toEditableProperty(-1000.0, +1000.0),
-    this::y.toEditableProperty(-1000.0, +1000.0)
-)
-
 class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineContext) : JPanel() {
     val contentPane = JPanel()
     init {
@@ -79,72 +68,6 @@ class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineC
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
-@JvmName("toEditablePropertyDouble")
-fun KMutableProperty0<Double>.toEditableProperty(
-    min: Double? = null, max: Double? = null,
-    transformedMin: Double? = null, transformedMax: Double? = null,
-    name: String? = null,
-    supportOutOfRange: Boolean = false
-): EditableNumericProperty<Double> {
-    val prop = this
-    val range = this.annotations.filterIsInstance<DoubleSupportedRange>().firstOrNull()
-
-    val editMin = min ?: range?.min ?: 0.0
-    val editMax = max ?: range?.max ?: 1000.0
-
-    val realMin = transformedMin ?: editMin
-    val realMax = transformedMax ?: editMax
-
-    return EditableNumericProperty(
-        name = name ?: this.name,
-        clazz = Double::class,
-        initialValue = this.get().convertRange(realMin, realMax, editMin, editMax),
-        minimumValue = editMin,
-        maximumValue = editMax,
-        supportOutOfRange = supportOutOfRange
-    ).also {
-        it.onChange {
-            prop.set(it.convertRange(editMin, editMax, realMin, realMax))
-        }
-    }
-}
-
-@JvmName("toEditablePropertyInt")
-fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null): EditableNumericProperty<Int> {
-    val prop = this
-    val range = this.annotations.filterIsInstance<IntSupportedRange>().firstOrNull()
-    return EditableNumericProperty(
-        name = this.name,
-        clazz = Int::class,
-        initialValue = this.get(),
-        minimumValue = min ?: range?.min,
-        maximumValue = max ?: range?.max,
-    ).also {
-        it.onChange { prop.set(it) }
-    }
-}
-
-inline fun <reified T : Enum<*>> KMutableProperty0<T>.toEditableProperty(name: String? = null): EditableEnumerableProperty<T> =
-    toEditableProperty(name, T::class)
-
-fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
-    name: String? = null,
-    clazz: KClass<T>
-): EditableEnumerableProperty<T> {
-    val prop = this
-    return EditableEnumerableProperty<T>(
-        name = name ?: this.name,
-        clazz = clazz,
-        initialValue = prop.get(),
-        supportedValues = clazz.java.enumConstants.toSet() as Set<T>
-    ).also {
-        it.onChange { prop.set(it) }
-    }
-}
-
-annotation class IntSupportedRange(val min: Int, val max: Int)
-annotation class DoubleSupportedRange(val min: Double, val max: Double)
 
 class Section(val indentation: Int, val title: String, val components: List<Component>) : JPanel() {
     val header: SectionHeader = SectionHeader(title, indentation, true).apply {
@@ -427,7 +350,7 @@ object PropertyPanelSample {
         val obj = MyObject()
 
         val rootSection = EditableNodeList {
-            add(EditableSection("Enum", obj::z.toEditableProperty()))
+            add(EditableSection("Enum", obj::z.toEditableProperty(MyEnum.values())))
             add(EditableSection("Position", obj::x.toEditableProperty(), obj::y.toEditableProperty()))
             add(EditableSection("Color", obj::red.toEditableProperty(), obj::blue.toEditableProperty(), obj::green.toEditableProperty()))
         }
@@ -464,20 +387,15 @@ object PropertyPanelSample {
         var z: MyEnum = MyEnum.A
 
         @Suppress("UnusedUnaryOperator")
-        @DoubleSupportedRange(-1.0, +1.0)
         var x: Double = 0.0
 
         @Suppress("UnusedUnaryOperator")
-        @DoubleSupportedRange(-1.0, +1.0)
         var y: Double = 0.0
 
-        @IntSupportedRange(0, 255)
         var red: Int = 128
 
-        @IntSupportedRange(0, 255)
         var green: Int = 128
 
-        @IntSupportedRange(0, 255)
         var blue: Int = 128
     }
 }

@@ -1,4 +1,4 @@
-package com.soywiz.korge.intellij.editor.formats
+package com.soywiz.korge.intellij.editor.util
 
 import com.soywiz.korge.component.onStageResized
 import com.soywiz.korge.view.View

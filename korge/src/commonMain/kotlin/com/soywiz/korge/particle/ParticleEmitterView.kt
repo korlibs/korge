@@ -3,11 +3,13 @@ package com.soywiz.korge.particle
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korag.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 inline fun Container.particleEmitter(
 	emitter: ParticleEmitter, emitterPos: IPoint = IPoint(),
@@ -29,7 +31,7 @@ suspend fun Container.attachParticleAndWait(
     this -= p
 }
 
-class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View() {
+class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), KorgeDebugNode {
 	val simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
 	var timeUntilStop by simulator::timeUntilStop.redirected()
@@ -80,4 +82,55 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 			}
 		}
 	}
+
+    override fun getDebugProperties(): EditableNode {
+        val particle = this.emitter
+        return EditableNodeList {
+            add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty(ParticleEmitter.Type.values())))
+            add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(AG.BlendFactor.values()), particle::blendFuncDestination.toEditableProperty(AG.BlendFactor.values())))
+            add(EditableSection("Angle",
+                particle::angle.toEditableProperty(0.0, 360.0, 0.0, PI * 2),
+                particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, PI * 2)
+            ))
+            add(EditableSection("Speed",
+                particle::speed.toEditableProperty(0.0, 1000.0),
+                particle::speedVariance.toEditableProperty(0.0, 1000.0),
+            ))
+            add(EditableSection("Lifespan",
+                particle::lifeSpan.toEditableProperty(0.0, 10.0),
+                particle::lifespanVariance.toEditableProperty(-10.0, 10.0),
+                particle::duration.toEditableProperty(-10.0, 10.0),
+            ))
+            add(EditableSection("Gravity", particle.gravity.editableNodes()))
+            add(EditableSection("Source Position", particle.sourcePosition.editableNodes()))
+            add(EditableSection("Source Position Variance", particle.sourcePositionVariance.editableNodes()))
+            add(EditableSection("Acceleration",
+                particle::radialAcceleration.toEditableProperty(-1000.0, +1000.0),
+                particle::radialAccelVariance.toEditableProperty(-1000.0, +1000.0),
+                particle::tangentialAcceleration.toEditableProperty(-1000.0, +1000.0),
+                particle::tangentialAccelVariance.toEditableProperty(-1000.0, +1000.0)
+            ))
+            add(EditableSection("Start Color", particle.startColor.editableNodes()))
+            add(EditableSection("Start Color Variance", particle.startColorVariance.editableNodes(variance = true)))
+            add(EditableSection("End Color", particle.endColor.editableNodes()))
+            add(EditableSection("End Color Variance", particle.endColor.editableNodes(variance = true)))
+            add(EditableSection("Max particles", particle::maxParticles.toEditableProperty(1, 20000)))
+            add(EditableSection("Start Size", particle::startSize.toEditableProperty(1.0, 1000.0), particle::startSizeVariance.toEditableProperty(-1000.0, 1000.0)))
+            add(EditableSection("End Size", particle::endSize.toEditableProperty(1.0, 1000.0), particle::endSizeVariance.toEditableProperty(-1000.0, 1000.0)))
+            add(EditableSection("Radius",
+                particle::minRadius.toEditableProperty(0.0, 1000.0),
+                particle::minRadiusVariance.toEditableProperty(-1000.0, 1000.0),
+                particle::maxRadius.toEditableProperty(0.0, 1000.0),
+                particle::maxRadiusVariance.toEditableProperty(-1000.0, 1000.0),
+            ))
+            add(EditableSection("Rotate",
+                particle::rotatePerSecond.toEditableProperty(0.0, 1000.0),
+                particle::rotatePerSecondVariance.toEditableProperty(-1000.0, 1000.0),
+                particle::rotationStart.toEditableProperty(0.0, 1000.0),
+                particle::rotationStartVariance.toEditableProperty(-1000.0, 1000.0),
+                particle::rotationEnd.toEditableProperty(0.0, 1000.0),
+                particle::rotationEndVariance.toEditableProperty(-1000.0, 1000.0),
+            ))
+        }
+    }
 }

@@ -30,6 +30,7 @@ import com.dragonbones.event.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.internal.fastForEach
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -39,7 +40,7 @@ import com.soywiz.korma.geom.vector.*
 /**
  * @inheritDoc
  */
-class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
+class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
 	private val _events = arrayListOf<EventObject>()
 	private val _eventsReturnQueue: ArrayList<BaseObject> = arrayListOf()
 
@@ -307,4 +308,14 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 	 * @inheritDoc
 	 */
 	override val animation: Animation get() = this._armature!!.animation
+
+    val animationNames get() = animation.animationNames
+
+    override fun getDebugProperties(): EditableNode = EditableSection("DragonBones") {
+        add(EditableEnumerableProperty("animation1", String::class, animation.lastAnimationName, animationNames.toSet()).apply {
+            this.onChange { animationName ->
+                animation.play(animationName)
+            }
+        })
+    }
 }

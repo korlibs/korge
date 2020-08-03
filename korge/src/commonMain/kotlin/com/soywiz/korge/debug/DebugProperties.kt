@@ -1,6 +1,9 @@
 package com.soywiz.korge.debug
 
+import com.soywiz.kmem.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import kotlin.jvm.*
 import kotlin.reflect.*
 
 sealed class EditableNode {
@@ -72,3 +75,78 @@ data class EditableButtonProperty(
     val callback: () -> Unit
 ) : EditableNode() {
 }
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmName("toEditablePropertyDouble")
+fun KMutableProperty0<Double>.toEditableProperty(
+    min: Double? = null, max: Double? = null,
+    transformedMin: Double? = null, transformedMax: Double? = null,
+    name: String? = null,
+    supportOutOfRange: Boolean = false
+): EditableNumericProperty<Double> {
+    val prop = this
+
+    val editMin = min ?: 0.0
+    val editMax = max ?: 1000.0
+
+    val realMin = transformedMin ?: editMin
+    val realMax = transformedMax ?: editMax
+
+    return EditableNumericProperty(
+        name = name ?: this.name,
+        clazz = Double::class,
+        initialValue = this.get().convertRange(realMin, realMax, editMin, editMax),
+        minimumValue = editMin,
+        maximumValue = editMax,
+        supportOutOfRange = supportOutOfRange
+    ).also {
+        it.onChange {
+            prop.set(it.convertRange(editMin, editMax, realMin, realMax))
+        }
+    }
+}
+
+@JvmName("toEditablePropertyInt")
+fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null): EditableNumericProperty<Int> {
+    val prop = this
+    return EditableNumericProperty(
+        name = this.name,
+        clazz = Int::class,
+        initialValue = this.get(),
+        minimumValue = min,
+        maximumValue = max,
+    ).also {
+        it.onChange { prop.set(it) }
+    }
+}
+
+inline fun <reified T : Enum<*>> KMutableProperty0<T>.toEditableProperty(enumConstants: Array<T>, name: String? = null): EditableEnumerableProperty<T> {
+    return toEditableProperty(name, T::class, enumConstants)
+}
+
+fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
+    name: String? = null,
+    clazz: KClass<T>,
+    enumConstants: Array<T>
+): EditableEnumerableProperty<T> {
+    val prop = this
+    return EditableEnumerableProperty<T>(
+        name = name ?: this.name,
+        clazz = clazz,
+        initialValue = prop.get(),
+        supportedValues = enumConstants.toSet()
+    ).also {
+        it.onChange { prop.set(it) }
+    }
+}
+
+fun RGBAf.editableNodes(variance: Boolean = false) = listOf(
+    this::rd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "red"),
+    this::gd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "green"),
+    this::bd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "blue"),
+    this::ad.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "alpha")
+)
+fun com.soywiz.korma.geom.Point.editableNodes() = listOf(
+    this::x.toEditableProperty(-1000.0, +1000.0),
+    this::y.toEditableProperty(-1000.0, +1000.0)
+)

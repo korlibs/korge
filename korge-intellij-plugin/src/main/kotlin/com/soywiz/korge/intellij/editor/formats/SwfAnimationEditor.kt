@@ -2,15 +2,12 @@ package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.readAni
-import com.soywiz.korge.awt.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.extensionLC
 
 suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {

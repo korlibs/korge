@@ -1,6 +1,8 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korev.Event
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
@@ -34,6 +36,8 @@ class ViewNode(val view: View?) : TreeNode {
     override fun children(): Enumeration<*> = Vector<Any>(childrenList()).elements()
 }
 
+class ViewDebuggerChanged(val view: View?) : Event()
+
 class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
     fun setView(view: View?, coroutineContext: CoroutineContext) {
         removeAll()
@@ -53,7 +57,13 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
         })
-        add(PropertyPanel(EditableNodeList(nodes), coroutineContext))
+        val nodeTree = EditableNodeList(nodes)
+        for (property in nodeTree.getAllBaseEditableProperty()) {
+            property.onChange {
+                view?.stage?.views?.debugSaveView(view)
+            }
+        }
+        add(PropertyPanel(nodeTree, coroutineContext))
         revalidate()
         repaint()
     }
