@@ -130,7 +130,7 @@ open class KorgeBaseKorgeFileEditor(
                     width = minWidth
                     fillHeight()
                     if (rootNode != null) {
-                        add(PropertyPanel(rootNode, EmptyCoroutineContext).styled {
+                        add(PropertyPanel(rootNode, EmptyCoroutineContext, { null }).styled {
                             fill()
                         })
                     }

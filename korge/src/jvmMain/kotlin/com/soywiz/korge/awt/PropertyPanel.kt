@@ -26,36 +26,7 @@ import kotlin.system.*
 
 var myComponentFactory = MyComponentFactory()
 
-fun Styled<out Container>.createPropertyPanelWithEditor(
-    editor: Component,
-    rootNode: EditableNode,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-) {
-    verticalStack {
-        fill()
-        horizontalStack {
-            fill()
-            verticalStack {
-                //minWidth = 32.pt
-                minWidth = 360.pt
-                fill()
-                add(editor.styled {
-                    fill()
-                })
-            }
-            verticalStack {
-                minWidth = 360.pt
-                width = minWidth
-                fillHeight()
-                add(PropertyPanel(rootNode, coroutineContext).styled {
-                    fill()
-                })
-            }
-        }
-    }
-}
-
-class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineContext) : JPanel() {
+class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineContext, val evalContext: () -> Any?) : JPanel() {
     val contentPane = JPanel()
     init {
         this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -64,7 +35,7 @@ class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineC
     init {
         //contentPane.preferredSize = Dimension(500, 400)
 
-        contentPane.add(rootNode.toComponent(coroutineContext))
+        contentPane.add(rootNode.toComponent(coroutineContext, evalContext))
         //contentPane.add(Box.Filler(Dimension(0, 0), Dimension(0, 1024), Dimension(0, 1024)))
         contentPane.add(Box.createVerticalGlue())
     }
@@ -172,7 +143,12 @@ class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: Ed
     }
 }
 
-class EditableNumberValue(val context: CoroutineContext, val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+class EditableNumberValue(
+    val context: CoroutineContext,
+    val editProp: EditableNumericProperty<out Number>,
+    val indentation: Int,
+    val evalContext: () -> Any?
+) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     var value = editProp.value?.toDouble() ?: 0.0
     val minimum = editProp.minimumValue?.toDouble() ?: -10000.0
@@ -232,7 +208,7 @@ class EditableNumberValue(val context: CoroutineContext, val editProp: EditableN
             })
         })
         add(EditableLabel("") { editText ->
-            val templateResult = runBlocking { Template("{{ $editText }}").invoke() }
+            val templateResult = runBlocking { Template("{{ $editText }}").invoke(evalContext()) }
             println("templateResult: '$templateResult', editText: '$editText'")
             val double = templateResult.toDoubleOrNull()
             if (double != null) {
@@ -357,7 +333,7 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
     }
 }
 
-
+/*
 object PropertyPanelSample {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -416,3 +392,34 @@ object PropertyPanelSample {
         var blue: Int = 128
     }
 }
+
+
+fun Styled<out Container>.createPropertyPanelWithEditor(
+    editor: Component,
+    rootNode: EditableNode,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+) {
+    verticalStack {
+        fill()
+        horizontalStack {
+            fill()
+            verticalStack {
+                //minWidth = 32.pt
+                minWidth = 360.pt
+                fill()
+                add(editor.styled {
+                    fill()
+                })
+            }
+            verticalStack {
+                minWidth = 360.pt
+                width = minWidth
+                fillHeight()
+                add(PropertyPanel(rootNode, coroutineContext).styled {
+                    fill()
+                })
+            }
+        }
+    }
+}
+*/

@@ -85,7 +85,7 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
                 }
             }
         }
-        add(PropertyPanel(nodeTree, coroutineContext))
+        add(PropertyPanel(nodeTree, coroutineContext) { view })
         revalidate()
         repaint()
     }

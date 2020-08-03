@@ -126,6 +126,10 @@ interface ExprNode : DynamicContext {
             }
         }
 
+        fun parse(str: String, fileName: String = "expression"): ExprNode {
+            return ExprNode.parse(str, FilePosContext(FileContext(fileName, str), 1))
+        }
+
         fun parseId(r: ListReader<Token>): String {
             return r.tryRead()?.text ?: (r.tryPrev() ?: r.ctx)?.exception("Expected id") ?: TODO()
         }

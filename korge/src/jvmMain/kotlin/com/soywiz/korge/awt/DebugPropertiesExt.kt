@@ -9,15 +9,15 @@ import kotlin.coroutines.*
 
 val INDENTATION_SIZE = 24
 
-fun EditableNode.toComponent(context: CoroutineContext, indentation: Int = 0): Component = when (this) {
+fun EditableNode.toComponent(context: CoroutineContext, evalContext: () -> Any?, indentation: Int = 0): Component = when (this) {
     is EditableNodeList -> {
         JPanel().also {
             it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-            for (item in list) it.add(item.toComponent(context, indentation))
+            for (item in list) it.add(item.toComponent(context, evalContext, indentation))
         }
     }
     is EditableSection -> {
-        Section(indentation, this.title, this.list.map { it.toComponent(context, indentation + 1) })
+        Section(indentation, this.title, this.list.map { it.toComponent(context, evalContext, indentation + 1) })
     }
     is InformativeProperty<*> -> {
         JPanel(GridLayout(1, 2)).also {
@@ -30,7 +30,7 @@ fun EditableNode.toComponent(context: CoroutineContext, indentation: Int = 0): C
         EditableListValue(context, this as EditableEnumerableProperty<Any>, indentation)
     }
     is EditableNumericProperty<*> -> {
-        EditableNumberValue(context, this, indentation)
+        EditableNumberValue(context, this, indentation, evalContext)
     }
     is EditableButtonProperty -> {
         JButton(title).apply {
