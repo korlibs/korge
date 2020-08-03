@@ -337,16 +337,19 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
 
     override fun getDebugProperties(): EditableNode = EditableSection("Animation") {
         val currentAnimationName = currentMainAnimation?.name ?: "default"
-        add(EditableEnumerableProperty("animation1", String::class, currentAnimationName, skeleton.data.animations.map { it.name }.toSet()).apply {
-            this.onChange { animationName ->
+        add(EditableEnumerableProperty(
+            "animation1", String::class,
+            get = { currentAnimationName },
+            set = { animationName ->
                 val animation = skeleton.data.findAnimation(animationName)
                 if (animation != null) {
                     this@SkeletonView.play()
                     animationState?.setAnimation(0, animation, true)
                     stage?.views?.debugHightlightView(this@SkeletonView)
                 }
-            }
-        })
+            },
+            skeleton.data.animations.map { it.name }.toSet()
+        ))
         add(EditableButtonProperty("play") { this@SkeletonView.play() })
         add(EditableButtonProperty("stop") { this@SkeletonView.stop() })
     }

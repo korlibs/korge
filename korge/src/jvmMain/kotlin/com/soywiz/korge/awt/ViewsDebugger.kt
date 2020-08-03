@@ -1,8 +1,10 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
 import com.soywiz.korev.Event
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
@@ -49,18 +51,40 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
         nodes.add(EditableSection("View") {
             add(view::alpha.toEditableProperty(0.0, 1.0))
             add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
+            add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
             add(view::x.toEditableProperty(supportOutOfRange = true))
             add(view::y.toEditableProperty(supportOutOfRange = true))
-            add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
+            if (view is RectBase) {
+                add(view::anchorX.toEditableProperty(supportOutOfRange = true))
+                add(view::anchorY.toEditableProperty(supportOutOfRange = true))
+            }
+            if (view is AnBaseShape) {
+                add(view::dx.toEditableProperty(name = "anchorX", supportOutOfRange = true))
+                add(view::dy.toEditableProperty(name = "anchorY", supportOutOfRange = true))
+            }
+            add(view::width.toEditableProperty(supportOutOfRange = true))
+            add(view::height.toEditableProperty(supportOutOfRange = true))
             add(view::scale.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
         })
         val nodeTree = EditableNodeList(nodes)
-        for (property in nodeTree.getAllBaseEditableProperty()) {
+        val propertyList = nodeTree.getAllBaseEditableProperty()
+        var updating = false
+        propertyList.fastForEach { property ->
             property.onChange {
-                view?.stage?.views?.debugSaveView(view)
+                if (!updating) {
+                    try {
+                        updating = true
+                        propertyList.fastForEach { property ->
+                            (property as BaseEditableProperty<Any>).onChange(property.getValue())
+                        }
+                        view.stage?.views?.debugSaveView(view)
+                    } finally {
+                        updating = false
+                    }
+                }
             }
         }
         add(PropertyPanel(nodeTree, coroutineContext))

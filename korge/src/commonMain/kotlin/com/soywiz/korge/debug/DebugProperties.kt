@@ -22,19 +22,34 @@ class EditableSection(val title: String, val list: List<EditableNode>) : Editabl
     override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
 }
 
-abstract class BaseEditableProperty<T : Any>(initialValue: T) : EditableNode() {
+abstract class BaseEditableProperty<T : Any>(
+    val getValue: () -> T,
+    val setValue: (T) -> Unit,
+) : EditableNode() {
     abstract val name: String
     abstract val clazz: KClass<T>
     val onChange = Signal<T>()
     //var prev: T = initialValue
-    var value: T = initialValue
+    val initialValue = getValue()
+
+    fun updateValue(newValue: T) {
+        setValue(newValue)
+        onChange(newValue)
+    }
+
+    fun synchronizeValue() {
+        updateValue(value)
+    }
+
+    var value: T
+        get() = getValue()
         set(newValue) {
             //this.prev = this.value
-            if (field != newValue) {
-                onChange(newValue)
-                field = newValue
+            if (value != newValue) {
+                updateValue(newValue)
             }
         }
+
     override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf(this)
 }
 
@@ -48,9 +63,10 @@ data class InformativeProperty<T : Any>(
 data class EditableEnumerableProperty<T : Any>(
     override val name: String,
     override val clazz: KClass<T>,
-    val initialValue: T,
+    val get: () -> T,
+    val set: (T) -> Unit,
     var supportedValues: Set<T>
-) : BaseEditableProperty<T>(initialValue) {
+) : BaseEditableProperty<T>(get, set) {
     val onUpdateSupportedValues = Signal<Set<T>>()
 
     fun updateSupportedValues(set: Set<T>) {
@@ -62,12 +78,13 @@ data class EditableEnumerableProperty<T : Any>(
 data class EditableNumericProperty<T : Number>(
     override val name: String,
     override val clazz: KClass<T>,
-    val initialValue: T,
+    val get: () -> T,
+    val set: (value: T) -> Unit,
     val minimumValue: T? = null,
     val maximumValue: T? = null,
     val step: T? = null,
     val supportOutOfRange: Boolean = false
-) : BaseEditableProperty<T>(initialValue) {
+) : BaseEditableProperty<T>(get, set) {
 }
 
 data class EditableButtonProperty(
@@ -95,15 +112,39 @@ fun KMutableProperty0<Double>.toEditableProperty(
     return EditableNumericProperty(
         name = name ?: this.name,
         clazz = Double::class,
-        initialValue = this.get().convertRange(realMin, realMax, editMin, editMax),
+        get = { prop.get().convertRange(realMin, realMax, editMin, editMax) },
+        set = { prop.set(it.convertRange(editMin, editMax, realMin, realMax)) },
         minimumValue = editMin,
         maximumValue = editMax,
         supportOutOfRange = supportOutOfRange
-    ).also {
-        it.onChange {
-            prop.set(it.convertRange(editMin, editMax, realMin, realMax))
-        }
-    }
+    )
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmName("toEditablePropertyFloat")
+fun KMutableProperty0<Float>.toEditableProperty(
+    min: Float? = null, max: Float? = null,
+    transformedMin: Float? = null, transformedMax: Float? = null,
+    name: String? = null,
+    supportOutOfRange: Boolean = false
+): EditableNumericProperty<Float> {
+    val prop = this
+
+    val editMin = min ?: 0f
+    val editMax = max ?: 1000f
+
+    val realMin = transformedMin ?: editMin
+    val realMax = transformedMax ?: editMax
+
+    return EditableNumericProperty(
+        name = name ?: this.name,
+        clazz = Float::class,
+        get = { prop.get().convertRange(realMin, realMax, editMin, editMax) },
+        set = { prop.set(it.convertRange(editMin, editMax, realMin, realMax)) },
+        minimumValue = editMin,
+        maximumValue = editMax,
+        supportOutOfRange = supportOutOfRange
+    )
 }
 
 @JvmName("toEditablePropertyInt")
@@ -112,12 +153,11 @@ fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null
     return EditableNumericProperty(
         name = this.name,
         clazz = Int::class,
-        initialValue = this.get(),
+        get = { this.get() },
+        set = { prop.set(it) },
         minimumValue = min,
         maximumValue = max,
-    ).also {
-        it.onChange { prop.set(it) }
-    }
+    )
 }
 
 inline fun <reified T : Enum<*>> KMutableProperty0<T>.toEditableProperty(enumConstants: Array<T>, name: String? = null): EditableEnumerableProperty<T> {
@@ -133,11 +173,10 @@ fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
     return EditableEnumerableProperty<T>(
         name = name ?: this.name,
         clazz = clazz,
-        initialValue = prop.get(),
+        get = { prop.get() },
+        set = { prop.set(it) },
         supportedValues = enumConstants.toSet()
-    ).also {
-        it.onChange { prop.set(it) }
-    }
+    )
 }
 
 fun RGBAf.editableNodes(variance: Boolean = false) = listOf(

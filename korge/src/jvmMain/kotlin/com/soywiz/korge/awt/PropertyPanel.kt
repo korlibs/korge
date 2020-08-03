@@ -136,10 +136,12 @@ class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: Ed
         stringToType = editProp.supportedValues.associateBy { it.toString() }.toCaseInsensitiveMap()
     }
 
-    fun updateValue(value: T?) {
+    fun updateValue(value: T?, setProperty: Boolean = true) {
         if (value != null) {
-            launchImmediately(context) {
-                editProp.value = value
+            if (setProperty) {
+                launchImmediately(context) {
+                    editProp.value = value
+                }
             }
             valueTextField.text = value.toString()
         }
@@ -161,9 +163,13 @@ class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: Ed
             updateStringToType()
             valueTextField.supportedValues = it.map { it.toString() }.toSet()
         }
+        editProp.onChange.add {
+            updateValue(it, false)
+        }
         updateValue(editProp.value)
     }
 }
+
 class EditableNumberValue(val context: CoroutineContext, val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     var value = editProp.value?.toDouble() ?: 0.0
@@ -172,17 +178,21 @@ class EditableNumberValue(val context: CoroutineContext, val editProp: EditableN
     val length = maximum - minimum
     lateinit var valueTextField: EditableLabel
 
-    fun updateValue(value: Double) {
+    fun updateValue(value: Double, setProperty: Boolean = true) {
         this.value = if (editProp.supportOutOfRange) value else value.coerceIn(minimum, maximum)
         if (editProp.clazz == Int::class) {
             valueTextField.text = this.value.toInt().toString()
-            launchImmediately(context) {
-                (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
+            if (setProperty) {
+                launchImmediately(context) {
+                    (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
+                }
             }
         } else {
             valueTextField.text = this.value.toStringDecimal(2)
-            launchImmediately(context) {
-                (editProp as EditableNumericProperty<Double>).value = this.value
+            if (setProperty) {
+                launchImmediately(context) {
+                    (editProp as EditableNumericProperty<Double>).value = this.value
+                }
             }
         }
     }
@@ -227,6 +237,9 @@ class EditableNumberValue(val context: CoroutineContext, val editProp: EditableN
                 updateValue(value)
             }
         }.also { valueTextField = it })
+        editProp.onChange.add {
+            updateValue(it.toDouble(), false)
+        }
         updateValue(value)
     }
 }

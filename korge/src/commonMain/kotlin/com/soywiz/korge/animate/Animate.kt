@@ -29,8 +29,8 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	View(), AnElement {
 	var ninePatch: Rectangle? = null
 
-	abstract val dx: Float
-	abstract val dy: Float
+	abstract var dx: Float
+	abstract var dy: Float
 	abstract val tex: BmpSlice
 	abstract val texScale: Double
 	abstract val texWidth: Float
@@ -121,8 +121,8 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 }
 
 class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnBaseShape(library, shapeSymbol), AnElement {
-	override val dx = shapeSymbol.bounds.x.toFloat()
-	override val dy = shapeSymbol.bounds.y.toFloat()
+	override var dx = shapeSymbol.bounds.x.toFloat()
+	override var dy = shapeSymbol.bounds.y.toFloat()
 	override val tex = shapeSymbol.textureWithBitmap?.texture ?: Bitmaps.transparent
 	override val texScale = shapeSymbol.textureWithBitmap?.scale ?: 1.0
 	override val texWidth = (tex.width / texScale).toFloat()
@@ -606,20 +606,31 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
     override fun getDebugProperties(): EditableNode = EditableSection("SWF",
         EditableButtonProperty("start") { play() },
         EditableButtonProperty("stop") { stop() },
-        EditableEnumerableProperty("symbol", String::class, symbol.name ?: "#${symbol.id}", library.symbolsByName.keys).apply {
-            this.onChange { symbolName ->
+        EditableEnumerableProperty(
+            "symbol", String::class,
+            get = { symbol.name ?: "#${symbol.id}" },
+            set = { symbolName ->
                 val views = stage?.views
                 val newView = library.create(symbolName) as View
                 this@AnMovieClip.replaceWith(newView)
                 views?.debugHightlightView(newView)
-            }
-        },
-        EditableEnumerableProperty("gotoAndPlay", String::class, "__start", stateNames.toSet()).apply {
-            this.onChange { frameName -> this@AnMovieClip.play(frameName) }
-        },
-        EditableEnumerableProperty("gotoAndStop", String::class, "__start", stateNames.toSet()).apply {
-            this.onChange { frameName -> this@AnMovieClip.playAndStop(frameName) }
-        },
+            },
+            supportedValues = library.symbolsByName.keys
+        ),
+        EditableEnumerableProperty(
+            "gotoAndPlay",
+            String::class,
+            get = { timelineRunner.currentStateName ?: "__start" },
+            set = { frameName -> this@AnMovieClip.play(frameName) },
+            stateNames.toSet()
+        ),
+        EditableEnumerableProperty(
+            "gotoAndStop",
+            String::class,
+            get = { timelineRunner.currentStateName ?: "__start" },
+            set = { frameName -> this@AnMovieClip.playAndStop(frameName) },
+            stateNames.toSet()
+        ),
     )
 
     override var ratio: Double

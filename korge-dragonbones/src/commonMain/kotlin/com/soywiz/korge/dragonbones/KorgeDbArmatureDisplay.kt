@@ -312,10 +312,12 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
     val animationNames get() = animation.animationNames
 
     override fun getDebugProperties(): EditableNode = EditableSection("DragonBones") {
-        add(EditableEnumerableProperty("animation1", String::class, animation.lastAnimationName, animationNames.toSet()).apply {
-            this.onChange { animationName ->
-                animation.play(animationName)
-            }
-        })
+        add(EditableEnumerableProperty(
+            "animation1",
+            String::class,
+            get = { animation.lastAnimationName },
+            set = { animationName -> animation.play(animationName) },
+            animationNames.toSet()
+        ))
     }
 }
