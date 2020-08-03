@@ -339,7 +339,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
         })
     }
 
-    fun mouseEvent(etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int, ebutton: Int, wParam: Int) {
+    fun mouseEvent(
+        etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int,
+        ebutton: Int, wParam: Int, scrollDeltaY: Double = 0.0
+    ) {
         val lbutton = (wParam and MK_LBUTTON) != 0
         val rbutton = (wParam and MK_RBUTTON) != 0
         val shift = (wParam and MK_SHIFT) != 0
@@ -365,6 +368,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.isCtrlDown = control
             this.isShiftDown = shift
             this.isMetaDown = false
+            this.scrollDeltaY = scrollDeltaY
             //this.scaleCoords = false
         })
     }
@@ -376,6 +380,7 @@ val _WM_SIZE: UINT = WM_SIZE.convert()
 val _WM_QUIT: UINT = WM_QUIT.convert()
 val _WM_MOUSEMOVE: UINT = WM_MOUSEMOVE.convert()
 val _WM_MOUSELEAVE: UINT = WM_MOUSELEAVE.convert()
+val _WM_MOUSEWHEEL: UINT = WM_MOUSEWHEEL.convert()
 val _WM_LBUTTONDOWN: UINT = WM_LBUTTONDOWN.convert()
 val _WM_MBUTTONDOWN: UINT = WM_MBUTTONDOWN.convert()
 val _WM_RBUTTONDOWN: UINT = WM_RBUTTONDOWN.convert()
@@ -439,6 +444,11 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             val x = (lParam.toInt() ushr 0) and 0xFFFF
             val y = (lParam.toInt() ushr 16) and 0xFFFF
             mouseMove(x, y, wParam.toInt())
+        }
+        _WM_MOUSEWHEEL -> {
+            val type = com.soywiz.korev.MouseEvent.Type.SCROLL
+            val scrollDeltaY = ((wParam.toInt() ushr 16) and 0xFFFF).toByte().toDouble()
+            windowsGameWindow.mouseEvent(type, mouseX, mouseY, 8, wParam.toInt(), scrollDeltaY)
         }
         _WM_LBUTTONDOWN -> mouseButton(0, true, wParam.toInt())
         _WM_MBUTTONDOWN -> mouseButton(1, true, wParam.toInt())
