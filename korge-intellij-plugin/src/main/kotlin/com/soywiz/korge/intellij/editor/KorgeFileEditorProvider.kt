@@ -92,13 +92,18 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 
 	override fun getEditorTypeId(): String = this::class.java.name
 
-    data class BlockToExecute(val block: suspend Scene.() -> Unit)
+    data class BlockToExecute(val block: suspend SceneWithHighlighting.() -> Unit)
 
     @Prototype
     class EditorScene(
         val fileToEdit: KorgeFileToEdit,
-        val blockToExecute: BlockToExecute
-    ) : Scene() {
+        val blockToExecute: BlockToExecute,
+        val viewsDebuggerComponent: ViewsDebuggerComponent
+    ) : SceneWithHighlighting() {
+
+        override fun highlightView(view: View?) {
+            viewsDebuggerComponent.highlight(view)
+        }
 
         override suspend fun Container.sceneMain() {
             val loading = text("Loading...", color = Colors.WHITE).apply {
@@ -128,7 +133,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
     }
 }
 
-fun createModule(editableNode: EditableNode?, block: suspend Scene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
+fun createModule(editableNode: EditableNode?, block: suspend SceneWithHighlighting.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
     return object : KorgeBaseKorgeFileEditor.EditorModule() {
         override val editableNode: EditableNode? get() = editableNode
         override val mainScene: KClass<out Scene> = KorgeFileEditorProvider.EditorScene::class
@@ -137,4 +142,8 @@ fun createModule(editableNode: EditableNode?, block: suspend Scene.() -> Unit): 
             mapInstance(KorgeFileEditorProvider.BlockToExecute(block))
         }
     }
+}
+
+abstract class SceneWithHighlighting : Scene() {
+    abstract fun highlightView(view: View?)
 }

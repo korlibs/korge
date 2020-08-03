@@ -47,6 +47,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
     lateinit var gotoAndStopProperty: EditableEnumerableProperty<String>
     lateinit var ratioProperty: EditableNumericProperty<Double>
     lateinit var symbolProperty: EditableEnumerableProperty<String>
+    lateinit var sceneWithHighlighting: SceneWithHighlighting
 
     fun selectSymbol(symbolName: String) {
         container.removeChildren()
@@ -70,6 +71,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         }
 
         repositionResult?.refreshBounds()
+        sceneWithHighlighting.highlightView(childView)
     }
 
     symbolProperty = EditableEnumerableProperty("symbol", String::class, defaultSymbolName, symbolNames.toSet()).apply {
@@ -131,6 +133,7 @@ suspend fun swfAnimationEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorMo
         ))
     }) {
         views = this.views
+        sceneWithHighlighting = this
 
         //container = sceneView.fixedSizeContainer(animationLibrary.width, animationLibrary.height) {
         sceneView += container

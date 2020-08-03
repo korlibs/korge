@@ -5,13 +5,16 @@ import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.rgba
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.awt.*
@@ -20,6 +23,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
+import java.awt.Container
 import java.beans.*
 import javax.swing.*
 
@@ -46,6 +50,7 @@ open class KorgeBaseKorgeFileEditor(
 	var views: Views? = null
     var gameWindow: GameWindow? = null
     var canvas: GLCanvas? = null
+    val viewsDebuggerComponent = ViewsDebuggerComponent(null)
 
 	val component by lazy {
 		componentsCreated++
@@ -59,21 +64,6 @@ open class KorgeBaseKorgeFileEditor(
         val fileToEdit = KorgeFileToEdit(virtualFile)
         Thread {
             runBlocking {
-                /*
-                println("[B] ${Thread.currentThread()}")
-                val korge = GLCanvasKorge(canvas)
-                println("[D] ${Thread.currentThread()}")
-                this@KorgeBaseKorgeFileEditor.korge = korge
-                println("[E] ${Thread.currentThread()}")
-                korge.launchInContext {
-                    println("[F] ${Thread.currentThread()}")
-                    injector.jvmAutomapping()
-                    val container = sceneContainer(views)
-                    container.changeTo(module.mainScene, KorgeFileToEdit(virtualFile.toVfs()))
-                    println("[G] ${Thread.currentThread()}")
-                }
-                println("[H] ${Thread.currentThread()}")
-                 */
                 gameWindow = GLCanvasGameWindow(canvas)
                 //val controlRgba = MetalLookAndFeel.getCurrentTheme().control.rgba()
                 val controlRgba = panel.background.rgba()
@@ -90,28 +80,64 @@ open class KorgeBaseKorgeFileEditor(
                 ) {
                     //println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
+                    injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
                     module.apply {
                         injector.configure()
                     }
                     container.changeTo(module.mainScene, fileToEdit)
+                    viewsDebuggerComponent?.setRootView(stage)
+                    stage.timers.interval(500.hrMilliseconds) {
+                        viewsDebuggerComponent?.update()
+                    }
                     //println("[G] ${Thread.currentThread()}")
                 }
             }
         }.also { it.isDaemon = true }.start()
         //println("[I] ${Thread.currentThread()}")
-        val editableNode = module.editableNode
-        if (editableNode != null) {
-            createRootStyled().apply {
-                createPropertyPanelWithEditor(panel, editableNode)
-            }.component
-        } else {
-            panel
-        }
+        initializeIdeaComponentFactory()
+        createRootStyled().apply {
+            createViewsWithDebugger(panel, module.editableNode, viewsDebuggerComponent)
+        }.component
 	}
 
-	override fun getComponent(): JComponent = component
+    fun Styled<out Container>.createViewsWithDebugger(
+        editor: Component,
+        rootNode: EditableNode?,
+        viewsDebuggerComponent: ViewsDebuggerComponent
+    ) {
+        verticalStack {
+            fill()
+            horizontalStack {
+                fill()
+                verticalStack {
+                    //minWidth = 32.pt
+                    minWidth = 360.pt
+                    fill()
+                    add(editor.styled {
+                        fill()
+                    })
+                }
+                verticalStack {
+                    minWidth = 360.pt
+                    width = minWidth
+                    fillHeight()
+                    if (rootNode != null) {
+                        add(PropertyPanel(rootNode).styled {
+                            fill()
+                        })
+                    }
+                    add(viewsDebuggerComponent.styled {
+                        fill()
+                    })
+                }
+            }
+        }
+    }
+
+
+    override fun getComponent(): JComponent = component
 
 	override fun dispose() {
 		componentsCreated--

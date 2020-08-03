@@ -1,6 +1,7 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
@@ -38,17 +39,27 @@ class ViewNode(val view: View?) : TreeNode {
 class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
     fun setView(view: View?) {
         removeAll()
-        if (view != null) {
-            add(PropertyPanel(EditableSection("Properties", listOf(
-                view::alpha.toEditableProperty(0.0, 1.0),
-                view::x.toEditableProperty(supportOutOfRange = true),
-                view::y.toEditableProperty(supportOutOfRange = true),
-                view::scale.toEditableProperty(0.01, 2.0, supportOutOfRange = true),
-                view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true),
-                view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true),
-                view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false),
-            ))))
-        }
+        if (view == null) return
+        add(PropertyPanel(EditableSection("Properties") {
+            if (view is KorgeDebugNode) {
+                for ((name, method) in view.getDebugMethods()) {
+                    add(EditableButtonProperty(name) {
+                        method()
+                    })
+                }
+            }
+            add(view::alpha.toEditableProperty(0.0, 1.0))
+            add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
+            add(view::x.toEditableProperty(supportOutOfRange = true))
+            add(view::y.toEditableProperty(supportOutOfRange = true))
+            add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
+            add(view::scale.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
+            add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
+            add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
+            add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
+        }))
+        revalidate()
+        repaint()
     }
 
     init {
@@ -58,19 +69,28 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
 
 class ViewsDebuggerComponent(rootView: View?) : JPanel(GridLayout(2, 1)) {
     val properties = EditPropertiesComponent(rootView).also { add(it) }
-    val tree = JTree(ViewNode(rootView)).also { add(it) }.apply {
+    val tree = JTree(ViewNode(rootView)).apply {
         addTreeSelectionListener {
             val viewNode = it.path.lastPathComponent as ViewNode
             properties.setView(viewNode.view)
         }
     }
+    val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
     fun setRootView(root: View) {
         tree.model = DefaultTreeModel(root.treeNode)
-        tree.updateUI()
+        update()
     }
 
     fun update() {
         tree.updateUI()
+    }
+
+    fun highlight(view: View?) {
+        val treeNode = view?.treeNode ?: return
+        val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
+        tree.expandPath(path)
+        tree.clearSelection()
+        tree.addSelectionPath(path)
     }
 }

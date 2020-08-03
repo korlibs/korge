@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -359,7 +360,7 @@ class AnSimpleAnimation(
 }
 
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(),
-	AnElement, AnPlayable {
+	AnElement, AnPlayable, KorgeDebugNode {
 	override fun clone(): View = createInstance().apply {
 		this@apply.copyPropsFrom(this)
 	}
@@ -602,11 +603,17 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
+    override fun getDebugMethods(): Map<String, () -> Unit> = mapOf(
+        "start" to { play() },
+        "stop" to { stop() },
+    )
+
     override var ratio: Double
         get() = timelineRunner.ratio
         set(value) {
             //println("set ratio: $value")
             timelineRunner.ratio = value
+            update()
         }
 
     suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
