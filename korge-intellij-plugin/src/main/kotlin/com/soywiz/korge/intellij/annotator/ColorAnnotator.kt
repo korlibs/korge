@@ -27,7 +27,16 @@ class ColorAnnotator: Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is KtElement) return
 
-        val context = element.analyze(BodyResolveMode.PARTIAL)
+        val leftExpression = when (element) {
+            is KtDotQualifiedExpression -> element.receiverExpression
+            is KtArrayAccessExpression -> element.arrayExpression
+            else -> return
+        }
+        val leftExpressionText = leftExpression?.text
+
+        if (leftExpressionText != Colors::class.simpleName && leftExpressionText != Colors::class.qualifiedName) {
+            return
+        }
 
         fun gutter(rgba: RGBA) {
             val color = rgba.toAwt()
@@ -43,12 +52,16 @@ class ColorAnnotator: Annotator {
                 .create()
         }
 
+        val context by lazy { element.analyze(BodyResolveMode.PARTIAL) }
+
+        val annotationSessions = holder.currentAnnotationSession
+
         when (element) {
             is KtDotQualifiedExpression -> {
                 val receiverExpression = element.receiverExpression
-                val typeReceiver = receiverExpression.getType(context)?.fqName?.asString()
                 val selectorExpression = element.selectorExpression
-                val typeSelector = selectorExpression?.getType(context)?.fqName?.asString()
+                val typeSelector by lazy { selectorExpression?.getType(context)?.fqName?.asString() }
+                val typeReceiver by lazy { receiverExpression.getType(context)?.fqName?.asString() }
 
                 if (typeReceiver == Colors::class.java.name && typeSelector == RGBA::class.java.name) {
                     if (selectorExpression is KtNameReferenceExpression) {
