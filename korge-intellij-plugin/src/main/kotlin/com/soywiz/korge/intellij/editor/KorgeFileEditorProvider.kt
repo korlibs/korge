@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor
 
 import com.intellij.openapi.fileEditor.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
@@ -92,19 +93,13 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 
 	override fun getEditorTypeId(): String = this::class.java.name
 
-    data class BlockToExecute(val block: suspend SceneWithHighlighting.() -> Unit)
+    data class BlockToExecute(val block: suspend Scene.() -> Unit)
 
     @Prototype
     class EditorScene(
         val fileToEdit: KorgeFileToEdit,
-        val blockToExecute: BlockToExecute,
-        val viewsDebuggerComponent: ViewsDebuggerComponent
-    ) : SceneWithHighlighting() {
-
-        override fun highlightView(view: View?) {
-            viewsDebuggerComponent.highlight(view)
-        }
-
+        val blockToExecute: BlockToExecute
+    ) : Scene() {
         override suspend fun Container.sceneMain() {
             val loading = text("Loading...", color = Colors.WHITE).apply {
                 //format = Html.Format(align = Html.Alignment.CENTER)
@@ -133,7 +128,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
     }
 }
 
-fun createModule(editableNode: EditableNode?, block: suspend SceneWithHighlighting.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
+fun createModule(editableNode: EditableNode? = null, block: suspend Scene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
     return object : KorgeBaseKorgeFileEditor.EditorModule() {
         override val editableNode: EditableNode? get() = editableNode
         override val mainScene: KClass<out Scene> = KorgeFileEditorProvider.EditorScene::class
@@ -142,8 +137,4 @@ fun createModule(editableNode: EditableNode?, block: suspend SceneWithHighlighti
             mapInstance(KorgeFileEditorProvider.BlockToExecute(block))
         }
     }
-}
-
-abstract class SceneWithHighlighting : Scene() {
-    abstract fun highlightView(view: View?)
 }

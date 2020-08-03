@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.component.docking.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.view.*

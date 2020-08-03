@@ -2,6 +2,7 @@ package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
@@ -11,6 +12,7 @@ import java.util.*
 import javax.swing.*
 import javax.swing.border.*
 import kotlin.collections.ArrayList
+import kotlin.coroutines.*
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.system.*
@@ -24,7 +26,8 @@ var myComponentFactory = MyComponentFactory()
 
 fun Styled<out Container>.createPropertyPanelWithEditor(
     editor: Component,
-    rootNode: EditableNode
+    rootNode: EditableNode,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
 ) {
     verticalStack {
         fill()
@@ -42,7 +45,7 @@ fun Styled<out Container>.createPropertyPanelWithEditor(
                 minWidth = 360.pt
                 width = minWidth
                 fillHeight()
-                add(PropertyPanel(rootNode).styled {
+                add(PropertyPanel(rootNode, coroutineContext).styled {
                     fill()
                 })
             }
@@ -61,7 +64,7 @@ fun com.soywiz.korma.geom.Point.editableNodes() = listOf(
     this::y.toEditableProperty(-1000.0, +1000.0)
 )
 
-class PropertyPanel(val rootNode: EditableNode) : JPanel() {
+class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineContext) : JPanel() {
     val contentPane = JPanel()
     init {
         this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -70,7 +73,7 @@ class PropertyPanel(val rootNode: EditableNode) : JPanel() {
     init {
         //contentPane.preferredSize = Dimension(500, 400)
 
-        contentPane.add(rootNode.toComponent())
+        contentPane.add(rootNode.toComponent(coroutineContext))
         //contentPane.add(Box.Filler(Dimension(0, 0), Dimension(0, 1024), Dimension(0, 1024)))
         contentPane.add(Box.createVerticalGlue())
     }
@@ -143,96 +146,6 @@ fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
 annotation class IntSupportedRange(val min: Int, val max: Int)
 annotation class DoubleSupportedRange(val min: Double, val max: Double)
 
-interface EditableNode {
-    fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
-    fun toComponent(indentation: Int = 0): Component
-}
-
-class EditableNodeList(val list: List<EditableNode>) : EditableNode {
-    constructor(vararg list: EditableNode) : this(list.toList())
-    constructor(block: MutableList<EditableNode>.() -> Unit) : this(ArrayList<EditableNode>().apply(block))
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
-    override fun toComponent(indentation: Int): Component = JPanel().also {
-        it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-        for (item in list) it.add(item.toComponent())
-    }
-}
-
-class EditableSection(val title: String, val list: List<EditableNode>) : EditableNode {
-    constructor(title: String, vararg list: EditableNode) : this(title, list.toList())
-    constructor(title: String, block: MutableList<EditableNode>.() -> Unit) : this(title, ArrayList<EditableNode>().apply(block))
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = this.list.flatMap { it.getAllBaseEditableProperty() }
-    override fun toComponent(indentation: Int): Component = Section(indentation, this.title, this.list.map { it.toComponent(indentation + 1) })
-}
-
-abstract class BaseEditableProperty<T : Any>(initialValue: T) : EditableNode {
-    abstract val name: String
-    abstract val clazz: KClass<T>
-    val onChange = Signal<T>()
-    //var prev: T = initialValue
-    var value: T = initialValue
-        set(newValue) {
-            //this.prev = this.value
-            if (field != newValue) {
-                onChange(newValue)
-                field = newValue
-            }
-        }
-
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf(this)
-}
-
-data class InformativeProperty<T : Any>(
-    val name: String,
-    val value: T
-) : EditableNode {
-    override fun getAllBaseEditableProperty(): List<BaseEditableProperty<*>> = listOf()
-    override fun toComponent(indentation: Int): Component = JPanel(GridLayout(1, 2)).also {
-        it.maximumSize = Dimension(1024, 32)
-        it.add(JLabel(name).also { it.border = CompoundBorder(it.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10)) })
-        it.add(JLabel(value.toString()).also { it.border = CompoundBorder(it.border, EmptyBorder(10, 10, 10, 10)) })
-    }
-}
-
-data class EditableEnumerableProperty<T : Any>(
-    override val name: String,
-    override val clazz: KClass<T>,
-    val initialValue: T,
-    var supportedValues: Set<T>
-) : BaseEditableProperty<T>(initialValue) {
-    val onUpdateSupportedValues = Signal<Set<T>>()
-
-    fun updateSupportedValues(set: Set<T>) {
-        supportedValues = set
-        onUpdateSupportedValues(set)
-    }
-
-    override fun toComponent(indentation: Int): Component = EditableListValue(this as EditableEnumerableProperty<Any>, indentation)
-}
-
-data class EditableNumericProperty<T : Number>(
-    override val name: String,
-    override val clazz: KClass<T>,
-    val initialValue: T,
-    val minimumValue: T? = null,
-    val maximumValue: T? = null,
-    val step: T? = null,
-    val supportOutOfRange: Boolean = false
-) : BaseEditableProperty<T>(initialValue) {
-    override fun toComponent(indentation: Int): Component = EditableNumberValue(this, indentation)
-}
-
-data class EditableButtonProperty(
-    val title: String,
-    val callback: () -> Unit
-) : EditableNode {
-    override fun toComponent(indentation: Int): Component = JButton(title).apply {
-        addActionListener {
-            callback()
-        }
-    }
-}
-
 class Section(val indentation: Int, val title: String, val components: List<Component>) : JPanel() {
     val header: SectionHeader = SectionHeader(title, indentation, true).apply {
         val header = this
@@ -250,8 +163,6 @@ class Section(val indentation: Int, val title: String, val components: List<Comp
         add(body)
     }
 }
-
-private val INDENTATION_SIZE = 24
 
 class SectionHeader(val title: String, val indentation: Int, initiallyOpened: Boolean) : JPanel(BorderLayout()) {
     val label = JLabel("").apply {
@@ -292,7 +203,7 @@ class SectionBody(components: List<Component>) : JPanel() {
     }
 }
 
-class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: EditableEnumerableProperty<T>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     lateinit var valueTextField: EditableLabel
 
@@ -304,7 +215,9 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
 
     fun updateValue(value: T?) {
         if (value != null) {
-            editProp.value = value
+            launchImmediately(context) {
+                editProp.value = value
+            }
             valueTextField.text = value.toString()
         }
     }
@@ -328,7 +241,7 @@ class EditableListValue<T : Any>(val editProp: EditableEnumerableProperty<T>, va
         updateValue(editProp.value)
     }
 }
-class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+class EditableNumberValue(val context: CoroutineContext, val editProp: EditableNumericProperty<out Number>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     var value = editProp.value?.toDouble() ?: 0.0
     val minimum = editProp.minimumValue?.toDouble() ?: -10000.0
@@ -340,10 +253,14 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
         this.value = if (editProp.supportOutOfRange) value else value.coerceIn(minimum, maximum)
         if (editProp.clazz == Int::class) {
             valueTextField.text = this.value.toInt().toString()
-            (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
+            launchImmediately(context) {
+                (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
+            }
         } else {
             valueTextField.text = this.value.toStringDecimal(2)
-            (editProp as EditableNumericProperty<Double>).value = this.value
+            launchImmediately(context) {
+                (editProp as EditableNumericProperty<Double>).value = this.value
+            }
         }
     }
 

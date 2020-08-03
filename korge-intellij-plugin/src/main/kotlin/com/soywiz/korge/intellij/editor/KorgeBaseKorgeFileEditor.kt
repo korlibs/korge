@@ -9,6 +9,7 @@ import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.ui.*
@@ -26,6 +27,7 @@ import java.awt.*
 import java.awt.Container
 import java.beans.*
 import javax.swing.*
+import kotlin.coroutines.*
 
 data class KorgeFileToEdit(val originalFile: VirtualFile) {
     val file: VfsFile = originalFile.toTextualVfs()
@@ -83,11 +85,15 @@ open class KorgeBaseKorgeFileEditor(
                     injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
+                    views.debugHighlighters.add { view ->
+                        println("HIGHLIGHTING: $view")
+                        viewsDebuggerComponent.highlight(view)
+                    }
                     module.apply {
                         injector.configure()
                     }
                     container.changeTo(module.mainScene, fileToEdit)
-                    viewsDebuggerComponent?.setRootView(stage)
+                    viewsDebuggerComponent?.setRootView(stage, views.coroutineContext)
                     stage.timers.interval(500.hrMilliseconds) {
                         viewsDebuggerComponent?.update()
                     }
@@ -124,7 +130,7 @@ open class KorgeBaseKorgeFileEditor(
                     width = minWidth
                     fillHeight()
                     if (rootNode != null) {
-                        add(PropertyPanel(rootNode).styled {
+                        add(PropertyPanel(rootNode, EmptyCoroutineContext).styled {
                             fill()
                         })
                     }

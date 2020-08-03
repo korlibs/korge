@@ -603,9 +603,23 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
-    override fun getDebugMethods(): Map<String, () -> Unit> = mapOf(
-        "start" to { play() },
-        "stop" to { stop() },
+    override fun getDebugProperties(): EditableNode = EditableSection("SWF",
+        EditableButtonProperty("start") { play() },
+        EditableButtonProperty("stop") { stop() },
+        EditableEnumerableProperty("symbol", String::class, symbol.name ?: "#${symbol.id}", library.symbolsByName.keys).apply {
+            this.onChange { symbolName ->
+                val views = stage?.views
+                val newView = library.create(symbolName) as View
+                this@AnMovieClip.replaceWith(newView)
+                views?.debugHightlightView(newView)
+            }
+        },
+        EditableEnumerableProperty("gotoAndPlay", String::class, "__start", stateNames.toSet()).apply {
+            this.onChange { frameName -> this@AnMovieClip.play(frameName) }
+        },
+        EditableEnumerableProperty("gotoAndStop", String::class, "__start", stateNames.toSet()).apply {
+            this.onChange { frameName -> this@AnMovieClip.playAndStop(frameName) }
+        },
     )
 
     override var ratio: Double

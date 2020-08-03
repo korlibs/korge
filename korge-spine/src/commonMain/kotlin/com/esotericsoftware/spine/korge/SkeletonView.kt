@@ -4,12 +4,14 @@ import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.BlendMode
 import com.esotericsoftware.spine.attachments.*
 import com.esotericsoftware.spine.effect.*
+import com.esotericsoftware.spine.ext.*
 import com.soywiz.korim.color.RGBAf
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -20,7 +22,7 @@ import com.soywiz.korma.geom.Rectangle
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
     = SkeletonView(skeleton, animationState).addTo(this, block)
 
-class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) : View() {
+class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) : View(), KorgeDebugNode {
     init {
         if (animationState != null) {
             addUpdater { delta ->
@@ -330,6 +332,24 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
 
     @Deprecated("We shouldn't do this")
     private fun RGBAf.toFloatBits(): Float = Float.fromBits(this.rgba.value)
+
+    val currentMainAnimation get() = animationState?.tracks?.first()?.animation
+
+    override fun getDebugProperties(): EditableNode = EditableSection("Animation") {
+        val currentAnimationName = currentMainAnimation?.name ?: "default"
+        add(EditableEnumerableProperty("animation1", String::class, currentAnimationName, skeleton.data.animations.map { it.name }.toSet()).apply {
+            this.onChange { animationName ->
+                val animation = skeleton.data.findAnimation(animationName)
+                if (animation != null) {
+                    this@SkeletonView.play()
+                    animationState?.setAnimation(0, animation, true)
+                    stage?.views?.debugHightlightView(this@SkeletonView)
+                }
+            }
+        })
+        add(EditableButtonProperty("play") { this@SkeletonView.play() })
+        add(EditableButtonProperty("stop") { this@SkeletonView.stop() })
+    }
 
     companion object {
         private val quadTriangles = shortArrayOf(0, 1, 2, 2, 3, 0)

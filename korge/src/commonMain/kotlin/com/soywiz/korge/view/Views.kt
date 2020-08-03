@@ -344,6 +344,13 @@ class Views constructor(
     fun globalToWindowX(x: Double, y: Double): Double = stage.localMatrix.transformX(x, y)
     /** Transform global coordinates [x] and [y] into coordinates in the window space Y */
     fun globalToWindowY(x: Double, y: Double): Double = stage.localMatrix.transformY(x, y)
+
+    val debugHighlighters = Signal<View?>()
+
+    fun debugHightlightView(viewToHightlight: View?) {
+        println("debugHightlightView: $viewToHightlight")
+        debugHighlighters(viewToHightlight)
+    }
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
