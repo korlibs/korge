@@ -6,6 +6,8 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
+import com.soywiz.korte.*
+import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 import java.util.*
@@ -229,8 +231,10 @@ class EditableNumberValue(val context: CoroutineContext, val editProp: EditableN
                 }
             })
         })
-        add(EditableLabel("") {
-            val double = it.toDoubleOrNull()
+        add(EditableLabel("") { editText ->
+            val templateResult = runBlocking { Template("{{ $editText }}").invoke() }
+            println("templateResult: '$templateResult', editText: '$editText'")
+            val double = templateResult.toDoubleOrNull()
             if (double != null) {
                 updateValue(double)
             } else {

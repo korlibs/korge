@@ -16,6 +16,11 @@ class TemplateTest : BaseTest() {
     }
 
     @Test
+    fun testDoubleLiteral() = suspendTest {
+        assertEquals("1.1", (Template("{{ 1.1 }}"))(null))
+    }
+
+    @Test
     fun testChunked() = suspendTest {
         assertEquals("[[1, 2], [3, 4], [5]]", (Template("{{ [1, 2, 3, 4, 5]|chunked(2) }}"))(null))
     }

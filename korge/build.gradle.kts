@@ -4,6 +4,7 @@ dependencies {
 	add("commonMainApi", project(":klogger"))
 	add("commonMainApi", project(":korinject"))
 	add("jvmMainApi", project(":krypto"))
+    add("jvmMainApi", project(":korte"))
 }
 
 /*

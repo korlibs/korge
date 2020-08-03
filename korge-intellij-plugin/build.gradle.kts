@@ -57,6 +57,7 @@ val kotlinVersion: String by project
 
 dependencies {
 	//implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
+    //implementation(project(":korte"))
     implementation(project(":korge"))
     implementation(project(":korge-swf"))
     implementation(project(":korge-dragonbones"))
