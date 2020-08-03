@@ -57,8 +57,9 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA> {
     }
 
     val hexString: String get() ="#%02x%02x%02x%02x".format(r, g, b, a)
+    val hexStringNoAlpha: String get() = "#%02x%02x%02x".format(r, g, b)
 	val htmlColor: String get() = "rgba($r, $g, $b, $af)"
-	val htmlStringSimple: String get() = "#%02x%02x%02x".format(r, g, b)
+	val htmlStringSimple: String get() = hexStringNoAlpha
 
 	override fun toString(): String = hexString
 
