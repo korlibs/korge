@@ -193,6 +193,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open var visible: Boolean = false
     open var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
 
+    open val debugComponent: Any? = null
+    open var debug: Boolean = false
+
     /**
      * Describes if the rendering should focus on performance or quality.
      * [PERFORMANCE] will use lower resolutions, while [QUALITY] will use the devicePixelRatio

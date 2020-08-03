@@ -5,10 +5,12 @@ import com.soywiz.korgw.platform.*
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Rectangle
 import java.awt.*
 import java.awt.Toolkit.getDefaultToolkit
 import java.awt.event.*
-import javax.swing.JFrame
+import javax.swing.*
 
 
 class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
@@ -110,6 +112,28 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
             }
         }
 
+    val debugFrame = JFrame("Debug").apply {
+        this.defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+        //focusableWindowState = false
+    }
+
+    override val debugComponent: Any? = debugFrame
+
+    private fun synchronizeDebugFrameCoordinates() {
+        val frameBounds = RectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
+        debugFrame.setLocation(frameBounds.right, frameBounds.top)
+        debugFrame.setSize(256, frameBounds.height)
+    }
+
+    override var debug: Boolean = false
+        set(value) {
+            field = value
+            debugFrame.isVisible = value
+            synchronizeDebugFrameCoordinates()
+            frame.isVisible = false
+            frame.isVisible = true
+        }
+
     override var fullscreen: Boolean
         get() = frame.rootPane.bounds == frame.bounds
         set(value) {
@@ -146,10 +170,20 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
     override fun loopInitialization() {
         frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
+                debugFrame.isVisible = false
+                debugFrame.dispose()
                 running = false
             }
         })
+        frame.addComponentListener(object : ComponentAdapter() {
+            override fun componentMoved(e: ComponentEvent?) {
+                synchronizeDebugFrameCoordinates()
+            }
 
+            override fun componentResized(e: ComponentEvent?) {
+                synchronizeDebugFrameCoordinates()
+            }
+        })
     }
 
     override fun frameDispose() {

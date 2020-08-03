@@ -214,6 +214,7 @@ class Views constructor(
                     input.keys.triggerKeyEvent(e)
                     if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                         debugViews = !debugViews
+                        gameWindow.debug = debugViews
                     }
                     stagedViews.fastForEach { it._components?.key?.fastForEach { it.onKeyEvent(views, e) } }
                 }

@@ -31,6 +31,7 @@ class PropertyPanel(val rootNode: EditableNode, var coroutineContext: CoroutineC
     init {
         this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
         add(myComponentFactory.scrollPane(contentPane))
+        isFocusable = true
     }
     init {
         //contentPane.preferredSize = Dimension(500, 400)

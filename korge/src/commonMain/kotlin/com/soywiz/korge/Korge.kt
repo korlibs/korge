@@ -150,6 +150,7 @@ object Korge {
 
             prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
 
+            completeViews(views)
             views.launchImmediately {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
@@ -164,6 +165,7 @@ object Korge {
 
             // @TODO: Do not complete to prevent job cancelation?
             gameWindow.waitClose()
+            gameWindow.exit()
         }
     }
 
