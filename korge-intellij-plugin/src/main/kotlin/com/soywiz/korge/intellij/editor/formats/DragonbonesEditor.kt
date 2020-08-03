@@ -1,8 +1,7 @@
 package com.soywiz.korge.intellij.editor.formats
 
-import com.esotericsoftware.spine.ext.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.dragonbones.*
-import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korio.file.*
 

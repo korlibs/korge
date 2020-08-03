@@ -1,8 +1,8 @@
 package com.soywiz.korge.intellij.editor.tiled
 
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.HistoryManager
 import com.soywiz.korge.intellij.editor.tiled.dialog.ProjectContext
-import com.soywiz.korge.intellij.ui.styled
 import com.soywiz.korio.file.VfsFile
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout

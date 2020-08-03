@@ -7,26 +7,21 @@ import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.*
-import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.rgba
-import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.awt.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.beans.*
-import java.io.*
 import javax.swing.*
-import javax.swing.plaf.metal.MetalLookAndFeel
-import kotlin.reflect.*
 
 data class KorgeFileToEdit(val originalFile: VirtualFile) {
     val file: VfsFile = originalFile.toTextualVfs()

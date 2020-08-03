@@ -1,6 +1,7 @@
 package com.soywiz.korge.intellij.editor.tiled.dialog
 
 import com.intellij.ui.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.ObservableProperty
 import com.soywiz.korio.async.*

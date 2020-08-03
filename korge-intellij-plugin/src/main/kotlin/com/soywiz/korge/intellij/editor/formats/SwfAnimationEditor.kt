@@ -2,9 +2,9 @@ package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.readAni
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
-import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*

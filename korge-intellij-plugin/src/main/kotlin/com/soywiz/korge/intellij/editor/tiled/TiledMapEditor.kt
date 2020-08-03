@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.tiled
 
 import com.intellij.ui.components.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.tiled.dialog.*
 import com.soywiz.korge.intellij.editor.tiled.editor.*

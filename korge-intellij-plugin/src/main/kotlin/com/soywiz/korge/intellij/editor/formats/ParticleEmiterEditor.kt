@@ -1,13 +1,14 @@
 package com.soywiz.korge.intellij.editor.formats
 
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.component.docking.*
-import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 suspend fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     val particle = file.readParticleEmitter()
@@ -16,8 +17,8 @@ suspend fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.Editor
         add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty()))
         add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(), particle::blendFuncDestination.toEditableProperty()))
         add(EditableSection("Angle",
-            particle::angle.toEditableProperty(0.0, 360.0, 0.0, kotlin.math.PI * 2),
-            particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, kotlin.math.PI * 2)
+            particle::angle.toEditableProperty(0.0, 360.0, 0.0, PI * 2),
+            particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, PI * 2)
         ))
         add(EditableSection("Speed",
             particle::speed.toEditableProperty(0.0, 1000.0),

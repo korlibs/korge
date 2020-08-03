@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.ui
 
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.tiled.createTileMapEditor
 import java.awt.Dimension
 import javax.swing.JFrame

@@ -3,18 +3,11 @@ package com.soywiz.korge.intellij.editor.formats
 import com.esotericsoftware.spine.*
 import com.esotericsoftware.spine.ext.*
 import com.esotericsoftware.spine.korge.*
-import com.soywiz.klock.*
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.intellij.components.*
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.textButton
-import com.soywiz.korge.view.*
 import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korim.color.Colors
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
-import com.soywiz.korma.geom.*
 
 suspend fun spineEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     val atlas = file.parent.listSimple().firstOrNull { it.baseName.endsWith(".atlas") }

@@ -1,8 +1,7 @@
-package com.soywiz.korge.intellij.components
+package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
@@ -14,13 +13,14 @@ import javax.swing.border.*
 import kotlin.collections.ArrayList
 import kotlin.math.*
 import kotlin.reflect.*
-import kotlin.reflect.jvm.*
 import kotlin.system.*
 
 //typealias MyJScrollPane = JScrollPane
 //typealias MyJComboBox<T> = JComboBox<T>
-typealias MyJScrollPane = com.intellij.ui.components.JBScrollPane
-typealias MyJComboBox<T> = com.intellij.openapi.ui.ComboBox<T>
+//typealias MyJScrollPane = com.intellij.ui.components.JBScrollPane
+//typealias MyJComboBox<T> = com.intellij.openapi.ui.ComboBox<T>
+
+var myComponentFactory = MyComponentFactory()
 
 fun Styled<out Container>.createPropertyPanelWithEditor(
     editor: Component,
@@ -61,10 +61,12 @@ fun com.soywiz.korma.geom.Point.editableNodes() = listOf(
     this::y.toEditableProperty(-1000.0, +1000.0)
 )
 
-class PropertyPanel(val rootNode: EditableNode) : MyJScrollPane(JPanel().apply {
-    this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
-}, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED) {
-    val contentPane = viewport.view as JPanel
+class PropertyPanel(val rootNode: EditableNode) : JPanel() {
+    val contentPane = JPanel()
+    init {
+        this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        add(myComponentFactory.scrollPane(contentPane))
+    }
     init {
         //contentPane.preferredSize = Dimension(500, 400)
 
@@ -74,11 +76,13 @@ class PropertyPanel(val rootNode: EditableNode) : MyJScrollPane(JPanel().apply {
     }
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 @JvmName("toEditablePropertyDouble")
 fun KMutableProperty0<Double>.toEditableProperty(
     min: Double? = null, max: Double? = null,
     transformedMin: Double? = null, transformedMax: Double? = null,
-    name: String? = null
+    name: String? = null,
+    supportOutOfRange: Boolean = false
 ): EditableNumericProperty<Double> {
     val prop = this
     val range = this.annotations.filterIsInstance<DoubleSupportedRange>().firstOrNull()
@@ -91,10 +95,11 @@ fun KMutableProperty0<Double>.toEditableProperty(
 
     return EditableNumericProperty(
         name = name ?: this.name,
-        clazz = this.returnType.jvmErasure as KClass<Double>,
+        clazz = Double::class,
         initialValue = this.get().convertRange(realMin, realMax, editMin, editMax),
         minimumValue = editMin,
         maximumValue = editMax,
+        supportOutOfRange = supportOutOfRange
     ).also {
         it.onChange {
             prop.set(it.convertRange(editMin, editMax, realMin, realMax))
@@ -108,7 +113,7 @@ fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null
     val range = this.annotations.filterIsInstance<IntSupportedRange>().firstOrNull()
     return EditableNumericProperty(
         name = this.name,
-        clazz = this.returnType.jvmErasure as KClass<Int>,
+        clazz = Int::class,
         initialValue = this.get(),
         minimumValue = min ?: range?.min,
         maximumValue = max ?: range?.max,
@@ -117,11 +122,14 @@ fun KMutableProperty0<Int>.toEditableProperty(min: Int? = null, max: Int? = null
     }
 }
 
+inline fun <reified T : Enum<*>> KMutableProperty0<T>.toEditableProperty(name: String? = null): EditableEnumerableProperty<T> =
+    toEditableProperty(name, T::class)
+
 fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
-    name: String? = null
+    name: String? = null,
+    clazz: KClass<T>
 ): EditableEnumerableProperty<T> {
     val prop = this
-    val clazz = this.returnType.jvmErasure as KClass<T>
     return EditableEnumerableProperty<T>(
         name = name ?: this.name,
         clazz = clazz,
@@ -208,7 +216,8 @@ data class EditableNumericProperty<T : Number>(
     val initialValue: T,
     val minimumValue: T? = null,
     val maximumValue: T? = null,
-    val step: T? = null
+    val step: T? = null,
+    val supportOutOfRange: Boolean = false
 ) : BaseEditableProperty<T>(initialValue) {
     override fun toComponent(indentation: Int): Component = EditableNumberValue(this, indentation)
 }
@@ -272,6 +281,7 @@ class SectionBody(components: List<Component>) : JPanel() {
         for (comp in components) {
             add(comp)
         }
+        add(JLabel(" "))
 
         //val obj = MyObject()
 
@@ -327,7 +337,7 @@ class EditableNumberValue(val editProp: EditableNumericProperty<out Number>, val
     lateinit var valueTextField: EditableLabel
 
     fun updateValue(value: Double) {
-        this.value = value.coerceIn(minimum, maximum)
+        this.value = if (editProp.supportOutOfRange) value else value.coerceIn(minimum, maximum)
         if (editProp.clazz == Int::class) {
             valueTextField.text = this.value.toInt().toString()
             (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
@@ -416,7 +426,7 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
         })
     }
 
-    val comboBox: MyJComboBox<String> = MyJComboBox((supportedValues ?: setOf()).toTypedArray()).apply {
+    val comboBox: JComboBox<String> = myComponentFactory.comboBox((supportedValues ?: setOf()).toTypedArray()).apply {
         this.border = CompoundBorder(this.border, EmptyBorder(0, 2, 0, 2))
         //this.border = EmptyBorder(8, 8, 8, 8)
         addItemListener {
@@ -434,7 +444,7 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
     fun synchronizeEditText() {
         val editText = when (editComponent) {
             is JTextField -> editComponent.text
-            is MyJComboBox<*> -> editComponent.selectedItem?.toString() ?: ""
+            is JComboBox<*> -> editComponent.selectedItem?.toString() ?: ""
             else -> TODO("editComponent: $editComponent")
         }
         if (label.text != editText) {
@@ -469,7 +479,7 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
             label.text = value
             when (editComponent) {
                 is JTextField -> editComponent.text = value
-                is MyJComboBox<*> -> editComponent.selectedItem = value
+                is JComboBox<*> -> editComponent.selectedItem = value
                 else -> TODO("editComponent: $editComponent")
             }
         }
