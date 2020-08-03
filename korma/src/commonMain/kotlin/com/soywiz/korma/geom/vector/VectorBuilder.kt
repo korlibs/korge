@@ -48,6 +48,8 @@ fun VectorBuilder.arcTo(ax: Double, ay: Double, cx: Double, cy: Double, r: Doubl
     quadTo(a.x, a.y, B.x, B.y)
 }
 
+fun VectorBuilder.rect(rect: Rectangle) = rect(rect.x, rect.y, rect.width, rect.height)
+
 fun VectorBuilder.rect(x: Double, y: Double, width: Double, height: Double) {
     moveTo(x, y)
     lineTo(x + width, y)

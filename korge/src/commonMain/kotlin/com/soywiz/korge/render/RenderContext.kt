@@ -38,6 +38,8 @@ class RenderContext(
 ) : Extra by Extra.Mixin(), BoundsProvider by bp {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 
+    var debugAnnotateView: View? = null
+
     /** Current frame. */
     @Deprecated("unused")
 	var frame = 0

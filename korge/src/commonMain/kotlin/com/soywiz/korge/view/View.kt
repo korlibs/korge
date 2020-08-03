@@ -828,6 +828,8 @@ abstract class View internal constructor(
      */
     var filter: Filter? = null
 
+    var debugAnnotate: Boolean = false
+
     /**
      * The [render] method that is in charge of rendering.
      * This method receives the [ctx] [RenderContext] that allows to buffer
@@ -844,6 +846,35 @@ abstract class View internal constructor(
         } else {
             renderInternal(ctx)
         }
+    }
+
+    open fun renderDebug(ctx: RenderContext) {
+        if (debugAnnotate || this === ctx.debugAnnotateView) {
+            renderDebugAnnotationsInternal(ctx)
+        }
+    }
+
+    open protected fun renderDebugAnnotationsInternal(ctx: RenderContext) {
+        //println("DEBUG ANNOTATE VIEW!")
+        ctx.flush()
+        ctx.debugLineRenderContext.drawVector(Colors.RED) {
+            rect(globalBounds)
+        }
+        ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
+            val local = getLocalBounds()
+            moveTo(localToGlobal(Point(local.left, local.top)))
+            lineTo(localToGlobal(Point(local.right, local.top)))
+            lineTo(localToGlobal(Point(local.right, local.bottom)))
+            lineTo(localToGlobal(Point(local.left, local.bottom)))
+            close()
+        }
+        ctx.debugLineRenderContext.drawVector(Colors.BLUE) {
+            val centerX = globalX
+            val centerY = globalY
+            line(centerX, centerY - 5, centerX, centerY + 5)
+            line(centerX - 5, centerY, centerX + 5, centerY)
+        }
+        ctx.flush()
     }
 
     private fun renderFiltered(ctx: RenderContext, filter: Filter) {

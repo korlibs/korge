@@ -57,10 +57,18 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             if (view is RectBase) {
                 add(view::anchorX.toEditableProperty(supportOutOfRange = true))
                 add(view::anchorY.toEditableProperty(supportOutOfRange = true))
+                add(EditableButtonProperty("center") {
+                    view.anchorX = -view.width / 2
+                    view.anchorY = -view.height / 2
+                })
             }
             if (view is AnBaseShape) {
                 add(view::dx.toEditableProperty(name = "anchorX", supportOutOfRange = true))
                 add(view::dy.toEditableProperty(name = "anchorY", supportOutOfRange = true))
+                add(EditableButtonProperty("center") {
+                    view.dx = (-view.width / 2).toFloat()
+                    view.dy = (-view.height / 2).toFloat()
+                })
             }
             add(view::width.toEditableProperty(supportOutOfRange = true))
             add(view::height.toEditableProperty(supportOutOfRange = true))
@@ -95,18 +103,22 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
     }
 }
 
-class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext) : JPanel(GridLayout(2, 1)) {
+class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext, var views: Views? = null) : JPanel(GridLayout(2, 1)) {
     val properties = EditPropertiesComponent(rootView).also { add(it) }
     val tree = JTree(ViewNode(rootView)).apply {
         addTreeSelectionListener {
             val viewNode = it.path.lastPathComponent as ViewNode
             properties.setView(viewNode.view, coroutineContext)
+            (views ?: rootView?.stage?.views)?.renderContext?.debugAnnotateView = viewNode.view
         }
     }
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
-    fun setRootView(root: View, coroutineContext: CoroutineContext) {
+    fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
         this.coroutineContext = coroutineContext
+        if (views != null) {
+            this.views = views
+        }
         tree.model = DefaultTreeModel(root.treeNode)
         update()
     }

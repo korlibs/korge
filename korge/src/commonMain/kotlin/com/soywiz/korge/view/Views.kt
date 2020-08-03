@@ -232,6 +232,7 @@ class Views constructor(
         onBeforeRender()
 		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
 		stage.render(renderContext)
+        stage.renderDebug(renderContext)
 
 		if (debugViews) {
 			debugHandlers.fastForEach { debugHandler ->

@@ -190,7 +190,14 @@ open class Container : View(true) {
 		}
 	}
 
-	private val bb = BoundsBuilder()
+    override fun renderDebug(ctx: RenderContext) {
+        super.renderDebug(ctx)
+        forEachChildren { child ->
+            child.renderDebug(ctx)
+        }
+    }
+
+    private val bb = BoundsBuilder()
 	private val tempRect = Rectangle()
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

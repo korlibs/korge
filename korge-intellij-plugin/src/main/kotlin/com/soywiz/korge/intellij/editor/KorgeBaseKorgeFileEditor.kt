@@ -93,7 +93,7 @@ open class KorgeBaseKorgeFileEditor(
                         injector.configure()
                     }
                     container.changeTo(module.mainScene, fileToEdit)
-                    viewsDebuggerComponent?.setRootView(stage, views.coroutineContext)
+                    viewsDebuggerComponent?.setRootView(stage, views.coroutineContext, views)
                     stage.timers.interval(500.hrMilliseconds) {
                         viewsDebuggerComponent?.update()
                     }

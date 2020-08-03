@@ -47,7 +47,7 @@ fun main() {
         println("[2]")
         launchImmediately {
             korge.executeInContext {
-                tree.setRootView(stage, views.coroutineContext)
+                tree.setRootView(stage, views.coroutineContext, views)
                 val rect = solidRect(50, 50, Colors.BLUE)
                 rect.name = "MyRectangle"
                 rect.mouse {

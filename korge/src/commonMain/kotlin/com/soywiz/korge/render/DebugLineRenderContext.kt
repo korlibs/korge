@@ -94,8 +94,14 @@ class DebugLineRenderContext(
         }
     }
 
-    fun drawVector(block: VectorBuilder.() -> Unit) {
+    inline fun drawVector(block: VectorBuilder.() -> Unit) {
         drawVector(VectorPath().apply(block))
+    }
+
+    inline fun drawVector(color: RGBA, block: VectorBuilder.() -> Unit) {
+        color(color) {
+            drawVector(block)
+        }
     }
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
