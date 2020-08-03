@@ -1,8 +1,7 @@
 package com.soywiz.korgw
 
-import com.soywiz.kgl.*
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.hr.HRTimeSpan
+import com.soywiz.kgl.toInt
+import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGConfig
 import com.soywiz.korag.AGOpenglFactory
@@ -441,13 +440,13 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             kotlin.system.exitProcess(0.convert())
         }
         _WM_MOUSEMOVE -> {
-            val x = (lParam.toInt() ushr 0) and 0xFFFF
-            val y = (lParam.toInt() ushr 16) and 0xFFFF
+            val x = lParam.toInt().extract(0, 8)
+            val y = lParam.toInt().extract(16, 8)
             mouseMove(x, y, wParam.toInt())
         }
         _WM_MOUSEWHEEL -> {
             val type = com.soywiz.korev.MouseEvent.Type.SCROLL
-            val scrollDeltaY = ((wParam.toInt() ushr 16) and 0xFFFF).toByte().toDouble()
+            val scrollDeltaY = wParam.toInt().extract(16, 8).toByte().toDouble()
             windowsGameWindow.mouseEvent(type, mouseX, mouseY, 8, wParam.toInt(), scrollDeltaY)
         }
         _WM_LBUTTONDOWN -> mouseButton(0, true, wParam.toInt())
