@@ -41,8 +41,11 @@ class ViewNode(val view: View?) : TreeNode {
 class ViewDebuggerChanged(val view: View?) : Event()
 
 class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
+    var nodeTree: EditableNodeList? = null
+
     fun setView(view: View?, coroutineContext: CoroutineContext) {
         removeAll()
+        this.nodeTree = null
         if (view == null) return
         val nodes = ArrayList<EditableNode>()
         if (view is KorgeDebugNode) {
@@ -78,6 +81,7 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
         })
         val nodeTree = EditableNodeList(nodes)
+        this.nodeTree = nodeTree
         val propertyList = nodeTree.allBaseEditableProperty
         var updating = false
         propertyList.fastForEach { property ->
@@ -98,6 +102,10 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
         repaint()
     }
 
+    fun update() {
+        nodeTree?.synchronizeProperties()
+    }
+
     init {
         setView(view, EmptyCoroutineContext)
     }
@@ -112,6 +120,7 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
             (views ?: rootView?.stage?.views)?.renderContext?.debugAnnotateView = viewNode.view
         }
     }
+    val selectedView get() = (tree.selectionPath?.lastPathComponent as? ViewNode)?.view
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
     fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
@@ -125,6 +134,7 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
 
     fun update() {
         tree.updateUI()
+        properties.update()
     }
 
     fun highlight(view: View?) {

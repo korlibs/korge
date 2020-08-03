@@ -193,8 +193,13 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open var visible: Boolean = false
     open var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
 
+    val onDebugChanged = Signal<Boolean>()
     open val debugComponent: Any? = null
     open var debug: Boolean = false
+        set(value) {
+            field = value
+            onDebugChanged(value)
+        }
 
     /**
      * Describes if the rendering should focus on performance or quality.

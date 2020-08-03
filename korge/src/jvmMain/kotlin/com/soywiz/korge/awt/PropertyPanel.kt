@@ -117,7 +117,10 @@ class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: Ed
                     editProp.value = value
                 }
             }
-            valueTextField.text = value.toString()
+            val valueString = value.toString()
+            if (valueTextField.text != valueString && !valueTextField.isEditing) {
+                valueTextField.text = value.toString()
+            }
         }
     }
 
@@ -159,20 +162,26 @@ class EditableNumberValue(
 
     fun updateValue(value: Double, setProperty: Boolean = true) {
         this.value = if (editProp.supportOutOfRange) value else value.coerceIn(minimum, maximum)
+        var valueString: String
         if (editProp.clazz == Int::class) {
-            valueTextField.text = this.value.toInt().toString()
+            val valueInt = this.value.toInt()
+            valueString = valueInt.toString()
             if (setProperty) {
                 launchImmediately(context) {
-                    (editProp as EditableNumericProperty<Int>).value = this.value.toInt()
+                    (editProp as EditableNumericProperty<Int>).value = valueInt
                 }
             }
         } else {
-            valueTextField.text = this.value.toStringDecimal(2)
+            val valueDouble = this.value
+            valueString = valueDouble.toStringDecimal(2)
             if (setProperty) {
                 launchImmediately(context) {
-                    (editProp as EditableNumericProperty<Double>).value = this.value
+                    (editProp as EditableNumericProperty<Double>).value = valueDouble
                 }
             }
+        }
+        if (valueTextField.text != valueString && !valueTextField.isEditing) {
+            valueTextField.text = valueString
         }
     }
 
@@ -295,6 +304,8 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
         editComponent.requestFocus()
     }
 
+    val isEditing get() = this.components.firstOrNull() != label
+
     fun stopEditing() {
         panel.removeAll()
         panel.add(label, BorderLayout.CENTER)
@@ -306,7 +317,7 @@ class EditableLabel(initialText: String, supportedValues: Set<String>? = null, v
     var text: String
         get() = label.text
         set(value) {
-            if (this.components.firstOrNull() != label) {
+            if (isEditing) {
                 //useLabelNoChangeText()
                 stopEditing()
             }

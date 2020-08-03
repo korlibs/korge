@@ -114,6 +114,7 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
 
     val debugFrame = JFrame("Debug").apply {
         this.defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+        this.setSize(256, 256)
         //focusableWindowState = false
     }
 
@@ -122,17 +123,19 @@ class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
     private fun synchronizeDebugFrameCoordinates() {
         val frameBounds = RectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
         debugFrame.setLocation(frameBounds.right, frameBounds.top)
-        debugFrame.setSize(256, frameBounds.height)
+        debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }
 
-    override var debug: Boolean = false
-        set(value) {
-            field = value
-            debugFrame.isVisible = value
+    init {
+        onDebugChanged.add {
+            debugFrame.isVisible = it
             synchronizeDebugFrameCoordinates()
-            frame.isVisible = false
-            frame.isVisible = true
+            if (debugFrame.isVisible) {
+                frame.isVisible = false
+                frame.isVisible = true
+            }
         }
+    }
 
     override var fullscreen: Boolean
         get() = frame.rootPane.bounds == frame.bounds
