@@ -101,7 +101,8 @@ class ColorAnnotator: Annotator {
 private val COLORS_TO_NAMES = Colors.colorsByName.flip()
 
 data class GutterColorRenderer(val element: PsiElement, val color: Color): GutterIconRenderer() {
-    override fun getIcon(): Icon = ColorIcon(if (UIUtil.isRetina()) 24 else 12, color, true)
+    //override fun getIcon(): Icon = ColorIcon(if (UIUtil.isRetina()) 24 else 12, color, true)
+    override fun getIcon(): Icon = ColorIcon(12, color, true)
 
     fun chooseColor() {
         val editor = PsiUtilBase.findEditor(element) ?: return

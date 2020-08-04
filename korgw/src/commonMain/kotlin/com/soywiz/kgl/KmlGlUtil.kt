@@ -55,7 +55,9 @@ fun KmlGl.createProgram(vertex: String, fragment: String): KmlGlProgram {
  */
 
 class KmlGlVertexLayout(val program: KmlGlProgram) {
-	data class Element(val index: Int, val size: Int, val type: Int, val pointer: Int, val normalized: Boolean)
+	data class Element(val index: Int, val size: Int, val type: Int, val pointer: Int, val normalized: Boolean) {
+        val pointerLong: Long = pointer.toLong()
+    }
 
 	val gl = program.gl
 	private var index: Int = 0
@@ -104,7 +106,7 @@ class KmlGlVertexLayout(val program: KmlGlProgram) {
 				element.type,
 				element.normalized,
 				size,
-				element.pointer
+				element.pointerLong
 			)
 		}
 	}

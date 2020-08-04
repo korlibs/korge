@@ -89,6 +89,11 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	fun getAlignedInt16(index: Int): Short = i16[index]
 	fun setAlignedInt32(index: Int, value: Int): Unit = run { i32[index] = value }
 	fun getAlignedInt32(index: Int): Int = i32[index]
+    fun getAlignedInt64(index: Int): Long {
+        val low = i32[index * 2 + 0]
+        val high = i32[index * 2 + 1]
+        return ((high.toLong() and 0xFFFFFFFFL) shl 32) or (low.toLong() and 0xFFFFFFFFL)
+    }
 	fun setAlignedFloat32(index: Int, value: Float): Unit = run { f32[index] = value }
 	fun getAlignedFloat32(index: Int): Float = f32[index]
 	fun setAlignedFloat64(index: Int, value: Double): Unit = run { f64[index] = value }

@@ -193,7 +193,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     override fun vertexAttrib3fv(index: Int, v: FBuffer): Unit = gl.vertexAttrib3fv(index, v)
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.vertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = gl.vertexAttrib4fv(index, v)
-    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Int): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer)
+    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
     private fun Float32Buffer.sliceIfRequired(count: Int): Float32Buffer = if (size == count) this else Float32Array(this.buffer, 0, count)

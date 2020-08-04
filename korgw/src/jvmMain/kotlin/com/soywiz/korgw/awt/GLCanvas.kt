@@ -12,7 +12,7 @@ open class GLCanvas(val checkGl: Boolean = true) : Canvas(), Closeable {
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
 
-    override fun getGraphicsConfiguration(): GraphicsConfiguration {
+    override fun getGraphicsConfiguration(): GraphicsConfiguration? {
         return super.getGraphicsConfiguration()
     }
 

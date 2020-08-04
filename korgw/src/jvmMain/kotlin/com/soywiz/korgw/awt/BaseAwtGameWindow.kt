@@ -57,6 +57,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         ctx?.useContext(g, ag) { info ->
             state.keep {
+            //run {
                 ctx?.swapInterval(1)
 
                 val g = g as Graphics2D
@@ -127,6 +128,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
                     )
                 }
 
+                //gl.clearColor(1f, 1f, 1f, 1f)
+                //gl.clear(gl.COLOR_BUFFER_BIT)
                 frame()
                 gl.flush()
                 gl.finish()

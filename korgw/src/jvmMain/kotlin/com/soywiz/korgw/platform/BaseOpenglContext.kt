@@ -51,6 +51,7 @@ interface BaseOpenglContext : Disposable {
     override fun dispose() = Unit
 }
 
+/*
 inline fun BaseOpenglContext.useContext(block: () -> Unit) {
     makeCurrent()
     try {
@@ -60,6 +61,7 @@ inline fun BaseOpenglContext.useContext(block: () -> Unit) {
         releaseCurrent()
     }
 }
+*/
 
 object DummyOpenglContext : BaseOpenglContext {
     override fun makeCurrent() {
@@ -112,6 +114,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                 override fun useContext(obj: Any?, ag: AG, action: (BaseOpenglContext.ContextInfo) -> Unit) {
                     val g = obj as Graphics
                     invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
+                        //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
                         try {
                             val factor = getDisplayScalingFactor(c)
                             //val window = SwingUtilities.getWindowAncestor(c)
@@ -132,6 +135,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                             //println("viewport: $viewport, $scissorBox")
                             //println(g.clipBounds)
                             action(info)
+
                         } catch (e: Throwable) {
                             e.printStackTrace()
                         }

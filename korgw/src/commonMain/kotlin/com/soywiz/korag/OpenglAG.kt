@@ -229,7 +229,7 @@ abstract class AGOpengl : AG() {
         val scissor = batch.scissor
 
         val vattrs = vertexLayout.attributes
-        val vattrspos = vertexLayout.attributePositions
+        val vattrspos = vertexLayout.attributePositionsLong
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
         applyScissorState(scissor)

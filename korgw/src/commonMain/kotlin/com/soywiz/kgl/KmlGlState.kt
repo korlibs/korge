@@ -43,7 +43,6 @@ class KmlGlState(val gl: KmlGl) {
         gl.getIntegerv(gl.TEXTURE_BINDING_2D, textureBinding2D)
         gl.getIntegerv(gl.CURRENT_PROGRAM, currentProgram)
         //println("maxAttribs: $maxAttribs")
-        /*
         for (n in 0 until MAX_ATTRIB) {
             //println(gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED))
             vertexAttribEnabled[n] = gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED) != 0
@@ -58,7 +57,6 @@ class KmlGlState(val gl: KmlGl) {
         }
         arrayBufferBinding = gl.getIntegerv(gl.ARRAY_BUFFER_BINDING)
         elementArrayBufferBinding = gl.getIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING)
-         */
     }
 
     fun saveEnable() = run { for (n in enabledList.indices) enabledArray[n] = gl.isEnabled(enabledList[n]) }
@@ -76,12 +74,10 @@ class KmlGlState(val gl: KmlGl) {
         gl.bindTexture(gl.TEXTURE_2D, textureBinding2D.i32[0])
         gl.useProgram(currentProgram.i32[0])
         //gl.bindAttribLocation()
-        /*
         for (n in 0 until MAX_ATTRIB) {
             gl.enableDisableVertexAttribArray(n, vertexAttribEnabled[n])
             if (vertexAttribEnabled[n]) {
-                // @TODO: Could be a non-zero pointer which would have 64 bits
-                val ptr = vertexAttribPointer[n].getAlignedInt32(0)
+                val ptr = vertexAttribPointer[n].getAlignedInt64(0)
                 gl.vertexAttribPointer(
                     n,
                     vertexAttribSize[n].i32[0],
@@ -94,7 +90,6 @@ class KmlGlState(val gl: KmlGl) {
         }
         gl.bindBuffer(gl.ARRAY_BUFFER, arrayBufferBinding)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementArrayBufferBinding)
-         */
 
         /*
         gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())

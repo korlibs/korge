@@ -516,6 +516,8 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 		out
 	}
 
+    val attributePositionsLong = attributePositions.map { it.toLong() }
+
 	val maxAlignment = alignments.max() ?: 1
     /** Size in bytes for each vertex */
 	val totalSize: Int = run { layoutSize ?: _lastPos.nextAlignedTo(maxAlignment) }

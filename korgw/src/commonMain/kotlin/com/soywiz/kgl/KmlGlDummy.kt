@@ -151,6 +151,6 @@ open class KmlGlDummyBase : KmlGl() {
     override fun vertexAttrib3fv(index: Int, v: FBuffer): Unit = Unit
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = Unit
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = Unit
-    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Int): Unit = Unit
+    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = Unit
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = Unit
 }
