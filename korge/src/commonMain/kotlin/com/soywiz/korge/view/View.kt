@@ -20,6 +20,7 @@ import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.collections.set
 import kotlin.math.*
 import kotlin.native.concurrent.*
@@ -1300,6 +1301,13 @@ abstract class View internal constructor(
      */
     open fun clone(): View = createInstance().apply {
         this@apply.copyPropsFrom(this@View)
+    }
+
+    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: Point = Point()): Point {
+        val bounds = getLocalBounds()
+        val x = ratioX.interpolate(bounds.left, bounds.right)
+        val y = ratioY.interpolate(bounds.top, bounds.bottom)
+        return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
     }
 }
 

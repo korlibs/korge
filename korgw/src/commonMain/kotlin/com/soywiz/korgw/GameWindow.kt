@@ -14,6 +14,7 @@ import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -134,7 +135,33 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     enum class Cursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
         RESIZE_EAST, RESIZE_WEST, RESIZE_SOUTH, RESIZE_NORTH,
-        RESIZE_NORTH_EAST, RESIZE_NORTH_WEST, RESIZE_SOUTH_EAST, RESIZE_SOUTH_WEST,
+        RESIZE_NORTH_EAST, RESIZE_NORTH_WEST, RESIZE_SOUTH_EAST, RESIZE_SOUTH_WEST;
+
+        companion object {
+            val ANGLE_TO_CURSOR = mapOf(
+                (45.degrees * 0) to RESIZE_EAST,
+                (45.degrees * 1) to RESIZE_SOUTH_EAST,
+                (45.degrees * 2) to RESIZE_SOUTH,
+                (45.degrees * 3) to RESIZE_SOUTH_WEST,
+                (45.degrees * 4) to RESIZE_WEST,
+                (45.degrees * 5) to RESIZE_NORTH_WEST,
+                (45.degrees * 6) to RESIZE_NORTH,
+                (45.degrees * 7) to RESIZE_NORTH_EAST,
+            )
+
+            fun fromAngle(angle: Angle): Cursor {
+                var minDistance = 360.degrees
+                var cursor: Cursor = DEFAULT
+                for ((cangle, ccursor) in ANGLE_TO_CURSOR) {
+                    val cdistance = (angle - cangle).absoluteValue
+                    if (cdistance <= minDistance) {
+                        minDistance = cdistance
+                        cursor = ccursor
+                    }
+                }
+                return cursor
+            }
+        }
     }
 
     open var cursor: Cursor = Cursor.DEFAULT

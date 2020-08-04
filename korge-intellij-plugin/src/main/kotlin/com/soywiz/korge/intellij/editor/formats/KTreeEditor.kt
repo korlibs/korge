@@ -6,6 +6,7 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korgw.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
@@ -50,6 +51,7 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                         startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
                     }
                 } else {
+                    views.renderContext.debugAnnotateView = null
                     selectedView = null
                     views.debugHightlightView(selectedView)
                 }
@@ -63,14 +65,38 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                 if (pressing && view != null) {
                     val dx = views.globalMouseX - startSelectedMousePos.x
                     val dy = views.globalMouseY - startSelectedMousePos.y
-                    view.globalX = (startSelectedViewPos.x + dx).nearestAlignedTo(16.0)
-                    view.globalY = (startSelectedViewPos.y + dy).nearestAlignedTo(16.0)
+                    view.globalX = (startSelectedViewPos.x + dx).nearestAlignedTo(20.0)
+                    view.globalY = (startSelectedViewPos.y + dy).nearestAlignedTo(20.0)
                     //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                 }
             }
         }
 
         stage.addUpdater {
+            val view = selectedView
+            var cursor = GameWindow.Cursor.DEFAULT
+            fun distanceToPoint(point: Point) = (stage.mouseXY - point).length
+            if (view != null) {
+                var angle: Angle? = null
+                angle = when {
+                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 0.5)) < 10 -> (45).degrees * 0
+                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 1.0)) < 10 -> (45).degrees * 1
+                    distanceToPoint(view.globalLocalBoundsPointRatio(0.5, 1.0)) < 10 -> (45).degrees * 2
+                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 1.0)) < 10 -> (45).degrees * 3
+                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 0.5)) < 10 -> (45).degrees * 4
+                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 0.0)) < 10 -> (45).degrees * 5
+                    distanceToPoint(view.globalLocalBoundsPointRatio(0.5, 0.0)) < 10 -> (45).degrees * 6
+                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 0.0)) < 10 -> (45).degrees * 7
+                    else -> null
+                }
+                if (angle != null) {
+                    val realAngle = (view.rotation + angle).normalized
+                    cursor = GameWindow.Cursor.fromAngle(realAngle)
+                }
+            }
+
+            gameWindow.cursor = cursor
+
             if (save) {
                 save = false
                 launchImmediately {
