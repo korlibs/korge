@@ -163,9 +163,24 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                 if (SwingUtilities.isRightMouseButton(e)) {
                     val row = tree.getClosestRowForLocation(e.x, e.y)
                     tree.setSelectionRow(row)
+                    val view = selectedView
+                    val isContainer = view is Container
 
                     val popupMenu = JPopupMenu()
-                    popupMenu.add(JMenuItem("Duplicate").also {
+                    popupMenu.add(JMenuItem("Add solid rect").also {
+                        it.isEnabled = isContainer
+                        it.addActionListener {
+                            attachNewView(SolidRect(100, 100, Colors.WHITE))
+                        }
+                    })
+                    popupMenu.add(JMenuItem("Add container").also {
+                        it.isEnabled = isContainer
+                        it.addActionListener {
+                            attachNewView(Container())
+                        }
+                    })
+                    popupMenu.add(JSeparator())
+                    popupMenu.add(JMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
                         it.addActionListener {
                             launchImmediately(coroutineContext) {
                                 val view = selectedView
@@ -178,17 +193,8 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                             }
                         }
                     })
-                    popupMenu.add(JMenuItem("Add solid rect").also {
-                        it.addActionListener {
-                            attachNewView(SolidRect(100, 100, Colors.WHITE))
-                        }
-                    })
-                    popupMenu.add(JMenuItem("Add container").also {
-                        it.addActionListener {
-                            attachNewView(Container())
-                        }
-                    })
-                    popupMenu.add(JMenuItem("Remove view").also {
+                    popupMenu.add(JSeparator())
+                    popupMenu.add(JMenuItem("Remove view", KeyEvent.VK_DELETE).also {
                         it.addActionListener {
                             removeCurrentNode()
                         }
