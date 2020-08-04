@@ -7,13 +7,14 @@
 	<a herf="https://bintray.com/korlibs/korlibs/korge-plugins/_latestVersion"><img src="https://api.bintray.com/packages/korlibs/korlibs/korge-plugins/images/download.svg" alt="Download" /></a>
 	<!--<a href="https://bintray.com/korlibs/korlibs/korge"><img alt="Maven Version" src="https://img.shields.io/bintray/v/korlibs/korlibs/korge.svg?style=flat&label=maven" /></a>-->
 	<a href="https://slack.soywiz.com/"><img alt="Slack" src="https://img.shields.io/badge/chat-on%20slack-green?style=flat&logo=slack" /></a>
+	<a href="https://discord.com/invite/jKCxCHn"><img alt="Slack" src="https://img.shields.io/discord/728582275884908604?label=Discord" /></a>
 </p>
 <!-- /BADGES -->
 
 <!-- SUPPORT -->
 <h2 align="center">Support korge</h2>
 <p align="center">
-If you like korge, or want your company logo here, please consider <a href="https://github.com/sponsors/soywiz">becoming a sponsor ★</a>,<br />
+If you like korge, or want your company logo here, please consider <a href="https://www.patreon.com/korgegameengine">becoming a patreon sponsor ★</a>,<br />
 in addition to ensure the continuity of the project, you will get exclusive content.
 </p>
 <!-- /SUPPORT -->
@@ -21,7 +22,7 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 
 ## Info:
 
-[![KorGE Game Engine Landing](docs/landing.png)](https://korge.soywiz.com/)
+[![KorGE Game Engine Landing](docs/landing_new.png)](https://korge.org)
 
 
 ## Contributors
