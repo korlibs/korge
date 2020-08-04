@@ -265,6 +265,8 @@ suspend fun NativeSocket.accept(): NativeSocket {
 	}
 }
 
+internal actual val asyncSocketFactory: AsyncSocketFactory = NativeAsyncSocketFactory
+
 object NativeAsyncSocketFactory : AsyncSocketFactory() {
 	class NativeAsyncClient(val socket: NativeSocket) : AsyncClient {
 		override suspend fun connect(host: String, port: Int) {

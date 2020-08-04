@@ -1,3 +1,3 @@
 package com.soywiz.korio
 
-val TARGET_INFO = "watchosArm64"
+actual val TARGET_INFO = "watchosArm64"

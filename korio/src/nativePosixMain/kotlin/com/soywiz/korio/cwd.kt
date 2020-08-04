@@ -3,7 +3,7 @@ package com.soywiz.korio
 import kotlinx.cinterop.*
 import platform.posix.*
 
-fun doMkdir(path: String, attr: Int): Int {
+actual fun doMkdir(path: String, attr: Int): Int {
 	return platform.posix.mkdir(path, attr.convert())
 }
 

@@ -1,143 +1,212 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.gradle.targets.android.*
-import com.soywiz.korge.gradle.targets.desktop.*
-import com.soywiz.korge.gradle.targets.ios.*
-import com.soywiz.korge.gradle.targets.isMacos
-import com.soywiz.korge.gradle.targets.js.*
-import com.soywiz.korge.gradle.targets.jvm.*
-import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
-import org.gradle.api.Project
-import org.gradle.api.plugins.*
-import org.gradle.api.tasks.*
-import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
-val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
-val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
+class KorgeGradlePlugin : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureRepositories()
+        //project.extensions.add("korge", project.korge)
+        project.korge // Ensure KorGE extension is here
+        System.setProperty("java.awt.headless", "true")
+        project.plugins.apply("kotlin-multiplatform")
+        project.kotlin.apply {
+            metadata()
+        }
+        project.afterEvaluate {
+            val korgeVersion = project.findProperty("korgeVersion") ?: "20-SNAPSHOT"
+            project.dependencies.add("commonMainApi", "com.soywiz.korlibs.korge:korge:$korgeVersion")
+            //project.
 
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
-val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
-val Project.korge: KorgeExtension
-	get() {
-		val extension = project.extensions.findByName("korge") as? KorgeExtension?
-		return if (extension == null) {
-			val newExtension = KorgeExtension(this)
-			project.extensions.add("korge", newExtension)
-			newExtension
-		} else {
-			extension
-		}
-	}
+            if (project.hasKotlinTarget("js")) {
+                project.tasks.create("runJs").apply {
+                    group = "run"
+                    dependsOn("jsBrowserDevelopmentRun")
+                }
+            }
+            if (project.hasKotlinTarget("jvm")) {
+                //project.dependencies.add("jvmMainApi", "com.soywiz.korlibs.korge:korge-jvm:$korgeVersion")
+                project.tasks.create("runJvm", KorgeJavaExec::class.java).apply {
+                    group = "run"
+                    main = "MainKt"
+                }
+            }
 
-open class JsWebCopy() : Copy() {
-	@OutputDirectory
-	open lateinit var targetDir: File
-}
+            /*
+            kotlin {
+                tasks.getByName("jsProcessResources", Task::class).apply {
+                    //println(this.outputs.files.toList())
+                    doLast {
+                        val targetDir = this.outputs.files.first()
+                        val jsMainCompilation = kotlin.js().compilations["main"]!!
+                        val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+                        val resourcesFolders = jsMainCompilation.allKotlinSourceSets
+                            .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                        //println("jsFile: $jsFile")
+                        //println("resourcesFolders: $resourcesFolders")
+                        fun readTextFile(name: String): String {
+                            for (folder in resourcesFolders) {
+                                val file = File(folder, name)?.takeIf { it.exists() } ?: continue
+                                return file.readText()
+                            }
+                            return ClassLoader.getSystemResourceAsStream(name)?.readBytes()?.toString(Charsets.UTF_8)
+                                ?: error("We cannot find suitable '$name'")
+                        }
 
-val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
-//val node_modules by lazy { project.file("node_modules") }
+                        val indexTemplateHtml = readTextFile("index.v2.template.html")
+                        val customCss = readTextFile("custom-styles.template.css")
+                        val customHtmlHead = readTextFile("custom-html-head.template.html")
+                        val customHtmlBody = readTextFile("custom-html-body.template.html")
 
-class KorgeGradleApply(val project: Project) {
-	fun apply(includeIndirectAndroid: Boolean = true) = project {
-		System.setProperty("java.awt.headless", "true")
+                        println(File(targetDir, "index.html"))
 
-		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
-		val expectedGradleVersion = SemVer("5.1.1")
-		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
+                        File(targetDir, "index.html").writeText(
+                            groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
+                                mapOf(
+                                    "OUTPUT" to jsFile,
+                                    //"TITLE" to korge.name,
+                                    "TITLE" to "TODO",
+                                    "CUSTOM_CSS" to customCss,
+                                    "CUSTOM_HTML_HEAD" to customHtmlHead,
+                                    "CUSTOM_HTML_BODY" to customHtmlBody
+                                )
+                            ).toString()
+                        )
+                    }
+                }
 
-		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
-			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
-		}
+                if (doEnableKotlinNative) {
+                    for (target in nativeTargets()) {
+                        target.apply {
+                            binaries {
+                                executable {
+                                    entryPoint("entrypoint.main")
+                                }
+                            }
+                        }
+                    }
 
-		//KorgeBuildServiceProxy.init()
-		project.addVersionExtension()
-		project.configureRepositories()
-		project.configureKotlin()
+                    val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
+                    //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
+                    //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
+                    sourceSets.getByName("nativeCommonMain") { kotlin.srcDir(nativeDesktopFolder) }
 
-		project.addGenResourcesTasks()
-		project.configureIdea()
+                    val createEntryPointAdaptorNativeDesktop = tasks.create("createEntryPointAdaptorNativeDesktop") {
+                        val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
 
-		project.configureJvm()
+                        outputs.file(mainEntrypointFile)
 
-		if (korge.nativeEnabled) {
-			project.configureNativeDesktop()
-			if (includeIndirectAndroid) {
-				project.configureNativeAndroid()
-			}
-			if (isMacos) {
-				project.configureNativeIos()
-			}
-		}
-		project.configureJavaScript()
+                        // @TODO: Determine the package of the main file
+                        doLast {
+                            mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
+                        package entrypoint
 
-		project.korge.init()
+                        import kotlinx.coroutines.*
+                        import main
 
-		project.configureDependencies()
-	}
+                        fun main(args: Array<String>) {
+                            runBlocking {
+                                main()
+                            }
+                        }
+                    """.trimIndent())
+                        }
+                    }
 
-	private fun Project.configureDependencies() {
-		dependencies {
-			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${korgeVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
-		}
-	}
+                    val nativeDesktopTargets = nativeTargets()
+                    val allNativeTargets = nativeDesktopTargets
 
-	private fun Project.configureIdea() {
-		project.plugins.apply("idea")
-		(project["idea"] as IdeaModel).apply {
-			module { module ->
-				for (file in listOf(
-					".gradle", "node_modules", "classes", "docs", "dependency-cache",
-					"libs", "reports", "resources", "test-results", "tmp"
-				)) {
-					module.excludeDirs.add(file(".gradle"))
-				}
-			}
-		}
-	}
+                    //for (target in nativeDesktopTargets) {
+                    //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
+                    //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
+                    //}
 
-	private fun Project.addVersionExtension() {
-		ext.set("korioVersion", korioVersion)
-		ext.set("kormaVersion", kormaVersion)
-		ext.set("korauVersion", korauVersion)
-		ext.set("korimVersion", korimVersion)
-		ext.set("korgwVersion", korgwVersion)
-		ext.set("korgeVersion", korgeVersion)
-		ext.set("kotlinVersion", kotlinVersion)
-		ext.set("coroutinesVersion", coroutinesVersion)
-	}
+                    for (target in allNativeTargets) {
+                        for (binary in target.binaries) {
+                            val compilation = binary.compilation
+                            val copyResourcesTask = tasks.create("copyResources${target.name.capitalize()}${binary.name.capitalize()}", Copy::class) {
+                                dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
+                                group = "resources"
+                                val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
+                                val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
+                                val compilation = if (isTest) target.compilations["test"] else target.compilations["main"]
+                                //target.compilations.first().allKotlinSourceSets
+                                val sourceSet = compilation.defaultSourceSet
+                                from(sourceSet.resources)
+                                from(sourceSet.dependsOn.map { it.resources })
+                                into(binary.outputDirectory)
+                            }
 
-	private fun Project.configureKotlin() {
-		plugins.apply("kotlin-multiplatform")
+                            //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
+                            binary.linkTask.dependsOn(copyResourcesTask)
+                            binary.compilation.compileKotlinTask.dependsOn(createEntryPointAdaptorNativeDesktop)
+                        }
+                    }
+                }
+            }
 
-		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
-		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
-		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
+            project.tasks {
+                val runJvm by getting(KorgeJavaExec::class)
+                val jvmMainClasses by getting(Task::class)
 
-		//println("com.soywiz.korlibs.korge:korge:$korgeVersion")
-		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge:korge:$korgeVersion")
-		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
-		//}
-		//kotlin.sourceSets.create("")
-	}
-}
+                //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
+                //    dependsOn(jvmMainClasses)
+                //    afterEvaluate {
+                //        from(runJvm.korgeClassPath.toList().map { if (it.extension == "jar") zipTree(it) else it })
+                //    }
+                //    into(File(project.buildDir, "korgeProcessedResources/classes"))
+                //}
 
-open class KorgeGradlePlugin : Plugin<Project> {
-	override fun apply(project: Project) {
+                for (target in kotlin.targets) {
+                    for (compilation in target.compilations) {
+                        val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
+                        compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
+                        val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
+                            //dependsOn(prepareResourceProcessingClasses)
+                            dependsOn(jvmMainClasses)
 
-		//TODO PABLO changed to have the android tasks enabled again
-		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
+                            doLast {
+                                processedResourcesFolder.mkdirs()
+                                //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-		//for (res in project.getResourcesFolders()) println("- $res")
-	}
+
+                                /*
+                                URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                                    val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                                    val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
+                                    //println(folders)
+                                    try {
+                                        clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
+                                    } catch (e: java.lang.reflect.InvocationTargetException) {
+                                        val re = (e.targetException ?: e)
+                                        re.printStackTrace()
+                                        System.err.println(re.toString())
+                                    }
+                                }
+                                System.gc()
+                                 */
+                            }
+                        }
+                        //println(compilation.compileKotlinTask.name)
+                        //println(compilation.compileKotlinTask.name)
+                        //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
+                        //println(compilation.compileKotlinTask)
+                        //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
+                        if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
+                            compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
+                        } else {
+                            compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
+                            getByName("runJvm").dependsOn(korgeProcessedResources)
+
+                        }
+                        //println(compilation.output.allOutputs.toList())
+                        //println("$target - $compilation")
+
+                    }
+                }
+            }
+             */
+        }
+    }
 }

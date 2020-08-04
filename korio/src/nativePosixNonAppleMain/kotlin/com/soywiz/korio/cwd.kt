@@ -9,4 +9,4 @@ fun getCurrentExe(): String? = readlink("/proc/self/exe")
 
 fun getCurrentExeFolder() = getCurrentExe()?.substringBeforeLast('/')
 
-fun nativeCwd(): String = getCurrentExeFolder() ?: realpath(".") ?: "."
+actual fun nativeCwd(): String = getCurrentExeFolder() ?: realpath(".") ?: "."

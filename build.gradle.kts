@@ -16,6 +16,7 @@ buildscript {
     dependencies {
         //classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
         //classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
+        classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
         classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
     }
 }
@@ -26,18 +27,11 @@ plugins {
 	//kotlin("multiplatform") version "1.4-M3"
     kotlin("multiplatform") version "1.4.0-rc"
     //kotlin("multiplatform")
+    //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
-allprojects {
-	repositories {
-        mavenLocal()
-		mavenCentral()
-        jcenter()
-        google()
-		maven("https://dl.bintray.com/kotlin/kotlin-eap")
-		maven("https://kotlin.bintray.com/kotlinx")
-	}
-}
+//apply(plugin = "java")
+//apply(plugin = "kotlin-multiplatform")
 
 val kotlinVersion: String by project
 val isKotlinDev = kotlinVersion.contains("-release")
@@ -45,8 +39,10 @@ val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
 
 allprojects {
 	repositories {
+        mavenLocal()
 		mavenCentral()
 		jcenter()
+        google()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
 		if (isKotlinDev || isKotlinEap) {
 			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
@@ -78,13 +74,13 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
 }
 
 subprojects {
-    if (project.name != "korge-intellij-plugin") {
+    group = "com.soywiz.korlibs.${project.name}"
+
+    if (project.name != "korge-intellij-plugin" && project.name != "korge-gradle-plugin") {
         apply(plugin = "kotlin-multiplatform")
         if (!project.path.startsWith(":samples")) {
             apply(plugin = "maven-publish")
         }
-
-        group = "com.soywiz.korlibs.${project.name}"
 
         kotlin {
             jvm {
@@ -203,7 +199,6 @@ subprojects {
         }
     }
 }
-
 
 open class KorgeJavaExec : JavaExec() {
     private val jvmCompilation by lazy { project.kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*> }

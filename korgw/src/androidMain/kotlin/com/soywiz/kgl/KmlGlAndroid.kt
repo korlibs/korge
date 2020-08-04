@@ -159,6 +159,6 @@ class KmlGlAndroid : KmlGl() {
     override fun vertexAttrib3fv(index: Int, v: FBuffer): Unit = glVertexAttrib3fv(index, v.nioFloatBuffer)
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = glVertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = glVertexAttrib4fv(index, v.nioFloatBuffer)
-    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Int): Unit = glVertexAttribPointer(index, size, type, normalized, stride, pointer)
+    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = glVertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = glViewport(x, y, width, height)
 }

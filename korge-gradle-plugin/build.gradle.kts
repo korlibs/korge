@@ -1,5 +1,3 @@
-/*
-
 plugins {
 	java
 	`java-gradle-plugin`
@@ -8,6 +6,11 @@ plugins {
 	`maven-publish`
 	id("com.gradle.plugin-publish")
 }
+
+group = "com.soywiz.korlibs.korge.plugins"
+
+//apply(plugin = "kotlin")
+//apply(plugin = "org.jetbrains.intellij")
 
 pluginBundle {
 	website = "https://korge.soywiz.com/"
@@ -34,8 +37,8 @@ gradlePlugin {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
-        //jvmTarget = "1.8"
-		jvmTarget = "1.6"
+        jvmTarget = "1.8"
+		//jvmTarget = "1.6"
     }
 }
 
@@ -43,7 +46,8 @@ val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
 
 dependencies {
-	implementation(project(":korge-build"))
+	//implementation(project(":korge-build"))
+    implementation(kotlin("gradle-plugin"))
 
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 	implementation("net.sf.proguard:proguard-gradle:6.2.2")
@@ -52,4 +56,3 @@ dependencies {
 	implementation(gradleApi())
 	implementation(localGroovy())
 }
-*/

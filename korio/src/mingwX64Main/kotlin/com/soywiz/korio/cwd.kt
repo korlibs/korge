@@ -12,7 +12,7 @@ fun getExecutablePath(): String = kotlinx.cinterop.memScoped {
 
 fun getExecutableDirectory(): String = getExecutablePath().substringBeforeLast('\\')
 
-fun nativeCwd(): String = getExecutableDirectory()
+actual fun nativeCwd(): String = getExecutableDirectory()
 
-fun doMkdir(path: String, attr: Int): Int = platform.posix.mkdir(path)
+actual fun doMkdir(path: String, attr: Int): Int = platform.posix.mkdir(path)
 fun realpath(path: String): String = path
