@@ -79,6 +79,8 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
+            add(view::skewX.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
+            add(view::skewY.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
         })
         val nodeTree = EditableNodeList(nodes)
         this.nodeTree = nodeTree

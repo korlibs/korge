@@ -11,12 +11,14 @@ import com.soywiz.korio.file.PathInfo
 import kotlin.math.*
 
 fun PsiElement.replace(text: String, context: InsertionContext? = null) {
-	val range = this.textRange
-	val start = range.startOffset
-	val end = range.endOffset
 	//context?.commitDocument()
 	//document?.replaceString(start, end - 1, text)
-    document?.replaceString(start, end, text)
+    runWriteAction {
+        val range = this.textRange
+        val start = range.startOffset
+        val end = range.endOffset
+        document?.replaceString(start, end, text)
+    }
 	//context?.commitDocument()
 	//currentCaret?.moveToOffset(start + text.length)
 }

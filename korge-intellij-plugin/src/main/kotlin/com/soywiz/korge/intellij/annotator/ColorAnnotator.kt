@@ -16,6 +16,7 @@ import com.soywiz.korge.intellij.util.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.color.Colors
 import org.jetbrains.kotlin.idea.caches.resolve.*
+import org.jetbrains.kotlin.idea.debugger.*
 import org.jetbrains.kotlin.idea.refactoring.fqName.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.calls.callUtil.*
@@ -65,7 +66,10 @@ class ColorAnnotator: Annotator {
 
                 if (typeReceiver == Colors::class.java.name && typeSelector == RGBA::class.java.name) {
                     if (selectorExpression is KtNameReferenceExpression) {
-                        gutter(Colors[selectorExpression.getReferencedName()])
+                        try {
+                            gutter(Colors[selectorExpression.getReferencedName()])
+                        } catch (e: Throwable) {
+                        }
                     }
                 }
             }
@@ -80,7 +84,11 @@ class ColorAnnotator: Annotator {
                             val arrayExpression = element.arrayExpression
                             val typeArray = arrayExpression?.getType(context)?.fqName?.asString()
                             if (typeArray == Colors::class.java.name) {
-                                gutter(Colors[indexText])
+                                try {
+                                    gutter(Colors[indexText])
+                                } catch (e: Throwable) {
+
+                                }
                             }
                         }
                     }
