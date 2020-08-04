@@ -188,7 +188,7 @@
         <!--
         <framework.type implementation="com.soywiz.korge.intellij.KorgeFramework" />
         -->
-        <moduleType id="KORGE" implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType" />
+        <moduleType id="korge" implementationClass="com.soywiz.korge.intellij.module.KorgeModuleType" />
 
         <internalFileTemplate name="KorgeScene"/>
 
