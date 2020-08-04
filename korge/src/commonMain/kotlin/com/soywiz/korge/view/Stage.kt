@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korev.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -13,6 +14,7 @@ class Stage(override val views: Views) : Container()
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
     , ViewsScope, ViewsContainer
+    , KorgeDebugNode
 {
     val injector get() = views.injector
     val ag get() = views.ag
@@ -44,5 +46,14 @@ class Stage(override val views: Views) : Container()
         } else {
             super.renderInternal(ctx)
         }
+    }
+
+    override fun getDebugProperties(): EditableNode = EditableSection("Views") {
+        add(views::virtualWidth.toEditableProperty().also {
+            it.onChange.add { views.resized() }
+        })
+        add(views::virtualHeight.toEditableProperty().also {
+            it.onChange.add { views.resized() }
+        })
     }
 }

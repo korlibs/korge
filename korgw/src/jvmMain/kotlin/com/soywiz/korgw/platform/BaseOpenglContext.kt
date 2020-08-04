@@ -114,7 +114,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                     invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
                         try {
                             val factor = getDisplayScalingFactor(c)
-                            val window = SwingUtilities.getWindowAncestor(c)
+                            //val window = SwingUtilities.getWindowAncestor(c)
                             val viewport = getOGLViewport.invoke(null, g, (c.width * factor).toInt(), (c.height * factor).toInt()) as java.awt.Rectangle
                             //val viewport = getOGLViewport.invoke(null, g, window.width.toInt(), window.height.toInt()) as java.awt.Rectangle
                             val scissorBox = getOGLScissorBox(null, g) as? java.awt.Rectangle?
