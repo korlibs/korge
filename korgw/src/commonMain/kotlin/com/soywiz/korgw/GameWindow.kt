@@ -164,6 +164,11 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         }
     }
 
+    data class MenuItem(val text: String?, val enabled: Boolean = true, val children: List<MenuItem>? = null, val action: () -> Unit)
+
+    open fun showContextMenu(items: List<MenuItem?>) {
+    }
+
     open var cursor: Cursor = Cursor.DEFAULT
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey

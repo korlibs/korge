@@ -7,6 +7,7 @@ import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -53,6 +54,23 @@ abstract class BaseAwtGameWindow : GameWindow() {
             }
             component.cursor = java.awt.Cursor(awtCursor)
         }
+
+    override fun showContextMenu(items: List<MenuItem?>) {
+        val popupMenu = JPopupMenu()
+        for (item in items) {
+            if (item == null || item.text == null) {
+                popupMenu.add(JSeparator())
+            } else {
+                popupMenu.add(JMenuItem(item.text).also {
+                    it.isEnabled = item.enabled
+                    it.addActionListener {
+                        item.action()
+                    }
+                })
+            }
+        }
+        popupMenu.show(contentComponent, mouseX, mouseY)
+    }
 
     protected open fun ensureContext() {
     }
@@ -257,6 +275,9 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
     var reshaped = false
 
+    private var mouseX: Int = 0
+    private var mouseY: Int = 0
+
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
             entry()
@@ -297,6 +318,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 val sx = e.x * factor
                 val sy = e.y * factor
                 val modifiers = e.modifiersEx
+                mouseX = e.x
+                mouseY = e.y
                 dispatchMouseEvent(
                     type = ev,
                     id = 0,

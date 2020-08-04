@@ -6,7 +6,13 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import kotlin.reflect.*
 
-open class KTreeSerializer {
+interface KTreeSerializerHolder {
+    val serializer: KTreeSerializer
+}
+
+open class KTreeSerializer : KTreeSerializerHolder {
+    override val serializer get() = this
+
     companion object {
         val DEFAULT = KTreeSerializer()
     }
@@ -125,9 +131,6 @@ open class KTreeSerializer {
     }
 }
 
-suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializer = KTreeSerializer.DEFAULT): View = serializer.ktreeToViewTree(this)
-
-suspend fun View.viewTreeToKTree(serializer: KTreeSerializer = KTreeSerializer.DEFAULT): Xml = serializer.viewTreeToKTree(this)
-
-suspend fun VfsFile.readKTree(serializer: KTreeSerializer = KTreeSerializer.DEFAULT): View =
-    readXml().ktreeToViewTree(serializer)
+suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = serializer.serializer.ktreeToViewTree(this)
+suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): Xml = serializer.serializer.viewTreeToKTree(this)
+suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = readXml().ktreeToViewTree(serializer)

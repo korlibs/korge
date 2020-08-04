@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.view.*
@@ -19,6 +20,7 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
 
     return createModule {
         val views = this.views
+        val gameWindow = this.views.gameWindow
         val stage = views.stage
         // Dirty hack
         views.stage.removeChildren()
@@ -37,9 +39,44 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
 
         var pressing = false
         var selectedView: View? = null
-        var startSelectedViewPos = Point()
-        var startSelectedMousePos = Point()
+        val startSelectedViewPos = Point()
+        val startSelectedMousePos = Point()
         stage.mouse {
+            click {
+                val view = selectedView
+                if (it.button == MouseButton.RIGHT) {
+                    val hasView = view != null
+                    gameWindow.showContextMenu(listOf(
+                        GameWindow.MenuItem("Copy", enabled = hasView) {
+                            launchImmediately {
+                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views)
+                            }
+                        },
+                        GameWindow.MenuItem("Paste in place") {
+                            val pasteboard = viewsDebuggerComponent.pasteboard
+                            launchImmediately {
+                                val container = (view as? Container?) ?: view?.parent ?: stage
+                                if (pasteboard != null) {
+                                    container.addChild(pasteboard.ktreeToViewTree(views))
+                                }
+                            }
+                        },
+                        null,
+                        GameWindow.MenuItem("Send to back", enabled = hasView) {
+                            val parent = view!!.parent
+                            if (parent != null) {
+                                parent.swapChildren(view, parent.firstChild!!)
+                            }
+                        },
+                        GameWindow.MenuItem("Bring to front", enabled = hasView) {
+                            val parent = view!!.parent
+                            if (parent != null) {
+                                parent.swapChildren(view, parent.lastChild!!)
+                            }
+                        },
+                    ))
+                }
+            }
             down {
                 pressing = true
                 val view2 = stage.hitTest(it.lastPosStage)

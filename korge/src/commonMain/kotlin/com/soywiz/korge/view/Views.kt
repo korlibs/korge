@@ -14,6 +14,7 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.stat.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -42,9 +43,18 @@ class Views constructor(
     val timeProvider: HRTimeProvider,
     val stats: Stats,
     val gameWindow: GameWindow
-) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope, ViewsContainer,
-	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
+) :
+    Extra by Extra.Mixin(),
+    EventDispatcher by EventDispatcher.Mixin(),
+    CoroutineScope, ViewsScope, ViewsContainer,
+	BoundsProvider,
+    DialogInterface by gameWindow,
+    AsyncCloseable,
+    KTreeSerializerHolder
+{
     override val views = this
+
+    override val serializer = KTreeSerializer()
 
     val keys get() = input.keys
 

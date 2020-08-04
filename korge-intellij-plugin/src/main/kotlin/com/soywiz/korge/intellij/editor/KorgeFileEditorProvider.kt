@@ -95,12 +95,13 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 
 	override fun getEditorTypeId(): String = this::class.java.name
 
-    data class BlockToExecute(val block: suspend Scene.() -> Unit)
+    data class BlockToExecute(val block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit)
 
     @Prototype
     class EditorScene(
         val fileToEdit: KorgeFileToEdit,
-        val blockToExecute: BlockToExecute
+        val blockToExecute: BlockToExecute,
+        val viewsDebuggerComponent: ViewsDebuggerComponent
     ) : Scene() {
         override suspend fun Container.sceneMain() {
             val loading = text("Loading...", color = Colors.WHITE).apply {
@@ -130,10 +131,10 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
     }
 }
 
-fun createModule(editableNode: EditableNode? = null, block: suspend Scene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
+fun createModule(editableNode: EditableNode? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
     return object : KorgeBaseKorgeFileEditor.EditorModule() {
         override val editableNode: EditableNode? get() = editableNode
-        override val mainScene: KClass<out Scene> = KorgeFileEditorProvider.EditorScene::class
+        override val mainScene = KorgeFileEditorProvider.EditorScene::class
         override suspend fun AsyncInjector.configure() {
             get<ResourcesRoot>().mount("/", KorgeFileEditorProvider.pluginResurcesVfs.root)
             mapInstance(KorgeFileEditorProvider.BlockToExecute(block))

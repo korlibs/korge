@@ -10,8 +10,10 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.serialization.xml.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -125,6 +127,7 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
 class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext, var views: Views? = null) : JPanel(GridLayout(2, 1)) {
     var treeSerializer = KTreeSerializer.DEFAULT
     val properties = EditPropertiesComponent(rootView).also { add(it) }
+    var pasteboard: Xml? = null
 
     fun attachNewView(newView: View?) {
         if (newView == null) return
@@ -166,41 +169,62 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                     val view = selectedView
                     val isContainer = view is Container
 
-                    val popupMenu = JPopupMenu()
-                    popupMenu.add(JMenuItem("Add solid rect").also {
-                        it.isEnabled = isContainer
-                        it.addActionListener {
-                            attachNewView(SolidRect(100, 100, Colors.WHITE))
-                        }
-                    })
-                    popupMenu.add(JMenuItem("Add container").also {
-                        it.isEnabled = isContainer
-                        it.addActionListener {
-                            attachNewView(Container())
-                        }
-                    })
-                    popupMenu.add(JSeparator())
-                    popupMenu.add(JMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
-                        it.addActionListener {
-                            launchImmediately(coroutineContext) {
-                                val view = selectedView
-                                if (view != null) {
-                                    val parent = view.parent
-                                    val newChild = view.viewTreeToKTree(treeSerializer).ktreeToViewTree(treeSerializer)
-                                    parent?.addChild(newChild)
-                                    highlight(newChild)
+                    if (view != null) {
+                        val popupMenu = JPopupMenu()
+                        popupMenu.add(JMenuItem("Add solid rect").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(SolidRect(100, 100, Colors.WHITE))
+                            }
+                        })
+                        popupMenu.add(JMenuItem("Add container").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(Container())
+                            }
+                        })
+                        popupMenu.add(JSeparator())
+                        popupMenu.add(JMenuItem("Copy").also {
+                            it.addActionListener {
+                                launchImmediately(coroutineContext) {
+                                    pasteboard = view.viewTreeToKTree(views!!)
                                 }
                             }
-                        }
-                    })
-                    popupMenu.add(JSeparator())
-                    popupMenu.add(JMenuItem("Remove view", KeyEvent.VK_DELETE).also {
-                        it.addActionListener {
-                            removeCurrentNode()
-                        }
-                    })
+                        })
+                        popupMenu.add(JMenuItem("Paste").also {
+                            it.addActionListener {
+                                val pasteboard = pasteboard
+                                launchImmediately(coroutineContext) {
+                                    val container = (view as? Container?) ?: view.parent
+                                    if (pasteboard != null) {
+                                        container?.addChild(pasteboard.ktreeToViewTree(views!!))
+                                    }
+                                }
+                            }
+                        })
+                        popupMenu.add(JSeparator())
+                        popupMenu.add(JMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
+                            it.addActionListener {
+                                launchImmediately(coroutineContext) {
+                                    val view = selectedView
+                                    if (view != null) {
+                                        val parent = view.parent
+                                        val newChild = view.viewTreeToKTree(treeSerializer).ktreeToViewTree(treeSerializer)
+                                        parent?.addChild(newChild)
+                                        highlight(newChild)
+                                    }
+                                }
+                            }
+                        })
+                        popupMenu.add(JSeparator())
+                        popupMenu.add(JMenuItem("Remove view", KeyEvent.VK_DELETE).also {
+                            it.addActionListener {
+                                removeCurrentNode()
+                            }
+                        })
 
-                    popupMenu.show(e.component, e.x, e.y)
+                        popupMenu.show(e.component, e.x, e.y)
+                    }
                 }
             }
         })
