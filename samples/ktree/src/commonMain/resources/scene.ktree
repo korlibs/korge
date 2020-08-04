@@ -1,0 +1,6 @@
+<container>
+	<solidrect name="big" colorMul="#ff7700ff" x="266.0" y="266.0" scaleX="1.2985" scaleY="1.2985" width="187.76037196064794" height="190.27994117181697"/>
+	<container>
+		<solidrect name="small" colorMul="#ff0000ff" x="266.0" y="266.0" anchorY="1.0" width="100.0" height="100.0"/>
+	</container>
+</container>

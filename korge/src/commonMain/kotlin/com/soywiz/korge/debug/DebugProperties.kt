@@ -58,6 +58,7 @@ abstract class BaseEditableProperty<T : Any>(
         get() = getValue()
         set(newValue) {
             //this.prev = this.value
+            //println("TEXT CHANGED: '$value' != '$newValue'")
             if (value != newValue) {
                 updateValue(newValue)
             }
@@ -88,6 +89,22 @@ data class EditableEnumerableProperty<T : Any>(
     }
 }
 
+data class EditableStringProperty(
+    override val name: String,
+    val get: () -> String,
+    val set: (String) -> Unit
+) : BaseEditableProperty<String>(get, set) {
+    override val clazz = String::class
+}
+
+data class EditableColorProperty(
+    override val name: String,
+    val get: () -> RGBA,
+    val set: (RGBA) -> Unit
+) : BaseEditableProperty<RGBA>(get, set) {
+    override val clazz = RGBA::class
+}
+
 data class EditableNumericProperty<T : Number>(
     override val name: String,
     override val clazz: KClass<T>,
@@ -104,6 +121,51 @@ data class EditableButtonProperty(
     val title: String,
     val callback: () -> Unit
 ) : EditableNode() {
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmName("toEditablePropertyStringNullable")
+fun KMutableProperty0<String?>.toEditableProperty(
+    name: String? = null
+): EditableStringProperty {
+    val prop = this
+
+    return EditableStringProperty(
+        name = name ?: this.name,
+        get = { prop.get() ?: "" },
+        set = {
+            //println("TEXT CHANGED")
+            prop.set(it.takeIf { it.isNotEmpty() })
+        }
+    )
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmName("toEditablePropertyString")
+fun KMutableProperty0<String>.toEditableProperty(
+    name: String? = null
+): EditableStringProperty {
+    val prop = this
+
+    return EditableStringProperty(
+        name = name ?: this.name,
+        get = { prop.get() },
+        set = { prop.set(it) }
+    )
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@JvmName("toEditablePropertyColor")
+fun KMutableProperty0<RGBA>.toEditableProperty(
+    name: String? = null
+): EditableColorProperty {
+    val prop = this
+
+    return EditableColorProperty(
+        name = name ?: this.name,
+        get = { prop.get() },
+        set = { prop.set(it) }
+    )
 }
 
 @OptIn(ExperimentalStdlibApi::class)

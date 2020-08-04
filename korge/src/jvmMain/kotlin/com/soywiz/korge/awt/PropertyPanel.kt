@@ -100,6 +100,78 @@ class SectionBody(components: List<Component>) : JPanel() {
     }
 }
 
+class EditableColorValue(val context: CoroutineContext, val editProp: EditableColorProperty, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+    lateinit var valueTextField: EditableLabel
+
+    fun updateValue(value: RGBA?, setProperty: Boolean = true) {
+        //println("updateValue: $value")
+        if (value != null) {
+            if (setProperty) {
+                launchImmediately(context) {
+                    editProp.value = value
+                }
+            }
+            val valueString = value.toString()
+            if (valueTextField.text != valueString && !valueTextField.isEditing) {
+                valueTextField.text = value.toString()
+            }
+        }
+    }
+
+    init {
+        //preferredSize = Dimension(1024, 32)
+        maximumSize = Dimension(1024, 32)
+        add(JLabel(editProp.name).apply {
+            this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
+            size = Dimension(128, 32)
+            maximumSize = Dimension(128, 32)
+        })
+        add(EditableLabel("", null) {
+            updateValue(Colors[it])
+        }.also { valueTextField = it })
+        editProp.onChange.add {
+            updateValue(it.newValue, false)
+        }
+        updateValue(editProp.value)
+    }
+}
+
+class EditableStringValue(val context: CoroutineContext, val editProp: EditableStringProperty, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+    lateinit var valueTextField: EditableLabel
+
+    fun updateValue(value: String?, setProperty: Boolean = true) {
+        //println("updateValue: $value")
+        if (value != null) {
+            if (setProperty) {
+                launchImmediately(context) {
+                    editProp.value = value
+                }
+            }
+            val valueString = value.toString()
+            if (valueTextField.text != valueString && !valueTextField.isEditing) {
+                valueTextField.text = value.toString()
+            }
+        }
+    }
+
+    init {
+        //preferredSize = Dimension(1024, 32)
+        maximumSize = Dimension(1024, 32)
+        add(JLabel(editProp.name).apply {
+            this.border = CompoundBorder(this.border, EmptyBorder(10, 10 + INDENTATION_SIZE * indentation, 10, 10))
+            size = Dimension(128, 32)
+            maximumSize = Dimension(128, 32)
+        })
+        add(EditableLabel("", null) {
+            updateValue(it)
+        }.also { valueTextField = it })
+        editProp.onChange.add {
+            updateValue(it.newValue, false)
+        }
+        updateValue(editProp.value)
+    }
+}
+
 class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: EditableEnumerableProperty<T>, val indentation: Int) : JPanel(GridLayout(1, 2)) {
     val FULL_CHANGE_WIDTH = 200
     lateinit var valueTextField: EditableLabel

@@ -32,6 +32,12 @@ fun EditableNode.toComponent(context: CoroutineContext, evalContext: () -> Any?,
     is EditableNumericProperty<*> -> {
         EditableNumberValue(context, this, indentation, evalContext)
     }
+    is EditableStringProperty -> {
+        EditableStringValue(context, this, indentation)
+    }
+    is EditableColorProperty -> {
+        EditableColorValue(context, this, indentation)
+    }
     is EditableButtonProperty -> {
         JButton(title).apply {
             addActionListener {

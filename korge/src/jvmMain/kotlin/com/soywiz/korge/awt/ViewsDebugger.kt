@@ -12,6 +12,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korim.color.*
 import java.awt.*
 import java.awt.event.*
+import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.*
@@ -58,6 +59,8 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             nodes.add(view.getDebugProperties())
         }
         nodes.add(EditableSection("View") {
+            add(view::name.toEditableProperty())
+            add(view::colorMul.toEditableProperty())
             add(view::alpha.toEditableProperty(0.0, 1.0))
             add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
             add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
@@ -124,7 +127,18 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
         if (newView == null) return
         (selectedView as Container?)?.addChild(newView)
         highlight(newView)
+        save(newView)
+    }
+
+    fun save(newView: View? = selectedView) {
         views?.stage?.views?.debugSaveView(newView)
+    }
+
+    fun removeCurrentNode() {
+        val parent = selectedView?.parent
+        selectedView?.removeFromParent()
+        highlight(parent)
+        save(parent)
     }
 
     val tree: JTree = JTree(ViewNode(rootView)).apply {
@@ -134,6 +148,13 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
             properties.setView(viewNode.view, coroutineContext)
             (views ?: rootView?.stage?.views)?.renderContext?.debugAnnotateView = viewNode.view
         }
+        addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_DELETE) {
+                    removeCurrentNode()
+                }
+            }
+        })
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (SwingUtilities.isRightMouseButton(e)) {
@@ -143,12 +164,17 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                     val popupMenu = JPopupMenu()
                     popupMenu.add(JMenuItem("Add solid rect").also {
                         it.addActionListener {
-                            attachNewView(SolidRect(100, 100, Colors.RED))
+                            attachNewView(SolidRect(100, 100, Colors.WHITE))
                         }
                     })
                     popupMenu.add(JMenuItem("Add container").also {
                         it.addActionListener {
                             attachNewView(Container())
+                        }
+                    })
+                    popupMenu.add(JMenuItem("Remove view").also {
+                        it.addActionListener {
+                            removeCurrentNode()
                         }
                     })
 

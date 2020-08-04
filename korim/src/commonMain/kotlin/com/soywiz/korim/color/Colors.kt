@@ -304,34 +304,39 @@ object Colors {
 	operator fun get(str: String): RGBA = get(str, Colors.TRANSPARENT_BLACK, errorOnDefault = true)
 
 	operator fun get(str: String, default: RGBA, errorOnDefault: Boolean = false): RGBA {
-		when {
-			str.startsWith("#") -> {
-				val hex = str.substr(1)
-				if (hex.length !in setOf(3, 4, 6, 8)) return BLACK
-				val chars = if (hex.length < 6) 1 else 2
-				val scale = if (hex.length < 6) (255.0 / 15.0) else 1.0
-				val hasAlpha = (hex.length / chars) >= 4
-				val r = (hex.substr(0 * chars, chars).toInt(0x10) * scale).toInt()
-				val g = (hex.substr(1 * chars, chars).toInt(0x10) * scale).toInt()
-				val b = (hex.substr(2 * chars, chars).toInt(0x10) * scale).toInt()
-				val a = if (hasAlpha) (hex.substr(3 * chars, chars).toInt(0x10) * scale).toInt() else 0xFF
-				return RGBA(r, g, b, a)
-			}
-			str.startsWith("RGBA(", ignoreCase = true) -> {
-				val parts = str.toUpperCase().removePrefix("RGBA(").removeSuffix(")").split(",")
-				val r = parts.getOrElse(0) { "0" }.toIntOrNull() ?: 0
-				val g = parts.getOrElse(1) { "0" }.toIntOrNull() ?: 0
-				val b = parts.getOrElse(2) { "0" }.toIntOrNull() ?: 0
-				val af = parts.getOrElse(3) { "1.0" }.toDoubleOrNull() ?: 1.0
-				return RGBA(r, g, b, (af * 255).toInt())
-			}
-			else -> {
-				val col = colorsByName[str.toLowerCase()]
-                //error("Unsupported color '$str'")
-                if (col == null && errorOnDefault) return get("#$str", default)
-				return col ?: default
-			}
-		}
+        try {
+            when {
+                str.startsWith("#") -> {
+                    val hex = str.substr(1)
+                    if (hex.length !in setOf(3, 4, 6, 8)) return BLACK
+                    val chars = if (hex.length < 6) 1 else 2
+                    val scale = if (hex.length < 6) (255.0 / 15.0) else 1.0
+                    val hasAlpha = (hex.length / chars) >= 4
+                    val r = (hex.substr(0 * chars, chars).toInt(0x10) * scale).toInt()
+                    val g = (hex.substr(1 * chars, chars).toInt(0x10) * scale).toInt()
+                    val b = (hex.substr(2 * chars, chars).toInt(0x10) * scale).toInt()
+                    val a = if (hasAlpha) (hex.substr(3 * chars, chars).toInt(0x10) * scale).toInt() else 0xFF
+                    return RGBA(r, g, b, a)
+                }
+                str.startsWith("RGBA(", ignoreCase = true) -> {
+                    val parts = str.toUpperCase().removePrefix("RGBA(").removeSuffix(")").split(",")
+                    val r = parts.getOrElse(0) { "0" }.toIntOrNull() ?: 0
+                    val g = parts.getOrElse(1) { "0" }.toIntOrNull() ?: 0
+                    val b = parts.getOrElse(2) { "0" }.toIntOrNull() ?: 0
+                    val af = parts.getOrElse(3) { "1.0" }.toDoubleOrNull() ?: 1.0
+                    return RGBA(r, g, b, (af * 255).toInt())
+                }
+                else -> {
+                    val col = colorsByName[str.toLowerCase()]
+                    //error("Unsupported color '$str'")
+                    if (col == null && errorOnDefault) return get("#$str", default)
+                    return col ?: default
+                }
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            return Colors.RED
+        }
 	}
 
     open class WithDefault(val defaultColor: RGBA) {
