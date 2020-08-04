@@ -9,7 +9,9 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -121,6 +123,7 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
 }
 
 class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext, var views: Views? = null) : JPanel(GridLayout(2, 1)) {
+    var treeSerializer = KTreeSerializer.DEFAULT
     val properties = EditPropertiesComponent(rootView).also { add(it) }
 
     fun attachNewView(newView: View?) {
@@ -162,6 +165,19 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                     tree.setSelectionRow(row)
 
                     val popupMenu = JPopupMenu()
+                    popupMenu.add(JMenuItem("Duplicate").also {
+                        it.addActionListener {
+                            launchImmediately(coroutineContext) {
+                                val view = selectedView
+                                if (view != null) {
+                                    val parent = view.parent
+                                    val newChild = view.viewTreeToKTree(treeSerializer).ktreeToViewTree(treeSerializer)
+                                    parent?.addChild(newChild)
+                                    highlight(newChild)
+                                }
+                            }
+                        }
+                    })
                     popupMenu.add(JMenuItem("Add solid rect").also {
                         it.addActionListener {
                             attachNewView(SolidRect(100, 100, Colors.WHITE))

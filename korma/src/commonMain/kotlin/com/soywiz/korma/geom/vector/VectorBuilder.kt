@@ -131,6 +131,7 @@ fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Double, end: Doubl
 }
 
 fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, 0.0, PI.toDouble() * 2f)
+fun VectorBuilder.circle(point: Point, radius: Double) = arc(point.x, point.y, radius, 0.0, PI.toDouble() * 2f)
 
 fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
     val k = .5522848

@@ -30,6 +30,11 @@ data class Rectangle(
     var x: Double, var y: Double,
     var width: Double, var height: Double
 ) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
+    val topLeft get() = Point(left, top)
+    val topRight get() = Point(right, top)
+    val bottomLeft get() = Point(left, bottom)
+    val bottomRight get() = Point(right, bottom)
+
     override val _x: Double get() = x
     override val _y: Double get() = y
     override val _width: Double get() = width

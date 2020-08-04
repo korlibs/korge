@@ -117,16 +117,30 @@ infix fun Double.umod(other: Double): Double {
 fun Int.nextAlignedTo(align: Int) = if (this.isAlignedTo(align)) this else (((this / align) + 1) * align)
 /** Returns the next value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
 fun Long.nextAlignedTo(align: Long) = if (this.isAlignedTo(align)) this else (((this / align) + 1) * align)
+/** Returns the next value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
+fun Double.nextAlignedTo(align: Double) = if (this.isAlignedTo(align)) this else (((this / align).toInt() + 1) * align)
 
 /** Returns the previous value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
 fun Int.prevAlignedTo(align: Int) = if (this.isAlignedTo(align)) this else nextAlignedTo(align) - align
 /** Returns the previous value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
 fun Long.prevAlignedTo(align: Long) = if (this.isAlignedTo(align)) this else nextAlignedTo(align) - align
+/** Returns the previous value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
+fun Double.prevAlignedTo(align: Double) = if (this.isAlignedTo(align)) this else nextAlignedTo(align) - align
 
 /** Returns whether [this] is multiple of [alignment] */
 fun Int.isAlignedTo(alignment: Int): Boolean = alignment == 0 || (this % alignment) == 0
 /** Returns whether [this] is multiple of [alignment] */
 fun Long.isAlignedTo(alignment: Long): Boolean = alignment == 0L || (this % alignment) == 0L
+/** Returns whether [this] is multiple of [alignment] */
+fun Double.isAlignedTo(alignment: Double): Boolean = alignment == 0.0 || (this % alignment) == 0.0
+
+/** Returns the previous or next value of [this] that is multiple of [align]. If [this] is already multiple, returns itself. */
+fun Double.nearestAlignedTo(align: Double): Double {
+    val prev = this.prevAlignedTo(align)
+    val next = this.nextAlignedTo(align)
+    return if ((this - prev).absoluteValue < (this - next).absoluteValue) prev else next
+}
+
 
 ////////////////////
 ////////////////////

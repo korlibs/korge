@@ -32,6 +32,28 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
     val window by lazy { SwingUtilities.getWindowAncestor(component) ?: (component as Frame) }
 
+    override var cursor: Cursor = Cursor.DEFAULT
+        set(value) {
+            field = value
+            val awtCursor = when (value) {
+                Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
+                Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
+                Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
+                Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
+                Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
+                Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
+                Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
+                Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
+                Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
+                Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
+                Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
+                Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
+                Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
+                Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+            }
+            component.cursor = java.awt.Cursor(awtCursor)
+        }
+
     protected open fun ensureContext() {
     }
 

@@ -131,6 +131,14 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 }
 
 open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, CoroutineContext.Element, AGWindow {
+    enum class Cursor {
+        DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
+        RESIZE_EAST, RESIZE_WEST, RESIZE_SOUTH, RESIZE_NORTH,
+        RESIZE_NORTH_EAST, RESIZE_NORTH_WEST, RESIZE_SOUTH_EAST, RESIZE_SOUTH_WEST,
+    }
+
+    open var cursor: Cursor = Cursor.DEFAULT
+
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow>
 

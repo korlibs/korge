@@ -11,11 +11,9 @@ class KorgeGradlePlugin : Plugin<Project> {
         project.korge // Ensure KorGE extension is here
         System.setProperty("java.awt.headless", "true")
         project.plugins.apply("kotlin-multiplatform")
-        project.kotlin.apply {
-            metadata()
-        }
         project.afterEvaluate {
-            val korgeVersion = project.findProperty("korgeVersion") ?: "20-SNAPSHOT"
+            //val korgeVersion = project.findProperty("korgeVersion") ?: "20-SNAPSHOT"
+            val korgeVersion = project.findProperty("korgeVersion") ?: "20-alpha-1"
             project.dependencies.add("commonMainApi", "com.soywiz.korlibs.korge:korge:$korgeVersion")
             //project.
 
@@ -33,8 +31,8 @@ class KorgeGradlePlugin : Plugin<Project> {
                 }
             }
 
-            /*
-            kotlin {
+            project.kotlin.apply {
+                /*
                 tasks.getByName("jsProcessResources", Task::class).apply {
                     //println(this.outputs.files.toList())
                     doLast {
@@ -75,7 +73,9 @@ class KorgeGradlePlugin : Plugin<Project> {
                         )
                     }
                 }
+                */
 
+                /*
                 if (doEnableKotlinNative) {
                     for (target in nativeTargets()) {
                         target.apply {
@@ -144,8 +144,11 @@ class KorgeGradlePlugin : Plugin<Project> {
                         }
                     }
                 }
+
+                 */
             }
 
+            /*
             project.tasks {
                 val runJvm by getting(KorgeJavaExec::class)
                 val jvmMainClasses by getting(Task::class)
@@ -206,7 +209,7 @@ class KorgeGradlePlugin : Plugin<Project> {
                     }
                 }
             }
-             */
+            */
         }
     }
 }

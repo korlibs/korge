@@ -191,10 +191,10 @@ open class Container : View(true) {
 	}
 
     override fun renderDebug(ctx: RenderContext) {
-        super.renderDebug(ctx)
         forEachChildren { child ->
             child.renderDebug(ctx)
         }
+        super.renderDebug(ctx)
     }
 
     private val bb = BoundsBuilder()

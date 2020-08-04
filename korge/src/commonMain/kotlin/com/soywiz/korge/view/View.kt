@@ -854,19 +854,30 @@ abstract class View internal constructor(
         }
     }
 
-    open protected fun renderDebugAnnotationsInternal(ctx: RenderContext) {
+    protected open fun renderDebugAnnotationsInternal(ctx: RenderContext) {
         //println("DEBUG ANNOTATE VIEW!")
-        ctx.flush()
+        //ctx.flush()
+        val local = getLocalBounds()
         ctx.debugLineRenderContext.drawVector(Colors.RED) {
             rect(globalBounds)
         }
         ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
-            val local = getLocalBounds()
             moveTo(localToGlobal(Point(local.left, local.top)))
             lineTo(localToGlobal(Point(local.right, local.top)))
             lineTo(localToGlobal(Point(local.right, local.bottom)))
             lineTo(localToGlobal(Point(local.left, local.bottom)))
             close()
+        }
+        ctx.debugLineRenderContext.drawVector(Colors.YELLOW) {
+            val anchorSize = 5.0
+            circle(localToGlobal(local.topLeft), anchorSize)
+            circle(localToGlobal(local.topRight), anchorSize)
+            circle(localToGlobal(local.bottomRight), anchorSize)
+            circle(localToGlobal(local.bottomLeft), anchorSize)
+            circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
+            circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
+            circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
+            circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
         }
         ctx.debugLineRenderContext.drawVector(Colors.BLUE) {
             val centerX = globalX
@@ -874,7 +885,7 @@ abstract class View internal constructor(
             line(centerX, centerY - 5, centerX, centerY + 5)
             line(centerX - 5, centerY, centerX + 5, centerY)
         }
-        ctx.flush()
+        //ctx.flush()
     }
 
     private fun renderFiltered(ctx: RenderContext, filter: Filter) {
