@@ -50,5 +50,7 @@ include(":korge-swf")
 include(":korge-intellij-plugin")
 
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
-    include(":samples:${sample.name}")
+    if (File(sample, "build.gradle.kts").exists() || File(sample, "build.gradle").exists()) {
+        include(":samples:${sample.name}")
+    }
 }

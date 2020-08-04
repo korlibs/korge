@@ -35,7 +35,7 @@ class ViewNode(val view: View?) : TreeNode {
     override fun getAllowsChildren(): Boolean = container != null
     override fun isLeaf(): Boolean = container == null
     @OptIn(KorgeInternal::class)
-    override fun children(): Enumeration<*> = Vector<Any>(childrenList()).elements()
+    override fun children() = Vector<Any>(childrenList()).elements() as Enumeration<out TreeNode>
 }
 
 class ViewDebuggerChanged(val view: View?) : Event()
