@@ -30,23 +30,28 @@ class EditableSection(val title: String, val list: List<EditableNode>) : Editabl
     override val allBaseEditableProperty: List<BaseEditableProperty<*>> = this.list.flatMap { it.allBaseEditableProperty }
 }
 
+data class DebugChangeEvent<T>(
+    val newValue: T,
+    val triggeredByUser: Boolean
+)
+
 abstract class BaseEditableProperty<T : Any>(
     val getValue: () -> T,
     val setValue: (T) -> Unit,
 ) : EditableNode() {
     abstract val name: String
     abstract val clazz: KClass<T>
-    val onChange = Signal<T>()
+    val onChange = Signal<DebugChangeEvent<T>>()
     //var prev: T = initialValue
     val initialValue = getValue()
 
-    fun updateValue(newValue: T) {
+    fun updateValue(newValue: T, triggeredByUser: Boolean = true) {
         setValue(newValue)
-        onChange(newValue)
+        onChange(DebugChangeEvent(newValue, triggeredByUser))
     }
 
     override fun synchronizeProperties() {
-        onChange(value)
+        onChange(DebugChangeEvent(value, false))
     }
 
     var value: T

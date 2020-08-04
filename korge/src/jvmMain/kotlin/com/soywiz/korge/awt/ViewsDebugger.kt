@@ -9,11 +9,17 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
+import com.soywiz.korim.color.*
 import java.awt.*
+import java.awt.event.*
+import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
+import javax.swing.SwingUtilities
+
+
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -58,16 +64,18 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
             add(view::x.toEditableProperty(supportOutOfRange = true))
             add(view::y.toEditableProperty(supportOutOfRange = true))
             if (view is RectBase) {
-                add(view::anchorX.toEditableProperty(supportOutOfRange = true))
-                add(view::anchorY.toEditableProperty(supportOutOfRange = true))
+                add(view::anchorX.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
+                add(view::anchorY.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
                 add(EditableButtonProperty("center") {
-                    view.anchorX = -view.width / 2
-                    view.anchorY = -view.height / 2
+                    view.anchorX = 0.5
+                    view.anchorY = 0.5
+                    //view.anchorX = -view.width / 2
+                    //view.anchorY = -view.height / 2
                 })
             }
             if (view is AnBaseShape) {
-                add(view::dx.toEditableProperty(name = "anchorX", supportOutOfRange = true))
-                add(view::dy.toEditableProperty(name = "anchorY", supportOutOfRange = true))
+                add(view::dx.toEditableProperty(name = "dx", supportOutOfRange = true))
+                add(view::dy.toEditableProperty(name = "dy", supportOutOfRange = true))
                 add(EditableButtonProperty("center") {
                     view.dx = (-view.width / 2).toFloat()
                     view.dy = (-view.height / 2).toFloat()
@@ -88,14 +96,10 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
         var updating = false
         propertyList.fastForEach { property ->
             property.onChange {
-                if (!updating) {
-                    try {
-                        updating = true
-                        nodeTree.synchronizeProperties()
-                        view.stage?.views?.debugSaveView(view)
-                    } finally {
-                        updating = false
-                    }
+                if (it.triggeredByUser) {
+                    updating = true
+                    nodeTree.synchronizeProperties()
+                    view.stage?.views?.debugSaveView(view)
                 }
             }
         }
@@ -115,14 +119,45 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
 
 class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext, var views: Views? = null) : JPanel(GridLayout(2, 1)) {
     val properties = EditPropertiesComponent(rootView).also { add(it) }
-    val tree = JTree(ViewNode(rootView)).apply {
+
+    fun attachNewView(newView: View?) {
+        if (newView == null) return
+        (selectedView as Container?)?.addChild(newView)
+        highlight(newView)
+        views?.stage?.views?.debugSaveView(newView)
+    }
+
+    val tree: JTree = JTree(ViewNode(rootView)).apply {
+        val tree = this
         addTreeSelectionListener {
             val viewNode = it.path.lastPathComponent as ViewNode
             properties.setView(viewNode.view, coroutineContext)
             (views ?: rootView?.stage?.views)?.renderContext?.debugAnnotateView = viewNode.view
         }
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    val row = tree.getClosestRowForLocation(e.x, e.y)
+                    tree.setSelectionRow(row)
+
+                    val popupMenu = JPopupMenu()
+                    popupMenu.add(JMenuItem("Add solid rect").also {
+                        it.addActionListener {
+                            attachNewView(SolidRect(100, 100, Colors.RED))
+                        }
+                    })
+                    popupMenu.add(JMenuItem("Add container").also {
+                        it.addActionListener {
+                            attachNewView(Container())
+                        }
+                    })
+
+                    popupMenu.show(e.component, e.x, e.y)
+                }
+            }
+        })
     }
-    val selectedView get() = (tree.selectionPath?.lastPathComponent as? ViewNode)?.view
+    val selectedView: View? get() = (tree.selectionPath?.lastPathComponent as? ViewNode)?.view
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
     fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {

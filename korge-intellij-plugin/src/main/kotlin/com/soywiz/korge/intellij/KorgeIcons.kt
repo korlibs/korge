@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij
 import com.intellij.openapi.util.IconLoader
 
 object KorgeIcons {
+    val KTREE by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/korge.png") }
 	val PARTICLE by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/particle.png") }
 	val BITMAP_FONT by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/bitmap_font.png") }
 	val KRITA by lazy { IconLoader.getIcon("/com/soywiz/korge/intellij/icon/krita.png") }

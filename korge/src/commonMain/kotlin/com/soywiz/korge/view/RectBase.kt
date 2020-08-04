@@ -18,7 +18,8 @@ open class RectBase(
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
-) : Container(), Anchorable {
+//) : Container(), Anchorable {
+) : View(), Anchorable {
     init {
         this.hitShape = hitShape
     }
@@ -61,7 +62,7 @@ open class RectBase(
 			//println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
 			ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
 		}
-		super.renderInternal(ctx)
+		//super.renderInternal(ctx)
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

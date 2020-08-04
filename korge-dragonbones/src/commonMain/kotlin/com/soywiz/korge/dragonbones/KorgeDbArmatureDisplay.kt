@@ -94,7 +94,8 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
 			this._debugDraw = drawed
 			if (this._debugDraw) {
 				if (this._debugDrawer === null) {
-					this._debugDrawer = Image(Bitmaps.transparent)
+					//this._debugDrawer = Image(Bitmaps.transparent)
+                    this._debugDrawer = Container()
 					val boneDrawer = Graphics()
 					this._debugDrawer?.addChild(boneDrawer)
 				}

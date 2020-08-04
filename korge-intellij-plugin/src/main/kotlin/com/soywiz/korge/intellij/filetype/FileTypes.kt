@@ -34,6 +34,11 @@ open class PEXLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANC
 		@JvmField val INSTANCE = PEXLanguage()
 	}
 }
+open class KTREELanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANCE, "KORGE_KTREE", "text/ktree") {
+    companion object {
+        @JvmField val INSTANCE = KTREELanguage()
+    }
+}
 open class SCMLLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANCE, "KORGE_SCML", "text/scml") {
 	companion object {
 		@JvmField val INSTANCE = SCMLLanguage()
@@ -78,6 +83,11 @@ open class PexFileType : XmlBaseType(KorgeIcons.PARTICLE, "KORGE_PEX", "pex", "P
 	companion object {
 		@JvmField val INSTANCE = PexFileType()
 	}
+}
+open class KTreeFileType : XmlBaseType(KorgeIcons.KTREE, "KORGE_KTREE", "ktree", "Korge Tree", KTREELanguage.INSTANCE) {
+    companion object {
+        @JvmField val INSTANCE = KTreeFileType()
+    }
 }
 open class ScmlFileType : XmlBaseType(KorgeIcons.SPRITER, "KORGE_SCML", "scml", "Spriter Text File", SCMLLanguage.INSTANCE) {
 	companion object {

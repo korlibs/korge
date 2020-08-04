@@ -141,7 +141,7 @@ class EditableListValue<T : Any>(val context: CoroutineContext, val editProp: Ed
             valueTextField.supportedValues = it.map { it.toString() }.toSet()
         }
         editProp.onChange.add {
-            updateValue(it, false)
+            updateValue(it.newValue, false)
         }
         updateValue(editProp.value)
     }
@@ -228,7 +228,7 @@ class EditableNumberValue(
             }
         }.also { valueTextField = it })
         editProp.onChange.add {
-            updateValue(it.toDouble(), false)
+            updateValue(it.newValue.toDouble(), false)
         }
         updateValue(value)
     }

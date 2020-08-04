@@ -13,6 +13,7 @@ data class Xml(
 	val allChildren: List<Xml>,
 	val content: String
 ) {
+
 	val attributesLC = attributes.toCaseInsensitiveMap()
 	val nameLC: String = name.toLowerCase().trim()
 	val descendants: Iterable<Xml> get() = allChildren.flatMap { it.descendants + it }

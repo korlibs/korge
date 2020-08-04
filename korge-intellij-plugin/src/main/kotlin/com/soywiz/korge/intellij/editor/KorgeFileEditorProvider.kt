@@ -34,6 +34,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
             ////////
             name.endsWith(".svg", ignoreCase = true) -> true
             name.endsWith(".pex", ignoreCase = true) -> true
+            name.endsWith(".ktree", ignoreCase = true) -> true
             name.endsWith(".scml", ignoreCase = true) -> true
             name.endsWith("_ske.json", ignoreCase = true) -> true
             ////////
@@ -78,6 +79,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
                     "tmx" -> createModule(null) { tiledMapEditor(file) }
                     "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
                     "pex" -> particleEmiterEditor(file)
+                    "ktree" -> ktreeEditor(file)
                     "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
                     "swf", "ani" -> swfAnimationEditor(file)
                     else -> createModule(null) { }

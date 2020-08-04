@@ -13,3 +13,8 @@ class XmlBuilder internal constructor() {
 
 fun buildXml(rootTag: String, vararg props: Pair<String, Any?>, block: XmlBuilder.() -> Unit): Xml =
     XmlBuilder().node(rootTag, *props, block = block)
+
+fun Xml(rootTag: String, vararg props: Pair<String, Any?>, block: XmlBuilder.() -> Unit): Xml =
+    XmlBuilder().node(rootTag, *props, block = block)
+fun Xml(rootTag: String, vararg props: Pair<String, Any?>): Xml =
+    XmlBuilder().node(rootTag, *props, block = {})

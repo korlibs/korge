@@ -130,6 +130,7 @@
             <action id="Korge.NewFile.KorgeScene" class="com.soywiz.korge.intellij.createnew.NewKorgeScene"/>
             <action id="Korge.NewFile.TiledMap" class="com.soywiz.korge.intellij.createnew.NewTiledMap"/>
             <action id="Korge.NewFile.ParticleEmitter" class="com.soywiz.korge.intellij.createnew.NewParticleEmitter"/>
+            <action id="Korge.NewFile.KTree" class="com.soywiz.korge.intellij.createnew.KTreeNew"/>
 
             <separator/>
         </group>
@@ -174,6 +175,7 @@
         <fileType name="KORGE_SCML"  implementationClass="com.soywiz.korge.intellij.filetype.ScmlFileType"       fieldName="INSTANCE" language="KORGE_SCML"  extensions="scml"       />
         <fileType name="KORGE_SCON"  implementationClass="com.soywiz.korge.intellij.filetype.SconFileType"       fieldName="INSTANCE" language="KORGE_SCON"  extensions="scon"       />
         <fileType name="KORGE_FNT"   implementationClass="com.soywiz.korge.intellij.filetype.FntFileType"        fieldName="INSTANCE" language="KORGE_FNT"   extensions="fnt"        />
+        <fileType name="KORGE_KTREE" implementationClass="com.soywiz.korge.intellij.filetype.KTreeFileType"      fieldName="INSTANCE" language="KORGE_KTREE"   extensions="ktree"        />
 
         <fileType name="KRA"   implementationClass="com.soywiz.korge.intellij.filetype.KraFileType"        fieldName="INSTANCE"   extensions="kra"        />
         <fileType name="SKEL"   implementationClass="com.soywiz.korge.intellij.filetype.SpineSkeletonFileType"        fieldName="INSTANCE"   extensions="skel"        />
