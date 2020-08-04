@@ -18,3 +18,7 @@ fun Xml(rootTag: String, vararg props: Pair<String, Any?>, block: XmlBuilder.() 
     XmlBuilder().node(rootTag, *props, block = block)
 fun Xml(rootTag: String, vararg props: Pair<String, Any?>): Xml =
     XmlBuilder().node(rootTag, *props, block = {})
+fun Xml(rootTag: String, props: Map<String, Any?>): Xml =
+    XmlBuilder().node(rootTag, *props.map { it.key to it.value }.toTypedArray(), block = {})
+fun Xml(rootTag: String, props: Map<String, Any?>, block: XmlBuilder.() -> Unit): Xml =
+    XmlBuilder().node(rootTag, *props.map { it.key to it.value }.toTypedArray(), block = block)

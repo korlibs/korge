@@ -10,11 +10,36 @@ open class KTreeSerializer {
         val DEFAULT = KTreeSerializer()
     }
 
+    data class Registration(
+        val deserializer: (xml: Xml) -> View?,
+        val serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?
+    )
+
+    private val registrations = arrayListOf<Registration>()
+
+    fun register(registration: Registration) {
+        registrations.add(registration)
+    }
+
+    fun register(deserializer: (xml: Xml) -> View, serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
+        register(Registration(deserializer, serializer))
+    }
+
     open fun ktreeToViewTree(xml: Xml): View {
-        val view = when (xml.nameLC) {
-            "solidrect" -> SolidRect(100, 100, Colors.RED)
-            "container" -> Container()
-            else -> TODO()
+        var view: View? = null
+        when (xml.nameLC) {
+            "solidrect" -> view = SolidRect(100, 100, Colors.RED)
+            "container" -> view = Container()
+            else -> {
+                for (registration in registrations) {
+                    view = registration.deserializer(xml)
+                    if (view != null) break
+                }
+            }
+        }
+
+        if (view == null) {
+            TODO("Unsupported node ${xml.name}")
         }
 
         fun double(prop: KMutableProperty0<Double>, defaultValue: Double) {
@@ -46,10 +71,10 @@ open class KTreeSerializer {
     }
     
     open fun viewTreeToKTree(view: View): Xml {
-        val properties = arrayListOf<Pair<String, Any?>>()
+        val properties = LinkedHashMap<String, Any?>()
 
         fun add(prop: KProperty0<*>) {
-            properties.add(prop.name to prop.get())
+            properties[prop.name] = prop.get()
         }
 
         if (view.alpha != 1.0) add(view::alpha)
@@ -70,13 +95,14 @@ open class KTreeSerializer {
         }
 
         return when (view) {
-            is SolidRect -> Xml("solidrect", *properties.toTypedArray())
-            is Container -> Xml("container", *properties.toTypedArray()) {
-                view.forEachChildren {
-                    this@Xml.node(it.viewTreeToKTree())
-                }
+            is SolidRect -> Xml("solidrect", properties)
+            is Container -> Xml("container", properties) {
+                view.forEachChildren { this@Xml.node(it.viewTreeToKTree()) }
             }
-            else -> TODO("Unsupported node")
+            else -> {
+                registrations.map { it.serializer(view, properties) }.firstOrNull()
+                    ?: error("Don't know how to serialize $view")
+            }
         }
     }
 }
