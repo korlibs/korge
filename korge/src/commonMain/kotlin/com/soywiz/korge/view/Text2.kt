@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
@@ -43,7 +44,7 @@ open class Text2(
     color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
     horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
     renderer: TextRenderer<String> = DefaultStringTextRenderer
-) : Container() {
+) : Container(), KorgeDebugNode, ViewLeaf {
     private var cachedVersion = -1
     private var version = 0
 
@@ -95,6 +96,14 @@ open class Text2(
             }
         }
         super.renderInternal(ctx)
+    }
+
+    override fun getDebugProperties(views: Views) = EditableSection("Text") {
+        val text = this@Text2
+        add(text::text.toEditableProperty())
+        add(text::fontSize.toEditableProperty(1.0, 300.0))
+        add(text::verticalAlign.toEditablePropertyEnum(clazz = VerticalAlign::class, enumConstants = arrayOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM)))
+        add(text::horizontalAlign.toEditablePropertyEnum(clazz = HorizontalAlign::class, enumConstants = arrayOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY)))
     }
 }
 

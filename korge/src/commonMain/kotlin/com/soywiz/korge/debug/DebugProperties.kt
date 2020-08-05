@@ -274,6 +274,21 @@ fun <T : Enum<*>> KMutableProperty0<T>.toEditableProperty(
     )
 }
 
+fun <T : Any> KMutableProperty0<T>.toEditablePropertyEnum(
+    name: String? = null,
+    clazz: KClass<T>,
+    enumConstants: Array<T>
+): EditableEnumerableProperty<T> {
+    val prop = this
+    return EditableEnumerableProperty<T>(
+        name = name ?: this.name,
+        clazz = clazz,
+        get = { prop.get() },
+        set = { prop.set(it) },
+        supportedValues = enumConstants.toSet()
+    )
+}
+
 fun RGBAf.editableNodes(variance: Boolean = false) = listOf(
     this::rd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "red"),
     this::gd.toEditableProperty(if (variance) -1.0 else 0.0, +1.0, name = "green"),

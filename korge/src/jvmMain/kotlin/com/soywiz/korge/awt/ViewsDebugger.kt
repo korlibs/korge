@@ -194,7 +194,10 @@ class ViewsDebuggerComponent(
                             popupMenu.add(JMenuItem("Add ${factory.name}").also {
                                 it.isEnabled = isContainer
                                 it.addActionListener {
-                                    attachNewView(factory.build().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
+                                    attachNewView(factory.build().also {
+                                        it.globalX = views.virtualWidth * 0.5
+                                        it.globalY = views.virtualWidth * 0.5
+                                    })
                                 }
                             })
                         }

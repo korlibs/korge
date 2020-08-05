@@ -3,8 +3,10 @@ package com.soywiz.korge.view.ktree
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import kotlin.reflect.*
@@ -56,6 +58,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             "animation" -> view = AnimationViewRef()
             "tiledmapref" -> view = TiledMapViewRef()
             "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
+            "text" -> view = Text2(xml.str("text"))
             else -> {
                 for (registration in registrations) {
                     view = registration.deserializer(xml)
@@ -109,6 +112,12 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             double(view::width, 100.0)
             double(view::height, 100.0)
         }
+        if (view is Text2) {
+            string(view::text, "Text")
+            double(view::fontSize, 10.0)
+            view.verticalAlign = VerticalAlign(xml.str("verticalAlign"))
+            view.horizontalAlign = HorizontalAlign(xml.str("horizontalAlign"))
+        }
         view.blendMode = BlendMode[xml.str("blendMode", "INHERIT")]
         if (view is Container) {
             for (node in xml.allNodeChildren) {
@@ -153,6 +162,12 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         if (view is ViewFileRef) {
             add(view::sourceFile)
         }
+        if (view is Text2) {
+            add(view::text)
+            add(view::fontSize)
+            add(view::verticalAlign)
+            add(view::horizontalAlign)
+        }
 
         val results = registrations.map { it.serializer(view, properties) }
         val result = results.filterNotNull().firstOrNull()
@@ -166,6 +181,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             is Image -> Xml("image", properties)
             is TreeViewRef -> Xml("treeviewref", properties)
             is TiledMapViewRef -> Xml("tiledmapref", properties)
+            is Text2 -> Xml("text", properties)
             is Container -> Xml("container", properties) {
                 view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs)) }
             }
