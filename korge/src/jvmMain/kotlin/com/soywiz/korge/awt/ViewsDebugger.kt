@@ -190,6 +190,14 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                             }
                         })
                         popupMenu.add(JSeparator())
+                        popupMenu.add(JMenuItem("Cut").also {
+                            it.addActionListener {
+                                launchImmediately(coroutineContext) {
+                                    pasteboard = view.viewTreeToKTree(views!!)
+                                    removeCurrentNode()
+                                }
+                            }
+                        })
                         popupMenu.add(JMenuItem("Copy").also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {

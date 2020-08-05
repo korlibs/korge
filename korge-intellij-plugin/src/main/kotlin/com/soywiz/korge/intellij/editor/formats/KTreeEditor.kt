@@ -87,12 +87,25 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         var gridWidth = 20.0
         var gridHeight = 20.0
 
+        fun selectView(view: View?) {
+            views.renderContext.debugAnnotateView = view
+            views.debugHightlightView(view)
+            selectedView = view
+        }
+
         stage.mouse {
             click {
                 val view = selectedView
                 if (it.button == MouseButton.RIGHT) {
                     val hasView = view != null
                     gameWindow.showContextMenu(listOf(
+                        GameWindow.MenuItem("Cut", enabled = hasView) {
+                            launchImmediately {
+                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views)
+                                selectView(view?.parent)
+                                view!!.removeFromParent()
+                            }
+                        },
                         GameWindow.MenuItem("Copy", enabled = hasView) {
                             launchImmediately {
                                 viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views)
@@ -132,12 +145,9 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                 if (currentAnchor == null) {
                     val view2 = stage.hitTest(it.lastPosStage)
                     if (view2 !== stage) {
-                        views.debugHightlightView(view2)
-                        selectedView = view2
+                        selectView(view2)
                     } else {
-                        views.renderContext.debugAnnotateView = null
-                        selectedView = null
-                        views.debugHightlightView(selectedView)
+                        selectView(null)
                     }
                 } else {
                     val view = selectedView
