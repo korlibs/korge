@@ -149,9 +149,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
                 (45.degrees * 7) to RESIZE_NORTH_EAST,
             )
 
-            fun fromAngle(angle: Angle?): Cursor {
+            fun fromAngle(angle: Angle?): Cursor? {
                 var minDistance = 360.degrees
-                var cursor: Cursor = DEFAULT
+                var cursor: Cursor? = null
                 if (angle != null) {
                     for ((cangle, ccursor) in ANGLE_TO_CURSOR) {
                         val cdistance = (angle - cangle).absoluteValue

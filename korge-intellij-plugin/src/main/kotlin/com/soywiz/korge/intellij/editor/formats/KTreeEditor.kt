@@ -13,9 +13,12 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
+enum class AnchorKind { SCALING, ROTATING }
+
 data class AnchorPointResult(
     val anchor: Anchor,
-    val angle: Angle
+    val angle: Angle,
+    val kind: AnchorKind
 ) {
     companion object {
         val ANCHOR_POINT_TO_ANGLE = mapOf(
@@ -41,21 +44,21 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         val gameWindow = this.views.gameWindow
         val stage = views.stage
 
-        fun getScaleAnchorPoint(view: View?): AnchorPointResult? {
+        fun getScaleAnchorPoint(view: View?, distance: Int, kind: AnchorKind): AnchorPointResult? {
             if (view == null) return null
             fun cursorDistanceToPoint(point: Point) = (stage.mouseXY - point).length
             var anchor: Anchor? = null
             var angle: Angle? = null
 
             for ((currentAnchor, currentAngle) in AnchorPointResult.ANCHOR_POINT_TO_ANGLE) {
-                if (cursorDistanceToPoint(view.globalLocalBoundsPointRatio(currentAnchor)) < 10) {
+                if (cursorDistanceToPoint(view.globalLocalBoundsPointRatio(currentAnchor)) < distance) {
                     anchor = currentAnchor
                     angle = (view.rotation + currentAngle).normalized
                     break
                 }
             }
 
-            return if (anchor == null || angle == null) null else AnchorPointResult(anchor, angle)
+            return if (anchor == null || angle == null) null else AnchorPointResult(anchor, angle, kind)
         }
 
         // Dirty hack
@@ -78,7 +81,12 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         val startSelectedViewPos = Point()
         val startSelectedMousePos = Point()
         val selectedViewSize = Size()
+        var selectedViewInitialRotation = 0.degrees
         var currentAnchor: AnchorPointResult? = null
+        var gridSnapping = true
+        var gridWidth = 20.0
+        var gridHeight = 20.0
+
         stage.mouse {
             click {
                 val view = selectedView
@@ -117,16 +125,15 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
             }
             down {
                 pressing = true
-                currentAnchor = getScaleAnchorPoint(selectedView)
+                currentAnchor = getScaleAnchorPoint(selectedView, 10, AnchorKind.SCALING)
+                        ?: getScaleAnchorPoint(selectedView, 20, AnchorKind.ROTATING)
+
                 startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
                 if (currentAnchor == null) {
                     val view2 = stage.hitTest(it.lastPosStage)
                     if (view2 !== stage) {
                         views.debugHightlightView(view2)
                         selectedView = view2
-                        if (view2 != null) {
-                            startSelectedViewPos.setTo(view2.globalX, view2.globalY)
-                        }
                     } else {
                         views.renderContext.debugAnnotateView = null
                         selectedView = null
@@ -136,32 +143,63 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                     val view = selectedView
                     if (view != null) {
                         selectedViewSize.setTo(view.scaledWidth, view.scaledHeight)
+                        selectedViewInitialRotation = view.rotation
                     }
                 }
+                selectedView?.let { view ->
+                    startSelectedViewPos.setTo(view.globalX, view.globalY)
+                }
+
                 //println("DOWN ON ${it.view}, $view2, ${it.lastPosStage}")
             }
             up {
                 pressing = false
             }
-            onMoveAnywhere {
+            onMoveAnywhere { e ->
                 val view = selectedView
                 if (pressing && view != null) {
                     val dx = views.globalMouseX - startSelectedMousePos.x
                     val dy = views.globalMouseY - startSelectedMousePos.y
-                    if (currentAnchor != null) {
-                        view.scaledWidth = (selectedViewSize.width + dx).nearestAlignedTo(20.0)
-                        view.scaledHeight = (selectedViewSize.height + dy).nearestAlignedTo(20.0)
+                    val anchor = currentAnchor
+                    if (anchor != null) {
+                        when (anchor.kind) {
+                            AnchorKind.SCALING -> {
+                                view.scaledWidth = (selectedViewSize.width + dx)
+                                view.scaledHeight = (selectedViewSize.height + dy)
+                                if (gridSnapping) {
+                                    view.scaledWidth = view.scaledWidth.nearestAlignedTo(gridWidth)
+                                    view.scaledHeight = view.scaledHeight.nearestAlignedTo(gridHeight)
+                                }
+                            }
+                            AnchorKind.ROTATING -> {
+                                val initialAngle = Angle.between(startSelectedViewPos, startSelectedMousePos)
+                                val currentAngle = Angle.between(startSelectedViewPos, views.globalMouseXY)
+                                val deltaAngle = currentAngle - initialAngle
+                                view.rotation = (selectedViewInitialRotation + deltaAngle)
+                                if (e.isShiftDown) {
+                                    view.rotationDegrees = view.rotationDegrees.nearestAlignedTo(15.0)
+                                }
+                            }
+                        }
                     } else {
-                        view.globalX = (startSelectedViewPos.x + dx).nearestAlignedTo(20.0)
-                        view.globalY = (startSelectedViewPos.y + dy).nearestAlignedTo(20.0)
+                        view.globalX = (startSelectedViewPos.x + dx)
+                        view.globalY = (startSelectedViewPos.y + dy)
+                        if (gridSnapping) {
+                            view.globalX = view.globalX.nearestAlignedTo(gridWidth)
+                            view.globalY = view.globalY.nearestAlignedTo(gridHeight)
+                        }
                     }
+                    save = true
                     //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                 }
             }
         }
 
         stage.addUpdater {
-            gameWindow.cursor = GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView)?.angle)
+            gameWindow.cursor =
+                GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView, 10, AnchorKind.SCALING)?.angle)
+                    ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
+                    ?: GameWindow.Cursor.DEFAULT
 
             if (save) {
                 save = false
