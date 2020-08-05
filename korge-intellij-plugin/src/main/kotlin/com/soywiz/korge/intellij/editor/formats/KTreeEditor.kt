@@ -13,6 +13,24 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
+data class AnchorPointResult(
+    val anchor: Anchor,
+    val angle: Angle
+) {
+    companion object {
+        val ANCHOR_POINT_TO_ANGLE = mapOf(
+            Anchor.MIDDLE_RIGHT to ((45).degrees * 0),
+            Anchor.BOTTOM_RIGHT to ((45).degrees * 1),
+            Anchor.BOTTOM_CENTER to ((45).degrees * 2),
+            Anchor.BOTTOM_LEFT to ((45).degrees * 3),
+            Anchor.MIDDLE_LEFT to ((45).degrees * 4),
+            Anchor.TOP_LEFT to ((45).degrees * 5),
+            Anchor.TOP_CENTER to ((45).degrees * 6),
+            Anchor.TOP_RIGHT to ((45).degrees * 7),
+        )
+    }
+}
+
 suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     var save = false
 
@@ -22,6 +40,24 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         val views = this.views
         val gameWindow = this.views.gameWindow
         val stage = views.stage
+
+        fun getScaleAnchorPoint(view: View?): AnchorPointResult? {
+            if (view == null) return null
+            fun cursorDistanceToPoint(point: Point) = (stage.mouseXY - point).length
+            var anchor: Anchor? = null
+            var angle: Angle? = null
+
+            for ((currentAnchor, currentAngle) in AnchorPointResult.ANCHOR_POINT_TO_ANGLE) {
+                if (cursorDistanceToPoint(view.globalLocalBoundsPointRatio(currentAnchor)) < 10) {
+                    anchor = currentAnchor
+                    angle = (view.rotation + currentAngle).normalized
+                    break
+                }
+            }
+
+            return if (anchor == null || angle == null) null else AnchorPointResult(anchor, angle)
+        }
+
         // Dirty hack
         views.stage.removeChildren()
 
@@ -41,6 +77,8 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
         var selectedView: View? = null
         val startSelectedViewPos = Point()
         val startSelectedMousePos = Point()
+        val selectedViewSize = Size()
+        var currentAnchor: AnchorPointResult? = null
         stage.mouse {
             click {
                 val view = selectedView
@@ -79,18 +117,26 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
             }
             down {
                 pressing = true
-                val view2 = stage.hitTest(it.lastPosStage)
-                if (view2 !== stage) {
-                    views.debugHightlightView(view2)
-                    selectedView = view2
-                    if (view2 != null) {
-                        startSelectedViewPos.setTo(view2.globalX, view2.globalY)
-                        startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
+                currentAnchor = getScaleAnchorPoint(selectedView)
+                startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
+                if (currentAnchor == null) {
+                    val view2 = stage.hitTest(it.lastPosStage)
+                    if (view2 !== stage) {
+                        views.debugHightlightView(view2)
+                        selectedView = view2
+                        if (view2 != null) {
+                            startSelectedViewPos.setTo(view2.globalX, view2.globalY)
+                        }
+                    } else {
+                        views.renderContext.debugAnnotateView = null
+                        selectedView = null
+                        views.debugHightlightView(selectedView)
                     }
                 } else {
-                    views.renderContext.debugAnnotateView = null
-                    selectedView = null
-                    views.debugHightlightView(selectedView)
+                    val view = selectedView
+                    if (view != null) {
+                        selectedViewSize.setTo(view.scaledWidth, view.scaledHeight)
+                    }
                 }
                 //println("DOWN ON ${it.view}, $view2, ${it.lastPosStage}")
             }
@@ -102,37 +148,20 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                 if (pressing && view != null) {
                     val dx = views.globalMouseX - startSelectedMousePos.x
                     val dy = views.globalMouseY - startSelectedMousePos.y
-                    view.globalX = (startSelectedViewPos.x + dx).nearestAlignedTo(20.0)
-                    view.globalY = (startSelectedViewPos.y + dy).nearestAlignedTo(20.0)
+                    if (currentAnchor != null) {
+                        view.scaledWidth = (selectedViewSize.width + dx).nearestAlignedTo(20.0)
+                        view.scaledHeight = (selectedViewSize.height + dy).nearestAlignedTo(20.0)
+                    } else {
+                        view.globalX = (startSelectedViewPos.x + dx).nearestAlignedTo(20.0)
+                        view.globalY = (startSelectedViewPos.y + dy).nearestAlignedTo(20.0)
+                    }
                     //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                 }
             }
         }
 
         stage.addUpdater {
-            val view = selectedView
-            var cursor = GameWindow.Cursor.DEFAULT
-            fun distanceToPoint(point: Point) = (stage.mouseXY - point).length
-            if (view != null) {
-                var angle: Angle? = null
-                angle = when {
-                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 0.5)) < 10 -> (45).degrees * 0
-                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 1.0)) < 10 -> (45).degrees * 1
-                    distanceToPoint(view.globalLocalBoundsPointRatio(0.5, 1.0)) < 10 -> (45).degrees * 2
-                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 1.0)) < 10 -> (45).degrees * 3
-                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 0.5)) < 10 -> (45).degrees * 4
-                    distanceToPoint(view.globalLocalBoundsPointRatio(0.0, 0.0)) < 10 -> (45).degrees * 5
-                    distanceToPoint(view.globalLocalBoundsPointRatio(0.5, 0.0)) < 10 -> (45).degrees * 6
-                    distanceToPoint(view.globalLocalBoundsPointRatio(1.0, 0.0)) < 10 -> (45).degrees * 7
-                    else -> null
-                }
-                if (angle != null) {
-                    val realAngle = (view.rotation + angle).normalized
-                    cursor = GameWindow.Cursor.fromAngle(realAngle)
-                }
-            }
-
-            gameWindow.cursor = cursor
+            gameWindow.cursor = GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView)?.angle)
 
             if (save) {
                 save = false

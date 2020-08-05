@@ -1303,6 +1303,8 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
+    fun globalLocalBoundsPointRatio(anchor: Anchor, out: Point = Point()): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
+
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: Point = Point()): Point {
         val bounds = getLocalBounds()
         val x = ratioX.interpolate(bounds.left, bounds.right)
