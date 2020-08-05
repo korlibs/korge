@@ -18,15 +18,29 @@ class KeysEvents(override val view: View) : KeyComponent {
 	val onKeyUp = AsyncSignal<KeyEvent>()
 	val onKeyTyped = AsyncSignal<KeyEvent>()
 
+    @Deprecated("Use downNew")
 	fun down(key: Key, callback: suspend (key: Key) -> Unit): Closeable = onKeyDown { e -> if (e.key == key) callback(key) }
+    @Deprecated("Use downNew")
 	fun up(key: Key, callback: suspend (key: Key) -> Unit): Closeable = onKeyUp { e -> if (e.key == key) callback(key) }
+    @Deprecated("Use downNew")
 	fun typed(key: Key, callback: suspend (key: Key) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(key) }
 
+    @Deprecated("Use downNew")
 	fun down(callback: suspend (key: Key) -> Unit): Closeable = onKeyDown { e -> callback(e.key) }
+    @Deprecated("Use downNew")
 	fun up(callback: suspend (key: Key) -> Unit): Closeable = onKeyUp { e -> callback(e.key) }
+    @Deprecated("Use downNew")
 	fun typed(callback: suspend (key: Key) -> Unit): Closeable = onKeyTyped { e -> callback(e.key) }
 
-	override fun onKeyEvent(views: Views, event: KeyEvent) {
+    fun downNew(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> callback(e) }
+    fun upNew(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> callback(e) }
+    fun typedNew(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> callback(e) }
+
+    fun downNew(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> if (e.key == key) callback(e) }
+    fun upNew(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key == key) callback(e) }
+    fun typedNew(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(e) }
+
+    override fun onKeyEvent(views: Views, event: KeyEvent) {
         this.views = views
 		when (event.type) {
 			KeyEvent.Type.TYPE -> launchImmediately(views.coroutineContext) { onKeyTyped.invoke(event) }

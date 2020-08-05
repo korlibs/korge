@@ -386,6 +386,23 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         })
     }
 
+    fun dispatchKeyEventEx(
+        type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,
+        shift: Boolean, ctrl: Boolean, alt: Boolean, meta: Boolean
+    ) {
+        dispatch(keyEvent.apply {
+            this.id = id
+            this.character = character
+            this.key = key
+            this.keyCode = keyCode
+            this.type = type
+            this.shift = shift
+            this.ctrl = ctrl
+            this.alt = alt
+            this.meta = meta
+        })
+    }
+
     fun dispatchSimpleMouseEvent(
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, simulateClickOnUp: Boolean = false
     ) {

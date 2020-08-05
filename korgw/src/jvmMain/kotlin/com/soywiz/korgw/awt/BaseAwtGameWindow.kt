@@ -382,7 +382,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 val char = e.keyChar
                 val keyCode = e.keyCode
                 val key = AwtKeyMap[e.keyCode] ?: Key.UNKNOWN
-                dispatchKeyEvent(ev, id, char, key, keyCode)
+
+                dispatchKeyEventEx(ev, id, char, key, keyCode, e.isShiftDown, e.isControlDown, e.isAltDown, e.isMetaDown)
             }
         }
 

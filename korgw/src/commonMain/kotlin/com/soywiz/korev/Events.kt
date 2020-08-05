@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 
@@ -126,14 +127,21 @@ data class TouchEvent(
     enum class Type { START, END, MOVE }
 }
 
-data class KeyEvent(
+data class KeyEvent constructor(
     var type: Type = Type.UP,
     var id: Int = 0,
     var key: Key = Key.UP,
     var keyCode: Int = 0,
     //var char: Char = '\u0000' // @TODO: This caused problem on Kotlin/Native because it is a keyword (framework H)
-    var character: Char = '\u0000'
+    var character: Char = '\u0000',
+    var shift: Boolean = false,
+    var ctrl: Boolean = false,
+    var alt: Boolean = false,
+    var meta: Boolean = false,
 ) : Event() {
+
+    val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
+
 	enum class Type { UP, DOWN, TYPE }
 
     fun copyFrom(other: KeyEvent) {
@@ -142,6 +150,10 @@ data class KeyEvent(
         this.key = other.key
         this.keyCode = other.keyCode
         this.character = other.character
+        this.shift = other.shift
+        this.ctrl = other.ctrl
+        this.alt = other.alt
+        this.meta = other.meta
     }
 }
 
