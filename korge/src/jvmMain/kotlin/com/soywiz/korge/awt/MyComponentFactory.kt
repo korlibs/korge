@@ -1,7 +1,11 @@
 package com.soywiz.korge.awt
 
+import com.soywiz.korge.debug.*
+import com.soywiz.korge.resources.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korinject.*
 import com.soywiz.korio.file.*
 import java.awt.*
 import java.util.*
@@ -22,6 +26,10 @@ open class MyComponentFactory {
     }
 
     open fun chooseColor(value: RGBA, views: Views?): RGBA? {
+        TODO()
+    }
+
+    open fun createModule(block: suspend Scene.() -> Unit): EditorModule {
         TODO()
     }
 }

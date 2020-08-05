@@ -1,11 +1,12 @@
 package com.soywiz.korge.intellij.editor.formats
 
+import com.soywiz.korge.awt.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
 import com.soywiz.korio.file.*
 
-suspend fun dragonBonesEditor(file: VfsFile) : KorgeBaseKorgeFileEditor.EditorModule {
+suspend fun dragonBonesEditor(file: VfsFile) : EditorModule {
     val factory = KorgeDbFactory()
     val skeleton = file.readDbSkeletonAndAtlas(factory)
     val armature = skeleton.armatureNames.first()

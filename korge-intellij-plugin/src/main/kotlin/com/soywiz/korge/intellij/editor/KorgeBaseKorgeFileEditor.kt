@@ -40,9 +40,6 @@ open class KorgeBaseKorgeFileEditor(
 	val module: EditorModule,
 	val _name: String
 ) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware  {
-    abstract class EditorModule() : Module() {
-        open val editableNode: EditableNode? = null
-    }
 
 	companion object {
 		var componentsCreated = 0

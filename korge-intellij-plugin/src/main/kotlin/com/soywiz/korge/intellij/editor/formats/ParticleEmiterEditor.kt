@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
-suspend fun particleEmiterEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
+suspend fun particleEmiterEditor(file: VfsFile): EditorModule {
     val particle = file.readParticleEmitter()
     var doSave = false
     val uiContext = EmptyCoroutineContext

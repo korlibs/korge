@@ -3,6 +3,7 @@ package com.soywiz.korge.intellij.editor
 import com.intellij.openapi.fileEditor.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
@@ -63,13 +64,15 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 		return KorgeBaseKorgeFileEditor(project, virtualFile, createModule(fileToEdit), "Preview")
 	}
 
-    open fun createModule(fileToEdit: KorgeFileToEdit): KorgeBaseKorgeFileEditor.EditorModule {
+    open fun createModule(fileToEdit: KorgeFileToEdit): EditorModule {
         val file = fileToEdit.file
 
         val computedExtension = when {
             file.baseName.endsWith("_ske.json") -> "dbbin"
             else -> file.extensionLC
         }
+
+        initializeIdeaComponentFactory()
 
         return runBlocking {
             try {
@@ -131,8 +134,9 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
     }
 }
 
-fun createModule(editableNode: EditableNode? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): KorgeBaseKorgeFileEditor.EditorModule {
-    return object : KorgeBaseKorgeFileEditor.EditorModule() {
+
+fun createModule(editableNode: EditableNode? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): EditorModule {
+    return object : EditorModule() {
         override val editableNode: EditableNode? get() = editableNode
         override val mainScene = KorgeFileEditorProvider.EditorScene::class
         override suspend fun AsyncInjector.configure() {
@@ -141,3 +145,4 @@ fun createModule(editableNode: EditableNode? = null, block: suspend KorgeFileEdi
         }
     }
 }
+

@@ -7,6 +7,7 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.kds.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
@@ -36,6 +37,10 @@ object IdeaMyComponentFactory : MyComponentFactory() {
 
     override fun chooseColor(value: RGBA, views: Views?): RGBA? {
         return ColorChooser.chooseColor(views!!.ideaComponent, "Choose Color", value.toAwt(), true, true)?.toRgba()
+    }
+
+    override fun createModule(block: suspend Scene.() -> Unit): EditorModule {
+        return com.soywiz.korge.intellij.editor.createModule(null) { block() }
     }
 }
 
