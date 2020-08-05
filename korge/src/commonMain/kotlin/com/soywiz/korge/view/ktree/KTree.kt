@@ -55,6 +55,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
             "animation" -> view = AnimationViewRef()
             "tiledmapref" -> view = TiledMapViewRef()
+            "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
             else -> {
                 for (registration in registrations) {
                     view = registration.deserializer(xml)
@@ -104,6 +105,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             double(view::width, 100.0)
             double(view::height, 100.0)
         }
+        if (view is NinePatchEx) {
+            double(view::width, 100.0)
+            double(view::height, 100.0)
+        }
         view.blendMode = BlendMode[xml.str("blendMode", "INHERIT")]
         if (view is Container) {
             for (node in xml.allNodeChildren) {
@@ -141,6 +146,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             add(view::width)
             add(view::height)
         }
+        if (view is NinePatchEx) {
+            add(view::width)
+            add(view::height)
+        }
         if (view is ViewFileRef) {
             add(view::sourceFile)
         }
@@ -149,6 +158,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         val result = results.filterNotNull().firstOrNull()
         //println("registrations: $registrations, $result, $results")
         return result ?: when (view) {
+            is NinePatchEx -> Xml("ninepatch", properties)
             is AnimationViewRef -> Xml("animation", properties)
             is ParticleEmitterView -> Xml("particle", properties)
             is SolidRect -> Xml("solidrect", properties)

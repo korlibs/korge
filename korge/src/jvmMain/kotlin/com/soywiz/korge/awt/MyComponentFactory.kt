@@ -49,5 +49,6 @@ open class MyComponentFactory {
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
         list.add(ViewFactory("AnimationViewRef") { AnimationViewRef() })
         list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
+        list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62))) })
     }
 }
