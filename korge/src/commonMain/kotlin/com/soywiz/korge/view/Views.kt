@@ -56,7 +56,7 @@ class Views constructor(
 {
     override val views = this
 
-    override val serializer = KTreeSerializer()
+    override val serializer = KTreeSerializer(this)
 
     val keys get() = input.keys
 

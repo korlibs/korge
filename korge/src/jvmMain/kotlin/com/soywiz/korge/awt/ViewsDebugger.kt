@@ -8,7 +8,6 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
@@ -17,7 +16,6 @@ import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
@@ -34,7 +32,6 @@ import javax.swing.SwingUtilities
 import com.soywiz.korma.geom.Point
 import com.soywiz.korev.MouseButton
 
-
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
 class ViewNode(val view: View?) : TreeNode {
@@ -47,13 +44,17 @@ class ViewNode(val view: View?) : TreeNode {
         }.toString()
     }
 
-    fun childrenList(): List<View> = container?.children?.filter { it !is DummyView } ?: listOf()
-    override fun getChildAt(childIndex: Int): TreeNode? = childrenList()?.getOrNull(childIndex)?.treeNode
-    override fun getChildCount(): Int = childrenList()?.size ?: 0
+    override fun isLeaf(): Boolean = (container == null) || (view is ViewLeaf)
+    fun childrenList(): List<View> {
+        if (view is ViewLeaf) return listOf()
+        return container?.children?.filter { it !is DummyView } ?: listOf()
+    }
+
+    override fun getChildAt(childIndex: Int): TreeNode? = childrenList().getOrNull(childIndex)?.treeNode
+    override fun getChildCount(): Int = childrenList().size
     override fun getParent(): TreeNode? = view?.parent?.treeNode
-    override fun getIndex(node: TreeNode?): Int = childrenList()?.indexOf((node as? ViewNode?)?.view) ?: -1
+    override fun getIndex(node: TreeNode?): Int = childrenList().indexOf((node as? ViewNode?)?.view)
     override fun getAllowsChildren(): Boolean = container != null
-    override fun isLeaf(): Boolean = container == null
     @OptIn(KorgeInternal::class)
     override fun children() = Vector<Any>(childrenList()).elements() as Enumeration<out TreeNode>
 }
@@ -208,6 +209,12 @@ class ViewsDebuggerComponent(
                             it.isEnabled = isContainer
                             it.addActionListener {
                                 attachNewView(Container())
+                            }
+                        })
+                        popupMenu.add(JMenuItem("Add TreeViewRef").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(TreeViewRef())
                             }
                         })
                         popupMenu.add(JSeparator())
@@ -430,9 +437,11 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
 
                 startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
                 if (currentAnchor == null) {
-                    val view2 = stage.hitTest(it.lastPosStage)
-                    if (view2 !== stage) {
-                        selectView(view2)
+                    val pickedView = stage.hitTest(it.lastPosStage)
+                    val viewLeaf = pickedView.findLastAscendant { it is ViewLeaf }
+                    val view = viewLeaf ?: pickedView
+                    if (view !== stage) {
+                        selectView(view)
                     } else {
                         selectView(null)
                     }

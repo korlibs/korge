@@ -179,6 +179,7 @@ open class Container : View(true) {
 	 */
 	fun addChild(view: View) = this.plusAssign(view)
 
+    fun addChildren(views: List<View>) = views.fastForEach { addChild(it) }
 	/**
 	 * Alias for [addChild].
 	 */

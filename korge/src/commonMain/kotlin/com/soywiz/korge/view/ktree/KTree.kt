@@ -3,9 +3,7 @@ package com.soywiz.korge.view.ktree
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.xml.*
 import kotlin.reflect.*
 
@@ -13,7 +11,7 @@ interface KTreeSerializerHolder {
     val serializer: KTreeSerializer
 }
 
-open class KTreeSerializer : KTreeSerializerHolder {
+open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     override val serializer get() = this
 
     data class Registration(
@@ -39,6 +37,9 @@ open class KTreeSerializer : KTreeSerializerHolder {
             "container" -> view = Container()
             "image" -> view = Image(Bitmaps.transparent).also { image ->
                 image.forceLoadSourceImage(currentVfs, xml.str("sourceImage"))
+            }
+            "treeviewref" -> view = TreeViewRef().also { ref ->
+                ref.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
             }
             else -> {
                 for (registration in registrations) {
@@ -125,12 +126,15 @@ open class KTreeSerializer : KTreeSerializerHolder {
         if (view is Image) {
             add(view::sourceImage)
         }
-
+        if (view is TreeViewRef) {
+            add(view::sourceFile)
+        }
 
         return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
             is SolidRect -> Xml("solidrect", properties)
             is Ellipse -> Xml("ellipse", properties)
             is Image -> Xml("image", properties)
+            is TreeViewRef -> Xml("treeviewref", properties)
             is Container -> Xml("container", properties) {
                 view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs)) }
             }

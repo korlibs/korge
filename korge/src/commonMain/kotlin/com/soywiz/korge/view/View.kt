@@ -1950,3 +1950,24 @@ inline fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number): T =
 @Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS) annotation class ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
 //typealias ViewDslMarker = KorDslMarker
+
+interface ViewLeaf
+
+fun View?.findFirstAscendant(cond: (view: View) -> Boolean): View? {
+    var current: View? = this
+    while (current != null) {
+        if (cond(current)) return current
+        current = current.parent
+    }
+    return null
+}
+
+fun View?.findLastAscendant(cond: (view: View) -> Boolean): View? {
+    var current: View? = this
+    var result: View? = null
+    while (current != null) {
+        if (cond(current)) result = current
+        current = current.parent
+    }
+    return result
+}
