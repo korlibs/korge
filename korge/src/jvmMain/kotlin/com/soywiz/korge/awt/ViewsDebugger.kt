@@ -224,10 +224,10 @@ class ViewsDebuggerComponent(
                                 attachNewView(ParticleEmitterView(ParticleEmitter()).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
-                        popupMenu.add(JMenuItem("Add AnMovieClip").also {
+                        popupMenu.add(JMenuItem("Add AnimationViewRef").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(AnMovieClip(AnLibrary(AnLibrary.Context(views), 60, 60, 60.0), AnSymbolMovieClip(0, "MainTimeLine", AnSymbolLimits(0, 0, 0, 0))).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
+                                attachNewView(AnimationViewRef())
                             }
                         })
                         popupMenu.add(JSeparator())

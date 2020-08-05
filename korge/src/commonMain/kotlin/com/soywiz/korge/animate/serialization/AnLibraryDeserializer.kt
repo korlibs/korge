@@ -18,6 +18,16 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.coroutines.*
 
+suspend fun VfsFile.readAnimation(views: Views): AnLibrary {
+    val file = this
+    val bytes = this.readBytes()
+    views.animateLibraryLoaders.fastForEach { libraryLoader ->
+        val library = libraryLoader.invoke(bytes.openFastStream(), views.injector)?.loader?.invoke(file, bytes.openFastStream(), views)
+        if (library != null) return library
+    }
+    error("Unsupported format for $file. Did you miss installing something? Like: views.registerSwfLoading()")
+}
+
 suspend fun VfsFile.readAni(context: AnLibrary.Context, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
 	return AnLibraryDeserializer.read(

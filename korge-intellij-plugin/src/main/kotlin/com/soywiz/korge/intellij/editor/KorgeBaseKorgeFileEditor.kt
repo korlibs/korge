@@ -11,6 +11,7 @@ import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.ext.swf.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.ui.*
@@ -79,6 +80,7 @@ open class KorgeBaseKorgeFileEditor(
                     bgcolor = controlRgba,
                     debug = false
                 ) {
+                    views.registerSwfLoading()
                     views.ideaProject = project
                     viewsDebuggerComponent = ViewsDebuggerComponent(views).also {
                         it.styled.fill()

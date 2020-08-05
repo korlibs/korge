@@ -36,15 +36,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             "solidrect" -> view = SolidRect(100, 100, Colors.RED)
             "ellipse" -> view = Ellipse(50.0, 50.0, Colors.RED)
             "container" -> view = Container()
-            "image" -> view = Image(Bitmaps.transparent).also { image ->
-                image.forceLoadSourceImage(currentVfs, xml.str("sourceImage"))
-            }
-            "treeviewref" -> view = TreeViewRef().also { ref ->
-                ref.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
-            }
-            "particle" -> view = ParticleEmitterView(ParticleEmitter()).also { ref ->
-                ref.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
-            }
+            "image" -> view = Image(Bitmaps.transparent)
+            "treeviewref" -> view = TreeViewRef()
+            "particle" -> view = ParticleEmitterView(ParticleEmitter())
+            "animation" -> view = AnimationViewRef()
             else -> {
                 for (registration in registrations) {
                     view = registration.deserializer(xml)
@@ -55,6 +50,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
 
         if (view == null) {
             TODO("Unsupported node ${xml.name}")
+        }
+
+        if (view is ViewFileRef) {
+            view.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
         }
 
         fun double(prop: KMutableProperty0<Double>, defaultValue: Double) {
@@ -127,17 +126,12 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             add(view::width)
             add(view::height)
         }
-        if (view is Image) {
-            add(view::sourceImage)
-        }
-        if (view is TreeViewRef) {
-            add(view::sourceFile)
-        }
-        if (view is ParticleEmitterView) {
+        if (view is ViewFileRef) {
             add(view::sourceFile)
         }
 
         return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
+            is AnimationViewRef -> Xml("animation", properties)
             is ParticleEmitterView -> Xml("particle", properties)
             is SolidRect -> Xml("solidrect", properties)
             is Ellipse -> Xml("ellipse", properties)

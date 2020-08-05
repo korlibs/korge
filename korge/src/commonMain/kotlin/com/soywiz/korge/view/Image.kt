@@ -56,7 +56,7 @@ class Image(
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), KorgeDebugNode {
+) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), KorgeDebugNode {
 	constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
@@ -67,33 +67,25 @@ class Image(
 
     override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
 
-    private var sourceImageLoaded: Boolean = false
-    var sourceImage: String? = null
-        set(value) {
-            sourceImageLoaded = false
-            field = value
-        }
-
-    suspend fun forceLoadSourceImage(currentVfs: VfsFile, sourceImage: String? = null) {
+    override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
+        baseForceLoadSourceFile(views, currentVfs, sourceFile)
         //println("### Trying to load sourceImage=$sourceImage")
-        this.sourceImage = sourceImage
-        sourceImageLoaded = true
-        bitmap = currentVfs["$sourceImage"].readBitmapSlice()
-        scale = 1.0
+        try {
+            bitmap = currentVfs["$sourceFile"].readBitmapSlice()
+            scale = 1.0
+        } catch (e: Throwable) {
+            bitmap = Bitmaps.white
+            scale = 100.0
+        }
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        if (!sourceImageLoaded && sourceImage != null) {
-            sourceImageLoaded = true
-            launchImmediately(ctx.coroutineContext) {
-                forceLoadSourceImage(ctx.views?.currentVfs ?: resourcesVfs, sourceImage)
-            }
-        }
+        lazyLoadRenderInternal(ctx, this)
         super.renderInternal(ctx)
     }
 
     override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Image") {
-        add(this@Image::sourceImage.toEditableProperty(
+        add(this@Image::sourceFile.toEditableProperty(
             kind = EditableStringProperty.Kind.FILE { it.extensionLC == "png" || it.extensionLC == "jpg" },
             views = views
         ))
