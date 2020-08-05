@@ -35,7 +35,7 @@ suspend fun Container.attachParticleAndWait(
     this -= p
 }
 
-class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), KorgeDebugNode {
+class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), ViewFileRef by ViewFileRef.Mixin(), KorgeDebugNode {
     var emitter: ParticleEmitter = emitter
 	var simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
@@ -70,12 +70,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
                 forceLoadTexture(ctx.views!!, sourceFile = texture)
             }
         }
-        if (!sourceTreeLoaded && sourceFile != null) {
-            sourceTreeLoaded = true
-            launchImmediately(ctx.coroutineContext) {
-                forceLoadSourceFile(ctx.views!!, sourceFile = sourceFile)
-            }
-        }
+        lazyLoadRenderInternal(ctx, this)
 		//ctx.flush()
 
         if (cachedBlending.srcRGB != emitter.blendFuncSource || cachedBlending.dstRGB != emitter.blendFuncDestination) {
@@ -104,13 +99,6 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
         out.setBounds(-30, -30, +30, +30)
     }
 
-    private var sourceTreeLoaded: Boolean = false
-    var sourceFile: String? = null
-        set(value) {
-            sourceTreeLoaded = false
-            field = value
-        }
-
     private var textureLoaded: Boolean = false
     var texture: String?
         get() = emitter.textureName
@@ -126,10 +114,9 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
         emitter.texture = currentVfs["$sourceFile"].readBitmapSlice()
     }
 
-    suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile = views.currentVfs, sourceFile: String? = null) {
+    override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         //println("### Trying to load sourceImage=$sourceImage")
-        this.sourceFile = sourceFile
-        sourceTreeLoaded = true
+        baseForceLoadSourceFile(views, currentVfs, sourceFile)
         emitter = currentVfs["$sourceFile"].readParticleEmitter()
         simulator = ParticleEmitterSimulator(emitter, emitterPos)
         scale = 1.0
