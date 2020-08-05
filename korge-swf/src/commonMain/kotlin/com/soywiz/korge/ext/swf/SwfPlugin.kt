@@ -3,7 +3,7 @@ package com.soywiz.korge.ext.swf
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.view.*
 
-fun Views.registerSwfLoading() {
+fun Views.registerSwf() {
     val loderTester = KorgeFileLoaderTester<AnLibrary>("swf") { s, injector ->
         val MAGIC = s.readString(3)
         when (MAGIC) {

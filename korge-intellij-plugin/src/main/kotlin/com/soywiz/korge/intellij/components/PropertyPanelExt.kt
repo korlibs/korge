@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.components
 
+import com.esotericsoftware.spine.korge.*
 import com.intellij.openapi.fileChooser.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.*
@@ -7,6 +8,7 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.kds.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -48,6 +50,13 @@ object IdeaMyComponentFactory : MyComponentFactory() {
 
     override fun createModule(block: suspend Scene.() -> Unit): EditorModule {
         return com.soywiz.korge.intellij.editor.createModule(null) { block() }
+    }
+
+    override fun getViewFactories(views: Views): List<ViewFactory> {
+        return super.getViewFactories(views) + listOf(
+            ViewFactory("Dragonbones") { KorgeDbRef() },
+            ViewFactory("Spine") { SpineViewRef() },
+        )
     }
 }
 

@@ -28,6 +28,7 @@ import com.dragonbones.core.*
 import com.dragonbones.factory.*
 import com.dragonbones.model.*
 import com.dragonbones.parser.*
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -198,3 +199,5 @@ open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: D
 			return this._dragonBones.eventManager as KorgeDbArmatureDisplay
 		}
 }
+
+val Views.dragonbonsFactory by Extra.Property { KorgeDbFactory() }

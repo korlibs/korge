@@ -1,6 +1,7 @@
 package com.soywiz.korge.view.ktree
 
 import com.soywiz.korge.particle.*
+import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -15,19 +16,32 @@ interface KTreeSerializerHolder {
 open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     override val serializer get() = this
 
-    data class Registration(
+    class Registration(
+        val name: String,
         val deserializer: suspend (xml: Xml) -> View?,
         val serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?
-    )
+    ) {
 
-    private val registrations = arrayListOf<Registration>()
+        override fun toString(): String = "KTreeSerializer($name)"
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+            other as Registration
+            if (name != other.name) return false
+            return true
+        }
+
+        override fun hashCode(): Int = name.hashCode()
+    }
+
+    private val registrations = mutableSetOf<Registration>()
 
     fun register(registration: Registration) {
         registrations.add(registration)
     }
 
-    fun register(deserializer: suspend (xml: Xml) -> View, serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
-        register(Registration(deserializer, serializer))
+    fun register(name: String, deserializer: suspend (xml: Xml) -> View?, serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
+        register(Registration(name, deserializer, serializer))
     }
 
     open suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): View {
@@ -40,6 +54,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             "treeviewref" -> view = TreeViewRef()
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
             "animation" -> view = AnimationViewRef()
+            "tiledmapref" -> view = TiledMapViewRef()
             else -> {
                 for (registration in registrations) {
                     view = registration.deserializer(xml)
@@ -130,13 +145,17 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             add(view::sourceFile)
         }
 
-        return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
+        val results = registrations.map { it.serializer(view, properties) }
+        val result = results.filterNotNull().firstOrNull()
+        //println("registrations: $registrations, $result, $results")
+        return result ?: when (view) {
             is AnimationViewRef -> Xml("animation", properties)
             is ParticleEmitterView -> Xml("particle", properties)
             is SolidRect -> Xml("solidrect", properties)
             is Ellipse -> Xml("ellipse", properties)
             is Image -> Xml("image", properties)
             is TreeViewRef -> Xml("treeviewref", properties)
+            is TiledMapViewRef -> Xml("tiledmapref", properties)
             is Container -> Xml("container", properties) {
                 view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs)) }
             }

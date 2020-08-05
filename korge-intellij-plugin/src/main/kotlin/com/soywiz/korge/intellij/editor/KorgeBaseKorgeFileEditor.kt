@@ -1,20 +1,20 @@
 package com.soywiz.korge.intellij.editor
 
+import com.esotericsoftware.spine.korge.*
 import com.intellij.codeHighlighting.*
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
-import com.soywiz.kds.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.ext.swf.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
-import com.soywiz.korge.intellij.ui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
@@ -80,7 +80,9 @@ open class KorgeBaseKorgeFileEditor(
                     bgcolor = controlRgba,
                     debug = false
                 ) {
-                    views.registerSwfLoading()
+                    views.registerSwf()
+                    views.registerDragonBones()
+                    views.registerSpine()
                     views.ideaProject = project
                     viewsDebuggerComponent = ViewsDebuggerComponent(views).also {
                         it.styled.fill()

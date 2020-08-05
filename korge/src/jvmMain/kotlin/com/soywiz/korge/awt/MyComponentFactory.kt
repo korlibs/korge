@@ -1,9 +1,14 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.particle.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Image
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.file.*
@@ -31,5 +36,18 @@ open class MyComponentFactory {
 
     open fun createModule(block: suspend Scene.() -> Unit): EditorModule {
         TODO()
+    }
+
+    data class ViewFactory(val name: String, val build: () -> View)
+
+    open fun getViewFactories(views: Views): List<ViewFactory> = ArrayList<ViewFactory>().also { list ->
+        list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
+        list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
+        list.add(ViewFactory("Ellipse") { Ellipse(50.0, 50.0, Colors.WHITE) })
+        list.add(ViewFactory("Container") { Container() })
+        list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
+        list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
+        list.add(ViewFactory("AnimationViewRef") { AnimationViewRef() })
+        list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
     }
 }

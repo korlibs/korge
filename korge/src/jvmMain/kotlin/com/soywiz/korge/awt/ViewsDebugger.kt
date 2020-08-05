@@ -186,50 +186,19 @@ class ViewsDebuggerComponent(
                     val view = selectedView
                     val isContainer = view is Container
 
+                    myComponentFactory
                     if (view != null) {
                         val popupMenu = JPopupMenu()
-                        popupMenu.add(JMenuItem("Add image").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(Image(Bitmaps.white).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5).apply { setSize(100.0, 100.0) })
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add solid rect").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(SolidRect(100, 100, Colors.WHITE).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add ellipse").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(Ellipse(50.0, 50.0, Colors.WHITE).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add container").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(Container().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add TreeViewRef").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(TreeViewRef().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add ParticleEmitter").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(ParticleEmitterView(ParticleEmitter()).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
-                            }
-                        })
-                        popupMenu.add(JMenuItem("Add AnimationViewRef").also {
-                            it.isEnabled = isContainer
-                            it.addActionListener {
-                                attachNewView(AnimationViewRef())
-                            }
-                        })
+
+                        for (factory in myComponentFactory.getViewFactories(views)) {
+                            popupMenu.add(JMenuItem("Add ${factory.name}").also {
+                                it.isEnabled = isContainer
+                                it.addActionListener {
+                                    attachNewView(factory.build().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
+                                }
+                            })
+                        }
+
                         popupMenu.add(JSeparator())
                         popupMenu.add(JMenuItem("Cut").also {
                             it.addActionListener {
