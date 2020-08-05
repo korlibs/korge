@@ -21,7 +21,7 @@ open class MyComponentFactory {
 
     open fun tabbedPane(tabPlacement: Int, tabLayoutPolicy: Int): JTabbedPane = JTabbedPane(tabPlacement, tabLayoutPolicy)
 
-    open fun chooseFile(views: Views?): VfsFile? {
+    open fun chooseFile(views: Views?, filter: (VfsFile) -> Boolean): VfsFile? {
         TODO()
     }
 

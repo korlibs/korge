@@ -98,7 +98,10 @@ data class EditableStringProperty(
     val get: () -> String,
     val set: (String) -> Unit
 ) : BaseEditableProperty<String>(get, set) {
-    enum class Kind { STRING, FILE }
+    open class Kind {
+        object STRING : Kind()
+        class FILE(val filter: (VfsFile) -> Boolean) : Kind()
+    }
 
     override val clazz = String::class
 }

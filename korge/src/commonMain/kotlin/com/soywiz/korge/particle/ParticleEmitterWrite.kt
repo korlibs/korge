@@ -18,7 +18,7 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
             node(name, "red" to color.rd, "green" to color.gd, "blue" to color.bd, "alpha" to color.ad)
         }
 
-        node("texture", "name" to "texture.png")
+        node("texture", "name" to (particle.textureName ?: "texture.png"))
         nodePoint("sourcePosition", particle.sourcePosition)
         nodePoint("sourcePositionVariance", particle.sourcePositionVariance)
         nodeValue("speed", particle.speed)

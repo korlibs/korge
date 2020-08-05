@@ -7,6 +7,7 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.soywiz.kds.*
 import com.soywiz.korge.awt.*
+import com.soywiz.korge.intellij.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -30,8 +31,14 @@ object IdeaMyComponentFactory : MyComponentFactory() {
         return JBTabbedPane(tabPlacement, tabLayoutPolicy)
     }
 
-    override fun chooseFile(views: Views?): VfsFile? {
-        val file = FileChooser.chooseFile(FileChooserDescriptor(true, false, false, false, false, false), views?.ideaProject, null) ?: return null
+    override fun chooseFile(views: Views?, filter: (VfsFile) -> Boolean): VfsFile? {
+        val file = FileChooser.chooseFile(
+            FileChooserDescriptor(true, false, false, false, false, false).also { fcd ->
+                fcd.withFileFilter { filter(it.toVfs()) }
+            },
+            views?.ideaProject,
+            null
+        ) ?: return null
         return localVfs(file.canonicalPath!!)
     }
 

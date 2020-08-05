@@ -35,7 +35,7 @@ class TreeViewRef : Container(), KorgeDebugNode, ViewLeaf {
 
     override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Tree") {
         add(this@TreeViewRef::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE,
+            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "ktree" },
             views = views
         ))
     }

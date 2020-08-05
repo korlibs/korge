@@ -143,7 +143,11 @@ class EditableColorValue(val context: CoroutineContext, val editProp: EditableCo
     }
 }
 
-class EditableStringValue(val context: CoroutineContext, val editProp: EditableStringProperty, val indentation: Int) : JPanel(GridLayout(1, if (editProp.kind == EditableStringProperty.Kind.STRING) 2 else 3)) {
+class EditableStringValue(
+    val context: CoroutineContext,
+    val editProp: EditableStringProperty,
+    val indentation: Int
+) : JPanel(GridLayout(1, if (editProp.kind == EditableStringProperty.Kind.STRING) 2 else 3)) {
     lateinit var valueTextField: EditableLabel
 
     fun updateValue(value: String?, setProperty: Boolean = true) {
@@ -169,13 +173,14 @@ class EditableStringValue(val context: CoroutineContext, val editProp: EditableS
             size = Dimension(128, 32)
             maximumSize = Dimension(128, 32)
         })
-        when (editProp.kind) {
-            EditableStringProperty.Kind.FILE -> {
+        val kind = editProp.kind
+        when (kind) {
+            is EditableStringProperty.Kind.FILE -> {
                 add(JButton("...").also { button ->
                     button.maximumSize = Dimension(32, 32)
                     button.addActionListener {
                         val views = editProp.views!!
-                        val file = myComponentFactory.chooseFile(views)
+                        val file = myComponentFactory.chooseFile(views, kind.filter)
                         if (file != null) {
                             val filePathInfo = file.absolutePathInfo
                             val currentVfsPathInfo = views.currentVfs.absolutePathInfo

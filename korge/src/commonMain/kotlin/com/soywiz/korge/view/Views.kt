@@ -60,6 +60,7 @@ class Views constructor(
 
     val keys get() = input.keys
 
+    var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)

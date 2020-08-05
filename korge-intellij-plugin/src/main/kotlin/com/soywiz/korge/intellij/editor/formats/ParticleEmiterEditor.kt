@@ -19,9 +19,10 @@ suspend fun particleEmiterEditor(file: VfsFile): EditorModule {
     val uiContext = EmptyCoroutineContext
 
     return createModule {
+        views.currentVfs = file.parent
+
         views.debugSavedHandlers.add {
             doSave = true
-
         }
 
         sceneView.addUpdater {

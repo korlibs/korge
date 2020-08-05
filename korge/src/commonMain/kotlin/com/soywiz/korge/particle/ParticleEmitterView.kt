@@ -8,6 +8,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
@@ -63,6 +64,12 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        if (!textureLoaded && texture != null) {
+            textureLoaded = true
+            launchImmediately(ctx.coroutineContext) {
+                forceLoadTexture(ctx.views!!, sourceFile = texture)
+            }
+        }
         if (!sourceTreeLoaded && sourceFile != null) {
             sourceTreeLoaded = true
             launchImmediately(ctx.coroutineContext) {
@@ -94,7 +101,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
 	}
 
     override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setBounds(-25, -25, +25, +25)
+        out.setBounds(-30, -30, +30, +30)
     }
 
     private var sourceTreeLoaded: Boolean = false
@@ -103,6 +110,21 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             sourceTreeLoaded = false
             field = value
         }
+
+    private var textureLoaded: Boolean = false
+    var texture: String?
+        get() = emitter.textureName
+        set(value) {
+            textureLoaded = false
+            emitter.textureName = value
+        }
+
+    suspend fun forceLoadTexture(views: Views, currentVfs: VfsFile = views.currentVfs, sourceFile: String? = null) {
+        //println("### Trying to load sourceImage=$sourceImage")
+        this.texture = sourceFile
+        textureLoaded = true
+        emitter.texture = currentVfs["$sourceFile"].readBitmapSlice()
+    }
 
     suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile = views.currentVfs, sourceFile: String? = null) {
         //println("### Trying to load sourceImage=$sourceImage")
@@ -116,55 +138,66 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
     override fun getDebugProperties(views: Views): EditableNode? {
         val particle = this.emitter
         return EditableNodeList {
-            add(this@ParticleEmitterView::sourceFile.toEditableProperty(
-                kind = EditableStringProperty.Kind.FILE,
-                views = views
-            ))
-            add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty(ParticleEmitter.Type.values())))
-            add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(AG.BlendFactor.values()), particle::blendFuncDestination.toEditableProperty(AG.BlendFactor.values())))
-            add(EditableSection("Angle",
-                particle::angle.toEditableProperty(0.0, 360.0, 0.0, PI * 2),
-                particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, PI * 2)
-            ))
-            add(EditableSection("Speed",
-                particle::speed.toEditableProperty(0.0, 1000.0),
-                particle::speedVariance.toEditableProperty(0.0, 1000.0),
-            ))
-            add(EditableSection("Lifespan",
-                particle::lifeSpan.toEditableProperty(0.0, 10.0),
-                particle::lifespanVariance.toEditableProperty(-10.0, 10.0),
-                particle::duration.toEditableProperty(-10.0, 10.0),
-            ))
-            add(EditableSection("Gravity", particle.gravity.editableNodes()))
-            add(EditableSection("Source Position", particle.sourcePosition.editableNodes()))
-            add(EditableSection("Source Position Variance", particle.sourcePositionVariance.editableNodes()))
-            add(EditableSection("Acceleration",
-                particle::radialAcceleration.toEditableProperty(-1000.0, +1000.0),
-                particle::radialAccelVariance.toEditableProperty(-1000.0, +1000.0),
-                particle::tangentialAcceleration.toEditableProperty(-1000.0, +1000.0),
-                particle::tangentialAccelVariance.toEditableProperty(-1000.0, +1000.0)
-            ))
-            add(EditableSection("Start Color", particle.startColor.editableNodes()))
-            add(EditableSection("Start Color Variance", particle.startColorVariance.editableNodes(variance = true)))
-            add(EditableSection("End Color", particle.endColor.editableNodes()))
-            add(EditableSection("End Color Variance", particle.endColor.editableNodes(variance = true)))
-            add(EditableSection("Max particles", particle::maxParticles.toEditableProperty(1, 20000)))
-            add(EditableSection("Start Size", particle::startSize.toEditableProperty(1.0, 1000.0), particle::startSizeVariance.toEditableProperty(-1000.0, 1000.0)))
-            add(EditableSection("End Size", particle::endSize.toEditableProperty(1.0, 1000.0), particle::endSizeVariance.toEditableProperty(-1000.0, 1000.0)))
-            add(EditableSection("Radius",
-                particle::minRadius.toEditableProperty(0.0, 1000.0),
-                particle::minRadiusVariance.toEditableProperty(-1000.0, 1000.0),
-                particle::maxRadius.toEditableProperty(0.0, 1000.0),
-                particle::maxRadiusVariance.toEditableProperty(-1000.0, 1000.0),
-            ))
-            add(EditableSection("Rotate",
-                particle::rotatePerSecond.toEditableProperty(0.0, 1000.0),
-                particle::rotatePerSecondVariance.toEditableProperty(-1000.0, 1000.0),
-                particle::rotationStart.toEditableProperty(0.0, 1000.0),
-                particle::rotationStartVariance.toEditableProperty(-1000.0, 1000.0),
-                particle::rotationEnd.toEditableProperty(0.0, 1000.0),
-                particle::rotationEndVariance.toEditableProperty(-1000.0, 1000.0),
-            ))
+            if (views.name == "ktree") {
+                add(this@ParticleEmitterView::sourceFile.toEditableProperty(
+                    kind = EditableStringProperty.Kind.FILE { it.extensionLC == "pex"},
+                    views = views
+                ))
+            } else {
+                add(this@ParticleEmitterView::texture.toEditableProperty(
+                    kind = EditableStringProperty.Kind.FILE { it.extensionLC == "png" || it.extensionLC == "jpg" },
+                    views = views
+                ))
+                add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty(ParticleEmitter.Type.values())))
+                add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(AG.BlendFactor.values()), particle::blendFuncDestination.toEditableProperty(AG.BlendFactor.values())))
+                add(EditableSection("Angle",
+                    particle::angle.toEditableProperty(0.0, 360.0, 0.0, PI * 2),
+                    particle::angleVariance.toEditableProperty(0.0, 360.0, 0.0, PI * 2)
+                ))
+                add(EditableSection(
+                    "Speed",
+                    particle::speed.toEditableProperty(0.0, 1000.0),
+                    particle::speedVariance.toEditableProperty(0.0, 1000.0),
+                ))
+                add(EditableSection(
+                    "Lifespan",
+                    particle::lifeSpan.toEditableProperty(0.0, 10.0),
+                    particle::lifespanVariance.toEditableProperty(-10.0, 10.0),
+                    particle::duration.toEditableProperty(-10.0, 10.0),
+                ))
+                add(EditableSection("Gravity", particle.gravity.editableNodes()))
+                add(EditableSection("Source Position", particle.sourcePosition.editableNodes()))
+                add(EditableSection("Source Position Variance", particle.sourcePositionVariance.editableNodes()))
+                add(EditableSection("Acceleration",
+                    particle::radialAcceleration.toEditableProperty(-1000.0, +1000.0),
+                    particle::radialAccelVariance.toEditableProperty(-1000.0, +1000.0),
+                    particle::tangentialAcceleration.toEditableProperty(-1000.0, +1000.0),
+                    particle::tangentialAccelVariance.toEditableProperty(-1000.0, +1000.0)
+                ))
+                add(EditableSection("Start Color", particle.startColor.editableNodes()))
+                add(EditableSection("Start Color Variance", particle.startColorVariance.editableNodes(variance = true)))
+                add(EditableSection("End Color", particle.endColor.editableNodes()))
+                add(EditableSection("End Color Variance", particle.endColor.editableNodes(variance = true)))
+                add(EditableSection("Max particles", particle::maxParticles.toEditableProperty(1, 20000)))
+                add(EditableSection("Start Size", particle::startSize.toEditableProperty(1.0, 1000.0), particle::startSizeVariance.toEditableProperty(-1000.0, 1000.0)))
+                add(EditableSection("End Size", particle::endSize.toEditableProperty(1.0, 1000.0), particle::endSizeVariance.toEditableProperty(-1000.0, 1000.0)))
+                add(EditableSection(
+                    "Radius",
+                    particle::minRadius.toEditableProperty(0.0, 1000.0),
+                    particle::minRadiusVariance.toEditableProperty(-1000.0, 1000.0),
+                    particle::maxRadius.toEditableProperty(0.0, 1000.0),
+                    particle::maxRadiusVariance.toEditableProperty(-1000.0, 1000.0),
+                ))
+                add(EditableSection(
+                    "Rotate",
+                    particle::rotatePerSecond.toEditableProperty(0.0, 1000.0),
+                    particle::rotatePerSecondVariance.toEditableProperty(-1000.0, 1000.0),
+                    particle::rotationStart.toEditableProperty(0.0, 1000.0),
+                    particle::rotationStartVariance.toEditableProperty(-1000.0, 1000.0),
+                    particle::rotationEnd.toEditableProperty(0.0, 1000.0),
+                    particle::rotationEndVariance.toEditableProperty(-1000.0, 1000.0),
+                ))
+            }
         }
     }
 }

@@ -191,37 +191,37 @@ class ViewsDebuggerComponent(
                         popupMenu.add(JMenuItem("Add image").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(Image(Bitmaps.white).apply { setSize(100.0, 100.0) })
+                                attachNewView(Image(Bitmaps.white).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5).apply { setSize(100.0, 100.0) })
                             }
                         })
                         popupMenu.add(JMenuItem("Add solid rect").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(SolidRect(100, 100, Colors.WHITE))
+                                attachNewView(SolidRect(100, 100, Colors.WHITE).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
                         popupMenu.add(JMenuItem("Add ellipse").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(Ellipse(50.0, 50.0, Colors.WHITE))
+                                attachNewView(Ellipse(50.0, 50.0, Colors.WHITE).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
                         popupMenu.add(JMenuItem("Add container").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(Container())
+                                attachNewView(Container().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
                         popupMenu.add(JMenuItem("Add TreeViewRef").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(TreeViewRef())
+                                attachNewView(TreeViewRef().position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
                         popupMenu.add(JMenuItem("Add ParticleEmitter").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
-                                attachNewView(ParticleEmitterView(ParticleEmitter()))
+                                attachNewView(ParticleEmitterView(ParticleEmitter()).position(views.virtualWidth * 0.5, views.virtualWidth * 0.5))
                             }
                         })
                         popupMenu.add(JSeparator())
@@ -342,6 +342,7 @@ abstract class EditorModule() : Module() {
 
 suspend fun ktreeEditor(file: VfsFile): EditorModule {
     return myComponentFactory.createModule {
+        views.name = "ktree"
         var save = false
         val views = this.views
         val gameWindow = this.views.gameWindow

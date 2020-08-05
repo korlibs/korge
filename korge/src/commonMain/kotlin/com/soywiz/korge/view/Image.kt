@@ -94,7 +94,7 @@ class Image(
 
     override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Image") {
         add(this@Image::sourceImage.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE,
+            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "png" || it.extensionLC == "jpg" },
             views = views
         ))
     }
