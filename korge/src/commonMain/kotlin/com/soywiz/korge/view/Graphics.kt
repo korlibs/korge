@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -17,7 +18,7 @@ inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}
 
 open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
-) : Image(Bitmaps.transparent), VectorBuilder {
+) : BaseImage(Bitmaps.transparent), VectorBuilder {
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()

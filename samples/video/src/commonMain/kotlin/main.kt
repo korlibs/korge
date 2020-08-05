@@ -39,7 +39,7 @@ fun View.addUpdaterOnce(block: () -> Unit) {
 
 inline fun Container.korviView(views: Views, video: KorviVideo, callback: KorviView.() -> Unit = {}): KorviView = KorviView(views, video).also { addChild(it) }.also { callback(it) }
 suspend inline fun Container.korviView(views: Views, video: VfsFile, autoPlay: Boolean = true, callback: KorviView.() -> Unit = {}): KorviView = KorviView(views, video, autoPlay).also { addChild(it) }.also { callback(it) }
-class KorviView(val views: Views, val video: KorviVideo) : Image(Bitmaps.transparent), AsyncCloseable, BaseKorviSeekable by video {
+class KorviView(val views: Views, val video: KorviVideo) : BaseImage(Bitmaps.transparent), AsyncCloseable, BaseKorviSeekable by video {
 	val onPrepared = Signal<Unit>()
 	val onCompleted = Signal<Unit>()
 	var autoLoop = true

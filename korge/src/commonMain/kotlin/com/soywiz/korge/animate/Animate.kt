@@ -603,7 +603,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
-    override fun getDebugProperties(views: Views): EditableNode = EditableSection("SWF",
+    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("SWF",
         EditableButtonProperty("start") { play() },
         EditableButtonProperty("stop") { stop() },
         EditableEnumerableProperty(

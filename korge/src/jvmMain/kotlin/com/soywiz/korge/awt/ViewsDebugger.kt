@@ -60,7 +60,9 @@ class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout
         if (view == null) return
         val nodes = ArrayList<EditableNode>()
         if (view is KorgeDebugNode) {
-            nodes.add(view.getDebugProperties(views))
+            view.getDebugProperties(views)?.let {
+                nodes.add(it)
+            }
         }
         nodes.add(EditableSection("View") {
             add(view::name.toEditableProperty())
@@ -129,7 +131,6 @@ class ViewsDebuggerComponent(
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext
 ) : JPanel(GridLayout(2, 1)) {
-    var treeSerializer = KTreeSerializer.DEFAULT
     val properties = EditPropertiesComponent(rootView, views).also { add(it) }
     var pasteboard: Xml? = null
 
@@ -233,7 +234,7 @@ class ViewsDebuggerComponent(
                                     val view = selectedView
                                     if (view != null) {
                                         val parent = view.parent
-                                        val newChild = view.viewTreeToKTree(treeSerializer).ktreeToViewTree(treeSerializer)
+                                        val newChild = view.viewTreeToKTree(views).ktreeToViewTree(views)
                                         parent?.addChild(newChild)
                                         highlight(newChild)
                                     }

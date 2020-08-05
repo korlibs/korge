@@ -16,10 +16,6 @@ interface KTreeSerializerHolder {
 open class KTreeSerializer : KTreeSerializerHolder {
     override val serializer get() = this
 
-    companion object {
-        val DEFAULT = KTreeSerializer()
-    }
-
     data class Registration(
         val deserializer: suspend (xml: Xml) -> View?,
         val serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?
@@ -140,6 +136,9 @@ open class KTreeSerializer : KTreeSerializerHolder {
     }
 }
 
-suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT, currentVfs: VfsFile = resourcesVfs): View = serializer.serializer.ktreeToViewTree(this, currentVfs)
-suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT, currentVfs: VfsFile = resourcesVfs): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
-suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = readXml().ktreeToViewTree(serializer, this.parent)
+suspend fun Xml.ktreeToViewTree(views: Views): View = views.serializer.ktreeToViewTree(this, views.currentVfs)
+suspend fun View.viewTreeToKTree(views: Views): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs)
+
+suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): View = serializer.serializer.ktreeToViewTree(this, currentVfs)
+suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
+suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder): View = readXml().ktreeToViewTree(serializer, this.parent)

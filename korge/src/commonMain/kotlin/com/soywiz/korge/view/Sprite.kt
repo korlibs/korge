@@ -42,7 +42,7 @@ open class Sprite(
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
     smoothing: Boolean = true
-) : Image(bitmap, anchorX, anchorY, hitShape, smoothing) {
+) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing) {
     constructor(
         bitmap : Bitmap,
         anchorX: Double = 0.0,

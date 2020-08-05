@@ -95,7 +95,7 @@ suspend fun main() = Korge(
 	//image(shipBitmap)
 }
 
-class Asteroid(val assets: Assets, val asteroidSize: Int = 3) : Image(assets.asteroidBitmap) {
+class Asteroid(val assets: Assets, val asteroidSize: Int = 3) : BaseImage(assets.asteroidBitmap) {
 	var angle = 30.degrees
 
 	init {

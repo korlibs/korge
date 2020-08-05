@@ -334,7 +334,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
 
     val currentMainAnimation get() = animationState?.tracks?.first()?.animation
 
-    override fun getDebugProperties(views: Views): EditableNode = EditableSection("Animation") {
+    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Animation") {
         val currentAnimationName = currentMainAnimation?.name ?: "default"
         add(EditableEnumerableProperty(
             "animation1", String::class,

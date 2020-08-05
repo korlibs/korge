@@ -36,16 +36,14 @@ data class AnchorPointResult(
 }
 
 suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
-    var save = false
-
-    val viewTree = file.readKTree()
-
     return createModule {
+        var save = false
         val views = this.views
         val gameWindow = this.views.gameWindow
         val stage = views.stage
-
-        views.currentVfs = file.parent
+        val viewTree = file.readKTree(views)
+        val currentVfs = file.parent
+        views.currentVfs = currentVfs
 
         fun getScaleAnchorPoint(view: View?, distance: Int, kind: AnchorKind): AnchorPointResult? {
             if (view == null) return null
@@ -104,14 +102,14 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                     gameWindow.showContextMenu(listOf(
                         GameWindow.MenuItem("Cut", enabled = hasView) {
                             launchImmediately {
-                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views)
+                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views, currentVfs)
                                 selectView(view?.parent)
                                 view!!.removeFromParent()
                             }
                         },
                         GameWindow.MenuItem("Copy", enabled = hasView) {
                             launchImmediately {
-                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views)
+                                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views, currentVfs)
                             }
                         },
                         GameWindow.MenuItem("Paste in place") {
@@ -119,7 +117,7 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                             launchImmediately {
                                 val container = (view as? Container?) ?: view?.parent ?: stage
                                 if (pasteboard != null) {
-                                    container.addChild(pasteboard.ktreeToViewTree(views))
+                                    container.addChild(pasteboard.ktreeToViewTree(views, currentVfs))
                                 }
                             }
                         },
@@ -211,7 +209,7 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
             if (save) {
                 save = false
                 launchImmediately {
-                    file.writeString(stage.viewTreeToKTree().toOuterXmlIndented().toString())
+                    file.writeString(stage.viewTreeToKTree(views).toOuterXmlIndented().toString())
                 }
             }
         }

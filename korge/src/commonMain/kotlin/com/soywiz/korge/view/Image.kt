@@ -19,13 +19,44 @@ inline fun Container.image(
 
 //typealias Sprite = Image
 
-open class Image(
+open class BaseImage(
+    bitmap: BmpSlice,
+    anchorX: Double = 0.0,
+    anchorY: Double = anchorX,
+    hitShape: VectorPath? = null,
+    smoothing: Boolean = true
+) : RectBase(anchorX, anchorY, hitShape, smoothing) {
+    constructor(
+        bitmap: Bitmap,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true
+    ) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
+
+    var bitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
+    var texture: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
+
+    init {
+        this.baseBitmap = bitmap
+    }
+
+    override val bwidth: Double get() = bitmap.width.toDouble()
+    override val bheight: Double get() = bitmap.height.toDouble()
+
+    override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
+
+    override fun toString(): String = super.toString() + ":bitmap=$bitmap"
+
+}
+
+class Image(
 	bitmap: BmpSlice,
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : RectBase(anchorX, anchorY, hitShape, smoothing), KorgeDebugNode {
+) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), KorgeDebugNode {
 	constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
@@ -34,17 +65,7 @@ open class Image(
 		smoothing: Boolean = true
 	) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
 
-	var bitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
-	var texture: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
-
-	init {
-		this.baseBitmap = bitmap
-	}
-
-	override val bwidth: Double get() = bitmap.width.toDouble()
-	override val bheight: Double get() = bitmap.height.toDouble()
-
-	override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
+    override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
 
     private var sourceImageLoaded: Boolean = false
     var sourceImage: String? = null
@@ -71,13 +92,10 @@ open class Image(
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode = EditableSection("Image") {
+    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Image") {
         add(this@Image::sourceImage.toEditableProperty(
             kind = EditableStringProperty.Kind.FILE,
             views = views
         ))
     }
-
-    override fun toString(): String = super.toString() + ":bitmap=$bitmap"
-
 }

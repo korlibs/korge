@@ -48,7 +48,7 @@ class Stage(override val views: Views) : Container()
         }
     }
 
-    override fun getDebugProperties(views: Views): EditableNode = EditableSection("Views") {
+    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Views") {
         add(views::virtualWidth.toEditableProperty().also {
             it.onChange.add { views.resized() }
         })
