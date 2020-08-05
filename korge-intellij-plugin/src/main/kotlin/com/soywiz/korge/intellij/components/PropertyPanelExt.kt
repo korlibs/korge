@@ -58,6 +58,13 @@ object IdeaMyComponentFactory : MyComponentFactory() {
             ViewFactory("Spine") { SpineViewRef() },
         )
     }
+
+    override fun createPopupMenu() = JBPopupMenu()
+    override fun createSeparator() = JSeparator()
+    override fun createMenuItem(text: String, mnemonic: Int?, icon: Icon?) = when {
+        icon != null -> JBMenuItem(text, icon)
+        else -> JBMenuItem(text)
+    }
 }
 
 var Views.ideaProject: Project? by Extra.PropertyThis<Views, Project?> { null }

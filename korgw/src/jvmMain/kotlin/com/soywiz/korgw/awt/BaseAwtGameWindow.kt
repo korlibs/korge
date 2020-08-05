@@ -58,7 +58,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
     override fun showContextMenu(items: List<MenuItem?>) {
         val popupMenu = JPopupMenu()
         for (item in items) {
-            if (item == null || item.text == null) {
+            if (item?.text == null) {
                 popupMenu.add(JSeparator())
             } else {
                 popupMenu.add(JMenuItem(item.text).also {
@@ -275,8 +275,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
     var reshaped = false
 
-    private var mouseX: Int = 0
-    private var mouseY: Int = 0
+    protected var mouseX: Int = 0
+    protected var mouseY: Int = 0
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {

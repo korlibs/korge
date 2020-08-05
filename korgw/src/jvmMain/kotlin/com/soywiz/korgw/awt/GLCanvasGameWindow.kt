@@ -3,7 +3,7 @@ package com.soywiz.korgw.awt
 import com.soywiz.korgw.platform.*
 import java.awt.*
 
-class GLCanvasGameWindow(val canvas: GLCanvas) : BaseAwtGameWindow() {
+open class GLCanvasGameWindow(val canvas: GLCanvas) : BaseAwtGameWindow() {
     init {
         canvas.ag.isGlAvailable = false
         canvas.defaultRenderer = { gl, g ->

@@ -52,4 +52,12 @@ open class MyComponentFactory {
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62))) })
         list.add(ViewFactory("Text") { Text2("Text") })
     }
+
+    open fun createPopupMenu(): JPopupMenu = JPopupMenu()
+    open fun createSeparator(): JSeparator = JSeparator()
+    open fun createMenuItem(text: String, mnemonic: Int? = null, icon: Icon? = null): JMenuItem = when {
+        mnemonic != null -> JMenuItem(text, mnemonic)
+        icon != null -> JMenuItem(text, icon)
+        else -> JMenuItem(text)
+    }
 }

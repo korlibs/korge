@@ -66,7 +66,7 @@ open class KorgeBaseKorgeFileEditor(
         val fileToEdit = KorgeFileToEdit(virtualFile)
         Thread {
             runBlocking {
-                gameWindow = GLCanvasGameWindow(canvas)
+                gameWindow = GLCanvasGameWindowIJ(canvas)
                 //val controlRgba = MetalLookAndFeel.getCurrentTheme().control.rgba()
                 val controlRgba = panel.background.rgba()
                 Korge(

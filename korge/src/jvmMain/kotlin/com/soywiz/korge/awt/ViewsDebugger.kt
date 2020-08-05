@@ -186,12 +186,12 @@ class ViewsDebuggerComponent(
                     val view = selectedView
                     val isContainer = view is Container
 
-                    myComponentFactory
                     if (view != null) {
-                        val popupMenu = JPopupMenu()
+
+                        val popupMenu = myComponentFactory.createPopupMenu()
 
                         for (factory in myComponentFactory.getViewFactories(views)) {
-                            popupMenu.add(JMenuItem("Add ${factory.name}").also {
+                            popupMenu.add(myComponentFactory.createMenuItem("Add ${factory.name}").also {
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     attachNewView(factory.build().also {
@@ -202,8 +202,8 @@ class ViewsDebuggerComponent(
                             })
                         }
 
-                        popupMenu.add(JSeparator())
-                        popupMenu.add(JMenuItem("Cut").also {
+                        popupMenu.add(myComponentFactory.createSeparator())
+                        popupMenu.add(myComponentFactory.createMenuItem("Cut").also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
                                     pasteboard = view.viewTreeToKTree(views!!)
@@ -211,14 +211,14 @@ class ViewsDebuggerComponent(
                                 }
                             }
                         })
-                        popupMenu.add(JMenuItem("Copy").also {
+                        popupMenu.add(myComponentFactory.createMenuItem("Copy").also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
                                     pasteboard = view.viewTreeToKTree(views!!)
                                 }
                             }
                         })
-                        popupMenu.add(JMenuItem("Paste").also {
+                        popupMenu.add(myComponentFactory.createMenuItem("Paste").also {
                             it.addActionListener {
                                 val pasteboard = pasteboard
                                 launchImmediately(coroutineContext) {
@@ -229,8 +229,8 @@ class ViewsDebuggerComponent(
                                 }
                             }
                         })
-                        popupMenu.add(JSeparator())
-                        popupMenu.add(JMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
+                        popupMenu.add(myComponentFactory.createSeparator())
+                        popupMenu.add(myComponentFactory.createMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
                                     val view = selectedView
@@ -243,19 +243,19 @@ class ViewsDebuggerComponent(
                                 }
                             }
                         })
-                        popupMenu.add(JSeparator())
-                        popupMenu.add(JMenuItem("Remove view", KeyEvent.VK_DELETE).also {
+                        popupMenu.add(myComponentFactory.createSeparator())
+                        popupMenu.add(myComponentFactory.createMenuItem("Remove view", KeyEvent.VK_DELETE).also {
                             it.addActionListener {
                                 removeCurrentNode()
                             }
                         })
-                        popupMenu.add(JSeparator())
-                        popupMenu.add(JMenuItem("Send to back").also {
+                        popupMenu.add(myComponentFactory.createSeparator())
+                        popupMenu.add(myComponentFactory.createMenuItem("Send to back").also {
                             it.addActionListener {
                                 view?.parent?.sendChildToBack(view)
                             }
                         })
-                        popupMenu.add(JMenuItem("Bring to front").also {
+                        popupMenu.add(myComponentFactory.createMenuItem("Bring to front").also {
                             it.addActionListener {
                                 view?.parent?.sendChildToFront(view)
                             }
