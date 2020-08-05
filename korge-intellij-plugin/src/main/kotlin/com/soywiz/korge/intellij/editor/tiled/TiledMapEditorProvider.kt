@@ -43,7 +43,7 @@ class TiledMapEditorProvider : FileEditorProvider, DumbAware {
 				projectCtx = ProjectContext(project, file),
 				onSaveXml = { xmlText ->
 				    ref.document?.let { doc ->
-			    		runWriteAction {
+                        runWriteActionNoWait {
 				    	//run {
 					    	println("DOCUMENT SET TEXT")
 						    doc.setText(xmlText)

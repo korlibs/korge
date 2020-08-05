@@ -76,6 +76,7 @@ class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout
         nodes.add(EditableSection("View") {
             add(view::name.toEditableProperty())
             add(view::colorMul.toEditableProperty(views = views))
+            add(view::blendMode.toEditableProperty(BlendMode.values()))
             add(view::alpha.toEditableProperty(0.0, 1.0))
             add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
             add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))

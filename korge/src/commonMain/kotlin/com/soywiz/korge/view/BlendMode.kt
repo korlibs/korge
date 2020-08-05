@@ -79,6 +79,10 @@ enum class BlendMode(val factors: AG.Blending) {
 	companion object {
 		val OVERLAY = NORMAL
 
-		val BY_ORDINAL = values().map { it.ordinal to it }.toMap()
+		val BY_ORDINAL = values().associateBy { it.ordinal }
+        val BY_NAME = values().associateBy { it.name }
+
+        operator fun get(ordinal: Int) = BY_ORDINAL.getOrElse(ordinal) { INHERIT }
+        operator fun get(name: String) = BY_NAME[name.toUpperCase()] ?: INHERIT
 	}
 }

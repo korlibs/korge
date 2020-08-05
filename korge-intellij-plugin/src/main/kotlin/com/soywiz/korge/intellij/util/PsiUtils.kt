@@ -13,7 +13,7 @@ import kotlin.math.*
 fun PsiElement.replace(text: String, context: InsertionContext? = null) {
 	//context?.commitDocument()
 	//document?.replaceString(start, end - 1, text)
-    runWriteAction {
+    runWriteActionNoWait {
         val range = this.textRange
         val start = range.startOffset
         val end = range.endOffset

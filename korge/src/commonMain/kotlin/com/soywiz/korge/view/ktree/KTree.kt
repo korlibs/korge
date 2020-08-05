@@ -85,6 +85,7 @@ open class KTreeSerializer : KTreeSerializerHolder {
             double(view::width, 100.0)
             double(view::height, 100.0)
         }
+        view.blendMode = BlendMode[xml.str("blendMode", "INHERIT")]
         if (view is Container) {
             for (node in xml.allNodeChildren) {
                 view.addChild(ktreeToViewTree(node, currentVfs))
@@ -104,6 +105,7 @@ open class KTreeSerializer : KTreeSerializerHolder {
         if (view.colorMul != Colors.WHITE) {
             properties["colorMul"] = view.colorMul.hexString
         }
+        if (view.blendMode != BlendMode.INHERIT) add(view::blendMode)
         if (view.alpha != 1.0) add(view::alpha)
         if (view.speed != 1.0) add(view::speed)
         if (view.ratio != 0.0) add(view::ratio)
@@ -123,6 +125,7 @@ open class KTreeSerializer : KTreeSerializerHolder {
         if (view is Image) {
             add(view::sourceImage)
         }
+
 
         return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
             is SolidRect -> Xml("solidrect", properties)

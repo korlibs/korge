@@ -121,6 +121,30 @@ inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
     }
 }
 
+fun runWriteActionNoWait(runnable: () -> Unit) {
+    //return ApplicationManager.getApplication().runWriteAction(Computable { runnable() })
+    //TransactionGuard.getInstance().assertWriteSafeContext(ModalityState.NON_MODAL)
+    //WriteAction.computeAndWait()
+    //WriteAction.computeAndWait<T, Throwable> {
+    //return com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.defaultModalityState()) {
+    invokeLater {
+        invokeAndWaitIfNeeded(ModalityState.current()) {
+            runnable()
+        }
+    }
+    /*
+    WriteAction.compute<Unit> {
+        runnable()
+    }
+    return WriteAction.computeAndWait<T, Throwable> {
+        com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.current()) {
+            runnable()
+            //}
+        }
+    }
+     */
+}
+
 val <T> JComboBox<T>.selected get() = selectedItem as T
 
 fun JPanel.addAtGrid(
