@@ -37,12 +37,14 @@ data class AnchorPointResult(
 suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
     var save = false
 
-    val viewTree = file.readXml().ktreeToViewTree()
+    val viewTree = file.readKTree()
 
     return createModule {
         val views = this.views
         val gameWindow = this.views.gameWindow
         val stage = views.stage
+
+        views.currentVfs = file.parent
 
         fun getScaleAnchorPoint(view: View?, distance: Int, kind: AnchorKind): AnchorPointResult? {
             if (view == null) return null
@@ -122,16 +124,10 @@ suspend fun ktreeEditor(file: VfsFile): KorgeBaseKorgeFileEditor.EditorModule {
                         },
                         null,
                         GameWindow.MenuItem("Send to back", enabled = hasView) {
-                            val parent = view!!.parent
-                            if (parent != null) {
-                                parent.swapChildren(view, parent.firstChild!!)
-                            }
+                            view?.parent?.sendChildToBack(view)
                         },
                         GameWindow.MenuItem("Bring to front", enabled = hasView) {
-                            val parent = view!!.parent
-                            if (parent != null) {
-                                parent.swapChildren(view, parent.lastChild!!)
-                            }
+                            view?.parent?.sendChildToFront(view)
                         },
                     ))
                 }

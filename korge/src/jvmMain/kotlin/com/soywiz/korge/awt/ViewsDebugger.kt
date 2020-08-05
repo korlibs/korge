@@ -9,8 +9,10 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Image
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
@@ -88,8 +90,8 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
                     view.dy = (-view.height / 2).toFloat()
                 })
             }
-            add(view::width.toEditableProperty(supportOutOfRange = true))
-            add(view::height.toEditableProperty(supportOutOfRange = true))
+            add(view::scaledWidth.toEditableProperty(name = "width", supportOutOfRange = true))
+            add(view::scaledHeight.toEditableProperty(name = "height", supportOutOfRange = true))
             add(view::scale.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
@@ -171,6 +173,12 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
 
                     if (view != null) {
                         val popupMenu = JPopupMenu()
+                        popupMenu.add(JMenuItem("Add image").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(Image(Bitmaps.white).apply { setSize(100.0, 100.0) })
+                            }
+                        })
                         popupMenu.add(JMenuItem("Add solid rect").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
@@ -236,7 +244,17 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                                 removeCurrentNode()
                             }
                         })
-
+                        popupMenu.add(JSeparator())
+                        popupMenu.add(JMenuItem("Send to back").also {
+                            it.addActionListener {
+                                view?.parent?.sendChildToBack(view)
+                            }
+                        })
+                        popupMenu.add(JMenuItem("Bring to front").also {
+                            it.addActionListener {
+                                view?.parent?.sendChildToFront(view)
+                            }
+                        })
                         popupMenu.show(e.component, e.x, e.y)
                     }
                 }

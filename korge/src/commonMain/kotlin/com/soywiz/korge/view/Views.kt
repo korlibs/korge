@@ -23,6 +23,7 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -58,6 +59,7 @@ class Views constructor(
 
     val keys get() = input.keys
 
+    var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager

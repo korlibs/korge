@@ -1,6 +1,12 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.*
+import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.vector.*
 
 inline fun Container.image(
@@ -19,7 +25,7 @@ open class Image(
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : RectBase(anchorX, anchorY, hitShape, smoothing) {
+) : RectBase(anchorX, anchorY, hitShape, smoothing), KorgeDebugNode {
 	constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
@@ -40,6 +46,35 @@ open class Image(
 
 	override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
 
-	override fun toString(): String = super.toString() + ":bitmap=$bitmap"
+    private var sourceImageLoaded: Boolean = false
+    var sourceImage: String? = null
+        set(value) {
+            sourceImageLoaded = false
+            field = value
+        }
+
+    suspend fun forceLoadSourceImage(currentVfs: VfsFile, sourceImage: String? = null) {
+        //println("### Trying to load sourceImage=$sourceImage")
+        this.sourceImage = sourceImage
+        sourceImageLoaded = true
+        bitmap = currentVfs["$sourceImage"].readBitmapSlice()
+        scale = 1.0
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
+        if (!sourceImageLoaded && sourceImage != null) {
+            sourceImageLoaded = true
+            launchImmediately(ctx.coroutineContext) {
+                forceLoadSourceImage(ctx.views?.currentVfs ?: resourcesVfs, sourceImage)
+            }
+        }
+        super.renderInternal(ctx)
+    }
+
+    override fun getDebugProperties(): EditableNode = EditableSection("Image") {
+        add(this@Image::sourceImage.toEditableProperty())
+    }
+
+    override fun toString(): String = super.toString() + ":bitmap=$bitmap"
 
 }

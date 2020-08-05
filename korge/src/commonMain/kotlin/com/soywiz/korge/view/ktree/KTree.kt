@@ -1,8 +1,11 @@
 package com.soywiz.korge.view.ktree
 
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.xml.*
 import kotlin.reflect.*
 
@@ -32,12 +35,15 @@ open class KTreeSerializer : KTreeSerializerHolder {
         register(Registration(deserializer, serializer))
     }
 
-    open suspend fun ktreeToViewTree(xml: Xml): View {
+    open suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): View {
         var view: View? = null
         when (xml.nameLC) {
             "solidrect" -> view = SolidRect(100, 100, Colors.RED)
             "ellipse" -> view = Ellipse(50.0, 50.0, Colors.RED)
             "container" -> view = Container()
+            "image" -> view = Image(Bitmaps.transparent).also { image ->
+                image.forceLoadSourceImage(currentVfs, xml.str("sourceImage"))
+            }
             else -> {
                 for (registration in registrations) {
                     view = registration.deserializer(xml)
@@ -85,13 +91,13 @@ open class KTreeSerializer : KTreeSerializerHolder {
         }
         if (view is Container) {
             for (node in xml.allNodeChildren) {
-                view.addChild(ktreeToViewTree(node))
+                view.addChild(ktreeToViewTree(node, currentVfs))
             }
         }
         return view
     }
     
-    open suspend fun viewTreeToKTree(view: View): Xml {
+    open suspend fun viewTreeToKTree(view: View, currentVfs: VfsFile): Xml {
         val properties = LinkedHashMap<String, Any?>()
 
         fun add(prop: KProperty0<*>) {
@@ -118,21 +124,22 @@ open class KTreeSerializer : KTreeSerializerHolder {
             add(view::width)
             add(view::height)
         }
+        if (view is Image) {
+            add(view::sourceImage)
+        }
 
-        return when (view) {
+        return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
             is SolidRect -> Xml("solidrect", properties)
             is Ellipse -> Xml("ellipse", properties)
+            is Image -> Xml("image", properties)
             is Container -> Xml("container", properties) {
-                view.forEachChildren { this@Xml.node(it.viewTreeToKTree()) }
+                view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs)) }
             }
-            else -> {
-                registrations.map { it.serializer(view, properties) }.firstOrNull()
-                    ?: error("Don't know how to serialize $view")
-            }
+            else -> error("Don't know how to serialize $view")
         }
     }
 }
 
-suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = serializer.serializer.ktreeToViewTree(this)
-suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): Xml = serializer.serializer.viewTreeToKTree(this)
-suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = readXml().ktreeToViewTree(serializer)
+suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT, currentVfs: VfsFile = resourcesVfs): View = serializer.serializer.ktreeToViewTree(this, currentVfs)
+suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT, currentVfs: VfsFile = resourcesVfs): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
+suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder = KTreeSerializer.DEFAULT): View = readXml().ktreeToViewTree(serializer, this.parent)

@@ -306,7 +306,9 @@ abstract class View internal constructor(
      */
     open var width: Double
         get() = unscaledWidth
-        set(value) { scaleX = value / unscaledWidth }
+        set(value) {
+            scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / unscaledWidth)
+        }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
@@ -316,7 +318,9 @@ abstract class View internal constructor(
      */
     open var height: Double
         get() = unscaledHeight
-        set(value) { scaleY = value / unscaledHeight }
+        set(value) {
+            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / unscaledHeight)
+        }
 
     val unscaledWidth: Double get() = getLocalBounds().width
     val unscaledHeight: Double get() = getLocalBounds().height
@@ -324,7 +328,7 @@ abstract class View internal constructor(
     var scaledWidth: Double
         get() = unscaledWidth * scaleX
         set(value) {
-            width = value / scaleX
+            width = if (scaleX == 0.0) value else value / scaleX
         }
 
     /**
@@ -334,7 +338,7 @@ abstract class View internal constructor(
     var scaledHeight: Double
         get() = unscaledHeight * scaleY
         set(value) {
-            height = value / scaleY
+            height = if (scaleY == 0.0) value else value / scaleY
         }
 
     /**

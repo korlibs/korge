@@ -94,7 +94,23 @@ open class Container : View(true) {
 		}
 	}
 
-	/**
+    fun sendChildToFront(view: View) {
+        if (view.parent === this) {
+            while (view != lastChild!!) {
+                swapChildren(view, children[view.index + 1])
+            }
+        }
+    }
+
+    fun sendChildToBack(view: View) {
+        if (view.parent === this) {
+            while (view != firstChild!!) {
+                swapChildren(view, children[view.index - 1])
+            }
+        }
+    }
+
+    /**
 	 * Adds the [view] [View] as a child at a specific [index].
      *
      * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
