@@ -7,6 +7,9 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -31,8 +34,9 @@ suspend fun Container.attachParticleAndWait(
     this -= p
 }
 
-class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), KorgeDebugNode {
-	val simulator = ParticleEmitterSimulator(emitter, emitterPos)
+class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), KorgeDebugNode {
+    var emitter: ParticleEmitter = emitter
+	var simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
 	var timeUntilStop by simulator::timeUntilStop.redirected()
 	val emitterPos by simulator::emitterPos.redirected()
@@ -59,6 +63,12 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        if (!sourceTreeLoaded && sourceFile != null) {
+            sourceTreeLoaded = true
+            launchImmediately(ctx.coroutineContext) {
+                forceLoadSourceFile(ctx.views!!, sourceFile = sourceFile)
+            }
+        }
 		//ctx.flush()
 
         if (cachedBlending.srcRGB != emitter.blendFuncSource || cachedBlending.dstRGB != emitter.blendFuncDestination) {
@@ -83,9 +93,33 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 		}
 	}
 
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        out.setBounds(-25, -25, +25, +25)
+    }
+
+    private var sourceTreeLoaded: Boolean = false
+    var sourceFile: String? = null
+        set(value) {
+            sourceTreeLoaded = false
+            field = value
+        }
+
+    suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile = views.currentVfs, sourceFile: String? = null) {
+        //println("### Trying to load sourceImage=$sourceImage")
+        this.sourceFile = sourceFile
+        sourceTreeLoaded = true
+        emitter = currentVfs["$sourceFile"].readParticleEmitter()
+        simulator = ParticleEmitterSimulator(emitter, emitterPos)
+        scale = 1.0
+    }
+
     override fun getDebugProperties(views: Views): EditableNode? {
         val particle = this.emitter
         return EditableNodeList {
+            add(this@ParticleEmitterView::sourceFile.toEditableProperty(
+                kind = EditableStringProperty.Kind.FILE,
+                views = views
+            ))
             add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty(ParticleEmitter.Type.values())))
             add(EditableSection("Blend Factors", particle::blendFuncSource.toEditableProperty(AG.BlendFactor.values()), particle::blendFuncDestination.toEditableProperty(AG.BlendFactor.values())))
             add(EditableSection("Angle",

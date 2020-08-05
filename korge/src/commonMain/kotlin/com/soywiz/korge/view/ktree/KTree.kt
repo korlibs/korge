@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.ktree
 
+import com.soywiz.korge.particle.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -39,6 +40,9 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
                 image.forceLoadSourceImage(currentVfs, xml.str("sourceImage"))
             }
             "treeviewref" -> view = TreeViewRef().also { ref ->
+                ref.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
+            }
+            "particle" -> view = ParticleEmitterView(ParticleEmitter()).also { ref ->
                 ref.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
             }
             else -> {
@@ -129,8 +133,12 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         if (view is TreeViewRef) {
             add(view::sourceFile)
         }
+        if (view is ParticleEmitterView) {
+            add(view::sourceFile)
+        }
 
         return registrations.map { it.serializer(view, properties) }.firstOrNull() ?: when (view) {
+            is ParticleEmitterView -> Xml("particle", properties)
             is SolidRect -> Xml("solidrect", properties)
             is Ellipse -> Xml("ellipse", properties)
             is Image -> Xml("image", properties)

@@ -31,6 +31,7 @@ import kotlin.coroutines.*
 import javax.swing.SwingUtilities
 import com.soywiz.korma.geom.Point
 import com.soywiz.korev.MouseButton
+import com.soywiz.korge.particle.*
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -215,6 +216,12 @@ class ViewsDebuggerComponent(
                             it.isEnabled = isContainer
                             it.addActionListener {
                                 attachNewView(TreeViewRef())
+                            }
+                        })
+                        popupMenu.add(JMenuItem("Add ParticleEmitter").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(ParticleEmitterView(ParticleEmitter()))
                             }
                         })
                         popupMenu.add(JSeparator())
