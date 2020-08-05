@@ -31,7 +31,7 @@ class CameraContainer2(
         }
     }
 
-    private val sourceCamera = Camera(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    private val sourceCamera = Camera2(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
     private val currentCamera = sourceCamera.copy()
     private val targetCamera = sourceCamera.copy()
 
@@ -90,10 +90,10 @@ class CameraContainer2(
 
     val onCompletedTransition = Signal<Unit>()
 
-    fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
-    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    fun getCurrentCamera(out: Camera2 = Camera2()): Camera2 = out.copyFrom(currentCamera)
+    fun getDefaultCamera(out: Camera2 = Camera2()): Camera2 = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera {
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera2 = Camera2()): Camera2 {
         val size = Rectangle(0.0, 0.0, width, height).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
         val scaleX = size.width / rect.width
         val scaleY = size.height / rect.height
@@ -107,8 +107,8 @@ class CameraContainer2(
         )
     }
 
-    fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
-    fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
+    fun getCameraToFit(rect: Rectangle, out: Camera2 = Camera2()): Camera2 = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
+    fun getCameraToCover(rect: Rectangle, out: Camera2 = Camera2()): Camera2 = getCameraRect(rect, ScaleMode.COVER, out)
 
     private var transitionTime = 1.hrSeconds
     private var elapsedTime = 0.hrSeconds
@@ -132,7 +132,7 @@ class CameraContainer2(
         following = null
     }
 
-    fun setCurrentCamera(camera: Camera) {
+    fun setCurrentCamera(camera: Camera2) {
         elapsedTime = transitionTime
         following = null
         sourceCamera.copyFrom(camera)
@@ -141,7 +141,7 @@ class CameraContainer2(
         sync()
     }
 
-    fun setTargetCamera(camera: Camera, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
+    fun setTargetCamera(camera: Camera2, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
         elapsedTime = 0.hrSeconds
         this.transitionTime = time
         this.easing = easing
@@ -150,7 +150,7 @@ class CameraContainer2(
         targetCamera.copyFrom(camera)
     }
 
-    suspend fun tweenCamera(camera: Camera, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
+    suspend fun tweenCamera(camera: Camera2, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
         setTargetCamera(camera, time, easing)
         onCompletedTransition.waitOne()
     }
@@ -224,14 +224,14 @@ class CameraContainer2(
 
 }
 
-data class Camera(
+data class Camera2(
     var x: Double = 0.0,
     var y: Double = 0.0,
     var zoom: Double = 1.0,
     var angle: Angle = 0.degrees,
     var anchorX: Double = 0.5,
     var anchorY: Double = 0.5
-) : MutableInterpolable<Camera> {
+) : MutableInterpolable<Camera2> {
     fun setTo(
         x: Double = 0.0,
         y: Double = 0.0,
@@ -239,7 +239,7 @@ data class Camera(
         angle: Angle = 0.degrees,
         anchorX: Double = 0.5,
         anchorY: Double = 0.5
-    ): Camera = this.apply {
+    ): Camera2 = this.apply {
         this.x = x
         this.y = y
         this.zoom = zoom
@@ -248,7 +248,7 @@ data class Camera(
         this.anchorY = anchorY
     }
 
-    fun copyFrom(source: Camera) = source.apply { this@Camera.setTo(x, y, zoom, angle, anchorX, anchorY) }
+    fun copyFrom(source: Camera2) = source.apply { this@Camera2.setTo(x, y, zoom, angle, anchorX, anchorY) }
 
     // @TODO: Easing must be adjusted from the zoom change
     // @TODO: This is not exact. We have to preserve final pixel-level speed while changing the zoom
@@ -262,7 +262,7 @@ data class Camera(
         }
     }
 
-    override fun setToInterpolated(ratio: Double, l: Camera, r: Camera): Camera {
+    override fun setToInterpolated(ratio: Double, l: Camera2, r: Camera2): Camera2 {
         // Adjust based on the zoom changes
         val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio)
 
