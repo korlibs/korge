@@ -36,8 +36,19 @@ open class Ellipse(
         get() = colorMul
         set(value) { colorMul = value }
 
-    override val bwidth get() = radiusX * 2
-    override val bheight get() = radiusY * 2
+    override var width: Double
+        get() = radiusX * 2
+        set(value) {
+            radiusX = value / 2
+        }
+    override var height: Double
+        get() = radiusY * 2
+        set(value) {
+            radiusY = value / 2
+        }
+
+    override val bwidth get() = width
+    override val bheight get() = height
 
     init {
         this.color = color
@@ -48,7 +59,8 @@ open class Ellipse(
         clear()
         fill(Colors.WHITE) {
             //ellipse(radiusX, radiusY, radiusX, radiusY)
-            ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
+            //ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
+            ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
         }
     }
 }

@@ -36,6 +36,7 @@ open class KTreeSerializer : KTreeSerializerHolder {
         var view: View? = null
         when (xml.nameLC) {
             "solidrect" -> view = SolidRect(100, 100, Colors.RED)
+            "ellipse" -> view = Ellipse(50.0, 50.0, Colors.RED)
             "container" -> view = Container()
             else -> {
                 for (registration in registrations) {
@@ -120,6 +121,7 @@ open class KTreeSerializer : KTreeSerializerHolder {
 
         return when (view) {
             is SolidRect -> Xml("solidrect", properties)
+            is Ellipse -> Xml("ellipse", properties)
             is Container -> Xml("container", properties) {
                 view.forEachChildren { this@Xml.node(it.viewTreeToKTree()) }
             }

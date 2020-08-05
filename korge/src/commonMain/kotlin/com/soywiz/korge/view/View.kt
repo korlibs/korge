@@ -324,7 +324,7 @@ abstract class View internal constructor(
     var scaledWidth: Double
         get() = unscaledWidth * scaleX
         set(value) {
-            scaleX = value / unscaledWidth
+            width = value / scaleX
         }
 
     /**
@@ -334,7 +334,7 @@ abstract class View internal constructor(
     var scaledHeight: Double
         get() = unscaledHeight * scaleY
         set(value) {
-            scaleY = value / unscaledHeight
+            height = value / scaleY
         }
 
     /**

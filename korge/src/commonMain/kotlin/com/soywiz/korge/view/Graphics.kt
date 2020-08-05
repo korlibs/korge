@@ -311,6 +311,7 @@ open class Graphics @JvmOverloads constructor(
         bb.reset()
         shapes.fastForEach { it.addBounds(bb) }
         bb.getBounds(out)
+        //println("Graphics.BOUNDS: $out")
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {

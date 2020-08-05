@@ -177,6 +177,12 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
                                 attachNewView(SolidRect(100, 100, Colors.WHITE))
                             }
                         })
+                        popupMenu.add(JMenuItem("Add ellipse").also {
+                            it.isEnabled = isContainer
+                            it.addActionListener {
+                                attachNewView(Ellipse(50.0, 50.0, Colors.WHITE))
+                            }
+                        })
                         popupMenu.add(JMenuItem("Add container").also {
                             it.isEnabled = isContainer
                             it.addActionListener {
