@@ -2,6 +2,11 @@ package com.soywiz.kds
 
 import com.soywiz.kds.internal.umod
 
+inline fun count(cond: (index: Int) -> Boolean): Int {
+    var counter = 0
+    while (cond(counter)) counter++
+    return counter
+}
 inline fun <reified T> mapWhile(cond: (index: Int) -> Boolean, gen: (Int) -> T): List<T> = arrayListOf<T>().apply { while (cond(this.size)) this += gen(this.size) }
 inline fun <reified T> mapWhileArray(cond: (index: Int) -> Boolean, gen: (Int) -> T): Array<T> = mapWhile(cond, gen).toTypedArray()
 inline fun mapWhileInt(cond: (index: Int) -> Boolean, gen: (Int) -> Int): IntArray = IntArrayList().apply { while (cond(this.size)) this += gen(this.size) }.toIntArray()

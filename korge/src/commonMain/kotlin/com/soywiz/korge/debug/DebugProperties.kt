@@ -2,8 +2,10 @@ package com.soywiz.korge.debug
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import kotlin.jvm.*
 import kotlin.reflect.*
 
@@ -91,14 +93,19 @@ data class EditableEnumerableProperty<T : Any>(
 
 data class EditableStringProperty(
     override val name: String,
+    val kind: Kind,
+    val views: Views?,
     val get: () -> String,
     val set: (String) -> Unit
 ) : BaseEditableProperty<String>(get, set) {
+    enum class Kind { STRING, FILE }
+
     override val clazz = String::class
 }
 
 data class EditableColorProperty(
     override val name: String,
+    val views: Views?,
     val get: () -> RGBA,
     val set: (RGBA) -> Unit
 ) : BaseEditableProperty<RGBA>(get, set) {
@@ -126,12 +133,16 @@ data class EditableButtonProperty(
 @OptIn(ExperimentalStdlibApi::class)
 @JvmName("toEditablePropertyStringNullable")
 fun KMutableProperty0<String?>.toEditableProperty(
-    name: String? = null
+    name: String? = null,
+    kind: EditableStringProperty.Kind = EditableStringProperty.Kind.STRING,
+    views: Views? = null
 ): EditableStringProperty {
     val prop = this
 
     return EditableStringProperty(
         name = name ?: this.name,
+        kind = kind,
+        views = views,
         get = { prop.get() ?: "" },
         set = {
             //println("TEXT CHANGED")
@@ -143,26 +154,32 @@ fun KMutableProperty0<String?>.toEditableProperty(
 @OptIn(ExperimentalStdlibApi::class)
 @JvmName("toEditablePropertyString")
 fun KMutableProperty0<String>.toEditableProperty(
-    name: String? = null
+    name: String? = null,
+    kind: EditableStringProperty.Kind = EditableStringProperty.Kind.STRING,
+    views: Views? = null,
 ): EditableStringProperty {
     val prop = this
 
     return EditableStringProperty(
         name = name ?: this.name,
+        kind = kind,
+        views = views,
         get = { prop.get() },
-        set = { prop.set(it) }
+        set = { prop.set(it) },
     )
 }
 
 @OptIn(ExperimentalStdlibApi::class)
 @JvmName("toEditablePropertyColor")
 fun KMutableProperty0<RGBA>.toEditableProperty(
-    name: String? = null
+    name: String? = null,
+    views: Views? = null,
 ): EditableColorProperty {
     val prop = this
 
     return EditableColorProperty(
         name = name ?: this.name,
+        views = views,
         get = { prop.get() },
         set = { prop.set(it) }
     )

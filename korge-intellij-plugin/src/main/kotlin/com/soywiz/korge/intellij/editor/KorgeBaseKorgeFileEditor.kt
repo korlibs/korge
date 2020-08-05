@@ -5,6 +5,7 @@ import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
+import com.soywiz.kds.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
@@ -13,7 +14,7 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.ui.*
-import com.soywiz.korge.intellij.util.rgba
+import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -52,7 +53,8 @@ open class KorgeBaseKorgeFileEditor(
 	var views: Views? = null
     var gameWindow: GameWindow? = null
     var canvas: GLCanvas? = null
-    val viewsDebuggerComponent = ViewsDebuggerComponent(null)
+    val viewsDebuggerComponentHolder = JPanel(LinearLayout(Direction.VERTICAL))
+    var viewsDebuggerComponent: ViewsDebuggerComponent? = null
 
 	val component by lazy {
 		componentsCreated++
@@ -80,20 +82,29 @@ open class KorgeBaseKorgeFileEditor(
                     bgcolor = controlRgba,
                     debug = false
                 ) {
+                    views.ideaProject = project
+                    viewsDebuggerComponent = ViewsDebuggerComponent(views).also {
+                        it.styled.fill()
+                    }
+                    views.ideaComponent = viewsDebuggerComponent
+                    invokeLater {
+                        viewsDebuggerComponentHolder.add(viewsDebuggerComponent)
+                    }
+
                     //println("[F] ${Thread.currentThread()}")
                     injector.jvmAutomapping()
-                    injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent)
+                    injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent!!)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
                     views.debugHighlighters.add { view ->
                         println("HIGHLIGHTING: $view")
-                        viewsDebuggerComponent.highlight(view)
+                        viewsDebuggerComponent!!.highlight(view)
                     }
                     module.apply {
                         injector.configure()
                     }
                     container.changeTo(module.mainScene, fileToEdit)
-                    viewsDebuggerComponent?.setRootView(stage, views.coroutineContext, views)
+                    //viewsDebuggerComponent?.setRootView(stage)
                     stage.timers.interval(500.hrMilliseconds) {
                         viewsDebuggerComponent?.update()
                     }
@@ -104,14 +115,14 @@ open class KorgeBaseKorgeFileEditor(
         //println("[I] ${Thread.currentThread()}")
         initializeIdeaComponentFactory()
         createRootStyled().apply {
-            createViewsWithDebugger(panel, module.editableNode, viewsDebuggerComponent)
+            createViewsWithDebugger(panel, module.editableNode, viewsDebuggerComponentHolder)
         }.component
 	}
 
     fun Styled<out Container>.createViewsWithDebugger(
         editor: Component,
         rootNode: EditableNode?,
-        viewsDebuggerComponent: ViewsDebuggerComponent
+        viewsDebuggerComponentHolder: JPanel
     ) {
         verticalStack {
             fill()
@@ -134,7 +145,7 @@ open class KorgeBaseKorgeFileEditor(
                             fill()
                         })
                     }
-                    add(viewsDebuggerComponent.styled {
+                    add(viewsDebuggerComponentHolder.styled {
                         fill()
                     })
                 }

@@ -17,7 +17,7 @@ import java.awt.Dimension
 import javax.swing.plaf.*
 import javax.swing.UIManager
 
-
+/*
 fun main() {
     UIManager.put("Tree.collapsedIcon", IconUIResource(NodeIcon('+')));
     UIManager.put("Tree.expandedIcon", IconUIResource(NodeIcon('-')));
@@ -91,3 +91,4 @@ class NodeIcon(private val type: Char) : Icon {
         private val SIZE = 9
     }
 }
+*/

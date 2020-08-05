@@ -32,9 +32,7 @@ import com.dragonbones.util.*
 import com.dragonbones.internal.fastForEach
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 /**
@@ -312,7 +310,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
 
     val animationNames get() = animation.animationNames
 
-    override fun getDebugProperties(): EditableNode = EditableSection("DragonBones") {
+    override fun getDebugProperties(views: Views): EditableNode = EditableSection("DragonBones") {
         add(EditableEnumerableProperty(
             "animation1",
             String::class,

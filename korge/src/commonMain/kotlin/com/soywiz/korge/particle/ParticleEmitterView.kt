@@ -83,7 +83,7 @@ class ParticleEmitterView(val emitter: ParticleEmitter, emitterPos: IPoint = IPo
 		}
 	}
 
-    override fun getDebugProperties(): EditableNode {
+    override fun getDebugProperties(views: Views): EditableNode {
         val particle = this.emitter
         return EditableNodeList {
             add(EditableSection("Emitter Type", particle::emitterType.toEditableProperty(ParticleEmitter.Type.values())))

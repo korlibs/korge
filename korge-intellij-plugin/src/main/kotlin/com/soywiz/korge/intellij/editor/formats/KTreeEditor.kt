@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+import com.intellij.openapi.fileChooser.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*

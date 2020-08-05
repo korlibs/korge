@@ -71,8 +71,11 @@ open class Image(
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(): EditableNode = EditableSection("Image") {
-        add(this@Image::sourceImage.toEditableProperty())
+    override fun getDebugProperties(views: Views): EditableNode = EditableSection("Image") {
+        add(this@Image::sourceImage.toEditableProperty(
+            kind = EditableStringProperty.Kind.FILE,
+            views = views
+        ))
     }
 
     override fun toString(): String = super.toString() + ":bitmap=$bitmap"

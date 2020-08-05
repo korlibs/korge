@@ -9,6 +9,14 @@ import kotlinx.coroutines.flow.*
 import kotlin.test.*
 
 class VfsFileTest {
+    @Test
+    fun testRelativePath() {
+        val file = MemoryVfs()
+        val file1 = file["my/current/path.txt"]
+        val file2 = file["my/demo/test/"]
+        assertEquals("../../current/path.txt", file1.relativePathTo(file2))
+    }
+
 	@Test
 	fun name() = suspendTest {
 		val file = MemoryVfs()["C:\\this\\is\\a\\test.txt"]

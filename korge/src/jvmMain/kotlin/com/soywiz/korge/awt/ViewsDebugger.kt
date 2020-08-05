@@ -2,7 +2,6 @@ package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.korev.*
 import com.soywiz.korev.Event
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.*
@@ -11,7 +10,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
 import com.soywiz.korge.view.ktree.*
-import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -53,7 +51,7 @@ class ViewNode(val view: View?) : TreeNode {
 
 class ViewDebuggerChanged(val view: View?) : Event()
 
-class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
+class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout(1, 1)) {
     var nodeTree: EditableNodeList? = null
 
     fun setView(view: View?, coroutineContext: CoroutineContext) {
@@ -62,11 +60,11 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
         if (view == null) return
         val nodes = ArrayList<EditableNode>()
         if (view is KorgeDebugNode) {
-            nodes.add(view.getDebugProperties())
+            nodes.add(view.getDebugProperties(views))
         }
         nodes.add(EditableSection("View") {
             add(view::name.toEditableProperty())
-            add(view::colorMul.toEditableProperty())
+            add(view::colorMul.toEditableProperty(views = views))
             add(view::alpha.toEditableProperty(0.0, 1.0))
             add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
             add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
@@ -126,9 +124,13 @@ class EditPropertiesComponent(view: View?) : JPanel(GridLayout(1, 1)) {
     }
 }
 
-class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: CoroutineContext = EmptyCoroutineContext, var views: Views? = null) : JPanel(GridLayout(2, 1)) {
+class ViewsDebuggerComponent(
+    val views: Views,
+    rootView: View? = views.stage,
+    val coroutineContext: CoroutineContext = views.coroutineContext
+) : JPanel(GridLayout(2, 1)) {
     var treeSerializer = KTreeSerializer.DEFAULT
-    val properties = EditPropertiesComponent(rootView).also { add(it) }
+    val properties = EditPropertiesComponent(rootView, views).also { add(it) }
     var pasteboard: Xml? = null
 
     fun attachNewView(newView: View?) {
@@ -264,11 +266,11 @@ class ViewsDebuggerComponent(rootView: View?, private var coroutineContext: Coro
     val selectedView: View? get() = (tree.selectionPath?.lastPathComponent as? ViewNode)?.view
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
-    fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
-        this.coroutineContext = coroutineContext
-        if (views != null) {
-            this.views = views
-        }
+    //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
+    fun setRootView(root: View) {
+        //this.coroutineContext = coroutineContext
+        //if (views != null) this.views = views
+        //properties.views = views?.views
         tree.model = DefaultTreeModel(root.treeNode)
         update()
     }

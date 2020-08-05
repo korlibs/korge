@@ -5,6 +5,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korte.*
 import kotlinx.coroutines.*
@@ -13,11 +14,8 @@ import java.awt.event.*
 import java.util.*
 import javax.swing.*
 import javax.swing.border.*
-import kotlin.collections.ArrayList
 import kotlin.coroutines.*
 import kotlin.math.*
-import kotlin.reflect.*
-import kotlin.system.*
 
 //typealias MyJScrollPane = JScrollPane
 //typealias MyJComboBox<T> = JComboBox<T>
@@ -100,7 +98,7 @@ class SectionBody(components: List<Component>) : JPanel() {
     }
 }
 
-class EditableColorValue(val context: CoroutineContext, val editProp: EditableColorProperty, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+class EditableColorValue(val context: CoroutineContext, val editProp: EditableColorProperty, val indentation: Int) : JPanel(GridLayout(1, 3)) {
     lateinit var valueTextField: EditableLabel
 
     fun updateValue(value: RGBA?, setProperty: Boolean = true) {
@@ -126,6 +124,15 @@ class EditableColorValue(val context: CoroutineContext, val editProp: EditableCo
             size = Dimension(128, 32)
             maximumSize = Dimension(128, 32)
         })
+        add(JButton("...").also { button ->
+            button.maximumSize = Dimension(32, 32)
+            button.addActionListener {
+                val newColor = myComponentFactory.chooseColor(editProp.value, editProp.views)
+                if (newColor != null) {
+                    updateValue(newColor)
+                }
+            }
+        })
         add(EditableLabel("", null) {
             updateValue(Colors[it])
         }.also { valueTextField = it })
@@ -136,7 +143,7 @@ class EditableColorValue(val context: CoroutineContext, val editProp: EditableCo
     }
 }
 
-class EditableStringValue(val context: CoroutineContext, val editProp: EditableStringProperty, val indentation: Int) : JPanel(GridLayout(1, 2)) {
+class EditableStringValue(val context: CoroutineContext, val editProp: EditableStringProperty, val indentation: Int) : JPanel(GridLayout(1, if (editProp.kind == EditableStringProperty.Kind.STRING) 2 else 3)) {
     lateinit var valueTextField: EditableLabel
 
     fun updateValue(value: String?, setProperty: Boolean = true) {
@@ -162,6 +169,29 @@ class EditableStringValue(val context: CoroutineContext, val editProp: EditableS
             size = Dimension(128, 32)
             maximumSize = Dimension(128, 32)
         })
+        when (editProp.kind) {
+            EditableStringProperty.Kind.FILE -> {
+                add(JButton("...").also { button ->
+                    button.maximumSize = Dimension(32, 32)
+                    button.addActionListener {
+                        val views = editProp.views!!
+                        val file = myComponentFactory.chooseFile(views)
+                        if (file != null) {
+                            val filePathInfo = file.absolutePathInfo
+                            val currentVfsPathInfo = views.currentVfs.absolutePathInfo
+                            val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
+                            println("filePathInfo: $filePathInfo")
+                            println("currentVfsPathInfo: $currentVfsPathInfo")
+                            println("relativePath: $relativePath")
+
+                            //PathInfo("test").rela
+                            updateValue(relativePath)
+                        }
+                    }
+                })
+            }
+            else -> Unit
+        }
         add(EditableLabel("", null) {
             updateValue(it)
         }.also { valueTextField = it })

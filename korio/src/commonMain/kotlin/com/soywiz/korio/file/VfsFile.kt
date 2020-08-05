@@ -18,9 +18,15 @@ data class VfsFile(
 	val vfs: Vfs,
 	val path: String
 ) : VfsNamed(path.pathInfo), AsyncInputOpenable, Extra by Extra.Mixin() {
-	val parent: VfsFile get() = VfsFile(vfs, folder)
+    fun relativePathTo(relative: VfsFile): String? {
+        if (relative.vfs != this.vfs) return null
+        return this.pathInfo.relativePathTo(relative.pathInfo)
+    }
+
+    val parent: VfsFile get() = VfsFile(vfs, folder)
 	val root: VfsFile get() = vfs.root
 	val absolutePath: String get() = vfs.getAbsolutePath(this.path)
+    val absolutePathInfo: PathInfo get() = PathInfo(absolutePath)
 
 	operator fun get(path: String): VfsFile =
 		VfsFile(vfs, this.path.pathInfo.combine(path.pathInfo).fullPath)
