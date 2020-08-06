@@ -6,12 +6,14 @@ import com.soywiz.korio.serialization.xml.*
 import javax.swing.tree.*
 
 class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerComponent) {
-    var selectedView: View? = null
+    //var selectedView: View? = null
+    val selectedView: View? get() = (component.tree.selectionPath?.lastPathComponent as? ViewNode)?.view
     var pasteboard: Xml? = null
     val stage get() = views.stage
     val currentVfs get() = views.currentVfs
 
     fun highlight(view: View?) {
+        //println("ViewsDebuggerActions.highlight: $views")
         component.update()
         val treeNode = view?.treeNode ?: return
         val path = TreePath((component.tree.model as DefaultTreeModel).getPathToRoot(treeNode))
@@ -23,7 +25,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
     fun selectView(view: View?) {
         views.renderContext.debugAnnotateView = view
         views.debugHightlightView(view)
-        selectedView = view
+        //selectedView = view
     }
 
     suspend fun cut() {
@@ -76,6 +78,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
 
     fun attachNewView(newView: View?) {
         if (newView == null) return
+        println("attachNewView.selectedView: $selectedView")
         (selectedView as Container?)?.addChild(newView)
         highlight(newView)
         save(newView)

@@ -232,7 +232,7 @@ class ViewsDebuggerComponent(
             }
         })
     }
-    val selectedView: View? get() = (tree.selectionPath?.lastPathComponent as? ViewNode)?.view
+    val selectedView: View? get() = actions.selectedView
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
     //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
