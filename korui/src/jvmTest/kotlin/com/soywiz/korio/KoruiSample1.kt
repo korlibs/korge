@@ -2,6 +2,7 @@ package com.soywiz.korio
 
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import javax.swing.*
 
 object KoruiSample1 {
     @JvmStatic
@@ -16,8 +17,12 @@ object KoruiSample1 {
         defaultKoruiFactory.setVisible(window, true)
         */
 
+        JTree()
+
         UiApplication().window {
-            //layout = UiLayout(this)
+            layout = UiLayout(this)
+            setBounds(0, 0, 600, 600)
+            /*
             title = "Hello"
             minimumSize = Size(600.pt)
             setBounds(16, 16, 600, 600)
@@ -47,6 +52,13 @@ object KoruiSample1 {
                 items = listOf("hello", "world")
                 selectedItem = "world"
                 setBounds(16, 350, 320, 32)
+            }
+             */
+            tree {
+                setBounds(0, 0, 300, 300)
+                root = SimpleUiTreeNode("hello", listOf(
+                    SimpleUiTreeNode("world")
+                ))
             }
         }
     }

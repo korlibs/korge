@@ -8,6 +8,8 @@ import java.awt.*
 import java.awt.event.*
 import javax.swing.*
 import java.awt.event.ComponentEvent
+import java.util.*
+import javax.swing.tree.*
 
 actual val DEFAULT_UI_FACTORY: UiFactory = AwtUiFactory()
 
@@ -19,6 +21,7 @@ open class AwtUiFactory : UiFactory {
     override fun createLabel() = AwtLabel(this)
     override fun createTextField() = AwtTextField(this)
     override fun <T> createComboBox() = AwtComboBox<T>(this)
+    override fun createTree() = AwtTree(this)
 }
 
 private val awtToWrappersMap = WeakMap<Component, AwtComponent>()
@@ -32,14 +35,16 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         component.setBounds(x, y, width, height)
     }
 
-    override fun setParent(p: UiContainer?) {
-        if (p == null) {
-            component.parent?.remove(component)
-        } else {
-            //(p as AwtContainer).childContainer.add(component)
-            (p as AwtContainer).container.add(component)
+    override var parent: UiContainer?
+        get() = awtToWrappersMap[component.parent] as? UiContainer?
+        set(p) {
+            if (p == null) {
+                component.parent?.remove(component)
+            } else {
+                //(p as AwtContainer).childContainer.add(component)
+                (p as AwtContainer).container.add(component)
+            }
         }
-    }
 
     override var index: Int
         get() = super.index
@@ -80,16 +85,25 @@ open class AwtContainer(factory: AwtUiFactory, val container: Container = JPanel
     override fun getChild(index: Int): UiComponent = awtToWrappersMap[childContainer.getComponent(index)] ?: error("Can't find component")
 }
 
+open class JFixedSizeContainer : JPanel() {
+    init {
+        this.layout = null
+    }
+    var myPreferredSize = Dimension(2000, 2000)
+    override fun isPreferredSizeSet(): Boolean = true
+    override fun preferredSize(): Dimension = myPreferredSize
+}
+
 open class AwtScrollPanel(
     factory: AwtUiFactory,
-    val view: JPanel = AwtContainer(factory, JPanel()).container as JPanel,
+    val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     val scrollPanel: JScrollPane = JScrollPane(view, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS)
 ) : AwtContainer(factory, scrollPanel, view), UiScrollPanel {
     init {
         //view.preferredSize = Dimension(2000, 2000)
         //view.size = Dimension(2000, 2000)
         //scrollPanel.viewport.extentSize = Dimension(2000, 2000)
-        scrollPanel.viewport.viewSize = Dimension(2000, 2000)
+        //scrollPanel.viewport.viewSize = Dimension(2000, 2000)
     }
 }
 
@@ -128,6 +142,27 @@ open class AwtLabel(factory: AwtUiFactory, val label: JLabel = JLabel()) : AwtCo
     override var text: String
         get() = label.text
         set(value) = run { label.text = value }
+}
+
+val UiTreeNode.awt by Extra.PropertyThis<UiTreeNode, AwtTreeNode>() { AwtTreeNode(this) }
+
+data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
+    override fun getChildAt(childIndex: Int): TreeNode? = node.children?.get(childIndex)?.awt
+    override fun getChildCount(): Int = node.children?.size ?: 0
+    override fun getParent(): TreeNode? = node.parent?.let { it.awt }
+    override fun getIndex(node: TreeNode?): Int = this.node.children?.indexOf(node) ?: -1
+    override fun getAllowsChildren(): Boolean = node.children != null
+    override fun isLeaf(): Boolean = node.children == null
+    override fun children(): Enumeration<*> = Vector(node.children ?: listOf()).elements()
+    override fun toString(): String = node.toString()
+}
+
+open class AwtTree(factory: AwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), UiTree {
+    override var root: UiTreeNode?
+        get() = ((tree.model as DefaultTreeModel).root as? AwtTreeNode?)?.node
+        set(value) {
+            tree.model = DefaultTreeModel(value?.awt)
+        }
 }
 
 open class AwtTextField(factory: AwtUiFactory, val textField: JTextField = JTextField()) : AwtComponent(factory, textField), UiTextField {

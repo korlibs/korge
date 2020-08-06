@@ -14,7 +14,7 @@ inline fun UiContainer.forEachChild(block: (UiComponent) -> Unit) {
 val UiContainer.children: List<UiComponent?> get() = (0 until numChildren).map { getChild(it) }
 
 fun UiContainer.container(block: UiContainer.() -> Unit): UiContainer {
-    return factory.createContainer().also { it.setParent(this) }.also(block)
+    return factory.createContainer().also { it.parent = this }.also(block)
 }
 
 fun UiContainer.addBlock(block: UiContainer.() -> Unit) {

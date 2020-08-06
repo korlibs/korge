@@ -7,7 +7,9 @@ import com.soywiz.korio.lang.*
 interface UiComponent : Extra {
     val factory: UiFactory
     fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
-    fun setParent(p: UiContainer?) = Unit
+    var parent: UiContainer?
+        get() = null
+        set(value) = Unit
     var index: Int
         get() = -1
         set(value) = Unit

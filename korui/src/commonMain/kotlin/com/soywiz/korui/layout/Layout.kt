@@ -57,9 +57,9 @@ var UiComponent.height: Length?
     }
 
 fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
-    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.setParent(this) }.also(block)
+    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }
 
 fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
-    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.setParent(this) }.also(block)
+    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }
