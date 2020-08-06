@@ -2,6 +2,7 @@ package com.soywiz.korio
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korma.geom.*
@@ -29,6 +30,7 @@ object KoruiSample1 {
             layout = UiLayout(this)
 
             menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world"))), UiMenuItem("world")))
+            focusable = true
             /*
             title = "Hello"
             minimumSize = Size(600.pt)
@@ -90,7 +92,7 @@ object KoruiSample1 {
                         onClick { }
                     }
                     addChild(MyCustomComponent(app).apply {
-                        bounds = RectangleInt(0, 100, 200, 64)
+                        bounds = RectangleInt(0, 100, 240, 32)
                     })
                 }
             //}
@@ -123,9 +125,81 @@ object KoruiSample1 {
     }
 }
 
+class MyEditableNumber(app: UiApplication) : UiContainer(app) {
+    init {
+        layout = null
+        //bounds = RectangleInt(0, 0, 120, 32)
+        //backgroundColor = Colors.BLUE
+        visible = true
+    }
+
+    val contentText = UiLabel(app).also { it.text = "world" }.also { it.bounds = RectangleInt(0, 0, 120, 32) }.also { it.visible = true }
+    val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.bounds = RectangleInt(0, 0, 120, 32) }.also { it.visible = false }
+
+    fun hideEditor() {
+        contentText.visible = true
+        contentTextField.visible = false
+        contentText.text = contentTextField.text
+    }
+
+    fun showEditor() {
+        contentTextField.text = contentText.text
+        contentText.visible = false
+        contentTextField.visible = true
+        contentTextField.select()
+        contentTextField.focus()
+    }
+
+    init {
+        contentText.onClick {
+            showEditor()
+        }
+        contentTextField.onKeyEvent { e ->
+            if (e.typeDown && e.key == Key.RETURN) {
+                hideEditor()
+            }
+            //println(e)
+        }
+        contentTextField.onFocus { e ->
+            if (e.typeBlur) {
+                hideEditor()
+            }
+            //println(e)
+        }
+        var startX = 0
+        var startY = 0
+        contentText.onMouseEvent { e ->
+            if (e.typeDown) {
+                startX = e.x
+                startY = e.y
+            }
+            if (e.typeDrag) {
+                val dx = e.x - startX
+                val dy = e.y - startY
+                contentText.text = "$dx"
+                contentTextField.text = "$dx"
+            }
+        }
+        contentText.cursor = UiStandardCursor.RESIZE_EAST
+        addChild(contentText)
+        addChild(contentTextField)
+    }
+}
+
 class MyCustomComponent(app: UiApplication) : UiContainer(app) {
     init {
-        addChild(UiLabel(app).also { it.text = "hello" }.also { it.bounds = RectangleInt(0, 0, 120, 32) })
-        addChild(UiLabel(app).also { it.text = "world" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
+        //this.bounds = RectangleInt(0, 0, 240, 32)
+        layout = null
+    }
+    val label = UiLabel(app).also { it.text = "hello" }.also { it.bounds = RectangleInt(0, 0, 120, 32) }
+    val editor = MyEditableNumber(app).also {  }.also { it.bounds = RectangleInt(120, 0, 120, 32) }
+    init {
+        //backgroundColor = Colors.RED
+        addChild(label)
+        addChild(editor)
+        label.onClick {
+            editor.hideEditor()
+        }
+        //addChild(UiLabel(app).also { it.text = "text" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
     }
 }

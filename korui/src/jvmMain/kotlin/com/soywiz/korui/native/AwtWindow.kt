@@ -3,6 +3,7 @@ package com.soywiz.korui.native
 import com.soywiz.korev.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korui.*
+import com.soywiz.korui.native.util.*
 import java.awt.event.*
 import javax.swing.*
 
@@ -29,6 +30,12 @@ open class AwtWindow(factory: AwtUiFactory, val frame: JFrame = JFrame()) : AwtC
         set(value) {
             field = value
             frame.jMenuBar = value?.toJMenuBar()
+        }
+
+    override var focusable: Boolean
+        get() = frame.contentPane.isFocusable
+        set(value) {
+            frame.contentPane.isFocusable = value
         }
 
     override fun onResize(handler: (ReshapeEvent) -> Unit): Disposable {

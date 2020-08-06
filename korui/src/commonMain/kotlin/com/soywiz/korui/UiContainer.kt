@@ -1,12 +1,15 @@
 package com.soywiz.korui
 
+import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korui.native.*
 
 open class UiContainer(app: UiApplication, val container: NativeUiFactory.NativeContainer = app.factory.createContainer()) : UiComponent(app, container) {
     private val _children = arrayListOf<UiComponent>()
     val numChildren: Int get() = _children.size
     val size: Int get() = numChildren
+    var backgroundColor: RGBA? by redirect(container::backgroundColor)
 
     fun getChildIndex(child: UiComponent): Int = _children.indexOf(child)
     fun getChildAt(index: Int): UiComponent = _children[index]

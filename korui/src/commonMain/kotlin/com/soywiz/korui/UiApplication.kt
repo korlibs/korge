@@ -10,6 +10,6 @@ class UiApplication(val factory: NativeUiFactory = DEFAULT_UI_FACTORY) {
         .also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }
         .also(block)
         .also { it.visible = true }
-        .also { window -> window.onResize { window.layout.relayout(RectangleInt(0, 0, it.width, it.height)) } }
-        .also { it.layout.relayout(RectangleInt(0, 0, 600, 600)) }
+        .also { window -> window.onResize { window.layout?.relayout(RectangleInt(0, 0, it.width, it.height)) } }
+        .also { it.layout?.relayout(RectangleInt(0, 0, 600, 600)) }
 }

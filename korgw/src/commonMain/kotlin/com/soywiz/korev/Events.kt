@@ -26,6 +26,15 @@ data class MouseEvent(
 ) : Event() {
 	enum class Type { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
 
+    val typeMove get() = type == Type.MOVE
+    val typeDrag get() = type == Type.DRAG
+    val typeUp get() = type == Type.UP
+    val typeDown get() = type == Type.DOWN
+    val typeClick get() = type == Type.CLICK
+    val typeEnter get() = type == Type.ENTER
+    val typeExit get() = type == Type.EXIT
+    val typeScroll get() = type == Type.SCROLL
+
     fun copyFrom(other: MouseEvent) {
         this.type = other.type
         this.id = other.id
@@ -42,6 +51,14 @@ data class MouseEvent(
         this.isMetaDown = other.isMetaDown
         this.scaleCoords = other.scaleCoords
     }
+}
+
+data class FocusEvent(
+    var type: Type = Type.FOCUS
+) {
+    enum class Type { FOCUS, BLUR }
+    val typeFocus get() = type == Type.FOCUS
+    val typeBlur get() = type == Type.BLUR
 }
 
 data class Touch(
@@ -139,6 +156,9 @@ data class KeyEvent constructor(
     var alt: Boolean = false,
     var meta: Boolean = false,
 ) : Event() {
+    val typeType get() = type == Type.TYPE
+    val typeDown get() = type == Type.DOWN
+    val typeUp get() = type == Type.UP
 
     val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
 

@@ -28,7 +28,7 @@ open class LineUiLayout(
             }
             child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
             if (child is UiContainer) {
-                child.layout.relayout(childBounds)
+                child.layout?.relayout(childBounds)
             }
             sum += value
             cur += value
@@ -39,7 +39,7 @@ open class LineUiLayout(
 fun Size.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection { VERTICAL, HORIZONTAL }
 
-var UiContainer.layout by Extra.PropertyThis<UiContainer, UiLayout>() { LineUiLayout(this, LayoutDirection.VERTICAL) }
+var UiContainer.layout by Extra.PropertyThis<UiContainer, UiLayout?>() { LineUiLayout(this, LayoutDirection.VERTICAL) }
 
 var UiComponent.size by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
 var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }

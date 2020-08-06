@@ -2,6 +2,7 @@ package com.soywiz.korui.native
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -49,6 +50,9 @@ interface NativeUiFactory {
         var bounds: RectangleInt
             get() = RectangleInt(0, 0, 0, 0)
             set(value) = Unit
+        var cursor: UiCursor?
+            get() = null
+            set(value) = Unit
         fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
         var parent: NativeContainer?
             get() = null
@@ -62,10 +66,14 @@ interface NativeUiFactory {
         var visible: Boolean
             get() = true
             set(value) = Unit
+        var focusable: Boolean
+            get() = true
+            set(value) = Unit
         var enabled: Boolean
             get() = true
             set(value) = Unit
         fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
+        fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
 
         fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 
@@ -74,6 +82,9 @@ interface NativeUiFactory {
 
     interface NativeContainer : NativeComponent {
         val numChildren: Int get() = 0
+        var backgroundColor: RGBA?
+            get() = null
+            set(value) = Unit
         fun getChildAt(index: Int): NativeComponent = TODO()
         fun insertChildAt(index: Int, child: NativeComponent): Unit = TODO()
         fun removeChild(child: NativeComponent): Unit = TODO()
@@ -87,6 +98,9 @@ interface NativeUiFactory {
     }
 
     interface NativeTextField : NativeComponent, NativeWithText {
+        fun select(range: IntRange? = 0 until Int.MAX_VALUE): Unit = Unit
+        fun focus(): Unit = Unit
+        fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = Disposable { }
     }
 
     interface NativeTree : NativeComponent {
@@ -106,6 +120,7 @@ interface NativeUiFactory {
         var menu: UiMenu?
             get() = null
             set(value) = Unit
+        val pixelFactor: Double get() = 1.0
     }
 
     interface NativeWithText : NativeComponent {

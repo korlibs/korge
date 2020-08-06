@@ -2,6 +2,7 @@ package com.soywiz.korui
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.native.*
@@ -17,19 +18,22 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
             parent?.removeChild(this)
             value?.addChild(this)
         }
-    var visible by RedirectMutableField(component::visible)
-    var enabled by RedirectMutableField(component::enabled)
-    var bounds by RedirectMutableField(component::bounds)
+    var visible by redirect(component::visible)
+    var enabled by redirect(component::enabled)
+    var bounds by redirect(component::bounds)
+    var cursor by redirect(component::cursor)
+    var focusable by redirect(component::focusable)
 
     open fun copyFrom(that: UiComponent) {
         this.visible = that.visible
         this.enabled = that.enabled
         this.bounds = that.bounds
+        this.cursor = that.cursor
+        this.focusable = that.focusable
     }
 
-    fun onMouseEvent(block: (MouseEvent) -> Unit) {
-        component.onMouseEvent(block)
-    }
+    fun onMouseEvent(block: (MouseEvent) -> Unit) = component.onMouseEvent(block)
+    fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
 }
 
 val UiComponent.root: UiComponent? get() {

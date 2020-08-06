@@ -1,4 +1,4 @@
-package com.soywiz.korui.native
+package com.soywiz.korui.native.util
 
 import com.soywiz.korui.*
 import javax.swing.*

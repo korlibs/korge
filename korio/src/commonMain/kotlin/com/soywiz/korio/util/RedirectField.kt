@@ -11,6 +11,9 @@ class RedirectMutableField<V>(val redirect: KMutableProperty0<V>) {
 	inline operator fun setValue(thisRef: Any?, property: KProperty<*>, value: V) = redirect.set(value)
 }
 
+fun <V> redirect(prop: KMutableProperty0<V>) = RedirectMutableField(prop)
+fun <V> redirect(prop: KProperty0<V>) = RedirectField(prop)
+
 class RedirectMutableFieldGen<V>(val redirect: () -> KMutableProperty0<V>) {
 	inline operator fun getValue(thisRef: Any?, property: KProperty<*>): V = redirect().get()
 	inline operator fun setValue(thisRef: Any?, property: KProperty<*>, value: V) = redirect().set(value)

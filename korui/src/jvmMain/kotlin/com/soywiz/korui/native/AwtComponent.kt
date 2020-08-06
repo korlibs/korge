@@ -2,9 +2,12 @@ package com.soywiz.korui.native
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korev.FocusEvent
+import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import com.soywiz.korui.native.util.*
 import java.awt.*
 import java.awt.Rectangle
 import java.awt.event.*
@@ -29,6 +32,12 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
             component.bounds = Rectangle(value.x, value.y, value.width, value.height)
         }
 
+    override var cursor: UiCursor? = null
+        set(value) {
+            field = value
+            component.cursor = value.toAwt()
+        }
+
     override fun setBounds(x: Int, y: Int, width: Int, height: Int) {
         component.setBounds(x, y, width, height)
     }
@@ -51,29 +60,63 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         get() = component.isVisible
         set(value) = run { component.isVisible = value }
 
+    override var focusable: Boolean
+        get() = component.isFocusable
+        set(value) = run { component.isFocusable = value }
+
     override var enabled: Boolean
         get() = component.isEnabled
         set(value) = run { component.isEnabled = value }
 
     //var lastMouseEvent: java.awt.event.MouseEvent? = null
 
+    override fun onFocus(handler: (FocusEvent) -> Unit): Disposable {
+        val event = com.soywiz.korev.FocusEvent()
+
+        fun dispatch(e: java.awt.event.FocusEvent, type: com.soywiz.korev.FocusEvent.Type) {
+            event.type = type
+            handler(event)
+        }
+        val listener = object : FocusAdapter() {
+            override fun focusGained(e: java.awt.event.FocusEvent) = dispatch(e, FocusEvent.Type.FOCUS)
+            override fun focusLost(e: java.awt.event.FocusEvent) = dispatch(e, FocusEvent.Type.BLUR)
+        }
+        component.addFocusListener(listener)
+        return Disposable {
+            component.removeFocusListener(listener)
+        }
+    }
+
     override fun onMouseEvent(handler: (com.soywiz.korev.MouseEvent) -> Unit): Disposable {
         val event = com.soywiz.korev.MouseEvent()
 
         fun dispatch(e: MouseEvent, type: com.soywiz.korev.MouseEvent.Type) {
+            event.type = type
             event.button = MouseButton[e.button]
             event.x = e.x
             event.y = e.y
-            event.type = type
+            event.isShiftDown = e.isShiftDown
+            event.isCtrlDown = e.isControlDown
+            event.isAltDown = e.isAltDown
+            event.isMetaDown = e.isMetaDown
             handler(event)
         }
 
         val listener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.CLICK)
+            override fun mousePressed(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.DOWN)
+            override fun mouseReleased(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.UP)
+            override fun mouseEntered(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.ENTER)
+            override fun mouseExited(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.EXIT)
+            //override fun mouseWheelMoved(e: MouseWheelEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.WEE)
+            override fun mouseDragged(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.DRAG)
+            override fun mouseMoved(e: MouseEvent) = dispatch(e, com.soywiz.korev.MouseEvent.Type.MOVE)
         }
 
         component.addMouseListener(listener)
+        component.addMouseMotionListener(listener)
         return Disposable {
+            component.removeMouseMotionListener(listener)
             component.removeMouseListener(listener)
         }
     }
