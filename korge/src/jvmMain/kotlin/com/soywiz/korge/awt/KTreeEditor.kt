@@ -60,6 +60,9 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
 
             for ((currentAnchor, currentAngle) in AnchorPointResult.ANCHOR_POINT_TO_ANGLE) {
                 if (cursorDistanceToPoint(view.globalLocalBoundsPointRatio(currentAnchor)) < distance) {
+                    val inside = view.getLocalBounds().contains(view.globalToLocal(stage.mouseXY))
+                    if (kind == AnchorKind.ROTATING && inside) continue
+
                     anchor = currentAnchor
                     angle = (view.rotation + currentAngle).normalized
                     break
