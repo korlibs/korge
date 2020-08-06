@@ -5,7 +5,7 @@ import com.soywiz.korev.*
 import com.soywiz.korio.lang.*
 
 interface UiComponent : Extra {
-    val factory: KoruiFactory
+    val factory: UiFactory
     fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
     fun setParent(p: UiContainer?) = Unit
     var index: Int
@@ -14,9 +14,9 @@ interface UiComponent : Extra {
     var visible: Boolean
         get() = false
         set(value) = Unit
-    fun addMouseEventListener(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
+    fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
 }
 
 fun UiComponent.onClick(block: (MouseEvent) -> Unit) {
-    addMouseEventListener(block)
+    onMouseEvent(block)
 }

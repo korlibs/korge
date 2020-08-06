@@ -1,6 +1,7 @@
 package com.soywiz.korio
 
 import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 
 object KoruiSample1 {
     @JvmStatic
@@ -16,14 +17,23 @@ object KoruiSample1 {
         */
 
         UiApplication().window {
+            //layout = UiLayout(this)
             title = "Hello"
+            minimumSize = Size(600.pt)
             setBounds(16, 16, 600, 600)
-            button("Hello World!") {
-                onClick {
-                    println("BUTTON")
+            //vertical {
+            scrollPanel {
+                setBounds(0, 0, 200, 200)
+                button("Hello World!") {
+                    setBounds(16, 16, 320, 100)
+                    height = 64.pt
+                    onClick {
+                        println("BUTTON")
+                    }
+                    //size = Size(width = 320.pt, height = 100.pt)
                 }
-                setBounds(16, 16, 320, 100)
             }
+            //}
             label("Label") {
                 onClick {
                     println("LABEL")
