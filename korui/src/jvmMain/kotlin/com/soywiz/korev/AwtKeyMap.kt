@@ -1,4 +1,4 @@
-package com.soywiz.korgw.awt
+package com.soywiz.korev
 
 import com.soywiz.korev.*
 import java.awt.event.*

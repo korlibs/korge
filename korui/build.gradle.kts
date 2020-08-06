@@ -1,3 +1,3 @@
 dependencies {
-	commonMainApi(project(":korgw"))
+    commonMainApi(project(":korim"))
 }

@@ -1,6 +1,6 @@
 package com.soywiz.korev
 
-import com.soywiz.korev.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 

@@ -23,9 +23,7 @@ if (doEnableKotlinNative) {
 }
 
 dependencies {
-	commonMainApi(project(":korim"))
-	commonMainApi(project(":klock"))
-	commonMainApi(project(":kmem"))
+    commonMainApi(project(":korui"))
 	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
 	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
 }

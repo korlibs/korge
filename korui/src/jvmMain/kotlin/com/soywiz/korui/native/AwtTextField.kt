@@ -2,7 +2,6 @@ package com.soywiz.korui.native
 
 import com.soywiz.korev.*
 import com.soywiz.korev.KeyEvent
-import com.soywiz.korgw.awt.*
 import com.soywiz.korio.lang.*
 import java.awt.event.*
 import javax.swing.*
