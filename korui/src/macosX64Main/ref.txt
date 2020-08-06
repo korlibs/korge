@@ -1,0 +1,425 @@
+//
+//  main.kt
+//  sample3
+//
+//  Created by Carlos Ballesteros Velasco on 07/07/2018.
+//  Copyright © 2018 soywiz. All rights reserved.
+//
+
+import kotlinx.cinterop.*
+import platform.AppKit.*
+import platform.CoreGraphics.CGPoint
+import platform.CoreGraphics.CGRect
+import platform.Foundation.NSMakeRect
+import platform.Foundation.NSMakeSize
+import platform.Foundation.NSNotification
+import platform.Foundation.NSTimer
+import platform.OpenGL.GL_COLOR_BUFFER_BIT
+import platform.OpenGL.glClear
+import platform.OpenGL.glClearColor
+import platform.darwin.NSObject
+import kotlin.coroutines.CoroutineContext
+
+fun main(args: Array<String>) {
+    EventLoop().loop()
+}
+
+object NativeLightsComponentsFactory : LightComponentsFactory {
+    override fun create(context: CoroutineContext): LightComponents = NativeLightComponents(context)
+}
+
+class NativeLightComponents(val context: CoroutineContext) : LightComponents() {
+    override fun create(type: LightType, config: Any?): LightComponentInfo {
+        var agg: AG? = null
+        val handle: Any = when (type) {
+            LightType.FRAME -> Any()
+            LightType.CONTAINER -> Any()
+            LightType.BUTTON -> Any()
+            LightType.IMAGE -> Any()
+            LightType.PROGRESS -> Any()
+            LightType.LABEL -> Any()
+            LightType.TEXT_FIELD -> Any()
+            LightType.TEXT_AREA -> Any()
+            LightType.CHECK_BOX -> Any()
+            LightType.SCROLL_PANE -> Any()
+            LightType.AGCANVAS -> {
+                agg = agFactory.create()
+                agg.nativeComponent
+            }
+            else -> throw UnsupportedOperationException("Type: $type")
+        }
+        return LightComponentInfo(handle).apply {
+            if (agg != null) {
+                this.ag = agg!!
+            }
+        }
+    }
+}
+
+open class EventLoop {
+    open fun start() {
+    }
+
+    lateinit var app: NSApplication
+    val ag = agFactory.create()
+
+    var listener = object : KMLWindowListener() {
+    }
+
+    open fun loop() {
+        autoreleasepool {
+            app = NSApplication.sharedApplication()
+
+            val windowConfig = WindowConfig(640, 480, "Korui")
+            app.delegate = MyAppDelegate(object : MyAppHandler() {
+                override fun init(context: NSOpenGLContext?) {
+                    macTrace("init[a]")
+                    //runInitBlocking(listener)
+                    macTrace("init[b]")
+                }
+
+                override fun mouseUp(x: Int, y: Int, button: Int) = listener.mouseUpdateButton(button, false)
+                override fun mouseDown(x: Int, y: Int, button: Int) = listener.mouseUpdateButton(button, true)
+                override fun mouseMoved(x: Int, y: Int) = listener.mouseUpdateMove(x, y)
+
+                fun keyChange(keyCode: Char, pressed: Boolean) {
+                    println("KEY: $keyCode, ${keyCode.toInt()}, $pressed")
+                    //listener.keyUpdate(key, pressed)
+                }
+
+                override fun keyDown(keyCode: Char) = keyChange(keyCode, true)
+                override fun keyUp(keyCode: Char) = keyChange(keyCode, false)
+
+                override fun windowDidResize(width: Int, height: Int, context: NSOpenGLContext?) {
+                    macTrace("resize[a]")
+                    //glNative.viewport(0, 0, width, height)
+                    macTrace("resize[b]")
+                    listener.resized(width, height)
+                    macTrace("resize[b]")
+                    //println("RESIZED($width, $height)")
+                    //render(context)
+                    //listener.render(glNative)
+                    macTrace("resize[d]")
+                    context?.flushBuffer()
+                    macTrace("resize[e]")
+                }
+
+                override fun render(context: NSOpenGLContext?) {
+                    //println("FRAME")
+                    //glClearColor(0.2f, 0.4f, 0.6f, 1f)
+                    //glClear(GL_COLOR_BUFFER_BIT)
+                    macTrace("render[a]")
+                    //listener.render(glNative)
+                    macTrace("render[b]")
+                    context?.flushBuffer()
+                    macTrace("render[c]")
+                }
+            }, windowConfig)
+            app.setActivationPolicy(NSApplicationActivationPolicy.NSApplicationActivationPolicyRegular)
+            app.activateIgnoringOtherApps(true)
+
+            app.run()
+        }
+    }
+}
+
+class WindowConfig(val width: Int, val height: Int, val title: String)
+
+private class MyAppDelegate(val handler: MyAppHandler, val windowConfig: WindowConfig) :
+        NSObject(),
+        NSApplicationDelegateProtocol {
+    private val window: NSWindow
+    private val openglView: AppNSOpenGLView
+    private val appDelegate: AppDelegate
+
+    init {
+        macTrace("[a]")
+        val mainDisplayRect = NSScreen.mainScreen()!!.frame
+        val windowRect = mainDisplayRect.useContents<CGRect, CValue<CGRect>> {
+            NSMakeRect(
+                    (size.width * 0.5 - windowConfig.width * 0.5),
+                    (size.height * 0.5 - windowConfig.height * 0.5),
+                    windowConfig.width.toDouble(),
+                    windowConfig.height.toDouble()
+            )
+        }
+
+        macTrace("[b]")
+        val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
+                NSWindowStyleMaskClosable or NSWindowStyleMaskResizable
+
+        val attrs = intArrayOf(
+                //NSOpenGLPFAOpenGLProfile,
+                //NSOpenGLProfileVersion4_1Core,
+                NSOpenGLPFAColorSize, 24,
+                NSOpenGLPFAAlphaSize, 8,
+                NSOpenGLPFADoubleBuffer,
+                NSOpenGLPFADepthSize, 32,
+                0
+        )
+
+        macTrace("[c]")
+
+        val pixelFormat = attrs.usePinned {
+            NSOpenGLPixelFormat.alloc()!!.initWithAttributes(it.addressOf(0).reinterpret())!!
+        }
+
+        openglView = AppNSOpenGLView(handler, NSMakeRect(0.0, 0.0, 16.0, 16.0), pixelFormat)!!
+
+        appDelegate = AppDelegate(handler, openglView, openglView?.openGLContext)
+
+        macTrace("[d]")
+
+        window = NSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false).apply {
+            title = windowConfig.title
+            opaque = true
+            hasShadow = true
+            preferredBackingLocation = NSWindowBackingLocationVideoMemory
+            hidesOnDeactivate = false
+            releasedWhenClosed = false
+
+            openglView.setFrame(contentRectForFrameRect(frame))
+            delegate = appDelegate
+
+            setContentView(openglView)
+            makeFirstResponder(openglView)
+            setContentMinSize(NSMakeSize(150.0, 100.0))
+        }
+
+        macTrace("[e]")
+    }
+
+    override fun applicationShouldTerminateAfterLastWindowClosed(app: NSApplication): Boolean {
+        println("applicationShouldTerminateAfterLastWindowClosed")
+        return true
+    }
+
+    override fun applicationWillFinishLaunching(notification: NSNotification) {
+        println("applicationWillFinishLaunching")
+        window.makeKeyAndOrderFront(this)
+    }
+
+    override fun applicationDidFinishLaunching(notification: NSNotification) {
+        //val data = decodeImageData(readBytes("icon.jpg"))
+        //println("${data.width}, ${data.height}")
+
+
+        macTrace("[f]")
+        openglView?.openGLContext?.makeCurrentContext()
+        try {
+            macTrace("[g]")
+            handler.init(openglView?.openGLContext)
+            macTrace("[h]")
+            handler.render(openglView?.openGLContext)
+            macTrace("[i]")
+            appDelegate.timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 60.0, true, ::timer)
+            macTrace("[j]")
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            window.close()
+        }
+    }
+
+
+    private fun timer(timer: NSTimer?) {
+        macTrace("[k]")
+        //println("TIMER")
+        handler.render(openglView?.openGLContext)
+        macTrace("[l]")
+    }
+
+    override fun applicationWillTerminate(notification: NSNotification) {
+        println("applicationWillTerminate")
+        // Insert code here to tear down your application
+
+    }
+}
+
+fun macTrace(str: String) {
+    println(str)
+}
+
+class AppNSOpenGLView(val handler: MyAppHandler, frameRect: CValue<CGRect>, pixelFormat: NSOpenGLPixelFormat?) :
+        //NSOpenGLView(frameRect, pixelFormat) {
+        NSOpenGLView() {
+    private var trackingArea: NSTrackingArea? = null
+
+    override fun acceptsFirstResponder(): Boolean {
+        return true
+    }
+
+    fun getHeight(): Int = bounds.useContents<CGRect, Int> { size.height.toInt() }
+
+    override fun updateTrackingAreas() {
+        trackingArea?.let { removeTrackingArea(it) }
+        trackingArea = NSTrackingArea(bounds, NSTrackingActiveWhenFirstResponder or NSTrackingMouseMoved, this, null)
+        addTrackingArea(trackingArea!!)
+    }
+
+    override fun mouseUp(event: NSEvent) {
+        super.mouseUp(event)
+
+        event.locationInWindow.useContents<CGPoint, Unit> {
+            handler.mouseUp(x.toInt(), getHeight() - y.toInt(), event.buttonNumber.toInt())
+        }
+    }
+
+    override fun mouseDown(event: NSEvent) {
+        super.mouseDown(event)
+        event.locationInWindow.useContents<CGPoint, Unit> {
+            handler.mouseDown(x.toInt(), getHeight() - y.toInt(), event.buttonNumber.toInt())
+        }
+    }
+
+    override fun mouseMoved(event: NSEvent) {
+        super.mouseMoved(event)
+        event.locationInWindow.useContents<CGPoint, Unit> {
+            handler.mouseMoved(x.toInt(), getHeight() - y.toInt())
+        }
+    }
+
+    fun keyDownUp(event: NSEvent, pressed: Boolean) {
+        val str = event.charactersIgnoringModifiers ?: "\u0000"
+        val c = str.getOrNull(0) ?: '\u0000'
+        val cc = c.toInt().toChar()
+        if (pressed) {
+            handler.keyDown(cc)
+        } else {
+            handler.keyUp(cc)
+        }
+    }
+
+    override fun keyDown(event: NSEvent) = keyDownUp(event, true)
+    override fun keyUp(event: NSEvent) = keyDownUp(event, false)
+}
+
+open class MyAppHandler {
+    open fun init(context: NSOpenGLContext?) {
+
+    }
+
+    open fun mouseUp(x: Int, y: Int, button: Int) {
+        println("MOUSE_UP $x, $y: BUTTON: $button")
+    }
+
+    open fun mouseDown(x: Int, y: Int, button: Int) {
+        println("MOUSE_DOWN $x, $y: BUTTON: $button")
+    }
+
+    open fun mouseMoved(x: Int, y: Int) {
+        println("MOUSE_MOVED $x, $y")
+    }
+
+    open fun keyDown(keyCode: Char) {
+        println("KEY_DOWN: $keyCode")
+    }
+
+    open fun keyUp(keyCode: Char) {
+        println("KEY_UP: $keyCode")
+    }
+
+    open fun windowDidResize(width: Int, height: Int, context: NSOpenGLContext?) {
+        println("RESIZED($width, $height)")
+        render(context)
+    }
+
+    open fun render(context: NSOpenGLContext?) {
+        context?.makeCurrentContext()
+        println("FRAME")
+        glClearColor(0.2f, 0.4f, 0.6f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT)
+        context?.flushBuffer()
+    }
+}
+
+class AppDelegate(
+        val handler: MyAppHandler,
+        val openGLView: AppNSOpenGLView,
+        var openGLContext: NSOpenGLContext? = null
+) : NSObject(), NSWindowDelegateProtocol {
+    var timer: NSTimer? = null
+
+    override fun windowShouldClose(sender: NSWindow): Boolean {
+        println("windowShouldClose")
+        return true
+    }
+
+    override fun windowWillClose(notification: NSNotification) {
+        println("windowWillClose")
+        //openGLContext = null
+//
+        //timer?.invalidate()
+        //timer = null
+//
+        //NSApplication.sharedApplication().stop(this)
+    }
+
+    override fun windowDidResize(notification: NSNotification) {
+        openGLView.bounds.useContents<CGRect, Unit> {
+            val bounds = this
+            handler.windowDidResize(bounds.size.width.toInt(), bounds.size.height.toInt(), openGLContext)
+            Unit
+        }
+    }
+}
+
+
+open class KMLWindowListener {
+    open suspend fun init(gl: KmlGl): Unit = gl.run {
+    }
+
+    open fun render(gl: KmlGl): Unit = gl.run {
+        TODO()
+    }
+
+    open fun keyUpdate(key: Int, pressed: Boolean) {
+    }
+
+    open fun gamepadConnection(player: Int, name: String, connected: Boolean) {
+    }
+
+    open fun gamepadButtonUpdate(player: Int, button: Int, ratio: Double) {
+    }
+
+    open fun gamepadStickUpdate(player: Int, stick: Int, x: Double, y: Double) {
+    }
+
+    open fun mouseUpdateMove(x: Int, y: Int) {
+    }
+
+    open fun mouseUpdateButton(button: Int, pressed: Boolean) {
+    }
+
+    open fun resized(width: Int, height: Int) {
+    }
+}
+
+/////////////////////////////
+
+
+interface LightComponentsFactory {
+    fun create(context: CoroutineContext): LightComponents
+}
+
+open class LightComponents {
+    open fun create(type: LightType): LightComponentInfo = TODO()
+}
+
+class LightComponentInfo(val handle: Any) {
+    var ag: AG? = null
+}
+
+
+class AG {
+    val nativeComponent: Any = Any()
+}
+
+object agFactory {
+    fun create(): AG = TODO()
+}
+
+enum class LightType {
+    FRAME, CONTAINER, BUTTON, PROGRESS, IMAGE, LABEL, TEXT_FIELD, TEXT_AREA, CHECK_BOX, SCROLL_PANE, AGCANVAS
+}
+
+class KmlGl
