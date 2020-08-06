@@ -53,6 +53,10 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun show() = run { visible = true }
     fun hide() = run { visible = false }
     fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
+
+    open fun updateUI() {
+        component.updateUI()
+    }
 }
 
 

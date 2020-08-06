@@ -4,26 +4,9 @@ import com.soywiz.korma.geom.*
 import java.awt.*
 import javax.swing.*
 
-open class JFixedSizeContainer : JPanel() {
-    init {
-        this.layout = null
-    }
-    var myPreferredSize = Dimension(2000, 2000)
-    override fun isPreferredSizeSet(): Boolean = true
-    override fun preferredSize(): Dimension {
-        val bb = BoundsBuilder()
-        for (n in 0 until componentCount) {
-            val b = this.getComponent(n).bounds
-            bb.add(b.x, b.y)
-            bb.add(b.x + b.width, b.y + b.height)
-        }
-        return Dimension(bb.xmax.toInt(), bb.ymax.toInt())
-    }
-}
-
 open class AwtScrollPanel(
     factory: AwtUiFactory,
-    val view: JPanel = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
+    val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     //val view: JPanel = JPanel(),
     val scrollPanel: JScrollPane = JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
 ) : AwtContainer(factory, scrollPanel, view), NativeUiFactory.NativeScrollPanel {
@@ -68,5 +51,31 @@ open class AwtScrollPanel(
         //view.size = Dimension(2000, 2000)
         //scrollPanel.viewport.extentSize = Dimension(2000, 2000)
         //scrollPanel.viewport.viewSize = Dimension(2000, 2000)
+    }
+
+    override fun updateUI() {
+        super<AwtContainer>.updateUI()
+        view.cachedBounds = null
+    }
+}
+
+open class JFixedSizeContainer : JPanel() {
+    init {
+        this.layout = null
+    }
+    internal var cachedBounds: Dimension? = null
+    override fun isPreferredSizeSet(): Boolean = true
+    override fun preferredSize(): Dimension {
+        //cachedBounds = null
+        if (cachedBounds == null) {
+            val bb = BoundsBuilder()
+            for (n in 0 until componentCount) {
+                val b = this.getComponent(n).bounds
+                bb.add(b.x, b.y)
+                bb.add(b.x + b.width, b.y + b.height)
+            }
+            cachedBounds = Dimension(bb.xmax.toInt(), bb.ymax.toInt())
+        }
+        return cachedBounds!!
     }
 }

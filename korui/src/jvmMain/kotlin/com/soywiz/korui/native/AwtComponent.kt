@@ -177,4 +177,7 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
             component.parent.requestFocus()
         }
     }
+
+    override fun updateUI() {
+    }
 }

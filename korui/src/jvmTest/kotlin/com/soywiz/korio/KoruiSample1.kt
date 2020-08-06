@@ -108,10 +108,12 @@ object KoruiSample1 {
                         addChild(MyCustomComponent(app, "x", MyEditableNumber(app)))
                         addChild(MyCustomComponent(app, "y", MyEditableComboBox(app, listOf("hello", "world"))))
                     }
-                    addChild(UiTree(app).also {
-                        it.minimumSize = Size(32.pt, 128.pt)
-                        it.nodeRoot = SimpleUiTreeNode("hello", listOf(SimpleUiTreeNode("world")))
-                    })
+                    tree {
+                        minimumSize = Size(32.pt, 128.pt)
+                        nodeRoot = SimpleUiTreeNode("hello",
+                            (0 until 40).map { SimpleUiTreeNode("world$it") }
+                        )
+                    }
                     lateinit var vert: UiContainer
                     label("DEMO") {
                         icon = crossIcon

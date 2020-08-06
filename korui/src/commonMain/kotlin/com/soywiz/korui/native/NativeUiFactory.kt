@@ -88,6 +88,7 @@ interface NativeUiFactory {
 
         fun repaintAll() = Unit
         fun focus(focus: Boolean) = Unit
+        fun updateUI() = Unit
     }
 
     interface NativeContainer : NativeComponent {

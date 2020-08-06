@@ -22,6 +22,12 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
 
     fun relayout() {
         layout?.relayout(this)
+        updateUI()
+    }
+
+    override fun updateUI() {
+        super.updateUI()
+        forEachChild { it.updateUI() }
     }
 
     override var bounds: RectangleInt
