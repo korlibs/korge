@@ -60,8 +60,8 @@ fun <T> Font.renderTextToBitmap(size: Double, text: T, paint: Paint = DefaultPai
     val bounds = getTextBounds(size, text, renderer = renderer)
     //println("BOUNDS: $bounds")
     val glyphs = arrayListOf<TextToBitmapResult.PlacedGlyph>()
-    val iwidth = bounds.width.toInt() + border * 2
-    val iheight = bounds.height.toInt() + border * 2
+    val iwidth = bounds.width.toInt() + border * 2 + 1
+    val iheight = bounds.height.toInt() + border * 2 + 1
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
     image.context2d {
         font.drawText(this, size, text, paint, -bounds.left, -bounds.top, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
