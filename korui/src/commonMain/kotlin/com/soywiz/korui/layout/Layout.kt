@@ -10,14 +10,15 @@ object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
 open class LineUiLayout(
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
 ) : UiLayout {
-    override fun computePreferredSize(container: UiContainer): SizeInt {
+    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
         var sum = 0
         val ctx = Length.Context()
         val padding = container.layoutChildrenPadding
         ctx.size = 1024
         container.forEachChild { child ->
             val value = when (child) {
-                is UiContainer -> child.computePreferredSize().getDirection(direction)
+                //is UiContainer -> child.computePreferredSize(available).getDirection(direction)
+                is UiContainer -> child.computePreferredSize(SizeInt(16, 16)).getDirection(direction)
                 else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
             }
             sum += value + padding
@@ -42,7 +43,7 @@ open class LineUiLayout(
         container.forEachChild { child ->
             if (child.visible) {
                 val value = when (child) {
-                    is UiContainer -> child.computePreferredSize().getDirection(direction)
+                    is UiContainer -> child.computePreferredSize(bounds.size).getDirection(direction)
                     else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
                 }
                 val childBounds = when (direction) {

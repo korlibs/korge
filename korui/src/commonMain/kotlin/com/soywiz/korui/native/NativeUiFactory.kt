@@ -26,6 +26,7 @@ interface NativeUiFactory {
     fun createTextField(): NativeTextField = object : DummyBase(), NativeTextField {}
     fun <T> createComboBox(): NativeComboBox<T> = object : DummyBase(), NativeComboBox<T> {}
     fun createTree(): NativeTree = object : DummyBase(), NativeTree {}
+    fun createCanvas(): NativeCanvas = object : DummyBase(), NativeCanvas {}
 
     interface NativeButton : NativeComponent, NativeWithText {
         var icon: Bitmap?
@@ -102,6 +103,12 @@ interface NativeUiFactory {
 
     interface NativeLabel : NativeComponent, NativeWithText {
         var icon: Bitmap?
+            get() = null
+            set(value) = Unit
+    }
+
+    interface NativeCanvas : NativeComponent {
+        var image: Bitmap?
             get() = null
             set(value) = Unit
     }

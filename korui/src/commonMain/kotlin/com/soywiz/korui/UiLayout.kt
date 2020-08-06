@@ -4,15 +4,16 @@ import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 
 interface UiLayout {
-    fun computePreferredSize(container: UiContainer): SizeInt
+    fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
     fun relayout(container: UiContainer)
 }
 
 var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 object UiFillLayout : UiLayout {
-    override fun computePreferredSize(container: UiContainer): SizeInt {
-        return SizeInt(128, 128)
+    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
+        return available
+        //return SizeInt(64, 64)
     }
 
     override fun relayout(container: UiContainer) {

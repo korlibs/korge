@@ -31,65 +31,87 @@ object KoruiSample1 {
             }
 
             menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world", icon = crossIcon))), UiMenuItem("world")))
-            focusable = true
-            layoutChildrenPadding = 8
-            //var checked by state { false }
-            var checked = true
 
-            //val checked by ObservableProperty(false)
-            //var checked: Boolean by ObservableProperty(false)
-            //var checked2: Boolean by ObservableProperty(false)
-
-            println("checked: $checked")
-
-            onClick {
-                focus()
-            }
-
-            //vertical {
+            layout = UiFillLayout
+            //scrollPanel {
             run {
-                checkBox("hello", checked = checked) {
-                    //enabled = false
+                layout = VerticalUiLayout
 
-                    bounds = RectangleInt(16, 16, 320, 32)
-                    onClick {
-                        checked = !checked
-                        //checked = false
-                        //checked = true
-                    }
+                focusable = true
+                layoutChildrenPadding = 8
+                //var checked by state { false }
+                var checked = true
+
+                //val checked by ObservableProperty(false)
+                //var checked: Boolean by ObservableProperty(false)
+                //var checked2: Boolean by ObservableProperty(false)
+
+                println("checked: $checked")
+
+                onClick {
+                    focus()
                 }
 
-                button("save") {
-                    //enabled = false
-                    bounds = RectangleInt(16, 64, 320, 32)
-                    onClick {
-                        this.showPopupMenu(listOf(UiMenuItem("HELLO", icon = crossIcon)))
-                    }
-                }
-                addChild(MyCustomComponent(app, "x", MyEditableNumber(app)).apply {
-                })
-                addChild(MyCustomComponent(app, "y", MyEditableComboBox(app, listOf("hello", "world"))).apply {
-                })
-                addChild(UiTree(app).also {
-                    it.minimumSize = Size(32.pt, 128.pt)
-                    it.nodeRoot = SimpleUiTreeNode("hello", listOf(SimpleUiTreeNode("world")))
-                })
-                lateinit var vert: UiContainer
-                label("DEMO") {
-                    icon = crossIcon
-                    onClick {
-                        vert.visible = !vert.visible
-                        icon = if (vert.visible) crossIcon else null
-                    }
-                }
-                vert = vertical {
-                    label("HELLO") {}
-                    label("WORLD") {}
-                    button("test") { }
-                    label("LOL") {}
-                }
-                button("TEST") {
+                //vertical {
+                run {
+                    canvas(NativeImage(128, 128).context2d {
+                        stroke(Colors.WHITE, lineWidth = 3.0) {
+                            line(0, 0, 128 - 1.5, 128 - 1.5)
+                            line(128 - 1.5, 0, 0, 128 - 1.5)
+                        }
+                    }) {
 
+                    }
+                    checkBox("hello", checked = checked) {
+                        //enabled = false
+
+                        bounds = RectangleInt(16, 16, 320, 32)
+                        onClick {
+                            checked = !checked
+                            //checked = false
+                            //checked = true
+                        }
+                    }
+
+                    button("save") {
+                        //enabled = false
+                        bounds = RectangleInt(16, 64, 320, 32)
+                        onClick {
+                            this.showPopupMenu(listOf(UiMenuItem("HELLO", icon = crossIcon)))
+                        }
+                    }
+                    lateinit var props: UiContainer
+                    button("Properties") {
+                        onClick {
+                            props.visible = !props.visible
+                        }
+                    }
+                    props = vertical {
+                        addChild(MyCustomComponent(app, "position", TwoItemEditableComponent(app, MyEditableNumber(app), MyEditableNumber(app))))
+                        addChild(MyCustomComponent(app, "x", MyEditableNumber(app)))
+                        addChild(MyCustomComponent(app, "y", MyEditableComboBox(app, listOf("hello", "world"))))
+                    }
+                    addChild(UiTree(app).also {
+                        it.minimumSize = Size(32.pt, 128.pt)
+                        it.nodeRoot = SimpleUiTreeNode("hello", listOf(SimpleUiTreeNode("world")))
+                    })
+                    lateinit var vert: UiContainer
+                    label("DEMO") {
+                        icon = crossIcon
+                        onClick {
+                            vert.visible = !vert.visible
+                            icon = if (vert.visible) crossIcon else null
+                        }
+                    }
+                    vert = vertical {
+                        label("HELLO") {}
+                        label("WORLD") {}
+                        button("test") { }
+                        label("LOL") {}
+                    }
+                    button("TEST") {
+
+                    }
                 }
             }
         }
@@ -101,6 +123,16 @@ open class MyEditableComponent(app: UiApplication) : UiContainer(app) {
     }
 
     open fun showEditor() {
+    }
+}
+
+class TwoItemEditableComponent(app: UiApplication, left: MyEditableComponent, right: MyEditableComponent) : MyEditableComponent(app) {
+    init {
+        layout = HorizontalUiLayout
+        left.preferredWidth = 50.percent
+        right.preferredWidth = 50.percent
+        addChild(left)
+        addChild(right)
     }
 }
 

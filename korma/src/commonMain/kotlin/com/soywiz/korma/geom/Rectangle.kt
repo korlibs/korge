@@ -277,6 +277,12 @@ fun RectangleInt.setSize(width: Int, height: Int) = this.apply {
     this.height = height
 }
 
+fun RectangleInt.getPosition(out: PointInt = PointInt()): PointInt = out.setTo(x, y)
+fun RectangleInt.getSize(out: SizeInt = SizeInt()): SizeInt = out.setTo(width, height)
+
+val RectangleInt.position get() = getPosition()
+val RectangleInt.size get() = getSize()
+
 fun RectangleInt.setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) = setTo(left, top, right - left, bottom - top)
 
 ////////////////////

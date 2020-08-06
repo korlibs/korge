@@ -16,8 +16,8 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
 
     var layout: UiLayout? = VerticalUiLayout
 
-    open fun computePreferredSize(): SizeInt {
-        return layout?.computePreferredSize(this) ?: SizeInt(16, 16)
+    open fun computePreferredSize(available: SizeInt): SizeInt {
+        return layout?.computePreferredSize(this, available) ?: available
     }
 
     fun relayout() {

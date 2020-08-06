@@ -15,6 +15,7 @@ open class AwtUiFactory : NativeUiFactory {
     override fun createScrollPanel() = AwtScrollPanel(this)
     override fun createButton() = AwtButton(this)
     override fun createLabel() = AwtLabel(this)
+    override fun createCanvas() = AwtCanvas(this)
     override fun createCheckBox() = AwtCheckBox(this)
     override fun createTextField() = AwtTextField(this)
     override fun <T> createComboBox() = AwtComboBox<T>(this)
