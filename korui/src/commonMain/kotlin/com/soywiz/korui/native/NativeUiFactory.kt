@@ -114,6 +114,12 @@ interface NativeUiFactory {
     }
 
     interface NativeScrollPanel : NativeContainer {
+        var xbar: Boolean?
+            get() = null
+            set(value) = Unit
+        var ybar: Boolean?
+            get() = null
+            set(value) = Unit
     }
 
     interface NativeTextField : NativeComponent, NativeWithText {

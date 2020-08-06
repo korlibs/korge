@@ -3,7 +3,9 @@ package com.soywiz.korui.native
 import java.awt.*
 import javax.swing.*
 
-actual val DEFAULT_UI_FACTORY: NativeUiFactory by lazy { AwtUiFactory() }
+actual val DEFAULT_UI_FACTORY: NativeUiFactory get() = DEFAULT_AWT_UI_FACTORY
+
+var DEFAULT_AWT_UI_FACTORY: NativeUiFactory = AwtUiFactory()
 
 open class AwtUiFactory : NativeUiFactory {
     init {

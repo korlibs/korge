@@ -8,6 +8,23 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.layout.Size
+import com.soywiz.korui.native.*
+
+object KoruiSample2 {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val window = DEFAULT_UI_FACTORY.createWindow()
+        val scrollPanel = DEFAULT_UI_FACTORY.createScrollPanel()
+        val button = DEFAULT_UI_FACTORY.createButton()
+        button.bounds = RectangleInt(0, 0, 400, 250)
+        scrollPanel.insertChildAt(-1, button)
+        scrollPanel.bounds = RectangleInt(0, 0, 300, 300)
+        window.insertChildAt(-1, scrollPanel)
+        //window.insertChildAt(-1, button)
+        window.bounds = RectangleInt(0, 0, 600, 600)
+        window.visible = true
+    }
+}
 
 object KoruiSample1 {
     @JvmStatic
@@ -33,8 +50,8 @@ object KoruiSample1 {
             menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world", icon = crossIcon))), UiMenuItem("world")))
 
             layout = UiFillLayout
-            //scrollPanel {
-            run {
+            scrollPanel(xbar = false, ybar = true) {
+            //run {
                 layout = VerticalUiLayout
 
                 focusable = true

@@ -1,12 +1,18 @@
 package com.soywiz.korui.native
 
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import java.awt.*
+import java.awt.Rectangle
 import javax.swing.*
 
-open class AwtContainer(factory: AwtUiFactory, val container: Container = JPanel(), val childContainer: Container = container) : AwtComponent(factory, container), NativeUiFactory.NativeContainer {
+open class AwtContainer(
+    factory: AwtUiFactory,
+    val container: Container = JPanel(),
+    val childContainer: Container = container
+) : AwtComponent(factory, container), NativeUiFactory.NativeContainer {
     init {
-        container.layout = null
+        //container.layout = null
         childContainer.layout = null
     }
 
@@ -18,6 +24,16 @@ open class AwtContainer(factory: AwtUiFactory, val container: Container = JPanel
             container.background = value?.toAwt()
         }
 
+    /*
+    override var bounds: RectangleInt
+        get() {
+            val b = childContainer.bounds
+            return RectangleInt(b.x, b.y, b.width, b.height)
+        }
+        set(value) {
+            container.bounds = Rectangle(value.x, value.y, value.width, value.height)
+        }
+    */
 
     override val numChildren: Int get() = childContainer.componentCount
     override fun getChildAt(index: Int): NativeUiFactory.NativeComponent = awtToWrappersMap[childContainer.getComponent(index)] ?: error("Can't find component")
