@@ -9,8 +9,8 @@ open class AwtContainer(factory: AwtUiFactory, val container: Container = JPanel
     }
 
     override val numChildren: Int get() = childContainer.componentCount
-    override fun getChild(index: Int): UiComponent = awtToWrappersMap[childContainer.getComponent(index)] ?: error("Can't find component")
-    override fun insertChildAt(child: UiComponent, index: Int) {
+    override fun getChildAt(index: Int): UiComponent = awtToWrappersMap[childContainer.getComponent(index)] ?: error("Can't find component")
+    override fun insertChildAt(index: Int, child: UiComponent) {
         childContainer.add((child as AwtComponent).component, index)
     }
     override fun removeChild(child: UiComponent): Unit {

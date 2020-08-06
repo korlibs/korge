@@ -31,6 +31,7 @@ interface UiComponent : Extra {
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 
     fun repaintAll()
+    fun copyFrom(nchild: UiComponent): Unit = TODO()
 }
 
 val UiComponent.root: UiContainer? get() {

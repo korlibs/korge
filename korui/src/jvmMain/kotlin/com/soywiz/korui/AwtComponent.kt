@@ -97,4 +97,10 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         component.revalidate()
         component.repaint()
     }
+
+    override fun copyFrom(nchild: UiComponent) {
+        this.bounds = nchild.bounds
+        this.visible = nchild.visible
+        this.enabled = nchild.enabled
+    }
 }

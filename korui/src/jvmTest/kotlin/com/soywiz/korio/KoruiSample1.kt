@@ -70,17 +70,24 @@ object KoruiSample1 {
 
                 println("checked: $checked")
 
-                checkBox("hello", checked = checked) {
-                    //enabled = false
+                //vertical {
+                run {
+                    checkBox("hello", checked = checked) {
+                        //enabled = false
 
-                    setBounds(16, 16, 320, 32)
-                    onClick { checked = !checked }
-                }
+                        setBounds(16, 16, 320, 32)
+                        onClick {
+                            checked = !checked
+                            //checked = false
+                            //checked = true
+                        }
+                    }
 
-                button("save") {
-                    //enabled = false
-                    setBounds(16, 64, 320, 32)
-                    onClick { }
+                    button("save") {
+                        //enabled = false
+                        setBounds(16, 64, 320, 32)
+                        onClick { }
+                    }
                 }
             }
             /*

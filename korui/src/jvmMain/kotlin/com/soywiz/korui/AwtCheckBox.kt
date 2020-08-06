@@ -9,4 +9,11 @@ open class AwtCheckBox(factory: AwtUiFactory, val checkBox: JCheckBox = JCheckBo
     override var checked: Boolean
         get() = checkBox.isSelected
         set(value) = run { checkBox.isSelected = value }
+
+    override fun copyFrom(nchild: UiComponent) {
+        super<AwtComponent>.copyFrom(nchild)
+        nchild as UiCheckBox
+        this.text = nchild.text
+        this.checked = nchild.checked
+    }
 }

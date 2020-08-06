@@ -4,10 +4,18 @@ import com.soywiz.korio.lang.*
 
 interface UiContainer : UiComponent {
     val numChildren: Int get() = 0
-    fun getChild(index: Int): UiComponent = TODO()
-    fun insertChildAt(child: UiComponent, index: Int): Unit = TODO()
+    fun getChildAt(index: Int): UiComponent = TODO()
+    fun insertChildAt(index: Int, child: UiComponent): Unit = TODO()
     fun removeChild(child: UiComponent): Unit = TODO()
     fun removeChildAt(index: Int): Unit = TODO()
+}
+
+val UiContainer.size get() = numChildren
+operator fun UiContainer.get(index: Int) = getChildAt(index)
+
+fun UiContainer.replaceChildAt(index: Int, newChild: UiComponent): Unit {
+    removeChildAt(index)
+    insertChildAt(index, newChild)
 }
 
 fun UiContainer.removeChildren() {
@@ -18,15 +26,15 @@ fun UiContainer.removeChildren() {
     }
 }
 
-fun UiContainer.addChild(child: UiComponent): Unit = insertChildAt(child, -1)
+fun UiContainer.addChild(child: UiComponent): Unit = insertChildAt(-1, child)
 
 inline fun UiContainer.forEachChild(block: (UiComponent) -> Unit) {
     for (n in 0 until numChildren) {
-        block(getChild(n))
+        block(getChildAt(n))
     }
 }
 
-val UiContainer.children: List<UiComponent?> get() = (0 until numChildren).map { getChild(it) }
+val UiContainer.children: List<UiComponent?> get() = (0 until numChildren).map { getChildAt(it) }
 
 inline fun UiContainer.container(block: UiContainer.() -> Unit): UiContainer {
     return factory.createContainer()
