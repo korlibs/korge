@@ -1,6 +1,6 @@
 package com.soywiz.korio
 
-import com.soywiz.korui.ui.*
+import com.soywiz.korui.*
 
 object KoruiSample1 {
     @JvmStatic
@@ -15,7 +15,7 @@ object KoruiSample1 {
         defaultKoruiFactory.setVisible(window, true)
         */
 
-        Application().window {
+        UiApplication().window {
             title = "Hello"
             setBounds(16, 16, 600, 600)
             button("Hello World!") {
@@ -28,7 +28,15 @@ object KoruiSample1 {
                 onClick {
                     println("LABEL")
                 }
-                setBounds(16, 150, 320, 100)
+                setBounds(16, 150, 320, 32)
+            }
+            textField("Hello") {
+                setBounds(16, 300, 320, 32)
+            }
+            comboBox<String> {
+                items = listOf("hello", "world")
+                selectedItem = "world"
+                setBounds(16, 350, 320, 32)
             }
         }
     }
