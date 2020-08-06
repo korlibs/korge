@@ -5,7 +5,7 @@ import java.awt.*
 import javax.swing.*
 
 open class AwtScrollPanel(
-    factory: AwtUiFactory,
+    factory: BaseAwtUiFactory,
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     //val view: JPanel = JPanel(),
     val scrollPanel: JScrollPane = JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)

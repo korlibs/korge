@@ -71,6 +71,11 @@ object KoruiSample1 {
 
                 //vertical {
                 run {
+                    //toolbar {
+                    //    button("1") { }
+                    //    button("2") { }
+                    //    button("3") { }
+                    //}
                     canvas(NativeImage(128, 128).context2d {
                         stroke(Colors.WHITE, lineWidth = 3.0) {
                             line(0, 0, 128 - 1.5, 128 - 1.5)

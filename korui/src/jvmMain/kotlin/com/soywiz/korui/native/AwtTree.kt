@@ -19,7 +19,7 @@ data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun toString(): String = node.toString()
 }
 
-open class AwtTree(factory: AwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
+open class AwtTree(factory: BaseAwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
     val model get() = tree.model as DefaultTreeModel
     override var root: UiTreeNode?
         get() = (model.root as? AwtTreeNode?)?.node

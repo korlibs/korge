@@ -7,7 +7,7 @@ import java.awt.Rectangle
 import javax.swing.*
 
 open class AwtContainer(
-    factory: AwtUiFactory,
+    factory: BaseAwtUiFactory,
     val container: Container = JPanel(),
     val childContainer: Container = container
 ) : AwtComponent(factory, container), NativeUiFactory.NativeContainer {

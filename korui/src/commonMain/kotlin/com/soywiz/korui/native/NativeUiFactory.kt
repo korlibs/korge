@@ -19,6 +19,7 @@ interface NativeUiFactory {
     fun wrapNative(native: Any?): NativeComponent = object : DummyBase(), NativeComponent {}
     fun createWindow(): NativeWindow = object : DummyBase(), NativeWindow {}
     fun createContainer(): NativeContainer = object : DummyBase(), NativeContainer {}
+    fun createToolbar(): NativeToolbar = object : DummyBase(), NativeToolbar {}
     fun createScrollPanel(): NativeScrollPanel = object : DummyBase(), NativeScrollPanel {}
     fun createButton(): NativeButton = object : DummyBase(), NativeButton {}
     fun createLabel(): NativeLabel = object : DummyBase(), NativeLabel {}
@@ -27,6 +28,9 @@ interface NativeUiFactory {
     fun <T> createComboBox(): NativeComboBox<T> = object : DummyBase(), NativeComboBox<T> {}
     fun createTree(): NativeTree = object : DummyBase(), NativeTree {}
     fun createCanvas(): NativeCanvas = object : DummyBase(), NativeCanvas {}
+
+    interface NativeToolbar : NativeContainer {
+    }
 
     interface NativeButton : NativeComponent, NativeWithText {
         var icon: Bitmap?

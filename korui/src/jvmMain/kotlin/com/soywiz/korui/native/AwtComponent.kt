@@ -18,7 +18,7 @@ internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
 
 fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
-open class AwtComponent(override val factory: AwtUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+open class AwtComponent(override val factory: BaseAwtUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
     init {
         awtToWrappersMap[component] = this
     }
@@ -149,9 +149,9 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
     }
 
     override fun showPopupMenu(menu: List<UiMenuItem>, x: Int, y: Int) {
-        val jmenu = JPopupMenu()
+        val jmenu = factory.createJPopupMenu()
         //jmenu.border = DropShadowBorder()
-        for (it in menu) jmenu.add(it.toMenuItem())
+        for (it in menu) jmenu.add(it.toMenuItem(factory))
         //var x = if (x >= 0) x
         try {
             jmenu.show(

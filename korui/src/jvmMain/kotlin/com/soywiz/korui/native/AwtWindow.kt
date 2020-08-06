@@ -9,7 +9,7 @@ import java.awt.Rectangle
 import java.awt.event.*
 import javax.swing.*
 
-open class AwtWindow(factory: AwtUiFactory, val frame: JFrame = JFrame()) : AwtContainer(factory, frame, frame.contentPane), NativeUiFactory.NativeWindow {
+open class AwtWindow(factory: BaseAwtUiFactory, val frame: JFrame = JFrame()) : AwtContainer(factory, frame, frame.contentPane), NativeUiFactory.NativeWindow {
     init {
         frame.contentPane.layout = null
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
@@ -41,7 +41,7 @@ open class AwtWindow(factory: AwtUiFactory, val frame: JFrame = JFrame()) : AwtC
     override var menu: UiMenu? = null
         set(value) {
             field = value
-            frame.jMenuBar = value?.toJMenuBar()
+            frame.jMenuBar = value?.toJMenuBar(factory)
         }
 
     override var focusable: Boolean

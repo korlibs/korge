@@ -5,7 +5,7 @@ import com.soywiz.korui.native.util.*
 import java.awt.*
 import javax.swing.*
 
-open class AwtCanvas(factory: AwtUiFactory, val label: JLabel = JLabel()) : AwtComponent(factory, label), NativeUiFactory.NativeCanvas {
+open class AwtCanvas(factory: BaseAwtUiFactory, val label: JLabel = JLabel()) : AwtComponent(factory, label), NativeUiFactory.NativeCanvas {
     override var image: Bitmap? = null
         set(value) {
             field = value
