@@ -4,7 +4,8 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.*
 
 class UiApplication(val factory: UiFactory = DEFAULT_UI_FACTORY) {
-    fun window(block: UiWindow.() -> Unit): UiWindow = factory.createWindow()
+    fun window(width: Int = 300, height: Int = 300, block: UiWindow.() -> Unit): UiWindow = factory.createWindow()
+        .also { it.setBounds(0, 0, width, height) }
         .also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }
         .also(block)
         .also { it.visible = true }

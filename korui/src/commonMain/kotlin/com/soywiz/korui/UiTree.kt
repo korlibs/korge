@@ -6,6 +6,9 @@ interface UiTree : UiComponent {
     var root: UiTreeNode?
         get() = null
         set(value) = Unit
+    fun select(node: UiTreeNode?) = Unit
+
+    fun onSelect(block: (nodes: List<UiTreeNode>) -> Unit) = Unit
 }
 
 interface UiTreeNode : Extra {
@@ -27,6 +30,6 @@ class SimpleUiTreeNode(val text: String, override val children: List<SimpleUiTre
     override fun toString(): String = text
 }
 
-fun UiContainer.tree(block: UiTree.() -> Unit): UiTree {
+inline fun UiContainer.tree(block: UiTree.() -> Unit): UiTree {
     return factory.createTree().also { it.parent = this }.also(block)
 }

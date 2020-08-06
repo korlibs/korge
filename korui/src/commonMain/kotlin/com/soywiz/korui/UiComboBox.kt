@@ -9,6 +9,6 @@ interface UiComboBox<T> : UiComponent {
         get() = null
         set(value) = Unit
 }
-fun <T> UiContainer.comboBox(block: UiComboBox<T>.() -> Unit): UiComboBox<T> {
-    return factory.createComboBox<T>().also { it.parent = this }.also(block)
-}
+
+inline fun <T> UiContainer.comboBox(block: UiComboBox<T>.() -> Unit): UiComboBox<T> =
+    factory.createComboBox<T>().also { it.parent = this }.also(block)

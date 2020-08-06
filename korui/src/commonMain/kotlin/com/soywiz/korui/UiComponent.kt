@@ -14,10 +14,23 @@ interface UiComponent : Extra {
         get() = -1
         set(value) = Unit
     var visible: Boolean
-        get() = false
+        get() = true
+        set(value) = Unit
+    var enabled: Boolean
+        get() = true
         set(value) = Unit
     fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
+
+    fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 }
+
+val UiComponent.root: UiContainer? get() {
+    if (this.parent == null) return this as UiContainer
+    return this.parent?.root
+}
+
+fun UiComponent.show() = run { visible = true }
+fun UiComponent.hide() = run { visible = false }
 
 fun UiComponent.onClick(block: (MouseEvent) -> Unit) {
     onMouseEvent(block)

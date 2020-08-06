@@ -1,7 +1,9 @@
 package com.soywiz.korio
 
+import com.soywiz.korev.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import com.soywiz.korui.react.*
 import javax.swing.*
 
 object KoruiSample1 {
@@ -17,11 +19,10 @@ object KoruiSample1 {
         defaultKoruiFactory.setVisible(window, true)
         */
 
-        JTree()
-
-        UiApplication().window {
+        UiApplication().window(600, 600) {
             layout = UiLayout(this)
-            setBounds(0, 0, 600, 600)
+
+            menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world"))), UiMenuItem("world")))
             /*
             title = "Hello"
             minimumSize = Size(600.pt)
@@ -54,12 +55,40 @@ object KoruiSample1 {
                 setBounds(16, 350, 320, 32)
             }
              */
+            react {
+                var checked by state { false }
+
+                checkBox("hello", checked = checked) {
+                    //enabled = false
+                    setBounds(16, 16, 320, 32)
+                    onClick { checked = !checked }
+                }
+            }
+            /*
             tree {
                 setBounds(0, 0, 300, 300)
+                lateinit var select: SimpleUiTreeNode
                 root = SimpleUiTreeNode("hello", listOf(
-                    SimpleUiTreeNode("world")
+                    SimpleUiTreeNode("world", listOf(
+                        SimpleUiTreeNode("this"),
+                        SimpleUiTreeNode("is").also { select = it },
+                        SimpleUiTreeNode("a"),
+                        SimpleUiTreeNode("test"),
+                    ))
                 ))
+                //hide()
+                onSelect {
+                    println(it)
+                }
+                onClick {
+                    if (it.button == MouseButton.RIGHT) {
+                        showPopupMenu(listOf(UiMenuItem("hello") { }))
+                    }
+                }
+                select(select)
             }
+
+             */
         }
     }
 }

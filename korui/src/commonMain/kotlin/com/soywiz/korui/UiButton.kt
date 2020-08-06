@@ -1,8 +1,7 @@
 package com.soywiz.korui
 
-interface UiButton : UiComponent, UiText {
+interface UiButton : UiComponent, UiWithText {
 }
 
-fun UiContainer.button(text: String = "Button", block: UiButton.() -> Unit): UiButton {
-    return factory.createButton().also { it.text = text }.also { it.parent = this }.also(block)
-}
+inline fun UiContainer.button(text: String = "Button", block: UiButton.() -> Unit): UiButton =
+    factory.createButton().also { it.text = text }.also { it.parent = this }.also(block)

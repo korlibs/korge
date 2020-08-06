@@ -8,4 +8,7 @@ interface UiWindow : UiContainer {
         get() = ""
         set(value) = Unit
     fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
+    var menu: UiMenu?
+        get() = null
+        set(value) = Unit
 }
