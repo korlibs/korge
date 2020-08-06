@@ -17,6 +17,11 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         //selectedView = view
     }
 
+    fun addSelection(view: View?) {
+        views.debugHightlightView(view)
+        //selectedView = view
+    }
+
     suspend fun cut() {
         val view = selectedView
         if (view != null) {

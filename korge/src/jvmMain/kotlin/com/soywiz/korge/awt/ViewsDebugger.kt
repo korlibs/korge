@@ -132,37 +132,44 @@ class ViewsDebuggerComponent(
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext
 ) : JPanel(GridLayout(2, 1)) {
+    val actions = ViewsDebuggerActions(views, this)
+    val properties = EditPropertiesComponent(rootView, views).also { add(it) }
+
     init {
         views.debugHighlighters.add { view ->
             //println("HIGHLIGHTING: $view")
             println("ViewsDebuggerActions.highlight: $views")
-            views.renderContext.debugAnnotateView = view
-            invokeLater {
-                val treeNode = view?.treeNode
-                if (treeNode != null) {
-                    val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
-                    println("   - $path")
-                    tree.expandPath(path)
-                    //tree.clearSelection()
-                    tree.selectionPath = path
-                    tree.scrollPathToVisible(path)
-                    tree.revalidate()
-                    //tree.repaint()
-                }
-                update()
+            val treeNode = view?.treeNode
+            if (treeNode != null) {
+                val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
+                println("   - $path")
+                tree.expandPath(path)
+                //tree.clearSelection()
+                tree.selectionPath = path
+                tree.scrollPathToVisible(path)
+                //tree.repaint()
+            } else {
+                tree.clearSelection()
+                selectView(null)
             }
+            update()
         }
     }
 
-    val actions = ViewsDebuggerActions(views, this)
-    val properties = EditPropertiesComponent(rootView, views).also { add(it) }
+    private fun selectView(view: View?) {
+        properties.setView(view, coroutineContext)
+        views.renderContext.debugAnnotateView = view
+    }
 
     val tree: JTree = JTree(ViewNode(rootView)).apply {
         val tree = this
         addTreeSelectionListener {
-            val viewNode = it.path.lastPathComponent as ViewNode
-            properties.setView(viewNode.view, coroutineContext)
-            (views ?: rootView?.stage?.views)?.renderContext?.debugAnnotateView = viewNode.view
+            println("addTreeSelectionListener: ${it.paths.toList()}")
+            if (it.paths.isNotEmpty()) {
+                selectView((it.path.lastPathComponent as ViewNode).view)
+            } else {
+                selectView(null)
+            }
         }
         addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
