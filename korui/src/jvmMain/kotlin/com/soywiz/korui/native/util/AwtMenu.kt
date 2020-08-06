@@ -5,6 +5,7 @@ import javax.swing.*
 
 fun UiMenuItem.toMenuItem(): JMenuItem {
     val item = JMenuItem(this.text)
+    item.icon = this.icon?.toAwtIcon()
     if (this.children != null) {
         for (child in this.children!!) {
             item.add(child.toMenuItem())

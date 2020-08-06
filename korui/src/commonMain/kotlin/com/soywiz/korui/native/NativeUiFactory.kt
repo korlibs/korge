@@ -2,6 +2,7 @@ package com.soywiz.korui.native
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -27,6 +28,9 @@ interface NativeUiFactory {
     fun createTree(): NativeTree = object : DummyBase(), NativeTree {}
 
     interface NativeButton : NativeComponent, NativeWithText {
+        var icon: Bitmap?
+            get() = null
+            set(value) = Unit
     }
 
     interface NativeCheckBox : NativeComponent, NativeWithText {
@@ -97,6 +101,9 @@ interface NativeUiFactory {
     }
 
     interface NativeLabel : NativeComponent, NativeWithText {
+        var icon: Bitmap?
+            get() = null
+            set(value) = Unit
     }
 
     interface NativeScrollPanel : NativeContainer {

@@ -16,6 +16,10 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
 
     var layout: UiLayout? = VerticalUiLayout
 
+    open fun computePreferredSize(): SizeInt {
+        return layout?.computePreferredSize(this) ?: SizeInt(16, 16)
+    }
+
     fun relayout() {
         layout?.relayout(this)
     }
@@ -66,6 +70,8 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
         }
     }
     val children: List<UiComponent?> get() = _children.toList()
+    val firstChild get() = _children.first()
+    val lastChild get() = _children.last()
 }
 
 inline fun UiContainer.container(block: UiContainer.() -> Unit): UiContainer {

@@ -1,9 +1,13 @@
 package com.soywiz.korio
 
 import com.soywiz.korev.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import com.soywiz.korui.layout.Size
 
 object KoruiSample1 {
     @JvmStatic
@@ -19,9 +23,14 @@ object KoruiSample1 {
         */
 
         UiApplication().window(600, 600) {
-            layout = VerticalUiLayout
+            val crossIcon = NativeImage(16, 16).context2d {
+                stroke(Colors.WHITE, lineWidth = 3.0) {
+                    line(0, 0, 16 - 1.5, 16 - 1.5)
+                    line(16 - 1.5, 0, 0, 16 - 1.5)
+                }
+            }
 
-            menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world"))), UiMenuItem("world")))
+            menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world", icon = crossIcon))), UiMenuItem("world")))
             focusable = true
             layoutChildrenPadding = 8
             //var checked by state { false }
@@ -54,13 +63,34 @@ object KoruiSample1 {
                     //enabled = false
                     bounds = RectangleInt(16, 64, 320, 32)
                     onClick {
-                        this.showPopupMenu(listOf(UiMenuItem("HELLO")))
+                        this.showPopupMenu(listOf(UiMenuItem("HELLO", icon = crossIcon)))
                     }
                 }
-                addChild(MyCustomComponent(app, MyEditableNumber(app)).apply {
+                addChild(MyCustomComponent(app, "x", MyEditableNumber(app)).apply {
                 })
-                addChild(MyCustomComponent(app, MyEditableComboBox(app, listOf("hello", "world"))).apply {
+                addChild(MyCustomComponent(app, "y", MyEditableComboBox(app, listOf("hello", "world"))).apply {
                 })
+                addChild(UiTree(app).also {
+                    it.minimumSize = Size(32.pt, 128.pt)
+                    it.nodeRoot = SimpleUiTreeNode("hello", listOf(SimpleUiTreeNode("world")))
+                })
+                lateinit var vert: UiContainer
+                label("DEMO") {
+                    icon = crossIcon
+                    onClick {
+                        vert.visible = !vert.visible
+                        icon = if (vert.visible) crossIcon else null
+                    }
+                }
+                vert = vertical {
+                    label("HELLO") {}
+                    label("WORLD") {}
+                    button("test") { }
+                    label("LOL") {}
+                }
+                button("TEST") {
+
+                }
             }
         }
     }
@@ -175,18 +205,21 @@ class MyEditableNumber(app: UiApplication) : MyEditableComponent(app) {
     }
 }
 
-class MyCustomComponent(app: UiApplication, val editor: MyEditableComponent) : UiContainer(app) {
+class MyCustomComponent(app: UiApplication, val labelText: String, val editor: MyEditableComponent) : UiContainer(app) {
     init {
         //this.bounds = RectangleInt(0, 0, 240, 32)
         layout = HorizontalUiLayout
     }
     val label = UiLabel(app).apply {
-        text = "hello"
-        width = 50.percent
+        text = labelText
+        preferredWidth = 50.percent
     }
     init {
-        editor.width = 50.percent
+        editor.preferredWidth = 50.percent
         //backgroundColor = Colors.RED
+        addChild(UiLabel(app).apply {
+            preferredWidth = 16.pt
+        })
         addChild(label)
         addChild(editor)
         label.onClick {

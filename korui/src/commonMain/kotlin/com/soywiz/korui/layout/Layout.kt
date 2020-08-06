@@ -10,6 +10,23 @@ object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
 open class LineUiLayout(
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
 ) : UiLayout {
+    override fun computePreferredSize(container: UiContainer): SizeInt {
+        var sum = 0
+        val ctx = Length.Context()
+        val padding = container.layoutChildrenPadding
+        ctx.size = 1024
+        container.forEachChild { child ->
+            val value = when (child) {
+                is UiContainer -> child.computePreferredSize().getDirection(direction)
+                else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
+            }
+            sum += value + padding
+        }
+        //println("${container.preferredSize} - ${container.minimumSize} - ${container.maximumSize}")
+
+        return SizeInt(if (direction.horizontal) sum else 16, if (direction.vertical) sum else 16)
+    }
+
     override fun relayout(container: UiContainer) {
         val bounds = container.bounds
         //println("$bounds: ${container.children}")
@@ -24,7 +41,10 @@ open class LineUiLayout(
 
         container.forEachChild { child ->
             if (child.visible) {
-                val value = Length.calc(ctx, 32.pt, child.size.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
+                val value = when (child) {
+                    is UiContainer -> child.computePreferredSize().getDirection(direction)
+                    else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
+                }
                 val childBounds = when (direction) {
                     LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
                     LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
@@ -42,21 +62,26 @@ open class LineUiLayout(
 
 fun RectangleInt.getSizeDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 fun Size.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
-enum class LayoutDirection { VERTICAL, HORIZONTAL }
+fun SizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
+enum class LayoutDirection {
+    VERTICAL, HORIZONTAL;
+    val vertical get() = this == VERTICAL
+    val horizontal get() = this == HORIZONTAL
+}
 
-var UiComponent.size by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
+var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
 var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
 var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
 
-var UiComponent.width: Length?
-    get() = size.width
+var UiComponent.preferredWidth: Length?
+    get() = preferredSize.width
     set(value) {
-        size = size.copy(width = value)
+        preferredSize = preferredSize.copy(width = value)
     }
-var UiComponent.height: Length?
-    get() = size.height
+var UiComponent.preferredHeight: Length?
+    get() = preferredSize.height
     set(value) {
-        size = size.copy(height = value)
+        preferredSize = preferredSize.copy(height = value)
     }
 
 fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {

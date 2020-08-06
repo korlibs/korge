@@ -150,6 +150,7 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
 
     override fun showPopupMenu(menu: List<UiMenuItem>, x: Int, y: Int) {
         val jmenu = JPopupMenu()
+        //jmenu.border = DropShadowBorder()
         for (it in menu) jmenu.add(it.toMenuItem())
         //var x = if (x >= 0) x
         try {

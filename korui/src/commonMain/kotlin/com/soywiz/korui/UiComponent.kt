@@ -50,15 +50,9 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
     fun focus(focus: Boolean = true) = component.focus(focus)
+    fun show() = run { visible = true }
+    fun hide() = run { visible = false }
+    fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
 }
 
-fun UiComponent.show() = run { visible = true }
-fun UiComponent.hide() = run { visible = false }
 
-fun UiComponent.onClick(block: (MouseEvent) -> Unit) {
-    onMouseEvent {
-        if (it.type == MouseEvent.Type.CLICK) {
-            block(it)
-        }
-    }
-}
