@@ -12,18 +12,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
     val stage get() = views.stage
     val currentVfs get() = views.currentVfs
 
-    fun highlight(view: View?) {
-        //println("ViewsDebuggerActions.highlight: $views")
-        component.update()
-        val treeNode = view?.treeNode ?: return
-        val path = TreePath((component.tree.model as DefaultTreeModel).getPathToRoot(treeNode))
-        component.tree.expandPath(path)
-        component.tree.clearSelection()
-        component.tree.addSelectionPath(path)
-    }
-
     fun selectView(view: View?) {
-        views.renderContext.debugAnnotateView = view
         views.debugHightlightView(view)
         //selectedView = view
     }
@@ -80,7 +69,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         if (newView == null) return
         println("attachNewView.selectedView: $selectedView")
         (selectedView as Container?)?.addChild(newView)
-        highlight(newView)
+        selectView(newView)
         save(newView)
     }
 
@@ -91,7 +80,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
     fun removeCurrentNode() {
         val parent = selectedView?.parent
         selectedView?.removeFromParent()
-        highlight(parent)
+        selectView(parent)
         save(parent)
     }
 

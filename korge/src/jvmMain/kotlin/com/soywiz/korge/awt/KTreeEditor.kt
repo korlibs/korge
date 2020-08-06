@@ -82,7 +82,7 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
         views.debugSavedHandlers.add {
             save = true
         }
-        views.debugHightlightView(stage)
+        actions.selectView(stage)
 
         var pressing = false
         val startSelectedViewPos = Point()

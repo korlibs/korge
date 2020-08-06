@@ -20,6 +20,7 @@ import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
 import javax.swing.SwingUtilities
+import javax.swing.SwingUtilities.*
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -134,7 +135,22 @@ class ViewsDebuggerComponent(
     init {
         views.debugHighlighters.add { view ->
             //println("HIGHLIGHTING: $view")
-            this.actions!!.highlight(view)
+            println("ViewsDebuggerActions.highlight: $views")
+            views.renderContext.debugAnnotateView = view
+            invokeLater {
+                val treeNode = view?.treeNode
+                if (treeNode != null) {
+                    val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
+                    println("   - $path")
+                    tree.expandPath(path)
+                    //tree.clearSelection()
+                    tree.selectionPath = path
+                    tree.scrollPathToVisible(path)
+                    tree.revalidate()
+                    //tree.repaint()
+                }
+                update()
+            }
         }
     }
 

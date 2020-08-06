@@ -36,7 +36,11 @@ fun VirtualFile.toTextualVfs(): VfsFile {
         override suspend fun put(path: String, content: AsyncInputStream, attributes: List<Attribute>): Long {
             val byteArray = content.readAll()
             runWriteActionNoWait {
-                ref.document?.setText(byteArray.toString(Charsets.UTF_8))
+                try {
+                    ref.document?.setText(byteArray.toString(Charsets.UTF_8))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
             return byteArray.size.toLong()
         }
