@@ -2,24 +2,15 @@ package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
 import com.soywiz.korev.Event
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Image
 import com.soywiz.korge.view.ktree.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korma.geom.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -29,9 +20,6 @@ import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
 import javax.swing.SwingUtilities
-import com.soywiz.korma.geom.Point
-import com.soywiz.korev.MouseButton
-import com.soywiz.korge.particle.*
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -143,26 +131,15 @@ class ViewsDebuggerComponent(
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext
 ) : JPanel(GridLayout(2, 1)) {
+    init {
+        views.debugHighlighters.add { view ->
+            //println("HIGHLIGHTING: $view")
+            this.actions!!.highlight(view)
+        }
+    }
+
+    val actions = ViewsDebuggerActions(views, this)
     val properties = EditPropertiesComponent(rootView, views).also { add(it) }
-    var pasteboard: Xml? = null
-
-    fun attachNewView(newView: View?) {
-        if (newView == null) return
-        (selectedView as Container?)?.addChild(newView)
-        highlight(newView)
-        save(newView)
-    }
-
-    fun save(newView: View? = selectedView) {
-        views?.stage?.views?.debugSaveView(newView)
-    }
-
-    fun removeCurrentNode() {
-        val parent = selectedView?.parent
-        selectedView?.removeFromParent()
-        highlight(parent)
-        save(parent)
-    }
 
     val tree: JTree = JTree(ViewNode(rootView)).apply {
         val tree = this
@@ -174,7 +151,7 @@ class ViewsDebuggerComponent(
         addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_DELETE) {
-                    removeCurrentNode()
+                    actions.removeCurrentNode()
                 }
             }
         })
@@ -194,7 +171,7 @@ class ViewsDebuggerComponent(
                             popupMenu.add(myComponentFactory.createMenuItem("Add ${factory.name}").also {
                                 it.isEnabled = isContainer
                                 it.addActionListener {
-                                    attachNewView(factory.build().also {
+                                    actions.attachNewView(factory.build().also {
                                         it.globalX = views.virtualWidth * 0.5
                                         it.globalY = views.virtualWidth * 0.5
                                     })
@@ -206,26 +183,21 @@ class ViewsDebuggerComponent(
                         popupMenu.add(myComponentFactory.createMenuItem("Cut").also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
-                                    pasteboard = view.viewTreeToKTree(views!!)
-                                    removeCurrentNode()
+                                    actions.cut()
                                 }
                             }
                         })
                         popupMenu.add(myComponentFactory.createMenuItem("Copy").also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
-                                    pasteboard = view.viewTreeToKTree(views!!)
+                                    actions.copy()
                                 }
                             }
                         })
                         popupMenu.add(myComponentFactory.createMenuItem("Paste").also {
                             it.addActionListener {
-                                val pasteboard = pasteboard
                                 launchImmediately(coroutineContext) {
-                                    val container = (view as? Container?) ?: view.parent
-                                    if (pasteboard != null) {
-                                        container?.addChild(pasteboard.ktreeToViewTree(views!!))
-                                    }
+                                    actions.paste()
                                 }
                             }
                         })
@@ -233,31 +205,25 @@ class ViewsDebuggerComponent(
                         popupMenu.add(myComponentFactory.createMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
-                                    val view = selectedView
-                                    if (view != null) {
-                                        val parent = view.parent
-                                        val newChild = view.viewTreeToKTree(views).ktreeToViewTree(views)
-                                        parent?.addChild(newChild)
-                                        highlight(newChild)
-                                    }
+                                    actions.duplicate()
                                 }
                             }
                         })
                         popupMenu.add(myComponentFactory.createSeparator())
                         popupMenu.add(myComponentFactory.createMenuItem("Remove view", KeyEvent.VK_DELETE).also {
                             it.addActionListener {
-                                removeCurrentNode()
+                                actions.removeCurrentNode()
                             }
                         })
                         popupMenu.add(myComponentFactory.createSeparator())
                         popupMenu.add(myComponentFactory.createMenuItem("Send to back").also {
                             it.addActionListener {
-                                view?.parent?.sendChildToBack(view)
+                                actions.sendToBack()
                             }
                         })
                         popupMenu.add(myComponentFactory.createMenuItem("Bring to front").also {
                             it.addActionListener {
-                                view?.parent?.sendChildToFront(view)
+                                actions.sendToFront()
                             }
                         })
                         popupMenu.show(e.component, e.x, e.y)
@@ -270,25 +236,16 @@ class ViewsDebuggerComponent(
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
     //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
-    fun setRootView(root: View) {
-        //this.coroutineContext = coroutineContext
-        //if (views != null) this.views = views
-        //properties.views = views?.views
-        tree.model = DefaultTreeModel(root.treeNode)
-        update()
-    }
+    //fun setRootView(root: View) {
+    //    //this.coroutineContext = coroutineContext
+    //    //if (views != null) this.views = views
+    //    //properties.views = views?.views
+    //    tree.model = DefaultTreeModel(root.treeNode)
+    //    update()
+    //}
 
     fun update() {
         tree.updateUI()
         properties.update()
-    }
-
-    fun highlight(view: View?) {
-        update()
-        val treeNode = view?.treeNode ?: return
-        val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
-        tree.expandPath(path)
-        tree.clearSelection()
-        tree.addSelectionPath(path)
     }
 }

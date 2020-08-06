@@ -48,8 +48,9 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
         val stage = views.stage
         val viewTree = file.readKTree(views)
         val currentVfs = file.parent
-        val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
         views.currentVfs = currentVfs
+        val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
+        val actions = viewsDebuggerComponent.actions
 
         fun getScaleAnchorPoint(view: View?, distance: Int, kind: AnchorKind): AnchorPointResult? {
             if (view == null) return null
@@ -84,7 +85,6 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
         views.debugHightlightView(stage)
 
         var pressing = false
-        var selectedView: View? = null
         val startSelectedViewPos = Point()
         val startSelectedMousePos = Point()
         val selectedViewSize = Size()
@@ -94,74 +94,25 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
         var gridWidth = 20.0
         var gridHeight = 20.0
 
-        fun selectView(view: View?) {
-            views.renderContext.debugAnnotateView = view
-            views.debugHightlightView(view)
-            selectedView = view
-        }
-
-        suspend fun cut() {
-            val view = selectedView
-            if (view != null) {
-                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views, currentVfs)
-                selectView(view?.parent)
-                view!!.removeFromParent()
-            }
-        }
-
-        suspend fun copy() {
-            val view = selectedView
-            if (view != null) {
-                viewsDebuggerComponent.pasteboard = view!!.viewTreeToKTree(views, currentVfs)
-            }
-        }
-
-        suspend fun paste() {
-            val view = selectedView
-            if (view != null) {
-                val pasteboard = viewsDebuggerComponent.pasteboard
-                val container: Container = view.findFirstAscendant { it is ViewLeaf }?.parent
-                    ?: (view as? Container?)
-                    ?: view?.parent
-                    ?: stage
-
-                if (pasteboard != null) {
-                    val newView = pasteboard.ktreeToViewTree(views, currentVfs)
-                    container.addChild(newView)
-                    selectView(newView)
-                }
-            }
-        }
-
-        suspend fun duplicate() {
-            copy()
-            //selectView(selectedView?.parent)
-            paste()
-        }
-
         stage.keys {
             downNew { e ->
-                val view = selectedView
-                val increment = if (e.shift) 10.0 else 1.0
-                if (view != null) {
-                    when (e.key) {
-                        Key.UP -> view.y -= increment
-                        Key.DOWN -> view.y += increment
-                        Key.LEFT -> view.x -= increment
-                        Key.RIGHT -> view.x += increment
-                    }
+                when (e.key) {
+                    Key.UP -> actions.moveView(0, -1, e.shift)
+                    Key.DOWN -> actions.moveView(0, +1, e.shift)
+                    Key.LEFT -> actions.moveView(-1, 0, e.shift)
+                    Key.RIGHT -> actions.moveView(+1, 0, e.shift)
                 }
             }
             upNew { e ->
-                val view = selectedView
+                val view = actions.selectedView
                 if (view != null) {
                     when (e.key) {
-                        Key.DELETE -> view.removeFromParent()
-                        Key.BACKSPACE -> view.removeFromParent()
-                        Key.D -> if (e.ctrlOrMeta) launchImmediately { duplicate() }
-                        Key.X -> if (e.ctrlOrMeta) launchImmediately { cut() }
-                        Key.C -> if (e.ctrlOrMeta) launchImmediately { copy() }
-                        Key.V -> if (e.ctrlOrMeta) launchImmediately { paste() }
+                        Key.DELETE -> actions.removeCurrentNode()
+                        Key.BACKSPACE -> actions.removeCurrentNode()
+                        Key.D -> if (e.ctrlOrMeta) launchImmediately { actions.duplicate() }
+                        Key.X -> if (e.ctrlOrMeta) launchImmediately { actions.cut() }
+                        Key.C -> if (e.ctrlOrMeta) launchImmediately { actions.copy() }
+                        Key.V -> if (e.ctrlOrMeta) launchImmediately { actions.paste() }
                     }
                 }
             }
@@ -169,28 +120,24 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
 
         stage.mouse {
             click {
-                val view = selectedView
+                val view = actions.selectedView
                 if (it.button == MouseButton.RIGHT) {
                     val hasView = view != null
                     gameWindow.showContextMenu(listOf(
-                        GameWindow.MenuItem("Cut", enabled = hasView) { launchImmediately { cut() } },
-                        GameWindow.MenuItem("Copy", enabled = hasView) { launchImmediately { copy() } },
-                        GameWindow.MenuItem("Paste") { launchImmediately { paste() } },
-                        GameWindow.MenuItem("Duplicate") { launchImmediately { duplicate() } },
+                        GameWindow.MenuItem("Cut", enabled = hasView) { launchImmediately { actions.cut() } },
+                        GameWindow.MenuItem("Copy", enabled = hasView) { launchImmediately { actions.copy() } },
+                        GameWindow.MenuItem("Paste") { launchImmediately { actions.paste() } },
+                        GameWindow.MenuItem("Duplicate") { launchImmediately { actions.duplicate() } },
                         null,
-                        GameWindow.MenuItem("Send to back", enabled = hasView) {
-                            view?.parent?.sendChildToBack(view)
-                        },
-                        GameWindow.MenuItem("Bring to front", enabled = hasView) {
-                            view?.parent?.sendChildToFront(view)
-                        },
+                        GameWindow.MenuItem("Send to back", enabled = hasView) { actions.sendToBack() },
+                        GameWindow.MenuItem("Bring to front", enabled = hasView) { actions.sendToFront() },
                     ))
                 }
             }
             down {
                 pressing = true
-                currentAnchor = getScaleAnchorPoint(selectedView, 10, AnchorKind.SCALING)
-                    ?: getScaleAnchorPoint(selectedView, 20, AnchorKind.ROTATING)
+                currentAnchor = getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)
+                    ?: getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)
 
                 startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
                 if (currentAnchor == null) {
@@ -198,18 +145,18 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
                     val viewLeaf = pickedView.findLastAscendant { it is ViewLeaf }
                     val view = viewLeaf ?: pickedView
                     if (view !== stage) {
-                        selectView(view)
+                        actions.selectView(view)
                     } else {
-                        selectView(null)
+                        actions.selectView(null)
                     }
                 } else {
-                    val view = selectedView
+                    val view = actions.selectedView
                     if (view != null) {
                         selectedViewSize.setTo(view.scaledWidth, view.scaledHeight)
                         selectedViewInitialRotation = view.rotation
                     }
                 }
-                selectedView?.let { view ->
+                actions.selectedView?.let { view ->
                     startSelectedViewPos.setTo(view.globalX, view.globalY)
                 }
 
@@ -219,7 +166,7 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
                 pressing = false
             }
             onMoveAnywhere { e ->
-                val view = selectedView
+                val view = actions.selectedView
                 if (pressing && view != null) {
                     val dx = views.globalMouseX - startSelectedMousePos.x
                     val dy = views.globalMouseY - startSelectedMousePos.y
@@ -260,8 +207,8 @@ suspend fun ktreeEditor(file: VfsFile): EditorModule {
 
         stage.addUpdater {
             gameWindow.cursor =
-                com.soywiz.korgw.GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView, 10, AnchorKind.SCALING)?.angle)
-                    ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
+                com.soywiz.korgw.GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)?.angle)
+                    ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
                         ?: GameWindow.Cursor.DEFAULT
 
             if (save) {

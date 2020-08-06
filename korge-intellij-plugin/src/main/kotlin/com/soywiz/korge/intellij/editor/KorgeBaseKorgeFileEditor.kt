@@ -60,7 +60,7 @@ open class KorgeBaseKorgeFileEditor(
 		panel.layout = GridLayout(1, 1)
         canvas = GLCanvas()
         val canvas = canvas!!
-        canvas?.minimumSize = Dimension(64, 64)
+        canvas.minimumSize = Dimension(64, 64)
         panel.add(canvas)
         //println("[A] ${Thread.currentThread()}")
         val fileToEdit = KorgeFileToEdit(virtualFile)
@@ -97,10 +97,6 @@ open class KorgeBaseKorgeFileEditor(
                     injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent!!)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
-                    views.debugHighlighters.add { view ->
-                        println("HIGHLIGHTING: $view")
-                        viewsDebuggerComponent!!.highlight(view)
-                    }
                     module.apply {
                         injector.configure()
                     }
