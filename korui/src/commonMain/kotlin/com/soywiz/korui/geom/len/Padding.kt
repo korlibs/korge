@@ -1,9 +1,8 @@
 package com.soywiz.korui.geom.len
 
-data class Padding(var top: Length?, var right: Length?, var bottom: Length?, var left: Length?) {
+data class Padding(var top: Length? = Length.ZERO, var right: Length? = Length.ZERO, var bottom: Length? = Length.ZERO, var left: Length? = Length.ZERO) {
 	constructor(vertical: Length?, horizontal: Length?) : this(vertical, horizontal, vertical, horizontal)
 	constructor(pad: Length?) : this(pad, pad, pad, pad)
-	constructor() : this(Length.ZERO, Length.ZERO, Length.ZERO, Length.ZERO)
 
 	fun setTo(top: Length?, right: Length?, bottom: Length?, left: Length?) = this.apply {
 		this.top = top

@@ -176,6 +176,11 @@ open class Component(override val app: Application, val type: LightType, val lig
 	open fun clone(newApp: Application): Component = Component(newApp, type).also { it.copyStateFrom(this) }
 }
 
+fun <T : Container> T.addBlock(block: T.() -> Unit): T {
+    block(this)
+    return this
+}
+
 open class Container(app: Application, var layout: Layout, type: LightType = LightType.CONTAINER) :
 	Component(app, type) {
 	val children = arrayListOf<Component>()
@@ -203,7 +208,7 @@ open class Container(app: Application, var layout: Layout, type: LightType = Lig
 		return other
 	}
 
-	fun <T : Component> remove(other: T): T {
+    fun <T : Component> remove(other: T): T {
 		other.parent = null
 		return other
 	}
@@ -315,6 +320,14 @@ class Button(app: Application, text: String) : Component(app, LightType.BUTTON) 
 	init {
 		this.text = text
 	}
+
+    fun onClick(block: (MouseEvent) -> Unit) {
+        addEventListener<MouseEvent> {
+            if (it.type == MouseEvent.Type.CLICK) {
+                block(it)
+            }
+        }
+    }
 	
 	override fun clone(newApp: Application) = Button(newApp, text).also { it.copyStateFrom(this) }
 	override fun toString(): String = "Button"
