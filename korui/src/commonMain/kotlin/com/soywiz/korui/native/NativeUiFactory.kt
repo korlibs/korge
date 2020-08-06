@@ -10,11 +10,11 @@ import com.soywiz.korui.*
 expect val DEFAULT_UI_FACTORY: NativeUiFactory
 
 object DummyUiFactory : NativeUiFactory
+open class DummyBase : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+    override val factory: NativeUiFactory get() = DummyUiFactory
+}
 
 interface NativeUiFactory {
-    open class DummyBase : NativeComponent, Extra by Extra.Mixin() {
-        override val factory: NativeUiFactory get() = TODO()
-    }
     fun wrapNative(native: Any?): NativeComponent = object : DummyBase(), NativeComponent {}
     fun createWindow(): NativeWindow = object : DummyBase(), NativeWindow {}
     fun createContainer(): NativeContainer = object : DummyBase(), NativeContainer {}
@@ -43,6 +43,10 @@ interface NativeUiFactory {
         var selectedItem: T?
             get() = null
             set(value) = Unit
+
+        fun open(): Unit = Unit
+        fun close(): Unit = Unit
+        fun onChange(block: () -> Unit) = Disposable { }
     }
 
     interface NativeComponent : Extra {
@@ -78,6 +82,7 @@ interface NativeUiFactory {
         fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 
         fun repaintAll() = Unit
+        fun focus(focus: Boolean) = Unit
     }
 
     interface NativeContainer : NativeComponent {

@@ -168,4 +168,12 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         component.revalidate()
         component.repaint()
     }
+
+    override fun focus(focus: Boolean) {
+        if (focus) {
+            component.requestFocus()
+        } else {
+            component.parent.requestFocus()
+        }
+    }
 }

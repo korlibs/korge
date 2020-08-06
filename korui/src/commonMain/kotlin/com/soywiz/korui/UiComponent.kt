@@ -12,13 +12,23 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     var _parent: UiContainer? = null
         internal set
 
+    val root: UiContainer? get() {
+        if (this.parent == null) return this as? UiContainer?
+        return this.parent?.root
+    }
+
     var parent: UiContainer?
         get() = _parent
         set(value) {
             parent?.removeChild(this)
             value?.addChild(this)
         }
-    var visible by redirect(component::visible)
+    var visible: Boolean
+        get() = component.visible
+        set(value) {
+            component.visible = value
+            root?.relayout()
+        }
     var enabled by redirect(component::enabled)
     open var bounds: RectangleInt
         get() = component.bounds
@@ -39,11 +49,7 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun onMouseEvent(block: (MouseEvent) -> Unit) = component.onMouseEvent(block)
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
-}
-
-val UiComponent.root: UiComponent? get() {
-    if (this.parent == null) return this as UiContainer
-    return this.parent?.root
+    fun focus(focus: Boolean = true) = component.focus(focus)
 }
 
 fun UiComponent.show() = run { visible = true }

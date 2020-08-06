@@ -43,7 +43,7 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
             child.parent?.removeChild(child)
         }
         container.insertChildAt(index, child.component)
-        val rindex: Int = if (index < 0) numChildren + index else index
+        val rindex: Int = if (index < 0) numChildren + 1 + index else index
         _children.add(rindex.coerceAtLeast(0), child)
         child._parent = this
     }

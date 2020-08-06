@@ -14,26 +14,33 @@ open class LineUiLayout(
         val bounds = container.bounds
         //println("$bounds: ${container.children}")
         val ctx = Length.Context()
+        ctx.size = bounds.getSizeDirection(direction)
+
+        val padding = container.layoutChildrenPadding
+        val padding2 = padding * 2
 
         var sum = 0
-        var cur = 0
+        var cur = padding
 
         container.forEachChild { child ->
-            val value = Length.calc(ctx, 32.pt, child.size.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
-            val childBounds = when (direction) {
-                LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
-                LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
+            if (child.visible) {
+                val value = Length.calc(ctx, 32.pt, child.size.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
+                val childBounds = when (direction) {
+                    LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
+                    LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
+                }
+                child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
+                if (child is UiContainer) {
+                    child.layout?.relayout(child)
+                }
+                sum += value
+                cur += value + padding
             }
-            child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
-            if (child is UiContainer) {
-                child.layout?.relayout(child)
-            }
-            sum += value
-            cur += value
         }
     }
 }
 
+fun RectangleInt.getSizeDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 fun Size.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection { VERTICAL, HORIZONTAL }
 

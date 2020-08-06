@@ -5,7 +5,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korui.native.*
 
 open class UiTree(app: UiApplication, val tree: NativeUiFactory.NativeTree = app.factory.createTree()) : UiComponent(app, tree) {
-    var root by RedirectMutableField(tree::root)
+    var nodeRoot by RedirectMutableField(tree::root)
 }
 
 interface UiTreeNode : Extra {

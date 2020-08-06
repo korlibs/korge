@@ -1,5 +1,7 @@
 package com.soywiz.korui.native
 
+import com.soywiz.korio.lang.*
+import java.awt.event.ActionListener
 import javax.swing.*
 
 open class AwtComboBox<T>(factory: AwtUiFactory, val comboBox: JComboBox<T> = JComboBox<T>()) : AwtComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {
@@ -16,4 +18,21 @@ open class AwtComboBox<T>(factory: AwtUiFactory, val comboBox: JComboBox<T> = JC
         get() = comboBox.selectedItem as T?
         set(value) = run { comboBox.selectedItem = value }
 
+    override fun open() {
+        comboBox.showPopup()
+        //println("ComboBox.open")
+    }
+
+    override fun close() {
+        comboBox.hidePopup()
+    }
+
+
+    override fun onChange(block: () -> Unit): Disposable {
+        val listener = ActionListener { block() }
+        comboBox.addActionListener(listener)
+        return Disposable {
+            comboBox.removeActionListener(listener)
+        }
+    }
 }
