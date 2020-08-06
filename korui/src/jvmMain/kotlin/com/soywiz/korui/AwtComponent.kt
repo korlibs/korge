@@ -3,18 +3,30 @@ package com.soywiz.korui
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 import java.awt.*
+import java.awt.Rectangle
 import java.awt.event.*
 import java.awt.event.MouseEvent
 import javax.swing.*
 
-
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
+
+fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
 open class AwtComponent(override val factory: AwtUiFactory, val component: Component) : UiComponent, Extra by Extra.Mixin() {
     init {
         awtToWrappersMap[component] = this
     }
+
+    override var bounds: RectangleInt
+        get() {
+            val b = component.bounds
+            return RectangleInt(b.x, b.y, b.width, b.height)
+        }
+        set(value) {
+            component.bounds = Rectangle(value.x, value.y, value.width, value.height)
+        }
 
     override fun setBounds(x: Int, y: Int, width: Int, height: Int) {
         component.setBounds(x, y, width, height)
@@ -27,13 +39,7 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         //}
         set(p) {
             field = p
-            if (p == null) {
-                component.parent?.remove(component)
-                //field = null
-            } else {
-                //(p as AwtContainer).childContainer.add(component)
-                (p as AwtContainer).container.add(component)
-            }
+            super.parent = p
         }
 
     override var index: Int
@@ -84,5 +90,11 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         } catch (e: Throwable) {
             e.printStackTrace()
         }
+    }
+
+    override fun repaintAll() {
+        component.doLayout()
+        component.revalidate()
+        component.repaint()
     }
 }

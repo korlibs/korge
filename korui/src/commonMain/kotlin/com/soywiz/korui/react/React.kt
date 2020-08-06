@@ -2,44 +2,51 @@ package com.soywiz.korui.react
 
 import com.soywiz.kds.*
 import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlin.reflect.*
 
-interface UiContainerWithReactState {
+fun UiContainer.react(gen: UiContainerWithReactState.() -> Unit): UiContainer {
+    return container {
+        ReactUiMyContainer(this@container, gen)
+    }
+}
+
+interface UiContainerWithReactState : UiContainer {
     fun <T> state(initial: () -> T): ReactState<T>
 }
 
-class ReactUiContainer(
+class ReactUiMyContainer(
     val container: UiContainer,
-    val container2: UiContainer,
     val gen: UiContainerWithReactState.() -> Unit
-) : UiContainer, Extra by Extra.Mixin(), UiContainerWithReactState {
-    class ReactUiFactory : UiFactory {
-    }
-
-    override val factory: UiFactory = ReactUiFactory()
+) {
+    val changed = Signal<Unit>()
+    val data = LinkedHashMap<String, Any?>()
+    val holder = BaseUiContainerWithReactState(this, container)
 
     init {
-        gen(this)
-    }
-
-    override fun <T> state(initial: () -> T): ReactState<T> {
-        return ReactState<T>(this, initial)
+        holder.removeChildren()
+        gen(holder)
+        changed.add {
+            //println("CHANGED STATE!")
+            holder.removeChildren()
+            gen(holder)
+            //holder.root?.repaintAll()
+        }
+        //gen(holder1)
     }
 }
 
-class ReactState<T>(val container: ReactUiContainer, val initial: () -> T) {
-    operator fun getValue(t: Any?, property: KProperty<*>): T {
-        return initial()
-    }
-
-    operator fun setValue(t: Any?, property: KProperty<*>, any: T) {
-    }
-
+class BaseUiContainerWithReactState(val states: ReactUiMyContainer, val container: UiContainer) : UiContainerWithReactState, UiContainer by container {
+    override fun <T> state(initial: () -> T): ReactState<T> = ReactState(states, initial)
 }
 
-fun UiContainer.react(gen: UiContainerWithReactState.() -> Unit): UiContainer {
-    return container {
-        ReactUiContainer(this@react, this@container, gen)
+class ReactState<T>(val states: ReactUiMyContainer, val initial: () -> T) {
+    operator fun getValue(obj: Any?, property: KProperty<*>): T = (states.data as MutableMap<String, T>).getOrPut(property.name) { initial() }
+    operator fun setValue(obj: Any?, property: KProperty<*>, value: T) = run {
+        if (value != getValue(obj, property)) {
+            states.data[property.name] = value
+            states.changed()
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.soywiz.korui
 
-interface UiWithText : UiContainer {
+interface UiWithText : UiComponent {
     var text: String
         get() = ""
         set(value) = Unit

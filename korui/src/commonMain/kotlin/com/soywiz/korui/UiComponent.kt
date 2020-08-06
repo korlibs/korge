@@ -3,13 +3,20 @@ package com.soywiz.korui
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 
 interface UiComponent : Extra {
     val factory: UiFactory
+    var bounds: RectangleInt
+        get() = RectangleInt(0, 0, 0, 0)
+        set(value) = Unit
     fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
     var parent: UiContainer?
         get() = null
-        set(value) = Unit
+        set(value) {
+            parent?.removeChild(this)
+            value?.addChild(this)
+        }
     var index: Int
         get() = -1
         set(value) = Unit
@@ -22,6 +29,8 @@ interface UiComponent : Extra {
     fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
 
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
+
+    fun repaintAll()
 }
 
 val UiComponent.root: UiContainer? get() {

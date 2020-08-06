@@ -1,10 +1,15 @@
 package com.soywiz.korio
 
+import com.soywiz.kds.*
 import com.soywiz.korev.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.react.*
 import javax.swing.*
+import kotlin.properties.*
+import kotlin.reflect.*
 
 object KoruiSample1 {
     @JvmStatic
@@ -57,11 +62,25 @@ object KoruiSample1 {
              */
             react {
                 var checked by state { false }
+                //var checked = true
+
+                //val checked by ObservableProperty(false)
+                //var checked: Boolean by ObservableProperty(false)
+                //var checked2: Boolean by ObservableProperty(false)
+
+                println("checked: $checked")
 
                 checkBox("hello", checked = checked) {
                     //enabled = false
+
                     setBounds(16, 16, 320, 32)
                     onClick { checked = !checked }
+                }
+
+                button("save") {
+                    //enabled = false
+                    setBounds(16, 64, 320, 32)
+                    onClick { }
                 }
             }
             /*
