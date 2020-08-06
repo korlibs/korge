@@ -2,6 +2,7 @@
 
 package com.soywiz.korio.util
 
+import com.soywiz.kmem.isNanOrInfinite
 import com.soywiz.korio.lang.*
 import kotlin.math.*
 
@@ -12,6 +13,8 @@ val Float.niceStr: String get() = if (round(this) == this) "${this.toLong()}" el
 val Double.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
 
 fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = false): String {
+    if (this.isNanOrInfinite()) return this.toString()
+
 	val res = this.toString()
 
 	val containsEup = res.contains('E')

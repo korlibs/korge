@@ -42,7 +42,7 @@ object KoruiSample1 {
 
         UiApplication().window(600, 600) {
             val crossIcon = NativeImage(16, 16).context2d {
-                stroke(Colors.WHITE, lineWidth = 3.0) {
+                stroke(Colors.RED, lineWidth = 3.0) {
                     line(0, 0, 16 - 1.5, 16 - 1.5)
                     line(16 - 1.5, 0, 0, 16 - 1.5)
                 }
@@ -110,8 +110,8 @@ object KoruiSample1 {
                         }
                     }
                     props = vertical {
-                        addChild(RowUiEditableValue(app, "position", TwoItemUiEditableValue(app, NumberUiEditableValue(app, 0.0), NumberUiEditableValue(app, 0.0))))
-                        addChild(RowUiEditableValue(app, "x", NumberUiEditableValue(app, 0.0)))
+                        addChild(RowUiEditableValue(app, "position", TwoItemUiEditableValue(app, NumberUiEditableValue(app, 0.0, -1000.0, +1000.0), NumberUiEditableValue(app, 0.0, -1000.0, +1000.0))))
+                        addChild(RowUiEditableValue(app, "ratio", NumberUiEditableValue(app, 0.0, min = 0.0, max = 1.0, clampMin = true, clampMax = true)))
                         addChild(RowUiEditableValue(app, "y", ListUiEditableValue(app, listOf("hello", "world"))))
                     }
                     tree {

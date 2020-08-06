@@ -8,12 +8,21 @@ class ListUiEditableValue<T>(app: UiApplication, items: List<T>) : UiEditableVal
         visible = true
     }
 
+    var items = items
     val contentText = UiLabel(app).also { it.text = "world" }.also { it.visible = true }
-    val contentComboBox = UiComboBox<T>(app).also { it.items =items }.also { it.visible = false }
+    val contentComboBox = UiComboBox<T>(app).also { it.items = items }.also { it.visible = false }
+
+    fun setValue(value: T?) {
+        contentText.text = value.toString()
+        if (contentComboBox.selectedItem != value) {
+            contentComboBox.selectedItem = value
+        }
+    }
 
     override fun hideEditor() {
         contentText.visible = true
         contentComboBox.visible = false
+        setValue(contentComboBox.selectedItem)
     }
 
     override fun showEditor() {
@@ -23,6 +32,8 @@ class ListUiEditableValue<T>(app: UiApplication, items: List<T>) : UiEditableVal
     }
 
     init {
+        setValue(items.first())
+
         contentText.onClick {
             showEditor()
         }
