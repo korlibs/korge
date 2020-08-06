@@ -23,7 +23,6 @@ fun UiMenuItem.toMenu(): JMenu {
     return item
 }
 
-
 fun UiMenu.toJMenuBar(): JMenuBar {
     val bar = JMenuBar()
     for (child in children) {

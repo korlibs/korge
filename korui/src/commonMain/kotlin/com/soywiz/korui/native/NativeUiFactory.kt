@@ -11,15 +11,19 @@ expect val DEFAULT_UI_FACTORY: NativeUiFactory
 object DummyUiFactory : NativeUiFactory
 
 interface NativeUiFactory {
-    fun createWindow(): NativeWindow = object : NativeWindow, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createContainer(): NativeContainer = object : NativeContainer, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createScrollPanel(): NativeScrollPanel = object : NativeScrollPanel, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createButton(): NativeButton = object : NativeButton, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createLabel(): NativeLabel = object : NativeLabel, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createCheckBox(): NativeCheckBox = object : NativeCheckBox, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createTextField(): NativeTextField = object : NativeTextField, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun <T> createComboBox(): NativeComboBox<T> = object : NativeComboBox<T>, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
-    fun createTree(): NativeTree = object : NativeTree, Extra by Extra.Mixin() { override val factory = this@NativeUiFactory }
+    open class DummyBase : NativeComponent, Extra by Extra.Mixin() {
+        override val factory: NativeUiFactory get() = TODO()
+    }
+    fun wrapNative(native: Any?): NativeComponent = object : DummyBase(), NativeComponent {}
+    fun createWindow(): NativeWindow = object : DummyBase(), NativeWindow {}
+    fun createContainer(): NativeContainer = object : DummyBase(), NativeContainer {}
+    fun createScrollPanel(): NativeScrollPanel = object : DummyBase(), NativeScrollPanel {}
+    fun createButton(): NativeButton = object : DummyBase(), NativeButton {}
+    fun createLabel(): NativeLabel = object : DummyBase(), NativeLabel {}
+    fun createCheckBox(): NativeCheckBox = object : DummyBase(), NativeCheckBox {}
+    fun createTextField(): NativeTextField = object : DummyBase(), NativeTextField {}
+    fun <T> createComboBox(): NativeComboBox<T> = object : DummyBase(), NativeComboBox<T> {}
+    fun createTree(): NativeTree = object : DummyBase(), NativeTree {}
 
     interface NativeButton : NativeComponent, NativeWithText {
     }
