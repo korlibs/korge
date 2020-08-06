@@ -1,7 +1,13 @@
 package com.soywiz.korui.factory
 
+import com.soywiz.korev.*
+import com.soywiz.korev.Event
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korio.lang.*
 import java.awt.*
+import java.awt.event.*
 import javax.swing.*
+import kotlin.reflect.*
 
 actual val defaultKoruiFactory: KoruiFactory = AwtKoruiFactory()
 
@@ -23,7 +29,7 @@ class AwtKoruiFactory : KoruiFactory() {
         if (p == null) {
             c.component.parent?.remove(c.component)
         } else {
-            p?.container?.add(c.component)
+            p.container.add(c.component)
         }
     }
 
@@ -38,7 +44,7 @@ class AwtKoruiFactory : KoruiFactory() {
         val component = c.component
         return when (component) {
             is AbstractButton -> component.text
-            is Label -> component.text
+            is JLabel -> component.text
             is Frame -> component.title
             else -> null
         }
@@ -48,7 +54,7 @@ class AwtKoruiFactory : KoruiFactory() {
         val component = c.component
         when (component) {
             is AbstractButton -> component.text = text
-            is Label -> component.text = text
+            is JLabel -> component.text = text
             is Frame -> component.title = text
         }
     }
@@ -59,5 +65,31 @@ class AwtKoruiFactory : KoruiFactory() {
 
     override fun setVisible(c: NativeUiComponent, visible: Boolean) {
         c.component.isVisible = visible
+    }
+
+    override fun <T : Event> addEventListener(c: NativeUiComponent, clazz: KClass<T>, handler: (T) -> Unit): Disposable {
+        when (clazz) {
+            MouseEvent::class -> {
+                val event = MouseEvent()
+
+                fun dispatch(e: java.awt.event.MouseEvent, type: MouseEvent.Type) {
+                    event.button = MouseButton[e.button]
+                    event.x = e.x
+                    event.y = e.y
+                    event.type = type
+                    handler(event as T)
+                }
+
+                val listener = object : MouseAdapter() {
+                    override fun mouseClicked(e: java.awt.event.MouseEvent) = dispatch(e, MouseEvent.Type.CLICK)
+                }
+
+                c.component.addMouseListener(listener)
+                return Disposable {
+                    c.component.removeMouseListener(listener)
+                }
+            }
+        }
+        return Disposable { }
     }
 }

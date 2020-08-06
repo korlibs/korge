@@ -1,5 +1,6 @@
 package com.soywiz.korui.ui
 
+import com.soywiz.korev.*
 import com.soywiz.korui.factory.*
 
 open class Component(val app: Application, val component: NativeUiComponent) {
@@ -20,6 +21,12 @@ open class Component(val app: Application, val component: NativeUiComponent) {
         set(value) {
             factory.setVisible(component, value)
         }
+
+    fun onClick(handler: (MouseEvent) -> Unit) {
+        factory.addEventListener<MouseEvent>(component) {
+            if (it.type == MouseEvent.Type.CLICK) handler(it)
+        }
+    }
 
     fun show() = run { isVisible = true }
     fun hide() = run { isVisible = false }

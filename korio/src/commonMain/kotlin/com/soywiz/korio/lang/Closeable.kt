@@ -4,6 +4,12 @@ import kotlinx.coroutines.*
 
 interface Disposable {
 	fun dispose()
+
+    companion object {
+        operator fun invoke(callback: () -> Unit) = object : Disposable {
+            override fun dispose() = callback()
+        }
+    }
 }
 
 interface Closeable {

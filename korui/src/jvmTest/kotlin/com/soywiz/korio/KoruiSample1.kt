@@ -15,12 +15,20 @@ object KoruiSample1 {
         defaultKoruiFactory.setVisible(window, true)
         */
 
-        val app = Application()
-        app.window {
+        Application().window {
             title = "Hello"
             setBounds(16, 16, 600, 600)
             button("Hello World!") {
+                onClick {
+                    println("BUTTON")
+                }
                 setBounds(16, 16, 320, 100)
+            }
+            label("Label") {
+                onClick {
+                    println("LABEL")
+                }
+                setBounds(16, 150, 320, 100)
             }
         }
     }

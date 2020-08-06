@@ -7,3 +7,9 @@ open class Container(application: Application, component: NativeUiComponent = ap
         component.parent = this
     }
 }
+
+fun Container.container(block: Container.() -> Unit): Container {
+    return Container(app)
+        .also { addChild(it) }
+        .also(block)
+}

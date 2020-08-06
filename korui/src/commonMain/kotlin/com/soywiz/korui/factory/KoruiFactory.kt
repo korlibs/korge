@@ -1,5 +1,9 @@
 package com.soywiz.korui.factory
 
+import com.soywiz.korev.*
+import com.soywiz.korio.lang.*
+import kotlin.reflect.*
+
 expect val defaultKoruiFactory: KoruiFactory
 
 open class KoruiFactory {
@@ -17,6 +21,10 @@ open class KoruiFactory {
 
     open fun getVisible(c: NativeUiComponent): Boolean = false
     open fun setVisible(c: NativeUiComponent, visible: Boolean) = Unit
+
+    open fun <T : Event> addEventListener(c: NativeUiComponent, clazz: KClass<T>, handler: (T) -> Unit): Disposable = Disposable { }
+
+    inline fun <reified T : Event> addEventListener(c: NativeUiComponent, noinline handler: (T) -> Unit): Disposable = addEventListener(c, T::class, handler)
 }
 
 inline class NativeUiComponent(val rawComponent: Any?)
