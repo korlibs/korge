@@ -27,6 +27,10 @@ open class BaseAwtUiFactory : NativeUiFactory {
     override fun <T> createComboBox() = AwtComboBox<T>(this)
     override fun createTree() = AwtTree(this)
 
+    open fun createJScrollPane() = JScrollPane().also {
+        it.verticalScrollBar.unitIncrement = 16
+        it.horizontalScrollBar.unitIncrement = 16
+    }
     open fun createJPopupMenu() = JPopupMenu()
     open fun createJMenuItem() = JMenuItem()
     open fun createJMenu() = JMenu()

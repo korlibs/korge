@@ -7,8 +7,7 @@ import javax.swing.*
 open class AwtScrollPanel(
     factory: BaseAwtUiFactory,
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
-    //val view: JPanel = JPanel(),
-    val scrollPanel: JScrollPane = JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+    val scrollPanel: JScrollPane = factory.createJScrollPane()
 ) : AwtContainer(factory, scrollPanel, view), NativeUiFactory.NativeScrollPanel {
     override var bounds: RectangleInt
         get() = super<AwtContainer>.bounds
@@ -38,14 +37,14 @@ open class AwtScrollPanel(
         }
 
     init {
+        scrollPanel.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+        scrollPanel.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         //scrollPanel.layout = ScrollPaneLayout()
         //view.background = Color.GREEN
         //view.layout = BoxLayout(view, BoxLayout.Y_AXIS)
         //view.setBounds(0, 0, 1000, 1000)
         //view.minimumSize = Dimension(300, 300)
 
-        scrollPanel.verticalScrollBar.unitIncrement = 16
-        scrollPanel.horizontalScrollBar.unitIncrement = 16
         scrollPanel.setViewportView(view)
         //view.preferredSize = Dimension(2000, 2000)
         //view.size = Dimension(2000, 2000)
