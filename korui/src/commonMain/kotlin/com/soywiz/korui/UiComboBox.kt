@@ -1,14 +1,12 @@
 package com.soywiz.korui
 
-interface UiComboBox<T> : UiComponent {
-    var items: List<T>
-        get() = listOf()
-        set(value) = Unit
+import com.soywiz.korio.util.*
+import com.soywiz.korui.native.*
 
-    var selectedItem: T?
-        get() = null
-        set(value) = Unit
+open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.NativeComboBox<T> = app.factory.createComboBox()) : UiComponent(app, comboBox) {
+    var items by RedirectMutableField(comboBox::items)
+    var selectedItem by RedirectMutableField(comboBox::selectedItem)
 }
 
 inline fun <T> UiContainer.comboBox(block: UiComboBox<T>.() -> Unit): UiComboBox<T> =
-    factory.createComboBox<T>().also { it.parent = this }.also(block)
+    UiComboBox<T>(app).also { it.parent = this }.also(block)

@@ -2,39 +2,37 @@ package com.soywiz.korui
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.native.*
 
-interface UiComponent : Extra {
-    val factory: UiFactory
-    var bounds: RectangleInt
-        get() = RectangleInt(0, 0, 0, 0)
-        set(value) = Unit
-    fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
+open class UiComponent(val app: UiApplication, val component: NativeUiFactory.NativeComponent) : Extra by Extra.Mixin() {
+    val factory get() = app.factory
+    var _parent: UiContainer? = null
+        internal set
+
     var parent: UiContainer?
-        get() = null
+        get() = _parent
         set(value) {
             parent?.removeChild(this)
             value?.addChild(this)
         }
-    var index: Int
-        get() = -1
-        set(value) = Unit
-    var visible: Boolean
-        get() = true
-        set(value) = Unit
-    var enabled: Boolean
-        get() = true
-        set(value) = Unit
-    fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
+    var visible by RedirectMutableField(component::visible)
+    var enabled by RedirectMutableField(component::enabled)
+    var bounds by RedirectMutableField(component::bounds)
 
-    fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
+    open fun copyFrom(that: UiComponent) {
+        this.visible = that.visible
+        this.enabled = that.enabled
+        this.bounds = that.bounds
+    }
 
-    fun repaintAll()
-    fun copyFrom(nchild: UiComponent): Unit = TODO()
+    fun onMouseEvent(block: (MouseEvent) -> Unit) {
+        component.onMouseEvent(block)
+    }
 }
 
-val UiComponent.root: UiContainer? get() {
+val UiComponent.root: UiComponent? get() {
     if (this.parent == null) return this as UiContainer
     return this.parent?.root
 }
@@ -43,5 +41,9 @@ fun UiComponent.show() = run { visible = true }
 fun UiComponent.hide() = run { visible = false }
 
 fun UiComponent.onClick(block: (MouseEvent) -> Unit) {
-    onMouseEvent(block)
+    onMouseEvent {
+        if (it.type == MouseEvent.Type.CLICK) {
+            block(it)
+        }
+    }
 }

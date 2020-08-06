@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.ObservableProperty
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.react.*
@@ -60,9 +61,9 @@ object KoruiSample1 {
                 setBounds(16, 350, 320, 32)
             }
              */
-            react {
-                var checked by state { false }
-                //var checked = true
+            //react {
+                //var checked by state { false }
+                var checked = true
 
                 //val checked by ObservableProperty(false)
                 //var checked: Boolean by ObservableProperty(false)
@@ -75,7 +76,7 @@ object KoruiSample1 {
                     checkBox("hello", checked = checked) {
                         //enabled = false
 
-                        setBounds(16, 16, 320, 32)
+                        bounds = RectangleInt(16, 16, 320, 32)
                         onClick {
                             checked = !checked
                             //checked = false
@@ -85,11 +86,14 @@ object KoruiSample1 {
 
                     button("save") {
                         //enabled = false
-                        setBounds(16, 64, 320, 32)
+                        bounds = RectangleInt(16, 64, 320, 32)
                         onClick { }
                     }
+                    addChild(MyCustomComponent(app).apply {
+                        bounds = RectangleInt(0, 100, 200, 64)
+                    })
                 }
-            }
+            //}
             /*
             tree {
                 setBounds(0, 0, 300, 300)
@@ -116,5 +120,12 @@ object KoruiSample1 {
 
              */
         }
+    }
+}
+
+class MyCustomComponent(app: UiApplication) : UiContainer(app) {
+    init {
+        addChild(UiLabel(app).also { it.text = "hello" }.also { it.bounds = RectangleInt(0, 0, 120, 32) })
+        addChild(UiLabel(app).also { it.text = "world" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
     }
 }

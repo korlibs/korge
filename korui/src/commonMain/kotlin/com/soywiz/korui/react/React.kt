@@ -9,40 +9,37 @@ import kotlin.reflect.*
 var UiComponent.reactUid by Extra.PropertyThis<UiComponent, Any?> { null }
 
 fun UiContainer.react(gen: UiContainerWithReactState.() -> Unit): UiContainer {
-    return container {
-        ReactUiMyContainer(this@container, gen)
-    }
+    val reactCC = ReactUiMyContainer(this.app, gen)
+    this.addChild(reactCC.holder)
+    return reactCC.holder
 }
 
-interface UiContainerWithReactState : UiContainer {
-    fun <T> state(initial: () -> T): ReactState<T>
+class UiContainerWithReactState(val states: ReactUiMyContainer) : UiContainer(states.app) {
+    fun <T> state(initial: () -> T): ReactState<T> = ReactState(states, initial)
 }
 
 class ReactUiMyContainer(
-    val container: UiContainer,
+    val app: UiApplication,
     val gen: UiContainerWithReactState.() -> Unit
 ) {
     val changed = Signal<Unit>()
     val data = LinkedHashMap<String, Any?>()
-    val holder = BaseUiContainerWithReactState(this, container)
-    val holderTemp = BaseUiContainerWithReactState(this, container.factory.createContainer().also {
-        it.layout = container.layout
-        it.bounds = container.bounds
-    })
+    val holder = UiContainerWithReactState(this)
+    val holderTemp = UiContainerWithReactState(this)
     var currentUids = ReactUids()
 
     init {
         holder.removeChildren()
         gen(holder)
-        currentUids.generate(holder.container)
+        currentUids.generate(holder)
 
         changed.add {
             //println("CHANGED STATE!")
             holderTemp.removeChildren()
             gen(holderTemp)
             val tempUids = ReactUids()
-            tempUids.generate(holderTemp.container)
-            sync(holder.container, currentUids, holderTemp.container, tempUids)
+            tempUids.generate(holderTemp)
+            sync(holder, currentUids, holderTemp, tempUids)
         }
     }
 
@@ -88,10 +85,6 @@ class ReactUids {
             }
         }
     }
-}
-
-class BaseUiContainerWithReactState(val states: ReactUiMyContainer, val container: UiContainer) : UiContainerWithReactState, UiContainer by container {
-    override fun <T> state(initial: () -> T): ReactState<T> = ReactState(states, initial)
 }
 
 class ReactState<T>(val states: ReactUiMyContainer, val initial: () -> T) {

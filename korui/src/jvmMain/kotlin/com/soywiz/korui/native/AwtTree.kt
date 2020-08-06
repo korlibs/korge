@@ -1,6 +1,7 @@
-package com.soywiz.korui
+package com.soywiz.korui.native
 
 import com.soywiz.kds.*
+import com.soywiz.korui.*
 import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
@@ -18,7 +19,7 @@ data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun toString(): String = node.toString()
 }
 
-open class AwtTree(factory: AwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), UiTree {
+open class AwtTree(factory: AwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
     val model get() = tree.model as DefaultTreeModel
     override var root: UiTreeNode?
         get() = (model.root as? AwtTreeNode?)?.node

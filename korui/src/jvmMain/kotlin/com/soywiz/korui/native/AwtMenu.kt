@@ -1,5 +1,6 @@
-package com.soywiz.korui
+package com.soywiz.korui.native
 
+import com.soywiz.korui.*
 import javax.swing.*
 
 fun UiMenuItem.toMenuItem(): JMenuItem {

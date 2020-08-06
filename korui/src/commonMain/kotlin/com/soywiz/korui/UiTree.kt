@@ -1,14 +1,11 @@
 package com.soywiz.korui
 
 import com.soywiz.kds.*
+import com.soywiz.korio.util.*
+import com.soywiz.korui.native.*
 
-interface UiTree : UiComponent {
-    var root: UiTreeNode?
-        get() = null
-        set(value) = Unit
-    fun select(node: UiTreeNode?) = Unit
-
-    fun onSelect(block: (nodes: List<UiTreeNode>) -> Unit) = Unit
+open class UiTree(app: UiApplication, val tree: NativeUiFactory.NativeTree = app.factory.createTree()) : UiComponent(app, tree) {
+    var root by RedirectMutableField(tree::root)
 }
 
 interface UiTreeNode : Extra {
@@ -31,5 +28,5 @@ class SimpleUiTreeNode(val text: String, override val children: List<SimpleUiTre
 }
 
 inline fun UiContainer.tree(block: UiTree.() -> Unit): UiTree {
-    return factory.createTree().also { it.parent = this }.also(block)
+    return UiTree(app).also { it.parent = this }.also(block)
 }

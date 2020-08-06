@@ -1,4 +1,4 @@
-package com.soywiz.korui
+package com.soywiz.korui.native
 
 import java.awt.*
 import javax.swing.*
@@ -16,7 +16,7 @@ open class AwtScrollPanel(
     factory: AwtUiFactory,
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     val scrollPanel: JScrollPane = JScrollPane(view, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS)
-) : AwtContainer(factory, scrollPanel, view), UiScrollPanel {
+) : AwtContainer(factory, scrollPanel, view), NativeUiFactory.NativeScrollPanel {
     init {
         //view.preferredSize = Dimension(2000, 2000)
         //view.size = Dimension(2000, 2000)

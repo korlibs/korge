@@ -1,8 +1,10 @@
 package com.soywiz.korui
 
-interface UiScrollPanel : UiContainer {
+import com.soywiz.korui.native.*
+
+open class UiScrollPanel(app: UiApplication, val panel: NativeUiFactory.NativeScrollPanel = app.factory.createScrollPanel()) : UiContainer(app, panel) {
 }
 
 inline fun UiContainer.scrollPanel(block: UiScrollPanel.() -> Unit): UiScrollPanel {
-    return factory.createScrollPanel().also { it.parent = this }.also(block)
+    return UiScrollPanel(app).also { it.parent = this }.also(block)
 }

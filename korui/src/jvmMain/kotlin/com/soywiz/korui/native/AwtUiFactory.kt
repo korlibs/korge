@@ -1,10 +1,10 @@
-package com.soywiz.korui
+package com.soywiz.korui.native
 
 import javax.swing.*
 
-actual val DEFAULT_UI_FACTORY: UiFactory by lazy { AwtUiFactory() }
+actual val DEFAULT_UI_FACTORY: NativeUiFactory by lazy { AwtUiFactory() }
 
-open class AwtUiFactory : UiFactory {
+open class AwtUiFactory : NativeUiFactory {
     init {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
     }

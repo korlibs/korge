@@ -26,7 +26,7 @@ open class LineUiLayout(
                 LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
                 LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
             }
-            child.setBounds(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
+            child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
             if (child is UiContainer) {
                 child.layout.relayout(childBounds)
             }
@@ -57,9 +57,9 @@ var UiComponent.height: Length?
     }
 
 fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
-    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
+    return UiContainer(app).also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }
 
 fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
-    return factory.createContainer().also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
+    return UiContainer(app).also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }

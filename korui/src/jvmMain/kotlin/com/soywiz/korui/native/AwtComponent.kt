@@ -1,9 +1,10 @@
-package com.soywiz.korui
+package com.soywiz.korui.native
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import java.awt.*
 import java.awt.Rectangle
 import java.awt.event.*
@@ -14,7 +15,7 @@ internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
 
 fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
-open class AwtComponent(override val factory: AwtUiFactory, val component: Component) : UiComponent, Extra by Extra.Mixin() {
+open class AwtComponent(override val factory: AwtUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
     init {
         awtToWrappersMap[component] = this
     }
@@ -32,7 +33,7 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         component.setBounds(x, y, width, height)
     }
 
-    override var parent: UiContainer? = null
+    override var parent: NativeUiFactory.NativeContainer? = null
         //get() {
         //    println(component.parent.parent.parent)
         //    return awtToWrappersMap[component.parent] as? UiContainer?
@@ -96,11 +97,5 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
         component.doLayout()
         component.revalidate()
         component.repaint()
-    }
-
-    override fun copyFrom(nchild: UiComponent) {
-        this.bounds = nchild.bounds
-        this.visible = nchild.visible
-        this.enabled = nchild.enabled
     }
 }
