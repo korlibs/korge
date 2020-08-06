@@ -12,8 +12,8 @@ var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 object UiFillLayout : UiLayout {
     override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
-        return available
-        //return SizeInt(64, 64)
+        //return available
+        return SizeInt(64, 64)
     }
 
     override fun relayout(container: UiContainer) {
