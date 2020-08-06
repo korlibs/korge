@@ -1,8 +1,11 @@
 package com.soywiz.korui
 
+import com.soywiz.kds.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korui.layout.*
 import com.soywiz.korui.native.*
 
 open class UiContainer(app: UiApplication, val container: NativeUiFactory.NativeContainer = app.factory.createContainer()) : UiComponent(app, container) {
@@ -10,6 +13,19 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
     val numChildren: Int get() = _children.size
     val size: Int get() = numChildren
     var backgroundColor: RGBA? by redirect(container::backgroundColor)
+
+    var layout: UiLayout? = VerticalUiLayout
+
+    fun relayout() {
+        layout?.relayout(this)
+    }
+
+    override var bounds: RectangleInt
+        get() = super.bounds
+        set(value) {
+            super.bounds = value
+            relayout()
+        }
 
     fun getChildIndex(child: UiComponent): Int = _children.indexOf(child)
     fun getChildAt(index: Int): UiComponent = _children[index]

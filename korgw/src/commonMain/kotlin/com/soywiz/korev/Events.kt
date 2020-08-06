@@ -51,6 +51,8 @@ data class MouseEvent(
         this.isMetaDown = other.isMetaDown
         this.scaleCoords = other.scaleCoords
     }
+
+    var requestLock: () -> Unit = { }
 }
 
 data class FocusEvent(

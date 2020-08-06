@@ -20,7 +20,11 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
         }
     var visible by redirect(component::visible)
     var enabled by redirect(component::enabled)
-    var bounds by redirect(component::bounds)
+    open var bounds: RectangleInt
+        get() = component.bounds
+        set(value) {
+            component.bounds = value
+        }
     var cursor by redirect(component::cursor)
     var focusable by redirect(component::focusable)
 
@@ -34,6 +38,7 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
 
     fun onMouseEvent(block: (MouseEvent) -> Unit) = component.onMouseEvent(block)
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
+    fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
 }
 
 val UiComponent.root: UiComponent? get() {

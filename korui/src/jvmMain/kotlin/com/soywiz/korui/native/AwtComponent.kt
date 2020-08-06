@@ -90,16 +90,43 @@ open class AwtComponent(override val factory: AwtUiFactory, val component: Compo
     override fun onMouseEvent(handler: (com.soywiz.korev.MouseEvent) -> Unit): Disposable {
         val event = com.soywiz.korev.MouseEvent()
 
+        var lockingX = 0
+        var lockingY = 0
+        var lockingDeltaX = 0
+        var lockingDeltaY = 0
+        var locking = false
+
         fun dispatch(e: MouseEvent, type: com.soywiz.korev.MouseEvent.Type) {
             event.type = type
             event.button = MouseButton[e.button]
-            event.x = e.x
-            event.y = e.y
             event.isShiftDown = e.isShiftDown
             event.isCtrlDown = e.isControlDown
             event.isAltDown = e.isAltDown
             event.isMetaDown = e.isMetaDown
+            if (event.typeUp) {
+                locking = false
+            }
+            if (locking) {
+                val dx = e.xOnScreen - e.x
+                val dy = e.yOnScreen - e.y
+                lockingDeltaX += MouseInfo.getPointerInfo().location.x - lockingX
+                lockingDeltaY += MouseInfo.getPointerInfo().location.y - lockingY
+                event.x = lockingDeltaX - dx
+                event.y = lockingDeltaY - dy
+                Robot().mouseMove(lockingX, lockingY)
+            } else {
+                event.x = e.x
+                event.y = e.y
+            }
             handler(event)
+        }
+
+        event.requestLock = {
+            locking = true
+            lockingX = MouseInfo.getPointerInfo().location.x
+            lockingY = MouseInfo.getPointerInfo().location.y
+            lockingDeltaX = lockingX
+            lockingDeltaY = lockingY
         }
 
         val listener = object : MouseAdapter() {

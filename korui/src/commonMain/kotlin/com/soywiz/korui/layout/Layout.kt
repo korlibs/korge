@@ -4,16 +4,14 @@ import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-open class UiLayout(val container: UiContainer) {
-    open fun relayout(bounds: RectangleInt) {
-    }
-}
+object VerticalUiLayout : LineUiLayout(LayoutDirection.VERTICAL)
+object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
 
 open class LineUiLayout(
-    container: UiContainer,
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
-) : UiLayout(container) {
-    override fun relayout(bounds: RectangleInt) {
+) : UiLayout {
+    override fun relayout(container: UiContainer) {
+        val bounds = container.bounds
         //println("$bounds: ${container.children}")
         val ctx = Length.Context()
 
@@ -28,7 +26,7 @@ open class LineUiLayout(
             }
             child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
             if (child is UiContainer) {
-                child.layout?.relayout(childBounds)
+                child.layout?.relayout(child)
             }
             sum += value
             cur += value
@@ -38,8 +36,6 @@ open class LineUiLayout(
 
 fun Size.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection { VERTICAL, HORIZONTAL }
-
-var UiContainer.layout by Extra.PropertyThis<UiContainer, UiLayout?>() { LineUiLayout(this, LayoutDirection.VERTICAL) }
 
 var UiComponent.size by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
 var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
@@ -57,9 +53,9 @@ var UiComponent.height: Length?
     }
 
 fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
-    return UiContainer(app).also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
+    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }
 
 fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
-    return UiContainer(app).also { it.layout = LineUiLayout(it, LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
+    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }

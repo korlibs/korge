@@ -27,7 +27,7 @@ object KoruiSample1 {
         */
 
         UiApplication().window(600, 600) {
-            layout = UiLayout(this)
+            layout = null
 
             menu = UiMenu(listOf(UiMenuItem("hello", listOf(UiMenuItem("world"))), UiMenuItem("world")))
             focusable = true
@@ -89,7 +89,9 @@ object KoruiSample1 {
                     button("save") {
                         //enabled = false
                         bounds = RectangleInt(16, 64, 320, 32)
-                        onClick { }
+                        onClick {
+                            this.showPopupMenu(listOf(UiMenuItem("HELLO")))
+                        }
                     }
                     addChild(MyCustomComponent(app).apply {
                         bounds = RectangleInt(0, 100, 240, 32)
@@ -127,14 +129,12 @@ object KoruiSample1 {
 
 class MyEditableNumber(app: UiApplication) : UiContainer(app) {
     init {
-        layout = null
-        //bounds = RectangleInt(0, 0, 120, 32)
-        //backgroundColor = Colors.BLUE
+        layout = UiFillLayout
         visible = true
     }
 
-    val contentText = UiLabel(app).also { it.text = "world" }.also { it.bounds = RectangleInt(0, 0, 120, 32) }.also { it.visible = true }
-    val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.bounds = RectangleInt(0, 0, 120, 32) }.also { it.visible = false }
+    val contentText = UiLabel(app).also { it.text = "world" }.also { it.visible = true }
+    val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.visible = false }
 
     fun hideEditor() {
         contentText.visible = true
@@ -172,6 +172,7 @@ class MyEditableNumber(app: UiApplication) : UiContainer(app) {
             if (e.typeDown) {
                 startX = e.x
                 startY = e.y
+                e.requestLock()
             }
             if (e.typeDrag) {
                 val dx = e.x - startX
