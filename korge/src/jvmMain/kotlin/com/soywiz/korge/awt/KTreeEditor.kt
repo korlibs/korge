@@ -179,12 +179,17 @@ suspend fun ktreeEditor(file: VfsFile): Module {
             onMoveAnywhere { e ->
                 val view = actions.selectedView
                 if (pressing && view != null) {
-                    val dx = views.globalMouseX - startSelectedMousePos.x
-                    val dy = views.globalMouseY - startSelectedMousePos.y
+                    var dx = views.globalMouseX - startSelectedMousePos.x
+                    var dy = views.globalMouseY - startSelectedMousePos.y
                     val anchor = currentAnchor
                     if (anchor != null) {
                         when (anchor.kind) {
                             AnchorKind.SCALING -> {
+                                //val dy = dx * (anchor.localBounds.height / anchor.localBounds.width)
+                                if (gridSnapping) {
+                                    dx = dx.nearestAlignedTo(gridWidth)
+                                    dy = dy.nearestAlignedTo(gridHeight)
+                                }
                                 val newGlobalAnchorXY = anchor.globalAnchorXY + Point(dx, dy)
                                 val newLocalAnchorXY = anchor.globalToLocal(newGlobalAnchorXY)
                                 val oldLocalBounds = anchor.localBounds
@@ -205,18 +210,29 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                                     0.0 -> {
                                         newLocalBounds.top = newLocalAnchorXY.y
                                         newLocalBounds.bottom = oldLocalBounds.bottom
+
+                                        //val newHeight = newLocalBounds.width * (oldLocalBounds.height / oldLocalBounds.width)
+                                        //newLocalBounds.top += newLocalBounds.height - newHeight
                                     }
                                     0.5 -> Unit
                                     1.0 -> {
                                         newLocalBounds.top = oldLocalBounds.top
                                         newLocalBounds.bottom = newLocalAnchorXY.y
+
+                                        //newLocalBounds.height = newLocalBounds.width * (oldLocalBounds.height / oldLocalBounds.width)
                                     }
+                                }
+
+                                if (true) {
+                                    //newLocalBounds.width = newLocalBounds.width
                                 }
 
                                 //if (gridSnapping) {
                                 //    newLocalBounds.width = newLocalBounds.width.nearestAlignedTo(gridWidth)
                                 //    newLocalBounds.height = newLocalBounds.height.nearestAlignedTo(gridHeight)
                                 //}
+
+
 
                                 //println("localAnchorXY=${anchor.localAnchorXY}, newLocalAnchorXY=$newLocalAnchorXY, newLocalBounds=$newLocalBounds, oldLocalBounds=${anchor.localBounds}")
                                 //println("anchor=$anchor, newLocalBounds[${System.identityHashCode(newLocalBounds)}]=$newLocalBounds  -- oldLocalBounds[${System.identityHashCode(oldLocalBounds)}]=$oldLocalBounds")
