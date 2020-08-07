@@ -7,11 +7,12 @@ import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
 
-suspend fun swfAnimationEditor(file: VfsFile): EditorModule {
+suspend fun swfAnimationEditor(file: VfsFile): Module {
     val context = AnLibrary.Context()
     val animationLibrary = when (file.extensionLC) {
         "swf" -> file.readSWF(

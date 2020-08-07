@@ -5,6 +5,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korui.*
 
 class TreeViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
@@ -19,10 +20,11 @@ class TreeViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by View
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Tree") {
-        add(this@TreeViewRef::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "ktree" },
-            views = views
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("Tree") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "ktree"
+            })
+        }
     }
 }

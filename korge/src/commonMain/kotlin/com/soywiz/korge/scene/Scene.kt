@@ -126,11 +126,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
         }
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? {
-        return null
-    }
-
-    override fun buildDebugComponent(views: Views, component: UiContainer) {
+    override fun UiContainer.buildDebugComponent(views: Views) {
     }
 }
 

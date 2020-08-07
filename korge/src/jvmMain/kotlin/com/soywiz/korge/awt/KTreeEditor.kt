@@ -35,11 +35,7 @@ data class AnchorPointResult(
     }
 }
 
-abstract class EditorModule() : Module() {
-    open val editableNode: EditableNode? = null
-}
-
-suspend fun ktreeEditor(file: VfsFile): EditorModule {
+suspend fun ktreeEditor(file: VfsFile): Module {
     return myComponentFactory.createModule {
         views.name = "ktree"
         var save = false

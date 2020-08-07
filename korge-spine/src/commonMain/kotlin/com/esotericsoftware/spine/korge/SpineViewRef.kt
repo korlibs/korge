@@ -7,6 +7,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korio.file.*
+import com.soywiz.korui.*
 
 class SpineViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     private var skeletonView: SkeletonView? = null
@@ -47,10 +48,11 @@ class SpineViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by Vie
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Spine") {
-        add(this@SpineViewRef::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "skel" },
-            views = views
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("Spine") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "skel"
+            })
+        }
     }
 }

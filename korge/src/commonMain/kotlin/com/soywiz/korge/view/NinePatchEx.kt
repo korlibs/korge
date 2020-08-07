@@ -8,6 +8,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlin.math.*
 
 inline fun Container.ninePatch(
@@ -174,10 +175,11 @@ class NinePatchEx(
         }
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("9-PatchImage") {
-        add(this@NinePatchEx::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.baseName.endsWith(".9.png") },
-            views = views
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("9-PatchImage") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.baseName.endsWith(".9.png")
+            })
+        }
     }
 }

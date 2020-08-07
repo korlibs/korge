@@ -1,6 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 data class Particle(
     val index: Int,
@@ -8,7 +9,7 @@ data class Particle(
     var x: Double = 0.0,
     var y: Double = 0.0,
     var scale: Double = 1.0,
-    var rotation: Double = 0.0,
+    var rotation: Angle = 0.0.degrees,
     var currentTime: Double = 0.0,
     var totalTime: Double = 0.0,
 
@@ -33,9 +34,9 @@ data class Particle(
     var tangentialAcceleration: Double = 0.0,
     var emitRadius: Double = 0.0,
     var emitRadiusDelta: Double = 0.0,
-    var emitRotation: Double = 0.0,
-    var emitRotationDelta: Double = 0.0,
-    var rotationDelta: Double = 0.0,
+    var emitRotation: Angle = 0.0.degrees,
+    var emitRotationDelta: Angle = 0.0.degrees,
+    var rotationDelta: Angle = 0.0.degrees,
     var scaleDelta: Double = 0.0
 ) {
     val color: RGBA get() = RGBA.float(colorR.toFloat(), colorG.toFloat(), colorB.toFloat(), colorA.toFloat())

@@ -4,9 +4,10 @@ import com.soywiz.korge.awt.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korio.file.*
 
-suspend fun dragonBonesEditor(file: VfsFile) : EditorModule {
+suspend fun dragonBonesEditor(file: VfsFile) : Module {
     val factory = KorgeDbFactory()
     val skeleton = file.readDbSkeletonAndAtlas(factory)
     val armature = skeleton.armatureNames.first()

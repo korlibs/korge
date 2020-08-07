@@ -11,6 +11,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 /*
 // Example:
@@ -98,12 +99,13 @@ open class Text2(
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views) = EditableSection("Text") {
-        val text = this@Text2
-        add(text::text.toEditableProperty())
-        add(text::fontSize.toEditableProperty(1.0, 300.0))
-        add(text::verticalAlign.toEditablePropertyEnum(clazz = VerticalAlign::class, enumConstants = arrayOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM)))
-        add(text::horizontalAlign.toEditablePropertyEnum(clazz = HorizontalAlign::class, enumConstants = arrayOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY)))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("Text") {
+            uiEditableValue(::text)
+            uiEditableValue(::fontSize, min= 1.0, max = 300.0)
+            uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
+            uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
+        }
     }
 }
 

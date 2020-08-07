@@ -4,7 +4,7 @@ import com.soywiz.korui.*
 
 class UiListEditableValue<T>(
     app: UiApplication,
-    items: List<T>,
+    val itemsFactory: () -> List<T>,
     val prop: ObservableProperty<T>
 ) : UiEditableValue(app) {
     init {
@@ -12,7 +12,7 @@ class UiListEditableValue<T>(
         visible = true
     }
 
-    var items = items
+    var items = itemsFactory()
     val contentText = UiLabel(app)
         .also { it.text = "" }
         .also { it.visible = true }
@@ -42,6 +42,11 @@ class UiListEditableValue<T>(
 
     init {
         setValue(prop.value)
+
+        prop.onChange {
+            items = itemsFactory()
+            setValue(it, false)
+        }
 
         contentText.onClick {
             showEditor()

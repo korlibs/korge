@@ -50,7 +50,7 @@ object IdeaMyComponentFactory : MyComponentFactory() {
         return ColorChooser.chooseColor(views!!.ideaComponent, "Choose Color", value.toAwt(), true, true)?.toRgba()
     }
 
-    override fun createModule(block: suspend Scene.() -> Unit): EditorModule {
+    override fun createModule(block: suspend Scene.() -> Unit): Module {
         return com.soywiz.korge.intellij.editor.createModule(null) { block() }
     }
 

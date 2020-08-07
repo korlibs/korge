@@ -1,9 +1,7 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korev.Event
-import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
@@ -11,7 +9,6 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korio.async.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -20,7 +17,6 @@ import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
-import javax.swing.SwingUtilities
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -51,91 +47,24 @@ class ViewNode(val view: View?) : TreeNode {
 
 class ViewDebuggerChanged(val view: View?) : Event()
 
-class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout(1, 1)) {
-    var nodeTree: EditableNodeList? = null
-
-    fun setView(view: View?, coroutineContext: CoroutineContext) {
-        removeAll()
-        this.nodeTree = null
-        if (view == null) return
-        val nodes = ArrayList<EditableNode>()
-        if (view is KorgeDebugNode) {
-            view.getDebugProperties(views)?.let {
-                nodes.add(it)
-            }
-        }
-        nodes.add(EditableSection("View") {
-            add(view::name.toEditableProperty())
-            add(view::colorMul.toEditableProperty(views = views))
-            add(view::blendMode.toEditableProperty(BlendMode.values()))
-            add(view::alpha.toEditableProperty(0.0, 1.0))
-            add(view::speed.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
-            add(view::ratio.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
-            add(view::x.toEditableProperty(supportOutOfRange = true))
-            add(view::y.toEditableProperty(supportOutOfRange = true))
-            if (view is RectBase) {
-                add(view::anchorX.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
-                add(view::anchorY.toEditableProperty(0.0, 1.0, supportOutOfRange = true))
-                add(EditableButtonProperty("center") {
-                    view.anchorX = 0.5
-                    view.anchorY = 0.5
-                    //view.anchorX = -view.width / 2
-                    //view.anchorY = -view.height / 2
-                })
-            }
-            if (view is AnBaseShape) {
-                add(view::dx.toEditableProperty(name = "dx", supportOutOfRange = true))
-                add(view::dy.toEditableProperty(name = "dy", supportOutOfRange = true))
-                add(EditableButtonProperty("center") {
-                    view.dx = (-view.width / 2).toFloat()
-                    view.dy = (-view.height / 2).toFloat()
-                })
-            }
-            add(view::scaledWidth.toEditableProperty(name = "width", supportOutOfRange = true))
-            add(view::scaledHeight.toEditableProperty(name = "height", supportOutOfRange = true))
-            add(view::scale.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
-            add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
-            add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
-            add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
-            add(view::skewXDegrees.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
-            add(view::skewYDegrees.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
-        })
-        val nodeTree = EditableNodeList(nodes)
-        this.nodeTree = nodeTree
-        val propertyList = nodeTree.allBaseEditableProperty
-        var updating = false
-        propertyList.fastForEach { property ->
-            property.onChange {
-                if (it.triggeredByUser) {
-                    updating = true
-                    nodeTree.synchronizeProperties()
-                    view.stage?.views?.debugSaveView(view)
-                }
-            }
-        }
-        add(PropertyPanel(nodeTree, coroutineContext) { view })
-        revalidate()
-        repaint()
-    }
-
-    fun update() {
-        nodeTree?.synchronizeProperties()
-    }
-
-    init {
-        setView(view, EmptyCoroutineContext)
-    }
-}
 
 class ViewsDebuggerComponent constructor(
     val views: Views,
     val app: UiApplication,
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext,
-) : JPanel(GridLayout(3, 1)) {
+) : JPanel(GridLayout(2, 1)) {
     val actions = ViewsDebuggerActions(views, this)
-    val properties = EditPropertiesComponent(rootView, views).also { add(it) }
     val uiProperties = UiEditProperties(app, rootView, views)
+    val uiPropertiesPanel = JPanel().also {
+        val panel = app.wrapContainer(it)
+        panel.layout = VerticalUiLayout
+        //panel.button("Hello")
+        panel.addChild(uiProperties)
+        //it.add(JButton())
+        add(it)
+        panel.relayout()
+    }
 
     init {
         views.debugHighlighters.add { view ->
@@ -159,10 +88,9 @@ class ViewsDebuggerComponent constructor(
     }
 
     private fun selectView(view: View?) {
-        properties.setView(view, coroutineContext)
         uiProperties.setView(view, coroutineContext)
         views.renderContext.debugAnnotateView = view
-        (demo.toAwt()?.uiComponent as? UiContainer?)?.relayout()
+        uiProperties.relayout()
     }
 
     val tree: JTree = JTree(ViewNode(rootView)).apply {
@@ -261,15 +189,6 @@ class ViewsDebuggerComponent constructor(
     }
     val selectedView: View? get() = actions.selectedView
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
-    val demo = JPanel().also {
-        val panel = app.wrapContainer(it)
-        panel.layout = VerticalUiLayout
-        //panel.button("Hello")
-        panel.addChild(uiProperties)
-        //it.add(JButton())
-        add(it)
-        panel.relayout()
-    }
 
     //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
     //fun setRootView(root: View) {
@@ -282,7 +201,6 @@ class ViewsDebuggerComponent constructor(
 
     fun update() {
         tree.updateUI()
-        properties.update()
         uiProperties.update()
     }
 }

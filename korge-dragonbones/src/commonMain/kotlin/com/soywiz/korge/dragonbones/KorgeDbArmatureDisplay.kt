@@ -36,6 +36,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 /**
  * @inheritDoc
@@ -312,13 +313,13 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
 
     val animationNames get() = animation.animationNames
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("DragonBones") {
-        add(EditableEnumerableProperty(
-            "animation1",
-            String::class,
-            get = { animation.lastAnimationName },
-            set = { animationName -> animation.play(animationName) },
-            animationNames.toSet()
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("DragonBones") {
+            addChild(UiRowEditableValue(app, "animation", UiListEditableValue(app, { animationNames }, ObservableProperty(
+                name = "animation",
+                internalSet = { animationName -> animation.play(animationName) },
+                internalGet = { animation.lastAnimationName }
+            ))))
+        }
     }
 }

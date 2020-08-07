@@ -83,14 +83,7 @@ class Image(
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Image") {
-        add(this@Image::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "png" || it.extensionLC == "jpg" },
-            views = views
-        ))
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer): Unit = container.run {
+    override fun UiContainer.buildDebugComponent(views: Views) {
         uiCollapsableSection("Image") {
             uiEditableValue(this@Image::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"

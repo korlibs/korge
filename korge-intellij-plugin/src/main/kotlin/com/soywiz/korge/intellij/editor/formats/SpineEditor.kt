@@ -6,11 +6,12 @@ import com.esotericsoftware.spine.korge.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.intellij.editor.*
 import com.soywiz.korge.intellij.editor.util.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korim.atlas.readAtlas
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 
-suspend fun spineEditor(file: VfsFile): EditorModule {
+suspend fun spineEditor(file: VfsFile): Module {
     val atlas = file.parent.listSimple().firstOrNull { it.baseName.endsWith(".atlas") }
         ?: error("Can't find atlas in ${file.parent}")
     val skeletonData = file.readSkeletonBinary(atlas.readAtlas(asumePremultiplied = true))

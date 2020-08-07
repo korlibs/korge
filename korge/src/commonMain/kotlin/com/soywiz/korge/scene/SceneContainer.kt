@@ -216,11 +216,9 @@ class SceneContainer(
         visitStack[visitPos] = entry
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? {
-        return currentScene?.getDebugProperties(views)
-    }
-
-    override fun buildDebugComponent(views: Views, component: UiContainer) {
-        currentScene?.buildDebugComponent(views, component)
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        currentScene?.apply {
+            buildDebugComponent(views)
+        }
     }
 }

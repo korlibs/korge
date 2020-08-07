@@ -5,6 +5,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -15,6 +16,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
@@ -612,35 +614,32 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("SWF",
-        EditableButtonProperty("start") { play() },
-        EditableButtonProperty("stop") { stop() },
-        EditableEnumerableProperty(
-            "symbol", String::class,
-            get = { symbol.name ?: "#${symbol.id}" },
-            set = { symbolName ->
-                val views = stage?.views
-                val newView = library.create(symbolName) as View
-                this@AnMovieClip.replaceWith(newView)
-                views?.debugHightlightView(newView)
-            },
-            supportedValues = library.symbolsByName.keys
-        ),
-        EditableEnumerableProperty(
-            "gotoAndPlay",
-            String::class,
-            get = { timelineRunner.currentStateName ?: "__start" },
-            set = { frameName -> this@AnMovieClip.play(frameName) },
-            stateNames.toSet()
-        ),
-        EditableEnumerableProperty(
-            "gotoAndStop",
-            String::class,
-            get = { timelineRunner.currentStateName ?: "__start" },
-            set = { frameName -> this@AnMovieClip.playAndStop(frameName) },
-            stateNames.toSet()
-        ),
-    )
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("SWF") {
+            addChild(UiRowEditableValue(app, "symbol", UiListEditableValue(app, { library.symbolsByName.keys.toList() }, ObservableProperty(
+                name = "symbol",
+                internalSet = { symbolName ->
+                    val views = stage?.views
+                    val newView = library.create(symbolName) as View
+                    this@AnMovieClip.replaceWith(newView)
+                    views?.debugHightlightView(newView)
+                },
+                internalGet = { symbol.name ?: "#${symbol.id}" },
+            ))))
+            addChild(UiRowEditableValue(app, "gotoAndPlay", UiListEditableValue(app, { stateNames }, ObservableProperty(
+                name = "gotoAndPlay",
+                internalSet = { frameName -> this@AnMovieClip.play(frameName) },
+                internalGet = { timelineRunner.currentStateName ?: "__start" },
+            ))))
+            addChild(UiRowEditableValue(app, "gotoAndStop", UiListEditableValue(app, { stateNames }, ObservableProperty(
+                name = "gotoAndStop",
+                internalSet = { frameName -> this@AnMovieClip.playAndStop(frameName) },
+                internalGet = { timelineRunner.currentStateName ?: "__start" },
+            ))))
+            button("start") { play() }
+            button("stop") { stop() }
+        }
+    }
 
     override var ratio: Double
         get() = timelineRunner.ratio

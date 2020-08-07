@@ -25,7 +25,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         fun blendFactor() = ParticleEmitter.blendFactorMap[scalar().toInt()] ?: AG.BlendFactor.ONE
         fun type() = ParticleEmitter.typeMap[scalar().toInt()] ?: ParticleEmitter.Type.GRAVITY
 
-        fun angle() = Angle.degreesToRadians(item.double("value"))
+        fun angle() = item.double("value").degrees
         fun color(): RGBAf =
             RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 
@@ -59,8 +59,8 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
             "maxradiusvariance" -> emitter.maxRadiusVariance = scalar()
             "minradius" -> emitter.minRadius = scalar()
             "minradiusvariance" -> emitter.minRadiusVariance = scalar()
-            "rotatepersecond" -> emitter.rotatePerSecond = scalar()
-            "rotatepersecondvariance" -> emitter.rotatePerSecondVariance = scalar()
+            "rotatepersecond" -> emitter.rotatePerSecond = angle()
+            "rotatepersecondvariance" -> emitter.rotatePerSecondVariance = angle()
             "blendfuncsource" -> emitter.blendFuncSource = blendFactor()
             "blendfuncdestination" -> emitter.blendFuncDestination = blendFactor()
             "rotationstart" -> emitter.rotationStart = angle()

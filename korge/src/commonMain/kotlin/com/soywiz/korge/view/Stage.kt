@@ -1,9 +1,11 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 
 /**
@@ -48,12 +50,13 @@ class Stage(override val views: Views) : Container()
         }
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Views") {
-        add(views::virtualWidth.toEditableProperty().also {
-            it.onChange.add { views.resized() }
-        })
-        add(views::virtualHeight.toEditableProperty().also {
-            it.onChange.add { views.resized() }
-        })
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("Stage") {
+            uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize").findObservableProperties().fastForEach {
+                it.onChange {
+                    views.resized()
+                }
+            }
+        }
     }
 }

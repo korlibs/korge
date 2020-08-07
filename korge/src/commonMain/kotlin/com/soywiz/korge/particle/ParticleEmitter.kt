@@ -22,8 +22,8 @@ class ParticleEmitter() {
 	var speedVariance = 30.0
 	var lifeSpan = 2.0
 	var lifespanVariance = 1.9
-	var angle = 270.0
-	var angleVariance = 2.0
+	var angle: Angle = 270.0.degrees
+	var angleVariance: Angle = 2.0.degrees
 	var gravity = Point()
 	var radialAcceleration = 0.0
 	var tangentialAcceleration = 0.0
@@ -44,14 +44,14 @@ class ParticleEmitter() {
 	var maxRadiusVariance = 0.0
 	var minRadius = 0.0
 	var minRadiusVariance = 0.0
-	var rotatePerSecond = 0.0
-	var rotatePerSecondVariance = 0.0
+	var rotatePerSecond = 0.0.degrees
+	var rotatePerSecondVariance = 0.0.degrees
     var blendFuncSource = AG.BlendFactor.ONE
     var blendFuncDestination = AG.BlendFactor.ONE
-	var rotationStart = 0.0
-	var rotationStartVariance = 0.0
-	var rotationEnd = 0.0
-	var rotationEndVariance = 0.0
+	var rotationStart = 0.0.degrees
+	var rotationStartVariance = 0.0.degrees
+	var rotationEnd = 0.0.degrees
+	var rotationEndVariance = 0.0.degrees
 
 	fun create(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView =
 		ParticleEmitterView(this, IPoint(x, y)).apply {

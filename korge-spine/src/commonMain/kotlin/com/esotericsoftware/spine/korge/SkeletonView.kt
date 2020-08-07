@@ -17,6 +17,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korui.*
 
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
     = SkeletonView(skeleton, animationState).addTo(this, block)
@@ -334,23 +335,23 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
 
     val currentMainAnimation get() = animationState?.tracks?.first()?.animation
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("Animation") {
-        val currentAnimationName = currentMainAnimation?.name ?: "default"
-        add(EditableEnumerableProperty(
-            "animation1", String::class,
-            get = { currentAnimationName },
-            set = { animationName ->
-                val animation = skeleton.data.findAnimation(animationName)
-                if (animation != null) {
-                    this@SkeletonView.play()
-                    animationState?.setAnimation(0, animation, true)
-                    stage?.views?.debugHightlightView(this@SkeletonView)
-                }
-            },
-            skeleton.data.animations.map { it.name }.toSet()
-        ))
-        add(EditableButtonProperty("play") { this@SkeletonView.play() })
-        add(EditableButtonProperty("stop") { this@SkeletonView.stop() })
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("Animation") {
+            addChild(UiRowEditableValue(app, "animation", UiListEditableValue(app, { skeleton.data.animations.map { it.name } }, ObservableProperty(
+                name = "animation",
+                internalSet = {  animationName ->
+                    val animation = skeleton.data.findAnimation(animationName)
+                    if (animation != null) {
+                        this@SkeletonView.play()
+                        animationState?.setAnimation(0, animation, true)
+                        stage?.views?.debugHightlightView(this@SkeletonView)
+                    }
+                },
+                internalGet = { currentMainAnimation?.name ?: "default" }
+            ))))
+            button("play") { play() }
+            button("stop") { stop() }
+        }
     }
 
     companion object {

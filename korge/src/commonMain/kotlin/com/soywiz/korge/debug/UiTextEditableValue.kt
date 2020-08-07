@@ -70,30 +70,26 @@ class UiTextEditableValue(
         when (kind) {
             is Kind.FILE -> {
                 button("...") {
-                    onClick {
-                        val file = openFileDialog(null, kind.filter)
-                        if (file != null) {
-                            val filePathInfo = file.absolutePathInfo
-                            val currentVfsPathInfo = kind.currentVfs.absolutePathInfo
-                            val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
-                            println("filePathInfo: $filePathInfo")
-                            println("currentVfsPathInfo: $currentVfsPathInfo")
-                            println("relativePath: $relativePath")
+                    val file = openFileDialog(null, kind.filter)
+                    if (file != null) {
+                        val filePathInfo = file.absolutePathInfo
+                        val currentVfsPathInfo = kind.currentVfs.absolutePathInfo
+                        val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
+                        println("filePathInfo: $filePathInfo")
+                        println("currentVfsPathInfo: $currentVfsPathInfo")
+                        println("relativePath: $relativePath")
 
-                            //PathInfo("test").rela
-                            if (relativePath != null) {
-                                setValue(relativePath)
-                            }
+                        //PathInfo("test").rela
+                        if (relativePath != null) {
+                            setValue(relativePath)
                         }
                     }
                 }
             }
             is Kind.COLOR -> {
                 button("...") {
-                    onClick {
-                        val color = Colors[prop.value]
-                        prop.value = (openColorPickerDialog(color) ?: color).hexString
-                    }
+                    val color = Colors[prop.value]
+                    prop.value = (openColorPickerDialog(color) ?: color).hexString
                 }
             }
         }

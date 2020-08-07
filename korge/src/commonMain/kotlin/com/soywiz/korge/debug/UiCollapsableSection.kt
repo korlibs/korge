@@ -16,10 +16,8 @@ class UiCollapsableSection(app: UiApplication, val name: String, val componentCh
 
     init {
         button(name) {
-            onClick {
-                mycontainer.visible = !mycontainer.visible
-                mycontainer.root?.relayout()
-            }
+            mycontainer.visible = !mycontainer.visible
+            mycontainer.root?.relayout()
         }
         mycontainer = container {
             for (child in componentChildren) {

@@ -23,6 +23,9 @@ class ParticleEmitterSimulator(
     private fun randomVariance(base: Double, variance: Double): Double =
         base + variance * (random.nextDouble() * 2.0 - 1.0)
 
+    private fun randomVariance(base: Angle, variance: Angle): Angle =
+        randomVariance(base.degrees, variance.degrees).degrees
+
     fun init(particle: Particle, initialization: Boolean): Particle {
         val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance).coerceAtLeast(0.001)
 

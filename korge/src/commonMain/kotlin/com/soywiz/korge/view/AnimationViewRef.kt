@@ -4,6 +4,7 @@ import com.soywiz.korge.animate.serialization.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korio.file.*
+import com.soywiz.korui.*
 
 class AnimationViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
@@ -17,10 +18,11 @@ class AnimationViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("SWF") {
-        add(this@AnimationViewRef::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "swf" || it.extensionLC == "ani" },
-            views = views
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("SWF") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "swf" || it.extensionLC == "ani"
+            })
+        }
     }
 }

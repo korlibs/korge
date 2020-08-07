@@ -64,7 +64,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 		return KorgeBaseKorgeFileEditor(project, virtualFile, createModule(fileToEdit), "Preview")
 	}
 
-    open fun createModule(fileToEdit: KorgeFileToEdit): EditorModule {
+    open fun createModule(fileToEdit: KorgeFileToEdit): Module {
         val file = fileToEdit.file
 
         val computedExtension = when {
@@ -135,9 +135,9 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 }
 
 
-fun createModule(editableNode: EditableNode? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): EditorModule {
-    return object : EditorModule() {
-        override val editableNode: EditableNode? get() = editableNode
+fun createModule(root: Any? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): Module {
+    return object : Module() {
+        //override val editableNode: EditableNode? get() = editableNode
         override val mainScene = KorgeFileEditorProvider.EditorScene::class
         override suspend fun AsyncInjector.configure() {
             get<ResourcesRoot>().mount("/", KorgeFileEditorProvider.pluginResurcesVfs.root)

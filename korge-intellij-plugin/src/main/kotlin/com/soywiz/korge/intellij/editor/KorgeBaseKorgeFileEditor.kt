@@ -39,7 +39,7 @@ data class KorgeFileToEdit(val originalFile: VirtualFile) {
 open class KorgeBaseKorgeFileEditor(
 	val project: Project,
 	val virtualFile: VirtualFile,
-	val module: EditorModule,
+	val module: Module,
 	val _name: String
 ) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware  {
 
@@ -114,13 +114,13 @@ open class KorgeBaseKorgeFileEditor(
         //println("[I] ${Thread.currentThread()}")
         initializeIdeaComponentFactory()
         createRootStyled().apply {
-            createViewsWithDebugger(panel, module.editableNode, viewsDebuggerComponentHolder)
+            createViewsWithDebugger(panel, null, viewsDebuggerComponentHolder)
         }.component
 	}
 
     fun Styled<out Container>.createViewsWithDebugger(
         editor: Component,
-        rootNode: EditableNode?,
+        rootNode: Any?,
         viewsDebuggerComponentHolder: JPanel
     ) {
         verticalStack {
@@ -139,11 +139,6 @@ open class KorgeBaseKorgeFileEditor(
                     minWidth = 360.pt
                     width = minWidth
                     fillHeight()
-                    if (rootNode != null) {
-                        add(PropertyPanel(rootNode, EmptyCoroutineContext, { null }).styled {
-                            fill()
-                        })
-                    }
                     add(viewsDebuggerComponentHolder.styled {
                         fill()
                     })

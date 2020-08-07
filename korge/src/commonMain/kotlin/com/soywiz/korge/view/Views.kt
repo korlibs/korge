@@ -83,6 +83,13 @@ class Views constructor(
     /** The defined virtual height */
 	var virtualHeight = DefaultViewport.HEIGHT; internal set
 
+    var virtualWidthDouble: Double
+        get() = virtualWidth.toDouble()
+        set(value) = run { virtualWidth = value.toInt() }
+    var virtualHeightDouble: Double
+        get() = virtualHeight.toDouble()
+        set(value) = run { virtualHeight = value.toInt() }
+
     @KorgeExperimental
 	var actualVirtualLeft = 0; private set
     @KorgeExperimental

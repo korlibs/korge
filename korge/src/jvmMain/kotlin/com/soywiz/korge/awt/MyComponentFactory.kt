@@ -16,6 +16,8 @@ import java.awt.*
 import java.util.*
 import javax.swing.*
 
+var myComponentFactory = MyComponentFactory()
+
 open class MyComponentFactory {
     open fun <T> list(array: List<T>) = JList(Vector(array))
 
@@ -34,7 +36,7 @@ open class MyComponentFactory {
         TODO()
     }
 
-    open fun createModule(block: suspend Scene.() -> Unit): EditorModule {
+    open fun createModule(block: suspend Scene.() -> Unit): Module {
         TODO()
     }
 

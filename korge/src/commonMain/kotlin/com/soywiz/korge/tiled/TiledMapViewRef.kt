@@ -1,10 +1,10 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.korge.animate.serialization.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.file.*
+import com.soywiz.korui.*
 
 class TiledMapViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
@@ -18,10 +18,11 @@ class TiledMapViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by 
         super.renderInternal(ctx)
     }
 
-    override fun getDebugProperties(views: Views): EditableNode? = EditableSection("TiledMap") {
-        add(this@TiledMapViewRef::sourceFile.toEditableProperty(
-            kind = EditableStringProperty.Kind.FILE { it.extensionLC == "tmx" },
-            views = views
-        ))
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection("TiledMap") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "tmx"
+            })
+        }
     }
 }

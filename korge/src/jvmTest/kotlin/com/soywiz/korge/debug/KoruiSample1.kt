@@ -94,18 +94,14 @@ object KoruiSample1 {
                         }
                     }
 
-                    button("save") {
-                        //enabled = false
+                    button("save", {
                         bounds = RectangleInt(16, 64, 320, 32)
-                        onClick {
-                            this.showPopupMenu(listOf(UiMenuItem("HELLO", icon = crossIcon)))
-                        }
+                    }) {
+                        this.showPopupMenu(listOf(UiMenuItem("HELLO", icon = crossIcon)))
                     }
                     lateinit var props: UiContainer
                     button("Properties") {
-                        onClick {
-                            props.visible = !props.visible
-                        }
+                        props.visible = !props.visible
                     }
                     props = vertical {
                         addChild(UiRowEditableValue(app, "position", UiTwoItemEditableValue(app, UiNumberEditableValue(app, 0.0, -1000.0, +1000.0, decimalPlaces = 0), UiNumberEditableValue(app, 0.0, -1000.0, +1000.0))))
@@ -129,7 +125,7 @@ object KoruiSample1 {
                     vert = vertical {
                         label("HELLO") {}
                         label("WORLD") {}
-                        button("test") { }
+                        button("test")
                         label("LOL") {}
                     }
                     button("TEST") {
