@@ -46,7 +46,7 @@ open class BaseAwtUiFactory : NativeUiFactory {
         TODO()
     }
 
-    open fun awtOpenColorPickerDialog(component: Component, color: RGBA): RGBA? {
+    open fun awtOpenColorPickerDialog(component: Component, color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
         TODO()
     }
 

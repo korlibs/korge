@@ -15,7 +15,6 @@ import java.awt.Rectangle
 import java.awt.event.*
 import java.awt.event.MouseEvent
 import java.awt.image.*
-import javax.swing.*
 
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
 
@@ -200,8 +199,8 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         return factory.awtOpenFileDialog(component, file, filter)
     }
 
-    override fun openColorPickerDialog(color: RGBA): RGBA? {
-        return factory.awtOpenColorPickerDialog(component, color)
+    override fun openColorPickerDialog(color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
+        return factory.awtOpenColorPickerDialog(component, color, listener)
     }
 
     override fun repaintAll() {

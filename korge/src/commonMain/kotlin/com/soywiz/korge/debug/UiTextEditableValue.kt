@@ -89,7 +89,9 @@ class UiTextEditableValue(
             is Kind.COLOR -> {
                 button("...") {
                     val color = Colors[prop.value]
-                    prop.value = (openColorPickerDialog(color) ?: color).hexString
+                    prop.value = (openColorPickerDialog(color) {
+                        prop.value = it.hexString
+                    } ?: color).hexString
                 }
             }
         }

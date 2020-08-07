@@ -103,7 +103,7 @@ interface NativeUiFactory {
             return null
         }
 
-        fun openColorPickerDialog(color: RGBA): RGBA? {
+        fun openColorPickerDialog(color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
             return color
         }
     }

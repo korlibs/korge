@@ -30,8 +30,17 @@ open class IdeaNativeUiFactory(val project: Project) : BaseAwtUiFactory() {
         return localVfs(file.canonicalPath!!)
     }
 
-    override fun awtOpenColorPickerDialog(component: Component, color: RGBA): RGBA? {
-        return ColorChooser.chooseColor(component, "Choose Color", color.toAwt(), true, true)?.toRgba()
+    override fun awtOpenColorPickerDialog(component: Component, color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
+        return ColorChooser.chooseColor(component, "Choose Color", color.toAwt(), true, mutableListOf(object : ColorPickerListener {
+            override fun colorChanged(color: Color?) {
+                if (color != null) {
+                    listener?.invoke(color.toRgba())
+                }
+            }
+
+            override fun closed(color: Color?) {
+            }
+        }), true)?.toRgba()
     }
 }
 

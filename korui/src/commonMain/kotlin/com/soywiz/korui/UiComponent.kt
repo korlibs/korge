@@ -57,7 +57,7 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
     fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean) = component.openFileDialog(file, filter)
-    fun openColorPickerDialog(color: RGBA): RGBA? = component.openColorPickerDialog(color)
+    fun openColorPickerDialog(color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? = component.openColorPickerDialog(color, listener)
     fun focus(focus: Boolean = true) = component.focus(focus)
     fun show() = run { visible = true }
     fun hide() = run { visible = false }
