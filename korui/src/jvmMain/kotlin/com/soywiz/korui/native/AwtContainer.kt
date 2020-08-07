@@ -8,7 +8,7 @@ import javax.swing.*
 
 open class AwtContainer(
     factory: BaseAwtUiFactory,
-    val container: Container = JPanel(),
+    val container: Container = factory.createJPanel(),
     val childContainer: Container = container
 ) : AwtComponent(factory, container), NativeUiFactory.NativeContainer {
     init {

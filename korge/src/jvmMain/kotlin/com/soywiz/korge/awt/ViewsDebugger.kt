@@ -56,15 +56,16 @@ class ViewsDebuggerComponent constructor(
 ) : JPanel(GridLayout(2, 1)) {
     val actions = ViewsDebuggerActions(views, this)
     val uiProperties = UiEditProperties(app, rootView, views)
-    val uiPropertiesPanel = JPanel().also {
-        val panel = app.wrapContainer(it)
-        panel.layout = VerticalUiLayout
-        //panel.button("Hello")
-        panel.addChild(uiProperties)
-        //it.add(JButton())
-        add(it)
-        panel.relayout()
-    }
+    val uiPropertiesPanel = JPanel()
+        .also {
+            val panel = app.wrapContainer(it)
+            panel.layout = VerticalUiLayout
+            //panel.button("Hello")
+            panel.addChild(uiProperties)
+            //it.add(JButton())
+            panel.relayout()
+        }
+    val uiPropertiesPanelScroll = myComponentFactory.scrollPane(uiPropertiesPanel).also { add(it) }
 
     init {
         views.debugHighlighters.add { view ->

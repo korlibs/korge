@@ -1,6 +1,5 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*

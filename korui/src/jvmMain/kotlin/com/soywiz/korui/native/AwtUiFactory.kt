@@ -2,6 +2,7 @@ package com.soywiz.korui.native
 
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.*
 import java.awt.*
 import javax.swing.*
 
@@ -47,5 +48,25 @@ open class BaseAwtUiFactory : NativeUiFactory {
 
     open fun awtOpenColorPickerDialog(component: Component, color: RGBA): RGBA? {
         TODO()
+    }
+
+    open fun createJPanel(): JPanel {
+        return object : JPanel() {
+            internal var cachedBounds: Dimension? = null
+            override fun isPreferredSizeSet(): Boolean = true
+            override fun preferredSize(): Dimension {
+                //cachedBounds = null
+                if (cachedBounds == null) {
+                    val bb = BoundsBuilder()
+                    for (n in 0 until componentCount) {
+                        val b = this.getComponent(n).bounds
+                        bb.add(b.x, b.y)
+                        bb.add(b.x + b.width, b.y + b.height)
+                    }
+                    cachedBounds = Dimension(bb.xmax.toInt(), bb.ymax.toInt())
+                }
+                return cachedBounds!!
+            }
+        }
     }
 }
