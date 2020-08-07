@@ -241,7 +241,9 @@ suspend fun ktreeEditor(file: VfsFile): Module {
 
                                 view.width = newLocalBounds.width
                                 view.height = newLocalBounds.height
+                                //println(newLocalBounds.topLeft + Point(view.anchorDispX, view.anchorDispY))
                                 val globalPos = anchor.localToGlobal(newLocalBounds.topLeft + Point(view.anchorDispX, view.anchorDispY))
+                                //val globalPos = anchor.localToGlobal(newLocalBounds.topLeft - oldLocalBounds.topLeft)
 
                                 view.globalX = globalPos.x
                                 view.globalY = globalPos.y

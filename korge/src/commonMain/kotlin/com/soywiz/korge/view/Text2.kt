@@ -5,11 +5,14 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.tiled.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
@@ -59,8 +62,32 @@ open class Text2(
     private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()
+    private var fontLoaded: Boolean = false
+    var fontSource: String? = null
+        set(value) {
+            field = value
+            fontLoaded = false
+        }
+
+    suspend fun forceLoadFontSource(currentVfs: VfsFile, sourceFile: String?) {
+        fontSource = sourceFile
+        fontLoaded = true
+        if (sourceFile != null) {
+            font = when {
+                sourceFile.endsWith(".ttf") -> currentVfs["$sourceFile"].readTtfFont()
+                else -> currentVfs["$sourceFile"].readBitmapFont()
+            }
+        }
+    }
 
     override fun renderInternal(ctx: RenderContext) {
+        val fontSource = fontSource
+        if (!fontLoaded && fontSource != null) {
+            fontLoaded = true
+            launchImmediately(ctx.coroutineContext) {
+                forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
+            }
+        }
         container.colorMul = color
         if (font is BitmapFont) {
             bitmapFontActions.x = 0.0
@@ -99,12 +126,16 @@ open class Text2(
         super.renderInternal(ctx)
     }
 
+
     override fun UiContainer.buildDebugComponent(views: Views) {
         uiCollapsableSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::fontSize, min= 1.0, max = 300.0)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
+            uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "ttf" || it.extensionLC == "fnt"
+            })
         }
     }
 }

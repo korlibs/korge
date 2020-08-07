@@ -79,6 +79,14 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             }
         }
 
+        if (view is Text2) {
+            try {
+                view.forceLoadFontSource(currentVfs, xml.str("fontSource"))
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+
         fun double(prop: KMutableProperty0<Double>, defaultValue: Double) {
             prop.set(xml.double(prop.name, defaultValue))
         }
@@ -119,6 +127,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         if (view is Text2) {
             string(view::text, "Text")
             double(view::fontSize, 10.0)
+            //view.fontSource = xml.str("fontSource", "")
             view.verticalAlign = VerticalAlign(xml.str("verticalAlign"))
             view.horizontalAlign = HorizontalAlign(xml.str("horizontalAlign"))
         }
@@ -169,6 +178,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         if (view is Text2) {
             add(view::text)
             add(view::fontSize)
+            add(view::fontSource)
             add(view::verticalAlign)
             add(view::horizontalAlign)
         }
