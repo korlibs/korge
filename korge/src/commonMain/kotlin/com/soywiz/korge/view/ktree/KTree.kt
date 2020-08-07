@@ -72,7 +72,11 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         }
 
         if (view is ViewFileRef) {
-            view.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
+            try {
+                view.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
 
         fun double(prop: KMutableProperty0<Double>, defaultValue: Double) {

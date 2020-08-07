@@ -91,7 +91,7 @@ fun UiContainer.uiEditableValue(
     props: Pair<KMutableProperty0<Double>, KMutableProperty0<Double>>,
     min: Double = -1.0,
     max: Double = +1.0,
-    clamp: Boolean = true,
+    clamp: Boolean = false,
     clampMin: Boolean = clamp,
     clampMax: Boolean = clamp,
     decimalPlaces: Int = 2,

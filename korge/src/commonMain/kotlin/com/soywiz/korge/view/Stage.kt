@@ -52,7 +52,7 @@ class Stage(override val views: Views) : Container()
 
     override fun UiContainer.buildDebugComponent(views: Views) {
         uiCollapsableSection("Stage") {
-            uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize").findObservableProperties().fastForEach {
+            uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize", min = 0.0, max = 2000.0).findObservableProperties().fastForEach {
                 it.onChange {
                     views.resized()
                 }

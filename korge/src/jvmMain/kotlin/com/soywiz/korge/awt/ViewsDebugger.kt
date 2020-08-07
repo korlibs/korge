@@ -129,7 +129,7 @@ class ViewsDebuggerComponent constructor(
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
                                         it.globalX = views.virtualWidth * 0.5
-                                        it.globalY = views.virtualWidth * 0.5
+                                        it.globalY = views.virtualHeight * 0.5
                                     })
                                 }
                             })
