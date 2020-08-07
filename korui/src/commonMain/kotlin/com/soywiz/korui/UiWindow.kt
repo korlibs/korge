@@ -9,5 +9,4 @@ open class UiWindow(app: UiApplication, val window: NativeUiFactory.NativeWindow
     var title by redirect(window::title)
     var menu by redirect(window::menu)
     val pixelFactory by redirect(window::pixelFactor)
-    fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = window.onResize(handler)
 }

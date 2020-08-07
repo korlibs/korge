@@ -8,5 +8,5 @@ open class UiButton(app: UiApplication, val button: NativeUiFactory.NativeButton
     var text by redirect(button::text)
 }
 
-inline fun UiContainer.button(text: String = "Button", block: UiButton.() -> Unit): UiButton =
+inline fun UiContainer.button(text: String = "Button", block: UiButton.() -> Unit = {}): UiButton =
     UiButton(app).also { it.text = text }.also { it.parent = this }.also(block)

@@ -229,7 +229,17 @@ abstract class View internal constructor(
         }
 
     /** Local skewing in the X axis of this view */
-    var skewX: Double
+    var skewX: Angle
+        get() = skewXRadians.radians
+        set(v) { skewXRadians = v.radians }
+
+    /** Local skewing in the Y axis of this view */
+    var skewY: Angle
+        get() = skewYRadians.radians
+        set(v) { skewYRadians = v.radians }
+
+    /** Local skewing in the X axis of this view */
+    var skewXRadians: Double
         get() = ensureTransform()._skewX
         set(v) {
             ensureTransform(); if (_skewX != v) {
@@ -238,13 +248,23 @@ abstract class View internal constructor(
         }
 
     /** Local skewing in the Y axis of this view */
-    var skewY: Double
+    var skewYRadians: Double
         get() = ensureTransform()._skewY
         set(v) {
             ensureTransform(); if (_skewY != v) {
                 _skewY = v; invalidateMatrix()
             }
         }
+
+    /** Local skewing in the X axis of this view */
+    var skewXDegrees: Double
+        get() = skewX.degrees
+        set(v) { skewX = v.degrees }
+
+    /** Local skewing in the Y axis of this view */
+    var skewYDegrees: Double
+        get() = skewY.degrees
+        set(v) { skewY = v.degrees }
 
     /** Local rotation of this view */
     var rotation: Angle
@@ -659,7 +679,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
+                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewXRadians, skewYRadians)
             }
             return _localMatrix
         }
@@ -940,7 +960,7 @@ abstract class View internal constructor(
         var out = this::class.portableSimpleName
         if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
         if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
-        if (skewX != 0.0 || skewY != 0.0) out += ":skew=(${skewX.str},${skewY.str})"
+        if (skewXRadians != 0.0 || skewYRadians != 0.0) out += ":skew=(${skewXRadians.str},${skewYRadians.str})"
         if (rotationRadians != 0.0) out += ":rotation=(${rotationDegrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
@@ -1865,7 +1885,7 @@ fun <T : View> T.rotation(rot: Angle): T {
 }
 
 /** Chainable method returning this that sets [View.skewX] and [View.skewY] */
-fun <T : View> T.skew(sx: Double, sy: Double): T {
+fun <T : View> T.skew(sx: Angle, sy: Angle): T {
     this.skewX = sx
     this.skewY = sy
     return this
@@ -1885,7 +1905,7 @@ fun <T : View> T.alpha(alpha: Double): T {
 }
 
 @Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.skew(sx: Number, sy: Number): T = skew(sx.toDouble(), sy.toDouble())
+inline fun <T : View> T.skewRadians(sx: Number, sy: Number): T = skew(sx.radians, sy.radians)
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number")

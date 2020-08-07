@@ -9,9 +9,11 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.native.util.*
 import java.awt.*
+import java.awt.Point
 import java.awt.Rectangle
 import java.awt.event.*
 import java.awt.event.MouseEvent
+import java.awt.image.*
 import javax.swing.*
 
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
@@ -87,6 +89,10 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         }
     }
 
+    companion object {
+        val blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), Point(0, 0), "blank cursor");
+    }
+
     override fun onMouseEvent(handler: (com.soywiz.korev.MouseEvent) -> Unit): Disposable {
         val event = com.soywiz.korev.MouseEvent()
 
@@ -95,16 +101,22 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         var lockingDeltaX = 0
         var lockingDeltaY = 0
         var locking = false
+        var lastAwtComponent: Component? = null
+        var lockAwtComponent: Component? = null
+        var lastAwtCursor: Cursor? = null
 
         fun dispatch(e: MouseEvent, type: com.soywiz.korev.MouseEvent.Type) {
+            event.component = e.component
             event.type = type
             event.button = MouseButton[e.button]
             event.isShiftDown = e.isShiftDown
             event.isCtrlDown = e.isControlDown
             event.isAltDown = e.isAltDown
             event.isMetaDown = e.isMetaDown
-            if (event.typeUp) {
+            if (event.typeUp && locking) {
                 locking = false
+                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+                component.cursor = lastAwtCursor
             }
             if (locking) {
                 val dx = e.xOnScreen - e.x
@@ -122,6 +134,11 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         }
 
         event.requestLock = {
+            val component = (event.component as? Component?)
+            if (component != null) {
+                lastAwtCursor = component.cursor
+                component.cursor = blankCursor
+            }
             locking = true
             lockingX = MouseInfo.getPointerInfo().location.x
             lockingY = MouseInfo.getPointerInfo().location.y
@@ -145,6 +162,20 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         return Disposable {
             component.removeMouseMotionListener(listener)
             component.removeMouseListener(listener)
+        }
+    }
+
+    open val componentPane get() = component
+
+    override fun onResize(handler: (ReshapeEvent) -> Unit): Disposable {
+        val listener = object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent) {
+                handler(ReshapeEvent(component.x, component.y, componentPane.width, componentPane.height))
+            }
+        }
+        component.addComponentListener(listener)
+        return Disposable {
+            component.removeComponentListener(listener)
         }
     }
 

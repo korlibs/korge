@@ -1,4 +1,4 @@
-package com.soywiz.korui.edit
+package com.soywiz.korge.debug
 
 import com.soywiz.korui.*
 

@@ -14,7 +14,10 @@ sealed class EditableNode {
     open fun synchronizeProperties() {
         allBaseEditableProperty.fastForEach {
             if (it !== this@EditableNode) {
-                it.synchronizeProperties()
+                try {
+                    it.synchronizeProperties()
+                } catch (e: Throwable) {
+                }
             }
         }
     }

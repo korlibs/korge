@@ -9,12 +9,16 @@ var DEFAULT_AWT_UI_FACTORY: NativeUiFactory = AwtUiFactory()
 
 class AwtUiFactory : BaseAwtUiFactory() {
     init {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+        //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
     }
 }
 
 open class BaseAwtUiFactory : NativeUiFactory {
     override fun wrapNative(native: Any?) = AwtComponent(this, native as Component)
+    override fun wrapNativeContainer(native: Any?): NativeUiFactory.NativeContainer {
+        val container = native as Container
+        return AwtContainer(this, container)
+    }
     override fun createWindow() = AwtWindow(this)
     override fun createContainer() = AwtContainer(this)
     override fun createToolbar() = AwtToolbar(this)

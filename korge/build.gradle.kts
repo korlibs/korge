@@ -4,8 +4,9 @@ dependencies {
 	add("commonMainApi", project(":korau"))
 	add("commonMainApi", project(":klogger"))
 	add("commonMainApi", project(":korinject"))
+    commonMainApi(project(":korte"))
 	add("jvmMainApi", project(":krypto"))
-    add("jvmMainApi", project(":korte"))
+    //add("jvmMainApi", project(":korte"))
 }
 
 /*

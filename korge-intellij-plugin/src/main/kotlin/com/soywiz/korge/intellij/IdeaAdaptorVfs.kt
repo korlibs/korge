@@ -37,9 +37,10 @@ fun VirtualFile.toTextualVfs(): VfsFile {
             val byteArray = content.readAll()
             runWriteActionNoWait {
                 try {
-                    ref.document?.setText(byteArray.toString(Charsets.UTF_8))
+                    //ref.document?.setText(byteArray.toString(Charsets.UTF_8))
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    System.err.println("VirtualFile.toTextualVfs: ${e.message}")
+                    //e.printStackTrace()
                 }
             }
             return byteArray.size.toLong()

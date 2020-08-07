@@ -1,12 +1,10 @@
-package com.soywiz.korio
+package com.soywiz.korge.debug
 
-import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
-import com.soywiz.korui.edit.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.layout.Size
 import com.soywiz.korui.native.*
@@ -110,7 +108,7 @@ object KoruiSample1 {
                         }
                     }
                     props = vertical {
-                        addChild(RowUiEditableValue(app, "position", TwoItemUiEditableValue(app, NumberUiEditableValue(app, 0.0, -1000.0, +1000.0), NumberUiEditableValue(app, 0.0, -1000.0, +1000.0))))
+                        addChild(RowUiEditableValue(app, "position", TwoItemUiEditableValue(app, NumberUiEditableValue(app, 0.0, -1000.0, +1000.0, decimalPlaces = 0), NumberUiEditableValue(app, 0.0, -1000.0, +1000.0))))
                         addChild(RowUiEditableValue(app, "ratio", NumberUiEditableValue(app, 0.0, min = 0.0, max = 1.0, clampMin = true, clampMax = true)))
                         addChild(RowUiEditableValue(app, "y", ListUiEditableValue(app, listOf("hello", "world"), "world")))
                     }

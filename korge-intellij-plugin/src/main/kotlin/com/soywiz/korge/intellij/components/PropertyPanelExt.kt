@@ -10,17 +10,20 @@ import com.soywiz.kds.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.intellij.korui.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korui.native.*
 import java.awt.*
 import java.util.*
 import javax.swing.*
 
 fun initializeIdeaComponentFactory() {
     myComponentFactory = IdeaMyComponentFactory
+    DEFAULT_AWT_UI_FACTORY = IdeaNativeUiFactory()
 }
 
 object IdeaMyComponentFactory : MyComponentFactory() {

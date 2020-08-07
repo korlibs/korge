@@ -16,6 +16,8 @@ open class AwtWindow(factory: BaseAwtUiFactory, val frame: JFrame = JFrame()) : 
         frame.setLocationRelativeTo(null)
     }
 
+    override val componentPane get() = frame.contentPane
+
     override var bounds: RectangleInt
         get() {
             val b = frame.contentPane.bounds
@@ -49,16 +51,4 @@ open class AwtWindow(factory: BaseAwtUiFactory, val frame: JFrame = JFrame()) : 
         set(value) {
             frame.contentPane.isFocusable = value
         }
-
-    override fun onResize(handler: (ReshapeEvent) -> Unit): Disposable {
-        val listener = object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent) {
-                handler(ReshapeEvent(frame.x, frame.y, frame.contentPane.width, frame.contentPane.height))
-            }
-        }
-        frame.addComponentListener(listener)
-        return Disposable {
-            frame.removeComponentListener(listener)
-        }
-    }
 }

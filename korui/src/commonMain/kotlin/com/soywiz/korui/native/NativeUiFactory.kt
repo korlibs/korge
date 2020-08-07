@@ -17,6 +17,7 @@ open class DummyBase : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
 
 interface NativeUiFactory {
     fun wrapNative(native: Any?): NativeComponent = object : DummyBase(), NativeComponent {}
+    fun wrapNativeContainer(native: Any?): NativeContainer = object : DummyBase(), NativeContainer {}
     fun createWindow(): NativeWindow = object : DummyBase(), NativeWindow {}
     fun createContainer(): NativeContainer = object : DummyBase(), NativeContainer {}
     fun createToolbar(): NativeToolbar = object : DummyBase(), NativeToolbar {}
@@ -85,8 +86,10 @@ interface NativeUiFactory {
         var enabled: Boolean
             get() = true
             set(value) = Unit
+
         fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable = Disposable { }
         fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
+        fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
 
         fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 
@@ -146,7 +149,6 @@ interface NativeUiFactory {
         var title: String
             get() = ""
             set(value) = Unit
-        fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
         var menu: UiMenu?
             get() = null
             set(value) = Unit

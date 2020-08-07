@@ -11,6 +11,9 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
+import com.soywiz.korui.native.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -97,8 +100,8 @@ class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout
             add(view::scaleY.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::scaleX.toEditableProperty(0.01, 2.0, supportOutOfRange = true))
             add(view::rotationDegrees.toEditableProperty(-360.0, 360.0, supportOutOfRange = false))
-            add(view::skewX.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
-            add(view::skewY.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
+            add(view::skewXDegrees.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
+            add(view::skewYDegrees.toEditableProperty(0.0, 2.0, supportOutOfRange = true))
         })
         val nodeTree = EditableNodeList(nodes)
         this.nodeTree = nodeTree
@@ -131,9 +134,11 @@ class ViewsDebuggerComponent(
     val views: Views,
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext
-) : JPanel(GridLayout(2, 1)) {
+) : JPanel(GridLayout(3, 1)) {
+    val app = UiApplication(DEFAULT_AWT_UI_FACTORY)
     val actions = ViewsDebuggerActions(views, this)
     val properties = EditPropertiesComponent(rootView, views).also { add(it) }
+    val uiProperties = EditPropertiesUiComponent(app, rootView, views)
 
     init {
         views.debugHighlighters.add { view ->
@@ -158,7 +163,9 @@ class ViewsDebuggerComponent(
 
     private fun selectView(view: View?) {
         properties.setView(view, coroutineContext)
+        uiProperties.setView(view, coroutineContext)
         views.renderContext.debugAnnotateView = view
+        (demo.toAwt()?.uiComponent as? UiContainer?)?.relayout()
     }
 
     val tree: JTree = JTree(ViewNode(rootView)).apply {
@@ -257,6 +264,15 @@ class ViewsDebuggerComponent(
     }
     val selectedView: View? get() = actions.selectedView
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
+    val demo = JPanel().also {
+        val panel = app.wrapContainer(it)
+        panel.layout = VerticalUiLayout
+        //panel.button("Hello")
+        panel.addChild(uiProperties)
+        //it.add(JButton())
+        add(it)
+        panel.relayout()
+    }
 
     //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
     //fun setRootView(root: View) {
@@ -270,5 +286,6 @@ class ViewsDebuggerComponent(
     fun update() {
         tree.updateUI()
         properties.update()
+        uiProperties.update()
     }
 }

@@ -24,6 +24,8 @@ data class MouseEvent(
     var isMetaDown: Boolean = false,
     var scaleCoords: Boolean = true
 ) : Event() {
+    var component: Any? = null
+
 	enum class Type { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
 
     val typeMove get() = type == Type.MOVE

@@ -3,11 +3,17 @@ package com.soywiz.korui
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.native.*
 
+var NativeUiFactory.NativeComponent.uiComponent by Extra.PropertyThis<NativeUiFactory.NativeComponent, UiComponent?> { null }
+
 open class UiComponent(val app: UiApplication, val component: NativeUiFactory.NativeComponent) : Extra by Extra.Mixin() {
+    init {
+        component.uiComponent = this
+    }
     val factory get() = app.factory
     var _parent: UiContainer? = null
         internal set
@@ -53,10 +59,10 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun show() = run { visible = true }
     fun hide() = run { visible = false }
     fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
+    fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = component.onResize(handler)
 
-    open fun updateUI() {
-        component.updateUI()
-    }
+    fun repaintAll() = component.repaintAll()
+    open fun updateUI() = component.updateUI()
 }
 
 

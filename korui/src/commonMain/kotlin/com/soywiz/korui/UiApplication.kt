@@ -13,4 +13,10 @@ class UiApplication(val factory: NativeUiFactory = DEFAULT_UI_FACTORY) {
         .also { window -> window.onResize { window.layout?.relayout(window) } }
         .also { it.relayout() }
 
+    fun wrapContainer(native: Any?): UiContainer = UiContainer(this, factory.wrapNativeContainer(native)).also { container ->
+        container.onResize {
+            //println("wrapContainer.container.onResize: ${container.bounds}")
+            container.relayout()
+        }
+    }
 }
