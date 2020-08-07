@@ -3,7 +3,6 @@ package com.soywiz.korge.awt
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -16,11 +15,24 @@ import com.soywiz.korma.geom.*
 
 enum class AnchorKind { SCALING, ROTATING }
 
-data class AnchorPointResult(
+class AnchorPointResult(
+    val view: View,
     val anchor: Anchor,
     val angle: Angle,
     val kind: AnchorKind
 ) {
+    val viewInitialMatrix = view.localMatrix.copy()
+    val viewInitialMatrixInv = view.localMatrix.inverted()
+    val viewInitialGlobalMatrix = view.globalMatrix.copy()
+    val viewInitialGlobalMatrixInv = view.globalMatrixInv.copy()
+    val localPos = Point(view.x, view.y)
+    val localBounds = view.getLocalBounds().copy()
+    val localAnchorXY = localBounds.getAnchoredPosition(anchor)
+    val globalAnchorXY = view.localToGlobal(localAnchorXY)
+
+    fun globalToLocal(p: Point) = viewInitialGlobalMatrixInv.transform(p)
+    fun localToGlobal(p: Point) = viewInitialGlobalMatrix.transform(p)
+
     companion object {
         val ANCHOR_POINT_TO_ANGLE = mapOf(
             Anchor.MIDDLE_RIGHT to ((45).degrees * 0),
@@ -56,7 +68,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
 
             for ((currentAnchor, currentAngle) in AnchorPointResult.ANCHOR_POINT_TO_ANGLE) {
                 if (cursorDistanceToPoint(view.globalLocalBoundsPointRatio(currentAnchor)) < distance) {
-                    val inside = view.getLocalBounds().contains(view.globalToLocal(stage.mouseXY))
+                    val inside = view.getLocalBoundsOptimized().contains(view.globalToLocal(stage.mouseXY))
                     if (kind == AnchorKind.ROTATING && inside) continue
 
                     anchor = currentAnchor
@@ -65,7 +77,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                 }
             }
 
-            return if (anchor == null || angle == null) null else AnchorPointResult(anchor, angle, kind)
+            return if (anchor == null || angle == null) null else AnchorPointResult(view, anchor, angle, kind)
         }
 
         // Dirty hack
@@ -173,12 +185,64 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                     if (anchor != null) {
                         when (anchor.kind) {
                             AnchorKind.SCALING -> {
+                                val newGlobalAnchorXY = anchor.globalAnchorXY + Point(dx, dy)
+                                val newLocalAnchorXY = anchor.globalToLocal(newGlobalAnchorXY)
+                                val oldLocalBounds = anchor.localBounds
+                                val newLocalBounds = oldLocalBounds.clone()
+
+                                when (anchor.anchor.sx) {
+                                    0.0 -> {
+                                        newLocalBounds.left = newLocalAnchorXY.x
+                                        newLocalBounds.right = oldLocalBounds.right
+                                    }
+                                    0.5 -> Unit
+                                    1.0 -> {
+                                        newLocalBounds.left = oldLocalBounds.left
+                                        newLocalBounds.right = newLocalAnchorXY.x
+                                    }
+                                }
+                                when (anchor.anchor.sy) {
+                                    0.0 -> {
+                                        newLocalBounds.top = newLocalAnchorXY.y
+                                        newLocalBounds.bottom = oldLocalBounds.bottom
+                                    }
+                                    0.5 -> Unit
+                                    1.0 -> {
+                                        newLocalBounds.top = oldLocalBounds.top
+                                        newLocalBounds.bottom = newLocalAnchorXY.y
+                                    }
+                                }
+
+                                //if (gridSnapping) {
+                                //    newLocalBounds.width = newLocalBounds.width.nearestAlignedTo(gridWidth)
+                                //    newLocalBounds.height = newLocalBounds.height.nearestAlignedTo(gridHeight)
+                                //}
+
+                                //println("localAnchorXY=${anchor.localAnchorXY}, newLocalAnchorXY=$newLocalAnchorXY, newLocalBounds=$newLocalBounds, oldLocalBounds=${anchor.localBounds}")
+                                //println("anchor=$anchor, newLocalBounds[${System.identityHashCode(newLocalBounds)}]=$newLocalBounds  -- oldLocalBounds[${System.identityHashCode(oldLocalBounds)}]=$oldLocalBounds")
+                                //val pos = anchor.localPos + anchor.viewInitialMatrix.transform(newLocalBounds.topLeft)
+                                //val delta = anchor.viewInitialMatrix.transform(anchor.localPos - newLocalBounds.topLeft)
+
+                                view.width = newLocalBounds.width
+                                view.height = newLocalBounds.height
+                                val globalPos = anchor.localToGlobal(newLocalBounds.topLeft + Point(view.anchorDispX, view.anchorDispY))
+
+                                view.globalX = globalPos.x
+                                view.globalY = globalPos.y
+
+                                //if (gridSnapping) {
+                                //    view.globalX = view.globalX.nearestAlignedTo(gridWidth)
+                                //    view.globalY = view.globalY.nearestAlignedTo(gridHeight)
+                                //}
+
+                                /*
+                                if (gridSnapping) {
+                                    view.globalX = view.globalX
+                                    view.globalY = view.globalY
+                                }
                                 view.scaledWidth = (selectedViewSize.width + dx)
                                 view.scaledHeight = (selectedViewSize.height + dy)
-                                if (gridSnapping) {
-                                    view.scaledWidth = view.scaledWidth.nearestAlignedTo(gridWidth)
-                                    view.scaledHeight = view.scaledHeight.nearestAlignedTo(gridHeight)
-                                }
+                                */
                             }
                             AnchorKind.ROTATING -> {
                                 val initialAngle = Angle.between(startSelectedViewPos, startSelectedMousePos)

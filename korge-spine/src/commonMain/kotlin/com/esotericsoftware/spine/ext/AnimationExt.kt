@@ -14,7 +14,7 @@ fun Animation.getAnimationMaxBounds(skeletonData: SkeletonData, out: Rectangle =
         animation.apply(skeleton, time, time, false, null, 1f, Animation.MixBlend.replace, Animation.MixDirection.`in`)
         skeleton.updateWorldTransform()
         skeletonView.getLocalBoundsInternal()
-        bb.add(skeletonView.getLocalBounds(out))
+        bb.add(skeletonView.getLocalBoundsOptimized(out))
         time += 0.1f
     }
     return bb.getBounds()

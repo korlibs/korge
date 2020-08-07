@@ -1270,7 +1270,9 @@ abstract class View internal constructor(
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBounds(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
+    fun getLocalBounds(out: Rectangle = Rectangle()) = out.apply { getLocalBoundsInternal(out) }
+
+    fun getLocalBoundsOptimized(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
 
     fun getLocalBounds(doAnchoring: Boolean, out: Rectangle = _localBounds) = getLocalBounds(out).also {
         if (!doAnchoring) {
