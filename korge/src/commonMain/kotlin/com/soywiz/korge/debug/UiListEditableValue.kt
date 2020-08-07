@@ -22,16 +22,18 @@ class UiListEditableValue<T>(
 
     fun setValue(value: T, setProperty: Boolean = true) {
         contentText.text = value.toString()
-        if (contentComboBox.selectedItem != value) {
-            contentComboBox.selectedItem = value
-            if (setProperty) prop.value = value
-        }
+        contentComboBox.selectedItem = value
+        if (setProperty) prop.value = value
     }
 
     override fun hideEditor() {
+        val selectedItem = contentComboBox.selectedItem
+        //println("UiListEditableValue.hideEditor.selectedItem: $selectedItem")
+        if (selectedItem != null) {
+            setValue(selectedItem)
+        }
         contentText.visible = true
         contentComboBox.visible = false
-        setValue(contentComboBox.selectedItem ?: items.first())
     }
 
     override fun showEditor() {
