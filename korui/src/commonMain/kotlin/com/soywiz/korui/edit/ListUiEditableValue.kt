@@ -2,15 +2,23 @@ package com.soywiz.korui.edit
 
 import com.soywiz.korui.*
 
-class ListUiEditableValue<T>(app: UiApplication, items: List<T>) : UiEditableValue(app) {
+class ListUiEditableValue<T>(
+    app: UiApplication,
+    items: List<T>,
+    val initial: T
+) : UiEditableValue(app) {
     init {
         layout = UiFillLayout
         visible = true
     }
 
     var items = items
-    val contentText = UiLabel(app).also { it.text = "world" }.also { it.visible = true }
-    val contentComboBox = UiComboBox<T>(app).also { it.items = items }.also { it.visible = false }
+    val contentText = UiLabel(app)
+        .also { it.text = "" }
+        .also { it.visible = true }
+    val contentComboBox = UiComboBox<T>(app)
+        .also { it.items = items }
+        .also { it.visible = false }
 
     fun setValue(value: T?) {
         contentText.text = value.toString()
@@ -32,7 +40,7 @@ class ListUiEditableValue<T>(app: UiApplication, items: List<T>) : UiEditableVal
     }
 
     init {
-        setValue(items.first())
+        setValue(initial)
 
         contentText.onClick {
             showEditor()

@@ -11,7 +11,8 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
     dependencies {
         //classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
@@ -25,7 +26,9 @@ plugins {
 	java
 	//kotlin("multiplatform") version "1.4-M2"
 	//kotlin("multiplatform") version "1.4-M3"
-    kotlin("multiplatform") version "1.4.0-rc"
+    //kotlin("multiplatform") version "1.4.0-rc"
+    kotlin("multiplatform") version "1.4.0-rc-284"
+    //kotlin("multiplatform") version "1.4.0-rc-276"
     //kotlin("multiplatform")
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
