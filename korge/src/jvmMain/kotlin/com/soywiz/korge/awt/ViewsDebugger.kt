@@ -8,9 +8,7 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.native.*
@@ -23,7 +21,6 @@ import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
 import javax.swing.SwingUtilities
-import javax.swing.SwingUtilities.*
 
 val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
 
@@ -130,15 +127,15 @@ class EditPropertiesComponent(view: View?, val views: Views) : JPanel(GridLayout
     }
 }
 
-class ViewsDebuggerComponent(
+class ViewsDebuggerComponent constructor(
     val views: Views,
+    val app: UiApplication,
     rootView: View? = views.stage,
-    val coroutineContext: CoroutineContext = views.coroutineContext
+    val coroutineContext: CoroutineContext = views.coroutineContext,
 ) : JPanel(GridLayout(3, 1)) {
-    val app = UiApplication(DEFAULT_AWT_UI_FACTORY)
     val actions = ViewsDebuggerActions(views, this)
     val properties = EditPropertiesComponent(rootView, views).also { add(it) }
-    val uiProperties = EditPropertiesUiComponent(app, rootView, views)
+    val uiProperties = UiEditProperties(app, rootView, views)
 
     init {
         views.debugHighlighters.add { view ->

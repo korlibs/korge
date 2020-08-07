@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korev.FocusEvent
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -193,6 +194,14 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
         } catch (e: Throwable) {
             e.printStackTrace()
         }
+    }
+
+    override fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
+        return factory.awtOpenFileDialog(component, file, filter)
+    }
+
+    override fun openColorPickerDialog(color: RGBA): RGBA? {
+        return factory.awtOpenColorPickerDialog(component, color)
     }
 
     override fun repaintAll() {

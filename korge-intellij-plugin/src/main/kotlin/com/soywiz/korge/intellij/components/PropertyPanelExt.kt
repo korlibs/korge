@@ -23,7 +23,6 @@ import javax.swing.*
 
 fun initializeIdeaComponentFactory() {
     myComponentFactory = IdeaMyComponentFactory
-    DEFAULT_AWT_UI_FACTORY = IdeaNativeUiFactory()
 }
 
 object IdeaMyComponentFactory : MyComponentFactory() {

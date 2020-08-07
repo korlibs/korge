@@ -1,5 +1,7 @@
 package com.soywiz.korui.native
 
+import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 import java.awt.*
 import javax.swing.*
 
@@ -39,4 +41,11 @@ open class BaseAwtUiFactory : NativeUiFactory {
     open fun createJMenuItem() = JMenuItem()
     open fun createJMenu() = JMenu()
     open fun createJMenuBar(): JMenuBar = JMenuBar()
+    open fun awtOpenFileDialog(component: Component, file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
+        TODO()
+    }
+
+    open fun awtOpenColorPickerDialog(component: Component, color: RGBA): RGBA? {
+        TODO()
+    }
 }

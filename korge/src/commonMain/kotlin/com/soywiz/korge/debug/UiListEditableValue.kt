@@ -2,10 +2,10 @@ package com.soywiz.korge.debug
 
 import com.soywiz.korui.*
 
-class ListUiEditableValue<T>(
+class UiListEditableValue<T>(
     app: UiApplication,
     items: List<T>,
-    val initial: T
+    val prop: ObservableProperty<T>
 ) : UiEditableValue(app) {
     init {
         layout = UiFillLayout
@@ -20,17 +20,18 @@ class ListUiEditableValue<T>(
         .also { it.items = items }
         .also { it.visible = false }
 
-    fun setValue(value: T?) {
+    fun setValue(value: T, setProperty: Boolean = true) {
         contentText.text = value.toString()
         if (contentComboBox.selectedItem != value) {
             contentComboBox.selectedItem = value
+            if (setProperty) prop.value = value
         }
     }
 
     override fun hideEditor() {
         contentText.visible = true
         contentComboBox.visible = false
-        setValue(contentComboBox.selectedItem)
+        setValue(contentComboBox.selectedItem ?: items.first())
     }
 
     override fun showEditor() {
@@ -40,7 +41,7 @@ class ListUiEditableValue<T>(
     }
 
     init {
-        setValue(initial)
+        setValue(prop.value)
 
         contentText.onClick {
             showEditor()

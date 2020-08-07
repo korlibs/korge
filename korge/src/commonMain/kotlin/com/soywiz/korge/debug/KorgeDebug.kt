@@ -5,5 +5,5 @@ import com.soywiz.korui.*
 
 interface KorgeDebugNode {
     fun getDebugProperties(views: Views): EditableNode?
-    fun getDebugComponent(views: Views): UiComponent? = null
+    fun buildDebugComponent(views: Views, component: UiContainer) = Unit
 }

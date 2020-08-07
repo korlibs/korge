@@ -3,7 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class RowUiEditableValue(app: UiApplication, val labelText: String, val editor: UiEditableValue) : UiContainer(app) {
+class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: UiEditableValue) : UiContainer(app) {
     init {
         //this.bounds = RectangleInt(0, 0, 240, 32)
         layout = HorizontalUiLayout

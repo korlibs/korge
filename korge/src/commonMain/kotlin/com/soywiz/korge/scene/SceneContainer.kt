@@ -2,12 +2,14 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.async
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 
@@ -32,7 +34,7 @@ class SceneContainer(
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer"
-) : Container(), CoroutineScope by views {
+) : Container(), CoroutineScope by views, KorgeDebugNode {
     init {
         this.name = name
     }
@@ -212,5 +214,13 @@ class SceneContainer(
     private fun setCurrent(entry: VisitEntry) {
         while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
         visitStack[visitPos] = entry
+    }
+
+    override fun getDebugProperties(views: Views): EditableNode? {
+        return currentScene?.getDebugProperties(views)
+    }
+
+    override fun buildDebugComponent(views: Views, component: UiContainer) {
+        currentScene?.buildDebugComponent(views, component)
     }
 }

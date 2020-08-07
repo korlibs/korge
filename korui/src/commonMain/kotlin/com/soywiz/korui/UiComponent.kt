@@ -3,6 +3,7 @@ package com.soywiz.korui
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -55,6 +56,8 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun onMouseEvent(block: (MouseEvent) -> Unit) = component.onMouseEvent(block)
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
     fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
+    fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean) = component.openFileDialog(file, filter)
+    fun openColorPickerDialog(color: RGBA): RGBA? = component.openColorPickerDialog(color)
     fun focus(focus: Boolean = true) = component.focus(focus)
     fun show() = run { visible = true }
     fun hide() = run { visible = false }

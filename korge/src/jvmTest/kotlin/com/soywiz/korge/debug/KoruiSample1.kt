@@ -108,9 +108,9 @@ object KoruiSample1 {
                         }
                     }
                     props = vertical {
-                        addChild(RowUiEditableValue(app, "position", TwoItemUiEditableValue(app, NumberUiEditableValue(app, 0.0, -1000.0, +1000.0, decimalPlaces = 0), NumberUiEditableValue(app, 0.0, -1000.0, +1000.0))))
-                        addChild(RowUiEditableValue(app, "ratio", NumberUiEditableValue(app, 0.0, min = 0.0, max = 1.0, clampMin = true, clampMax = true)))
-                        addChild(RowUiEditableValue(app, "y", ListUiEditableValue(app, listOf("hello", "world"), "world")))
+                        addChild(UiRowEditableValue(app, "position", UiTwoItemEditableValue(app, UiNumberEditableValue(app, 0.0, -1000.0, +1000.0, decimalPlaces = 0), UiNumberEditableValue(app, 0.0, -1000.0, +1000.0))))
+                        addChild(UiRowEditableValue(app, "ratio", UiNumberEditableValue(app, 0.0, min = 0.0, max = 1.0, clampMin = true, clampMax = true)))
+                        addChild(UiRowEditableValue(app, "y", UiListEditableValue(app, listOf("hello", "world"), "world")))
                     }
                     tree {
                         minimumSize = Size(32.pt, 128.pt)

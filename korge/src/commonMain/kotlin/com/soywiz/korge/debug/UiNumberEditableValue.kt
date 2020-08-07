@@ -10,7 +10,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.withSign
 import kotlin.reflect.*
 
-class NumberUiEditableValue(
+class UiNumberEditableValue(
     app: UiApplication,
     override val prop: ObservableProperty<Double>,
     var min: Double = -1.0,
@@ -112,38 +112,4 @@ class NumberUiEditableValue(
         addChild(contentText)
         addChild(contentTextField)
     }
-}
-
-fun KMutableProperty0<Double>.toEditableValue(
-    app: UiApplication,
-    name: String? = null,
-    min: Double = -1.0,
-    max: Double = +1.0,
-    clamp: Boolean = true,
-    clampMin: Boolean = clamp,
-    clampMax: Boolean = clamp,
-    decimalPlaces: Int = 2
-): RowUiEditableValue {
-    val prop = this
-    val obs = ObservableProperty(name ?: this.name, internalSet = { prop.set(it) }, internalGet = {prop.get() })
-    val number = NumberUiEditableValue(app, obs, min, max, clampMin, clampMax, decimalPlaces)
-    return RowUiEditableValue(app, name ?: this.name, number)
-}
-
-fun Pair<KMutableProperty0<Double>, KMutableProperty0<Double>>.toEditableValue(
-    app: UiApplication,
-    name: String,
-    min: Double = -1.0,
-    max: Double = +1.0,
-    clamp: Boolean = true,
-    clampMin: Boolean = clamp,
-    clampMax: Boolean = clamp,
-    decimalPlaces: Int = 2
-): RowUiEditableValue {
-    val prop = this
-    val obs1 = ObservableProperty(prop.first.name, internalSet = { prop.first.set(it) }, internalGet = { prop.first.get() })
-    val obs2 = ObservableProperty(prop.second.name, internalSet = { prop.second.set(it) }, internalGet = { prop.second.get() })
-    val number1 = NumberUiEditableValue(app, obs1, min, max, clampMin, clampMax, decimalPlaces)
-    val number2 = NumberUiEditableValue(app, obs2, min, max, clampMin, clampMax, decimalPlaces)
-    return RowUiEditableValue(app, name, TwoItemUiEditableValue(app, number1, number2))
 }

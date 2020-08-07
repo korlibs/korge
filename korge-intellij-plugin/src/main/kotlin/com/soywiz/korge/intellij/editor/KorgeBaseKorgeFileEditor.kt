@@ -15,6 +15,7 @@ import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.ext.swf.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.components.*
+import com.soywiz.korge.intellij.korui.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
@@ -64,6 +65,7 @@ open class KorgeBaseKorgeFileEditor(
         panel.add(canvas)
         //println("[A] ${Thread.currentThread()}")
         val fileToEdit = KorgeFileToEdit(virtualFile)
+        val app = IdeaUiApplication(project)
         Thread {
             runBlocking {
                 gameWindow = GLCanvasGameWindowIJ(canvas)
@@ -84,7 +86,7 @@ open class KorgeBaseKorgeFileEditor(
                     views.registerDragonBones()
                     views.registerSpine()
                     views.ideaProject = project
-                    viewsDebuggerComponent = ViewsDebuggerComponent(views).also {
+                    viewsDebuggerComponent = ViewsDebuggerComponent(views, app).also {
                         it.styled.fill()
                     }
                     views.ideaComponent = viewsDebuggerComponent

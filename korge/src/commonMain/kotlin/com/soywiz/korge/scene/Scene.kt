@@ -2,6 +2,7 @@ package com.soywiz.korge.scene
 
 import com.soywiz.klock.*
 import com.soywiz.korag.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.util.*
@@ -9,6 +10,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -27,7 +29,7 @@ import kotlin.coroutines.*
  * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
  * - ## New scene is returned
  */
-abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
+abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode {
     /** A child [AsyncInjector] for this instance. Set by the [init] method. */
 	lateinit var injector: AsyncInjector
     /** The [Views] singleton of the application. Set by the [init] method. */
@@ -122,6 +124,13 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope {
         } catch (e: Throwable) {
             e.printStackTrace()
         }
+    }
+
+    override fun getDebugProperties(views: Views): EditableNode? {
+        return null
+    }
+
+    override fun buildDebugComponent(views: Views, component: UiContainer) {
     }
 }
 

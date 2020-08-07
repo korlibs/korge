@@ -4,10 +4,9 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 inline fun Container.image(
 	texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
@@ -89,5 +88,13 @@ class Image(
             kind = EditableStringProperty.Kind.FILE { it.extensionLC == "png" || it.extensionLC == "jpg" },
             views = views
         ))
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer): Unit = container.run {
+        uiCollapsableSection("Image") {
+            uiEditableValue(this@Image::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "png" || it.extensionLC == "jpg"
+            })
+        }
     }
 }

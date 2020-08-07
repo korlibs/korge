@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -91,11 +92,20 @@ interface NativeUiFactory {
         fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
         fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
 
-        fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
 
         fun repaintAll() = Unit
         fun focus(focus: Boolean) = Unit
         fun updateUI() = Unit
+
+        fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
+        fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
+            TODO()
+            return null
+        }
+
+        fun openColorPickerDialog(color: RGBA): RGBA? {
+            return color
+        }
     }
 
     interface NativeContainer : NativeComponent {
