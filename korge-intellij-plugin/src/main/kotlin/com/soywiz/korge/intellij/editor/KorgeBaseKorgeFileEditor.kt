@@ -2,10 +2,17 @@ package com.soywiz.korge.intellij.editor
 
 import com.esotericsoftware.spine.korge.*
 import com.intellij.codeHighlighting.*
+import com.intellij.openapi.command.*
+import com.intellij.openapi.command.undo.*
+import com.intellij.openapi.editor.*
+import com.intellij.openapi.editor.event.DocumentAdapter
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
+import com.intellij.ui.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
@@ -28,17 +35,68 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.Container
+import java.awt.event.*
 import java.beans.*
 import javax.swing.*
+import javax.swing.event.*
 import kotlin.coroutines.*
 
-data class KorgeFileToEdit(val originalFile: VirtualFile) {
-    val file: VfsFile = originalFile.toTextualVfs()
+data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) : BaseKorgeFileToEdit(originalFile.toTextualVfs()) {
+    val ref = DocumentReferenceManager.getInstance().create(originalFile)
+    val doc = ref.document ?: error("Can't get document")
+    var lastSavedText = ""
+
+    init {
+        doc.addDocumentListener(object : DocumentListener {
+            override fun documentChanged(event: DocumentEvent) {
+                val newText = event.document.text
+                if (newText != lastSavedText) {
+                    lastSavedText = newText
+                    println("documentChanged")
+                    onChanged(newText)
+                } else {
+                    println("documentUnchanged")
+                }
+            }
+        })
+    }
+
+    var n = 0
+
+    override fun save(text: String, message: String) {
+        val oldText = doc.text
+        if (oldText != text) {
+            lastSavedText = text
+            clearWriteActionNoWait()
+            queueWriteActionNoWait {
+                val id = n++
+                CommandProcessor.getInstance().executeCommand(project, Runnable {
+                    /*
+                    val action = object : UndoableAction {
+                        override fun undo() {
+                            //doc.setText(oldText)
+                            //load(oldText)
+                        }
+                        override fun redo() {
+                            //doc.setText(text)
+                            //load(text)
+                        }
+                        override fun getAffectedDocuments() = arrayOf(ref)
+                        override fun isGlobal(): Boolean = false
+                    }
+                    UndoManager.getInstance(project).undoableActionPerformed(action)
+                    */
+
+                    doc.setText(text)
+                }, message, "korge$id", doc)
+            }
+        }
+    }
 }
 
 open class KorgeBaseKorgeFileEditor(
 	val project: Project,
-	val virtualFile: VirtualFile,
+	val fileToEdit: KorgeFileToEdit,
 	val module: Module,
 	val _name: String
 ) : com.intellij.diff.util.FileEditorBase(), com.intellij.openapi.project.DumbAware  {
@@ -64,11 +122,21 @@ open class KorgeBaseKorgeFileEditor(
         canvas.minimumSize = Dimension(64, 64)
         panel.add(canvas)
         //println("[A] ${Thread.currentThread()}")
-        val fileToEdit = KorgeFileToEdit(virtualFile)
         val app = IdeaUiApplication(project)
         Thread {
             runBlocking {
                 gameWindow = GLCanvasGameWindowIJ(canvas)
+                val listener = object : MouseAdapter() {
+                    override fun mouseReleased(e: MouseEvent) {
+                        executePendingWriteActions()
+                    }
+
+                    override fun mouseMoved(e: MouseEvent?) {
+                        executePendingWriteActions()
+                    }
+                }
+                canvas.addMouseListener(listener)
+                canvas.addMouseMotionListener(listener)
                 //val controlRgba = MetalLookAndFeel.getCurrentTheme().control.rgba()
                 val controlRgba = panel.background.rgba()
                 Korge(
@@ -115,7 +183,21 @@ open class KorgeBaseKorgeFileEditor(
         initializeIdeaComponentFactory()
         createRootStyled().apply {
             createViewsWithDebugger(panel, null, viewsDebuggerComponentHolder)
-        }.component
+        }.component.also { component ->
+            val listener = object : MouseAdapter() {
+                override fun mouseReleased(e: MouseEvent) {
+                    println("mouseReleased")
+                    executePendingWriteActions()
+                }
+
+                override fun mouseMoved(e: MouseEvent) {
+                    println("mouseMoved")
+                    executePendingWriteActions()
+                }
+            }
+            component.addMouseMotionListener(listener)
+            component.addMouseListener(listener)
+        }
 	}
 
     fun Styled<out Container>.createViewsWithDebugger(

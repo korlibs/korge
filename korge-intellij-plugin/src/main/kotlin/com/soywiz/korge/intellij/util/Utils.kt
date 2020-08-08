@@ -17,6 +17,7 @@
 
 package com.soywiz.korge.intellij.util
 
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.*
 import com.intellij.openapi.progress.*
 import com.intellij.openapi.project.*
@@ -26,6 +27,7 @@ import com.intellij.ui.*
 import com.intellij.ui.components.*
 import com.intellij.ui.components.labels.*
 import com.intellij.uiDesigner.core.*
+import org.gradle.cache.internal.*
 import java.awt.*
 import java.io.*
 import java.net.*
@@ -121,28 +123,51 @@ inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
     }
 }
 
-fun runWriteActionNoWait(runnable: () -> Unit) {
-    //return ApplicationManager.getApplication().runWriteAction(Computable { runnable() })
-    //TransactionGuard.getInstance().assertWriteSafeContext(ModalityState.NON_MODAL)
-    //WriteAction.computeAndWait()
-    //WriteAction.computeAndWait<T, Throwable> {
-    //return com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.defaultModalityState()) {
-    invokeLater {
-        invokeAndWaitIfNeeded(ModalityState.current()) {
-            runnable()
-        }
-    }
-    /*
-    WriteAction.compute<Unit> {
+object RunWriteActionNoWaitClass
+
+class MyWriteAction(val runnable: () -> Unit) : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
         runnable()
     }
-    return WriteAction.computeAndWait<T, Throwable> {
-        com.intellij.openapi.application.invokeAndWaitIfNeeded(ModalityState.current()) {
-            runnable()
-            //}
+}
+
+val queueWriteActions = arrayListOf<() -> Unit>()
+
+fun getPendingWriteActions(): List<() -> Unit> {
+    return synchronized(queueWriteActions) {
+        queueWriteActions.toList().also { queueWriteActions.clear() }
+    }
+}
+
+fun executePendingWriteActions() {
+    WriteAction.run<Throwable> {
+        val actions = getPendingWriteActions()
+        if (actions.isNotEmpty()) {
+            println("executePendingWriteActions: ${actions.size}")
+        }
+        for (action in actions) {
+            action()
         }
     }
-     */
+}
+
+fun clearWriteActionNoWait() {
+    synchronized(queueWriteActions) {
+        queueWriteActions.clear()
+    }
+}
+
+fun queueWriteActionNoWait(runnable: () -> Unit) {
+    synchronized(queueWriteActions) {
+        queueWriteActions += runnable
+    }
+}
+
+//fun runWriteActionNoWait(component: Component, runnable: () -> Unit) {
+fun runWriteActionNoWait(runnable: () -> Unit) {
+    synchronized(queueWriteActions) {
+        queueWriteActions += runnable
+    }
 }
 
 val <T> JComboBox<T>.selected get() = selectedItem as T
@@ -181,7 +206,9 @@ inline fun invokeLater(crossinline func: () -> Unit) {
 	if (ApplicationManager.getApplication().isDispatchThread) {
 		func()
 	} else {
-		ApplicationManager.getApplication().invokeLater({ func() }, ModalityState.defaultModalityState())
+        println("KORGE WARNING: invokeLater not in AWT thread")
+		//ApplicationManager.getApplication().invokeLater({ func() }, ModalityState.stateForComponent(component))
+        ApplicationManager.getApplication().invokeLater({ func() }, ModalityState.defaultModalityState())
 	}
 }
 

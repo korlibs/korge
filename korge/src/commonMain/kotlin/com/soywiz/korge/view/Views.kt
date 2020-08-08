@@ -376,10 +376,25 @@ class Views constructor(
         debugHighlighters(viewToHightlight)
     }
 
-    val debugSavedHandlers = Signal<View?>()
+    data class SaveEvent(val action: String, val view: View?) {
+        override fun toString(): String = buildString {
+            append(action)
+            if (view != null) {
+                append(" ")
+                append(if (view.name != null) view.name else "#${view.index}")
+                append(" (${view::class.simpleName})")
+            }
+        }
+    }
 
-    fun debugSaveView(viewToHightlight: View?) {
-        debugSavedHandlers(viewToHightlight)
+    val debugSavedHandlers = Signal<SaveEvent>()
+
+    fun debugSaveView(e: SaveEvent) {
+        debugSavedHandlers(e)
+    }
+
+    fun debugSaveView(action: String, view: View?) {
+        debugSavedHandlers(SaveEvent(action, view))
     }
 }
 

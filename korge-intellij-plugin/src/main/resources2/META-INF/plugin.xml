@@ -163,6 +163,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <annotator language="kotlin" implementationClass="com.soywiz.korge.intellij.annotator.ColorAnnotator" />
 
+
         <!-- Add your extensions here -->
         <stepsBeforeRunProvider implementation="com.soywiz.korge.intellij.KorgeUpdateResourceBeforeRunProvider"/>
         <!--<iconProvider implementation="com.soywiz.korge.intellij.KorgeIconProvider" />-->
@@ -192,6 +193,7 @@
 
 
         <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.TmxParserDefinition" language="KORGE_TMX" />
+        <lang.parserDefinition implementationClass="com.soywiz.korge.intellij.filetype.KTreeParserDefinition" language="KORGE_KTREE" />
 
         <!-- Completions -->
         <completion.contributor language="XML" implementationClass="com.soywiz.korge.intellij.completion.PexCompletionContributor"/>

@@ -1,17 +1,27 @@
 package com.soywiz.korge.intellij.filetype
 
 import com.intellij.ide.highlighter.*
+import com.intellij.lang.*
 import com.intellij.lang.xml.*
 import com.intellij.openapi.fileTypes.*
 import com.soywiz.korge.intellij.*
 import javax.swing.*
+import com.intellij.lang.xml.XMLParserDefinition
+import com.intellij.lang.xml.XMLLanguage
+import com.intellij.lexer.*
+import com.intellij.openapi.project.*
+import com.intellij.psi.*
+import com.intellij.psi.xml.XmlFile
+import com.intellij.psi.impl.source.xml.XmlFileImpl
+import com.intellij.psi.tree.*
+
 
 open class XmlBaseType(
-	val _icon: Icon,
-	val _name: String,
-	val _extension: String,
-	val _description: String,
-	val lang: XMLLanguage
+    val _icon: Icon,
+    val _name: String,
+    val _extension: String,
+    val _description: String,
+    val lang: XMLLanguage
 ) : XmlLikeFileType(lang) {
 	override fun getIcon(): Icon? = _icon
 	override fun getName(): String = _name
@@ -34,7 +44,17 @@ open class PEXLanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANC
 		@JvmField val INSTANCE = PEXLanguage()
 	}
 }
+
+class KtreeFile internal constructor(viewProvider: FileViewProvider) : XmlFileImpl(viewProvider, KTREE_FILE_ELEMENT_TYPE), XmlFile {
+    override fun toString(): String = "KtreeFile:$name"
+
+    companion object {
+        val KTREE_FILE_ELEMENT_TYPE = IFileElementType("KORGE_KTREE_ELEMENT_TYPE", KTREELanguage.INSTANCE)
+    }
+}
+
 open class KTREELanguage protected constructor() : XMLLanguage(XMLLanguage.INSTANCE, "KORGE_KTREE", "text/ktree") {
+
     companion object {
         @JvmField val INSTANCE = KTREELanguage()
     }

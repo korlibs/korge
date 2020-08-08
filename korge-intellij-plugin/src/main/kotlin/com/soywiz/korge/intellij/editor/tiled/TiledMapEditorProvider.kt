@@ -36,14 +36,15 @@ class TiledMapEditorProvider : FileEditorProvider, DumbAware {
 		val ref = DocumentReferenceManager.getInstance().create(file)
 		val refs = arrayOf(ref)
 
-		val fileEditor = object : FileEditorBase(), DumbAware {
+		val fileEditor: FileEditorBase = object : FileEditorBase(), DumbAware {
+            val fileEditor: FileEditorBase = this
 			val panel = TiledMapEditorPanel(
 				tmxFile, history,
 				registerHistoryShortcuts = false,
 				projectCtx = ProjectContext(project, file),
 				onSaveXml = { xmlText ->
 				    ref.document?.let { doc ->
-                        runWriteActionNoWait {
+                        runWriteActionNoWait() {
 				    	//run {
 					    	println("DOCUMENT SET TEXT")
 						    doc.setText(xmlText)

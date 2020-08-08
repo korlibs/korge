@@ -10,6 +10,7 @@ import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 
@@ -47,10 +48,17 @@ class AnchorPointResult(
     }
 }
 
-suspend fun ktreeEditor(file: VfsFile): Module {
+abstract class BaseKorgeFileToEdit(val file: VfsFile) {
+    val onRequestSave = Signal<String>()
+    val onChanged = Signal<String>()
+    abstract fun save(text: String, message: String)
+}
+
+suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
+    val file = fileToEdit.file
     return myComponentFactory.createModule {
         views.name = "ktree"
-        var save = false
+        //var save = false
         val views = this.views
         val gameWindow = this.views.gameWindow
         val stage = views.stage
@@ -83,6 +91,23 @@ suspend fun ktreeEditor(file: VfsFile): Module {
         // Dirty hack
         views.stage.removeChildren()
 
+        fun load(text: String) {
+            launchImmediately(views.coroutineContext) {
+                val tree = Xml(text).ktreeToViewTree(views, file.parent) as Container
+                //println("${tree.numChildren} : " + text.split("\n").joinToString(" "))
+                stage.removeChildren()
+                stage.addChildren(tree.children.toList())
+            }
+        }
+
+        fun save(message: String) {
+            fileToEdit.save(stage.viewTreeToKTree(views).toOuterXmlIndentedString(), message)
+        }
+
+        fileToEdit.onChanged {
+            load(it)
+        }
+
         if (viewTree is Container) {
             viewTree.children.toList().fastForEach {
                 //println("ADDING: $it")
@@ -91,7 +116,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
         }
 
         views.debugSavedHandlers.add {
-            save = true
+            save(it.toString())
         }
         actions.selectView(stage)
 
@@ -129,6 +154,8 @@ suspend fun ktreeEditor(file: VfsFile): Module {
             }
         }
 
+        var action = ""
+
         stage.mouse {
             click {
                 val view = actions.selectedView
@@ -146,6 +173,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                 }
             }
             down {
+                action = ""
                 pressing = true
                 currentAnchor = getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)
                     ?: getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)
@@ -175,6 +203,10 @@ suspend fun ktreeEditor(file: VfsFile): Module {
             }
             up {
                 pressing = false
+                if (action != "") {
+                    views.debugSaveView(action, actions.selectedView)
+                }
+                //save = true
             }
             onMoveAnywhere { e ->
                 val view = actions.selectedView
@@ -185,6 +217,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                     if (anchor != null) {
                         when (anchor.kind) {
                             AnchorKind.SCALING -> {
+                                action = "scaled"
                                 //val dy = dx * (anchor.localBounds.height / anchor.localBounds.width)
                                 if (gridSnapping) {
                                     dx = dx.nearestAlignedTo(gridWidth)
@@ -263,6 +296,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                                 */
                             }
                             AnchorKind.ROTATING -> {
+                                action = "rotated"
                                 val initialAngle = Angle.between(startSelectedViewPos, startSelectedMousePos)
                                 val currentAngle = Angle.between(startSelectedViewPos, views.globalMouseXY)
                                 val deltaAngle = currentAngle - initialAngle
@@ -273,6 +307,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                             }
                         }
                     } else {
+                        action = "moved"
                         view.globalX = (startSelectedViewPos.x + dx)
                         view.globalY = (startSelectedViewPos.y + dy)
                         if (gridSnapping) {
@@ -280,7 +315,7 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                             view.globalY = view.globalY.nearestAlignedTo(gridHeight)
                         }
                     }
-                    save = true
+                    //save = true
                     //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                 }
             }
@@ -292,12 +327,10 @@ suspend fun ktreeEditor(file: VfsFile): Module {
                     ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
                         ?: GameWindow.Cursor.DEFAULT
 
-            if (save) {
-                save = false
-                launchImmediately {
-                    file.writeString(stage.viewTreeToKTree(views).toOuterXmlIndented().toString())
-                }
-            }
+            //if (save) {
+            //    save = false
+            //    fileToEdit.save(stage.viewTreeToKTree(views))
+            //}
         }
     }
 }

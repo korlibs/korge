@@ -75,18 +75,18 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         println("attachNewView.selectedView: $selectedView")
         (selectedView as Container?)?.addChild(newView)
         selectView(newView)
-        save(newView)
+        save("Create", newView)
     }
 
-    fun save(newView: View? = selectedView) {
-        views.stage.views.debugSaveView(newView)
+    fun save(action: String, newView: View? = selectedView) {
+        views.stage.views.debugSaveView(action, newView)
     }
 
     fun removeCurrentNode() {
         val parent = selectedView?.parent
         selectedView?.removeFromParent()
         selectView(parent)
-        save(parent)
+        save("Remove", parent)
     }
 
     fun sendToBack() {

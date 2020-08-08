@@ -82,7 +82,9 @@ data class Xml(
 			Type.COMMENT -> ""
 		}
 
-	fun toOuterXmlIndented(indenter: Indenter = Indenter()): Indenter = indenter.apply {
+    fun toOuterXmlIndentedString(indenter: Indenter = Indenter()): String = toOuterXmlIndented(indenter).toString()
+
+    fun toOuterXmlIndented(indenter: Indenter = Indenter()): Indenter = indenter.apply {
 		when (type) {
 			Type.NODE -> {
 				if (allChildren.isEmpty()) {

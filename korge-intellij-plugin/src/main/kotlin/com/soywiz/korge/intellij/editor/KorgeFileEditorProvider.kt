@@ -5,13 +5,16 @@ import com.soywiz.korge.awt.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.intellij.components.*
 import com.soywiz.korge.intellij.editor.formats.*
+import com.soywiz.korge.intellij.util.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korinject.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.*
@@ -60,8 +63,8 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
 		project: com.intellij.openapi.project.Project,
 		virtualFile: com.intellij.openapi.vfs.VirtualFile
 	): com.intellij.openapi.fileEditor.FileEditor {
-        val fileToEdit = KorgeFileToEdit(virtualFile)
-		return KorgeBaseKorgeFileEditor(project, virtualFile, createModule(fileToEdit), "Preview")
+        val fileToEdit = KorgeFileToEdit(virtualFile, project)
+		return KorgeBaseKorgeFileEditor(project, fileToEdit, createModule(fileToEdit), "Preview")
 	}
 
     open fun createModule(fileToEdit: KorgeFileToEdit): Module {
@@ -82,7 +85,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
                     "tmx" -> createModule(null) { tiledMapEditor(file) }
                     "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
                     "pex" -> particleEmiterEditor(file)
-                    "ktree" -> ktreeEditor(file)
+                    "ktree" -> ktreeEditor(fileToEdit)
                     "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
                     "swf", "ani" -> swfAnimationEditor(file)
                     else -> createModule(null) { }

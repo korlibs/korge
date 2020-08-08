@@ -21,7 +21,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     class Registration(
         val name: String,
         val deserializer: suspend (xml: Xml) -> View?,
-        val serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?
+        val serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?
     ) {
 
         override fun toString(): String = "KTreeSerializer($name)"
@@ -42,7 +42,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         registrations.add(registration)
     }
 
-    fun register(name: String, deserializer: suspend (xml: Xml) -> View?, serializer: suspend (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
+    fun register(name: String, deserializer: suspend (xml: Xml) -> View?, serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
         register(Registration(name, deserializer, serializer))
     }
 
@@ -72,18 +72,24 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         }
 
         if (view is ViewFileRef) {
-            try {
-                view.forceLoadSourceFile(views, currentVfs, xml.str("sourceFile"))
-            } catch (e: Throwable) {
-                e.printStackTrace()
+            val sourceFile = xml.str("sourceFile")
+            if (sourceFile.isNotBlank()) {
+                try {
+                    view.forceLoadSourceFile(views, currentVfs, sourceFile)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
 
         if (view is Text2) {
-            try {
-                view.forceLoadFontSource(currentVfs, xml.str("fontSource"))
-            } catch (e: Throwable) {
-                e.printStackTrace()
+            val fontSource = xml.str("fontSource")
+            if (fontSource.isNotBlank()) {
+                try {
+                    view.forceLoadFontSource(currentVfs, fontSource)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -140,7 +146,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         return view
     }
     
-    open suspend fun viewTreeToKTree(view: View, currentVfs: VfsFile): Xml {
+    open fun viewTreeToKTree(view: View, currentVfs: VfsFile): Xml {
         val properties = LinkedHashMap<String, Any?>()
 
         fun add(prop: KProperty0<*>) {
@@ -204,9 +210,9 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     }
 }
 
-suspend fun Xml.ktreeToViewTree(views: Views): View = views.serializer.ktreeToViewTree(this, views.currentVfs)
-suspend fun View.viewTreeToKTree(views: Views): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs)
+suspend fun Xml.ktreeToViewTree(views: Views, currentVfs: VfsFile = views.currentVfs): View = views.serializer.ktreeToViewTree(this, currentVfs)
+fun View.viewTreeToKTree(views: Views): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs)
 
 suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): View = serializer.serializer.ktreeToViewTree(this, currentVfs)
-suspend fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
+fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
 suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder): View = readXml().ktreeToViewTree(serializer, this.parent)
