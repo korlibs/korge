@@ -56,12 +56,7 @@ enum class BlendMode(val factors: AG.Blending) {
 			AG.BlendFactor.ONE, AG.BlendFactor.ONE
 		)
 	),
-	INVERT(
-		AG.Blending(
-			AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-			AG.BlendFactor.ONE, AG.BlendFactor.ONE
-		)
-	),
+	INVERT(AG.Blending(AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR, AG.BlendFactor.ZERO)),
 	ALPHA(
 		AG.Blending(
 			AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
