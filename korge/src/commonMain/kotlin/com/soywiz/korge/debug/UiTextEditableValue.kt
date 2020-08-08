@@ -85,6 +85,7 @@ class UiTextEditableValue(
                         //PathInfo("test").rela
                         if (relativePath != null) {
                             setValue(relativePath)
+                            completedEditing()
                         }
                     }
                 }
@@ -95,6 +96,7 @@ class UiTextEditableValue(
                     prop.value = (openColorPickerDialog(color) {
                         prop.value = it.hexString
                     } ?: color).hexString
+                    completedEditing()
                 }
             }
         }
