@@ -36,6 +36,7 @@ enum class BlendMode(val factors: AG.Blending) {
 			AG.BlendEquation.REVERSE_SUBTRACT
 		)
 	),
+    INVERT(AG.Blending(AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR, AG.BlendFactor.ZERO)),
 
 	// Unimplemented
 	LIGHTEN(
@@ -56,7 +57,6 @@ enum class BlendMode(val factors: AG.Blending) {
 			AG.BlendFactor.ONE, AG.BlendFactor.ONE
 		)
 	),
-	INVERT(AG.Blending(AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR, AG.BlendFactor.ZERO)),
 	ALPHA(
 		AG.Blending(
 			AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
@@ -80,4 +80,18 @@ enum class BlendMode(val factors: AG.Blending) {
         operator fun get(ordinal: Int) = BY_ORDINAL.getOrElse(ordinal) { INHERIT }
         operator fun get(name: String) = BY_NAME[name.toUpperCase()] ?: INHERIT
 	}
+
+    // https://community.khronos.org/t/blending-mode/34770/4
+    //multiply 	a * b
+    //screen 	1 - (1 - a) * (1 - b)
+    //darken 	min(a, b)
+    //lighten 	max(a, b)
+    //difference 	abs(a - b)
+    //negation 	1 - abs(1 - a - b)
+    //exclusion 	a + b - 2 * a * b
+    //overlay 	a < .5 ? (2 * a * b) : (1 - 2 * (1 - a) * (1 - b))
+    //hard light 	b < .5 ? (2 * a * b) : (1 - 2 * (1 - a) * (1 - b))
+    //soft light 	b < .5 ? (2 * a * b + a * a * (1 - 2 * b)) : (sqrt(a) * (2 * b - 1) + (2 * a) * (1 - b))
+    //dodge 	a / (1 - b)
+    //burn 	1 - (1 - a) / b
 }
