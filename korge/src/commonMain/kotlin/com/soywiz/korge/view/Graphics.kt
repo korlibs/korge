@@ -230,8 +230,16 @@ open class Graphics @JvmOverloads constructor(
 	internal val _sLeft get() = sLeft
 	internal val _sTop get() = sTop
 
-    override val sLeft get() = bounds.x - anchorDispX
-    override val sTop get() = bounds.y - anchorDispY
+    override val sLeft: Double get() {
+        var out = bounds.x - anchorDispX
+        if (bwidth < 0) out -= bwidth
+        return out
+    }
+    override val sTop: Double get() {
+        var out = bounds.y - anchorDispY
+        if (bheight < 0) out -= bheight
+        return out
+    }
 
 	private val bb = BoundsBuilder()
 	private val bounds = Rectangle()
@@ -294,6 +302,8 @@ open class Graphics @JvmOverloads constructor(
             }
             // Generates new image
             run {
+                //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
+
                 val image = createImage(
                     (bounds.width * renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
                     (bounds.height * renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
