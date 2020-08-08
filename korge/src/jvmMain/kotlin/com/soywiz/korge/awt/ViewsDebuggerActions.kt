@@ -2,10 +2,12 @@ package com.soywiz.korge.awt
 
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
 import javax.swing.tree.*
 
-class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerComponent) {
+open class ViewsDebuggerActions(val views: Views) {
+    lateinit var component: ViewsDebuggerComponent
     //var selectedView: View? = null
     val selectedView: View? get() = (component.tree.selectionPath?.lastPathComponent as? ViewNode)?.view
     var pasteboard: Xml? = null
@@ -22,7 +24,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         //selectedView = view
     }
 
-    suspend fun cut() {
+    fun cut() {
         val view = selectedView
         if (view != null) {
             pasteboard = view.viewTreeToKTree(views, currentVfs)
@@ -32,31 +34,41 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         }
     }
 
-    suspend fun copy() {
+    fun copyToXml(): Xml? {
         val view = selectedView
         if (view != null) {
-            pasteboard = view.viewTreeToKTree(views, currentVfs)
+            return view.viewTreeToKTree(views, currentVfs)
+        } else {
+            return null
         }
     }
 
-    suspend fun paste(save: Boolean = true) {
+    fun copy() {
         val view = selectedView
         if (view != null) {
-            val pasteboard = pasteboard
-            val container: Container = view.findFirstAscendant { it is ViewLeaf }?.parent
-                ?: (view as? Container?)
-                ?: view.parent
-                ?: stage
+            pasteboard = copyToXml()
+        }
+    }
 
-            if (pasteboard != null) {
-                val newView = pasteboard.ktreeToViewTree(views, currentVfs)
-                container.addChild(newView)
-                selectView(newView)
-            }
+    suspend fun pasteFromXml(xml: Xml?, save: Boolean = true) {
+        val view = selectedView ?: views.stage
+        val container: Container = view.findFirstAscendant { it is ViewLeaf }?.parent
+            ?: (view as? Container?)
+            ?: view.parent
+            ?: stage
+
+        if (xml != null) {
+            val newView = xml.ktreeToViewTree(views, currentVfs)
+            container.addChild(newView)
+            selectView(newView)
         }
         if (save) {
             save("Paste", view)
         }
+    }
+
+    suspend fun paste(save: Boolean = true) {
+        pasteFromXml(pasteboard, save)
     }
 
     suspend fun duplicate() {
@@ -105,4 +117,31 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         save("Send to front", selectedView)
     }
 
+    fun canDeleteCopyCut(): Boolean {
+        return selectedView != null
+    }
+
+    fun canPaste(): Boolean {
+        return true
+    }
+
+    open fun requestCopy() {
+        copy()
+    }
+
+    open fun requestCut() {
+        cut()
+    }
+
+    open fun requestPaste() {
+        launchImmediately(views.coroutineContext) {
+            paste()
+        }
+    }
+
+    open fun requestDuplicate() {
+        launchImmediately(views.coroutineContext) {
+            duplicate()
+        }
+    }
 }

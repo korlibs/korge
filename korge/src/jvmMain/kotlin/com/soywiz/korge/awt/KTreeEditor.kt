@@ -139,6 +139,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                     Key.RIGHT -> actions.moveView(+1, 0, e.shift)
                 }
             }
+            /*
             upNew { e ->
                 val view = actions.selectedView
                 if (view != null) {
@@ -152,6 +153,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                     }
                 }
             }
+            */
         }
 
         var action = ""
@@ -162,10 +164,10 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 if (it.button == MouseButton.RIGHT) {
                     val hasView = view != null
                     gameWindow.showContextMenu(listOf(
-                        GameWindow.MenuItem("Cut", enabled = hasView) { launchImmediately { actions.cut() } },
-                        GameWindow.MenuItem("Copy", enabled = hasView) { launchImmediately { actions.copy() } },
-                        GameWindow.MenuItem("Paste") { launchImmediately { actions.paste() } },
-                        GameWindow.MenuItem("Duplicate") { launchImmediately { actions.duplicate() } },
+                        GameWindow.MenuItem("Cut", enabled = hasView) { actions.requestCut() },
+                        GameWindow.MenuItem("Copy", enabled = hasView) { actions.requestCopy() },
+                        GameWindow.MenuItem("Paste") { actions.requestPaste() },
+                        GameWindow.MenuItem("Duplicate") { actions.requestDuplicate() },
                         null,
                         GameWindow.MenuItem("Send to back", enabled = hasView) { actions.sendToBack() },
                         GameWindow.MenuItem("Bring to front", enabled = hasView) { actions.sendToFront() },

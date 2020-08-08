@@ -53,8 +53,11 @@ class ViewsDebuggerComponent constructor(
     val app: UiApplication,
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext,
+    val actions: ViewsDebuggerActions = ViewsDebuggerActions(views),
 ) : JPanel(GridLayout(2, 1)) {
-    val actions = ViewsDebuggerActions(views, this)
+    init {
+        actions.component = this
+    }
     val uiProperties = UiEditProperties(app, rootView, views)
     val uiPropertiesPanel = JPanel()
         .also {
@@ -138,23 +141,17 @@ class ViewsDebuggerComponent constructor(
                         popupMenu.add(myComponentFactory.createSeparator())
                         popupMenu.add(myComponentFactory.createMenuItem("Cut").also {
                             it.addActionListener {
-                                launchImmediately(coroutineContext) {
-                                    actions.cut()
-                                }
+                                actions.requestCut()
                             }
                         })
                         popupMenu.add(myComponentFactory.createMenuItem("Copy").also {
                             it.addActionListener {
-                                launchImmediately(coroutineContext) {
-                                    actions.copy()
-                                }
+                                actions.requestCopy()
                             }
                         })
                         popupMenu.add(myComponentFactory.createMenuItem("Paste").also {
                             it.addActionListener {
-                                launchImmediately(coroutineContext) {
-                                    actions.paste()
-                                }
+                                actions.requestPaste()
                             }
                         })
                         popupMenu.add(myComponentFactory.createSeparator())
