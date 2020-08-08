@@ -46,22 +46,28 @@ data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) 
     val doc = ref.document ?: error("Can't get document")
     var lastSavedText = ""
 
-    init {
-        doc.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(event: DocumentEvent) {
-                val newText = event.document.text
-                if (newText != lastSavedText) {
-                    lastSavedText = newText
-                    println("documentChanged")
-                    onChanged(newText)
-                } else {
-                    println("documentUnchanged")
-                }
+    val documentListener = object : DocumentListener {
+        override fun documentChanged(event: DocumentEvent) {
+            val newText = event.document.text
+            if (newText != lastSavedText) {
+                lastSavedText = newText
+                //println("documentChanged")
+                onChanged(newText)
+            } else {
+                //println("documentUnchanged")
             }
-        })
+        }
+    }
+
+    init {
+        doc.addDocumentListener(documentListener)
     }
 
     var n = 0
+
+    fun dispose() {
+        doc.removeDocumentListener(documentListener)
+    }
 
     override fun save(text: String, message: String) {
         val oldText = doc.text
@@ -122,7 +128,6 @@ open class KorgeBaseKorgeFileEditor(
         canvas.minimumSize = Dimension(64, 64)
         panel.add(canvas)
         //println("[A] ${Thread.currentThread()}")
-        val app = IdeaUiApplication(project)
         Thread {
             runBlocking {
                 gameWindow = GLCanvasGameWindowIJ(canvas)
@@ -150,10 +155,16 @@ open class KorgeBaseKorgeFileEditor(
                     bgcolor = controlRgba,
                     debug = false
                 ) {
+                    views.completedEditing {
+                        println("!! completedEditing")
+                        executePendingWriteActions()
+
+                    }
                     views.registerSwf()
                     views.registerDragonBones()
                     views.registerSpine()
                     views.ideaProject = project
+                    val app = IdeaUiApplication(project, views)
                     viewsDebuggerComponent = ViewsDebuggerComponent(views, app).also {
                         it.styled.fill()
                     }
@@ -234,6 +245,7 @@ open class KorgeBaseKorgeFileEditor(
 
 	override fun dispose() {
 		componentsCreated--
+        println("!!!!!!!!!! KorgeBaseKorgeFileEditor.DISPOSE")
 		println("KorgeBaseKorgeFileEditor.componentsCreated: $componentsCreated")
 		if (componentsCreated != 0) {
 			println("   !!!! componentsCreated != 0")
@@ -244,6 +256,7 @@ open class KorgeBaseKorgeFileEditor(
 		ag?.dispose()
 		ag = null
 		disposed = true
+        fileToEdit?.dispose()
         gameWindow?.close()
         canvas?.close()
 		System.gc()

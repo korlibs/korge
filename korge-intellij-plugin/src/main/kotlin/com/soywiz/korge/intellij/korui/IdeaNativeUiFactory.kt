@@ -5,6 +5,7 @@ import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.*
 import com.intellij.ui.*
 import com.soywiz.korge.intellij.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -13,7 +14,10 @@ import com.soywiz.korui.native.*
 import java.awt.*
 import javax.swing.*
 
-open class IdeaUiApplication(val project: Project) : UiApplication(IdeaNativeUiFactory(project)) {
+open class IdeaUiApplication(val project: Project, views: Views) : UiApplication(IdeaNativeUiFactory(project)) {
+    init {
+        this.views = views
+    }
 }
 
 open class IdeaNativeUiFactory(val project: Project) : BaseAwtUiFactory() {

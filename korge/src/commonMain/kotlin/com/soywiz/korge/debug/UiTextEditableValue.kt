@@ -9,9 +9,9 @@ import com.soywiz.korui.layout.*
 
 class UiTextEditableValue(
     app: UiApplication,
-    override val prop: ObservableProperty<String>,
+    prop: ObservableProperty<String>,
     val kind: Kind
-) : UiEditableValue(app), ObservablePropertyHolder<String> {
+) : UiEditableValue<String>(app, prop), ObservablePropertyHolder<String> {
     open class Kind {
         object STRING : Kind()
         object COLOR : Kind()
@@ -39,9 +39,12 @@ class UiTextEditableValue(
     var current: String = ""
 
     override fun hideEditor() {
-        contentText.visible = true
-        contentTextField.visible = false
-        setValue(contentTextField.text)
+        if (!contentText.visible) {
+            contentText.visible = true
+            contentTextField.visible = false
+            setValue(contentTextField.text)
+            super.hideEditor()
+        }
     }
 
     override fun showEditor() {

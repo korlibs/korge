@@ -11,6 +11,7 @@ import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -27,6 +28,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
@@ -388,6 +390,7 @@ class Views constructor(
     }
 
     val debugSavedHandlers = Signal<SaveEvent>()
+    val completedEditing = Signal<Unit>()
 
     fun debugSaveView(e: SaveEvent) {
         debugSavedHandlers(e)
@@ -395,6 +398,11 @@ class Views constructor(
 
     fun debugSaveView(action: String, view: View?) {
         debugSavedHandlers(SaveEvent(action, view))
+    }
+
+    fun <T> completedEditing(prop: ObservableProperty<T>) {
+        debugSaveView("Adjusted ${prop.name}", null)
+        completedEditing(Unit)
     }
 }
 
@@ -530,3 +538,5 @@ interface BoundsProvider {
         override val virtualBottom: Double = 0.0
     }
 }
+
+var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }

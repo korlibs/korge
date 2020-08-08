@@ -2,23 +2,23 @@ package com.soywiz.korge.debug
 
 import com.soywiz.kmem.convertRange
 import com.soywiz.korev.*
+import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korte.Template
 import com.soywiz.korui.*
 import kotlin.math.absoluteValue
 import kotlin.math.withSign
-import kotlin.reflect.*
 
 class UiNumberEditableValue(
     app: UiApplication,
-    override val prop: ObservableProperty<Double>,
+    prop: ObservableProperty<Double>,
     var min: Double = -1.0,
     var max: Double = +1.0,
     var clampMin: Boolean = false,
     var clampMax: Boolean = false,
     var decimalPlaces: Int = 2
-) : UiEditableValue(app), ObservablePropertyHolder<Double> {
+) : UiEditableValue<Double>(app, prop), ObservablePropertyHolder<Double> {
     var evalContext: () -> Any? = { null }
     val initial = prop.value
     companion object {
@@ -40,11 +40,14 @@ class UiNumberEditableValue(
     var current: Double = Double.NaN
 
     override fun hideEditor() {
-        contentText.visible = true
-        contentTextField.visible = false
-        if (contentTextField.text.isNotEmpty()) {
-            val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
-            setValue(templateResult.toDoubleOrNull() ?: 0.0)
+        if (!contentText.visible) {
+            contentText.visible = true
+            contentTextField.visible = false
+            if (contentTextField.text.isNotEmpty()) {
+                val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
+                setValue(templateResult.toDoubleOrNull() ?: 0.0)
+            }
+            super.hideEditor()
         }
     }
 
@@ -98,6 +101,9 @@ class UiNumberEditableValue(
                 startY = e.y
                 startValue = current
                 e.requestLock()
+            }
+            if (e.typeUp) {
+                app.views?.completedEditing(prop)
             }
             if (e.typeDrag) {
                 val dx = (e.x - startX).toDouble()

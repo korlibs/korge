@@ -10,7 +10,9 @@ import javax.swing.*
 
 internal actual fun completeViews(views: Views) {
     val frame = (views.gameWindow.debugComponent as? JFrame?) ?: return
-    val debugger = ViewsDebuggerComponent(views, UiApplication(DEFAULT_UI_FACTORY))
+    val app = UiApplication(DEFAULT_UI_FACTORY)
+    app.views = views
+    val debugger = ViewsDebuggerComponent(views, app)
     views.gameWindow.onDebugChanged.add { debug ->
         views.renderContext.debugAnnotateView = if (debug) debugger.selectedView else null
     }

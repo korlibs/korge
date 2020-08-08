@@ -5,8 +5,8 @@ import com.soywiz.korui.*
 class UiListEditableValue<T>(
     app: UiApplication,
     val itemsFactory: () -> List<T>,
-    val prop: ObservableProperty<T>
-) : UiEditableValue(app) {
+    prop: ObservableProperty<T>
+) : UiEditableValue<T>(app, prop) {
     init {
         layout = UiFillLayout
         visible = true
@@ -27,13 +27,16 @@ class UiListEditableValue<T>(
     }
 
     override fun hideEditor() {
-        val selectedItem = contentComboBox.selectedItem
-        //println("UiListEditableValue.hideEditor.selectedItem: $selectedItem")
-        if (selectedItem != null) {
-            setValue(selectedItem)
+        if (!contentText.visible) {
+            val selectedItem = contentComboBox.selectedItem
+            //println("UiListEditableValue.hideEditor.selectedItem: $selectedItem")
+            if (selectedItem != null) {
+                setValue(selectedItem)
+            }
+            contentText.visible = true
+            contentComboBox.visible = false
+            super.hideEditor()
         }
-        contentText.visible = true
-        contentComboBox.visible = false
     }
 
     override fun showEditor() {

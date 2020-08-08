@@ -28,6 +28,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
             pasteboard = view.viewTreeToKTree(views, currentVfs)
             selectView(view.parent)
             view.removeFromParent()
+            save("Cut", view)
         }
     }
 
@@ -38,7 +39,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
         }
     }
 
-    suspend fun paste() {
+    suspend fun paste(save: Boolean = true) {
         val view = selectedView
         if (view != null) {
             val pasteboard = pasteboard
@@ -53,12 +54,16 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
                 selectView(newView)
             }
         }
+        if (save) {
+            save("Paste", view)
+        }
     }
 
     suspend fun duplicate() {
         copy()
         //selectView(selectedView?.parent)
-        paste()
+        paste(save = false)
+        save("Duplicate", selectedView)
     }
 
     fun moveView(dx: Int, dy: Int, shift: Boolean) {
@@ -68,6 +73,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
             view.x += dx * increment
             view.y += dy * increment
         }
+        save("Move", view)
     }
 
     fun attachNewView(newView: View?) {
@@ -79,7 +85,7 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
     }
 
     fun save(action: String, newView: View? = selectedView) {
-        views.stage.views.debugSaveView(action, newView)
+        views.debugSaveView(action, newView)
     }
 
     fun removeCurrentNode() {
@@ -91,10 +97,12 @@ class ViewsDebuggerActions(val views: Views, val component: ViewsDebuggerCompone
 
     fun sendToBack() {
         selectedView?.let { it.parent?.sendChildToBack(it) }
+        save("Send to back", selectedView)
     }
 
     fun sendToFront() {
         selectedView?.let { it.parent?.sendChildToFront(it) }
+        save("Send to front", selectedView)
     }
 
 }

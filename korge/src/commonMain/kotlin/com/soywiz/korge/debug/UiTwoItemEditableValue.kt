@@ -3,7 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiTwoItemEditableValue(app: UiApplication, left: UiEditableValue, right: UiEditableValue) : UiEditableValue(app) {
+class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableValue<T>, right: UiEditableValue<T>) : UiEditableValue<T>(app, left.prop) {
     init {
         layout = HorizontalUiLayout
         left.preferredWidth = 50.percent
