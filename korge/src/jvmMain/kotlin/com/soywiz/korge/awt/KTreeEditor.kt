@@ -272,8 +272,8 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 //val pos = anchor.localPos + anchor.viewInitialMatrix.transform(newLocalBounds.topLeft)
                                 //val delta = anchor.viewInitialMatrix.transform(anchor.localPos - newLocalBounds.topLeft)
 
-                                view.width = newLocalBounds.width
-                                view.height = newLocalBounds.height
+                                view.scaledWidth = newLocalBounds.width
+                                view.scaledHeight = newLocalBounds.height
                                 //println(newLocalBounds.topLeft + Point(view.anchorDispX, view.anchorDispY))
                                 val globalPos = anchor.localToGlobal(newLocalBounds.topLeft + Point(view.anchorDispX, view.anchorDispY))
                                 //val globalPos = anchor.localToGlobal(newLocalBounds.topLeft - oldLocalBounds.topLeft)
