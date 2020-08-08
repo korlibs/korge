@@ -116,7 +116,7 @@ class BitmapFont(
     }
 
 
-	class Glyph(
+	data class Glyph(
         val fontSize: Double,
 		val id: Int,
 		val texture: BitmapSlice<Bitmap>,

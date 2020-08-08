@@ -5,7 +5,6 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.tiled.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -89,11 +88,14 @@ open class Text2(
             }
         }
         container.colorMul = color
+        val font = this.font
         if (font is BitmapFont) {
             bitmapFontActions.x = 0.0
             bitmapFontActions.y = 0.0
 
             bitmapFontActions.mreset()
+            bitmapFontActions.verticalAlign = verticalAlign
+            bitmapFontActions.horizontalAlign = horizontalAlign
             renderer(bitmapFontActions, text, fontSize, font)
             while (container.numChildren < bitmapFontActions.arrayTex.size) {
                 container.image(Bitmaps.transparent)
@@ -101,10 +103,18 @@ open class Text2(
             while (container.numChildren > bitmapFontActions.arrayTex.size) {
                 container[container.numChildren - 1].removeFromParent()
             }
+            //println(font.glyphs['H'.toInt()])
+            //println(font.glyphs['a'.toInt()])
+            //println(font.glyphs['g'.toInt()])
+
+            val textWidth = bitmapFontActions.x
+
+            val dx = -textWidth * horizontalAlign.ratio
+
             for (n in 0 until bitmapFontActions.arrayTex.size) {
                 (container[n] as Image).also {
                     it.texture = bitmapFontActions.arrayTex[n]
-                    it.x = bitmapFontActions.arrayX[n]
+                    it.x = bitmapFontActions.arrayX[n] + dx
                     it.y = bitmapFontActions.arrayY[n]
                     it.scaleX = bitmapFontActions.arraySX[n]
                     it.scaleY = bitmapFontActions.arraySY[n]
@@ -141,6 +151,8 @@ open class Text2(
 }
 
 class Text2TextRendererActions : TextRendererActions() {
+    var verticalAlign: VerticalAlign = VerticalAlign.TOP
+    var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT
     internal val arrayTex = arrayListOf<BmpSlice>()
     internal val arrayX = doubleArrayListOf()
     internal val arrayY = doubleArrayListOf()
@@ -162,15 +174,21 @@ class Text2TextRendererActions : TextRendererActions() {
         val bf = font as BitmapFont
         val m = getGlyphMetrics(codePoint)
         val g = bf[codePoint]
-        val x = 0.0
-        val y = -m.height
+        val x = -g.xoffset.toDouble()
+        val y = g.yoffset.toDouble() - when (verticalAlign) {
+            VerticalAlign.BASELINE -> bf.base
+            else -> bf.lineHeight * verticalAlign.ratio
+        }
+
+        val fontScale = fontSize / bf.fontSize
+
         tr.setMatrix(transform)
         //println("x: ${this.x}, y: ${this.y}")
         arrayTex += g.texture
-        arrayX += this.x + transform.fastTransformX(x, y)
-        arrayY += this.y + transform.fastTransformY(x, y)
-        arraySX += tr.scaleX
-        arraySY += tr.scaleY
+        arrayX += this.x + transform.fastTransformX(x, y) * fontScale
+        arrayY += this.y + transform.fastTransformY(x, y) * fontScale
+        arraySX += tr.scaleX * fontScale
+        arraySY += tr.scaleY * fontScale
         arrayRot += tr.rotation.radians
         return m
     }

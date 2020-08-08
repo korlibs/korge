@@ -2,6 +2,7 @@ package com.soywiz.korim.font
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.Paint
 import com.soywiz.korma.geom.*
 
