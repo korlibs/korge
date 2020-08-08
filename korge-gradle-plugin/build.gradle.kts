@@ -42,14 +42,14 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     }
 }
 
-val kotlinVersion: String by project
+//val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
 
 dependencies {
 	//implementation(project(":korge-build"))
     implementation(kotlin("gradle-plugin"))
 
-	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
 	implementation("net.sf.proguard:proguard-gradle:6.2.2")
     implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
 

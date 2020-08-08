@@ -105,6 +105,7 @@ class IntFloatMap private constructor(private var nbits: Int, private val loadFa
     @PublishedApi
     internal val map = IntIntMap(nbits, loadFactor)
 
+    val size get() = map.size
     operator fun contains(key: Int): Boolean = map.contains(key)
     fun remove(key: Int): Boolean = map.remove(key)
     fun clear() = map.clear()

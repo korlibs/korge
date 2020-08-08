@@ -53,7 +53,7 @@ sourceSets {
 }
 
 val korgeVersion: String by project
-val kotlinVersion: String by project
+//val kotlinVersion: String by project
 
 dependencies {
 	//implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
@@ -62,7 +62,7 @@ dependencies {
     implementation(project(":korge-swf"))
     implementation(project(":korge-dragonbones"))
     implementation(project(":korge-spine"))
-	implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
 	//implementation("javax.xml.bind:jaxb-api:2.3.1")
 	//implementation("com.sun.xml.bind:jaxb-impl:2.3.1")

@@ -1,11 +1,8 @@
 import org.gradle.kotlin.dsl.kotlin
 import org.jetbrains.kotlin.gradle.plugin.*
-import java.net.URLClassLoader
 import java.io.File
 
 buildscript {
-    val kotlinVersion: String by project
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -15,8 +12,6 @@ buildscript {
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
     dependencies {
-        //classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
-        //classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
         classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
         classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
     }
@@ -33,13 +28,6 @@ plugins {
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
-//apply(plugin = "java")
-//apply(plugin = "kotlin-multiplatform")
-
-val kotlinVersion: String by project
-val isKotlinDev = kotlinVersion.contains("-release")
-val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M") || kotlinVersion.contains("-rc")
-
 allprojects {
 	repositories {
         mavenLocal()
@@ -47,10 +35,8 @@ allprojects {
 		jcenter()
         google()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-		if (isKotlinDev || isKotlinEap) {
-			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-		}
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 	}
 }
 
