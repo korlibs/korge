@@ -142,7 +142,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         var gridSnapping = true
         var gridWidth = 20
         var gridHeight = 20
-        var movingCamera = false
+        var movingCameraMouse = false
 
         stage.keys {
             downNew { e ->
@@ -152,6 +152,8 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                     Key.LEFT -> actions.moveView(-1, 0, e.shift)
                     Key.RIGHT -> actions.moveView(+1, 0, e.shift)
                 }
+            }
+            upNew { e ->
             }
             /*
             upNew { e ->
@@ -242,9 +244,9 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
                 pressing = true
                 action = ""
-                movingCamera = spaceBarIsBeingPressed() || (it.lastEvent.button == MouseButton.MIDDLE)
+                movingCameraMouse = spaceBarIsBeingPressed() || (it.lastEvent.button == MouseButton.MIDDLE)
 
-                if (movingCamera) {
+                if (movingCameraMouse) {
                     startCameraPos.setTo(camera.cameraX, camera.cameraY)
                 } else {
                     currentAnchor = getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)
@@ -275,6 +277,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             }
             up {
                 pressing = false
+                movingCameraMouse = false
                 if (action != "") {
                     views.debugSaveView(action, actions.selectedView)
                 }
@@ -285,7 +288,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 var dx = views.globalMouseX - startSelectedMousePos.x
                 var dy = views.globalMouseY - startSelectedMousePos.y
                 when {
-                    pressing && movingCamera -> {
+                    pressing && movingCameraMouse -> {
                         camera.cameraX = startCameraPos.x - dx / camera.cameraZoom
                         camera.cameraY = startCameraPos.y - dy / camera.cameraZoom
                     }
@@ -398,10 +401,13 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         }
 
         stage.addUpdater {
-            gameWindow.cursor =
-                com.soywiz.korgw.GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)?.angle)
+            gameWindow.cursor = when {
+                movingCameraMouse || spaceBarIsBeingPressed() -> GameWindow.Cursor.MOVE
+                else -> com.soywiz.korgw.GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)?.angle)
                     ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
-                        ?: GameWindow.Cursor.DEFAULT
+                    ?: GameWindow.Cursor.DEFAULT
+            }
+
 
             //if (save) {
             //    save = false
