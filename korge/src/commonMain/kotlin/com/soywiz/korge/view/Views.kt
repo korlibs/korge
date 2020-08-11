@@ -183,8 +183,8 @@ class Views constructor(
     @KorgeInternal
     val actualHeight get() = actualSize.height
 
-    val onBeforeRender = Signal<Unit>()
-    val onAfterRender = Signal<Unit>()
+    val onBeforeRender = Signal<RenderContext>()
+    val onAfterRender = Signal<RenderContext>()
 
     var targetFps: Double = -1.0
 
@@ -253,8 +253,8 @@ class Views constructor(
 	}
 
 	fun render() {
-        onBeforeRender()
 		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
+        onBeforeRender(renderContext)
 		stage.render(renderContext)
         renderContext.flush()
         stage.renderDebug(renderContext)
@@ -265,7 +265,7 @@ class Views constructor(
 			}
 		}
 
-        onAfterRender()
+        onAfterRender(renderContext)
     }
 
 	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL) {

@@ -21,7 +21,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     class Registration(
         val name: String,
         val deserializer: suspend (xml: Xml) -> View?,
-        val serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?
+        val serializer: (view: View, properties: MutableMap<String, Any?>?) -> Xml?
     ) {
 
         override fun toString(): String = "KTreeSerializer($name)"
@@ -42,7 +42,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         registrations.add(registration)
     }
 
-    fun register(name: String, deserializer: suspend (xml: Xml) -> View?, serializer: (view: View, properties: MutableMap<String, Any?>) -> Xml?) {
+    fun register(name: String, deserializer: suspend (xml: Xml) -> View?, serializer: (view: View, properties: MutableMap<String, Any?>?) -> Xml?) {
         register(Registration(name, deserializer, serializer))
     }
 
@@ -146,7 +146,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         return view
     }
     
-    open fun viewTreeToKTree(view: View, currentVfs: VfsFile): Xml {
+    open fun viewTreeToKTree(view: View, currentVfs: VfsFile, level: Int): Xml {
         val properties = LinkedHashMap<String, Any?>()
 
         fun add(prop: KProperty0<*>) {
@@ -189,21 +189,25 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             add(view::horizontalAlign)
         }
 
-        val results = registrations.map { it.serializer(view, properties) }
+        val rproperties: LinkedHashMap<String, Any?>? = if (level == 0) null else properties
+
+        val results = registrations.map { it.serializer(view, rproperties) }
         val result = results.filterNotNull().firstOrNull()
+
+
         //println("registrations: $registrations, $result, $results")
         return result ?: when (view) {
-            is NinePatchEx -> Xml("ninepatch", properties)
-            is AnimationViewRef -> Xml("animation", properties)
-            is ParticleEmitterView -> Xml("particle", properties)
-            is SolidRect -> Xml("solidrect", properties)
-            is Ellipse -> Xml("ellipse", properties)
-            is Image -> Xml("image", properties)
-            is TreeViewRef -> Xml("treeviewref", properties)
-            is TiledMapViewRef -> Xml("tiledmapref", properties)
-            is Text2 -> Xml("text", properties)
-            is Container -> Xml("container", properties) {
-                view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs)) }
+            is NinePatchEx -> Xml("ninepatch", rproperties)
+            is AnimationViewRef -> Xml("animation", rproperties)
+            is ParticleEmitterView -> Xml("particle", rproperties)
+            is SolidRect -> Xml("solidrect", rproperties)
+            is Ellipse -> Xml("ellipse", rproperties)
+            is Image -> Xml("image", rproperties)
+            is TreeViewRef -> Xml("treeviewref", rproperties)
+            is TiledMapViewRef -> Xml("tiledmapref", rproperties)
+            is Text2 -> Xml("text", rproperties)
+            is Container -> Xml("container", rproperties) {
+                view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
             }
             else -> error("Don't know how to serialize $view")
         }
@@ -211,8 +215,8 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
 }
 
 suspend fun Xml.ktreeToViewTree(views: Views, currentVfs: VfsFile = views.currentVfs): View = views.serializer.ktreeToViewTree(this, currentVfs)
-fun View.viewTreeToKTree(views: Views): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs)
+fun View.viewTreeToKTree(views: Views): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs, 0)
 
 suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): View = serializer.serializer.ktreeToViewTree(this, currentVfs)
-fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs)
+fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs, 0)
 suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder): View = readXml().ktreeToViewTree(serializer, this.parent)

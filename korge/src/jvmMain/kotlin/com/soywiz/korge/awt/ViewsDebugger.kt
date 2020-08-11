@@ -188,14 +188,13 @@ class ViewsDebuggerComponent constructor(
     val selectedView: View? get() = actions.selectedView
     val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
 
-    //fun setRootView(root: View, coroutineContext: CoroutineContext, views: Views? = null) {
-    //fun setRootView(root: View) {
-    //    //this.coroutineContext = coroutineContext
-    //    //if (views != null) this.views = views
-    //    //properties.views = views?.views
-    //    tree.model = DefaultTreeModel(root.treeNode)
-    //    update()
-    //}
+    fun setRootView(root: View) {
+        //this.coroutineContext = coroutineContext
+        //if (views != null) this.views = views
+        //properties.views = views?.views
+        tree.model = DefaultTreeModel(root.treeNode)
+        update()
+    }
 
     fun update() {
         tree.updateUI()

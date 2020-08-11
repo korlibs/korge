@@ -12,14 +12,10 @@ class XmlBuilder @PublishedApi internal constructor() {
     fun raw(text: String): Xml = Xml.Raw(text).also { nodes += it }
 }
 
-inline fun buildXml(rootTag: String, vararg props: Pair<String, Any?>, crossinline block: XmlBuilder.() -> Unit): Xml =
+inline fun buildXml(rootTag: String, vararg props: Pair<String, Any?>, crossinline block: XmlBuilder.() -> Unit = {}): Xml =
     XmlBuilder().node(rootTag, *props, block = block)
 
-inline fun Xml(rootTag: String, vararg props: Pair<String, Any?>, block: XmlBuilder.() -> Unit): Xml =
+inline fun Xml(rootTag: String, vararg props: Pair<String, Any?>, block: XmlBuilder.() -> Unit = {}): Xml =
     XmlBuilder().node(rootTag, *props, block = block)
-inline fun Xml(rootTag: String, vararg props: Pair<String, Any?>): Xml =
-    XmlBuilder().node(rootTag, *props, block = {})
-inline fun Xml(rootTag: String, props: Map<String, Any?>): Xml =
-    XmlBuilder().node(rootTag, *props.map { it.key to it.value }.toTypedArray(), block = {})
-inline fun Xml(rootTag: String, props: Map<String, Any?>, block: XmlBuilder.() -> Unit): Xml =
-    XmlBuilder().node(rootTag, *props.map { it.key to it.value }.toTypedArray(), block = block)
+inline fun Xml(rootTag: String, props: Map<String, Any?>?, block: XmlBuilder.() -> Unit = {}): Xml =
+    XmlBuilder().node(rootTag, *(props ?: emptyMap()).map { it.key to it.value }.toTypedArray(), block = block)

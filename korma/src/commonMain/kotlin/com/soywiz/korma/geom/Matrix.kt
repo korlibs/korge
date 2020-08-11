@@ -268,6 +268,8 @@ data class Matrix(
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
 
+    fun toTransform(out: Transform = Transform()): Transform = out.setMatrix(this)
+
     // Transform points
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
     fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty

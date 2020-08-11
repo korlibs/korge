@@ -1,17 +1,21 @@
 package com.soywiz.korge.awt
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.camera2.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 
 enum class AnchorKind { SCALING, ROTATING }
@@ -62,11 +66,18 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         val views = this.views
         val gameWindow = this.views.gameWindow
         val stage = views.stage
-        val viewTree = file.readKTree(views)
+        // Dirty hack
+        views.stage.removeChildren()
+
+        val camera = stage.cameraContainer2(views.virtualWidth.toDouble(), views.virtualHeight.toDouble(), clip = false)
+        val root: Container = camera.content
+
         val currentVfs = file.parent
         views.currentVfs = currentVfs
         val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
         val actions = viewsDebuggerComponent.actions
+
+        viewsDebuggerComponent.setRootView(root)
 
         fun getScaleAnchorPoint(view: View?, distance: Int, kind: AnchorKind): AnchorPointResult? {
             if (view == null) return null
@@ -88,47 +99,50 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             return if (anchor == null || angle == null) null else AnchorPointResult(view, anchor, angle, kind)
         }
 
-        // Dirty hack
-        views.stage.removeChildren()
+        fun load(tree: Container) {
+            root.removeChildren()
+            root.addChildren(tree.children.toList())
+        }
 
         fun load(text: String) {
             launchImmediately(views.coroutineContext) {
                 val tree = Xml(text).ktreeToViewTree(views, file.parent) as Container
                 //println("${tree.numChildren} : " + text.split("\n").joinToString(" "))
-                stage.removeChildren()
-                stage.addChildren(tree.children.toList())
+                load(tree)
             }
         }
 
+        suspend fun load(file: VfsFile) {
+            load(file.readKTree(views) as Container)
+        }
+
         fun save(message: String) {
-            fileToEdit.save(stage.viewTreeToKTree(views).toOuterXmlIndentedString(), message)
+            fileToEdit.save(root.viewTreeToKTree(views).toOuterXmlIndentedString(), message)
         }
 
         fileToEdit.onChanged {
             load(it)
         }
 
-        if (viewTree is Container) {
-            viewTree.children.toList().fastForEach {
-                //println("ADDING: $it")
-                stage.addChild(it)
-            }
-        }
-
         views.debugSavedHandlers.add {
             save(it.toString())
         }
-        actions.selectView(stage)
+
+        load(fileToEdit.file)
+
+        actions.selectView(root)
 
         var pressing = false
         val startSelectedViewPos = Point()
         val startSelectedMousePos = Point()
+        var startCameraPos = Point()
         val selectedViewSize = Size()
         var selectedViewInitialRotation = 0.degrees
         var currentAnchor: AnchorPointResult? = null
         var gridSnapping = true
-        var gridWidth = 20.0
-        var gridHeight = 20.0
+        var gridWidth = 20
+        var gridHeight = 20
+        var movingCamera = false
 
         stage.keys {
             downNew { e ->
@@ -158,7 +172,50 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
 
         var action = ""
 
+        fun spaceBarIsBeingPressed(): Boolean = views.input.keys[Key.SPACE]
+
+        views.onBeforeRender {
+            val ctx = it.debugLineRenderContext
+
+            val transform = camera.content.globalMatrix.toTransform()
+            val dx = transform.scaleX * gridWidth
+            val dy = transform.scaleY * gridHeight
+            //println("dxy: $dx, $dy")
+            val smallX = dx < 3
+            val smallY = dy < 3
+
+            if (!smallX && !smallY) {
+                ctx.draw(camera.content.globalMatrix) {
+                    ctx.drawVector(Colors.LIGHTGREY.withAd(0.4)) {
+                        for (x in 0 until views.virtualWidth step gridWidth) line(x, 0, x, views.virtualHeight)
+                        for (y in 0 until views.virtualHeight step gridHeight) line(0, y, views.virtualWidth, y)
+                    }
+                }
+            }
+        }
+
+        views.onAfterRender {
+            val ctx = it.debugLineRenderContext
+            ctx.draw(camera.content.globalMatrix) {
+                ctx.drawVector(Colors.RED) {
+                    rect(0, 0, views.virtualWidth, views.virtualHeight)
+                }
+            }
+        }
+
         stage.mouse {
+            scroll {
+                //println("${it.scrollDeltaX}, ${it.scrollDeltaY}, ${it.scrollDeltaZ}")
+                val multiplier = if (it.isShiftDown) 4 else 1
+                val delta = (32.0 * multiplier).withSign(it.scrollDeltaY)
+                when {
+                    it.isAltDown -> camera.cameraX += delta
+                    it.isCtrlDown -> camera.cameraY += delta
+                    else -> camera.cameraZoom *= 1.0 - (0.1 * multiplier).withSign(delta)
+                }
+                //it.isCtrlDown
+            }
+
             click {
                 val view = actions.selectedView
                 if (it.button == MouseButton.RIGHT) {
@@ -175,33 +232,39 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 }
             }
             down {
-                action = ""
-                pressing = true
-                currentAnchor = getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)
-                    ?: getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)
-
                 startSelectedMousePos.setTo(views.globalMouseX, views.globalMouseY)
-                if (currentAnchor == null) {
-                    val pickedView = stage.hitTest(it.lastPosStage)
-                    val viewLeaf = pickedView.findLastAscendant { it is ViewLeaf }
-                    val view = viewLeaf ?: pickedView
-                    if (view !== stage) {
-                        actions.selectView(view)
-                    } else {
-                        actions.selectView(null)
-                    }
-                } else {
-                    val view = actions.selectedView
-                    if (view != null) {
-                        selectedViewSize.setTo(view.scaledWidth, view.scaledHeight)
-                        selectedViewInitialRotation = view.rotation
-                    }
-                }
-                actions.selectedView?.let { view ->
-                    startSelectedViewPos.setTo(view.globalX, view.globalY)
-                }
+                pressing = true
+                action = ""
+                movingCamera = spaceBarIsBeingPressed() || (it.lastEvent.button == MouseButton.MIDDLE)
 
-                //println("DOWN ON ${it.view}, $view2, ${it.lastPosStage}")
+                if (movingCamera) {
+                    startCameraPos.setTo(camera.cameraX, camera.cameraY)
+                } else {
+                    currentAnchor = getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)
+                        ?: getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)
+
+                    if (currentAnchor == null) {
+                        val pickedView = stage.hitTest(it.lastPosStage)
+                        val viewLeaf = pickedView.findLastAscendant { it is ViewLeaf }
+                        val view = viewLeaf ?: pickedView
+                        if (view !== stage && view !== root) {
+                            actions.selectView(view)
+                        } else {
+                            actions.selectView(null)
+                        }
+                    } else {
+                        val view = actions.selectedView
+                        if (view != null) {
+                            selectedViewSize.setTo(view.scaledWidth, view.scaledHeight)
+                            selectedViewInitialRotation = view.rotation
+                        }
+                    }
+                    actions.selectedView?.let { view ->
+                        startSelectedViewPos.setTo(view.globalX, view.globalY)
+                    }
+
+                    //println("DOWN ON ${it.view}, $view2, ${it.lastPosStage}")
+                }
             }
             up {
                 pressing = false
@@ -212,18 +275,22 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             }
             onMoveAnywhere { e ->
                 val view = actions.selectedView
-                if (pressing && view != null) {
-                    var dx = views.globalMouseX - startSelectedMousePos.x
-                    var dy = views.globalMouseY - startSelectedMousePos.y
-                    val anchor = currentAnchor
-                    if (anchor != null) {
-                        when (anchor.kind) {
+                var dx = views.globalMouseX - startSelectedMousePos.x
+                var dy = views.globalMouseY - startSelectedMousePos.y
+                when {
+                    pressing && movingCamera -> {
+                        camera.cameraX = startCameraPos.x - dx / camera.cameraZoom
+                        camera.cameraY = startCameraPos.y - dy / camera.cameraZoom
+                    }
+                    pressing && view != null -> {
+                        val anchor = currentAnchor
+                        when (anchor?.kind) {
                             AnchorKind.SCALING -> {
                                 action = "scaled"
                                 //val dy = dx * (anchor.localBounds.height / anchor.localBounds.width)
                                 if (gridSnapping) {
-                                    dx = dx.nearestAlignedTo(gridWidth)
-                                    dy = dy.nearestAlignedTo(gridHeight)
+                                    dx = dx.nearestAlignedTo(gridWidth.toDouble())
+                                    dy = dy.nearestAlignedTo(gridHeight.toDouble())
                                 }
                                 val newGlobalAnchorXY = anchor.globalAnchorXY + Point(dx, dy)
                                 val newLocalAnchorXY = anchor.globalToLocal(newGlobalAnchorXY)
@@ -268,7 +335,6 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 //}
 
 
-
                                 //println("localAnchorXY=${anchor.localAnchorXY}, newLocalAnchorXY=$newLocalAnchorXY, newLocalBounds=$newLocalBounds, oldLocalBounds=${anchor.localBounds}")
                                 //println("anchor=$anchor, newLocalBounds[${System.identityHashCode(newLocalBounds)}]=$newLocalBounds  -- oldLocalBounds[${System.identityHashCode(oldLocalBounds)}]=$oldLocalBounds")
                                 //val pos = anchor.localPos + anchor.viewInitialMatrix.transform(newLocalBounds.topLeft)
@@ -289,13 +355,13 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 //}
 
                                 /*
-                                if (gridSnapping) {
-                                    view.globalX = view.globalX
-                                    view.globalY = view.globalY
-                                }
-                                view.scaledWidth = (selectedViewSize.width + dx)
-                                view.scaledHeight = (selectedViewSize.height + dy)
-                                */
+                                    if (gridSnapping) {
+                                        view.globalX = view.globalX
+                                        view.globalY = view.globalY
+                                    }
+                                    view.scaledWidth = (selectedViewSize.width + dx)
+                                    view.scaledHeight = (selectedViewSize.height + dy)
+                                    */
                             }
                             AnchorKind.ROTATING -> {
                                 action = "rotated"
@@ -307,18 +373,19 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                     view.rotationDegrees = view.rotationDegrees.nearestAlignedTo(15.0)
                                 }
                             }
+                            null -> {
+                                action = "moved"
+                                view.globalX = (startSelectedViewPos.x + dx)
+                                view.globalY = (startSelectedViewPos.y + dy)
+                                if (gridSnapping) {
+                                    view.globalX = view.globalX.nearestAlignedTo(gridWidth.toDouble())
+                                    view.globalY = view.globalY.nearestAlignedTo(gridHeight.toDouble())
+                                }
+                            }
                         }
-                    } else {
-                        action = "moved"
-                        view.globalX = (startSelectedViewPos.x + dx)
-                        view.globalY = (startSelectedViewPos.y + dy)
-                        if (gridSnapping) {
-                            view.globalX = view.globalX.nearestAlignedTo(gridWidth)
-                            view.globalY = view.globalY.nearestAlignedTo(gridHeight)
-                        }
+                        //save = true
+                        //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                     }
-                    //save = true
-                    //startSelectedViewPos.setTo(view2.globalX, view2.globalY)
                 }
             }
         }

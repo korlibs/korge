@@ -2,7 +2,6 @@ package com.soywiz.korge.view.camera2
 
 import com.soywiz.klock.hr.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.camera.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Point
@@ -13,15 +12,17 @@ import kotlin.math.*
 inline fun Container.cameraContainer2(
     width: Double,
     height: Double,
-    noinline decoration: @ViewDslMarker CameraContainer2.() -> Unit = {},
+    clip: Boolean = true,
+    noinline block: @ViewDslMarker CameraContainer2.() -> Unit = {},
     content: @ViewDslMarker Container.() -> Unit = {}
-) = CameraContainer2(width, height, decoration).addTo(this).also { content(it.content) }
+) = CameraContainer2(width, height, clip, block).addTo(this).also { content(it.content) }
 
 class CameraContainer2(
     width: Double = 100.0,
     height: Double = 100.0,
-    decoration: @ViewDslMarker CameraContainer2.() -> Unit = {}
-) : FixedSizeContainer(width, height, true), View.Reference {
+    clip: Boolean = true,
+    block: @ViewDslMarker CameraContainer2.() -> Unit = {}
+) : FixedSizeContainer(width, height, clip), View.Reference {
 
     private val contentContainer = Container()
 
@@ -132,6 +133,10 @@ class CameraContainer2(
         following = null
     }
 
+    fun updateCamera(block: Camera2.() -> Unit) {
+        block(currentCamera)
+    }
+
     fun setCurrentCamera(camera: Camera2) {
         elapsedTime = transitionTime
         following = null
@@ -165,7 +170,7 @@ class CameraContainer2(
 
     private val tempPoint = Point()
     init {
-        decoration(this)
+        block(this)
         contentContainer.addTo(this)
         content.addTo(contentContainer)
         addHrUpdater {
