@@ -48,7 +48,7 @@ import javax.swing.*
 
 data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) : BaseKorgeFileToEdit(originalFile.toTextualVfs()) {
     val ref = DocumentReferenceManager.getInstance().create(originalFile)
-    val doc = ref.document ?: error("Can't get document")
+    val doc = ref.document
     var lastSavedText = ""
 
     val documentListener = object : DocumentListener {
@@ -65,17 +65,17 @@ data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) 
     }
 
     init {
-        doc.addDocumentListener(documentListener)
+        doc?.addDocumentListener(documentListener)
     }
 
     var n = 0
 
     fun dispose() {
-        doc.removeDocumentListener(documentListener)
+        doc?.removeDocumentListener(documentListener)
     }
 
     override fun save(text: String, message: String) {
-        val oldText = doc.text
+        val oldText = doc?.text ?: ""
         if (oldText != text) {
             lastSavedText = text
             clearWriteActionNoWait()
@@ -98,7 +98,7 @@ data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) 
                     UndoManager.getInstance(project).undoableActionPerformed(action)
                     */
 
-                    doc.setText(text)
+                    doc?.setText(text)
                 }, message, "korge$id", doc)
             }
         }
