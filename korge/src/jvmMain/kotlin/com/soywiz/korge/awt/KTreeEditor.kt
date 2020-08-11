@@ -388,8 +388,10 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 view.globalX = (startSelectedViewPos.x + dx)
                                 view.globalY = (startSelectedViewPos.y + dy)
                                 if (gridSnapping) {
-                                    view.globalX = view.globalX.nearestAlignedTo(gridWidth.toDouble())
-                                    view.globalY = view.globalY.nearestAlignedTo(gridHeight.toDouble())
+                                    //view.globalX = view.globalX.nearestAlignedTo(gridWidth.toDouble())
+                                    //view.globalY = view.globalY.nearestAlignedTo(gridHeight.toDouble())
+                                    view.x = view.x.nearestAlignedTo(gridWidth.toDouble())
+                                    view.y = view.y.nearestAlignedTo(gridHeight.toDouble())
                                 }
                             }
                         }
