@@ -227,6 +227,17 @@ class CameraContainer2(
         contentContainer.scaleY = realScaleY
     }
 
+    fun setAnchorPosKeepingPos(anchor: Point) {
+        setAnchorPosKeepingPos(anchor.x, anchor.y)
+    }
+
+    fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
+        setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
+    }
+    fun setAnchorRatioKeepingPos(ratioX: Double, ratioY: Double) {
+        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, width, height)
+        sync()
+    }
 }
 
 data class Camera2(
@@ -251,6 +262,20 @@ data class Camera2(
         this.angle = angle
         this.anchorX = anchorX
         this.anchorY = anchorY
+    }
+
+    fun setAnchorRatioKeepingPos(anchorX: Double, anchorY: Double, width: Double, height: Double) {
+        val sx = width / zoom
+        val sy = height / zoom
+        val oldPaX = this.anchorX * sx
+        val oldPaY = this.anchorY * sy
+        val newPaX = anchorX * sx
+        val newPaY = anchorY * sy
+        this.x += newPaX - oldPaX
+        this.y += newPaY - oldPaY
+        this.anchorX = anchorX
+        this.anchorY = anchorY
+        //println("ANCHOR: $anchorX, $anchorY")
     }
 
     fun copyFrom(source: Camera2) = source.apply { this@Camera2.setTo(x, y, zoom, angle, anchorX, anchorY) }

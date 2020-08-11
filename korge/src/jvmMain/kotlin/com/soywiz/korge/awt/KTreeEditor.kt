@@ -203,6 +203,8 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             }
         }
 
+        camera.cameraZoom = 1.25
+
         stage.mouse {
             scroll {
                 //println("${it.scrollDeltaX}, ${it.scrollDeltaY}, ${it.scrollDeltaZ}")
@@ -211,7 +213,12 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 when {
                     it.isAltDown -> camera.cameraX += delta
                     it.isCtrlDown -> camera.cameraY += delta
-                    else -> camera.cameraZoom *= 1.0 - (0.1 * multiplier).withSign(delta)
+                    else -> {
+                        val mouseLocalPos = camera.localMouseXY(views)
+                        //println(mouseLocalPos)
+                        camera.setAnchorPosKeepingPos(mouseLocalPos)
+                        camera.cameraZoom *= 1.0 - (0.1 * multiplier).withSign(delta)
+                    }
                 }
                 //it.isCtrlDown
             }
