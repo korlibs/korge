@@ -183,7 +183,12 @@ abstract class View internal constructor(
     private var _rotation: Angle = 0.radians
 
     /** Position of the view. **@NOTE**: If plan to change its values manually. You should call [View.invalidateMatrix] later to keep the matrix in sync */
-    val pos = Point()
+    var pos = Point()
+        get() = field
+        set(value) {
+            field.copyFrom(value)
+            invalidateMatrix()
+        }
 
     /** Local X position of this view */
     var x: Double
@@ -1206,7 +1211,9 @@ abstract class View internal constructor(
         when {
             target === parent -> out.copyFrom(this.localMatrix)
             target === this -> out.identity()
+            // @TODO: Verify
             View.commonAncestor(this, target) != null -> out.multiply(this.globalMatrix, target.globalMatrixInv)
+            //View.commonAncestor(this, target) != null -> out.multiply(target.globalMatrixInv, this.globalMatrix)
             else -> out.identity()
         }
         if (inclusive) {
@@ -1742,6 +1749,31 @@ fun <T : View> T.positionX(x: Double): T {
 fun <T : View> T.positionY(y: Double): T {
     this.y = y
     return this
+}
+
+fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
+    val mat = this.parent!!.getConcatMatrix(view, false)
+    return mat.transform(pos, out)
+}
+
+fun View.setPositionRelativeTo(view: View, pos: Point) {
+    val mat = this.parent!!.getConcatMatrix(view, false)
+    val matInv = mat.inverted()
+    val out = matInv.transform(pos)
+    this.x = out.x
+    this.y = out.y
+}
+
+fun View.getPointRelativeTo(pos: Point, view: View, out: Point = Point()): Point {
+    val mat = this.getConcatMatrix(view, false)
+    return mat.transform(pos, out)
+}
+
+fun View.getPointRelativeToInv(pos: Point, view: View, out: Point = Point()): Point {
+    val mat = this.getConcatMatrix(view, false)
+    val matInv = mat.inverted()
+    matInv.transform(pos, out)
+    return out
 }
 
 /** Chainable method returning this that sets [View.x] */

@@ -140,8 +140,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         var selectedViewInitialRotation = 0.degrees
         var currentAnchor: AnchorPointResult? = null
         var gridSnapping = true
-        var gridWidth = 20
-        var gridHeight = 20
+        val grid = OrthographicGrid(20, 20)
         var movingCameraMouse = false
 
         stage.keys {
@@ -180,18 +179,15 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             val ctx = it.debugLineRenderContext
 
             val transform = camera.content.globalMatrix.toTransform()
-            val dx = transform.scaleX * gridWidth
-            val dy = transform.scaleY * gridHeight
+            val dx = transform.scaleX * grid.width
+            val dy = transform.scaleY * grid.height
             //println("dxy: $dx, $dy")
             val smallX = dx < 3
             val smallY = dy < 3
 
             if (!smallX && !smallY) {
                 ctx.draw(camera.content.globalMatrix) {
-                    ctx.drawVector(Colors.LIGHTGREY.withAd(0.4)) {
-                        for (x in 0 until views.virtualWidth step gridWidth) line(x, 0, x, views.virtualHeight)
-                        for (y in 0 until views.virtualHeight step gridHeight) line(0, y, views.virtualWidth, y)
-                    }
+                    grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
                 }
             }
         }
@@ -298,14 +294,22 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                             AnchorKind.SCALING -> {
                                 action = "scaled"
                                 //val dy = dx * (anchor.localBounds.height / anchor.localBounds.width)
-                                if (gridSnapping) {
-                                    dx = dx.nearestAlignedTo(gridWidth.toDouble())
-                                    dy = dy.nearestAlignedTo(gridHeight.toDouble())
-                                }
+                                //if (gridSnapping) {
+                                //    dx = dx.nearestAlignedTo(gridWidth.toDouble())
+                                //    dy = dy.nearestAlignedTo(gridHeight.toDouble())
+                                //}
                                 val newGlobalAnchorXY = anchor.globalAnchorXY + Point(dx, dy)
-                                val newLocalAnchorXY = anchor.globalToLocal(newGlobalAnchorXY)
+                                var newLocalAnchorXY = anchor.globalToLocal(newGlobalAnchorXY)
                                 val oldLocalBounds = anchor.localBounds
                                 val newLocalBounds = oldLocalBounds.clone()
+
+                                //view.setPositionRelativeTo(root, grid.snap(view.getPositionRelativeTo(root)))
+
+                                run {
+                                    val transformed = view.parent!!.getPointRelativeTo(newLocalAnchorXY, root)
+                                    val snappedTransformed = grid.snap(transformed)
+                                    newLocalAnchorXY = view.parent!!.getPointRelativeToInv(snappedTransformed, root)
+                                }
 
                                 when (anchor.anchor.sx) {
                                     0.0 -> {
@@ -388,10 +392,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 view.globalX = (startSelectedViewPos.x + dx)
                                 view.globalY = (startSelectedViewPos.y + dy)
                                 if (gridSnapping) {
-                                    //view.globalX = view.globalX.nearestAlignedTo(gridWidth.toDouble())
-                                    //view.globalY = view.globalY.nearestAlignedTo(gridHeight.toDouble())
-                                    view.x = view.x.nearestAlignedTo(gridWidth.toDouble())
-                                    view.y = view.y.nearestAlignedTo(gridHeight.toDouble())
+                                    view.setPositionRelativeTo(root, grid.snap(view.getPositionRelativeTo(root)))
                                 }
                             }
                         }

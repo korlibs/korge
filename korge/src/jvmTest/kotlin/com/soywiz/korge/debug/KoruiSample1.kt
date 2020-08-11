@@ -25,6 +25,7 @@ object KoruiSample2 {
     }
 }
 
+/*
 object KoruiSample1 {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -38,7 +39,7 @@ object KoruiSample1 {
         defaultKoruiFactory.setVisible(window, true)
         */
 
-        UiApplication().window(600, 600) {
+        UiApplication(DEFAULT_UI_FACTORY).window(600, 600) {
             val crossIcon = NativeImage(16, 16).context2d {
                 stroke(Colors.RED, lineWidth = 3.0) {
                     line(0, 0, 16 - 1.5, 16 - 1.5)
@@ -136,3 +137,4 @@ object KoruiSample1 {
         }
     }
 }
+*/
