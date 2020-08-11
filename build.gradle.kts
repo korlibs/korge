@@ -246,10 +246,10 @@ samples {
         }
 
         //val jsRun by creating { dependsOn("jsBrowserDevelopmentRun") } // Already available
-        val jvmRun by creating {
-            group = "run"
-            dependsOn(runJvm)
-        }
+        //val jvmRun by creating {
+        //    group = "run"
+        //    dependsOn(runJvm)
+        //}
         //val run by getting(JavaExec::class)
 
         //val processResources by getting {
