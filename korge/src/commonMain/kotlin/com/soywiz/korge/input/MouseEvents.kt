@@ -181,7 +181,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     var clickedCount = 0
 
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
-    lateinit var lastEvent: MouseEvent
+    var lastEventSet = false
+    var lastEvent: MouseEvent = MouseEvent()
     val button: MouseButton get() = lastEvent.button
     val buttons: Int get() = lastEvent.buttons
     val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
@@ -191,12 +192,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val isCtrlDown: Boolean get() = lastEvent.isCtrlDown
     val isAltDown: Boolean get() = lastEvent.isAltDown
     val isMetaDown: Boolean get() = lastEvent.isMetaDown
+    val pressing get() = views.input.mouseButtons != 0
 
 	@Suppress("DuplicatedCode")
     override fun onMouseEvent(views: Views, event: MouseEvent) {
         this.views = views
         // Store event
         this.lastEvent = event
+        lastEventSet = true
 
         //println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
@@ -262,7 +265,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		val over = isOver
         val inside = views.input.mouseInside
 		if (over) views.input.mouseHitResultUsed = view
-		val pressing = views.input.mouseButtons != 0
 		val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
 		val pressingChanged = pressing != lastPressing

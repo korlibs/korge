@@ -11,25 +11,47 @@ import com.soywiz.korui.*
 
 expect val DEFAULT_UI_FACTORY: NativeUiFactory
 
-object DummyUiFactory : NativeUiFactory
-open class DummyBase : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
-    override val factory: NativeUiFactory get() = DummyUiFactory
+object DummyUiFactory : NativeUiFactory {
+    open class DummyComponent(val native: Any?) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+        override val factory: NativeUiFactory get() = DummyUiFactory
+        override var bounds: RectangleInt = RectangleInt(0, 0, 0, 0)
+        override var cursor: UiCursor? = null
+        override var visible: Boolean = true
+        override var focusable: Boolean = true
+        override var enabled: Boolean = true
+    }
+
+    open class DummyContainer(native: Any?) : DummyComponent(native), NativeUiFactory.NativeContainer, NativeUiFactory.NativeChildren by NativeUiFactory.NativeChildren.Mixin() {
+        override val factory: NativeUiFactory get() = DummyUiFactory
+    }
+
+    open class DummyWindow(native: Any?) : DummyContainer(native), NativeUiFactory.NativeWindow {
+    }
+
+    open class DummyButton(native: Any?) : DummyComponent(native), NativeUiFactory.NativeButton {
+    }
+
+    override fun wrapNative(native: Any?) = DummyComponent(native)
+    override fun wrapNativeContainer(native: Any?) = DummyContainer(native)
+    override fun createWindow() = DummyWindow(null)
+    override fun createContainer() = DummyContainer(null)
+    override fun createButton() = DummyButton(null)
 }
 
 interface NativeUiFactory {
-    fun wrapNative(native: Any?): NativeComponent = object : DummyBase(), NativeComponent {}
-    fun wrapNativeContainer(native: Any?): NativeContainer = object : DummyBase(), NativeContainer {}
-    fun createWindow(): NativeWindow = object : DummyBase(), NativeWindow {}
-    fun createContainer(): NativeContainer = object : DummyBase(), NativeContainer {}
-    fun createToolbar(): NativeToolbar = object : DummyBase(), NativeToolbar {}
-    fun createScrollPanel(): NativeScrollPanel = object : DummyBase(), NativeScrollPanel {}
-    fun createButton(): NativeButton = object : DummyBase(), NativeButton {}
-    fun createLabel(): NativeLabel = object : DummyBase(), NativeLabel {}
-    fun createCheckBox(): NativeCheckBox = object : DummyBase(), NativeCheckBox {}
-    fun createTextField(): NativeTextField = object : DummyBase(), NativeTextField {}
-    fun <T> createComboBox(): NativeComboBox<T> = object : DummyBase(), NativeComboBox<T> {}
-    fun createTree(): NativeTree = object : DummyBase(), NativeTree {}
-    fun createCanvas(): NativeCanvas = object : DummyBase(), NativeCanvas {}
+    fun wrapNative(native: Any?): NativeComponent = TODO()
+    fun wrapNativeContainer(native: Any?): NativeContainer = TODO()
+    fun createWindow(): NativeWindow = TODO()
+    fun createContainer(): NativeContainer = TODO()
+    fun createToolbar(): NativeToolbar = TODO()
+    fun createScrollPanel(): NativeScrollPanel = TODO()
+    fun createButton(): NativeButton = TODO()
+    fun createLabel(): NativeLabel = TODO()
+    fun createCheckBox(): NativeCheckBox = TODO()
+    fun createTextField(): NativeTextField = TODO()
+    fun <T> createComboBox(): NativeComboBox<T> = TODO()
+    fun createTree(): NativeTree = TODO()
+    fun createCanvas(): NativeCanvas = TODO()
 
     interface NativeToolbar : NativeContainer {
     }
@@ -92,7 +114,6 @@ interface NativeUiFactory {
         fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
         fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
 
-
         fun repaintAll() = Unit
         fun focus(focus: Boolean) = Unit
         fun updateUI() = Unit
@@ -108,15 +129,38 @@ interface NativeUiFactory {
         }
     }
 
-    interface NativeContainer : NativeComponent {
+    interface NativeChildren {
         val numChildren: Int get() = 0
-        var backgroundColor: RGBA?
-            get() = null
-            set(value) = Unit
         fun getChildAt(index: Int): NativeComponent = TODO()
         fun insertChildAt(index: Int, child: NativeComponent): Unit = TODO()
         fun removeChild(child: NativeComponent): Unit = TODO()
         fun removeChildAt(index: Int): Unit = TODO()
+
+        class Mixin : NativeChildren {
+            val children = arrayListOf<NativeComponent>()
+
+            override val numChildren: Int get() = children.size
+            override fun getChildAt(index: Int): NativeComponent = children[index]
+            override fun insertChildAt(index: Int, child: NativeComponent): Unit {
+                if (index < 0) {
+                    children.add(child)
+                } else {
+                    children.add(index, child)
+                }
+            }
+            override fun removeChild(child: NativeComponent): Unit {
+                children.remove(child)
+            }
+            override fun removeChildAt(index: Int): Unit {
+                children.removeAt(index)
+            }
+        }
+    }
+
+    interface NativeContainer : NativeComponent, NativeChildren {
+        var backgroundColor: RGBA?
+            get() = null
+            set(value) = Unit
     }
 
     interface NativeLabel : NativeComponent, NativeWithText {

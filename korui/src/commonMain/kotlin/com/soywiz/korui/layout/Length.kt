@@ -13,7 +13,7 @@ sealed class Length {
 	abstract class Fixed() : Length()
 	abstract class Variable() : Length()
 
-	class Context {
+	class Context : LengthExtensions {
 		var fontSize: Double = 16.0
 		var viewportWidth: Double = 640.0
 		var viewportHeight: Double = 480.0
@@ -151,59 +151,32 @@ fun Length?.calcMax(ctx: Length.Context, default: Int = ctx.size): Int = this?.c
 //operator fun Length?.minus(that: Length?): Length? = Length.Binop(this, that, "-") { a, b -> a - b }
 operator fun Length?.times(that: Double): Length? = Length.Scale(this, that)
 
-fun RectangleInt.setNewTo(
-	ctx: Length.Context,
-	bounds: RectangleInt,
-	x: Length?,
-	y: Length?,
-	width: Length?,
-	height: Length?
-) = this.setTo(
-	x?.calc(ctx.setSize(bounds.width)) ?: bounds.x,
-	y?.calc(ctx.setSize(bounds.height)) ?: bounds.y,
-	width?.calc(ctx.setSize(bounds.width)) ?: bounds.width,
-	height?.calc(ctx.setSize(bounds.height)) ?: bounds.height
-)
+interface LengthExtensions {
+    //val Int.px: Length get() = Length.PX(this.toDouble())
+    val Int.mm: Length get() = Length.MM(this.toDouble())
+    val Int.cm: Length get() = Length.CM(this.toDouble())
+    val Int.inch: Length get() = Length.INCH(this.toDouble())
+    val Int.pt: Length get() = Length.PT(this.toDouble())
+    val Int.em: Length get() = Length.EM(this.toDouble())
+    val Int.vw: Length get() = Length.VW(this.toDouble())
+    val Int.vh: Length get() = Length.VH(this.toDouble())
+    val Int.vmin: Length get() = Length.VMIN(this.toDouble())
+    val Int.vmax: Length get() = Length.VMAX(this.toDouble())
+    val Int.percent: Length get() = Length.Ratio(this.toDouble() / 100.0)
 
-fun RectangleInt.setNewBoundsTo(
-	ctx: Length.Context,
-	bounds: RectangleInt,
-	left: Length?,
-	top: Length?,
-	right: Length?,
-	bottom: Length?
-) = this.setBoundsTo(
-	left?.calc(ctx.setSize(bounds.width)) ?: bounds.left,
-	top?.calc(ctx.setSize(bounds.height)) ?: bounds.top,
-	right?.calc(ctx.setSize(bounds.width)) ?: bounds.right,
-	bottom?.calc(ctx.setSize(bounds.height)) ?: bounds.bottom
-)
-
-//val Int.px: Length get() = Length.PX(this.toDouble())
-val Int.mm: Length get() = Length.MM(this.toDouble())
-val Int.cm: Length get() = Length.CM(this.toDouble())
-val Int.inch: Length get() = Length.INCH(this.toDouble())
-val Int.pt: Length get() = Length.PT(this.toDouble())
-val Int.em: Length get() = Length.EM(this.toDouble())
-val Int.vw: Length get() = Length.VW(this.toDouble())
-val Int.vh: Length get() = Length.VH(this.toDouble())
-val Int.vmin: Length get() = Length.VMIN(this.toDouble())
-val Int.vmax: Length get() = Length.VMAX(this.toDouble())
-val Int.percent: Length get() = Length.Ratio(this.toDouble() / 100.0)
-
-//val Int.px: Length get() = Length.PX(this)
-val Double.mm: Length get() = Length.MM(this)
-val Double.cm: Length get() = Length.CM(this)
-val Double.inch: Length get() = Length.INCH(this)
-val Double.pt: Length get() = Length.PT(this)
-val Double.em: Length get() = Length.EM(this)
-val Double.vw: Length get() = Length.VW(this)
-val Double.vh: Length get() = Length.VH(this)
-val Double.vmin: Length get() = Length.VMIN(this)
-val Double.vmax: Length get() = Length.VMAX(this)
-val Double.percent: Length get() = Length.Ratio(this.toDouble() / 100.0)
-
-val Double.ratio: Length get() = Length.Ratio(this)
+    //val Int.px: Length get() = Length.PX(this)
+    val Double.mm: Length get() = Length.MM(this)
+    val Double.cm: Length get() = Length.CM(this)
+    val Double.inch: Length get() = Length.INCH(this)
+    val Double.pt: Length get() = Length.PT(this)
+    val Double.em: Length get() = Length.EM(this)
+    val Double.vw: Length get() = Length.VW(this)
+    val Double.vh: Length get() = Length.VH(this)
+    val Double.vmin: Length get() = Length.VMIN(this)
+    val Double.vmax: Length get() = Length.VMAX(this)
+    val Double.percent: Length get() = Length.Ratio(this.toDouble() / 100.0)
+    val Double.ratio: Length get() = Length.Ratio(this)
+}
 
 data class Padding(var top: Length? = Length.ZERO, var right: Length? = Length.ZERO, var bottom: Length? = Length.ZERO, var left: Length? = Length.ZERO) {
     constructor(vertical: Length?, horizontal: Length?) : this(vertical, horizontal, vertical, horizontal)

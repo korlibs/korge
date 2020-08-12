@@ -1,8 +1,13 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.html.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.native.*
@@ -13,11 +18,13 @@ open class KorgeNativeUiFactory : NativeUiFactory {
     override fun wrapNative(native: Any?) = KorgeComponent(this, native as View)
     override fun wrapNativeContainer(native: Any?) = KorgeContainer(this, native as Container)
 
-    override fun createWindow(): NativeUiFactory.NativeWindow = KorgeWindow(this, FixedSizeContainer())
-    override fun createContainer(): NativeUiFactory.NativeContainer = KorgeContainer(this, FixedSizeContainer())
-    override fun createButton(): NativeUiFactory.NativeButton = KorgeButton(this, TextButton())
-    override fun createCheckBox(): NativeUiFactory.NativeCheckBox = KorgeCheckBox(this, UICheckBox())
-    override fun <T> createComboBox(): NativeUiFactory.NativeComboBox<T> = KorgeComboBox(this, UIComboBox<T>())
+    override fun createWindow() = KorgeWindow(this, FixedSizeContainer())
+    override fun createContainer() = KorgeContainer(this, FixedSizeContainer())
+    override fun createButton() = KorgeButton(this, TextButton())
+    override fun createCheckBox() = KorgeCheckBox(this, UICheckBox())
+    override fun <T> createComboBox() = KorgeComboBox(this, UIComboBox<T>())
+    override fun createLabel() = KorgeLabel(this, UIText("").also { it.textAlignment = Html.Alignment.MIDDLE_LEFT })
+    override fun createTextField() = KorgeTextField(this, UIText(""))
 
     open class KorgeComponent(override val factory: KorgeNativeUiFactory, val view: View) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
         init {
@@ -40,6 +47,37 @@ open class KorgeNativeUiFactory : NativeUiFactory {
         override var visible: Boolean
             get() = view.visible
             set(value) = run { view.visible = value }
+
+        override fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable {
+            var startedHere = false
+            view.mouse {
+                click {
+                    //println("CLICK")
+                    handler(MouseEvent(MouseEvent.Type.CLICK))
+                }
+                down {
+                    handler(MouseEvent(MouseEvent.Type.DOWN))
+                    startedHere = true
+                }
+                up {
+                    handler(MouseEvent(MouseEvent.Type.UP))
+                }
+                upAnywhere {
+                    startedHere = false
+                }
+                moveAnywhere {
+                    if (startedHere && it.pressing) {
+                        val x = view.localMouseX(views).toInt()
+                        val y = view.localMouseY(views).toInt()
+                        //println("dragging")
+                        handler(MouseEvent(MouseEvent.Type.DRAG, x = x, y = y))
+                    }
+                }
+            }
+            return Disposable {
+                view.mouse.removeFromView()
+            }
+        }
     }
 
     open class KorgeButton(override val factory: KorgeNativeUiFactory, val button: TextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeButton {
@@ -47,6 +85,22 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             get() = button.text
             set(value) {
                 button.text = value
+            }
+    }
+
+    open class KorgeLabel(override val factory: KorgeNativeUiFactory, val uiText: UIText) : KorgeComponent(factory, uiText), NativeUiFactory.NativeLabel {
+        override var text: String
+            get() = uiText.text
+            set(value) {
+                uiText.text = value
+            }
+    }
+
+    open class KorgeTextField(override val factory: KorgeNativeUiFactory, val uiText: UIText) : KorgeComponent(factory, uiText), NativeUiFactory.NativeTextField {
+        override var text: String
+            get() = uiText.text
+            set(value) {
+                uiText.text = value
             }
     }
 

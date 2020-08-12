@@ -11,9 +11,14 @@ import com.soywiz.korma.geom.*
 object Html {
 	data class Alignment(val anchor: Anchor) {
 		companion object {
+            val TOP_LEFT = Alignment(Anchor.TOP_LEFT)
+            val TOP_CENTER = Alignment(Anchor.TOP_CENTER)
+            val TOP_RIGHT = Alignment(Anchor.TOP_RIGHT)
+
 			val LEFT = Alignment(Anchor.TOP_LEFT)
 			val CENTER = Alignment(Anchor.TOP_CENTER)
 			val RIGHT = Alignment(Anchor.TOP_RIGHT)
+
 			val JUSTIFIED = Alignment(Anchor.TOP_LEFT)
 
 			val MIDDLE_LEFT = Alignment(Anchor.MIDDLE_LEFT)

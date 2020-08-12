@@ -5,6 +5,8 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.*
 import com.soywiz.korui.native.*
 
+//fun NativeUiFactory.createApp() = UiApplication(this)
+
 open class UiApplication constructor(val factory: NativeUiFactory) : Extra by Extra.Mixin() {
     fun window(width: Int = 300, height: Int = 300, block: UiWindow.() -> Unit): UiWindow = UiWindow(this)
         .also { it.bounds = RectangleInt(0, 0, width, height) }
@@ -19,5 +21,9 @@ open class UiApplication constructor(val factory: NativeUiFactory) : Extra by Ex
             //println("wrapContainer.container.onResize: ${container.bounds}")
             container.relayout()
         }
+    }
+
+    open fun evaluateExpression(expr: String): Any? {
+        return expr.toDoubleOrNull() ?: 0.0
     }
 }

@@ -1,6 +1,7 @@
 package com.soywiz.korge.debug
 
 import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 
 class UiListEditableValue<T>(
     app: UiApplication,

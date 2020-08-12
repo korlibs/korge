@@ -1,5 +1,6 @@
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.font.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
@@ -18,20 +19,23 @@ import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
-    korui {
+    val container = fixedSizeContainer(width, height, clip = true) { }
+    container.korui {
+        addChild(UiEditProperties(app, container, views))
+        /*
         vertical {
             horizontal {
                 preferredWidth = 100.percent
                 //minimumWidth = 100.percent
-                button("HELLO") {
+                button("HELLO", {
                     //minimumWidth = 50.percent
-                    preferredWidth = 50.percent
+                    preferredWidth = 70.percent
+                    //preferredHeight = 32.pt
+                })
+                button("WORLD", {
+                    preferredWidth = 30.percent
                     preferredHeight = 32.pt
-                }
-                button("WORLD") {
-                    preferredWidth = 50.percent
-                    preferredHeight = 32.pt
-                }
+                })
             }
             button("DEMO").apply {
                 visible = false
@@ -40,6 +44,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
             checkBox("CheckBox", checked = true)
             comboBox("test", listOf("test", "demo"))
         }
+        */
     }
 }
 

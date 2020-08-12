@@ -71,10 +71,9 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
     }
     fun addChild(child: UiComponent): Unit = insertChildAt(-1, child)
     inline fun forEachChild(block: (UiComponent) -> Unit) {
-        for (n in 0 until numChildren) {
-            block(getChildAt(n))
-        }
+        for (n in 0 until numChildren) block(getChildAt(n))
     }
+    inline fun forEachVisibleChild(block: (UiComponent) -> Unit) = forEachChild { if (it.visible) block(it) }
     val children: List<UiComponent?> get() = _children.toList()
     val firstChild get() = _children.first()
     val lastChild get() = _children.last()

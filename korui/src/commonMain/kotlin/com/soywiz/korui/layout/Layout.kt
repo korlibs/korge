@@ -4,28 +4,81 @@ import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
+interface UiLayout {
+    fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
+    fun relayout(container: UiContainer)
+}
+
+var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
+
+object UiFillLayout : UiLayout {
+    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
+        var maxWidth = 0
+        var maxHeight = 0
+        val ctx = LayoutContext(available)
+
+        container.forEachVisibleChild { child ->
+            val size = ctx.computeChildSize(child)
+            maxWidth = kotlin.math.max(size.width, maxWidth)
+            maxHeight = kotlin.math.max(size.height, maxHeight)
+        }
+        return SizeInt(maxWidth, maxHeight)
+    }
+
+    override fun relayout(container: UiContainer) {
+        val bounds = container.bounds
+        //container.bounds = bounds
+        val padding = container.layoutChildrenPadding
+        container.forEachChild { child ->
+            child.bounds = RectangleInt.fromBounds(padding, padding, bounds.width - padding, bounds.height - padding)
+        }
+    }
+}
+
 object VerticalUiLayout : LineUiLayout(LayoutDirection.VERTICAL)
 object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
 
+fun Length.Context.computeChildSize(child: UiComponent, direction: LayoutDirection): Int {
+    val ctx = this
+    return when (child) {
+        is UiContainer -> child.computePreferredSize(SizeInt(16, 16)).getDirection(direction)
+        else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
+    }
+}
+
+class LayoutContext(val available: SizeInt) {
+    val widthContext = Length.Context().also { it.size = available.width }
+    val heightContext = Length.Context().also { it.size = available.height }
+
+    fun computeChildSize(child: UiComponent): SizeInt {
+        return SizeInt(
+            widthContext.computeChildSize(child, LayoutDirection.HORIZONTAL),
+            heightContext.computeChildSize(child, LayoutDirection.VERTICAL),
+        )
+    }
+}
+
 open class LineUiLayout(
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
-) : UiLayout {
+) : UiLayout, LengthExtensions {
+    val revDirection = direction.reversed
     override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
         var sum = 0
-        val ctx = Length.Context()
+        var max = 0
+        val ctx = LayoutContext(available)
         val padding = container.layoutChildrenPadding
-        ctx.size = 1024
-        container.forEachChild { child ->
-            val value = when (child) {
-                //is UiContainer -> child.computePreferredSize(available).getDirection(direction)
-                is UiContainer -> child.computePreferredSize(SizeInt(16, 16)).getDirection(direction)
-                else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
-            }
-            sum += value + padding
+        container.forEachVisibleChild { child ->
+            val size = ctx.computeChildSize(child)
+            val main = size.getDirection(direction)
+            val rev = size.getDirection(revDirection)
+
+            //println(main)
+            sum += main + padding
+            max = kotlin.math.max(max, rev)
         }
         //println("${container.preferredSize} - ${container.minimumSize} - ${container.maximumSize}")
 
-        return SizeInt(if (direction.horizontal) sum else 16, if (direction.vertical) sum else 16)
+        return SizeInt(if (direction.horizontal) sum else max, if (direction.vertical) sum else max)
     }
 
     override fun relayout(container: UiContainer) {
@@ -40,23 +93,21 @@ open class LineUiLayout(
         var sum = 0
         var cur = padding
 
-        container.forEachChild { child ->
-            if (child.visible) {
-                val value = when (child) {
-                    is UiContainer -> child.computePreferredSize(bounds.size).getDirection(direction)
-                    else -> Length.calc(ctx, 32.pt, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
-                }
-                val childBounds = when (direction) {
-                    LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
-                    LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
-                }
-                child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
-                if (child is UiContainer) {
-                    child.layout?.relayout(child)
-                }
-                sum += value
-                cur += value + padding
+        container.forEachVisibleChild { child ->
+            val value = when (child) {
+                is UiContainer -> child.computePreferredSize(bounds.size).getDirection(direction)
+                else -> Length.calc(ctx, DEFAULT_HEIGHT, child.preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
             }
+            val childBounds = when (direction) {
+                LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
+                LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
+            }
+            child.bounds = RectangleInt(childBounds.x, childBounds.y, childBounds.width, childBounds.height)
+            if (child is UiContainer) {
+                child.layout?.relayout(child)
+            }
+            sum += value
+            cur += value + padding
         }
     }
 }
@@ -66,13 +117,23 @@ fun Size.getDirection(direction: LayoutDirection) = if (direction == LayoutDirec
 fun SizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection {
     VERTICAL, HORIZONTAL;
+
+    val reversed get() = if (vertical) HORIZONTAL else VERTICAL
+
     val vertical get() = this == VERTICAL
     val horizontal get() = this == HORIZONTAL
 }
 
-var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
-var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
-var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size>() { Size(null, null) }
+private val DEFAULT_WIDTH = Length.PT(128.0)
+private val DEFAULT_HEIGHT = Length.PT(32.0)
+
+var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size> { Size(DEFAULT_WIDTH, DEFAULT_HEIGHT) }
+var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
+var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
+
+fun UiComponent.preferredSize(width: Length?, height: Length?) {
+    preferredSize = Size(width, height)
+}
 
 var UiComponent.preferredWidth: Length?
     get() = preferredSize.width

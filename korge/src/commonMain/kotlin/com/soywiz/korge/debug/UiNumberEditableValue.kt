@@ -7,6 +7,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korte.Template
 import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 import kotlin.math.absoluteValue
 import kotlin.math.withSign
 
@@ -60,6 +61,7 @@ class UiNumberEditableValue(
     }
 
     fun setValue(value: Double, setProperty: Boolean = true) {
+        //println("setValue")
         var rvalue = value
         if (clampMin) rvalue = rvalue.coerceAtLeast(min)
         if (clampMax) rvalue = rvalue.coerceAtMost(max)
@@ -76,6 +78,7 @@ class UiNumberEditableValue(
 
     init {
         layout = UiFillLayout
+        //layout = HorizontalUiLayout
         visible = true
         contentText.onClick {
             showEditor()
@@ -108,9 +111,11 @@ class UiNumberEditableValue(
             if (e.typeDrag) {
                 val dx = (e.x - startX).toDouble()
                 val dy = (e.y - startY).toDouble()
+                //println("typeDrag: dx=$dx")
                 val lenAbs = dx.absoluteValue.convertRange(0.0, MAX_WIDTH.toDouble(), 0.0, max - min)
                 val len = lenAbs.withSign(dx)
                 setValue(startValue + len)
+                //println("//")
             }
         }
         setValue(initial)
