@@ -29,7 +29,7 @@ suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtua
 			//animate(completeOnCancel = true) {
 			//animate {
 				sequence(time = 1.seconds, speed = 256.0) {
-					wait(0.25.seconds)
+					//wait(0.25.seconds)
 					parallel {
 						//rect1.moveTo(0, 150)
 						rect1.moveToWithSpeed(width - 100, 0.0)
@@ -56,13 +56,14 @@ suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtua
 						rect1.show()
 						rect2.show()
 					}
+                    wait(0.25.seconds)
 				}
 			}
 		}
 		job.join()
-        println("[a]")
-        delay(1.seconds)
-        println("[b]")
+        //println("[a]")
+        //delay(1.seconds)
+        //println("[b]")
 		//job.cancel()
 	}
 }
