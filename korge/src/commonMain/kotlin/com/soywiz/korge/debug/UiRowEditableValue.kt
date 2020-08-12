@@ -3,7 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: UiEditableValue<*>) : UiContainer(app) {
+class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: UiComponent) : UiContainer(app) {
     val leftPadding = UiLabel(app)
     val label = UiLabel(app).apply {
         text = labelText
@@ -19,7 +19,9 @@ class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: 
         addChild(label)
         addChild(editor)
         label.onClick {
-            editor.hideEditor()
+            if (editor is UiEditableValue<*>) {
+                editor.hideEditor()
+            }
         }
         //addChild(UiLabel(app).also { it.text = "text" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
     }

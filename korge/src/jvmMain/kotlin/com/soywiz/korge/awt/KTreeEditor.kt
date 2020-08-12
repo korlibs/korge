@@ -252,7 +252,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                         val pickedView = stage.hitTest(it.lastPosStage)
                         val viewLeaf = pickedView.findLastAscendant { it is ViewLeaf }
                         val view = viewLeaf ?: pickedView
-                        if (view !== stage && view !== root) {
+                        if (view !== stage && view !== root && view !== camera) {
                             actions.selectView(view)
                         } else {
                             actions.selectView(null)
