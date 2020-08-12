@@ -5,7 +5,6 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
@@ -36,7 +35,7 @@ object Html {
 
 	interface FontFace {
 		data class Named(val name: String) : FontFace
-		data class Bitmap(val font: BitmapFont) : FontFace, Html.MetricsProvider {
+		data class Font(val font: com.soywiz.korim.font.Font) : FontFace, Html.MetricsProvider {
 			override fun getBounds(text: String, format: Format, out: Rectangle) = font.getBounds(text, format, out)
 		}
 	}
@@ -59,7 +58,7 @@ object Html {
 		val computedColor: RGBA get() = parent?.computedColor ?: color ?: Colors.WHITE
 
 		//val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
-        val computedFace by Computed(Format::face) { FontFace.Bitmap(debugBmpFont) }
+        val computedFace by Computed(Format::face) { FontFace.Font(debugBmpFont) }
 		val computedSize by Computed(Format::size) { 16 }
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }

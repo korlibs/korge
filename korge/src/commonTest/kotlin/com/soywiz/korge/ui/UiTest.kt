@@ -2,7 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -22,7 +21,7 @@ class UiTest : ViewsForTesting() {
 
         //uiSkin(OtherUISkin()) {
         defaultUISkin = OtherUISkin()
-        defaultUIFont = Html.FontFace.Bitmap(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
+        defaultUIFont = Html.FontFace.Font(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
         textButton(256.0, 32.0) {
             text = "Disabled Button"
             position(128, 128)

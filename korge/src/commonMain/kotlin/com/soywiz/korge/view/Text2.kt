@@ -33,20 +33,20 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 */
 @KorgeExperimental
 inline fun Container.text2(
-    text: String, fontSize: Double = 64.0,
-    color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
-    horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
-    noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    block: @ViewDslMarker Text2.() -> Unit = {}
+        text: String, fontSize: Double = 64.0,
+        color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
+        horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
+        noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
+        block: @ViewDslMarker Text2.() -> Unit = {}
 ): Text2
     = Text2(text, fontSize, color, font, horizontalAlign, verticalAlign, renderer).addTo(this, block)
 
 @KorgeExperimental
 open class Text2(
-    text: String, fontSize: Double = 64.0,
-    color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
-    horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
-    renderer: TextRenderer<String> = DefaultStringTextRenderer
+        text: String, fontSize: Double = 64.0,
+        color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
+        horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
+        renderer: TextRenderer<String> = DefaultStringTextRenderer
 ) : Container(), KorgeDebugNode, ViewLeaf {
     private var cachedVersion = -1
     private var version = 0

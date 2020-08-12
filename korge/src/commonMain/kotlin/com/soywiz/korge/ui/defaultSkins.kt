@@ -5,26 +5,24 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.paint.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import kotlin.coroutines.*
 
 val DefaultTextSkin by lazy {
     TextSkin(
-        normal = TextFormat(RGBA(0, 0, 0), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
-        over = TextFormat(RGBA(80, 80, 80), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
-        down = TextFormat(RGBA(120, 120, 120), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
-        disabled = TextFormat(RGBA(160, 160, 160), 16, Html.FontFace.Bitmap(Fonts.defaultFont)),
+        normal = TextFormat(RGBA(0, 0, 0), 16, Html.FontFace.Font(Fonts.defaultFont)),
+        over = TextFormat(RGBA(80, 80, 80), 16, Html.FontFace.Font(Fonts.defaultFont)),
+        down = TextFormat(RGBA(120, 120, 120), 16, Html.FontFace.Font(Fonts.defaultFont)),
+        disabled = TextFormat(RGBA(160, 160, 160), 16, Html.FontFace.Font(Fonts.defaultFont)),
         backColor = Colors.WHITE
     )
 }
 
 val DefaultUIFont by lazy {
-    Html.FontFace.Bitmap(debugBmpFont)
+    Html.FontFace.Font(debugBmpFont)
+    //Html.FontFace.Font(DefaultTtfFont)
 }
 
 private fun buildDefaultButton(index: Int): Bitmap {
@@ -33,7 +31,7 @@ private fun buildDefaultButton(index: Int): Bitmap {
             0 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
             1 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#9E9E9E"]) // Over
             2 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#909090"]).addColorStop(1.0, Colors["#F5F5F5"]) // Down
-            3 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#D7D7D7"]).addColorStop(1.0, Colors["#D7D7D7"]) // Disabled
+            3 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#A7A7A7"]).addColorStop(1.0, Colors["#A7A7A7"]) // Disabled
             else -> TODO()
         }
 
@@ -69,10 +67,10 @@ private fun buildDefaultShape(index: Int, enabled: Boolean): Bitmap {
                 rotate((45 + 90 * (index - 1)).degrees)
                 val offsetX = -8
                 val offsetY = -8
-                stroke(color, lineWidth = lineWidth, lineCap = LineCap.BUTT) {
-                    moveTo(offsetX + 0, offsetY + 32)
-                    lineTo(offsetX + 0, offsetY + 0)
-                    lineTo(offsetX + 32, offsetY + 0)
+                val lineLength = 20
+                stroke(color, lineWidth = lineWidth, lineCap = LineCap.SQUARE) {
+                    line(offsetX + 0, offsetY + 0, offsetX + 0, offsetY + lineLength)
+                    line(offsetX + 0, offsetY + 0, offsetX + lineLength, offsetY + 0)
                 }
             }
         }

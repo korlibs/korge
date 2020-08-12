@@ -19,7 +19,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
 	val nativeProcess = NativeProcess(views)
 
 	defaultUISkin = OtherUISkin()
-	defaultUIFont = Html.FontFace.Bitmap(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
+	defaultUIFont = Html.FontFace.Font(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
 
 	textButton(256.0, 32.0) {
 		text = "Disabled Button"

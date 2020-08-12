@@ -25,7 +25,7 @@ class Text : View(), IText, IHtml {
 			color: RGBA = Colors.WHITE,
 			font: BitmapFont = Fonts.defaultFont
 		): Text = Text().apply {
-			this.format = Html.Format(color = color, face = Html.FontFace.Bitmap(font), size = textSize.toInt())
+			this.format = Html.Format(color = color, face = Html.FontFace.Font(font), size = textSize.toInt())
 			if (text != "") this.text = text
 		}
 	}
@@ -65,9 +65,9 @@ class Text : View(), IText, IHtml {
 			recalculateBoundsWhenRequired()
 		}
 
-    var font: BitmapFont?
-        get() = (format.computedFace as? Html.FontFace.Bitmap?)?.font
-        set(value) = run { format.face = if (value != null) Html.FontFace.Bitmap(value) else null }
+    var font: Font?
+        get() = (format.computedFace as? Html.FontFace.Font?)?.font
+        set(value) = run { format.face = if (value != null) Html.FontFace.Font(value) else null }
 
     var color: RGBA
         get() = format.computedColor
@@ -117,7 +117,7 @@ class Text : View(), IText, IHtml {
 			document!!.allSpans.fastForEach { span ->
 				val font = fonts.getBitmapFont(span.format)
 				val format = span.format
-				font.drawText(
+                (font as BitmapFont).drawText(
 					ctx, format.computedSize.toDouble(), text,
 					span.bounds.x.toInt(), span.bounds.y.toInt(),
 					m,
@@ -154,7 +154,7 @@ class Text : View(), IText, IHtml {
 			}
 
 			//println(" -> ($x, $y)")
-			font.drawText(
+            (font as BitmapFont).drawText(
 				ctx, format.computedSize.toDouble(), text, px.toInt(), py.toInt(),
 				m,
 				colMul = RGBA.multiply(colorMul, format.computedColor),
