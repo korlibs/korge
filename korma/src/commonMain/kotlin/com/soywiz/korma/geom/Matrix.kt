@@ -300,6 +300,8 @@ data class Matrix(
         var skewX: Double = 0.0, var skewY: Double = 0.0,
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
+        val scaleAvg get() = (scaleX + scaleY) * 0.5
+
         companion object {
             @Deprecated("Kotlin/Native boxes inline + Number")
             inline operator fun invoke(x: Number = 0.0, y: Number = 0.0, scaleX: Number = 1.0, scaleY: Number = 1.0, skewX: Number = 0.0, skewY: Number = 0.0, rotation: Angle = 0.radians) =
