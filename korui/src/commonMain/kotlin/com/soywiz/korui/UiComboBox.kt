@@ -11,5 +11,9 @@ open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.Nativ
     fun onChange(block: () -> Unit) = comboBox.onChange(block)
 }
 
-inline fun <T> UiContainer.comboBox(block: UiComboBox<T>.() -> Unit): UiComboBox<T> =
-    UiComboBox<T>(app).also { it.parent = this }.also(block)
+inline fun <T> UiContainer.comboBox(selectedItem: T, items: List<T>, block: UiComboBox<T>.() -> Unit = {}): UiComboBox<T> =
+    UiComboBox<T>(app)
+        .also { it.parent = this }
+        .also { it.items = items }
+        .also { it.selectedItem = selectedItem }
+        .also(block)

@@ -8,7 +8,7 @@ open class UiCheckBox(app: UiApplication, val checkBox: NativeUiFactory.NativeCh
     var checked by RedirectMutableField(checkBox::checked)
 }
 
-inline fun UiContainer.checkBox(text: String = "CheckBox", checked: Boolean = false, block: UiCheckBox.() -> Unit): UiCheckBox {
+inline fun UiContainer.checkBox(text: String = "CheckBox", checked: Boolean = false, block: UiCheckBox.() -> Unit = {}): UiCheckBox {
     return UiCheckBox(app)
         .also { it.text = text }
         .also { it.checked = checked }

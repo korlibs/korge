@@ -40,9 +40,7 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
             component.cursor = value.toAwt()
         }
 
-    override fun setBounds(x: Int, y: Int, width: Int, height: Int) {
-        component.setBounds(x, y, width, height)
-    }
+    //override fun setBounds(x: Int, y: Int, width: Int, height: Int) { component.setBounds(x, y, width, height) }
 
     override var parent: NativeUiFactory.NativeContainer? = null
         //get() {

@@ -14,8 +14,36 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
+    korui {
+        vertical {
+            horizontal {
+                preferredWidth = 100.percent
+                //minimumWidth = 100.percent
+                button("HELLO") {
+                    //minimumWidth = 50.percent
+                    preferredWidth = 50.percent
+                    preferredHeight = 32.pt
+                }
+                button("WORLD") {
+                    preferredWidth = 50.percent
+                    preferredHeight = 32.pt
+                }
+            }
+            button("DEMO").apply {
+                visible = false
+            }
+            button("TEST")
+            checkBox("CheckBox", checked = true)
+            comboBox("test", listOf("test", "demo"))
+        }
+    }
+}
+
+suspend fun main2() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 	val nativeProcess = NativeProcess(views)
 
 	defaultUISkin = OtherUISkin()

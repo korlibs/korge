@@ -30,7 +30,7 @@ open class UIComboBox<T>(
 	width: Double = 192.0,
 	height: Double = 32.0,
 	selectedIndex: Int = 0,
-	items: List<T>,
+	items: List<T> = listOf(),
 	verticalScroll: Boolean = true,
     private val skin: ComboBoxSkin = DefaultComboBoxSkin
 ) : UIView(width, height) {
@@ -78,6 +78,14 @@ open class UIComboBox<T>(
 			onSizeChanged()
 		}
 	}
+
+    fun open() {
+        showItems = true
+    }
+
+    fun close() {
+        showItems = false
+    }
 
 	private fun updateItemsSize() {
 		itemsView.container.forEachChildrenWithIndex { index, child ->

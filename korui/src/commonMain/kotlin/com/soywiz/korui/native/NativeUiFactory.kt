@@ -68,7 +68,7 @@ interface NativeUiFactory {
         var cursor: UiCursor?
             get() = null
             set(value) = Unit
-        fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
+        //fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
         var parent: NativeContainer?
             get() = null
             set(value) {

@@ -90,5 +90,5 @@ fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
 }
 
 fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
-    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
+    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.HORIZONTAL) }.also { it.parent = this }.also(block)
 }
