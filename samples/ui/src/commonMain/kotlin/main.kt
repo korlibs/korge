@@ -18,7 +18,7 @@ import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
+suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI", bgcolor = Colors["#1c1e0e"]) {
     val container = fixedSizeContainer(width, height, clip = true) { }
     container.korui {
         addChild(UiEditProperties(app, container, views))
@@ -113,7 +113,7 @@ suspend fun main2() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 }
 
 private val otherColorTransform = ColorTransform(0.7, 0.9, 1.0)
-private val OTHER_UI_SKIN_IMG by lazy {
+private val OTHER_UI_SKIN_IMG: Bitmap32 by lazy {
 	DEFAULT_UI_SKIN_IMG.withColorTransform(otherColorTransform)
 }
 

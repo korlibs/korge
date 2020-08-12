@@ -77,7 +77,7 @@ private fun buildDefaultShape(index: Int, enabled: Boolean): Bitmap {
     }
 }
 
-val DEFAULT_UI_SKIN_IMG by lazy {
+val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //Bitmap32(64 * 3, 64).context2d {
     NativeImage(256, 512).context2d {
         for (n in 0 until 4) {

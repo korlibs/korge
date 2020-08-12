@@ -11,9 +11,9 @@ class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: 
     }
     init {
         layout = HorizontalUiLayout
-        leftPadding.preferredSize(16.pt, 16.pt)
-        label.preferredSize(50.percent - 16.pt, 16.pt)
-        editor.preferredSize(50.percent, 16.pt)
+        leftPadding.preferredSize(16.pt, 32.pt)
+        label.preferredSize(50.percent - 16.pt, 32.pt)
+        editor.preferredSize(50.percent, 32.pt)
         //backgroundColor = Colors.RED
         addChild(leftPadding)
         addChild(label)
