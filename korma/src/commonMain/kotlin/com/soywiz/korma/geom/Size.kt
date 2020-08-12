@@ -80,6 +80,8 @@ inline class SizeInt(val size: Size) : ISizeInt {
         operator fun invoke(x: Int, y: Int): SizeInt = SizeInt(Size(x, y))
     }
 
+    fun clone() = SizeInt(size.clone())
+
     override var width: Int
         set(value) = run { size.width = value.toDouble() }
         get() = size.width.toInt()

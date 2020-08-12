@@ -4,6 +4,7 @@ import com.intellij.openapi.fileChooser.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.ui.*
 import com.intellij.ui.*
+import com.intellij.ui.components.*
 import com.soywiz.korge.intellij.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -22,6 +23,7 @@ open class IdeaUiApplication(val project: Project, views: Views) : UiApplication
 
 open class IdeaNativeUiFactory(val project: Project) : BaseAwtUiFactory() {
     override fun createJPopupMenu(): JPopupMenu = JBPopupMenu()
+    override fun createJScrollPane(): JScrollPane = JBScrollPane()
 
     override fun awtOpenFileDialog(component: Component, file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
         val file = FileChooser.chooseFile(

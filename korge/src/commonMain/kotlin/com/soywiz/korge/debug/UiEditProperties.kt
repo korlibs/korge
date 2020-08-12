@@ -4,20 +4,23 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 import kotlin.coroutines.*
 
 class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
+    val propsContainer = scrollPanel(xbar = false)
+
     fun setView(view: View?, coroutineContext: CoroutineContext) {
-        removeChildren()
+        propsContainer.removeChildren()
 
         if (view != null) {
             if (view is KorgeDebugNode) {
                 view.apply {
-                    this@UiEditProperties.buildDebugComponent(views)
+                    this@UiEditProperties.propsContainer.buildDebugComponent(views)
                 }
             }
 
-            addChild(UiCollapsableSection(app, "View") {
+            propsContainer.addChild(UiCollapsableSection(app, "View") {
                 uiEditableValue(view::name)
                 uiEditableValue(view::colorMul)
                 uiEditableValue(view::blendMode, values = { BlendMode.values().toList() })
@@ -74,6 +77,7 @@ class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiCo
     }
 
     init {
+        layout = UiFillLayout
         setView(view, EmptyCoroutineContext)
     }
 }

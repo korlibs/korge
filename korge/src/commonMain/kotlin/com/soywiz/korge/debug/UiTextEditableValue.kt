@@ -70,9 +70,13 @@ class UiTextEditableValue(
         contentText.onClick { showEditor() }
         contentTextField.onKeyEvent { e -> if (e.typeDown && e.key == Key.RETURN) hideEditor() }
         contentTextField.onFocus { e -> if (e.typeBlur) hideEditor() }
+        var childCount = 1
         when (kind) {
             is Kind.FILE -> {
-                button("...") {
+                button("...", {
+                    preferredWidth = 50.percent
+                    childCount++
+                }) {
                     val file = openFileDialog(null, kind.filter)
                     if (file != null) {
                         val filePathInfo = file.absolutePathInfo
@@ -91,17 +95,19 @@ class UiTextEditableValue(
                 }
             }
             is Kind.COLOR -> {
-                button("...") {
+                button("...", {
+                    preferredWidth = 50.percent
+                    childCount++
+                }) {
                     val color = Colors[prop.value]
-                    prop.value = (openColorPickerDialog(color) {
-                        prop.value = it.hexString
-                    } ?: color).hexString
+                    prop.value = (openColorPickerDialog(color) { prop.value = it.hexString } ?: color).hexString
                     completedEditing()
                 }
             }
         }
         container {
             layout = UiFillLayout
+            preferredWidth = if (childCount == 2) 50.percent else 100.percent
             setValue(initial)
             addChild(contentText)
             addChild(contentTextField)

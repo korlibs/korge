@@ -13,6 +13,7 @@ var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 object UiFillLayout : UiLayout {
     override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
+        /*
         var maxWidth = 0
         var maxHeight = 0
         val ctx = LayoutContext(available)
@@ -23,6 +24,8 @@ object UiFillLayout : UiLayout {
             maxHeight = kotlin.math.max(size.height, maxHeight)
         }
         return SizeInt(maxWidth, maxHeight)
+        */
+        return available.clone()
     }
 
     override fun relayout(container: UiContainer) {

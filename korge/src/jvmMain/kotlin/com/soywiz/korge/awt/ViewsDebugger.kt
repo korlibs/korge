@@ -63,7 +63,8 @@ class ViewsDebuggerComponent constructor(
     val uiPropertiesPanel = JPanel()
         .also {
             val panel = app.wrapContainer(it)
-            panel.layout = VerticalUiLayout
+            //panel.layout = VerticalUiLayout
+            panel.layout = UiFillLayout
             //panel.button("Hello")
             panel.addChild(uiProperties)
             //it.add(JButton())
