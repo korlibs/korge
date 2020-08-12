@@ -46,65 +46,6 @@ import java.awt.event.*
 import java.beans.*
 import javax.swing.*
 
-data class KorgeFileToEdit(val originalFile: VirtualFile, val project: Project) : BaseKorgeFileToEdit(originalFile.toTextualVfs()) {
-    val ref = DocumentReferenceManager.getInstance().create(originalFile)
-    val doc = ref.document
-    var lastSavedText = ""
-
-    val documentListener = object : DocumentListener {
-        override fun documentChanged(event: DocumentEvent) {
-            val newText = event.document.text
-            if (newText != lastSavedText) {
-                lastSavedText = newText
-                //println("documentChanged")
-                onChanged(newText)
-            } else {
-                //println("documentUnchanged")
-            }
-        }
-    }
-
-    init {
-        doc?.addDocumentListener(documentListener)
-    }
-
-    var n = 0
-
-    fun dispose() {
-        doc?.removeDocumentListener(documentListener)
-    }
-
-    override fun save(text: String, message: String) {
-        val oldText = doc?.text ?: ""
-        if (oldText != text) {
-            lastSavedText = text
-            clearWriteActionNoWait()
-            queueWriteActionNoWait {
-                val id = n++
-                CommandProcessor.getInstance().executeCommand(project, Runnable {
-                    /*
-                    val action = object : UndoableAction {
-                        override fun undo() {
-                            //doc.setText(oldText)
-                            //load(oldText)
-                        }
-                        override fun redo() {
-                            //doc.setText(text)
-                            //load(text)
-                        }
-                        override fun getAffectedDocuments() = arrayOf(ref)
-                        override fun isGlobal(): Boolean = false
-                    }
-                    UndoManager.getInstance(project).undoableActionPerformed(action)
-                    */
-
-                    doc?.setText(text)
-                }, message, "korge$id", doc)
-            }
-        }
-    }
-}
-
 open class KorgeBaseKorgeFileEditor(
     val project: Project,
     val fileToEdit: KorgeFileToEdit,
@@ -125,100 +66,6 @@ open class KorgeBaseKorgeFileEditor(
     val viewsDebuggerComponentHolder = JPanel(LinearLayout(Direction.VERTICAL))
     var viewsDebuggerComponent: ViewsDebuggerComponent? = null
     val viewsDebuggerActions: ViewsDebuggerActions? get() = viewsDebuggerComponent?.actions
-
-    class KTreeTransferable(val xml: Xml) : Transferable {
-        companion object {
-            val FLAVOR = DataFlavor("text/ktree; charset=unicode; class=java.lang.String", "KTree XML")
-        }
-
-        override fun getTransferDataFlavors(): Array<DataFlavor> = arrayOf(FLAVOR, DataFlavor.stringFlavor)
-        override fun isDataFlavorSupported(flavor: DataFlavor): Boolean = flavor in transferDataFlavors
-        override fun getTransferData(flavor: DataFlavor): Any = when (flavor) {
-            KTreeTransferable.FLAVOR -> xml
-            DataFlavor.stringFlavor -> xml.toOuterXmlIndentedString()
-            else -> throw UnsupportedFlavorException(flavor)
-        }
-    }
-
-    inner class RootComponent : JPanel(BorderLayout()), DataProvider, CopyProvider, PasteProvider, DeleteProvider, CutProvider {
-        override fun getData(dataId: String): Any? {
-            //println("FakeCopyAndPasteProvider.getData('$dataId')")
-            //CopyPasteDelegator(project, this)
-            when {
-                CommonDataKeys.PROJECT.`is`(dataId) -> return project
-                PlatformDataKeys.COPY_PROVIDER.`is`(dataId) -> return this
-                PlatformDataKeys.PASTE_PROVIDER.`is`(dataId) -> return this
-                PlatformDataKeys.DELETE_ELEMENT_PROVIDER.`is`(dataId) -> return this
-                PlatformDataKeys.CUT_PROVIDER.`is`(dataId) -> return this
-                CommonDataKeys.VIRTUAL_FILE.`is`(dataId) -> return fileToEdit.originalFile
-
-                /*
-                CommonDataKeys.VIRTUAL_FILE_ARRAY.`is`(dataId) -> return if (editor != null) arrayOf(editor!!.getFile()) else VirtualFile.EMPTY_ARRAY
-                CommonDataKeys.PSI_FILE.`is`(dataId) -> return findPsiFile()
-                CommonDataKeys.PSI_ELEMENT.`is`(dataId) -> return findPsiFile()
-                LangDataKeys.PSI_ELEMENT_ARRAY.`is`(dataId) -> {
-                    val psi = findPsiFile()
-                    return if (psi != null) arrayOf<PsiElement>(psi) else PsiElement.EMPTY_ARRAY
-                }
-                ImageComponentDecorator.DATA_KEY.`is`(dataId) -> return if (editor != null) editor else this
-                */
-                else -> return null
-            }
-        }
-
-        override fun deleteElement(dataContext: DataContext) {
-            viewsDebuggerActions?.removeCurrentNode()
-        }
-
-        override fun canDeleteElement(dataContext: DataContext): Boolean {
-            return viewsDebuggerActions?.canDeleteCopyCut() == true
-        }
-
-        override fun performCut(dataContext: DataContext) {
-            performCopy(dataContext)
-            deleteElement(dataContext)
-        }
-
-        override fun isCutEnabled(dataContext: DataContext): Boolean {
-            return viewsDebuggerActions?.canDeleteCopyCut() == true
-        }
-
-        override fun isCutVisible(dataContext: DataContext): Boolean {
-            return true
-        }
-
-        override fun performPaste(dataContext: DataContext) {
-            val actions = viewsDebuggerActions ?: return
-            val xml = CopyPasteManager.getInstance().getContents<Xml>(KTreeTransferable.FLAVOR) ?: return
-            launchImmediately(actions.views.coroutineContext) {
-                println("PASTE: $xml")
-                actions.pasteFromXml(xml)
-            }
-        }
-
-        override fun isPastePossible(dataContext: DataContext): Boolean {
-            return viewsDebuggerActions?.canPaste() == true
-        }
-
-        override fun isPasteEnabled(dataContext: DataContext): Boolean {
-            return viewsDebuggerActions?.canPaste() == true
-        }
-
-        override fun performCopy(dataContext: DataContext) {
-            val actions = viewsDebuggerActions ?: return
-            val xml = actions.copyToXml() ?: return
-            println("COPY: $xml")
-            CopyPasteManager.getInstance().setContents(KTreeTransferable(xml))
-        }
-
-        override fun isCopyEnabled(dataContext: DataContext): Boolean {
-            return viewsDebuggerActions?.canDeleteCopyCut() == true
-        }
-
-        override fun isCopyVisible(dataContext: DataContext): Boolean {
-            return true
-        }
-    }
 
     open class MyViewsDebuggerActions(views: Views) : ViewsDebuggerActions(views) {
         fun Component.createFakeEvent() = KeyEvent(this, 0, 0L, 0, 0, '\u0000', 0)
@@ -309,7 +156,7 @@ open class KorgeBaseKorgeFileEditor(
         //println("[I] ${Thread.currentThread()}")
         initializeIdeaComponentFactory()
         //createRootStyled()
-        RootComponent().styled.apply {
+        RootComponent(this@KorgeBaseKorgeFileEditor).styled.apply {
             createViewsWithDebugger(panel, null, viewsDebuggerComponentHolder)
         }.component.also { component ->
             val listener = object : MouseAdapter() {
@@ -341,6 +188,18 @@ open class KorgeBaseKorgeFileEditor(
                     //minWidth = 32.pt
                     minWidth = 360.pt
                     fill()
+                    toolbar {
+                        button("Grid") {
+                            click {
+                                viewsDebuggerActions?.toggleGrid()
+                            }
+                        }
+                        button("Snapping") {
+                            click {
+                                viewsDebuggerActions?.toggleGridSnapping()
+                            }
+                        }
+                    }
                     add(editor.styled {
                         fill()
                     })

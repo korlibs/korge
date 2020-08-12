@@ -76,6 +76,13 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         views.currentVfs = currentVfs
         val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
         val actions = viewsDebuggerComponent.actions
+        //val grid get() = actions.grid
+        //val gridSnapping get() = actions.gridSnapping
+        //val gridShowing get() = actions.gridShowing
+
+        val grid by com.soywiz.korio.util.redirect(actions::grid)
+        val gridSnapping by com.soywiz.korio.util.redirect(actions::gridSnapping)
+        val gridShowing by com.soywiz.korio.util.redirect(actions::gridShowing)
 
         viewsDebuggerComponent.setRootView(root)
 
@@ -139,8 +146,6 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         val selectedViewSize = Size()
         var selectedViewInitialRotation = 0.degrees
         var currentAnchor: AnchorPointResult? = null
-        var gridSnapping = true
-        val grid = OrthographicGrid(20, 20)
         var movingCameraMouse = false
 
         stage.keys {
@@ -187,7 +192,9 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
 
             if (!smallX && !smallY) {
                 ctx.draw(camera.content.globalMatrix) {
-                    grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
+                    if (gridShowing) {
+                        grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
+                    }
                 }
             }
         }
@@ -272,6 +279,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 }
                 //save = true
             }
+
             onMoveAnywhere { e ->
                 val view = actions.selectedView
                 var dx = views.globalMouseX - startSelectedMousePos.x

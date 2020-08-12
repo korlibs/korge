@@ -18,11 +18,14 @@ import java.awt.*
 import java.awt.event.*
 
 fun Styled<out Container>.createTileMapEditor(
-	tilemap: TiledMap = runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() },
-	history: HistoryManager = HistoryManager(),
+	tilemap: TiledMap? = null,
+	history: HistoryManager? = null,
 	registerHistoryShortcuts: Boolean = true,
 	projectContext: ProjectContext? = null
 ) {
+    var tilemap = if (tilemap == null) runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() } else tilemap
+    val history = if (history == null) HistoryManager() else history
+
 	val ctx = MapContext(
 		tilemap = tilemap,
 		projectContext = projectContext,

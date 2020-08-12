@@ -22,9 +22,9 @@ import kotlin.reflect.*
 
 open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorProvider, com.intellij.openapi.project.DumbAware {
 	companion object {
-		val pluginClassLoader by lazy { KorgeFileEditorProvider::class.java.classLoader }
+		val pluginClassLoader: ClassLoader = KorgeFileEditorProvider::class.java.classLoader
 		//val pluginResurcesVfs by lazy { resourcesVfs(pluginClassLoader) }
-		val pluginResurcesVfs by lazy { resourcesVfs }
+		val pluginResurcesVfs: VfsFile get() = resourcesVfs
 	}
 
     var myPolicy: FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
@@ -100,52 +100,6 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
     }
 
 	override fun getEditorTypeId(): String = this::class.java.name
-
-    data class BlockToExecute(val block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit)
-
-    @Prototype
-    class EditorScene(
-        val fileToEdit: KorgeFileToEdit,
-        val blockToExecute: BlockToExecute,
-        val viewsDebuggerComponent: ViewsDebuggerComponent
-    ) : Scene() {
-        override suspend fun Container.sceneMain() {
-            val loading = text("Loading...", color = Colors.WHITE).apply {
-                //format = Html.Format(align = Html.Alignment.CENTER)
-                //x = views.virtualWidth * 0.5
-                //y = views.virtualHeight * 0.5
-                x = 16.0
-                y = 16.0
-            }
-
-            //val uiFrameView = ui.koruiFrame {}
-            //sceneView += uiFrameView
-            //val frame = uiFrameView.frame
-
-            delayFrame()
-
-            try {
-                blockToExecute.block(this@EditorScene)
-            } catch (e: Throwable) {
-                sceneView.text("Error: ${e.message}").centerOnStage()
-                e.printStackTrace()
-            }
-            sceneView -= loading
-
-            Unit
-        }
-    }
 }
 
-
-fun createModule(root: Any? = null, block: suspend KorgeFileEditorProvider.EditorScene.() -> Unit): Module {
-    return object : Module() {
-        //override val editableNode: EditableNode? get() = editableNode
-        override val mainScene = KorgeFileEditorProvider.EditorScene::class
-        override suspend fun AsyncInjector.configure() {
-            get<ResourcesRoot>().mount("/", KorgeFileEditorProvider.pluginResurcesVfs.root)
-            mapInstance(KorgeFileEditorProvider.BlockToExecute(block))
-        }
-    }
-}
-
+data class BlockToExecute(val block: suspend EditorScene.() -> Unit)

@@ -13,6 +13,17 @@ open class ViewsDebuggerActions(val views: Views) {
     var pasteboard: Xml? = null
     val stage get() = views.stage
     val currentVfs get() = views.currentVfs
+    var gridShowing = true
+    var gridSnapping = true
+    val grid = OrthographicGrid(20, 20)
+
+    fun toggleGrid() {
+        gridShowing = !gridShowing
+    }
+
+    fun toggleGridSnapping() {
+        gridSnapping = !gridSnapping
+    }
 
     fun selectView(view: View?) {
         views.debugHightlightView(view)

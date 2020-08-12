@@ -26,11 +26,13 @@ class CameraContainer2(
 
     private val contentContainer = Container()
 
-    val content: Container = object : Container(), Reference {
+    class ContentContainer(val cameraContainer: CameraContainer2) : Container(), Reference {
         override fun getLocalBoundsInternal(out: Rectangle) {
-            out.setTo(0, 0, this@CameraContainer2.width, this@CameraContainer2.height)
+            out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
         }
     }
+
+    val content: Container = ContentContainer(this)
 
     private val sourceCamera = Camera2(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
     private val currentCamera = sourceCamera.copy()
