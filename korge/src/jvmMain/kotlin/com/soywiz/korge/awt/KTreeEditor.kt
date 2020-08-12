@@ -308,7 +308,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
 
                                 //view.setPositionRelativeTo(root, grid.snap(view.getPositionRelativeTo(root)))
 
-                                run {
+                                if (actions.gridSnapping) {
                                     val transformed = view.parent!!.getPointRelativeTo(newLocalAnchorXY, root)
                                     val snappedTransformed = grid.snap(transformed)
                                     newLocalAnchorXY = view.parent!!.getPointRelativeToInv(snappedTransformed, root)
