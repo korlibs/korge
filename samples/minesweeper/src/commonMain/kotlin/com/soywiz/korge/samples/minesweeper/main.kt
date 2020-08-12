@@ -11,6 +11,7 @@ import com.soywiz.korma.geom.*
 
 suspend fun main() = Korge(
 	width = 800, height = 600,
+    //width = 640, height = 480,
 	virtualWidth = 640, virtualHeight = 480,
 	title = "Minesweeper",
 	scaleMode = ScaleMode.SHOW_ALL,

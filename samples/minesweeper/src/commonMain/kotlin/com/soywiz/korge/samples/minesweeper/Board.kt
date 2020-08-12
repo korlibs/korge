@@ -6,6 +6,7 @@ import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.font.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
@@ -46,7 +47,8 @@ class Board(
 		//timeText = new Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, new Font("Arial", 40));
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
 		val FONT_HEIGHT = 24.0
-		timeText = text("00:00", textSize = FONT_HEIGHT).apply {
+		//timeText = text("00:00", font = DefaultTtfFont.toBitmapFont(32), textSize = FONT_HEIGHT).apply {
+        timeText = text("00:00", textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.width)
 			y = -FONT_HEIGHT - 5
 			format.align = Html.Alignment.CENTER
@@ -55,6 +57,10 @@ class Board(
 		//The board is centered on the screen
 		//x = screen.width / 2 - width / 2
 		//y = screen.height / 2 - (height - 10 - FONT_HEIGHT) / 2
+
+        //x = views.virtualWidthDouble / 2 - width / 2
+        //y = views.virtualHeightDouble / 2 - (height - 10 - FONT_HEIGHT) / 2
+
 		centerOnStage()
 		y += FONT_HEIGHT / 2
 

@@ -2,6 +2,7 @@ package com.soywiz.korge.intellij.util
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.ide.*
+import com.intellij.openapi.application.*
 import com.intellij.openapi.editor.*
 import com.intellij.openapi.util.*
 import com.intellij.psi.*
@@ -13,7 +14,7 @@ import kotlin.math.*
 fun PsiElement.replace(text: String, context: InsertionContext? = null) {
 	//context?.commitDocument()
 	//document?.replaceString(start, end - 1, text)
-    runWriteActionNoWait {
+    WriteAction.run<Throwable> {
         val range = this.textRange
         val start = range.startOffset
         val end = range.endOffset

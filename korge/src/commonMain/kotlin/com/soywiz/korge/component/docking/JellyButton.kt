@@ -12,8 +12,8 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var targetScale: Double = 1.5) {
-	val hitTest = view["hitTest"] ?: view
-	val content = view["content"] ?: view
+	val hitTest = view["hitTest"].firstOrNull ?: view
+	val content = view["content"].firstOrNull ?: view
 	val initialScale = content?.scale ?: 1.0
 	var down = false
 	var over = false

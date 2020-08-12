@@ -330,9 +330,9 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var width: Double
-        get() = unscaledWidth
+        get() = getLocalBounds().width
         set(value) {
-            scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / unscaledWidth)
+            scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
         }
 
     /**
@@ -342,13 +342,13 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var height: Double
-        get() = unscaledHeight
+        get() = getLocalBounds().height
         set(value) {
-            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / unscaledHeight)
+            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBounds().height)
         }
 
-    val unscaledWidth: Double get() = getLocalBounds().width
-    val unscaledHeight: Double get() = getLocalBounds().height
+    val unscaledWidth: Double get() = width
+    val unscaledHeight: Double get() = height
 
     var scaledWidth: Double
         get() = unscaledWidth * scaleX
@@ -1666,9 +1666,6 @@ fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<P
 /** Returns a list of descendants views that are of type [T]. */
 inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith { it is T }
 
-/** Indexer that allows to get a descendant marked with the name [name]. */
-operator fun View?.get(name: String): View? = firstDescendantWith { it.name == name }
-
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
@@ -1688,9 +1685,6 @@ fun <T : View> T.size(width: Double, height: Double): T {
 }
 
 fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
-
-@Deprecated("", ReplaceWith("this[name]", "com.soywiz.korge.view.get"))
-fun View?.firstDescendantWithName(name: String): View? = this[name]
 
 /** Returns a list of all the non-null [View.name] values of this and the descendants */
 val View?.allDescendantNames
@@ -1831,6 +1825,7 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     val ratioM1_1 = (ratio * 2 - 1)
     val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
     val iratio = if (inside) ratio else 1.0 - ratio
+    println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
         x = (bounds.x + (bounds.width * ratio)) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {

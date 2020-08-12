@@ -11,6 +11,8 @@ class KorgeGradlePlugin : Plugin<Project> {
         project.korge // Ensure KorGE extension is here
         System.setProperty("java.awt.headless", "true")
         project.plugins.apply("kotlin-multiplatform")
+        // JVM is always enabled
+        project.korge.jvm()
         project.afterEvaluate {
             //val korgeVersion = project.findProperty("korgeVersion") ?: "20-SNAPSHOT"
             val korgeVersion = project.findProperty("korgeVersion") ?: "20-alpha-1"

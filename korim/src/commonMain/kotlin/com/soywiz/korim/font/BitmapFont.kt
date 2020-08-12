@@ -339,3 +339,11 @@ fun Bitmap32.drawText(
     this.fillStyle = createColor(color)
     this.fillText(str, x, y)
 }
+
+fun Font.toBitmapFont(
+    fontSize: Number,
+    chars: CharacterSet = CharacterSet.LATIN_ALL,
+    fontName: String = this.name,
+    paint: Paint = ColorPaint(Colors.WHITE),
+    mipmaps: Boolean = true
+) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps)
