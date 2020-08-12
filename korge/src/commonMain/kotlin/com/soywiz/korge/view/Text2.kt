@@ -5,6 +5,8 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -12,6 +14,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
@@ -48,6 +51,27 @@ open class Text2(
         horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
         renderer: TextRenderer<String> = DefaultStringTextRenderer
 ) : Container(), KorgeDebugNode, ViewLeaf {
+    object Serializer : KTreeSerializerExt<Text2>("Text", Text2::class, { Text2("Text") }, {
+        add(Text2::text, "Text")
+        add(Text2::fontSource)
+        add(Text2::fontSize, 10.0)
+        add(Text2::verticalAlign, { VerticalAlign(it) }, { it.toString() })
+        add(Text2::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
+        //view.fontSource = xml.str("fontSource", "")
+    }) {
+        override suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): Text2 {
+            return super.ktreeToViewTree(xml, currentVfs).also { view ->
+                if ((view.fontSource ?: "").isNotBlank()) {
+                    try {
+                        view.forceLoadFontSource(currentVfs, view.fontSource)
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
+
     private var cachedVersion = -1
     private var version = 0
 
@@ -192,4 +216,5 @@ class Text2TextRendererActions : TextRendererActions() {
         arrayRot += tr.rotation.radians
         return m
     }
+
 }

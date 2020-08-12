@@ -1,11 +1,14 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiCheckBox(
@@ -38,7 +41,7 @@ open class UICheckBox(
     textFont: Html.FontFace = DefaultUIFont,
     private val skin: UISkin = DefaultUISkin,
     private val checkIcon: IconSkin = DefaultCheckSkin
-) : UIView(width, height) {
+) : UIView(width, height), KorgeDebugNodeLeaf {
 
     var checked by uiObservable(checked) { updateState() }
     var text by uiObservable(text) { updateText() }
@@ -121,4 +124,16 @@ open class UICheckBox(
         textView.position(height + 8.0, 0)
         textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
     }
+
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection(UICheckBox::class.simpleName!!) {
+            uiEditableValue(::text)
+            //uiEditableValue(::checked)
+        }
+    }
+
+    object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
+        add(UICheckBox::text)
+        add(UICheckBox::checked)
+    })
 }

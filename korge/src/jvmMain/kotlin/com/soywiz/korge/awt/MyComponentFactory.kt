@@ -5,6 +5,7 @@ import com.soywiz.korge.particle.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
@@ -52,7 +53,9 @@ open class MyComponentFactory {
         list.add(ViewFactory("AnimationViewRef") { AnimationViewRef() })
         list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62))) })
-        list.add(ViewFactory("Text") { Text2("Text") })
+        for (registration in views.serializer.registrationsExt) {
+            list.add(ViewFactory(registration.name) { registration.factory() })
+        }
     }
 
     open fun createPopupMenu(): JPopupMenu = JPopupMenu()

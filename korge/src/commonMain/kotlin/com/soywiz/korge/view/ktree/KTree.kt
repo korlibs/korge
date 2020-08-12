@@ -1,7 +1,10 @@
 package com.soywiz.korge.view.ktree
 
+import com.soywiz.kds.iterators.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.tiled.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
@@ -9,14 +12,106 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
+import kotlin.jvm.*
 import kotlin.reflect.*
 
 interface KTreeSerializerHolder {
     val serializer: KTreeSerializer
 }
 
+open class KTreeSerializerExt<T : View>(val name: String, val clazz: KClass<T>, val factory: () -> T, val block: KTreeSerializerExt<T>.() -> Unit) {
+    val nameLC = name.toLowerCase()
+    data class Prop<T, R>(val prop: KMutableProperty1<T, R>, val default: R) {
+        val name get() = prop.name
+    }
+
+    data class CustomProp<T, R>(val prop: KMutableProperty1<T, R>, val serialize: (String) -> R, val deserialize: (R) -> String) {
+        val name get() = prop.name
+    }
+
+    val propsBoolean = arrayListOf<Prop<T, Boolean>>()
+    val propsString = arrayListOf<Prop<T, String>>()
+    val propsStringNull = arrayListOf<Prop<T, String?>>()
+    val propsDouble = arrayListOf<Prop<T, Double>>()
+    val propsInt = arrayListOf<Prop<T, Int>>()
+    val propsRGBA = arrayListOf<Prop<T, RGBA>>()
+    val propsCustom = arrayListOf<CustomProp<T, *>>()
+
+    val allPropsList = listOf(propsBoolean, propsString, propsStringNull, propsDouble, propsInt, propsRGBA)
+
+    init {
+        block()
+    }
+
+    @JvmName("addCustom")
+    fun <R> add(prop: KMutableProperty1<T, R>, serialize: (String) -> R, deserialize: (R) -> String) {
+        propsCustom.add(CustomProp(prop, serialize, deserialize))
+    }
+
+    @JvmName("addBoolean")
+    fun add(prop: KMutableProperty1<T, Boolean>, default: Boolean = false) = propsBoolean.add(Prop(prop, default))
+
+    @JvmName("addString")
+    fun add(prop: KMutableProperty1<T, String>, default: String = "") = propsString.add(Prop(prop, default))
+
+    @JvmName("addStringNull")
+    fun add(prop: KMutableProperty1<T, String?>) = propsStringNull.add(Prop(prop, null))
+
+    @JvmName("addDouble")
+    fun add(prop: KMutableProperty1<T, Double>, default: Double = 0.0) = propsDouble.add(Prop(prop, default))
+
+    @JvmName("addInt")
+    fun add(prop: KMutableProperty1<T, Int>, default: Int = 0) = propsInt.add(Prop(prop, default))
+
+    //@JvmName("addRGBA")
+    fun add(prop: KMutableProperty1<T, RGBA>, default: RGBA = Colors.WHITE) = propsRGBA.add(Prop(prop, default))
+
+    open suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): T {
+        if (xml.nameLC != nameLC) error("Not a '$nameLC' ($clazz) : ${xml.nameLC}")
+        val instance = factory()
+        propsBoolean.fastForEach { it.prop.set(instance, xml.str(it.prop.name, "${it.default}") == "true") }
+        propsString.fastForEach { it.prop.set(instance, xml.str(it.prop.name, it.default)) }
+        propsStringNull.fastForEach { it.prop.set(instance, xml.strNull(it.prop.name)) }
+        propsRGBA.fastForEach { it.prop.set(instance, Colors[(xml.strNull(it.prop.name) ?: it.default.hexString)]) }
+        propsDouble.fastForEach { it.prop.set(instance, xml.double(it.prop.name, it.default)) }
+        propsInt.fastForEach { it.prop.set(instance, xml.int(it.prop.name, it.default)) }
+        propsCustom.fastForEach {
+            it as CustomProp<T, Any>
+            it.prop.set(instance, it.serialize(xml.str(it.prop.name)))
+        }
+        return instance
+    }
+
+    open fun viewTreeToKTree(view: T, currentVfs: VfsFile, level: Int, props: MutableMap<String, Any?>?): Xml {
+        if (view::class != clazz) error("Not a '$name' ($clazz) : $view")
+        if (props != null) {
+            allPropsList.fastForEach { list ->
+                list.fastForEach { props[it.name] = it.prop.get(view) }
+            }
+            propsCustom.fastForEach {
+                it as CustomProp<T, Any>
+                props[it.name] = it.deserialize(it.prop.get(view))
+            }
+        }
+        return Xml(nameLC, props)
+    }
+}
+
+@OptIn(KorgeExperimental::class)
 open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
     override val serializer get() = this
+
+    val registrationsExt = mutableSetOf<KTreeSerializerExt<*>>()
+    private val registrationsByClass = LinkedHashMap<KClass<*>, KTreeSerializerExt<*>>()
+    private val registrationsByNameLC = LinkedHashMap<String, KTreeSerializerExt<*>>()
+    private val registrations = mutableSetOf<Registration>()
+
+    init {
+        register(TextButton.Serializer)
+        register(Text2.Serializer)
+        register(UIProgressBar.Serializer)
+        register(UICheckBox.Serializer)
+    }
 
     class Registration(
         val name: String,
@@ -36,7 +131,11 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         override fun hashCode(): Int = name.hashCode()
     }
 
-    private val registrations = mutableSetOf<Registration>()
+    fun register(registration: KTreeSerializerExt<*>) {
+        registrationsExt.add(registration)
+        registrationsByClass[registration.clazz] = registration
+        registrationsByNameLC[registration.nameLC] = registration
+    }
 
     fun register(registration: Registration) {
         registrations.add(registration)
@@ -58,17 +157,21 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             "animation" -> view = AnimationViewRef()
             "tiledmapref" -> view = TiledMapViewRef()
             "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
-            "text" -> view = Text2(xml.str("text"))
             else -> {
-                for (registration in registrations) {
-                    view = registration.deserializer(xml)
-                    if (view != null) break
+                val registration = registrationsByNameLC[xml.nameLC]
+                if (registration != null) {
+                    view = registration.ktreeToViewTree(xml, currentVfs)
+                } else {
+                    for (registration in registrations) {
+                        view = registration.deserializer(xml)
+                        if (view != null) break
+                    }
                 }
             }
         }
 
         if (view == null) {
-            TODO("Unsupported node ${xml.name}")
+            TODO("Unsupported node '${xml.name}'")
         }
 
         if (view is ViewFileRef) {
@@ -76,17 +179,6 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             if (sourceFile.isNotBlank()) {
                 try {
                     view.forceLoadSourceFile(views, currentVfs, sourceFile)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
-            }
-        }
-
-        if (view is Text2) {
-            val fontSource = xml.str("fontSource")
-            if (fontSource.isNotBlank()) {
-                try {
-                    view.forceLoadFontSource(currentVfs, fontSource)
                 } catch (e: Throwable) {
                     e.printStackTrace()
                 }
@@ -181,19 +273,16 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
         if (view is ViewFileRef) {
             add(view::sourceFile)
         }
-        if (view is Text2) {
-            add(view::text)
-            add(view::fontSize)
-            add(view::fontSource)
-            add(view::verticalAlign)
-            add(view::horizontalAlign)
-        }
 
         val rproperties: LinkedHashMap<String, Any?>? = if (level == 0) null else properties
 
+        val registration = registrationsByClass[view::class]
+        if (registration != null) {
+            return (registration as KTreeSerializerExt<View>).viewTreeToKTree(view, currentVfs, level, rproperties)
+        }
+
         val results = registrations.map { it.serializer(view, rproperties) }
         val result = results.filterNotNull().firstOrNull()
-
 
         //println("registrations: $registrations, $result, $results")
         return result ?: when (view) {
@@ -206,6 +295,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder {
             is TreeViewRef -> Xml("treeviewref", rproperties)
             is TiledMapViewRef -> Xml("tiledmapref", rproperties)
             is Text2 -> Xml("text", rproperties)
+            is TextButton -> Xml("uitextbutton", rproperties)
             is Container -> Xml("container", rproperties) {
                 view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
             }

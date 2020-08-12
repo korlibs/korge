@@ -1,6 +1,10 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
+import com.soywiz.korui.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.uiProgressBar(
@@ -13,7 +17,7 @@ inline fun Container.uiProgressBar(
     width: Double = 256.0,
     height: Double = 24.0,
     current: Double = 0.0,
-    maximum: Double = 1.0,
+    maximum: Double = 100.0,
     skin: UISkin = defaultUISkin,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
 ): UIProgressBar = UIProgressBar(width, height, current, maximum, skin).addTo(this).apply(block)
@@ -22,9 +26,9 @@ open class UIProgressBar(
 	width: Double = 256.0,
 	height: Double = 24.0,
 	current: Double = 0.0,
-	maximum: Double = 1.0,
+	maximum: Double = 100.0,
 	skin: UISkin = DefaultUISkin
-) : UIView(width, height) {
+) : UIView(width, height), KorgeDebugNode, ViewLeaf {
 
 	var current by uiObservable(current) { updateState() }
 	var maximum by uiObservable(maximum) { updateState() }
@@ -39,7 +43,7 @@ open class UIProgressBar(
 
 	private val background = solidRect(width, height, skin.backColor)
 	protected open val progressView: View =
-		ninePatch(skin.normal, width * current / maximum, height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
+		ninePatch(skin.normal, width * (current / maximum).clamp01(), height, 1.0 / 4.0, 1.0 / 4.0, 3.0 / 4.0, 3.0 / 4.0)
 
 	override fun onSizeChanged() {
 		background.size(width, height)
@@ -54,4 +58,16 @@ open class UIProgressBar(
 		(progressView as? NinePatch)?.tex = skin.normal
 		background.color = skin.backColor
 	}
+
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection(this@UIProgressBar::class.simpleName!!) {
+            uiEditableValue(::current, min = 0.0, max = 100.0, clamp = false)
+            uiEditableValue(::maximum, min = 1.0, max = 100.0, clamp = false)
+        }
+    }
+
+    object Serializer : KTreeSerializerExt<UIProgressBar>("UIProgressBar", UIProgressBar::class, { UIProgressBar() }, {
+        add(UIProgressBar::current)
+        add(UIProgressBar::maximum)
+    })
 }

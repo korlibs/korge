@@ -183,25 +183,27 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         views.onBeforeRender {
             val ctx = it.debugLineRenderContext
 
-            val transform = camera.content.globalMatrix.toTransform()
-            val dx = transform.scaleX * grid.width
-            val dy = transform.scaleY * grid.height
-            //println("dxy: $dx, $dy")
-            val smallX = dx < 3
-            val smallY = dy < 3
 
-            if (!smallX && !smallY) {
-                ctx.draw(camera.content.globalMatrix) {
-                    if (gridShowing) {
-                        grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
-                    }
-                }
-            }
         }
 
         views.onAfterRender {
             val ctx = it.debugLineRenderContext
             ctx.draw(camera.content.globalMatrix) {
+                val transform = camera.content.globalMatrix.toTransform()
+                val dx = transform.scaleX * grid.width
+                val dy = transform.scaleY * grid.height
+                //println("dxy: $dx, $dy")
+                val smallX = dx < 3
+                val smallY = dy < 3
+
+                if (!smallX && !smallY) {
+                    ctx.draw(camera.content.globalMatrix) {
+                        if (gridShowing) {
+                            grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
+                        }
+                    }
+                }
+
                 ctx.drawVector(Colors.RED) {
                     rect(0, 0, views.virtualWidth, views.virtualHeight)
                 }

@@ -23,7 +23,7 @@ open class OrthographicGrid(
     }
 
     override fun draw(ctx: DebugLineRenderContext, rect: RectangleInt) {
-        ctx.drawVector(Colors.LIGHTGREY.withAd(0.4)) {
+        ctx.drawVector(Colors["#d3d3d367"]) {
             for (x in rect.left until rect.right step width) line(x, rect.top, x, rect.bottom)
             for (y in rect.top until rect.bottom step height) line(rect.left, y, rect.right, y)
         }

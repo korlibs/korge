@@ -1,9 +1,14 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.textButton(
@@ -30,7 +35,7 @@ open class TextButton(
 	text: String = "Button",
 	skin: UISkin = DefaultUISkin,
 	textFont: Html.FontFace = DefaultUIFont
-) : UIButton(width, height, skin) {
+) : UIButton(width, height, skin), KorgeDebugNode, ViewLeaf {
 
 	var text by uiObservable(text) { updateText(); updateShadow() }
 	var textSize by uiObservable(16) { updateText() }
@@ -39,7 +44,7 @@ open class TextButton(
 	var textFont by uiObservable(textFont) { updateText(); updateShadow() }
 	var shadowX by uiObservable(1) { updateShadow() }
 	var shadowY by uiObservable(1) { updateShadow() }
-	var shadowSize by uiObservable(16) { updateShadow() }
+	//var shadowSize by uiObservable(16) { updateShadow() }
 	var shadowColor by uiObservable(Colors.BLACK.withA(64)) { updateShadow() }
 	var shadowVisible by uiObservable(true) { updateShadow() }
 
@@ -59,7 +64,7 @@ open class TextButton(
 
 	private fun updateShadow() {
 		textShadow.visible = shadowVisible
-		textShadow.format = Html.Format(face = textFont, size = shadowSize, color = shadowColor, align = textAlignment)
+		textShadow.format = Html.Format(face = textFont, size = textSize, color = shadowColor, align = textAlignment)
 		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 		textShadow.setText(text)
 		textShadow.position(shadowX, shadowY)
@@ -70,4 +75,23 @@ open class TextButton(
 		textView.setTextBounds(Rectangle(0, 0, width, height))
 		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 	}
+
+    override fun UiContainer.buildDebugComponent(views: Views) {
+        uiCollapsableSection(TextButton::class.simpleName!!) {
+            uiEditableValue(::text)
+            uiEditableValue(::textSize, min = 1.0, max = 300.0)
+            /*
+            uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
+            uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
+            uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "ttf" || it.extensionLC == "fnt"
+            })
+             */
+        }
+    }
+
+    object Serializer : KTreeSerializerExt<TextButton>("UITextButton", TextButton::class, { TextButton().also { it.text = "Button" } }, {
+        add(TextButton::text)
+        add(TextButton::textSize)
+    })
 }

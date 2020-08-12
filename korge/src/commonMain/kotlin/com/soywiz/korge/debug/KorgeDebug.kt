@@ -6,3 +6,6 @@ import com.soywiz.korui.*
 interface KorgeDebugNode {
     fun UiContainer.buildDebugComponent(views: Views)
 }
+
+interface KorgeDebugNodeLeaf : KorgeDebugNode, ViewLeaf {
+}
