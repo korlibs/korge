@@ -39,7 +39,7 @@ open class UIProgressBar(
 
 	override var ratio: Double
 		set(value) { current = value * maximum }
-		get() = current / maximum
+		get() = (current / maximum).clamp01()
 
 	private val background = solidRect(width, height, skin.backColor)
 	protected open val progressView: View =
