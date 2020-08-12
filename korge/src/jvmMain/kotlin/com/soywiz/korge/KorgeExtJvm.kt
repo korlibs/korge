@@ -18,6 +18,8 @@ internal actual fun completeViews(views: Views) {
     }
     frame.add(debugger)
     views.stage.timers.interval(500.hrMilliseconds) {
-        debugger.update()
+        if (views.gameWindow.debug) {
+            debugger.update()
+        }
     }
 }

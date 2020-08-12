@@ -5,6 +5,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
 
 suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtualHeight = 512) {
@@ -14,26 +15,31 @@ suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtua
 	var job: Job? = null
 
 	onClick {
-		job?.cancel()
+        //println("CLICK: ${it.button}")
+        if (it.button.isRight) {
+            job?.cancel(AnimateCancellationException(completeOnCancel = true))
+        } else {
+            job?.cancel(AnimateCancellationException(completeOnCancel = false))
+        }
 	}
 
 	while (true) {
 		job = launchImmediately {
-			//animate(completeOnCancel = false) {
-			animate(completeOnCancel = true) {
+			animate(completeOnCancel = false) {
+			//animate(completeOnCancel = true) {
 			//animate {
 				sequence(time = 1.seconds, speed = 256.0) {
-					wait()
+					wait(0.25.seconds)
 					parallel {
 						//rect1.moveTo(0, 150)
-						rect1.moveToWithSpeed(512.0 - 100, 0.0)
-						rect2.moveToWithSpeed(0.0, 512.0 - 100 - 100)
+						rect1.moveToWithSpeed(width - 100, 0.0)
+						rect2.moveToWithSpeed(0.0, height - 100 - 100)
 						//rect1.moveTo(0, height - 100)
 					}
 					parallel {
 						//rect1.moveTo(0, 150)
-						rect1.moveTo(512.0 - 100, 512.0 - 100)
-						rect2.moveTo(512.0 - 100, 512.0 - 100)
+						rect1.moveTo(width - 100, height - 100)
+						rect2.moveTo(width - 100, height - 100)
 						//rect1.moveTo(0, height - 100)
 					}
 					parallel(time = 1.seconds) {
@@ -41,6 +47,8 @@ suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtua
 						rect2.hide()
 					}
 					block {
+                        //printStackTrace()
+                        //println("ZERO")
 						rect1.position(0, 0)
 						rect2.position(0, 0)
 					}
@@ -51,8 +59,10 @@ suspend fun main() = Korge(width = 512, height = 512, virtualWidth = 512, virtua
 				}
 			}
 		}
-		delay(3.seconds)
 		job.join()
+        println("[a]")
+        delay(1.seconds)
+        println("[b]")
 		//job.cancel()
 	}
 }

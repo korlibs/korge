@@ -33,7 +33,8 @@ class ViewNode(val view: View?) : TreeNode {
     override fun isLeaf(): Boolean = (container == null) || (view is ViewLeaf)
     fun childrenList(): List<View> {
         if (view is ViewLeaf) return listOf()
-        return container?.children?.filter { it !is DummyView } ?: listOf()
+        //return container?.children?.filter { it !is DummyView } ?: EmptyList() // TOO SLOW
+        return container?.children ?: emptyList()
     }
 
     override fun getChildAt(childIndex: Int): TreeNode? = childrenList().getOrNull(childIndex)?.treeNode
@@ -197,6 +198,8 @@ class ViewsDebuggerComponent constructor(
     }
 
     fun update() {
+        //tree.model.tree
+        //tree.treeDidChange()
         tree.updateUI()
         uiProperties.update()
     }

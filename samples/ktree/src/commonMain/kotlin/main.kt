@@ -11,5 +11,5 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.serialization.xml.*
 
 suspend fun main() = Korge {
-	addChild(resourcesVfs["scene.ktree"].readKTree())
+	addChild(resourcesVfs["scene.ktree"].readKTree(views))
 }

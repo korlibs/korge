@@ -3,7 +3,6 @@ package com.soywiz.korge.animate
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -62,19 +61,25 @@ open class Animator(
         when (kind) {
             NodeKind.Sequence -> {
                 try {
-                    executeLoopedOrNot {
-                        while (nodes.isNotEmpty()) nodes.removeFirst().execute()
+                    executeMaybeLooped {
+                        while (nodes.isNotEmpty()) {
+                            val node = nodes.removeFirst()
+                            //println("Executing $node...")
+                            node.execute()
+                        }
                     }
                 } catch (e: CancellationException) {
+                    //println("CANCELLED SEQUENCE: $this")
                     _onCancel()
-                    if (completeOnCancel) {
+                    if (completeOnCancel(e)) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
+                    throw e
                 }
             }
             NodeKind.Parallel -> {
                 try {
-                    executeLoopedOrNot {
+                    executeMaybeLooped {
                         val jobs = arrayListOf<Job>()
                         while (nodes.isNotEmpty()) {
                             val node = nodes.removeFirst()
@@ -83,16 +88,25 @@ open class Animator(
                         jobs.joinAll()
                     }
                 } catch (e: CancellationException) {
+                    //println("CANCELLED PARALLEL: $this")
                     _onCancel()
-                    if (completeOnCancel) {
+                    if (completeOnCancel(e)) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
+                    throw e
                 }
             }
         }
     }
 
-    private suspend inline fun executeLoopedOrNot(crossinline code: suspend () -> Unit) {
+    fun completeOnCancel(e: CancellationException): Boolean {
+        if (e is AnimateCancellationException) {
+            return e.completeOnCancel ?: this.completeOnCancel
+        }
+        return this.completeOnCancel
+    }
+
+    private suspend inline fun executeMaybeLooped(crossinline code: suspend () -> Unit) {
         if (looped) {
             val nodesCopy = nodes.toList()
             while (true) {
@@ -166,10 +180,12 @@ open class Animator(
                 val rtime = lazyTime?.invoke() ?: time
                 view.tween(*computedVs, time = rtime, easing = easing)
             } catch (e: CancellationException) {
+                //println("CANCELLED TweenNode: $this")
                 //println("TweenNode: $e")
-                if (completeOnCancel) {
+                if (completeOnCancel(e)) {
                     executeImmediately()
                 }
+                throw e
             }
         }
 
@@ -229,6 +245,12 @@ open class Animator(
             override fun executeImmediately() = callback()
         })
     }
+}
+
+open class AnimateCancellationException(
+    val completeOnCancel: Boolean?
+) : CancellationException("AnimateCancellationException") {
+    override fun toString(): String = "AnimateCancellationException(completeOnCancel = $completeOnCancel)"
 }
 
 fun View.animator(
