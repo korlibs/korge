@@ -215,6 +215,10 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 	inline fun rotate(angle: Number) = rotate(angle.toDouble())
 	inline fun rotateDeg(degs: Number) = rotateDeg(degs.toDouble())
 
+    inline fun scale(sx: Double, sy: Double = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
+    inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
+    inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
+
 	fun scale(sx: Double, sy: Double = sx) = run { state.transform.prescale(sx, sy) }
     fun rotate(angle: Angle) = run { state.transform.prerotate(angle) }
 	fun rotate(angle: Double) = run { state.transform.prerotate(angle.radians) }
