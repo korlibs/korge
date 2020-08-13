@@ -73,6 +73,7 @@ class Box2dWorldComponent(
     override val world: World,
     var velocityIterations: Int = 6,
     var positionIterations: Int = 2,
+    var autoDestroyBodies: Boolean = true
 ) : UpdateComponentV2, WorldRef {
     override fun update(dt: HRTimeSpan) {
         world.step(dt.secondsDouble.toFloat(), velocityIterations, positionIterations)
@@ -101,6 +102,10 @@ class Box2dWorldComponent(
                 node.viewInfo.x = view.x
                 node.viewInfo.y = view.y
                 node.viewInfo.rotation = view.rotation
+
+                if (autoDestroyBodies && view.root !is Stage) {
+                    world.destroyBody(node)
+                }
             }
         }
     }
