@@ -34,7 +34,7 @@ class SceneContainer(
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer"
-) : Container(), CoroutineScope by views, KorgeDebugNode {
+) : Container(), CoroutineScope by views {
     init {
         this.name = name
     }
@@ -216,9 +216,8 @@ class SceneContainer(
         visitStack[visitPos] = entry
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        currentScene?.apply {
-            buildDebugComponent(views)
-        }
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        currentScene?.buildDebugComponent(views, container)
+        super.buildDebugComponent(views, container)
     }
 }

@@ -129,6 +129,18 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	override fun toString(): String = super.toString() + ":symbol=" + symbol
 
 	override fun createInstance(): View = symbol.create(library) as View
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("AnBaseShape") {
+            uiEditableValue(Pair(view::dxDouble, view::dyDouble), name = "dxy", clamp = false)
+            button("Center") {
+                view.dx = (-view.width / 2).toFloat()
+                view.dy = (-view.height / 2).toFloat()
+            }
+        }
+        super.buildDebugComponent(views, container)
+    }
 }
 
 class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnBaseShape(library, shapeSymbol), AnElement {
@@ -371,7 +383,7 @@ class AnSimpleAnimation(
 }
 
 class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbolMovieClip) : Container(),
-	AnElement, AnPlayable, KorgeDebugNode {
+	AnElement, AnPlayable {
 	override fun clone(): View = createInstance().apply {
 		this@apply.copyPropsFrom(this)
 	}
@@ -614,8 +626,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
         update()
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("SWF") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("SWF") {
             addChild(UiRowEditableValue(app, "symbol", UiListEditableValue(app, { library.symbolsByName.keys.toList() }, ObservableProperty(
                 name = "symbol",
                 internalSet = { symbolName ->
@@ -639,6 +651,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
             button("start") { play() }
             button("stop") { stop() }
         }
+        super.buildDebugComponent(views, container)
     }
 
     override var ratio: Double

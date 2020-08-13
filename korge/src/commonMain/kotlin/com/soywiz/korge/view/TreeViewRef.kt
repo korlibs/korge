@@ -7,7 +7,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
-class TreeViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+class TreeViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         removeChildren()
@@ -20,11 +20,12 @@ class TreeViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by View
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Tree") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Tree") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "ktree"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

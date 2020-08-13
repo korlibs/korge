@@ -36,7 +36,7 @@ suspend fun Container.attachParticleAndWait(
     this -= p
 }
 
-class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), ViewFileRef by ViewFileRef.Mixin(), KorgeDebugNode {
+class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), ViewFileRef by ViewFileRef.Mixin() {
     var emitter: ParticleEmitter = emitter
 	var simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
@@ -123,9 +123,9 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
         scale = 1.0
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
         if (views.name == "ktree") {
-            uiCollapsableSection("Particle Emitter Reference") {
+            container.uiCollapsableSection("Particle Emitter Reference") {
                 uiEditableValue(::sourceFile, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                     it.extensionLC == "pex"
                 })
@@ -133,7 +133,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             return
         }
         val particle = this@ParticleEmitterView.emitter
-        uiCollapsableSection("Particle Emitter") {
+        container.uiCollapsableSection("Particle Emitter") {
             uiEditableValue(::texture, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"
             })
@@ -187,5 +187,6 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
                 uiEditableValue(particle::rotationEndVariance)
             }
         }
+        super.buildDebugComponent(views, container)
     }
 }

@@ -24,7 +24,7 @@ class NinePatchEx(
 	ninePatch: Tex,
 	override var width: Double,
 	override var height: Double
-) : View(), ViewFileRef by ViewFileRef.Mixin(), KorgeDebugNode {
+) : View(), ViewFileRef by ViewFileRef.Mixin() {
     var ninePatch: Tex = ninePatch
         set(value) {
             field = value
@@ -175,11 +175,12 @@ class NinePatchEx(
         }
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("9-PatchImage") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("9-PatchImage") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.baseName.endsWith(".9.png")
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

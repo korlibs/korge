@@ -126,7 +126,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
         }
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
     }
 }
 

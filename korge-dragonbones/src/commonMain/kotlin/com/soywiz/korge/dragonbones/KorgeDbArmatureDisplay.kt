@@ -41,7 +41,7 @@ import com.soywiz.korui.*
 /**
  * @inheritDoc
  */
-class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
+class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 	private val _events = arrayListOf<EventObject>()
 	private val _eventsReturnQueue: ArrayList<BaseObject> = arrayListOf()
 
@@ -313,13 +313,14 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy, KorgeDebugNode {
 
     val animationNames get() = animation.animationNames
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("DragonBones") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("DragonBones") {
             addChild(UiRowEditableValue(app, "animation", UiListEditableValue(app, { animationNames }, ObservableProperty(
                 name = "animation",
                 internalSet = { animationName -> animation.play(animationName) },
                 internalGet = { animation.lastAnimationName }
             ))))
         }
+        super.buildDebugComponent(views, container)
     }
 }

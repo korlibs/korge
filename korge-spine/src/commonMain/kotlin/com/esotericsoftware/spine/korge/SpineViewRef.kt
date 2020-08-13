@@ -9,7 +9,7 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
-class SpineViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+class SpineViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     private var skeletonView: SkeletonView? = null
     private var skeleton: Skeleton? = null
 
@@ -48,11 +48,12 @@ class SpineViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by Vie
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Spine") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Spine") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "skel"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

@@ -28,7 +28,7 @@ open class UIProgressBar(
 	current: Double = 0.0,
 	maximum: Double = 100.0,
 	skin: UISkin = DefaultUISkin
-) : UIView(width, height), KorgeDebugNode, ViewLeaf {
+) : UIView(width, height), ViewLeaf {
 
 	var current by uiObservable(current) { updateState() }
 	var maximum by uiObservable(maximum) { updateState() }
@@ -59,11 +59,12 @@ open class UIProgressBar(
 		background.color = skin.backColor
 	}
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection(this@UIProgressBar::class.simpleName!!) {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection(this@UIProgressBar::class.simpleName!!) {
             uiEditableValue(::current, min = 0.0, max = 100.0, clamp = false)
             uiEditableValue(::maximum, min = 1.0, max = 100.0, clamp = false)
         }
+        super.buildDebugComponent(views, container)
     }
 
     object Serializer : KTreeSerializerExt<UIProgressBar>("UIProgressBar", UIProgressBar::class, { UIProgressBar() }, {

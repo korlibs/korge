@@ -6,7 +6,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
-class AnimationViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+class AnimationViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         removeChildren()
@@ -18,11 +18,12 @@ class AnimationViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("SWF") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("SWF") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "swf" || it.extensionLC == "ani"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

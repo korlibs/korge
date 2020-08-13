@@ -6,7 +6,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
-class TiledMapViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+class TiledMapViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         removeChildren()
@@ -18,11 +18,12 @@ class TiledMapViewRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by 
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("TiledMap") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("TiledMap") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "tmx"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

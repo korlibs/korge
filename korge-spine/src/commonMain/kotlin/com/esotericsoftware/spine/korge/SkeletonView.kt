@@ -22,7 +22,7 @@ import com.soywiz.korui.*
 inline fun Container.skeletonView(skeleton: Skeleton, animationState: AnimationState, block: @ViewDslMarker SkeletonView.() -> Unit = {})
     = SkeletonView(skeleton, animationState).addTo(this, block)
 
-class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) : View(), KorgeDebugNode {
+class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) : View() {
     init {
         if (animationState != null) {
             addUpdater { delta ->
@@ -335,8 +335,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
 
     val currentMainAnimation get() = animationState?.tracks?.first()?.animation
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Animation") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Animation") {
             addChild(UiRowEditableValue(app, "animation", UiListEditableValue(app, { skeleton.data.animations.map { it.name } }, ObservableProperty(
                 name = "animation",
                 internalSet = {  animationName ->
@@ -352,6 +352,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
             button("play") { play() }
             button("stop") { stop() }
         }
+        super.buildDebugComponent(views, container)
     }
 
     companion object {

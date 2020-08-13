@@ -35,7 +35,7 @@ open class TextButton(
 	text: String = "Button",
 	skin: UISkin = DefaultUISkin,
 	textFont: Html.FontFace = DefaultUIFont
-) : UIButton(width, height, skin), KorgeDebugNode, ViewLeaf {
+) : UIButton(width, height, skin), ViewLeaf {
 
 	var text by uiObservable(text) { updateText(); updateShadow() }
 	var textSize by uiObservable(16) { updateText() }
@@ -76,8 +76,8 @@ open class TextButton(
 		textShadow.setTextBounds(Rectangle(0, 0, width, height))
 	}
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection(TextButton::class.simpleName!!) {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection(TextButton::class.simpleName!!) {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min = 1.0, max = 300.0)
             /*
@@ -88,6 +88,7 @@ open class TextButton(
             })
              */
         }
+        super.buildDebugComponent(views, container)
     }
 
     object Serializer : KTreeSerializerExt<TextButton>("UITextButton", TextButton::class, { TextButton().also { it.text = "Button" } }, {

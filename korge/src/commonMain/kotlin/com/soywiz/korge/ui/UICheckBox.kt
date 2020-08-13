@@ -41,7 +41,7 @@ open class UICheckBox(
     textFont: Html.FontFace = DefaultUIFont,
     private val skin: UISkin = DefaultUISkin,
     private val checkIcon: IconSkin = DefaultCheckSkin
-) : UIView(width, height), KorgeDebugNodeLeaf {
+) : UIView(width, height), ViewLeaf {
 
     var checked by uiObservable(checked) { updateState() }
     var text by uiObservable(text) { updateText() }
@@ -127,11 +127,12 @@ open class UICheckBox(
         textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection(UICheckBox::class.simpleName!!) {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection(UICheckBox::class.simpleName!!) {
             uiEditableValue(::text)
             uiEditableValue(::checked)
         }
+        super.buildDebugComponent(views, container)
     }
 
     object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {

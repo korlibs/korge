@@ -7,7 +7,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
-class KorgeDbRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+class KorgeDbRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         removeChildren()
@@ -22,11 +22,12 @@ class KorgeDbRef() : Container(), KorgeDebugNode, ViewLeaf, ViewFileRef by ViewF
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("DragonBones") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("DragonBones") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "dbbin" || it.baseName.endsWith("_ske.json")
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

@@ -55,7 +55,7 @@ class Image(
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), KorgeDebugNode {
+) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin() {
 	constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
@@ -83,11 +83,12 @@ class Image(
         super.renderInternal(ctx)
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Image") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Image") {
             uiEditableValue(this@Image::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }

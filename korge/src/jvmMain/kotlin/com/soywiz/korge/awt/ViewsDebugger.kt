@@ -94,7 +94,7 @@ class ViewsDebuggerComponent constructor(
     }
 
     private fun selectView(view: View?) {
-        uiProperties.setView(view, coroutineContext)
+        uiProperties.setView(view)
         views.renderContext.debugAnnotateView = view
         uiProperties.relayout()
     }

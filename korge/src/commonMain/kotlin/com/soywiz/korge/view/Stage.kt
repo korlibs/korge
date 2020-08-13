@@ -16,7 +16,6 @@ class Stage(override val views: Views) : Container()
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
     , ViewsScope, ViewsContainer
-    , KorgeDebugNode
 {
     val injector get() = views.injector
     val ag get() = views.ag
@@ -50,13 +49,14 @@ class Stage(override val views: Views) : Container()
         }
     }
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Stage") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Stage") {
             uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize", min = 0.0, max = 2000.0).findObservableProperties().fastForEach {
                 it.onChange {
                     views.resized()
                 }
             }
         }
+        super.buildDebugComponent(views, container)
     }
 }

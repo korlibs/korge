@@ -50,7 +50,7 @@ open class Text2(
         color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
         horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
         renderer: TextRenderer<String> = DefaultStringTextRenderer
-) : Container(), KorgeDebugNode, ViewLeaf {
+) : Container(), ViewLeaf {
     object Serializer : KTreeSerializerExt<Text2>("Text", Text2::class, { Text2("Text") }, {
         add(Text2::text, "Text")
         add(Text2::fontSource)
@@ -161,8 +161,8 @@ open class Text2(
     }
 
 
-    override fun UiContainer.buildDebugComponent(views: Views) {
-        uiCollapsableSection("Text") {
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::fontSize, min= 1.0, max = 300.0)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
@@ -171,6 +171,7 @@ open class Text2(
                 it.extensionLC == "ttf" || it.extensionLC == "fnt"
             })
         }
+        super.buildDebugComponent(views, container)
     }
 }
 

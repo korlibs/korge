@@ -1,11 +1,13 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 /**
  * [RectBase] is an abstract [Container] [View] that represents something with a Rect-like shape: like a [SolidRect] or an [Image].
@@ -89,4 +91,16 @@ open class RectBase(
 		if (anchorX != 0.0 || anchorY != 0.0) out += ":anchor=(${anchorX.str}, ${anchorY.str})"
 		return out
 	}
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("RectBase") {
+            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
+            button("Center") {
+                view.anchorX = 0.5
+                view.anchorY = 0.5
+            }
+        }
+        super.buildDebugComponent(views, container)
+    }
 }

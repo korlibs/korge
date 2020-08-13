@@ -7,12 +7,15 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korev.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
@@ -21,6 +24,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korui.*
 import kotlin.collections.set
 import kotlin.math.*
 import kotlin.native.concurrent.*
@@ -61,6 +65,7 @@ abstract class View internal constructor(
     val isContainer: Boolean
 ) : Renderable
     , Extra by Extra.Mixin()
+    , KorgeDebugNode
 //, EventDispatcher by EventDispatcher.Mixin()
 {
     constructor() : this(false)
@@ -1343,6 +1348,26 @@ abstract class View internal constructor(
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("View") {
+            addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
+            uiEditableValue(view::name)
+            uiEditableValue(view::colorMul)
+            uiEditableValue(view::blendMode, values = { BlendMode.values().toList() })
+            uiEditableValue(view::alpha, min = 0.0, max = 1.0, clamp = true)
+            uiEditableValue(view::speed, min = -1.0, max = 1.0, clamp = false)
+            uiEditableValue(view::ratio, min = 0.0, max = 1.0, clamp = false)
+            uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
+            uiEditableValue(Pair(view::scaledWidth, view::scaledHeight), min = -1000.0, max = 1000.0, clamp = false, name = "size")
+            uiEditableValue(view::scale, min = 0.0, max = 1.0, clamp = false)
+            uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
+            uiEditableValue(view::rotationDegrees, min = -360.0, max = +360.0, clamp = true, name = "rotation")
+            uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
+            uiEditableValue(view::visible)
+        }
     }
 }
 
