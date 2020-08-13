@@ -155,7 +155,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param gravityScale
      */
 
-    var m_gravityScale: Float = 0.toFloat()
+    var gravityScale: Float = 0.toFloat()
 
     var m_sleepTime: Float = 0.toFloat()
 
@@ -514,7 +514,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
 
         m_linearDamping = bd.linearDamping
         m_angularDamping = bd.angularDamping
-        m_gravityScale = bd.gravityScale
+        gravityScale = bd.gravityScale
 
         force.setZero()
         torque = 0.0f

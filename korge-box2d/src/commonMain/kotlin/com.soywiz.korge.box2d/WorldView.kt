@@ -37,7 +37,7 @@ fun Views.registerBox2dSupportOnce() {
                     uiEditableValue(body::isFixedRotation)
                     uiEditableValue(body::isBullet)
                     uiEditableValue(body::isActive)
-                    uiEditableValue(body::m_gravityScale)
+                    uiEditableValue(body::gravityScale)
                     uiEditableValue(body::angularVelocity)
 
                     val fixture = body.m_fixtureList
