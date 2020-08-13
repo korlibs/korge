@@ -246,12 +246,14 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
         get() = linearVelocity.x
         set(v)  {
             linearVelocity.x = v
+            isAwake = true
         }
 
     var linearVelocityY: Float
         get() = linearVelocity.y
         set(v)  {
             linearVelocity.y = v
+            isAwake = true
         }
 
             /**
