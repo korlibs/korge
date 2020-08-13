@@ -61,6 +61,21 @@ fun UiContainer.uiEditableValue(
     return UiRowEditableValue(app, name, UiNumberEditableValue(app, obs, min, max, clampMin, clampMax, decimalPlaces)).also { addChild(it) }
 }
 
+@JvmName("uiEditableValueFloat")
+fun UiContainer.uiEditableValue(
+    prop: KMutableProperty0<Float>,
+    min: Float = -1f,
+    max: Float = +1f,
+    clamp: Boolean = true,
+    clampMin: Boolean = clamp,
+    clampMax: Boolean = clamp,
+    decimalPlaces: Int = 2,
+    name: String = prop.name,
+): UiRowEditableValue {
+    val obs = ObservableProperty(name, internalSet = { prop.set(it.toFloat()) }, internalGet = { prop.get().toDouble() })
+    return UiRowEditableValue(app, name, UiNumberEditableValue(app, obs, min.toDouble(), max.toDouble(), clampMin, clampMax, decimalPlaces)).also { addChild(it) }
+}
+
 @JvmName("uiEditableValueAngle")
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Angle>,

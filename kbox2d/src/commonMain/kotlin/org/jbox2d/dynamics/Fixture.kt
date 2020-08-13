@@ -176,6 +176,18 @@ class Fixture : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
             m_density = density
         }
 
+    var friction: Float
+        get() = m_friction
+        set(value) {
+            m_friction = value
+        }
+
+    var restitution: Float
+        get() = m_restitution
+        set(value) {
+            m_restitution = value
+        }
+
     private val pool1 = AABB()
     private val pool2 = AABB()
     private val displacement = Vec2()

@@ -472,6 +472,8 @@ class Components {
         gen: (View) -> T
     ): T = getOrCreateComponent(view, eresize, clazz, gen) as T
 
+    inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class) as T?
+
     fun <T : Component> findFirstComponentOfType(array: ArrayList<T>, clazz: KClass<out T>): T? {
         array.fastForEach { if (it::class == clazz) return it }
         return null

@@ -43,6 +43,14 @@ import org.jbox2d.userdata.*
  */
 class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
 
+    class ViewInfo {
+        var view: Any? = null
+        var x: Double = 0.0
+        var y: Double = 0.0
+        var rotation: Angle = 0.degrees
+    }
+
+    val viewInfo = ViewInfo()
 
     var _type: BodyType
 
@@ -172,17 +180,30 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      *
      * @return the current world rotation angle in radians.
      */
-    val angleRadians: Float
+    var angleRadians: Float
         get() = sweep.a
+        // @TODO: Check this is possible
+        set(value) {
+            sweep.a = value
+        }
+
+    var angle: Angle
+        get() = angleRadians.radians
+        set(value) {
+            angleRadians = value.radians.toFloat()
+        }
 
     /**
      * Get the angle in degrees.
      *
      * @return the current world rotation angle in degrees.
      */
-    val angleDegrees: Float get() = angleRadians * MathUtils.RAD2DEG
+    var angleDegrees: Float
+        get() = angle.degrees.toFloat()
+        set(value) {
+            angle = value.degrees
+        }
 
-    val angle: Angle get() = angleRadians.radians
 
     /**
      * Get the world position of the center of mass. Do not modify.

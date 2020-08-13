@@ -123,10 +123,7 @@ open class KorgeBaseKorgeFileEditor(
                         println("!! completedEditing")
                         executePendingWriteActions()
                     }
-                    views.registerSwf()
-                    views.registerDragonBones()
-                    views.registerSpine()
-                    views.ideaProject = project
+                    views.registerIdeaStuff(project)
                     val app = IdeaUiApplication(project, views)
                     viewsDebuggerComponent = ViewsDebuggerComponent(views, app, actions = MyViewsDebuggerActions(views)).also {
                         it.styled.fill()

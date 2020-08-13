@@ -411,6 +411,8 @@ class Views constructor(
         debugSaveView("Adjusted ${prop.name}", null)
         completedEditing(Unit)
     }
+
+    var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {

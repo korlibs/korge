@@ -544,6 +544,8 @@ abstract class View internal constructor(
     internal var validLocalProps = true
     internal var validLocalMatrix = true
 
+    // region Components
+
     @KorgeInternal
     @PublishedApi
     internal var _components: Components? = null
@@ -555,10 +557,6 @@ abstract class View internal constructor(
             if (_components == null) _components = Components()
             return _components!!
         }
-
-    // region Components
-    @PublishedApi
-    internal var components: ArrayList<Component>? = null
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
     @Deprecated("")
@@ -591,6 +589,8 @@ abstract class View internal constructor(
 
     inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (View) -> T): T =
         componentsSure.getOrCreateComponent(this, T::class, gen)
+
+    inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = componentsSure.getComponentUpdate<T>()
 
     /** Removes a specific [c] component from the view */
     fun removeComponent(c: Component) {
@@ -1372,6 +1372,9 @@ abstract class View internal constructor(
             views.undoable("Add filter", view) {
                 view.filter = WaveFilter()
             }
+        }
+        views.viewExtraBuildDebugComponent.fastForEach {
+            it(views, view, container)
         }
     }
 }
