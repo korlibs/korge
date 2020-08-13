@@ -105,6 +105,8 @@ class Box2dWorldComponent(
 
                 if (autoDestroyBodies && view.root !is Stage) {
                     world.destroyBody(node)
+                    node.view?.body = null
+                    node.view = null
                 }
             }
         }
