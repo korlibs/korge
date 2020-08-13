@@ -9,6 +9,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*
@@ -32,29 +33,23 @@ var KTreeSerializer.box2dWorld by Extra.PropertyThis<KTreeSerializer, Box2dWorld
 object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
     override fun setProps(serializer: KTreeSerializer, view: View, xml: Xml) {
         //println("PhysicsKTreeSerializerExtension.setProps")
-        val body = view.registerBodyWithFixture(
+        view.registerBodyWithFixture(
             world = serializer.box2dWorld?.world,
             type = xml.strNull("type")?.let { BodyType[it] } ?: BodyType.STATIC,
-        ).body
-        if (body != null) {
-            val fixture = body.m_fixtureList
-            if (fixture != null) {
-                fixture.isSensor = xml.boolean("isSensor", false)
-                fixture.friction = xml.float("friction", 0f)
-                fixture.density = xml.float("density", 1f)
-                fixture.restitution = xml.float("restitution", 0f)
-            }
-            body.linearVelocityX = xml.float("linearVelocityX", 0f)
-            body.linearVelocityY = xml.float("linearVelocityY", 0f)
-            body.gravityScale = xml.float("gravityScale", 1f)
-            body.angularVelocity = xml.float("angularVelocity", 0f)
-            body.isSleepingAllowed = xml.boolean("isSleepingAllowed", true)
-            body.isAwake = xml.boolean("isAwake", true)
-            body.isFixedRotation = xml.boolean("isFixedRotation", false)
-            body.isBullet = xml.boolean("isBullet", false)
-            body.isActive = xml.boolean("isActive", true)
-            //println("body.linearVelocityY: ${body.linearVelocityY}")
-        }
+            linearVelocityX = xml.float("linearVelocityX", 0f),
+            linearVelocityY = xml.float("linearVelocityY", 0f),
+            gravityScale = xml.float("gravityScale", 1f),
+            angularVelocity = xml.float("angularVelocity", 0f),
+            allowSleep = xml.boolean("isSleepingAllowed", true),
+            awake = xml.boolean("isAwake", true),
+            fixedRotation = xml.boolean("isFixedRotation", false),
+            bullet = xml.boolean("isBullet", false),
+            friction = xml.float("friction", 0f),
+            density = xml.float("density", 1f),
+            restitution = xml.float("restitution", 0f),
+            isSensor = xml.boolean("isSensor", false),
+            active = xml.boolean("isActive", true)
+        )
     }
 
     override fun getProps(serializer: KTreeSerializer, view: View): Map<String, Any?>? {
@@ -153,24 +148,30 @@ class Box2dWorldComponent(
     var positionIterations: Int = 2,
     var autoDestroyBodies: Boolean = true,
 ) : UpdateComponentV2, WorldRef {
+    val worldView = view
     init {
         world.component = this
     }
 
     object Key : Box2dTypedUserData.Key<Box2dWorldComponent>()
 
+    private val tempVec = Vec2()
+    private val tempPos = Point()
     override fun update(dt: HRTimeSpan) {
         world.step(dt.secondsDouble.toFloat(), velocityIterations, positionIterations)
-        val tempVec = Vec2()
         world.forEachBody { node ->
             val view = node.view
 
             if (view != null) {
                 val worldScale = world.customScale
                 val worldScaleInv = 1.0 / worldScale
-                if (view.x != node.viewInfo.x || view.y != node.viewInfo.y || view.rotation != node.viewInfo.rotation) {
+
+                //val viewPos = view.getPositionRelativeTo(worldView, tempPos)
+                val viewPos = tempPos.setTo(view.x, view.y)
+
+                if (viewPos.x != node.viewInfo.x || viewPos.y != node.viewInfo.y || view.rotation != node.viewInfo.rotation) {
                     node.setTransform(
-                        tempVec.set(view.x * worldScaleInv, view.y * worldScaleInv),
+                        tempVec.set(viewPos.x * worldScaleInv, viewPos.y * worldScaleInv),
                         view.rotation
                     )
                     node.linearVelocity = tempVec.set(0f, 0f)
@@ -179,8 +180,12 @@ class Box2dWorldComponent(
                     node.isAwake = true
                 }
 
-                view.x = node.position.x.toDouble() * worldScale
-                view.y = node.position.y.toDouble() * worldScale
+                val newX = node.position.x.toDouble() * worldScale
+                val newY = node.position.y.toDouble() * worldScale
+
+                view.position(newX, newY)
+                //view.setPositionRelativeTo(worldView, tempPos.setTo(newX, newY))
+
                 view.rotation = node.angle
 
                 val viewRoot = view.root
@@ -270,6 +275,8 @@ inline fun <T : View> T.registerBodyWithFixture(
     type: BodyType = BodyType.STATIC,
     friction: Number = 0.01,
     restitution: Number = 0.2,
+    active: Boolean = true,
+    isSensor: Boolean = false,
     density: Number = 10.0,
     world: World? = null,
 ): T {
@@ -286,6 +293,7 @@ inline fun <T : View> T.registerBodyWithFixture(
         this.fixedRotation = fixedRotation
         this.bullet = bullet
         this.awake = awake
+        this.active = active
     }
     val world = body.world
 
@@ -295,6 +303,7 @@ inline fun <T : View> T.registerBodyWithFixture(
         } else {
             BoxShape(width / world.customScale, height / world.customScale)
         }
+        this.isSensor = isSensor
         this.friction = friction.toFloat()
         this.restitution = restitution.toFloat()
         this.density = density.toFloat()
