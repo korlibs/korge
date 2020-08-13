@@ -32,6 +32,14 @@ fun Views.registerBox2dSupportOnce() {
             if (body != null) {
                 physicsContainer.uiCollapsableSection("Box2D Physics") {
                     uiEditableValue(body::type, values = { listOf(BodyType.STATIC, BodyType.DYNAMIC, BodyType.KINEMATIC) })
+                    uiEditableValue(body::isSleepingAllowed)
+                    uiEditableValue(body::isAwake)
+                    uiEditableValue(body::isFixedRotation)
+                    uiEditableValue(body::isBullet)
+                    uiEditableValue(body::isActive)
+                    uiEditableValue(body::m_gravityScale)
+                    uiEditableValue(body::angularVelocity)
+
                     val fixture = body.m_fixtureList
                     if (fixture != null) {
                         uiEditableValue(fixture::isSensor)
