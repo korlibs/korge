@@ -128,8 +128,10 @@ class ViewsDebuggerComponent constructor(
 
                         val popupMenu = myComponentFactory.createPopupMenu()
 
+                        val subMenuAdd = JMenu("Add")
+
                         for (factory in myComponentFactory.getViewFactories(views)) {
-                            popupMenu.add(myComponentFactory.createMenuItem("Add ${factory.name}").also {
+                            subMenuAdd.add(myComponentFactory.createMenuItem(factory.name).also {
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
@@ -139,6 +141,7 @@ class ViewsDebuggerComponent constructor(
                                 }
                             })
                         }
+                        popupMenu.add(subMenuAdd)
 
                         popupMenu.add(myComponentFactory.createSeparator())
                         popupMenu.add(myComponentFactory.createMenuItem("Cut").also {
