@@ -48,6 +48,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
         var x: Double = 0.0
         var y: Double = 0.0
         var rotation: Angle = 0.degrees
+        var onStage = false
     }
 
     val viewInfo = ViewInfo()
@@ -244,16 +245,14 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
 
     var linearVelocityX: Float
         get() = linearVelocity.x
-        set(v)  {
-            linearVelocity.x = v
-            isAwake = true
+        set(v) {
+            linearVelocity = linearVelocity.set(v, linearVelocity.y)
         }
 
     var linearVelocityY: Float
         get() = linearVelocity.y
-        set(v)  {
-            linearVelocity.y = v
-            isAwake = true
+        set(v) {
+            linearVelocity = linearVelocity.set(linearVelocity.x, v)
         }
 
             /**

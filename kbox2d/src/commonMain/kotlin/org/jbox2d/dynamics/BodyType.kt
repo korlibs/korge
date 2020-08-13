@@ -37,5 +37,10 @@ package org.jbox2d.dynamics
  * @author daniel
  */
 enum class BodyType {
-    STATIC, KINEMATIC, DYNAMIC
+    STATIC, KINEMATIC, DYNAMIC;
+
+    companion object {
+        val BY_NAME = values().associateBy { it.name.toUpperCase() }
+        operator fun get(name: String): BodyType = BY_NAME[name.toUpperCase()] ?: STATIC
+    }
 }

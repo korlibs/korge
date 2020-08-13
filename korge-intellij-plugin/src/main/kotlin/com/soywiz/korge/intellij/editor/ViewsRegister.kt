@@ -14,4 +14,5 @@ fun Views.registerIdeaStuff(project: Project) {
     views.registerSpine()
     views.registerBox2dSupportOnce()
     views.ideaProject = project
+    views.serializer.box2dWorld = views.stage.getOrCreateBox2dWorld()
 }

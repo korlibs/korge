@@ -6,7 +6,9 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korui.*
 import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*
@@ -25,9 +27,64 @@ fun Views.checkBox2dRegistered() {
     if (!registeredBox2dSupport) error("You should call Views.registerBox2dSupport()")
 }
 
+var KTreeSerializer.box2dWorld by Extra.PropertyThis<KTreeSerializer, Box2dWorldComponent?> { null }
+
+object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
+    override fun setProps(serializer: KTreeSerializer, view: View, xml: Xml) {
+        //println("PhysicsKTreeSerializerExtension.setProps")
+        val body = view.registerBodyWithFixture(
+            world = serializer.box2dWorld?.world,
+            type = xml.strNull("type")?.let { BodyType[it] } ?: BodyType.STATIC,
+        ).body
+        if (body != null) {
+            val fixture = body.m_fixtureList
+            if (fixture != null) {
+                fixture.isSensor = xml.boolean("isSensor", false)
+                fixture.friction = xml.float("friction", 0f)
+                fixture.density = xml.float("density", 1f)
+                fixture.restitution = xml.float("restitution", 0f)
+            }
+            body.linearVelocityX = xml.float("linearVelocityX", 0f)
+            body.linearVelocityY = xml.float("linearVelocityY", 0f)
+            body.gravityScale = xml.float("gravityScale", 1f)
+            body.angularVelocity = xml.float("angularVelocity", 0f)
+            body.isSleepingAllowed = xml.boolean("isSleepingAllowed", true)
+            body.isAwake = xml.boolean("isAwake", true)
+            body.isFixedRotation = xml.boolean("isFixedRotation", false)
+            body.isBullet = xml.boolean("isBullet", false)
+            body.isActive = xml.boolean("isActive", true)
+            //println("body.linearVelocityY: ${body.linearVelocityY}")
+        }
+    }
+
+    override fun getProps(serializer: KTreeSerializer, view: View): Map<String, Any?>? {
+        val body = view.body ?: return null
+        val fixture = body.m_fixtureList
+        //println("PhysicsKTreeSerializerExtension.getProps")
+        return LinkedHashMap<String, Any?>().apply {
+            if (body.type != BodyType.STATIC) this["type"] = body.type
+            if (body.linearVelocityX != 0f) this["linearVelocityX"] = body.linearVelocityX
+            if (body.linearVelocityY != 0f) this["linearVelocityY"] = body.linearVelocityY
+            if (body.gravityScale != 1f) this["gravityScale"] = body.gravityScale
+            if (body.angularVelocity != 0f) this["angularVelocity"] = body.angularVelocity
+            if (!body.isSleepingAllowed) this["isSleepingAllowed"] = body.isSleepingAllowed
+            if (!body.isAwake) this["isAwake"] = body.isAwake
+            if (body.isFixedRotation) this["isFixedRotation"] = body.isFixedRotation
+            if (body.isBullet) this["isBullet"] = body.isBullet
+            if (!body.isActive) this["isActive"] = body.isActive
+            if (fixture != null) {
+                if (fixture.isSensor) this["isSensor"] = fixture.isSensor
+                if (fixture.friction != 0f) this["friction"] = fixture.friction
+                if (fixture.density != 1f) this["density"] = fixture.density
+                if (fixture.restitution != 0f) this["restitution"] = fixture.restitution
+            }
+        }
+    }
+}
 fun ViewsContainer.registerBox2dSupportOnce() {
     if (views.registeredBox2dSupport) return
     views.registeredBox2dSupport = true
+    views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
     views.viewExtraBuildDebugComponent.add { views, view, container ->
         val physicsContainer = container.container {
         }
@@ -57,6 +114,7 @@ fun ViewsContainer.registerBox2dSupportOnce() {
             } else {
                 physicsContainer.button("Add box2d physics") {
                     view.registerBodyWithFixture(type = BodyType.STATIC)
+                    views.debugSaveView("Add physics", view)
                     physicsContainer()
                 }
             }
@@ -125,15 +183,20 @@ class Box2dWorldComponent(
                 view.y = node.position.y.toDouble() * worldScale
                 view.rotation = node.angle
 
+                val viewRoot = view.root
+                val viewRootStage = viewRoot is Stage
+
                 node.viewInfo.x = view.x
                 node.viewInfo.y = view.y
                 node.viewInfo.rotation = view.rotation
 
-                if (autoDestroyBodies && view.root !is Stage) {
+                if (autoDestroyBodies && node.viewInfo.onStage && !viewRootStage) {
                     world.destroyBody(node)
                     node.view?.body = null
                     node.view = null
                 }
+
+                node.viewInfo.onStage = viewRootStage
             }
         }
     }
@@ -168,7 +231,7 @@ val View.nearestBox2dWorldComponent: Box2dWorldComponent
 
 val View.nearestBox2dWorld: World get() = nearestBox2dWorldComponent.world
 
-inline fun View.createBody(callback: BodyDef.() -> Unit): Body = nearestBox2dWorld.createBody(BodyDef().apply(callback))
+inline fun View.createBody(world: World? = null, callback: BodyDef.() -> Unit): Body = (world ?: nearestBox2dWorld).createBody(BodyDef().apply(callback))
 
 /** Shortcut to create and attach a [Fixture] to this [Body] */
 inline fun Body.fixture(callback: FixtureDef.() -> Unit): Body = this.also { createFixture(FixtureDef().apply(callback)) }
@@ -207,9 +270,10 @@ inline fun <T : View> T.registerBodyWithFixture(
     type: BodyType = BodyType.STATIC,
     friction: Number = 0.01,
     restitution: Number = 0.2,
-    density: Number = 10.0
+    density: Number = 10.0,
+    world: World? = null,
 ): T {
-    val body = createBody {
+    val body = createBody(world) {
         this.type = type
         this.angle = rotation
         this.angularVelocity = angularVelocity.toFloat()

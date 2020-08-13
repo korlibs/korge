@@ -13,6 +13,7 @@ data class Xml(
 	val allChildren: List<Xml>,
 	val content: String
 ) {
+    fun withExtraChild(node: Xml) = copy(allChildren = allChildren + node)
 
 	val attributesLC = attributes.toCaseInsensitiveMap()
 	val nameLC: String = name.toLowerCase().trim()
@@ -156,7 +157,16 @@ data class Xml(
 	fun double(name: String, defaultValue: Double = 0.0): Double =
 		this.attributesLC[name]?.toDoubleOrNull() ?: defaultValue
 
-	fun float(name: String, defaultValue: Float = 0f): Float = this.attributesLC[name]?.toFloatOrNull() ?: defaultValue
+    fun boolean(name: String, defaultValue: Boolean = false): Boolean = booleanOrNull(name) ?: defaultValue
+
+    fun booleanOrNull(name: String): Boolean? =
+        when (str(name).toLowerCase()) {
+            "true", "1" -> true
+            "false", "0" -> false
+            else -> null
+        }
+
+    fun float(name: String, defaultValue: Float = 0f): Float = this.attributesLC[name]?.toFloatOrNull() ?: defaultValue
 	fun int(name: String, defaultValue: Int = 0): Int = this.attributesLC[name]?.toIntOrNull() ?: defaultValue
 	fun long(name: String, defaultValue: Long = 0): Long = this.attributesLC[name]?.toLongOrNull() ?: defaultValue
 	fun str(name: String, defaultValue: String = ""): String = this.attributesLC[name] ?: defaultValue
