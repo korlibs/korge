@@ -117,7 +117,7 @@ var View.box2dWorldComponent by Extra.PropertyThis<View, Box2dWorldComponent?> {
 
 inline fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
     if (this.box2dWorldComponent == null) {
-        val component = Box2dWorldComponent(this, World(), 6, 2)
+        val component = Box2dWorldComponent(this, World(0f, 98f), 6, 2)
         this.box2dWorldComponent = component
         addComponent(component)
     }
