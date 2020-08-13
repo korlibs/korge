@@ -66,6 +66,7 @@ interface NativeUiFactory {
         var checked: Boolean
             get() = false
             set(value) = Unit
+        fun onChange(block: () -> Unit) = Disposable { }
     }
 
     interface NativeComboBox<T> : NativeComponent {

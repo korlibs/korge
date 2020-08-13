@@ -48,6 +48,7 @@ class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiCo
                 uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
                 uiEditableValue(view::rotationDegrees, min = -360.0, max = +360.0, clamp = true, name = "rotation")
                 uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
+                uiEditableValue(view::visible)
             })
         }
 

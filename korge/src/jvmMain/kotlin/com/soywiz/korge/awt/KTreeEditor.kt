@@ -62,6 +62,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
     val file = fileToEdit.file
     return myComponentFactory.createModule {
         views.name = "ktree"
+        views.editingMode = true
         //var save = false
         val views = this.views
         val gameWindow = this.views.gameWindow

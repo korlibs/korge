@@ -121,7 +121,7 @@ fun UiContainer.uiEditableValue(
     return UiRowEditableValue(app, name, UiTextEditableValue(app, obs, kind)).also { addChild(it) }
 }
 
-@JvmName("uiEditableValueNullable")
+@JvmName("uiEditableValueStringNullable")
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<String>,
     kind: UiTextEditableValue.Kind = UiTextEditableValue.Kind.STRING,
@@ -133,4 +133,17 @@ fun UiContainer.uiEditableValue(
         internalGet = { prop.get() }
     )
     return UiRowEditableValue(app, name, UiTextEditableValue(app, obs, kind)).also { addChild(it) }
+}
+
+@JvmName("uiEditableValueBoolean")
+fun UiContainer.uiEditableValue(
+    prop: KMutableProperty0<Boolean>,
+    name: String = prop.name,
+): UiRowEditableValue {
+    val obs = ObservableProperty(
+        name,
+        internalSet = { prop.set(it) },
+        internalGet = { prop.get() }
+    )
+    return UiRowEditableValue(app, name, UiBooleanEditableValue(app, obs)).also { addChild(it) }
 }

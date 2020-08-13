@@ -79,7 +79,9 @@ open class UICheckBox(
                 this@UICheckBox.pressing = false
             }
             onClick {
-                this@UICheckBox.checked = !this@UICheckBox.checked
+                if (!it.views.editingMode) {
+                    this@UICheckBox.checked = !this@UICheckBox.checked
+                }
             }
         }
         updateText()
@@ -128,7 +130,7 @@ open class UICheckBox(
     override fun UiContainer.buildDebugComponent(views: Views) {
         uiCollapsableSection(UICheckBox::class.simpleName!!) {
             uiEditableValue(::text)
-            //uiEditableValue(::checked)
+            uiEditableValue(::checked)
         }
     }
 

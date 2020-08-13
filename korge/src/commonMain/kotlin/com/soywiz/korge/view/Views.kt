@@ -72,6 +72,8 @@ class Views constructor(
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
 
+    var editingMode: Boolean = false
+
     /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
     @KorgeInternal
 	val nativeWidth get() = ag.mainRenderBuffer.width

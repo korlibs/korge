@@ -104,18 +104,22 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             }
     }
 
-    open class KorgeCheckBox(override val factory: KorgeNativeUiFactory, val button: UICheckBox) : KorgeComponent(factory, button), NativeUiFactory.NativeCheckBox {
+    open class KorgeCheckBox(override val factory: KorgeNativeUiFactory, val checkBox: UICheckBox) : KorgeComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
         override var text: String
-            get() = button.text
+            get() = checkBox.text
             set(value) {
-                button.text = value
+                checkBox.text = value
             }
 
         override var checked: Boolean
-            get() = button.checked
+            get() = checkBox.checked
             set(value) {
-                button.checked = value
+                checkBox.checked = value
             }
+
+        override fun onChange(block: () -> Unit): Disposable {
+            return checkBox.onChange { block() }.disposable()
+        }
     }
 
     open class KorgeComboBox<T>(override val factory: KorgeNativeUiFactory, val comboBox: UIComboBox<T>) : KorgeComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {

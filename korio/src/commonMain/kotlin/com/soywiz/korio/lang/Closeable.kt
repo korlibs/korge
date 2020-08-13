@@ -2,6 +2,8 @@ package com.soywiz.korio.lang
 
 import kotlinx.coroutines.*
 
+// @TODO: Merge [Closeable], [Disposable] and [Cancellable]
+
 interface Disposable {
 	fun dispose()
 
@@ -73,5 +75,6 @@ fun Iterable<Closeable>.close() = run { for (c in this) c.close() }
 fun Iterable<Closeable>.closeable() = Closeable { this.close() }
 
 fun Closeable.cancellable() = Cancellable { this.close() }
+fun Closeable.disposable() = Disposable { this.close() }
 fun Cancellable.closeable(e: () -> Throwable = { CancellationException("") }) =
 	Closeable { this.cancel(e()) }
