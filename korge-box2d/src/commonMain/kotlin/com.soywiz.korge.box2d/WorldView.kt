@@ -160,7 +160,7 @@ val View.nearestBox2dWorldComponent: Box2dWorldComponent
             if (component != null) {
                 return component
             }
-            if (view.parent == null) {
+            if (view.parent == null || view is View.Reference) {
                 return view.getOrCreateBox2dWorld()
             }
             view = view.parent
