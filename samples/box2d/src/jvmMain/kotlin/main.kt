@@ -10,6 +10,8 @@ import org.jbox2d.common.*
 import org.jbox2d.dynamics.*
 import org.jbox2d.userdata.*
 
+
+/*
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
     box2dWorldView(gravityY = 100.0) {
         solidRect(20, 20, Colors.RED).position(100, 100).rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
@@ -30,6 +32,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My
         solidRect(20, 20, Colors.RED).position(150, 100).rotation(30.degrees).registerBody(dynamic = true, density = 2, friction = 0.01)
     }
 }
+ */
 
 ///////////////////////////////
 // Core

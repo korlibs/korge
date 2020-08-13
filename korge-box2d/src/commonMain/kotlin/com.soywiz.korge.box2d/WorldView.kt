@@ -14,15 +14,20 @@ import org.jbox2d.dynamics.*
 import org.jbox2d.userdata.*
 import kotlin.math.*
 
+@PublishedApi
+internal val DEFAULT_SCALE = 20.0
+@PublishedApi
+internal val DEFAULT_GRAVITY_Y = 9.8f
+
 var Views.registeredBox2dSupport: Boolean by Extra.Property { false }
 
 fun Views.checkBox2dRegistered() {
     if (!registeredBox2dSupport) error("You should call Views.registerBox2dSupport()")
 }
 
-fun Views.registerBox2dSupportOnce() {
-    if (registeredBox2dSupport) return
-    registeredBox2dSupport = true
+fun ViewsContainer.registerBox2dSupportOnce() {
+    if (views.registeredBox2dSupport) return
+    views.registeredBox2dSupport = true
     views.viewExtraBuildDebugComponent.add { views, view, container ->
         val physicsContainer = container.container {
         }
@@ -54,7 +59,7 @@ fun Views.registerBox2dSupportOnce() {
 }
 
 inline fun Container.worldView(
-    world: World = World(Vec2(0f, 9.8f)),
+    world: World = World(Vec2(0f, DEFAULT_GRAVITY_Y)),
     velocityIterations: Int = 6,
     positionIterations: Int = 2,
     callback: @ViewDslMarker WorldView.() -> Unit = {}
@@ -62,31 +67,43 @@ inline fun Container.worldView(
 
 inline fun Container.worldView(
     gravityX: Double = 0.0,
-    gravityY: Double = 9.8,
+    gravityY: Double = DEFAULT_GRAVITY_Y.toDouble(),
     velocityIterations: Int = 6,
     positionIterations: Int = 2,
     callback: @ViewDslMarker WorldView.() -> Unit = {}
 ): WorldView = WorldView(World(Vec2(gravityX.toFloat(), gravityY.toFloat())), velocityIterations, positionIterations).addTo(this, callback)
+
+var World.component: Box2dWorldComponent?
+    get() = get(Box2dWorldComponent.Key)
+    set(value) {
+        set(Box2dWorldComponent.Key, value)
+    }
 
 class Box2dWorldComponent(
     override val view: View,
     override val world: World,
     var velocityIterations: Int = 6,
     var positionIterations: Int = 2,
-    var autoDestroyBodies: Boolean = true
+    var autoDestroyBodies: Boolean = true,
 ) : UpdateComponentV2, WorldRef {
+    init {
+        world.component = this
+    }
+
+    object Key : Box2dTypedUserData.Key<Box2dWorldComponent>()
+
     override fun update(dt: HRTimeSpan) {
         world.step(dt.secondsDouble.toFloat(), velocityIterations, positionIterations)
         val tempVec = Vec2()
         world.forEachBody { node ->
-            val px = node.position.x.toDouble()
-            val py = node.position.y.toDouble()
             val view = node.view
 
             if (view != null) {
+                val worldScale = world.customScale
+                val worldScaleInv = 1.0 / worldScale
                 if (view.x != node.viewInfo.x || view.y != node.viewInfo.y || view.rotation != node.viewInfo.rotation) {
                     node.setTransform(
-                        tempVec.set(view.x.toFloat(), view.y.toFloat()),
+                        tempVec.set(view.x * worldScaleInv, view.y * worldScaleInv),
                         view.rotation
                     )
                     node.linearVelocity = tempVec.set(0f, 0f)
@@ -95,8 +112,8 @@ class Box2dWorldComponent(
                     node.isAwake = true
                 }
 
-                view.x = px
-                view.y = py
+                view.x = node.position.x.toDouble() * worldScale
+                view.y = node.position.y.toDouble() * worldScale
                 view.rotation = node.angle
 
                 node.viewInfo.x = view.x
@@ -117,7 +134,7 @@ var View.box2dWorldComponent by Extra.PropertyThis<View, Box2dWorldComponent?> {
 
 inline fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
     if (this.box2dWorldComponent == null) {
-        val component = Box2dWorldComponent(this, World(0f, 98f), 6, 2)
+        val component = Box2dWorldComponent(this, World(0f, DEFAULT_GRAVITY_Y).also { it.customScale = DEFAULT_SCALE }, 6, 2)
         this.box2dWorldComponent = component
         addComponent(component)
     }
@@ -173,15 +190,15 @@ inline fun <T : View> T.registerBodyWithFixture(
     linearDamping: Number = 0.0,
     angularDamping: Number = 0.0,
     gravityScale: Number = 1.0,
-    shape: Shape = BoxShape(width, height),
+    shape: Shape? = null,
     allowSleep: Boolean = true,
     awake: Boolean = true,
     fixedRotation: Boolean = false,
     bullet: Boolean = false,
     type: BodyType = BodyType.STATIC,
-    friction: Number = 0.2,
+    friction: Number = 0.01,
     restitution: Number = 0.2,
-    density: Number = 1.0
+    density: Number = 10.0
 ): T {
     val body = createBody {
         this.type = type
@@ -197,8 +214,14 @@ inline fun <T : View> T.registerBodyWithFixture(
         this.bullet = bullet
         this.awake = awake
     }
+    val world = body.world
+
     body.fixture {
-        this.shape = shape
+        this.shape = if (shape != null) {
+            shape
+        } else {
+            BoxShape(width / world.customScale, height / world.customScale)
+        }
         this.friction = friction.toFloat()
         this.restitution = restitution.toFloat()
         this.density = density.toFloat()
@@ -250,7 +273,7 @@ class WorldView(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        ctx.views?.checkBox2dRegistered()
+        //ctx.views?.checkBox2dRegistered()
 
         val debugViews = stage?.views?.debugViews ?: false
         super.renderInternal(ctx)
