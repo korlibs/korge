@@ -114,9 +114,8 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
 
         fun load(text: String) {
             launchImmediately(views.coroutineContext) {
-                root.removeChildren()
                 //Xml(text).ktreeToViewTree(views, file.parent, parent = root)
-                root.addChildren((Xml(text).ktreeToViewTree(views, file.parent) as Container).children.toList())
+                load(Xml(text).ktreeToViewTree(views, file.parent) as Container)
             }
         }
 
