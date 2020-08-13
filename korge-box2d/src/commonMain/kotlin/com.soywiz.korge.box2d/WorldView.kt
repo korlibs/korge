@@ -37,8 +37,11 @@ fun Views.registerBox2dSupportOnce() {
                     uiEditableValue(body::isFixedRotation)
                     uiEditableValue(body::isBullet)
                     uiEditableValue(body::isActive)
-                    uiEditableValue(body::gravityScale)
+                    uiEditableValue(body::gravityScale, min = -100f, max = 100f, clampMin = true, clampMax = false)
                     uiEditableValue(body::angularVelocity)
+                    uiEditableValue(body::linearVelocityX, min = -100f, max = 100f, clampMin = true, clampMax = false)
+                    uiEditableValue(body::linearVelocityY, min = -100f, max = 100f, clampMin = true, clampMax = false)
+
 
                     val fixture = body.m_fixtureList
                     if (fixture != null) {
