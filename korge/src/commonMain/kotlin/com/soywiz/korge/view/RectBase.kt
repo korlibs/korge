@@ -97,8 +97,10 @@ open class RectBase(
         container.uiCollapsableSection("RectBase") {
             uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
             button("Center") {
-                view.anchorX = 0.5
-                view.anchorY = 0.5
+                views.undoable("Change anchor", view) {
+                    view.anchorX = 0.5
+                    view.anchorY = 0.5
+                }
             }
         }
         super.buildDebugComponent(views, container)

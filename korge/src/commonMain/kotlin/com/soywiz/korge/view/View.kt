@@ -1368,6 +1368,11 @@ abstract class View internal constructor(
             uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
             uiEditableValue(view::visible)
         }
+        container.button("Add filter") {
+            views.undoable("Add filter", view) {
+                view.filter = WaveFilter()
+            }
+        }
     }
 }
 

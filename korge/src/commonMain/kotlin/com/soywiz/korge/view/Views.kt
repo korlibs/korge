@@ -402,6 +402,11 @@ class Views constructor(
         debugSavedHandlers(SaveEvent(action, view))
     }
 
+    fun <T : View?> undoable(action: String, view: T, block: (T) -> Unit) {
+        block(view)
+        debugSaveView(action, view)
+    }
+
     fun <T> completedEditing(prop: ObservableProperty<T>) {
         debugSaveView("Adjusted ${prop.name}", null)
         completedEditing(Unit)
