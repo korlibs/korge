@@ -31,9 +31,29 @@ fun Views.checkBox2dRegistered() {
 var KTreeSerializer.box2dWorld by Extra.PropertyThis<KTreeSerializer, Box2dWorldComponent?> { null }
 
 object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
+    override fun complete(serializer: KTreeSerializer, view: View) {
+        //serializer.box2dWorld?.world?.forEachBody { println("it.linearVelocityY: ${it.linearVelocityY}") }
+        serializer.box2dWorld?.update(0.hrSeconds)
+        serializer.box2dWorld?.world?.forEachBody {
+            if (!it.didReset) {
+                it.didReset = true
+                it.type = it.bodyDef.type
+                it.linearVelocityX = it.bodyDef.linearVelocity.x
+                it.linearVelocityY = it.bodyDef.linearVelocity.y
+                it.gravityScale = it.bodyDef.gravityScale
+                it.angularVelocity = it.bodyDef.angularVelocity
+                it.isSleepingAllowed = it.bodyDef.allowSleep
+                it.isAwake = it.bodyDef.awake
+                it.isFixedRotation = it.bodyDef.fixedRotation
+                it.isBullet = it.bodyDef.bullet
+            }
+            //println("it.linearVelocityY: ${it.linearVelocityY}")
+        }
+    }
+
     override fun setProps(serializer: KTreeSerializer, view: View, xml: Xml) {
         //println("PhysicsKTreeSerializerExtension.setProps")
-        view.registerBodyWithFixture(
+        val body = view.registerBodyWithFixture(
             world = serializer.box2dWorld?.world,
             type = xml.strNull("type")?.let { BodyType[it] } ?: BodyType.STATIC,
             linearVelocityX = xml.float("linearVelocityX", 0f),
@@ -49,7 +69,8 @@ object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
             restitution = xml.float("restitution", 0f),
             isSensor = xml.boolean("isSensor", false),
             active = xml.boolean("isActive", true)
-        )
+        ).body
+        body?.didReset = false
     }
 
     override fun getProps(serializer: KTreeSerializer, view: View): Map<String, Any?>? {
@@ -142,13 +163,12 @@ var World.component: Box2dWorldComponent?
     }
 
 class Box2dWorldComponent(
-    override val view: View,
+    val worldView: View,
     override val world: World,
     var velocityIterations: Int = 6,
     var positionIterations: Int = 2,
     var autoDestroyBodies: Boolean = true,
-) : UpdateComponentV2, WorldRef {
-    val worldView = view
+) : FixedUpdateComponent(worldView, 16.hrMilliseconds), WorldRef {
     init {
         world.component = this
     }
@@ -157,8 +177,8 @@ class Box2dWorldComponent(
 
     private val tempVec = Vec2()
     private val tempPos = Point()
-    override fun update(dt: HRTimeSpan) {
-        world.step(dt.secondsDouble.toFloat(), velocityIterations, positionIterations)
+    override fun update() {
+        world.step(step.secondsDouble.toFloat(), velocityIterations, positionIterations)
         world.forEachBody { node ->
             val view = node.view
 
@@ -220,14 +240,21 @@ inline fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
 
 val View.nearestBox2dWorldComponent: Box2dWorldComponent
     get() {
+        var nearestReference: View? = null
         var view: View? = this
         while (view != null) {
             val component = view.box2dWorldComponent
             if (component != null) {
                 return component
             }
-            if (view.parent == null || view is View.Reference) {
-                return view.getOrCreateBox2dWorld()
+            //if (view.parent == null || view is View.Reference) {
+            if (view is View.Reference) {
+                if (nearestReference == null) {
+                    nearestReference = view
+                }
+            }
+            if (view.parent == null) {
+                return (nearestReference ?: view).getOrCreateBox2dWorld()
             }
             view = view.parent
         }
@@ -273,11 +300,11 @@ inline fun <T : View> T.registerBodyWithFixture(
     fixedRotation: Boolean = false,
     bullet: Boolean = false,
     type: BodyType = BodyType.STATIC,
-    friction: Number = 0.01,
+    friction: Number = 0.2,
     restitution: Number = 0.2,
     active: Boolean = true,
     isSensor: Boolean = false,
-    density: Number = 10.0,
+    density: Number = 1.0,
     world: World? = null,
 ): T {
     val body = createBody(world) {
@@ -439,8 +466,8 @@ class WorldView(
         bullet: Boolean = false,
         type: BodyType = BodyType.STATIC,
         friction: Number = 0.2,
-        restitution: Number = 0.0,
-        density: Number = 0.0
+        restitution: Number = 0.01,
+        density: Number = 1.0
     ): T {
         val body = createBody {
             this.type = type

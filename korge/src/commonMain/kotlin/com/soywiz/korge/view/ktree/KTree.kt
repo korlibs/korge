@@ -23,6 +23,9 @@ interface KTreeSerializerHolder {
 open class KTreeSerializerExtension(val name: String) {
     val nameLC = name.toLowerCase()
 
+    open fun complete(serializer: KTreeSerializer, view: View) {
+    }
+
     open fun getProps(serializer: KTreeSerializer, view: View): Map<String, Any?>? {
         return null
     }
@@ -169,6 +172,14 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
     }
 
     open suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile, parent: Container?): View {
+        return ktreeToViewTreeInternal(xml, currentVfs, parent).also {
+            for (extension in extensions) {
+                extension.complete(this, it)
+            }
+        }
+    }
+
+    open suspend fun ktreeToViewTreeInternal(xml: Xml, currentVfs: VfsFile, parent: Container?): View {
         var view: View? = null
         when (xml.nameLC) {
             "solidrect" -> view = SolidRect(100, 100, Colors.RED)
@@ -259,7 +270,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         if (view is Container) {
             for (node in xml.allNodeChildren) {
                 if (node.nameLC.startsWith(__ex_)) continue
-                ktreeToViewTree(node, currentVfs, view)
+                ktreeToViewTreeInternal(node, currentVfs, view)
             }
         }
         for (node in xml.allNodeChildren) {

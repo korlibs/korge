@@ -43,6 +43,9 @@ import org.jbox2d.userdata.*
  */
 class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
 
+    val bodyDef = bd
+    var didReset = true
+
     class ViewInfo {
         var view: Any? = null
         var x: Double = 0.0

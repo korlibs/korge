@@ -1,8 +1,7 @@
 package com.soywiz.korge.component
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.klock.hr.hr
+import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
@@ -206,6 +205,21 @@ interface UpdateComponentV2 : UpdateComponent {
     @Suppress("DEPRECATION")
     override fun update(ms: Double): Unit = update(ms.milliseconds.hr)
     override fun update(dt: HRTimeSpan)
+}
+
+abstract class FixedUpdateComponent(override val view: View, val step: HRTimeSpan, val maxAccumulated: Int = 10) : UpdateComponentV2 {
+    var accumulated = 0.hrSeconds
+    final override fun update(dt: HRTimeSpan) {
+        accumulated += dt
+        if (accumulated >= step * maxAccumulated) {
+            accumulated = step * maxAccumulated
+        }
+        while (accumulated >= step) {
+            accumulated -= step
+            update()
+        }
+    }
+    abstract fun update(): Unit
 }
 
 /**
