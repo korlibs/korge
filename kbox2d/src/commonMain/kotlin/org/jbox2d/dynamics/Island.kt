@@ -271,8 +271,8 @@ class Island {
             if (b._type === BodyType.DYNAMIC) {
                 // Integrate velocities.
                 // v += h * (b.m_gravityScale * gravity + b.m_invMass * b.m_force);
-                v.x += h * (b.m_gravityScale * gravity.x + b.m_invMass * b.force.x)
-                v.y += h * (b.m_gravityScale * gravity.y + b.m_invMass * b.force.y)
+                v.x += h * (b.gravityScale * gravity.x + b.m_invMass * b.force.x)
+                v.y += h * (b.gravityScale * gravity.y + b.m_invMass * b.force.y)
                 w += h * b.m_invI * b.torque
 
                 // Apply damping.

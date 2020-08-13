@@ -122,6 +122,7 @@ fun UiContainer.uiEditableValue(
         )).also { addChild(it) }
 }
 
+
 @JvmName("uiEditableValueStringOrNull")
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<String?>,
