@@ -22,7 +22,7 @@ plugins {
 	//kotlin("multiplatform") version "1.4-M2"
 	//kotlin("multiplatform") version "1.4-M3"
     //kotlin("multiplatform") version "1.4.0-rc"
-    kotlin("multiplatform") version "1.4.0-rc-315"
+    kotlin("multiplatform") version "1.4.0"
     //kotlin("multiplatform") version "1.4.0-rc-284"
     //kotlin("multiplatform") version "1.4.0-rc-276"
     //kotlin("multiplatform")
