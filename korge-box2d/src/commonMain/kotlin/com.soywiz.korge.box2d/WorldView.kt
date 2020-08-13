@@ -88,6 +88,10 @@ class Box2dWorldComponent(
                         tempVec.set(view.x.toFloat(), view.y.toFloat()),
                         view.rotation
                     )
+                    node.linearVelocity = tempVec.set(0f, 0f)
+                    node.angularVelocity = 0f
+                    node.isActive = true
+                    node.isAwake = true
                 }
 
                 view.x = px

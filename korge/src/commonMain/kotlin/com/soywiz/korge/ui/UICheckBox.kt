@@ -138,5 +138,7 @@ open class UICheckBox(
     object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
         add(UICheckBox::text)
         add(UICheckBox::checked)
+        add(UICheckBox::width)
+        add(UICheckBox::height)
     })
 }

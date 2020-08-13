@@ -94,5 +94,7 @@ open class TextButton(
     object Serializer : KTreeSerializerExt<TextButton>("UITextButton", TextButton::class, { TextButton().also { it.text = "Button" } }, {
         add(TextButton::text)
         add(TextButton::textSize)
+        add(TextButton::width)
+        add(TextButton::height)
     })
 }

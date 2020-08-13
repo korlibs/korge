@@ -70,5 +70,7 @@ open class UIProgressBar(
     object Serializer : KTreeSerializerExt<UIProgressBar>("UIProgressBar", UIProgressBar::class, { UIProgressBar() }, {
         add(UIProgressBar::current)
         add(UIProgressBar::maximum)
+        add(UIProgressBar::width)
+        add(UIProgressBar::height)
     })
 }
