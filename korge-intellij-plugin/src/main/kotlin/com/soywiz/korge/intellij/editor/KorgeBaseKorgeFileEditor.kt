@@ -196,6 +196,11 @@ open class KorgeBaseKorgeFileEditor(
                                 viewsDebuggerActions?.toggleGridSnapping()
                             }
                         }
+                        button("Play/Pause") {
+                            click {
+                                viewsDebuggerActions?.togglePlay()
+                            }
+                        }
                     }
                     add(editor.styled {
                         fill()

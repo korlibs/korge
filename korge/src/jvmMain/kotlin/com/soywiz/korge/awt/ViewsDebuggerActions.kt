@@ -21,6 +21,10 @@ open class ViewsDebuggerActions(val views: Views) {
         gridShowing = !gridShowing
     }
 
+    fun togglePlay() {
+        views.stage.speed = if (views.stage.speed == 0.0) 1.0 else 0.0
+    }
+
     fun toggleGridSnapping() {
         gridSnapping = !gridSnapping
     }
