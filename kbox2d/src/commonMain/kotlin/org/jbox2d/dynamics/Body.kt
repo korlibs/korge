@@ -251,7 +251,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
     var linearVelocityY: Float
         get() = linearVelocity.y
         set(v)  {
-            linearVelocity.x = v
+            linearVelocity.y = v
         }
 
             /**
