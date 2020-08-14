@@ -1,8 +1,10 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 /**
  * Creates a [Ellipse] of [radiusX], [radiusY] and [color].
@@ -64,5 +66,13 @@ open class Ellipse(
             //ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
             ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
         }
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("Ellipse") {
+            uiEditableValue(Pair(view::radiusX, view::radiusY), min = 0.0, max = 1000.0, clamp = false, name = "radius")
+        }
+        super.buildDebugComponent(views, container)
     }
 }
