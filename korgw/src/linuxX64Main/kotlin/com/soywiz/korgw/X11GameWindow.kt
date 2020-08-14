@@ -258,7 +258,8 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
                     val conf = e.xconfigure
                     width = conf.width
                     height = conf.height
-                    dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
+                    //dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
+                    dispatchReshapeEvent(0, 0, conf.width, conf.height)
                     if (!doubleBuffered) {
                         render(doUpdate = false)
                     }
