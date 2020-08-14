@@ -91,7 +91,11 @@ subprojects {
                 }
             }
             if (doEnableKotlinNative) {
-                nativeTargets()
+                for (target in nativeTargets()) {
+                    target.compilations.all {
+                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                    }
+                }
             }
 
             // common

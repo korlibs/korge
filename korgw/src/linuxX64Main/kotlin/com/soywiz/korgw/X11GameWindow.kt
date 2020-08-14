@@ -2,8 +2,7 @@ package com.soywiz.korgw
 
 import GL.*
 import com.soywiz.kds.IntMap
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.toInt
+import com.soywiz.kgl.*
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.kmem.startAddressOf
 import com.soywiz.kmem.write32LE
@@ -66,8 +65,8 @@ class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffe
     init {
         println("VI: $vi, d: $d, w: $w, glc: $glc")
         makeCurrent()
-        println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
-        println("GL_VERSION: " + glGetString(GL.GL_VERSION))
+        println("GL_VENDOR: " + glGetString(GL.GL_VENDOR)?.toKString())
+        println("GL_VERSION: " + glGetString(GL.GL_VERSION)?.toKString())
     }
 
     fun makeCurrent() {
