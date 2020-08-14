@@ -1,5 +1,5 @@
 <container>
-	<solidrect y="740.0" width="920.0" height="100.0">
+	<solidrect y="620.0" width="920.0" height="100.0">
 		<__ex_physics friction="0.2" restitution="0.2"/>
 	</solidrect>
 	<ellipse x="120.0" y="246" anchorX="0.5" anchorY="0.5" width="100.0" height="100.0">
