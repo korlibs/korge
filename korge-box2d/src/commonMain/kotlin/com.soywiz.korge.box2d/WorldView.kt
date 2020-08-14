@@ -147,21 +147,6 @@ fun ViewsContainer.registerBox2dSupportOnce() {
     //views.serializer.register()
 }
 
-inline fun Container.worldView(
-    world: World = World(Vec2(0f, DEFAULT_GRAVITY_Y)),
-    velocityIterations: Int = 6,
-    positionIterations: Int = 2,
-    callback: @ViewDslMarker WorldView.() -> Unit = {}
-): WorldView = WorldView(world, velocityIterations, positionIterations).addTo(this, callback)
-
-inline fun Container.worldView(
-    gravityX: Double = 0.0,
-    gravityY: Double = DEFAULT_GRAVITY_Y.toDouble(),
-    velocityIterations: Int = 6,
-    positionIterations: Int = 2,
-    callback: @ViewDslMarker WorldView.() -> Unit = {}
-): WorldView = WorldView(World(Vec2(gravityX.toFloat(), gravityY.toFloat())), velocityIterations, positionIterations).addTo(this, callback)
-
 var World.component: Box2dWorldComponent?
     get() = get(Box2dWorldComponent.Key)
     set(value) {
@@ -379,6 +364,22 @@ inline fun BoxShape(width: Number, height: Number) = PolygonShape().apply {
     centroid.setZero()
 }
 
+@Deprecated("")
+inline fun Container.worldView(
+    gravityX: Number = 0.0,
+    gravityY: Number = DEFAULT_GRAVITY_Y.toDouble(),
+    velocityIterations: Int = 6,
+    positionIterations: Int = 2,
+    callback: @ViewDslMarker Container.() -> Unit = {}
+): Container = container(callback).also {
+    it.getOrCreateBox2dWorld().also {
+        it.world.gravity.set(gravityX, gravityY)
+        it.velocityIterations = velocityIterations
+        it.positionIterations = positionIterations
+    }
+}
+
+/*
 @Deprecated("Not required")
 class WorldView(
     override val world: World,
@@ -518,3 +519,4 @@ class WorldView(
     }
 
 }
+*/

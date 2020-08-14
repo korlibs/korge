@@ -40,19 +40,21 @@ class UiNumberEditableValue(
     val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.visible = false }
     var current: Double = Double.NaN
 
+    val isEditorVisible get() = !contentText.visible
+
     override fun hideEditor() {
-        if (!contentText.visible) {
-            contentText.visible = true
-            contentTextField.visible = false
-            if (contentTextField.text.isNotEmpty()) {
-                val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
-                setValue(templateResult.toDoubleOrNull() ?: 0.0)
-            }
-            super.hideEditor()
+        if (!isEditorVisible) return
+        contentText.visible = true
+        contentTextField.visible = false
+        if (contentTextField.text.isNotEmpty()) {
+            val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
+            setValue(templateResult.toDoubleOrNull() ?: 0.0)
         }
+        super.hideEditor()
     }
 
     override fun showEditor() {
+        if (isEditorVisible) return
         contentTextField.text = contentText.text
         contentText.visible = false
         contentTextField.visible = true
@@ -72,7 +74,9 @@ class UiNumberEditableValue(
                 prop.value = rvalue
             }
             contentText.text = valueStr
-            contentTextField.text = valueStr
+            if (!isEditorVisible) {
+                contentTextField.text = valueStr
+            }
         }
     }
 
