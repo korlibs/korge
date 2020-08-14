@@ -208,7 +208,7 @@ class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbol
 }
 
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(),
-	AnElement, IText, IHtml {
+	AnElement, IText, IHtml, ViewLeaf {
 	private val textField = Text("", 16.0).apply {
 		textBounds.copyFrom(this@AnTextField.symbol.bounds)
 		html = this@AnTextField.symbol.initialHtml
@@ -224,6 +224,13 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 	override var html: String by textField::html.redirected()
 
 	override fun createInstance(): View = symbol.create(library) as View
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("AnTextField") {
+            uiEditableValue(::text)
+        }
+        super.buildDebugComponent(views, container)
+    }
 }
 
 //class PopMaskView(views: Views) : View(views)
