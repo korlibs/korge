@@ -322,11 +322,8 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     fun frameRender(doUpdate: Boolean) {
         try {
-            ag.mainRenderBuffer.init()
-            ag.setRenderBufferTemporally(ag.mainRenderBuffer) {
-                ag.onRender(ag)
-                dispatchRenderEvent(update = false)
-            }
+            ag.onRender(ag)
+            dispatchRenderEvent(update = false)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)

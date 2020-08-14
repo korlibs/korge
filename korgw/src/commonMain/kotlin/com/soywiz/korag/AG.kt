@@ -59,7 +59,15 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
 	val onReady: Deferred<AG> = _onReadyDeferred
+    @Deprecated("")
 	val onRender = Signal<AG>()
+
+    inline fun doRender(block: () -> Unit) {
+        mainRenderBuffer.init()
+        setRenderBufferTemporally(mainRenderBuffer) {
+            block()
+        }
+    }
 
 	open fun offscreenRendering(callback: () -> Unit) {
 		callback()
@@ -608,7 +616,7 @@ abstract class AG : Extra by Extra.Mixin() {
         }
     }
 
-	val mainRenderBuffer: BaseRenderBuffer = createMainRenderBuffer()
+	val mainRenderBuffer: BaseRenderBuffer by lazy { createMainRenderBuffer() }
 
     open fun createMainRenderBuffer() = BaseRenderBufferImpl()
 

@@ -187,7 +187,10 @@ abstract class AGOpengl : AG() {
     private val tempRect = Rectangle()
 
     fun applyScissorState(scissor: AG.Scissor? = null) {
-        val currentRenderBuffer = this.currentRenderBuffer!!
+        if (this.currentRenderBuffer == null) {
+            println("this.currentRenderBuffer == null")
+        }
+        val currentRenderBuffer = this.currentRenderBuffer ?: return
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
         if (scissor != null) {

@@ -389,21 +389,23 @@ object Korge {
         val firstRenderDeferred = CompletableDeferred<Unit>()
         views.gameWindow.addEventListener<RenderEvent> {
             //println("RenderEvent: $it")
-            if (!renderShown) {
-                //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                renderShown = true
-                firstRenderDeferred.complete(Unit)
-            }
-            try {
-                views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
-
-                if (moveMouseOutsideInNextFrame) {
-                    moveMouseOutsideInNextFrame = false
-                    views.input.mouseInside = false
-                    views.mouseUpdated()
+            views.ag.doRender {
+                if (!renderShown) {
+                    //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                    renderShown = true
+                    firstRenderDeferred.complete(Unit)
                 }
-            } catch (e: Throwable) {
-                e.printStackTrace()
+                try {
+                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
+
+                    if (moveMouseOutsideInNextFrame) {
+                        moveMouseOutsideInNextFrame = false
+                        views.input.mouseInside = false
+                        views.mouseUpdated()
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
 

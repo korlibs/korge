@@ -356,10 +356,14 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 
 		fun Xml.encodeGids(): IntArray = when (encoding) {
 			Encoding.XML -> {
-				children("tile").map { it.uint("gid").toInt() }.toIntArray()
+                // @TODO: Bug on Kotlin-JS 1.4.0 release
+				//children("tile").map { it.uint("gid").toInt() }.toIntArray()
+                children("tile").map { it.double("gid").toInt() }.toIntArray()
 			}
 			Encoding.CSV -> {
-				text.replace(spaces, "").split(',').map { it.toUInt().toInt() }.toIntArray()
+                // @TODO: Bug on Kotlin-JS 1.4.0 release
+				//text.replace(spaces, "").split(',').map { it.toUInt().toInt() }.toIntArray()
+                text.replace(spaces, "").split(',').map { it.toDouble().toInt() }.toIntArray()
 			}
 			Encoding.BASE64 -> {
 				val rawContent = text.trim().fromBase64()
