@@ -95,7 +95,10 @@ abstract class AG : Extra by Extra.Mixin() {
     val realBackWidth get() = mainRenderBuffer.fullWidth
     val realBackHeight get() = mainRenderBuffer.fullHeight
 
-	//protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
+    val currentWidth: Int get() = currentRenderBuffer?.width ?: mainRenderBuffer.width
+    val currentHeight: Int get() = currentRenderBuffer?.height ?: mainRenderBuffer.height
+
+    //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
 	enum class BlendEquation {
 		ADD, SUBTRACT, REVERSE_SUBTRACT
@@ -693,22 +696,16 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
     inline fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit) {
-    //fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: ((tex: Texture) -> Unit)? = null) {
 		val rb = renderBuffers.alloc()
 		frameRenderBuffers += rb
-		val oldRenderBuffer = currentRenderBuffer
 
-		rb.setSize(0, 0, width, height, width, height)
-		setRenderBuffer(rb)
+        try {
+            rb.setSize(0, 0, width, height, width, height)
+            setRenderBufferTemporally(rb) {
+                clear(Colors.TRANSPARENT_BLACK) // transparent
+                render()
+            }
 
-		try {
-			clear(Colors.TRANSPARENT_BLACK) // transparent
-			render()
-		} finally {
-			setRenderBuffer(oldRenderBuffer)
-		}
-
-		try {
 			use(rb.tex)
 		} finally {
 			frameRenderBuffers -= rb
@@ -716,8 +713,7 @@ abstract class AG : Extra by Extra.Mixin() {
 		}
 	}
 
-    inline
-    fun renderToBitmap(bmp: Bitmap32, render: () -> Unit) {
+    inline fun renderToBitmap(bmp: Bitmap32, render: () -> Unit) {
         renderToTexture(bmp.width, bmp.height, {
             render()
             readColor(bmp)

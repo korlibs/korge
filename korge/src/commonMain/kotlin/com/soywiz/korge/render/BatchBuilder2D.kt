@@ -520,9 +520,9 @@ class BatchBuilder2D constructor(
 	fun flush() {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
-				projMat.setToOrtho(tempRect.setBounds(0, ag.backHeight, ag.backWidth, 0), -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
 			} else {
-				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
 			}
 
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
@@ -576,17 +576,19 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: Matrix, temp: Matrix3D = Matrix3D(), callback: () -> Unit) {
-		flush()
-		temp.copyFrom(this.viewMat)
-		this.viewMat.copyFrom(matrix)
-		//println("viewMat: $viewMat, matrix: $matrix")
-		try {
-			callback()
-		} finally {
-			flush()
-			this.viewMat.copyFrom(temp)
-		}
+	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
+        ctx.matrix3DPool.alloc { temp ->
+            flush()
+            temp.copyFrom(this.viewMat)
+            this.viewMat.copyFrom(matrix)
+            //println("viewMat: $viewMat, matrix: $matrix")
+            try {
+                callback()
+            } finally {
+                flush()
+                this.viewMat.copyFrom(temp)
+            }
+        }
 	}
 
     /**

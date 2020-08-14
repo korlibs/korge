@@ -67,7 +67,7 @@ open class EffectView : Container() {
 			tempMat2d.copyFrom(this.globalMatrixInv)
 			tempMat2d.translate(-bounds.x + borderEffect, -bounds.y + borderEffect)
 			//println("$this: [1] $tempMat2d")
-			ctx.batch.setViewMatrixTemp(tempMat2d, temp = oldViewMatrix) {
+			ctx.batch.setViewMatrixTemp(tempMat2d) {
 				super.renderInternal(ctx)
 			}
 		}) { texture ->

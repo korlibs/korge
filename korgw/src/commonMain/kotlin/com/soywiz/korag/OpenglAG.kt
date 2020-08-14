@@ -187,32 +187,39 @@ abstract class AGOpengl : AG() {
     private val tempRect = Rectangle()
 
     fun applyScissorState(scissor: AG.Scissor? = null) {
+        //println("applyScissorState")
         if (this.currentRenderBuffer == null) {
             println("this.currentRenderBuffer == null")
         }
         val currentRenderBuffer = this.currentRenderBuffer ?: return
-        var realScissors: Rectangle? = finalScissorBL
-        realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
-        if (scissor != null) {
+        if (currentRenderBuffer === mainRenderBuffer) {
+            var realScissors: Rectangle? = finalScissorBL
+            realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
+            if (scissor != null) {
+                tempRect.setTo(currentRenderBuffer.x + scissor.x, ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)), (scissor.width), scissor.height)
+                realScissors = realScissors?.intersection(tempRect, realScissors)
+            }
 
-            tempRect.setTo(currentRenderBuffer.x + scissor.x, ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)), (scissor.width), scissor.height)
-            realScissors = realScissors?.intersection(tempRect, realScissors)
-        }
+            //println("currentRenderBuffer: $currentRenderBuffer")
 
-        //println("currentRenderBuffer: $currentRenderBuffer")
+            val renderBufferScissor = currentRenderBuffer.scissor
+            if (renderBufferScissor != null) {
+                realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
+            }
 
-        val renderBufferScissor = currentRenderBuffer.scissor
-        if (renderBufferScissor != null) {
-            realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
-        }
+            //println("finalScissorBL: $finalScissorBL, renderBufferScissor: $renderBufferScissor")
 
-        //println("finalScissorBL: $finalScissorBL, renderBufferScissor: $renderBufferScissor")
-
-        gl.enable(gl.SCISSOR_TEST)
-        if (realScissors != null) {
-            gl.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
+            gl.enable(gl.SCISSOR_TEST)
+            if (realScissors != null) {
+                gl.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
+            } else {
+                gl.scissor(0, 0, 0, 0)
+            }
         } else {
-            gl.scissor(0, 0, 0, 0)
+            gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
+            if (scissor != null) {
+                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
+            }
         }
     }
 
@@ -439,6 +446,10 @@ abstract class AGOpengl : AG() {
             gl.disable(gl.STENCIL_TEST)
             gl.stencilMask(0)
         }
+
+        //val viewport = FBuffer(4 * 4)
+        //gl.getIntegerv(gl.VIEWPORT, viewport)
+        //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
         if (indices != null) {
             gl.drawElements(type.glDrawMode, vertexCount, gl.UNSIGNED_SHORT, offset)

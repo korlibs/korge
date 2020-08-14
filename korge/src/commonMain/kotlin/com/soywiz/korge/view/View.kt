@@ -7,27 +7,26 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korev.*
-import com.soywiz.korge.animate.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
-import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
 import kotlin.collections.set
-import kotlin.math.*
-import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 @Deprecated("", replaceWith = ReplaceWith("View"))
@@ -928,36 +927,53 @@ abstract class View internal constructor(
 
         val borderEffect = filter.border
         ctx.matrixPool.alloc { tempMat2d ->
-            ctx.matrix3DPool.alloc { oldViewMatrix ->
-                val texWidth = bounds.width.toInt() + borderEffect * 2
-                val texHeight = bounds.height.toInt() + borderEffect * 2
+            val texWidth = bounds.width.toInt() + borderEffect * 2
+            val texHeight = bounds.height.toInt() + borderEffect * 2
 
-                val addx = -bounds.x + borderEffect
-                val addy = -bounds.y + borderEffect
+            val addx = -bounds.x + borderEffect
+            val addy = -bounds.y + borderEffect
 
-                //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
+            //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
 
-                ctx.renderToTexture(texWidth, texHeight, render = {
+            /*
+            run {
+                val bmp = ctx.renderToBitmap(texWidth, texHeight) {
                     tempMat2d.copyFrom(globalMatrixInv)
                     tempMat2d.translate(addx, addy)
                     //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-                    ctx.batch.setViewMatrixTemp(tempMat2d, temp = oldViewMatrix) {
+                    //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                    ctx.batch.setViewMatrixTemp(tempMat2d) {
                         renderInternal(ctx)
                     }
-                }) { texture ->
-                    tempMat2d.copyFrom(globalMatrix)
-                    tempMat2d.pretranslate(-addx, -addy)
-                    filter.render(
-                        ctx,
-                        tempMat2d,
-                        texture,
-                        texWidth,
-                        texHeight,
-                        renderColorAdd,
-                        renderColorMul,
-                        blendMode
-                    )
                 }
+                com.soywiz.korio.async.launchImmediately(ctx.coroutineContext) {
+                    bmp.writeTo("/tmp/bitmap.png".uniVfs, PNG)
+                }
+            }
+            */
+
+            ctx.renderToTexture(texWidth, texHeight, render = {
+                tempMat2d.copyFrom(globalMatrixInv)
+                //tempMat2d.copyFrom(globalMatrix)
+                tempMat2d.translate(addx, addy)
+                //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                ctx.batch.setViewMatrixTemp(tempMat2d) {
+                    renderInternal(ctx)
+                }
+            }) { texture ->
+                tempMat2d.copyFrom(globalMatrix)
+                tempMat2d.pretranslate(-addx, -addy)
+                filter.render(
+                    ctx,
+                    tempMat2d,
+                    texture,
+                    texWidth,
+                    texHeight,
+                    renderColorAdd,
+                    renderColorMul,
+                    blendMode
+                )
             }
         }
     }
@@ -2053,3 +2069,4 @@ fun View?.findLastAscendant(cond: (view: View) -> Boolean): View? {
     }
     return result
 }
+

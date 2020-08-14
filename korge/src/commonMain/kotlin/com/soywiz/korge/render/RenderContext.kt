@@ -111,6 +111,9 @@ class RenderContext constructor(
 		return bmp
 	}
 
+    inline fun renderToBitmap(width: Int, height: Int, callback: () -> Unit): Bitmap32 =
+        renderToBitmap(Bitmap32(width, height), callback)
+
     /**
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
