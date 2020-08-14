@@ -5,13 +5,13 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-fun UiContainer.uiCollapsableSection(name: String, block: UiContainer.() -> Unit): UiCollapsableSection {
+fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsableSection {
     return UiCollapsableSection(app, name, block).also { addChild(it) }
 }
 
-class UiCollapsableSection(app: UiApplication, val name: String, val componentChildren: List<UiComponent>) : UiContainer(app) {
+class UiCollapsableSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
     companion object {
-        operator fun invoke(app: UiApplication, name: String, block: UiContainer.() -> Unit): UiCollapsableSection =
+        operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsableSection =
             UiCollapsableSection(app, name, listOf()).also { block(it.mycontainer) }
 
         private fun createIcon(angle: Angle): NativeImage {
@@ -41,7 +41,7 @@ class UiCollapsableSection(app: UiApplication, val name: String, val componentCh
     private lateinit var mycontainer: UiContainer
 
     init {
-        button(name, {
+        button(name ?: "Unknown", {
             this.icon = ICON_OPEN
         }) {
             mycontainer.visible = !mycontainer.visible

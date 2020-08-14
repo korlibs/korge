@@ -1,10 +1,12 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlin.math.*
 
 class BlurFilter(initialRadius: Double = 1.0) : Filter {
@@ -46,5 +48,9 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
             blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
         }
         composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiEditableValue(::radius)
     }
 }

@@ -11,6 +11,8 @@ import com.soywiz.korma.geom.*
 class ComposedFilter(val filters: List<Filter>) : Filter {
 	constructor(vararg filters: Filter) : this(filters.toList())
 
+    override val allFilters: List<Filter> get() = filters.flatMap { it.allFilters }
+
 	override val border get() = filters.sumBy { it.border }
 
 	override fun render(

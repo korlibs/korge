@@ -102,11 +102,30 @@ class UniformValueStorage<T : Any>(val uniforms: AG.UniformValues, val uniform: 
 	}
 }
 
+class UniformValueStorageMatrix3D(val uniforms: AG.UniformValues, val uniform: Uniform, val value: Matrix3D) {
+    init {
+        uniforms[uniform] = value
+    }
+
+    fun delegate() = this
+
+    fun setMatrix(value: Matrix3D) {
+        this.value.copyFrom(value)
+        uniforms[uniform] = this.value
+    }
+
+    operator fun getValue(obj: Any, prop: KProperty<*>): Matrix3D = value
+    operator fun setValue(obj: Any, prop: KProperty<*>, value: Matrix3D) = setMatrix(value)
+}
+
 fun AG.UniformValues.storageFor(uniform: Uniform, array: FloatArray = FloatArray(4)) =
     UniformFloatStorage(this, uniform, array)
 //fun AG.UniformValues.storageForMatrix2(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
 //fun AG.UniformValues.storageForMatrix3(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
 //fun AG.UniformValues.storageForMatrix4(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
-fun AG.UniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matrix3D()) =
-    UniformValueStorage(this, uniform, matrix)
+fun AG.UniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matrix3D()): UniformValueStorageMatrix3D {
+    return UniformValueStorageMatrix3D(this, uniform, Matrix3D()).also {
+        it.setMatrix(matrix)
+    }
+}
 

@@ -109,6 +109,12 @@ fun ViewsContainer.registerBox2dSupportOnce() {
             val body = view.body
             if (body != null) {
                 physicsContainer.uiCollapsableSection("Box2D Physics") {
+                    button("Remove") {
+                        body.destroyBody()
+                        view.body = null
+                        body.view = null
+                        physicsContainer()
+                    }
                     uiEditableValue(body::type, values = { listOf(BodyType.STATIC, BodyType.DYNAMIC, BodyType.KINEMATIC) })
                     val fixture = body.m_fixtureList
                     if (fixture != null) {

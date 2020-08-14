@@ -42,6 +42,9 @@ import org.jbox2d.userdata.*
  * @author Daniel Murphy
  */
 class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
+    fun destroyBody() {
+        world.destroyBody(this)
+    }
 
     val bodyDef = bd
     var didReset = true

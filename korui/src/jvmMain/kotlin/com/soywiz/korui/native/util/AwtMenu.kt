@@ -8,6 +8,7 @@ fun UiMenuItem.toMenuItem(factory: BaseAwtUiFactory): JMenuItem {
     val item = factory.createJMenuItem()
     item.text = this.text
     item.icon = this.icon?.toAwtIcon()
+    item.addActionListener { this.action() }
     if (this.children != null) {
         for (child in this.children!!) {
             item.add(child.toMenuItem(factory))
@@ -19,6 +20,7 @@ fun UiMenuItem.toMenuItem(factory: BaseAwtUiFactory): JMenuItem {
 fun UiMenuItem.toMenu(factory: BaseAwtUiFactory): JMenu {
     val item = factory.createJMenu()
     item.text = this.text
+    item.addActionListener { this.action() }
     if (this.children != null) {
         for (child in this.children!!) {
             item.add(child.toMenuItem(factory))

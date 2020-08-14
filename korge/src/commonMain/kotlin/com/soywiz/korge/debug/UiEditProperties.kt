@@ -1,5 +1,6 @@
 package com.soywiz.korge.debug
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.view.*
@@ -15,18 +16,14 @@ class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiCo
 
         view?.buildDebugComponent(views, this@UiEditProperties.propsContainer)
 
-        obsProperties = this.findObservableProperties()
-
-        obsProperties.fastForEach {
-            it.onChange { update() }
-        }
-
         root?.updateUI()
         root?.relayout()
         root?.repaintAll()
+
+        update()
     }
 
-    private var obsProperties: List<ObservableProperty<*>> = listOf()
+    private val registeredProperties = WeakMap<ObservableProperty<*>, Boolean>()
 
     // Calls from time to time to update all the properties
     private var updating = false
@@ -35,7 +32,17 @@ class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiCo
         updating = true
         try {
             //println("obsProperties[update]: $obsProperties")
-            obsProperties.fastForEach { it.forceRefresh() }
+            //obsProperties.fastForEach { it.forceRefresh() }
+            val obsProperties = this.findObservableProperties()
+
+            obsProperties.fastForEach {
+                if (it !in registeredProperties) {
+                    registeredProperties[it] = true
+                    it.onChange { update() }
+                }
+                it.forceRefresh()
+            }
+
         } finally {
             updating = false
         }

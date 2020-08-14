@@ -862,6 +862,21 @@ abstract class View internal constructor(
      */
     var filter: Filter? = null
 
+    fun addFilter(filter: Filter) {
+        when (this.filter) {
+            null -> this.filter = filter
+            is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters + filter)
+            else -> this.filter = ComposedFilter(listOf(this.filter!!, filter))
+        }
+    }
+
+    fun removeFilter(filter: Filter) {
+        when (this.filter) {
+            filter -> this.filter = null
+            is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters.filter { it != filter })
+        }
+    }
+
     var debugAnnotate: Boolean = false
 
     /**
@@ -1384,11 +1399,7 @@ abstract class View internal constructor(
             uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
             uiEditableValue(view::visible)
         }
-        container.button("Add filter") {
-            views.undoable("Add filter", view) {
-                view.filter = WaveFilter()
-            }
-        }
+
         views.viewExtraBuildDebugComponent.fastForEach {
             it(views, view, container)
         }
