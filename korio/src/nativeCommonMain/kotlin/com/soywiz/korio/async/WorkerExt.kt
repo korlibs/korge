@@ -11,6 +11,15 @@ suspend fun <T, R> executeInWorker(worker: kotlin.native.concurrent.Worker, valu
 	return future.await()
 }
 
+suspend fun <T, R> executeInTempWorker(value: T, func: (T) -> R): R {
+    val worker = Worker.start()
+    try {
+        return executeInWorker(worker, value, func)
+    } finally {
+        worker.requestTermination()
+    }
+}
+
 /*
 @UseExperimental(InternalCoroutinesApi::class)
 suspend fun <T, R> executeInWorker(worker: kotlin.native.concurrent.Worker, value: T, func: (T) -> R): R = kotlin.coroutines.suspendCoroutine { c ->

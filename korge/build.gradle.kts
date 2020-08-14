@@ -2,7 +2,6 @@ dependencies {
 	add("commonMainApi", project(":korgw"))
     add("commonMainApi", project(":korui"))
 	add("commonMainApi", project(":korau"))
-	add("commonMainApi", project(":klogger"))
 	add("commonMainApi", project(":korinject"))
     commonMainApi(project(":korte"))
 	add("jvmMainApi", project(":krypto"))

@@ -5,6 +5,7 @@ dependencies {
 	add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
+    add("commonMainApi", project(":klogger"))
 }
 /*
 import com.soywiz.korlibs.korlibs

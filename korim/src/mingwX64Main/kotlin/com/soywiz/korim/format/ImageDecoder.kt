@@ -11,70 +11,70 @@ import platform.gdiplus.*
 import platform.windows.*
 import kotlin.native.concurrent.*
 
-private val ImageIOWorker by lazy { Worker.start() }
-
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
     override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage {
         data class Info(val data: ByteArray, val premultiplied: Boolean)
         initGdiPlusOnce()
         return wrapNative(
-            ImageIOWorker.execute(
-                TransferMode.SAFE,
-                { Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied) },
-                { info ->
-                    val data = info.data
-                    val premultiplied = info.premultiplied
-                    memScoped {
-                        val width = alloc<FloatVar>()
-                        val height = alloc<FloatVar>()
-                        val pimage = allocArray<COpaquePointerVar>(1)
+            executeInImageIOWorker { worker ->
+                worker.execute(
+                    TransferMode.SAFE,
+                    { Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied) },
+                    { info ->
+                        val data = info.data
+                        val premultiplied = info.premultiplied
+                        memScoped {
+                            val width = alloc<FloatVar>()
+                            val height = alloc<FloatVar>()
+                            val pimage = allocArray<COpaquePointerVar>(1)
 
-                        data.usePinned { datap ->
-                            val pdata = datap.addressOf(0)
-                            val pstream = SHCreateMemStream(pdata.reinterpret(), data.size.convert())!!
-                            try {
-                                if (GdipCreateBitmapFromStream(pstream, pimage).toInt() != 0) {
-                                    return@execute null
+                            data.usePinned { datap ->
+                                val pdata = datap.addressOf(0)
+                                val pstream = SHCreateMemStream(pdata.reinterpret(), data.size.convert())!!
+                                try {
+                                    if (GdipCreateBitmapFromStream(pstream, pimage).toInt() != 0) {
+                                        return@execute null
+                                    }
+                                } finally {
+                                    pstream.pointed.lpVtbl?.pointed?.Release?.invoke(pstream)
                                 }
-                            } finally {
-                                pstream.pointed.lpVtbl?.pointed?.Release?.invoke(pstream)
                             }
-                        }
 
-                        GdipGetImageDimension(pimage[0], width.ptr, height.ptr)
+                            GdipGetImageDimension(pimage[0], width.ptr, height.ptr)
 
-                        val rect = alloc<GpRect>().apply {
-                            X = 0
-                            Y = 0
-                            Width = width.value.toInt()
-                            Height = height.value.toInt()
-                        }
-                        val bmpData = alloc<BitmapData>()
-                        if (GdipBitmapLockBits(pimage[0], rect.ptr.reinterpret(), ImageLockModeRead, if (premultiplied) PixelFormat32bppPARGB else PixelFormat32bppARGB, bmpData.ptr.reinterpret()).toInt() != 0) {
-                            return@execute null
-                        }
-
-                        val bmpWidth = bmpData.Width.toInt()
-                        val bmpHeight = bmpData.Height.toInt()
-                        val out = IntArray((bmpWidth * bmpHeight).toInt())
-                        out.usePinned { outp ->
-                            val o = outp.addressOf(0)
-                            for (y in 0 until bmpHeight) {
-                                val optr = (o.reinterpret<IntVar>() + bmpWidth * y)!!
-                                val iptr = (bmpData.Scan0.toLong() + (bmpData.Stride * y)).toCPointer<IntVar>()!!
-                                memcpy(optr, iptr, (bmpData.Width * 4.convert()).convert())
-                                for (x in 0 until bmpWidth) optr[x] = argbToAbgr(optr[x])
+                            val rect = alloc<GpRect>().apply {
+                                X = 0
+                                Y = 0
+                                Width = width.value.toInt()
+                                Height = height.value.toInt()
                             }
+                            val bmpData = alloc<BitmapData>()
+                            if (GdipBitmapLockBits(pimage[0], rect.ptr.reinterpret(), ImageLockModeRead, if (premultiplied) PixelFormat32bppPARGB else PixelFormat32bppARGB, bmpData.ptr.reinterpret()).toInt() != 0) {
+                                return@execute null
+                            }
+
+                            val bmpWidth = bmpData.Width.toInt()
+                            val bmpHeight = bmpData.Height.toInt()
+                            val out = IntArray((bmpWidth * bmpHeight).toInt())
+                            out.usePinned { outp ->
+                                val o = outp.addressOf(0)
+                                for (y in 0 until bmpHeight) {
+                                    val optr = (o.reinterpret<IntVar>() + bmpWidth * y)!!
+                                    val iptr = (bmpData.Scan0.toLong() + (bmpData.Stride * y)).toCPointer<IntVar>()!!
+                                    memcpy(optr, iptr, (bmpData.Width * 4.convert()).convert())
+                                    for (x in 0 until bmpWidth) optr[x] = argbToAbgr(optr[x])
+                                }
+                            }
+
+                            GdipBitmapUnlockBits(pimage[0], bmpData.ptr)
+                            GdipDisposeImage(pimage[0])
+
+                            //println(out.toList())
+                            Bitmap32(bmpWidth, bmpHeight, RgbaArray(out), premultiplied = premultiplied)
                         }
-
-                        GdipBitmapUnlockBits(pimage[0], bmpData.ptr)
-                        GdipDisposeImage(pimage[0])
-
-                        //println(out.toList())
-                        Bitmap32(bmpWidth, bmpHeight, RgbaArray(out), premultiplied = premultiplied)
                     }
-                }
-            ).await() ?: throw IOException("Can't load image from ByteArray"),
+                )
+            } ?: throw IOException("Can't load image from ByteArray"),
             premultiplied
         )
     }
