@@ -207,7 +207,8 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
 
         views.onAfterRender {
             val ctx = it.debugLineRenderContext
-            ctx.draw(camera.content.globalMatrix) {
+            val mat = camera.content.globalMatrix
+            ctx.draw(mat) {
                 val transform = camera.content.globalMatrix.toTransform()
                 val dx = transform.scaleX * grid.width
                 val dy = transform.scaleY * grid.height
@@ -222,10 +223,13 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                         }
                     }
                 }
-
-                ctx.drawVector(Colors.RED) {
-                    rect(0, 0, root.width, root.height)
-                }
+            }
+            val rectBounds = Rectangle.fromBounds(mat.transform(0, 0), mat.transform(root.width, root.height))
+            ctx.drawVector(Colors.BLACK) {
+                rect(rectBounds)
+            }
+            ctx.drawVector(Colors.WHITE) {
+                rect(rectBounds.left - 1, rectBounds.top - 1, rectBounds.width + 2, rectBounds.height + 2)
             }
         }
 

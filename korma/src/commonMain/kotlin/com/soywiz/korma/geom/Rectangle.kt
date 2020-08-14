@@ -47,6 +47,8 @@ data class Rectangle(
         inline fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): Rectangle = Rectangle().setBounds(left, top, right, bottom)
         inline fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): Rectangle = Rectangle().setBounds(left, top, right, bottom)
 
+        inline fun fromBounds(topLeft: Point, bottomRight: Point): Rectangle = Rectangle().setBounds(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y)
+
         @Deprecated("Kotlin/Native boxes inline + Number")
         inline operator fun invoke(x: Number, y: Number, width: Number, height: Number): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
         @Deprecated("Kotlin/Native boxes inline + Number")
