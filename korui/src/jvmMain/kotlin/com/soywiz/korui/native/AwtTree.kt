@@ -15,7 +15,7 @@ data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun getIndex(node: TreeNode?): Int = this.node.children?.indexOf(node) ?: -1
     override fun getAllowsChildren(): Boolean = node.children != null
     override fun isLeaf(): Boolean = node.children == null
-    override fun children(): Enumeration<*> = Vector(node.children ?: listOf()).elements()
+    override fun children(): Enumeration<out TreeNode> = Vector(node.children ?: listOf()).elements() as Enumeration<out TreeNode>
     override fun toString(): String = node.toString()
 }
 
