@@ -90,4 +90,9 @@ class RootComponent(val korgeBaseKorgeFileEditor: KorgeBaseKorgeFileEditor) : JP
     override fun isCopyVisible(dataContext: DataContext): Boolean {
         return true
     }
+
+    override fun paintComponent(g: Graphics) {
+        super.paintComponent(g)
+        korgeBaseKorgeFileEditor.onRepaint()
+    }
 }

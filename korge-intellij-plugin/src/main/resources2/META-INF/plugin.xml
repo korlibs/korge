@@ -103,6 +103,9 @@
     <depends>org.jetbrains.kotlin</depends>
 	<depends>com.intellij.modules.java</depends>
     <depends>com.intellij.platform.images</depends>
+    <!--
+    <depends>com.intellij.modules.platform</depends>
+    -->
 
 
 	<!-- Do not use so plugin can be loaded without IDE restart -->

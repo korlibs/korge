@@ -38,6 +38,10 @@ open class BaseAwtUiFactory : NativeUiFactory {
         it.verticalScrollBar.unitIncrement = 16
         it.horizontalScrollBar.unitIncrement = 16
     }
+    open fun createJToolBar() = JToolBar().also {
+        it.isOpaque = true
+        it.background = JPanel().background
+    }
     open fun createJPopupMenu() = JPopupMenu()
     open fun createJMenuItem() = JMenuItem()
     open fun createJMenu() = JMenu()

@@ -1,7 +1,9 @@
 package com.soywiz.korge.awt
 
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import java.awt.*
+import java.awt.event.*
 import java.util.*
 import javax.imageio.*
 import javax.swing.*
@@ -38,6 +40,7 @@ fun <T : AbstractButton> Styled<T>.click(handler: T.() -> Unit) {
 fun Styled<out Container>.button(text: String, block: @UIDslMarker Styled<JButton>.() -> Unit = {}) {
     component.add(JButton(text).also { block(it.styled) })
 }
+
 
 fun Styled<out Container>.label(text: String, block: @UIDslMarker Styled<JLabel>.() -> Unit = {}) {
     component.add(JLabel(text).also { block(it.styled) })
@@ -86,15 +89,27 @@ fun Styled<out Container>.iconButton(icon: Icon, tooltip: String? = null, block:
     )
 }
 
+/*
 fun Styled<out Container>.toolbar(direction: Direction = Direction.HORIZONTAL, props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<JToolBar>.() -> Unit = {}): JToolBar {
     val container = JToolBar(if (direction.horizontal) JToolBar.HORIZONTAL else JToolBar.VERTICAL)
     container.styled.height = 32.pt
     container.isFloatable = false
-    container.layout = LinearLayout(if (direction.horizontal) Direction.HORIZONTAL else Direction.VERTICAL, props)
+    container.isOpaque = true
+    container.background = JPanel().background
     component.add(container)
     block(container.styled)
     return container
 }
+*/
+
+fun Styled<out Container>.toolbar(direction: Direction = Direction.HORIZONTAL, props: LinearLayout.Props = LinearLayout.Props(), block: @UIDslMarker Styled<JPanel>.() -> Unit = {}): JPanel {
+    val container = JPanel(LinearLayout(if (direction.horizontal) Direction.HORIZONTAL else Direction.VERTICAL, props))
+    container.styled.height = 32.pt
+    component.add(container)
+    block(container.styled)
+    return container
+}
+
 
 fun Styled<out Container>.tabs(block: @UIDslMarker Styled<JTabbedPane>.() -> Unit = {}): JTabbedPane {
     val container = myComponentFactory.tabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT)
@@ -176,11 +191,11 @@ class Styled<T : Component> constructor(val component: T) {
 
     var width: MUnit
         get() = preferred.width
-        set(value) = run { preferred = preferred.copy( width = value) }
+        set(value) = run { preferred = preferred.copy(width = value) }
 
     var height: MUnit
         get() = preferred.height
-        set(value) = run { preferred = preferred.copy( height = value) }
+        set(value) = run { preferred = preferred.copy(height = value) }
 
     fun fill() {
         fillWidth()

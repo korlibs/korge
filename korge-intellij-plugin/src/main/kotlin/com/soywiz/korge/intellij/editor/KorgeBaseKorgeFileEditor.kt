@@ -172,6 +172,10 @@ open class KorgeBaseKorgeFileEditor(
         }
 	}
 
+    fun onRepaint() {
+        viewsDebuggerComponent?.views?.clearColor = component.background.rgba()
+    }
+
     fun Styled<out Container>.createViewsWithDebugger(
         editor: Component,
         rootNode: Any?,
@@ -186,19 +190,34 @@ open class KorgeBaseKorgeFileEditor(
                     minWidth = 360.pt
                     fill()
                     toolbar {
-                        button("Grid") {
+                        toolbarButton("Grid", "Shows/Hides the grid") {
+                            fun updateState() {
+                                component.isSelected = viewsDebuggerActions?.gridShowing != false
+                            }
+                            updateState()
                             click {
                                 viewsDebuggerActions?.toggleGrid()
+                                updateState()
                             }
                         }
-                        button("Snapping") {
+                        toolbarButton("Snapping", "Enables/Disables grid snapping") {
+                            fun updateState() {
+                                component.isSelected = viewsDebuggerActions?.gridSnapping != false
+                            }
+                            updateState()
                             click {
                                 viewsDebuggerActions?.toggleGridSnapping()
+                                updateState()
                             }
                         }
-                        button("Play/Pause") {
+                        toolbarButton("Play/Pause", "Plays/Pauses the animations") {
+                            fun updateState() {
+                                component.isSelected = viewsDebuggerActions?.playing != false
+                            }
+                            updateState()
                             click {
                                 viewsDebuggerActions?.togglePlay()
+                                updateState()
                             }
                         }
                     }
