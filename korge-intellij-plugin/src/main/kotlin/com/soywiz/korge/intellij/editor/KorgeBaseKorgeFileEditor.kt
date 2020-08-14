@@ -212,12 +212,31 @@ open class KorgeBaseKorgeFileEditor(
                         }
                         toolbarButton("Play/Pause", "Plays/Pauses the animations") {
                             fun updateState() {
-                                component.isSelected = viewsDebuggerActions?.playing != false
+                                component.isSelected = viewsDebuggerActions?.playing == true
                             }
                             updateState()
                             click {
                                 viewsDebuggerActions?.togglePlay()
                                 updateState()
+                            }
+                        }
+                        toolbarButton("Settings") {
+                            click {
+                                val actions = viewsDebuggerActions
+                                if (actions != null) {
+                                    val settings = showKorgeBaseEditorSettings(KorgeBaseEditorSettings(
+                                        width = actions.root.width.toInt(),
+                                        height = actions.root.height.toInt(),
+                                        gridWidth = actions.grid.width,
+                                        gridHeight = actions.grid.height,
+                                    ))
+                                    if (settings != null) {
+                                        actions.root.width = settings.width.toDouble()
+                                        actions.root.height = settings.height.toDouble()
+                                        actions.grid.width = settings.gridWidth
+                                        actions.grid.height = settings.gridHeight
+                                    }
+                                }
                             }
                         }
                     }

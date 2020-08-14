@@ -1,4 +1,4 @@
-package com.soywiz.korge.awt
+package com.soywiz.korge.view.grid
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
@@ -15,6 +15,14 @@ open class OrthographicGrid(
     var width: Int,
     var height: Int,
 ) : Grid {
+
+    var size: Int
+        get() = (width + height) / 2
+        set(value) {
+            width = value
+            height = value
+        }
+
     override fun snap(point: Point, out: Point): Point {
         return out.setTo(
             point.x.nearestAlignedTo(width.toDouble()),

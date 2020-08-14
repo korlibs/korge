@@ -16,7 +16,7 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
-
+import com.soywiz.korge.debug.*
 
 enum class AnchorKind { SCALING, ROTATING }
 
@@ -61,6 +61,10 @@ abstract class BaseKorgeFileToEdit(val file: VfsFile) {
 suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
     val file = fileToEdit.file
     return myComponentFactory.createModule {
+        val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
+        val actions = viewsDebuggerComponent.actions
+        actions.playing = false
+
         views.name = "ktree"
         views.editingMode = true
         //var save = false
@@ -68,15 +72,24 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         val gameWindow = this.views.gameWindow
         val stage = views.stage
         // Dirty hack
-        views.stage.removeChildren()
+        //views.stage.removeChildren()
 
-        val camera = stage.cameraContainer2(views.virtualWidth.toDouble(), views.virtualHeight.toDouble(), clip = false)
-        val root: Container = camera.content
+        val camera = actions.camera
+        val root = actions.root
+        //root.width = camera.width
+        //root.height = camera.height
+
+        root.extraBuildDebugComponent = { views, view, container ->
+            container.uiCollapsableSection("Document") {
+                uiEditableValue(listOf(root::width, root::height), min = 0.0, max = 4096.0, clamp = true, name = "Document Size")
+                uiEditableValue(actions.grid::size, min = 1, max = 500, clamp = true, name = "Grid Size")
+                uiEditableValue(listOf(actions.grid::width, actions.grid::height), min = 1, max = 500, clamp = true, name = "Grid Size")
+            }
+        }
 
         val currentVfs = file.parent
         views.currentVfs = currentVfs
-        val viewsDebuggerComponent = injector.get<ViewsDebuggerComponent>()
-        val actions = viewsDebuggerComponent.actions
+
         //val grid get() = actions.grid
         //val gridSnapping get() = actions.gridSnapping
         //val gridShowing get() = actions.gridShowing
@@ -110,6 +123,12 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         fun load(tree: Container) {
             root.removeChildren()
             root.addChildren(tree.children.toList())
+            if (tree is KTreeRoot) {
+                root.width = tree.width
+                root.height = tree.height
+                root.grid.width = tree.grid.width
+                root.grid.height = tree.grid.height
+            }
         }
 
         fun load(text: String) {
@@ -199,13 +218,13 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 if (!smallX && !smallY) {
                     ctx.draw(camera.content.globalMatrix) {
                         if (gridShowing) {
-                            grid.draw(ctx, RectangleInt(0, 0, views.virtualWidth, views.virtualHeight))
+                            grid.draw(ctx, RectangleInt(0, 0, root.width, root.height))
                         }
                     }
                 }
 
                 ctx.drawVector(Colors.RED) {
-                    rect(0, 0, views.virtualWidth, views.virtualHeight)
+                    rect(0, 0, root.width, root.height)
                 }
             }
         }

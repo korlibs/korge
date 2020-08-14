@@ -8,6 +8,7 @@ import com.soywiz.korge.tiled.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.grid.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
@@ -191,6 +192,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             "animation" -> view = AnimationViewRef()
             "tiledmapref" -> view = TiledMapViewRef()
             "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
+            "ktree" -> view = KTreeRoot(100.0, 100.0)
             else -> {
                 val registration = registrationsByNameLC[xml.nameLC]
                 if (registration != null) {
@@ -263,6 +265,12 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             view.verticalAlign = VerticalAlign(xml.str("verticalAlign"))
             view.horizontalAlign = HorizontalAlign(xml.str("horizontalAlign"))
         }
+        if (view is KTreeRoot) {
+            view.width = xml.double("width", 512.0)
+            view.height = xml.double("height", 512.0)
+            view.grid.width = xml.int("gridWidth", 20)
+            view.grid.height = xml.int("gridHeight", 20)
+        }
         view.blendMode = BlendMode[xml.str("blendMode", "INHERIT")]
 
         parent?.addChild(view)
@@ -333,6 +341,9 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             //println("registrations: $registrations, $result, $results")
             result ?: when (view) {
                 is NinePatchEx -> Xml("ninepatch", rproperties)
+                is KTreeRoot -> Xml("ktree", mapOf("width" to view.width, "height" to view.height, "gridWidth" to view.grid.width, "gridHeight" to view.grid.height)) {
+                    view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
+                }
                 is AnimationViewRef -> Xml("animation", rproperties)
                 is ParticleEmitterView -> Xml("particle", rproperties)
                 is SolidRect -> Xml("solidrect", rproperties)
@@ -366,3 +377,7 @@ suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder, parent: Contain
 
 fun View.viewTreeToKTree(views: Views, level: Int = 1): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs, level)
 fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile, level: Int = 1): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs, level)
+
+class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, height) {
+    val grid = OrthographicGrid(20, 20)
+}

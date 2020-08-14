@@ -1381,8 +1381,13 @@ abstract class View internal constructor(
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
     }
 
+    var extraBuildDebugComponent: ((views: Views, view: View, container: UiContainer) -> Unit)? = null
+
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         val view = this
+
+        extraBuildDebugComponent?.invoke(views, view, container)
+
         container.uiCollapsableSection("View") {
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
             uiEditableValue(view::name)

@@ -1,6 +1,7 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.camera2.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
@@ -15,7 +16,12 @@ open class ViewsDebuggerActions(val views: Views) {
     val currentVfs get() = views.currentVfs
     var gridShowing = true
     var gridSnapping = true
-    val grid = OrthographicGrid(20, 20)
+
+    val camera = stage.cameraContainer2(1280.toDouble(), 720.toDouble(), clip = false, contentBuilder = {
+        KTreeRoot(it.width, it.height)
+    })
+    val root: KTreeRoot = camera.content as KTreeRoot
+    val grid get() = root.grid
 
     fun toggleGrid() {
         gridShowing = !gridShowing

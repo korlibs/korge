@@ -13,26 +13,29 @@ inline fun Container.cameraContainer2(
     width: Double,
     height: Double,
     clip: Boolean = true,
+    noinline contentBuilder: (camera: CameraContainer2) -> Container = { FixedSizeContainer(it.width, it.height) },
     noinline block: @ViewDslMarker CameraContainer2.() -> Unit = {},
     content: @ViewDslMarker Container.() -> Unit = {}
-) = CameraContainer2(width, height, clip, block).addTo(this).also { content(it.content) }
+) = CameraContainer2(width, height, clip, contentBuilder, block).addTo(this).also { content(it.content) }
 
 class CameraContainer2(
     width: Double = 100.0,
     height: Double = 100.0,
     clip: Boolean = true,
+    contentBuilder: (camera: CameraContainer2) -> Container = { FixedSizeContainer(it.width, it.height) },
     block: @ViewDslMarker CameraContainer2.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
 
     private val contentContainer = Container()
 
-    class ContentContainer(val cameraContainer: CameraContainer2) : Container(), Reference {
+    class ContentContainer(val cameraContainer: CameraContainer2) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
         override fun getLocalBoundsInternal(out: Rectangle) {
-            out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
+            //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
+            out.setTo(0, 0, width, height)
         }
     }
 
-    val content: Container = ContentContainer(this)
+    val content: Container by lazy { contentBuilder(this) }
 
     private val sourceCamera = Camera2(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
     private val currentCamera = sourceCamera.copy()
