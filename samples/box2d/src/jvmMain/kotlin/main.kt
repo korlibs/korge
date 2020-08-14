@@ -1,15 +1,22 @@
 //import com.soywiz.korge.admob.*
 import com.soywiz.kds.*
 import com.soywiz.korge.*
+import com.soywiz.korge.box2d.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*
 import org.jbox2d.dynamics.*
 import org.jbox2d.userdata.*
 
+suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
+    registerBox2dSupportOnce()
+    addChild(resourcesVfs["restitution.ktree"].readKTree(views))
+}
 
 /*
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
