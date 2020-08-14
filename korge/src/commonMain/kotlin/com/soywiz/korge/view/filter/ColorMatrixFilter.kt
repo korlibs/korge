@@ -63,11 +63,9 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
 
 	override val fragment = FRAGMENT_SHADER
 
-    var namedColorMatrix: String = NAMED_MATRICES.keys.first()
-        set(value) {
-            field = value
-            colorMatrix = (NAMED_MATRICES[value] ?: IDENTITY_MATRIX)
-        }
+    var namedColorMatrix: String
+        get() = NAMED_MATRICES.entries.firstOrNull { it.value == colorMatrix }?.key ?: NAMED_MATRICES.keys.first()
+        set(value) = run { colorMatrix = (NAMED_MATRICES[value] ?: IDENTITY_MATRIX) }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(listOf(colorMatrix::v00, colorMatrix::v01, colorMatrix::v02, colorMatrix::v03), name = "row0")

@@ -9,7 +9,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlin.math.*
 
-class BlurFilter(initialRadius: Double = 1.0) : Filter {
+class BlurFilter(initialRadius: Double = 4.0) : Filter {
     private val gaussianBlurs = mutableListOf<Convolute3Filter>()
     private val composedFilters = arrayListOf<Convolute3Filter>()
     private val composed = ComposedFilter(composedFilters)
@@ -32,7 +32,7 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
         val nsteps = this.nsteps
         // Cache values
         while (gaussianBlurs.size < nsteps) {
-            gaussianBlurs.add(Convolute3Filter(Matrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble()))
+            gaussianBlurs.add(Convolute3Filter(Matrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble(), applyAlpha = true))
         }
 
         //println("border: $border")

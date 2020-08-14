@@ -305,8 +305,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
             for (n in 0 until trianglesCount) {
                 batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
             }
-            val colorMul = this.colorMul
-            val colorAdd = this.colorAdd
+            val colorMul = this.renderColorMul
+            val colorAdd = this.renderColorAdd
             for (n in 0 until vertexCount) {
                 val x = verticesData[verticesOffset + n * vertexSize + 0]
                 val y = -verticesData[verticesOffset + n * vertexSize + 1]

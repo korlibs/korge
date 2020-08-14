@@ -15,7 +15,8 @@ class Convolute3Filter(
     /** 3x3 matrix representing a convolution kernel */
     var kernel: Matrix3D,
     /** Distance between the origin pixel for sampling for edges */
-    dist: Double = 1.0
+    dist: Double = 1.0,
+    applyAlpha: Boolean = false
 ) : ShaderFilter() {
     companion object {
         private val u_ApplyAlpha = Uniform("apply_alpha", VarType.Float1)
@@ -92,16 +93,14 @@ class Convolute3Filter(
     /** Distance between the origin pixel for sampling for edges */
     var dist by uniforms.storageFor(u_Dist).doubleDelegateX(dist)
     /** Whether or not kernel must be applied to the alpha component */
-    var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(false)
+    var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
 
     override val border: Int get() = dist.toInt()
     override val fragment = FRAGMENT_SHADER
 
-    var namedKernel: String = NAMED_KERNELS.keys.first()
-        set(value) {
-            field = value
-            weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY)
-        }
+    var namedKernel: String
+        get() = NAMED_KERNELS.entries.firstOrNull { it.value == weights }?.key ?: NAMED_KERNELS.keys.first()
+        set(value) = run { weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY) }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(listOf(weights::v00, weights::v01, weights::v02), name = "row0")
