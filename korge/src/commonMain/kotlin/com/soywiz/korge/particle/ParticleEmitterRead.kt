@@ -26,8 +26,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         fun type() = ParticleEmitter.typeMap[scalar().toInt()] ?: ParticleEmitter.Type.GRAVITY
 
         fun angle() = item.double("value").degrees
-        fun color(): RGBAf =
-            RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
+        fun color(): RGBAf = RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 
         when (item.name.toLowerCase()) {
             "texture" -> emitter.textureName = item.str("name")

@@ -79,7 +79,7 @@ open class TextButton(
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection(TextButton::class.simpleName!!) {
             uiEditableValue(::text)
-            uiEditableValue(::textSize, min = 1.0, max = 300.0)
+            uiEditableValue(::textSize, min = 1, max = 300)
             /*
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })

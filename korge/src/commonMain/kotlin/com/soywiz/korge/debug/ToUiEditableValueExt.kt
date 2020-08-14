@@ -30,12 +30,7 @@ fun UiContainer.uiEditableValue(
     name: String,
     prop: RGBAf
 ) {
-    uiCollapsableSection(name) {
-        uiEditableValue(prop::rd)
-        uiEditableValue(prop::gd)
-        uiEditableValue(prop::bd)
-        uiEditableValue(prop::ad)
-    }
+    uiEditableValue(listOf(prop::rd, prop::gd, prop::bd, prop::ad), name = name)
 }
 
 @JvmName("uiEditableValuePoint")
@@ -90,15 +85,14 @@ fun UiContainer.uiEditableValue(
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Int>,
     name: String = prop.name,
-    min: Double = -1.0,
-    max: Double = +1.0,
+    min: Int = -1000,
+    max: Int = +1000,
     clamp: Boolean = false,
     clampMin: Boolean = clamp,
-    clampMax: Boolean = clamp,
-    decimalPlaces: Int = 2
+    clampMax: Boolean = clamp
 ): UiRowEditableValue {
     val obs = ObservableProperty(name, internalSet = { prop.set(it.toInt()) }, internalGet = { prop.get().toDouble() })
-    return UiRowEditableValue(app, name, UiNumberEditableValue(app, obs, min, max, clampMin, clampMax, decimalPlaces)).also { addChild(it) }
+    return UiRowEditableValue(app, name, UiNumberEditableValue(app, obs, min.toDouble(), max.toDouble(), clampMin, clampMax, 0)).also { addChild(it) }
 }
 
 @JvmName("uiEditableValuePair")
@@ -131,7 +125,7 @@ fun UiContainer.uiEditableValue(
     clampMin: Boolean = clamp,
     clampMax: Boolean = clamp,
     decimalPlaces: Int = 2,
-    name: String = "pair",
+    name: String = props.first().name,
 ): UiRowEditableValue {
     val obs = props.map { prop -> ObservableProperty(prop.name, internalSet = { prop.set(it) }, internalGet = { prop.get() }) }
     return UiRowEditableValue(
@@ -149,12 +143,24 @@ fun UiContainer.uiEditableValue(
     clampMin: Boolean = clamp,
     clampMax: Boolean = clamp,
     decimalPlaces: Int = 2,
-    name: String = "pair",
+    name: String = props.first().name,
 ): UiRowEditableValue {
     val obs = props.map { prop -> ObservableProperty(prop.name, internalSet = { prop.set(it.toFloat()) }, internalGet = { prop.get().toDouble() }) }
     return UiRowEditableValue(
         app, name,
         UiMultipleItemEditableValue(app, obs.map { UiNumberEditableValue(app, it, min.toDouble(), max.toDouble(), clampMin, clampMax, decimalPlaces) })
+    ).also { addChild(it) }
+}
+
+@JvmName("uiEditableValueTupleAngle")
+fun UiContainer.uiEditableValue(
+    props: List<KMutableProperty0<Angle>>,
+    name: String = props.first().name,
+): UiRowEditableValue {
+    val obs = props.map { prop -> ObservableProperty(prop.name, internalSet = { prop.set(it.degrees) }, internalGet = { prop.get().degrees }) }
+    return UiRowEditableValue(
+        app, name,
+        UiMultipleItemEditableValue(app, obs.map { UiNumberEditableValue(app, it, -360.0, +360.0, true, true, 0) })
     ).also { addChild(it) }
 }
 

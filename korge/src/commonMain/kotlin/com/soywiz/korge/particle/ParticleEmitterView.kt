@@ -141,50 +141,38 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             uiEditableValue(particle::blendFuncSource, values = { AG.BlendFactor.values().toList() })
             uiEditableValue(particle::blendFuncDestination, values = { AG.BlendFactor.values().toList() })
             uiCollapsableSection("Angle") {
-                uiEditableValue(particle::angle)
-                uiEditableValue(particle::angleVariance)
+                uiEditableValue(listOf(particle::angle, particle::angleVariance))
             }
             uiCollapsableSection("Speed") {
-                uiEditableValue(particle::speed, 0.0, 1000.0)
-                uiEditableValue(particle::speedVariance, 0.0, 1000.0)
+                uiEditableValue(listOf(particle::speed, particle::speedVariance), 0.0, 1000.0)
             }
             uiCollapsableSection("Lifespan") {
-                uiEditableValue(particle::lifeSpan, 0.0, 10.0)
-                uiEditableValue(particle::lifespanVariance, -10.0, 10.0)
+                uiEditableValue(listOf(particle::lifeSpan, particle::lifespanVariance), -10.0, 10.0)
                 uiEditableValue(particle::duration, -10.0, 10.0)
             }
             uiEditableValue("Gravity", particle.gravity)
             uiEditableValue("Source Position", particle.sourcePosition)
             uiEditableValue("Source Position Variance", particle.sourcePositionVariance)
             uiCollapsableSection("Acceleration") {
-                uiEditableValue(particle::radialAcceleration, -1000.0, +1000.0)
-                uiEditableValue(particle::radialAccelVariance, -1000.0, +1000.0)
-                uiEditableValue(particle::tangentialAcceleration, -1000.0, +1000.0)
-                uiEditableValue(particle::tangentialAccelVariance, -1000.0, +1000.0)
+                uiEditableValue(listOf(particle::radialAcceleration, particle::radialAccelVariance), -1000.0, +1000.0)
+                uiEditableValue(listOf(particle::tangentialAcceleration, particle::tangentialAccelVariance), -1000.0, +1000.0)
             }
             uiEditableValue("Start Color", particle.startColor)
             uiEditableValue("Start Color Variance", particle.startColorVariance)
             uiEditableValue("End Color", particle.endColor)
             uiEditableValue("End Color Variance", particle.endColor)
             uiEditableValue(particle::maxParticles)
-            uiEditableValue(particle::startSize, -1.0, +1000.0)
-            uiEditableValue(particle::startSizeVariance, -1000.0, 1000.0)
-            uiEditableValue(particle::endSize, 1.0, 1000.0)
-            uiEditableValue(particle::endSizeVariance, -1000.0, 1000.0)
+            uiEditableValue(listOf(particle::startSize, particle::startSizeVariance), -1000.0, +1000.0)
+            uiEditableValue(listOf(particle::endSize, particle::endSizeVariance), -1000.0, 1000.0)
 
             uiCollapsableSection("Radius") {
-                uiEditableValue(particle::minRadius, min = 0.0, max = 1000.0)
-                uiEditableValue(particle::minRadiusVariance, min = -1000.0, max = 1000.0)
-                uiEditableValue(particle::maxRadius, min = 0.0, max = 1000.0)
-                uiEditableValue(particle::maxRadiusVariance, min = -1000.0, max = 1000.0)
+                uiEditableValue(listOf(particle::minRadius, particle::minRadiusVariance), min = -1000.0, max = 1000.0)
+                uiEditableValue(listOf(particle::maxRadius, particle::maxRadiusVariance), min = -1000.0, max = 1000.0)
             }
             uiCollapsableSection("Rotate") {
-                uiEditableValue(particle::rotatePerSecond)
-                uiEditableValue(particle::rotatePerSecondVariance)
-                uiEditableValue(particle::rotationStart)
-                uiEditableValue(particle::rotationStartVariance)
-                uiEditableValue(particle::rotationEnd)
-                uiEditableValue(particle::rotationEndVariance)
+                uiEditableValue(listOf(particle::rotatePerSecond, particle::rotatePerSecondVariance))
+                uiEditableValue(listOf(particle::rotationStart, particle::rotationStartVariance))
+                uiEditableValue(listOf(particle::rotationEnd, particle::rotationEndVariance))
             }
         }
         super.buildDebugComponent(views, container)

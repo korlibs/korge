@@ -11,6 +11,9 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
         fun nodeValue(name: String, value: Any?) {
             node(name, "value" to value)
         }
+        fun nodeAngle(name: String, value: Angle) {
+            node(name, "value" to value.degrees)
+        }
         fun nodePoint(name: String, point: IPoint) {
             node(name, "x" to point.x, "y" to point.y)
         }
@@ -25,8 +28,8 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
         nodeValue("speedVariance", particle.speedVariance)
         nodeValue("particleLifeSpan", particle.lifeSpan)
         nodeValue("particleLifespanVariance", particle.lifespanVariance)
-        nodeValue("angle", particle.angle.radians.degrees)
-        nodeValue("angleVariance", particle.angleVariance.radians.degrees)
+        nodeAngle("angle", particle.angle)
+        nodeAngle("angleVariance", particle.angleVariance)
         nodePoint("gravity", particle.gravity)
         nodeValue("radialAcceleration", particle.radialAcceleration)
         nodeValue("radialAccelVariance", particle.radialAccelVariance)
@@ -47,13 +50,13 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
         nodeValue("maxRadiusVariance", particle.maxRadiusVariance)
         nodeValue("minRadius", particle.minRadius)
         nodeValue("minRadiusVariance", particle.minRadiusVariance)
-        nodeValue("rotatePerSecond", particle.rotatePerSecond)
-        nodeValue("rotatePerSecondVariance", particle.rotatePerSecondVariance)
+        nodeAngle("rotatePerSecond", particle.rotatePerSecond)
+        nodeAngle("rotatePerSecondVariance", particle.rotatePerSecondVariance)
         nodeValue("blendFuncSource", ParticleEmitter.blendFactorMapReversed[particle.blendFuncSource] ?: 1)
         nodeValue("blendFuncDestination", ParticleEmitter.blendFactorMapReversed[particle.blendFuncDestination] ?: 1)
-        nodeValue("rotationStart", particle.rotationStart)
-        nodeValue("rotationStartVariance", particle.rotationStartVariance)
-        nodeValue("rotationEnd", particle.rotationEnd)
-        nodeValue("rotationEndVariance", particle.rotationEndVariance)
+        nodeAngle("rotationStart", particle.rotationStart)
+        nodeAngle("rotationStartVariance", particle.rotationStartVariance)
+        nodeAngle("rotationEnd", particle.rotationEnd)
+        nodeAngle("rotationEndVariance", particle.rotationEndVariance)
     }.toOuterXmlIndented().toString())
 }
