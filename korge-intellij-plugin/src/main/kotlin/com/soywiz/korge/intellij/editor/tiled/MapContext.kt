@@ -7,6 +7,7 @@ import com.soywiz.korge.intellij.util.ObservableProperty
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korge.tiled.*
 
 data class MapContext(
 	val tilemap: TiledMap,

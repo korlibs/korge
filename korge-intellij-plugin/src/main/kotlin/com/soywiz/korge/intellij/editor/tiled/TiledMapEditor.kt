@@ -13,6 +13,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korge.tiled.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
@@ -23,7 +24,8 @@ fun Styled<out Container>.createTileMapEditor(
 	registerHistoryShortcuts: Boolean = true,
 	projectContext: ProjectContext? = null
 ) {
-    var tilemap = if (tilemap == null) runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() } else tilemap
+    com.soywiz.korge.intellij.components.initializeIdeaComponentFactory()
+    var tilemap: TiledMap = if (tilemap == null) runBlocking { localCurrentDirVfs["samples/gfx/sample.tmx"].readTiledMap() } else tilemap
     val history = if (history == null) HistoryManager() else history
 
 	val ctx = MapContext(

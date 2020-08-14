@@ -7,6 +7,7 @@ import com.soywiz.korio.file.VfsFile
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import javax.swing.JPanel
+import com.soywiz.korge.tiled.*
 
 class TiledMapEditorPanel(
     val tmxFile: VfsFile,

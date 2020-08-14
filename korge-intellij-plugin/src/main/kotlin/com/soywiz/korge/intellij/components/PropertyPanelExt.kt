@@ -21,6 +21,8 @@ import java.awt.*
 import java.util.*
 import javax.swing.*
 
+// com.soywiz.korge.intellij.components.initializeIdeaComponentFactory()
+
 fun initializeIdeaComponentFactory() {
     myComponentFactory = IdeaMyComponentFactory
 }

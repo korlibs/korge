@@ -14,6 +14,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korge.tiled.*
 import kotlinx.coroutines.*
 import javax.swing.*
 import kotlin.math.*
