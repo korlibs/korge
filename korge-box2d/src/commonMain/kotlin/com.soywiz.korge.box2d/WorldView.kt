@@ -313,6 +313,8 @@ inline fun <T : View> T.registerBodyWithFixture(
     density: Number = 1.0,
     world: World? = null,
 ): T {
+    val view = this
+
     val body = createBody(world) {
         this.type = type
         this.angle = rotation
@@ -331,11 +333,13 @@ inline fun <T : View> T.registerBodyWithFixture(
     val world = body.world
 
     body.fixture {
-        this.shape = if (shape != null) {
-            shape
-        } else {
-            BoxShape(width / world.customScale, height / world.customScale)
-        }
+        this.shape = shape ?:
+            when {
+                view is Ellipse && view.isCircle -> CircleShape(view.radiusX / world.customScale)
+                else -> BoxShape(getLocalBounds() / world.customScale)
+            }
+
+        //BoxShape(width / world.customScale, height / world.customScale)
         this.isSensor = isSensor
         this.friction = friction.toFloat()
         this.restitution = restitution.toFloat()
@@ -344,6 +348,19 @@ inline fun <T : View> T.registerBodyWithFixture(
     body.view = this
     this.body = body
     return this
+}
+
+fun BoxShape(rect: Rectangle) = PolygonShape().apply {
+    count = 4
+    vertices[0].set(rect.left, rect.top)
+    vertices[1].set(rect.right, rect.top)
+    vertices[2].set(rect.right, rect.bottom)
+    vertices[3].set(rect.left, rect.bottom)
+    normals[0].set(0.0f, -1.0f)
+    normals[1].set(1.0f, 0.0f)
+    normals[2].set(0.0f, 1.0f)
+    normals[3].set(-1.0f, 0.0f)
+    centroid.setZero()
 }
 
 /**
@@ -500,19 +517,4 @@ class WorldView(
         return this
     }
 
-    /**
-     * Creates a [PolygonShape] as a box with the specified [width] and [height]
-     */
-    inline fun BoxShape(width: Number, height: Number) = PolygonShape().apply {
-        count = 4
-        vertices[0].set(0, 0)
-        vertices[1].set(width, 0)
-        vertices[2].set(width, height)
-        vertices[3].set(0, height)
-        normals[0].set(0.0f, -1.0f)
-        normals[1].set(1.0f, 0.0f)
-        normals[2].set(0.0f, 1.0f)
-        normals[3].set(-1.0f, 0.0f)
-        centroid.setZero()
-    }
 }

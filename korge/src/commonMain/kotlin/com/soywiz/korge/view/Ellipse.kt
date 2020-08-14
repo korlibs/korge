@@ -31,6 +31,8 @@ open class Ellipse(
     /** Radius of the circle */
     var radiusX: Double by uiObservable(radiusX) { updateGraphics() }
     var radiusY: Double by uiObservable(radiusY) { updateGraphics() }
+
+    val isCircle get() = radiusX == radiusY
     /** Color of the circle. Internally it uses the [colorMul] property */
     var color: RGBA
         get() = colorMul
