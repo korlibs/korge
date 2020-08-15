@@ -72,16 +72,22 @@ subprojects {
             apply(plugin = "maven-publish")
         }
 
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions.suppressWarnings = true
+        }
+
         kotlin {
             jvm {
                 compilations.all {
                     kotlinOptions.jvmTarget = "1.8"
+                    kotlinOptions.suppressWarnings = true
                 }
             }
             js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                 browser {
                     compilations.all {
                         kotlinOptions.sourceMap = true
+                        kotlinOptions.suppressWarnings = true
                     }
                     testTask {
                         useKarma {
@@ -94,6 +100,7 @@ subprojects {
                 for (target in nativeTargets()) {
                     target.compilations.all {
                         kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                        kotlinOptions.suppressWarnings = true
                     }
                 }
             }
@@ -294,7 +301,7 @@ samples {
                 val customHtmlHead = readTextFile("custom-html-head.template.html")
                 val customHtmlBody = readTextFile("custom-html-body.template.html")
 
-                println(File(targetDir, "index.html"))
+                //println(File(targetDir, "index.html"))
 
                 File(targetDir, "index.html").writeText(
                     groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(

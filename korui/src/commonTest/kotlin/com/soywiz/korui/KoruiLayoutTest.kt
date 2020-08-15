@@ -24,8 +24,8 @@ class KoruiLayoutTest {
                 })
             }
         }
-        assertEquals("Rectangle(x=0, y=0, width=300, height=16)", "${button0.bounds}")
+        assertEquals("Rectangle(x=0, y=0, width=300, height=32)", "${button0.bounds}")
         assertEquals("Rectangle(x=0, y=0, width=150, height=32), Rectangle(x=150, y=0, width=150, height=32)", "${button1.bounds}, ${button2.bounds}")
-        assertEquals("Rectangle(x=0, y=16, width=300, height=32)", "${horizontal.bounds}")
+        assertEquals("Rectangle(x=0, y=32, width=300, height=32)", "${horizontal.bounds}")
     }
 }

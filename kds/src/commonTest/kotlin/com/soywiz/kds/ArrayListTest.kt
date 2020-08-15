@@ -112,8 +112,9 @@ class ArrayListTest {
 
     @Test
     fun list() {
-        assertEquals(intArrayListOf(1, 2, 3), listOf(1, 2, 3))
-        assertEquals(listOf(1, 2, 3), intArrayListOf(1, 2, 3))
+        // No List<T> anymore to prevent get/set performance issues
+        assertEquals(intArrayListOf(1, 2, 3).toList(), listOf(1, 2, 3))
+        assertEquals(listOf(1, 2, 3), intArrayListOf(1, 2, 3).toList())
     }
 
     @Test

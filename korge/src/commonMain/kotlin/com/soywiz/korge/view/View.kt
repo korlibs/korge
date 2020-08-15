@@ -65,8 +65,12 @@ abstract class View internal constructor(
 ) : Renderable
     , Extra by Extra.Mixin()
     , KorgeDebugNode
+    , BView
 //, EventDispatcher by EventDispatcher.Mixin()
 {
+    override val bview: View get() = this
+    override val bviewAll: List<View> by lazy { listOf(this) }
+
     constructor() : this(false)
     //internal val _transform = ViewTransform(this)
 

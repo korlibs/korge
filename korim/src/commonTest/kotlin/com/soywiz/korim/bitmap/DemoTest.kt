@@ -27,7 +27,7 @@ class DemoTest {
 
     @Test
     fun test2() = suspendTest {
-        assertEquals(Size(8, 8), debugBmpFont.glyphs.values.first().bmp.size)
+        assertEquals(Size(8, 8), debugBmpFont.glyphs.values.first()!!.bmp.size)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.kds.iterators.*
 import kotlinx.coroutines.*
 
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
@@ -52,19 +53,20 @@ inline fun <TCloseable : Closeable, T : Any> TCloseable.use(callback: (TCloseabl
 	}
 }
 
-interface Cancellable {
-	fun cancel(e: Throwable = CancellationException("")): Unit
+fun interface Cancellable {
+	fun cancel(e: Throwable): Unit
 
 	interface Listener {
 		fun onCancel(handler: (Throwable) -> Unit): Unit
 	}
 
 	companion object {
-		operator fun invoke(callback: (Throwable) -> Unit) = object : Cancellable {
-			override fun cancel(e: Throwable) = callback(e)
-		}
+		operator fun invoke(callback: (Throwable) -> Unit) = Cancellable { e -> callback(e) }
+        operator fun invoke(cancellables: List<Cancellable>) = Cancellable { e -> cancellables.fastForEach { it.cancel(e) } }
 	}
 }
+
+fun Cancellable.cancel() = cancel(CancellationException(""))
 
 fun Iterable<Cancellable>.cancel(e: Throwable = CancellationException("")): Unit =
 	run { for (c in this) c.cancel(e) }

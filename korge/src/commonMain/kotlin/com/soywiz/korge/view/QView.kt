@@ -6,9 +6,11 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
-class QView(val views: List<View>) {
+class QView(val views: List<View>) : List<View> by views, BView {
     val firstOrNull: View? = views.firstOrNull()
     val first: View by lazy { firstOrNull ?: DummyView() }
+    override val bview: View get() = first
+    override val bviewAll: List<View> get() = views
 
     constructor(view: View?) : this(if (view != null) listOf(view) else emptyList())
 

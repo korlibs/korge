@@ -18,7 +18,7 @@ class GridViewListTest : ViewsForTesting() {
 		views.stage.addChild(row0)
 		views.stage.addChild(row1)
 		val gridView =
-			GridViewList(views.stage["row0"]!!, views.stage["row1"]!!, { it["cell0"]!! to it["cell1"]!! }, 3, 3)
+			GridViewList(views.stage["row0"].first, views.stage["row1"].first, { it["cell0"].first to it["cell1"].first }, 3, 3)
 		val cell = gridView[2, 2]
 		assertEquals(9, gridView.length)
 		assertEquals(Rectangle(40, 40, 10, 10), cell?.globalBounds)

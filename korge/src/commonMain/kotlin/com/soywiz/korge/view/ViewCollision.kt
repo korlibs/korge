@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korge.util.*
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.threadLocal
 import com.soywiz.korma.geom.*
@@ -106,6 +107,9 @@ fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, k
 		}
 	}
 }
+
+fun List<View>.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable =
+    Cancellable(this.map { it.onCollision(filter, root, kind, callback) })
 
 fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = null, callback: View.(View) -> Unit): Cancellable {
     return onCollision(filter, root, kind = CollisionKind.SHAPE, callback = callback)
