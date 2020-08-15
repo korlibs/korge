@@ -1,7 +1,7 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
 	<!-- https://plugins.jetbrains.com/plugin/9676-korge-intellij-plugin -->
 	<!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-	<idea-version since-build="202.0" />
+	<idea-version since-build="202.6397" />
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
@@ -110,16 +110,6 @@
     <!--
     <depends>com.intellij.modules.platform</depends>
     -->
-
-
-	<!-- Do not use so plugin can be loaded without IDE restart -->
-	<!--
-	<application-components>
-		<component>
-			<implementation-class>com.soywiz.korge.intellij.KorgeInitializerComponent</implementation-class>
-		</component>
-	</application-components>
-	-->
 
     <actions>
         <group id="Korge" popup="true" text="_Korge" icon="/com/soywiz/korge/intellij/icon/korge.png">
