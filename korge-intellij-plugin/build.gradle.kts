@@ -76,6 +76,8 @@ dependencies {
 
 val globalProps = properties
 
+version = "2.0.0.0-beta-2"
+
 extensions.getByType<org.jetbrains.intellij.IntelliJPluginExtension>().apply {
 	//version = "IC-2019.3"; setPlugins("gradle", "java")
     version = "IC-2020.2"; setPlugins("gradle", "java", "platform-images", "Kotlin")
