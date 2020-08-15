@@ -45,7 +45,11 @@ fun ObjectReference.readKorimBitmap32Internal(thread: ThreadReference?): Bitmap3
 	val height = value.invoke("getHeight", listOf(), thread = thread).int(0)
 	val premultiplied = value.invoke("getPremultiplied", listOf(), thread = thread).bool(false)
 	val bmp32Mirror = value.invoke("toBMP32", listOf(), thread = thread) as ObjectReference
-	val dataInstance = (bmp32Mirror.invoke("getData", listOf(), thread = thread) as ObjectReference).debugToLocalInstanceViaSerialization(thread = thread) as IntArray
+    val getDataMethod = bmp32Mirror.getMethod("getIntData")
+        ?: bmp32Mirror.getMethod("getData")
+        ?: bmp32Mirror.referenceType().allMethods().firstOrNull { it.name().startsWith("getData") }
+        ?: error("Can't find suitable Bitmap32.getData method")
+	val dataInstance = (bmp32Mirror.invoke(getDataMethod.name(), listOf(), thread = thread) as ObjectReference).debugToLocalInstanceViaSerialization(thread = thread) as IntArray
 	return Bitmap32(width, height, RgbaArray(dataInstance.copyOf()), premultiplied)
 }
 

@@ -8,49 +8,39 @@ import com.intellij.debugger.ui.tree.render.*
 import com.intellij.util.ui.*
 import com.intellij.xdebugger.frame.*
 import com.soywiz.korim.awt.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.vector.*
 import com.sun.jdi.*
 import java.awt.*
 import javax.swing.*
+import kotlin.reflect.*
 
-class KorimBitmapDebugNodeRenderer
-	: CompoundReferenceRenderer("Bitmap", null, null), FullValueEvaluatorProvider {
-	companion object {
-		const val NAME = "KorimBitmapDebugNodeRenderer"
-	}
+class KorimBitmapDebugNodeRenderer : BaseKorimBitmapDebugNodeRenderer(Bitmap::class)
+class KorimBmpSliceDebugNodeRenderer : BaseKorimBitmapDebugNodeRenderer(BmpSlice::class)
+class KorimDrawableDebugNodeRenderer : BaseKorimBitmapDebugNodeRenderer(Drawable::class)
+class KorimKorgeViewImageDebugNodeRenderer : BaseKorimBitmapDebugNodeRenderer(com.soywiz.korge.view.Image::class)
 
-	override fun isApplicable(type: Type?): Boolean = type?.isKorimBitmapOrDrawable() ?: false
+abstract class BaseKorimBitmapDebugNodeRenderer(val applicableClass: KClass<*>) : CompoundReferenceRenderer(applicableClass.simpleName!!, null, null), FullValueEvaluatorProvider {
+    //val uniqueIdName = this::class.simpleName!!
+    val uniqueIdName = "Korim${applicableClass.simpleName}DebugNodeRenderer"
+	//companion object { const val NAME = "KorimBitmapDebugNodeRenderer" }
+
+    //override fun getClassName(): String = applicableClass.qualifiedName!!.replace("/", ".")
+    override fun getClassName(): String = applicableClass.qualifiedName!!
+    //override fun isApplicable(type: Type?): Boolean {
+    //    val applicable = type?.isKorimBitmapOrDrawable() ?: false
+    //    println("BaseKorimBitmapDebugNodeRenderer.isApplicable: $type, applicable=$applicable")
+    //    return applicable
+    //}
 	override fun isEnabled(): Boolean = true
-	override fun getUniqueId(): String = NAME
+	override fun getUniqueId(): String = uniqueIdName
+    override fun hasOverhead(): Boolean = true
 
-	/*
-	override fun calcLabel(descriptor: ValueDescriptor, evaluationContext: EvaluationContext, listener: DescriptorLabelListener): String {
-		val value = descriptor.value
-		val thread = evaluationContext.suspendContext.thread?.threadReference
-		/*
-		try {
-			if (value is ObjectReference) {
-				val width = value.invoke("getWidth", listOf(), thread = thread).int()
-				val height = value.invoke("getHeight", listOf(), thread = thread).int()
-				return "${width}x${height}"
-			}
-		} catch (e: Throwable) {
-			//e.printStackTrace()
-		}
-		*/
-		try {
-			if (value is ObjectReference) {
-				return value.invoke("toString", listOf(), thread = thread).toString()
-			}
-		} catch (e: Throwable) {
-			//e.printStackTrace()
-		}
-		return value.toString()
-	}
-	 */
 
-	override fun hasOverhead(): Boolean = true
+    //override fun hasOverhead(): Boolean = true
 
 	override fun calcValueIcon(descriptor: ValueDescriptor, evaluationContext: EvaluationContext, listener: DescriptorLabelListener): Icon? {
+        //println("calcValueIcon: $descriptor, $evaluationContext, $listener")
 		try {
 			val value = descriptor.value
 			val type = value.type()
@@ -68,6 +58,7 @@ class KorimBitmapDebugNodeRenderer
 	}
 
 	override fun getFullValueEvaluator(evaluationContext: EvaluationContextImpl, valueDescriptor: ValueDescriptorImpl): XFullValueEvaluator? {
+        //println("getFullValueEvaluator: $evaluationContext, $valueDescriptor")
 		return object : IconPopupEvaluator("\u2026 Show bitmap", evaluationContext) {
 			override fun getData(): Icon? {
 				val value = valueDescriptor.value
@@ -82,8 +73,7 @@ class KorimBitmapDebugNodeRenderer
 		}
 	}
 
-	internal abstract class IconPopupEvaluator(linkText: String, evaluationContext: EvaluationContextImpl) :
-		CustomPopupFullValueEvaluator<Icon?>(linkText, evaluationContext) {
+	internal abstract class IconPopupEvaluator(linkText: String, evaluationContext: EvaluationContextImpl) : CustomPopupFullValueEvaluator<Icon?>(linkText, evaluationContext) {
 		override fun createComponent(icon: Icon?): JComponent {
 			if (icon == null) return JLabel("No data", SwingConstants.CENTER)
 			val w = icon.iconWidth

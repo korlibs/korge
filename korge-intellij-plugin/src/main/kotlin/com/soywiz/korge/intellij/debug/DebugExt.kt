@@ -73,14 +73,13 @@ fun ClassType.invoke(methodName: String, args: List<Value>, signature: String? =
 	}
 }
 
+fun ObjectReference.getMethod(methodName: String, signature: String? = null): Method? {
+    return if (signature != null) this.referenceType().methodsByName(methodName, signature).firstOrNull() else this.referenceType().methodsByName(methodName).firstOrNull()
+}
+
 fun ObjectReference.invoke(methodName: String, args: List<Value> = listOf(), signature: String? = null, thread: ThreadReference? = null): Value {
-	try {
-		val method =
-			if (signature != null) this.referenceType().methodsByName(methodName, signature).first() else this.referenceType().methodsByName(methodName).first()
-		return this.invokeMethod(thread ?: this.virtualMachine().anyThread(), method, args, ClassType.INVOKE_SINGLE_THREADED)
-	} catch (e: IncompatibleThreadStateException) {
-		throw e
-	}
+    val method = getMethod(methodName, signature) ?: error("Can't find method '$methodName' in ${this.referenceType().allMethods()}")
+    return this.invokeMethod(thread ?: this.virtualMachine().anyThread(), method, args, ClassType.INVOKE_SINGLE_THREADED)
 }
 
 fun ClassType.getField(fieldName: String): Value = this.getValue(this.fieldByName(fieldName))

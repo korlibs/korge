@@ -204,7 +204,10 @@
 
         <applicationService serviceImplementation="com.soywiz.korge.intellij.config.KorgeGlobalSettings" />
 
-        <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBitmapDebugNodeRenderer" />
+        <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBitmapDebugNodeRenderer" order="first" />
+        <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimBmpSliceDebugNodeRenderer" order="first" />
+        <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimDrawableDebugNodeRenderer" order="first" />
+        <debugger.nodeRenderer implementation="com.soywiz.korge.intellij.debug.KorimKorgeViewImageDebugNodeRenderer" order="first" />
 
         <referenceInjector implementation="com.soywiz.korge.intellij.references.ResourceReferenceInjector" />
 
