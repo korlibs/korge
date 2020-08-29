@@ -189,7 +189,7 @@ abstract class AGOpengl : AG() {
     fun applyScissorState(scissor: AG.Scissor? = null) {
         //println("applyScissorState")
         if (this.currentRenderBuffer == null) {
-            println("this.currentRenderBuffer == null")
+            //println("this.currentRenderBuffer == null")
         }
         val currentRenderBuffer = this.currentRenderBuffer ?: return
         if (currentRenderBuffer === mainRenderBuffer) {
