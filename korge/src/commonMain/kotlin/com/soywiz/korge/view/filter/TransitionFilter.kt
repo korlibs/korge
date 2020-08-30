@@ -21,7 +21,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korui.*
 
 class TransitionFilter(
-    var transition: Transition = Transition.VERTICAL,
+    var transition: Transition = Transition.CIRCULAR,
     reversed: Boolean = false,
     discrete: Boolean = false,
 ) : ShaderFilter() {
