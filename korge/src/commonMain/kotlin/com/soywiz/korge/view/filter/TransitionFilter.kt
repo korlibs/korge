@@ -24,6 +24,7 @@ class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,
     reversed: Boolean = false,
     discrete: Boolean = false,
+    time: Double = 1.0,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
         companion object {
@@ -79,7 +80,7 @@ class TransitionFilter(
     private val s_tex = uniforms.storageForTextureUnit(u_Mask, textureUnit)
     var reversed by uniforms.storageFor(u_Reversed).boolDelegateX(reversed)
     var discrete by uniforms.storageFor(u_Discrete).boolDelegateX(discrete)
-    var time by s_time.doubleDelegateX()
+    var time by s_time.doubleDelegateX(time)
 
     override fun updateUniforms(ctx: RenderContext) {
         textureUnit.texture = ctx.getTex(transition.bmp).base
