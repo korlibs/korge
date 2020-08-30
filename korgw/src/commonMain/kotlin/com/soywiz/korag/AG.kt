@@ -821,6 +821,10 @@ abstract class AG : Extra by Extra.Mixin() {
 			for (pair in pairs) put(pair.first, pair.second)
 		}
 
+        operator fun plus(other: UniformValues): UniformValues {
+            return UniformValues().put(this).put(other)
+        }
+
 		fun clear() {
 			_uniforms.clear()
 			_values.clear()
@@ -843,16 +847,17 @@ abstract class AG : Extra by Extra.Mixin() {
 			}
 		}
 
-		fun put(uniform: Uniform, value: Any) {
+		fun put(uniform: Uniform, value: Any): UniformValues {
 			for (n in 0 until _uniforms.size) {
 				if (_uniforms[n].name == uniform.name) {
 					_values[n] = value
-					return
+					return this
 				}
 			}
 
 			_uniforms.add(uniform)
 			_values.add(value)
+            return this
 		}
 
 		fun remove(uniform: Uniform) {
@@ -865,10 +870,11 @@ abstract class AG : Extra by Extra.Mixin() {
 			}
 		}
 
-		fun put(uniforms: UniformValues) {
+		fun put(uniforms: UniformValues): UniformValues {
 			for (n in 0 until uniforms.size) {
 				this.put(uniforms._uniforms[n], uniforms._values[n])
 			}
+            return this
 		}
 
 		fun setTo(uniforms: UniformValues) {

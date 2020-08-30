@@ -68,7 +68,7 @@ abstract class ShaderFilter : Filter {
     private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
     private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
 
-    protected open fun updateUniforms() {
+    protected open fun updateUniforms(ctx: RenderContext) {
     }
 
     override fun render(
@@ -85,7 +85,7 @@ abstract class ShaderFilter : Filter {
         // @TODO: Precompute vertices
         textureSizeHolder[0] = texture.base.width.toFloat()
         textureSizeHolder[1] = texture.base.height.toFloat()
-        updateUniforms()
+        updateUniforms(ctx)
 
         ctx.batch.setTemporalUniforms(this.uniforms) {
             //println("renderColorMulInt=" + RGBA(renderColorMulInt))

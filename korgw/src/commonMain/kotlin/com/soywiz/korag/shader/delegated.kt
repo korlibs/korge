@@ -2,6 +2,7 @@ package com.soywiz.korag.shader
 
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
@@ -129,3 +130,6 @@ fun AG.UniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Mat
     }
 }
 
+fun AG.UniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AG.TextureUnit): UniformValueStorage<AG.TextureUnit> {
+    return UniformValueStorage(this, uniform, textureUnit)
+}
