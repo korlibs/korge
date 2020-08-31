@@ -4,6 +4,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.UiContainer
 
 /**
  * Allows to create a single [Filter] that will render several [filters] in order.
@@ -59,4 +60,10 @@ class ComposedFilter(val filters: List<Filter>) : Filter {
 			}
 		})
 	}
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        for (filter in filters) {
+            filter.buildDebugComponent(views, container)
+        }
+    }
 }
