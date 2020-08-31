@@ -7,8 +7,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.Filter
-import com.soywiz.korge.view.filter.ShaderFilter
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
@@ -23,8 +21,8 @@ import com.soywiz.korui.*
 class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,
     reversed: Boolean = false,
-    discrete: Boolean = false,
-    time: Double = 1.0,
+    smooth: Boolean = true,
+    ratio: Double = 1.0,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
         companion object {
@@ -51,16 +49,16 @@ class TransitionFilter(
 
     companion object {
         private val u_Reversed = Uniform("reversed", VarType.Float1)
-        private val u_Discrete = Uniform("discrete", VarType.Float1)
-        private val u_Time = Uniform("time", VarType.Float1)
+        private val u_Smooth = Uniform("smooth", VarType.Float1)
+        private val u_Ratio = Uniform("ratio", VarType.Float1)
         private val u_Mask = Uniform("mask", VarType.TextureUnit)
         private val FRAGMENT_SHADER = Filter.DEFAULT_FRAGMENT.appending {
             t_Temp1.x setTo texture2D(u_Mask, v_Tex["xy"]).r
             IF(u_Reversed.x eq 1f.lit) {
                 t_Temp1.x setTo 1f.lit - t_Temp1.x
             }
-            t_Temp1.x setTo clamp(t_Temp1.x + ((u_Time.x * 2f.lit) - 1f.lit), 0f.lit, 1f.lit)
-            IF(u_Discrete.x eq 1f.lit) {
+            t_Temp1.x setTo clamp(t_Temp1.x + ((u_Ratio.x * 2f.lit) - 1f.lit), 0f.lit, 1f.lit)
+            IF(u_Smooth.x ne 1f.lit) {
                 IF(t_Temp1.x ge 1f.lit) {
                     t_Temp1.x setTo 1f.lit
                 } ELSE {
@@ -76,18 +74,20 @@ class TransitionFilter(
     override val fragment: FragmentShader = FRAGMENT_SHADER
 
     private val textureUnit = AG.TextureUnit()
-    private val s_time = uniforms.storageFor(u_Time)
+    private val s_ratio = uniforms.storageFor(u_Ratio)
     private val s_tex = uniforms.storageForTextureUnit(u_Mask, textureUnit)
     var reversed by uniforms.storageFor(u_Reversed).boolDelegateX(reversed)
-    var discrete by uniforms.storageFor(u_Discrete).boolDelegateX(discrete)
-    var time by s_time.doubleDelegateX(time)
+    var smooth by uniforms.storageFor(u_Smooth).boolDelegateX(smooth)
+    var ratio by s_ratio.doubleDelegateX(ratio)
 
     override fun updateUniforms(ctx: RenderContext) {
         textureUnit.texture = ctx.getTex(transition.bmp).base
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(::time)
+        container.uiEditableValue(::ratio)
+        container.uiEditableValue(::smooth)
+        container.uiEditableValue(::reversed)
         //container.uiEditableValue(::bitmap)
     }
 }
