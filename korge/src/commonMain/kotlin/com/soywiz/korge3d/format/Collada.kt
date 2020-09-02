@@ -407,7 +407,7 @@ class ColladaParser {
 				var ambient: Library3D.LightKindDef? = null
 				var diffuse: Library3D.LightKindDef? = null
 				var specular: Library3D.LightKindDef? = null
-				var shiness: Float? = null
+				var shininess: Float? = null
 				var index_of_refraction: Float? = null
 				val params = FastStringMap<Any>()
 
@@ -443,7 +443,7 @@ class ColladaParser {
 										specular =
 											parseLightKindType(tech["specular"].firstOrNull(), tech.nameLC, params)
 												?: specular
-										shiness = tech["shiness"]["float"].firstText?.toFloatOrNull()?.div(100f) ?: shiness
+										shininess = tech["shininess"]["float"].firstText?.toFloatOrNull()?.div(100f) ?: shininess
 										index_of_refraction =
 											tech["index_of_refraction"]["float"].firstText?.toFloatOrNull()
 												?: index_of_refraction
@@ -467,7 +467,7 @@ class ColladaParser {
 					ambient,
 					diffuse,
 					specular,
-					shiness,
+					shininess,
 					index_of_refraction
 				)
 			}

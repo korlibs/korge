@@ -84,7 +84,7 @@ open class ViewWithMesh3D(
 						//this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
 						this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix).invert()
 
-						this[u_Shiness] = meshMaterial?.shiness ?: 0.5f
+						this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
 						this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
 
 						if (meshMaterial != null) {

@@ -12,7 +12,7 @@ data class Material3D(
 	val diffuse: Light = LightColor(Colors.BLACK),
 	//val specular: Light = LightColor(RGBA.float(.5f, .5f, .5f, 1f)),
 	val specular: Light = LightColor(Colors.BLACK),
-	val shiness: Float = .5f,
+	val shininess: Float = .5f,
 	val indexOfRefraction: Float = 1f
 ) {
 	@Korge3DExperimental

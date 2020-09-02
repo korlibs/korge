@@ -1,7 +1,6 @@
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -68,14 +67,14 @@ class CratesScene : Scene() {
 
 			light().position(0, 0, -3)
 
-			val cube1 = box().material(crateMaterial)
-			val cube2 = box().position(0, 2, 0).scale(1, 2, 1).rotation(0.degrees, 0.degrees, 45.degrees).material(crateMaterial)
-			val cube3 = box().position(-5, 0, 0).material(crateMaterial)
-			val cube4 = box().position(+5, 0, 0).material(crateMaterial)
-			val cube5 = box().position(0, -5, 0).material(crateMaterial)
-			val cube6 = box().position(0, +5, 0).material(crateMaterial)
-			val cube7 = box().position(0, 0, -5).material(crateMaterial)
-			val cube8 = box().position(0, 0, +5).material(crateMaterial)
+			val cube1 = cube().material(crateMaterial)
+			val cube2 = cube().position(0, 2, 0).scale(1, 2, 1).rotation(0.degrees, 0.degrees, 45.degrees).material(crateMaterial)
+			val cube3 = cube().position(-5, 0, 0).material(crateMaterial)
+			val cube4 = cube().position(+5, 0, 0).material(crateMaterial)
+			val cube5 = cube().position(0, -5, 0).material(crateMaterial)
+			val cube6 = cube().position(0, +5, 0).material(crateMaterial)
+			val cube7 = cube().position(0, 0, -5).material(crateMaterial)
+			val cube8 = cube().position(0, 0, +5).material(crateMaterial)
 
 			var tick = 0
 			addUpdatable {

@@ -21,4 +21,7 @@ class RenderContext3D() {
 	val cameraMatInv: Matrix3D = Matrix3D()
 	val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
 	val ambientColor: Vector3D = Vector3D()
+
+    /** Allows to draw things using a precomputed global matrix or raw vertices */
+    val batch by lazy { BatchBuilder3D(this) }
 }
