@@ -70,12 +70,14 @@ class IntMapTest {
 
     @Test
     fun testLimits() {
+        val set = LinkedHashSet<Int>()
         val map = IntMap<Unit>()
         val mapInt = IntIntMap()
         for (i in items) {
             for (j in items) {
                 if (j % 4 == 0) {
                     val key = i or (j shl 16)
+                    set += key
                     map[key] = Unit
                     mapInt[key] = 1
                 }
@@ -87,5 +89,7 @@ class IntMapTest {
         assertTrue { mapInt.backSize <= 4194789 }
         assertTrue { map.stashSize <= 512 }
         assertTrue { mapInt.stashSize <= 512 }
+        assertTrue { set.all { it in map } }
+        assertTrue { set.all { it in mapInt } }
     }
 }
