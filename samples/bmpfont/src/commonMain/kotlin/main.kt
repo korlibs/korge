@@ -8,7 +8,8 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 
 suspend fun main() = Korge(bgcolor = Colors["#333"]) {
-	val font1 = resourcesVfs["font1.fnt"].readBitmapFont()
+	//val font1 = resourcesVfs["font1.fnt"].readBitmapFont()
+    val font1 = resourcesVfs["roboto-regular-ft-12.fnt"].readBitmapFont()
 	val text1 = text("Hello World!", textSize = 96.0, font = font1)
 	val text2 = text("Hello World!", textSize = 96.0, font = font1) {
 		filtering = false
