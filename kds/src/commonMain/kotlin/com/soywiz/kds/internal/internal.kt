@@ -11,6 +11,7 @@ internal infix fun Int.umod(other: Int): Int {
 }
 
 internal fun ilog2(v: Int): Int = kotlin.math.log2(v.toDouble()).toInt()
+internal fun ilog2Ceil(v: Int): Int = kotlin.math.ceil(kotlin.math.log2(v.toDouble())).toInt()
 
 //private val ilog2_tab32 = intArrayOf(
 //    0, 9, 1, 10, 13, 21, 2, 29,

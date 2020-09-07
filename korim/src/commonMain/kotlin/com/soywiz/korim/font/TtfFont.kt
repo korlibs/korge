@@ -103,7 +103,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
     private var horMetrics = listOf<HorMetric>()
     private val characterMaps = LinkedHashMap<Int, Int>()
     private val tablesByName = LinkedHashMap<String, Table>()
-    private val glyphCache = IntMap<Glyph>()
+    private val glyphCache = IntMap<Glyph>(512)
     private fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
 
     private var frozen = false

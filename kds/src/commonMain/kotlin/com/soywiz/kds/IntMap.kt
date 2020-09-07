@@ -5,8 +5,14 @@ package com.soywiz.kds
 import com.soywiz.kds.internal.*
 import kotlin.contracts.*
 
+private fun _mask(value: Int, mask: Int) = (value + ((value ushr 8) and 0xFF) + ((value ushr 16) and 0xFF) + ((value shr 24) and 0xFF)) and mask
+//private fun _mask(value: Int, mask: Int) = (value + (value shr 16)) and mask
+private fun _hash1(key: Int, mask: Int) = _mask(key, mask)
+private fun _hash2(key: Int, mask: Int) = _mask(key * 0x4d2fa52d, mask)
+private fun _hash3(key: Int, mask: Int) = _mask((key * 0x1194e069), mask)
+
 class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean = false) {
-    constructor(loadFactor: Double = 0.75) : this(4, loadFactor, true)
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(kotlin.math.max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
 
     companion object {
         @PublishedApi
@@ -22,16 +28,24 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
     internal var hasZero = false
     private var zeroValue: T? = null
     private var mask = capacity - 1
-    private var stashSize = 1 + ilog2(capacity)
+    //private var stashSize = 1 + nbits * nbits * nbits
+    internal var stashSize = 1 + nbits * nbits; private set
+    internal val backSize get() = capacity + stashSize
     @PublishedApi
-    internal var _keys = IntArray(capacity + stashSize)
-    private var _values = arrayOfNulls<Any>(capacity + stashSize) as Array<T?>
+    internal var _keys = IntArray(backSize)
+    private var _values = arrayOfNulls<Any>(backSize) as Array<T?>
     private val stashStart get() = _keys.size - stashSize
     private var growSize: Int = (capacity * loadFactor).toInt()
     var size: Int = 0; private set
 
     private fun grow() {
-        val new = IntMap<T>(nbits + 3, loadFactor)
+        val inc = if (nbits < 20) 3 else 1
+        val newnbits = nbits + inc
+        //println("newnbits=${newnbits}")
+        //if (newnbits >= 23) {
+        //    println("!!!!")
+        //}
+        val new = IntMap<T>(newnbits, loadFactor, true)
 
         for (n in _keys.indices) {
             val k = _keys[n]
@@ -45,6 +59,12 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         this._keys = new._keys
         this._values = new._values
         this.growSize = new.growSize
+    }
+
+    private fun growStash() {
+        this.stashSize = this.stashSize * 2
+        this._keys = this._keys.copyOf(backSize)
+        this._values = this._values.copyOf(backSize)
     }
 
     operator fun contains(key: Int): Boolean = _getKeyIndex(key) >= 0
@@ -111,7 +131,11 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
                     val index2 = hash2(key); if (_keys[index2] == EMPTY) return setEmptySlot(index2, key, value)
                     val index3 = hash3(key); if (_keys[index3] == EMPTY) return setEmptySlot(index3, key, value)
                     for (n in stashStart until _keys.size) if (_keys[n] == EMPTY) return setEmptySlot(n, key, value)
-                    grow()
+                    if (stashSize > 512) {
+                        grow()
+                    } else {
+                        growStash()
+                    }
                     continue@retry
                 }
                 (index == ZERO_INDEX) -> return zeroValue.apply { zeroValue = value }
@@ -126,9 +150,9 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         return get(key)!!
     }
 
-    private fun hash1(key: Int) = key and mask
-    private fun hash2(key: Int) = (key * (-0x12477ce0)) and mask
-    private fun hash3(key: Int) = (key * (-1262997959)) and mask
+    private fun hash1(key: Int) = _hash1(key, mask)
+    private fun hash2(key: Int) = _hash2(key, mask)
+    private fun hash3(key: Int) = _hash3(key, mask)
 
     fun removeRange(src: Int, dst: Int): Unit {
         //println("removeRange($src, $dst)")
@@ -258,12 +282,12 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         error("firstValue on empty IntMap")
     }
 
-    fun clone(): IntMap<T> = IntMap<T>(nbits, loadFactor).also { it.putAll(this) }
+    fun clone(): IntMap<T> = IntMap<T>(nbits, loadFactor, false).also { it.putAll(this) }
 }
 
 
 fun <T> Map<Int, T>.toIntMap(): IntMap<T> {
-    val out = IntMap<T>()
+    val out = IntMap<T>((this.size * 1.25).toInt())
     for ((k, v) in this) out[k] = v
     return out
 }
@@ -335,8 +359,8 @@ class IntFloatMap {
 }
 */
 
-class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double) {
-    constructor(loadFactor: Double = 0.75) : this(4, loadFactor)
+class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean) {
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(kotlin.math.max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
 
     companion object {
         @PublishedApi
@@ -352,15 +376,22 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     internal var hasZero = false
     private var zeroValue: Int = 0
     private var mask = capacity - 1
-    private var stashSize = 1 + ilog2(capacity)
-    @PublishedApi internal var _keys = IntArray(capacity + stashSize)
-    private var _values = IntArray(capacity + stashSize)
+    internal var stashSize = 1 + nbits * nbits; private set
+    internal val backSize get() = capacity + stashSize
+    @PublishedApi internal var _keys = IntArray(backSize)
+    private var _values = IntArray(backSize)
     private val stashStart get() = _keys.size - stashSize
     private var growSize: Int = (capacity * loadFactor).toInt()
     var size: Int = 0; private set
 
     private fun grow() {
-        val new = IntIntMap(nbits + 3, loadFactor)
+        val inc = if (nbits < 20) 3 else 1
+        val newnbits = nbits + inc
+        //println("newnbits=${newnbits}")
+        //if (newnbits >= 23) {
+        //    println("!!!!")
+        //}
+        val new = IntIntMap(newnbits, loadFactor, true)
 
         for (n in _keys.indices) {
             val k = _keys[n]
@@ -374,6 +405,12 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
         this._keys = new._keys
         this._values = new._values
         this.growSize = new.growSize
+    }
+
+    private fun growStash() {
+        this.stashSize = this.stashSize * 2
+        this._keys = this._keys.copyOf(backSize)
+        this._values = this._values.copyOf(backSize)
     }
 
     operator fun contains(key: Int): Boolean = _getKeyIndex(key) >= 0
@@ -440,7 +477,11 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
                     val index2 = hash2(key); if (_keys[index2] == EMPTY) return setEmptySlot(index2, key, value)
                     val index3 = hash3(key); if (_keys[index3] == EMPTY) return setEmptySlot(index3, key, value)
                     for (n in stashStart until _keys.size) if (_keys[n] == EMPTY) return setEmptySlot(n, key, value)
-                    grow()
+                    if (stashSize > 512) {
+                        grow()
+                    } else {
+                        growStash()
+                    }
                     continue@retry
                 }
                 (index == ZERO_INDEX) -> return zeroValue.apply { zeroValue = value }
@@ -454,9 +495,9 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
         return get(key)
     }
 
-    private fun hash1(key: Int) = key and mask
-    private fun hash2(key: Int) = (key * (-0x12477ce0)) and mask
-    private fun hash3(key: Int) = (key * (-1262997959)) and mask
+    private fun hash1(key: Int) = _hash1(key, mask)
+    private fun hash2(key: Int) = _hash2(key, mask)
+    private fun hash3(key: Int) = _hash3(key, mask)
 
     data class Entry(var key: Int, var value: Int)
 
