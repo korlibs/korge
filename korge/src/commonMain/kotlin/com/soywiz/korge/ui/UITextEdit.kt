@@ -25,6 +25,7 @@ import com.soywiz.korio.util.isPrintable
  * @author Matthias Wienand and Dr.D.H.Akehurst
  *
  */
+/*
 class UITextEdit(textArg: String, fontArg: TtfFont, sizeArg: Double, colorArg: RGBA) {
     var font = fontArg
     var size = sizeArg
@@ -389,3 +390,4 @@ class UITextEdit(textArg: String, fontArg: TtfFont, sizeArg: Double, colorArg: R
     // . attributed sections (define_style('x', Style(Bold, Underlined)); set_style('x', 4, 6))
     // . optimized use of resources (if necessary)
 }
+*/
