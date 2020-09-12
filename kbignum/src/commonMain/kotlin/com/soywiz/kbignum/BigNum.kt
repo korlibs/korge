@@ -35,19 +35,21 @@ class BigNum(val int: BigInt, val scale: Int) {
 	operator fun minus(other: BigNum): BigNum = binary(other, BigInt::minus)
 	operator fun times(other: BigNum): BigNum =
 		BigNum(this.int * other.int, this.scale + other.scale)
-	operator fun div(other: BigNum): BigNum = div(other, this.scale)
+    //operator fun div(other: BigNum): BigNum = div(other, other.int.significantBits / 2)
+    operator fun div(other: BigNum): BigNum = div(other, 0)
 
-	fun div(other: BigNum, precision: Int): BigNum {
-		val li = this.int * (10.bi pow other.scale)
-		val ri = other.int
-		val res = li / ri
-		return BigNum(res, this.scale)
-	}
+    fun div(other: BigNum, precision: Int): BigNum {
+        val li = this.int * (10.bi pow (other.scale + precision))
+        val ri = other.int
+        val res = li / ri
+        return BigNum(res, this.scale) * BigNum(1.bi, precision)
+    }
 
 	infix fun pow(other: Int) = pow(other, 32)
 
 	fun pow(exponent: Int, precision: Int): BigNum {
-		if (exponent < 0) return ONE.div(this.pow(-exponent, precision), precision)
+        //if (exponent < 0) return ONE.div(this.pow(-exponent, precision), precision)
+		if (exponent < 0) return ONE.div(this.pow(-exponent, precision), 0)
 		var result = ONE
 		var base = this
 		var exp = exponent
