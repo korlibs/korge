@@ -84,7 +84,7 @@ open class WAV : AudioFormat("wav") {
 	override suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps) {
 		// HEADER
 		out.writeString("RIFF")
-		out.write32LE(0x24 + data.samples.size * 2) // length
+		out.write32LE(0x24 + data.samples.totalSamples * 2) // length
 		out.writeString("WAVE")
 
 		// FMT
@@ -99,7 +99,7 @@ open class WAV : AudioFormat("wav") {
 
 		// DATA
 		out.writeString("data")
-		out.write32LE(data.samples.size * 2)
+		out.write32LE(data.samples.totalSamples * 2)
 		out.writeShortArrayLE(data.samples.interleaved().data)
 	}
 

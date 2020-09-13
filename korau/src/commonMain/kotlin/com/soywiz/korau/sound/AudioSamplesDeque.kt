@@ -19,15 +19,15 @@ class AudioSamplesDeque(val channels: Int) {
     fun writeFloat(channel: Int, sample: Float) = write(channel, (sample * Short.MAX_VALUE.toFloat()).toShort())
 
     // Write samples
-    fun write(samples: AudioSamples, offset: Int = 0, len: Int = samples.size - offset) {
+    fun write(samples: AudioSamples, offset: Int = 0, len: Int = samples.totalSamples - offset) {
         for (channel in 0 until samples.channels) write(channel, samples[channel], offset, len)
     }
 
-    fun write(samples: AudioSamplesInterleaved, offset: Int = 0, len: Int = samples.size - offset) {
+    fun write(samples: AudioSamplesInterleaved, offset: Int = 0, len: Int = samples.totalSamples - offset) {
         writeInterleaved(samples.data, offset, len, samples.channels)
     }
 
-    fun write(samples: IAudioSamples, offset: Int = 0, len: Int = samples.size - offset) {
+    fun write(samples: IAudioSamples, offset: Int = 0, len: Int = samples.totalSamples - offset) {
         when (samples) {
             is AudioSamples -> write(samples, offset, len)
             is AudioSamplesInterleaved -> write(samples, offset, len)

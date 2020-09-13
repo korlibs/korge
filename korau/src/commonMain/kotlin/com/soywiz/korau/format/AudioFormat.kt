@@ -119,7 +119,3 @@ suspend fun VfsFile.readSoundInfo(formats: AudioFormat = defaultAudioFormats, pr
 	this.openUse { formats.tryReadInfo(this, props) }
 
 fun standardAudioFormats(): AudioFormats = AudioFormats(WAV, OGG, MP3)
-
-@Deprecated("Use standardAudioFormats")
-fun AudioFormats.registerStandard(): AudioFormats = this.apply { register(standardAudioFormats()) }
-

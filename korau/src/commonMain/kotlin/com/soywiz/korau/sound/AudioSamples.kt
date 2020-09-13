@@ -6,8 +6,6 @@ import com.soywiz.korau.internal.*
 interface IAudioSamples {
     val channels: Int
     val totalSamples: Int
-    @Deprecated("", ReplaceWith("totalSamples"))
-    val size get() = totalSamples
     fun isEmpty() = totalSamples == 0
     fun isNotEmpty() = totalSamples != 0
     operator fun get(channel: Int, sample: Int): Short

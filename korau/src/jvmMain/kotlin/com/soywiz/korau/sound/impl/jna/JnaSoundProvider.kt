@@ -144,7 +144,7 @@ class OpenALPlatformAudioOutput(
                 break
             }
         } finally {
-            availableSamples -= samples.size
+            availableSamples -= samples.totalSamples
         }
     }
 

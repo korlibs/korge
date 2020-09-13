@@ -27,7 +27,7 @@ object Win32NativeSoundProvider : NativeSoundProvider() {
         }
 
         val completed: Boolean get() = (hdr.dwFlags.toInt() and WHDR_DONE.toInt()) != 0
-        val totalSamples get() = samplesInterleaved.size
+        val totalSamples get() = samplesInterleaved.totalSamples
 
         fun dispose() {
             samplesPin.unpin()
