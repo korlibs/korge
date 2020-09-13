@@ -10,7 +10,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 
@@ -32,10 +31,10 @@ data class VfsFile(
 		VfsFile(vfs, this.path.pathInfo.combine(path.pathInfo).fullPath)
 
 	// @TODO: Kotlin suspend operator not supported yet!
-	suspend fun set(path: String, content: String) = run { this[path].put(content.toByteArray(UTF8).openAsync()) }
-	suspend fun set(path: String, content: ByteArray) = run { this[path].put(content.openAsync()) }
-	suspend fun set(path: String, content: AsyncStream) = run { this[path].writeStream(content) }
-	suspend fun set(path: String, content: VfsFile) = run { this[path].writeFile(content) }
+	//suspend fun set(path: String, content: String) = run { this[path].put(content.toByteArray(UTF8).openAsync()) }
+	//suspend fun set(path: String, content: ByteArray) = run { this[path].put(content.openAsync()) }
+	//suspend fun set(path: String, content: AsyncStream) = run { this[path].writeStream(content) }
+	//suspend fun set(path: String, content: VfsFile) = run { this[path].writeFile(content) }
 
 	suspend fun put(content: AsyncInputStream, attributes: List<Vfs.Attribute> = listOf()): Long = vfs.put(this.path, content, attributes)
 	suspend fun put(content: AsyncInputStream, vararg attributes: Vfs.Attribute): Long = vfs.put(this.path, content, attributes.toList())
@@ -82,8 +81,8 @@ data class VfsFile(
 	suspend fun read(): ByteArray = readAll()
 	suspend fun readBytes(): ByteArray = readAll()
 
-	suspend fun readLines(charset: Charset = UTF8): List<String> = readString(charset).lines()
-	suspend fun writeLines(lines: List<String>, charset: Charset = UTF8) =
+	suspend fun readLines(charset: Charset = UTF8): Sequence<String> = readString(charset).lineSequence()
+	suspend fun writeLines(lines: Iterable<String>, charset: Charset = UTF8) =
 		writeString(lines.joinToString("\n"), charset = charset)
 
 	suspend fun readString(charset: Charset = UTF8): String = read().toString(charset)
@@ -122,9 +121,9 @@ data class VfsFile(
 		notify(this to target)
 		if (this.isDirectory()) {
 			target.mkdir()
-			for (file in list()) {
-				file.copyToTree(target[file.baseName], *attributes, notify = notify)
-			}
+            list().collect { file ->
+                file.copyToTree(target[file.baseName], *attributes, notify = notify)
+            }
 		} else {
 			//println("copyToTree: $this -> $target")
 			this.copyTo(target, *attributes)
@@ -135,13 +134,8 @@ data class VfsFile(
 
 	suspend fun renameTo(dstPath: String) = vfs.rename(this.path, dstPath)
 
-    @Deprecated("Use listFlow instead", ReplaceWith("listFlow().toChannel()", "com.soywiz.korio.async.toChannel"))
-	suspend fun list(): ReceiveChannel<VfsFile> = listFlow().toChannel()
 	suspend fun listSimple(): List<VfsFile> = vfs.listSimple(this.path)
-    suspend fun listFlow(): Flow<VfsFile> = vfs.listFlow(this.path)
-
-    @Deprecated("Use listRecursiveFlow instead", ReplaceWith("listRecursiveFlow(filter).toChannel()", "com.soywiz.korio.async.toChannel"))
-	suspend fun listRecursive(filter: (VfsFile) -> Boolean = { true }): ReceiveChannel<VfsFile> = listRecursiveFlow(filter).toChannel()
+    suspend fun list(): Flow<VfsFile> = vfs.listFlow(this.path)
 
 	suspend fun listRecursiveSimple(filter: (VfsFile) -> Boolean = { true }): List<VfsFile> = ArrayList<VfsFile>().apply {
 		for (file in listSimple()) {
@@ -155,13 +149,13 @@ data class VfsFile(
 		}
 	}
 
-	suspend fun listRecursiveFlow(filter: (VfsFile) -> Boolean = { true }): Flow<VfsFile> = flow {
-        listFlow().collect { file ->
+	suspend fun listRecursive(filter: (VfsFile) -> Boolean = { true }): Flow<VfsFile> = flow {
+        list().collect { file ->
             if (filter(file)) {
                 emit(file)
                 val stat = file.stat()
                 if (stat.isDirectory) {
-                    file.listRecursiveFlow(filter).collect { emit(it) }
+                    file.listRecursive(filter).collect { emit(it) }
                 }
             }
         }

@@ -5,7 +5,8 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlin.test.*
 
 class CopyToTreeTest {

@@ -5,7 +5,7 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.toList
 import org.junit.Test
 import kotlin.test.*
 

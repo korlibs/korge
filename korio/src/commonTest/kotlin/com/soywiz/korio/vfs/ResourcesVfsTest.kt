@@ -4,6 +4,8 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.toList
 import kotlin.test.*
 
 class ResourcesVfsTest {

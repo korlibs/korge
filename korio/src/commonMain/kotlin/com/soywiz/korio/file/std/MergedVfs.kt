@@ -1,13 +1,9 @@
 package com.soywiz.korio.file.std
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
 
 open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
 	private val vfsList = ArrayList(vfsList)
@@ -42,12 +38,12 @@ open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
 			val items = runIgnoringExceptions { vfs[path].list() } ?: return@fastForEach
 
 			try {
-				for (v in items) {
-					if (v.baseName !in emitted) {
-						emitted += v.baseName
-						emit(file("$path/${v.baseName}"))
-					}
-				}
+                items.collect { v ->
+                    if (v.baseName !in emitted) {
+                        emitted += v.baseName
+                        emit(file("$path/${v.baseName}"))
+                    }
+                }
 			} catch (e: Throwable) {
 
 			}

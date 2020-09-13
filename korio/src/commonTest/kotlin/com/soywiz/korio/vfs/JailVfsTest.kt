@@ -5,7 +5,8 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlin.test.*
 
 class JailVfsTest {
@@ -18,7 +19,7 @@ class JailVfsTest {
 
 		assertEquals(
 			"[/hello, /hello/secret.txt, /hello/world, /hello/world/test.txt]",
-			mem.listRecursive().toList().map { it.fullName }.toString()
+			mem.listRecursive().map { it.fullName }.toList().toString()
 		)
 
 		val worldFolder = mem["hello/world"]

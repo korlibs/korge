@@ -7,7 +7,8 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlin.test.*
 
 @Suppress("EXPERIMENTAL_FEATURE_WARNING")
@@ -88,7 +89,7 @@ class ZipVfsTest {
 
 			assertEquals(
 				"[/hello, /hello/compressedWorld.txt, /hello/world.txt]",
-				helloZip.listRecursive().toList().map { it.fullName }.toString()
+				helloZip.listRecursive().map { it.fullName }.toList().toString()
 			)
 
 			println(helloZip.stat())

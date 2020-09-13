@@ -7,7 +7,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
@@ -169,12 +168,10 @@ abstract class Vfs : AsyncCloseable {
 
 		override suspend fun setSize(path: String, size: Long): Unit = initOnce().access(path).setSize(size)
 		override suspend fun stat(path: String): VfsStat = initOnce().access(path).stat().copy(file = file(path))
-		override suspend fun list(path: String) = initOnce().access(path).list()
 		override suspend fun listSimple(path: String) = initOnce().access(path).listSimple()
-
         override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
             initOnce()
-            access(path).listFlow().collect { emit(it.transform()) }
+            access(path).list().collect { emit(it.transform()) }
         }
 
         override suspend fun delete(path: String): Boolean = initOnce().access(path).delete()

@@ -9,6 +9,7 @@ import com.soywiz.korio.lang.toByteArray
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.checksum.CRC32
 import com.soywiz.korio.util.checksum.checksum
+import kotlinx.coroutines.flow.collect
 
 class ZipBuilder {
     companion object {
@@ -99,7 +100,7 @@ class ZipBuilder {
 
         suspend fun addZipFileEntryTree(s: AsyncStream, entry: VfsFile, entries: MutableList<ZipEntry>) {
             if (entry.isDirectory()) {
-                for (it in entry.list()) addZipFileEntryTree(s, it, entries)
+                entry.list().collect { addZipFileEntryTree(s, it, entries) }
             } else {
                 entries += addZipFileEntry(s, entry)
             }

@@ -3,8 +3,8 @@ package com.soywiz.korio.vfs
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.util.OS
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlin.test.*
 
 class IsoVfsTest {
@@ -13,7 +13,7 @@ class IsoVfsTest {
 		resourcesVfs["isotest.iso"].openAsIso { isotestIso ->
 			assertEquals(
 				listOf("/HELLO", "/HELLO/WORLD.TXT"),
-				isotestIso.listRecursive().toList().map { it.fullName }
+				isotestIso.listRecursive().map { it.fullName }.toList()
 			)
 
 			// Case insensitive!
