@@ -586,7 +586,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		val rname = name ?: data.name
 		val textureAtlasList = this._textureAtlasDataMap.getOrPut(rname) { arrayListOf() }
 		if (textureAtlasList.indexOf(data) < 0) {
-			textureAtlasList.push(data)
+            textureAtlasList.add(data)
 		}
 	}
 	/**

@@ -289,7 +289,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 				display != this._rawDisplay && display != this._meshDisplay &&
 				disposeDisplayList.indexOf(display) < 0
 			) {
-				disposeDisplayList.push(display!!)
+                disposeDisplayList.add(display!!)
 			}
 
 			dispayFrame.returnToPool()
@@ -511,7 +511,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 					if (gd != null) {
 						for (i in 0 until gd.bones.lengthSet) {
 							val bone = this._armature!!.getBone(gd.bones[i].name)
-							this._geometryBones.push(bone)
+                            this._geometryBones.add(bone)
 						}
 					}
 				}
@@ -1198,7 +1198,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	var displayList: ArrayList<Any?> get() {
 		val displays = ArrayList<Any?>()
 		this._displayFrames.fastForEach { displayFrame ->
-			displays.push(displayFrame.display)
+            displays.add(displayFrame.display)
 		}
 
 		return displays

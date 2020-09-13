@@ -731,7 +731,7 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 		for (i in 0 until data.bones.length) {
 			val bone = this._armature.getBone(data.bones[i].name)
 			if (bone != null) {
-				this._bones.push(bone)
+                this._bones.add(bone)
 			}
 		}
 

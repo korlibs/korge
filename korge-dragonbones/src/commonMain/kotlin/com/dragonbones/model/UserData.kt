@@ -99,7 +99,7 @@ class UserData(pool: SingleObjectPool<UserData>) : BaseObject(pool) {
 	 * @internal
 	 */
 	fun addString(value: String) {
-		this.strings.push(value)
+        this.strings.add(value)
 	}
 	/**
 	 * - Get the custom int number.

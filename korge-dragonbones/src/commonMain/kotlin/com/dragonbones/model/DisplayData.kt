@@ -138,7 +138,7 @@ class ArmatureDisplayData(pool: SingleObjectPool<ArmatureDisplayData>) :  Displa
 	 * @private
 	 */
 	fun addAction(value: ActionData) {
-		this.actions.push(value)
+        this.actions.add(value)
 	}
 }
 /**
@@ -221,6 +221,6 @@ class WeightData(pool: SingleObjectPool<WeightData>) :  BaseObject(pool) {
 	}
 
 	fun addBone(value: BoneData) {
-		this.bones.push(value)
+        this.bones.add(value)
 	}
 }

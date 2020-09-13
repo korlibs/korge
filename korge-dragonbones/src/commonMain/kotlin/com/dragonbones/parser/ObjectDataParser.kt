@@ -316,7 +316,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		if (this._actionFrames.size == 0) { // First frame.
 			frame = ActionFrame()
 			frame.frameStart = 0
-			this._actionFrames.push(frame)
+			this._actionFrames.add(frame)
 			frame = null
 		}
 
@@ -397,7 +397,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 							this._cacheBones[parentName] = arrayListOf()
 						}
 
-						this._cacheBones[parentName]?.push(bone)
+                        this._cacheBones[parentName]?.add(bone)
 					}
 				}
 
@@ -410,7 +410,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				}
 
 				armature.addBone(bone)
-				this._rawBones.push(bone) // Cache raw bones sort.
+                this._rawBones.add(bone) // Cache raw bones sort.
 			}
 		}
 
@@ -750,8 +750,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 				if (rawData.containsDynamic(DataParser.SHARE)) {
 					meshDisplay.geometry.data = this._data
-					this._cacheRawMeshes.push(rawData!!)
-					this._cacheMeshes.push(meshDisplay)
+                    this._cacheRawMeshes.add(rawData!!)
+                    this._cacheMeshes.add(meshDisplay)
 				} else {
 					this._parseMesh(rawData, meshDisplay)
 				}
@@ -1947,7 +1947,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			action.name = rawData
 			action.bone = bone
 			action.slot = slot
-			actions.push(action)
+            actions.add(action)
 		} else if (rawData is List<*>) {
 			(rawData as List<Map<String, Any?>>).fastForEach { rawAction ->
 				val action = pool.actionData.borrow()
@@ -2015,7 +2015,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				}
 
 				action.data = userData
-				actions.push(action)
+                actions.add(action)
 			}
 		}
 
