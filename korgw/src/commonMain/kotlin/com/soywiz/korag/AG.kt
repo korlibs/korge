@@ -500,24 +500,7 @@ abstract class AG : Extra by Extra.Mixin() {
 	private val dummyStencilState = StencilState()
 	private val dummyColorMaskState = ColorMaskState()
 
-    @Deprecated("")
-	fun draw(
-		vertices: Buffer,
-		program: Program,
-		type: DrawType,
-		vertexLayout: VertexLayout,
-		vertexCount: Int,
-		indices: Buffer? = null,
-		offset: Int = 0,
-		blending: Blending = Blending.NORMAL,
-		uniforms: UniformValues = UniformValues.EMPTY,
-		stencil: StencilState = dummyStencilState,
-		colorMask: ColorMaskState = dummyColorMaskState,
-		scissor: Scissor? = null
-	) = draw(
-        vertices, program, type, vertexLayout, vertexCount, indices, offset, blending,
-		uniforms, stencil, colorMask, dummyRenderState, scissor
-    )
+    //open val supportInstancedDrawing: Boolean get() = false
 
     fun draw(
         vertices: Buffer,
@@ -525,6 +508,7 @@ abstract class AG : Extra by Extra.Mixin() {
         type: DrawType,
         vertexLayout: VertexLayout,
         vertexCount: Int,
+        //instanceCount: Int = 1,
         indices: Buffer? = null,
         offset: Int = 0,
         blending: Blending = Blending.NORMAL,
@@ -539,6 +523,7 @@ abstract class AG : Extra by Extra.Mixin() {
         batch.type = type
         batch.vertexLayout = vertexLayout
         batch.vertexCount = vertexCount
+        //batch.instanceCount = instanceCount
         batch.indices = indices
         batch.offset = offset
         batch.blending = blending
@@ -555,6 +540,7 @@ abstract class AG : Extra by Extra.Mixin() {
         var type: DrawType = DrawType.TRIANGLES
         var vertexLayout: VertexLayout = VertexLayout()
         var vertexCount: Int = 0
+        //var instanceCount: Int = 1
         var indices: Buffer? = null
         var offset: Int = 0
         var blending: Blending = Blending.NORMAL

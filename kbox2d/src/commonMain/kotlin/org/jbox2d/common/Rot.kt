@@ -48,11 +48,6 @@ class Rot {
         setIdentity()
     }
 
-    @Deprecated("", replaceWith = ReplaceWith("Rot(angleRadians.radians)"))
-    constructor(angleRadians: Float) {
-        setRadians(angleRadians)
-    }
-
     constructor(angle: Angle) {
         set(angle)
     }

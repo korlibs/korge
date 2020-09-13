@@ -8,9 +8,6 @@ data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
         operator fun invoke(sx: Int, sy: Int) = Anchor(sx.toDouble(), sy.toDouble())
         operator fun invoke(sx: Float, sy: Float) = Anchor(sx.toDouble(), sy.toDouble())
 
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline operator fun invoke(sx: Number, sy: Number) = Anchor(sx.toDouble(), sy.toDouble())
-
         val TOP_LEFT = Anchor(0.0, 0.0)
         val TOP_CENTER = Anchor(0.5, 0.0)
         val TOP_RIGHT = Anchor(1.0, 0.0)

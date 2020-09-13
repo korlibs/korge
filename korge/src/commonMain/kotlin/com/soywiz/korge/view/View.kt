@@ -2009,7 +2009,7 @@ fun <T : View> T.alpha(alpha: Double): T {
 }
 
 @Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.skewRadians(sx: Number, sy: Number): T = skew(sx.radians, sy.radians)
+inline fun <T : View> T.skewRadians(sx: Number, sy: Number): T = skew(sx.toDouble().radians, sy.toDouble().radians)
 @Deprecated("Kotlin/Native boxes inline+Number")
 inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
 @Deprecated("Kotlin/Native boxes inline+Number")

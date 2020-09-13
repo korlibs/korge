@@ -319,8 +319,8 @@ class PolygonScanline : RastScale() {
     private object IntArrayListSort : SortOps<XWithWind>() {
         override fun compare(subject: XWithWind, l: Int, r: Int): Int = subject.x.getAt(l).compareTo(subject.x.getAt(r))
         override fun swap(subject: XWithWind, indexL: Int, indexR: Int) {
-            subject.x.swapIndices(indexL, indexR)
-            subject.w.swapIndices(indexL, indexR)
+            subject.x.swap(indexL, indexR)
+            subject.w.swap(indexL, indexR)
         }
     }
 }

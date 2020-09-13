@@ -112,9 +112,6 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
         length += count
     }
 
-    @Deprecated("", ReplaceWith("swap(indexA, indexB)"))
-    fun swapIndices(indexA: Int, indexB: Int) = swap(indexA, indexB)
-
     fun swap(indexA: Int, indexB: Int) {
         val l = this.getAt(indexA)
         val r = this.getAt(indexB)
@@ -274,9 +271,6 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
         length += count
     }
 
-    @Deprecated("", ReplaceWith("swap(indexA, indexB)"))
-    fun swapIndices(indexA: Int, indexB: Int) = swap(indexA, indexB)
-
     fun swap(indexA: Int, indexB: Int) {
         val l = this.getAt(indexA)
         val r = this.getAt(indexB)
@@ -435,9 +429,6 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
         for (n in 0 until count) data[index + n] = value[start + n]
         length += count
     }
-
-    @Deprecated("", ReplaceWith("swap(indexA, indexB)"))
-    fun swapIndices(indexA: Int, indexB: Int) = swap(indexA, indexB)
 
     fun swap(indexA: Int, indexB: Int) {
         val l = this.getAt(indexA)

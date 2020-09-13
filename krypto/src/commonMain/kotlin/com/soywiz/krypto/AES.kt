@@ -195,12 +195,6 @@ class AES(val keyWords: IntArray) {
             return dstIV
         }
 
-        @Deprecated(
-            "This was a typo",
-            ReplaceWith("encryptAes128Cbc(data, key)", "com.soywiz.krypto.AES.Companion.encryptAes128Cbc")
-        )
-        fun encryptEes128Cbc(data: ByteArray, key: ByteArray): ByteArray = encryptAes128Cbc(data, key)
-
         fun encryptAes128Cbc(data: ByteArray, key: ByteArray, padding: Padding = Padding.NoPadding): ByteArray {
             return encryptAesCbc(data, key, ByteArray(16), padding)
         }

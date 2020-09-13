@@ -128,8 +128,8 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
     }
 
     fun swap(indexA: Int, indexB: Int) {
-        xList.swapIndices(indexA, indexB)
-        yList.swapIndices(indexA, indexB)
+        xList.swap(indexA, indexB)
+        yList.swap(indexA, indexB)
     }
 
     fun reverse() {
@@ -245,8 +245,8 @@ class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
     }
 
     fun swap(indexA: Int, indexB: Int) {
-        xList.swapIndices(indexA, indexB)
-        yList.swapIndices(indexA, indexB)
+        xList.swap(indexA, indexB)
+        yList.swap(indexA, indexB)
     }
 
     fun reverse() {

@@ -23,11 +23,6 @@ inline class Angle(val radians: Double) : Comparable<Angle> {
         fun fromRadians(radians: Int) = fromRadians(radians.toDouble())
         fun fromDegrees(degrees: Int) = fromDegrees(degrees.toDouble())
 
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun fromRadians(radians: Number) = fromRadians(radians.toDouble())
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun fromDegrees(degrees: Number) = fromDegrees(degrees.toDouble())
-
         internal const val PI2 = PI * 2
 
         internal const val DEG2RAD = PI / 180.0
@@ -67,8 +62,8 @@ inline class Angle(val radians: Double) : Comparable<Angle> {
             return if (angle < 0) Angle(angle + PI2) else Angle(angle)
         }
 
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun between(x0: Number, y0: Number, x1: Number, y1: Number): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
+        fun between(x0: Int, y0: Int, x1: Int, y1: Int): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
+        fun between(x0: Float, y0: Float, x1: Float, y1: Float): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
 
         fun between(p0: IPoint, p1: IPoint): Angle = between(p0.x, p0.y, p1.x, p1.y)
     }
@@ -91,14 +86,10 @@ fun Angle.longDistanceTo(other: Angle): Angle = Angle.longDistanceTo(this, other
 
 operator fun Angle.times(scale: Double): Angle = Angle(this.radians * scale)
 operator fun Angle.div(scale: Double): Angle = Angle(this.radians / scale)
-
+operator fun Angle.times(scale: Float): Angle = this * scale.toDouble()
+operator fun Angle.div(scale: Float): Angle = this / scale.toDouble()
 operator fun Angle.times(scale: Int): Angle = this * scale.toDouble()
 operator fun Angle.div(scale: Int): Angle = this / scale.toDouble()
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline operator fun Angle.times(scale: Number): Angle = this * scale.toDouble()
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline operator fun Angle.div(scale: Number): Angle = this / scale.toDouble()
 
 operator fun Angle.div(other: Angle): Double = this.radians / other.radians // Ratio
 operator fun Angle.plus(other: Angle): Angle = Angle(this.radians + other.radians)
@@ -133,11 +124,6 @@ val Int.degrees get() = Angle.fromDegrees(this)
 val Int.radians get() = Angle.fromRadians(this)
 val Float.degrees get() = Angle.fromDegrees(this)
 val Float.radians get() = Angle.fromRadians(this)
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline val Number.degrees get() = Angle.fromDegrees(this)
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline val Number.radians get() = Angle.fromRadians(this)
 
 val Angle.normalized get() = Angle(radians umod Angle.MAX_RADIANS)
 

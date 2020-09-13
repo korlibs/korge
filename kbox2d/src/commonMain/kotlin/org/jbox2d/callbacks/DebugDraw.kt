@@ -171,17 +171,6 @@ abstract class DebugDraw  constructor(viewport: IViewportTransform? = null) {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param scale
-     */
-    @Deprecated("use the viewport transform in {@link #getViewportTranform()}")
-    fun setCamera(x: Float, y: Float, scale: Float) {
-        viewportTranform!!.setCamera(x, y, scale)
-    }
-
-
-    /**
      * @param argScreen
      * @param argWorld
      */

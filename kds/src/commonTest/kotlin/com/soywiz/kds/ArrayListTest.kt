@@ -112,8 +112,8 @@ class ArrayListTest {
 
     @Test
     fun list() {
-        assertEquals(intArrayListOf(1, 2, 3), listOf(1, 2, 3))
-        assertEquals(listOf(1, 2, 3), intArrayListOf(1, 2, 3))
+        assertEquals(intArrayListOf(1, 2, 3).toList(), listOf(1, 2, 3))
+        assertEquals(listOf(1, 2, 3), intArrayListOf(1, 2, 3).toList())
     }
 
     @Test

@@ -26,7 +26,11 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
 		filter = blur
 	}
 
-	val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
+	//val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
+    //val color = TransitionFilter(TransitionFilter.Transition.DIAGONAL1, reversed = false)
+    val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, smooth = true)
+    //val color = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false)
+    //val color = TransitionFilter(time = 1.0)
 	image(bitmap) {
 		scale(.5)
 		position(512, 0)
@@ -63,8 +67,10 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
 			tween(blur::radius[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 		}
 		sequence(looped = true) {
-			tween(color::blendRatio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-			tween(color::blendRatio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+			//tween(color::blendRatio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+			//tween(color::blendRatio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+            tween(color::ratio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+            tween(color::ratio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 		}
 		sequence(looped = true) {
 			tween(page::hratio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
