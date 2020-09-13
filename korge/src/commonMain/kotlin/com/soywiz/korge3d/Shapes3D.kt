@@ -37,8 +37,7 @@ class Shape3D(
 
 
 @Korge3DExperimental
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container3D.cube(width: Number, height: Number, depth: Number, callback: Cube3D.() -> Unit = {}): Cube3D = cube(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
+inline fun Container3D.cube(width: Int, height: Int, depth: Int, callback: Cube3D.() -> Unit = {}): Cube3D = cube(width.toDouble(), height.toDouble(), depth.toDouble(), callback)
 
 @Korge3DExperimental
 inline fun Container3D.cube(

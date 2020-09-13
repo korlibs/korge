@@ -219,12 +219,12 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                 if (!smallX && !smallY) {
                     ctx.draw(camera.content.globalMatrix) {
                         if (gridShowing) {
-                            grid.draw(ctx, RectangleInt(0, 0, root.width, root.height))
+                            grid.draw(ctx, RectangleInt(0.0, 0.0, root.width, root.height))
                         }
                     }
                 }
             }
-            val rectBounds = Rectangle.fromBounds(mat.transform(0, 0), mat.transform(root.width, root.height))
+            val rectBounds = Rectangle.fromBounds(mat.transform(0.0, 0.0), mat.transform(root.width, root.height))
             ctx.drawVector(Colors.BLACK) {
                 rect(rectBounds)
             }

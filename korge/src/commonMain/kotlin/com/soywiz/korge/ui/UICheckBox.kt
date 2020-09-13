@@ -112,7 +112,7 @@ open class UICheckBox(
             color = textColor,
             align = Html.Alignment.MIDDLE_LEFT
         )
-        textView.setTextBounds(Rectangle(0, 0, width - height, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width - height, height))
         textView.setText(text)
         textView.position(height + 8.0, 0)
     }
@@ -124,7 +124,7 @@ open class UICheckBox(
         icon.width = checkIcon.calculateWidth(height)
         icon.height = checkIcon.calculateHeight(height)
         textView.position(height + 8.0, 0)
-        textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width - height - 8.0, height))
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

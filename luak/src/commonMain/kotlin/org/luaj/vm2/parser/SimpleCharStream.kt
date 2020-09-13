@@ -188,20 +188,17 @@ class SimpleCharStream
         return c
     }
 
-    /**
-     * @see .getEndColumn
-     */
-
-    //@Deprecated(" ")
+    ///**
+    // * DEPRECATED: @see .getEndColumn
+    // */
     //fun getColumn(): Int {
     //    return bufcolumn!![bufpos]
     //}
     //
     ///**
-    // * @see .getEndLine
+    // * DEPRECATED: @see .getEndLine
     // */
     //
-    //@Deprecated(" ")
     //fun getLine(): Int {
     //    return bufline!![bufpos]
     //}

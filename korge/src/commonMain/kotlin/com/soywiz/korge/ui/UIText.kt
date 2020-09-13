@@ -92,13 +92,13 @@ class UIText(
 
     private fun updateText() {
         textView.format = Html.Format(face = textFont, size = textSize, color = textColor, align = textAlignment)
-        textView.setTextBounds(Rectangle(0, 0, width, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
         textView.setText(text)
     }
 
     override fun onSizeChanged() {
         super.onSizeChanged()
         background.size(width, height)
-        textView.setTextBounds(Rectangle(0, 0, width, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
     }
 }

@@ -24,14 +24,6 @@ class ScaleMode(
     )
 
     companion object {
-        @Deprecated("")
-        operator fun invoke(function: (item: Size, container: Size, target: Size) -> Unit): ScaleMode {
-            val t1 = Size()
-            val t2 = Size()
-            val tt = Size()
-            return ScaleMode { c, iw, ih, cw, ch -> function(t1.setTo(iw, ih), t2.setTo(cw, ch), tt).let { if (c == 0) tt.width else tt.height } }
-        }
-
         val COVER = ScaleMode { c, iw, ih, cw, ch ->
             val s0 = cw / iw
             val s1 = ch / ih
@@ -62,7 +54,7 @@ fun Rectangle.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anch
 
 fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle(), tempSize: Size = Size()): Rectangle {
     val outSize = this.applyScaleMode(container.size, mode, tempSize)
-    out.setToAnchoredRectangle(Rectangle(0, 0, outSize.width, outSize.height), anchor, container)
+    out.setToAnchoredRectangle(Rectangle(0.0, 0.0, outSize.width, outSize.height), anchor, container)
     return out
 }
 

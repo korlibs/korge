@@ -58,22 +58,22 @@ open class TextButton(
 
 	private fun updateText() {
 		textView.format = Html.Format(face = textFont, size = textSize, color = textColor, align = textAlignment)
-		textView.setTextBounds(Rectangle(0, 0, width, height))
+		textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
 		textView.setText(text)
 	}
 
 	private fun updateShadow() {
 		textShadow.visible = shadowVisible
 		textShadow.format = Html.Format(face = textFont, size = textSize, color = shadowColor, align = textAlignment)
-		textShadow.setTextBounds(Rectangle(0, 0, width, height))
+		textShadow.setTextBounds(Rectangle(0.0, 0.0, width, height))
 		textShadow.setText(text)
 		textShadow.position(shadowX, shadowY)
 	}
 
 	override fun onSizeChanged() {
 		super.onSizeChanged()
-		textView.setTextBounds(Rectangle(0, 0, width, height))
-		textShadow.setTextBounds(Rectangle(0, 0, width, height))
+		textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+		textShadow.setTextBounds(Rectangle(0.0, 0.0, width, height))
 	}
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

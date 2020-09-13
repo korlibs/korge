@@ -26,8 +26,6 @@ abstract class Shape2d {
         companion object {
             operator fun invoke(x0: Float, y0: Float, x1: Float, y1: Float) = Line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
             operator fun invoke(x0: Int, y0: Int, x1: Int, y1: Int) = Line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
-            @Deprecated("Kotlin/Native boxes inline + Number")
-            inline operator fun invoke(x0: Number, y0: Number, x1: Number, y1: Number) = Line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
         }
 
         override val paths get() = listOf(PointArrayList(2).apply { add(x0, y0).add(x1, y1) })
@@ -40,8 +38,6 @@ abstract class Shape2d {
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
-            @Deprecated("Kotlin/Native boxes inline + Number")
-            inline operator fun invoke(x: Number, y: Number, radius: Number, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
         }
 
         override val paths by lazy {
@@ -63,8 +59,7 @@ abstract class Shape2d {
         companion object {
             inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
             inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
-            @Deprecated("Kotlin/Native boxes inline + Number")
-            inline operator fun invoke(x: Number, y: Number, width: Number, height: Number) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
+            inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
         }
 
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })

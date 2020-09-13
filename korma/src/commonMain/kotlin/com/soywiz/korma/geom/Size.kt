@@ -7,11 +7,15 @@ interface ISize {
     val width: Double
     val height: Double
 
+    val area: Double get() = width * height
+    val perimeter: Double get() = width * 2 + height * 2
+    val min: Double get() = kotlin.math.min(width, height)
+    val max: Double get() = kotlin.math.max(width, height)
+
     companion object {
         operator fun invoke(width: Double, height: Double): ISize = Size(Point(width, height))
         operator fun invoke(width: Int, height: Int): ISize = Size(Point(width, height))
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline operator fun invoke(width: Number, height: Number): ISize = Size(Point(width, height))
+        operator fun invoke(width: Float, height: Float): ISize = Size(Point(width, height))
     }
 }
 
@@ -20,8 +24,7 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
         operator fun invoke(): Size = Size(Point(0, 0))
         operator fun invoke(width: Double, height: Double): Size = Size(Point(width, height))
         operator fun invoke(width: Int, height: Int): Size = Size(Point(width, height))
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline operator fun invoke(width: Number, height: Number): Size = Size(Point(width, height))
+        operator fun invoke(width: Float, height: Float): Size = Size(Point(width, height))
     }
 
     fun copy() = Size(p.copy())
@@ -41,6 +44,12 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
         return this
     }
     fun setTo(width: Int, height: Int) = setTo(width.toDouble(), height.toDouble())
+    fun setTo(width: Float, height: Float) = setTo(width.toDouble(), height.toDouble())
+    fun setTo(that: ISize) = setTo(that.width, that.height)
+
+    fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
+    fun setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
+    fun setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
 
     fun clone() = Size(width, height)
 
@@ -53,21 +62,6 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun Size.setTo(width: Number, height: Number) = setTo(width.toDouble(), height.toDouble())
-
-fun Size.setTo(that: ISize) = setTo(that.width, that.height)
-fun Size.setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun Size.setToScaled(sx: Number, sy: Number = sx) = setToScaled(sx.toDouble(), sy.toDouble())
-
-
-val ISize.area: Double get() = width * height
-val ISize.perimeter: Double get() = width * 2 + height * 2
-val ISize.min: Double get() = kotlin.math.min(width, height)
-val ISize.max: Double get() = kotlin.math.max(width, height)
 
 interface ISizeInt {
     val width: Int
@@ -101,9 +95,8 @@ fun SizeInt.setTo(width: Int, height: Int) = this.apply {
 fun SizeInt.setTo(that: SizeInt) = setTo(that.width, that.height)
 
 fun SizeInt.setToScaled(sx: Double, sy: Double) = setTo((this.width * sx).toInt(), (this.height * sy).toInt())
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun SizeInt.setToScaled(sx: Number, sy: Number = sx) = setToScaled(sx.toDouble(), sy.toDouble())
+fun SizeInt.setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
+fun SizeInt.setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
 
 fun SizeInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleInt = RectangleInt()): RectangleInt {
     return out.setTo(
@@ -117,9 +110,7 @@ fun SizeInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleIn
 operator fun SizeInt.contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
 operator fun SizeInt.times(v: Double) = SizeInt(Size((width * v).toInt(), (height * v).toInt()))
 operator fun SizeInt.times(v: Int) = this * v.toDouble()
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline operator fun SizeInt.times(v: Number) = this * v.toDouble()
+operator fun SizeInt.times(v: Float) = this * v.toDouble()
 
 fun SizeInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt(0, 0)): PointInt =
     out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())

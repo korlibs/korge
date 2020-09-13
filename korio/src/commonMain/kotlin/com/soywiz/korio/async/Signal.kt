@@ -150,9 +150,6 @@ fun <T> Signal<T>.waitOneAsync(): Deferred<T> {
 	return deferred
 }
 
-@Deprecated("", ReplaceWith("waitOneAsync()"))
-fun <T> Signal<T>.waitOnePromise(): Deferred<T> = waitOneAsync()
-
 suspend fun <T> Signal<T>.addSuspend(handler: suspend (T) -> Unit): Closeable {
 	val cc = coroutineContext
 	return this@addSuspend { value ->
