@@ -3,27 +3,6 @@ package com.soywiz.korinject
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
-//import kotlin.reflect.KClass
-
-//@TODO: kotlin-native
-//exception: java.lang.IllegalStateException: Symbol for public constructor Singleton() defined in com.soywiz.korinject.Singleton[ClassConstructorDescriptorImpl@777d0bc3] is unbound
-//at org.jetbrains.kotlin.ir.symbols.impl.IrBindableSymbolBase.getOwner(IrSymbolBase.kt:42)
-
-//@Target(AnnotationTarget.CLASS)
-//annotation class Prototype
-
-//@Target(AnnotationTarget.CLASS)
-//annotation class Singleton
-
-//@Target(AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.FIELD)
-//@Target(AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.FIELD)
-//@Target(AnnotationTarget.)
-//@Deprecated("Do not use Inject but injector.get() with a lateinit")
-//annotation class Inject
-
-//@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.FIELD)
-//annotation class Optional
-
 interface AsyncObjectProvider<T> {
     suspend fun get(injector: AsyncInjector): T
 }

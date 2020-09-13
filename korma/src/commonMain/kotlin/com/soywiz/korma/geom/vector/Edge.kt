@@ -125,8 +125,7 @@ class Edge {
     fun containsY(y: Int): Boolean = y >= ay && y < by
     //fun containsY(y: Int): Boolean = y in ay until by // @TODO: Kotlin/Native at least on Debug doesn't optimize this
 
-    @Deprecated("")
-    fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y < (by + offset)
+    //fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y < (by + offset)
     //fun containsY(y: Int): Boolean = y in ay..by
     //fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y <= (by + offset)
     fun intersectX(y: Int): Int = if (isCoplanarY) ax else ((y - h) * dx) / dy

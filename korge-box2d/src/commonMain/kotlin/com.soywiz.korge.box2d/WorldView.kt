@@ -220,7 +220,7 @@ class Box2dWorldComponent(
 
 var View.box2dWorldComponent by Extra.PropertyThis<View, Box2dWorldComponent?> { null }
 
-inline fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
+fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
     if (this.box2dWorldComponent == null) {
         val component = Box2dWorldComponent(this, World(0f, DEFAULT_GRAVITY_Y).also { it.customScale = DEFAULT_SCALE }, 6, 2)
         this.box2dWorldComponent = component

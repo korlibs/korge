@@ -166,6 +166,3 @@ class NamedAsyncThreads(val threadFactory: () -> AsyncInvokable = { AsyncThread2
 		}
 	}
 }
-
-//@Deprecated("AsyncQueue", ReplaceWith("AsyncQueue"))
-//typealias WorkQueue = AsyncQueue

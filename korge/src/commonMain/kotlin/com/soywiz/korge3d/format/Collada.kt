@@ -898,9 +898,6 @@ class ColladaParser {
 	inline fun log(str: () -> String) {
 		// DO NOTHING
 	}
-
-	@Deprecated("", ReplaceWith("log { str }", "com.soywiz.korge3d.format.ColladaParser.log"))
-	inline fun log(str: String) = log { str }
 }
 
 //fun com.soywiz.korma.geom.Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns(

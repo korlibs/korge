@@ -84,9 +84,6 @@ interface AsyncServer: AsyncCloseable {
 		return Closeable { job.cancel() }
 	}
 
-    @Deprecated("Use listenFlow instead", ReplaceWith("listenFlow().toChannel()", "com.soywiz.korio.async.toChannel"))
-	suspend fun listen(): ReceiveChannel<AsyncClient> = listenFlow().toChannel()
-
     suspend fun listenFlow(): Flow<AsyncClient> = flow { while (true) emit(accept()) }
 
     // Provide a default implementation

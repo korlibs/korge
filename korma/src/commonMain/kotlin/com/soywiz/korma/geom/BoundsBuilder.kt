@@ -35,14 +35,47 @@ class BoundsBuilder {
         return this
     }
 
-    fun add(x: Double, y: Double, transform: Matrix): BoundsBuilder =
-        add(transform.transformX(x, y), transform.transformY(x, y))
-
+    fun add(x: Int, y: Int): BoundsBuilder = add(x.toDouble(), y.toDouble())
     fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
+
+    fun add(x: Double, y: Double, transform: Matrix): BoundsBuilder = add(transform.transformX(x, y), transform.transformY(x, y))
+    fun add(x: Int, y: Int, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
     fun add(x: Float, y: Float, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
+
+    fun add(ps: Iterable<IPoint>): BoundsBuilder {
+        for (p in ps) add(p)
+        return this
+    }
+    fun add(ps: IPointArrayList): BoundsBuilder {
+        for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
+        return this
+    }
+    fun add(rect: Rectangle): BoundsBuilder {
+        if (rect.isNotEmpty) {
+            add(rect.left, rect.top)
+            add(rect.right, rect.bottom)
+        }
+        return this
+    }
+
+    fun add(ps: Iterable<IPoint>, transform: Matrix): BoundsBuilder {
+        for (p in ps) add(p, transform)
+        return this
+    }
+    fun add(ps: IPointArrayList, transform: Matrix): BoundsBuilder {
+        for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
+        return this
+    }
+    fun add(rect: Rectangle, transform: Matrix): BoundsBuilder {
+        if (rect.isNotEmpty) {
+            add(rect.left, rect.top, transform)
+            add(rect.right, rect.bottom, transform)
+        }
+        return this
+    }
 
     fun getBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? = if (npoints == 0) null else out.setBounds(xmin, ymin, xmax, ymax)
 
@@ -51,30 +84,5 @@ class BoundsBuilder {
             out.setBounds(0, 0, 0, 0)
         }
         return out
-    }
-}
-
-fun BoundsBuilder.add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun BoundsBuilder.add(x: Number, y: Number) = add(x.toDouble(), y.toDouble())
-
-fun BoundsBuilder.add(p: IPoint) = add(p.x, p.y)
-fun BoundsBuilder.add(ps: Iterable<IPoint>) = this.apply { for (p in ps) add(p) }
-fun BoundsBuilder.add(ps: IPointArrayList) = run { for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n)) }
-fun BoundsBuilder.add(rect: Rectangle) = this.apply {
-    if (rect.isNotEmpty) {
-        add(rect.left, rect.top)
-        add(rect.right, rect.bottom)
-    }
-}
-
-fun BoundsBuilder.add(p: IPoint, transform: Matrix) = add(p.x, p.y, transform)
-fun BoundsBuilder.add(ps: Iterable<IPoint>, transform: Matrix) = this.apply { for (p in ps) add(p, transform) }
-fun BoundsBuilder.add(ps: IPointArrayList, transform: Matrix) = run { for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform) }
-fun BoundsBuilder.add(rect: Rectangle, transform: Matrix) = this.apply {
-    if (rect.isNotEmpty) {
-        add(rect.left, rect.top, transform)
-        add(rect.right, rect.bottom, transform)
     }
 }
