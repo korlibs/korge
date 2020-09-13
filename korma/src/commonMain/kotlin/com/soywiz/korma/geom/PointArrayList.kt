@@ -1,7 +1,6 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
-import com.soywiz.korma.algo.*
 import kotlin.math.*
 
 interface IPointArrayList {
@@ -149,7 +148,7 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
 @Deprecated("Kotlin/Native boxes inline + Number")
 inline fun PointArrayList.add(x: Number, y: Number) = add(x.toDouble(), y.toDouble())
 @Deprecated("Use Point instead")
-fun PointArrayList.add(p: IPoint) = add(p._x, p._y)
+fun PointArrayList.add(p: IPoint) = add(p.x, p.y)
 fun PointArrayList.add(other: IPointArrayList) = this.apply { for (n in 0 until other.size) add(other.getX(n), other.getY(n)) }
 
 @Deprecated("Kotlin/Native boxes inline + Number")

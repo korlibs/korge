@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class Vector2Test {
     @Test
     fun name() {
-        val v = IPoint(1, 1.0)
+        val v = IPoint(1.0, 1.0)
         //assertEquals(sqrt(2.0), v.length, 0.001)
         assertEquals(sqrt(2.0), v.length)
     }

@@ -2,122 +2,84 @@
 
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.internal.*
+import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
-//@Deprecated("Use Point instead")
 interface IPoint {
-    val _x: Double
-    val _y: Double
+    val x: Double
+    val y: Double
 
     companion object {
-        //@Deprecated("Use Point instead")
         operator fun invoke(): IPoint = Point(0.0, 0.0)
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline operator fun invoke(x: Number, y: Number): IPoint = Point(x.toDouble(), y.toDouble())
+        operator fun invoke(v: IPoint): IPoint = Point(v.x, v.y)
+        operator fun invoke(x: Double, y: Double): IPoint = Point(x, y)
+        operator fun invoke(x: Float, y: Float): IPoint = Point(x, y)
+        operator fun invoke(x: Int, y: Int): IPoint = Point(x, y)
     }
 }
 
-//@Deprecated("Use Point instead")
-val IPoint.x: Double get() = _x
-//@Deprecated("Use Point instead")
-val IPoint.y: Double get() = _y
-
-@Deprecated("Kotlin/Native boxes inline + Number")
-operator fun Point.Companion.invoke(v: IPoint): Point = Point(v._x, v._y)
-//@Deprecated("Use Point instead")
-fun Point.Companion.middle(a: IPoint, b: IPoint): Point = Point((a._x + b._x) * 0.5, (a._y + b._y) * 0.5)
-//@Deprecated("Use Point instead")
+fun Point.Companion.middle(a: IPoint, b: IPoint): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
 fun Point.Companion.angle(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
-//@Deprecated("Use Point instead")
-fun Point.Companion.compare(l: IPoint, r: IPoint): Int = Point.compare(l._x, l._y, r._x, r._y)
-//@Deprecated("Use Point instead")
-fun Point.Companion.distance(a: IPoint, b: IPoint): Double = Point.distance(a._x, a._y, b._x, b._y)
-//@Deprecated("Use Point instead")
-fun Point.copyFrom(that: IPoint) = setTo(that._x, that._y)
-//@Deprecated("Use Point instead")
+fun Point.Companion.compare(l: IPoint, r: IPoint): Int = Point.compare(l.x, l.y, r.x, r.y)
+fun Point.Companion.distance(a: IPoint, b: IPoint): Double = Point.distance(a.x, a.y, b.x, b.y)
+fun Point.copyFrom(that: IPoint) = setTo(that.x, that.y)
 fun Point.add(p: IPoint) = this.setToAdd(this, p)
-//@Deprecated("Use Point instead")
 fun Point.sub(p: IPoint) = this.setToSub(this, p)
-// @TODO: mul instead of dot
-//@Deprecated("Use Point instead")
-operator fun IPoint.plus(that: IPoint): IPoint = IPoint(_x + that._x, _y + that._y)
-//@Deprecated("Use Point instead")
-operator fun IPoint.minus(that: IPoint): IPoint = IPoint(_x - that._x, _y - that._y)
-//@Deprecated("Use Point instead")
-operator fun IPoint.times(that: IPoint): IPoint = IPoint(_x * that._x, _y * that._y)
-//@Deprecated("Use Point instead")
-operator fun IPoint.div(that: IPoint): IPoint = IPoint(_x / that._x, _y / that._y)
-//@Deprecated("Use Point instead")
-inline operator fun IPoint.times(scale: Number): IPoint = IPoint(_x * scale.toDouble(), _y * scale.toDouble())
-//@Deprecated("Use Point instead")
-inline operator fun IPoint.div(scale: Number): IPoint = IPoint(_x / scale.toDouble(), _y / scale.toDouble())
-//@Deprecated("Use Point instead")
-infix fun IPoint.dot(that: IPoint): Double = this._x * that._x + this._y * that._y
-//@Deprecated("Use Point instead")
-inline fun IPoint.distanceTo(x: Number, y: Number): Double = hypot(x.toDouble() - this._x, y.toDouble() - this._y)
-//@Deprecated("Use Point instead")
-fun IPoint.distanceTo(that: IPoint): Double = distanceTo(that._x, that._y)
-//@Deprecated("Use Point instead")
-fun IPoint.angleTo(other: IPoint): Angle = Angle.between(this._x, this._y, other._x, other._y)
-//@Deprecated("Use Point instead")
+
+operator fun IPoint.plus(that: IPoint): IPoint = IPoint(x + that.x, y + that.y)
+operator fun IPoint.minus(that: IPoint): IPoint = IPoint(x - that.x, y - that.y)
+operator fun IPoint.times(that: IPoint): IPoint = IPoint(x * that.x, y * that.y)
+operator fun IPoint.div(that: IPoint): IPoint = IPoint(x / that.x, y / that.y)
+
+operator fun IPoint.times(scale: Double): IPoint = IPoint(x * scale, y * scale)
+operator fun IPoint.div(scale: Double): IPoint = IPoint(x / scale, y / scale)
+fun IPoint.distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
+
+operator fun IPoint.times(scale: Int): IPoint = this * scale.toDouble()
+operator fun IPoint.div(scale: Int): IPoint = this / scale.toDouble()
+fun IPoint.distanceTo(x: Int, y: Int): Double = this.distanceTo(x.toDouble(), y.toDouble())
+
+operator fun IPoint.times(scale: Float): IPoint = this * scale.toDouble()
+operator fun IPoint.div(scale: Float): IPoint = this / scale.toDouble()
+fun IPoint.distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble(), y.toDouble())
+
+infix fun IPoint.dot(that: IPoint): Double = this.x * that.x + this.y * that.y
+fun IPoint.distanceTo(that: IPoint): Double = distanceTo(that.x, that.y)
+fun IPoint.angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
 fun IPoint.transformed(mat: IMatrix, out: Point = Point()): Point = out.setToTransform(mat, this)
-//@Deprecated("Use Point instead")
 operator fun IPoint.get(index: Int) = when (index) {
-    0 -> _x; 1 -> _y
+    0 -> x; 1 -> y
     else -> throw IndexOutOfBoundsException("IPoint doesn't have $index component")
 }
-//@Deprecated("Use Point instead")
 val IPoint.unit: IPoint get() = this / this.length
-//@Deprecated("Use Point instead")
-val IPoint.length: Double get() = hypot(_x, _y)
-//@Deprecated("Use Point instead")
-val IPoint.magnitude: Double get() = hypot(_x, _y)
-//@Deprecated("Use Point instead")
+val IPoint.length: Double get() = hypot(x, y)
+val IPoint.magnitude: Double get() = hypot(x, y)
 val IPoint.normalized: IPoint
     get() {
         val imag = 1.0 / magnitude
-        return IPoint(_x * imag, _y * imag)
+        return IPoint(x * imag, y * imag)
     }
-//@Deprecated("Use Point instead")
-val IPoint.mutable: Point get() = Point(_x, _y)
-//@Deprecated("Use Point instead")
-val IPoint.immutable: IPoint get() = IPoint(_x, _y)
-//@Deprecated("Use Point instead")
-fun IPoint.copy() = IPoint(_x, _y)
-//@Deprecated("Use Point instead")
-fun Point.setToTransform(mat: IMatrix, p: IPoint): Point = setToTransform(mat, p._x, p._y)
-//@Deprecated("Use Point instead")
+val IPoint.mutable: Point get() = Point(x, y)
+val IPoint.immutable: IPoint get() = IPoint(x, y)
+fun IPoint.copy() = IPoint(x, y)
+fun Point.setToTransform(mat: IMatrix, p: IPoint): Point = setToTransform(mat, p.x, p.y)
 fun Point.setToTransform(mat: IMatrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))
-//@Deprecated("Use Point instead")
-fun Point.setToAdd(a: IPoint, b: IPoint): Point = setTo(a._x + b._x, a._y + b._y)
-//@Deprecated("Use Point instead")
-fun Point.setToSub(a: IPoint, b: IPoint): Point = setTo(a._x - b._x, a._y - b._y)
-//@Deprecated("Use Point instead")
-fun Point.setToMul(a: IPoint, b: IPoint): Point = setTo(a._x * b._x, a._y * b._y)
-//@Deprecated("Use Point instead")
-fun Point.setToMul(a: IPoint, s: Double): Point = setTo(a._x * s, a._y * s)
-//@Deprecated("Use Point instead")
+fun Point.setToAdd(a: IPoint, b: IPoint): Point = setTo(a.x + b.x, a.y + b.y)
+fun Point.setToSub(a: IPoint, b: IPoint): Point = setTo(a.x - b.x, a.y - b.y)
+fun Point.setToMul(a: IPoint, b: IPoint): Point = setTo(a.x * b.x, a.y * b.y)
+fun Point.setToMul(a: IPoint, s: Double): Point = setTo(a.x * s, a.y * s)
 inline fun Point.setToMul(a: IPoint, s: Number): Point = setToMul(a, s.toDouble())
-//@Deprecated("Use Point instead")
-fun Point.setToDiv(a: IPoint, b: IPoint): Point = setTo(a._x / b._x, a._y / b._y)
-//@Deprecated("Use Point instead")
-fun Point.setToDiv(a: IPoint, s: Double): Point = setTo(a._x / s, a._y / s)
-//@Deprecated("Use Point instead")
+fun Point.setToDiv(a: IPoint, b: IPoint): Point = setTo(a.x / b.x, a.y / b.y)
+fun Point.setToDiv(a: IPoint, s: Double): Point = setTo(a.x / s, a.y / s)
 inline fun Point.setToDiv(a: IPoint, s: Number): Point = setToDiv(a, s.toDouble())
-//@Deprecated("Use Point instead")
-operator fun Point.plusAssign(that: IPoint): Unit = run { setTo(this.x + that._x, this.y + that._y) }
+operator fun Point.plusAssign(that: IPoint): Unit = run { setTo(this.x + that.x, this.y + that.y) }
 
 data class Point(
-    var x: Double,
-    var y: Double
+    override var x: Double,
+    override var y: Double
 ) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint {
-    override val _x: Double get() = x
-    override val _y: Double get() = y
-
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    override fun compareTo(other: IPoint): Int = compare(this.x, this.y, other._x, other._y)
+    override fun compareTo(other: IPoint): Int = compare(this.x, this.y, other.x, other.y)
     fun compareTo(other: Point): Int = compare(this.x, this.y, other.x, other.y)
 
     fun setToZero() = setTo(0.0, 0.0)
@@ -128,40 +90,28 @@ data class Point(
     fun setToRight() = setTo(+1.0, 0.0)
 
     companion object {
-        @Deprecated("")
-        val Zero: IPoint = Point(0.0, 0.0)
-        @Deprecated("")
-        val One: IPoint = Point(1.0, 1.0)
-
-        @Deprecated("")
-        val Up: IPoint = Point(0.0, +1.0)
-        @Deprecated("")
-        val Down: IPoint = Point(0.0, -1.0)
-        @Deprecated("")
-        val Left: IPoint = Point(-1.0, 0.0)
-        @Deprecated("")
-        val Right: IPoint = Point(+1.0, 0.0)
+        val Zero: IPoint = IPoint(0.0, 0.0)
+        val One: IPoint = IPoint(1.0, 1.0)
+        val Up: IPoint = IPoint(0.0, +1.0)
+        val Down: IPoint = IPoint(0.0, -1.0)
+        val Left: IPoint = IPoint(-1.0, 0.0)
+        val Right: IPoint = IPoint(+1.0, 0.0)
 
         //inline operator fun invoke(): Point = Point(0.0, 0.0) // @TODO: // e: java.lang.NullPointerException at org.jetbrains.kotlin.com.google.gwt.dev.js.JsAstMapper.mapFunction(JsAstMapper.java:562) (val pt = Array(1) { Point() })
         operator fun invoke(): Point = Point(0.0, 0.0)
         operator fun invoke(v: Point): Point = Point(v.x, v.y)
-
-        inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
-        inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
-        inline operator fun invoke(xy: Int): Point = Point(xy.toDouble(), xy.toDouble())
-        inline operator fun invoke(xy: Float): Point = Point(xy.toDouble(), xy.toDouble())
-        inline operator fun invoke(xy: Double): Point = Point(xy, xy)
+        operator fun invoke(v: IPoint): Point = Point(v.x, v.y)
+        operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
+        operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
+        operator fun invoke(xy: Int): Point = Point(xy.toDouble(), xy.toDouble())
+        operator fun invoke(xy: Float): Point = Point(xy.toDouble(), xy.toDouble())
+        operator fun invoke(xy: Double): Point = Point(xy, xy)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline operator fun invoke(angle: Angle, length: Double = 1.0): Point = fromPolar(angle, length)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         fun fromPolar(angle: Angle, length: Double = 1.0): Point = Point(angle.cosine * length, angle.sine * length)
-
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline operator fun invoke(x: Number, y: Number): Point = Point(x.toDouble(), y.toDouble())
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline operator fun invoke(xy: Number): Point = Point(xy.toDouble(), xy.toDouble())
 
         fun middle(a: Point, b: Point): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
         fun angle(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
@@ -180,11 +130,8 @@ data class Point(
 
         fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
         fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
-
-        inline fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        inline fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline fun distance(x1: Number, y1: Number, x2: Number, y2: Number): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
 
         fun distance(a: Point, b: Point): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: IPointInt, b: IPointInt): Double = distance(a.x, a.y, b.x, b.y)
@@ -207,10 +154,8 @@ data class Point(
     /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
     fun setToPolar(angle: Angle, length: Double = 1.0): Point = setTo(angle.cosine * length, angle.sine * length)
 
-    fun neg() = setTo(-x, -y)
-    fun mul(s: Double) = setTo(x * s, y * s)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun mul(s: Number) = mul(s.toDouble())
+    fun neg() = setTo(-this.x, -this.y)
+    fun mul(s: Double) = setTo(this.x * s, this.y * s)
     fun mul(s: Float) = mul(s.toDouble())
     fun mul(s: Int) = mul(s.toDouble())
 
@@ -225,58 +170,49 @@ data class Point(
     fun setToSub(a: Point, b: Point): Point = setTo(a.x - b.x, a.y - b.y)
     fun setToMul(a: Point, b: Point): Point = setTo(a.x * b.x, a.y * b.y)
     fun setToMul(a: Point, s: Double): Point = setTo(a.x * s, a.y * s)
+    fun setToMul(a: Point, s: Float): Point = setToMul(a, s.toDouble())
     fun setToDiv(a: Point, b: Point): Point = setTo(a.x / b.x, a.y / b.y)
     fun setToDiv(a: Point, s: Double): Point = setTo(a.x / s, a.y / s)
+    fun setToDiv(a: Point, s: Float): Point = setToDiv(a, s.toDouble())
     operator fun plusAssign(that: Point): Unit = run { setTo(this.x + that.x, this.y + that.y) }
 
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToMul(a: Point, s: Number): Point = setToMul(a, s.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToDiv(a: Point, s: Number): Point = setToDiv(a, s.toDouble())
+    operator fun plus(that: Point): Point = Point(this.x + that.x, this.y + that.y)
+    operator fun minus(that: Point): Point = Point(this.x - that.x, this.y - that.y)
+    operator fun times(that: Point): Point = Point(this.x * that.x, this.y * that.y)
+    operator fun div(that: Point): Point = Point(this.x / that.x, this.y / that.y)
+    infix fun dot(that: Point): Double = this.x * that.x + this.y * that.y
 
-    operator fun plus(that: Point): Point = Point(_x + that._x, _y + that._y)
-    operator fun minus(that: Point): Point = Point(_x - that._x, _y - that._y)
-    operator fun times(that: Point): Point = Point(_x * that._x, _y * that._y)
-    operator fun div(that: Point): Point = Point(_x / that._x, _y / that._y)
-    infix fun dot(that: Point): Double = this._x * that._x + this._y * that._y
-
-    operator fun times(scale: Double): Point = Point(_x * scale.toDouble(), _y * scale.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun times(scale: Number): Point = this * scale.toDouble()
+    operator fun times(scale: Double): Point = Point(this.x * scale, this.y * scale)
     operator fun times(scale: Float): Point = this * scale.toDouble()
     operator fun times(scale: Int): Point = this * scale.toDouble()
 
-    operator fun div(scale: Double): Point = Point(_x / scale.toDouble(), _y / scale.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun div(scale: Number): Point = this / scale.toDouble()
+    operator fun div(scale: Double): Point = Point(this.x / scale, this.y / scale)
     operator fun div(scale: Float): Point = this / scale.toDouble()
     operator fun div(scale: Int): Point = this / scale.toDouble()
 
-    fun distanceTo(x: Double, y: Double): Double = hypot(x.toDouble() - this._x, y.toDouble() - this._y)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun distanceTo(x: Number, y: Number): Double = hypot(x.toDouble() - this._x, y.toDouble() - this._y)
+    fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
     fun distanceTo(x: Int, y: Int): Double = distanceTo(x.toDouble(), y.toDouble())
     fun distanceTo(x: Float, y: Float): Float = distanceTo(x.toDouble(), y.toDouble()).toFloat()
 
-    fun distanceTo(that: Point): Double = distanceTo(that._x, that._y)
-    fun angleTo(other: Point): Angle = Angle.between(this._x, this._y, other._x, other._y)
+    fun distanceTo(that: Point): Double = distanceTo(that.x, that.y)
+    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     fun transformed(mat: Matrix, out: Point = Point()): Point = out.setToTransform(mat, this)
     operator fun get(index: Int) = when (index) {
-        0 -> x; 1 -> y
+        0 -> this.x; 1 -> this.y
         else -> throw IndexOutOfBoundsException("IPoint doesn't have $index component")
     }
-    val mutable: Point get() = Point(_x, _y)
-    val immutable: Point get() = Point(_x, _y)
-    fun copy() = Point(_x, _y)
+    val mutable: Point get() = Point(this.x, this.y)
+    val immutable: Point get() = Point(this.x, this.y)
+    fun copy() = Point(this.x, this.y)
 
 
     val unit: Point get() = this / this.length
-    val length: Double get() = hypot(_x, _y)
-    val magnitude: Double get() = hypot(_x, _y)
+    val length: Double get() = hypot(this.x, this.y)
+    val magnitude: Double get() = hypot(this.x, this.y)
     val normalized: Point
         get() {
             val imag = 1.0 / magnitude
-            return Point(_x * imag, _y * imag)
+            return Point(this.x * imag, this.y * imag)
         }
 
     fun normalize() {
@@ -290,12 +226,10 @@ data class Point(
     override fun setToInterpolated(ratio: Double, l: Point, r: Point): Point =
         this.setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
-    override fun toString(): String = "(${x.niceStr}, ${y.niceStr})"
+    override fun toString(): String = "(${this.x.niceStr}, ${this.y.niceStr})"
 
-    fun rotate(rotation: Angle, out: Point = Point()): Point {
-        val newAngle = Angle.between(0.0, 0.0, this.x, this.y) + rotation
-        return out.setToPolar(newAngle, this.length)
-    }
+    fun rotate(rotation: Angle, out: Point = Point()): Point =
+        out.setToPolar(Angle.between(0.0, 0.0, this.x, this.y) + rotation, this.length)
 }
 
 
@@ -344,9 +278,8 @@ operator fun IPointInt.rem(that: IPointInt) = PointInt(this.x % that.x, this.y %
 fun Point.asInt(): PointInt = PointInt(this)
 fun PointInt.asDouble(): Point = this.p
 
-val Point.int get() = PointInt(x.toInt(), y.toInt())
-//@Deprecated("Use Point instead")
-val IPoint.int get() = PointInt(_x.toInt(), _y.toInt())
+val Point.int get() = PointInt(this.x.toInt(), this.y.toInt())
+val IPoint.int get() = PointInt(this.x.toInt(), this.y.toInt())
 val IPointInt.float get() = IPoint(x.toDouble(), y.toDouble())
 
 fun List<Point>.getPolylineLength(): Double {
@@ -360,7 +293,6 @@ fun List<Point>.getPolylineLength(): Double {
 }
 fun List<Point>.bounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle = bb.add(this).getBounds(out)
 
-//@Deprecated("Use Point instead")
 fun Iterable<IPoint>.getPolylineLength(): Double {
     var out = 0.0
     var prev: IPoint? = null
@@ -370,5 +302,4 @@ fun Iterable<IPoint>.getPolylineLength(): Double {
     }
     return out
 }
-//@Deprecated("Use Point instead")
 fun Iterable<IPoint>.bounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle = bb.add(this).getBounds(out)
