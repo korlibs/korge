@@ -76,33 +76,32 @@ private suspend fun fallback(
 			constructor.isAccessible = true
 			val instance = constructor.newInstance(*out.toTypedArray())
 
-			val allDeclaredFields = clazz.allDeclaredFields
-
 			// @TODO: Cache this!
-			for (field in allDeclaredFields.filter { it.getAnnotation(Inject::class.java) != null }) {
-				if (Modifier.isStatic(field.modifiers)) continue
-				var isOptional = false
-				val i = if (field.annotations.isNotEmpty()) {
-					val i = this.child()
-					for (annotation in field.annotations) {
-						when (annotation) {
-							is Optional -> isOptional = true
-							else -> i.mapInstance(annotation.annotationClass as KClass<Any>, annotation as Any)
-						}
-					}
-					i
-				} else {
-					this
-				}
-				field.isAccessible = true
-				val res = if (isOptional) {
-					if (i.has(field.type.kotlin)) i.get(field.type.kotlin, ctx) else null
-				} else {
-					i.get(field.type.kotlin, ctx)
-				}
-				allInstances.add(res)
-				field.set(instance, res)
-			}
+            val allDeclaredFields = clazz.allDeclaredFields
+			//for (field in allDeclaredFields.filter { it.getAnnotation(Inject::class.java) != null }) {
+			//	if (Modifier.isStatic(field.modifiers)) continue
+			//	var isOptional = false
+			//	val i = if (field.annotations.isNotEmpty()) {
+			//		val i = this.child()
+			//		for (annotation in field.annotations) {
+			//			when (annotation) {
+			//				is Optional -> isOptional = true
+			//				else -> i.mapInstance(annotation.annotationClass as KClass<Any>, annotation as Any)
+			//			}
+			//		}
+			//		i
+			//	} else {
+			//		this
+			//	}
+			//	field.isAccessible = true
+			//	val res = if (isOptional) {
+			//		if (i.has(field.type.kotlin)) i.get(field.type.kotlin, ctx) else null
+			//	} else {
+			//		i.get(field.type.kotlin, ctx)
+			//	}
+			//	allInstances.add(res)
+			//	field.set(instance, res)
+			//}
 
 			if (instance is AsyncDependency) instance.init()
 
