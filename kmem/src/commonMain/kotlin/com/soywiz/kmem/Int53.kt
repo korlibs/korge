@@ -56,32 +56,27 @@ inline class Int53(val value: Double) : Comparable<Int53> {
     operator fun plus(other: Double): Int53 = fromDoubleClamped(this.value + other)
     operator fun plus(other: Int): Int53 = this + other.toDouble()
     operator fun plus(other: Int53): Int53 = this + other.toDouble()
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun plus(other: Number): Int53 = this + other.toDouble()
+    operator fun plus(other: Float): Int53 = this + other.toDouble()
 
     operator fun minus(other: Double): Int53 = fromDoubleClamped(this.value - other)
     operator fun minus(other: Int): Int53 = this - other.toDouble()
     operator fun minus(other: Int53): Int53 = this - other.toDouble()
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun minus(other: Number): Int53 = this - other.toDouble()
+    operator fun minus(other: Float): Int53 = this - other.toDouble()
 
     operator fun times(other: Double): Int53 = fromDoubleClamped(this.value * other)
     operator fun times(other: Int): Int53 = this * other.toDouble()
     operator fun times(other: Int53): Int53 = this * other.toDouble()
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun times(other: Number): Int53 = this * other.toDouble()
+    operator fun times(other: Float): Int53 = this * other.toDouble()
 
     operator fun div(other: Double): Int53 = fromDoubleClamped(this.value / other)
     operator fun div(other: Int): Int53 = this / other.toDouble()
     operator fun div(other: Int53): Int53 = this / other.toDouble()
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun div(other: Number): Int53 = this / other.toDouble()
+    operator fun div(other: Float): Int53 = this / other.toDouble()
 
     operator fun rem(other: Double): Int53 = fromDoubleClamped(this.value % other.toDouble())
     operator fun rem(other: Int): Int53 = this % other.toDouble()
     operator fun rem(other: Int53): Int53 = this % other.toDouble()
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline operator fun rem(other: Number): Int53 = this % other.toDouble()
+    operator fun rem(other: Float): Int53 = this % other.toDouble()
 
     infix fun and(other: Int53): Int53 = Int53.fromLowHigh(this.low and other.low, this.high and other.high)
     infix fun or(other: Int53): Int53 = Int53.fromLowHigh(this.low or other.low, this.high or other.high)
@@ -99,8 +94,7 @@ inline class Int53(val value: Double) : Comparable<Int53> {
     fun compareTo(other: Double): Int = this.value.compareTo(other)
     fun compareTo(other: Int): Int = this.compareTo(other.toDouble())
     override fun compareTo(other: Int53): Int = this.compareTo(other.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun compareTo(other: Number): Int = this.compareTo(other.toDouble())
+    fun compareTo(other: Float): Int = this.compareTo(other.toDouble())
 
     // @TODO: We are casting to Long that might allocate on JS
     override fun toString(): String = value.toLong().toString().removeSuffix(".0")

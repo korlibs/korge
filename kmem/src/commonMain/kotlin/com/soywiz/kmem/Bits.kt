@@ -67,9 +67,6 @@ fun Int.reverseBits(): Int {
     return v
 }
 
-@Deprecated("", ReplaceWith("v.countLeadingZeros()"))
-fun clz32(v: Int): Int = v.countLeadingZeros()
-
 /** Returns the number of leading zeros of the bits of [this] integer */
 inline fun Int.countLeadingZeros(): Int = this.countLeadingZeroBits()
 

@@ -18,12 +18,6 @@ data class DateTimeRange(val from: DateTime, val to: DateTime) : Comparable<Date
 
 	val size: TimeSpan get() = to - from
 
-    @Suppress("UNUSED_PARAMETER")
-    @Deprecated("[inclusive] is ignored")
-    constructor(from: DateTime, to: DateTime, inclusive: Boolean) : this(from, to)
-
-    @Deprecated("[inclusive is not used anymore. All the ranges are right-opened.")
-    val inclusive get() = false
     val min get() = from
     val max get() = to
     /**
@@ -152,12 +146,6 @@ data class DateTimeRange(val from: DateTime, val to: DateTime) : Comparable<Date
 }
 
 fun List<DateTimeRange>.toStringLongs() = this.map { it.toStringLongs() }.toString()
-
-/**
- * Alias for [this] until [other]
- */
-@Deprecated("Use until instead", ReplaceWith("this until other"))
-operator fun DateTime.rangeTo(other: DateTime) = this until other
 
 /**
  * Generates a right-opened range between two [DateTime]s

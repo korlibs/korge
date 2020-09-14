@@ -3,17 +3,14 @@ package com.soywiz.korma.interpolation
 import kotlin.math.*
 
 @Suppress("unused")
-interface Easing {
+fun interface Easing {
     operator fun invoke(it: Double): Double
 
     companion object {
         fun cubic(f: (t: Double, b: Double, c: Double, d: Double) -> Double): Easing = Easing { f(it, 0.0, 1.0, 1.0) }
-        fun combine(start: Easing, end: Easing) =
-            Easing { if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5 }
+        fun combine(start: Easing, end: Easing) = Easing { if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5 }
 
-        operator fun invoke(f: (Double) -> Double) = object : Easing {
-            override fun invoke(it: Double): Double = f(it)
-        }
+        operator fun invoke(f: (Double) -> Double) = Easing { it -> f(it) }
 
         val SMOOTH get() = Easings.SMOOTH
         val EASE_IN_ELASTIC get() = Easings.EASE_IN_ELASTIC
@@ -90,8 +87,7 @@ private object Easings {
     val EASE_OUT_IN_BOUNCE = Easing.combine(EASE_OUT_BOUNCE, EASE_IN_BOUNCE)
     val EASE_IN_QUAD = Easing { 1.0 * it * it }
     val EASE_OUT_QUAD = Easing { -1.0 * it * (it - 2) }
-    val EASE_IN_OUT_QUAD =
-        Easing { val t = it * 2.0; if (t < 1) (1.0 / 2 * t * t) else (-1.0 / 2 * ((t - 1) * ((t - 1) - 2) - 1)) }
+    val EASE_IN_OUT_QUAD = Easing { val t = it * 2.0; if (t < 1) (1.0 / 2 * t * t) else (-1.0 / 2 * ((t - 1) * ((t - 1) - 2) - 1)) }
 
     val EASE_SINE = Easing { sin(it * PI_2) }
 }

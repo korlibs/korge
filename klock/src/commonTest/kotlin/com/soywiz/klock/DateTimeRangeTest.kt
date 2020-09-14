@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class DateTimeRangeTest {
     val format = ISO8601.DATETIME_COMPLETE
     fun String.date() = format.parseUtc(this)
-    fun range(from: Int, to: Int) = (DateTime.EPOCH + from.milliseconds)..(DateTime.EPOCH + to.milliseconds)
+    fun range(from: Int, to: Int) = (DateTime.EPOCH + from.milliseconds) until (DateTime.EPOCH + to.milliseconds)
 
     @Test
     fun test() {

@@ -169,9 +169,6 @@ data class V2<V>(
 ) {
 	val endTime = startTime + duration.coalesce { 0.hrNanoseconds }
 
-	@Deprecated("", replaceWith = ReplaceWith("key .. (initial...end)", "com.soywiz.korge.tween.rangeTo"))
-	constructor(key: KMutableProperty0<V>, initial: V, end: V, includeStart: Boolean = false) : this(key, initial, end, ::_interpolateAny, includeStart)
-
     fun init() {
         if (!includeStart) {
             initial = key.get()
@@ -183,11 +180,28 @@ data class V2<V>(
 		"V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
-operator fun <V> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateAny, includeStart = false)
-operator fun <V> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateAny, includeStart = true)
+operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
+operator fun KMutableProperty0<Int>.get(initial: Int, end: Int) = V2(this, initial, end, ::_interpolateInt, includeStart = true)
+
+operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateInterpolable, includeStart = false)
+operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
 @PublishedApi
 internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = when {
+    ratio < 0.0 -> l
+    ratio >= 1.0 -> r
+    else -> ratio.interpolate(l, r)
+}
+
+@PublishedApi
+internal fun _interpolateInt(ratio: Double, l: Int, r: Int): Int = when {
+    ratio < 0.0 -> l
+    ratio >= 1.0 -> r
+    else -> ratio.interpolate(l, r)
+}
+
+@PublishedApi
+internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Double, l: V, r: V): V = when {
     ratio < 0.0 -> l
     ratio >= 1.0 -> r
     else -> ratio.interpolate(l, r)
