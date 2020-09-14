@@ -238,67 +238,63 @@ class Matrix3D {
         0f, 0f, 0f, 1f
     )
 
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToTranslation(x: Number, y: Number, z: Number, w: Number = 1f) = setToTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
-
+    fun setToTranslation(x: Float, y: Float, z: Float, w: Float = 1f): Matrix3D = this.setRows(
+        1f, 0f, 0f, x,
+        0f, 1f, 0f, y,
+        0f, 0f, 1f, z,
+        0f, 0f, 0f, w
+    )
     fun setToTranslation(x: Double, y: Double, z: Double, w: Double = 1.0) = setToTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setToTranslation(x: Int, y: Int, z: Int, w: Int = 1) = setToTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun setToTranslation(x: Float, y: Float, z: Float, w: Float = 1f): Matrix3D = this.setRows(
-        1, 0, 0, x,
-        0, 1, 0, y,
-        0, 0, 1, z,
-        0, 0, 0, w
-    )
-
     fun setToScale(x: Float, y: Float, z: Float, w: Float = 1f): Matrix3D = this.setRows(
-        x, 0, 0, 0,
-        0, y, 0, 0,
-        0, 0, z, 0,
-        0, 0, 0, w
+        x, 0f, 0f, 0f,
+        0f, y, 0f, 0f,
+        0f, 0f, z, 0f,
+        0f, 0f, 0f, w
     )
     fun setToScale(x: Double, y: Double, z: Double, w: Double = 1.0) = setToScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setToScale(x: Int, y: Int, z: Int, w: Int = 1) = setToScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun setToShear(x: Float, y: Float, z: Float): Matrix3D = this.setRows(
-        1, y, z, 0,
-        x, 1, z, 0,
-        x, y, 1, 0,
-        0, 0, 0, 1
+        1f, y, z, 0f,
+        x, 1f, z, 0f,
+        x, y, 1f, 0f,
+        0f, 0f, 0f, 1f
     )
     fun setToShear(x: Double, y: Double, z: Double) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
     fun setToShear(x: Int, y: Int, z: Int) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
 
     fun setToRotationX(angle: Angle): Matrix3D {
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
-            1, 0, 0, 0,
-            0, c, - s, 0,
-            0, s, c, 0,
-            0, 0, 0, 1
+            1f, 0f, 0f, 0f,
+            0f, c, - s, 0f,
+            0f, s, c, 0f,
+            0f, 0f, 0f, 1f
         )
     }
 
     fun setToRotationY(angle: Angle): Matrix3D {
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
-            c, 0, s, 0,
-            0, 1, 0, 0,
-            - s, 0, c, 0,
-            0, 0, 0, 1
+            c, 0f, s, 0f,
+            0f, 1f, 0f, 0f,
+            - s, 0f, c, 0f,
+            0f, 0f, 0f, 1f
         )
     }
 
     fun setToRotationZ(angle: Angle): Matrix3D {
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
-            c, - s, 0, 0,
-            s, c, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
+            c, - s, 0f, 0f,
+            s, c, 0f, 0f,
+            0f, 0f, 1f, 0f,
+            0f, 0f, 0f, 1f
         )
     }
 
@@ -316,10 +312,10 @@ class Matrix3D {
         val ty = t * ny
 
         return this.setRows(
-            tx * nx + c, tx * ny - s * nz, tx * nz + s * ny, 0,
-            tx * ny + s * nz, ty * ny + c, ty * nz - s * nx, 0,
-            tx * nz - s * ny, ty * nz + s * nx, t * nz * nz + c, 0,
-            0, 0, 0, 1
+            tx * nx + c, tx * ny - s * nz, tx * nz + s * ny, 0.0,
+            tx * ny + s * nz, ty * ny + c, ty * nz - s * nx, 0.0,
+            tx * nz - s * ny, ty * nz + s * nx, t * nz * nz + c, 0.0,
+            0.0, 0.0, 0.0, 1.0
         )
     }
     fun setToRotation(angle: Angle, direction: Vector3D): Matrix3D = setToRotation(angle, direction.x, direction.y, direction.z)
@@ -371,51 +367,30 @@ class Matrix3D {
 
     fun transform(v: Vector3D, out: Vector3D = Vector3D()): Vector3D = transform(v.x, v.y, v.z, v.w, out)
 
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToOrtho(rect: Rectangle, near: Number = 0f, far: Number = 1f): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(rect: Rectangle, near: Double = 0.0, far: Double = 1.0): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
-    fun setToOrtho(rect: Rectangle, near: Float = 0f, far: Float = 1f): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(rect: Rectangle, near: Int = 0, far: Int = 1): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToOrtho(left: Number, right: Number, bottom: Number, top: Number, near: Number, far: Number): Matrix3D =
-        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
-
-    inline fun setToOrtho(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Matrix3D =
-        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
-    inline fun setToOrtho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): Matrix3D =
-        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
-
     fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): Matrix3D {
-        val sx = 2 / (right - left)
-        val sy = 2 / (top - bottom)
-        val sz = -2 / (far - near)
+        val sx = 2f / (right - left)
+        val sy = 2f / (top - bottom)
+        val sz = -2f / (far - near)
 
         val tx = -(right + left) / (right - left)
         val ty = -(top + bottom) / (top - bottom)
         val tz = -(far + near) / (far - near)
 
         return setRows(
-            sx, 0, 0, tx,
-            0, sy, 0, ty,
-            0, 0, sz, tz,
-            0, 0, 0, 1
+            sx, 0f, 0f, tx,
+            0f, sy, 0f, ty,
+            0f, 0f, sz, tz,
+            0f, 0f, 0f, 1f
         )
     }
 
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToFrustum(rect: Rectangle, zNear: Number = 0f, zFar: Number = 1f): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: Rectangle, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: Rectangle, zNear: Float = 0f, zFar: Float = 1f): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: Rectangle, zNear: Int = 0, zFar: Int = 1): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToFrustum(left: Number, right: Number, bottom: Number, top: Number, zNear: Number = 0f, zFar: Number = 1f): Matrix3D
-        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
-    inline fun setToFrustum(left: Double, right: Double, bottom: Double, top: Double, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D
-        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
-    inline fun setToFrustum(left: Int, right: Int, bottom: Int, top: Int, zNear: Int = 0, zFar: Int = 1): Matrix3D
-        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
+    fun setToOrtho(rect: Rectangle, near: Double = 0.0, far: Double = 1.0): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
+    fun setToOrtho(rect: Rectangle, near: Float = 0f, far: Float = 1f): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
+    fun setToOrtho(rect: Rectangle, near: Int = 0, far: Int = 1): Matrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
+    fun setToOrtho(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Matrix3D =
+        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
+    fun setToOrtho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): Matrix3D =
+        setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
 
     fun setToFrustum(left: Float, right: Float, bottom: Float, top: Float, zNear: Float = 0f, zFar: Float = 1f): Matrix3D {
         if (zNear <= 0.0f || zFar <= zNear) {
@@ -435,18 +410,21 @@ class Matrix3D {
         val D = -2.0f * (zFar * zNear) / dz
 
         return setRows(
-            zNear2 / dx, 0, A, 0,
-            0, zNear2 / dy, B, 0,
-            0, 0, C, D,
-            0, 0, -1, 0
+            zNear2 / dx, 0f, A, 0f,
+            0f, zNear2 / dy, B, 0f,
+            0f, 0f, C, D,
+            0f, 0f, -1f, 0f
         )
     }
+    fun setToFrustum(rect: Rectangle, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: Rectangle, zNear: Float = 0f, zFar: Float = 1f): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: Rectangle, zNear: Int = 0, zFar: Int = 1): Matrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
 
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setToPerspective(fovy: Angle, aspect: Number, zNear: Number, zFar: Number): Matrix3D
-        = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
-    fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): Matrix3D
-        = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
+    fun setToFrustum(left: Double, right: Double, bottom: Double, top: Double, zNear: Double = 0.0, zFar: Double = 1.0): Matrix3D
+        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
+    fun setToFrustum(left: Int, right: Int, bottom: Int, top: Int, zNear: Int = 0, zFar: Int = 1): Matrix3D
+        = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
+
 
     fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float): Matrix3D {
         val top = tan(fovy.radians / 2f) * zNear
@@ -455,6 +433,9 @@ class Matrix3D {
         val right = aspect * top
         return setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear, zFar)
     }
+    fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): Matrix3D
+        = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
+
 
     override fun equals(other: Any?): Boolean = (other is Matrix3D) && this.data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()
@@ -497,18 +478,6 @@ fun Matrix3D.copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = c
 fun Matrix3D.copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
 fun Matrix3D.copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setRows(
-    a00: Number, a01: Number, a02: Number, a03: Number,
-    a10: Number, a11: Number, a12: Number, a13: Number,
-    a20: Number, a21: Number, a22: Number, a23: Number,
-    a30: Number, a31: Number, a32: Number, a33: Number
-): Matrix3D = setRows(
-    a00.toFloat(), a01.toFloat(), a02.toFloat(), a03.toFloat(),
-    a10.toFloat(), a11.toFloat(), a12.toFloat(), a13.toFloat(),
-    a20.toFloat(), a21.toFloat(), a22.toFloat(), a23.toFloat(),
-    a30.toFloat(), a31.toFloat(), a32.toFloat(), a33.toFloat()
-)
 fun Matrix3D.setRows(
     a00: Double, a01: Double, a02: Double, a03: Double,
     a10: Double, a11: Double, a12: Double, a13: Double,
@@ -532,18 +501,6 @@ fun Matrix3D.setRows(
     a30, a31, a32, a33
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setColumns(
-    a00: Number, a10: Number, a20: Number, a30: Number,
-    a01: Number, a11: Number, a21: Number, a31: Number,
-    a02: Number, a12: Number, a22: Number, a32: Number,
-    a03: Number, a13: Number, a23: Number, a33: Number
-): Matrix3D = setColumns(
-    a00.toFloat(), a10.toFloat(), a20.toFloat(), a30.toFloat(),
-    a01.toFloat(), a11.toFloat(), a21.toFloat(), a31.toFloat(),
-    a02.toFloat(), a12.toFloat(), a22.toFloat(), a32.toFloat(),
-    a03.toFloat(), a13.toFloat(), a23.toFloat(), a33.toFloat()
-)
 fun Matrix3D.setColumns(
     a00: Double, a10: Double, a20: Double, a30: Double,
     a01: Double, a11: Double, a21: Double, a31: Double,
@@ -567,17 +524,6 @@ fun Matrix3D.setColumns(
     a03, a13, a23, a33
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setRows3x3(
-    a00: Number, a01: Number, a02: Number,
-    a10: Number, a11: Number, a12: Number,
-    a20: Number, a21: Number, a22: Number
-): Matrix3D = setRows(
-    a00.toFloat(), a01.toFloat(), a02.toFloat(), 0f,
-    a10.toFloat(), a11.toFloat(), a12.toFloat(), 0f,
-    a20.toFloat(), a21.toFloat(), a22.toFloat(), 0f,
-    0f, 0f, 0f, 1f
-)
 fun Matrix3D.setRows3x3(
     a00: Double, a01: Double, a02: Double,
     a10: Double, a11: Double, a12: Double,
@@ -599,17 +545,6 @@ fun Matrix3D.setRows3x3(
     0f, 0f, 0f, 1f
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setColumns3x3(
-    a00: Number, a10: Number, a20: Number,
-    a01: Number, a11: Number, a21: Number,
-    a02: Number, a12: Number, a22: Number
-): Matrix3D = setColumns(
-    a00.toFloat(), a10.toFloat(), a20.toFloat(), 0f,
-    a01.toFloat(), a11.toFloat(), a21.toFloat(), 0f,
-    a02.toFloat(), a12.toFloat(), a22.toFloat(), 0f,
-    0f, 0f, 0f, 1f
-)
 fun Matrix3D.setColumns3x3(
     a00: Double, a10: Double, a20: Double,
     a01: Double, a11: Double, a21: Double,
@@ -631,16 +566,6 @@ fun Matrix3D.setColumns3x3(
     0f, 0f, 0f, 1f
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setRows2x2(
-    a00: Number, a01: Number,
-    a10: Number, a11: Number
-): Matrix3D = setRows(
-    a00.toFloat(), a01.toFloat(), 0f, 0f,
-    a10.toFloat(), a11.toFloat(), 0f, 0f,
-    0f, 0f, 1f, 0f,
-    0f, 0f, 0f, 1f
-)
 fun Matrix3D.setRows2x2(
     a00: Double, a01: Double,
     a10: Double, a11: Double
@@ -660,18 +585,6 @@ fun Matrix3D.setRows2x2(
     0f, 0f, 0f, 1f
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromRows(
-    a00: Number, a01: Number, a02: Number, a03: Number,
-    a10: Number, a11: Number, a12: Number, a13: Number,
-    a20: Number, a21: Number, a22: Number, a23: Number,
-    a30: Number, a31: Number, a32: Number, a33: Number
-): Matrix3D = Matrix3D().setRows(
-    a00.toFloat(), a01.toFloat(), a02.toFloat(), a03.toFloat(),
-    a10.toFloat(), a11.toFloat(), a12.toFloat(), a13.toFloat(),
-    a20.toFloat(), a21.toFloat(), a22.toFloat(), a23.toFloat(),
-    a30.toFloat(), a31.toFloat(), a32.toFloat(), a33.toFloat()
-)
 fun Matrix3D.Companion.fromRows(
     a00: Double, a01: Double, a02: Double, a03: Double,
     a10: Double, a11: Double, a12: Double, a13: Double,
@@ -695,18 +608,6 @@ fun Matrix3D.Companion.fromRows(
     a30, a31, a32, a33
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromColumns(
-    a00: Number, a10: Number, a20: Number, a30: Number,
-    a01: Number, a11: Number, a21: Number, a31: Number,
-    a02: Number, a12: Number, a22: Number, a32: Number,
-    a03: Number, a13: Number, a23: Number, a33: Number
-): Matrix3D = Matrix3D().setColumns(
-    a00.toFloat(), a10.toFloat(), a20.toFloat(), a30.toFloat(),
-    a01.toFloat(), a11.toFloat(), a21.toFloat(), a31.toFloat(),
-    a02.toFloat(), a12.toFloat(), a22.toFloat(), a32.toFloat(),
-    a03.toFloat(), a13.toFloat(), a23.toFloat(), a33.toFloat()
-)
 fun Matrix3D.Companion.fromColumns(
     a00: Double, a10: Double, a20: Double, a30: Double,
     a01: Double, a11: Double, a21: Double, a31: Double,
@@ -730,16 +631,6 @@ fun Matrix3D.Companion.fromColumns(
     a03, a13, a23, a33
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.setColumns2x2(
-    a00: Number, a10: Number,
-    a01: Number, a11: Number
-): Matrix3D = setColumns(
-    a00.toFloat(), a10.toFloat(), 0f, 0f,
-    a01.toFloat(), a11.toFloat(), 0f, 0f,
-    0f, 0f, 1f, 0f,
-    0f, 0f, 0f, 1f
-)
 fun Matrix3D.setColumns2x2(
     a00: Double, a10: Double,
     a01: Double, a11: Double
@@ -759,16 +650,6 @@ fun Matrix3D.setColumns2x2(
     0f, 0f, 0f, 1f
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromRows3x3(
-    a00: Number, a01: Number, a02: Number,
-    a10: Number, a11: Number, a12: Number,
-    a20: Number, a21: Number, a22: Number
-): Matrix3D = Matrix3D().setRows3x3(
-    a00.toFloat(), a01.toFloat(), a02.toFloat(),
-    a10.toFloat(), a11.toFloat(), a12.toFloat(),
-    a20.toFloat(), a21.toFloat(), a22.toFloat()
-)
 fun Matrix3D.Companion.fromRows3x3(
     a00: Double, a01: Double, a02: Double,
     a10: Double, a11: Double, a12: Double,
@@ -788,16 +669,6 @@ fun Matrix3D.Companion.fromRows3x3(
     a20, a21, a22
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromColumns3x3(
-    a00: Number, a10: Number, a20: Number,
-    a01: Number, a11: Number, a21: Number,
-    a02: Number, a12: Number, a22: Number
-): Matrix3D = Matrix3D().setColumns3x3(
-    a00.toFloat(), a10.toFloat(), a20.toFloat(),
-    a01.toFloat(), a11.toFloat(), a21.toFloat(),
-    a02.toFloat(), a12.toFloat(), a22.toFloat()
-)
 fun Matrix3D.Companion.fromColumns3x3(
     a00: Double, a10: Double, a20: Double,
     a01: Double, a11: Double, a21: Double,
@@ -817,14 +688,6 @@ fun Matrix3D.Companion.fromColumns3x3(
     a02, a12, a22
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromRows2x2(
-    a00: Number, a01: Number,
-    a10: Number, a11: Number
-): Matrix3D = Matrix3D().setRows2x2(
-    a00.toFloat(), a01.toFloat(),
-    a10.toFloat(), a11.toFloat()
-)
 fun Matrix3D.Companion.fromRows2x2(
     a00: Double, a01: Double,
     a10: Double, a11: Double
@@ -840,14 +703,6 @@ fun Matrix3D.Companion.fromRows2x2(
     a10, a11
 )
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.Companion.fromColumns2x2(
-    a00: Number, a10: Number,
-    a01: Number, a11: Number
-): Matrix3D = Matrix3D().setColumns2x2(
-    a00.toFloat(), a10.toFloat(),
-    a01.toFloat(), a11.toFloat()
-)
 fun Matrix3D.Companion.fromColumns2x2(
     a00: Double, a10: Double,
     a01: Double, a11: Double
@@ -866,17 +721,14 @@ fun Matrix3D.Companion.fromColumns2x2(
 operator fun Matrix3D.times(that: Matrix3D): Matrix3D = Matrix3D().multiply(this, that)
 operator fun Matrix3D.times(value: Float): Matrix3D = Matrix3D(this).multiply(value)
 operator fun Matrix3D.times(value: Double): Matrix3D = this * value.toFloat()
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline operator fun Matrix3D.times(value: Number): Matrix3D = this * value.toFloat()
+operator fun Matrix3D.times(value: Int): Matrix3D = this * value.toFloat()
 
 operator fun Matrix3D.div(value: Float): Matrix3D = this * (1f / value)
 operator fun Matrix3D.div(value: Double): Matrix3D = this / value.toFloat()
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline operator fun Matrix3D.div(value: Number): Matrix3D = this / value.toFloat()
+operator fun Matrix3D.div(value: Int): Matrix3D = this / value.toFloat()
 
 fun Matrix3D.multiply(scale: Double, l: Matrix3D = this) = multiply(scale.toFloat(), l)
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.multiply(scale: Number, l: Matrix3D = this) = multiply(scale.toFloat(), l)
+fun Matrix3D.multiply(scale: Int, l: Matrix3D = this) = multiply(scale.toFloat(), l)
 
 
 @PublishedApi
@@ -887,30 +739,23 @@ fun Matrix3D.translate(x: Float, y: Float, z: Float, w: Float = 1f, temp: Matrix
     temp.setToTranslation(x, y, z, w)
     this.multiply(this, temp)
 }
+fun Matrix3D.translate(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+fun Matrix3D.translate(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+
 fun Matrix3D.rotate(angle: Angle, x: Float, y: Float, z: Float, temp: Matrix3D = tempMat3D) = this.apply {
     temp.setToRotation(angle, x, y, z)
     this.multiply(this, temp)
 }
+fun Matrix3D.rotate(angle: Angle, x: Double, y: Double, z: Double, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
+fun Matrix3D.rotate(angle: Angle, x: Int, y: Int, z: Int, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
+
 fun Matrix3D.scale(x: Float, y: Float, z: Float, w: Float = 1f, temp: Matrix3D = tempMat3D) = this.apply {
     temp.setToScale(x, y, z, w)
     this.multiply(this, temp)
 }
 
-inline fun Matrix3D.translate(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-inline fun Matrix3D.rotate(angle: Angle, x: Double, y: Double, z: Double, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-inline fun Matrix3D.scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-
-inline fun Matrix3D.translate(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-inline fun Matrix3D.rotate(angle: Angle, x: Int, y: Int, z: Int, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-inline fun Matrix3D.scale(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.translate(x: Number, y: Number, z: Number, w: Number = 1f, temp: Matrix3D = tempMat3D) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.rotate(angle: Angle, x: Number, y: Number, z: Number, temp: Matrix3D = tempMat3D) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun Matrix3D.scale(x: Number, y: Number, z: Number, w: Number = 1f, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-
+fun Matrix3D.scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+fun Matrix3D.scale(x: Int, y: Int, z: Int, w: Int = 1, temp: Matrix3D = tempMat3D) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
 
 fun Matrix3D.setToRotation(quat: Quaternion, temp: Matrix3D = tempMat3D) = this.apply {
     quat.toMatrix(temp)
@@ -979,10 +824,10 @@ inline fun Matrix3D.rotate(angle: Angle, v: Vector3D, temp: Matrix3D = tempMat3D
 inline fun Matrix3D.scale(v: Vector3D, temp: Matrix3D = tempMat3D) = scale(v.x, v.y, v.z, v.w, temp)
 
 fun Matrix3D.setTRS(translation: Position3D, rotation: Quaternion, scale: Scale3D): Matrix3D {
-    val rx = rotation.x
-    val ry = rotation.y
-    val rz = rotation.z
-    val rw = rotation.w
+    val rx = rotation.x.toFloat()
+    val ry = rotation.y.toFloat()
+    val rz = rotation.z.toFloat()
+    val rw = rotation.w.toFloat()
 
     val xt = rx + rx
     val yt = ry + ry
@@ -1004,7 +849,7 @@ fun Matrix3D.setTRS(translation: Position3D, rotation: Quaternion, scale: Scale3
         ((1 - (yy + zz)) * scale.x), ((xy - wz) * scale.y), ((xz + wy) * scale.z), translation.x,
         ((xy + wz) * scale.x), ((1 - (xx + zz)) * scale.y), ((yz - wx) * scale.z), translation.y,
         ((xz - wy) * scale.x), ((yz + wx) * scale.y), ((1 - (xx + yy)) * scale.z), translation.z,
-        0, 0, 0, 1
+        0f, 0f, 0f, 1f
     )
 }
 
@@ -1012,11 +857,11 @@ private val tempMat1 = Matrix3D()
 
 fun Matrix3D.getTRS(position: Position3D, rotation: Quaternion, scale: Scale3D): Matrix3D = this.apply {
     val det = determinant
-    position.setTo(v03, v13, v23, 1)
-    scale.setTo(Vector3D.length(v00, v10, v20) * det.sign, Vector3D.length(v01, v11, v21), Vector3D.length(v02, v12, v22), 1)
-    val invSX = 1.0 / scale.x
-    val invSY = 1.0 / scale.y
-    val invSZ = 1.0 / scale.z
+    position.setTo(v03, v13, v23, 1f)
+    scale.setTo(Vector3D.length(v00, v10, v20) * det.sign, Vector3D.length(v01, v11, v21), Vector3D.length(v02, v12, v22), 1f)
+    val invSX = 1f / scale.x
+    val invSY = 1f / scale.y
+    val invSZ = 1f / scale.z
     rotation.setFromRotationMatrix(tempMat1.setRows(
         v00 * invSX, v01 * invSY, v02 * invSZ, v03,
         v10 * invSX, v11 * invSY, v12 * invSZ, v13,

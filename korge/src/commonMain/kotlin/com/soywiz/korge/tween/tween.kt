@@ -14,6 +14,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.jvm.*
 import kotlin.reflect.*
 
 class TweenComponent(
@@ -180,10 +181,14 @@ data class V2<V>(
 		"V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
+@JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
+@JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(initial: Int, end: Int) = V2(this, initial, end, ::_interpolateInt, includeStart = true)
 
+@JvmName("getMutableProperty")
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateInterpolable, includeStart = false)
+@JvmName("getMutableProperty")
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
 @PublishedApi
@@ -213,9 +218,6 @@ internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = when 
     ratio >= 1.0 -> r
     else -> ratio.interpolate(l, r)
 }
-
-@PublishedApi
-internal fun <V> _interpolateAny(ratio: Double, l: V, r: V) = ratio.interpolateAny(l, r)
 
 @PublishedApi
 internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)

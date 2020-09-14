@@ -733,8 +733,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
      */
     @OptIn(KorgeInternal::class)
 	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
-        //fun IMatrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
-        //fun IMatrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+        //fun Matrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+        //fun Matrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
 
         val x0 = matrix.fastTransformXf(x, y)
         val x1 = matrix.fastTransformXf(x + width, y)

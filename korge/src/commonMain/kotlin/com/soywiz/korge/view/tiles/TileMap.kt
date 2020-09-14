@@ -19,6 +19,9 @@ inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.
 inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map.toIntArray2(), tileset).repeat(repeatX, repeatY).addTo(this, callback)
 
+@PublishedApi
+internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
+
 @OptIn(KorgeInternal::class)
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
     @PublishedApi

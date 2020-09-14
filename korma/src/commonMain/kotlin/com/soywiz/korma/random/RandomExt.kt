@@ -2,7 +2,6 @@ package com.soywiz.korma.random
 
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.*
 import kotlin.math.*
 import kotlin.random.*
 
@@ -29,7 +28,6 @@ operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextInt(0x1
 operator fun <T> Random.get(list: List<T>): T = list[this[list.indices]]
 operator fun Random.get(rectangle: Rectangle): IPoint = IPoint(this[rectangle.left, rectangle.right], this[rectangle.top, rectangle.bottom])
 fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) = run { this.setToInterpolated(random.nextDouble(), min, max) }
-operator fun <T : Comparable<T>> Random.get(range: ClosedRange<T>): T = (this.nextInt(0x10001).toDouble() / 0x10000.toDouble()).interpolateAny(range.start, range.endInclusive)
 
 fun <T> Random.weighted(weights: Map<T, Double>): T = shuffledWeighted(weights).first()
 fun <T> Random.weighted(weights: RandomWeights<T>): T = shuffledWeighted(weights).first()

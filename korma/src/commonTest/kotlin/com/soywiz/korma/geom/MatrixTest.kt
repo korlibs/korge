@@ -4,7 +4,7 @@ import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class MatrixTest {
-    private val identity: IMatrix = Matrix(1, 0, 0, 1, 0, 0)
+    private val identity: Matrix = Matrix(1, 0, 0, 1, 0, 0)
 
     @Test
     fun test() {

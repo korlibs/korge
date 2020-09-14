@@ -47,7 +47,7 @@ fun IPoint.distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble()
 infix fun IPoint.dot(that: IPoint): Double = this.x * that.x + this.y * that.y
 fun IPoint.distanceTo(that: IPoint): Double = distanceTo(that.x, that.y)
 fun IPoint.angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
-fun IPoint.transformed(mat: IMatrix, out: Point = Point()): Point = out.setToTransform(mat, this)
+fun IPoint.transformed(mat: Matrix, out: Point = Point()): Point = out.setToTransform(mat, this)
 operator fun IPoint.get(index: Int) = when (index) {
     0 -> x; 1 -> y
     else -> throw IndexOutOfBoundsException("IPoint doesn't have $index component")
@@ -63,8 +63,8 @@ val IPoint.normalized: IPoint
 val IPoint.mutable: Point get() = Point(x, y)
 val IPoint.immutable: IPoint get() = IPoint(x, y)
 fun IPoint.copy() = IPoint(x, y)
-fun Point.setToTransform(mat: IMatrix, p: IPoint): Point = setToTransform(mat, p.x, p.y)
-fun Point.setToTransform(mat: IMatrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))
+fun Point.setToTransform(mat: Matrix, p: IPoint): Point = setToTransform(mat, p.x, p.y)
+fun Point.setToTransform(mat: Matrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))
 fun Point.setToAdd(a: IPoint, b: IPoint): Point = setTo(a.x + b.x, a.y + b.y)
 fun Point.setToSub(a: IPoint, b: IPoint): Point = setTo(a.x - b.x, a.y - b.y)
 fun Point.setToMul(a: IPoint, b: IPoint): Point = setTo(a.x * b.x, a.y * b.y)

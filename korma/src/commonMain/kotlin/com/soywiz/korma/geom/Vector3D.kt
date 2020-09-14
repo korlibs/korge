@@ -27,9 +27,6 @@ class Vector3D {
         operator fun invoke(x: Double, y: Double, z: Double, w: Double = 1.0): Vector3D = Vector3D().setTo(x, y, z, w)
         operator fun invoke(x: Int, y: Int, z: Int, w: Int = 1): Vector3D = Vector3D().setTo(x, y, z, w)
 
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline operator fun invoke(x: Number, y: Number, z: Number, w: Number = 1f): Vector3D = Vector3D().setTo(x, y, z, w)
-
         fun length(x: Double, y: Double, z: Double, w: Double): Double = sqrt(lengthSq(x, y, z, w))
         fun length(x: Double, y: Double, z: Double): Double = sqrt(lengthSq(x, y, z))
         fun length(x: Float, y: Float, z: Float, w: Float): Float = sqrt(lengthSq(x, y, z, w))
@@ -39,16 +36,6 @@ class Vector3D {
         fun lengthSq(x: Double, y: Double, z: Double): Double = x * x + y * y + z * z
         fun lengthSq(x: Float, y: Float, z: Float, w: Float): Float = x * x + y * y + z * z + w * w
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
-
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun length(x: Number, y: Number, z: Number, w: Number) = length(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun lengthSq(x: Number, y: Number, z: Number, w: Number) = lengthSq(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun length(x: Number, y: Number, z: Number) = length(x.toDouble(), y.toDouble(), z.toDouble())
-        @Deprecated("Kotlin/Native boxes Number in inline")
-        inline fun lengthSq(x: Number, y: Number, z: Number) = lengthSq(x.toDouble(), y.toDouble(), z.toDouble())
-
     }
 
     fun copyFrom(other: Vector3D) = setTo(other.x, other.y, other.z, other.w)
@@ -67,13 +54,11 @@ class Vector3D {
 
     fun normalize(vector: Vector3D = this): Vector3D = this.apply {
         val norm = 1.0 / vector.length3
-        setTo(vector.x * norm, vector.y * norm, vector.z * norm, 1)
+        setTo(vector.x * norm, vector.y * norm, vector.z * norm, 1.0)
     }
 
     fun normalized(out: Vector3D = Vector3D()): Vector3D = out.copyFrom(this).normalize()
 
-    @Deprecated("Kotlin/Native boxes Number in inline")
-    inline fun setTo(x: Number, y: Number, z: Number, w: Number): Vector3D = setTo(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     override fun equals(other: Any?): Boolean = (other is Vector3D) && almostEquals(this.x, other.x) && almostEquals(this.y, other.y) && almostEquals(this.z, other.z) && almostEquals(this.w, other.w)
     override fun hashCode(): Int = data.contentHashCode()

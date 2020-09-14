@@ -98,7 +98,7 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
         yList[index] = y
     }
 
-    fun transform(matrix: IMatrix) {
+    fun transform(matrix: Matrix) {
         for (n in 0 until size) {
             val x = getX(n)
             val y = getY(n)
