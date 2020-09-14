@@ -42,6 +42,7 @@ interface Easing {
 
 private object Easings {
     private const val BOUNCE_10 = 1.70158
+    private const val PI_2 = PI / 2.0
 
     val SMOOTH = Easing { it * it * (3 - 2 * it) }
 
@@ -92,5 +93,5 @@ private object Easings {
     val EASE_IN_OUT_QUAD =
         Easing { val t = it * 2.0; if (t < 1) (1.0 / 2 * t * t) else (-1.0 / 2 * ((t - 1) * ((t - 1) - 2) - 1)) }
 
-    val EASE_SINE = Easing { sin(it) }
+    val EASE_SINE = Easing { sin(it * PI_2) }
 }
