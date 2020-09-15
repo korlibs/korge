@@ -49,6 +49,12 @@ class Vector3D {
     fun setTo(x: Int, y: Int, z: Int): Vector3D = setTo(x, y, z, 1)
 
     inline fun setToFunc(func: (index: Int) -> Float): Vector3D = setTo(func(0), func(1), func(2), func(3))
+    inline fun setToFunc(l: Vector3D, r: Vector3D, func: (l: Float, r: Float) -> Float) = setTo(
+        func(l.x, r.x),
+        func(l.y, r.y),
+        func(l.z, r.z),
+        func(l.w, r.w)
+    )
 
     fun transform(mat: Matrix3D) = mat.transform(this, this)
 

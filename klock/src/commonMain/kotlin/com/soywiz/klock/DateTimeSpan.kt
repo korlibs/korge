@@ -44,15 +44,12 @@ data class DateTimeSpan(
     operator fun minus(other: DateTimeSpan) = this + -other
 
     operator fun times(times: Double) = DateTimeSpan((monthSpan * times), (timeSpan * times))
-    operator fun div(times: Double) = times(1.0 / times)
-
     operator fun times(times: Int) = this * times.toDouble()
-    operator fun div(times: Int) = this / times.toDouble()
+    operator fun times(times: Float) = this * times.toDouble()
 
-    @Deprecated("Boxing on Kotlin/Native", ReplaceWith("this * times.toDouble()"))
-    inline operator fun times(times: Number) = this * times.toDouble()
-    @Deprecated("Boxing on Kotlin/Native", ReplaceWith("this / times.toDouble()"))
-    inline operator fun div(times: Number) = this / times.toDouble()
+    operator fun div(times: Double) = times(1.0 / times)
+    operator fun div(times: Int) = this / times.toDouble()
+    operator fun div(times: Float) = this / times.toDouble()
 
     /** From the date part, all months represented as a [totalYears] [Double] */
     val totalYears: Double get() = monthSpan.totalYears

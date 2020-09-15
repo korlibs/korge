@@ -3,33 +3,39 @@ package com.soywiz.klock
 import com.soywiz.klock.internal.*
 import kotlin.math.*
 
-// @TODO: Kotlin/Native is not removing boxes on inline + Number
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().nanoseconds"))
-inline val Number.nanoseconds get() = this.toDouble().nanoseconds
+inline val Long.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
 /** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().microseconds"))
-inline val Number.microseconds get() = this.toDouble().microseconds
+inline val Long.microseconds get() = TimeSpan.fromMicroseconds(this.toDouble())
 /** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().milliseconds"))
-inline val Number.milliseconds get() = this.toDouble().milliseconds
+inline val Long.milliseconds get() = TimeSpan.fromMilliseconds(this.toDouble())
 /** [TimeSpan] representing this number as [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().seconds"))
-inline val Number.seconds get() = this.toDouble().seconds
+inline val Long.seconds get() = TimeSpan.fromSeconds((this.toDouble()))
 /** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().minutes"))
-inline val Number.minutes get() = this.toDouble().minutes
+inline val Long.minutes get() = TimeSpan.fromMinutes(this.toDouble())
 /** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().hours"))
-inline val Number.hours get() = this.toDouble().hours
+inline val Long.hours get() = TimeSpan.fromHours(this.toDouble())
 /** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().days"))
-inline val Number.days get() = this.toDouble().days
+inline val Long.days get() = TimeSpan.fromDays(this.toDouble())
 /** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
-@Deprecated("Boxing on Kotlin/Native", ReplaceWith("this.toDouble().weeks"))
-inline val Number.weeks get() = this.toDouble().weeks
+inline val Long.weeks get() = TimeSpan.fromWeeks(this.toDouble())
 
-// Kotlin/Native is not removing boxes from inline + Number
+/** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
+inline val Float.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
+/** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
+inline val Float.microseconds get() = TimeSpan.fromMicroseconds(this.toDouble())
+/** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
+inline val Float.milliseconds get() = TimeSpan.fromMilliseconds(this.toDouble())
+/** [TimeSpan] representing this number as [seconds]. */
+inline val Float.seconds get() = TimeSpan.fromSeconds((this.toDouble()))
+/** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
+inline val Float.minutes get() = TimeSpan.fromMinutes(this.toDouble())
+/** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
+inline val Float.hours get() = TimeSpan.fromHours(this.toDouble())
+/** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
+inline val Float.days get() = TimeSpan.fromDays(this.toDouble())
+/** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
+inline val Float.weeks get() = TimeSpan.fromWeeks(this.toDouble())
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
 inline val Int.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())

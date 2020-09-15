@@ -344,6 +344,59 @@ class Matrix3D {
         (l.v30 * r.v03) + (l.v31 * r.v13) + (l.v32 * r.v23) + (l.v33 * r.v33)
     )
 
+    fun multiply(
+        lv00: Float, lv01: Float, lv02: Float, lv03: Float,
+        lv10: Float, lv11: Float, lv12: Float, lv13: Float,
+        lv20: Float, lv21: Float, lv22: Float, lv23: Float,
+        lv30: Float, lv31: Float, lv32: Float, lv33: Float,
+
+        rv00: Float, rv01: Float, rv02: Float, rv03: Float,
+        rv10: Float, rv11: Float, rv12: Float, rv13: Float,
+        rv20: Float, rv21: Float, rv22: Float, rv23: Float,
+        rv30: Float, rv31: Float, rv32: Float, rv33: Float,
+    ) = this.setRows(
+        (lv00 * rv00) + (lv01 * rv10) + (lv02 * rv20) + (lv03 * rv30),
+        (lv00 * rv01) + (lv01 * rv11) + (lv02 * rv21) + (lv03 * rv31),
+        (lv00 * rv02) + (lv01 * rv12) + (lv02 * rv22) + (lv03 * rv32),
+        (lv00 * rv03) + (lv01 * rv13) + (lv02 * rv23) + (lv03 * rv33),
+
+        (lv10 * rv00) + (lv11 * rv10) + (lv12 * rv20) + (lv13 * rv30),
+        (lv10 * rv01) + (lv11 * rv11) + (lv12 * rv21) + (lv13 * rv31),
+        (lv10 * rv02) + (lv11 * rv12) + (lv12 * rv22) + (lv13 * rv32),
+        (lv10 * rv03) + (lv11 * rv13) + (lv12 * rv23) + (lv13 * rv33),
+
+        (lv20 * rv00) + (lv21 * rv10) + (lv22 * rv20) + (lv23 * rv30),
+        (lv20 * rv01) + (lv21 * rv11) + (lv22 * rv21) + (lv23 * rv31),
+        (lv20 * rv02) + (lv21 * rv12) + (lv22 * rv22) + (lv23 * rv32),
+        (lv20 * rv03) + (lv21 * rv13) + (lv22 * rv23) + (lv23 * rv33),
+
+        (lv30 * rv00) + (lv31 * rv10) + (lv32 * rv20) + (lv33 * rv30),
+        (lv30 * rv01) + (lv31 * rv11) + (lv32 * rv21) + (lv33 * rv31),
+        (lv30 * rv02) + (lv31 * rv12) + (lv32 * rv22) + (lv33 * rv32),
+        (lv30 * rv03) + (lv31 * rv13) + (lv32 * rv23) + (lv33 * rv33)
+    )
+
+    fun multiply(
+        lv00: Double, lv01: Double, lv02: Double, lv03: Double,
+        lv10: Double, lv11: Double, lv12: Double, lv13: Double,
+        lv20: Double, lv21: Double, lv22: Double, lv23: Double,
+        lv30: Double, lv31: Double, lv32: Double, lv33: Double,
+
+        rv00: Double, rv01: Double, rv02: Double, rv03: Double,
+        rv10: Double, rv11: Double, rv12: Double, rv13: Double,
+        rv20: Double, rv21: Double, rv22: Double, rv23: Double,
+        rv30: Double, rv31: Double, rv32: Double, rv33: Double,
+    ) = multiply(
+        lv00.toFloat(), lv01.toFloat(), lv02.toFloat(), lv03.toFloat(),
+        lv10.toFloat(), lv11.toFloat(), lv12.toFloat(), lv13.toFloat(),
+        lv20.toFloat(), lv21.toFloat(), lv22.toFloat(), lv23.toFloat(),
+        lv30.toFloat(), lv31.toFloat(), lv32.toFloat(), lv33.toFloat(),
+        rv00.toFloat(), rv01.toFloat(), rv02.toFloat(), rv03.toFloat(),
+        rv10.toFloat(), rv11.toFloat(), rv12.toFloat(), rv13.toFloat(),
+        rv20.toFloat(), rv21.toFloat(), rv22.toFloat(), rv23.toFloat(),
+        rv30.toFloat(), rv31.toFloat(), rv32.toFloat(), rv33.toFloat(),
+    )
+
     fun multiply(scale: Float, l: Matrix3D = this) = this.apply {
         for (n in 0 until 16) this.data[n] = l.data[n] * scale
     }

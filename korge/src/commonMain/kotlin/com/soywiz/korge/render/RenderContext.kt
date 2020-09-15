@@ -42,10 +42,6 @@ class RenderContext constructor(
 
     var debugAnnotateView: View? = null
 
-    /** Current frame. */
-    @Deprecated("unused")
-	var frame = 0
-
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
 	val batch by lazy { BatchBuilder2D(this) }
 

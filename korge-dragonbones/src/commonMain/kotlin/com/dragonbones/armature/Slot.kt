@@ -1333,12 +1333,12 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 
 	///**
 	// * - Deprecated, please refer to {@link #display}.
-	// * @deprecated
+	// * deprecated
 	// * @language en_US
 	// */
 	///**
 	// * - 已废弃，请参考 {@link #display}。
-	// * @deprecated
+	// * deprecated
 	// * @language zh_CN
 	// */
 	//fun getDisplay(): Any {
@@ -1346,12 +1346,12 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	//}
 	///**
 	// * - Deprecated, please refer to {@link #display}.
-	// * @deprecated
+	// * deprecated
 	// * @language en_US
 	// */
 	///**
 	// * - 已废弃，请参考 {@link #display}。
-	// * @deprecated
+	// * deprecated
 	// * @language zh_CN
 	// */
 	//fun setDisplay(value: Any) {

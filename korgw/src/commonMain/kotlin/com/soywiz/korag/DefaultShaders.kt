@@ -24,9 +24,6 @@ object DefaultShaders {
 
 	val textureUnit = AG.TextureUnit()
 
-	@Deprecated("Use LAYOUT_DEFAULT", ReplaceWith("DefaultShaders.LAYOUT_DEFAULT"))
-	val FORMAT_DEFAULT = VertexLayout(a_Pos, a_Tex, a_Col)
-
 	val LAYOUT_DEFAULT = VertexLayout(a_Pos, a_Tex, a_Col)
 
 	val VERTEX_DEFAULT = VertexShader {
@@ -75,8 +72,6 @@ object DefaultShaders {
 		name = "PROGRAM_SOLID_COLOR"
 	)
 
-	@Deprecated("Use LAYOUT_DEBUG", ReplaceWith("DefaultShaders.LAYOUT_DEBUG"))
-	val FORMAT_DEBUG = VertexLayout(a_Pos)
 	val LAYOUT_DEBUG = VertexLayout(a_Pos)
 
 	val PROGRAM_DEBUG = Program(

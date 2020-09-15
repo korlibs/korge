@@ -330,7 +330,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
         bb.getBounds(out)
     }
 
-    @Deprecated("We shouldn't do this")
+    // @TODO: We shouldn't do this
     private fun RGBAf.toFloatBits(): Float = Float.fromBits(this.rgba.value)
 
     val currentMainAnimation get() = animationState?.tracks?.first()?.animation

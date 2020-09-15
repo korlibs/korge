@@ -99,7 +99,7 @@ class IdeaAdaptorVfs(val file: VirtualFile) : Vfs() {
 
 	override fun getAbsolutePath(path: String): String = accessSure(path).toString()
 
-	override suspend fun list(path: String): ReceiveChannel<VfsFile> {
-		return accessSure(path).children.map { VfsFile(this@IdeaAdaptorVfs, "$path/${it.name}") }.toChannel()
+	override suspend fun listSimple(path: String): List<VfsFile> {
+		return accessSure(path).children.map { VfsFile(this@IdeaAdaptorVfs, "$path/${it.name}") }
 	}
 }

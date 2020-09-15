@@ -38,8 +38,6 @@ abstract class KlockLocale {
     }
     */
 
-	@Deprecated("Use months3", ReplaceWith("monthsShort"))
-	val months3 get() = monthsShort
 	open val h12Marker = listOf("AM", "OM")
 
 	// This might be required for some languages like chinese?
