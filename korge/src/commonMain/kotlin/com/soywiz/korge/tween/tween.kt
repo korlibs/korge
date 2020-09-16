@@ -24,7 +24,7 @@ class TweenComponent(
         val easing: Easing = DEFAULT_EASING,
         val callback: (Double) -> Unit,
         val c: CancellableContinuation<Unit>
-) : UpdateComponentV2 {
+) : UpdateComponent {
 	var elapsed = 0.hrNanoseconds
 	val hrtime = if (time != HRTimeSpan.NIL) time else (vs.map { it.endTime.nanosecondsDouble }.max() ?: 0.0).hrNanoseconds
 	var cancelled = false

@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klock.hr.*
 import com.soywiz.korim.color.Colors
 import kotlin.test.*
 
@@ -15,7 +16,7 @@ class ViewCollisionTest {
 		container["view1"].onCollision {
 			log += "collision[${this.name}, ${it.name}]"
 		}
-		container["view1"].first.updateSingleView(0.0)
+		container["view1"].first.updateSingleView(0.hrMilliseconds)
 		assertEquals(listOf("collision[view1, view1]"), log)
 	}
 }

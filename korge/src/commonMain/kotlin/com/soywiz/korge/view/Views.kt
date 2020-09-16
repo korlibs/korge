@@ -50,7 +50,7 @@ class Views constructor(
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
-    CoroutineScope, ViewsScope, ViewsContainer,
+    CoroutineScope, ViewsContainer,
 	BoundsProvider,
     DialogInterface by gameWindow,
     AsyncCloseable,
@@ -289,10 +289,6 @@ class Views constructor(
 		render()
 	}
 
-    @Deprecated("")
-    fun update(dtMs: Int) {
-        update(dtMs.hrMilliseconds)
-    }
 
 	fun update(elapsed: HRTimeSpan) {
 		//println(this)
@@ -435,24 +431,11 @@ class ViewsLog(
 	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow)
 }
 
-fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture =
-	Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-
-fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture =
-	Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-
+fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
+fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture = Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
 fun Bitmap.texture(views: Views, mipmaps: Boolean = false) = views.texture(this, mipmaps)
-
-fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) =
-	texture(Bitmap32(width, height), mipmaps)
-
-suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture =
-	texture(nativeImageFormatProvider.decode(bmp), mipmaps)
-
-@Deprecated("Use ViewsContainer")
-interface ViewsScope {
-    val views: Views
-}
+fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) = texture(Bitmap32(width, height), mipmaps)
+suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture = texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
 interface ViewsContainer {
 	val views: Views
@@ -502,23 +485,22 @@ private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+fun View.updateSingleView(delta: HRTimeSpan, tempViews: ArrayList<View> = arrayListOf()) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
         view._components?.update?.fastForEach { comp ->
-            comp.update(dtMsD * view.globalSpeed)
+            comp.update(delta * view.globalSpeed)
         }
     }
 }
 
-@Deprecated("")
-@OptIn(KorgeInternal::class)
-fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
-    getAllDescendantViews(this, tempViews).fastForEach { view ->
-        view._components?.updateWV?.fastForEach { comp ->
-            comp.update(views, dtMsD * view.globalSpeed)
-        }
-    }
-}
+//@OptIn(KorgeInternal::class)
+//fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+//    getAllDescendantViews(this, tempViews).fastForEach { view ->
+//        view._components?.updateWV?.fastForEach { comp ->
+//            comp.update(views, (dtMsD * view.globalSpeed).hrMilliseconds)
+//        }
+//    }
+//}
 
 @OptIn(KorgeInternal::class)
 fun View.updateSingleViewWithViewsAll(

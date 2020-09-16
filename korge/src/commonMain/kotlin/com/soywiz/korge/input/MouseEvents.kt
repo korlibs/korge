@@ -1,6 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -246,14 +247,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	}
 
     inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews, Extra by Extra.Mixin() {
-        override fun update(views: Views, ms: Double) {
-            this@MouseEvents.update(views, ms)
+        override fun update(views: Views, dt: HRTimeSpan) {
+            this@MouseEvents.update(views, dt)
         }
     }
 
     val updater = MouseEventsUpdate(view).attach()
 
-    fun update(views: Views, ms: Double) {
+    fun update(views: Views, dt: HRTimeSpan) {
 		if (!view.mouseEnabled) return
         this.views = views
 
@@ -339,4 +340,4 @@ inline fun <T : View?> T.onUpAnywhere(noinline handler: @EventsDslMarker suspend
 inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
 inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
-fun ViewsScope.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
+fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)

@@ -15,7 +15,7 @@ private typealias TimerCallback = (HRTimeSpan) -> Unit
 
 inline class TimerRef(val ref: Double)
 
-class TimerComponents(override val view: View) : UpdateComponentV2 {
+class TimerComponents(override val view: View) : UpdateComponent {
     private val _timers = arrayListOf<(HRTimeSpan) -> Unit>()
 
     override fun update(dt: HRTimeSpan) {

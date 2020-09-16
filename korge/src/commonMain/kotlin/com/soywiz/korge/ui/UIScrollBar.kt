@@ -73,8 +73,8 @@ open class UIScrollBar(
         }
 
     protected val background = solidRect(100, 100, skin.backColor)
-    protected val upButton = iconButton(16, 16, skin.upSkin, skin.upIcon)
-    protected val downButton = iconButton(16, 16, skin.downSkin, skin.downIcon)
+    protected val upButton = iconButton(16.0, 16.0, skin.upSkin, skin.upIcon)
+    protected val downButton = iconButton(16.0, 16.0, skin.downSkin, skin.downIcon)
     protected val thumb = uiButton(16.0, 16.0, skin.thumbSkin)
 
     protected val views get() = stage?.views

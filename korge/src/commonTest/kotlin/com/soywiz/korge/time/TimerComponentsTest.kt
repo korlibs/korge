@@ -1,6 +1,7 @@
 package com.soywiz.korge.time
 
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -20,9 +21,9 @@ class TimerComponentsTest {
 			}
 		}
 		assertEquals("a", log)
-		view.updateSingleView(7.0)
+		view.updateSingleView(7.hrMilliseconds)
 		assertEquals("ab", log)
-		view.updateSingleView(3.0)
+		view.updateSingleView(3.hrMilliseconds)
 		assertEquals("abc", log)
 	}
 }

@@ -1,6 +1,7 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds

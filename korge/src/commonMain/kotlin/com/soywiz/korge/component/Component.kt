@@ -177,9 +177,7 @@ interface EventComponent : Component {
  * It is like [UpdateComponent] but includes a reference to the [Views] itself.
  */
 interface UpdateComponentWithViews : Component {
-    @Deprecated("")
-    fun update(views: Views, ms: Double)
-    fun update(views: Views, delta: HRTimeSpan) = update(views, delta.millisecondsDouble)
+    fun update(views: Views, dt: HRTimeSpan)
 }
 
 /**
@@ -195,19 +193,10 @@ interface UpdateComponentWithViews : Component {
  * ```
  */
 interface UpdateComponent : Component {
-    @Deprecated("")
-    fun update(ms: Double)
-    @Suppress("DEPRECATION")
-    fun update(delta: HRTimeSpan): Unit = update(delta.millisecondsDouble)
+    fun update(dt: HRTimeSpan)
 }
 
-interface UpdateComponentV2 : UpdateComponent {
-    @Suppress("DEPRECATION")
-    override fun update(ms: Double): Unit = update(ms.milliseconds.hr)
-    override fun update(dt: HRTimeSpan)
-}
-
-abstract class FixedUpdateComponent(override val view: View, val step: HRTimeSpan, val maxAccumulated: Int = 10) : UpdateComponentV2 {
+abstract class FixedUpdateComponent(override val view: View, val step: HRTimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
     var accumulated = 0.hrSeconds
     final override fun update(dt: HRTimeSpan) {
         accumulated += dt
