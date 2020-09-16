@@ -62,6 +62,3 @@ val debugBmpFont: BitmapFont by lazy {
         )
     }.toIntMap(), IntMap())
 }
-
-@Deprecated("", ReplaceWith("debugBmpFont"))
-fun getDebugBmpFontOnce() = debugBmpFont

@@ -335,36 +335,10 @@ data class PolylineShape(
     val lineJoin: LineJoin,
     val miterLimit: Double
 ) : StyledShape {
-    @Suppress("unused")
-    @Deprecated("Use lineJoin instead", replaceWith = ReplaceWith("lineJoin.name"))
-    val joints: String? = lineJoin.name
-
-    @Deprecated("Use constructor with lineJoin: LineJoin")
-    constructor(
-        path: GraphicsPath,
-        clip: GraphicsPath?,
-        paint: Paint,
-        transform: Matrix,
-        thickness: Double,
-        pixelHinting: Boolean,
-        scaleMode: LineScaleMode,
-        startCaps: LineCap,
-        endCaps: LineCap,
-        joints: String?,
-        miterLimit: Double
-    ) : this(path, clip, paint, transform, thickness, pixelHinting, scaleMode, startCaps, endCaps, when (joints) {
-        null -> LineJoin.MITER
-        "MITER", "miter" -> LineJoin.MITER
-        "BEVEL", "bevel" -> LineJoin.BEVEL
-        "SQUARE", "square" -> LineJoin.SQUARE
-        "ROUND", "round" -> LineJoin.ROUND
-        else -> LineJoin.MITER
-    }, miterLimit)
-
     private val tempBB = BoundsBuilder()
     private val tempRect = Rectangle()
 
-    override fun addBounds(bb: BoundsBuilder): Unit {
+    override fun addBounds(bb: BoundsBuilder) {
         tempBB.reset()
         tempBB.add(path)
         tempBB.getBounds(tempRect)

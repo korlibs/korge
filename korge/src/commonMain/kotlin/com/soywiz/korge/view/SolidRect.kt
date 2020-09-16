@@ -3,13 +3,10 @@ package com.soywiz.korge.view
 import com.soywiz.korim.color.*
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.solidRect(width: Number, height: Number, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = solidRect(width.toDouble(), height.toDouble(), color, callback)
-
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(width, height, color).addTo(this, callback)
 
+/** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
 inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(width.toDouble(), height.toDouble(), color).addTo(this, callback)
 

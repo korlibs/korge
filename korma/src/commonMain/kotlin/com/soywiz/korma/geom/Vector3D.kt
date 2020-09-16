@@ -55,6 +55,11 @@ class Vector3D {
         func(l.z, r.z),
         func(l.w, r.w)
     )
+    fun setToInterpolated(left: Vector3D, right: Vector3D, t: Double): Vector3D = setToFunc { t.interpolate(left[it], right[it]) }
+
+    fun scale(scale: Float) = this.setTo(this.x * scale, this.y * scale, this.z * scale, this.w * scale)
+    fun scale(scale: Int) = scale(scale.toFloat())
+    fun scale(scale: Double) = scale(scale.toFloat())
 
     fun transform(mat: Matrix3D) = mat.transform(this, this)
 
@@ -80,16 +85,6 @@ inline class IntVector3(val v: Vector3D) {
 }
 
 fun Vector3D.asIntVector3D() = IntVector3(this)
-fun Vector3D.setToInterpolated(left: Vector3D, right: Vector3D, t: Double): Vector3D = setToFunc { t.interpolate(left[it], right[it]) }
-
-fun Vector3D.scale(scale: Float) = this.setTo(this.x * scale, this.y * scale, this.z * scale, this.w * scale)
-fun Vector3D.scale(scale: Int) = scale(scale.toFloat())
-fun Vector3D.scale(scale: Double) = scale(scale.toFloat())
-
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun Vector3D.scale(scale: Number) = scale(scale.toFloat())
-@Deprecated("Kotlin/Native boxes Number in inline")
-inline fun Vector3D.setTo(x: Number, y: Number, z: Number) = setTo(x.toFloat(), y.toFloat(), z.toFloat(), 1f)
 
 typealias Position3D = Vector3D
 typealias Scale3D = Vector3D
