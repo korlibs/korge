@@ -127,12 +127,12 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		//private var _objectDataParserInstance = ObjectDataParser()
 		///**
 		// * - Deprecated, please refer to {@link dragonBones.BaseFactory#parseDragonBonesData()}.
-		// * @deprecated
+		// * deprecated
 		// * @language en_US
 		// */
 		///**
 		// * - 已废弃，请参考 {@link dragonBones.BaseFactory#parseDragonBonesData()}。
-		// * @deprecated
+		// * deprecated
 		// * @language zh_CN
 		// */
 		//fun getInstance(): ObjectDataParser = ObjectDataParser._objectDataParserInstance

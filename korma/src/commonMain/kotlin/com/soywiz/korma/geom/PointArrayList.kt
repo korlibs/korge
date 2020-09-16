@@ -9,14 +9,18 @@ interface IPointArrayList {
     fun getY(index: Int): Double
 }
 
-fun IPointArrayList.getPoint(index: Int): Point = Point(getX(index), getY(index))
+inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
+    for (n in 0 until size) {
+        block(getX(n), getY(n))
+    }
+}
+
+fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.setTo(getX(index), getY(index))
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
+
 fun IPointArrayList.toPoints(): List<Point> = (0 until size).map { getPoint(it) }
-@Deprecated("Use Point instead")
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun IPointArrayList.contains(x: Number, y: Number): Boolean = contains(x.toDouble(), y.toDouble())
 fun IPointArrayList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
 fun IPointArrayList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
 fun IPointArrayList.contains(x: Double, y: Double): Boolean {
@@ -53,15 +57,10 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
     }
 
     fun add(p: Point) = add(p.x, p.y)
-    fun add(p: PointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
+    fun add(p: IPoint) = add(p.x, p.y)
+    fun add(p: IPointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
 
-    inline fun fastForEach(block: (x: Double, y: Double) -> Unit) {
-        for (n in 0 until size) {
-            block(getX(n), getY(n))
-        }
-    }
-
-    fun copyFrom(other: PointArrayList): PointArrayList = this.apply { clear() }.apply { add(other) }
+    fun copyFrom(other: IPointArrayList): PointArrayList = this.apply { clear() }.apply { add(other) }
     fun clone(out: PointArrayList = PointArrayList()): PointArrayList = out.clear().add(this)
 
     fun toList(): List<Point> {
@@ -91,12 +90,20 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
         yList.removeAt(index, count)
     }
 
-    fun setX(index: Int, x: Double) = run { xList[index] = x }
-    fun setY(index: Int, y: Double) = run { yList[index] = y }
+    fun setX(index: Int, x: Double) { xList[index] = x }
+    fun setX(index: Int, x: Int) = setX(index, x.toDouble())
+    fun setX(index: Int, x: Float) = setX(index, x.toDouble())
+
+    fun setY(index: Int, y: Double) { yList[index] = y }
+    fun setY(index: Int, y: Int) = setY(index, y.toDouble())
+    fun setY(index: Int, y: Float) = setY(index, y.toDouble())
+
     fun setXY(index: Int, x: Double, y: Double) {
         xList[index] = x
         yList[index] = y
     }
+    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
+    fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
 
     fun transform(matrix: Matrix) {
         for (n in 0 until size) {
@@ -145,33 +152,26 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
     }
 }
 
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun PointArrayList.add(x: Number, y: Number) = add(x.toDouble(), y.toDouble())
-@Deprecated("Use Point instead")
-fun PointArrayList.add(p: IPoint) = add(p.x, p.y)
-fun PointArrayList.add(other: IPointArrayList) = this.apply { for (n in 0 until other.size) add(other.getX(n), other.getY(n)) }
-
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun PointArrayList.setX(index: Int, x: Number) = setX(index, x.toDouble())
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun PointArrayList.setY(index: Int, y: Number) = setY(index, y.toDouble())
-@Deprecated("Kotlin/Native boxes inline + Number")
-inline fun PointArrayList.setXY(index: Int, x: Number, y: Number) = setXY(index, x.toDouble(), y.toDouble())
-
-fun PointArrayList.setX(index: Int, x: Float) = setX(index, x.toDouble())
-fun PointArrayList.setY(index: Int, y: Float) = setY(index, y.toDouble())
-fun PointArrayList.setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
-
-fun PointArrayList.setX(index: Int, x: Int) = setX(index, x.toDouble())
-fun PointArrayList.setY(index: Int, y: Int) = setY(index, y.toDouble())
-fun PointArrayList.setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
-
 //////////////////////////////////////
 
 interface IPointIntArrayList {
     val size: Int
     fun getX(index: Int): Int
     fun getY(index: Int): Int
+}
+
+fun IPointIntArrayList.getPoint(index: Int, out: PointInt = PointInt()): PointInt = out.setTo(getX(index), getY(index))
+fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
+fun IPointIntArrayList.toPoints(): List<PointInt> = (0 until size).map { getPoint(it) }
+fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }
+fun IPointIntArrayList.contains(x: Int, y: Int): Boolean {
+    for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
+    return false
+}
+inline fun IPointIntArrayList.fastForEach(block: (x: Int, y: Int) -> Unit) {
+    for (n in 0 until size) {
+        block(getX(n), getY(n))
+    }
 }
 
 class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
@@ -201,6 +201,8 @@ class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
         xList += x
         yList += y
     }
+    fun add(p: IPointInt) = add(p.x, p.y)
+    fun add(p: IPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
 
     inline fun fastForEach(block: (x: Int, y: Int) -> Unit) {
         for (n in 0 until size) {
@@ -260,15 +262,4 @@ class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
         override fun compare(p: PointIntArrayList, l: Int, r: Int): Int = PointInt.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
         override fun swap(subject: PointIntArrayList, indexL: Int, indexR: Int) = subject.swap(indexL, indexR)
     }
-}
-
-fun PointIntArrayList.add(p: IPointInt) = add(p.x, p.y)
-fun PointIntArrayList.add(other: IPointIntArrayList) = this.apply { for (n in 0 until other.size) add(other.getX(n), other.getY(n)) }
-fun IPointIntArrayList.getPoint(index: Int): PointInt = PointInt(getX(index), getY(index))
-fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
-fun IPointIntArrayList.toPoints(): List<PointInt> = (0 until size).map { getPoint(it) }
-fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }
-fun IPointIntArrayList.contains(x: Int, y: Int): Boolean {
-    for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
-    return false
 }
