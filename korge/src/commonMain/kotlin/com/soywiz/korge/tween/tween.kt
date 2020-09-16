@@ -256,27 +256,24 @@ inline operator fun KMutableProperty0<Double>.get(initial: Int, end: Int) = get(
 inline operator fun KMutableProperty0<Double>.get(end: Float) = get(end.toDouble())
 inline operator fun KMutableProperty0<Double>.get(initial: Float, end: Float) = get(initial.toDouble(), end.toDouble())
 
-@Deprecated("Kotlin/Native boxes inline+Number")
+inline operator fun KMutableProperty0<Double>.get(end: Long) = get(end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Long, end: Float) = get(initial.toDouble(), end.toDouble())
+
 inline operator fun KMutableProperty0<Double>.get(end: Number) = get(end.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) = get(initial.toDouble(), end.toDouble())
 
 inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor, includeStart = false)
-inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) =
-	V2(this, initial, end, ::_interpolateColor, includeStart = true)
+inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) = V2(this, initial, end, ::_interpolateColor, includeStart = true)
 
 inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle, includeStart = false)
-inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) =
-	V2(this, initial, end, ::_interpolateAngle, includeStart = true)
+inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) = V2(this, initial, end, ::_interpolateAngle, includeStart = true)
 
 fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
 
 inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
-inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) =
-    V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
+inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) = V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
 
-fun <V> V2<V>.easing(easing: Easing): V2<V> =
-	this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
+fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
 
 inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime.hr)
 inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration.hr)
