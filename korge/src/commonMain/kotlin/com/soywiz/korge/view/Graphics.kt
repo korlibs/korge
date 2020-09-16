@@ -116,8 +116,6 @@ open class Graphics @JvmOverloads constructor(
 	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
     inline fun fill(color: RGBA, alpha: Double = 1.0, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), callback)
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun fill(color: RGBA, alpha: Number, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(color, alpha.toDouble(), callback)
 
 	inline fun fill(paint: Paint, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
 		beginFill(paint)

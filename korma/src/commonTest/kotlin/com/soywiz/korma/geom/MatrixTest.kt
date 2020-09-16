@@ -22,7 +22,6 @@ class MatrixTest {
         assertEquals(75.0, matrix.transformY(10, 20))
         assertEquals(Point(30.0, 75.0), matrix.transform(Point(10, 20)))
         assertEquals(Point(20.0, 60.0), matrix.deltaTransformPoint(Point(10, 20)))
-
     }
 
     @Test
@@ -93,21 +92,21 @@ class MatrixTest {
 
     @Test
     fun transform2() {
-        assertEquals(Matrix(2, 0, 0, 3, 10, 20), Matrix.Transform(10, 20, scaleX = 2, scaleY = 3).toMatrix())
+        assertEquals(Matrix(2, 0, 0, 3, 10, 20), Matrix.Transform(10.0, 20.0, scaleX = 2.0, scaleY = 3.0).toMatrix())
 
         // @TODO: Kotlin.JS BUG (missing arguments are NaN or undefined but it works fine on JVM)
         //val t1 = Matrix.Transform(10, 20, scaleX = 2, scaleY = 3, rotation = 90.degrees)
         //val t2 = Matrix.Transform(20, 40, scaleX = 4, scaleY = 5, rotation = 180.degrees)
 
-        val t1 = Matrix.Transform(10, 20, scaleX = 2, scaleY = 3, skewX = 0.0, skewY = 0.0, rotation = 90.degrees)
-        val t2 = Matrix.Transform(20, 40, scaleX = 4, scaleY = 5, skewX = 0.0, skewY = 0.0, rotation = 180.degrees)
+        val t1 = Matrix.Transform(10.0, 20.0, scaleX = 2.0, scaleY = 3.0, skewX = 0.0, skewY = 0.0, rotation = 90.degrees)
+        val t2 = Matrix.Transform(20.0, 40.0, scaleX = 4.0, scaleY = 5.0, skewX = 0.0, skewY = 0.0, rotation = 180.degrees)
         assertEquals(
             Matrix.Transform(x = 15.0, y = 30.0, scaleX = 3.0, scaleY = 4.0, skewX = 0.0, skewY = 0.0, rotation = 135.degrees),
             0.5.interpolate(t1, t2)
         )
 
         val identity = Matrix.Transform()
-        val mt = Matrix.Transform(1, 2, 3, 4, 5, 6, 7.radians)
+        val mt = Matrix.Transform(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0.radians)
         mt.identity()
         assertEquals(identity, mt)
         assertNotSame(mt, mt.clone())

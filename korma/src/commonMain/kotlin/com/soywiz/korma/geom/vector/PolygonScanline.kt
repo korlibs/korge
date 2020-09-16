@@ -184,8 +184,6 @@ class PolygonScanline : RastScale() {
     fun add(x: Double, y: Double, move: Boolean) = if (move) moveTo(x, y) else lineTo(x, y)
     fun add(x: Float, y: Float, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
     fun add(x: Int, y: Int, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun add(x: Number, y: Number, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
 
     internal inline fun forEachActiveEdgeAtY(y: Int, block: (Edge) -> Unit): Int {
         var edgesChecked = 0

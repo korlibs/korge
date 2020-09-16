@@ -86,7 +86,7 @@ open class UIComboBox<T>(
 	private fun updateItems() {
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
-			itemsView.container.textButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
+			itemsView.container.textButton(width - 32.0, itemHeight.toDouble(), item.toString(), skin.itemSkin, skin.textFont) {
 				position(0, index * this@UIComboBox.itemHeight)
 				onClick {
                     this@UIComboBox.showItems = false

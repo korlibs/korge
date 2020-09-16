@@ -37,9 +37,6 @@ open class Module {
 
 	open val fullscreen: Boolean? = null
 
-	@Deprecated("", ReplaceWith("injector.configure()"))
-	open suspend fun init(injector: AsyncInjector) = Unit
-
 	@Suppress("DEPRECATION")
-	open suspend fun AsyncInjector.configure() = init(this)
+	open suspend fun AsyncInjector.configure() = Unit
 }

@@ -90,9 +90,6 @@ open class ViewsForTesting @JvmOverloads constructor(
 
     suspend fun mouseMoveTo(x: Double, y: Double) = mouseMoveTo(x.toInt(), y.toInt())
 
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    suspend fun mouseMoveTo(x: Number, y: Number) = mouseMoveTo(x.toInt(), y.toInt())
-
     private var mouseButtons = 0
 
     suspend fun mouseDown(button: MouseButton = MouseButton.LEFT) {

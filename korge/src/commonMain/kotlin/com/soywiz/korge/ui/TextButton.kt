@@ -10,16 +10,6 @@ import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.textButton(
-	width: Number,
-	height: Number,
-	text: String = "Button",
-	skin: UISkin = defaultUISkin,
-	textFont: Html.FontFace = defaultUIFont,
-	block: @ViewDslMarker TextButton.() -> Unit = {}
-): TextButton = textButton(width.toDouble(), height.toDouble(), text, skin, textFont, block)
-
 inline fun Container.textButton(
     width: Double = 128.0,
     height: Double = 64.0,

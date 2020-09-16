@@ -16,9 +16,7 @@ inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHI
 class SolidRect(width: Double, height: Double, color: RGBA) : RectBase() {
 	companion object {
         operator fun invoke(width: Int, height: Int, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
-
-        @Deprecated("Kotlin/Native boxes inline+Number")
-        inline operator fun invoke(width: Number, height: Number, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Float, height: Float, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
 	}
 
 	override var width: Double = width; set(v) { field = v; dirtyVertices = true }
