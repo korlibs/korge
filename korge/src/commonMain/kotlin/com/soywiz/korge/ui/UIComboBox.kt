@@ -5,17 +5,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T> Container.uiComboBox(
-	width: Number,
-	height: Number,
-	selectedIndex: Int = 0,
-	items: List<T>,
-	verticalScroll: Boolean = true,
-	skin: ComboBoxSkin = defaultComboBoxSkin,
-	block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
-) = uiComboBox(width.toDouble(), height.toDouble(), selectedIndex, items, verticalScroll, skin, block)
-
 inline fun <T> Container.uiComboBox(
     width: Double = 192.0,
     height: Double = 32.0,

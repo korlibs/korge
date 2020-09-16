@@ -6,13 +6,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korui.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiProgressBar(
-	width: Number, height: Number, current: Number, maximum: Number,
-	skin: UISkin = defaultUISkin,
-	block: @ViewDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = uiProgressBar(width.toDouble(), height.toDouble(), current.toDouble(), maximum.toDouble(), skin, block)
-
 inline fun Container.uiProgressBar(
     width: Double = 256.0,
     height: Double = 24.0,

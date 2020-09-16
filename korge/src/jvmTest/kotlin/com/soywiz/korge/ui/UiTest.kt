@@ -15,7 +15,7 @@ fun main(): Unit = runBlocking { korge() }
 
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 
-    uiText("Some text", 130, 20) {
+    uiText("Some text", 130.0, 20.0) {
         position(128, 265)
     }
 

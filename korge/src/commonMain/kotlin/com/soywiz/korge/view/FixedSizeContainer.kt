@@ -19,15 +19,6 @@ inline fun Container.fixedSizeContainer(
     callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
 ) = FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.fixedSizeContainer(
-    width: Number,
-    height: Number,
-    clip: Boolean = false,
-    callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
-) = fixedSizeContainer(width.toDouble(), height.toDouble(), clip, callback)
-
-
 open class FixedSizeContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,

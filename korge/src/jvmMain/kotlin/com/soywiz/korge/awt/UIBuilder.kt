@@ -169,8 +169,6 @@ sealed class MUnit {
 }
 
 val Number.pt get() = MUnit.Points(this.toInt())
-@Deprecated("", ReplaceWith("this.pt"))
-val Number.points get() = this.pt
 val Number.ratio get() = MUnit.Ratio(this.toDouble())
 val Number.percentage get() = (this.toDouble() / 100.0).ratio
 

@@ -3,14 +3,6 @@ package com.soywiz.korge.ui
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiButton(
-	width: Number,
-	height: Number,
-	skin: UISkin = defaultUISkin,
-	block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = uiButton(width.toDouble(), height.toDouble(), skin, block)
-
 inline fun Container.uiButton(
     width: Double = 128.0,
     height: Double = 64.0,

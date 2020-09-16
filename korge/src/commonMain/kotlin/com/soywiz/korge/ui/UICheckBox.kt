@@ -10,18 +10,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiCheckBox(
-    width: Number,
-    height: Number,
-    checked: Boolean = false,
-    text: String = "CheckBox",
-    textFont: Html.FontFace = defaultUIFont,
-    skin: UISkin = defaultUISkin,
-    checkIcon: IconSkin = defaultCheckSkin,
-    block: @ViewDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = uiCheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon, block)
-
 inline fun Container.uiCheckBox(
     width: Double = 120.0,
     height: Double = 32.0,

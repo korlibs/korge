@@ -8,15 +8,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiScrollBar(
-    width: Number, height: Number, current: Number, pageSize: Number, totalSize: Number, buttonSize: Number, stepSize: Number,
-    direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
-    skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
-    block: @ViewDslMarker UIScrollBar.() -> Unit = {}
-): UIScrollBar = uiScrollBar(width.toDouble(), height.toDouble(), current.toDouble(), pageSize.toDouble(), totalSize.toDouble(), buttonSize.toDouble(),
-    stepSize.toDouble(), direction, skin, block)
-
 inline fun Container.uiScrollBar(
     width: Double,
     height: Double,
@@ -84,7 +75,7 @@ open class UIScrollBar(
     protected val background = solidRect(100, 100, skin.backColor)
     protected val upButton = iconButton(16, 16, skin.upSkin, skin.upIcon)
     protected val downButton = iconButton(16, 16, skin.downSkin, skin.downIcon)
-    protected val thumb = uiButton(16, 16, skin.thumbSkin)
+    protected val thumb = uiButton(16.0, 16.0, skin.thumbSkin)
 
     protected val views get() = stage?.views
 
