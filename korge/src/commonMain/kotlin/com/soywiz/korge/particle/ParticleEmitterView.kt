@@ -57,7 +57,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
     }
 
 	suspend fun waitComplete() {
-		while (anyAlive) waitFrame()
+		while (anyAlive) delayFrame()
 	}
 
     private var cachedBlending = AG.Blending.NORMAL

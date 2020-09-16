@@ -114,36 +114,6 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     /** Traces the lazily executed [msg] if the [Logger.level] is at least [Level.TRACE] */
     inline fun trace(msg: () -> Any?) = log(Level.TRACE, msg)
 
-    @Deprecated(
-        "Potential performance problem. Use inline to lazily compute the message.",
-        ReplaceWith("fatal { msg }")
-    )
-    fun fatal(msg: String) = fatal { msg }
-
-    @Deprecated(
-        "potential performance problem. Use inline to lazily compute the message.",
-        ReplaceWith("error { msg }")
-    )
-    fun error(msg: String) = error { msg }
-
-    @Deprecated("potential performance problem. Use inline to lazily compute the message.", ReplaceWith("warn { msg }"))
-    fun warn(msg: String) = warn { msg }
-
-    @Deprecated("potential performance problem. Use inline to lazily compute the message.", ReplaceWith("info { msg }"))
-    fun info(msg: String) = info { msg }
-
-    @Deprecated(
-        "potential performance problem. Use inline to lazily compute the message.",
-        ReplaceWith("debug { msg }")
-    )
-    fun debug(msg: String) = debug { msg }
-
-    @Deprecated(
-        "potential performance problem. Use inline to lazily compute the message.",
-        ReplaceWith("trace { msg }")
-    )
-    fun trace(msg: String) = trace { msg }
-
     @PublishedApi
     internal fun actualLog(level: Level, msg: Any?) = run { output.output(this, level, msg) }
 }

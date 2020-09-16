@@ -2,15 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.iconButton(
-    width: Number,
-    height: Number,
-    skin: UISkin = defaultUISkin,
-    iconSkin: IconSkin = defaultCheckSkin,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): IconButton = iconButton(width.toDouble(), height.toDouble(), skin, iconSkin, block)
-
 inline fun Container.iconButton(
     width: Double = 128.0,
     height: Double = 64.0,

@@ -71,27 +71,6 @@ class TimerComponents(override val view: View) : UpdateComponentV2 {
 
 val View.timers get() = this.getOrCreateComponentUpdate<TimerComponents> { TimerComponents(this) }
 
-@Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.waitMs(time: Int) = this.delay(time.milliseconds)
-
-@Deprecated("", ReplaceWith("this.delay(time)"))
-suspend fun View.wait(time: TimeSpan) = this.delay(time)
-
-@Deprecated("", ReplaceWith("this.delayFrame()"))
-suspend fun View.waitFrame() = this.delayFrame()
-
-@Deprecated("", ReplaceWith("this.delay(time.milliseconds)", "com.soywiz.klock.milliseconds"))
-suspend fun View.sleepMs(time: Int) = this.delay(time.milliseconds)
-
-@Deprecated("", ReplaceWith("this.delay(time)"))
-suspend fun View.sleep(time: TimeSpan) = this.delay(time)
-
-@Deprecated("", ReplaceWith("this.delayFrame()"))
-suspend fun View.sleepFrame() = this.delayFrame()
-
-@Deprecated("", ReplaceWith("this.timeout(time, callback)"))
-fun View.timer(time: TimeSpan, callback: () -> Unit): Closeable = this.timeout(time, callback)
-
 fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeoutMs(time.milliseconds, callback)
 fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.intervalMs(time.milliseconds, callback)
 suspend fun View.delay(time: TimeSpan) = this.timers.wait(time)
