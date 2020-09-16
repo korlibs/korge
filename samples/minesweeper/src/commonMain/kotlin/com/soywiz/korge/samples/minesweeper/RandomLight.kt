@@ -2,6 +2,7 @@ package com.soywiz.korge.samples.minesweeper
 
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.random.*
 import kotlin.math.*
 import kotlin.random.*
@@ -36,10 +37,10 @@ class RandomLight(
 		alpha = 0.1
 
 		while (true) {
-			rotationDegrees += inca
-			x = w2 - cos(rotationDegrees) * w2 * excx + sx
-			y = h2 - sin(rotationDegrees) * h2 * excy + sy
-			scale = 1 + (cos(rotationDegrees) / 6) * incs
+			rotation += inca.degrees
+			x = w2 - cos(rotation) * w2 * excx + sx
+			y = h2 - sin(rotation) * h2 * excy + sy
+			scale = 1 + (cos(rotation) / 6) * incs
 
 			// Check if a light sphere collided with another one
 			// The default collision system is inner circle

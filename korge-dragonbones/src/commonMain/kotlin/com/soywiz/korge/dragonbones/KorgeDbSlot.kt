@@ -383,7 +383,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 		}
 
         if (rd != null) {
-            rd.rotationRadians = transform.rotation.toDouble()
+            rd.rotation = transform.rotation.radians
             rd.skew(-transform.skew.toDouble().radians, 0.0.radians)
         }
 	}

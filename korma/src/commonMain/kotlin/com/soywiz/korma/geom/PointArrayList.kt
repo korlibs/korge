@@ -55,6 +55,8 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
         xList += x
         yList += y
     }
+    fun add(x: Float, y: Float) = add(x.toDouble(), y.toDouble())
+    fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)

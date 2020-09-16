@@ -288,13 +288,12 @@ abstract class View internal constructor(
             }
         }
 
-    /** Local rotation in radians of this view */
-    @Deprecated("Use rotation instead")
-    var rotationRadians: Double
-        get() = rotation.radians
-        set(v) {
-            rotation = v.radians
-        }
+    ///** Local rotation in radians of this view */
+    //var rotationRadians: Double
+    //    get() = rotation.radians
+    //    set(v) {
+    //        rotation = v.radians
+    //    }
 
     /** Local rotation in degrees of this view */
     @Deprecated("Use rotation instead")
@@ -1006,7 +1005,7 @@ abstract class View internal constructor(
         if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
         if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
         if (skewXRadians != 0.0 || skewYRadians != 0.0) out += ":skew=(${skewXRadians.str},${skewYRadians.str})"
-        if (rotationRadians != 0.0) out += ":rotation=(${rotationDegrees.str}º)"
+        if (rotation != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
@@ -1984,7 +1983,7 @@ fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
 
 /** Chainable method returning this that sets [View.rotation] */
 fun <T : View> T.rotation(rot: Angle): T {
-    this.rotationRadians = rot.radians
+    this.rotation = rot
     return this
 }
 

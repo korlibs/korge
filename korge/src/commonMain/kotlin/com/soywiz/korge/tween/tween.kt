@@ -142,21 +142,22 @@ suspend fun View.hide(time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EA
 	tween(this::alpha[0.0], time = time, easing = easing)
 
 suspend inline fun View.moveTo(x: Double, y: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[x], this::y[y], time = time, easing = easing)
+suspend inline fun View.moveTo(x: Float, y: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[x], this::y[y], time = time, easing = easing)
+suspend inline fun View.moveTo(x: Int, y: Int, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[x], this::y[y], time = time, easing = easing)
+
 suspend inline fun View.moveBy(dx: Double, dy: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
+suspend inline fun View.moveBy(dx: Float, dy: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
+suspend inline fun View.moveBy(dx: Int, dy: Int, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], time = time, easing = easing)
+
 suspend inline fun View.scaleTo(sx: Double, sy: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
+suspend inline fun View.scaleTo(sx: Float, sy: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
+suspend inline fun View.scaleTo(sx: Int, sy: Int, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.moveTo(x: Number, y: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = moveTo(x.toDouble(), y.toDouble(), time, easing)
-@Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.moveBy(dx: Number, dy: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = moveBy(dx.toDouble(), dy.toDouble(), time, easing)
-@Deprecated("Kotlin/Native boxes inline+Number")
-suspend inline fun View.scaleTo(sx: Number, sy: Number, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = scaleTo(sx.toDouble(), sy.toDouble(), time, easing)
+suspend inline fun View.rotateTo(angle: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
+	tween(this::rotation[angle], time = time, easing = easing)
 
-suspend inline fun View.rotateTo(deg: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
-	tween(this::rotationRadians[deg.radians], time = time, easing = easing)
-
-suspend inline fun View.rotateBy(ddeg: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
-	tween(this::rotationRadians[this.rotationRadians + ddeg.radians], time = time, easing = easing)
+suspend inline fun View.rotateBy(deltaAngle: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
+	tween(this::rotation[rotation + deltaAngle], time = time, easing = easing)
 
 @Suppress("UNCHECKED_CAST")
 data class V2<V>(

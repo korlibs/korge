@@ -142,7 +142,7 @@ open class Text2(
                     it.y = bitmapFontActions.arrayY[n]
                     it.scaleX = bitmapFontActions.arraySX[n]
                     it.scaleY = bitmapFontActions.arraySY[n]
-                    it.rotationRadians = bitmapFontActions.arrayRot[n]
+                    it.rotation = bitmapFontActions.arrayRot[n].radians
                 }
             }
         } else {

@@ -412,7 +412,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                                 val deltaAngle = currentAngle - initialAngle
                                 view.rotation = (selectedViewInitialRotation + deltaAngle)
                                 if (e.isShiftDown) {
-                                    view.rotationDegrees = view.rotationDegrees.nearestAlignedTo(15.0)
+                                    view.rotation = view.rotation.degrees.nearestAlignedTo(15.0).degrees
                                 }
                             }
                             null -> {

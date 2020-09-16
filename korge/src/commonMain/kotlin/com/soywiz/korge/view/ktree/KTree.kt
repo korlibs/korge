@@ -14,6 +14,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 import kotlin.reflect.*
 
@@ -310,7 +311,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         if (view.ratio != 0.0) add(view::ratio)
         if (view.x != 0.0) add(view::x)
         if (view.y != 0.0) add(view::y)
-        if (view.rotationDegrees != 0.0) add(view::rotationDegrees)
+        if (view.rotation != 0.radians) add(view::rotationDegrees)
         if (view.scaleX != 1.0) add(view::scaleX)
         if (view.scaleY != 1.0) add(view::scaleY)
         if (view.skewXDegrees != 0.0) add(view::skewXDegrees)
