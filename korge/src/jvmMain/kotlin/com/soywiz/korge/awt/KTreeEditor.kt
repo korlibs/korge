@@ -6,7 +6,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.camera2.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
@@ -168,7 +167,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         var movingCameraMouse = false
 
         stage.keys {
-            downNew { e ->
+            down { e ->
                 when (e.key) {
                     Key.UP -> actions.moveView(0, -1, e.shift)
                     Key.DOWN -> actions.moveView(0, +1, e.shift)
@@ -176,7 +175,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
                     Key.RIGHT -> actions.moveView(+1, 0, e.shift)
                 }
             }
-            upNew { e ->
+            up { e ->
             }
             /*
             upNew { e ->
