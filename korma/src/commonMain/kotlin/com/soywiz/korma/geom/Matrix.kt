@@ -55,7 +55,6 @@ data class Matrix(
         this.tx = tx
         this.ty = ty
     }
-
     fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
     fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
@@ -97,11 +96,24 @@ data class Matrix(
             tx * sinY + ty * cosX
         )
     }
+    fun skew(skewX: Float, skewY: Float): Matrix = skew(skewX.toDouble(), skewY.toDouble())
+    fun skew(skewX: Int, skewY: Int): Matrix = skew(skewX.toDouble(), skewY.toDouble())
 
     fun scale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx * sx, ty * sy)
+    fun scale(sx: Float, sy: Float = sx) = scale(sx.toDouble(), sy.toDouble())
+    fun scale(sx: Int, sy: Int = sx) = scale(sx.toDouble(), sy.toDouble())
+
     fun prescale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx, ty)
+    fun prescale(sx: Float, sy: Float = sx) = prescale(sx.toDouble(), sy.toDouble())
+    fun prescale(sx: Int, sy: Int = sx) = prescale(sx.toDouble(), sy.toDouble())
+
     fun translate(dx: Double, dy: Double) = this.apply { this.tx += dx; this.ty += dy }
+    fun translate(dx: Float, dy: Float) = translate(dx.toDouble(), dy.toDouble())
+    fun translate(dx: Int, dy: Int) = translate(dx.toDouble(), dy.toDouble())
+
     fun pretranslate(dx: Double, dy: Double) = this.apply { tx += a * dx + c * dy; ty += b * dx + d * dy }
+    fun pretranslate(dx: Float, dy: Float) = pretranslate(dx.toDouble(), dy.toDouble())
+    fun pretranslate(dx: Int, dy: Int) = pretranslate(dx.toDouble(), dy.toDouble())
 
     fun prerotate(angle: Angle) = this.apply {
         val m = Matrix()
@@ -114,6 +126,8 @@ data class Matrix(
         m.skew(skewX, skewY)
         this.premultiply(m)
     }
+    fun preskew(skewX: Float, skewY: Float) = preskew(skewX.toDouble(), skewY.toDouble())
+    fun preskew(skewX: Int, skewY: Int) = preskew(skewX.toDouble(), skewY.toDouble())
 
     fun premultiply(m: Matrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
     fun postmultiply(m: Matrix) = multiply(this, m)
@@ -126,6 +140,8 @@ data class Matrix(
         ltx * a + lty * c + tx,
         ltx * b + lty * d + ty
     )
+    fun premultiply(la: Float, lb: Float, lc: Float, ld: Float, ltx: Float, lty: Float): Matrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
+    fun premultiply(la: Int, lb: Int, lc: Int, ld: Int, ltx: Int, lty: Int): Matrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
 
     fun multiply(l: Matrix, r: Matrix): Matrix = setTo(
         l.a * r.a + l.b * r.c,
@@ -190,35 +206,9 @@ data class Matrix(
         }
         return this
     }
+    fun setTransform(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Float, skewY: Float): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX.toDouble(), skewY.toDouble())
 
     fun clone() = Matrix(a, b, c, d, tx, ty)
-
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setTo(a: Number, b: Number, c: Number, d: Number, tx: Number, ty: Number): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun scale(sx: Number, sy: Number = sx) = scale(sx.toDouble(), sy.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun prescale(sx: Number, sy: Number = sx) = prescale(sx.toDouble(), sy.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun translate(dx: Number, dy: Number) = translate(dx.toDouble(), dy.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun pretranslate(dx: Number, dy: Number) = pretranslate(dx.toDouble(), dy.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun skew(skewX: Number, skewY: Number): Matrix = skew(skewX.toDouble(), skewY.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun preskew(skewX: Number, skewY: Number) = preskew(skewX.toDouble(), skewY.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun premultiply(la: Number, lb: Number, lc: Number, ld: Number, ltx: Number, lty: Number): Matrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun rotateRadians(angle: Number) = rotate(angle.toDouble().radians)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun rotateDegrees(angle: Number) = rotate(angle.toDouble().degrees)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun prerotateRadians(angle: Number) = prerotate(angle.toDouble().radians)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun prerotateDegrees(angle: Number) = prerotate(angle.toDouble().degrees)
-    @Deprecated("Kotlin/Native boxes inline + Number")
-    inline fun setTransform(x: Number, y: Number, scaleX: Number, scaleY: Number, rotation: Angle, skewX: Number, skewY: Number): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX.toDouble(), skewY.toDouble())
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
 
@@ -255,12 +245,6 @@ data class Matrix(
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
         val scaleAvg get() = (scaleX + scaleY) * 0.5
-
-        companion object {
-            @Deprecated("Kotlin/Native boxes inline + Number")
-            inline operator fun invoke(x: Number = 0.0, y: Number = 0.0, scaleX: Number = 1.0, scaleY: Number = 1.0, skewX: Number = 0.0, skewY: Number = 0.0, rotation: Angle = 0.radians) =
-                Transform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), skewX.toDouble(), skewY.toDouble(), rotation)
-        }
 
         override fun interpolateWith(ratio: Double, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
 
@@ -325,9 +309,7 @@ data class Matrix(
             this.skewY = skewY
             return this
         }
-
-        @Deprecated("Kotlin/Native boxes inline + Number")
-        inline fun setTo(x: Number, y: Number, scaleX: Number, scaleY: Number, rotation: Angle, skewX: Number, skewY: Number): Transform =
+        fun setTo(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Float, skewY: Float): Transform =
             setTo(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX.toDouble(), skewY.toDouble())
 
         fun clone() = Transform().copyFrom(this)
@@ -359,7 +341,7 @@ data class Matrix(
         val tx = this.tx
         val ty = this.ty
         try {
-            return callback()
+            return this.callback()
         } finally {
             this.a = a
             this.b = b
