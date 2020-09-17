@@ -102,9 +102,6 @@ open class Graphics @JvmOverloads constructor(
         hitTestUsingShapes = true
     }
 
-	@Deprecated("This doesn't do anything")
-	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
-
 	override val lastX: Double get() = currentPath.lastX
 	override val lastY: Double get() = currentPath.lastY
 	override val totalPoints: Int get() = currentPath.totalPoints

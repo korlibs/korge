@@ -34,6 +34,7 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
@@ -115,13 +116,13 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 					val endX = startX + bone.globalTransformMatrix.a * boneLength
 					val endY = startY + bone.globalTransformMatrix.b * boneLength
 
-					boneDrawer.lineStyle(2.0, Colors.PURPLE, 0.7)
-					boneDrawer.moveTo(startX.toDouble(), startY.toDouble())
-					boneDrawer.lineTo(endX, endY)
-					boneDrawer.lineStyle(0.0, Colors.BLACK, 0.0)
-					boneDrawer.beginFill(Colors.PURPLE, 0.7)
-					boneDrawer.circle(startX.toDouble(), startY.toDouble(), 3.0)
-					boneDrawer.endFill()
+                    boneDrawer.stroke(Colors.PURPLE.withAd(0.7), Context2d.StrokeInfo(thickness = 2.0)) {
+                        boneDrawer.moveTo(startX.toDouble(), startY.toDouble())
+                        boneDrawer.lineTo(endX, endY)
+                    }
+                    boneDrawer.fill(Colors.PURPLE, 0.7) {
+                        boneDrawer.circle(startX.toDouble(), startY.toDouble(), 3.0)
+                    }
 				}
 
 				val slots = armature.getSlots()

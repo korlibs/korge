@@ -29,9 +29,6 @@ import com.soywiz.korui.*
 import kotlin.collections.set
 import kotlin.reflect.*
 
-@Deprecated("", replaceWith = ReplaceWith("View"))
-typealias DisplayObject = View
-
 /**
  * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.
  *

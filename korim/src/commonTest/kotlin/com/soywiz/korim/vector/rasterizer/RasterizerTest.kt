@@ -59,7 +59,7 @@ class RasterizerTest {
         val shipSize = 24
         Bitmap32(shipSize, shipSize).context2d {
             stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
-                moveTo(shipSize * 0.5, 0)
+                moveTo(shipSize * 0.5, 0.0)
                 lineTo(shipSize, shipSize)
                 lineTo(shipSize * 0.5, shipSize * 0.8)
                 lineTo(0, shipSize)
@@ -177,7 +177,7 @@ class RasterizerTest {
                         strokeStyle = ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
                         beginPath();
                         //arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.0, PI * 2, true)
-                        arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.0, PI * 2)
+                        arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.degrees, 360.degrees)
                         stroke();
                     }
                 }

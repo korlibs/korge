@@ -51,7 +51,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 	}
 
 	private var _textureScale: Double = 1.0
-	private var _renderDisplay: DisplayObject? = null
+	private var _renderDisplay: View? = null
 
 	override fun _onClear() {
 		super._onClear()
@@ -70,7 +70,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 	}
 
 	override fun _onUpdateDisplay() {
-		this._renderDisplay = (if (this._display != null) this._display else this._rawDisplay) as DisplayObject
+		this._renderDisplay = (if (this._display != null) this._display else this._rawDisplay) as View
 	}
 
 	override fun _addDisplay() {
@@ -80,7 +80,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 
 	override fun _replaceDisplay(value: Any) {
 		val container = this._armature?.display as KorgeDbArmatureDisplay
-		val prevDisplay = value as DisplayObject
+		val prevDisplay = value as View
 		container.addChild(this._renderDisplay!!)
 		container.swapChildren(this._renderDisplay!!, prevDisplay)
 		container.removeChild(prevDisplay)
