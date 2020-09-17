@@ -15,7 +15,7 @@ interface Component {
     val view: View
 }
 
-@Deprecated("Unoptimized")
+//Deprecated("Unoptimized")
 fun <T : Component> T.attach(): T {
     this.view.addComponent(this); return this
 }
@@ -52,10 +52,8 @@ fun ResizeComponent.attach(): ResizeComponent {
     this.view.addComponent(this); return this
 }
 
-@Deprecated("Unoptimized")
-fun <T : Component> T.detach(): T {
-    this.view.removeComponent(this); return this
-}
+//Deprecated("Unoptimized")
+fun <T : Component> T.detach(): T { this.view.removeComponent(this); return this }
 
 fun MouseComponent.detach(): MouseComponent {
     this.view.removeComponent(this); return this

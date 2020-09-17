@@ -226,6 +226,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             prop.set(xml.double(prop.name, defaultValue))
         }
 
+        fun angleDegrees(prop: KMutableProperty0<Angle>, defaultValue: Angle) {
+            prop.set(xml.double(prop.name, defaultValue.degrees).degrees)
+        }
+
         fun color(prop: KMutableProperty0<RGBA>, defaultValue: RGBA) {
             prop.set(Colors[(xml.strNull(prop.name) ?: defaultValue.hexString)])
         }
@@ -244,7 +248,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         double(view::ratio, 0.0)
         double(view::x, 0.0)
         double(view::y, 0.0)
-        double(view::rotationDegrees, 0.0)
+        angleDegrees(view::rotation, 0.degrees)
         double(view::scaleX, 1.0)
         double(view::scaleY, 1.0)
         double(view::skewXDegrees, 0.0)
@@ -300,6 +304,9 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         fun add(prop: KProperty0<*>) {
             properties[prop.name] = prop.get()
         }
+        fun add(prop: KProperty0<Angle>) {
+            properties[prop.name] = prop.get().degrees
+        }
 
         if (view.name !== null) add(view::name)
         if (view.colorMul != Colors.WHITE) {
@@ -311,7 +318,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         if (view.ratio != 0.0) add(view::ratio)
         if (view.x != 0.0) add(view::x)
         if (view.y != 0.0) add(view::y)
-        if (view.rotation != 0.radians) add(view::rotationDegrees)
+        if (view.rotation != 0.radians) add(view::rotation)
         if (view.scaleX != 1.0) add(view::scaleX)
         if (view.scaleY != 1.0) add(view::scaleY)
         if (view.skewXDegrees != 0.0) add(view::skewXDegrees)

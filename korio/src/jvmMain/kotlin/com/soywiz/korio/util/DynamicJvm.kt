@@ -216,7 +216,7 @@ object DynamicJvm {
 	inline fun <reified T : Any> dynamicCast(value: Any?): T? = dynamicCast(value, T::class.java)
 
 	@Suppress("UNCHECKED_CAST")
-	@Deprecated("Use ObjectMapper")
+	//Deprecated("Use ObjectMapper")
 	fun <T : Any> dynamicCast(value: Any?, target: Class<T>, genericType: Type? = null): T? {
 		//if (value != null && target.isAssignableFrom(value.javaClass)) {
 		//	return if (genericType != null && genericType is ParameterizedType) {

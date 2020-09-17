@@ -113,12 +113,6 @@ abstract class View internal constructor(
      */
     interface Reference // View that breaks batching Viewport
 
-    @KorgeInternal
-    @Deprecated("Not used by now")
-    enum class HitTestType {
-        BOUNDING, SHAPE
-    }
-
     open var hitShape: VectorPath? = null
     open var hitShapes: List<VectorPath>? = null
 
@@ -283,21 +277,6 @@ abstract class View internal constructor(
             ensureTransform(); if (_rotation != v) {
                 _rotation = v; invalidateMatrix()
             }
-        }
-
-    ///** Local rotation in radians of this view */
-    //var rotationRadians: Double
-    //    get() = rotation.radians
-    //    set(v) {
-    //        rotation = v.radians
-    //    }
-
-    /** Local rotation in degrees of this view */
-    @Deprecated("Use rotation instead")
-    var rotationDegrees: Double
-        get() = rotation.degrees
-        set(v) {
-            rotation = v.degrees
         }
 
     /** The global x position of this view */
@@ -558,37 +537,17 @@ abstract class View internal constructor(
         }
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-    @Deprecated("")
-    inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : Component> getOrCreateComponentOther(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
-    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (View) -> T): T =
-        componentsSure.getOrCreateComponent(this, T::class, gen)
-
+    //Deprecated("")
+    //inline fun <reified T : Component> getOrCreateComponent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : Component> getOrCreateComponentOther(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
+    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (View) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
     inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = componentsSure.getComponentUpdate<T>()
 
     /** Removes a specific [c] component from the view */
@@ -629,11 +588,9 @@ abstract class View internal constructor(
     }
 
     //fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
-    /** Removes a set of components of the type [c] from the view */
-    @Deprecated("")
-    fun removeComponents(c: KClass<out Component>) {
-        _components?.removeAll(c)
-    }
+    ///** Removes a set of components of the type [c] from the view */
+    //@eprecated("")
+    //fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
 
     /** Removes all the components attached to this view */
     fun removeAllComponents(): Unit {
@@ -650,17 +607,6 @@ abstract class View internal constructor(
     fun addComponent(c: UpdateComponentWithViews) = componentsSure.add(c)
     fun addComponent(c: UpdateComponent) = componentsSure.add(c)
     fun addComponent(c: ResizeComponent) = componentsSure.add(c)
-
-    /** Adds a block that will be executed per frame to this view. This is deprecated, and you should use [addUpdater] instead that uses [TimeSpan] to provide the elapsed time */
-    @Deprecated("Use addUpdater, since this method uses dtMs: Int instead of a TimeSpan due to bugs in initial Kotlin inline classes")
-    fun addUpdatable(updatable: (dtMs: Int) -> Unit): Cancellable {
-        val component = object : UpdateComponent {
-            override val view: View get() = this@View
-            override fun update(dt: HRTimeSpan) = updatable(dt.millisecondsInt)
-        }.attach()
-        component.update(0.hrMicroseconds)
-        return Cancellable { component.detach() }
-    }
 
     /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
     fun deferWithViews(block: (views: Views) -> Unit) {
@@ -1408,7 +1354,7 @@ abstract class View internal constructor(
             uiEditableValue(Pair(view::scaledWidth, view::scaledHeight), min = -1000.0, max = 1000.0, clamp = false, name = "size")
             uiEditableValue(view::scale, min = 0.0, max = 1.0, clamp = false)
             uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
-            uiEditableValue(view::rotationDegrees, min = -360.0, max = +360.0, clamp = true, name = "rotation")
+            uiEditableValue(view::rotation, name = "rotation")
             uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
             uiEditableValue(view::visible)
         }

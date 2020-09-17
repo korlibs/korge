@@ -39,7 +39,7 @@ object Demo1 {
 			val cube8 = cube().position(0, 0, +5)
 
 			var tick = 0
-			addUpdatable {
+			addUpdater {
 				val angle = (tick / 4.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 2) * 4, cos(angle * 3) * 4, -sin(angle) * 4, // Orbiting camera
@@ -98,7 +98,7 @@ object Demo2 {
             */
 
 			var tick = 0
-			addUpdatable {
+            addUpdater {
 				val angle = (tick / 1.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 1) * 4, 0.0, -sin(angle * 1) * 4, // Orbiting camera
@@ -177,7 +177,7 @@ object Demo3 {
 
 
 			val animator = Animator3D(library.animationDefs.values, mainSceneView)
-			addUpdatable {
+            addUpdater {
 				animator.update(it)
 			}
 

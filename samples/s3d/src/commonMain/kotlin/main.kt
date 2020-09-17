@@ -77,7 +77,7 @@ class CratesScene : Scene() {
 			val cube8 = cube().position(0, 0, +5).material(crateMaterial)
 
 			var tick = 0
-			addUpdatable {
+			addUpdater {
 				val angle = (tick / 4.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 2) * 4, cos(angle * 3) * 4, -sin(angle) * 4, // Orbiting camera
@@ -121,7 +121,7 @@ class MonkeyScene : Scene() {
 			val view = mesh(model.mesh).rotation(-90.degrees, 0.degrees, 0.degrees)
 
 			var tick = 0
-			addUpdatable {
+            addUpdater {
 				val angle = (tick / 1.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 1) * 4, 0.0, -sin(angle * 1) * 4, // Orbiting camera
@@ -148,7 +148,7 @@ class SkinningScene : Scene() {
 			val cameras = mainSceneView.findByType<Camera3D>()
 
 			val animator = Animator3D(library.animationDefs.values, mainSceneView)
-			addUpdatable { animator.update(it) }
+            addUpdater { animator.update(it) }
 			val model = mainSceneView.findByType<ViewWithMesh3D>().first()
 				//.rotation(-90.degrees, 90.degrees, 0.degrees)
 
@@ -158,7 +158,7 @@ class SkinningScene : Scene() {
 			camera = camera1.clone()
 
 			this += mainSceneView
-			addUpdatable {
+            addUpdater {
 				//val mainSceneView = mainSceneView
 				//println(mainSceneView)
 

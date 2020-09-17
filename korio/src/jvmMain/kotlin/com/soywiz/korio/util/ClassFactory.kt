@@ -23,9 +23,7 @@ class ClassFactory<T> private constructor(iclazz: Class<out T>, internal: kotlin
 	companion object {
 		val cache = LinkedHashMap<Class<*>, ClassFactory<*>>()
 		@Suppress("UNCHECKED_CAST")
-		operator fun <T> get(clazz: Class<out T>): ClassFactory<T> =
-			cache.getOrPut(clazz) { ClassFactory(clazz, true) } as ClassFactory<T>
-
+		operator fun <T> get(clazz: Class<out T>): ClassFactory<T> = cache.getOrPut(clazz) { ClassFactory(clazz, true) } as ClassFactory<T>
 		fun <T : Any> getForInstance(obj: T): ClassFactory<T> = get(obj.javaClass)
 
 		operator fun <T> invoke(clazz: Class<out T>): ClassFactory<T> = ClassFactory[clazz]

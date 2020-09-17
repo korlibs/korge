@@ -3,6 +3,7 @@ package com.soywiz.korge3d.animation
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge3d.*
 import com.soywiz.korma.geom.*
@@ -11,9 +12,9 @@ import com.soywiz.korma.interpolation.*
 @Korge3DExperimental
 class Animator3D(val animations: List<Animation3D>, val rootView: View3D) {
 	var currentTime = 0.milliseconds
-	fun update(ms: Int) {
+	fun update(dt: TimeSpan) {
 		//currentTime += ms.ms * 0.1
-		currentTime += ms.milliseconds
+		currentTime += dt
 		animations.fastForEach { animation ->
 			val keyFrames = animation.keyFrames
 			val fseconds = keyFrames.seconds

@@ -376,7 +376,7 @@ class AnSimpleAnimation(
 	}
 
 	init {
-		addUpdatable { dtMs ->
+		addUpdater { dtMs ->
 			elapsedTime = (elapsedTime + dtMs) % (numberOfFrames * frameTime)
 			myupdate()
 		}
@@ -423,7 +423,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		dummyDepths.fastForEach { d ->
 			this += d
 		}
-		addUpdatable { updateInternal(it) }
+        addUpdater { updateInternal(it) }
 	}
 
 	private fun replaceDepth(depth: Int, view: View): Boolean {

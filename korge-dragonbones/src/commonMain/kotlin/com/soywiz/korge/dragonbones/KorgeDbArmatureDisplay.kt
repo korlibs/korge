@@ -64,10 +64,10 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 
 	// Do not use the time from DragonBones, but the UpdateComponent
 	init {
-		addUpdatable {
+        addUpdater {
 			returnEvents()
 			//_armature?.advanceTimeForChildren(it.toDouble() / 1000.0)
-			_armature?.advanceTime(it.toDouble() / 1000.0)
+			_armature?.advanceTime(it.seconds)
 			dispatchQueuedEvents()
 		}
 	}

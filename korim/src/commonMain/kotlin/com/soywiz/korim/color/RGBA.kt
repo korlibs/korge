@@ -231,10 +231,6 @@ inline class RGBAPremultiplied(val value: Int) {
 
         operator fun invoke(rgba: RGBA): RGBAPremultiplied = rgba.premultiplied
 
-        @Deprecated("Use blendAlpha instead")
-        fun mix(c1: RGBAPremultiplied, c2: RGBAPremultiplied): RGBAPremultiplied =
-            RGBAPremultiplied(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b, c1.a + c2.a)
-
         fun blendAlpha(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied =
             RGBAPremultiplied(sumPacked4MulR(src.value, dst.value, 256 - src.a))
 
@@ -367,11 +363,5 @@ fun RGBA.mix(other: RGBA, ratio: Double) = RGBA.mixRgba(this, other, ratio)
 fun List<RGBA>.toRgbaArray(): RgbaArray = RgbaArray(IntArray(this.size) { this@toRgbaArray[it].value })
 
 fun arraycopy(src: RgbaArray, srcPos: Int, dst: RgbaArray, dstPos: Int, size: Int): Unit = arraycopy(src.ints, srcPos, dst.ints, dstPos, size)
-
-@Deprecated("", ReplaceWith("v.asPremultiplied().depremultiplied"))
-fun RGBA.Companion.depremultiplyFaster(v: RGBA): RGBA = v.asPremultiplied().depremultiplied
-
-@Deprecated("", ReplaceWith("v.asPremultiplied().depremultiplied"))
-fun RGBA.Companion.depremultiplyFastest(v: RGBA): RGBA = v.asPremultiplied().depremultiplied
 
 fun Array<RGBA>.toRgbaArray() = RgbaArray(this.size) { this@toRgbaArray[it] }
