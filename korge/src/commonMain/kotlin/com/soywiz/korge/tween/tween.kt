@@ -68,9 +68,6 @@ class TweenComponent(
 		}
 	}
 
-    @Deprecated("")
-    fun setToMs(elapsed: Int) = setTo(elapsed.hrMilliseconds)
-
 	fun setTo(elapsed: HRTimeSpan) {
         if (elapsed == 0.hrNanoseconds) {
             vs.fastForEach { v ->
