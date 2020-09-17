@@ -2,7 +2,6 @@ package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.korau.format.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
 import com.soywiz.korge.render.*
@@ -35,10 +34,10 @@ class AnSymbolButton(id: Int, name: String?) : AnSymbol(id, name) {
 class AnSymbolVideo(id: Int, name: String?) : AnSymbol(id, name) {
 }
 
-class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) :
+class AnSymbolSound(id: Int, name: String?, private var inputSound: Sound?, val dataBytes: ByteArray?) :
 	AnSymbol(id, name) {
-	private val nativeSoundCache = AsyncOnce<NativeSound>()
-	suspend fun getNativeSound(): NativeSound = nativeSoundCache {
+	private val nativeSoundCache = AsyncOnce<Sound>()
+	suspend fun getNativeSound(): Sound = nativeSoundCache {
 		if (inputSound == null) {
 			inputSound = try {
 				nativeSoundProvider.createSound(dataBytes ?: byteArrayOf())

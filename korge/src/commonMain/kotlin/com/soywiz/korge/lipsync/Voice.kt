@@ -1,14 +1,11 @@
 package com.soywiz.korge.lipsync
 
 import com.soywiz.klock.*
-import com.soywiz.korau.sound.NativeSound
-import com.soywiz.korau.sound.playAndWait
-import com.soywiz.korau.sound.readNativeSoundOptimized
+import com.soywiz.korau.sound.*
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.animate.play
 import com.soywiz.korge.component.EventComponent
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.file.VfsFile
@@ -29,7 +26,7 @@ class LipSync(val lipsync: String) {
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(Voice.Factory::class)
-class Voice(val voice: NativeSound, val lipsync: LipSync) {
+class Voice(val voice: Sound, val lipsync: LipSync) {
 	val totalTime: TimeSpan get() = lipsync.totalTime
 	operator fun get(time: TimeSpan): Char = lipsync[time]
 	fun getAF(time: TimeSpan): Char = lipsync.getAF(time)
@@ -78,7 +75,7 @@ fun View.lipsync() = this.getOrCreateComponentEvent<LipSyncComponent> { LipSyncC
 suspend fun VfsFile.readVoice(): Voice {
 	val lipsyncFile = this.withExtension("lipsync")
 	return Voice(
-		this.readNativeSoundOptimized(),
+		this.readSound(),
 		LipSync(if (lipsyncFile.exists()) lipsyncFile.readString().trim() else "")
 	)
 }

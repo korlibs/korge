@@ -6,7 +6,6 @@ import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
@@ -16,8 +15,8 @@ class Board(
 	parent: Container,
 	val imageSet: BmpSlice,
 	val imageSlices: List<BmpSlice>,
-	val click: NativeSound,
-	val boom: NativeSound,
+	val click: Sound,
+	val boom: Sound,
 	// Width, height and quantity of mines are established
 	// Board characteristics: width, height, number of mines
 	val bwidth: Int,

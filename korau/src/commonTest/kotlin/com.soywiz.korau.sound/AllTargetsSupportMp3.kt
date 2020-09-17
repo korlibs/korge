@@ -13,6 +13,6 @@ class AllTargetsSupportMp3 {
         if (OS.isJsNodeJs) return@suspendTest
         if (OS.isLinux) return@suspendTest // TRAVIS: com.[secure].korau.sound.AllTargetsSupportMp3 > testDecode FAILED  com.jogamp.openal.ALException: Error opening default OpenAL device
 
-        val data = resourcesVfs["mp31.mp3"].readNativeSound().decode()
+        val data = resourcesVfs["mp31.mp3"].readSound().decode()
     }
 }

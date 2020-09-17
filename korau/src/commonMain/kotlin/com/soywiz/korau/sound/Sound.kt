@@ -1,7 +1,6 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.*
-import com.soywiz.korau.error.*
 import com.soywiz.korau.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
@@ -30,12 +29,12 @@ open class NativeSoundProvider {
 
 	protected open fun init(): Unit = Unit
 
-	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): NativeSound =
+	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound =
         createStreamingSound(audioFormats.decodeStreamOrError(data.openAsync(), props), closeStream = true, name = name)
 
     open val audioFormats: AudioFormats = AudioFormats(WAV)
 
-    open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): NativeSound {
+    open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound {
         return if (streaming) {
             //val stream = vfs.file(path).open()
             //createStreamingSound(audioFormats.decodeStreamOrError(stream, props)) {
@@ -49,28 +48,28 @@ open class NativeSoundProvider {
         }
     }
 
-	suspend fun createSound(file: FinalVfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): NativeSound = createSound(file.vfs, file.path, streaming, props)
-	suspend fun createSound(file: VfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): NativeSound = createSound(file.getUnderlyingUnscapedFile(), streaming, props)
+	suspend fun createSound(file: FinalVfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = createSound(file.vfs, file.path, streaming, props)
+	suspend fun createSound(file: VfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = createSound(file.getUnderlyingUnscapedFile(), streaming, props)
 
 	open suspend fun createSound(
 		data: AudioData,
 		formats: AudioFormats = defaultAudioFormats,
 		streaming: Boolean = false,
         name: String = "Unknown"
-	): NativeSound {
+	): Sound {
 		return createSound(WAV.encodeToByteArray(data), streaming, name = name)
 	}
 
-    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): NativeSound {
+    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): Sound {
         //println("STREAM.RATE:" + stream.rate)
         //println("STREAM.CHANNELS:" + stream.channels)
         val coroutineContext = coroutineContext
-        return object : NativeSound() {
+        return object : Sound() {
             override val name: String = name
             val nativeSound = this
             override val length: TimeSpan get() = stream.totalLength
             override suspend fun decode(): AudioData = stream.toData()
-            override fun play(params: PlaybackParameters): NativeSoundChannel {
+            override fun play(params: PlaybackParameters): SoundChannel {
                 val nas: PlatformAudioOutput = createAudioStream(coroutineContext, stream.rate)
                 nas.copySoundPropsFrom(params)
                 var playing = true
@@ -114,7 +113,7 @@ open class NativeSoundProvider {
                 fun close() {
                     job.cancel()
                 }
-                return object : NativeSoundChannel(nativeSound) {
+                return object : SoundChannel(nativeSound) {
                     override var volume: Double by nas::volume.redirected()
                     override var pitch: Double by nas::pitch.redirected()
                     override var panning: Double by nas::panning.redirected()
@@ -134,7 +133,7 @@ open class NativeSoundProvider {
 
 class DummyNativeSoundProvider : NativeSoundProvider()
 
-class DummyNativeSoundChannel(sound: NativeSound, val data: AudioData? = null) : NativeSoundChannel(sound) {
+class DummySoundChannel(sound: Sound, val data: AudioData? = null) : SoundChannel(sound) {
 	private var timeStart = DateTime.now()
 	override var current: TimeSpan
         get() = DateTime.now() - timeStart
@@ -164,8 +163,8 @@ interface SoundProps : ReadonlySoundProps {
     }
 }
 
-class NativeSoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : NativeSoundChannelBase {
-    private val channels = arrayListOf<NativeSoundChannelBase>()
+class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase {
+    private val channels = arrayListOf<SoundChannelBase>()
 
     override val playing: Boolean get() = channels.any { it.playing }
 
@@ -181,10 +180,10 @@ class NativeSoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning
         this.panning = panning
     }
 
-    fun add(channel: NativeSoundChannelBase) = run { channels.add(channel) }.also { setProps(channel) }
-    fun remove(channel: NativeSoundChannelBase) = run { channels.remove(channel) }
+    fun add(channel: SoundChannelBase) = run { channels.add(channel) }.also { setProps(channel) }
+    fun remove(channel: SoundChannelBase) = run { channels.remove(channel) }
 
-    private fun setProps(channel: NativeSoundChannelBase) {
+    private fun setProps(channel: SoundChannelBase) {
         channel.volume = this.volume
         channel.pitch = this.pitch
         channel.panning = this.panning
@@ -193,14 +192,14 @@ class NativeSoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning
     @PublishedApi
     internal fun prune() = run {  channels.removeAll { !it.playing }  }
 
-    private inline fun all(callback: (NativeSoundChannelBase) -> Unit) = run { for (channel in channels) callback(channel) }.also { prune() }
+    private inline fun all(callback: (SoundChannelBase) -> Unit) = run { for (channel in channels) callback(channel) }.also { prune() }
 
     override fun reset(): Unit = all { it.reset() }
     override fun stop(): Unit = all { it.stop() }
 
 }
 
-interface NativeSoundChannelBase : SoundProps {
+interface SoundChannelBase : SoundProps {
     val playing: Boolean
     fun reset(): Unit
     fun stop(): Unit
@@ -210,9 +209,9 @@ interface NativeSoundChannelBase : SoundProps {
     }
 }
 
-fun <T : NativeSoundChannelBase> T.attachTo(group: NativeSoundChannelGroup): T = this.apply { group.add(this) }
+fun <T : SoundChannelBase> T.attachTo(group: SoundChannelGroup): T = this.apply { group.add(this) }
 
-abstract class NativeSoundChannel(val sound: NativeSound) : NativeSoundChannelBase {
+abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
 	private var startTime = DateTime.now()
 	override var volume = 1.0
 	override var pitch = 1.0
@@ -227,7 +226,7 @@ abstract class NativeSoundChannel(val sound: NativeSound) : NativeSoundChannelBa
 	abstract override fun stop(): Unit
 }
 
-suspend fun NativeSoundChannel.await(progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }) {
+suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }) {
 	try {
 		while (playing) {
 			progress(current, total)
@@ -239,16 +238,20 @@ suspend fun NativeSoundChannel.await(progress: NativeSoundChannel.(current: Time
 	}
 }
 
-abstract class NativeSound : SoundProps {
+abstract class Sound : SoundProps {
     open val name: String = "UnknownNativeSound"
     override var volume: Double = 1.0
     override var panning: Double = 0.0
     override var pitch: Double = 1.0
 	open val length: TimeSpan = 0.seconds
 	abstract suspend fun decode(): AudioData
-	open fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): NativeSoundChannel = TODO()
-    fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): NativeSoundChannel = play(PlaybackParameters(times, startTime))
-    fun playForever(startTime: TimeSpan = 0.seconds): NativeSoundChannel = play(infinitePlaybackTimes, startTime)
+	open fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
+    fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(PlaybackParameters(times, startTime))
+    fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = play(infinitePlaybackTimes, startTime)
+    suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
+    suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
+    suspend fun toData(): AudioData = decode()
+    suspend fun toStream(): AudioStream = decode().toStream()
     override fun toString(): String = "NativeSound('$name')"
 }
 
@@ -278,12 +281,6 @@ inline class PlaybackTimes(val count: Int) {
     val oneLess get() = if (this == INFINITE) INFINITE else PlaybackTimes(count - 1)
     override fun toString(): String = if (count >= 0) "$count times" else "Infinite times"
 }
-
-suspend fun NativeSound.toData(): AudioData = decode()
-suspend fun NativeSound.toStream(): AudioStream = decode().toStream()
-
-suspend fun NativeSound.playAndWait(params: PlaybackParameters, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
-suspend fun NativeSound.playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
 
 suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
 suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)

@@ -1,11 +1,8 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korau.error.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.internal.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
@@ -17,10 +14,10 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 
 	override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
 
-	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): NativeSound =
-        AudioBufferNativeSound(HtmlSimpleSound.loadSound(data), coroutineContext, name)
+	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
+        AudioBufferSound(HtmlSimpleSound.loadSound(data), coroutineContext, name)
 
-	override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): NativeSound = when (vfs) {
+	override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): Sound = when (vfs) {
 		is LocalVfs, is UrlVfs -> {
             //println("createSound[1]")
 			val rpath = when (vfs) {
@@ -28,7 +25,7 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 				is UrlVfs -> vfs.getFullUrl(path)
 				else -> invalidOp
 			}
-			AudioBufferNativeSound(HtmlSimpleSound.loadSound(rpath), coroutineContext)
+			AudioBufferSound(HtmlSimpleSound.loadSound(rpath), coroutineContext)
 		}
 		else -> {
             //println("createSound[2]")
@@ -37,11 +34,11 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 	}
 }
 
-class AudioBufferNativeSound(
+class AudioBufferSound(
     val buffer: AudioBuffer?,
     val coroutineContext: CoroutineContext,
     override val name: String = "unknown"
-) : NativeSound() {
+) : Sound() {
 	override val length: TimeSpan = ((buffer?.duration) ?: 0.0).seconds
 
 	override suspend fun decode(): AudioData = if (buffer == null) {
@@ -60,9 +57,9 @@ class AudioBufferNativeSound(
 		AudioData(buffer.sampleRate, data)
 	}
 
-	override fun play(params: PlaybackParameters): NativeSoundChannel {
+	override fun play(params: PlaybackParameters): SoundChannel {
         //println("AudioBufferNativeSound.play: $params")
-		return object : NativeSoundChannel(this) {
+		return object : SoundChannel(this) {
 			val channel = if (buffer != null) HtmlSimpleSound.playSound(buffer, params,coroutineContext) else null
 
 			override var volume: Double

@@ -17,7 +17,7 @@ object JnaSoundProviderSample {
     fun main(args: Array<String>) {
         runBlocking {
             //val data = resourcesVfs["monkey_drama.mp3"].readNativeMusic()
-            val group = NativeSoundChannelGroup(volume = 0.2)
+            val group = SoundChannelGroup(volume = 0.2)
             println(resourcesVfs["monkey_drama.mp3"].cachedToMemory().readSoundInfo(props = AudioDecodingProps(exactTimings = false))?.decodingTime)
             println(resourcesVfs["monkey_drama.mp3"].cachedToMemory().readSoundInfo(props = AudioDecodingProps(exactTimings = true))?.decodingTime)
             //val data = resourcesVfs["mp31_joint_stereo_vbr.mp3"].readNativeMusic()

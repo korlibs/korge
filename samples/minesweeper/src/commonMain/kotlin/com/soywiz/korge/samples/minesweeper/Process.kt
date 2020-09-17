@@ -93,7 +93,7 @@ class MouseV(val views: Views) {
 }
 
 class AudioV(val views: Views) {
-	fun play(sound: NativeSound, repeat: Int = 0) {
+	fun play(sound: Sound, repeat: Int = 0) {
 		val times = (1 + repeat).playbackTimes
 		sound.play(times)
 	}

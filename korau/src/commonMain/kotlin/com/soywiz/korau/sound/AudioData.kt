@@ -84,9 +84,7 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
 }
 
 
-suspend fun AudioData.toNativeSound() = nativeSoundProvider.createSound(this)
-
-suspend fun AudioData.playAndWait(times: PlaybackTimes = 1.playbackTimes) = this.toNativeSound().playAndWait(times)
+suspend fun AudioData.toSound() = nativeSoundProvider.createSound(this)
 
 suspend fun VfsFile.readAudioData(formats: AudioFormats = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) =
     this.openUse { formats.decode(this, props) ?: invalidOp("Can't decode audio file ${this@readAudioData}") }

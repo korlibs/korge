@@ -46,7 +46,7 @@ suspend fun VfsFile.readAni(context: AnLibrary.Context, content: FastByteArrayIn
 object AnLibraryDeserializer {
 	class ExternalReaders(
 		val atlasReader: suspend (index: Int) -> Bitmap,
-		val readSound: suspend (index: Int) -> NativeSound
+		val readSound: suspend (index: Int) -> Sound
 	)
 
 	suspend fun read(s: ByteArray, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
@@ -108,7 +108,7 @@ object AnLibraryDeserializer {
 	private fun FastByteArrayInputStream.readSymbol(
 		strings: Array<String?>,
 		atlases: List<Pair<Bitmap, BitmapSlice<Bitmap>>>,
-		sounds: List<NativeSound>
+		sounds: List<Sound>
 	): AnSymbol {
 		val symbolId = readU_VL()
 		val symbolName = strings[readU_VL()]
