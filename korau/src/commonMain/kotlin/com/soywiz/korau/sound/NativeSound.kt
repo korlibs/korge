@@ -282,26 +282,11 @@ inline class PlaybackTimes(val count: Int) {
 suspend fun NativeSound.toData(): AudioData = decode()
 suspend fun NativeSound.toStream(): AudioStream = decode().toStream()
 
-suspend fun NativeSound.playAndWait(params: PlaybackParameters, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit =
-    play(params).await(progress)
+suspend fun NativeSound.playAndWait(params: PlaybackParameters, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
+suspend fun NativeSound.playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
 
-suspend fun NativeSound.playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: NativeSoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit =
-    play(times, startTime).await(progress)
+suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
+suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
 
-@Deprecated("", ReplaceWith("readSound(streaming, props)"))
-suspend fun VfsFile.readNativeSound(streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming, props)
-@Deprecated("", ReplaceWith("readSound(streaming, props)"))
-suspend fun ByteArray.readNativeSound(streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming, props)
-suspend fun VfsFile.readSound(streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = nativeSoundProvider.createSound(this, streaming, props)
-suspend fun ByteArray.readSound(streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = nativeSoundProvider.createSound(this, streaming, props)
-
-@Deprecated("", ReplaceWith("readMusic(props)"))
-suspend fun VfsFile.readNativeMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readMusic(props)
-@Deprecated("", ReplaceWith("readMusic(props)"))
-suspend fun ByteArray.readNativeMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readMusic(props)
-suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readNativeSound(streaming = true, props = props)
-suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readNativeSound(streaming = true, props = props)
-
-@Deprecated("", ReplaceWith("readNativeSound(streaming)"))
-suspend fun VfsFile.readNativeSoundOptimized(streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readNativeSound(streaming, props)
-
+suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)
+suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)

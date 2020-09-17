@@ -11,16 +11,16 @@ import org.junit.*
 class PlaySoundJvmTest {
     @Test
     fun testReadNativeSound() = suspendTest {
-        val soundWav = resourcesVfs["wav1.wav"].readNativeSound()
-        val soundMp3 = resourcesVfs["fl4.mp1"].readNativeSound()
+        val soundWav = resourcesVfs["wav1.wav"].readSound()
+        val soundMp3 = resourcesVfs["fl4.mp1"].readSound()
     }
 
     @Test
     @Ignore
     fun test() = suspendTest {
         coroutineScope {
-            //val sound = resourcesVfs["mp31.mp3"].readNativeSound()
-            val sound = resourcesVfs["wav1.wav"].readNativeSound()
+            //val sound = resourcesVfs["mp31.mp3"].readSound()
+            val sound = resourcesVfs["wav1.wav"].readSound()
             launchAsap {
                 sound.playAndWait()
             }
