@@ -118,13 +118,13 @@ open class UIScrollBar(
 
     protected fun reshape() {
         if (isHorizontal) {
-            background.position(buttonWidth, 0).size(trackWidth, trackHeight)
+            background.position(buttonWidth, 0.0).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(width - buttonWidth, 0).size(buttonWidth, buttonHeight)
+            downButton.position(width - buttonWidth, 0.0).size(buttonWidth, buttonHeight)
         } else {
-            background.position(0, buttonHeight).size(trackWidth, trackHeight)
+            background.position(0.0, buttonHeight).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(0, height - buttonHeight).size(buttonWidth, buttonHeight)
+            downButton.position(0.0, height - buttonHeight).size(buttonWidth, buttonHeight)
         }
         updatePosition()
     }
@@ -132,10 +132,10 @@ open class UIScrollBar(
     protected fun updatePosition() {
         if (isHorizontal) {
             val thumbWidth = (trackWidth * (pageSize / totalSize)).clamp(4.0, trackWidth)
-            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0).size(thumbWidth, trackHeight)
+            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0.0).size(thumbWidth, trackHeight)
         } else {
             val thumbHeight = (trackHeight * (pageSize / totalSize)).clamp(4.0, trackHeight)
-            thumb.position(0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
+            thumb.position(0.0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
         }
         onChange(this)
     }

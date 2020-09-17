@@ -38,7 +38,7 @@ open class UIComboBox<T>(
 		config = { visible = false }
 	)
 	private val selectedButton = textButton(width - height, height, "", skin.selectedSkin, skin.textFont)
-	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0)
+	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0.0)
 	private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 	private var showItems = false
 
@@ -110,7 +110,7 @@ open class UIComboBox<T>(
 	override fun onSizeChanged() {
 		super.onSizeChanged()
 		itemsView.visible = showItems
-		itemsView.size(width, viewportHeight).position(0, height)
+		itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
 		selectedButton.simulatePressing(showItems)
 		expandButton.simulatePressing(showItems)
         expandButton.skin = skin.expandSkin
@@ -118,6 +118,6 @@ open class UIComboBox<T>(
 		invisibleRect.size(width, height)
 		selectedButton.size(width - height, height)
 		selectedButton.text = selectedItem?.toString() ?: ""
-		expandButton.position(width - height, 0).size(height, height)
+		expandButton.position(width - height, 0.0).size(height, height)
 	}
 }

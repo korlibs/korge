@@ -102,7 +102,7 @@ open class UICheckBox(
         )
         textView.setTextBounds(Rectangle(0.0, 0.0, width - height, height))
         textView.setText(text)
-        textView.position(height + 8.0, 0)
+        textView.position(height + 8.0, 0.0)
     }
 
     override fun onSizeChanged() {
@@ -111,7 +111,7 @@ open class UICheckBox(
         box.size(height, height)
         icon.width = checkIcon.calculateWidth(height)
         icon.height = checkIcon.calculateHeight(height)
-        textView.position(height + 8.0, 0)
+        textView.position(height + 8.0, 0.0)
         textView.setTextBounds(Rectangle(0.0, 0.0, width - height - 8.0, height))
     }
 

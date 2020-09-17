@@ -1083,6 +1083,8 @@ abstract class View internal constructor(
         if (res != null) return res
         return if (this is Stage) this else null
     }
+    fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
+    fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
     fun hitTestAny(x: Double, y: Double): Boolean = hitTest(x, y) != null
 
@@ -1754,7 +1756,7 @@ fun <T : View> T.size(width: Double, height: Double): T {
     this.height = height
     return this
 }
-
+fun <T : View> T.size(width: Float, height: Float): T = size(width.toDouble(), height.toDouble())
 fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
 
 /** Returns a list of all the non-null [View.name] values of this and the descendants */
@@ -1799,22 +1801,27 @@ fun <T : View> T.xy(x: Double, y: Double): T {
     this.y = y
     return this
 }
-
+fun <T : View> T.xy(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)
+fun <T : View> T.position(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 
 fun <T : View> T.positionX(x: Double): T {
     this.x = x
     return this
 }
+fun <T : View> T.positionX(x: Float): T = positionX(x.toDouble())
+fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
 
 fun <T : View> T.positionY(y: Double): T {
     this.y = y
     return this
 }
+fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
+fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
     val mat = this.parent!!.getConcatMatrix(view, false)
@@ -1841,30 +1848,29 @@ fun View.getPointRelativeToInv(pos: Point, view: View, out: Point = Point()): Po
     return out
 }
 
-/** Chainable method returning this that sets [View.x] */
-fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
-
-/** Chainable method returning this that sets [View.y] */
-fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
-
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
     this.x = (x2 + x1 - this.width) / 2
     return this
 }
+fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
+fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDouble(), x2.toDouble())
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
 fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
     this.y = (y2 + y1 - this.height) / 2
     return this
 }
+fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
+fun <T : View> T.centerYBetween(y1: Int, y2: Int): T = centerYBetween(y1.toDouble(), y2.toDouble())
 
 /**
  * Chainable method returning this that sets [this] View
  * in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
  */
-fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): T =
-    this.centerXBetween(x1, x2).centerYBetween(y1, y2)
+fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): T = this.centerXBetween(x1, x2).centerYBetween(y1, y2)
+fun <T : View> T.centerBetween(x1: Float, y1: Float, x2: Float, y2: Float): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+fun <T : View> T.centerBetween(x1: Int, y1: Int, x2: Int, y2: Int): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
 
 /**
  * Chainable method returning this that sets [View.x] so that
@@ -1918,65 +1924,65 @@ fun <T : View> T.alignY(other: View, ratio: Double, inside: Boolean, padding: Do
  * [this] View's left side is aligned with the [other] View's left side
  */
 // @TODO: What about rotations? we might need to adjust y too?
-fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T {
-    return alignX(other, 0.0, inside = true, padding = padding)
-}
+fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T = alignX(other, 0.0, inside = true, padding = padding)
+fun <T : View> T.alignLeftToLeftOf(other: View, padding: Float): T = alignLeftToLeftOf(other, padding.toDouble())
+fun <T : View> T.alignLeftToLeftOf(other: View, padding: Int): T = alignLeftToLeftOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.x] so that
  * [this] View's left side is aligned with the [other] View's right side
  */
-fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T {
-    return alignX(other, 1.0, inside = false, padding = padding)
-}
+fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = false, padding = padding)
+fun <T : View> T.alignLeftToRightOf(other: View, padding: Float): T = alignLeftToRightOf(other, padding.toDouble())
+fun <T : View> T.alignLeftToRightOf(other: View, padding: Int): T = alignLeftToRightOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.x] so that
  * [this] View's right side is aligned with the [other] View's left side
  */
-fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T {
-    return alignX(other, 0.0, inside = false, padding = padding)
-}
+fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T = alignX(other, 0.0, inside = false, padding = padding)
+fun <T : View> T.alignRightToLeftOf(other: View, padding: Float): T = alignRightToLeftOf(other, padding.toDouble())
+fun <T : View> T.alignRightToLeftOf(other: View, padding: Int): T = alignRightToLeftOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.x] so that
  * [this] View's right side is aligned with the [other] View's right side
  */
-fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T {
-    return alignX(other, 1.0, inside = true, padding = padding)
-}
+fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = true, padding = padding)
+fun <T : View> T.alignRightToRightOf(other: View, padding: Float): T = alignRightToRightOf(other, padding.toDouble())
+fun <T : View> T.alignRightToRightOf(other: View, padding: Int): T = alignRightToRightOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.y] so that
  * [this] View's top side is aligned with the [other] View's top side
  */
-fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T {
-    return alignY(other, 0.0, inside = true, padding = padding)
-}
+fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = true, padding = padding)
+fun <T : View> T.alignTopToTopOf(other: View, padding: Float): T = alignTopToTopOf(other, padding.toDouble())
+fun <T : View> T.alignTopToTopOf(other: View, padding: Int): T = alignTopToTopOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.y] so that
  * [this] View's top side is aligned with the [other] View's bottom side
  */
-fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T {
-    return alignY(other, 1.0, inside = false, padding = padding)
-}
+fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = false, padding = padding)
+fun <T : View> T.alignTopToBottomOf(other: View, padding: Float): T = alignTopToBottomOf(other, padding.toDouble())
+fun <T : View> T.alignTopToBottomOf(other: View, padding: Int): T = alignTopToBottomOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.y] so that
  * [this] View's bottom side is aligned with the [other] View's top side
  */
-fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T {
-    return alignY(other, 0.0, inside = false, padding = padding)
-}
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = false, padding = padding)
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Float): T = alignBottomToTopOf(other, padding.toDouble())
+fun <T : View> T.alignBottomToTopOf(other: View, padding: Int): T = alignBottomToTopOf(other, padding.toDouble())
 
 /**
  * Chainable method returning this that sets [View.y] so that
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
-fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T {
-    return alignY(other, 1.0, inside = true, padding = padding)
-}
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = true, padding = padding)
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Float): T = alignBottomToBottomOf(other, padding.toDouble())
+fun <T : View> T.alignBottomToBottomOf(other: View, padding: Int): T = alignBottomToBottomOf(other, padding.toDouble())
 
 /** Chainable method returning this that sets [View.rotation] */
 fun <T : View> T.rotation(rot: Angle): T {
@@ -1997,75 +2003,16 @@ fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
     this.scaleY = sy
     return this
 }
+fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
+fun <T : View> T.scale(sx: Int, sy: Int = sx): T = scale(sx.toDouble(), sy.toDouble())
 
 /** Chainable method returning this that sets [View.alpha] */
 fun <T : View> T.alpha(alpha: Double): T {
     this.alpha = alpha
     return this
 }
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.skewRadians(sx: Number, sy: Number): T = skew(sx.toDouble().radians, sy.toDouble().radians)
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alpha(alpha: Number): T = alpha(alpha.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.rotation(rot: Number): T = this.rotation(rot.toDouble().radians)
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.rotationDegrees(degs: Number): T = rotation(degs.toDouble().degrees)
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.positionX(x: Number): T = positionX(x.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.positionY(y: Number): T = positionY(y.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun View.hitTest(x: Number, y: Number): View? = hitTest(x.toDouble(), y.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.centerXBetween(x1: Number, x2: Number): T = centerXBetween(x1.toDouble(), x2.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.centerYBetween(y1: Number, y2: Number): T = centerYBetween(y1.toDouble(), y2.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.centerBetween(x1: Number, y1: Number, x2: Number, y2: Number): T =
-    centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignLeftToLeftOf(other: View, padding: Number): T =
-    alignLeftToLeftOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignLeftToRightOf(other: View, padding: Number): T =
-    alignLeftToRightOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignRightToLeftOf(other: View, padding: Number): T =
-    alignRightToLeftOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignRightToRightOf(other: View, padding: Number): T =
-    alignRightToRightOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignTopToTopOf(other: View, padding: Number): T = alignTopToTopOf(other, padding.toDouble())
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignTopToBottomOf(other: View, padding: Number): T =
-    alignTopToBottomOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignBottomToTopOf(other: View, padding: Number): T =
-    alignBottomToTopOf(other, padding.toDouble())
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View> T.alignBottomToBottomOf(other: View, padding: Number): T =
-    alignBottomToBottomOf(other, padding.toDouble())
+fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
+fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
 
 @Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS) annotation class ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required

@@ -72,11 +72,11 @@ open class UIScrollableArea(
         container.size(contentWidth, contentHeight)
 
         horScrollBar.size(viewportWidth, buttonSize)
-        horScrollBar.position(0, height - buttonSize)
+        horScrollBar.position(0.0, height - buttonSize)
         horScrollBar.visible = horizontalScroll
 
         verScrollBar.size(buttonSize, viewportHeight)
-        verScrollBar.position(width - buttonSize, 0)
+        verScrollBar.position(width - buttonSize, 0.0)
         verScrollBar.visible = verticalScroll
     }
 

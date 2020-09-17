@@ -38,35 +38,38 @@ object Korge {
 
     suspend operator fun invoke(config: Config) {
         //println("Korge started from Config")
+        val module = config.module
+        val windowSize = module.windowSize
+
         Korge(
-            title = config.module.title,
-            width = config.module.windowSize.width,
-            height = config.module.windowSize.height,
-            virtualWidth = config.module.size.width,
-            virtualHeight = config.module.size.height,
-            bgcolor = config.module.bgcolor,
-            quality = config.module.quality,
+            title = module.title,
+            width = windowSize.width,
+            height = windowSize.height,
+            virtualWidth = module.size.width,
+            virtualHeight = module.size.height,
+            bgcolor = module.bgcolor,
+            quality = module.quality,
             icon = null,
-            iconPath = config.module.icon,
-            iconDrawable = config.module.iconImage,
-            imageFormats = ImageFormats(config.module.imageFormats),
-            targetFps = config.module.targetFps,
-            scaleAnchor = config.module.scaleAnchor,
-            scaleMode = config.module.scaleMode,
-            clipBorders = config.module.clipBorders,
+            iconPath = module.icon,
+            iconDrawable = module.iconImage,
+            imageFormats = ImageFormats(module.imageFormats),
+            targetFps = module.targetFps,
+            scaleAnchor = module.scaleAnchor,
+            scaleMode = module.scaleMode,
+            clipBorders = module.clipBorders,
             debug = config.debug,
-            fullscreen = config.module.fullscreen,
+            fullscreen = module.fullscreen,
             args = config.args,
             gameWindow = config.gameWindow,
             injector = config.injector,
             timeProvider = config.timeProvider,
             entry = {
                 //println("Korge views prepared for Config")
-                RegisteredImageFormats.register(*config.module.imageFormats.toTypedArray())
+                RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
-                injector.mapInstance(Module::class, config.module).mapInstance(Config::class, config)
+                injector.mapInstance(Module::class, module).mapInstance(Config::class, config)
                 config.constructedViews(views)
-                config.module.apply { injector.configure() }
+                module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
                 views.stage += sc
                 sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
