@@ -2,6 +2,8 @@ package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korge.debug.*
@@ -11,7 +13,6 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -167,7 +168,7 @@ class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : An
 	override var smoothing = true
 
 	private fun updatedRatio() {
-		val result = morphSymbol.texturesWithBitmap.find((ratio * 1000).toInt(), timedResult)
+		val result = morphSymbol.texturesWithBitmap.find(ratio.seconds, timedResult)
 		texWBS = result.left ?: result.right
 
 		dx = texWBS?.bounds?.x?.toFloat() ?: 0f
@@ -242,10 +243,10 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	//var firstUpdateSingleFrame = false
 	val library: AnLibrary get() = view.library
 	val context get() = library.context
-	var currentTime = 0
+	var currentTime = 0.milliseconds
 	var currentStateName: String? = null
 	var currentSubtimeline: AnSymbolMovieClipSubTimeline? = null
-	val currentStateTotalTime: Int get() = currentSubtimeline?.totalTime ?: 0
+	val currentStateTotalTime: TimeSpan get() = if (currentSubtimeline != null) currentSubtimeline!!.totalTime else 0.milliseconds
 	val onStop = Signal<Unit>()
 	val onChangeState = Signal<String>()
 	val onEvent = Signal<String>()
@@ -262,12 +263,12 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 		gotoAndPlay("default")
 	}
 
-	fun getStateTime(name: String): Int {
-		val substate = symbol.states[name] ?: return 0
+	fun getStateTime(name: String): TimeSpan {
+		val substate = symbol.states[name] ?: return 0.milliseconds
 		return substate.subTimeline.totalTime - substate.startTime
 	}
 
-	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
+	fun gotoAndRunning(running: Boolean, name: String, time: TimeSpan = 0.milliseconds) {
 		val substate = symbol.states[name]
 		if (substate != null) {
 			this.currentStateName = substate.name
@@ -275,7 +276,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			this.currentTime = substate.startTime + time
 			this.running = running
 			//this.firstUpdateSingleFrame = true
-			update(0)
+			update(0.milliseconds)
 			onChangeState(name)
 		} else {
             println("Can't find state with name '$name' : ${symbol.states.keys}")
@@ -284,16 +285,16 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
 
-	fun gotoAndPlay(name: String, time: Int = 0) = gotoAndRunning(true, name, time)
-	fun gotoAndStop(name: String, time: Int = 0) = gotoAndRunning(false, name, time)
+	fun gotoAndPlay(name: String, time: TimeSpan = 0.milliseconds) = gotoAndRunning(true, name, time)
+	fun gotoAndStop(name: String, time: TimeSpan = 0.milliseconds) = gotoAndRunning(false, name, time)
 
     var ratio: Double
-        get() = currentTime.toDouble() / currentStateTotalTime.toDouble()
+        get() = currentTime / currentStateTotalTime
         set(value) {
-            currentTime = (value.clamp01() * currentStateTotalTime).toInt()
+            currentTime = (currentStateTotalTime * value.clamp01())
         }
 
-	fun update(time: Int) {
+	fun update(time: TimeSpan) {
 		//println("Update[1]: $currentTime")
 		//println("$currentStateName: $currentTime: running=$running")
 		if (!running) return
@@ -313,7 +314,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 				running = false
 			} else {
 				//gotoAndRunning(cs.nextStatePlay, nextState, accumulatedTime)
-				gotoAndRunning(cs.nextStatePlay, nextState, 0)
+				gotoAndRunning(cs.nextStatePlay, nextState, 0.milliseconds)
 				currentTime += accumulatedTime
 				eval(currentTime - accumulatedTime, currentTime)
 			}
@@ -323,10 +324,10 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 
 	private val tempRangeResult = Timed.RangeResult()
 
-	private fun eval(prev: Int, current: Int) {
+	private fun eval(prev: TimeSpan, current: TimeSpan) {
 		if (prev >= current) return
 		val actionsTimeline = this.currentSubtimeline?.actions ?: return
-		val result = actionsTimeline.getRangeIndices(prev, current - 1, out = tempRangeResult)
+		val result = actionsTimeline.getRangeIndices(prev, current - 1.microseconds, out = tempRangeResult)
 
 		execution@ for (n in result.startIndex..result.endIndex) {
 			val action = actionsTimeline.objects[n]
@@ -352,7 +353,7 @@ interface AnPlayable {
 }
 
 class AnSimpleAnimation(
-	val frameTime: Int,
+	val frameTime: TimeSpan,
 	val animations: Map<String, List<BmpSlice?>>,
 	val anchor: Anchor = Anchor.TOP_LEFT
 ) : Container(), AnPlayable {
@@ -362,7 +363,7 @@ class AnSimpleAnimation(
 	val defaultAnimation = animations.values.firstOrNull() ?: listOf()
 	var animation = defaultAnimation
 	val numberOfFrames get() = animation.size
-	private var elapsedTime = 0
+	private var elapsedTime = 0.milliseconds
 
 	init {
 		image.anchorX = anchor.sx
@@ -376,14 +377,14 @@ class AnSimpleAnimation(
 	}
 
 	init {
-		addUpdater { dtMs ->
-			elapsedTime = (elapsedTime + dtMs) % (numberOfFrames * frameTime)
+		addUpdater {
+			elapsedTime = (elapsedTime + it) % (frameTime * numberOfFrames)
 			myupdate()
 		}
 	}
 
 	private fun myupdate() {
-		val frameNum = elapsedTime / frameTime
+		val frameNum = (elapsedTime / frameTime).toInt()
 		val bmpSlice = animation.getOrNull(frameNum % numberOfFrames) ?: Bitmaps.transparent
 		image.bitmap = bmpSlice
 	}
@@ -722,15 +723,15 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	 */
 	fun seekStill(name: String, ratio: Double = 0.0) {
 		val totalTime = timelineRunner.getStateTime(name)
-		timelineRunner.gotoAndStop(name, (totalTime * ratio).toInt())
+		timelineRunner.gotoAndStop(name, (totalTime * ratio))
 		//println("seekStill($name,$ratio) : $currentTime,$running,$currentState")
 		update()
 	}
 
-	private fun updateInternal(dtMs: Int) {
+	private fun updateInternal(dt: TimeSpan) {
 		if (timelineRunner.running && (firstUpdate || !singleFrame)) {
 			firstUpdate = false
-			timelineRunner.update(dtMs * 1000)
+			timelineRunner.update(dt)
             //println("Updating ${dtMs * 1000}")
 			update()
 		} else {

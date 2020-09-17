@@ -2,6 +2,7 @@ package com.soywiz.korge.ext.swf
 
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
@@ -154,7 +155,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		}
 	}
 
-	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
+	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt().milliseconds
 
 	suspend private fun generateActualTimelines() {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
@@ -292,8 +293,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 
 					//println("currentSubTimeline.totalTime = info.subtimeline.totalTime <- ${info.subtimeline.totalTime}")
 					if (frame.isFirst) {
-						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0)
-						symbol.states["frame0"] = AnSymbolMovieClipState("frame0", currentSubTimeline, 0)
+						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0.milliseconds)
+						symbol.states["frame0"] = AnSymbolMovieClipState("frame0", currentSubTimeline, 0.milliseconds)
 					}
 				}
 				// States
@@ -462,7 +463,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
                     charId = morph.id
 				)
 				itemsInAtlas.put(
-					{ texture -> morph.texturesWithBitmap.add((ratio * 1000).toInt(), texture) },
+					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },
 					rasterizer.imageWithScale
 				)
 			}
@@ -495,7 +496,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				}
 			}
 		}
-		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt())
+		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt().milliseconds)
 	}
 
     var pathsArePostScript = false

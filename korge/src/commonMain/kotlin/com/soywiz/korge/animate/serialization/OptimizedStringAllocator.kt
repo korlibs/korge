@@ -1,6 +1,12 @@
 package com.soywiz.korge.animate.serialization
 
-import com.soywiz.kds.*
+import kotlin.collections.contains
+import kotlin.collections.hashMapOf
+import kotlin.collections.map
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.sortedByDescending
+import kotlin.collections.toTypedArray
 
 class OptimizedStringAllocator {
 	private var finalized = false

@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.editor.formats
 
+import com.soywiz.klock.*
 import com.soywiz.korau.sound.readSound
 import com.soywiz.korge.animate.AnSimpleAnimation
 import com.soywiz.korge.input.onClick
@@ -38,7 +39,7 @@ suspend fun Scene.audioFileEditor(file: VfsFile) {
         views.setVirtualSize(408 * 2, 334 * 2)
 
         val mouth = AnSimpleAnimation(
-            10, mapOf(
+            10.milliseconds, mapOf(
             "A" to listOf(getLipTexture('A')),
             "B" to listOf(getLipTexture('B')),
             "C" to listOf(getLipTexture('C')),

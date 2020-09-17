@@ -1,5 +1,6 @@
 package com.soywiz.korge.ext.swf
 
+/*
 import com.soywiz.korge.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.*
@@ -56,5 +57,5 @@ class SwfTestDisabled {
 			}
 		}
 	}
-
 }
+*/

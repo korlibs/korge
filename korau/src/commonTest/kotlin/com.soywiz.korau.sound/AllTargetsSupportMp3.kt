@@ -7,7 +7,6 @@ import kotlin.test.*
 
 class AllTargetsSupportMp3 {
     @Test
-    @Ignore // TRAVIS: com.[secure].korau.sound.AllTargetsSupportMp3 > testDecode FAILED  com.jogamp.openal.ALException: Error opening default OpenAL device
     fun testDecode() = suspendTest {
         if (nativeSoundProvider.target == "android") return@suspendTest
         if (OS.isJsNodeJs) return@suspendTest

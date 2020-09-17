@@ -85,6 +85,9 @@ inline class TimeSpan(
     val nanoseconds: Double get() = this.milliseconds / MILLIS_PER_NANOSECOND
     /** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) */
     val microseconds: Double get() = this.milliseconds / MILLIS_PER_MICROSECOND
+    /** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) as Integer */
+    val microsecondsInt: Int get() = (this.milliseconds / MILLIS_PER_MICROSECOND).toInt()
+
     /** Returns the total number of [seconds] for this [TimeSpan] */
     val seconds: Double get() = this.milliseconds / MILLIS_PER_SECOND
     /** Returns the total number of [minutes] for this [TimeSpan] (60 [seconds]) */

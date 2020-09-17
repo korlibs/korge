@@ -1,9 +1,13 @@
+@file:OptIn(KorgeInternal::class)
+
 package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -249,13 +253,13 @@ data class AnEventAction(val event: String) : AnAction
 
 class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
-class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int)
+class AnSymbolLimits constructor(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: TimeSpan)
 
 class AnSymbolUidDef(val characterId: Int, val extraProps: MutableMap<String, String> = LinkedHashMap())
 
 class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	//var name: String = "default"
-	var totalTime: Int = 0
+    var totalTime = 0.milliseconds
 
 	//val totalTimeSeconds: Double get() = totalTime / 1_000_000.0
 	//val totalTimeSeconds: Double get() = 100.0
@@ -267,7 +271,7 @@ class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	var nextStatePlay: Boolean = false
 }
 
-class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieClipSubTimeline, val startTime: Int)
+class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieClipSubTimeline, val startTime: TimeSpan)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	var ninePatch: Rectangle? = null

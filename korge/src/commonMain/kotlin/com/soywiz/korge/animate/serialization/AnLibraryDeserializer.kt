@@ -2,6 +2,7 @@ package com.soywiz.korge.animate.serialization
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
@@ -165,7 +166,7 @@ object AnLibraryDeserializer {
 				val nframes = readU_VL()
 				val texturesWithBitmap = Timed<TextureWithBitmapSlice>(nframes)
 				for (n in 0 until nframes) {
-					val ratio1000 = readU_VL()
+					val ratio1000 = readU_VL().milliseconds
 					val scale = readF32LE().toDouble()
 					val bitmapId = readU_VL()
 					val bounds = readRect()
@@ -211,7 +212,7 @@ object AnLibraryDeserializer {
 
 		val totalDepths = readU_VL()
 		val totalFrames = readU_VL()
-		val totalTime = readU_VL()
+		val totalTime = readU_VL().milliseconds
 		val totalUids = readU_VL()
 		val uidsToCharacterIds = (0 until totalUids).map {
 			val charId = readU_VL()
@@ -230,17 +231,17 @@ object AnLibraryDeserializer {
 		val symbolStates = (0 until readU_VL()).map {
 			val ss = AnSymbolMovieClipSubTimeline(totalDepths)
 			//ss.name = strings[readU_VL()] ?: ""
-			ss.totalTime = readU_VL()
+			ss.totalTime = readU_VL().microseconds
 			val stateFlags = readU8()
 			ss.nextStatePlay = stateFlags.extract(0)
 			ss.nextState = strings[readU_VL()]
 
 			val numberOfActionFrames = readU_VL()
-			var lastFrameTimeInMs = 0
+			var lastFrameTime = 0.milliseconds
 			for (n in 0 until numberOfActionFrames) {
-				val deltaTime = readU_VL()
-				val timeInMs = lastFrameTimeInMs + deltaTime
-				lastFrameTimeInMs = timeInMs
+				val deltaTime = readU_VL().milliseconds
+				val timeInMs = lastFrameTime + deltaTime
+				lastFrameTime = timeInMs
 				val actions = (0 until readU_VL()).map {
 					val action = readU8()
 					when (action) {
@@ -266,10 +267,10 @@ object AnLibraryDeserializer {
 				var lastMatrix = Matrix()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
-				var lastFrameTime = 0
+				var lastFrameTime = 0.milliseconds
 				var lastBlendMode = BlendMode.INHERIT
 				for (frameIndex in 0 until readU_VL()) {
-					val deltaFrameTime = readU_VL()
+					val deltaFrameTime = readU_VL().milliseconds
 					val frameTime = lastFrameTime + deltaFrameTime
 					lastFrameTime = frameTime
 					val flags = readU_VL()
@@ -319,7 +320,7 @@ object AnLibraryDeserializer {
 						lastBlendMode = BlendMode.BY_ORDINAL[readU8()] ?: BlendMode.INHERIT
 					}
 					timeline.add(
-						frameTime * 1000, AnSymbolTimelineFrame(
+						frameTime, AnSymbolTimelineFrame(
 							depth = depth,
 							uid = lastUid,
 							transform = lastMatrix,
@@ -338,7 +339,7 @@ object AnLibraryDeserializer {
 		for (n in 0 until uidsToCharacterIds.size) mc.uidInfo[n] = uidsToCharacterIds[n]
 		mc.states += (0 until readU_VL()).map {
 			val name = strings[readU_VL()] ?: ""
-			val startTime = readU_VL()
+			val startTime = readU_VL().milliseconds
 			val stateIndex = readU_VL()
 			symbolStates[stateIndex].actions.add(startTime, AnEventAction(name))
 			//println("$startTime, $name")
