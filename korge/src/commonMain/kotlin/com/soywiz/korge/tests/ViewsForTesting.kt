@@ -32,9 +32,10 @@ open class ViewsForTesting @JvmOverloads constructor(
 	var time = startTime
 	val elapsed get() = time - startTime
 
-	val timeProvider: TimeProvider = object : TimeProvider {
-		override fun now(): DateTime = time
-	}
+	val timeProvider = object : HRTimeProvider {
+        //override fun now(): DateTime = time
+        override fun now(): HRTimeSpan = time.unixMillisDouble.hrMilliseconds
+    }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override var width: Int = initialSize.width
@@ -44,7 +45,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag = if (log) LogAG(windowSize.width, windowSize.height) else DummyAG(windowSize.width, windowSize.height)
-	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow).also { viewsLog ->
+	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
     }

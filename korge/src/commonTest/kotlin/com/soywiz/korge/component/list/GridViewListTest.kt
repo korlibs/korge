@@ -1,5 +1,6 @@
 package com.soywiz.korge.component.list
 
+/*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -24,3 +25,4 @@ class GridViewListTest : ViewsForTesting() {
 		assertEquals(Rectangle(40, 40, 10, 10), cell?.globalBounds)
 	}
 }
+*/

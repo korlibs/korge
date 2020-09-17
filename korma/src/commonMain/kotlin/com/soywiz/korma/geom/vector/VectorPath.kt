@@ -25,6 +25,8 @@ open class VectorPath(
     open fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
 
     companion object {
+        private val identityMatrix = Matrix()
+
         inline operator fun invoke(winding: Winding = Winding.EVEN_ODD, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
         fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
@@ -329,26 +331,22 @@ open class VectorPath(
         const val CLOSE = 4
     }
 
-    @Deprecated("")
-    // Can cause problems because we are not applying transforms at all that might be applied by the VectorBuilder
-    fun write(path: VectorPath) {
+    fun write(path: VectorPath, transform: Matrix = identityMatrix) {
         this.commands += path.commands
-        this.data += path.data
-        this.lastX = path.lastX
-        this.lastY = path.lastY
-        version++
-    }
-
-    fun write(path: VectorPath, transform: Matrix) {
-        this.commands += path.commands
-        for (n in 0 until path.data.size step 2) {
-            val x = path.data.getAt(n + 0)
-            val y = path.data.getAt(n + 1)
-            this.data += transform.transformX(x, y)
-            this.data += transform.transformY(x, y)
+        if (transform.isIdentity()) {
+            this.data += path.data
+            this.lastX = path.lastX
+            this.lastY = path.lastY
+        } else {
+            for (n in 0 until path.data.size step 2) {
+                val x = path.data.getAt(n + 0)
+                val y = path.data.getAt(n + 1)
+                this.data += transform.transformX(x, y)
+                this.data += transform.transformY(x, y)
+            }
+            this.lastX = transform.transformX(path.lastX, path.lastY)
+            this.lastY = transform.transformY(path.lastX, path.lastY)
         }
-        this.lastX = transform.transformX(path.lastX, path.lastY)
-        this.lastY = transform.transformY(path.lastX, path.lastY)
         version++
     }
 

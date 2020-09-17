@@ -175,6 +175,10 @@ object Korge {
         }
     }
 
+    //Deprecated("")
+    //@KorgeInternal
+    //private fun HRTimeProvider.toTimeProvider(): TimeProvider = TimeProvider { DateTime.fromUnix(this.now().millisecondsDouble) }
+
     @KorgeInternal
     fun prepareViewsBase(
         views: Views,
@@ -191,7 +195,7 @@ object Korge {
         injector.mapInstance(views.stats)
         injector.mapInstance(CoroutineContext::class, views.coroutineContext)
         injector.mapPrototype(EmptyScene::class) { EmptyScene() }
-        injector.mapInstance(TimeProvider::class, views.timeProvider.toTimeProvider()) // Deprecated
+        //injector.mapInstance(TimeProvider::class, views.timeProvider.toTimeProvider()) // Deprecated
         injector.mapInstance(HRTimeProvider::class, views.timeProvider)
 
         val input = views.input
