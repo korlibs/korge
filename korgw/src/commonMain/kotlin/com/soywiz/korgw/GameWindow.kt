@@ -84,11 +84,6 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         }
     }
 
-    @Deprecated("")
-    open fun executePending() {
-        executePending(1.hrSeconds)
-    }
-
     fun executePending(availableTime: HRTimeSpan) {
         try {
             val startTime = now()
@@ -198,8 +193,6 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     protected val mouseEvent = MouseEvent()
     protected val touchEvent = TouchEvent()
     protected val dropFileEvent = DropFileEvent()
-    @Deprecated("") protected val gamePadButtonEvent = GamePadButtonEvent()
-    @Deprecated("") protected val gamePadStickEvent = GamePadStickEvent()
     protected val gamePadUpdateEvent = GamePadUpdateEvent()
     protected val gamePadConnectionEvent = GamePadConnectionEvent()
 
@@ -348,7 +341,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     }
 
     fun executePending() {
-        coroutineDispatcher.executePending()
+        coroutineDispatcher.executePending(1.hrSeconds)
     }
 
     fun dispatchInitEvent() = dispatch(initEvent)

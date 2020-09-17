@@ -211,7 +211,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
-				dispatcher.executePending()
+				dispatcher.executePending(1.hrSeconds)
 			}
 
 			if (completedException != null) throw completedException!!
@@ -266,44 +266,6 @@ open class ViewsForTesting @JvmOverloads constructor(
             }
             timedTasks2.add(task)
         }
-
-        override fun executePending() {
-			//println("executePending.hasMore=$hasMore")
-            var skippingFrames = 0
-			try {
-                // Skip time after several frames without activity
-                if (tasks.isEmpty() && timedTasks2.isNotEmpty()) {
-                    skippingFrames++
-                    if (skippingFrames >= 100) {
-                        time = timedTasks2.head.time
-                    }
-                } else {
-                    skippingFrames = 0
-                }
-
-                while (timedTasks2.isNotEmpty() && time >= timedTasks2.head.time) {
-                    val item = timedTasks2.removeHead()
-                    //println("TIME[${time.unixMillisLong}]: TIMED TASK. Executing: $item")
-                    if (item.exception != null) {
-                        item.continuation?.resumeWithException(item.exception!!)
-                        if (item.callback != null) {
-                            item.exception?.printStackTrace()
-                        }
-                    } else {
-                        item.continuation?.resume(Unit)
-                        item.callback?.run()
-                    }
-                }
-
-				while (tasks.isNotEmpty()) {
-					val task = tasks.dequeue()
-					task.run()
-				}
-			} catch (e: Throwable) {
-				println("Error in GameWindowCoroutineDispatcher.executePending:")
-				e.printStackTrace()
-			}
-		}
 
 		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
 	}

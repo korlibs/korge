@@ -156,11 +156,6 @@ interface KeyComponent : Component {
 interface GamepadComponent : Component {
     fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
     fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
-
-    @Deprecated("")
-    fun onGamepadEvent(views: Views, event: GamePadButtonEvent)
-    @Deprecated("")
-    fun onGamepadEvent(views: Views, event: GamePadStickEvent)
 }
 
 /**

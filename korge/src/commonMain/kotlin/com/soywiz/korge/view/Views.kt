@@ -245,8 +245,8 @@ class Views constructor(
                 }
 				is GamePadConnectionEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
 				is GamePadUpdateEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				//is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				//is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
                 else -> stagedViews.fastForEach { it._components?.event?.fastForEach { it.onEvent(e) } }
 			}
 		} catch (e: PreventDefaultException) {

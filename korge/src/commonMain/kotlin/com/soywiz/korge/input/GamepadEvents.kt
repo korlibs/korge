@@ -101,16 +101,6 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 		updated(event)
 	}
 
-	override fun onGamepadEvent(views: Views, event: GamePadButtonEvent) {
-        this.views = views
-		button(event)
-	}
-
-	override fun onGamepadEvent(views: Views, event: GamePadStickEvent) {
-        this.views = views
-		stick(event)
-	}
-
 	override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {
         this.views = views
 		connection(event)
