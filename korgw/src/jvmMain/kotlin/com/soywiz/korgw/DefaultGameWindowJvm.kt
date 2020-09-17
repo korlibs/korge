@@ -4,8 +4,7 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.AGConfig
 import com.soywiz.korag.AGFactory
 import com.soywiz.korag.AGWindow
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.addEventListener
+import com.soywiz.korev.*
 import com.soywiz.korgw.awt.AwtGameWindow
 //import com.soywiz.korgw.jogl.JoglGameWindow
 import com.soywiz.korgw.osx.MacGameWindow
@@ -107,7 +106,7 @@ object TestGameWindow {
             var step = 0
             gameWindow.loop {
                 val ag = gameWindow.ag
-                ag.onRender {
+                gameWindow.onRenderEvent {
                     ag.clear(RGBA(64, 96, step % 256, 255))
                     step++
                 }

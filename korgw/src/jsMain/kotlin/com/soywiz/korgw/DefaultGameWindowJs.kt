@@ -104,7 +104,6 @@ class BrowserGameWindow : GameWindow() {
     }
 
     private fun doRender() {
-        ag.onRender(ag)
         dispatch(renderEvent)
     }
 

@@ -36,7 +36,7 @@ class TestE2eJava {
             gameWindow.title = "HELLO WORLD"
             gameWindow.loop {
                 val ag = gameWindow.ag
-                ag.onRender {
+                gameWindow.onRenderEvent {
                     try {
                         ag.clear(Colors.DARKGREY)
                         val vertices = ag.createVertexBuffer(floatArrayOf(

@@ -203,6 +203,10 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     protected val gamePadUpdateEvent = GamePadUpdateEvent()
     protected val gamePadConnectionEvent = GamePadConnectionEvent()
 
+    fun onRenderEvent(block: (RenderEvent) -> Unit) {
+        addEventListener<RenderEvent>(block)
+    }
+
     protected open fun _setFps(fps: Int): Int {
         return if (fps <= 0) 60 else fps
     }
@@ -322,7 +326,6 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     fun frameRender(doUpdate: Boolean) {
         try {
-            ag.onRender(ag)
             dispatchRenderEvent(update = false)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")

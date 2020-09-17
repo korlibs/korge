@@ -223,9 +223,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 		repeat(count) {
             //println("SIMULATE: $frameTime")
             time += frameTime
-            // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
-            gameWindow.dispatch(RenderEvent())
-            ag.onRender(ag)
+            gameWindow.dispatchRenderEvent()
             simulatedFrames++
             val now = PerformanceCounter.hr
             val elapsedSinceLastDelay = now - lastDelay

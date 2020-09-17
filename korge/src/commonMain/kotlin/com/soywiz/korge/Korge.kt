@@ -387,7 +387,7 @@ object Korge {
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
         val firstRenderDeferred = CompletableDeferred<Unit>()
-        views.gameWindow.addEventListener<RenderEvent> {
+        views.gameWindow.onRenderEvent {
             //println("RenderEvent: $it")
             views.ag.doRender {
                 if (!renderShown) {

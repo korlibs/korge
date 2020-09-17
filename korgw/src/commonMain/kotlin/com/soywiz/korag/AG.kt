@@ -59,8 +59,6 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
 	val onReady: Deferred<AG> = _onReadyDeferred
-    @Deprecated("")
-	val onRender = Signal<AG>()
 
     inline fun doRender(block: () -> Unit) {
         mainRenderBuffer.init()

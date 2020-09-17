@@ -86,7 +86,6 @@ class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) 
 
 	override fun repaint() {
 		onReadyOnce { ready() }
-		onRender(this)
 	}
 
 	override fun dispose() {
