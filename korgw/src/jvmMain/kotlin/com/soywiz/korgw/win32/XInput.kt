@@ -83,6 +83,8 @@ internal class XInputEventAdapter {
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
     private val xinput: XInput? by lazy { XInput() }
+    private val joy by lazy { Win32Joy() }
+    private val joyCapsW = JoyCapsW()
 
     private fun convertShortRangeToDouble(value: Short): Double = value.toDouble().convertRangeClamped(Short.MIN_VALUE.toDouble(), Short.MAX_VALUE.toDouble(), -1.0, +1.0)
     private fun convertUByteRangeToDouble(value: Byte): Double {
@@ -111,6 +113,12 @@ internal class XInputEventAdapter {
                 connectedCount++
             }
             if (prevConnected != connected) {
+                if (connected) {
+                    if (joy?.joyGetDevCapsW(n, joyCapsW, JoyCapsW.SIZE) == 0) {
+                        gamepad.name = joyCapsW.name
+                    }
+                }
+
                 gamepadsConnected[n] = connected
                 dispatcher.dispatch(gamePadConnectionEvent.also {
                     it.gamepad = n
