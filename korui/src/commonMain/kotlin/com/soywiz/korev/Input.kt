@@ -86,7 +86,10 @@ enum class GameStick(val id: Int) {
 
 enum class GameButton(val index: Int) {
 	LEFT(0), RIGHT(1), UP(2), DOWN(3),
-	BUTTON0(4), BUTTON1(5), BUTTON2(6), BUTTON3(7),
+	BUTTON0(4), // XBox: A, Playstation: Cross
+    BUTTON1(5), // XBox: B, Playstation: Circle
+    BUTTON2(6), // XBox: X, Playstation: Square
+    BUTTON3(7), // XBox: Y, Playstation: Triangle
 	SELECT(8), START(9), SYSTEM(10),
 	L1(11), R1(12),
 	L2(13), R2(14),
@@ -98,6 +101,24 @@ enum class GameButton(val index: Int) {
 	companion object {
 		val BUTTONS = values()
 		val MAX = 32
+
+        val LEFT_TRIGGER get() = L2
+        val RIGHT_TRIGGER get() = R2
+
+        val LEFT_THUMB get() = L3
+        val RIGHT_THUMB get() = R3
+
+        val BACK get() = SELECT
+
+        val XBOX_A get() = BUTTON0
+        val XBOX_B get() = BUTTON1
+        val XBOX_X get() = BUTTON2
+        val XBOX_Y get() = BUTTON3
+
+        val PS_CROSS get() = BUTTON0
+        val PS_CIRCLE get() = BUTTON1
+        val PS_SQUARE get() = BUTTON2
+        val PS_TRIANGLE get() = BUTTON3
 	}
 }
 
@@ -127,7 +148,7 @@ class GamepadInfo(
 		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
 	}
 
-	operator fun get(button: GameButton) = mapping.get(button, this)
+	operator fun get(button: GameButton): Double = mapping.get(button, this)
     operator fun get(stick: GameStick): Point = axesData[stick.id].apply {
         this.x = getX(stick)
         this.y = getY(stick)
@@ -146,7 +167,8 @@ class GamepadInfo(
 abstract class GamepadMapping {
 	abstract val id: String
 	private fun Int.getButton(index: Int): Double = if (extract(index)) 1.0 else 0.0
-    fun GamepadInfo.getRawButton(index: Int) = this.rawButtonsPressed.getButton(index)
+    fun GamepadInfo.getRawPressureButton(index: Int) = this.rawButtonsPressure[index]
+    fun GamepadInfo.getRawButton(index: Int): Double = this.rawButtonsPressed.getButton(index)
     fun GamepadInfo.getRawAxe(index: Int) = this.rawAxes.getOrElse(index) { 0.0 }
     abstract fun get(button: GameButton, info: GamepadInfo): Double
 
@@ -156,7 +178,9 @@ abstract class GamepadMapping {
 }
 
 // http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
-object StandardGamepadMapping : GamepadMapping() {
+open class StandardGamepadMapping : GamepadMapping() {
+    companion object : StandardGamepadMapping()
+
 	override val id = "Standard"
 
 	override fun get(button: GameButton, info: GamepadInfo): Double {

@@ -193,7 +193,7 @@ data class GamePadConnectionEvent(var type: Type = Type.CONNECTED, var gamepad: 
 @Suppress("ArrayInDataClass")
 data class GamePadUpdateEvent @JvmOverloads constructor(
     var gamepadsLength: Int = 0,
-    val gamepads: Array<GamepadInfo> = Array(8) { GamepadInfo() }
+    val gamepads: Array<GamepadInfo> = Array(8) { GamepadInfo(it) }
 ) : Event() {
     fun copyFrom(that: GamePadUpdateEvent) {
         this.gamepadsLength = that.gamepadsLength

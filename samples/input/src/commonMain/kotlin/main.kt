@@ -1,6 +1,7 @@
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
+import com.soywiz.korge.component.GamepadComponent
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 
@@ -33,6 +34,18 @@ suspend fun main() = Korge {
 	//	gamepadUpdateText.text = "${nowTime()}:$it"
 	//	gamepadUpdate2Text.text = "" + it.gamepads.lastOrNull { it.connected }?.rawButtonsPressed
 	//}
+
+    stage.addComponent(object : GamepadComponent {
+        override val view: View = stage
+
+        override fun onGamepadEvent(views: Views, event: GamePadUpdateEvent) {
+            println(event)
+        }
+
+        override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {
+            println(event)
+        }
+    })
 
 	gamepad {
 		button.invoke { gamepadButtonText.text = "$it" }
