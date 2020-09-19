@@ -231,6 +231,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
     }
 
     override fun doHandleEvents() {
+        xInputEventAdapter.updateGamepadsWin32(this)
         memScoped {
             val msg = alloc<MSG>()
             while (
@@ -502,6 +503,9 @@ private var mouseX: Int = 0
 
 @ThreadLocal
 private var mouseY: Int = 0
+
+@ThreadLocal
+private val xInputEventAdapter = XInputEventAdapter()
 
 //@ThreadLocal
 //private val buttons = BooleanArray(16)
