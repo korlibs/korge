@@ -24,7 +24,7 @@ fun interface Easing {
 
         // Author's note:
         // 1. Make sure new standard easings are added both here and in the Easings enum class
-        // 2. Make sure the name is the same, otherwise ALL_STANDARD will return confusing results
+        // 2. Make sure the name is the same, otherwise [ALL] will return confusing results
 
         val SMOOTH: Easing get() = Easings.SMOOTH
         val EASE_IN_ELASTIC: Easing get() = Easings.EASE_IN_ELASTIC
