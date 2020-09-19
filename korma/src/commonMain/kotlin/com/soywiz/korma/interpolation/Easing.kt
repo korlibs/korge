@@ -15,8 +15,6 @@ fun interface Easing {
         fun cubic(f: (t: Double, b: Double, c: Double, d: Double) -> Double): Easing = Easing { f(it, 0.0, 1.0, 1.0) }
         fun combine(start: Easing, end: Easing) = Easing { combine(it, start, end) }
 
-        operator fun invoke(f: (Double) -> Double) = Easing { f(it) }
-
         /**
          * Retrieves a mapping of all standard easings defined directly in [Easing], for example "SMOOTH" -> Easing.SMOOTH.
          */
