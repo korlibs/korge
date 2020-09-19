@@ -35,17 +35,15 @@ suspend fun main() = Korge {
 	//	gamepadUpdate2Text.text = "" + it.gamepads.lastOrNull { it.connected }?.rawButtonsPressed
 	//}
 
-    stage.addComponent(object : GamepadComponent {
-        override val view: View = stage
-
-        override fun onGamepadEvent(views: Views, event: GamePadUpdateEvent) {
-            println(event)
-        }
-
-        override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {
-            println(event)
-        }
-    })
+    //stage.addComponent(object : GamepadComponent {
+    //    override val view: View = stage
+    //    override fun onGamepadEvent(views: Views, event: GamePadUpdateEvent) {
+    //        println(event)
+    //    }
+    //    override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {
+    //        println(event)
+    //    }
+    //})
 
 	gamepad {
 		button.invoke { gamepadButtonText.text = "$it" }
