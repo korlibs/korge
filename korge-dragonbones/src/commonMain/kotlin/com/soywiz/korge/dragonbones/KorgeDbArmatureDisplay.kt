@@ -139,51 +139,49 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 							this._debugDrawer?.addChild(child)
 						}
 
-						child.clear()
-						child.lineStyle(2.0, Colors.RED, 0.7)
+						child.stroke(Colors.RED.withAd(0.7), Context2d.StrokeInfo(thickness = 2.0)) {
 
-						when (boundingBoxData.type) {
-							BoundingBoxType.Rectangle -> {
-								child.rect(
-									-boundingBoxData.width * 0.5,
-									-boundingBoxData.height * 0.5,
-									boundingBoxData.width,
-									boundingBoxData.height
-								)
-							}
+                            when (boundingBoxData.type) {
+                                BoundingBoxType.Rectangle -> {
+                                    child.rect(
+                                        -boundingBoxData.width * 0.5,
+                                        -boundingBoxData.height * 0.5,
+                                        boundingBoxData.width,
+                                        boundingBoxData.height
+                                    )
+                                }
 
-							BoundingBoxType.Ellipse -> {
-								child.rect(
-									-boundingBoxData.width * 0.5,
-									-boundingBoxData.height * 0.5,
-									boundingBoxData.width,
-									boundingBoxData.height
-								)
-							}
+                                BoundingBoxType.Ellipse -> {
+                                    child.rect(
+                                        -boundingBoxData.width * 0.5,
+                                        -boundingBoxData.height * 0.5,
+                                        boundingBoxData.width,
+                                        boundingBoxData.height
+                                    )
+                                }
 
-							BoundingBoxType.Polygon -> {
-								val vertices = (boundingBoxData as PolygonBoundingBoxData).vertices
-								//for (let i = 0, l = vertices.length; i < l; i += 2) {
-								for (i in 0 until vertices.size step 2) {
-									val x = vertices[i]
-									val y = vertices[i + 1]
+                                BoundingBoxType.Polygon -> {
+                                    val vertices = (boundingBoxData as PolygonBoundingBoxData).vertices
+                                    //for (let i = 0, l = vertices.length; i < l; i += 2) {
+                                    for (i in 0 until vertices.size step 2) {
+                                        val x = vertices[i]
+                                        val y = vertices[i + 1]
 
-									if (i == 0) {
-										child.moveTo(x, y)
-									} else {
-										child.lineTo(x, y)
-									}
-								}
+                                        if (i == 0) {
+                                            child.moveTo(x, y)
+                                        } else {
+                                            child.lineTo(x, y)
+                                        }
+                                    }
 
-								child.lineTo(vertices[0], vertices[1])
-							}
+                                    child.lineTo(vertices[0], vertices[1])
+                                }
 
-							else -> {
+                                else -> {
 
-							}
-						}
-
-						child.endFill()
+                                }
+                            }
+                        }
 						slot.updateTransformAndMatrix()
 						slot.updateGlobalTransform()
 
