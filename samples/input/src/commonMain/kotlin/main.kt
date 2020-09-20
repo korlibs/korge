@@ -29,7 +29,7 @@ suspend fun main() = Korge {
 	//stage.addEventListener<KeyEvent> { keysEvText.text = "${nowTime()}:$it" }
 	//stage.addEventListener<MouseEvent> { mouseEvText.text = "${nowTime()}:$it" }
 	stage.addEventListener<ReshapeEvent> { resizeText.text = "Resize ${nowTime()} $it" }
-	//stage.addEventListener<GamePadConnectionEvent> { gamepadConnectedText.text = "${nowTime()}:$it" }
+	stage.addEventListener<GamePadConnectionEvent> { gamepadConnectedText.text = "${nowTime()}:$it" }
 	//stage.addEventListener<GamePadUpdateEvent> {
 	//	gamepadUpdateText.text = "${nowTime()}:$it"
 	//	gamepadUpdate2Text.text = "" + it.gamepads.lastOrNull { it.connected }?.rawButtonsPressed

@@ -153,3 +153,6 @@ fun Int.unsetBits(bits: Int) = this and bits.inv()
 
 /** Returns the integer [this] with the [bits] set */
 fun Int.setBits(bits: Int) = this or bits
+
+/** Returns the integer [this] with the [bits] set or unset depending on the [set] parameter */
+fun Int.setBits(bits: Int, set: Boolean): Int = if (set) setBits(bits) else unsetBits(bits)

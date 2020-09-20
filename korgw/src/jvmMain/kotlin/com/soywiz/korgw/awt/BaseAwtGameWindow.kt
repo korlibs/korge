@@ -9,6 +9,7 @@ import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.XInput
 import com.soywiz.korgw.win32.XInputEventAdapter
 import com.soywiz.korgw.win32.XInputState
+import com.soywiz.korgw.x11.LinuxJoyEventAdapter
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -185,10 +186,17 @@ abstract class BaseAwtGameWindow : GameWindow() {
             OS.isWindows -> {
                 xinputEventAdapter.updateGamepadsWin32(this)
             }
+            OS.isLinux -> {
+                linuxJoyEventAdapter.updateGamepads(this)
+            }
+            else -> {
+                println("undetected OS: ${OS.rawName}")
+            }
         }
     }
 
     private val xinputEventAdapter by lazy { XInputEventAdapter() }
+    private val linuxJoyEventAdapter by lazy { LinuxJoyEventAdapter() }
 
     val frameScaleFactor: Double get() = run {
         getDisplayScalingFactor(component)
