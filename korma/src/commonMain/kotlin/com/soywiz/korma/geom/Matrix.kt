@@ -81,7 +81,7 @@ data class Matrix(
         tx = tx1
     }
 
-    fun skew(skewX: Double, skewY: Double): Matrix {
+    fun skew(skewX: Angle, skewY: Angle): Matrix {
         val sinX = sin(skewX)
         val cosX = cos(skewX)
         val sinY = sin(skewY)
@@ -96,8 +96,6 @@ data class Matrix(
             tx * sinY + ty * cosX
         )
     }
-    fun skew(skewX: Float, skewY: Float): Matrix = skew(skewX.toDouble(), skewY.toDouble())
-    fun skew(skewX: Int, skewY: Int): Matrix = skew(skewX.toDouble(), skewY.toDouble())
 
     fun scale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx * sx, ty * sy)
     fun scale(sx: Float, sy: Float = sx) = scale(sx.toDouble(), sy.toDouble())
@@ -121,13 +119,11 @@ data class Matrix(
         this.premultiply(m)
     }
 
-    fun preskew(skewX: Double, skewY: Double) = this.apply {
+    fun preskew(skewX: Angle, skewY: Angle) = this.apply {
         val m = Matrix()
         m.skew(skewX, skewY)
         this.premultiply(m)
     }
-    fun preskew(skewX: Float, skewY: Float) = preskew(skewX.toDouble(), skewY.toDouble())
-    fun preskew(skewX: Int, skewY: Int) = preskew(skewX.toDouble(), skewY.toDouble())
 
     fun premultiply(m: Matrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
     fun postmultiply(m: Matrix) = multiply(this, m)
@@ -186,10 +182,10 @@ data class Matrix(
         scaleX: Double,
         scaleY: Double,
         rotation: Angle,
-        skewX: Double,
-        skewY: Double
+        skewX: Angle,
+        skewY: Angle
     ): Matrix {
-        if (skewX == 0.0 && skewY == 0.0) {
+        if (skewX == 0.0.radians && skewY == 0.0.radians) {
             if (rotation == 0.radians) {
                 this.setTo(scaleX, 0.0, 0.0, scaleY, x, y)
             } else {
@@ -206,7 +202,7 @@ data class Matrix(
         }
         return this
     }
-    fun setTransform(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Float, skewY: Float): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX.toDouble(), skewY.toDouble())
+    fun setTransform(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
     fun clone() = Matrix(a, b, c, d, tx, ty)
 
@@ -241,7 +237,7 @@ data class Matrix(
     data class Transform(
         var x: Double = 0.0, var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
-        var skewX: Double = 0.0, var skewY: Double = 0.0,
+        var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
         val scaleAvg get() = (scaleX + scaleY) * 0.5
@@ -263,9 +259,9 @@ data class Matrix(
             y = 0.0
             scaleX = 1.0
             scaleY = 1.0
-            skewX = 0.0
-            skewY = 0.0
-            rotation = 0.radians
+            skewX = 0.0.radians
+            skewY = 0.0.radians
+            rotation = 0.0.radians
         }
 
         fun setMatrix(matrix: Matrix): Transform {
@@ -273,22 +269,22 @@ data class Matrix(
             this.x = matrix.tx
             this.y = matrix.ty
 
-            this.skewX = atan(-matrix.c / matrix.d)
-            this.skewY = atan(matrix.b / matrix.a)
+            this.skewX = atan(-matrix.c / matrix.d).radians
+            this.skewY = atan(matrix.b / matrix.a).radians
 
             // Faster isNaN
-            if (this.skewX != this.skewX) this.skewX = 0.0
-            if (this.skewY != this.skewY) this.skewY = 0.0
+            if (this.skewX != this.skewX) this.skewX = 0.0.radians
+            if (this.skewY != this.skewY) this.skewY = 0.0.radians
 
             this.scaleY =
-                if (this.skewX > -PI_4 && this.skewX < PI_4) matrix.d / cos(this.skewX) else -matrix.c / sin(this.skewX)
+                if (this.skewX > -PI_4.radians && this.skewX < PI_4.radians) matrix.d / cos(this.skewX) else -matrix.c / sin(this.skewX)
             this.scaleX =
-                if (this.skewY > -PI_4 && this.skewY < PI_4) matrix.a / cos(this.skewY) else matrix.b / sin(this.skewY)
+                if (this.skewY > -PI_4.radians && this.skewY < PI_4.radians) matrix.a / cos(this.skewY) else matrix.b / sin(this.skewY)
 
-            if (abs(this.skewX - this.skewY) < 0.0001) {
-                this.rotation = this.skewX.radians
-                this.skewX = 0.0
-                this.skewY = 0.0
+            if (abs(this.skewX - this.skewY).radians < 0.0001) {
+                this.rotation = this.skewX
+                this.skewX = 0.0.radians
+                this.skewY = 0.0.radians
             } else {
                 this.rotation = 0.radians
             }
@@ -299,7 +295,7 @@ data class Matrix(
         fun toMatrix(out: Matrix = Matrix()): Matrix = out.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
         fun copyFrom(that: Transform) = setTo(that.x, that.y, that.scaleX, that.scaleY, that.rotation, that.skewX, that.skewY)
 
-        fun setTo(x: Double, y: Double, scaleX: Double, scaleY: Double, rotation: Angle, skewX: Double, skewY: Double): Transform {
+        fun setTo(x: Double, y: Double, scaleX: Double, scaleY: Double, rotation: Angle, skewX: Angle, skewY: Angle): Transform {
             this.x = x
             this.y = y
             this.scaleX = scaleX
@@ -309,8 +305,8 @@ data class Matrix(
             this.skewY = skewY
             return this
         }
-        fun setTo(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Float, skewY: Float): Transform =
-            setTo(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX.toDouble(), skewY.toDouble())
+        fun setTo(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Transform =
+            setTo(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
         fun clone() = Transform().copyFrom(this)
     }

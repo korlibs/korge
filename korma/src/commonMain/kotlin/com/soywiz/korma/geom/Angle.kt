@@ -74,6 +74,7 @@ inline class Angle(val radians: Double) : Comparable<Angle> {
 inline fun cos(angle: Angle): Double = kotlin.math.cos(angle.radians)
 inline fun sin(angle: Angle): Double = kotlin.math.sin(angle.radians)
 inline fun tan(angle: Angle): Double = kotlin.math.tan(angle.radians)
+inline fun abs(angle: Angle): Angle = Angle.fromRadians(angle.radians.absoluteValue)
 
 val Angle.cosine get() = cos(this)
 val Angle.sine get() = sin(this)

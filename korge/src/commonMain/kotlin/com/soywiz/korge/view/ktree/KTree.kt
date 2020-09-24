@@ -251,8 +251,8 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         angleDegrees(view::rotation, 0.degrees)
         double(view::scaleX, 1.0)
         double(view::scaleY, 1.0)
-        double(view::skewXDegrees, 0.0)
-        double(view::skewYDegrees, 0.0)
+        angleDegrees(view::skewX, 0.degrees)
+        angleDegrees(view::skewY, 0.degrees)
         if (view is RectBase) {
             double(view::anchorX, 0.0)
             double(view::anchorY, 0.0)
@@ -321,8 +321,8 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         if (view.rotation != 0.radians) add(view::rotation)
         if (view.scaleX != 1.0) add(view::scaleX)
         if (view.scaleY != 1.0) add(view::scaleY)
-        if (view.skewXDegrees != 0.0) add(view::skewXDegrees)
-        if (view.skewYDegrees != 0.0) add(view::skewYDegrees)
+        if (view.skewX != 0.degrees) add(view::skewX)
+        if (view.skewY != 0.degrees) add(view::skewY)
         if (view is RectBase) {
             if (view.anchorX != 0.0) add(view::anchorX)
             if (view.anchorY != 0.0) add(view::anchorY)

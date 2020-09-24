@@ -1,4 +1,4 @@
-@file:UseExperimental(KorgeInternal::class)
+@file:OptIn(KorgeInternal::class)
 
 package com.soywiz.korge.view
 
@@ -177,9 +177,9 @@ abstract class View internal constructor(
 
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
-    private var _skewX: Double = 0.0
-    private var _skewY: Double = 0.0
-    private var _rotation: Angle = 0.radians
+    private var _skewX: Angle = 0.0.radians
+    private var _skewY: Angle = 0.0.radians
+    private var _rotation: Angle = 0.0.radians
 
     /** Position of the view. **@NOTE**: If plan to change its values manually. You should call [View.invalidateMatrix] later to keep the matrix in sync */
     var pos = Point()
@@ -234,41 +234,17 @@ abstract class View internal constructor(
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
-        get() = skewXRadians.radians
-        set(v) { skewXRadians = v.radians }
+        get() = ensureTransform()._skewX
+        set(v) { ensureTransform(); if (_skewX != v) {
+            _skewX = v; invalidateMatrix()
+        } }
 
     /** Local skewing in the Y axis of this view */
     var skewY: Angle
-        get() = skewYRadians.radians
-        set(v) { skewYRadians = v.radians }
-
-    /** Local skewing in the X axis of this view */
-    var skewXRadians: Double
-        get() = ensureTransform()._skewX
-        set(v) {
-            ensureTransform(); if (_skewX != v) {
-                _skewX = v; invalidateMatrix()
-            }
-        }
-
-    /** Local skewing in the Y axis of this view */
-    var skewYRadians: Double
         get() = ensureTransform()._skewY
-        set(v) {
-            ensureTransform(); if (_skewY != v) {
-                _skewY = v; invalidateMatrix()
-            }
-        }
-
-    /** Local skewing in the X axis of this view */
-    var skewXDegrees: Double
-        get() = skewX.degrees
-        set(v) { skewX = v.degrees }
-
-    /** Local skewing in the Y axis of this view */
-    var skewYDegrees: Double
-        get() = skewY.degrees
-        set(v) { skewY = v.degrees }
+        set(v) { ensureTransform(); if (_skewY != v) {
+            _skewY = v; invalidateMatrix()
+        } }
 
     /** Local rotation of this view */
     var rotation: Angle
@@ -634,7 +610,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewXRadians, skewYRadians)
+                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
             }
             return _localMatrix
         }
@@ -947,7 +923,7 @@ abstract class View internal constructor(
         var out = this::class.portableSimpleName
         if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
         if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
-        if (skewXRadians != 0.0 || skewYRadians != 0.0) out += ":skew=(${skewXRadians.str},${skewYRadians.str})"
+        if (skewX.radians != 0.0 || skewY.radians != 0.0) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
         if (rotation != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
@@ -1150,8 +1126,8 @@ abstract class View internal constructor(
         _localMatrix.identity()
         pos.setTo(0.0, 0.0)
         _scaleX = 1.0; _scaleY = 1.0
-        _skewX = 0.0; _skewY = 0.0
-        _rotation = 0.radians
+        _skewX = 0.0.radians; _skewY = 0.0.radians
+        _rotation = 0.0.radians
         validLocalMatrix = false
         invalidate()
     }
@@ -1355,7 +1331,7 @@ abstract class View internal constructor(
             uiEditableValue(view::scale, min = 0.0, max = 1.0, clamp = false)
             uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
             uiEditableValue(view::rotation, name = "rotation")
-            uiEditableValue(Pair(view::skewXDegrees, view::skewYDegrees), min = -360.0, max = +360.0, name = "skew")
+            uiEditableValue(Pair(view::skewX, view::skewY), name = "skew")
             uiEditableValue(view::visible)
         }
 

@@ -98,15 +98,15 @@ class MatrixTest {
         //val t1 = Matrix.Transform(10, 20, scaleX = 2, scaleY = 3, rotation = 90.degrees)
         //val t2 = Matrix.Transform(20, 40, scaleX = 4, scaleY = 5, rotation = 180.degrees)
 
-        val t1 = Matrix.Transform(10.0, 20.0, scaleX = 2.0, scaleY = 3.0, skewX = 0.0, skewY = 0.0, rotation = 90.degrees)
-        val t2 = Matrix.Transform(20.0, 40.0, scaleX = 4.0, scaleY = 5.0, skewX = 0.0, skewY = 0.0, rotation = 180.degrees)
+        val t1 = Matrix.Transform(10.0, 20.0, scaleX = 2.0, scaleY = 3.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 90.degrees)
+        val t2 = Matrix.Transform(20.0, 40.0, scaleX = 4.0, scaleY = 5.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 180.degrees)
         assertEquals(
-            Matrix.Transform(x = 15.0, y = 30.0, scaleX = 3.0, scaleY = 4.0, skewX = 0.0, skewY = 0.0, rotation = 135.degrees),
+            Matrix.Transform(x = 15.0, y = 30.0, scaleX = 3.0, scaleY = 4.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 135.degrees),
             0.5.interpolate(t1, t2)
         )
 
         val identity = Matrix.Transform()
-        val mt = Matrix.Transform(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0.radians)
+        val mt = Matrix.Transform(1.0, 2.0, 3.0, 4.0, 5.0.radians, 6.0.radians, 7.0.radians)
         mt.identity()
         assertEquals(identity, mt)
         assertNotSame(mt, mt.clone())
