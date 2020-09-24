@@ -13,10 +13,10 @@ inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHI
 /**
  * A Rect [RectBase] [View] of size [width] and [height] with the initial color, [color].
  */
-class SolidRect(width: Double, height: Double, color: RGBA) : RectBase() {
+class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : RectBase() {
 	companion object {
-        operator fun invoke(width: Int, height: Int, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
-        operator fun invoke(width: Float, height: Float, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
 	}
 
 	override var width: Double = width; set(v) { field = v; dirtyVertices = true }

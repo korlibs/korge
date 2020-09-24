@@ -7,6 +7,15 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 
+open class PrintAG(
+    width: Int = 640,
+    height: Int = 480
+) : LogBaseAG() {
+    override fun log(str: String) {
+        println("PrintAG: $str")
+    }
+}
+
 open class LogAG(
     width: Int = 640,
     height: Int = 480

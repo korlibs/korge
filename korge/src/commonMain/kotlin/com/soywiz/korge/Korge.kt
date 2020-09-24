@@ -4,6 +4,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
+import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -99,6 +100,7 @@ object Korge {
 		gameWindow: GameWindow? = null,
         timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
+        debugAg: Boolean = false,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -130,7 +132,7 @@ object Korge {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+            val views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector

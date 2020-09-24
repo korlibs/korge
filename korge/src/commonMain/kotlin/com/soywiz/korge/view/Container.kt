@@ -29,7 +29,7 @@ open class Container : View(true) {
     @PublishedApi
 	internal val childrenInternal: ArrayList<View> get() {
         if (_children == null) _children = arrayListOf()
-        return _children!!
+        return _children as ArrayList<View>
     }
 
 	/**

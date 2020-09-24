@@ -39,9 +39,10 @@ object KorgeHeadless {
         args: Array<String> = arrayOf(),
         timeProvider: HRTimeProvider = HRTimeProvider,
         injector: AsyncInjector = AsyncInjector(),
+        debugAg: Boolean = false,
         entry: suspend Stage.() -> Unit
     ) = Korge(
         title, width, height, virtualWidth, virtualHeight, icon, iconPath, iconDrawable, imageFormats, quality,
-        targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector, entry
+        targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector, debugAg = debugAg, entry = entry
     )
 }

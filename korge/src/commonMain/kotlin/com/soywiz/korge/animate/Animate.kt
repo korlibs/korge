@@ -236,9 +236,6 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 
 //class PopMaskView(views: Views) : View(views)
 
-var RenderContext.stencilIndex by Extra.Property { 0 }
-
-
 class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	//var firstUpdateSingleFrame = false
 	val library: AnLibrary get() = view.library
@@ -443,60 +440,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		}
 	}
 
-	companion object {
-		class RenderState(val stencil: AG.StencilState, val colorMask: AG.ColorMaskState) {
-			fun set(ctx: RenderContext, referenceValue: Int) {
-				ctx.flush()
-				if (ctx.masksEnabled) {
-					stencil.referenceValue = referenceValue
-					ctx.batch.stencil = stencil
-					ctx.batch.colorMask = colorMask
-				} else {
-					stencil.referenceValue = 0
-					ctx.batch.stencil = STATE_NONE.stencil
-					ctx.batch.colorMask = STATE_NONE.colorMask
-				}
-			}
-		}
-
-		// @TODO: Move this to a class handling masks
-		val STATE_NONE = RenderState(
-			AG.StencilState(enabled = false),
-			AG.ColorMaskState(true, true, true, true)
-		)
-		val STATE_SHAPE = RenderState(
-			AG.StencilState(
-				enabled = true,
-				compareMode = AG.CompareMode.ALWAYS,
-				actionOnBothPass = AG.StencilOp.SET,
-				actionOnDepthFail = AG.StencilOp.SET,
-				actionOnDepthPassStencilFail = AG.StencilOp.SET,
-				referenceValue = 0,
-				readMask = 0x00,
-				writeMask = 0xFF
-			),
-			AG.ColorMaskState(false, false, false, false)
-		)
-		val STATE_CONTENT = RenderState(
-			AG.StencilState(
-				enabled = true,
-				compareMode = AG.CompareMode.EQUAL,
-				actionOnBothPass = AG.StencilOp.KEEP,
-				actionOnDepthFail = AG.StencilOp.KEEP,
-				actionOnDepthPassStencilFail = AG.StencilOp.KEEP,
-				referenceValue = 0,
-				readMask = 0xFF,
-				writeMask = 0x00
-			),
-			AG.ColorMaskState(true, true, true, true)
-		)
-
-		//val STATE_NONE = RenderState(AG.StencilState(enabled = false), AG.ColorMaskState(true, true, true, true))
-		//val STATE_SHAPE = STATE_NONE
-		//val STATE_CONTENT = STATE_NONE
-	}
-
 	private val tempMatrix = Matrix()
+    private val tempLocalRenderState = MaskStates.LocalRenderState()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 
@@ -517,7 +462,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					maskPopDepths[maskDepth] = true
 					ctx.stencilIndex++
 					usedStencil = true
-					STATE_SHAPE.set(ctx, ctx.stencilIndex)
+                    MaskStates.STATE_SHAPE.set(ctx, ctx.stencilIndex, tempLocalRenderState)
 					state = 1
 					//println(" shape")
 				}
@@ -540,14 +485,14 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			// Mask content
 			if (maskDepth >= 0) {
 				//println(" content")
-				STATE_CONTENT.set(ctx, ctx.stencilIndex)
+                MaskStates.STATE_CONTENT.set(ctx, ctx.stencilIndex, tempLocalRenderState)
 				state = 2
 			}
 
 			// Pop Mask
 			if (maskPopDepths.getOrElse(depth) { false }) {
 				//println(" none")
-				STATE_NONE.set(ctx, referenceValue = 0)
+                MaskStates.STATE_NONE.set(ctx, referenceValue = 0, tempLocalRenderState)
 				ctx.stencilIndex--
 				state = 0
 			}

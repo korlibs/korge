@@ -492,7 +492,19 @@ abstract class AG : Extra by Extra.Mixin() {
 		var referenceValue: Int = 0,
 		var readMask: Int = 0xFF,
 		var writeMask: Int = 0xFF
-	)
+	) {
+        fun copyFrom(other: StencilState) {
+            this.enabled = other.enabled
+            this.triangleFace = other.triangleFace
+            this.compareMode = other.compareMode
+            this.actionOnBothPass = other.actionOnBothPass
+            this.actionOnDepthFail = other.actionOnDepthFail
+            this.actionOnDepthPassStencilFail = other.actionOnDepthPassStencilFail
+            this.referenceValue = other.referenceValue
+            this.readMask = other.readMask
+            this.writeMask = other.writeMask
+        }
+    }
 
 	private val dummyRenderState = RenderState()
 	private val dummyStencilState = StencilState()
@@ -532,22 +544,22 @@ abstract class AG : Extra by Extra.Mixin() {
         batch.scissor = scissor
     })
 
-    class Batch {
-        var vertices: Buffer = Buffer(Buffer.Kind.VERTEX)
-        var program: Program = DefaultShaders.PROGRAM_DEBUG
-        var type: DrawType = DrawType.TRIANGLES
-        var vertexLayout: VertexLayout = VertexLayout()
-        var vertexCount: Int = 0
-        //var instanceCount: Int = 1
-        var indices: Buffer? = null
-        var offset: Int = 0
-        var blending: Blending = Blending.NORMAL
-        var uniforms: UniformValues = UniformValues.EMPTY
-        var stencil: StencilState = StencilState()
-        var colorMask: ColorMaskState = ColorMaskState()
-        var renderState: RenderState = RenderState()
-        var scissor: Scissor? = null
-    }
+    data class Batch(
+        var vertices: Buffer = Buffer(Buffer.Kind.VERTEX),
+        var program: Program = DefaultShaders.PROGRAM_DEBUG,
+        var type: DrawType = DrawType.TRIANGLES,
+        var vertexLayout: VertexLayout = VertexLayout(),
+        var vertexCount: Int = 0,
+        //var instanceCount: Int = 1,
+        var indices: Buffer? = null,
+        var offset: Int = 0,
+        var blending: Blending = Blending.NORMAL,
+        var uniforms: UniformValues = UniformValues.EMPTY,
+        var stencil: StencilState = StencilState(),
+        var colorMask: ColorMaskState = ColorMaskState(),
+        var renderState: RenderState = RenderState(),
+        var scissor: Scissor? = null,
+    )
 
     private val batch = Batch()
 
