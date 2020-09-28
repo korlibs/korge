@@ -2,20 +2,10 @@
 
 package com.soywiz.korge3d.tween
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
 import com.soywiz.korge.tween.*
-import com.soywiz.korge3d.component.*
 import com.soywiz.korge3d.View3D
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.jvm.*
-import kotlin.reflect.*
 
 //suspend fun View3D.show(time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 //	tween(this::alpha[1.0], time = time, easing = easing) { this.visible = true }
