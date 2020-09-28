@@ -1,10 +1,8 @@
-import com.soywiz.korev.Key
+import com.soywiz.korev.*
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.keys
-import com.soywiz.korge3d.Korge3DExperimental
-import com.soywiz.korge3d.cubeMapFromResourceDirectory
-import com.soywiz.korge3d.scene3D
-import com.soywiz.korge3d.skyBox
+import com.soywiz.korge3d.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.times
 
@@ -13,40 +11,17 @@ suspend fun main() = Korge {
 
     scene3D {
         val stage3D = this
-        skyBox(cubeMapFromResourceDirectory("skybox", "jpg"))
+        skyBox(resourcesVfs["skybox"].readCubeMap("jpg"))
 
         keys {
             val angleSpeed = 1.degrees
-            val fast = 5
-            downFrame(Key.UP) {
-                val mul = when {
-                    it.shift -> fast
-                    else -> 1
-                }
-                stage3D.camera.pitchDown(angleSpeed.times(mul), 1f)
-            }
-            downFrame(Key.DOWN) {
-                val mul = when {
-                    it.shift -> fast
-                    else -> 1
-                }
-                stage3D.camera.pitchUp(angleSpeed.times(mul), 1f)
-            }
-            downFrame(Key.RIGHT) {
-                val mul = when {
-                    it.shift -> fast
-                    else -> 1
-                }
-                stage3D.camera.yawRight(angleSpeed.times(mul), 1f)
-            }
-            downFrame(Key.LEFT) {
-                val mul = when {
-                    it.shift -> fast
-                    else -> 1
-                }
-                stage3D.camera.yawLeft(angleSpeed.times(mul), 1f)
-            }
+            downFrame(Key.UP) { stage3D.camera.pitchDown(angleSpeed * it.speed, 1f) }
+            downFrame(Key.DOWN) { stage3D.camera.pitchUp(angleSpeed * it.speed, 1f) }
+            downFrame(Key.RIGHT) { stage3D.camera.yawRight(angleSpeed * it.speed, 1f) }
+            downFrame(Key.LEFT) { stage3D.camera.yawLeft(angleSpeed * it.speed, 1f) }
         }
     }
 
 }
+
+private val KeyEvent.speed: Double get() = if (shift) 5.0 else 1.0

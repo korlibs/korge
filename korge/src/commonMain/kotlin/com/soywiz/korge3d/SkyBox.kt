@@ -6,6 +6,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge3d.internal.toFBuffer
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.format.readNativeImage
+import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.*
 
@@ -22,12 +23,16 @@ interface CubeMap {
 }
 
 suspend fun cubeMapFromResourceDirectory(directory: String, ext: String): CubeMap {
-    val rightImage = resourcesVfs.get("$directory/right.$ext").readNativeImage()
-    val leftImage = resourcesVfs.get("$directory/left.$ext").readNativeImage()
-    val topImage = resourcesVfs.get("$directory/top.$ext").readNativeImage()
-    val bottomImage = resourcesVfs.get("$directory/bottom.$ext").readNativeImage()
-    val backImage = resourcesVfs.get("$directory/back.$ext").readNativeImage()
-    val frontImage = resourcesVfs.get("$directory/front.$ext").readNativeImage()
+    return resourcesVfs[directory].readCubeMap(ext)
+}
+
+suspend fun VfsFile.readCubeMap(ext: String): CubeMap {
+    val rightImage = this["right.$ext"].readNativeImage()
+    val leftImage = this["left.$ext"].readNativeImage()
+    val topImage = this["top.$ext"].readNativeImage()
+    val bottomImage = this["bottom.$ext"].readNativeImage()
+    val backImage = this["back.$ext"].readNativeImage()
+    val frontImage = this["front.$ext"].readNativeImage()
     return CubeMapSimple(rightImage, leftImage, topImage, bottomImage, backImage, frontImage)
 }
 
