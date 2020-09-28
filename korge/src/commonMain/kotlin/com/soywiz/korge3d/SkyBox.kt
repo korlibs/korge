@@ -124,7 +124,7 @@ class SkyBox(
             -1f, +1f, -1f, // 6, left, top, front
             +1f, +1f, -1f  // 7, right, top, front
         )
-        val skyboxIndices = intArrayOf(
+        val skyboxIndices = shortArrayOf(
             1, 5, 3, 3, 5, 7, // right
             0, 2, 4, 4, 2, 6, // left
             2, 3, 6, 3, 6, 7, // top
@@ -173,8 +173,8 @@ class SkyBox(
 
         val indexBuffer = ag.createIndexBuffer()
         ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-            vertexBuffer.upload(skyboxVertices.toFBuffer())
-            indexBuffer.upload(skyboxIndices.toFBuffer())
+            vertexBuffer.upload(skyboxVertices)
+            indexBuffer.upload(skyboxIndices)
             val projection = ctx.projCameraMat
             val view = transform.globalMatrix
             // remove translation from the view matrix
@@ -189,7 +189,7 @@ class SkyBox(
                 vertexLayout = layout,
                 vertexCount = 36,
                 indices = indexBuffer,
-                indexType = AG.IndexType.UINT,
+                indexType = AG.IndexType.USHORT,
                 blending = AG.Blending.NONE,
                 uniforms = uniformValues.apply {
                     this[u_ProjMat] = projection
@@ -198,9 +198,8 @@ class SkyBox(
                 },
                 renderState = rs
             )
-
-
         }
+        indexBuffer.close()
         //println("-----------------------------------------")
     }
 

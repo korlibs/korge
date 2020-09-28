@@ -411,7 +411,10 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
     enum class IndexType {
-        UBYTE, USHORT, UINT
+        UBYTE, USHORT,
+        // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+        @Deprecated("UINT is not always supported on webgl")
+        UINT
     }
 
 	val dummyTexture by lazy { createTexture() }
@@ -562,7 +565,7 @@ abstract class AG : Extra by Extra.Mixin() {
         var vertexLayout: VertexLayout = VertexLayout(),
         var vertexCount: Int = 0,
         var indices: Buffer? = null,
-        var indexType:IndexType = IndexType.USHORT,
+        var indexType: IndexType = IndexType.USHORT,
         var offset: Int = 0,
         var blending: Blending = Blending.NORMAL,
         var uniforms: UniformValues = UniformValues.EMPTY,
