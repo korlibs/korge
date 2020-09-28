@@ -7,8 +7,7 @@ import com.soywiz.korge3d.internal.toFBuffer
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.format.readNativeImage
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.translate
+import com.soywiz.korma.geom.*
 
 interface CubeMap {
     val right: NativeImage
@@ -147,6 +146,7 @@ class SkyBox(
 
     private var init = true
     private val cubeMapTexUnit = AG.TextureUnit()
+    private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {
         //println("----------- SkyBox render ---------------")
@@ -176,9 +176,9 @@ class SkyBox(
                 vertexBuffer.upload(skyboxVertices)
                 indexBuffer.upload(skyboxIndices)
                 val projection = ctx.projCameraMat
-                val view = transform.globalMatrix
                 // remove translation from the view matrix
-                val viewNoTrans = view.clone()
+                viewNoTrans
+                    .copyFrom(transform.globalMatrix)
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
