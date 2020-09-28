@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -59,7 +60,7 @@ open class UIView(
 	}
 }
 
-internal class DummyUpdateComponentWithViews(override val view: View) : UpdateComponentWithViews {
+internal class DummyUpdateComponentWithViews(override val view: BaseView) : UpdateComponentWithViews {
     override fun update(views: Views, dt: TimeSpan) {
     }
 }

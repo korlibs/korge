@@ -5,6 +5,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
+import com.soywiz.korge.baseview.*
 import kotlin.reflect.*
 
 /**
@@ -12,7 +13,7 @@ import kotlin.reflect.*
  * The most common case of Component is the [UpdateComponent]
  */
 interface Component {
-    val view: View
+    val view: BaseView
 }
 
 //Deprecated("Unoptimized")
@@ -189,7 +190,7 @@ interface UpdateComponent : Component {
     fun update(dt: TimeSpan)
 }
 
-abstract class FixedUpdateComponent(override val view: View, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
+abstract class FixedUpdateComponent(override val view: BaseView, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
     var accumulated = 0.milliseconds
     final override fun update(dt: TimeSpan) {
         accumulated += dt
@@ -215,9 +216,9 @@ interface ResizeComponent : Component {
     fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
 
     companion object {
-        operator fun invoke(view: View, block: Views.(width: Int, height: Int) -> Unit): ResizeComponent =
+        operator fun invoke(view: BaseView, block: Views.(width: Int, height: Int) -> Unit): ResizeComponent =
             object : ResizeComponent {
-                override val view: View = view
+                override val view: BaseView = view
                 override fun resized(views: Views, width: Int, height: Int) {
                     block(views, width, height)
                 }
@@ -225,7 +226,7 @@ interface ResizeComponent : Component {
     }
 }
 
-fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
+fun <T : BaseView> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
     if (firstTrigger) {
         deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }
     }
@@ -233,7 +234,7 @@ fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(widt
 }
 
 /*
-open class Component(val view: View) : EventDispatcher by view, Cancellable {
+open class Component(val view: BaseView) : EventDispatcher by view, Cancellable {
 	val detatchCloseables = arrayListOf<Closeable>()
 
 	fun attach() = view.addComponent(this)
@@ -407,10 +408,10 @@ class Components {
     }
 
     inline fun <reified T : Component> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         array: ArrayList<T>,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T {
         var component: T? = findFirstComponentOfType(array, clazz)
         if (component == null) {
@@ -420,52 +421,52 @@ class Components {
         return component
     }
 
-    inline fun <reified T : Component> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T =
+    inline fun <reified T : Component> getOrCreateComponent(view: BaseView, clazz: KClass<out T>, gen: (BaseView) -> T): T =
         getOrCreateComponent(view, eother, clazz, gen) as T
 
     inline fun <reified T : MouseComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, emouse, clazz, gen) as T
 
-    inline fun <reified T : KeyComponent> getOrCreateComponent(view: View, clazz: KClass<out T>, gen: (View) -> T): T =
+    inline fun <reified T : KeyComponent> getOrCreateComponent(view: BaseView, clazz: KClass<out T>, gen: (BaseView) -> T): T =
         getOrCreateComponent(view, ekey, clazz, gen) as T
 
     inline fun <reified T : GamepadComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, egamepad, clazz, gen) as T
 
     inline fun <reified T : TouchComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, etouch, clazz, gen) as T
 
     inline fun <reified T : EventComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, eevent, clazz, gen) as T
 
     inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, eupdateWV, clazz, gen) as T
 
     inline fun <reified T : UpdateComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, eupdate, clazz, gen) as T
 
     inline fun <reified T : ResizeComponent> getOrCreateComponent(
-        view: View,
+        view: BaseView,
         clazz: KClass<out T>,
-        gen: (View) -> T
+        gen: (BaseView) -> T
     ): T = getOrCreateComponent(view, eresize, clazz, gen) as T
 
     inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class) as T?

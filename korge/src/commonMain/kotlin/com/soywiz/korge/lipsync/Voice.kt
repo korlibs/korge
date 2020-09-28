@@ -5,6 +5,7 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.animate.play
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
@@ -59,12 +60,12 @@ data class LipSyncEvent(var name: String = "", var time: TimeSpan = 0.seconds, v
 	val timeMs: Int get() = time.millisecondsInt
 }
 
-class LipSyncComponent(override val view: View) : EventComponent {
+class LipSyncComponent(override val view: BaseView) : EventComponent {
 	override fun onEvent(event: Event) {
 		if (event is LipSyncEvent) {
 			val name = view.getPropString("lipsync")
 			if (event.name == name) {
-				view.play("${event.lip}")
+                (view as? View?)?.play("${event.lip}")
 			}
 		}
 	}
