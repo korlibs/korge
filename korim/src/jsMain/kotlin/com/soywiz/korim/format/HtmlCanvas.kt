@@ -4,7 +4,7 @@ import com.soywiz.korio.util.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
 import org.w3c.files.*
-import kotlin.browser.*
+import kotlinx.browser.*
 
 external interface HTMLCanvasElementLike : TexImageSource {
     val width: Int

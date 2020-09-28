@@ -14,7 +14,7 @@ import com.soywiz.kmem.set
 import com.soywiz.kmem.get
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.util.OS
-import kotlin.browser.document
+import kotlinx.browser.document
 
 // https://github.com/shrekshao/MoveWebGL1EngineToWebGL2/blob/master/Move-a-WebGL-1-Engine-To-WebGL-2-Blog-1.md
 // https://webglstats.com/

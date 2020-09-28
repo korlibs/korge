@@ -505,7 +505,7 @@ class SkinChangingScene : BaseDbScene() {
 				// Replace skin.
 				factory.replaceSkin(armatureDisplay.armature, partArmatureData!!.defaultSkin!!)
 				// Remove has been replaced
-				_replaceSuitParts.splice(partIndex, 1)
+				_replaceSuitParts.removeAt(partIndex)
 			}
 		}
 	}

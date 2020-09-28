@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
 import org.w3c.dom.events.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.coroutines.*
 
 class MediaElementAudioSourceNodeWithAudioElement(

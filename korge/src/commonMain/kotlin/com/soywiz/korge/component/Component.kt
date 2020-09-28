@@ -1,7 +1,7 @@
 package com.soywiz.korge.component
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
@@ -170,7 +170,7 @@ interface EventComponent : Component {
  * It is like [UpdateComponent] but includes a reference to the [Views] itself.
  */
 interface UpdateComponentWithViews : Component {
-    fun update(views: Views, dt: HRTimeSpan)
+    fun update(views: Views, dt: TimeSpan)
 }
 
 /**
@@ -186,12 +186,12 @@ interface UpdateComponentWithViews : Component {
  * ```
  */
 interface UpdateComponent : Component {
-    fun update(dt: HRTimeSpan)
+    fun update(dt: TimeSpan)
 }
 
-abstract class FixedUpdateComponent(override val view: View, val step: HRTimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
-    var accumulated = 0.hrSeconds
-    final override fun update(dt: HRTimeSpan) {
+abstract class FixedUpdateComponent(override val view: View, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
+    var accumulated = 0.milliseconds
+    final override fun update(dt: TimeSpan) {
         accumulated += dt
         if (accumulated >= step * maxAccumulated) {
             accumulated = step * maxAccumulated

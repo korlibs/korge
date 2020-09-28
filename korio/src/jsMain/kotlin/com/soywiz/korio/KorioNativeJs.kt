@@ -15,7 +15,7 @@ import org.w3c.dom.*
 import org.w3c.dom.events.*
 import org.w3c.performance.*
 import org.w3c.xhr.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.collections.set
 import kotlin.coroutines.*
 

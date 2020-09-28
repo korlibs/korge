@@ -1,7 +1,7 @@
 package com.soywiz.korio.util.i18n
 
 import com.soywiz.korio.*
-import kotlin.browser.*
+import kotlinx.browser.*
 
 internal actual val systemLanguageStrings: List<String> by lazy {
 	if (isNodeJs) {

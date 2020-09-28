@@ -1,6 +1,6 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.hr.hrSeconds
+import com.soywiz.klock.hr.hr
 
 val TimeSpan.hz get() = timesPerSecond
 val Int.hz get() = timesPerSecond
@@ -18,5 +18,5 @@ inline class Frequency(val hertz: Double) {
     }
 
     val timeSpan get() = (1.0 / this.hertz).seconds
-    val hrTimeSpan get() = (1.0 / this.hertz).hrSeconds
+    val hrTimeSpan get() = (1.0 / this.hertz).seconds.hr
 }

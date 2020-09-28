@@ -2,9 +2,10 @@ package com.soywiz.korge.box2d
 
 import com.soywiz.kds.*
 import com.soywiz.klock.hr.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
 import com.soywiz.korge.component.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.lang.*
@@ -15,7 +16,6 @@ import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*
 import org.jbox2d.dynamics.*
 import org.jbox2d.userdata.*
-import kotlin.math.*
 
 @PublishedApi
 internal val DEFAULT_SCALE = 20.0
@@ -33,7 +33,7 @@ var KTreeSerializer.box2dWorld by Extra.PropertyThis<KTreeSerializer, Box2dWorld
 object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
     override fun complete(serializer: KTreeSerializer, view: View) {
         //serializer.box2dWorld?.world?.forEachBody { println("it.linearVelocityY: ${it.linearVelocityY}") }
-        serializer.box2dWorld?.update(0.hrSeconds)
+        serializer.box2dWorld?.update(0.0.milliseconds)
         serializer.box2dWorld?.world?.forEachBody {
             if (!it.didReset) {
                 it.didReset = true
@@ -159,7 +159,7 @@ class Box2dWorldComponent(
     var velocityIterations: Int = 6,
     var positionIterations: Int = 2,
     var autoDestroyBodies: Boolean = true,
-) : FixedUpdateComponent(worldView, 16.hrMilliseconds), WorldRef {
+) : FixedUpdateComponent(worldView, 16.milliseconds), WorldRef {
     init {
         world.component = this
     }

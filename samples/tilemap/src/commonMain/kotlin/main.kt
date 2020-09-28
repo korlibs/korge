@@ -27,9 +27,9 @@ suspend fun main() = Korge(width = 512, height = 512) {
 		//		}
 		//	}
 		//}
-		addHrUpdater {
+		addUpdater {
 			//val scale = 1.0 / (it / 16.666666.hrMilliseconds)
-			val scale = if (it == 0.hrMilliseconds) 0.0 else (it / 16.666666.hrMilliseconds)
+			val scale = if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds)
 			if (views.input.keys[Key.RIGHT]) dx -= 1.0
 			if (views.input.keys[Key.LEFT]) dx += 1.0
 			if (views.input.keys[Key.UP]) dy += 1.0

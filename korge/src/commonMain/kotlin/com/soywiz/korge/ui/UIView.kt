@@ -1,7 +1,7 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -60,6 +60,6 @@ open class UIView(
 }
 
 internal class DummyUpdateComponentWithViews(override val view: View) : UpdateComponentWithViews {
-    override fun update(views: Views, dt: HRTimeSpan) {
+    override fun update(views: Views, dt: TimeSpan) {
     }
 }

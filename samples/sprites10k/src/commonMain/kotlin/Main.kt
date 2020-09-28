@@ -1,4 +1,4 @@
-import com.soywiz.klock.hr.hrMilliseconds
+import com.soywiz.klock.milliseconds
 import com.soywiz.korge.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -32,8 +32,8 @@ suspend fun main() = Korge(width = 1600, height = 1200) {
 		sprite.playAnimationLooped(redAnimations[index % redAnimations.size])
 	}
 
-	addHrUpdater {
-		val scale = if (it == 0.hrMilliseconds) 0.0 else (it / 16.666666.hrMilliseconds)
+	addUpdater {
+		val scale = if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds)
 
 		greenSprites.forEachIndexed { index, sprite ->
 			sprite.walkDirection(index % greenAnimations.size, scale)

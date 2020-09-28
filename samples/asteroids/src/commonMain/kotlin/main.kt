@@ -50,8 +50,8 @@ suspend fun main() = Korge(
 	}
 
 	var bulletReload = 0.0
-	addHrUpdater { time ->
-		val scale = time / 16.hrMilliseconds
+	addUpdater { time ->
+		val scale = time / 16.0.milliseconds
 		if (pressing(Key.LEFT)) ship.rotation -= 3.degrees * scale
 		if (pressing(Key.RIGHT)) ship.rotation += 3.degrees * scale
 		if (pressing(Key.UP)) ship.advance(2.0 * scale)
@@ -103,8 +103,8 @@ class Asteroid(val assets: Assets, val asteroidSize: Int = 3) : BaseImage(assets
 		scale = asteroidSize.toDouble() / 3.0
 		name = "asteroid"
 		speed = 0.6
-		addHrUpdater { time ->
-			val scale = time / 16.hrMilliseconds
+		addUpdater { time ->
+			val scale = time / 16.0.milliseconds
 			val dx = angle.cosine * scale
 			val dy = angle.sine * scale
 			x += dx

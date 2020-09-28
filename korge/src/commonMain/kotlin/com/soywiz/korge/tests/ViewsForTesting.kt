@@ -3,7 +3,6 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -32,9 +31,8 @@ open class ViewsForTesting @JvmOverloads constructor(
 	var time = startTime
 	val elapsed get() = time - startTime
 
-	val timeProvider = object : HRTimeProvider {
-        //override fun now(): DateTime = time
-        override fun now(): HRTimeSpan = time.unixMillisDouble.hrMilliseconds
+	val timeProvider = object : TimeProvider {
+        override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
@@ -211,7 +209,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
-				dispatcher.executePending(1.hrSeconds)
+				dispatcher.executePending(1.seconds)
 			}
 
 			if (completedException != null) throw completedException!!
@@ -219,16 +217,16 @@ open class ViewsForTesting @JvmOverloads constructor(
 	}
 
     private var simulatedFrames = 0
-    private var lastDelay = PerformanceCounter.hr
+    private var lastDelay = PerformanceCounter.reference
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
             //println("SIMULATE: $frameTime")
             time += frameTime
             gameWindow.dispatchRenderEvent()
             simulatedFrames++
-            val now = PerformanceCounter.hr
+            val now = PerformanceCounter.reference
             val elapsedSinceLastDelay = now - lastDelay
-            if (elapsedSinceLastDelay >= 1.hrSeconds) {
+            if (elapsedSinceLastDelay >= 1.seconds) {
                 lastDelay = now
                 delay(1)
             }
@@ -243,7 +241,7 @@ open class ViewsForTesting @JvmOverloads constructor(
     inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
 		val hasMore get() = timedTasks2.isNotEmpty() || tasks.isNotEmpty()
 
-		override fun now() = time.unixMillisDouble.hrMilliseconds
+		override fun now() = time.unixMillisDouble.milliseconds
 
         val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
 

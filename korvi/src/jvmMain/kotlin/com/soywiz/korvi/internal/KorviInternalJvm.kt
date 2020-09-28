@@ -3,7 +3,7 @@ package com.soywiz.korvi.internal
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.klock.hr.hrSeconds
+import com.soywiz.klock.hr.hr
 import com.soywiz.kmem.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korim.bitmap.*
@@ -74,7 +74,7 @@ abstract class JvmBaseKorviStream<TFrame : KorviFrame>(
     }
 
     override suspend fun getTotalFrames(): Long? = track.meta.totalFrames.toLong()
-    override suspend fun getDuration(): HRTimeSpan? = track.meta.totalDuration.hrSeconds
+    override suspend fun getDuration(): HRTimeSpan? = track.meta.totalDuration.seconds.hr
 
     override suspend fun readFrame(): TFrame? {
         prepareFrames()
@@ -97,7 +97,7 @@ class JvmKorviVideoStream(
         val frame = videoTrack.nextFrame() ?: return
         //println("FRAME: ${frame.frameNo}, ${frame.pts}, ${frame.timescale}, ${frame.duration}, ${frame.frameType}")
         val decodedFrame = adaptor.decodeFrame(frame, pic)
-        queue.enqueue(KorviVideoFrame({ decodedFrame.toBmp() }, frame.frameNo, frame.ptsD.hrSeconds, frame.durationD.hrSeconds))
+        queue.enqueue(KorviVideoFrame({ decodedFrame.toBmp() }, frame.frameNo, frame.ptsD.seconds.hr, frame.durationD.seconds.hr))
     }
 }
 
@@ -128,7 +128,7 @@ class JvmKorviAudioStream(
                 arraycopy(shorts, channel * sampleCount, array, 0, array.size)
             }
 
-            queue.enqueue(KorviAudioFrame(AudioData(audioBuffer.format.frameRate, audioSamples), frame.frameNo, frame.ptsD.hrSeconds, frame.durationD.hrSeconds))
+            queue.enqueue(KorviAudioFrame(AudioData(audioBuffer.format.frameRate, audioSamples), frame.frameNo, frame.ptsD.seconds.hr, frame.durationD.seconds.hr))
             //outs.write(shorts.toByteArrayLE())
         }
     }

@@ -5,7 +5,6 @@ import com.soywiz.korev.*
 import kotlinx.cinterop.*
 import platform.windows.GetProcAddress
 import platform.windows.LoadLibraryA
-import kotlin.jvm.JvmField
 
 internal val XINPUT_DLL by lazy { LoadLibraryA("xinput9_1_0.dll") }
 
@@ -38,14 +37,14 @@ internal class XInputState {
         const val SIZE = 16
     }
 
-    @JvmField var dwPacketNumber: Int = 0 // offset: 0
-    @JvmField var wButtons: Short = 0 // offset: 4, short = 2
-    @JvmField var bLeftTrigger: Byte = 0 // offset: 6
-    @JvmField var bRightTrigger: Byte = 0 // offset: 7
-    @JvmField var sThumbLX: Short = 0 // offset: 8
-    @JvmField var sThumbLY: Short = 0 // offset: 10
-    @JvmField var sThumbRX: Short = 0 // offset: 12
-    @JvmField var sThumbRY: Short = 0 // offset: 14
+    var dwPacketNumber: Int = 0 // offset: 0
+    var wButtons: Short = 0 // offset: 4, short = 2
+    var bLeftTrigger: Byte = 0 // offset: 6
+    var bRightTrigger: Byte = 0 // offset: 7
+    var sThumbLX: Short = 0 // offset: 8
+    var sThumbLY: Short = 0 // offset: 10
+    var sThumbRX: Short = 0 // offset: 12
+    var sThumbRY: Short = 0 // offset: 14
 
     fun write(ptr: CPointer<ByteVarOf<Byte>>) {
         val sptr = ptr.reinterpret<ShortVar>()

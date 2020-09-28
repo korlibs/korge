@@ -3,14 +3,12 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -44,7 +42,7 @@ class Views constructor(
     val ag: AG,
     val injector: AsyncInjector,
     val input: Input,
-    val timeProvider: HRTimeProvider,
+    val timeProvider: TimeProvider,
     val stats: Stats,
     val gameWindow: GameWindow
 ) :
@@ -70,7 +68,7 @@ class Views constructor(
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
-	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
+	var clampElapsedTimeTo = 100.0.milliseconds
 
     var editingMode: Boolean = false
 
@@ -282,7 +280,7 @@ class Views constructor(
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
 		if (fixedSizeStep != TimeSpan.NIL) {
-			update(fixedSizeStep.hr)
+			update(fixedSizeStep)
 		} else {
 			update(adelta)
 		}
@@ -290,7 +288,7 @@ class Views constructor(
 	}
 
 
-	fun update(elapsed: HRTimeSpan) {
+	fun update(elapsed: TimeSpan) {
 		//println(this)
 		//println("Update: $dtMs")
 		input.startFrame(elapsed)
@@ -424,7 +422,7 @@ class ViewsLog(
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: AG = LogAG(),
 	val input: Input = Input(),
-	val timeProvider: HRTimeProvider = HRTimeProvider,
+	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
@@ -485,7 +483,7 @@ private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: HRTimeSpan, tempViews: ArrayList<View> = arrayListOf()) {
+fun View.updateSingleView(delta: TimeSpan, tempViews: ArrayList<View> = arrayListOf()) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
         view._components?.update?.fastForEach { comp ->
             comp.update(delta * view.globalSpeed)
@@ -497,7 +495,7 @@ fun View.updateSingleView(delta: HRTimeSpan, tempViews: ArrayList<View> = arrayL
 //fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
 //    getAllDescendantViews(this, tempViews).fastForEach { view ->
 //        view._components?.updateWV?.fastForEach { comp ->
-//            comp.update(views, (dtMsD * view.globalSpeed).hrMilliseconds)
+//            comp.update(views, (dtMsD * view.globalSpeed).milliseconds)
 //        }
 //    }
 //}
@@ -505,7 +503,7 @@ fun View.updateSingleView(delta: HRTimeSpan, tempViews: ArrayList<View> = arrayL
 @OptIn(KorgeInternal::class)
 fun View.updateSingleViewWithViewsAll(
     views: Views,
-    delta: HRTimeSpan,
+    delta: TimeSpan,
     tempViews: ArrayList<View> = arrayListOf()
 ) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->

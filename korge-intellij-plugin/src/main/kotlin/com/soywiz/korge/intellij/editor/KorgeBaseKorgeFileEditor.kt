@@ -19,6 +19,7 @@ import com.intellij.openapi.project.*
 import com.intellij.openapi.util.*
 import com.intellij.openapi.vfs.*
 import com.soywiz.klock.hr.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.korag.*
 import com.soywiz.korge.*
 import com.soywiz.korge.awt.*
@@ -143,7 +144,7 @@ open class KorgeBaseKorgeFileEditor(
                     }
                     container.changeTo(module.mainScene, fileToEdit)
                     //viewsDebuggerComponent?.setRootView(stage)
-                    stage.timers.interval(500.hrMilliseconds) {
+                    stage.timers.interval(500.milliseconds) {
                         viewsDebuggerComponent?.update()
                     }
                     //println("[G] ${Thread.currentThread()}")

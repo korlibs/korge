@@ -5,7 +5,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korui.async.*
 import kotlinx.coroutines.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.coroutines.*
 
 actual val KoruiDispatcher: CoroutineDispatcher get() = if (OS.isJsNodeJs) NodeDispatcher else HtmlDispatcher

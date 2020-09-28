@@ -1,8 +1,9 @@
 package com.soywiz.korvi.internal
 
 import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.klock.hr.hrMilliseconds
-import com.soywiz.klock.hr.hrSeconds
+import com.soywiz.klock.hr.hr
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.HtmlImage
 import com.soywiz.korim.format.HtmlNativeImage
@@ -13,8 +14,8 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLVideoElement
 import org.w3c.dom.events.Event
-import kotlin.browser.document
-import kotlin.browser.window
+import kotlinx.browser.document
+import kotlinx.browser.window
 
 internal actual val korviInternal: KorviInternal = JsKorviInternal()
 
@@ -36,10 +37,10 @@ class KorviVideoJs(val url: String) : KorviVideo() {
     }
 
     override val running: Boolean get() = !video.paused
-    override val elapsedTimeHr: HRTimeSpan get() = video.currentTime.hrSeconds
+    override val elapsedTimeHr: HRTimeSpan get() = video.currentTime.seconds.hr
 
     override suspend fun getTotalFrames(): Long? = null
-    override suspend fun getDuration(): HRTimeSpan? = video.duration.hrSeconds
+    override suspend fun getDuration(): HRTimeSpan? = video.duration.seconds.hr
 
     val videoComplete = { e: Event? ->
         onComplete(Unit)
@@ -54,8 +55,8 @@ class KorviVideoJs(val url: String) : KorviVideo() {
             onVideoFrame(
                 Frame(
                     videoImage!!.also { videoImage!!.contentVersion++ },
-                    video.currentTime.hrSeconds,
-                    40.hrMilliseconds
+                    video.currentTime.seconds.hr,
+                    40.milliseconds.hr
                 )
             )
         }

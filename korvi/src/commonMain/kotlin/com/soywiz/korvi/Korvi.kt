@@ -25,7 +25,7 @@ open class KorviVideo : BaseKorviSeekable {
     val onVideoFrame = Signal<Frame>()
     val onComplete = Signal<Unit>()
     open val running: Boolean = false
-    open val elapsedTimeHr: HRTimeSpan get() = 0.hrNanoseconds
+    open val elapsedTimeHr: HRTimeSpan get() = 0.milliseconds.hr
     val elapsedTime: TimeSpan get() = elapsedTimeHr.timeSpan
     open fun prepare(): Unit = Unit
     open fun render(): Unit = Unit
@@ -66,7 +66,7 @@ open class KorviVideoFromLL(val ll: KorviVideoLL) : KorviVideo() {
     var audioStream: PlatformAudioOutput? = null
 
     override var running: Boolean = false
-    override var elapsedTimeHr: HRTimeSpan = 0.hrNanoseconds
+    override var elapsedTimeHr: HRTimeSpan = 0.nanoseconds.hr
 
     override suspend fun play() {
         if (videoJob != null || audioJob != null) return
@@ -76,7 +76,7 @@ open class KorviVideoFromLL(val ll: KorviVideoLL) : KorviVideo() {
 
         videoJob = launchImmediately(coroutineContext) {
             val frames = arrayListOf<KorviVideoFrame>()
-            val startTime = PerformanceCounter.hr
+            val startTime = PerformanceCounter.reference
             var completed = false
             do {
                 //ll.streams.forEach { stream ->
@@ -105,14 +105,14 @@ open class KorviVideoFromLL(val ll: KorviVideoLL) : KorviVideo() {
                 } else {
                     //delay(1.milliseconds)
                 }
-                val elapsedTime = PerformanceCounter.hr - startTime
+                val elapsedTime = PerformanceCounter.reference - startTime
                 if (frames.size >= 3 || (completed && frames.isNotEmpty())) {
                     val frame = frames.removeAt(0)
-                    val startTime = PerformanceCounter.hr
+                    val startTime = PerformanceCounter.reference
                     onVideoFrame(Frame(frame.data, frame.position, frame.duration))
-                    val elapsedTime = PerformanceCounter.hr - startTime
-                    val time = (frame.duration - elapsedTime)
-                    delay(if (time < 1.hrMilliseconds) 1.milliseconds else time.timeSpan)
+                    val elapsedTime = PerformanceCounter.reference - startTime
+                    val time = (frame.duration.timeSpan - elapsedTime)
+                    delay(if (time < 1.milliseconds) 1.milliseconds else time)
                     /*
                     var lastFrame: KorviVideoFrame? = null
                     while (frames.isNotEmpty()) {

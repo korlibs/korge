@@ -38,7 +38,7 @@ class Box2dTest {
 		}
 
 		assertEquals(10f, body.position.y)
-		for (n in 0 until 40) view.updateSingleView(16.hrMilliseconds)
+		for (n in 0 until 40) view.updateSingleView(16.milliseconds)
 		assertEquals(true, body.position.y < 8f)
 	}
 }

@@ -5,7 +5,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.util.*
 import org.w3c.dom.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import org.khronos.webgl.WebGLRenderingContext as GL
 
 object AGFactoryWebgl : AGFactory {

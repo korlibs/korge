@@ -2,7 +2,6 @@ package com.soywiz.korge
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -99,7 +98,7 @@ object Korge {
 		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
 		gameWindow: GameWindow? = null,
-        timeProvider: HRTimeProvider = HRTimeProvider,
+        timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         debugAg: Boolean = false,
         blocking:Boolean = true,
@@ -134,7 +133,7 @@ object Korge {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
+            val views: Views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
@@ -202,8 +201,7 @@ object Korge {
         injector.mapInstance(views.stats)
         injector.mapInstance(CoroutineContext::class, views.coroutineContext)
         injector.mapPrototype(EmptyScene::class) { EmptyScene() }
-        //injector.mapInstance(TimeProvider::class, views.timeProvider.toTimeProvider()) // Deprecated
-        injector.mapInstance(HRTimeProvider::class, views.timeProvider)
+        injector.mapInstance(TimeProvider::class, views.timeProvider)
 
         val input = views.input
         val ag = views.ag
@@ -446,7 +444,7 @@ object Korge {
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: HRTimeProvider = HRTimeProvider,
+		val timeProvider: TimeProvider = TimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,

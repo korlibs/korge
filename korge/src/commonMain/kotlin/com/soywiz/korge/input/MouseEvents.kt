@@ -1,7 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -12,7 +12,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
-import kotlin.js.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
@@ -247,14 +246,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	}
 
     inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews, Extra by Extra.Mixin() {
-        override fun update(views: Views, dt: HRTimeSpan) {
+        override fun update(views: Views, dt: TimeSpan) {
             this@MouseEvents.update(views, dt)
         }
     }
 
     val updater = MouseEventsUpdate(view).attach()
 
-    fun update(views: Views, dt: HRTimeSpan) {
+    fun update(views: Views, dt: TimeSpan) {
 		if (!view.mouseEnabled) return
         this.views = views
 

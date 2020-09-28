@@ -81,7 +81,7 @@ class CratesScene : Scene() {
 				val angle = (tick / 4.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 2) * 4, cos(angle * 3) * 4, -sin(angle) * 4, // Orbiting camera
-					0, 1, 0
+					0.0, 1.0, 0.0
 				)
 				tick++
 			}
@@ -125,7 +125,7 @@ class MonkeyScene : Scene() {
 				val angle = (tick / 1.0).degrees
 				camera.positionLookingAt(
 					cos(angle * 1) * 4, 0.0, -sin(angle * 1) * 4, // Orbiting camera
-					0, 0, 0
+					0.0, 0.0, 0.0
 				)
 				tick++
 			}

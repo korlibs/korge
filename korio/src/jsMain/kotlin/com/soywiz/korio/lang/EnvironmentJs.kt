@@ -3,7 +3,7 @@ package com.soywiz.korio.lang
 import com.soywiz.korio.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.util.*
-import kotlin.browser.*
+import kotlinx.browser.*
 
 actual object Environment {
 	val allEnvs: Map<String, String> = when {

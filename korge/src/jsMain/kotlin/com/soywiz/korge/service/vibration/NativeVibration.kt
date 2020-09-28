@@ -2,7 +2,7 @@ package com.soywiz.korge.service.vibration
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.view.Views
-import kotlin.browser.window
+import kotlinx.browser.window
 
 actual class NativeVibration actual constructor(val views: Views) {
 

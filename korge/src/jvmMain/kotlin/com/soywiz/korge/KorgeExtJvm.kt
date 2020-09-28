@@ -1,6 +1,6 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -17,7 +17,7 @@ internal actual fun completeViews(views: Views) {
         views.renderContext.debugAnnotateView = if (debug) debugger.selectedView else null
     }
     frame.add(debugger)
-    views.stage.timers.interval(500.hrMilliseconds) {
+    views.stage.timers.interval(500.milliseconds) {
         if (views.gameWindow.debug) {
             debugger.update()
         }

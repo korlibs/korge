@@ -1,6 +1,6 @@
 package com.soywiz.korge.view.camera2
 
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -116,8 +116,8 @@ class CameraContainer2(
     fun getCameraToFit(rect: Rectangle, out: Camera2 = Camera2()): Camera2 = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera2 = Camera2()): Camera2 = getCameraRect(rect, ScaleMode.COVER, out)
 
-    private var transitionTime = 1.hrSeconds
-    private var elapsedTime = 0.hrSeconds
+    private var transitionTime = 1.0.seconds
+    private var elapsedTime = 0.0.milliseconds
     //var easing = Easing.EASE_OUT
     private var easing = Easing.LINEAR
 
@@ -151,8 +151,8 @@ class CameraContainer2(
         sync()
     }
 
-    fun setTargetCamera(camera: Camera2, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
-        elapsedTime = 0.hrSeconds
+    fun setTargetCamera(camera: Camera2, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
+        elapsedTime = 0.seconds
         this.transitionTime = time
         this.easing = easing
         following = null
@@ -160,7 +160,7 @@ class CameraContainer2(
         targetCamera.copyFrom(camera)
     }
 
-    suspend fun tweenCamera(camera: Camera2, time: HRTimeSpan = 1.hrSeconds, easing: Easing = Easing.LINEAR) {
+    suspend fun tweenCamera(camera: Camera2, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
         setTargetCamera(camera, time, easing)
         onCompletedTransition.waitOne()
     }
@@ -178,7 +178,7 @@ class CameraContainer2(
         block(this)
         contentContainer.addTo(this)
         content.addTo(contentContainer)
-        addHrUpdater {
+        addUpdater {
             when {
                 following != null -> {
                     val point = getFollowingXY(tempPoint)

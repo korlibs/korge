@@ -3,7 +3,6 @@ package com.soywiz.korge3d.animation
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge3d.*
 import com.soywiz.korma.geom.*

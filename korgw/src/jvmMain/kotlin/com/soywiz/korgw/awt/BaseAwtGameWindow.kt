@@ -1,6 +1,7 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.klock.hr.*
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
@@ -494,7 +495,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                     else -> {
                         //println("running[bb]")
                         val nanos = System.nanoTime()
-                        val frameTimeNanos = (1.0 / fps.toDouble()).hrSeconds.nanosecondsInt
+                        val frameTimeNanos = (1.0 / fps.toDouble()).seconds.nanosecondsInt
                         val delayNanos = frameTimeNanos - (nanos % frameTimeNanos)
                         if (delayNanos > 0) {
                             //println(delayNanos / 1_000_000)

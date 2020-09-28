@@ -6,7 +6,7 @@ import com.soywiz.korau.internal.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import org.khronos.webgl.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.coroutines.*
 
 

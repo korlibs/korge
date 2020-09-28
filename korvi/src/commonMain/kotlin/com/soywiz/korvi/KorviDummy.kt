@@ -3,7 +3,6 @@ package com.soywiz.korvi
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.hr
-import com.soywiz.klock.hr.hrSeconds
 import com.soywiz.klock.hr.timeSpan
 import com.soywiz.korau.sound.*
 import com.soywiz.korim.bitmap.*
@@ -24,8 +23,8 @@ class DummyKorviVideoLL(
             width: Int = 320,
             height: Int = 240
         ) : KorviVideoLL {
-            val timePerFrame = 1.hrSeconds * (1 / fps.toDouble())
-            return DummyKorviVideoLL((time.hr / timePerFrame).toLong(), timePerFrame, width, height)
+            val timePerFrame = 1.seconds * (1 / fps.toDouble())
+            return DummyKorviVideoLL((time / timePerFrame).toLong(), timePerFrame.hr, width, height)
         }
     }
     override val video: List<KorviVideoStream> = listOf(DummyKorviVideoStream())

@@ -21,7 +21,7 @@ import org.khronos.webgl.set
 import org.w3c.dom.*
 import org.w3c.dom.url.*
 import org.w3c.files.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.coroutines.*
 import kotlin.js.*
 import kotlin.math.*
@@ -71,16 +71,16 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
 
     val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d").unsafeCast<CanvasRenderingContext2D>() }
 
-    private var lastRefresh = 0.0.hrNanoseconds
+    private var lastRefresh = 0.0.milliseconds
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         if (width <= 0 || height <= 0) return
         val size = width * height
 
         if (texSourceBase is HTMLVideoElement) {
             // Must refresh
-            val now = PerformanceCounter.hr
+            val now = PerformanceCounter.reference
             val elapsedTime = now - lastRefresh
-            if (elapsedTime >= 16.hrMilliseconds) {
+            if (elapsedTime >= 16.milliseconds) {
                 lastRefresh = now
                 ctx.clearRect(0.0, 0.0, width.toDouble(), height.toDouble())
                 ctx.drawImage(texSourceBase, 0.0, 0.0)

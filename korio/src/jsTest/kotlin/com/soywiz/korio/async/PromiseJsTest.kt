@@ -3,7 +3,7 @@ package com.soywiz.korio.async
 import com.soywiz.klock.*
 import com.soywiz.korio.*
 import com.soywiz.korio.util.*
-import kotlin.browser.*
+import kotlinx.browser.*
 import kotlin.test.*
 
 class PromiseJsTest {
