@@ -8,13 +8,13 @@ val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.ap
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOf(mingwX64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64())
+        else -> listOf(linuxX64(), mingwX64(), macosX64(), iosArm32(), iosArm64(), iosX64())
     }
 }
 
 if (doEnableKotlinNative) {
 	kotlin {
-		for (target in nativeTargets()) {
+		for (target in nativeTargets() ) {
 			target.compilations["main"].cinterops {
                 if (target.name == "mingwX64") maybeCreate("win32_winmm")
                 if (target.name == "linuxX64") maybeCreate("linux_OpenAL")
@@ -22,6 +22,7 @@ if (doEnableKotlinNative) {
 				maybeCreate("stb_vorbis")
 			}
 		}
+
 	}
 }
 

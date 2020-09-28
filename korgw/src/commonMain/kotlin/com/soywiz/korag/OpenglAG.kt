@@ -1,15 +1,27 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.FastStringMap
+import com.soywiz.kds.getOrPut
 import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.ProgramConfig
+import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.gl.GlslConfig
+import com.soywiz.korag.shader.gl.GlslGenerator
+import com.soywiz.korag.shader.gl.toNewGlslStringResult
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.vector.BitmapVector
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.unsupported
 import com.soywiz.korma.geom.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.min
@@ -230,6 +242,7 @@ abstract class AGOpengl : AG() {
         val vertexLayout = batch.vertexLayout
         val vertexCount = batch.vertexCount
         val indices = batch.indices
+        val indexType = batch.indexType
         val offset = batch.offset
         val blending = batch.blending
         val uniforms = batch.uniforms
@@ -306,6 +319,15 @@ abstract class AGOpengl : AG() {
                     gl.uniform1i(location, textureUnit)
                     textureUnit++
                 }
+                VarType.SamplerCube -> {
+                    val unit = value as TextureUnit
+                    gl.activeTexture(gl.TEXTURE0 + textureUnit)
+                    val tex = unit.texture as TextureGeneric
+                    tex.initialiseIfNeeded()
+                    tex.bindEnsuring()
+                    gl.uniform1i(location, textureUnit)
+                    textureUnit++
+                }
                 VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
                     val matArray = when (value) {
                         is Array<*> -> value
@@ -324,7 +346,7 @@ abstract class AGOpengl : AG() {
                     tempBuffer.setFloats(0, tempFloats, 0, stride * arrayCount)
 
                     if (webgl) {
-                    //if (true) {
+                        //if (true) {
                         val tb = when (uniformType) {
                             VarType.Mat2 -> tempBufferM2
                             VarType.Mat3 -> tempBufferM3
@@ -452,7 +474,7 @@ abstract class AGOpengl : AG() {
         //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
         if (indices != null) {
-            gl.drawElements(type.glDrawMode, vertexCount, gl.UNSIGNED_SHORT, offset)
+            gl.drawElements(type.glDrawMode, vertexCount, indexType.glIndexType, offset)
         } else {
             gl.drawArrays(type.glDrawMode, offset, vertexCount)
         }
@@ -469,6 +491,13 @@ abstract class AGOpengl : AG() {
             }
         }
     }
+
+    val TextureTargetKind.glTarget: Int
+        get() = when (this) {
+            TextureTargetKind.TEXTURE_2D -> gl.TEXTURE_2D
+            TextureTargetKind.TEXTURE_3D -> gl.TEXTURE_3D
+            TextureTargetKind.TEXTURE_CUBE_MAP -> gl.TEXTURE_CUBE_MAP
+        }
 
     val DrawType.glDrawMode: Int
         get() = when (this) {
@@ -489,6 +518,13 @@ abstract class AGOpengl : AG() {
             VarKind.TUNSIGNED_SHORT -> gl.UNSIGNED_SHORT
             VarKind.TINT -> gl.UNSIGNED_INT
             VarKind.TFLOAT -> gl.FLOAT
+        }
+
+    val IndexType.glIndexType: Int
+        get() = when (this) {
+            IndexType.UBYTE -> gl.UNSIGNED_BYTE
+            IndexType.USHORT -> gl.UNSIGNED_SHORT
+            IndexType.UINT -> gl.UNSIGNED_INT
         }
 
     private val programs = HashMap<Program, HashMap<ProgramConfig, GlProgram>>()
@@ -625,6 +661,63 @@ abstract class AGOpengl : AG() {
 
     override fun createTexture(premultiplied: Boolean): Texture = GlTexture(this.gl, premultiplied)
 
+    override fun createTexture(targetKind: TextureTargetKind, init: Texture.(gl: KmlGl) -> Unit): Texture {
+        val tex = TextureGeneric(targetKind, init)
+        return tex
+    }
+
+    inner class TextureGeneric(val targetKind: TextureTargetKind, val init: Texture.(gl: KmlGl) -> Unit) : Texture() {
+
+        private var initialised: Boolean = false
+
+        val texRef: Int by lazy {
+            val texIds = FBuffer(4)
+            gl.genTextures(1, texIds)
+            texIds.getInt(0)
+        }
+
+        fun initialiseIfNeeded() {
+            if (!initialised) {
+                this.texRef
+                this.init(gl)
+                this.initialised = true
+            }
+        }
+
+        override fun bind() {
+            gl.bindTexture(targetKind.glTarget, this.texRef)
+        }
+
+        override fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
+            this.mipmaps = false
+
+            val bytesPerPixel = if (source.rgba) 4 else 1
+            val type = if (source.rgba) {
+                //if (source is NativeImage) gl.BGRA else gl.RGBA
+                gl.RGBA
+            } else {
+                gl.LUMINANCE
+            }
+
+            val bmp = when (bmp) {
+                is BitmapVector -> bmp.nativeImage
+                else -> bmp
+            }
+
+            when (bmp) {
+                is NativeImage -> {
+                    prepareUploadNativeTexture(bmp)
+                    if (bmp.area != 0) {
+                        init.invoke(this, gl)
+                    }
+                }
+                else -> {
+                }
+            }
+        }
+
+    }
+
     inner class GlBuffer(kind: Buffer.Kind) : Buffer(kind) {
         var cachedVersion = -1
         private var id = -1
@@ -674,7 +767,10 @@ abstract class AGOpengl : AG() {
     open fun prepareUploadNativeTexture(bmp: NativeImage) {
     }
 
-    inner class GlTexture(val gl: KmlGl, override val premultiplied: Boolean) : Texture() {
+    inner class GlTexture(
+        val gl: KmlGl,
+        override val premultiplied: Boolean
+    ) : Texture() {
         var cachedVersion = -1
         val texIds = FBuffer(4)
 

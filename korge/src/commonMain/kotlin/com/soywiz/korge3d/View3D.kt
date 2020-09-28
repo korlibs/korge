@@ -1,11 +1,16 @@
 package com.soywiz.korge3d
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korge3d.component.*
+import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
-abstract class View3D {
-	var active = true
+abstract class View3D : ComponentOwner() {
+    //TODO: I don't think that a Camera, Container, Light, ViewWithMesh, Text3D should all have this as supertype
+    // they are not all 'types' of View ?
+
+    var active = true
 	var id: String? = null
 	var name: String? = null
 	val transform = Transform3D()
@@ -91,6 +96,9 @@ abstract class View3D {
 
 	val modelMat = Matrix3D()
 	//val position = Vector3D()
+
+
+
 
 	abstract fun render(ctx: RenderContext3D)
 }

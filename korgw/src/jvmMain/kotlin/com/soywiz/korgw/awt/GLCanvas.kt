@@ -6,8 +6,8 @@ import com.sun.jna.*
 import java.awt.*
 import java.io.*
 
-open class GLCanvas(val checkGl: Boolean = true) : Canvas(), Closeable {
-    val ag: AwtAg = AwtAg(this, checkGl)
+open class GLCanvas( checkGl: Boolean = true, logGl:Boolean=false) : Canvas(), Closeable {
+    val ag: AwtAg = AwtAg(this, checkGl, logGl)
     private var ctxComponentId: Long = -1L
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl

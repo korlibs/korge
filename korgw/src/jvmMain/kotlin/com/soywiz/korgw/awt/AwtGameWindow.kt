@@ -13,8 +13,8 @@ import java.awt.event.*
 import javax.swing.*
 
 
-class AwtGameWindow(val checkGl: Boolean) : BaseAwtGameWindow() {
-    override val ag: AwtAg = AwtAg(this, checkGl)
+class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
+    override val ag: AwtAg = AwtAg(this, checkGl, logGl)
 
     /*
     fun JFrame.isFullScreen(): Boolean {

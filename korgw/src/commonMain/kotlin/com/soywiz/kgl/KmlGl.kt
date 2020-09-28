@@ -59,6 +59,7 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
     val BACK: Int = 0x0405
     val FRONT_AND_BACK: Int = 0x0408
     val TEXTURE_2D: Int = 0x0DE1
+    val TEXTURE_3D: Int = 0x806F
     val CULL_FACE: Int = 0x0B44
     val BLEND: Int = 0x0BE2
     val DITHER: Int = 0x0BD0
@@ -193,6 +194,7 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
     val TEXTURE_MIN_FILTER: Int = 0x2801
     val TEXTURE_WRAP_S: Int = 0x2802
     val TEXTURE_WRAP_T: Int = 0x2803
+    val TEXTURE_WRAP_R: Int = 0x8072
     val TEXTURE: Int = 0x1702
     val TEXTURE_CUBE_MAP: Int = 0x8513
     val TEXTURE_BINDING_CUBE_MAP: Int = 0x8514

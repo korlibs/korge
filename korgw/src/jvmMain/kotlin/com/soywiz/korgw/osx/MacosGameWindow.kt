@@ -2,6 +2,7 @@ package com.soywiz.korgw.osx
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
+import com.soywiz.kgl.logIf
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.AGOpengl
 import com.soywiz.korev.Key
@@ -25,11 +26,11 @@ import com.sun.jna.Library
 import java.nio.ByteBuffer
 import kotlin.coroutines.*
 
-class MacAG(val window: Long, val checkGl: Boolean) : AGOpengl() {
+class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpengl() {
     override val gles: Boolean = true
     //override val glSlVersion = 140
     //override val glSlVersion = 100
-    override val gl: KmlGl = MacKmlGL.checkedIf(checkGl)
+    override val gl: KmlGl = MacKmlGL.checkedIf(checkGl).logIf(logGl)
     override val nativeComponent: Any = window
 }
 
@@ -113,7 +114,7 @@ fun initializeMacOnce() = _initializeMacOnce {
     }
 }
 
-class MacGameWindow(val checkGl: Boolean) : GameWindow() {
+class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
     init {
         initializeMacOnce()
     }
@@ -323,7 +324,7 @@ class MacGameWindow(val checkGl: Boolean) : GameWindow() {
 
     override val key: CoroutineContext.Key<*>
         get() = super.key
-    override val ag: MacAG = MacAG(window, checkGl)
+    override val ag: MacAG = MacAG(window, checkGl, logGl)
     override val coroutineDispatcher: GameWindowCoroutineDispatcher
         get() = super.coroutineDispatcher
     override var title: String

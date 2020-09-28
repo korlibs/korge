@@ -1,13 +1,13 @@
 package com.soywiz.korge3d
 
 import com.soywiz.kds.floatArrayListOf
+import com.soywiz.kds.intArrayListOf
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge3d.internal.toFBuffer
 import com.soywiz.korge3d.internal.vector3DTemps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korio.util.buildList
 import com.soywiz.korma.geom.Vector3D
 import kotlin.math.PI
@@ -15,7 +15,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Korge3DExperimental
-class MeshBuilder3D {
+class MeshBuilder3D(
+    val drawType: AG.DrawType = AG.DrawType.TRIANGLES
+) {
     val layout = VertexLayout(buildList {
         add(Shaders3D.a_pos)
         add(Shaders3D.a_norm)
@@ -28,8 +30,17 @@ class MeshBuilder3D {
         operator fun invoke(callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D().apply(callback).build()
     }
 
-    val data = floatArrayListOf()
+    val vertexData = floatArrayListOf()
+    var nextVertexIndex = 0
+    val indexData = intArrayListOf()
+
     private var _material: Material3D? = null
+
+    fun reset() {
+        vertexData.clear()
+        indexData.clear()
+        nextVertexIndex = 0
+    }
 
     fun material(
         emission: Material3D.Light = Material3D.LightColor(Colors.BLACK),
@@ -43,11 +54,11 @@ class MeshBuilder3D {
         _material = Material3D(emission, ambient, diffuse, specular, shininess, indexOfRefraction)
     }
 
-    fun vertex(pos: Vector3D, normal: Vector3D, texcoords: Vector3D) {
-        vertex(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, texcoords.x, texcoords.y)
+    fun addVertex(pos: Vector3D, normal: Vector3D = Vector3D(), texcoords: Vector3D = Vector3D()): Int {
+        return addVertex(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, texcoords.x, texcoords.y)
     }
 
-    fun vertex(
+    fun addVertex(
         px: Float,
         py: Float,
         pz: Float,
@@ -56,16 +67,23 @@ class MeshBuilder3D {
         nz: Float = 1f,
         u: Float = 0f,
         v: Float = 0f
-    ) {
-        data.add(px)
-        data.add(py)
-        data.add(pz)
-        data.add(nx)
-        data.add(ny)
-        data.add(nz)
-        data.add(u)
-        data.add(v)
+    ): Int {
+        vertexData.add(px)
+        vertexData.add(py)
+        vertexData.add(pz)
+        vertexData.add(nx)
+        vertexData.add(ny)
+        vertexData.add(nz)
+        vertexData.add(u)
+        vertexData.add(v)
+        return nextVertexIndex++
     }
+
+    fun addIndex(index: Int) {
+        indexData.add(index)
+    }
+
+    fun addIndices(vararg indices: Int) = indices.forEach { addIndex(it) }
 
     fun faceTriangle(v1: Vector3D, v2: Vector3D, v3: Vector3D) {
         vector3DTemps {
@@ -75,15 +93,38 @@ class MeshBuilder3D {
             val ny = (u.z * v.x) - (u.x * v.z)
             val nz = (u.x * v.y) - (u.y * v.x)
 
-            vertex(v1.x, v1.y, v1.z, nx, ny, nz)
-            vertex(v2.x, v2.y, v2.z, nx, ny, nz)
-            vertex(v3.x, v3.y, v3.z, nx, ny, nz)
+            val i1 = addVertex(v1.x, v1.y, v1.z, nx, ny, nz)
+            val i2 = addVertex(v2.x, v2.y, v2.z, nx, ny, nz)
+            val i3 = addVertex(v3.x, v3.y, v3.z, nx, ny, nz)
+            addIndices(i1, i2, i3)
         }
     }
 
+    fun faceTriangle(
+        v1: Vector3D, v2: Vector3D, v3: Vector3D,
+        nx: Float, ny: Float, nz: Float
+    ) {
+        val i1 = addVertex(v1.x, v1.y, v1.z, nx, ny, nz)
+        val i2 = addVertex(v2.x, v2.y, v2.z, nx, ny, nz)
+        val i3 = addVertex(v3.x, v3.y, v3.z, nx, ny, nz)
+        addIndices(i1, i2, i3)
+    }
+
     fun faceRectangle(v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D) {
-        faceTriangle(v1, v2, v3)
-        faceTriangle(v3, v4, v1)
+        vector3DTemps {
+            val u = v2 - v1
+            val v = v3 - v1
+            val nx = (u.y * v.z) - (u.z * v.y)
+            val ny = (u.z * v.x) - (u.x * v.z)
+            val nz = (u.x * v.y) - (u.y * v.x)
+
+            val i1 = addVertex(v1.x, v1.y, v1.z, nx, ny, nz )
+            val i2 = addVertex(v2.x, v2.y, v2.z, nx, ny, nz)
+            val i3 = addVertex(v3.x, v3.y, v3.z, nx, ny, nz)
+            val i4 = addVertex(v4.x, v4.y, v4.z, nx, ny, nz)
+            addIndices(i1, i2, i3)
+            addIndices(i3, i4, i1)
+        }
     }
 
     fun faceRectangle(
@@ -97,17 +138,17 @@ class MeshBuilder3D {
             val ny = (u.z * v.x) - (u.x * v.z)
             val nz = (u.x * v.y) - (u.y * v.x)
 
-            vertex(v1.x, v1.y, v1.z, nx, ny, nz, t1.x, t1.y)
-            vertex(v2.x, v2.y, v2.z, nx, ny, nz, t2.x, t2.y)
-            vertex(v3.x, v3.y, v3.z, nx, ny, nz, t3.x, t3.y)
-
-            vertex(v3.x, v3.y, v3.z, nx, ny, nz, t3.x, t3.y)
-            vertex(v4.x, v4.y, v4.z, nx, ny, nz, t4.x, t4.y)
-            vertex(v1.x, v1.y, v1.z, nx, ny, nz, t1.x, t1.y)
+            val i1 = addVertex(v1.x, v1.y, v1.z, nx, ny, nz, t1.x, t1.y)
+            val i2 = addVertex(v2.x, v2.y, v2.z, nx, ny, nz, t2.x, t2.y)
+            val i3 = addVertex(v3.x, v3.y, v3.z, nx, ny, nz, t3.x, t3.y)
+            val i4 = addVertex(v4.x, v4.y, v4.z, nx, ny, nz, t4.x, t4.y)
+            addIndices(i1, i2, i3)
+            addIndices(i3, i4, i1)
         }
     }
 
     fun pyramidTriangleBase(v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D) {
+        // cannot reuse vertices because the normals need to be different!
         faceTriangle(v1, v2, v3)
         faceTriangle(v1, v2, v4)
         faceTriangle(v1, v3, v4)
@@ -139,6 +180,7 @@ class MeshBuilder3D {
         val v7 = Vector3D(+hx, -hy, +hz)
         val v8 = Vector3D(-hx, -hy, +hz)
 
+        // cannot reuse vertices because the normals need to be different!
         faceRectangle(v1, v2, v3, v4) //front
         faceRectangle(v2, v6, v7, v3) // right
         faceRectangle(v5, v6, v7, v8) // back
@@ -166,6 +208,7 @@ class MeshBuilder3D {
         val endV = PI
         val stepU = (endU - startU) / longitudeLines // step size between U-points on the grid
         val stepV = (endV - startV) / latitudeLines // step size between V-points on the grid
+        //TODO: addVertices then indices to reduce number of vertices uploaded
         for (i in 0 until longitudeLines) { // U-points
             for (j in 0 until latitudeLines) { // V-points
                 val u = (i * stepU + startU).toFloat()
@@ -183,18 +226,22 @@ class MeshBuilder3D {
                 // version of each vertex point; this generally won't be the case for
                 // other parametric surfaces.
                 // Output the first triangle of this grid square
-                faceTriangle(v0, v2, v1)
+                //faceTriangle(v0, v2, v1)
                 // Output the other triangle of this grid square
-                faceTriangle(v3, v1, v2)
+                //faceTriangle(v3, v1, v2)
+                faceRectangle(v0,v1,v2,v3)
             }
         }
     }
 
     fun build(): Mesh3D = Mesh3D(
-        data.toFBuffer(),
+        vertexData.toFBuffer(),
+        indexData.toFBuffer(),
+        AG.IndexType.UINT,
+        indexData.size,
         layout,
         null,
-        AG.DrawType.TRIANGLES,
+        drawType,
         true,
         maxWeights = 0,
         skin = null,

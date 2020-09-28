@@ -39,8 +39,7 @@ open class ViewWithMesh3D(
 				this[uniform.u_color] = actual.colorVec
 			}
 			is Material3D.LightTexture -> {
-				actual.textureUnit.texture =
-					actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
+				actual.textureUnit.texture = actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
 				actual.textureUnit.linear = true
 				this[uniform.u_texUnit] = actual.textureUnit
 			}
@@ -52,11 +51,11 @@ open class ViewWithMesh3D(
 
 	override fun render(ctx: RenderContext3D) {
 		val ag = ctx.ag
-
+        val indexBuffer = ag.createIndexBuffer()
 		ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
 			//vertexBuffer.upload(mesh.data)
-			vertexBuffer.upload(mesh.fbuffer)
-
+			vertexBuffer.upload(mesh.vertexBuffer)
+            indexBuffer.upload(mesh.indexBuffer)
 			//tempMat2.invert()
 			//tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
 			//tempMat3.multiply(ctx.cameraMatInv, Matrix3D().invert(this.localTransform.matrix))
@@ -65,7 +64,9 @@ open class ViewWithMesh3D(
 			Shaders3D.apply {
 				val meshMaterial = mesh.material
 				ag.draw(
-					vertexBuffer,
+					vertices = vertexBuffer,
+                    indices = indexBuffer,
+                    indexType = mesh.indexType,
 					type = mesh.drawType,
 					program = mesh.program ?: ctx.shaders.getProgram3D(
 						ctx.lights.size.clamp(0, 4),
@@ -82,7 +83,7 @@ open class ViewWithMesh3D(
 						this[u_ViewMat] = transform.globalMatrix
 						this[u_ModMat] = tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat)
 						//this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
-						this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix).invert()
+						this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
 
 						this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
 						this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f

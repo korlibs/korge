@@ -52,8 +52,27 @@ include(":korge-swf")
 include(":korge-intellij-plugin")
 include(":korge-gradle-plugin")
 
+/*
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
     if (File(sample, "build.gradle.kts").exists() || File(sample, "build.gradle").exists()) {
         include(":samples:${sample.name}")
+    }
+}
+*/
+fileTree(File(rootProject.projectDir, "samples")) {
+    include("**/build.gradle.kts")
+    include("**/build.gradle")
+    exclude("**/build/**")
+}.forEach {
+    val sample = moduleName(it.parentFile)
+    include(":$sample")
+    //project(":$sample").projectDir = File(relativePath(it.parent))
+}
+fun moduleName(f: File): String {
+    return if (f.parentFile == rootDir) {
+        f.name
+    } else {
+        val p = moduleName(f.parentFile)
+        "${p}:${f.name}"
     }
 }

@@ -3,36 +3,119 @@ package com.soywiz.korge3d
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
-import com.soywiz.korge.ui.DefaultUIFont
-import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.invert
+import kotlin.math.max
 
-@Korge3DExperimental
-fun Container3D.text3D(str: String, v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D): Text3D {
-    return Text3D(str, v1, v2, v3, v4).addTo(this)
+interface HeightMap {
+    operator fun get(x: Float, z: Float): Float
+}
+
+class HeightMapConstant(val height: Float) : HeightMap {
+    override fun get(x: Float, z: Float): Float = height
+}
+
+class HeightMapBitmap(val bitmap:Bitmap) : HeightMap{
+    override fun get(x: Float, z: Float): Float {
+        val x1 = when {
+            x < 0 -> 0.0
+            x > bitmap.width -> bitmap.width.toDouble()
+            else -> x.toDouble()
+        }
+        val z1 = when {
+            z < 0 -> 0.0
+            z > bitmap.height -> bitmap.height.toDouble()
+            else -> z.toDouble()
+        }
+        return bitmap.getRgbaSampled(x1, z1).rgb.toFloat()
+    }
 }
 
 @Korge3DExperimental
-class Text3D(
-    var text: String,
-    var v1: Vector3D, var v2: Vector3D, var v3: Vector3D, var v4: Vector3D
+fun Container3D.terrain(
+    centerX: Float = 0f,
+    centerZ: Float = 0f,
+    width: Float = 100.0f,
+    depth: Float = 100.0f,
+    heightMap: HeightMap = HeightMapConstant(0f),
+    heightScale:Float = 1f
+): Terrain3D {
+    return Terrain3D(centerX, centerZ, width, depth, heightMap,heightScale).addTo(this)
+}
+
+@Korge3DExperimental
+class Terrain3D(
+    val centerX: Float,
+    val centerZ: Float,
+    val width: Float,
+    val depth: Float,
+    var heightMap: HeightMap,
+    val heightScale:Float
 ) : View3D() {
 
-    var font: BitmapFont = DefaultUIFont.font as BitmapFont
+    var stepX = 1f
+    var stepZ = 1f
 
-    protected open fun prepareExtraModelMatrix(mat: Matrix3D) {
-        mat.identity()
-    }
+    private val meshBuilder3D = MeshBuilder3D(AG.DrawType.TRIANGLE_STRIP)
+    private var mesh: Mesh3D = createMesh()
+
 
     private val uniformValues = AG.UniformValues()
     private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
     private val tempMat3 = Matrix3D()
-    private val identity = Matrix3D()
 
+    private fun getHeight(x: Float, z: Float) : Float  = heightMap[x,z] * heightScale
+
+    fun calcNormal(x: Float, z: Float): Vector3D {
+        val hl = getHeight(x - 1, z)
+        val hr = getHeight(x + 1, z)
+        val hf = getHeight(x, z + 1)
+        val hb = getHeight(x, z - 1)
+        val v = Vector3D(hl - hr, 2f, hb - hf).normalize()
+        return v
+    }
+
+    fun createMesh(): Mesh3D {
+        meshBuilder3D.reset()
+        val vec = Vector3D()
+        val tex = Vector3D() //TODO:
+        var z = 0f
+        val adjX = (width / 2) + centerX
+        val adjZ = (depth / 2) + centerZ
+        // Vertices
+        while (z < depth) {
+            var x = 0f
+            while (x < width) {
+                val norm = calcNormal(x, z)
+                vec.setTo(x - adjX, getHeight(x, z), z - adjZ)
+                meshBuilder3D.addVertex(vec, norm, tex)
+                x += stepX
+            }
+            z += stepZ
+        }
+
+        //Indices
+        val totalX: Int = (width / stepX).toInt()
+        val totalZ: Int = (depth / stepZ).toInt()
+        for (zi in 0 until totalZ - 1) {
+            for (xi in 0 until totalX - 1) {
+                val i1 = (zi * totalX) + xi
+                val i2 = i1 + totalX
+                meshBuilder3D.addIndices(i1, i2)
+            }
+            //add degenerate to indicate end of row
+            val d1 = (zi * totalX) + totalX
+            val d2 = ((zi + 1) * totalX) + 1
+            meshBuilder3D.addIndices(d1, d2)
+        }
+
+        return meshBuilder3D.build()
+    }
 
     fun AG.UniformValues.setMaterialLight(
         ctx: RenderContext3D,
@@ -54,21 +137,16 @@ class Text3D(
 
     override fun render(ctx: RenderContext3D) {
         val ag = ctx.ag
-        val mesh = this.createMesh(ctx)
-
+        val indexBuffer = ag.createIndexBuffer()
         ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-            //vertexBuffer.upload(mesh.data)
             vertexBuffer.upload(mesh.vertexBuffer)
-
-            //tempMat2.invert()
-            //tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
-            //tempMat3.multiply(ctx.cameraMatInv, Matrix3D().invert(this.localTransform.matrix))
-            //tempMat3.multiply(this.localTransform.matrix, ctx.cameraMat)
-
+            indexBuffer.upload(mesh.indexBuffer)
             Shaders3D.apply {
                 val meshMaterial = mesh.material
                 ag.draw(
-                    vertexBuffer,
+                    vertices = vertexBuffer,
+                    indices = indexBuffer,
+                    indexType = mesh.indexType,
                     type = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
                         ctx.lights.size.clamp(0, 4),
@@ -83,9 +161,9 @@ class Text3D(
                     uniforms = uniformValues.apply {
                         this[u_ProjMat] = ctx.projCameraMat
                         this[u_ViewMat] = transform.globalMatrix
-                        this[u_ModMat] = tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat)
+                        this[u_ModMat] = modelMat
                         //this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
-                        this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix).invert()
+                        this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
 
                         this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
                         this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
@@ -96,12 +174,7 @@ class Text3D(
                             setMaterialLight(ctx, emission, meshMaterial.emission)
                             setMaterialLight(ctx, specular, meshMaterial.specular)
                         }
-
-                        this[u_BindShapeMatrix] = identity
-                        this[u_BindShapeMatrixInv] = identity
-
                         this[u_AmbientColor] = ctx.ambientColor
-
                         ctx.lights.fastForEachWithIndex { index, light: Light3D ->
                             val lightColor = light.color
                             this[lights[index].u_sourcePos] = light.transform.translation
@@ -117,62 +190,8 @@ class Text3D(
                     renderState = rs
                 )
             }
+
         }
-    }
-
-    private fun createMesh(ctx: RenderContext3D): Mesh3D {
-        val str = this.text
-
-        val meshBuilder3D = MeshBuilder3D()
-
-        var dx = 0.0
-        var dy = 0.0
-        val dv1 = Vector3D(v1.x, v1.y, v1.z, v1.w)
-        val dv2 = Vector3D(v2.x, v2.y, v3.z, v2.w)
-        val dv3 = Vector3D(v3.x, v3.y, v3.z, v3.w)
-        val dv4 = Vector3D(v4.x, v4.y, v4.z, v4.w)
-        val t1 = Vector3D()
-        val t2 = Vector3D()
-        val t3 = Vector3D()
-        val t4 = Vector3D()
-        for (n in str.indices) {
-            val c1 = str[n].toInt()
-            if (c1 == '\n'.toInt()) {
-                dx = 0.0
-                dy += font.fontSize
-                continue
-            }
-            val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
-            val glyph = font[c1]
-            val bms = glyph.texture
-            val tex = ctx.rctx.getTex(bms)
-            val w = tex.width //(tex.x1 - tex.x0) * font.fontSize.toFloat()
-            val h = tex.height //(tex.y1-tex.y0) * font.fontSize.toFloat()
-            dv1.x = (dx + glyph.xoffset).toFloat()
-            dv1.y = (dy + glyph.yoffset).toFloat()
-            dv2.x = dv1.x + w
-            dv2.y = dv1.y
-            dv3.x = dv1.x + w
-            dv3.y = dv1.y + h
-            dv4.x = dv1.x
-            dv4.y = dv1.y + h
-            t1.x = tex.left.toFloat()
-            t1.y = tex.top.toFloat()
-            t2.x = tex.right.toFloat()
-            t2.y = tex.top.toFloat()
-            t3.x = tex.right.toFloat()
-            t3.y = tex.bottom.toFloat()
-            t4.x = tex.left.toFloat()
-            t4.y = tex.bottom.toFloat()
-            meshBuilder3D.faceRectangle(
-                dv1, dv2, dv3, dv4,
-                t1, t2, t3, t4
-            )
-
-            val kerningOffset = font.kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
-            dx += glyph.xadvance + kerningOffset
-        }
-        return meshBuilder3D.build()
     }
 
 }

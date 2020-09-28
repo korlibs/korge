@@ -58,7 +58,11 @@ class GlslGenerator constructor(
 		VarType.Mat3 -> "mat3"
 		VarType.Mat4 -> "mat4"
 		VarType.TextureUnit -> if (config.programConfig.externalTextureSampler) "samplerExternalOES" else "sampler2D"
-		else -> {
+        VarType.Sampler1D -> "sampler1d"
+        VarType.Sampler2D -> "sampler2d"
+        VarType.Sampler3D -> "sampler3d"
+        VarType.SamplerCube -> "samplerCube"
+        else -> {
 			when (type.kind) {
 				VarKind.TBYTE, VarKind.TUNSIGNED_BYTE, VarKind.TSHORT, VarKind.TUNSIGNED_SHORT, VarKind.TFLOAT -> {
 					when (type.elementCount) {
@@ -104,9 +108,11 @@ class GlslGenerator constructor(
         }
         visit(root)
 
-        if (kind == ShaderType.FRAGMENT && attributes.isNotEmpty()) {
-            throw RuntimeException("Can't use attributes in fragment shader")
-        }
+        // NOT THE CASE.
+        // You can define inputs for a Fragment shader, and attributes are used to define inputs
+        //if (kind == ShaderType.FRAGMENT && attributes.isNotEmpty()) {
+        //    throw RuntimeException("Can't use attributes in fragment shader")
+        //}
 
         val result = Indenter {
             if (gles) {
