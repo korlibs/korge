@@ -1489,6 +1489,11 @@ fun <T : View> T.addHrUpdater(updatable: T.(dt: HRTimeSpan) -> Unit): Cancellabl
     return Cancellable { component.detach() }
 }
 
+fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
+    TimeSpan.NIL -> addUpdater(updatable)
+    else -> addFixedUpdater(time) { updatable(time) }
+}
+
 fun <T : View> T.addFixedUpdater(
     time: TimeSpan,
     initial: Boolean = true,
