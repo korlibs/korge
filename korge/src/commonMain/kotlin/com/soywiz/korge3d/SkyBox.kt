@@ -171,36 +171,36 @@ class SkyBox(
             init = false
         }
 
-        val indexBuffer = ag.createIndexBuffer()
-        ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-            vertexBuffer.upload(skyboxVertices)
-            indexBuffer.upload(skyboxIndices)
-            val projection = ctx.projCameraMat
-            val view = transform.globalMatrix
-            // remove translation from the view matrix
-            val viewNoTrans = view.clone()
-                .setColumn(3, 0f, 0f, 0f, 0f)
-                .setRow(3, 0f, 0f, 0f, 0f)
-                .translate(center)
-            ag.draw(
-                vertices = vertexBuffer,
-                type = AG.DrawType.TRIANGLES,
-                program = skyBoxProgram,
-                vertexLayout = layout,
-                vertexCount = 36,
-                indices = indexBuffer,
-                indexType = AG.IndexType.USHORT,
-                blending = AG.Blending.NONE,
-                uniforms = uniformValues.apply {
-                    this[u_ProjMat] = projection
-                    this[u_ViewMat] = viewNoTrans
-                    this[u_SkyBox] = cubeMapTexUnit
-                },
-                renderState = rs
-            )
+        ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
+            ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
+                vertexBuffer.upload(skyboxVertices)
+                indexBuffer.upload(skyboxIndices)
+                val projection = ctx.projCameraMat
+                val view = transform.globalMatrix
+                // remove translation from the view matrix
+                val viewNoTrans = view.clone()
+                    .setColumn(3, 0f, 0f, 0f, 0f)
+                    .setRow(3, 0f, 0f, 0f, 0f)
+                    .translate(center)
+                ag.draw(
+                    vertices = vertexBuffer,
+                    type = AG.DrawType.TRIANGLES,
+                    program = skyBoxProgram,
+                    vertexLayout = layout,
+                    vertexCount = 36,
+                    indices = indexBuffer,
+                    indexType = AG.IndexType.USHORT,
+                    blending = AG.Blending.NONE,
+                    uniforms = uniformValues.apply {
+                        this[u_ProjMat] = projection
+                        this[u_ViewMat] = viewNoTrans
+                        this[u_SkyBox] = cubeMapTexUnit
+                    },
+                    renderState = rs
+                )
+            }
         }
-        indexBuffer.close()
-        //println("-----------------------------------------")
+    //println("-----------------------------------------")
     }
 
 }
