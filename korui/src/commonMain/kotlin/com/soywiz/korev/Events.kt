@@ -160,6 +160,8 @@ data class KeyEvent constructor(
     var alt: Boolean = false,
     var meta: Boolean = false,
 ) : Event() {
+    var deltaTime = TimeSpan.ZERO
+
     val typeType get() = type == Type.TYPE
     val typeDown get() = type == Type.DOWN
     val typeUp get() = type == Type.UP
@@ -178,6 +180,7 @@ data class KeyEvent constructor(
         this.ctrl = other.ctrl
         this.alt = other.alt
         this.meta = other.meta
+        this.deltaTime = other.deltaTime
     }
 }
 

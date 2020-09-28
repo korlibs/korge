@@ -8,8 +8,8 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
     dependencies {
         classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
@@ -19,7 +19,8 @@ buildscript {
 
 plugins {
 	java
-    kotlin("multiplatform") version "1.4.10"
+    //kotlin("multiplatform") version "1.4.10"
+    kotlin("multiplatform") version "1.4.20-M1"
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
@@ -30,8 +31,8 @@ allprojects {
 		jcenter()
         google()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-        //maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
+        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 	}
 }
 

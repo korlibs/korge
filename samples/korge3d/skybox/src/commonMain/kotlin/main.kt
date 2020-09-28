@@ -18,28 +18,28 @@ suspend fun main() = Korge {
         keys {
             val angleSpeed = 1.degrees
             val fast = 5
-            down(Key.UP) {
+            downFrame(Key.UP) {
                 val mul = when {
                     it.shift -> fast
                     else -> 1
                 }
                 stage3D.camera.pitchDown(angleSpeed.times(mul), 1f)
             }
-            down(Key.DOWN) {
+            downFrame(Key.DOWN) {
                 val mul = when {
                     it.shift -> fast
                     else -> 1
                 }
                 stage3D.camera.pitchUp(angleSpeed.times(mul), 1f)
             }
-            down(Key.RIGHT) {
+            downFrame(Key.RIGHT) {
                 val mul = when {
                     it.shift -> fast
                     else -> 1
                 }
                 stage3D.camera.yawRight(angleSpeed.times(mul), 1f)
             }
-            down(Key.LEFT) {
+            downFrame(Key.LEFT) {
                 val mul = when {
                     it.shift -> fast
                     else -> 1
