@@ -1,8 +1,7 @@
 package com.soywiz.korge3d.component
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.hr.*
-import com.soywiz.klock.milliseconds
+import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
 import com.soywiz.korge3d.View3D
@@ -178,9 +177,7 @@ interface EventComponent : Component {
  * It is like [UpdateComponent] but includes a reference to the [Views] itself.
  */
 interface UpdateComponentWithViews : Component {
-    @Deprecated("")
-    fun update(views: Views, ms: Double)
-    fun update(views: Views, delta: HRTimeSpan) = update(views, delta.millisecondsDouble)
+    fun update(views: Views, delta: TimeSpan)
 }
 
 /**
@@ -196,21 +193,13 @@ interface UpdateComponentWithViews : Component {
  * ```
  */
 interface UpdateComponent : Component {
-    @Deprecated("")
-    fun update(ms: Double)
-    @Suppress("DEPRECATION")
-    fun update(delta: HRTimeSpan): Unit = update(delta.millisecondsDouble)
+    fun update(delta: TimeSpan)
 }
 
-interface UpdateComponentV2 : UpdateComponent {
-    @Suppress("DEPRECATION")
-    override fun update(ms: Double): Unit = update(ms.milliseconds.hr)
-    override fun update(dt: HRTimeSpan)
-}
 
-abstract class FixedUpdateComponent(override val view: View3D, val step: HRTimeSpan, val maxAccumulated: Int = 10) : UpdateComponentV2 {
-    var accumulated = 0.hrSeconds
-    final override fun update(dt: HRTimeSpan) {
+abstract class FixedUpdateComponent(override val view: View3D, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
+    var accumulated = 0.0.milliseconds
+    final override fun update(dt: TimeSpan) {
         accumulated += dt
         if (accumulated >= step * maxAccumulated) {
             accumulated = step * maxAccumulated

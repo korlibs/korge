@@ -1,5 +1,6 @@
 package com.soywiz.korge3d
 
+import com.soywiz.klock.*
 import com.soywiz.korge.component.detach
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
@@ -84,7 +85,7 @@ abstract class ComponentOwner {
 
     internal class DeferWithViewsUpdateComponentWithViews(override val view: View3D, val block: (views: Views) -> Unit) :
         com.soywiz.korge3d.component.UpdateComponentWithViews {
-        override fun update(views: Views, ms: Double) {
+        override fun update(views: Views, delta: TimeSpan) {
             block(views)
             detach()
         }
