@@ -336,6 +336,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.key = KEYS[keyCode] ?: com.soywiz.korev.Key.UNKNOWN
             this.keyCode = keyCode
             this.character = keyCode.toChar()
+            this.alt = GetKeyState(VK_MENU) < 0
+            this.ctrl = GetKeyState(VK_CONTROL) < 0
+            this.shift = GetKeyState(VK_SHIFT) < 0
+            this.meta = GetKeyState(VK_LWIN) < 0 || GetKeyState(VK_RWIN) < 0
         })
     }
 
@@ -364,10 +368,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.y = ey
             this.button = MouseButton[ebutton]
             this.buttons = buttons
-            this.isAltDown = false
+            this.isAltDown = GetKeyState(VK_MENU) < 0
             this.isCtrlDown = control
             this.isShiftDown = shift
-            this.isMetaDown = false
+            this.isMetaDown = GetKeyState(VK_LWIN) < 0 || GetKeyState(VK_RWIN) < 0
             this.scrollDeltaY = scrollDeltaY
             //this.scaleCoords = false
         })
