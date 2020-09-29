@@ -14,8 +14,8 @@ import com.soywiz.korma.interpolation.*
 //	tween(this::alpha[0.0], time = time, easing = easing)
 
 suspend inline fun View3D.moveTo(x: Float, y: Float, z: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[x], this::y[y], this::z[z], time = time, easing = easing)
-suspend inline fun View3D.moveBy(dx: Float, dy: Float, dz:Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], this::z[this.z + dz], time = time, easing = easing)
-suspend inline fun View3D.scaleTo(sx: Double, sy: Double, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], time = time, easing = easing)
+suspend inline fun View3D.moveBy(dx: Float, dy: Float, dz: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::x[this.x + dx], this::y[this.y + dy], this::z[this.z + dz], time = time, easing = easing)
+suspend inline fun View3D.scaleTo(sx: Double, sy: Double, sz: Float, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) = tween(this::scaleX[sx], this::scaleY[sy], this::scaleZ[sz], time = time, easing = easing)
 
 //suspend inline fun View3D.rotateTo(deg: Angle, time: TimeSpan = DEFAULT_TIME, easing: Easing = DEFAULT_EASING) =
 //	tween(this::rotationRadians[deg.radians], time = time, easing = easing)
