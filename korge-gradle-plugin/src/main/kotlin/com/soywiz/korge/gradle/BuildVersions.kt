@@ -2,16 +2,20 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-	const val KLOCK = "1.11.14"
-	const val KDS = "1.10.13"
-	const val KMEM = "1.10.7"
-	const val KORMA = "1.11.21"
-	const val KORIO = "1.11.13"
-	const val KORIM = "1.12.29"
-	const val KORAU = "1.11.10"
-	const val KORGW = "1.12.25"
-	const val KORGE = "1.15.0"
-	const val KOTLIN = "1.3.72"
-	const val COROUTINES = "1.3.7"
+    const val KORLIBS_VERSION = "20-alpha-1"
+
+    ////////////////////
+	const val KLOCK = KORLIBS_VERSION
+	const val KDS = KORLIBS_VERSION
+	const val KMEM = KORLIBS_VERSION
+	const val KORMA = KORLIBS_VERSION
+	const val KORIO = KORLIBS_VERSION
+	const val KORIM = KORLIBS_VERSION
+	const val KORAU = KORLIBS_VERSION
+	const val KORGW = KORLIBS_VERSION
+    ////////////////////
+	const val KORGE = KORLIBS_VERSION
+	const val KOTLIN = "1.4.20-M1"
+	const val COROUTINES = "1.3.9"
 	const val ANDROID_BUILD = "3.6.0"
 }

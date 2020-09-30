@@ -87,8 +87,9 @@ class KorgeExtension(val project: Project) {
 		// Do nothing, but serves to be referenced to be installed
 	}
 
-	//var jvmTarget: String = project.findProject("jvm.target") ?: "1.8"
-	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: "1.6"
+    val DEFAULT_JVM_TARGET = "1.8"
+    //val DEFAULT_JVM_TARGET = "1.6"
+	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
 	var enableCordovaTargets: Boolean = project.findProperty("enable.cordova.targets") == "true"
@@ -102,7 +103,7 @@ class KorgeExtension(val project: Project) {
 	var orientation: Orientation = Orientation.DEFAULT
 	val cordovaPlugins = arrayListOf<KorgeCordovaPluginDescriptor>()
 
-	var copyright: String = "Copyright (c) 2019 Unknown"
+	var copyright: String = "Copyright (c) 2020 Unknown"
 
 	var supressWarnings: Boolean = false
 

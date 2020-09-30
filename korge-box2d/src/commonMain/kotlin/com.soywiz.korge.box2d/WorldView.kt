@@ -169,7 +169,7 @@ class Box2dWorldComponent(
     private val tempVec = Vec2()
     private val tempPos = Point()
     override fun update() {
-        world.step(step.secondsDouble.toFloat(), velocityIterations, positionIterations)
+        world.step(step.seconds.toFloat(), velocityIterations, positionIterations)
         world.forEachBody { node ->
             val view = node.view
 

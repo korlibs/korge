@@ -14,7 +14,7 @@ fun Project.configureRepositories() {
 				it.excludeGroup("Kotlin/Native")
 			}
 		}
-		if (BuildVersions.KOTLIN.contains("eap")) {
+		if (BuildVersions.isEAP()) {
 			maven {
 				it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
 				it.content {

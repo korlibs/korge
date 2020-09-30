@@ -25,7 +25,7 @@ fun Project.configureJavaScript() {
 	val kotlinTargets by lazy { project["kotlin"]["targets"] }
 
 	gkotlin.apply {
-		js {
+		js(KotlinJsCompilerType.IR) {
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 			compilations.all {
 				it.kotlinOptions.apply {
@@ -321,6 +321,7 @@ fun applyPatchToKotlinRuntime(runtime: String, patchSrc: String, patchDst: Strin
 }
 
 fun applyPatchesToKotlinRuntime(runtime: String): String {
-	val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
-	return applyPatchToKotlinRuntime(runtime, src, dst)
+	//val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
+	//return applyPatchToKotlinRuntime(runtime, src, dst)
+    return runtime
 }

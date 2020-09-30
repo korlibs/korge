@@ -86,6 +86,11 @@ subprojects {
         }
 
         kotlin {
+            metadata {
+                compilations.all {
+                    kotlinOptions.suppressWarnings = true
+                }
+            }
             jvm {
                 compilations.all {
                     kotlinOptions.jvmTarget = "1.8"
