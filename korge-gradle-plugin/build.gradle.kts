@@ -48,6 +48,9 @@ val androidBuildGradleVersion: String by project
 dependencies {
 	//implementation(project(":korge-build"))
     implementation(kotlin("gradle-plugin"))
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
+    //testImplementation("junit:junit:4.12")
 
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
 	implementation("net.sf.proguard:proguard-gradle:6.2.2")
