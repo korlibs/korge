@@ -1,5 +1,6 @@
 package com.soywiz.korma.math
 
+import kotlin.math.E
 import kotlin.test.*
 
 class MathTest {
@@ -14,6 +15,13 @@ class MathTest {
         assertEquals(10, log2(1024))
         assertEquals(4, log(10000, 10))
         assertEquals(4, log10(10000))
+    }
+
+
+    @Test
+    fun testLn() {
+        assertEquals(0, ln(1))
+        assertEquals(2, ln(20))
     }
 
     @Test
@@ -108,5 +116,17 @@ class MathTest {
         assertEquals(true, Float.POSITIVE_INFINITY.isNanOrInfinite())
         assertEquals(true, Float.NEGATIVE_INFINITY.isNanOrInfinite())
         assertEquals(true, Float.NaN.isNanOrInfinite())
+    }
+
+    @Test
+    fun testIsMultipleOf() {
+        assertTrue(4.isMultipleOf(2))
+        assertTrue(25L.isMultipleOf(5L))
+
+        assertEquals(12, 10.nextMultipleOf(3))
+        assertEquals(15L, 11L.nextMultipleOf(5L))
+
+        assertEquals(9, 10.prevMultipleOf(3))
+        assertEquals(10L, 11L.prevMultipleOf(5L))
     }
 }
