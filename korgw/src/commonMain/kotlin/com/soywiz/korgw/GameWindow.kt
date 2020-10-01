@@ -311,19 +311,66 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     }
 
     fun frame(doUpdate: Boolean, startTime: TimeSpan = PerformanceCounter.reference) {
-        frameRender(doUpdate)
+        frameRender()
         if (doUpdate) {
             frameUpdate(startTime)
         }
     }
 
-    fun frameRender(doUpdate: Boolean) {
+    fun frameRender() {
+        if (contextLost) {
+            contextLost = false
+            ag.contextLost()
+        }
+        if (surfaceChanged) {
+            surfaceChanged = false
+            ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+            dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+        }
+        if (doInitialize) {
+            doInitialize = false
+            //ag.mainRenderBuffer.setSize(0, 0, width, height)
+            println("---------------- Trigger AG.initialized ag.mainRenderBuffer.setSize ($width, $height) --------------")
+            dispatch(initEvent)
+        }
         try {
             dispatchRenderEvent(update = false)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
+            e.printStackTrace()
         }
+    }
+
+    private var surfaceChanged = false
+    private var surfaceX = -1
+    private var surfaceY = -1
+    private var surfaceWidth = -1
+    private var surfaceHeight = -1
+
+    private var doInitialize = false
+    private var initialized = false
+    private var contextLost = false
+
+    fun handleContextLost() {
+        println("---------------- handleContextLost --------------")
+        contextLost = true
+    }
+
+    fun handleInitEventIfRequired() {
+        if (initialized) return
+        initialized = true
+        doInitialize = true
+    }
+
+    fun handleReshapeEventIfRequired(x: Int, y: Int, width: Int, height: Int) {
+        if (surfaceX == x && surfaceY == y && surfaceWidth == width && surfaceHeight == height) return
+        println("handleReshapeEventIfRequired: $x, $y, $width, $height")
+        surfaceChanged = true
+        surfaceX = x
+        surfaceY = y
+        surfaceWidth = width
+        surfaceHeight = height
     }
 
     private var lastTime = PerformanceCounter.reference

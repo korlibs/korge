@@ -18,7 +18,7 @@ import javax.microedition.khronos.opengles.GL10
 import com.soywiz.korio.android.withAndroidContext
 
 abstract class KorgwActivity : Activity() {
-    var gameWindow: AndroidGameWindow? = null
+    var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
     private var mGLView: GLSurfaceView? = null
     lateinit var ag: AGOpengl
 
@@ -28,21 +28,7 @@ abstract class KorgwActivity : Activity() {
             gameWindow?.fps = value
         }
 
-    protected val pauseEvent = PauseEvent()
-    protected val resumeEvent = ResumeEvent()
-    protected val destroyEvent = DestroyEvent()
-    protected val renderEvent = RenderEvent()
-    protected val initEvent = InitEvent()
-    protected val disposeEvent = DisposeEvent()
-    protected val fullScreenEvent = FullScreenEvent()
-    protected val keyEvent = KeyEvent()
-    protected val mouseEvent = MouseEvent()
-    protected val touchEvent = TouchEvent()
-    protected val dropFileEvent = DropFileEvent()
-
     private var defaultUiVisibility = -1
-
-    //val touchEvents = Pool { TouchEvent() }
 
     inner class KorgwActivityAGOpengl : AGOpengl() {
         //override val gl: KmlGl = CheckErrorsKmlGlProxy(KmlGlAndroid())
@@ -75,99 +61,52 @@ abstract class KorgwActivity : Activity() {
             init {
                 println("KorgwActivity: Created GLSurfaceView $this for ${this@KorgwActivity}")
 
-                var contextLost = false
-                var surfaceChanged = false
-                var initialized = false
-
                 setEGLContextClientVersion(2)
                 setRenderer(object : GLSurfaceView.Renderer {
                     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
                         //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
-                        println("---------------- GLSurfaceView.onSurfaceCreated($config) --------------")
-                        contextLost = true
+                        gameWindow.handleContextLost()
                     }
 
                     override fun onDrawFrame(unused: GL10) {
-                        if (contextLost) {
-                            contextLost = false
-                            println("---------------- Trigger AG.contextLost --------------")
-                            ag.contextLost()
-                        }
-                        if (!initialized) {
-                            initialized = true
-                            //ag.setViewport(0, 0, width, height)
-                            gameWindow?.dispatch(initEvent)
-                        }
-                        if (surfaceChanged) {
-                            surfaceChanged = false
-                            //ag.setViewport(0, 0, width, height)
-                            gameWindow?.dispatchReshapeEvent(0, 0, view.width, view.height)
-                        }
-
-                        gameWindow?.frame()
+                        gameWindow.handleInitEventIfRequired()
+                        gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
+                        gameWindow.frame()
                     }
 
                     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
                         println("---------------- GLSurfaceView.onSurfaceChanged($width, $height) --------------")
                         //ag.contextVersion++
                         //GLES20.glViewport(0, 0, width, height)
-                        surfaceChanged = true
+                        //surfaceChanged = true
                     }
                 })
             }
 
-            private val touchesEventPool = Pool<TouchEvent> { TouchEvent() }
+            private val touches = TouchEventHandler()
             private val coords = MotionEvent.PointerCoords()
-            private var lastTouchEvent: TouchEvent = TouchEvent()
 
             override fun onTouchEvent(ev: MotionEvent): Boolean {
                 val gameWindow = gameWindow ?: return false
 
-                val currentTouchEvent = synchronized(touchesEventPool) {
-                    val currentTouchEvent = touchesEventPool.alloc()
-                    currentTouchEvent.copyFrom(lastTouchEvent)
-
-                    currentTouchEvent.startFrame(
-                        when (ev.action) {
-                            MotionEvent.ACTION_DOWN -> TouchEvent.Type.START
-                            MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
-                            MotionEvent.ACTION_UP -> TouchEvent.Type.END
-                            else -> TouchEvent.Type.END
-                        }
-                    )
-
+                touches.handleEvent(gameWindow, gameWindow.coroutineContext, when (ev.action) {
+                    MotionEvent.ACTION_DOWN -> TouchEvent.Type.START
+                    MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
+                    MotionEvent.ACTION_UP -> TouchEvent.Type.END
+                    else -> TouchEvent.Type.END
+                }, { currentTouchEvent ->
                     for (n in 0 until ev.pointerCount) {
                         ev.getPointerCoords(n, coords)
                         currentTouchEvent.touch(ev.getPointerId(n), coords.x.toDouble(), coords.y.toDouble())
                     }
-
-                    lastTouchEvent.copyFrom(currentTouchEvent)
-                    currentTouchEvent
-                }
-
-                gameWindow.coroutineDispatcher.dispatch(gameWindow.coroutineContext, Runnable {
-                    gameWindow.dispatch(currentTouchEvent)
-                    synchronized(touchesEventPool) { touchesEventPool.free(currentTouchEvent) }
                 })
                 return true
             }
-
-            override fun onResume() {
-                //Looper.getMainLooper().
-                println("---------------- GLSurfaceView.onResume --------------")
-                super.onResume()
-            }
-
-            override fun onPause() {
-                println("---------------- GLSurfaceView.onPause --------------")
-                super.onPause()
-            }
         }
 
+        gameWindow.initializeAndroid()
         setContentView(mGLView)
 
-        val gameWindow = AndroidGameWindow(this)
-        this.gameWindow = gameWindow
         val androidContext = this
         Korio(androidContext) {
             try {
@@ -211,9 +150,8 @@ abstract class KorgwActivity : Activity() {
         //mGLView?.
         mGLView = null
         setContentView(android.view.View(this))
-        gameWindow?.dispatchDestroyEvent()
+        gameWindow.dispatchDestroyEvent()
         //gameWindow?.close() // Do not close, since it will be automatically closed by the destroy event
-        gameWindow = null
     }
 
     data class ResultHandler(val request: Int) {

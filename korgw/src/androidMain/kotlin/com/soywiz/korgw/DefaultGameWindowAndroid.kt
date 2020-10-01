@@ -24,10 +24,6 @@ import kotlin.coroutines.*
 actual fun CreateDefaultGameWindow(): GameWindow = TODO()
 
 class AndroidGameWindow(val activity: KorgwActivity) : GameWindow() {
-    init {
-        activity.gameWindow = this
-    }
-
     val androidContext get() = activity
 
     override val ag: AG get() = activity.ag
@@ -50,7 +46,7 @@ class AndroidGameWindow(val activity: KorgwActivity) : GameWindow() {
         get() = super.quality
         set(value) {}
 
-    init {
+    fun initializeAndroid() {
         fullscreen = true
     }
 
