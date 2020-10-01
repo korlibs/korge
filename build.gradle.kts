@@ -7,6 +7,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         jcenter()
+        google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
@@ -14,6 +15,10 @@ buildscript {
     dependencies {
         classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
         classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
+        //classpath("com.android.tools.build:gradle:3.4.1")
+        classpath("com.android.tools.build:gradle:4.0.1")
+        //classpath("com.android.tools.build:gradle:4.1.0-rc03")
+        //classpath("com.android.tools.build:gradle:4.2.0-alpha12")
     }
 }
 
@@ -38,6 +43,9 @@ allprojects {
 
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
+
+val enableKotlinAndroid: String by project
+val doEnableKotlinAndroid get() = enableKotlinAndroid == "true"
 
 val enableKotlinMobile:String by project
 val doEnableKotlinMobile get() = enableKotlinMobile == "true"
@@ -74,10 +82,32 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 subprojects {
     group = "com.soywiz.korlibs.${project.name}"
 
-
     if (project.name != "korge-intellij-plugin" && project.name != "korge-gradle-plugin") {
+        val isSample = project.path.startsWith(":samples")
+        val hasAndroid = !isSample && doEnableKotlinAndroid
+        val mustPublish = !isSample
+
+        // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
+        if (hasAndroid) {
+            apply(plugin = "com.android.library")
+            //apply(plugin = "kotlin-android")
+            //apply(plugin = "kotlin-android-extensions")
+            // apply plugin: 'kotlin-android'
+            // apply plugin: 'kotlin-android-extensions'
+            (project.extensions.getByName("android") as com.android.build.gradle.LibraryExtension).apply {
+                compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+                buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+
+                defaultConfig {
+                    minSdkVersion(project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16) // Previously 18
+                    targetSdkVersion(project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+                }
+            }
+        }
+
         apply(plugin = "kotlin-multiplatform")
-        if (!project.path.startsWith(":samples")) {
+
+        if (mustPublish) {
             apply(plugin = "maven-publish")
         }
 
@@ -107,6 +137,17 @@ subprojects {
                         useKarma {
                             useChromeHeadless()
                         }
+                    }
+                }
+            }
+            if (hasAndroid) {
+                android {
+                    publishAllLibraryVariants()
+                    publishLibraryVariantsGroupedByFlavor = true
+                    this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+                    compilations.all {
+                        kotlinOptions.jvmTarget = "1.8"
+                        kotlinOptions.suppressWarnings = true
                     }
                 }
             }
@@ -182,6 +223,18 @@ subprojects {
                             implementation(kotlin("test-junit"))
                         } else {
                             implementation(kotlin("stdlib-jdk8"))
+                        }
+                    }
+                }
+
+                if (hasAndroid) {
+                    val android = createPairSourceSet("android", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
+                        dependencies {
+                            if (test) {
+                                //implementation(kotlin("test-junit"))
+                            } else {
+                                //implementation(kotlin("stdlib-jdk8"))
+                            }
                         }
                     }
                 }
