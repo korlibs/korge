@@ -60,6 +60,7 @@ val KotlinTarget.isIos get() = isIosArm64 || isIosArm32 || isIosX64
 val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
+val isMacos get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)
 
 fun guessAndroidSdkPath(): String? {
     val userHome = System.getProperty("user.home")
@@ -258,6 +259,8 @@ subprojects {
                     val nativePosix by lazy { createPairSourceSet("nativePosix", nativeCommon) }
                     val nativePosixNonApple by lazy { createPairSourceSet("nativePosixNonApple", nativePosix) }
                     val nativePosixApple by lazy { createPairSourceSet("nativePosixApple", nativePosix) }
+                    val iosWatchosTvosCommon by lazy { createPairSourceSet("iosWatchosTvosCommon", nativePosixApple) }
+                    val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
 
                     for (target in nativeTargets()) {
                         val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
@@ -280,6 +283,8 @@ subprojects {
                             val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
                             if (target.isIos) {
                                 native.dependsOn(nativePosixApple)
+                                native.dependsOn(iosCommon)
+                                native.dependsOn(iosWatchosTvosCommon)
                             }
                         }
                     }

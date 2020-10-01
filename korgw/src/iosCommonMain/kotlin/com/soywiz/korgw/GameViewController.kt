@@ -124,7 +124,8 @@ class GameViewController(nibName: kotlin.String?, bundle: platform.Foundation.NS
             reshape = false
             MyIosGameWindow.dispatchReshapeEvent(0, 0, width, height)
         }
-        MyIosGameWindow.ag.setViewport(0, 0, width, height)
+        MyIosGameWindow.handleReshapeEventIfRequired(0, 0, width, height)
+        //MyIosGameWindow.ag.setViewport(0, 0, width, height)
         //gameWindow2?.gameWindow.ag.setViewport(0, 0, width, height)
         //gameWindow2?.gameWindow.frame()
         MyIosGameWindow.frame()
