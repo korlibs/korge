@@ -4,6 +4,7 @@ val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
+val hasAndroid = project.extensions.findByName("android") != null
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
@@ -26,8 +27,7 @@ dependencies {
     commonMainApi(project(":korui"))
 	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
 	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
-    //if (hasAndroid) {
-    if (false) {
+    if (hasAndroid) {
         add("androidMainApi", "com.android.support:appcompat-v7:28.0.0")
     }
 }
