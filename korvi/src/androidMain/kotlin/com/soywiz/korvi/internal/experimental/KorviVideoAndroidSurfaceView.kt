@@ -16,8 +16,8 @@ import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.klock.hr.hrMilliseconds
+import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korim.format.AndroidNativeImage
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korvi.KorviVideo
@@ -51,7 +51,7 @@ class KorviVideoAndroidSurfaceView(val file: VfsFile, val androidContext: Contex
 
             override fun onFrameCaptured(bitmap: Bitmap) {
                 println("onFrameCaptured")
-                onVideoFrame(Frame(AndroidNativeImage(bitmap), 0.hrMilliseconds, 40.hrMilliseconds))
+                onVideoFrame(Frame(AndroidNativeImage(bitmap), 0.milliseconds.hr, 40.milliseconds.hr))
             }
         })
     init {

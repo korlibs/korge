@@ -95,18 +95,16 @@ abstract class KorgwActivity : Activity() {
                         }
                         if (!initialized) {
                             initialized = true
-                            ag.setViewport(0, 0, width, height)
+                            //ag.setViewport(0, 0, width, height)
                             gameWindow?.dispatch(initEvent)
                         }
                         if (surfaceChanged) {
                             surfaceChanged = false
-                            ag.setViewport(0, 0, width, height)
+                            //ag.setViewport(0, 0, width, height)
                             gameWindow?.dispatchReshapeEvent(0, 0, view.width, view.height)
                         }
 
-                        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-                        gameWindow?.coroutineDispatcher?.executePending()
-                        gameWindow?.dispatch(renderEvent)
+                        gameWindow?.frame()
                     }
 
                     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {

@@ -16,13 +16,15 @@ actual object AGOpenglFactory {
 object AGFactoryAndroid : AGFactory {
     override val supportsNativeFrame: Boolean = false
 
-    override fun create(nativeControl: Any?, config: AGConfig): AG = AGAndroid(nativeControl as Context)
+    //override fun create(nativeControl: Any?, config: AGConfig): AG = AGAndroid(nativeControl as Context)
+    override fun create(nativeControl: Any?, config: AGConfig): AG = TODO()
 
     override fun createFastWindow(title: String, width: Int, height: Int): AGWindow {
         TODO()
     }
 }
 
+/*
 private typealias GL = GLES20
 private typealias gl = GLES20
 
@@ -32,6 +34,10 @@ class AGAndroid(val context: Context) : AGOpengl() {
     val glv = GLSurfaceView(context)
     override val nativeComponent: Any = glv
     override val android: Boolean = true
+
+    private fun onRender(ag: AG) {
+
+    }
 
     init {
         //glv.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
@@ -54,7 +60,7 @@ class AGAndroid(val context: Context) : AGOpengl() {
             }
 
             override fun onSurfaceChanged(gl1: GL10, width: Int, height: Int) {
-                setViewport(0, 0, width, height)
+                //setViewport(0, 0, width, height)
                 initializeOnce()
                 //resized()
                 onRender(ag)
@@ -73,3 +79,4 @@ class AGAndroid(val context: Context) : AGOpengl() {
         glv.requestRender()
     }
 }
+*/

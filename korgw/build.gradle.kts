@@ -26,6 +26,10 @@ dependencies {
     commonMainApi(project(":korui"))
 	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
 	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+    //if (hasAndroid) {
+    if (true) {
+        add("androidMainApi", "com.android.support:appcompat-v7:28.0.0")
+    }
 }
 
 /*

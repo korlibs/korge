@@ -15,8 +15,7 @@ import android.view.Surface
 import com.soywiz.klock.Frequency
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.hr
-import com.soywiz.klock.hr.hrMilliseconds
-import com.soywiz.klock.hr.hrNanoseconds
+import com.soywiz.klock.*
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.Colors
@@ -74,7 +73,7 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile,
         lastUpdatedFrame = frameAvailable
         val surfaceTexture = nativeImage.surfaceTexture
         surfaceTexture.updateTexImage()
-        lastTimeSpan = surfaceTexture.timestamp.toDouble().hrNanoseconds
+        lastTimeSpan = surfaceTexture.timestamp.toDouble().nanoseconds.hr
         onVideoFrame(Frame(nativeImage, lastTimeSpan, frameRate.timeSpan.hr))
     }
 
@@ -87,7 +86,7 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile,
     override suspend fun getTotalFrames(): Long? =
         getDuration()?.let { duration -> (duration / frameRate.timeSpan.hr).toLong() }
 
-    override suspend fun getDuration(): HRTimeSpan? = player.duration.takeIf { it >= 0 }?.hrMilliseconds
+    override suspend fun getDuration(): HRTimeSpan? = player.duration.takeIf { it >= 0 }?.milliseconds?.hr
 
     override suspend fun play() {
         //println("START")

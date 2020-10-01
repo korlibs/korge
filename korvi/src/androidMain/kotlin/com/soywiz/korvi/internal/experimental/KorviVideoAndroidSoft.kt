@@ -3,9 +3,8 @@ package com.soywiz.korvi.internal.experimental
 import android.content.Context
 import android.graphics.ImageFormat
 import android.os.Build
-import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.klock.hr.hrMilliseconds
-import com.soywiz.klock.hr.hrNanoseconds
+import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -81,7 +80,7 @@ class AndroidKorviVideoSoft(val file: VfsFile, val androidContext: Context, val 
                 }
 
                 launchImmediately(coroutineContext) {
-                    onVideoFrame(Frame(bmp, image.timestamp.toDouble().hrNanoseconds, 40.hrMilliseconds))
+                    onVideoFrame(Frame(bmp, image.timestamp.toDouble().nanoseconds.hr, 40.milliseconds.hr))
                 }
             } else {
                 TODO("VERSION.SDK_INT < KITKAT")
@@ -89,7 +88,7 @@ class AndroidKorviVideoSoft(val file: VfsFile, val androidContext: Context, val 
         }
 
     override var running: Boolean = false
-    override val elapsedTimeHr: HRTimeSpan get() = 0.hrMilliseconds
+    override val elapsedTimeHr: HRTimeSpan get() = 0.milliseconds.hr
 
 
     override suspend fun getTotalFrames(): Long? = null
