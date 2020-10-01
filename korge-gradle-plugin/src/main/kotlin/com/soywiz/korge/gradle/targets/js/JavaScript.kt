@@ -19,39 +19,90 @@ val Project.webMinWebpackFolder get() = buildDir["web-min-webpack"]
 
 internal var _webServer: DecoratedHttpServer? = null
 
+private object JavaScriptClass
+
 fun Project.configureJavaScript() {
-	plugins.apply("kotlin-dce-js")
+	//plugins.apply("kotlin-dce-js")
 
 	val kotlinTargets by lazy { project["kotlin"]["targets"] }
 
 	gkotlin.apply {
 		js(KotlinJsCompilerType.IR) {
+            browser {
+                binaries.executable()
+                testTask {
+                    useKarma {
+                        useChromeHeadless()
+                    }
+                }
+            }
+
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
+
 			compilations.all {
 				it.kotlinOptions.apply {
-					languageVersion = "1.3"
+					languageVersion = "1.4"
 					sourceMap = true
-					metaInfo = true
-					moduleKind = "umd"
+					//metaInfo = true
+					//moduleKind = "umd"
 					suppressWarnings = korge.supressWarnings
-				}
-			}
-
-			browser {
-				testTask {
-					useKarma {
-						useChromeHeadless()
-					}
 				}
 			}
 		}
 	}
 
-	project.korge.addDependency("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
-	project.korge.addDependency("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
+	//project.korge.addDependency("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
+	//project.korge.addDependency("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
 
+    val runJs = project.addTask<Task>(name = "runJs") { task ->
+        task.group = GROUP_KORGE_RUN
+        task.dependsOn("jsBrowserDevelopmentRun")
+    }
+
+    project.tasks.getByName("jsProcessResources").apply {
+        //println(this.outputs.files.toList())
+        doLast {
+            val targetDir = this.outputs.files.first()
+            logger.debug("jsProcessResources.targetDir: $targetDir")
+            val jsMainCompilation = kotlin.js().compilations["main"]!!
+            val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+            val resourcesFolders = jsMainCompilation.allKotlinSourceSets
+                .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+            //println("jsFile: $jsFile")
+            //println("resourcesFolders: $resourcesFolders")
+            fun readTextFile(name: String): String {
+                for (folder in resourcesFolders) {
+                    val file = File(folder, name)?.takeIf { it.exists() } ?: continue
+                    return file.readText()
+                }
+                return JavaScriptClass::class.java.classLoader.getResourceAsStream(name)?.readBytes()?.toString(Charsets.UTF_8)
+                    ?: error("We cannot find suitable '$name'")
+            }
+
+            val indexTemplateHtml = readTextFile("index.v2.template.html")
+            val customCss = readTextFile("custom-styles.template.css")
+            val customHtmlHead = readTextFile("custom-html-head.template.html")
+            val customHtmlBody = readTextFile("custom-html-body.template.html")
+
+            //println(File(targetDir, "index.html"))
+
+            File(targetDir, "index.html").writeText(
+                groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
+                    mapOf(
+                        "OUTPUT" to jsFile,
+                        //"TITLE" to korge.name,
+                        "TITLE" to "TODO",
+                        "CUSTOM_CSS" to customCss,
+                        "CUSTOM_HTML_HEAD" to customHtmlHead,
+                        "CUSTOM_HTML_BODY" to customHtmlBody
+                    )
+                ).toString()
+            )
+        }
+    }
+
+    /*
 	val compileKotlinJs = project.tasks.getByName("compileKotlinJs") as Kotlin2JsCompile
-
 	//println(compileKotlinJs.outputFile)
 
 	for (minimized in listOf(false, true)) {
@@ -62,7 +113,7 @@ fun Project.configureJavaScript() {
 			task.group = GROUP_KORGE_PACKAGE
 			fun CopySpec.configureWeb() {
 				if (minimized) {
-					//include("**/require.min.js")
+					//include("**"+"/require.min.js")
 					exclude(*excludesAll)
 				} else {
 					exclude(*excludesNormal)
@@ -96,7 +147,7 @@ fun Project.configureJavaScript() {
 						//println("file: $file")
 						if (file.exists() && !file.isDirectory) {
 							from(project.zipTree(file.absolutePath)) { copy -> copy.configureWeb() }
-							from(project.zipTree(file.absolutePath)) { copy -> copy.include("**/*.min.js") }
+							from(project.zipTree(file.absolutePath)) { copy -> copy.include("**"+"/*.min.js") }
 						} else {
 							from(file) { copy -> copy.configureWeb() }
 							from(file) { copy -> copy.include("**/*.min.js") }
@@ -217,7 +268,7 @@ fun Project.configureJavaScript() {
 					}
 				}
 				copy.into(webMinWebpackFolder)
-				//copy.exclude("**/*.js", "**/index.template.html", "**/index.html")
+				//copy.exclude("**"+"/*.js", "**/index.template.html", "**"+"/index.html")
 			}
 			writeTemplateIndexHtml(webMinWebpackFolder, jsFile.name)
 			//println(jsFile)
@@ -227,6 +278,7 @@ fun Project.configureJavaScript() {
 
 	val jsDist = project.addTask<DefaultTask>("jsDist", dependsOn = listOf(jsWebMinWebpack)) { task ->
 	}
+    */
 
 	//println(compileKotlinJs.outputs.files.toList())
 }
@@ -283,41 +335,6 @@ private fun String.fixIndexHtmlWebpack(bundleJs: String = "bundle.js"): String {
 		Regex("$PREFIX.*$SUFFIX", RegexOption.DOT_MATCHES_ALL),
 		"$PREFIX<script type='text/javascript'>document.onreadystatechange = () => { if (document.readyState === 'complete') { preloader_complete() } };</script><script src='$bundleJs' type='text/javascript'></script>$SUFFIX"
 	)
-}
-
-fun applyPatchToKotlinRuntime(runtime: String, patchSrc: String, patchDst: String): String {
-	val srcRegex = Regex(
-		patchSrc
-			.trim()
-			.replace("\\", "\\\\")
-			.replace(".", "\\.")
-			.replace("?", "\\?")
-			.replace("[", "\\[")
-			.replace("(", "\\(")
-			.replace("{", "\\{")
-			.replace(")", "\\)")
-			.replace("}", "\\}")
-			.replace("]", "\\]")
-			.replace("+", "\\+")
-			.replace("*", "\\*")
-			.replace("\$", "\\\$")
-			.replace("^", "\\^")
-			.replace(Regex("\\s+", RegexOption.MULTILINE), "\\\\s*")
-		, setOf(
-			RegexOption.MULTILINE, RegexOption.IGNORE_CASE
-		)
-	)
-	//println(srcRegex.pattern)
-	return runtime.replace(srcRegex) { result ->
-		val srcLines = result.value.lines().size
-		val dstLines = patchDst.lines().size
-		if (srcLines > dstLines) {
-			patchDst + "\n".repeat(srcLines - dstLines)
-		} else {
-			println("WARNING: More lines in patch than expected")
-			patchDst
-		}
-	}
 }
 
 fun applyPatchesToKotlinRuntime(runtime: String): String {

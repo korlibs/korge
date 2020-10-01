@@ -152,7 +152,6 @@ class KorgeExtension(val project: Project) {
 	var androidCompileSdk: Int = 28
 	var androidTargetSdk: Int = 28
 
-	@JvmOverloads
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk
 		androidCompileSdk = compileSdk
@@ -261,7 +260,6 @@ class KorgeExtension(val project: Project) {
         """)
 	}
 
-	@JvmOverloads
 	fun author(name: String, email: String, href: String) {
 		authorName = name
 		authorEmail = email
@@ -318,7 +316,6 @@ class KorgeExtension(val project: Project) {
 	val cinterops = arrayListOf<CInteropTargets>()
 
 
-	@JvmOverloads
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {

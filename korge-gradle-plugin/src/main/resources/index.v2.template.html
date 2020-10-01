@@ -66,13 +66,7 @@ $CUSTOM_CSS
 
 $CUSTOM_HTML_BODY
 
-<!-- GAME_LOAD -->
-<script src="require.min.js" type="text/javascript"></script>
-<script type="text/javascript">
-	requirejs.config({ waitSeconds: 120, })
-	requirejs(["$OUTPUT"], (main) => { preloader_complete() })
-</script>
-<!-- /GAME_LOAD -->
+<script type="text/javascript" src="$OUTPUT" onload="preloader_complete()"></script>
 
 <script type="text/javascript">
 (() => {
