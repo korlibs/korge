@@ -537,3 +537,15 @@ samples {
         }
     }
 }
+
+/*
+if (Os.isFamily(Os.FAMILY_UNIX) &&
+    (File("/.dockerenv").exists() || System.getenv("TRAVIS") != null || System.getenv("GITHUB_REPOSITORY") != null) &&
+    (File("/usr/bin/apt-get").exists())
+) {
+
+    exec { commandLine("sudo", "apt-get", "update")  }
+    exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev", "ncurses5")  }
+    //exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
+}
+*/
