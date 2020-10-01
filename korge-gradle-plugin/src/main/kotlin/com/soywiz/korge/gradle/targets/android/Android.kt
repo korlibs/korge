@@ -21,16 +21,16 @@ import kotlin.collections.set
 //Linux: ~/Android/Sdk
 //Mac: ~/Library/Android/sdk
 //Windows: %LOCALAPPDATA%\Android\sdk
-val Project.androidSdkPath by WeakPropertyThis<Project, String> {
+val Project.androidSdkPath: String get() {
     val localPropertiesFile = projectDir["local.properties"]
     if (localPropertiesFile.exists()) {
         val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
         if (props.getProperty("sdk.dir") != null) {
-            return@WeakPropertyThis props.getProperty("sdk.dir")!!
+            return props.getProperty("sdk.dir")!!
         }
     }
     val userHome = System.getProperty("user.home")
-    listOfNotNull(
+    return listOfNotNull(
         System.getenv("ANDROID_HOME"),
         "$userHome/AppData/Local/Android/sdk",
         "$userHome/Library/Android/sdk",
@@ -104,11 +104,13 @@ fun Project.configureNativeAndroid() {
 				//""".trimIndent())
 				//}
 				File(outputFolder, "local.properties").conditionally(ifNotExists) {
-					ensureParents().writeText("sdk.dir=${androidSdkPath.escape()}")
+					ensureParents().writeTextIfChanged("sdk.dir=${androidSdkPath.escape()}")
 				}
-				File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
-					ensureParents().writeText(Indenter {
+				//File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
+                File(outputFolder, "settings.gradle").always {
+					ensureParents().writeTextIfChanged(Indenter {
 						line("enableFeaturePreview(\"GRADLE_METADATA\")")
+                        line("rootProject.name = ${project.name.quoted}")
 						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureNativeAndroid.parent?.projectDir?.let {
 							line("include(\":$parentProjectName\")")
 							line("project(\":$parentProjectName\").projectDir = file(\'$it\')")
@@ -122,15 +124,21 @@ fun Project.configureNativeAndroid() {
 				File(
 					outputFolder,
 					"proguard-rules.pro"
-				).conditionally(ifNotExists) { ensureParents().writeText("#Rules here\n") }
+				).conditionally(ifNotExists) { ensureParents().writeTextIfChanged("#Rules here\n") }
 
 				outputFolder["gradle"].mkdirs()
 				rootDir["gradle"].copyRecursively(outputFolder["gradle"], overwrite = true) { f, e -> OnErrorAction.SKIP }
 
-				File(outputFolder, "build.gradle").conditionally(ifNotExists) {
-					ensureParents().writeText(Indenter {
+                File(outputFolder, "build.extra.gradle").conditionally(ifNotExists) {
+                    ensureParents().writeTextIfChanged(Indenter {
+                        line("")
+                    })
+                }
+
+				File(outputFolder, "build.gradle").always {
+					ensureParents().writeTextIfChanged(Indenter {
 						line("buildscript") {
-							line("repositories { google(); jcenter(); maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") } }")
+							line("repositories { google(); jcenter(); maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-eap\") }; maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") } }")
 							line("dependencies { classpath 'com.android.tools.build:gradle:$androidBuildGradleVersion'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
 						}
 						line("repositories") {
@@ -138,6 +146,7 @@ fun Project.configureNativeAndroid() {
 							line("maven { url = 'https://dl.bintray.com/korlibs/korlibs' }")
 							line("google()")
 							line("jcenter()")
+                            line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-eap\") }")
 							line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") }")
 						}
 
@@ -150,6 +159,9 @@ fun Project.configureNativeAndroid() {
 						line("apply plugin: 'kotlin-android-extensions'")
 
 						line("android") {
+                            line("kotlinOptions") {
+                                line("jvmTarget = \"1.8\"")
+                            }
                             line("packagingOptions") {
                                 line("exclude 'META-INF/DEPENDENCIES'")
                                 line("exclude 'META-INF/LICENSE'")
@@ -252,13 +264,15 @@ fun Project.configureNativeAndroid() {
 						line("configurations") {
 							line("androidTestImplementation.extendsFrom(commonMainApi)")
 						}
+
+                        line("apply from: 'build.extra.gradle'")
 					}.toString())
 				}
 
 				writeAndroidManifest(outputFolder, korge)
 
 				File(outputFolder, "gradle.properties").conditionally(ifNotExists) {
-					ensureParents().writeText("org.gradle.jvmargs=-Xmx1536m")
+					ensureParents().writeTextIfChanged("org.gradle.jvmargs=-Xmx1536m")
 				}
 			}
 		}
@@ -325,7 +339,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 	val androidAppName = korge.name
 	val ifNotExists = korge.overwriteAndroidFiles
 	File(outputFolder, "src/main/AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
-		ensureParents().writeText(Indenter {
+		ensureParents().writeTextIfChanged(Indenter {
 			line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
 			line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
 			indent {
@@ -359,6 +373,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						when (korge.orientation) {
 							Orientation.LANDSCAPE -> line("android:screenOrientation=\"landscape\"")
 							Orientation.PORTRAIT -> line("android:screenOrientation=\"portrait\"")
+                            Orientation.DEFAULT -> Unit
 						}
 					}
 					line(">")
@@ -384,13 +399,13 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 		}.toString())
 	}
 	File(outputFolder, "korge.keystore").conditionally(ifNotExists) {
-		ensureParents().writeBytes(getResourceBytes("korge.keystore"))
+		ensureParents().writeBytesIfChanged(getResourceBytes("korge.keystore"))
 	}
 	File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
-		ensureParents().writeBytes(korge.getIconBytes())
+		ensureParents().writeBytesIfChanged(korge.getIconBytes())
 	}
 	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
-		ensureParents().writeText(Indenter {
+		ensureParents().writeTextIfChanged(Indenter {
 			line("package $androidPackageName")
 
 			line("import com.soywiz.korio.android.withAndroidContext")
@@ -411,15 +426,31 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 	}
 }
 
-val tryAndroidSdkDirs = listOf(
-	File(System.getProperty("user.home"), "/Library/Android/sdk"), // MacOS
-	File(System.getProperty("user.home"), "/Android/Sdk"), // Linux
-	File(System.getProperty("user.home"), "/AppData/Local/Android/Sdk") // Windows
-)
+private var _tryAndroidSdkDirs: List<File>? = null
+val tryAndroidSdkDirs: List<File> get() {
+    if (_tryAndroidSdkDirs == null) {
+        _tryAndroidSdkDirs = listOf(
+            File(System.getProperty("user.home"), "/Library/Android/sdk"), // MacOS
+            File(System.getProperty("user.home"), "/Android/Sdk"), // Linux
+            File(System.getProperty("user.home"), "/AppData/Local/Android/Sdk") // Windows
+        )
+    }
+    return _tryAndroidSdkDirs!!
+}
 
-val prop_sdk_dir = System.getProperty("sdk.dir")
-val prop_ANDROID_HOME = System.getenv("ANDROID_HOME")
-var hasAndroidConfigured = ((prop_sdk_dir != null) || (prop_ANDROID_HOME != null))
+val prop_sdk_dir: String? get() = System.getProperty("sdk.dir")
+val prop_ANDROID_HOME: String? get() = System.getenv("ANDROID_HOME")
+private var _hasAndroidConfigured: Boolean? = null
+var hasAndroidConfigured: Boolean
+    set(value) {
+        _hasAndroidConfigured = value
+    }
+    get() {
+        if (_hasAndroidConfigured == null) {
+            _hasAndroidConfigured = ((prop_sdk_dir != null) || (prop_ANDROID_HOME != null))
+        }
+        return _hasAndroidConfigured!!
+    }
 
 fun Project.tryToDetectAndroidSdkPath(): File? {
 	for (tryAndroidSdkDirs in tryAndroidSdkDirs) {
