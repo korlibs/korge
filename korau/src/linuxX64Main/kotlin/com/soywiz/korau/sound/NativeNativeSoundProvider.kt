@@ -36,7 +36,7 @@ class OpenALNativeSoundProvider : NativeSoundProvider() {
 
     override val audioFormats: AudioFormats = AudioFormats(WAV, com.soywiz.korau.format.mp3.MP3Decoder, NativeOggVorbisDecoderFormat)
 
-    override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): NativeSound {
+    override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound {
         return if (streaming) {
             super.createSound(data, streaming, props, name)
         } else {
@@ -80,7 +80,7 @@ class OpenALPlatformAudioOutput(
     }
 
     override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        availableSamples += samples.size
+        availableSamples += samples.totalSamples
         try {
             memScoped {
                 provider.makeCurrent()
@@ -128,7 +128,7 @@ class OpenALPlatformAudioOutput(
                 }
             }
         } finally {
-            availableSamples -= samples.size
+            availableSamples -= samples.totalSamples
         }
     }
 
@@ -176,7 +176,7 @@ class OpenALNativeSoundNoStream(
     val data: AudioData?,
     val sourceProvider: SourceProvider = SourceProvider(0.convert()),
     override val name: String = "Unknown"
-) : NativeSound(), SoundProps by JnaSoundPropsProvider(sourceProvider) {
+) : Sound(), SoundProps by JnaSoundPropsProvider(sourceProvider) {
     override suspend fun decode(): AudioData = data ?: AudioData.DUMMY
 
     var source: ALuint
@@ -185,8 +185,8 @@ class OpenALNativeSoundNoStream(
 
     override val length: TimeSpan get() = data?.totalTime ?: 0.seconds
 
-    override fun play(params: PlaybackParameters): NativeSoundChannel {
-        val data = data ?: return DummyNativeSoundChannel(this)
+    override fun play(params: PlaybackParameters): SoundChannel {
+        val data = data ?: return DummySoundChannel(this)
         provider.makeCurrent()
         val buffer = alGenBuffer()
         alBufferData(buffer, data, panning, volume)
@@ -197,7 +197,7 @@ class OpenALNativeSoundNoStream(
 
         var stopped = false
 
-        val channel = object : NativeSoundChannel(this), SoundProps by JnaSoundPropsProvider(sourceProvider) {
+        val channel = object : SoundChannel(this), SoundProps by JnaSoundPropsProvider(sourceProvider) {
             val totalSamples get() = data.totalSamples
             var currentSampleOffset: Int
                 get() = alGetSourcei(source, AL_SAMPLE_OFFSET)
