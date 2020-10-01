@@ -61,6 +61,29 @@ val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
 
+fun guessAndroidSdkPath(): String? {
+    val userHome = System.getProperty("user.home")
+    return listOfNotNull(
+        System.getenv("ANDROID_HOME"),
+        "$userHome/AppData/Local/Android/sdk",
+        "$userHome/Library/Android/sdk",
+        "$userHome/Android/Sdk"
+    ).firstOrNull { File(it).exists() }
+}
+
+fun hasAndroidSdk(): Boolean {
+    val env = System.getenv("ANDROID_SDK_ROOT")
+    if (env != null) return true
+    val localPropsFile = File(rootProject.rootDir, "local.properties")
+    if (!localPropsFile.exists()) {
+        val sdkPath = guessAndroidSdkPath() ?: return false
+        localPropsFile.writeText("sdk.dir=${sdkPath.replace("\\", "/")}")
+    }
+    return true
+}
+
+val hasAndroidSdk by lazy { hasAndroidSdk() }
+
 // Required by RC
 kotlin {
     jvm { }
@@ -84,25 +107,13 @@ subprojects {
 
     if (project.name != "korge-intellij-plugin" && project.name != "korge-gradle-plugin") {
         val isSample = project.path.startsWith(":samples")
-        val hasAndroid = !isSample && doEnableKotlinAndroid
+        val hasAndroid = !isSample && doEnableKotlinAndroid && hasAndroidSdk
+        //val hasAndroid = !isSample && true
         val mustPublish = !isSample
 
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         if (hasAndroid) {
-            apply(plugin = "com.android.library")
-            //apply(plugin = "kotlin-android")
-            //apply(plugin = "kotlin-android-extensions")
-            // apply plugin: 'kotlin-android'
-            // apply plugin: 'kotlin-android-extensions'
-            (project.extensions.getByName("android") as com.android.build.gradle.LibraryExtension).apply {
-                compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
-
-                defaultConfig {
-                    minSdkVersion(project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16) // Previously 18
-                    targetSdkVersion(project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                }
-            }
+            apply(from = "${rootProject.rootDir}/build.android.gradle")
         }
 
         apply(plugin = "kotlin-multiplatform")
@@ -141,20 +152,12 @@ subprojects {
                 }
             }
             if (hasAndroid) {
-                android {
-                    publishAllLibraryVariants()
-                    publishLibraryVariantsGroupedByFlavor = true
-                    this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                    compilations.all {
-                        kotlinOptions.jvmTarget = "1.8"
-                        kotlinOptions.suppressWarnings = true
-                    }
-                }
+                apply(from = "${rootProject.rootDir}/build.android.srcset.gradle")
             }
             if (doEnableKotlinNative) {
                 for (target in nativeTargets()) {
                     target.compilations.all {
-                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                        //kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
                         kotlinOptions.suppressWarnings = true
                     }
                 }
@@ -163,7 +166,7 @@ subprojects {
             if (doEnableKotlinMobile) {
                 for (target in mobileTargets()) {
                     target.compilations.all {
-                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                        //kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
                         kotlinOptions.suppressWarnings = true
                     }
                 }

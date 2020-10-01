@@ -1,5 +1,3 @@
-val jcodecVersion: String by project
-
 dependencies {
 	add("commonMainApi", project(":korim"))
 	add("commonMainApi", project(":korau"))
@@ -40,7 +38,6 @@ dependencies {
     add("jvmMainApi", "org.jcodec:jcodec:$jcodecVersion")
 }
 
-/*
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 //apply plugin: com.soywiz.korlibs.KorlibsPluginNoNativeNoAndroid
 
@@ -63,5 +60,4 @@ dependencies {
     jvmMainApi("org.jcodec:jcodec:0.2.5")
     //jvmMainApi(project(":korvi-jcodec"))
 }
-*/
 */
