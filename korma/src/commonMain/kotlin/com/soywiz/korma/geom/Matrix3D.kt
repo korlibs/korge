@@ -832,15 +832,6 @@ fun Matrix3D.rotate(quat: Quaternion, temp: Matrix3D = tempMat3D) = this.apply {
     this.multiply(this, temp)
 }
 
-fun Vector3D.sub(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x - r.x, l.y - r.y, l.z - r.z, l.w - r.w)
-fun Vector3D.add(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x + r.x, l.y + r.y, l.z + r.z, l.w + r.w)
-fun Vector3D.cross(a: Vector3D, b: Vector3D): Vector3D = setTo(
-    (a.y * b.z - a.z * b.y),
-    (a.z * b.x - a.x * b.z),
-    (a.x * b.y - a.y * b.x),
-    1f
-)
-
 private val tempVec1 = Vector3D()
 private val tempVec2 = Vector3D()
 private val tempVec3 = Vector3D()

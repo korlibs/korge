@@ -70,7 +70,16 @@ class Vector3D {
 
     fun normalized(out: Vector3D = Vector3D()): Vector3D = out.copyFrom(this).normalize()
 
+    fun dot(v2: Vector3D): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
 
+    fun sub(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x - r.x, l.y - r.y, l.z - r.z, l.w - r.w)
+    fun add(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x + r.x, l.y + r.y, l.z + r.z, l.w + r.w)
+    fun cross(a: Vector3D, b: Vector3D): Vector3D = setTo(
+        (a.y * b.z - a.z * b.y),
+        (a.z * b.x - a.x * b.z),
+        (a.x * b.y - a.y * b.x),
+        1f
+    )
     override fun equals(other: Any?): Boolean = (other is Vector3D) && almostEquals(this.x, other.x) && almostEquals(this.y, other.y) && almostEquals(this.z, other.z) && almostEquals(this.w, other.w)
     override fun hashCode(): Int = data.contentHashCode()
 
