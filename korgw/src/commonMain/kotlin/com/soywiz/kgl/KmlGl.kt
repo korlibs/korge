@@ -10,8 +10,13 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
     val DEPTH_BUFFER_BIT: Int = 0x0100
     val STENCIL_BUFFER_BIT: Int = 0x0400
     val COLOR_BUFFER_BIT: Int = 0x4000
-    val FALSE: Int = 0x0000
-    val TRUE: Int = 0x0001
+    // @TODO: Error on Kotlin/Native iOS framework
+    //While building module 'GameMain' imported from /Users/soywiz/projects/untitled/build/platforms/ios/app/ViewController.h:3:
+    //In file included from <module-includes>:1:
+    //../../bin/iosX64/debugFramework/GameMain.framework/Headers/GameMain.h:2726:1: error: property requires fields to be named
+    //@property (readonly) int32_t FALSE __attribute__((swift_name("FALSE")));
+    val GFALSE: Int = 0x0000
+    val GTRUE: Int = 0x0001
     val POINTS: Int = 0x0000
     val LINES: Int = 0x0001
     val LINE_LOOP: Int = 0x0002

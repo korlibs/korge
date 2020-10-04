@@ -603,7 +603,7 @@ abstract class AGOpengl : AG() {
 
             val out = gl.getShaderiv(shaderId, gl.COMPILE_STATUS)
             val errorInt = gl.getError()
-            if (out != gl.TRUE) {
+            if (out != gl.GTRUE) {
                 val error = gl.getShaderInfoLog(shaderId)
                 throw ShaderException(str, error, errorInt, gl)
             }
@@ -884,8 +884,8 @@ abstract class AGOpengl : AG() {
             if (linux) {
                 //println("prepareTexImage2D")
                 //gl.pixelStorei(GL_UNPACK_LSB_FIRST, gl.TRUE)
-                gl.pixelStorei(GL_UNPACK_LSB_FIRST, gl.FALSE)
-                gl.pixelStorei(GL_UNPACK_SWAP_BYTES, gl.TRUE)
+                gl.pixelStorei(GL_UNPACK_LSB_FIRST, gl.GFALSE)
+                gl.pixelStorei(GL_UNPACK_SWAP_BYTES, gl.GTRUE)
             }
         }
 

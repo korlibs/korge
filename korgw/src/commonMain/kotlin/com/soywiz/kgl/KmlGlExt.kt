@@ -35,14 +35,14 @@ fun KmlGl.getProgramInfoLog(shader: Int): String = getInfoLog(shader, ::getProgr
 
 fun KmlGl.compileShaderAndCheck(shader: Int) {
 	compileShader(shader)
-	if (getShaderiv(shader, COMPILE_STATUS) != TRUE) {
+	if (getShaderiv(shader, COMPILE_STATUS) != GTRUE) {
 		throw KmlGlException(getShaderInfoLog(shader))
 	}
 }
 
 fun KmlGl.linkProgramAndCheck(program: Int) {
 	linkProgram(program)
-	if (getProgramiv(program, LINK_STATUS) != TRUE) {
+	if (getProgramiv(program, LINK_STATUS) != GTRUE) {
 		throw KmlGlException(getProgramInfoLog(program))
 	}
 }
