@@ -36,7 +36,6 @@ class KorgeExtension(val project: Project) {
         //macosArm64()
     }
     fun ios() {
-        //iosArm32()
         iosArm64()
         iosX64()
     }
@@ -51,7 +50,6 @@ class KorgeExtension(val project: Project) {
     }
     fun android() = project.kotlin.android()
 
-    //fun iosArm32() = project.kotlin.iosArm32()
     fun iosArm64() = project.kotlin.iosArm64().korgeConfigure()
     fun iosX64() = project.kotlin.iosX64().korgeConfigure()
 

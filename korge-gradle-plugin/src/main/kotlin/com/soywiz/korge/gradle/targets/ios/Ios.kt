@@ -37,7 +37,7 @@ fun Project.configureNativeIos() {
 	}
 
 	kotlin.apply {
-		for (target in listOf(iosX64(), iosArm32(), iosArm64())) {
+		for (target in listOf(iosX64(), iosArm64())) {
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)

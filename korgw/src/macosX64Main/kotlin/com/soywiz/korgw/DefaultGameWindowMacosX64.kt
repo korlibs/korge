@@ -251,7 +251,7 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
 
     fun doRender() {
         //println("doRender[0]")
-        val startTime = PerformanceCounter.hr
+        val startTime = PerformanceCounter.reference
         //macTrace("render")
         val context = openglView.openGLContext
 
@@ -269,13 +269,14 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
         context?.makeCurrentContext()
 
         //println("doRender[3] : $context")
-        ag.clear(Colors.BLACK)
-        ag.onRender(ag)
-        dispatch(renderEvent)
+        //ag.clear(Colors.BLACK)
+        //ag.onRender(ag)
+        //dispatch(renderEvent)
+        frame()
         context?.flushBuffer()
 
         //println("doRender[3]")
-        val elapsed = PerformanceCounter.hr - startTime
+        val elapsed = PerformanceCounter.reference - startTime
         val available = counterTimePerFrame - elapsed
         coroutineDispatcher.executePending(available)
         //println("doRender[4]")
@@ -483,7 +484,7 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
             }
         }
 
-        coroutineDispatcher.executePending(1.seconds.hr)
+        coroutineDispatcher.executePending(1.seconds)
         app.run()
     }
 }

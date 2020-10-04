@@ -291,7 +291,7 @@ class KorgeExtension(val project: Project) {
 		}
 	}
 
-	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosArm32", "iosX64") + DESKTOP_NATIVE_TARGETS
+	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosX64") + DESKTOP_NATIVE_TARGETS
 	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 	val ALL_TARGETS = listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 

@@ -57,7 +57,7 @@ kotlin {
         iosMain
         iosTest
 
-        configure([iosX64Main, iosArm32Main, iosArm64Main]) {
+        configure([iosX64Main, iosArm64Main]) {
             dependsOn iosMain
             dependsOn iosTest
         }

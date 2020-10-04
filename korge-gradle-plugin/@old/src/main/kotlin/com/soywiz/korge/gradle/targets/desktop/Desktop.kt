@@ -82,7 +82,7 @@ fun Project.configureNativeDesktop() {
 	}
 
 	afterEvaluate {
-		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
+		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {
 
 		for (target in when {
 			isWindows -> listOf(kotlin.mingwX64())

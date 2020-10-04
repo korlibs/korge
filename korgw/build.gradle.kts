@@ -10,7 +10,7 @@ val hasAndroid = project.extensions.findByName("android") != null
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOf(mingwX64())
-        isMacos -> listOf(macosX64(), iosArm32(), iosArm64(), iosX64())
+        isMacos -> listOf(macosX64(), iosArm64(), iosX64())
         else -> listOf(linuxX64(), mingwX64(), macosX64())
     }
 }
@@ -41,7 +41,7 @@ apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
 korlibs {
     exposeVersion()
-    //dependencyCInteropsExternal("com.soywiz.korlibs.korim:korim:$korimVersion", "stb_image", ["linuxX64", "iosX64", "iosArm32", "iosArm64"])
+    //dependencyCInteropsExternal("com.soywiz.korlibs.korim:korim:$korimVersion", "stb_image", ["linuxX64", "iosX64", "iosArm64"])
     //dependencyCInterops("GL", ["linuxX64"])
 
     dependencies {
