@@ -1,4 +1,3 @@
-/*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.render.*
@@ -15,17 +14,6 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 	val minDegrees = (-16).degrees
 	val maxDegrees = (+16).degrees
 
-    views.addDebugRenderer { ctx ->
-        ctx.debugLineRenderContext.apply {
-            color(Colors.RED) {
-                drawVector {
-                    circle(100.0, 100.0, 60.0)
-                }
-            }
-        }
-        //ctx.debugLineRenderContext.line(0.0, 0.0, 100.0, 100.0)
-    }
-
 	val image = image(resourcesVfs["korge.png"].readBitmap()) {
 		rotation = maxDegrees
 		anchor(.5, .5)
@@ -38,4 +26,3 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 		image.tween(image::rotation[maxDegrees], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 	}
 }
-*/

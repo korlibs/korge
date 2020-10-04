@@ -1,3 +1,4 @@
+/*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.render.*
@@ -33,3 +34,4 @@ suspend fun main() {
         //MacosGameController.main(arrayOf())
     }
 }
+*/
