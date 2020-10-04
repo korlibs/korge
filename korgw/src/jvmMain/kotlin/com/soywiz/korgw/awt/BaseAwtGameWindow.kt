@@ -190,14 +190,19 @@ abstract class BaseAwtGameWindow : GameWindow() {
             OS.isLinux -> {
                 linuxJoyEventAdapter.updateGamepads(this)
             }
+            OS.isMac -> {
+                macosGamepadEventAdapter.updateGamepads(this)
+            }
             else -> {
-                println("undetected OS: ${OS.rawName}")
+                //println("undetected OS: ${OS.rawName}")
             }
         }
     }
 
     private val xinputEventAdapter by lazy { XInputEventAdapter() }
     private val linuxJoyEventAdapter by lazy { LinuxJoyEventAdapter() }
+    private val macosGamepadEventAdapter by lazy { MacosGamepadEventAdapter() }
+
 
     val frameScaleFactor: Double get() = run {
         getDisplayScalingFactor(component)

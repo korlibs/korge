@@ -1,3 +1,4 @@
+/*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.render.*
@@ -37,3 +38,4 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 		image.tween(image::rotation[maxDegrees], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 	}
 }
+*/

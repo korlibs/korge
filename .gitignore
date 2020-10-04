@@ -8,3 +8,4 @@
 hs_err_*.log
 local.properties
 local.*.properties
+.DS_Store
