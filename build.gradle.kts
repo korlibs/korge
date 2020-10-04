@@ -123,6 +123,14 @@ subprojects {
             apply(plugin = "maven-publish")
         }
 
+        if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)) {
+            afterEvaluate {
+                tasks.findByName("cinteropLinux_OpenALLinuxX64")?.enabled = false
+                tasks.findByName("publicLinuxX64PublicationToMavenLocal")?.enabled = false
+            }
+        }
+
+
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             kotlinOptions.suppressWarnings = true
         }
@@ -542,6 +550,7 @@ samples {
         }
     }
 }
+
 
 /*
 if (Os.isFamily(Os.FAMILY_UNIX) &&
