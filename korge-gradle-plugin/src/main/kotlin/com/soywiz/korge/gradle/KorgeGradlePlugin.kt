@@ -57,7 +57,6 @@ class KorgeGradleApply(val project: Project) {
 		project.configureRepositories()
 		project.configureKotlin()
 
-		project.addGenResourcesTasks()
 		project.configureIdea()
 
 		project.configureJvm()
@@ -76,6 +75,7 @@ class KorgeGradleApply(val project: Project) {
 		project.korge.init()
 
 		project.configureDependencies()
+        project.addGenResourcesTasks()
 	}
 
 	private fun Project.configureDependencies() {

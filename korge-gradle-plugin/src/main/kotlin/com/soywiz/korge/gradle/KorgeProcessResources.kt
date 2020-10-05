@@ -1,65 +1,54 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.desktop.*
+import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import java.io.File
 import java.net.*
 
 fun Project.addGenResourcesTasks() = this {
-	val genMainResourcesDir = buildDir["genMainResources"]
-	val genTestResourcesDir = buildDir["genTestResources"]
-	val genResourcesDirs = setOf(genMainResourcesDir, genTestResourcesDir)
+    tasks.apply {
+        val jvmMainClasses by lazy { (tasks["jvmMainClasses"]) }
+        val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
-	afterEvaluate {
-		kotlin.sourceSets["commonMain"].resources.srcDir(genMainResourcesDir)
-		kotlin.sourceSets["commonTest"].resources.srcDir(genTestResourcesDir)
-	}
+        for (target in kotlin.targets) {
+            for (compilation in target.compilations) {
+                val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
+                compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
+                val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
+                    //dependsOn(prepareResourceProcessingClasses)
+                    it.dependsOn(jvmMainClasses)
 
-	for (test in listOf(false, true)) {
-		val genResources = tasks.createTyped<Task>(if (test) "genTestResources" else "genResources") {
-			group = GROUP_KORGE_RESOURCES
+                    it.doLast {
+                        processedResourcesFolder.mkdirs()
+                        //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-			val outDir = if (test) genTestResourcesDir else genMainResourcesDir
+                        URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                            val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                            val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
+                            //println(folders)
+                            try {
+                                clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
+                            } catch (e: java.lang.reflect.InvocationTargetException) {
+                                val re = (e.targetException ?: e)
+                                re.printStackTrace()
+                                System.err.println(re.toString())
+                            }
+                        }
+                        System.gc()
+                    }
+                }
+                if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
+                    compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
+                } else {
+                    compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
+                    getByName("runJvm").dependsOn(korgeProcessedResources)
 
-			afterEvaluate {
-				tasks.findByName(if (test) "processTestResources" else "processResources")?.dependsOn(this)
-				tasks.findByName(if (test) "jvmTestClasses" else "jvmMainClasses")?.dependsOn(this)
-				tasks.findByName(if (test) "jsTestClasses" else "jsMainClasses")?.dependsOn(this)
-				for (target in ALL_NATIVE_TARGETS) {
-					//tasks.findByName(if (test) "compileTestKotlin${target.capitalize()}" else "compileKotlin${target.capitalize()}")?.dependsOn(this)
-				}
-
-                logger.error("ERROR: KorgeResourcesTask ($this) not implemented")
-
-                /*
-                val buildService = KorgeBuildService
-
-				val allResourcesDirs = kotlin.sourceSets
-					.flatMap { it.resources.srcDirs.toList() }.filter { it !in genResourcesDirs }
-
-				val resourcesDirs = kotlin.sourceSets
-					.filter { if (test) it.name.endsWith("Test") else it.name.endsWith("Main") }
-					.flatMap { it.resources.srcDirs.toList() }.filter { it.exists() }.filter { it !in genResourcesDirs }
-
-				for (dir in resourcesDirs) {
-					inputs.dir(dir)
-				}
-				outputs.dir(outDir)
-
-				doLast {
-					logger.info("KorgeResourcesTask ($this)")
-					logger.info("kotlin.sourceSets.names: ${kotlin.sourceSets.names}")
-					logger.info("allResourcesDirs: $allResourcesDirs")
-					logger.info("resourcesDirs: $resourcesDirs")
-					logger.info("korge.defaultPluginsClassLoader: ${(korge.defaultPluginsClassLoader as URLClassLoader).urLs.toList()}")
-
-					buildService.processResourcesFolders(ResourceProcessor.Group(korge.defaultPluginsClassLoader), resourcesDirs, outDir) { logger.info(it) }
-				}
-                 */
-			}
-		}
-
-	}
+                }
+            }
+        }
+    }
 }
 
+fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
+    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
