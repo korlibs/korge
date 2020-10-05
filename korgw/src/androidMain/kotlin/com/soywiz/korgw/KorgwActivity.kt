@@ -8,8 +8,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.soywiz.kds.Pool
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.KmlGlAndroid
+import com.soywiz.kgl.*
 import com.soywiz.korag.AGOpengl
 import com.soywiz.korev.*
 import com.soywiz.korio.Korio
@@ -21,6 +20,8 @@ abstract class KorgwActivity : Activity() {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
     private var mGLView: GLSurfaceView? = null
     lateinit var ag: AGOpengl
+    open val agCheck: Boolean get() = false
+    open val agTrace: Boolean get() = false
 
     var fps: Int
         get() = gameWindow?.fps ?: 60
@@ -32,7 +33,7 @@ abstract class KorgwActivity : Activity() {
 
     inner class KorgwActivityAGOpengl : AGOpengl() {
         //override val gl: KmlGl = CheckErrorsKmlGlProxy(KmlGlAndroid())
-        override val gl: KmlGl = KmlGlAndroid()
+        override val gl: KmlGl = KmlGlAndroid().checkedIf(agCheck).logIf(agCheck)
         override val nativeComponent: Any get() = this@KorgwActivity
         override val gles: Boolean = true
 
