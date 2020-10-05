@@ -10,6 +10,5 @@ class AGTest {
 		val ag = AGFactorySoftware().create(null, AGConfig())
 		val buffer = ag.createIndexBuffer()
 		buffer.upload(intArrayOf(1, 2, 3, 4))
-		ag.onReady.await()
 	}
 }

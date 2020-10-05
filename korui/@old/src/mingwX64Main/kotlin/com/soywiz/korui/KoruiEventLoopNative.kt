@@ -300,8 +300,6 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
 				wglSwapIntervalEXT?.invoke(0)
 
 				println("GL_CONTEXT: $glRenderContext")
-
-				ag.__ready()
 			}
 		}
 		_WM_SIZE -> {

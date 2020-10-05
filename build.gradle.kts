@@ -101,6 +101,12 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
     return listOf(iosArm64(), iosX64())
 }
 
+//apply(from = "${rootProject.rootDir}/build.idea.gradle")
+
+allprojects {
+    apply(from = "${rootProject.rootDir}/build.idea.gradle")
+}
+
 subprojects {
     group = "com.soywiz.korlibs.${project.name}"
 

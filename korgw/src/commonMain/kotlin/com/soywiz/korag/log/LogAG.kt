@@ -33,10 +33,6 @@ open class LogBaseAG(
 ) : AG() {
 	override val nativeComponent: Any = Any()
 
-	init {
-		ready()
-	}
-
 	open fun log(str: String) {
 	}
 

@@ -415,7 +415,6 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
                     macTrace("init[a] -- bb")
                     macTrace("init[b]")
                     //println("KoruiWrap.pentry[0]")
-                    ag.__ready()
                     //launch(KoruiDispatcher) { // Doesn't work!
                     //println("KoruiWrap.pentry[1]")
                     //println("KoruiWrap.entry[0]")

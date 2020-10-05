@@ -1477,4 +1477,4 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) 
 
 fun KmlGl.checked(throwException: Boolean = false) = CheckErrorsKmlGlProxy(this, throwException)
 fun KmlGl.checkedIf(checked: Boolean, throwException: Boolean = false) = if (checked) CheckErrorsKmlGlProxy(this, throwException) else this
-fun KmlGl.logIf(log:Boolean=false) = if(log) LogKmlGlProxy(this) else this
+fun KmlGl.logIf(log:Boolean=false) = if (log) LogKmlGlProxy(this) else this

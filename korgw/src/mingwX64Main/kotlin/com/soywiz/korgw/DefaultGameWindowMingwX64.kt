@@ -424,8 +424,6 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
                 wglSwapIntervalEXT?.invoke(0)
 
                 println("GL_CONTEXT: ${windowsGameWindow.glRenderContext}")
-
-                windowsGameWindow.ag.__ready()
             }
         }
         _WM_SIZE -> {

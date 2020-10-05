@@ -166,7 +166,6 @@ internal actual suspend fun KoruiWrap(entry: suspend (KoruiContext) -> Unit) = a
             macTrace("init[b]")
             val ctx = NativeKoruiContext(ag, light)
             println("KoruiWrap.pentry[0]")
-            ag.__ready()
             //launch(KoruiDispatcher) { // Doesn't work!
             println("KoruiWrap.pentry[1]")
             println("KoruiWrap.entry[0]")

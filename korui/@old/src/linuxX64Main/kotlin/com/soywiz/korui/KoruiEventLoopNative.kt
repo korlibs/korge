@@ -282,7 +282,6 @@ internal actual suspend fun KoruiWrap(entry: suspend (KoruiContext) -> Unit) {
     glutKeyboardFunc(staticCFunction(::glutKeyDown))
     glutKeyboardFunc(staticCFunction(::glutKeyUp))
 
-    ag.__ready()
     var running = true
     CoroutineScope(coroutineContext).launch(KoruiDispatcher) {
         try {

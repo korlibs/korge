@@ -49,18 +49,6 @@ abstract class AG : Extra by Extra.Mixin() {
 
 	open val devicePixelRatio: Double = 1.0
 
-	private val _onReadyDeferred = CompletableDeferred<AG>(Job())
-	protected fun ready() {
-		//println("AG.ready!")
-		__ready()
-	}
-
-	fun __ready() {
-		_onReadyDeferred.complete(this)
-	}
-
-	val onReady: Deferred<AG> = _onReadyDeferred
-
     inline fun doRender(block: () -> Unit) {
         mainRenderBuffer.init()
         setRenderBufferTemporally(mainRenderBuffer) {

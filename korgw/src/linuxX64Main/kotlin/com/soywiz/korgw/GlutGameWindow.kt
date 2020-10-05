@@ -97,7 +97,6 @@ class GlutGameWindow : GameWindow(), DialogInterface by ZenityDialogs {
         glutKeyboardFunc(staticCFunction(::glutKeyDown))
         glutKeyboardUpFunc(staticCFunction(::glutKeyUp))
 
-        ag.__ready()
         var running = true
         CoroutineScope(coroutineContext).launch(coroutineDispatcher) {
             try {

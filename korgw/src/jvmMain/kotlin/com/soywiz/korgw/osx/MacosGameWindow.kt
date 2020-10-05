@@ -480,7 +480,6 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         }.alloc().msgSend("init"))
 
         windowDidResize()
-        ag.__ready()
         dispatchInitEvent()
 
 

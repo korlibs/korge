@@ -59,7 +59,6 @@ class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) 
 		tDevicePixelRatio.isInfinite() -> 1.0
 		else -> tDevicePixelRatio
 	}
-	val onReadyOnce = Once()
 
 	init {
 		canvas.addEventListener("webglcontextlost", { e ->
@@ -85,7 +84,6 @@ class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) 
 	}
 
 	override fun repaint() {
-		onReadyOnce { ready() }
 	}
 
 	override fun dispose() {
