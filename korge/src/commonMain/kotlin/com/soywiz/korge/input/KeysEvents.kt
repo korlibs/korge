@@ -15,9 +15,9 @@ class KeysEvents(override val view: View) : KeyComponent {
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 
-    val onKeyDown = AsyncSignal<KeyEvent>()
-	val onKeyUp = AsyncSignal<KeyEvent>()
-	val onKeyTyped = AsyncSignal<KeyEvent>()
+    private val onKeyDown = AsyncSignal<KeyEvent>()
+    private val onKeyUp = AsyncSignal<KeyEvent>()
+	private val onKeyTyped = AsyncSignal<KeyEvent>()
 
     /** Executes [callback] on each frame when [key] is being pressed. When [dt] is provided, the [callback] is executed at that [dt] steps. */
     fun downFrame(key: Key, dt: TimeSpan = TimeSpan.NIL, callback: (ke: KeyEvent) -> Unit): Cancellable {
@@ -50,8 +50,8 @@ class KeysEvents(override val view: View) : KeyComponent {
     fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> callback(e) }
     fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(e) }
 
-    override fun onKeyEvent(views: Views, event: KeyEvent) {
-        this.views = views
+    override fun Views.onKeyEvent(event: KeyEvent) {
+        this@KeysEvents.views = this@onKeyEvent
 		when (event.type) {
 			KeyEvent.Type.TYPE -> launchImmediately(views.coroutineContext) { onKeyTyped.invoke(event) }
 			KeyEvent.Type.DOWN -> launchImmediately(views.coroutineContext) { onKeyDown.invoke(event) }
@@ -62,13 +62,3 @@ class KeysEvents(override val view: View) : KeyComponent {
 
 val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
-
-@PublishedApi
-internal inline fun <T : View?> T._keyEvent(prop: KProperty1<KeysEvents, AsyncSignal<KeyEvent>>, noinline handler: suspend (KeyEvent) -> Unit): T {
-    this?.keys?.let { keys -> prop.get(keys).add(handler) }
-    return this
-}
-
-inline fun <T : View?> T.onKeyDown(noinline handler: suspend (KeyEvent) -> Unit): T = _keyEvent(KeysEvents::onKeyDown, handler)
-inline fun <T : View?> T.onKeyUp(noinline handler: suspend (KeyEvent) -> Unit): T = _keyEvent(KeysEvents::onKeyUp, handler)
-inline fun <T : View?> T.onKeyTyped(noinline handler: suspend (KeyEvent) -> Unit): T = _keyEvent(KeysEvents::onKeyTyped, handler)

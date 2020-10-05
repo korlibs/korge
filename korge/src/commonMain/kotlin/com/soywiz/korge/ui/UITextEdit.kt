@@ -4,8 +4,6 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
-import com.soywiz.korge.input.onKeyDown
-import com.soywiz.korge.input.onKeyUp
 import com.soywiz.korge.view.Image
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapSlice

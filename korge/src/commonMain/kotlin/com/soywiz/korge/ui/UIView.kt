@@ -50,9 +50,6 @@ open class UIView(
 		if (stage.getExtra("uiSupport") == true) return
 		stage.setExtra("uiSupport", true)
 		stage.keys {
-			onKeyDown {
-
-			}
 		}
 		stage.getOrCreateComponentUpdateWithViews<DummyUpdateComponentWithViews> { stage ->
             DummyUpdateComponentWithViews(stage)

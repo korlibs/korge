@@ -187,12 +187,14 @@ class PlayScene() : Scene() {
 		}
 
 		// Add the keys needed to run the game
-		onKeyDown {
-			when (it.key) {
-				Key.ESCAPE -> sceneContainer.changeTo<MenuScene>()
-				Key.SPACE -> playState = GameStates.Playing
-				else -> Unit
-			}
-		}
+        keys {
+            down {
+                when (it.key) {
+                    Key.ESCAPE -> sceneContainer.changeTo<MenuScene>()
+                    Key.SPACE -> playState = GameStates.Playing
+                    else -> Unit
+                }
+            }
+        }
 	}
 }

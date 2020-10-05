@@ -132,7 +132,7 @@ interface MouseComponent : Component {
  * }
  */
 interface KeyComponent : Component {
-    fun onKeyEvent(views: Views, event: KeyEvent)
+    fun Views.onKeyEvent(event: KeyEvent)
 }
 
 /**

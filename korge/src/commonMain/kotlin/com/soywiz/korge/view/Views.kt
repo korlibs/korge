@@ -239,7 +239,7 @@ class Views constructor(
                         debugViews = !debugViews
                         gameWindow.debug = debugViews
                     }
-                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.onKeyEvent(views, e) } }
+                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.apply { views.onKeyEvent(e) } } }
                 }
 				is GamePadConnectionEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
 				is GamePadUpdateEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
