@@ -2,10 +2,7 @@ package com.soywiz.korge.gradle.targets.android
 
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.GROUP_KORGE_INSTALL
-import com.soywiz.korge.gradle.targets.GROUP_KORGE_RUN
-import com.soywiz.korge.gradle.targets.getIconBytes
-import com.soywiz.korge.gradle.targets.getResourceBytes
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -345,6 +342,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 			line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
 			line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
 			indent {
+                line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
+                line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
+
 				line("<application")
 				indent {
 					line("")
@@ -372,6 +372,10 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 
 					line("<activity android:name=\".MainActivity\"")
 					indent {
+                        line("android:banner=\"@drawable/app_icon\"")
+                        line("android:icon=\"@drawable/app_icon\"")
+                        line("android:label=\"$androidAppName\"")
+                        line("android:logo=\"@drawable/app_icon\"")
 						when (korge.orientation) {
 							Orientation.LANDSCAPE -> line("android:screenOrientation=\"landscape\"")
 							Orientation.PORTRAIT -> line("android:screenOrientation=\"portrait\"")
@@ -406,6 +410,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 	File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
 		ensureParents().writeBytesIfChanged(korge.getIconBytes())
 	}
+    File(outputFolder, "src/main/res/drawable/app_icon.png").conditionally(ifNotExists) {
+        ensureParents().writeBytesIfChanged(korge.getBannerBytes(432, 243))
+    }
 	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
 		ensureParents().writeTextIfChanged(Indenter {
 			line("package $androidPackageName")

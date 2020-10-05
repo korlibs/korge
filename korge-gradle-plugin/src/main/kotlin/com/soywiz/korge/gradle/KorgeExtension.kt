@@ -114,6 +114,7 @@ class KorgeExtension(val project: Project) {
 	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
 
 	var icon: File? = project.projectDir["icon.png"]
+    var banner: File? = project.projectDir["banner.png"]
 
 	var gameCategory: GameCategory? = null
 

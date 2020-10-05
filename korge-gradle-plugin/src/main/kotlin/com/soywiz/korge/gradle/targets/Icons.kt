@@ -17,15 +17,19 @@ fun getResourceBytes(path: String): ByteArray = tryGetResourceBytes(path) ?: err
 fun getResourceString(path: String): String = getResourceBytes(path).toString(Charsets.UTF_8)
 
 fun KorgeExtension.iconExists() = icon != null && icon!!.exists()
+fun KorgeExtension.bannerExists() = banner != null && banner!!.exists()
 
-fun KorgeExtension.getIconBytes(): ByteArray {
-	return when {
-		iconExists() -> icon!!.readBytes()
-		else -> getResourceBytes("/icons/korge.png")
-	}
+fun KorgeExtension.getIconBytes(): ByteArray = when {
+    iconExists() -> icon!!.readBytes()
+    else -> getResourceBytes("/icons/korge.png")
 }
 
-fun KorgeExtension.getIconBytes(size: Int): ByteArray {
-	return ImageIO.read(getIconBytes().inputStream()).getScaledInstance(size, size).toBufferedImage().encodePNG()
+fun KorgeExtension.getBannerBytes(): ByteArray = when {
+    bannerExists() -> banner!!.readBytes()
+    iconExists() -> icon!!.readBytes()
+    else -> getResourceBytes("/banners/korge.png")
 }
 
+
+fun KorgeExtension.getIconBytes(width: Int, height: Int = width): ByteArray =  ImageIO.read(getIconBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
+fun KorgeExtension.getBannerBytes(width: Int, height: Int = width): ByteArray =  ImageIO.read(getBannerBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
