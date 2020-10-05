@@ -217,9 +217,10 @@ fun Project.configureNativeAndroid() {
 								line("main") {
 									// @TODO: Use proper source sets of the app
 
-									val projectDir = project.projectDir
-									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/jvmMain/kotlin".quoted}]")
-									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
+                                    val resourcesSrcDirs = kotlin.jvm().compilations["main"].allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                                    val kotlinSrcDirs = kotlin.jvm().compilations["main"].allKotlinSourceSets.flatMap { it.kotlin.srcDirs }
+									line("java.srcDirs += [${kotlinSrcDirs.joinToString(", ") { it.absolutePath.quoted }}]")
+									line("assets.srcDirs += [${resourcesSrcDirs.joinToString(", ") { it.absolutePath.quoted }}]")
 								}
 							}
 						}
