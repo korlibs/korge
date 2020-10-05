@@ -1,5 +1,6 @@
 package com.soywiz.korge.admob
 
+import com.soywiz.korge.view.Views
 import com.soywiz.korio.globalDynamic
 import com.soywiz.korio.jsObject
 import com.soywiz.korio.lang.printStackTrace
@@ -10,14 +11,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 
-
-actual suspend fun AdmobCreate(testing: Boolean): Admob {
-	val admob: AdmobJs = globalDynamic.admob ?: return object : Admob() {}
+actual suspend fun AdmobCreate(views: Views, testing: Boolean): Admob {
+	val admob: AdmobJs = globalDynamic.admob ?: return object : Admob(views) {}
 	val admobBanner = admob.banner
 	val admobInterstitial = admob.interstitial
 	val admobRewardvideo = admob.rewardvideo
 
-	return object : Admob() {
+	return object : Admob(views) {
 		override suspend fun available() = true
 
 		override suspend fun bannerPrepare(config: Config) {

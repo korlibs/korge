@@ -8,15 +8,16 @@ import com.google.android.gms.ads.reward.*
 import com.soywiz.korio.android.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.close
+import com.soywiz.korge.view.Views
 import kotlinx.coroutines.*
 
 
-actual suspend fun AdmobCreate(testing: Boolean): Admob {
+actual suspend fun AdmobCreate(views: Views, testing: Boolean): Admob {
 	val activity = androidContext() as Activity
-	return AndroidAdmob(activity, testing)
+	return AndroidAdmob(views, activity, testing)
 }
 
-private class AndroidAdmob(val activity: Activity, val testing: Boolean) : Admob() {
+private class AndroidAdmob(views: Views, val activity: Activity, val testing: Boolean) : Admob(views) {
 	val initialRootView = activity.window.decorView.findViewById<android.view.View>(android.R.id.content).let {
 		if (it is FrameLayout) it.getChildAt(0) else it
 	}

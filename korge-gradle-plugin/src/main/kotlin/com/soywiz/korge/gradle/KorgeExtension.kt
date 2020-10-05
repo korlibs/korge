@@ -15,8 +15,6 @@ import kotlin.reflect.*
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 
-data class KorgeCordovaPluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
-
 class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLoader = KorgePluginsContainer::class.java.classLoader) {
     val globalParams = LinkedHashMap<String, String>()
 	val plugins = LinkedHashMap<MavenLocation, KorgePluginDescriptor>()
@@ -92,7 +90,6 @@ class KorgeExtension(val project: Project) {
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
-	var enableCordovaTargets: Boolean = project.findProperty("enable.cordova.targets") == "true"
     var id: String = "com.unknown.unknownapp"
 	var version: String = "0.0.1"
 
@@ -101,7 +98,6 @@ class KorgeExtension(val project: Project) {
 	var name: String = "unnamed"
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
-	val cordovaPlugins = arrayListOf<KorgeCordovaPluginDescriptor>()
 
 	var copyright: String = "Copyright (c) 2020 Unknown"
 
@@ -161,13 +157,6 @@ class KorgeExtension(val project: Project) {
 
 	internal var _androidAppendBuildGradle: String? = null
 
-	@JvmOverloads
-	fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
-		project.logger.info("Korge.cordovaPlugin(name=$name, args=$args, version=$version)")
-		cordovaPlugins += KorgeCordovaPluginDescriptor(name.toString(), args, version?.toString())
-		//println("cordovaPlugin($name, $args, $version)")
-	}
-
 	fun androidAppendBuildGradle(str: String) {
 		if (_androidAppendBuildGradle == null) {
 			_androidAppendBuildGradle = ""
@@ -214,52 +203,28 @@ class KorgeExtension(val project: Project) {
 	}
 
 	fun supportSwf() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge-swf:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
     fun supportShape() {
-        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
+        dependencyMulti("com.soywiz.korlibs.korma-shape:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
     }
 
     fun supportShapeOps() = supportShape()
 	fun supportTriangulation() = supportShape()
 
 	fun supportDragonbones() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge-dragonbones:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun supportBox2d() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
-	}
-
-	fun supportMp3() = Unit
-	fun supportOggVorbis() = Unit
-
-	fun supportQr() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-qr:${BuildVersions.KORIM}", registerPlugin = false)
-	}
-
-	fun supportJpeg() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-jpeg:${BuildVersions.KORIM}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge-box2d:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun admob(ADMOB_APP_ID: String) {
-        plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
+        //plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
+        plugin("com.soywiz.korlibs.korge-admob:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
-
-	fun cordovaUseCrosswalk() {
-		// Required to have webgl on android emulator?
-		// https://crosswalk-project.org/documentation/cordova.html
-		// https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview/issues/205#issuecomment-371669478
-		cordovaPlugin("cordova-plugin-crosswalk-webview", version = "2.4.0")
-		androidAppendBuildGradle("""
-        	configurations.all {
-        		resolutionStrategy {
-        			force 'com.android.support:support-v4:27.1.0'
-        		}
-        	}
-        """)
-	}
 
 	fun author(name: String, email: String, href: String) {
 		authorName = name
