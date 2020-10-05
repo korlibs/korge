@@ -4,10 +4,7 @@ import com.soywiz.korge.plugin.KorgePluginExtension
 import com.soywiz.korio.lang.quoted
 
 class ServicesKorgePluginExtension : KorgePluginExtension(
-    ServicesKorgePluginExtension::GOOGLE_APP_ID
 ) {
-	lateinit var GOOGLE_APP_ID: String
-
 	override fun getAndroidInit(): String? =
 		""""""
 

@@ -226,7 +226,15 @@ class KorgeExtension(val project: Project) {
         plugin("com.soywiz.korlibs.korge-admob:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
 
-	fun author(name: String, email: String, href: String) {
+    fun gameServices() {
+        plugin("com.soywiz.korlibs.korge-services:korge-services:${project.korgeVersion}")
+    }
+
+    fun billing() {
+        plugin("com.soywiz.korlibs.korge-billing:korge-billing:${project.korgeVersion}")
+    }
+
+    fun author(name: String, email: String, href: String) {
 		authorName = name
 		authorEmail = email
 		authorHref = href
