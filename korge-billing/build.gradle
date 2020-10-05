@@ -2,7 +2,7 @@ dependencies {
 	add("commonMainApi", project(":korge"))
 
     if (project.extensions.findByName("android")) {
-        add("androidMainApi", "com.google.android.gms:play-services-games:$playServicesGamesVersion")
+        add("androidMainApi", "com.android.billingclient:billing:$playServicesBillingVersion")
         add("androidMainApi", "com.google.android.gms:play-services-auth:$playServicesAuthVersion") // 18.1.0
 
         android {

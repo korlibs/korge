@@ -2,4 +2,8 @@ package com.soywiz.korge.services
 
 import com.soywiz.korge.view.Views
 
-actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPurchases(views) { }
+actual fun CreateAchievements(views: Views): Achievements = object : Achievements(views) {
+}
+
+actual fun CreateLeaderboards(views: Views): Leaderboards = object : Leaderboards(views) {
+}
