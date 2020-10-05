@@ -284,7 +284,7 @@ abstract class KorgwActivity : Activity() {
             alt = false,
             meta = false
         )
-        return if (down) super.onKeyDown(keyCode, event) else super.onKeyUp(keyCode, event)
+        return true
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
