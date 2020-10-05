@@ -17,11 +17,4 @@ class AdmobKorgePluginExtension : KorgePluginExtension(
 	override fun getAndroidDependencies() =
 		listOf("com.google.android.gms:play-services-ads:16.0.0")
 
-	override fun getCordovaPlugins(): List<CordovaPlugin> = listOf(
-		CordovaPlugin(
-			"cordova-plugin-admob-free", mapOf(
-				"ADMOB_APP_ID" to ADMOB_APP_ID
-			)
-		)
-	)
 }
