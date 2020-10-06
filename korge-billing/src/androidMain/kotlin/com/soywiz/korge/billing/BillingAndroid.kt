@@ -14,7 +14,7 @@ import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.flow.*
 
 actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPurchases(views) {
-    val context get() = views.gameWindow.androidContext()
+    val context get() = views.coroutineContext.androidContext()
     val activity get() = (context as? Activity?) ?: error("Android context is not an activity ($context)")
 
     val billingClient by lazy { BillingClient.newBuilder(context)

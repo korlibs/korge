@@ -7,3 +7,6 @@ actual fun CreateAchievements(views: Views): Achievements = object : Achievement
 
 actual fun CreateLeaderboards(views: Views): Leaderboards = object : Leaderboards(views) {
 }
+
+actual fun CreateNativeLogin(views: Views): NativeLogin = object : NativeLogin(views) {
+}

@@ -17,6 +17,10 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import com.soywiz.korio.android.withAndroidContext
 import com.soywiz.kds.toIntMap
+import com.soywiz.korio.file.VfsFile
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import androidx.core.app.ActivityCompat.startActivityForResult
 
 abstract class KorgwActivity : Activity() {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
@@ -168,6 +172,19 @@ abstract class KorgwActivity : Activity() {
         return resultHandlers.alloc().also {
             it.handler = handler
         }.request
+    }
+
+    suspend fun startActivityWithResult(intent: Intent): Intent? {
+        val deferred = CompletableDeferred<Intent?>()
+        val requestCode = registerActivityResult { result, data ->
+            if (result == Activity.RESULT_OK) {
+                deferred.complete(data)
+            } else {
+                deferred.completeExceptionally(CancellationException())
+            }
+        }
+        startActivityForResult(this, intent, requestCode, null)
+        return deferred.await()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

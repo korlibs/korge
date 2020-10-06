@@ -19,7 +19,11 @@ suspend fun <T> withAndroidContext(context: Context, callback: suspend Coroutine
 	return withContext(coroutineContext + AndroidCoroutineContext(context), callback)
 }
 
-fun CoroutineContext.androidContext(): Context = this[AndroidCoroutineContext.Key]?.context
+fun CoroutineContext.androidContextOrNull(): Context? = this[AndroidCoroutineContext.Key]?.context
+
+fun CoroutineContext.androidContext(): Context = androidContextOrNull()
     ?: error("Android context not set! Please call `withAndroidContext()` method in your coroutine body")
 
 suspend fun androidContext(): Context = coroutineContext.androidContext()
+suspend fun androidContextOrNull(): Context? = coroutineContext.androidContextOrNull()
+
