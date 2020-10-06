@@ -304,6 +304,7 @@ fun Project.configureNativeAndroid() {
 			task.apply {
 				group = GROUP_KORGE_INSTALL
 				dependsOn(prepareAndroidBootstrap)
+                dependsOn("korgeProcessedResourcesJvmMain")
 				buildFile = File(buildDir, "platforms/android/build.gradle")
 				version = "4.10.1"
 				tasks = listOf("install$suffixDebug")
