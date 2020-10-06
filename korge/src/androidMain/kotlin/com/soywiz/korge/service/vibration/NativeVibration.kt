@@ -3,7 +3,7 @@ package com.soywiz.korge.service.vibration
 import android.annotation.SuppressLint
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.support.v4.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.getSystemService
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.android.androidActivity
 import com.soywiz.korge.view.Views
