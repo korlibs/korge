@@ -38,7 +38,7 @@ actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPu
                             // The BillingClient is ready. You can query purchases here.
                             deferred.complete(Unit)
                         } else {
-                            deferred.completeExceptionally(Exception("Billing error: ${billingResult.responseCode}"))
+                            deferred.completeExceptionally(billingResult.toException())
                         }
                     }
                     override fun onBillingServiceDisconnected() {
