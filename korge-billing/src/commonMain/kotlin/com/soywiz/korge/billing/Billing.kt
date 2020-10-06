@@ -2,37 +2,51 @@ package com.soywiz.korge.billing
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.linkedHashMapOf
+import com.soywiz.korge.service.ServiceBaseId
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Signal
+import kotlinx.coroutines.flow.*
 
 abstract class InAppPurchases(val views: Views) {
     val onPurchases = Signal<List<PurchaseInfo>>()
-    open suspend fun listProducts(type: ProductType, items: List<ProductId>): List<ProductInfo> = listOf()
-    open suspend fun purchase(product: ProductInfo) = Unit
-    open suspend fun listPurchases(type: ProductType): List<PurchaseInfo> = listOf()
-    open suspend fun consume(purchase: PurchaseInfo): ConsumeInfo = TODO()
+    open suspend fun listProducts(type: ProductType, items: List<ProductId>): Flow<ProductInfo> = flow {
+        println("WARNING: Not implemented InAppPurchases.listProducts($type, $items)")
+    }
+    open suspend fun purchase(product: ProductInfo) {
+        println("WARNING: Not implemented InAppPurchases.purchase($product)")
+        if (views.confirm("Perform fake purchase?")) {
+            onPurchases(listOf(PurchaseInfo(productId = product.id)))
+        }
+    }
+    open suspend fun listPurchases(type: ProductType): Flow<PurchaseInfo> = flow {
+        println("WARNING: Not implemented InAppPurchases.listPurchases($type)")
+    }
+    open suspend fun consume(purchase: PurchaseInfo): ConsumeInfo {
+        println("WARNING: Not implemented InAppPurchases.consume($purchase)")
+        return ConsumeInfo("invalid")
+    }
 }
 
-class ConsumeInfo(val token: String)
+data class ConsumeInfo(val token: String)
 
-class PurchaseInfo(
-    val productId: String,
-    val orderId: String,
-    val token: String,
-    val time: Long,
-    val pending: Boolean?,
-    val packageName: String,
-    val originalJson: String,
-    val signature: String,
-    val developerPayload: String,
-    val accountId: String?,
-    val profileId: String?,
-    val acknowledged: Boolean,
-    val autoRenewing: Boolean,
+data class PurchaseInfo(
+    val productId: ProductId,
+    val orderId: String = "",
+    val token: String = "",
+    val time: Long = 0L,
+    val pending: Boolean? = null,
+    val packageName: String = "",
+    val originalJson: String = "",
+    val signature: String = "",
+    val developerPayload: String = "",
+    val accountId: String? = null,
+    val profileId: String? = null,
+    val acknowledged: Boolean = false,
+    val autoRenewing: Boolean = false,
 ) : Extra by Extra.Mixin() {
 }
 
-class ProductInfo(
+data class ProductInfo(
     val id: ProductId,
     val title: String,
     val description: String,
@@ -55,21 +69,7 @@ class ProductInfo(
 
 enum class ProductType { SUBSCRIPTION, PRODUCT }
 
-class ProductId() : BillingBaseId()
-class PurchaseId() : BillingBaseId()
-
-open class BillingBaseId() {
-    private val map: LinkedHashMap<String, String> = linkedHashMapOf()
-    operator fun set(platform: String, id: String) { map[platform] = id }
-    operator fun get(platform: String) = map[platform] ?: error("Id not set for platform '$platform'")
-    fun platform(platform: String) = this[platform]
-    fun android() = platform("android")
-    fun ios() = platform("ios")
-}
-
-fun <T : BillingBaseId> T.platform(platform: String, id: String): T = this.apply { this[platform] = id }
-fun <T : BillingBaseId> T.android(id: String): T = platform("android", id)
-fun <T : BillingBaseId> T.ios(id: String): T = platform("ios", id)
-
+class ProductId() : ServiceBaseId()
+class PurchaseId() : ServiceBaseId()
 
 expect fun CreateInAppPurchases(views: Views): InAppPurchases

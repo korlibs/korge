@@ -4,12 +4,14 @@ import android.app.Activity
 import com.android.billingclient.api.*
 import com.google.android.gms.tasks.Task
 import com.soywiz.kds.extraProperty
+import com.soywiz.korge.service.android
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.android.androidContext
 import com.soywiz.korio.async.launch
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.flow.*
 
 actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPurchases(views) {
     val context get() = views.gameWindow.androidContext()
@@ -64,7 +66,7 @@ actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPu
         return ConsumeInfo(deferred.await())
     }
 
-    override suspend fun listProducts(type: ProductType, items: List<ProductId>): List<ProductInfo> {
+    override suspend fun listProducts(type: ProductType, items: List<ProductId>): Flow<ProductInfo> {
         connectOnce()
         val params = SkuDetailsParams.newBuilder()
             .setSkusList(items.map { it.android() })
@@ -78,7 +80,7 @@ actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPu
                 deferred.completeExceptionally(billingResult.toException())
             }
         }
-        return deferred.await()
+        return deferred.await().asFlow()
     }
 
     override suspend fun purchase(product: ProductInfo) {
@@ -91,13 +93,13 @@ actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPu
         }
     }
 
-    override suspend fun listPurchases(type: ProductType): List<PurchaseInfo> {
+    override suspend fun listPurchases(type: ProductType): Flow<PurchaseInfo> {
         connectOnce()
         val query = billingClient.queryPurchases(type.toSkuType())
         if (query.responseCode != BillingClient.BillingResponseCode.OK) {
             error("Error consuming: ${query.responseCode} : ${query.billingResult.responseCode}, ${query.billingResult.debugMessage}")
         }
-        return query.purchasesList?.map { it.toInfo() } ?: listOf()
+        return (query.purchasesList?.map { it.toInfo() } ?: listOf()).asFlow()
     }
 
     fun BillingResult.toException() = Exception("Error consuming: $responseCode : $debugMessage")
@@ -108,7 +110,7 @@ actual fun CreateInAppPurchases(views: Views): InAppPurchases = object : InAppPu
     }
 
     fun Purchase.toInfo() = PurchaseInfo(
-        productId = this.sku,
+        productId = ProductId().android(this.sku),
         orderId = this.orderId,
         token = this.purchaseToken,
         time = this.purchaseTime,

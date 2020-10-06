@@ -4,6 +4,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.games.Games
 import com.google.android.gms.games.achievement.Achievement
 import com.google.android.gms.tasks.Task
+import com.soywiz.korge.service.android
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.android.androidContext
 import kotlinx.coroutines.CompletableDeferred

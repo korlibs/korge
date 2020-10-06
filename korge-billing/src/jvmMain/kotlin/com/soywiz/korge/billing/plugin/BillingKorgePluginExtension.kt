@@ -1,9 +1,9 @@
-package com.soywiz.korge.services.plugin
+package com.soywiz.korge.billing.plugin
 
 import com.soywiz.korge.plugin.KorgePluginExtension
 import com.soywiz.korio.lang.quoted
 
-class ServicesKorgePluginExtension : KorgePluginExtension(
+class BillingKorgePluginExtension : KorgePluginExtension(
 ) {
 	override fun getAndroidInit(): String? =
 		""""""

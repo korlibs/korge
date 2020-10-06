@@ -271,7 +271,13 @@ fun Project.configureNativeAndroid() {
 				writeAndroidManifest(outputFolder, korge)
 
 				File(outputFolder, "gradle.properties").conditionally(ifNotExists) {
-					ensureParents().writeTextIfChanged("org.gradle.jvmargs=-Xmx1536m")
+					ensureParents().writeTextIfChanged(
+                        listOf(
+                            "org.gradle.jvmargs=-Xmx1536m",
+                            "android.useAndroidX=true",
+                            "android.enableJetifier=true",
+                        ).joinToString("\n")
+                    )
 				}
 			}
 		}
@@ -340,7 +346,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 	File(outputFolder, "src/main/AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
 		ensureParents().writeTextIfChanged(Indenter {
 			line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-			line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
+			line("<manifest xmlns:tools=\"http://schemas.android.com/tools\" xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
 			indent {
                 line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
                 line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
@@ -348,6 +354,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 				line("<application")
 				indent {
 					line("")
+                    line("tools:replace=\"android:appComponentFactory\"")
 					line("android:allowBackup=\"true\"")
 
 					if (!korge.androidLibrary) {
