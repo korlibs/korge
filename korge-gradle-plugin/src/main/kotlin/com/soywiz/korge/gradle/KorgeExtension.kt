@@ -9,6 +9,7 @@ import groovy.text.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
+import java.time.*
 import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.reflect.*
@@ -99,7 +100,7 @@ class KorgeExtension(val project: Project) {
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
 
-	var copyright: String = "Copyright (c) 2020 Unknown"
+	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
 
 	var supressWarnings: Boolean = false
 
