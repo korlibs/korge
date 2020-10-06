@@ -174,7 +174,7 @@ abstract class KorgwActivity : Activity() {
         }.request
     }
 
-    suspend fun startActivityWithResult(intent: Intent): Intent? {
+    suspend fun startActivityWithResult(intent: Intent, options: Bundle? = null): Intent? {
         val deferred = CompletableDeferred<Intent?>()
         val requestCode = registerActivityResult { result, data ->
             if (result == Activity.RESULT_OK) {
@@ -183,7 +183,7 @@ abstract class KorgwActivity : Activity() {
                 deferred.completeExceptionally(CancellationException())
             }
         }
-        startActivityForResult(this, intent, requestCode, null)
+        startActivityForResult(this, intent, requestCode, options)
         return deferred.await()
     }
 
