@@ -203,35 +203,34 @@ class KorgeExtension(val project: Project) {
 	}
 
 	fun supportSwf() {
-		dependencyMulti("com.soywiz.korlibs.korge-swf:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
     fun supportShape() {
-        dependencyMulti("com.soywiz.korlibs.korma-shape:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
+        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
     }
 
     fun supportShapeOps() = supportShape()
 	fun supportTriangulation() = supportShape()
 
 	fun supportDragonbones() {
-		dependencyMulti("com.soywiz.korlibs.korge-dragonbones:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun supportBox2d() {
-		dependencyMulti("com.soywiz.korlibs.korge-box2d:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun admob(ADMOB_APP_ID: String) {
-        //plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
-        plugin("com.soywiz.korlibs.korge-admob:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
+        plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
 
     fun gameServices() {
-        plugin("com.soywiz.korlibs.korge-services:korge-services:${project.korgeVersion}")
+        plugin("com.soywiz.korlibs.korge:korge-services:${project.korgeVersion}")
     }
 
     fun billing() {
-        plugin("com.soywiz.korlibs.korge-billing:korge-billing:${project.korgeVersion}")
+        plugin("com.soywiz.korlibs.korge:korge-billing:${project.korgeVersion}")
     }
 
     fun author(name: String, email: String, href: String) {

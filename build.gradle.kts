@@ -108,7 +108,11 @@ allprojects {
 }
 
 subprojects {
-    group = "com.soywiz.korlibs.${project.name}"
+    val projectName = project.name
+    group = when {
+        projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
+        else -> "com.soywiz.korlibs.${projectName.substringBefore('-')}"
+    }
 
     if (project.name != "korge-intellij-plugin" && project.name != "korge-gradle-plugin") {
         val isSample = project.path.startsWith(":samples")
