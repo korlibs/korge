@@ -57,7 +57,7 @@ object AtlasPacker {
                     val rect = Rectangle(r.x.toInt() + 2, r.y.toInt() + 2, bmp.width, bmp.height).toInt()
                     val filename = it.originalSlice.name
                     AtlasInfo.Region(
-                        name = filename,
+                        name = filename ?: "unknown",
                         frame = AtlasInfo.Rect(rect.x, rect.y, rect.width, rect.height),
                         rotated = false,
                         sourceSize = AtlasInfo.Size(rect.width, rect.height),
@@ -74,7 +74,7 @@ object AtlasPacker {
                     version = AtlasInfo.Meta.VERSION
                 )
             )
-            AtlasResult(out, Atlas(atlasInfo, out.slice()), packedItems)
+            AtlasResult(out, Atlas(out.slice(), atlasInfo), packedItems)
         })
     }
 }

@@ -6,7 +6,7 @@ import com.soywiz.korma.geom.*
 
 // @TODO: We should convert this into an open class, then put those immutable fields in the constructor so accessing them doesn't require virtualization
 interface BmpSlice : Extra {
-	val name: String
+	val name: String?
 	var parent: Any?
 	val bmp: Bitmap
 	val tl_x: Float
@@ -25,13 +25,14 @@ interface BmpSlice : Extra {
 	val rotatedAngle: Int
 }
 
+val BmpSlice.nameSure: String get() = name ?: "unknown"
 fun <T : Bitmap> BmpSlice.asBitmapSlice(): BitmapSlice<T> = this as BitmapSlice<T>
 
 fun BmpSlice.getIntBounds(out: RectangleInt = RectangleInt()) = out.setTo(left, top, width, height)
 
 fun BmpSlice.extract(): Bitmap = bmp.extract(left, top, width, height)
 
-class BitmapSlice<out T : Bitmap>(override val bmp: T, val bounds: RectangleInt, override val name: String = "unknown", rotated: Boolean = false) : BmpSlice, Extra by Extra.Mixin() {
+class BitmapSlice<out T : Bitmap>(override val bmp: T, val bounds: RectangleInt, override val name: String? = null, rotated: Boolean = false) : BmpSlice, Extra by Extra.Mixin() {
 	val premultiplied get() = bmp.premultiplied
 	override var parent: Any? = null
 
@@ -89,7 +90,9 @@ class BitmapSlice<out T : Bitmap>(override val bmp: T, val bounds: RectangleInt,
         }
     }
 
-	override val rotated: Boolean = false
+    fun withName(name: String? = null)  = BitmapSlice<T>(bmp, bounds, name, rotated)
+
+    override val rotated: Boolean = false
 	override val rotatedAngle: Int = 0
 
 	override fun toString(): String = "BitmapSlice($name:${SizeInt(bounds.width, bounds.height)})"
@@ -105,9 +108,9 @@ fun BitmapSliceCompat(
 	name: String = "unknown"
 ) = BitmapSlice(bmp, frame.toInt(), name = name, rotated = rotated)
 
-fun <T : Bitmap> T.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String = "unknown"): BitmapSlice<T> = BitmapSlice<T>(this, bounds, name)
-fun <T : Bitmap> T.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String = "unknown"): BitmapSlice<T> = slice(createRectangleInt(0, 0, this.width, this.height, left, top, right, bottom), name)
-fun <T : Bitmap> T.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String = "unknown"): BitmapSlice<T> = sliceWithBounds(x, y, x + width, y + height, name)
+fun <T : Bitmap> T.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null): BitmapSlice<T> = BitmapSlice<T>(this, bounds, name)
+fun <T : Bitmap> T.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null): BitmapSlice<T> = slice(createRectangleInt(0, 0, this.width, this.height, left, top, right, bottom), name)
+fun <T : Bitmap> T.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null): BitmapSlice<T> = sliceWithBounds(x, y, x + width, y + height, name)
 
 private fun createRectangleInt(
     bleft: Int, btop: Int, bright: Int, bbottom: Int,

@@ -4,8 +4,9 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 
-class Atlas(val info: AtlasInfo, val textures: Map<String, BitmapSlice<Bitmap>>) {
-    constructor(info: AtlasInfo, texture: BitmapSlice<Bitmap>) : this(info, mapOf(info.pages.first().fileName to texture))
+class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) {
+    constructor(texture: BitmapSlice<Bitmap>, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
+    constructor(slices: List<BitmapSlice<Bitmap>>) : this(slices.mapIndexed { index, bmp -> (bmp.name.takeIf { it != "unknown" } ?: "$index") to bmp }.toMap())
 
     val texture get() = textures.values.first()
 
@@ -48,5 +49,5 @@ suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
             if (asumePremultiplied) it.bmp.asumePremultiplied()
         }
     }
-    return Atlas(info, textures)
+    return Atlas(textures, info)
 }

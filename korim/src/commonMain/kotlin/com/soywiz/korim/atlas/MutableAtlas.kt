@@ -1,16 +1,7 @@
-package com.soywiz.korim.bitmap.atlas
+package com.soywiz.korim.atlas
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.binpack.BinPacker
-
-// @TODO: Atlas building using BinPacking
-class Atlas(val slices: List<BmpSlice>) {
-	val slicesByName get() = slices.associateBy { it.name }
-
-	val size: Int get() = slices.size
-	operator fun get(name: String): BmpSlice = slicesByName[name]!!
-	operator fun get(index: Int): BmpSlice = slices[index]!!
-}
 
 class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premultiplied: Boolean = true, val allowToGrow: Boolean = true) {
     constructor(width: Int, height: Int, border: Int = 2, allowToGrow: Boolean = true) : this(BinPacker(width, height), border)
@@ -36,17 +27,18 @@ class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premult
         for (entry in slices) add(entry.slice, entry.data, entry.slice.name)
     }
 
-    fun add(bmp: Bitmap32, data: T, name: String = "Slice$size") = add(bmp.slice(), data, name)
+    fun add(bmp: Bitmap32, data: T, name: String? = null) = add(bmp.slice(name = "Slice$size"), data, name)
 
-    fun add(bmp: BitmapSlice<Bitmap32>, data: T, name: String = "Slice$size"): Entry<T> {
+    fun add(bmp: BitmapSlice<Bitmap32>, data: T, name: String? = bmp.name): Entry<T> {
         try {
+            val rname = name ?: "Slice$size"
             val rect = binPacker.add(bmp.width.toDouble() + border * 2, bmp.height.toDouble() + border * 2)
             val slice = this.bitmap.sliceWithSize(
                 (rect.left + border).toInt(),
                 (rect.top + border).toInt(),
                 bmp.width,
                 bmp.height,
-                name
+                rname
             )
             val dstX = slice.left
             val dstY = slice.top
@@ -54,7 +46,7 @@ class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premult
             //bmp.bmp.copy(srcX, srcY, this.bitmap, dstX, dstY, w, h)
             val entry = Entry(slice, data)
             entries += entry
-            entriesByName[name] = entry
+            entriesByName[rname] = entry
             bitmap.contentVersion++
             return entry
         } catch (e: Throwable) {

@@ -7,7 +7,7 @@ import com.soywiz.kmem.insert
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.atlas.MutableAtlas
+import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageFormat

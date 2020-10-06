@@ -9,8 +9,8 @@ import com.soywiz.korma.geom.*
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AtlasInfo.Factory::class)
 data class AtlasInfo(
-    val meta: Meta,
-    val pages: List<Page>
+    val meta: Meta = Meta(),
+    val pages: List<Page> = listOf()
 ) {
     val frames = pages.flatMap { it.regions }
     val framesMap = frames.associateBy { it.name }
@@ -35,12 +35,12 @@ data class AtlasInfo(
 	}
 
 	data class Meta(
-        val app: String,
-        val format: String,
-        val image: String,
-        val scale: Double,
-        val size: Size,
-        val version: String
+        val app: String = "app",
+        val format: String = "format",
+        val image: String = "image",
+        val scale: Double = 1.0,
+        val size: Size = Size(1, 1),
+        val version: String = VERSION
 	) {
 		companion object {
 			val VERSION = "1.0.0"

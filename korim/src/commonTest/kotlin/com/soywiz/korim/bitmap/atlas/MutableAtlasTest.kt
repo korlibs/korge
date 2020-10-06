@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap.atlas
 
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.RectangleInt
 import kotlin.test.Test
