@@ -19,10 +19,9 @@ abstract class BitmapIndexed(
 	protected val temp = ByteArray(max(width, height))
 
 	val datau = UByteArrayInt(data)
-	val n8_dbpp: Int = 8 / bpp
-    val n8_dbppLog2 = ilog2(n8_dbpp)
-    val n8_dbppMask = (n8_dbpp - 1)
-	val mask = ((1 shl bpp) - 1)
+    private val n8_dbpp: Int = 8 / bpp
+    private val n8_dbppLog2 = ilog2(n8_dbpp)
+    private val n8_dbppMask = (n8_dbpp - 1)
 
 	inline operator fun get(x: Int, y: Int): Int = getInt(x, y)
 	inline operator fun set(x: Int, y: Int, color: Int): Unit = setInt(x, y, color)
