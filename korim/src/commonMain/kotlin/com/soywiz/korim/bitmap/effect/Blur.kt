@@ -123,7 +123,7 @@ private fun boxBlurT(scl: UByteArray, tcl: UByteArray, w: Int, h: Int, r: Int) {
     }
 }
 
-private fun boxesForGaussN3(sigma: Int, emit: (a: Int, b: Int, c: Int) -> Unit) { // standard deviation, number of boxes
+private inline fun boxesForGaussN3(sigma: Int, emit: (a: Int, b: Int, c: Int) -> Unit) { // standard deviation, number of boxes
     val n = 3
     val wIdeal = sqrt((12.0 * sigma * sigma / n) + 1)  // Ideal averaging filter width
     var wl = wIdeal.toIntFloor()
