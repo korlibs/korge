@@ -179,8 +179,6 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		}
 	}
 
-	inline fun fillStyle(color: RGBA, callback: () -> Unit) = fillStyle(createColor(color), callback)
-
 	inline fun keepApply(callback: Context2d.() -> Unit) = this.apply { keep { callback() } }
 
 	inline fun keep(callback: () -> Unit) {
@@ -413,7 +411,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform)
     inline fun createSweepGradient(x0: Number, y0: Number, transform: Matrix = Matrix()) = SweepGradientPaint(x0, y0, transform)
 
-    fun createColor(color: RGBA) = ColorPaint(color)
+    fun createColor(color: RGBA): RGBA = color
 	fun createPattern(
 		bitmap: Bitmap,
 		repeat: Boolean = false,

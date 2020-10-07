@@ -7,11 +7,16 @@ import com.soywiz.korim.internal.*
 import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
+import com.soywiz.korim.vector.paint.*
 import com.soywiz.korio.lang.format
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 
-inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA> {
+inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
+    override fun transformed(m: Matrix): Paint = this
+    val color: RGBA get() = this
+
     val r: Int get() = (value ushr 0) and 0xFF
 	val g: Int get() = (value ushr 8) and 0xFF
 	val b: Int get() = (value ushr 16) and 0xFF
@@ -39,6 +44,11 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA> {
     fun withGd(v: Double) = withG(d2i(v))
     fun withBd(v: Double) = withB(d2i(v))
     fun withAd(v: Double) = withA(d2i(v))
+
+    fun withRf(v: Float) = withR(f2i(v))
+    fun withGf(v: Float) = withG(f2i(v))
+    fun withBf(v: Float) = withB(f2i(v))
+    fun withAf(v: Float) = withA(f2i(v))
 
     fun getComponent(c: Int): Int = when (c) {
         0 -> r
@@ -86,6 +96,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA> {
 		operator fun invoke(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntClamped(r, g, b, a))
         operator fun invoke(r: Int, g: Int, b: Int): RGBA = RGBA(packIntClamped(r, g, b, 0xFF))
 		operator fun invoke(rgb: Int, a: Int): RGBA = RGBA((rgb and 0xFFFFFF) or (a shl 24))
+        operator fun invoke(rgba: RGBA): RGBA = rgba
 		override fun getR(v: Int): Int = RGBA(v).r
 		override fun getG(v: Int): Int = RGBA(v).g
 		override fun getB(v: Int): Int = RGBA(v).b

@@ -19,14 +19,12 @@ object NonePaint : Paint {
     override fun transformed(m: Matrix) = this
 }
 
-open class ColorPaint(val color: RGBA) : Paint {
-    override fun transformed(m: Matrix) = this
-}
+typealias ColorPaint = RGBA
 
 /**
  * Paints a default color. For BitmapFonts, draw the original Bitmap without tinting.
  */
-object DefaultPaint : ColorPaint(Colors.BLACK)
+val DefaultPaint get() = Colors.BLACK
 
 interface TransformedPaint : Paint {
     val transform: Matrix
