@@ -20,6 +20,8 @@ abstract class BitmapIndexed(
 
 	val datau = UByteArrayInt(data)
 	val n8_dbpp: Int = 8 / bpp
+    val n8_dbppLog2 = ilog2(n8_dbpp)
+    val n8_dbppMask = (n8_dbpp - 1)
 	val mask = ((1 shl bpp) - 1)
 
 	inline operator fun get(x: Int, y: Int): Int = getInt(x, y)
@@ -28,17 +30,27 @@ abstract class BitmapIndexed(
 	override fun getInt(x: Int, y: Int): Int = getIntIndex(index(x, y))
 	override fun setInt(x: Int, y: Int, color: Int) = setIntIndex(index(x, y), color)
 
-    open fun getIntIndex(n: Int): Int = (datau[n / n8_dbpp] ushr (bpp * (n % n8_dbpp))) and mask
+    open fun getIntIndex(n: Int): Int {
+        val iD = index_d(n)
+        val iM = index_m(n)
+        //println("[$n]: $iD, $iM :: bpp=$bpp, n8_dbpp=$n8_dbpp, n8_mask=$n8_dbpp")
+        return datau[iD].extract(bpp * iM, bpp)
+    }
     open fun setIntIndex(n: Int, color: Int) {
-        val i = n / n8_dbpp
-        datau[i] = datau[i].insert(color, bpp * (n % n8_dbpp), bpp)
+        val iD = index_d(n)
+        val iM = index_m(n)
+        //println("[$n]: $iD, $iM")
+        datau[iD] = datau[iD].insert(color, bpp * iM, bpp)
     }
 
 	override fun getRgba(x: Int, y: Int): RGBA = palette[this[x, y]]
-	fun index_d(x: Int, y: Int) = index(x, y) / n8_dbpp
-	fun index_m(x: Int, y: Int) = index(x, y) % n8_dbpp
+	fun index_d(x: Int, y: Int) = index_d(index(x, y))
+	fun index_m(x: Int, y: Int) = index_m(index(x, y))
 
-	fun setRow(y: Int, row: UByteArray) {
+    fun index_d(n: Int) = n ushr n8_dbppLog2
+    fun index_m(n: Int) = n and n8_dbppMask
+
+    fun setRow(y: Int, row: UByteArray) {
 		arraycopy(row.asByteArray(), 0, data, index(0, y), stride)
 	}
 
