@@ -121,7 +121,7 @@ class DistanceBitmap(
         // indicate inside & outside
         for (y in height - 1 downTo 0) {
             for (x in width - 1 downTo 0) {
-                if (!bmp.getAlpha(x, y, thresoldInt)) {
+                if (bmp.getAlpha(x, y, thresoldInt)) {
                     setDist(x, y, -getDist(x, y))
                 }
             }
@@ -150,4 +150,4 @@ class DistanceBitmap(
     }
 }
 
-fun Bitmap.createDistanceMap(out: DistanceBitmap = DistanceBitmap(width, height), thresold: Double = 0.5): DistanceBitmap = out.also { it.setFromBitmap(this, thresold) }
+fun Bitmap.distanceMap(out: DistanceBitmap = DistanceBitmap(width, height), thresold: Double = 0.5): DistanceBitmap = out.also { it.setFromBitmap(this, thresold) }
