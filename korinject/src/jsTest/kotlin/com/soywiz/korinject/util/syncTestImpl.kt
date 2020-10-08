@@ -2,12 +2,12 @@ package com.soywiz.korinject.util
 
 import kotlin.coroutines.*
 
-val global = js("(typeof global !== 'undefined') ? global : window")
+internal val _global = js("((typeof global !== 'undefined') ? global : window)")
 
 actual fun syncTestImpl(ignoreJs: Boolean, block: suspend () -> Unit) {
     if (ignoreJs) return
 
-    global.testPromise = kotlin.js.Promise<Unit> { resolve, reject ->
+    _global.testPromise = kotlin.js.Promise<Unit> { resolve, reject ->
         block.startCoroutine(object : Continuation<Unit> {
             override val context: CoroutineContext = EmptyCoroutineContext
 
