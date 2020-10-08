@@ -64,10 +64,10 @@ class DateTimeRangeSetTest {
 
 		val fast = DateTimeRangeSet.Fast.minus(r1, r2).toStringLongs()
 		val slow = DateTimeRangeSet.Slow.minus(r1, r2).toStringLongs()
-		println(r1)
-		println(r2)
-		println("fast: $fast")
-		println("slow: $slow")
+		//println(r1)
+		//println(r2)
+		//println("fast: $fast")
+		//println("slow: $slow")
 		assertEquals(fast, slow)
 	}
 
@@ -89,10 +89,10 @@ class DateTimeRangeSetTest {
 			val fast = DateTimeRangeSet.Fast.intersection(r1, r2).toStringLongs()
 			val slow = DateTimeRangeSet.Slow.intersection(r1, r2).toStringLongs()
 			//val slow = DateTimeRangeSet.Fast.intersection(r1, r2).toStringLongs()
-			println(r1)
-			println(r2)
-			println("fast: $fast")
-			println("slow: $slow")
+			//println(r1)
+			//println(r2)
+			//println("fast: $fast")
+			//println("slow: $slow")
 			assertEquals(fast, slow)
 
 			val fast2 = DateTimeRangeSet.Fast.intersection(r2, r1).toStringLongs()

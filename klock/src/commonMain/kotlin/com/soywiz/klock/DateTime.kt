@@ -171,14 +171,14 @@ inline class DateTime(
             )
         }
 
-        /** Constructs a new [DateTime] from a [unix] timestamp. */
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         operator fun invoke(unix: Long) = fromUnix(unix)
-        /** Constructs a new [DateTime] from a [unix] timestamp. */
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         operator fun invoke(unix: Double) = fromUnix(unix)
 
-        /** Constructs a new [DateTime] from a [unix] timestamp. */
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         fun fromUnix(unix: Double): DateTime = DateTime(unix)
-        /** Constructs a new [DateTime] from a [unix] timestamp. */
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         fun fromUnix(unix: Long): DateTime = fromUnix(unix.toDouble())
 
         /** Constructs a new [DateTime] by parsing the [str] using standard date formats. */

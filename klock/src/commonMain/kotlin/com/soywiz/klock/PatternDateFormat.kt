@@ -208,23 +208,8 @@ data class PatternDateFormat @JvmOverloads constructor(
             when (name) {
                 "E", "EE", "EEE", "EEEE", "EEEEE", "EEEEEE" -> Unit // day of week (Sun | Sunday)
                 "z", "zzz" -> { // timezone (GMT)
-					val tzOffset = tzNames.namesToOffsets[value.toUpperCase()]
-					if (tzOffset != null) {
-						offset = tzOffset
-					} else {
-						var sign = +1
-						val reader = MicroStrReader(value)
-						reader.tryRead("GMT")
-						reader.tryRead("UTC")
-						if (reader.tryRead("+")) sign = +1
-						if (reader.tryRead("-")) sign = -1
-						val part = reader.readRemaining().replace(":", "")
-						val hours = part.substr(0, 2).padStart(2, '0').toIntOrNull() ?: 0
-						val minutes = part.substr(2, 2).padStart(2, '0').toIntOrNull() ?: 0
-						val roffset = hours.hours + minutes.minutes
-						offset = if (sign > 0) +roffset else -roffset
-					}
-				}
+                    offset = MicroStrReader(value).readTimeZoneOffset(tzNames)
+                }
                 "d", "dd" -> day = value.toInt()
                 "M", "MM" -> month = value.toInt()
                 "MMM" -> month = realLocale.monthsShort.indexOf(value.toLowerCase()) + 1

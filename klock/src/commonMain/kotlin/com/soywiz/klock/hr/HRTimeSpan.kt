@@ -50,8 +50,8 @@ inline class HRTimeSpan constructor(val nanosecondsRaw: Double) : Comparable<HRT
     override fun toString(): String = "$nanosecondsRaw".removeSuffix(".0") + " ns"
 }
 
-fun max(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = kotlin.math.max(a.nanosecondsRaw, b.nanosecondsRaw).nanoseconds.hr
-fun min(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = kotlin.math.min(a.nanosecondsRaw, b.nanosecondsRaw).nanoseconds.hr
+fun max(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = HRTimeSpan.fromNanoseconds(kotlin.math.max(a.nanosecondsRaw, b.nanosecondsRaw))
+fun min(a: HRTimeSpan, b: HRTimeSpan): HRTimeSpan = HRTimeSpan.fromNanoseconds(kotlin.math.min(a.nanosecondsRaw, b.nanosecondsRaw))
 fun HRTimeSpan.clamp(min: HRTimeSpan, max: HRTimeSpan): HRTimeSpan = when {
     this < min -> min
     this > max -> max

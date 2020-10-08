@@ -85,8 +85,8 @@ object ISO8601 {
         }
 
         private fun tryParse(str: String): DateTimeTz? {
-            var isUtc = false
             var sign = +1
+            var tzOffset: TimeSpan? = null
             var year = twoDigitBaseYear
             var month = 1
             var dayOfMonth = 1
@@ -104,7 +104,7 @@ object ISO8601 {
 
             while (fmtReader.hasMore) {
                 when {
-                    fmtReader.tryRead("Z") -> isUtc = true
+                    fmtReader.tryRead("Z") -> tzOffset = reader.readTimeZoneOffset()
                     fmtReader.tryRead("YYYYYY") -> year = reader.tryReadInt(6) ?: return reportParse("YYYYYY")
                     fmtReader.tryRead("YYYY") -> year = reader.tryReadInt(4) ?: return reportParse("YYYY")
                     //fmtReader.tryRead("YY") -> year = twoDigitBaseYear + (reader.tryReadInt(2) ?: return null) // @TODO: Kotlin compiler BUG?
@@ -169,7 +169,9 @@ object ISO8601 {
                 }
                 else -> DateTime(year, month, dayOfMonth)
             }
-            return (dateTime + hours.hours + minutes.minutes + seconds.seconds).local
+
+            val baseDateTime = dateTime + hours.hours + minutes.minutes + seconds.seconds
+            return if (tzOffset != null) DateTimeTz.utc(baseDateTime, TimezoneOffset(tzOffset)) else baseDateTime.local
         }
 
         fun withTwoDigitBaseYear(twoDigitBaseYear: Int = 1900) = BaseIsoDateTimeFormat(format, twoDigitBaseYear)
@@ -329,6 +331,8 @@ object ISO8601 {
 
     // Date + Time Variants
     val DATETIME_COMPLETE = IsoDateTimeFormat("YYYYMMDDThhmmss", "YYYY-MM-DDThh:mm:ss")
+    val DATETIME_UTC_COMPLETE = IsoDateTimeFormat("YYYYMMDDThhmmssZ", "YYYY-MM-DDThh:mm:ssZ")
+    val DATETIME_UTC_COMPLETE_FRACTION = IsoDateTimeFormat("YYYYMMDDThhmmss.sssZ", "YYYY-MM-DDThh:mm:ss.sssZ")
 
     // Interval Variants
     val INTERVAL_COMPLETE0 = IsoIntervalFormat("PnnYnnMnnDTnnHnnMnnS")
