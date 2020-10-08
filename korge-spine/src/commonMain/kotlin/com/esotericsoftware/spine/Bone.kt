@@ -218,7 +218,7 @@ class Bone : Updatable {
         worldY = pc * x + pd * y + parent.worldY
 
         when (data.transformMode) {
-            BoneData.TransformMode.normal -> {
+            TransformMode.normal -> {
                 val rotationY = rotation + 90f + shearY
                 val la = cosDeg(rotation + shearX) * scaleX
                 val lb = cosDeg(rotationY) * scaleY
@@ -230,14 +230,14 @@ class Bone : Updatable {
                 d = pc * lb + pd * ld
                 return
             }
-            BoneData.TransformMode.onlyTranslation -> {
+            TransformMode.onlyTranslation -> {
                 val rotationY = rotation + 90f + shearY
                 a = cosDeg(rotation + shearX) * scaleX
                 b = cosDeg(rotationY) * scaleY
                 c = sinDeg(rotation + shearX) * scaleX
                 d = sinDeg(rotationY) * scaleY
             }
-            BoneData.TransformMode.noRotationOrReflection -> {
+            TransformMode.noRotationOrReflection -> {
                 var s = pa * pa + pc * pc
                 val prx: Float
                 if (s > 0.0001f) {
@@ -263,7 +263,7 @@ class Bone : Updatable {
                 c = pc * la + pd * lc
                 d = pc * lb + pd * ld
             }
-            BoneData.TransformMode.noScale, BoneData.TransformMode.noScaleOrReflection -> {
+            TransformMode.noScale, TransformMode.noScaleOrReflection -> {
                 val cos = cosDeg(rotation)
                 val sin = sinDeg(rotation)
                 var za = (pa * cos + pb * sin) / skeleton.scaleX
