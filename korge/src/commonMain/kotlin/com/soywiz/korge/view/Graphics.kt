@@ -124,13 +124,6 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun stroke(
-		color: RGBA, info: Context2d.StrokeInfo, callback: @ViewDslMarker VectorBuilder.() -> Unit
-	) = stroke(
-		ColorPaint(color),
-		info, callback
-	)
-
-	inline fun stroke(
 		paint: Paint,
 		info: Context2d.StrokeInfo,
 		callback: @ViewDslMarker VectorBuilder.() -> Unit
