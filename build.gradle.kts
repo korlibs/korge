@@ -24,8 +24,8 @@ buildscript {
 
 plugins {
 	java
-    //kotlin("multiplatform") version "1.4.10"
-    kotlin("multiplatform") version "1.4.20-M1"
+    kotlin("multiplatform") version "1.4.10"
+    //kotlin("multiplatform") version "1.4.20-M1"
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
