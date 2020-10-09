@@ -8,6 +8,7 @@ import com.soywiz.korio.stream.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 
+@Suppress("RemoveToStringInStringTemplate")
 class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 	val log = arrayListOf<String>()
 	val logstr get() = log.toString()
@@ -55,7 +56,7 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 	}
 
 	override suspend fun readRange(path: String, range: LongRange): ByteArray {
-		log += "readRange($path, $range)"
+		log += "readRange($path, ${range.first.toString()}..${range.last.toString()})"
 		return super.readRange(path, range)
 	}
 
@@ -67,7 +68,7 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 
 	override suspend fun setSize(path: String, size: Long) {
 		modifiedFiles += path
-		log += "setSize($path, $size)"
+		log += "setSize($path, ${size.toString()})"
 		super.setSize(path, size)
 	}
 

@@ -11,8 +11,8 @@ class PromiseJsTest {
     fun test() = suspendTest({ !OS.isJsNodeJs }) {
         val startTime = DateTime.now()
         val value = delay(100)
-        assertTrue(js("(value instanceof Promise)"))
-        assertTrue(js("(typeof value.then == \"function\")"))
+        assertTrue(value is JsPromise<*>)
+        assertTrue(value.asDynamic().then != null)
         value.await()
         val endTime = DateTime.now()
         assertEquals(true, endTime - startTime >= 100.milliseconds)
@@ -20,3 +20,6 @@ class PromiseJsTest {
 
     fun delay(ms: Int): Promise<Unit> = Promise { resolve, reject -> global.setTimeout({ resolve(Unit) }, ms) }
 }
+
+@JsName("Promise")
+private external class JsPromise<T>
