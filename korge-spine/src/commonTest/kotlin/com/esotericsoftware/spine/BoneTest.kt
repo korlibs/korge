@@ -23,19 +23,21 @@ class BoneTest {
 
         bone.update()
         val origoToWorld = bone.localToWorld(SpineVector2(0.0f, 0.0f))
-        assertEquals(0.0f, origoToWorld.x)
-        assertEquals(0.0f, origoToWorld.y)
+        assertClose(0.0f, origoToWorld.x)
+        assertClose(0.0f, origoToWorld.y)
 
         val oneZeroToWorld = bone.localToWorld(SpineVector2(1.0f, 0.0f))
-        val epsilon = 1e-8f
-        assertClose(0.0f, oneZeroToWorld.x, epsilon)
-        assertEquals(1.0f, oneZeroToWorld.y)
+        assertClose(0.0f, oneZeroToWorld.x)
+        assertClose(1.0f, oneZeroToWorld.y)
         val matrix3D = bone.getWorldTransform(Matrix3D())
         val transformWithMatrix = Vector3D(1.0f, 0.0f, 0.0f).transform(matrix3D)
-        assertClose(oneZeroToWorld.x, transformWithMatrix.x, epsilon)
-        assertClose(oneZeroToWorld.y, transformWithMatrix.y, epsilon)
+        assertClose(oneZeroToWorld.x, transformWithMatrix.x)
+        assertClose(oneZeroToWorld.y, transformWithMatrix.y)
     }
 
-    private fun assertClose(expected: Float, actual: Float, epsilon: Float): Boolean = (expected - actual).absoluteValue <= epsilon
+    private fun assertClose(expected: Float, actual: Float, epsilon: Float = EPSILON) = assertTrue((expected - actual).absoluteValue <= epsilon, "Expected $expected to be close to $actual (epsilon=$epsilon)")
+    companion object {
+        const val EPSILON = 1e-7f
+    }
 }
 
