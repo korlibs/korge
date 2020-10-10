@@ -1,8 +1,11 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 
 /**
@@ -12,7 +15,7 @@ class Stage(override val views: Views) : Container()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
-    , ViewsScope, ViewsContainer
+    , ViewsContainer
 {
     val injector get() = views.injector
     val ag get() = views.ag
@@ -44,5 +47,16 @@ class Stage(override val views: Views) : Container()
         } else {
             super.renderInternal(ctx)
         }
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("Stage") {
+            uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize", min = 0.0, max = 2000.0).findObservableProperties().fastForEach {
+                it.onChange {
+                    views.resized()
+                }
+            }
+        }
+        super.buildDebugComponent(views, container)
     }
 }

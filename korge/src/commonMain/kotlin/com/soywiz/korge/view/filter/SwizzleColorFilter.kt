@@ -1,10 +1,12 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 /**
  * Allows to swizzle (interchange) color components via the [swizzle] property.
@@ -43,4 +45,8 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
         renderColorMul: RGBA,
         blendMode: BlendMode
     ) = proxy.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiEditableValue(::swizzle)
+    }
 }

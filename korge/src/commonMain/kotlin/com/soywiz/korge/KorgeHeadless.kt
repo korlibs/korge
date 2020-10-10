@@ -1,6 +1,6 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.TimeProvider
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.internal.*
@@ -37,11 +37,14 @@ object KorgeHeadless {
         debug: Boolean = false,
         fullscreen: Boolean? = null,
         args: Array<String> = arrayOf(),
-        timeProvider: HRTimeProvider = HRTimeProvider,
+        timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
+        blocking:Boolean = true,
+        debugAg: Boolean = false,
         entry: suspend Stage.() -> Unit
     ) = Korge(
         title, width, height, virtualWidth, virtualHeight, icon, iconPath, iconDrawable, imageFormats, quality,
-        targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector, entry
+        targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector,
+        blocking=blocking,debugAg = debugAg, entry = entry
     )
 }

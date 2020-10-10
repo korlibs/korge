@@ -28,7 +28,7 @@ import kotlin.coroutines.*
  * If you need to get textures from [Bitmap] that are allocated and deallocated as required
  * preventing leaks, you should use [getTex].
  */
-class RenderContext(
+class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
 	val bp: BoundsProvider = BoundsProvider.Dummy,
@@ -38,9 +38,11 @@ class RenderContext(
 ) : Extra by Extra.Mixin(), BoundsProvider by bp {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 
-    /** Current frame. */
-    @Deprecated("unused")
-	var frame = 0
+    val views: Views? = bp as? Views?
+
+    var debugAnnotateView: View? = null
+
+    var stencilIndex: Int = 0
 
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
 	val batch by lazy { BatchBuilder2D(this) }
@@ -106,6 +108,9 @@ class RenderContext(
 		}
 		return bmp
 	}
+
+    inline fun renderToBitmap(width: Int, height: Int, callback: () -> Unit): Bitmap32 =
+        renderToBitmap(Bitmap32(width, height), callback)
 
     /**
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.

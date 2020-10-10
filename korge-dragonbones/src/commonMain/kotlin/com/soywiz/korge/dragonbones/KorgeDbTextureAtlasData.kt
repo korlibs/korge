@@ -87,7 +87,7 @@ class KorgeDbTextureAtlasData(pool: SingleObjectPool<KorgeDbTextureAtlasData>) :
 						this._renderTexture!!,
 						Rectangle(textureData.region.x, textureData.region.y, textureData.region.width, textureData.region.height),
 						Rectangle(textureData.region.x, textureData.region.y, textureData.region.width, textureData.region.height),
-						Rectangle(0, 0, textureData.region.width, textureData.region.height),
+						Rectangle(0.0, 0.0, textureData.region.width, textureData.region.height),
 						textureData.rotated,
 						name = k
 					)

@@ -2,6 +2,7 @@ package com.soywiz.korge.animate.serialization
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.*
@@ -16,14 +17,26 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.coroutines.*
 
-suspend fun VfsFile.readAni(views: Views, content: FastByteArrayInputStream? = null): AnLibrary {
+suspend fun VfsFile.readAnimation(views: Views): AnLibrary {
+    val file = this
+    val bytes = this.readBytes()
+    views.animateLibraryLoaders.fastForEach { libraryLoader ->
+        val library = libraryLoader.invoke(bytes.openFastStream(), views.injector)?.loader?.invoke(file, bytes.openFastStream(), views)
+        if (library != null) return library
+    }
+    error("Unsupported format for $file. Did you miss installing something? Like: views.registerSwfLoading()")
+}
+
+suspend fun VfsFile.readAni(context: AnLibrary.Context, content: FastByteArrayInputStream? = null): AnLibrary {
 	val file = this
-	return AnLibraryDeserializer.read(content ?: FastByteArrayInputStream(this.readBytes()),
-		views,
+	return AnLibraryDeserializer.read(
+        content ?: FastByteArrayInputStream(this.readBytes()),
+        context.copy(coroutineContext = coroutineContext),
 		externalReaders = AnLibraryDeserializer.ExternalReaders(
 			atlasReader = { index ->
-				file.withExtension("ani.$index.png").readBitmapOptimized(views.imageFormats)
+				file.withExtension("ani.$index.png").readBitmapOptimized(context.imageFormats)
 			},
 			readSound = { index ->
 				file.withExtension("ani.$index.mp3").readSound()
@@ -34,20 +47,20 @@ suspend fun VfsFile.readAni(views: Views, content: FastByteArrayInputStream? = n
 object AnLibraryDeserializer {
 	class ExternalReaders(
 		val atlasReader: suspend (index: Int) -> Bitmap,
-		val readSound: suspend (index: Int) -> NativeSound
+		val readSound: suspend (index: Int) -> Sound
 	)
 
-	suspend fun read(s: ByteArray, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		FastByteArrayInputStream(s).readLibrary(views, externalReaders)
+	suspend fun read(s: ByteArray, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		FastByteArrayInputStream(s).readLibrary(context, externalReaders)
 
-	suspend fun read(s: SyncStream, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		FastByteArrayInputStream(s.readAll()).readLibrary(views, externalReaders)
+	suspend fun read(s: SyncStream, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		FastByteArrayInputStream(s.readAll()).readLibrary(context, externalReaders)
 
-	suspend fun read(s: FastByteArrayInputStream, views: Views, externalReaders: ExternalReaders): AnLibrary =
-		s.readLibrary(views, externalReaders)
+	suspend fun read(s: FastByteArrayInputStream, context: AnLibrary.Context, externalReaders: ExternalReaders): AnLibrary =
+		s.readLibrary(context, externalReaders)
 
-	suspend private fun FastByteArrayInputStream.readLibrary(
-		views: Views,
+	private suspend fun FastByteArrayInputStream.readLibrary(
+        context: AnLibrary.Context,
 		externalReaders: ExternalReaders
 	): AnLibrary {
 		val magic = readStringz(8)
@@ -61,7 +74,7 @@ object AnLibraryDeserializer {
 		val mipmaps = fileFlags.extract(0)
 		val smoothInterpolation = !fileFlags.extract(1)
 
-		val library = AnLibrary(views, width, height, 1000.0 / msPerFrame).apply {
+		val library = AnLibrary(context, width, height, 1000.0 / msPerFrame).apply {
 			this.defaultSmoothing = smoothInterpolation
 		}
 
@@ -96,7 +109,7 @@ object AnLibraryDeserializer {
 	private fun FastByteArrayInputStream.readSymbol(
 		strings: Array<String?>,
 		atlases: List<Pair<Bitmap, BitmapSlice<Bitmap>>>,
-		sounds: List<NativeSound>
+		sounds: List<Sound>
 	): AnSymbol {
 		val symbolId = readU_VL()
 		val symbolName = strings[readU_VL()]
@@ -153,7 +166,7 @@ object AnLibraryDeserializer {
 				val nframes = readU_VL()
 				val texturesWithBitmap = Timed<TextureWithBitmapSlice>(nframes)
 				for (n in 0 until nframes) {
-					val ratio1000 = readU_VL()
+					val ratio1000 = readU_VL().milliseconds
 					val scale = readF32LE().toDouble()
 					val bitmapId = readU_VL()
 					val bounds = readRect()
@@ -199,7 +212,7 @@ object AnLibraryDeserializer {
 
 		val totalDepths = readU_VL()
 		val totalFrames = readU_VL()
-		val totalTime = readU_VL()
+		val totalTime = readU_VL().milliseconds
 		val totalUids = readU_VL()
 		val uidsToCharacterIds = (0 until totalUids).map {
 			val charId = readU_VL()
@@ -218,17 +231,17 @@ object AnLibraryDeserializer {
 		val symbolStates = (0 until readU_VL()).map {
 			val ss = AnSymbolMovieClipSubTimeline(totalDepths)
 			//ss.name = strings[readU_VL()] ?: ""
-			ss.totalTime = readU_VL()
+			ss.totalTime = readU_VL().microseconds
 			val stateFlags = readU8()
 			ss.nextStatePlay = stateFlags.extract(0)
 			ss.nextState = strings[readU_VL()]
 
 			val numberOfActionFrames = readU_VL()
-			var lastFrameTimeInMs = 0
+			var lastFrameTime = 0.milliseconds
 			for (n in 0 until numberOfActionFrames) {
-				val deltaTime = readU_VL()
-				val timeInMs = lastFrameTimeInMs + deltaTime
-				lastFrameTimeInMs = timeInMs
+				val deltaTime = readU_VL().milliseconds
+				val timeInMs = lastFrameTime + deltaTime
+				lastFrameTime = timeInMs
 				val actions = (0 until readU_VL()).map {
 					val action = readU8()
 					when (action) {
@@ -254,10 +267,10 @@ object AnLibraryDeserializer {
 				var lastMatrix = Matrix()
 				var lastClipDepth = -1
 				var lastRatio = 0.0
-				var lastFrameTime = 0
+				var lastFrameTime = 0.milliseconds
 				var lastBlendMode = BlendMode.INHERIT
 				for (frameIndex in 0 until readU_VL()) {
-					val deltaFrameTime = readU_VL()
+					val deltaFrameTime = readU_VL().milliseconds
 					val frameTime = lastFrameTime + deltaFrameTime
 					lastFrameTime = frameTime
 					val flags = readU_VL()
@@ -307,7 +320,7 @@ object AnLibraryDeserializer {
 						lastBlendMode = BlendMode.BY_ORDINAL[readU8()] ?: BlendMode.INHERIT
 					}
 					timeline.add(
-						frameTime * 1000, AnSymbolTimelineFrame(
+						frameTime, AnSymbolTimelineFrame(
 							depth = depth,
 							uid = lastUid,
 							transform = lastMatrix,
@@ -326,7 +339,7 @@ object AnLibraryDeserializer {
 		for (n in 0 until uidsToCharacterIds.size) mc.uidInfo[n] = uidsToCharacterIds[n]
 		mc.states += (0 until readU_VL()).map {
 			val name = strings[readU_VL()] ?: ""
-			val startTime = readU_VL()
+			val startTime = readU_VL().milliseconds
 			val stateIndex = readU_VL()
 			symbolStates[stateIndex].actions.add(startTime, AnEventAction(name))
 			//println("$startTime, $name")

@@ -5,16 +5,20 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 object Html {
 	data class Alignment(val anchor: Anchor) {
 		companion object {
+            val TOP_LEFT = Alignment(Anchor.TOP_LEFT)
+            val TOP_CENTER = Alignment(Anchor.TOP_CENTER)
+            val TOP_RIGHT = Alignment(Anchor.TOP_RIGHT)
+
 			val LEFT = Alignment(Anchor.TOP_LEFT)
 			val CENTER = Alignment(Anchor.TOP_CENTER)
 			val RIGHT = Alignment(Anchor.TOP_RIGHT)
+
 			val JUSTIFIED = Alignment(Anchor.TOP_LEFT)
 
 			val MIDDLE_LEFT = Alignment(Anchor.MIDDLE_LEFT)
@@ -36,7 +40,7 @@ object Html {
 
 	interface FontFace {
 		data class Named(val name: String) : FontFace
-		data class Bitmap(val font: BitmapFont) : FontFace, Html.MetricsProvider {
+		data class Font(val font: com.soywiz.korim.font.Font) : FontFace, Html.MetricsProvider {
 			override fun getBounds(text: String, format: Format, out: Rectangle) = font.getBounds(text, format, out)
 		}
 	}
@@ -59,7 +63,7 @@ object Html {
 		val computedColor: RGBA get() = parent?.computedColor ?: color ?: Colors.WHITE
 
 		//val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
-        val computedFace by Computed(Format::face) { FontFace.Bitmap(debugBmpFont) }
+        val computedFace by Computed(Format::face) { FontFace.Font(debugBmpFont) }
 		val computedSize by Computed(Format::size) { 16 }
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }

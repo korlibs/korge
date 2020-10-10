@@ -3,18 +3,18 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -23,8 +23,10 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
@@ -40,22 +42,35 @@ class Views constructor(
     val ag: AG,
     val injector: AsyncInjector,
     val input: Input,
-    val timeProvider: HRTimeProvider,
+    val timeProvider: TimeProvider,
     val stats: Stats,
     val gameWindow: GameWindow
-) : Extra by Extra.Mixin(), EventDispatcher by EventDispatcher.Mixin(), CoroutineScope, ViewsScope, ViewsContainer,
-	BoundsProvider, DialogInterface by gameWindow, AsyncCloseable {
+) :
+    Extra by Extra.Mixin(),
+    EventDispatcher by EventDispatcher.Mixin(),
+    CoroutineScope, ViewsContainer,
+	BoundsProvider,
+    DialogInterface by gameWindow,
+    AsyncCloseable,
+    KTreeSerializerHolder
+{
     override val views = this
+
+    override val serializer = KTreeSerializer(this)
 
     val keys get() = input.keys
 
+    var name: String? = null
+    var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
-	var clampElapsedTimeTo = HRTimeSpan.fromMilliseconds(100.0)
+	var clampElapsedTimeTo = 100.0.milliseconds
+
+    var editingMode: Boolean = false
 
     /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
     @KorgeInternal
@@ -69,6 +84,13 @@ class Views constructor(
 	var virtualWidth = DefaultViewport.WIDTH; internal set
     /** The defined virtual height */
 	var virtualHeight = DefaultViewport.HEIGHT; internal set
+
+    var virtualWidthDouble: Double
+        get() = virtualWidth.toDouble()
+        set(value) = run { virtualWidth = value.toInt() }
+    var virtualHeightDouble: Double
+        get() = virtualHeight.toDouble()
+        set(value) = run { virtualHeight = value.toInt() }
 
     @KorgeExperimental
 	var actualVirtualLeft = 0; private set
@@ -145,6 +167,10 @@ class Views constructor(
 	var debugViews = false
 	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
 
+    fun addDebugRenderer(block: Views.(RenderContext) -> Unit) {
+        debugHandlers.add(block)
+    }
+
 	var lastTime = timeProvider.now()
 
     private val tempViews: ArrayList<View> = arrayListOf()
@@ -157,8 +183,8 @@ class Views constructor(
     @KorgeInternal
     val actualHeight get() = actualSize.height
 
-    val onBeforeRender = Signal<Unit>()
-    val onAfterRender = Signal<Unit>()
+    val onBeforeRender = Signal<RenderContext>()
+    val onAfterRender = Signal<RenderContext>()
 
     var targetFps: Double = -1.0
 
@@ -211,13 +237,14 @@ class Views constructor(
                     input.keys.triggerKeyEvent(e)
                     if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                         debugViews = !debugViews
+                        gameWindow.debug = debugViews
                     }
-                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.onKeyEvent(views, e) } }
+                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.apply { views.onKeyEvent(e) } } }
                 }
 				is GamePadConnectionEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
 				is GamePadUpdateEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				//is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				//is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
                 else -> stagedViews.fastForEach { it._components?.event?.fastForEach { it.onEvent(e) } }
 			}
 		} catch (e: PreventDefaultException) {
@@ -226,9 +253,11 @@ class Views constructor(
 	}
 
 	fun render() {
-        onBeforeRender()
 		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
+        onBeforeRender(renderContext)
 		stage.render(renderContext)
+        renderContext.flush()
+        stage.renderDebug(renderContext)
 
 		if (debugViews) {
 			debugHandlers.fastForEach { debugHandler ->
@@ -236,10 +265,10 @@ class Views constructor(
 			}
 		}
 
-        onAfterRender()
+        onAfterRender(renderContext)
     }
 
-	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NULL) {
+	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL) {
         val currentTime = timeProvider.now()
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
@@ -250,20 +279,16 @@ class Views constructor(
 		//println("delta: $delta")
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
-		if (fixedSizeStep != TimeSpan.NULL) {
-			update(fixedSizeStep.hr)
+		if (fixedSizeStep != TimeSpan.NIL) {
+			update(fixedSizeStep)
 		} else {
 			update(adelta)
 		}
 		render()
 	}
 
-    @Deprecated("")
-    fun update(dtMs: Int) {
-        update(dtMs.hrMilliseconds)
-    }
 
-	fun update(elapsed: HRTimeSpan) {
+	fun update(elapsed: TimeSpan) {
 		//println(this)
 		//println("Update: $dtMs")
 		input.startFrame(elapsed)
@@ -341,6 +366,47 @@ class Views constructor(
     fun globalToWindowX(x: Double, y: Double): Double = stage.localMatrix.transformX(x, y)
     /** Transform global coordinates [x] and [y] into coordinates in the window space Y */
     fun globalToWindowY(x: Double, y: Double): Double = stage.localMatrix.transformY(x, y)
+
+    val debugHighlighters = Signal<View?>()
+
+    fun debugHightlightView(viewToHightlight: View?) {
+        println("debugHightlightView: $viewToHightlight")
+        debugHighlighters(viewToHightlight)
+    }
+
+    data class SaveEvent(val action: String, val view: View?) {
+        override fun toString(): String = buildString {
+            append(action)
+            if (view != null) {
+                append(" ")
+                append(if (view.name != null) view.name else "#${view.index}")
+                append(" (${view::class.simpleName})")
+            }
+        }
+    }
+
+    val debugSavedHandlers = Signal<SaveEvent>()
+    val completedEditing = Signal<Unit>()
+
+    fun debugSaveView(e: SaveEvent) {
+        debugSavedHandlers(e)
+    }
+
+    fun debugSaveView(action: String, view: View?) {
+        debugSavedHandlers(SaveEvent(action, view))
+    }
+
+    fun <T : View?> undoable(action: String, view: T, block: (T) -> Unit) {
+        block(view)
+        debugSaveView(action, view)
+    }
+
+    fun <T> completedEditing(prop: ObservableProperty<T>) {
+        debugSaveView("Adjusted ${prop.name}", null)
+        completedEditing(Unit)
+    }
+
+    var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
@@ -356,31 +422,18 @@ class ViewsLog(
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: AG = LogAG(),
 	val input: Input = Input(),
-	val timeProvider: HRTimeProvider = HRTimeProvider,
+	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
 	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow)
 }
 
-fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture =
-	Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-
-fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture =
-	Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-
+fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
+fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture = Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
 fun Bitmap.texture(views: Views, mipmaps: Boolean = false) = views.texture(this, mipmaps)
-
-fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) =
-	texture(Bitmap32(width, height), mipmaps)
-
-suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture =
-	texture(nativeImageFormatProvider.decode(bmp), mipmaps)
-
-@Deprecated("Use ViewsContainer")
-interface ViewsScope {
-    val views: Views
-}
+fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) = texture(Bitmap32(width, height), mipmaps)
+suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture = texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
 interface ViewsContainer {
 	val views: Views
@@ -430,28 +483,27 @@ private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+fun View.updateSingleView(delta: TimeSpan, tempViews: ArrayList<View> = arrayListOf()) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
         view._components?.update?.fastForEach { comp ->
-            comp.update(dtMsD * view.globalSpeed)
+            comp.update(delta * view.globalSpeed)
         }
     }
 }
 
-@Deprecated("")
-@OptIn(KorgeInternal::class)
-fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
-    getAllDescendantViews(this, tempViews).fastForEach { view ->
-        view._components?.updateWV?.fastForEach { comp ->
-            comp.update(views, dtMsD * view.globalSpeed)
-        }
-    }
-}
+//@OptIn(KorgeInternal::class)
+//fun View.updateSingleViewWithViews(views: Views, dtMsD: Double, tempViews: ArrayList<View> = arrayListOf()) {
+//    getAllDescendantViews(this, tempViews).fastForEach { view ->
+//        view._components?.updateWV?.fastForEach { comp ->
+//            comp.update(views, (dtMsD * view.globalSpeed).milliseconds)
+//        }
+//    }
+//}
 
 @OptIn(KorgeInternal::class)
 fun View.updateSingleViewWithViewsAll(
     views: Views,
-    delta: HRTimeSpan,
+    delta: TimeSpan,
     tempViews: ArrayList<View> = arrayListOf()
 ) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
@@ -475,3 +527,5 @@ interface BoundsProvider {
         override val virtualBottom: Double = 0.0
     }
 }
+
+var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }

@@ -12,7 +12,9 @@ class UIObservable<T>(val initial: T, val observe: (T) -> Unit) {
 	}
 
 	operator fun setValue(obj: Any, prop: KProperty<*>, value: T) {
-		currentValue = value
-		observe(value)
+        if (currentValue != value) {
+            currentValue = value
+            observe(value)
+        }
 	}
 }

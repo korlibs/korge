@@ -335,7 +335,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 		}
 
 		this.bones[value.name] = value
-		this.sortedBones.push(value)
+        this.sortedBones.add(value)
 	}
 
 	/**
@@ -348,7 +348,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 		}
 
 		this.slots[value.name] = value
-		this.sortedSlots.push(value)
+        this.sortedSlots.add(value)
 	}
 
 	/**
@@ -394,7 +394,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 
 		value.parent = this
 		this.animations[value.name] = value
-		this.animationNames.push(value.name)
+        this.animationNames.add(value.name)
 		if (this.defaultAnimation == null) {
 			this.defaultAnimation = value
 		}
@@ -405,9 +405,9 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addAction(value: ActionData, isDefault: Boolean) {
 		if (isDefault) {
-			this.defaultActions.push(value)
+            this.defaultActions.add(value)
 		} else {
-			this.actions.push(value)
+            this.actions.add(value)
 		}
 	}
 	/**

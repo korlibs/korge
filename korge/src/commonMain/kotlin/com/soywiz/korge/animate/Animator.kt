@@ -3,7 +3,6 @@ package com.soywiz.korge.animate
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -62,19 +61,25 @@ open class Animator(
         when (kind) {
             NodeKind.Sequence -> {
                 try {
-                    executeLoopedOrNot {
-                        while (nodes.isNotEmpty()) nodes.removeFirst().execute()
+                    executeMaybeLooped {
+                        while (nodes.isNotEmpty()) {
+                            val node = nodes.removeFirst()
+                            //println("Executing $node...")
+                            node.execute()
+                        }
                     }
                 } catch (e: CancellationException) {
+                    //println("CANCELLED SEQUENCE: $this")
                     _onCancel()
-                    if (completeOnCancel) {
+                    if (completeOnCancel(e)) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
+                    throw e
                 }
             }
             NodeKind.Parallel -> {
                 try {
-                    executeLoopedOrNot {
+                    executeMaybeLooped {
                         val jobs = arrayListOf<Job>()
                         while (nodes.isNotEmpty()) {
                             val node = nodes.removeFirst()
@@ -83,16 +88,25 @@ open class Animator(
                         jobs.joinAll()
                     }
                 } catch (e: CancellationException) {
+                    //println("CANCELLED PARALLEL: $this")
                     _onCancel()
-                    if (completeOnCancel) {
+                    if (completeOnCancel(e)) {
                         while (nodes.isNotEmpty()) nodes.removeFirst().executeImmediately()
                     }
+                    throw e
                 }
             }
         }
     }
 
-    private suspend inline fun executeLoopedOrNot(crossinline code: suspend () -> Unit) {
+    fun completeOnCancel(e: CancellationException): Boolean {
+        if (e is AnimateCancellationException) {
+            return e.completeOnCancel ?: this.completeOnCancel
+        }
+        return this.completeOnCancel
+    }
+
+    private suspend inline fun executeMaybeLooped(crossinline code: suspend () -> Unit) {
         if (looped) {
             val nodesCopy = nodes.toList()
             while (true) {
@@ -166,10 +180,12 @@ open class Animator(
                 val rtime = lazyTime?.invoke() ?: time
                 view.tween(*computedVs, time = rtime, easing = easing)
             } catch (e: CancellationException) {
+                //println("CANCELLED TweenNode: $this")
                 //println("TweenNode: $e")
-                if (completeOnCancel) {
+                if (completeOnCancel(e)) {
                     executeImmediately()
                 }
+                throw e
             }
         }
 
@@ -197,28 +213,30 @@ open class Animator(
     fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, time = time, easing = easing)
     fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
 
-    fun View.scaleTo(scaleX: Double, scaleY: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::scaleX[scaleX], this::scaleY[scaleY], time = time, easing = easing)
-    fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
-    fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
-    fun View.moveToWithSpeed(x: Double, y: Double, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
-    fun View.alpha(alpha: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha], time = time, easing = easing)
-
     fun View.scaleTo(scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[scaleX()] }, { this::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
-    fun View.rotateTo(rotation: () -> Angle, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun View.scaleTo(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::scaleX[scaleX], this::scaleY[scaleY], time = time, easing = easing)
+    fun View.scaleTo(scaleX: Float, scaleY: Float = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
+    fun View.scaleTo(scaleX: Int, scaleY: Int = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
+
     fun View.moveTo(x: () -> Number = { this.x }, y: () -> Number = { this.y }, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
+    fun View.moveTo(x: Float, y: Float, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+    fun View.moveTo(x: Int, y: Int, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+
     fun View.moveToWithSpeed(x: () -> Number = { this.x }, y: () -> Number = { this.y }, speed: () -> Number = { this@Animator.speed }, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, lazyTime = { (hypot(this.x - x().toDouble(), this.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing)
+    fun View.moveToWithSpeed(x: Double, y: Double, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
+    fun View.moveToWithSpeed(x: Float, y: Float, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+    fun View.moveToWithSpeed(x: Int, y: Int, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 
-    fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1, time, easing)
-    fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0, time, easing)
+    fun View.alpha(alpha: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha], time = time, easing = easing)
+    fun View.alpha(alpha: Float, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
+    fun View.alpha(alpha: Int, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
 
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun View.scaleTo(scaleX: Number, scaleY: Number = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun View.moveTo(x: Number, y: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun View.moveToWithSpeed(x: Number, y: Number, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun View.alpha(alpha: Number, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
+    fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
+    fun View.rotateTo(rotation: () -> Angle, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
+
+    fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1.0, time, easing)
+    fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0.0, time, easing)
 
     fun wait(time: TimeSpan = this.time) = __tween(time = time)
     fun wait(time: () -> TimeSpan) = __tween(lazyTime = time)
@@ -229,6 +247,12 @@ open class Animator(
             override fun executeImmediately() = callback()
         })
     }
+}
+
+open class AnimateCancellationException(
+    val completeOnCancel: Boolean?
+) : CancellationException("AnimateCancellationException") {
+    override fun toString(): String = "AnimateCancellationException(completeOnCancel = $completeOnCancel)"
 }
 
 fun View.animator(

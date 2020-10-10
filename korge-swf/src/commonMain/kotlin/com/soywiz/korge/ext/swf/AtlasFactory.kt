@@ -1,13 +1,12 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.atlas.AtlasPacker
+import com.soywiz.korge.animate.*
+import com.soywiz.korim.atlas.AtlasPacker
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.binpack.*
 import kotlin.collections.set
 
 data class BitmapWithScale(val bitmap: Bitmap, val scale: Double, val bounds: Rectangle) : Extra by Extra.Mixin() {
@@ -16,7 +15,7 @@ data class BitmapWithScale(val bitmap: Bitmap, val scale: Double, val bounds: Re
 }
 
 /*
-suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<TextureWithBitmapSlice> {
+suspend fun List<BitmapWithScale>.toAtlas(context: AnLibrary.Context, mipmaps: Boolean): List<TextureWithBitmapSlice> {
 	return this.map {
 		TextureWithBitmapSlice(views.texture(it.bitmap), it.bitmap.slice(RectangleInt(0, 0, it.bitmap.width, it.bitmap.height)), it.scale)
 	}
@@ -25,27 +24,32 @@ suspend fun List<BitmapWithScale>.toAtlas(views: Views, mipmaps: Boolean): List<
 
 
 suspend fun <T> Map<T, BitmapWithScale>.toAtlas(
-	views: Views,
-	maxTextureSide: Int,
-	mipmaps: Boolean
+    context: AnLibrary.Context,
+    maxTextureSide: Int,
+    mipmaps: Boolean,
+    atlasPacking: Boolean
 ): Map<T, TextureWithBitmapSlice> {
-    val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
-    val out = LinkedHashMap<T, TextureWithBitmapSlice>()
-    //println("NUMBER OF ATLAS: ${atlas.atlases.map { "" + it.tex.width + "x" + it.tex.height  }}")
-    for (at in atlas.atlases) {
-        val texture = at.tex.slice()
-        for (item in at.packedItems) {
-            val ibmp = item.item.value
-            val rect2 = item.rect
-            out[item.item.key] = TextureWithBitmapSlice(
-                texture = texture.slice(rect2),
-                bitmapSlice = item.slice,
-                scale = ibmp.scale,
-                bounds = ibmp.bounds
-            )
+    if (atlasPacking) {
+        val atlas = AtlasPacker.pack(this.entries.toList().map { it to it.value.bitmap.slice() }, maxSide = maxTextureSide)
+        val out = LinkedHashMap<T, TextureWithBitmapSlice>()
+        //println("NUMBER OF ATLAS: ${atlas.atlases.map { "" + it.tex.width + "x" + it.tex.height  }}")
+        for (at in atlas.atlases) {
+            val texture = at.tex.slice()
+            for (item in at.packedItems) {
+                val ibmp = item.item.value
+                val rect2 = item.rect
+                out[item.item.key] = TextureWithBitmapSlice(
+                    texture = texture.slice(rect2),
+                    bitmapSlice = item.slice,
+                    scale = ibmp.scale,
+                    bounds = ibmp.bounds
+                )
+            }
         }
+        return out
+    } else {
+        return this.entries.associate { it.key to TextureWithBitmapSlice(it.value.bitmap.slice(), it.value.bitmap.slice(), it.value.scale, it.value.bounds) }
     }
-    return out
     //val borderSize = 4
     /*
     val borderSize = 8

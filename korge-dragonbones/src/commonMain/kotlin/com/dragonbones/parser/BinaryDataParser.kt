@@ -204,7 +204,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		}
 
 		// Offsets.
-		val offsets = rawData.getDynamic(DataParser.OFFSET) as  IntArrayList
+		val offsets = (rawData.getDynamic(DataParser.OFFSET) as DoubleArrayList).toIntArrayList()
 		animation.frameIntOffset = offsets[0]
 		animation.frameFloatOffset = offsets[1]
 		animation.frameOffset = offsets[2]
@@ -222,7 +222,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		if (rawData.containsDynamic(DataParser.BONE)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.BONE)
 			rawTimeliness.dynKeys.fastForEach { k ->
-				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k).intArrayList
 				val bone = this._armature?.getBone(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -237,7 +237,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		if (rawData.containsDynamic(DataParser.SLOT)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.SLOT)
 			rawTimeliness.dynKeys.fastForEach { k ->
-				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k).intArrayList
 				val slot = this._armature?.getSlot(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -252,7 +252,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		if (rawData.containsDynamic(DataParser.CONSTRAINT)) {
 			val rawTimeliness = rawData.getDynamic(DataParser.CONSTRAINT)
 			rawTimeliness.dynKeys.fastForEach { k ->
-				val rawTimelines = rawTimeliness.getDynamic(k) as  IntArrayList
+				val rawTimelines = rawTimeliness.getDynamic(k).intArrayList
 				val constraint = this._armature?.getConstraint(k) ?: return@fastForEach
 
 				for (i in 0 until rawTimelines.size step 2) {
@@ -356,7 +356,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	}
 
 	override fun _parseArray(rawData: Any?): Unit {
-		val offsets = rawData.getDynamic(DataParser.OFFSET) as  IntArrayList
+		val offsets = rawData.getDynamic(DataParser.OFFSET).intArrayList
 		val l1 = offsets[1]
 		val l2 = offsets[3]
 		val l3 = offsets[5]
@@ -365,13 +365,13 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		val l6 = offsets[11]
 		val l7 = if (offsets.size > 12) offsets[13] else 0 // Color.
 		val binary = this._binary
-		val intArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[0], l1 / 2)
-		val floatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[2], l2 / 4)
-		val frameIntArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[4], l3 / 2)
-		val frameFloatArray = binary.sliceFloat32Buffer(this._binaryOffset + offsets[6], l4 / 4)
-		val frameArray = binary.sliceInt16Buffer(this._binaryOffset + offsets[8], l5 / 2)
-		val timelineArray = binary.sliceUint16Buffer(this._binaryOffset + offsets[10], l6 / 2)
-		val colorArray = if (l7 > 0) binary.sliceInt16Buffer(this._binaryOffset + offsets[12], l7 / 2) else intArray // Color.
+		val intArray = binary.sliceInt16Buffer((this._binaryOffset + offsets[0]) / 2, l1 / 2)
+		val floatArray = binary.sliceFloat32Buffer((this._binaryOffset + offsets[2]) / 4, l2 / 4)
+		val frameIntArray = binary.sliceInt16Buffer((this._binaryOffset + offsets[4]) / 2, l3 / 2)
+		val frameFloatArray = binary.sliceFloat32Buffer((this._binaryOffset + offsets[6]) / 4, l4 / 4)
+		val frameArray = binary.sliceInt16Buffer((this._binaryOffset + offsets[8]) / 2, l5 / 2)
+		val timelineArray = binary.sliceUint16Buffer((this._binaryOffset + offsets[10]) / 2, l6 / 2)
+		val colorArray = if (l7 > 0) binary.sliceInt16Buffer((this._binaryOffset + offsets[12]) / 2, l7 / 2) else intArray // Color.
 
 		this._data!!.binary = this._binary
 		this._data!!.intArray = intArray
@@ -390,15 +390,15 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		//console.assert(rawData != null && rawData is MemBuffer, "Data error.")
 
 		val tag = NewUint8Buffer(rawData as MemBuffer, 0, 8)
+        val data = rawData.getData()
 		if (tag[0] != 'D'.toInt() || tag[1] != 'B'.toInt() || tag[2] != 'D'.toInt() || tag[3] != 'T'.toInt()) {
 			console.assert(false, "Nonsupport data.")
 			return null
 		}
 
-		val headerLength = NewInt32Buffer(rawData, 8, 1)[0]
-		val headerBytes = NewUint8Buffer(rawData, 8 + 4, headerLength)
-		val headerString = this._decodeUTF8(headerBytes)
-		val header = Json.parse(headerString)
+        val headerLength = data.getInt(8)
+		val headerString = this._decodeUTF8(NewUint8Buffer(rawData, 8 + 4, headerLength))
+		val header = Json.parse(headerString, Json.Context(optimizedNumericLists = true))
 		//
 		this._binaryOffset = 8 + 4 + headerLength
 		this._binary = rawData
@@ -410,12 +410,12 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 	//	private var _binaryDataParserInstance: BinaryDataParser? = null
 	//	/**
 	//	 * - Deprecated, please refer to {@link dragonBones.BaseFactory#parseDragonBonesData()}.
-	//	 * @deprecated
+	//	 * deprecated
 	//	 * @language en_US
 	//	 */
 	//	/**
 	//	 * - 已废弃，请参考 {@link dragonBones.BaseFactory#parseDragonBonesData()}。
-	//	 * @deprecated
+	//	 * deprecated
 	//	 * @language zh_CN
 	//	 */
 	//	fun getInstance(): BinaryDataParser {

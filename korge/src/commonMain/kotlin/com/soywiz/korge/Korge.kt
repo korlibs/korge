@@ -2,16 +2,14 @@ package com.soywiz.korge
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.klogger.*
-import com.soywiz.korag.*
+import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.service.storage.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
@@ -40,35 +38,39 @@ object Korge {
 
     suspend operator fun invoke(config: Config) {
         //println("Korge started from Config")
+        val module = config.module
+        val windowSize = module.windowSize
+
         Korge(
-            title = config.module.title,
-            width = config.module.windowSize.width,
-            height = config.module.windowSize.height,
-            virtualWidth = config.module.size.width,
-            virtualHeight = config.module.size.height,
-            bgcolor = config.module.bgcolor,
-            quality = config.module.quality,
+            title = module.title,
+            width = windowSize.width,
+            height = windowSize.height,
+            virtualWidth = module.size.width,
+            virtualHeight = module.size.height,
+            bgcolor = module.bgcolor,
+            quality = module.quality,
             icon = null,
-            iconPath = config.module.icon,
-            iconDrawable = config.module.iconImage,
-            imageFormats = ImageFormats(config.module.imageFormats),
-            targetFps = config.module.targetFps,
-            scaleAnchor = config.module.scaleAnchor,
-            scaleMode = config.module.scaleMode,
-            clipBorders = config.module.clipBorders,
+            iconPath = module.icon,
+            iconDrawable = module.iconImage,
+            imageFormats = ImageFormats(module.imageFormats),
+            targetFps = module.targetFps,
+            scaleAnchor = module.scaleAnchor,
+            scaleMode = module.scaleMode,
+            clipBorders = module.clipBorders,
             debug = config.debug,
-            fullscreen = config.module.fullscreen,
+            fullscreen = module.fullscreen,
             args = config.args,
             gameWindow = config.gameWindow,
             injector = config.injector,
             timeProvider = config.timeProvider,
+            blocking = config.blocking,
             entry = {
                 //println("Korge views prepared for Config")
-                RegisteredImageFormats.register(*config.module.imageFormats.toTypedArray())
+                RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
-                injector.mapInstance(Module::class, config.module).mapInstance(Config::class, config)
+                injector.mapInstance(Module::class, module).mapInstance(Config::class, config)
                 config.constructedViews(views)
-                config.module.apply { injector.configure() }
+                module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
                 views.stage += sc
                 sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
@@ -96,8 +98,10 @@ object Korge {
 		fullscreen: Boolean? = null,
 		args: Array<String> = arrayOf(),
 		gameWindow: GameWindow? = null,
-        timeProvider: HRTimeProvider = HRTimeProvider,
+        timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
+        debugAg: Boolean = false,
+        blocking:Boolean = true,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -129,7 +133,7 @@ object Korge {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+            val views: Views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
@@ -152,20 +156,26 @@ object Korge {
 
             prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
 
+            completeViews(views)
             views.launchImmediately {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
                     //println("GameWindow: ${coroutineContext[GameWindow]}")
                     entry(views.stage)
-                    // @TODO: Do not complete to prevent job cancelation?
-                    gameWindow.waitClose()
+                    if (blocking) {
+                        // @TODO: Do not complete to prevent job cancelation?
+                        gameWindow.waitClose()
+                    }
                 }
             }
             if (OS.isNative) println("CanvasApplicationEx.IN[1]")
             if (OS.isNative) println("Korui[1]")
 
-            // @TODO: Do not complete to prevent job cancelation?
-            gameWindow.waitClose()
+            if (blocking) {
+                // @TODO: Do not complete to prevent job cancelation?
+                gameWindow.waitClose()
+                gameWindow.exit()
+            }
         }
     }
 
@@ -181,7 +191,7 @@ object Korge {
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL
+        fixedSizeStep: TimeSpan = TimeSpan.NIL
     ): CompletableDeferred<Unit> {
         val injector = views.injector
         injector.mapInstance(views)
@@ -191,8 +201,7 @@ object Korge {
         injector.mapInstance(views.stats)
         injector.mapInstance(CoroutineContext::class, views.coroutineContext)
         injector.mapPrototype(EmptyScene::class) { EmptyScene() }
-        injector.mapInstance(TimeProvider::class, views.timeProvider.toTimeProvider()) // Deprecated
-        injector.mapInstance(HRTimeProvider::class, views.timeProvider)
+        injector.mapInstance(TimeProvider::class, views.timeProvider)
 
         val input = views.input
         val ag = views.ag
@@ -376,6 +385,7 @@ object Korge {
         eventDispatcher.addEventListener<ReshapeEvent> { e ->
             //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
             //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
+            //println("resized. ${ag.backWidth}, ${ag.backHeight}")
             views.resized(ag.backWidth, ag.backHeight)
         }
 
@@ -386,23 +396,25 @@ object Korge {
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
         val firstRenderDeferred = CompletableDeferred<Unit>()
-        views.gameWindow.addEventListener<RenderEvent> {
+        views.gameWindow.onRenderEvent {
             //println("RenderEvent: $it")
-            if (!renderShown) {
-                //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                renderShown = true
-                firstRenderDeferred.complete(Unit)
-            }
-            try {
-                views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
-
-                if (moveMouseOutsideInNextFrame) {
-                    moveMouseOutsideInNextFrame = false
-                    views.input.mouseInside = false
-                    views.mouseUpdated()
+            views.ag.doRender {
+                if (!renderShown) {
+                    //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                    renderShown = true
+                    firstRenderDeferred.complete(Unit)
                 }
-            } catch (e: Throwable) {
-                e.printStackTrace()
+                try {
+                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
+
+                    if (moveMouseOutsideInNextFrame) {
+                        moveMouseOutsideInNextFrame = false
+                        views.input.mouseInside = false
+                        views.mouseUpdated()
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -411,12 +423,12 @@ object Korge {
 
     @KorgeInternal
     suspend fun prepareViews(
-        views: Views,
-        eventDispatcher: EventDispatcher,
-        clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NULL,
-        waitForFirstRender: Boolean = true
+            views: Views,
+            eventDispatcher: EventDispatcher,
+            clearEachFrame: Boolean = true,
+            bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+            fixedSizeStep: TimeSpan = TimeSpan.NIL,
+            waitForFirstRender: Boolean = true
     ) {
         val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep)
         if (waitForFirstRender) {
@@ -432,12 +444,13 @@ object Korge {
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
 		val sceneClass: KClass<out Scene> = module.mainScene,
 		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: HRTimeProvider = HRTimeProvider,
+		val timeProvider: TimeProvider = TimeProvider,
 		val injector: AsyncInjector = AsyncInjector(),
 		val debug: Boolean = false,
 		val trace: Boolean = false,
 		val context: Any? = null,
 		val fullscreen: Boolean? = null,
+        val blocking: Boolean = true,
 		val constructedViews: (Views) -> Unit = {}
 	)
 

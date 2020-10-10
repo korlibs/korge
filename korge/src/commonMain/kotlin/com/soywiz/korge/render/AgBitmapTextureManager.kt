@@ -8,19 +8,6 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
 
-/** Extra property for [Bitmap] objects that specify whether mipmaps should be created for this Bitmap */
-@Deprecated("Use mipmaps instead")
-var Bitmap.texMipmaps: Boolean
-    get() = this.mipmaps
-    set(value) { this.mipmaps = value }
-
-/** Enable or disable mipmap generation for this [Bitmap] */
-@Deprecated("Use .mipmaps method from korim", level = DeprecationLevel.HIDDEN)
-fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T {
-    this.mipmaps = enable
-    return this
-}
-
 /**
  * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.
  *

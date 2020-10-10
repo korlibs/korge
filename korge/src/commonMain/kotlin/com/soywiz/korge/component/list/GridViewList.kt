@@ -3,6 +3,8 @@ package com.soywiz.korge.component.list
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.view.*
 
+/*
+Deprecated("")
 class GridViewList(
 	val row0: View,
 	val row1: View,
@@ -55,3 +57,4 @@ class GridViewList(
 	operator fun get(row: Int): ViewList = this.rowsData[row]
 	operator fun get(row: Int, column: Int): View? = this[row][column]
 }
+*/

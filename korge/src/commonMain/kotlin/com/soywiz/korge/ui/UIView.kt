@@ -1,6 +1,8 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -48,9 +50,6 @@ open class UIView(
 		if (stage.getExtra("uiSupport") == true) return
 		stage.setExtra("uiSupport", true)
 		stage.keys {
-			onKeyDown {
-
-			}
 		}
 		stage.getOrCreateComponentUpdateWithViews<DummyUpdateComponentWithViews> { stage ->
             DummyUpdateComponentWithViews(stage)
@@ -58,7 +57,7 @@ open class UIView(
 	}
 }
 
-internal class DummyUpdateComponentWithViews(override val view: View) : UpdateComponentWithViews {
-    override fun update(views: Views, ms: Double) {
+internal class DummyUpdateComponentWithViews(override val view: BaseView) : UpdateComponentWithViews {
+    override fun update(views: Views, dt: TimeSpan) {
     }
 }

@@ -247,10 +247,10 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 	fun _bufferAction(action: EventObject, append: Boolean) {
 		if (this._actions.indexOf(action) < 0) {
 			if (append) {
-				this._actions.push(action)
+                this._actions.add(action)
 			}
 			else {
-				this._actions.unshift(action)
+				this._actions.add(0, action)
 			}
 		}
 	}
@@ -914,16 +914,6 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 	//val parent: Slot? get() {
 	//	return this._parent
 	//}
-	///**
-	// * - Deprecated, please refer to {@link #display}.
-	// * @deprecated
-	// * @language en_US
-	// */
-	///**
-	// * - 已废弃，请参考 {@link #display}。
-	// * @deprecated
-	// * @language zh_CN
-	// */
 	//fun getDisplay(): Any {
 	//	return this._display
 	//}

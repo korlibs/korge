@@ -26,11 +26,11 @@ class ViewsTest : ViewsForTesting() {
                 ticks++
             }
             assertEquals(0, ticks)
-            view.updateSingleView(50.0)
+            view.updateSingleView(50.milliseconds)
             assertEquals(3, ticks)
-            view.updateSingleView(16.0)
+            view.updateSingleView(16.milliseconds)
             assertEquals(4, ticks) // This is 4 instead of 3 (16 < 16.6666) since the fixedUpdater approximates it to prevent micro-stuttering
-            view.updateSingleView(1.0)
+            view.updateSingleView(1.milliseconds)
             assertEquals(4, ticks)
         }
         run {
@@ -40,7 +40,7 @@ class ViewsTest : ViewsForTesting() {
                 ticks++
             }
             assertEquals(1, ticks)
-            view.updateSingleView(50.0)
+            view.updateSingleView(50.milliseconds)
             assertEquals(4, ticks)
         }
     }
@@ -53,9 +53,9 @@ class ViewsTest : ViewsForTesting() {
             ticks++
         }
         assertEquals(1, ticks)
-        view.updateSingleView(1000.0)
+        view.updateSingleView(1000.milliseconds)
         assertEquals(7, ticks)
-        view.updateSingleView(1000.0)
+        view.updateSingleView(1000.milliseconds)
         assertEquals(13, ticks)
     }
 
@@ -261,8 +261,8 @@ class ViewsTest : ViewsForTesting() {
                 assertTrue { this is SolidRect }
             }
         }
-        container.updateSingleView(0.0)
-        container.updateSingleView(0.0)
+        container.updateSingleView(0.milliseconds)
+        container.updateSingleView(0.milliseconds)
         assertEquals(0.0, container.x)
         assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.secs once
     }

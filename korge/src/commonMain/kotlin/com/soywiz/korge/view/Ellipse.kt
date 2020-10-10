@@ -1,8 +1,10 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 /**
  * Creates a [Ellipse] of [radiusX], [radiusY] and [color].
@@ -31,13 +33,26 @@ open class Ellipse(
     /** Radius of the circle */
     var radiusX: Double by uiObservable(radiusX) { updateGraphics() }
     var radiusY: Double by uiObservable(radiusY) { updateGraphics() }
+
+    val isCircle get() = radiusX == radiusY
     /** Color of the circle. Internally it uses the [colorMul] property */
     var color: RGBA
         get() = colorMul
         set(value) { colorMul = value }
 
-    override val bwidth get() = radiusX * 2
-    override val bheight get() = radiusY * 2
+    override var width: Double
+        get() = radiusX * 2
+        set(value) {
+            radiusX = value / 2
+        }
+    override var height: Double
+        get() = radiusY * 2
+        set(value) {
+            radiusY = value / 2
+        }
+
+    override val bwidth get() = width
+    override val bheight get() = height
 
     init {
         this.color = color
@@ -48,7 +63,16 @@ open class Ellipse(
         clear()
         fill(Colors.WHITE) {
             //ellipse(radiusX, radiusY, radiusX, radiusY)
-            ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
+            //ellipse(0.0, 0.0, this@Ellipse.radiusX, this@Ellipse.radiusY)
+            ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
         }
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("Ellipse") {
+            uiEditableValue(Pair(view::radiusX, view::radiusY), min = 0.0, max = 1000.0, clamp = false, name = "radius")
+        }
+        super.buildDebugComponent(views, container)
     }
 }

@@ -26,7 +26,7 @@ class Stage3D(val views: Views3D) : Container3D() {
 	var ambientColor: RGBA = Colors.BLACK // No ambient light
 	var ambientPower: Double = 0.3
 	var camera: Camera3D = Camera3D.Perspective().apply {
-		positionLookingAt(0, 1, -10, 0, 0, 0)
+		//positionLookingAt(0, 1, 10, 0, 0, 0)
 	}
 }
 

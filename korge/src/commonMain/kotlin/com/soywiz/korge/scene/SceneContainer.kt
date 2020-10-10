@@ -2,12 +2,14 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.async
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 
@@ -212,5 +214,10 @@ class SceneContainer(
     private fun setCurrent(entry: VisitEntry) {
         while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
         visitStack[visitPos] = entry
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        currentScene?.buildDebugComponent(views, container)
+        super.buildDebugComponent(views, container)
     }
 }

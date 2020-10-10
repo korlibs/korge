@@ -16,7 +16,7 @@ class SWFShapeTest : ViewsForTesting() {
         //val swf = resourcesVfs["swf/main.swf"].readSWF(views, defaultConfig = SWFExportConfig(rasterizerMethod = ShapeRasterizerMethod.X1))
         for (method in listOf(ShapeRasterizerMethod.NONE, ShapeRasterizerMethod.X1, ShapeRasterizerMethod.X4)) {
             val swf = resourcesVfs["swf/main.swf"].readSWF(
-                views,
+                AnLibrary.Context(views),
                 defaultConfig = SWFExportConfig(rasterizerMethod = method)
             )
             val img = (swf.symbolsById[10] as AnSymbolShape).textureWithBitmap!!.bitmapSlice.extract().toBMP32()

@@ -104,6 +104,6 @@ class PathConstraintData(pool: SingleObjectPool<PathConstraintData>) : Constrain
 	}
 
 	fun AddBone(value: BoneData): Unit {
-		this.bones.push(value)
+        this.bones.add(value)
 	}
 }

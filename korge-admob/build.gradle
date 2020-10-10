@@ -1,15 +1,10 @@
 apply plugin: com.soywiz.korlibs.KorlibsPlugin
 
-def playServicesVersion = "16.0.0"
-//def playServicesVersion = "15.0.0"
-
-
-
 korlibs {
     dependencyProject(":korge")
     dependencies {
         if (korlibs.hasAndroid) {
-            androidMainApi "com.google.android.gms:play-services-ads:$playServicesVersion"
+            androidMainApi "com.google.android.gms:play-services-ads:$playServicesAdsVersion"
             // https://github.com/Kotlin/kotlinx.coroutines/blob/344e93211779c3a25789babcf92f51aee8f286cb/ui/kotlinx-coroutines-android/build.gradle#L22
             //androidMainApi 'com.android.support:support-annotations:26.1.0'
             //androidMainApi 'com.android.support:support-annotations:28.0.0'

@@ -1,7 +1,7 @@
 package com.soywiz.korge.service.storage
 
 import com.soywiz.korge.view.*
-import kotlin.browser.*
+import kotlinx.browser.*
 
 actual class NativeStorage actual constructor(val views: Views) : IStorage {
 	actual override fun set(key: String, value: String) {

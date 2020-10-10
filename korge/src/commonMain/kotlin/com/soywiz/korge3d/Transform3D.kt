@@ -87,10 +87,8 @@ class Transform3D {
         matrixDirty = true
         translation.setTo(x, y, z, w)
     }
-
-    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
-    inline fun setTranslation(x: Number, y: Number, z: Number, w: Number = 1f) = setTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setTranslation(x: Double, y: Double, z: Double, w: Double = 1.0) = setTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    fun setTranslation(x: Int, y: Int, z: Int, w: Int = 1) = setTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun setRotation(quat: Quaternion) = updatingTRS {
         updateTRSIfRequired()
@@ -104,9 +102,8 @@ class Transform3D {
         rotation.setTo(x, y, z, w)
     }
 
-    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())"))
-    inline fun setRotation(x: Number, y: Number, z: Number, w: Number) = setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setRotation(x: Double, y: Double, z: Double, w: Double) = setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    fun setRotation(x: Int, y: Int, z: Int, w: Int) = setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun setRotation(euler: EulerRotation) = updatingTRS {
         _eulerRotationDirty = true
@@ -121,10 +118,8 @@ class Transform3D {
     fun setScale(x: Float = 1f, y: Float = 1f, z: Float = 1f, w: Float = 1f) = updatingTRS {
         scale.setTo(x, y, z, w)
     }
-
-    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("setScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())"))
-    inline fun setScale(x: Number, y: Number, z: Number, w: Number) = setScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setScale(x: Double, y: Double, z: Double, w: Double) = setScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    fun setScale(x: Int, y: Int, z: Int, w: Int) = setScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     @PublishedApi
     internal inline fun updatingTRS(callback: () -> Unit): Transform3D {
@@ -154,10 +149,8 @@ class Transform3D {
         rotation.setFromRotationMatrix(tempMat1)
         return this
     }
-
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun lookAt(tx: Number, ty: Number, tz: Number, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
     fun lookAt(tx: Double, ty: Double, tz: Double, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
+    fun lookAt(tx: Int, ty: Int, tz: Int, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
 
     //setTranslation(px, py, pz)
     //lookUp(tx, ty, tz, up)
@@ -171,13 +164,6 @@ class Transform3D {
             tempMat2.setToLookAt(tempVec1.setTo(px, py, pz), tempVec2.setTo(tx, ty, tz), up)
         )
     )
-
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun setTranslationAndLookAt(
-        px: Number, py: Number, pz: Number,
-        tx: Number, ty: Number, tz: Number,
-        up: Vector3D = UP
-    ) = setTranslationAndLookAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
     fun setTranslationAndLookAt(
         px: Double, py: Double, pz: Double,
         tx: Double, ty: Double, tz: Double,
@@ -186,8 +172,14 @@ class Transform3D {
 
     private val tempEuler = EulerRotation()
     fun rotate(x: Angle, y: Angle, z: Angle): Transform3D {
-        tempEuler.setQuaternion(this.rotation)
-        setRotation(tempEuler.x + x, tempEuler.y + y, tempEuler.z + z)
+        val re = this.rotationEuler
+        tempEuler.setTo(re.x+x,re.y+y, re.z+z)
+        setRotation(tempEuler)
+        return this
+    }
+
+    fun translate(vec:Vector3D) : Transform3D {
+        this.setTranslation( this.translation.x + vec.x, this.translation.y + vec.y, this.translation.z+vec.z )
         return this
     }
 

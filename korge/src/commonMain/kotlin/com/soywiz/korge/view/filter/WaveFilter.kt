@@ -3,7 +3,11 @@ package com.soywiz.korge.view.filter
 import com.soywiz.klock.*
 import com.soywiz.korag.DefaultShaders.t_Temp0
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korui.*
 import kotlin.math.*
 
 /**
@@ -69,4 +73,14 @@ class WaveFilter(
 
 	override val border: Int get() = max(amplitudeX, amplitudeY)
     override val fragment = FRAGMENT_SHADER
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiEditableValue(::amplitudeX)
+        container.uiEditableValue(::amplitudeY)
+        container.uiEditableValue(::crestCountX)
+        container.uiEditableValue(::crestCountY)
+        container.uiEditableValue(::cyclesPerSecondX)
+        container.uiEditableValue(::cyclesPerSecondY)
+        container.uiEditableValue(::timeSeconds)
+    }
 }

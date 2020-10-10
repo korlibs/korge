@@ -1123,65 +1123,66 @@ open class TagDefineMorphShape : _BaseTag(), IDefinitionTag {
 		var j = 0
 		val exportShape = SWFShape()
 		val numEdges: Int = startEdges.records.size
-		if (startEdges.records.size != endEdges.records.size) {
-			TODO("Not implemented different startEdges.records.size(${startEdges.records.size}) != endEdges.records.size(${endEdges.records.size})")
-		}
-		for (i in 0 until numEdges) {
-			var startRecord = startEdges.records[i]
-			// Ignore start records that are style change records and don't have moveTo
-			// The end record index is not incremented, because end records do not have
-			// style change records without moveTo's.
-			if (startRecord.type == SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as SWFShapeRecordStyleChange).stateMoveTo) {
-				exportShape.records.add(startRecord.clone())
-				continue
-			}
-			var endRecord = endEdges.records[j++]
-			var exportRecord: SWFShapeRecord? = null
-			// It is possible for an edge to change type over the course of a morph sequence.
-			// A straight edge can become a curved edge and vice versa
-			// Convert straight edge to curved edge, if needed:
-			if (startRecord.type == SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE) {
-				endRecord = convertToCurvedEdge(endRecord as SWFShapeRecordStraightEdge)
-			} else if (startRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == SWFShapeRecord.TYPE_CURVEDEDGE) {
-				startRecord = convertToCurvedEdge(startRecord as SWFShapeRecordStraightEdge)
-			}
-			when (startRecord.type) {
-				SWFShapeRecord.TYPE_STYLECHANGE -> {
-					val startStyleChange = startRecord.clone() as SWFShapeRecordStyleChange
-					val endStyleChange = endRecord as SWFShapeRecordStyleChange
-					startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
-					startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
-					exportRecord = startStyleChange
-				}
-				SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
-					val startStraightEdge = startRecord.clone() as SWFShapeRecordStraightEdge
-					val endStraightEdge = endRecord as SWFShapeRecordStraightEdge
-					startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
-					startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
-					if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
-						startStraightEdge.generalLineFlag = true
-						startStraightEdge.vertLineFlag = false
-					} else {
-						startStraightEdge.generalLineFlag = false
-						startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
-					}
-					exportRecord = startStraightEdge
-				}
-				SWFShapeRecord.TYPE_CURVEDEDGE -> {
-					val startCurvedEdge = startRecord.clone() as SWFShapeRecordCurvedEdge
-					val endCurvedEdge = endRecord as SWFShapeRecordCurvedEdge
-					startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
-					startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
-					startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
-					startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
-					exportRecord = startCurvedEdge
-				}
-				SWFShapeRecord.TYPE_END -> {
-					exportRecord = startRecord.clone()
-				}
-			}
-			exportShape.records.add(exportRecord!!)
-		}
+        try {
+            for (i in 0 until numEdges) {
+                var startRecord = startEdges.records[i]
+                // Ignore start records that are style change records and don't have moveTo
+                // The end record index is not incremented, because end records do not have
+                // style change records without moveTo's.
+                if (startRecord.type == SWFShapeRecord.TYPE_STYLECHANGE && !(startRecord as SWFShapeRecordStyleChange).stateMoveTo) {
+                    exportShape.records.add(startRecord.clone())
+                    continue
+                }
+                var endRecord = endEdges.records[j++]
+                var exportRecord: SWFShapeRecord? = null
+                // It is possible for an edge to change type over the course of a morph sequence.
+                // A straight edge can become a curved edge and vice versa
+                // Convert straight edge to curved edge, if needed:
+                if (startRecord.type == SWFShapeRecord.TYPE_CURVEDEDGE && endRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE) {
+                    endRecord = convertToCurvedEdge(endRecord as SWFShapeRecordStraightEdge)
+                } else if (startRecord.type == SWFShapeRecord.TYPE_STRAIGHTEDGE && endRecord.type == SWFShapeRecord.TYPE_CURVEDEDGE) {
+                    startRecord = convertToCurvedEdge(startRecord as SWFShapeRecordStraightEdge)
+                }
+                when (startRecord.type) {
+                    SWFShapeRecord.TYPE_STYLECHANGE -> {
+                        val startStyleChange = startRecord.clone() as SWFShapeRecordStyleChange
+                        val endStyleChange = endRecord as SWFShapeRecordStyleChange
+                        startStyleChange.moveDeltaX += ((endStyleChange.moveDeltaX - startStyleChange.moveDeltaX) * ratio).toInt()
+                        startStyleChange.moveDeltaY += ((endStyleChange.moveDeltaY - startStyleChange.moveDeltaY) * ratio).toInt()
+                        exportRecord = startStyleChange
+                    }
+                    SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
+                        val startStraightEdge = startRecord.clone() as SWFShapeRecordStraightEdge
+                        val endStraightEdge = endRecord as SWFShapeRecordStraightEdge
+                        startStraightEdge.deltaX += ((endStraightEdge.deltaX - startStraightEdge.deltaX) * ratio).toInt()
+                        startStraightEdge.deltaY += ((endStraightEdge.deltaY - startStraightEdge.deltaY) * ratio).toInt()
+                        if (startStraightEdge.deltaX != 0 && startStraightEdge.deltaY != 0) {
+                            startStraightEdge.generalLineFlag = true
+                            startStraightEdge.vertLineFlag = false
+                        } else {
+                            startStraightEdge.generalLineFlag = false
+                            startStraightEdge.vertLineFlag = (startStraightEdge.deltaX == 0)
+                        }
+                        exportRecord = startStraightEdge
+                    }
+                    SWFShapeRecord.TYPE_CURVEDEDGE -> {
+                        val startCurvedEdge = startRecord.clone() as SWFShapeRecordCurvedEdge
+                        val endCurvedEdge = endRecord as SWFShapeRecordCurvedEdge
+                        startCurvedEdge.controlDeltaX += ((endCurvedEdge.controlDeltaX - startCurvedEdge.controlDeltaX) * ratio).toInt()
+                        startCurvedEdge.controlDeltaY += ((endCurvedEdge.controlDeltaY - startCurvedEdge.controlDeltaY) * ratio).toInt()
+                        startCurvedEdge.anchorDeltaX += ((endCurvedEdge.anchorDeltaX - startCurvedEdge.anchorDeltaX) * ratio).toInt()
+                        startCurvedEdge.anchorDeltaY += ((endCurvedEdge.anchorDeltaY - startCurvedEdge.anchorDeltaY) * ratio).toInt()
+                        exportRecord = startCurvedEdge
+                    }
+                    SWFShapeRecord.TYPE_END -> {
+                        exportRecord = startRecord.clone()
+                    }
+                }
+                exportShape.records.add(exportRecord!!)
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
 		for (i in 0 until morphFillStyles.size) {
 			exportShape.fillStyles.add(morphFillStyles[i].getMorphedFillStyle(ratio))
 		}

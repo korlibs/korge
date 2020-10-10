@@ -515,7 +515,7 @@ abstract class MutilpleValueTimelineState(pool: SingleObjectPool<out MutilpleVal
 		super._onArriveAtFrame()
 
 		val valueCount = this._valueCount
-		this._rd = if (this._rd.size < valueCount) DoubleArray(valueCount) else this._rd
+		this._rd = if (this._rd.size < valueCount) DoubleArray(valueCount * 2) else this._rd
 		val rd = this._rd
 
 		if (this._timelineData != null) {
@@ -528,7 +528,9 @@ abstract class MutilpleValueTimelineState(pool: SingleObjectPool<out MutilpleVal
 				val nextValueOffset = if (this._frameIndex == this._frameCount - 1)
 					this._valueOffset + this._frameValueOffset else valueOffset + valueCount
 
-				for (i in 0 until valueCount) rd[valueCount + i] = (valueArray[nextValueOffset + i] - valueArray[valueOffset + i]) * valueScale
+				for (i in 0 until valueCount) {
+                    rd[valueCount + i] = (valueArray[nextValueOffset + i] - valueArray[valueOffset + i]) * valueScale
+                }
 			}
 			else {
 				for (i in 0 until valueCount) rd[i] = valueArray[valueOffset + i] * valueScale

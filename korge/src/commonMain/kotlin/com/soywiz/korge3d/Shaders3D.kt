@@ -25,7 +25,7 @@ open class Shaders3D {
 
 
 	companion object {
-		val u_Shiness = Uniform("u_shiness", VarType.Float1)
+		val u_Shininess = Uniform("u_shininess", VarType.Float1)
 		val u_IndexOfRefraction = Uniform("u_indexOfRefraction", VarType.Float1)
 		val u_AmbientColor = Uniform("u_ambientColor", VarType.Float4)
 		val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
@@ -205,11 +205,11 @@ abstract class AbstractStandardShader3D() : BaseShader3D() {
 		SET(NdotL, max(dot(normalize(N), normalize(lightDir)), 0f.lit))
 
 		IF(NdotL ge 0f.lit) {
-			SET(out["rgb"], out["rgb"] + (light.u_color["rgb"] * NdotL + Shaders3D.u_AmbientColor["rgb"]) * attenuation * Shaders3D.u_Shiness)
+			SET(out["rgb"], out["rgb"] + (light.u_color["rgb"] * NdotL + Shaders3D.u_AmbientColor["rgb"]) * attenuation * Shaders3D.u_Shininess)
 		}
 		//SET(out["rgb"], out["rgb"] * attenuation)
 		//SET(out["rgb"], out["rgb"] + clamp(light.diffuse * max(dot(N, L), 0f.lit), 0f.lit, 1f.lit)["rgb"])
-		//SET(out["rgb"], out["rgb"] + clamp(light.specular * pow(max(dot(R, E), 0f.lit), 0.3f.lit * u_Shiness), 0f.lit, 1f.lit)["rgb"])
+		//SET(out["rgb"], out["rgb"] + clamp(light.specular * pow(max(dot(R, E), 0f.lit), 0.3f.lit * u_Shininess), 0f.lit, 1f.lit)["rgb"])
 	}
 
 	fun Program.Builder.getBoneIndex(index: Int): Operand = int(Shaders3D.a_boneIndex[index / 4][index % 4])

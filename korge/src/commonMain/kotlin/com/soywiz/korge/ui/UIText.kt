@@ -5,13 +5,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiText(
-    text: String, width: Number, height: Number,
-    skin: TextSkin = defaultTextSkin,
-    block: @ViewDslMarker UIText.() -> Unit = {}
-): UIText = uiText(text, width.toDouble(), height.toDouble(), skin, block)
-
 inline fun Container.uiText(
     text: String,
     width: Double = 128.0,
@@ -92,13 +85,13 @@ class UIText(
 
     private fun updateText() {
         textView.format = Html.Format(face = textFont, size = textSize, color = textColor, align = textAlignment)
-        textView.setTextBounds(Rectangle(0, 0, width, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
         textView.setText(text)
     }
 
     override fun onSizeChanged() {
         super.onSizeChanged()
         background.size(width, height)
-        textView.setTextBounds(Rectangle(0, 0, width, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
     }
 }

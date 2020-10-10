@@ -226,32 +226,35 @@ class ColladaParser {
 
 
 			// @TODO: We should use separate components
-			val combinedData = floatArrayListOf()
+			val combinedVertexData = floatArrayListOf()
+            val combinedIndexData = intArrayListOf()
+
 			val hasNormals = (nx.size >= px.size)
 			val hasTexture = TEXCOORD != null
 			for (n in 0 until px.size) {
-				combinedData.add(px[n])
-				combinedData.add(py[n])
-				combinedData.add(pz[n])
+                combinedVertexData.add(px[n])
+                combinedVertexData.add(py[n])
+                combinedVertexData.add(pz[n])
 				if (hasNormals) {
-					combinedData.add(nx[n])
-					combinedData.add(ny[n])
-					combinedData.add(nz[n])
+                    combinedVertexData.add(nx[n])
+                    combinedVertexData.add(ny[n])
+                    combinedVertexData.add(nz[n])
 				}
 				if (hasTexture) {
-					combinedData.add(u0[n])
-					combinedData.add(1f - v0[n])
+                    combinedVertexData.add(u0[n])
+                    combinedVertexData.add(1f - v0[n])
 				}
 				if (maxWeights > 0) {
 					for (m in 0 until maxWeights) {
-						combinedData.add(weightIndices[m][VERTEX_indices[n]])
+                        combinedVertexData.add(weightIndices[m][VERTEX_indices[n]])
 					}
 				}
 				if (maxWeights > 0) {
 					for (m in 0 until maxWeights) {
-						combinedData.add(weightWeights[m][VERTEX_indices[n]])
+                        combinedVertexData.add(weightWeights[m][VERTEX_indices[n]])
 					}
 				}
+                combinedIndexData.add(n)
 			}
 
 			//println(combinedData.toString())
@@ -261,7 +264,10 @@ class ColladaParser {
 			geometryDefs[geom.id] = Library3D.GeometryDef(
 				Mesh3D(
 					//combinedData.toFloatArray().toFBuffer(),
-					combinedData.toFBuffer(),
+					combinedVertexData.toFBuffer(),
+                    combinedIndexData.toFBuffer(),
+                    AG.IndexType.UINT,
+                    combinedIndexData.size,
 					VertexLayout(buildList {
 						add(Shaders3D.a_pos)
 						if (hasNormals) add(Shaders3D.a_norm)
@@ -407,7 +413,7 @@ class ColladaParser {
 				var ambient: Library3D.LightKindDef? = null
 				var diffuse: Library3D.LightKindDef? = null
 				var specular: Library3D.LightKindDef? = null
-				var shiness: Float? = null
+				var shininess: Float? = null
 				var index_of_refraction: Float? = null
 				val params = FastStringMap<Any>()
 
@@ -443,7 +449,7 @@ class ColladaParser {
 										specular =
 											parseLightKindType(tech["specular"].firstOrNull(), tech.nameLC, params)
 												?: specular
-										shiness = tech["shiness"]["float"].firstText?.toFloatOrNull()?.div(100f) ?: shiness
+										shininess = tech["shininess"]["float"].firstText?.toFloatOrNull()?.div(100f) ?: shininess
 										index_of_refraction =
 											tech["index_of_refraction"]["float"].firstText?.toFloatOrNull()
 												?: index_of_refraction
@@ -467,7 +473,7 @@ class ColladaParser {
 					ambient,
 					diffuse,
 					specular,
-					shiness,
+					shininess,
 					index_of_refraction
 				)
 			}
@@ -898,9 +904,6 @@ class ColladaParser {
 	inline fun log(str: () -> String) {
 		// DO NOTHING
 	}
-
-	@Deprecated("", ReplaceWith("log { str }", "com.soywiz.korge3d.format.ColladaParser.log"))
-	inline fun log(str: String) = log { str }
 }
 
 //fun com.soywiz.korma.geom.Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns(

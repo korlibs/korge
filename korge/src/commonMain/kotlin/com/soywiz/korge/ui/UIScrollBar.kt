@@ -8,15 +8,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiScrollBar(
-    width: Number, height: Number, current: Number, pageSize: Number, totalSize: Number, buttonSize: Number, stepSize: Number,
-    direction: Direction = if (width.toDouble() > height.toDouble()) Direction.Horizontal else Direction.Vertical,
-    skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
-    block: @ViewDslMarker UIScrollBar.() -> Unit = {}
-): UIScrollBar = uiScrollBar(width.toDouble(), height.toDouble(), current.toDouble(), pageSize.toDouble(), totalSize.toDouble(), buttonSize.toDouble(),
-    stepSize.toDouble(), direction, skin, block)
-
 inline fun Container.uiScrollBar(
     width: Double,
     height: Double,
@@ -82,9 +73,9 @@ open class UIScrollBar(
         }
 
     protected val background = solidRect(100, 100, skin.backColor)
-    protected val upButton = iconButton(16, 16, skin.upSkin, skin.upIcon)
-    protected val downButton = iconButton(16, 16, skin.downSkin, skin.downIcon)
-    protected val thumb = uiButton(16, 16, skin.thumbSkin)
+    protected val upButton = iconButton(16.0, 16.0, skin.upSkin, skin.upIcon)
+    protected val downButton = iconButton(16.0, 16.0, skin.downSkin, skin.downIcon)
+    protected val thumb = uiButton(16.0, 16.0, skin.thumbSkin)
 
     protected val views get() = stage?.views
 
@@ -127,13 +118,13 @@ open class UIScrollBar(
 
     protected fun reshape() {
         if (isHorizontal) {
-            background.position(buttonWidth, 0).size(trackWidth, trackHeight)
+            background.position(buttonWidth, 0.0).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(width - buttonWidth, 0).size(buttonWidth, buttonHeight)
+            downButton.position(width - buttonWidth, 0.0).size(buttonWidth, buttonHeight)
         } else {
-            background.position(0, buttonHeight).size(trackWidth, trackHeight)
+            background.position(0.0, buttonHeight).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(0, height - buttonHeight).size(buttonWidth, buttonHeight)
+            downButton.position(0.0, height - buttonHeight).size(buttonWidth, buttonHeight)
         }
         updatePosition()
     }
@@ -141,10 +132,10 @@ open class UIScrollBar(
     protected fun updatePosition() {
         if (isHorizontal) {
             val thumbWidth = (trackWidth * (pageSize / totalSize)).clamp(4.0, trackWidth)
-            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0).size(thumbWidth, trackHeight)
+            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0.0).size(thumbWidth, trackHeight)
         } else {
             val thumbHeight = (trackHeight * (pageSize / totalSize)).clamp(4.0, trackHeight)
-            thumb.position(0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
+            thumb.position(0.0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
         }
         onChange(this)
     }

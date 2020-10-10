@@ -5,17 +5,6 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T> Container.uiComboBox(
-	width: Number,
-	height: Number,
-	selectedIndex: Int = 0,
-	items: List<T>,
-	verticalScroll: Boolean = true,
-	skin: ComboBoxSkin = defaultComboBoxSkin,
-	block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
-) = uiComboBox(width.toDouble(), height.toDouble(), selectedIndex, items, verticalScroll, skin, block)
-
 inline fun <T> Container.uiComboBox(
     width: Double = 192.0,
     height: Double = 32.0,
@@ -30,7 +19,7 @@ open class UIComboBox<T>(
 	width: Double = 192.0,
 	height: Double = 32.0,
 	selectedIndex: Int = 0,
-	items: List<T>,
+	items: List<T> = listOf(),
 	verticalScroll: Boolean = true,
     private val skin: ComboBoxSkin = DefaultComboBoxSkin
 ) : UIView(width, height) {
@@ -49,7 +38,7 @@ open class UIComboBox<T>(
 		config = { visible = false }
 	)
 	private val selectedButton = textButton(width - height, height, "", skin.selectedSkin, skin.textFont)
-	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0)
+	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0.0)
 	private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 	private var showItems = false
 
@@ -79,6 +68,14 @@ open class UIComboBox<T>(
 		}
 	}
 
+    fun open() {
+        showItems = true
+    }
+
+    fun close() {
+        showItems = false
+    }
+
 	private fun updateItemsSize() {
 		itemsView.container.forEachChildrenWithIndex { index, child ->
 			child.height = itemHeight.toDouble()
@@ -89,7 +86,7 @@ open class UIComboBox<T>(
 	private fun updateItems() {
 		itemsView.container.removeChildren()
 		for ((index, item) in items.withIndex()) {
-			itemsView.container.textButton(width - 32, itemHeight, item.toString(), skin.itemSkin, skin.textFont) {
+			itemsView.container.textButton(width - 32.0, itemHeight.toDouble(), item.toString(), skin.itemSkin, skin.textFont) {
 				position(0, index * this@UIComboBox.itemHeight)
 				onClick {
                     this@UIComboBox.showItems = false
@@ -113,7 +110,7 @@ open class UIComboBox<T>(
 	override fun onSizeChanged() {
 		super.onSizeChanged()
 		itemsView.visible = showItems
-		itemsView.size(width, viewportHeight).position(0, height)
+		itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
 		selectedButton.simulatePressing(showItems)
 		expandButton.simulatePressing(showItems)
         expandButton.skin = skin.expandSkin
@@ -121,6 +118,6 @@ open class UIComboBox<T>(
 		invisibleRect.size(width, height)
 		selectedButton.size(width - height, height)
 		selectedButton.text = selectedItem?.toString() ?: ""
-		expandButton.position(width - height, 0).size(height, height)
+		expandButton.position(width - height, 0.0).size(height, height)
 	}
 }

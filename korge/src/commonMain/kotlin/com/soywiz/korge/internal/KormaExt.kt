@@ -2,9 +2,6 @@ package com.soywiz.korge.internal
 
 import com.soywiz.korma.geom.*
 
-// @TODO: Move these to KorMA: instead of using IMatrix that requires a method lookup, we use Matrix directly that hopefully makes a much faster direct field access
-// @TODO: We might need to totally remove IMatrix to avoid method lookup since the properties have an override val
-
 internal fun Matrix.fastTransformX(px: Double, py: Double): Double = (this.a * px + this.c * py + this.tx)
 internal fun Matrix.fastTransformY(px: Double, py: Double): Double = (this.d * py + this.b * px + this.ty)
 

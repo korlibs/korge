@@ -29,7 +29,7 @@ open class Container : View(true) {
     @PublishedApi
 	internal val childrenInternal: ArrayList<View> get() {
         if (_children == null) _children = arrayListOf()
-        return _children!!
+        return _children as ArrayList<View>
     }
 
 	/**
@@ -94,7 +94,23 @@ open class Container : View(true) {
 		}
 	}
 
-	/**
+    fun sendChildToFront(view: View) {
+        if (view.parent === this) {
+            while (view != lastChild!!) {
+                swapChildren(view, children[view.index + 1])
+            }
+        }
+    }
+
+    fun sendChildToBack(view: View) {
+        if (view.parent === this) {
+            while (view != firstChild!!) {
+                swapChildren(view, children[view.index - 1])
+            }
+        }
+    }
+
+    /**
 	 * Adds the [view] [View] as a child at a specific [index].
      *
      * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
@@ -163,6 +179,7 @@ open class Container : View(true) {
 	 */
 	fun addChild(view: View) = this.plusAssign(view)
 
+    fun addChildren(views: List<View?>?) = views?.toList()?.fastForEach { it?.let { addChild(it) } }
 	/**
 	 * Alias for [addChild].
 	 */
@@ -190,7 +207,14 @@ open class Container : View(true) {
 		}
 	}
 
-	private val bb = BoundsBuilder()
+    override fun renderDebug(ctx: RenderContext) {
+        forEachChildren { child ->
+            child.renderDebug(ctx)
+        }
+        super.renderDebug(ctx)
+    }
+
+    private val bb = BoundsBuilder()
 	private val tempRect = Rectangle()
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

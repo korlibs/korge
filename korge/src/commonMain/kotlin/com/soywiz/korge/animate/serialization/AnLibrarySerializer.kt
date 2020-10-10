@@ -10,8 +10,6 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.file.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 
 suspend fun AnLibrary.writeTo(file: VfsFile, config: AnLibrarySerializer.Config = AnLibrarySerializer.Config()) {
@@ -202,7 +200,7 @@ object AnLibrarySerializer {
 					val limits = symbol.limits
 					writeU_VL(limits.totalDepths)
 					writeU_VL(limits.totalFrames)
-					writeU_VL(limits.totalTime)
+					writeU_VL(limits.totalTime.millisecondsInt)
 
 					// uids
 					writeU_VL(limits.totalUids)
@@ -222,11 +220,8 @@ object AnLibrarySerializer {
 					writeU_VL(symbolStates.size)
 					for (ss in symbolStates) {
 						//writeU_VL(strings[ss.name])
-						writeU_VL(ss.totalTime)
-						write8(
-							0
-								.insert(ss.nextStatePlay, 0)
-						)
+						writeU_VL(ss.totalTime.microseconds.toInt())
+						write8(0.insert(ss.nextStatePlay, 0))
 						writeU_VL(strings[ss.nextState])
 
 						var lastFrameTimeMs = 0
@@ -393,7 +388,7 @@ object AnLibrarySerializer {
 					for ((name, ssi) in symbol.states) {
 						val stateIndex = symbolStateToIndex[ssi.subTimeline] ?: 0
 						writeU_VL(strings[name])
-						writeU_VL(ssi.startTime)
+						writeU_VL(ssi.startTime.millisecondsInt)
 						writeU_VL(stateIndex)
 					}
 				}

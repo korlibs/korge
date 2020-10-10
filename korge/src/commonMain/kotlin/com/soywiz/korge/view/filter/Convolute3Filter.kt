@@ -2,7 +2,10 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.debug.*
+import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 /**
  * A [Filter] that will convolute near pixels (3x3) with a [kernel].
@@ -12,7 +15,8 @@ class Convolute3Filter(
     /** 3x3 matrix representing a convolution kernel */
     var kernel: Matrix3D,
     /** Distance between the origin pixel for sampling for edges */
-    dist: Double = 1.0
+    dist: Double = 1.0,
+    applyAlpha: Boolean = false
 ) : ShaderFilter() {
     companion object {
         private val u_ApplyAlpha = Uniform("apply_alpha", VarType.Float1)
@@ -74,15 +78,36 @@ class Convolute3Filter(
                 }
             }
         }
+
+        val NAMED_KERNELS = mapOf(
+            "IDENTITY" to KERNEL_IDENTITY,
+            "GAUSSIAN_BLUR" to KERNEL_GAUSSIAN_BLUR,
+            "BOX_BLUR" to KERNEL_BOX_BLUR,
+            "EDGE_DETECTION" to KERNEL_EDGE_DETECTION,
+            "SHARPEN" to KERNEL_SHARPEN,
+        )
     }
 
     /** 3x3 matrix representing a convolution kernel */
-    val weights by uniforms.storageForMatrix3D(u_Weights, kernel)
+    var weights by uniforms.storageForMatrix3D(u_Weights, kernel)
     /** Distance between the origin pixel for sampling for edges */
     var dist by uniforms.storageFor(u_Dist).doubleDelegateX(dist)
     /** Whether or not kernel must be applied to the alpha component */
-    var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(false)
+    var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
 
     override val border: Int get() = dist.toInt()
     override val fragment = FRAGMENT_SHADER
+
+    var namedKernel: String
+        get() = NAMED_KERNELS.entries.firstOrNull { it.value == weights }?.key ?: NAMED_KERNELS.keys.first()
+        set(value) = run { weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY) }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiEditableValue(listOf(weights::v00, weights::v01, weights::v02), name = "row0")
+        container.uiEditableValue(listOf(weights::v10, weights::v11, weights::v12), name = "row1")
+        container.uiEditableValue(listOf(weights::v20, weights::v21, weights::v22), name = "row2")
+        container.uiEditableValue(::dist)
+        container.uiEditableValue(::applyAlpha)
+        container.uiEditableValue(::namedKernel, values = { NAMED_KERNELS.keys.toList() })
+    }
 }

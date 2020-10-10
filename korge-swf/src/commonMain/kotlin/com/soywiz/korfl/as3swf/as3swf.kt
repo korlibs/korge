@@ -606,12 +606,13 @@ open class SWFTimelineContainer {
 			}
 			// Parse tag
 			tag.parse(data, tagHeader.contentLength, _tmpVersion, async)
-		} catch (e: Error) {
+		} catch (e: Throwable) {
 			// If we get here there was a problem parsing this particular tag.
 			// Corrupted SWF, possible SWF exploit, or obfuscated SWF.
 			// TODO: register errors and warnings
-			println("WARNING: parse error: " + e.message + ", Tag: " + tag.name + ", Index: " + tags.size)
-			throw(e)
+			println("ERROR: parse error: " + e.message + ", Tag: " + tag.name + ", Index: " + tags.size)
+            e.printStackTrace()
+			//throw(e)
 		}
 		// Register tag
 		tags.add(tag)

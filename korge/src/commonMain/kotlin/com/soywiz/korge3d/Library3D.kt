@@ -92,14 +92,14 @@ data class Library3D(
 	open class EffectDef() : Def()
 
 	data class StandardEffectDef(
-		val id: String,
-		val name: String,
-		val emission: LightKindDef?,
-		val ambient: LightKindDef?,
-		val diffuse: LightKindDef?,
-		val specular: LightKindDef?,
-		val shiness: Float?,
-		val index_of_refraction: Float?
+        val id: String,
+        val name: String,
+        val emission: LightKindDef?,
+        val ambient: LightKindDef?,
+        val diffuse: LightKindDef?,
+        val specular: LightKindDef?,
+        val shininess: Float?,
+        val index_of_refraction: Float?
 	) : EffectDef()
 
 	data class GeometryDef(
@@ -204,7 +204,7 @@ fun Library3D.MaterialDef.instantiate(): Material3D {
 		ambient = effect?.ambient?.instantiate() ?: Material3D.LightColor(Colors.BLACK),
 		diffuse = effect?.diffuse?.instantiate() ?: Material3D.LightColor(Colors.BLACK),
 		specular = effect?.specular?.instantiate() ?: Material3D.LightColor(Colors.BLACK),
-		shiness = effect?.shiness ?: 0.5f,
+        shininess = effect?.shininess ?: 0.5f,
 		indexOfRefraction = effect?.index_of_refraction ?: 1f
 	)
 }

@@ -1,20 +1,25 @@
+@file:OptIn(KorgeInternal::class)
+
 package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.korau.format.*
+import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import kotlin.collections.set
+import kotlin.coroutines.*
 
 open class AnSymbol(
 	val id: Int = -1,
@@ -27,10 +32,16 @@ open class AnSymbol(
 
 object AnSymbolEmpty : AnSymbol(-1, "")
 
-class AnSymbolSound(id: Int, name: String?, private var inputSound: NativeSound?, val dataBytes: ByteArray?) :
+class AnSymbolButton(id: Int, name: String?) : AnSymbol(id, name) {
+}
+
+class AnSymbolVideo(id: Int, name: String?) : AnSymbol(id, name) {
+}
+
+class AnSymbolSound(id: Int, name: String?, private var inputSound: Sound?, val dataBytes: ByteArray?) :
 	AnSymbol(id, name) {
-	private val nativeSoundCache = AsyncOnce<NativeSound>()
-	suspend fun getNativeSound(): NativeSound = nativeSoundCache {
+	private val nativeSoundCache = AsyncOnce<Sound>()
+	suspend fun getNativeSound(): Sound = nativeSoundCache {
 		if (inputSound == null) {
 			inputSound = try {
 				nativeSoundProvider.createSound(dataBytes ?: byteArrayOf())
@@ -242,13 +253,13 @@ data class AnEventAction(val event: String) : AnAction
 
 class AnDepthTimeline(val depth: Int) : Timed<AnSymbolTimelineFrame>()
 
-class AnSymbolLimits(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: Int)
+class AnSymbolLimits constructor(val totalDepths: Int, val totalFrames: Int, val totalUids: Int, val totalTime: TimeSpan)
 
 class AnSymbolUidDef(val characterId: Int, val extraProps: MutableMap<String, String> = LinkedHashMap())
 
 class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	//var name: String = "default"
-	var totalTime: Int = 0
+    var totalTime = 0.milliseconds
 
 	//val totalTimeSeconds: Double get() = totalTime / 1_000_000.0
 	//val totalTimeSeconds: Double get() = 100.0
@@ -260,7 +271,7 @@ class AnSymbolMovieClipSubTimeline(totalDepths: Int) {
 	var nextStatePlay: Boolean = false
 }
 
-class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieClipSubTimeline, val startTime: Int)
+class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieClipSubTimeline, val startTime: TimeSpan)
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	var ninePatch: Rectangle? = null
@@ -276,7 +287,7 @@ val Views.animateLibraryLoaders by Extra.Property {
 			when {
 				(s.readString(8) == AniFile.MAGIC) -> KorgeFileLoader("ani") { content, views ->
 					this.readAni(
-						views,
+                        AnLibrary.Context(views),
 						content = content
 					)
 				}
@@ -288,7 +299,16 @@ val Views.animateLibraryLoaders by Extra.Property {
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AnLibrary.Factory::class)
-class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+    data class Context(
+        val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        val imageFormats: ImageFormat = RegisteredImageFormats,
+    ) {
+        companion object {
+            operator fun invoke(views: Views) = Context(views.coroutineContext, views.imageFormats)
+        }
+    }
+
 	val msPerFrameDouble: Double = (1000 / fps)
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: RGBA = Colors.WHITE
@@ -329,7 +349,7 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 
 	fun AnElement.findFirstTexture(): BmpSlice? = this.symbol.findFirstTexture()
 
-	fun create(id: Int) = if (id < 0) TODO() else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
+	fun create(id: Int) = if (id < 0) TODO("id=$id") else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
 	fun createShape(id: Int) = create(id) as AnShape
 	fun createMovieClip(id: Int) = create(id) as AnMovieClip
 	fun getTexture(id: Int) = create(id).findFirstTexture()
@@ -341,6 +361,8 @@ class AnLibrary(val views: Views, val width: Int, val height: Int, val fps: Doub
 
 	fun getBitmap(id: Int) = (symbolsById[id] as AnSymbolBitmap).bmp
 	fun getBitmap(name: String) = (symbolsByName[name] as AnSymbolBitmap).bmp
+
+    val mainTimeLineInfo: AnSymbolMovieClip get() = symbolsById[0] as AnSymbolMovieClip
 
 	fun createMainTimeLine() = createMovieClip(0)
 }

@@ -26,7 +26,7 @@ private val logger = Logger("BatchBuilder2D")
  * Then the engine will call [flush] when required, automatically once the buffer is filled, at the end of the frame, or when [RenderContext.flush] is executed
  * by other renderers.
  */
-class BatchBuilder2D(
+class BatchBuilder2D constructor(
     @KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
@@ -34,6 +34,7 @@ class BatchBuilder2D(
      */
     val maxQuads: Int = 4096
 ) {
+    val texManager = ctx.agBitmapTextureManager
     constructor(ag: AG, maxQuads: Int = 512) : this(RenderContext(ag), maxQuads)
     val ag: AG = ctx.ag
 	init {
@@ -57,7 +58,8 @@ class BatchBuilder2D(
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
-	private var vertexCount = 0
+	var vertexCount = 0
+        private set
 	private var vertexPos = 0
 	private var indexPos = 0
 	private var currentTex: AG.Texture? = null
@@ -142,7 +144,7 @@ class BatchBuilder2D(
     }
 
 	// @TODO: copy data from TexturedVertexArray
-	private fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
+	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
 		vertices.setAlignedFloat32(vertexPos++, x)
 		vertices.setAlignedFloat32(vertexPos++, y)
 		vertices.setAlignedFloat32(vertexPos++, u)
@@ -152,11 +154,15 @@ class BatchBuilder2D(
 		vertexCount++
 	}
 
-	private fun addIndex(idx: Int) {
+	fun addIndex(idx: Int) {
 		indices.setAlignedInt16(indexPos++, idx.toShort())
 	}
 
-	private fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
+    fun addIndexRelative(idx: Int) {
+        indices.setAlignedInt16(indexPos++, (vertexCount + idx).toShort())
+    }
+
+	fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
 		addIndex(i0)
 		addIndex(i1)
 		addIndex(i2)
@@ -239,7 +245,7 @@ class BatchBuilder2D(
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
 	}
 
-	private fun ensure(indices: Int, vertices: Int) {
+	fun ensure(indices: Int, vertices: Int) {
 		if (!checkAvailable(indices, vertices)) flush()
 		if (!checkAvailable(indices, vertices)) error("Too much vertices")
 	}
@@ -262,6 +268,14 @@ class BatchBuilder2D(
 			currentProgram = program
 		}
 	}
+
+    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program)
+    }
+
+    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program)
+    }
 
     /**
      * Draws/buffers a 9-patch image with the texture [tex] at [x], [y] with the total size of [width] and [height].
@@ -506,9 +520,9 @@ class BatchBuilder2D(
 	fun flush() {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
-				projMat.setToOrtho(tempRect.setBounds(0, ag.backHeight, ag.backWidth, 0), -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
 			} else {
-				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
+				projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
 			}
 
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
@@ -562,17 +576,19 @@ class BatchBuilder2D(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: Matrix, temp: Matrix3D = Matrix3D(), callback: () -> Unit) {
-		flush()
-		temp.copyFrom(this.viewMat)
-		this.viewMat.copyFrom(matrix)
-		//println("viewMat: $viewMat, matrix: $matrix")
-		try {
-			callback()
-		} finally {
-			flush()
-			this.viewMat.copyFrom(temp)
-		}
+	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
+        ctx.matrix3DPool.alloc { temp ->
+            flush()
+            temp.copyFrom(this.viewMat)
+            this.viewMat.copyFrom(matrix)
+            //println("viewMat: $viewMat, matrix: $matrix")
+            try {
+                callback()
+            } finally {
+                flush()
+                this.viewMat.copyFrom(temp)
+            }
+        }
 	}
 
     /**
@@ -717,8 +733,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
      */
     @OptIn(KorgeInternal::class)
 	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
-        //fun IMatrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
-        //fun IMatrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+        //fun Matrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+        //fun Matrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
 
         val x0 = matrix.fastTransformXf(x, y)
         val x1 = matrix.fastTransformXf(x + width, y)
@@ -817,41 +833,6 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//	fun setCols(colMul: Int, colAdd: Int) { this.colMul = colMul }.also { this.colAdd = colAdd }
 	//}
 }
-
-@KorgeInternal
-@Deprecated("Not used anymore. Use TexturedVertexArray instead")
-class TexturedVertexArrayBuilder(count: Int) {
-	val indices = IntArray(count * 6)
-	val array = TexturedVertexArray(count * 4, indices)
-	var offset = 0
-
-	fun quad(x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
-		val offset4 = offset * 4
-		val i6 = offset * 6
-        array.quad(offset4, x, y, width, height, matrix, bmp, colMul, colAdd)
-		indices[i6 + 0] = offset4 + 0
-		indices[i6 + 1] = offset4 + 1
-		indices[i6 + 2] = offset4 + 2
-		indices[i6 + 3] = offset4 + 3
-		indices[i6 + 4] = offset4 + 0
-		indices[i6 + 5] = offset4 + 2
-		offset++
-	}
-
-    @Deprecated("Kotlin/Native boxes inline+Number", ReplaceWith("anchor(ax.toDouble(), ay.toDouble())"))
-	inline fun quad(x: Number, y: Number, width: Number, height: Number, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) =
-			quad(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), matrix, bmp, colMul, colAdd)
-
-    fun build() = array.apply {
-		vcount = offset * 4
-		isize = offset * 6
-	}
-}
-
-@KorgeInternal
-@Deprecated("Not used anymore")
-fun buildQuads(count: Int, build: TexturedVertexArrayBuilder.() -> Unit): TexturedVertexArray =
-	TexturedVertexArrayBuilder(count).apply(build).build()
 
 /*
 // @TODO: Move to the right place

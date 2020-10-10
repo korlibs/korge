@@ -2,24 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiScrollableArea(
-    width: Number,
-    height: Number,
-    contentWidth: Number = 512.0,
-    contentHeight: Number = 512.0,
-    buttonSize: Number = 32.0,
-    verticalScroll: Boolean = true,
-    horizontalScroll: Boolean = true,
-    horSkin: ScrollBarSkin = defaultHorScrollBarSkin,
-    verSkin: ScrollBarSkin = defaultVerScrollBarSkin,
-    config: UIScrollableArea.() -> Unit = {},
-    block: @ViewDslMarker Container.() -> Unit = {}
-): UIScrollableArea = uiScrollableArea(
-    width.toDouble(), height.toDouble(), contentWidth.toDouble(), contentHeight.toDouble(), buttonSize.toDouble(),
-    verticalScroll, horizontalScroll, horSkin, verSkin, config, block
-)
-
 inline fun Container.uiScrollableArea(
     width: Double = 256.0,
     height: Double = 256.0,
@@ -90,11 +72,11 @@ open class UIScrollableArea(
         container.size(contentWidth, contentHeight)
 
         horScrollBar.size(viewportWidth, buttonSize)
-        horScrollBar.position(0, height - buttonSize)
+        horScrollBar.position(0.0, height - buttonSize)
         horScrollBar.visible = horizontalScroll
 
         verScrollBar.size(buttonSize, viewportHeight)
-        verScrollBar.position(width - buttonSize, 0)
+        verScrollBar.position(width - buttonSize, 0.0)
         verScrollBar.visible = verticalScroll
     }
 

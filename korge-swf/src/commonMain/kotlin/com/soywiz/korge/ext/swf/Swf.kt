@@ -12,6 +12,7 @@ import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.yaml.*
+import kotlin.coroutines.*
 
 data class SWFExportConfig(
 	val debug: Boolean = false,
@@ -27,7 +28,8 @@ data class SWFExportConfig(
 	val maxTextureSide: Int = 4096,
 	val exportPaths: Boolean = false,
 	val adaptiveScaling: Boolean = true,
-	val smoothInterpolation: Boolean = true
+	val smoothInterpolation: Boolean = true,
+    val atlasPacking: Boolean = true
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config =
@@ -37,16 +39,22 @@ fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLi
 		mipmaps = this.mipmaps
 	)
 
-suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig?): AnLibrary {
-	return if (config != null) this.readSWF(views, config) else this.readSWF(views)
+suspend fun VfsFile.readSWF(context: AnLibrary.Context, config: SWFExportConfig?): AnLibrary {
+	return if (config != null) this.readSWF(context, config) else this.readSWF(context)
 }
 
 var AnLibrary.swfExportConfig by Extra.Property { SWFExportConfig() }
 
 suspend fun VfsFile.readSWF(
-	views: Views,
-	content: ByteArray? = null,
-	defaultConfig: SWFExportConfig = SWFExportConfig()
+    views: Views,
+    defaultConfig: SWFExportConfig = SWFExportConfig(),
+    atlasPacking: Boolean? = null
+): AnLibrary = readSWF(AnLibrary.Context(views), defaultConfig.copy(atlasPacking = atlasPacking ?: defaultConfig.atlasPacking))
+
+suspend fun VfsFile.readSWF(
+    context: AnLibrary.Context,
+    content: ByteArray? = null,
+    defaultConfig: SWFExportConfig = SWFExportConfig()
 ): AnLibrary {
 	val configFile = this.appendExtension("config")
 	val config = try {
@@ -59,13 +67,13 @@ suspend fun VfsFile.readSWF(
 		e.printStackTrace()
 		SWFExportConfig()
 	}
-	val lib = readSWF(views, config, content)
+	val lib = readSWF(context.copy(coroutineContext = coroutineContext), config, content)
 	lib.swfExportConfig = config
 	return lib
 }
 
-suspend fun VfsFile.readSWF(views: Views, config: SWFExportConfig, content: ByteArray? = null): AnLibrary =
-	SwfLoaderMethod(views, config).load(content ?: this.readAll())
+suspend fun VfsFile.readSWF(context: AnLibrary.Context, config: SWFExportConfig, content: ByteArray? = null): AnLibrary =
+	SwfLoaderMethod(context, config).load(content ?: this.readAll())
 
 inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagPlaceObject.clipDepth0: Int get() = this.clipDepth - 1

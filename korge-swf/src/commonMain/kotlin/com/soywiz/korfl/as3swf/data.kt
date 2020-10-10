@@ -1,10 +1,7 @@
 package com.soywiz.korfl.as3swf
 
-import com.soywiz.korfl.as3swf.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.set
 import kotlin.math.*
@@ -34,7 +31,7 @@ class SWFActionValue {
 		when (type) {
 			ActionValueType.STRING -> string = data.readString()
 			ActionValueType.FLOAT -> number = data.readFLOAT()
-			ActionValueType.NULL -> Unit
+			ActionValueType.NIL -> Unit
 			ActionValueType.UNDEFINED -> Unit
 			ActionValueType.REGISTER -> register = data.readUI8()
 			ActionValueType.BOOLEAN -> boolean = (data.readUI8() != 0)
@@ -62,7 +59,7 @@ class SWFActionValue {
 		return when (type) {
 			ActionValueType.STRING -> "$string (string)"
 			ActionValueType.FLOAT -> "$number (float)"
-			ActionValueType.NULL -> "null"
+			ActionValueType.NIL -> "null"
 			ActionValueType.UNDEFINED -> "undefined"
 			ActionValueType.REGISTER -> "$register (register)"
 			ActionValueType.BOOLEAN -> "$boolean (boolean)"
@@ -85,7 +82,7 @@ class SWFActionValue {
 					str
 				}
 			}
-			ActionValueType.NULL -> "null"
+			ActionValueType.NIL -> "null"
 			ActionValueType.UNDEFINED -> "undefined"
 			ActionValueType.REGISTER -> "$" + register
 			ActionValueType.BOOLEAN -> boolean.toString()

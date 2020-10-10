@@ -14,7 +14,6 @@ open class KorgePluginExtension(
 	open fun getAndroidInit(): String? = null
 	open fun getAndroidManifestApplication(): String? = null
 	open fun getAndroidDependencies(): List<String> = listOf()
-	open fun getCordovaPlugins(): List<CordovaPlugin> = listOf()
 
 	data class CordovaPlugin(val name: String, val args: Map<String, String>)
 }

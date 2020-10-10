@@ -2,11 +2,11 @@ package com.soywiz.korge.ext.swf
 
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -84,36 +84,38 @@ class SymbolAnalyzeInfo(val characterId: Int) {
 	}
 }
 
-class SWFShapeRasterizerRequest(
-	val swf: SWF,
-	val charId: Int,
-	val shapeBounds: Rectangle,
-	val export: (ShapeExporter) -> Unit,
-	val config: SWFExportConfig
-) {
-	val path = GraphicsPath()
-	fun getRasterizer(maxScale: Double): SWFShapeRasterizer {
-		val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
-		//val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
-		//println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
-		return SWFShapeRasterizer(
-			swf,
-			config.debug,
-			shapeBounds,
-			export,
-			rasterizerMethod = config.rasterizerMethod,
-			antialiasing = config.antialiasing,
-			//requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
-			requestScale = config.exportScale * adaptiveScaling,
-			minSide = config.minShapeSide,
-			maxSide = config.maxShapeSide,
-			path = path,
-            charId = charId
-		)
-	}
+fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: GraphicsPath = GraphicsPath()): SWFShapeExporter {
+    val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
+    //val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
+    //println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
+    return SWFShapeExporter(
+        swf,
+        config.debug,
+        this.shapeBounds.rect,
+        { this.export(it) },
+        rasterizerMethod = config.rasterizerMethod,
+        antialiasing = config.antialiasing,
+        //requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
+        requestScale = config.exportScale * adaptiveScaling,
+        minSide = config.minShapeSide,
+        maxSide = config.maxShapeSide,
+        path = path,
+        charId = this.characterId
+    )
 }
 
-class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
+class SWFShapeRasterizerRequest constructor(
+	val swf: SWF,
+    val tag: TagDefineShape,
+	val config: SWFExportConfig
+) {
+    val charId: Int get () = tag.characterId
+    val shapeBounds: Rectangle get() = tag.shapeBounds.rect
+	val path = GraphicsPath()
+	fun getShapeExporter(maxScale: Double): SWFShapeExporter = tag.getShapeExporter(swf, config, maxScale, path)
+}
+
+class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfig) {
 	lateinit var swf: SWF
 	lateinit var lib: AnLibrary
 	val classNameToTypes = hashMapOf<String, ABC.TypeInfo>()
@@ -131,10 +133,14 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	suspend fun load(data: ByteArray): AnLibrary {
 		swf = SWF().loadBytes(data)
 		val bounds = swf.frameSize.rect
-		lib = AnLibrary(views, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
-		parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
-		for (symbol in symbols) lib.addSymbol(symbol)
-		processAs3Actions()
+		lib = AnLibrary(context, bounds.width.toInt(), bounds.height.toInt(), swf.frameRate)
+        parseMovieClip(swf.tags, AnSymbolMovieClip(0, "MainTimeLine", findLimits(swf.tags)))
+        for (symbol in symbols) lib.addSymbol(symbol)
+        try {
+            processAs3Actions()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
 		generateActualTimelines()
 		lib.processSymbolNames()
 		generateTextures()
@@ -149,7 +155,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 		}
 	}
 
-	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt() * 1000
+	fun getFrameTime(index0: Int) = (index0 * lib.msPerFrameDouble).toInt().milliseconds
 
 	suspend private fun generateActualTimelines() {
 		for (symbol in lib.symbolsById.filterIsInstance<AnSymbolMovieClip>()) {
@@ -242,7 +248,10 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 					for (action in frame.actions) {
 						when (action) {
 							is MySwfFrame.Action.Goto -> {
-								info.subtimeline.nextState = frameInfos[action.frame0].stateName
+                                if (action.frame0 >= frameInfos.size) {
+                                    println("ERROR: action.frame0 >= frameInfos.size :: ${action.frame0} >= ${frameInfos.size}")
+                                }
+								info.subtimeline.nextState = frameInfos.getOrNull(action.frame0)?.stateName
 							}
 							is MySwfFrame.Action.Stop -> {
 								info.subtimeline.nextStatePlay = false
@@ -284,8 +293,8 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 
 					//println("currentSubTimeline.totalTime = info.subtimeline.totalTime <- ${info.subtimeline.totalTime}")
 					if (frame.isFirst) {
-						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0)
-						symbol.states["frame0"] = AnSymbolMovieClipState("frame0", currentSubTimeline, 0)
+						symbol.states["default"] = AnSymbolMovieClipState("default", currentSubTimeline, 0.milliseconds)
+						symbol.states["frame0"] = AnSymbolMovieClipState("frame0", currentSubTimeline, 0.milliseconds)
 					}
 				}
 				// States
@@ -349,7 +358,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 		}
 	}
 
-	suspend private fun processAs3Actions() {
+	private fun processAs3Actions() {
 		for ((className, tagId) in classNameToTagId) {
 			lib.symbolsById[tagId].name = className
 			val type = classNameToTypes[className] ?: continue
@@ -413,12 +422,12 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 	}
 
 
-	suspend private fun generateTextures() {
+	private suspend fun generateTextures() {
 		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
 
 		for ((shape, rasterizerRequest) in shapesToPopulate) {
 			val info = analyzerInfo(rasterizerRequest.charId)
-			val rasterizer = rasterizerRequest.getRasterizer(info.globalScaleBounds.max)
+			val rasterizer = rasterizerRequest.getShapeExporter(info.globalScaleBounds.max)
 			itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
 		}
 
@@ -437,7 +446,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				val bounds = bb.bb.getBounds()
 				//bb.bb.add()
-				val rasterizer = SWFShapeRasterizer(
+				val rasterizer = SWFShapeExporter(
 					swf, config.debug, bounds,
 					{
 						try {
@@ -454,13 +463,14 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
                     charId = morph.id
 				)
 				itemsInAtlas.put(
-					{ texture -> morph.texturesWithBitmap.add((ratio * 1000).toInt(), texture) },
+					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },
 					rasterizer.imageWithScale
 				)
 			}
 		}
 
-		for ((processor, texture) in itemsInAtlas.toAtlas(views, config.maxTextureSide, config.mipmaps)) processor(texture)
+		for ((processor, texture) in itemsInAtlas.toAtlas(context, config.maxTextureSide, config.mipmaps, config.atlasPacking)) processor(texture)
+        //for ((processor, texture) in itemsInAtlas) processor(texture)
 	}
 
 	fun findLimits(tags: Iterable<ITag>): AnSymbolLimits {
@@ -486,9 +496,10 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 			}
 		}
-		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt())
+		return AnSymbolLimits(maxDepth + 1, totalFrames, items.size, (totalFrames * lib.msPerFrameDouble).toInt().milliseconds)
 	}
 
+    var pathsArePostScript = false
 	val symbols = arrayListOf<AnSymbol>()
 
 	fun registerBitmap(charId: Int, bmp: Bitmap, name: String? = null) {
@@ -502,7 +513,15 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 
 	var spritesById = hashMapOf<Int, AnSymbolMovieClip>()
 
-	suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
+    suspend fun parseMovieClip(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
+        try {
+            parseMovieClipInternal(tags, mc)
+        } catch (e: Throwable) {
+
+        }
+    }
+
+	private suspend fun parseMovieClipInternal(tags: Iterable<ITag>, mc: AnSymbolMovieClip) {
 		symbols += mc
 
 		val swfTimeline = mc.swfTimeline
@@ -629,6 +648,20 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				is TagJPEGTables -> {
 					println("Unhandled tag: $it")
 				}
+                /*
+                is TagPathsArePostScript -> {
+                    pathsArePostScript = true
+                }
+                is TagDefineButton -> {
+                    symbols += AnSymbolButton(it.characterId, it.name)
+                }
+                is TagDefineButton2 -> {
+                    symbols += AnSymbolVideo(it.characterId, it.name)
+                }
+                is TagDefineVideoStream -> {
+                    symbols += AnSymbolVideo(it.characterId, it.name)
+                }
+                */
 				is TagDefineBits, is TagDefineBitsLossless -> {
 					var fbmp: Bitmap = Bitmap32(1, 1)
 					it as IDefinitionTag
@@ -637,7 +670,7 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 						is TagDefineBitsJPEG2 -> {
 							val bitsData = it.bitmapData.cloneToNewByteArray()
 							val nativeBitmap = try {
-								bitsData.openAsync().readBitmap(views.imageFormats)
+								bitsData.openAsync().readBitmap(context.imageFormats)
 							} catch (e: Throwable) {
 								e.printStackTrace()
 								Bitmap32(1, 1)
@@ -672,14 +705,17 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 								BitmapFormat.BIT_8 -> {
 									val ncolors = it.bitmapColorTableSize
 									val s = FastByteArrayInputStream(uncompressedData)
+                                    //println("FastByteArrayInputStream(uncompressedData): size=${uncompressedData.size}, alpha=${it.hasAlpha}, width=${it.actualWidth}, height=${it.actualHeight}, ncolors=$ncolors")
 									val clut = if (it.hasAlpha) {
 										(0 until ncolors).map { s.readS32LE() }.toIntArray()
 									} else {
 										(0 until ncolors).map { 0x00FFFFFF.inv() or s.readU24LE() }.toIntArray()
 									}
-									val pixels = s.readBytes(it.actualWidth * it.actualHeight)
+                                    val nbytes = it.actualWidth * it.actualHeight
+                                    val rpixels = ByteArray(nbytes)
+                                    s.read(rpixels, 0, nbytes)
 
-									val bmp = Bitmap8(it.actualWidth, it.actualHeight, pixels, RgbaArray(clut))
+									val bmp = Bitmap8(it.actualWidth, it.actualHeight, rpixels, RgbaArray(clut))
 									fbmp = bmp
 								}
 								BitmapFormat.BIT_15 -> {
@@ -708,16 +744,9 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				is TagDefineShape -> {
 					val tag = it
-					val rasterizerRequest = SWFShapeRasterizerRequest(
-						swf,
-						tag.characterId,
-						tag.shapeBounds.rect,
-						{ tag.export(it) },
-						config
-					)
+					val rasterizerRequest = SWFShapeRasterizerRequest(swf, tag, config)
 					//val rasterizer = LoggerShapeExporter(SWFShapeRasterizer(swf, debug, it))
-					val symbol =
-						AnSymbolShape(it.characterId, null, rasterizerRequest.shapeBounds, null, rasterizerRequest.path)
+					val symbol = AnSymbolShape(it.characterId, null, rasterizerRequest.shapeBounds, null, rasterizerRequest.path)
 					symbol.tagDefineShape = it
 					symbols += symbol
 					shapesToPopulate += symbol to rasterizerRequest
@@ -844,6 +873,10 @@ class SwfLoaderMethod(val views: Views, val config: SWFExportConfig) {
 				}
 				is TagEnd -> {
 				}
+                is IDefinitionTag -> {
+                    println("Unhandled tag $it - Can't continue without handling th define tag $it")
+                    //error("Can't continue without handling th define tag $it")
+                }
 				else -> {
 					println("Unhandled tag $it")
 				}

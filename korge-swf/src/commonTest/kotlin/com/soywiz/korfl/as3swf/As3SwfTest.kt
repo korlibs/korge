@@ -6,8 +6,7 @@ import kotlin.test.*
 
 class As3SwfTest {
 	@Test
-	@Ignore
-	fun name() = suspendTest {
+	fun name() = suspendTestNoJs {
 		val swf2 = SWF().loadBytes(resourcesVfs["empty.swf"].readAll())
 		println(swf2.frameSize.rect)
 		for (tag in swf2.tags) {
@@ -19,8 +18,7 @@ class As3SwfTest {
 	}
 
 	@Test
-	@Ignore
-	fun name2() = suspendTest {
+	fun name2() = suspendTestNoJs {
 		val swf2 = SWF().loadBytes(resourcesVfs["simple.swf"].readAll())
 		println(swf2.frameSize.rect)
 		for (tag in swf2.tags) {
@@ -33,8 +31,7 @@ class As3SwfTest {
 
 
 	@Test
-	@Ignore
-	fun name3() = suspendTest {
+	fun name3() = suspendTestNoJs {
 		val swf2 = SWF().loadBytes(resourcesVfs["test1.swf"].readAll())
 		println(swf2.frameSize.rect)
 		for (tag in swf2.tags) {

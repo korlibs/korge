@@ -1,23 +1,16 @@
 package com.soywiz.korge.atlas
 
-import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.korge.resources.ResourceProcessor
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.encode
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.stringifyTyped
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.binpack.BinPacker
-import kotlinx.coroutines.channels.toList
 
 open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	companion object : AtlasResourceProcessor()
@@ -37,26 +30,31 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 		//println("inputFile=$inputFile")
 		//println("outputFile=$outputFile")
 		//println("atlasPath=$atlasPath, atlasFolder=$atlasFolder")
-		val files = atlasFolder.listRecursive { it.extensionLC == "png" || it.extensionLC == "jpg" }.toList()
+		val files = atlasFolder.listRecursiveSimple { it.extensionLC == "png" || it.extensionLC == "jpg" }
 		//println("atlasFiles=$files")
 
-		val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
+        if (files.isNotEmpty()) {
 
-		val outputImageFile = outputFile.withCompoundExtension("atlas.png")
+            val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
 
-        val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
-        val atlas = atlases.atlases.first()
+            val outputImageFile = outputFile.withCompoundExtension("atlas.png")
 
-		outputImageFile.write(
-			PNG.encode(atlas.tex, ImageEncodingProps(filename = "file.png", quality = 1.0))
-		)
+            //println("outputImageFile=$outputImageFile")
 
-		//println(Json.stringify(atlasInfo, pretty = true))
+            val atlases = AtlasPacker.pack(bitmaps, fileName = outputImageFile.baseName)
+            val atlas = atlases.atlases.first()
 
-		outputFile.withCompoundExtension("atlas.json")
-			.writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
+            outputImageFile.write(
+                PNG.encode(atlas.tex, ImageEncodingProps(filename = "file.png", quality = 1.0))
+            )
 
-		//Atlas.Factory()
-		//println(files)
+            //println(Json.stringify(atlasInfo, pretty = true))
+
+            outputFile.withCompoundExtension("atlas.json")
+                .writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
+
+            //Atlas.Factory()
+            //println(files)
+        }
 	}
 }

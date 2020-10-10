@@ -1,5 +1,6 @@
 package com.soywiz.korge.ext.swf
 
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.AniFile
 import com.soywiz.korge.animate.serialization.writeTo
 import com.soywiz.korge.resources.ResourceProcessor
@@ -15,7 +16,7 @@ open class SwfResourceProcessor : ResourceProcessor("swf") {
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
 		val viewsLog = ViewsLog(coroutineContext)
-		val lib = inputFile.readSWF(viewsLog.views)
+		val lib = inputFile.readSWF(AnLibrary.Context(viewsLog.views))
 		val config = lib.swfExportConfig
 		lib.writeTo(outputFile, config.toAnLibrarySerializerConfig(compression = 1.0))
 	}

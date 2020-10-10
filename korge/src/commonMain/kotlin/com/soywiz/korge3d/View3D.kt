@@ -1,11 +1,19 @@
 package com.soywiz.korge3d
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.korge.baseview.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
-abstract class View3D {
-	var active = true
+abstract class View3D : BaseView() {
+
+    //TODO: I don't think that a Camera, Container, Light, ViewWithMesh, Text3D should all have this as supertype
+    // they are not all 'types' of View ?
+
+    var active = true
 	var id: String? = null
 	var name: String? = null
 	val transform = Transform3D()
@@ -92,6 +100,7 @@ abstract class View3D {
 	val modelMat = Matrix3D()
 	//val position = Vector3D()
 
+
 	abstract fun render(ctx: RenderContext3D)
 }
 
@@ -162,10 +171,6 @@ fun <T : View3D> T.position(x: Float, y: Float, z: Float, w: Float = 1f): T {
     transform.setTranslation(x, y, z, w)
     return this
 }
-
-@Korge3DExperimental
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun <T : View3D> T.position(x: Number, y: Number, z: Number, w: Number = 1f): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 @Korge3DExperimental
 fun <T : View3D> T.position(x: Double, y: Double, z: Double, w: Double = 1.0): T = position(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 @Korge3DExperimental
@@ -183,9 +188,6 @@ fun <T : View3D> T.scale(x: Float = 1f, y: Float = 1f, z: Float = 1f, w: Float =
     return this
 }
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-@Korge3DExperimental
-inline fun <T : View3D> T.scale(x: Number = 1, y: Number = 1, z: Number = 1, w: Number = 1): T = scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 @Korge3DExperimental
 inline fun <T : View3D> T.scale(x: Double = 1.0, y: Double = 1.0, z: Double = 1.0, w: Double = 1.0): T = scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 @Korge3DExperimental
@@ -197,9 +199,6 @@ fun <T : View3D> T.lookAt(x: Float, y: Float, z: Float): T {
     return this
 }
 
-@Deprecated("Kotlin/Native boxes inline+Number")
-@Korge3DExperimental
-inline fun <T : View3D> T.lookAt(x: Number, y: Number, z: Number): T = lookAt(x.toFloat(), y.toFloat(), z.toFloat())
 @Korge3DExperimental
 inline fun <T : View3D> T.lookAt(x: Double, y: Double, z: Double): T = lookAt(x.toFloat(), y.toFloat(), z.toFloat())
 @Korge3DExperimental
@@ -211,11 +210,6 @@ fun <T : View3D> T.positionLookingAt(px: Float, py: Float, pz: Float, tx: Float,
     transform.setTranslationAndLookAt(px, py, pz, tx, ty, tz)
     return this
 }
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-@Korge3DExperimental
-inline fun <T : View3D> T.positionLookingAt(px: Number, py: Number, pz: Number, tx: Number, ty: Number, tz: Number): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
-
 @Korge3DExperimental
 fun <T : View3D> T.positionLookingAt(px: Double, py: Double, pz: Double, tx: Double, ty: Double, tz: Double): T = positionLookingAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat())
 @Korge3DExperimental

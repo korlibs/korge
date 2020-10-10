@@ -2,8 +2,12 @@ package com.soywiz.korge.animate
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korge.debug.*
+import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -13,6 +17,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
@@ -28,15 +33,23 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	View(), AnElement {
 	var ninePatch: Rectangle? = null
 
-	abstract val dx: Float
-	abstract val dy: Float
+	abstract var dx: Float
+	abstract var dy: Float
 	abstract val tex: BmpSlice
 	abstract val texScale: Double
 	abstract val texWidth: Float
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
 
-	val posCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
+    var dxDouble: Double
+        get() = dx.toDouble()
+        set(value) = run { dx = value.toFloat() }
+
+    var dyDouble: Double
+        get() = dy.toDouble()
+        set(value) = run { dy = value.toFloat() }
+
+    val posCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 	val texCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 
 	override fun renderInternal(ctx: RenderContext) {
@@ -117,11 +130,23 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	override fun toString(): String = super.toString() + ":symbol=" + symbol
 
 	override fun createInstance(): View = symbol.create(library) as View
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsableSection("AnBaseShape") {
+            uiEditableValue(Pair(view::dxDouble, view::dyDouble), name = "dxy", clamp = false)
+            button("Center") {
+                view.dx = (-view.width / 2).toFloat()
+                view.dy = (-view.height / 2).toFloat()
+            }
+        }
+        super.buildDebugComponent(views, container)
+    }
 }
 
 class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnBaseShape(library, shapeSymbol), AnElement {
-	override val dx = shapeSymbol.bounds.x.toFloat()
-	override val dy = shapeSymbol.bounds.y.toFloat()
+	override var dx = shapeSymbol.bounds.x.toFloat()
+	override var dy = shapeSymbol.bounds.y.toFloat()
 	override val tex = shapeSymbol.textureWithBitmap?.texture ?: Bitmaps.transparent
 	override val texScale = shapeSymbol.textureWithBitmap?.scale ?: 1.0
 	override val texWidth = (tex.width / texScale).toFloat()
@@ -143,7 +168,7 @@ class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : An
 	override var smoothing = true
 
 	private fun updatedRatio() {
-		val result = morphSymbol.texturesWithBitmap.find((ratio * 1000).toInt(), timedResult)
+		val result = morphSymbol.texturesWithBitmap.find(ratio.seconds, timedResult)
 		texWBS = result.left ?: result.right
 
 		dx = texWBS?.bounds?.x?.toFloat() ?: 0f
@@ -184,7 +209,7 @@ class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbol
 }
 
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(),
-	AnElement, IText, IHtml {
+	AnElement, IText, IHtml, ViewLeaf {
 	private val textField = Text("", 16.0).apply {
 		textBounds.copyFrom(this@AnTextField.symbol.bounds)
 		html = this@AnTextField.symbol.initialHtml
@@ -200,27 +225,31 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 	override var html: String by textField::html.redirected()
 
 	override fun createInstance(): View = symbol.create(library) as View
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("AnTextField") {
+            uiEditableValue(::text)
+        }
+        super.buildDebugComponent(views, container)
+    }
 }
 
 //class PopMaskView(views: Views) : View(views)
 
-var RenderContext.stencilIndex by Extra.Property { 0 }
-
-
 class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 	//var firstUpdateSingleFrame = false
-	val library: AnLibrary = view.library
-	val views = library.views
-	var currentTime = 0
+	val library: AnLibrary get() = view.library
+	val context get() = library.context
+	var currentTime = 0.milliseconds
 	var currentStateName: String? = null
 	var currentSubtimeline: AnSymbolMovieClipSubTimeline? = null
-	val currentStateTotalTime: Int get() = currentSubtimeline?.totalTime ?: 0
+	val currentStateTotalTime: TimeSpan get() = if (currentSubtimeline != null) currentSubtimeline!!.totalTime else 0.milliseconds
 	val onStop = Signal<Unit>()
 	val onChangeState = Signal<String>()
 	val onEvent = Signal<String>()
 
 	var running = true
-		private set(value) {
+		internal set(value) {
 			field = value
 			if (!value) {
 				onStop(Unit)
@@ -231,12 +260,12 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 		gotoAndPlay("default")
 	}
 
-	fun getStateTime(name: String): Int {
-		val substate = symbol.states[name] ?: return 0
+	fun getStateTime(name: String): TimeSpan {
+		val substate = symbol.states[name] ?: return 0.milliseconds
 		return substate.subTimeline.totalTime - substate.startTime
 	}
 
-	fun gotoAndRunning(running: Boolean, name: String, time: Int = 0) {
+	fun gotoAndRunning(running: Boolean, name: String, time: TimeSpan = 0.milliseconds) {
 		val substate = symbol.states[name]
 		if (substate != null) {
 			this.currentStateName = substate.name
@@ -244,16 +273,25 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 			this.currentTime = substate.startTime + time
 			this.running = running
 			//this.firstUpdateSingleFrame = true
-			update(0)
+			update(0.milliseconds)
 			onChangeState(name)
-		}
+		} else {
+            println("Can't find state with name '$name' : ${symbol.states.keys}")
+        }
+        //println("gotoAndRunning: running=$running, name=$name, time=$time")
 		//println("currentStateName: $currentStateName, running=$running, currentTime=$currentTime, time=$time, totalTime=$currentStateTotalTime")
 	}
 
-	fun gotoAndPlay(name: String, time: Int = 0) = gotoAndRunning(true, name, time)
-	fun gotoAndStop(name: String, time: Int = 0) = gotoAndRunning(false, name, time)
+	fun gotoAndPlay(name: String, time: TimeSpan = 0.milliseconds) = gotoAndRunning(true, name, time)
+	fun gotoAndStop(name: String, time: TimeSpan = 0.milliseconds) = gotoAndRunning(false, name, time)
 
-	fun update(time: Int) {
+    var ratio: Double
+        get() = currentTime / currentStateTotalTime
+        set(value) {
+            currentTime = (currentStateTotalTime * value.clamp01())
+        }
+
+	fun update(time: TimeSpan) {
 		//println("Update[1]: $currentTime")
 		//println("$currentStateName: $currentTime: running=$running")
 		if (!running) return
@@ -273,7 +311,7 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 				running = false
 			} else {
 				//gotoAndRunning(cs.nextStatePlay, nextState, accumulatedTime)
-				gotoAndRunning(cs.nextStatePlay, nextState, 0)
+				gotoAndRunning(cs.nextStatePlay, nextState, 0.milliseconds)
 				currentTime += accumulatedTime
 				eval(currentTime - accumulatedTime, currentTime)
 			}
@@ -283,23 +321,18 @@ class TimelineRunner(val view: AnMovieClip, val symbol: AnSymbolMovieClip) {
 
 	private val tempRangeResult = Timed.RangeResult()
 
-	private fun eval(prev: Int, current: Int) {
+	private fun eval(prev: TimeSpan, current: TimeSpan) {
 		if (prev >= current) return
 		val actionsTimeline = this.currentSubtimeline?.actions ?: return
-		val result = actionsTimeline.getRangeIndices(prev, current - 1, out = tempRangeResult)
+		val result = actionsTimeline.getRangeIndices(prev, current - 1.microseconds, out = tempRangeResult)
 
 		execution@ for (n in result.startIndex..result.endIndex) {
 			val action = actionsTimeline.objects[n]
 			//println(" Action: $action")
 			when (action) {
 				is AnPlaySoundAction -> {
-
-
-					library.views.asyncImmediately {
-						val data = (library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()
-						if (data != null) {
-							data.play()
-						}
+                    launchImmediately(library.context.coroutineContext) {
+						(library.symbolsById[action.soundId] as AnSymbolSound?)?.getNativeSound()?.play()
 					}
 					//println("play sound!")
 				}
@@ -317,7 +350,7 @@ interface AnPlayable {
 }
 
 class AnSimpleAnimation(
-	val frameTime: Int,
+	val frameTime: TimeSpan,
 	val animations: Map<String, List<BmpSlice?>>,
 	val anchor: Anchor = Anchor.TOP_LEFT
 ) : Container(), AnPlayable {
@@ -327,7 +360,7 @@ class AnSimpleAnimation(
 	val defaultAnimation = animations.values.firstOrNull() ?: listOf()
 	var animation = defaultAnimation
 	val numberOfFrames get() = animation.size
-	private var elapsedTime = 0
+	private var elapsedTime = 0.milliseconds
 
 	init {
 		image.anchorX = anchor.sx
@@ -341,14 +374,14 @@ class AnSimpleAnimation(
 	}
 
 	init {
-		addUpdatable { dtMs ->
-			elapsedTime = (elapsedTime + dtMs) % (numberOfFrames * frameTime)
+		addUpdater {
+			elapsedTime = (elapsedTime + it) % (frameTime * numberOfFrames)
 			myupdate()
 		}
 	}
 
 	private fun myupdate() {
-		val frameNum = elapsedTime / frameTime
+		val frameNum = (elapsedTime / frameTime).toInt()
 		val bmpSlice = animation.getOrNull(frameNum % numberOfFrames) ?: Bitmaps.transparent
 		image.bitmap = bmpSlice
 	}
@@ -370,9 +403,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	val maskPopDepths = BooleanArray(totalDepths + 10) { false }
 	val viewUids = Array(totalUids) {
 		val info = symbol.uidInfo[it]
-		val view = library.create(info.characterId) as View
-		view.addProps(info.extraProps)
-		view
+        if (info.characterId == symbol.id) error("Recursive detection")
+		(library.create(info.characterId) as View).also { it.addProps(info.extraProps) }
 	}
 	var firstUpdate = true
 	var smoothing = library.defaultSmoothing
@@ -389,7 +421,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		dummyDepths.fastForEach { d ->
 			this += d
 		}
-		addUpdatable { updateInternal(it) }
+        addUpdater { updateInternal(it) }
 	}
 
 	private fun replaceDepth(depth: Int, view: View): Boolean {
@@ -408,60 +440,8 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		}
 	}
 
-	companion object {
-		class RenderState(val stencil: AG.StencilState, val colorMask: AG.ColorMaskState) {
-			fun set(ctx: RenderContext, referenceValue: Int) {
-				ctx.flush()
-				if (ctx.masksEnabled) {
-					stencil.referenceValue = referenceValue
-					ctx.batch.stencil = stencil
-					ctx.batch.colorMask = colorMask
-				} else {
-					stencil.referenceValue = 0
-					ctx.batch.stencil = STATE_NONE.stencil
-					ctx.batch.colorMask = STATE_NONE.colorMask
-				}
-			}
-		}
-
-		// @TODO: Move this to a class handling masks
-		val STATE_NONE = RenderState(
-			AG.StencilState(enabled = false),
-			AG.ColorMaskState(true, true, true, true)
-		)
-		val STATE_SHAPE = RenderState(
-			AG.StencilState(
-				enabled = true,
-				compareMode = AG.CompareMode.ALWAYS,
-				actionOnBothPass = AG.StencilOp.SET,
-				actionOnDepthFail = AG.StencilOp.SET,
-				actionOnDepthPassStencilFail = AG.StencilOp.SET,
-				referenceValue = 0,
-				readMask = 0x00,
-				writeMask = 0xFF
-			),
-			AG.ColorMaskState(false, false, false, false)
-		)
-		val STATE_CONTENT = RenderState(
-			AG.StencilState(
-				enabled = true,
-				compareMode = AG.CompareMode.EQUAL,
-				actionOnBothPass = AG.StencilOp.KEEP,
-				actionOnDepthFail = AG.StencilOp.KEEP,
-				actionOnDepthPassStencilFail = AG.StencilOp.KEEP,
-				referenceValue = 0,
-				readMask = 0xFF,
-				writeMask = 0x00
-			),
-			AG.ColorMaskState(true, true, true, true)
-		)
-
-		//val STATE_NONE = RenderState(AG.StencilState(enabled = false), AG.ColorMaskState(true, true, true, true))
-		//val STATE_SHAPE = STATE_NONE
-		//val STATE_CONTENT = STATE_NONE
-	}
-
 	private val tempMatrix = Matrix()
+    private val tempLocalRenderState = MaskStates.LocalRenderState()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
 
@@ -482,7 +462,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 					maskPopDepths[maskDepth] = true
 					ctx.stencilIndex++
 					usedStencil = true
-					STATE_SHAPE.set(ctx, ctx.stencilIndex)
+                    MaskStates.STATE_SHAPE.set(ctx, ctx.stencilIndex, tempLocalRenderState)
 					state = 1
 					//println(" shape")
 				}
@@ -505,14 +485,14 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			// Mask content
 			if (maskDepth >= 0) {
 				//println(" content")
-				STATE_CONTENT.set(ctx, ctx.stencilIndex)
+                MaskStates.STATE_CONTENT.set(ctx, ctx.stencilIndex, tempLocalRenderState)
 				state = 2
 			}
 
 			// Pop Mask
 			if (maskPopDepths.getOrElse(depth) { false }) {
 				//println(" none")
-				STATE_NONE.set(ctx, referenceValue = 0)
+                MaskStates.STATE_NONE.set(ctx, referenceValue = 0, tempLocalRenderState)
 				ctx.stencilIndex--
 				state = 0
 			}
@@ -582,7 +562,60 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		update()
 	}
 
-	suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
+    fun playAndStop(name: String) {
+        timelineRunner.gotoAndStop(name)
+        update()
+    }
+
+    fun play() {
+        //println("stop")
+        timelineRunner.running = true
+        update()
+    }
+
+    fun stop() {
+        //println("stop")
+        timelineRunner.running = false
+        update()
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("SWF") {
+            addChild(UiRowEditableValue(app, "symbol", UiListEditableValue(app, { library.symbolsByName.keys.toList() }, ObservableProperty(
+                name = "symbol",
+                internalSet = { symbolName ->
+                    val views = stage?.views
+                    val newView = library.create(symbolName) as View
+                    this@AnMovieClip.replaceWith(newView)
+                    views?.debugHightlightView(newView)
+                },
+                internalGet = { symbol.name ?: "#${symbol.id}" },
+            ))))
+            addChild(UiRowEditableValue(app, "gotoAndPlay", UiListEditableValue(app, { stateNames }, ObservableProperty(
+                name = "gotoAndPlay",
+                internalSet = { frameName -> this@AnMovieClip.play(frameName) },
+                internalGet = { timelineRunner.currentStateName ?: "__start" },
+            ))))
+            addChild(UiRowEditableValue(app, "gotoAndStop", UiListEditableValue(app, { stateNames }, ObservableProperty(
+                name = "gotoAndStop",
+                internalSet = { frameName -> this@AnMovieClip.playAndStop(frameName) },
+                internalGet = { timelineRunner.currentStateName ?: "__start" },
+            ))))
+            button("start") { play() }
+            button("stop") { stop() }
+        }
+        super.buildDebugComponent(views, container)
+    }
+
+    override var ratio: Double
+        get() = timelineRunner.ratio
+        set(value) {
+            //println("set ratio: $value")
+            timelineRunner.ratio = value
+            update()
+        }
+
+    suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 
@@ -635,17 +668,20 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 	 */
 	fun seekStill(name: String, ratio: Double = 0.0) {
 		val totalTime = timelineRunner.getStateTime(name)
-		timelineRunner.gotoAndStop(name, (totalTime * ratio).toInt())
+		timelineRunner.gotoAndStop(name, (totalTime * ratio))
 		//println("seekStill($name,$ratio) : $currentTime,$running,$currentState")
 		update()
 	}
 
-	private fun updateInternal(dtMs: Int) {
+	private fun updateInternal(dt: TimeSpan) {
 		if (timelineRunner.running && (firstUpdate || !singleFrame)) {
 			firstUpdate = false
-			timelineRunner.update(dtMs * 1000)
+			timelineRunner.update(dt)
+            //println("Updating ${dtMs * 1000}")
 			update()
-		}
+		} else {
+            //println("Not updating")
+        }
 	}
 
 	override fun toString(): String = super.toString() + ":symbol=" + symbol

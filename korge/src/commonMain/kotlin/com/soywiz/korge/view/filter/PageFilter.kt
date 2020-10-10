@@ -2,6 +2,9 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.debug.*
+import com.soywiz.korge.view.*
+import com.soywiz.korui.*
 import kotlin.math.*
 
 /**
@@ -59,4 +62,15 @@ class PageFilter(
 
     override val border: Int get() = max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toInt()
     override val fragment = FRAGMENT_SHADER
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiEditableValue(::hratio)
+        container.uiEditableValue(::hamplitude0)
+        container.uiEditableValue(::hamplitude1)
+        container.uiEditableValue(::hamplitude2)
+        container.uiEditableValue(::vratio)
+        container.uiEditableValue(::vamplitude0)
+        container.uiEditableValue(::vamplitude1)
+        container.uiEditableValue(::vamplitude2)
+    }
 }

@@ -3,22 +3,22 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
-import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
 
-inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback)
-inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback)
+inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
+inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback).apply { redrawIfRequired() }
 
 open class Graphics @JvmOverloads constructor(
     var autoScaling: Boolean = false
-) : Image(Bitmaps.transparent), VectorBuilder {
+) : BaseImage(Bitmaps.transparent), VectorBuilder {
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
@@ -65,11 +65,24 @@ open class Graphics @JvmOverloads constructor(
             return tempVectorPaths
         }
 
-	inline fun dirty(callback: () -> Unit): Graphics {
+    @PublishedApi
+    internal inline fun dirty(callback: () -> Unit): Graphics {
 		this.dirty = true
 		callback()
         return this
 	}
+
+    /**
+     * Ensure that after this function the [bitmap] property is up-to-date with all the drawings inside [block].
+     */
+    inline fun lock(block: Graphics.() -> Unit): Graphics {
+        try {
+            block()
+        } finally {
+            redrawIfRequired()
+        }
+        return this
+    }
 
 	fun clear() {
         shapes.forEach { (it as? StyledShape)?.path?.let { path -> graphicsPathPool.free(path) } }
@@ -89,9 +102,6 @@ open class Graphics @JvmOverloads constructor(
         hitTestUsingShapes = true
     }
 
-	@Deprecated("This doesn't do anything")
-	fun lineStyle(thickness: Double, color: RGBA, alpha: Double): Unit = TODO()
-
 	override val lastX: Double get() = currentPath.lastX
 	override val lastY: Double get() = currentPath.lastY
 	override val totalPoints: Int get() = currentPath.totalPoints
@@ -103,8 +113,6 @@ open class Graphics @JvmOverloads constructor(
 	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
     inline fun fill(color: RGBA, alpha: Double = 1.0, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), callback)
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    inline fun fill(color: RGBA, alpha: Number, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(color, alpha.toDouble(), callback)
 
 	inline fun fill(paint: Paint, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
 		beginFill(paint)
@@ -114,13 +122,6 @@ open class Graphics @JvmOverloads constructor(
 			endFill()
 		}
 	}
-
-	inline fun stroke(
-		color: RGBA, info: Context2d.StrokeInfo, callback: @ViewDslMarker VectorBuilder.() -> Unit
-	) = stroke(
-		ColorPaint(color),
-		info, callback
-	)
 
 	inline fun stroke(
 		paint: Paint,
@@ -186,6 +187,11 @@ open class Graphics @JvmOverloads constructor(
 
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
+    fun shape(shape: Shape) {
+        shapes += shape
+        currentPath = graphicsPathPool.alloc()
+        shapeVersion++
+    }
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
     inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
 
@@ -212,8 +218,16 @@ open class Graphics @JvmOverloads constructor(
 	internal val _sLeft get() = sLeft
 	internal val _sTop get() = sTop
 
-    override val sLeft get() = bounds.x - anchorDispX
-    override val sTop get() = bounds.y - anchorDispY
+    override val sLeft: Double get() {
+        var out = bounds.x - anchorDispX
+        if (bwidth < 0) out -= bwidth
+        return out
+    }
+    override val sTop: Double get() {
+        var out = bounds.y - anchorDispY
+        if (bheight < 0) out -= bheight
+        return out
+    }
 
 	private val bb = BoundsBuilder()
 	private val bounds = Rectangle()
@@ -232,6 +246,20 @@ open class Graphics @JvmOverloads constructor(
     }
 
     override fun renderInternal(ctx: RenderContext) {
+        bitmapsToRemove.fastForEach {
+            ctx.agBitmapTextureManager.removeBitmap(it)
+        }
+        bitmapsToRemove.clear()
+
+        redrawIfRequired()
+		super.renderInternal(ctx)
+	}
+
+    @PublishedApi
+    internal val bitmapsToRemove = arrayListOf<Bitmap>()
+
+    @PublishedApi
+    internal fun redrawIfRequired() {
         if (autoScaling) {
             matrixTransform.setMatrix(this.globalMatrix)
             //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
@@ -251,20 +279,22 @@ open class Graphics @JvmOverloads constructor(
             }
         }
 
-		if (dirty) {
-			dirty = false
+        if (dirty) {
+            dirty = false
 
             getLocalBoundsInternalNoAnchor(bounds)
 
             // Removes old image
             run {
-                ctx.agBitmapTextureManager.removeBitmap(this.bitmap.bmp)
+                bitmapsToRemove.add(this.bitmap.bmp)
             }
             // Generates new image
             run {
+                //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
+
                 val image = createImage(
-                    (bounds.width * renderedAtScaleX).toInt().coerceAtLeast(1),
-                    (bounds.height * renderedAtScaleY).toInt().coerceAtLeast(1)
+                    (bounds.width * renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
+                    (bounds.height * renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
                 )
                 image.context2d {
                     scale(this@Graphics.renderedAtScaleX, this@Graphics.renderedAtScaleY)
@@ -273,14 +303,14 @@ open class Graphics @JvmOverloads constructor(
                 }
                 this.bitmap = image.slice()
             }
-		}
-		super.renderInternal(ctx)
-	}
+        }
+    }
 
     fun getLocalBoundsInternalNoAnchor(out: Rectangle) {
         bb.reset()
         shapes.fastForEach { it.addBounds(bb) }
         bb.getBounds(out)
+        //println("Graphics.BOUNDS: $out")
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {

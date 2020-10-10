@@ -3,7 +3,7 @@ package com.soywiz.korge.service.vibration
 import android.annotation.SuppressLint
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.support.v4.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.getSystemService
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.android.androidActivity
 import com.soywiz.korge.view.Views
@@ -25,7 +25,7 @@ actual class NativeVibration actual constructor(views: Views) {
     @ExperimentalUnsignedTypes
     @SuppressLint("MissingPermission")
     actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double>) {
-        val onOffTimings = (listOf(TimeSpan.NULL) + timings).map { it.millisecondsLong }.toLongArray()
+        val onOffTimings = (listOf(TimeSpan.NIL) + timings).map { it.millisecondsLong }.toLongArray()
         if (amplitudes.size != onOffTimings.size) {
             vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
         } else {

@@ -2,9 +2,13 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 import kotlin.math.*
 
 inline fun Container.ninePatch(
@@ -17,10 +21,14 @@ inline fun Container.ninePatch(
 ) = NinePatchEx(ninePatch, width, height).addTo(this, callback)
 
 class NinePatchEx(
-	val ninePatch: Tex,
+	ninePatch: Tex,
 	override var width: Double,
 	override var height: Double
-) : View() {
+) : View(), ViewFileRef by ViewFileRef.Mixin() {
+    var ninePatch: Tex = ninePatch
+        set(value) {
+            field = value
+        }
 	var smoothing = true
 
 	private val bounds = RectangleInt()
@@ -34,6 +42,7 @@ class NinePatchEx(
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        lazyLoadRenderInternal(ctx, this)
 
 		val m = globalMatrix
 
@@ -154,4 +163,24 @@ class NinePatchEx(
 
 		fun getSliceTex(s: NinePatchInfo.Segment): BmpSlice = s.tex
 	}
+
+
+    override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
+        baseForceLoadSourceFile(views, currentVfs, sourceFile)
+        //println("### Trying to load sourceImage=$sourceImage")
+        ninePatch = try {
+            Tex(currentVfs["$sourceFile"].readNinePatch())
+        } catch (e: Throwable) {
+            Tex(NinePatchBitmap32(Bitmap32(62, 62)))
+        }
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection("9-PatchImage") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.baseName.endsWith(".9.png")
+            })
+        }
+        super.buildDebugComponent(views, container)
+    }
 }

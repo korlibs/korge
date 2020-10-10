@@ -3,25 +3,20 @@ package com.soywiz.korge.view
 import com.soywiz.korim.color.*
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.solidRect(width: Number, height: Number, color: RGBA, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = solidRect(width.toDouble(), height.toDouble(), color, callback)
-
-inline fun Container.solidRect(width: Double, height: Double, color: RGBA, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(width, height, color).addTo(this, callback)
 
-inline fun Container.solidRect(width: Int, height: Int, color: RGBA, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+/** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
+inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(width.toDouble(), height.toDouble(), color).addTo(this, callback)
 
 /**
  * A Rect [RectBase] [View] of size [width] and [height] with the initial color, [color].
  */
-class SolidRect(width: Double, height: Double, color: RGBA) : RectBase() {
+class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : RectBase() {
 	companion object {
-        operator fun invoke(width: Int, height: Int, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
-
-        @Deprecated("Kotlin/Native boxes inline+Number")
-        inline operator fun invoke(width: Number, height: Number, color: RGBA) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
 	}
 
 	override var width: Double = width; set(v) { field = v; dirtyVertices = true }

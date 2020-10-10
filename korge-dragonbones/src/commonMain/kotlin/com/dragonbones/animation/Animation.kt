@@ -928,7 +928,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 			this._animations.clear()
 
 			value.fastKeyForEach { k ->
-				this._animationNames.push(k)
+				this._animationNames.add(k)
 				this._animations[k] = value[k]!!
 			}
 		}

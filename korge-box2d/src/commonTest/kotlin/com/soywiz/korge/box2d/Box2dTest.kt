@@ -1,5 +1,7 @@
 package com.soywiz.korge.box2d
 
+import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.vector.*
@@ -36,7 +38,7 @@ class Box2dTest {
 		}
 
 		assertEquals(10f, body.position.y)
-		for (n in 0 until 40) view.updateSingleView(16.0)
+		for (n in 0 until 40) view.updateSingleView(16.milliseconds)
 		assertEquals(true, body.position.y < 8f)
 	}
 }

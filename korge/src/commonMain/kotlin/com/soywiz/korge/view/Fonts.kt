@@ -12,13 +12,13 @@ import kotlin.collections.set
 import kotlin.math.*
 
 class Fonts : Html.MetricsProvider {
-	val fonts = hashMapOf<String, BitmapFont>()
+	val fonts = hashMapOf<String, Font>()
 
-	fun registerFont(name: String, bmp: BitmapFont) {
+	fun registerFont(name: String, bmp: Font) {
 		fonts[name.toLowerCase()] = bmp
 	}
 
-	fun getBitmapFont(name: String, size: Int): BitmapFont {
+	fun getBitmapFont(name: String, size: Int): Font {
 		val nameLC = name.toLowerCase()
 		if (nameLC !in fonts) {
 			registerFont(
@@ -29,13 +29,13 @@ class Fonts : Html.MetricsProvider {
 		return fonts[nameLC] ?: defaultFont
 	}
 
-	fun getBitmapFont(face: Html.FontFace, size: Int): BitmapFont = when (face) {
+	fun getBitmapFont(face: Html.FontFace, size: Int): Font = when (face) {
 		is Html.FontFace.Named -> getBitmapFont(face.name, size)
-		is Html.FontFace.Bitmap -> face.font
+		is Html.FontFace.Font -> face.font
 		else -> invalidOp("Unsupported font face: $face")
 	}
 
-	fun getBitmapFont(format: Html.Format): BitmapFont = getBitmapFont(format.computedFace, format.computedSize)
+	fun getBitmapFont(format: Html.Format): Font = getBitmapFont(format.computedFace, format.computedSize)
 
 	fun named(name: String) = Html.FontFace.Named(name)
 

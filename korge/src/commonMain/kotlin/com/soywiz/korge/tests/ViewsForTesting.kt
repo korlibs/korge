@@ -3,7 +3,6 @@ package com.soywiz.korge.tests
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -21,8 +20,6 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
-import kotlin.math.max
-import kotlin.time.*
 
 open class ViewsForTesting @JvmOverloads constructor(
     val frameTime: TimeSpan = 10.milliseconds,
@@ -34,9 +31,9 @@ open class ViewsForTesting @JvmOverloads constructor(
 	var time = startTime
 	val elapsed get() = time - startTime
 
-	val timeProvider: TimeProvider = object : TimeProvider {
-		override fun now(): DateTime = time
-	}
+	val timeProvider = object : TimeProvider {
+        override fun now(): DateTime = time
+    }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override var width: Int = initialSize.width
@@ -46,7 +43,7 @@ open class ViewsForTesting @JvmOverloads constructor(
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag = if (log) LogAG(windowSize.width, windowSize.height) else DummyAG(windowSize.width, windowSize.height)
-	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow).also { viewsLog ->
+	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
     }
@@ -92,9 +89,6 @@ open class ViewsForTesting @JvmOverloads constructor(
     }
 
     suspend fun mouseMoveTo(x: Double, y: Double) = mouseMoveTo(x.toInt(), y.toInt())
-
-    @Deprecated("Kotlin/Native boxes inline+Number")
-    suspend fun mouseMoveTo(x: Number, y: Number) = mouseMoveTo(x.toInt(), y.toInt())
 
     private var mouseButtons = 0
 
@@ -161,17 +155,17 @@ open class ViewsForTesting @JvmOverloads constructor(
     }
 
 	suspend fun View.simulateClick() {
-        viewMouse.onClick(viewMouse)
+        viewMouse.click(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOver() {
-        viewMouse.onOver(viewMouse)
+        viewMouse.over(viewMouse)
 		simulateFrame()
 	}
 
 	suspend fun View.simulateOut() {
-        viewMouse.onOut(viewMouse)
+        viewMouse.out(viewMouse)
 		simulateFrame()
 	}
 
@@ -211,11 +205,11 @@ open class ViewsForTesting @JvmOverloads constructor(
 			}
 		})
 
-		withTimeout(timeout ?: TimeSpan.NULL) {
+		withTimeout(timeout ?: TimeSpan.NIL) {
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
-				dispatcher.executePending()
+				dispatcher.executePending(1.seconds)
 			}
 
 			if (completedException != null) throw completedException!!
@@ -223,18 +217,16 @@ open class ViewsForTesting @JvmOverloads constructor(
 	}
 
     private var simulatedFrames = 0
-    private var lastDelay = PerformanceCounter.hr
+    private var lastDelay = PerformanceCounter.reference
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
             //println("SIMULATE: $frameTime")
             time += frameTime
-            // @TODO: ag.onRender + gameWindow.dispatch(RenderEvent) aren't duplicated?
-            gameWindow.dispatch(RenderEvent())
-            ag.onRender(ag)
+            gameWindow.dispatchRenderEvent()
             simulatedFrames++
-            val now = PerformanceCounter.hr
+            val now = PerformanceCounter.reference
             val elapsedSinceLastDelay = now - lastDelay
-            if (elapsedSinceLastDelay >= 1.hrSeconds) {
+            if (elapsedSinceLastDelay >= 1.seconds) {
                 lastDelay = now
                 delay(1)
             }
@@ -249,7 +241,7 @@ open class ViewsForTesting @JvmOverloads constructor(
     inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
 		val hasMore get() = timedTasks2.isNotEmpty() || tasks.isNotEmpty()
 
-		override fun now() = time.unixMillisDouble.hrMilliseconds
+		override fun now() = time.unixMillisDouble.milliseconds
 
         val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
 
@@ -272,44 +264,6 @@ open class ViewsForTesting @JvmOverloads constructor(
             }
             timedTasks2.add(task)
         }
-
-        override fun executePending() {
-			//println("executePending.hasMore=$hasMore")
-            var skippingFrames = 0
-			try {
-                // Skip time after several frames without activity
-                if (tasks.isEmpty() && timedTasks2.isNotEmpty()) {
-                    skippingFrames++
-                    if (skippingFrames >= 100) {
-                        time = timedTasks2.head.time
-                    }
-                } else {
-                    skippingFrames = 0
-                }
-
-                while (timedTasks2.isNotEmpty() && time >= timedTasks2.head.time) {
-                    val item = timedTasks2.removeHead()
-                    //println("TIME[${time.unixMillisLong}]: TIMED TASK. Executing: $item")
-                    if (item.exception != null) {
-                        item.continuation?.resumeWithException(item.exception!!)
-                        if (item.callback != null) {
-                            item.exception?.printStackTrace()
-                        }
-                    } else {
-                        item.continuation?.resume(Unit)
-                        item.callback?.run()
-                    }
-                }
-
-				while (tasks.isNotEmpty()) {
-					val task = tasks.dequeue()
-					task.run()
-				}
-			} catch (e: Throwable) {
-				println("Error in GameWindowCoroutineDispatcher.executePending:")
-				e.printStackTrace()
-			}
-		}
 
 		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
 	}

@@ -8,12 +8,11 @@ import com.soywiz.korma.geom.vector.*
  *  and allows you to configure it via [callback].
  *  Once created, it is added to this receiver [Container].
  **/
-@Deprecated("Kotlin/Native boxes inline+Number")
 inline fun Container.roundRect(
-    width: Number,
-    height: Number,
-    rx: Number,
-    ry: Number = rx,
+    width: Int,
+    height: Int,
+    rx: Int,
+    ry: Int = rx,
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}

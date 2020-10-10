@@ -1,23 +1,14 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-
-@Deprecated("Kotlin/Native boxes inline+Number")
-inline fun Container.uiCheckBox(
-    width: Number,
-    height: Number,
-    checked: Boolean = false,
-    text: String = "CheckBox",
-    textFont: Html.FontFace = defaultUIFont,
-    skin: UISkin = defaultUISkin,
-    checkIcon: IconSkin = defaultCheckSkin,
-    block: @ViewDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = uiCheckBox(width.toDouble(), height.toDouble(), checked, text, textFont, skin, checkIcon, block)
+import com.soywiz.korui.*
 
 inline fun Container.uiCheckBox(
     width: Double = 120.0,
@@ -38,7 +29,7 @@ open class UICheckBox(
     textFont: Html.FontFace = DefaultUIFont,
     private val skin: UISkin = DefaultUISkin,
     private val checkIcon: IconSkin = DefaultCheckSkin
-) : UIView(width, height) {
+) : UIView(width, height), ViewLeaf {
 
     var checked by uiObservable(checked) { updateState() }
     var text by uiObservable(text) { updateText() }
@@ -76,7 +67,9 @@ open class UICheckBox(
                 this@UICheckBox.pressing = false
             }
             onClick {
-                this@UICheckBox.checked = !this@UICheckBox.checked
+                if (!it.views.editingMode) {
+                    this@UICheckBox.checked = !this@UICheckBox.checked
+                }
             }
         }
         updateText()
@@ -107,9 +100,9 @@ open class UICheckBox(
             color = textColor,
             align = Html.Alignment.MIDDLE_LEFT
         )
-        textView.setTextBounds(Rectangle(0, 0, width - height, height))
+        textView.setTextBounds(Rectangle(0.0, 0.0, width - height, height))
         textView.setText(text)
-        textView.position(height + 8.0, 0)
+        textView.position(height + 8.0, 0.0)
     }
 
     override fun onSizeChanged() {
@@ -118,7 +111,22 @@ open class UICheckBox(
         box.size(height, height)
         icon.width = checkIcon.calculateWidth(height)
         icon.height = checkIcon.calculateHeight(height)
-        textView.position(height + 8.0, 0)
-        textView.setTextBounds(Rectangle(0, 0, width - height - 8.0, height))
+        textView.position(height + 8.0, 0.0)
+        textView.setTextBounds(Rectangle(0.0, 0.0, width - height - 8.0, height))
     }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsableSection(UICheckBox::class.simpleName!!) {
+            uiEditableValue(::text)
+            uiEditableValue(::checked)
+        }
+        super.buildDebugComponent(views, container)
+    }
+
+    object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
+        add(UICheckBox::text)
+        add(UICheckBox::checked)
+        add(UICheckBox::width)
+        add(UICheckBox::height)
+    })
 }

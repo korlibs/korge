@@ -69,3 +69,7 @@ internal fun FloatArrayList.toFBuffer(): FBuffer = toFloatArray().toFBuffer()
 
 internal fun FloatArray.toFBuffer(): FBuffer =
 	FBuffer.alloc(this.size * 4).also { it.setAlignedArrayFloat32(0, this, 0, this.size) }
+
+internal fun IntArrayList.toFBuffer(): FBuffer = toIntArray().toFBuffer()
+internal fun IntArray.toFBuffer():FBuffer =
+    FBuffer.alloc(this.size * 4).also { it.setAlignedArrayInt32(0, this, 0, this.size) }

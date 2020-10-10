@@ -28,6 +28,7 @@ import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.dragonbones.internal.fastForEach
+import com.dragonbones.parser.ObjectDataParser.Companion.intArrayList
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -74,12 +75,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		internal val Any?.doubleArrayList: DoubleArrayList get() {
 			if (this is DoubleArray) return DoubleArrayList(*this)
 			if (this is DoubleArrayList) return this
+            if (this is DoubleArrayList) return this.toDoubleList()
 			if (this is List<*>) return DoubleArrayList(*this.map { (it as Number).toDouble() }.toDoubleArray())
 			error("Can't cast '$this' to doubleArrayList")
 		}
 		internal val Any?.intArrayList: IntArrayList get() {
 			if (this is IntArray) return IntArrayList(*this)
 			if (this is IntArrayList) return this
+            if (this is DoubleArrayList) return this.toIntArrayList()
 			if (this is List<*>) return IntArrayList(*this.map { (it as Number).toInt() }.toIntArray())
 			error("Can't '$this' cast to intArrayList")
 		}
@@ -124,12 +127,12 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		//private var _objectDataParserInstance = ObjectDataParser()
 		///**
 		// * - Deprecated, please refer to {@link dragonBones.BaseFactory#parseDragonBonesData()}.
-		// * @deprecated
+		// * deprecated
 		// * @language en_US
 		// */
 		///**
 		// * - 已废弃，请参考 {@link dragonBones.BaseFactory#parseDragonBonesData()}。
-		// * @deprecated
+		// * deprecated
 		// * @language zh_CN
 		// */
 		//fun getInstance(): ObjectDataParser = ObjectDataParser._objectDataParserInstance
@@ -313,7 +316,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		if (this._actionFrames.size == 0) { // First frame.
 			frame = ActionFrame()
 			frame.frameStart = 0
-			this._actionFrames.push(frame)
+			this._actionFrames.add(frame)
 			frame = null
 		}
 
@@ -394,7 +397,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 							this._cacheBones[parentName] = arrayListOf()
 						}
 
-						this._cacheBones[parentName]?.push(bone)
+                        this._cacheBones[parentName]?.add(bone)
 					}
 				}
 
@@ -407,7 +410,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				}
 
 				armature.addBone(bone)
-				this._rawBones.push(bone) // Cache raw bones sort.
+                this._rawBones.add(bone) // Cache raw bones sort.
 			}
 		}
 
@@ -747,8 +750,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 				if (rawData.containsDynamic(DataParser.SHARE)) {
 					meshDisplay.geometry.data = this._data
-					this._cacheRawMeshes.push(rawData!!)
-					this._cacheMeshes.push(meshDisplay)
+                    this._cacheRawMeshes.add(rawData!!)
+                    this._cacheMeshes.add(meshDisplay)
 				} else {
 					this._parseMesh(rawData, meshDisplay)
 				}
@@ -1944,7 +1947,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			action.name = rawData
 			action.bone = bone
 			action.slot = slot
-			actions.push(action)
+            actions.add(action)
 		} else if (rawData is List<*>) {
 			(rawData as List<Map<String, Any?>>).fastForEach { rawAction ->
 				val action = pool.actionData.borrow()
@@ -2012,7 +2015,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				}
 
 				action.data = userData
-				actions.push(action)
+                actions.add(action)
 			}
 		}
 

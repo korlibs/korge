@@ -2,10 +2,12 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 /**
  * Interface for [View] filters.
@@ -19,7 +21,7 @@ import com.soywiz.korma.geom.*
  *
  * Filters are usually [ComposedFilter] or [ShaderFilter]
  */
-interface Filter {
+interface Filter : KorgeDebugNode {
     companion object {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
@@ -29,6 +31,8 @@ interface Filter {
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
         fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
     }
+
+    val allFilters: List<Filter> get() = listOf(this)
 
     /**
      * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
@@ -52,4 +56,7 @@ interface Filter {
         renderColorMul: RGBA,
         blendMode: BlendMode
     )
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+    }
 }

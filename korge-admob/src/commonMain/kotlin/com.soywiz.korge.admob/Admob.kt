@@ -1,10 +1,11 @@
 package com.soywiz.korge.admob
 
 import com.soywiz.klock.milliseconds
+import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.delay
 import kotlin.jvm.JvmOverloads
 
-abstract class Admob {
+abstract class Admob(val views: Views) {
 	enum class Size {
 		BANNER, IAB_BANNER, IAB_LEADERBOARD, IAB_MRECT, LARGE_BANNER, SMART_BANNER, FLUID
 	}
@@ -64,4 +65,4 @@ abstract class Admob {
 	}
 }
 
-expect suspend fun AdmobCreate(testing: Boolean): Admob
+expect suspend fun AdmobCreate(views: Views, testing: Boolean): Admob

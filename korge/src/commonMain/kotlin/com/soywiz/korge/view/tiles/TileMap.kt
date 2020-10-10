@@ -19,12 +19,12 @@ inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.
 inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
 	TileMap(map.toIntArray2(), tileset).repeat(repeatX, repeatY).addTo(this, callback)
 
+@PublishedApi
+internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
+
 @OptIn(KorgeInternal::class)
 open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
-    @PublishedApi
-    internal val _map = Bitmap32(intMap.width, intMap.height, RgbaArray(intMap.data))
-	@Deprecated("kept for compatiblity")
-	val map get() = _map
+    private var contentVersion = 0
 	constructor(map: Bitmap32, tileset: TileSet) : this(map.toIntArray2(), tileset)
 
 	val tileWidth = tileset.width.toDouble()
@@ -50,14 +50,24 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
     private val tt3 = Point(0, 0)
 
     // Analogous to Bitmap32.locking
-    fun lock() = _map.lock()
-    fun unlock() = _map.unlock()
-    inline fun lock(block: () -> Unit) = _map.lock(block = block)
+    fun lock() {
+    }
+    fun unlock() {
+        contentVersion++
+    }
+    inline fun <T> lock(block: () -> T): T {
+        lock()
+        try {
+            return block()
+        } finally {
+            unlock()
+        }
+    }
 
     private var cachedContentVersion = 0
 	private fun computeVertexIfRequired(ctx: RenderContext) {
-		if (!dirtyVertices && cachedContentVersion == _map.contentVersion) return
-        cachedContentVersion = _map.contentVersion
+		if (!dirtyVertices && cachedContentVersion == contentVersion) return
+        cachedContentVersion = contentVersion
         dirtyVertices = false
         val m = globalMatrix
 
@@ -165,7 +175,7 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
                 count++
             }
         }
-        renderTilesCounter?.increment(count)
+        renderTilesCounter.increment(count)
 	}
 
     private val indices = IntArray(4)

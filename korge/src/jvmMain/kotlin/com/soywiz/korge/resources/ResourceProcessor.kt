@@ -23,23 +23,23 @@ abstract class ResourceProcessor(vararg extensions: String) {
 		return _checkAndProcess(file, outputFolder, doProcess = false)
 	}
 
-	suspend fun process(file: VfsFile, outputFolder: VfsFile): Boolean {
-		return _checkAndProcess(file, outputFolder, doProcess = true)
+	suspend fun process(file: VfsFile, outputFile: VfsFile): Boolean {
+		return _checkAndProcess(file, outputFile, doProcess = true)
 	}
 
-	private suspend fun _checkAndProcess(file: VfsFile, outputFolder: VfsFile, doProcess: Boolean): Boolean {
+	private suspend fun _checkAndProcess(file: VfsFile, outputFile: VfsFile, doProcess: Boolean): Boolean {
 		val inputFile = file
-		val outputFile = outputFolder[file.fullName].withExtension(outputExtension)
-		val metaFile = outputFile.appendExtension("meta")
+		val outputFileReal = outputFile.withExtension(outputExtension)
+		val metaFile = outputFileReal.appendExtension("meta")
 		val metaInfo = ResourceVersion.fromFile(inputFile, version)
 		val newMetaInfo = if (metaFile.exists()) ResourceVersion.readMeta(metaFile) else null
 
-		if (metaInfo == newMetaInfo && outputFile.exists()) {
+		if (metaInfo == newMetaInfo && outputFileReal.exists()) {
 			return false
 		}
 		if (doProcess) {
 			try {
-				processInternal(inputFile, outputFile)
+				processInternal(inputFile, outputFileReal)
 			} catch (e: Throwable) {
 				e.printStackTrace()
 			} finally {

@@ -1,6 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -11,7 +12,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
-import kotlin.js.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
@@ -94,6 +94,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 
+
     val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
 	val out = Signal<MouseEvents>()
@@ -106,53 +107,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	val moveAnywhere = Signal<MouseEvents>()
     val moveOutside = Signal<MouseEvents>()
     val exit = Signal<MouseEvents>()
-
-    @Deprecated("", ReplaceWith("moveOutside"))
-    val mouseOutside get() = moveOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onClick")
-	val onClick = click
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onOver")
-	val onOver = over
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onOut")
-	val onOut = out
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onDown")
-	val onDown = down
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onDownFromOutside")
-	val onDownFromOutside = downFromOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUp")
-	val onUp = up
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUpOutside")
-	val onUpOutside = upOutside
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onUpAnywhere")
-	val onUpAnywhere = upAnywhere
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMove")
-	val onMove = move
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMoveAnywhere")
-	val onMoveAnywhere = moveAnywhere
-
-    @Deprecated("Use function instead with suspend handler")
-    @JsName("_onMoveOutside")
-	val onMoveOutside = mouseOutside
+    val scroll = Signal<MouseEvents>()
+    val scrollAnywhere = Signal<MouseEvents>()
+    val scrollOutside = Signal<MouseEvents>()
 
     @PublishedApi
     internal inline fun _mouseEvent(prop: KProperty1<MouseEvents, Signal<MouseEvents>>, noinline handler: suspend (MouseEvents) -> Unit): MouseEvents {
@@ -172,6 +129,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     inline fun onMoveAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveAnywhere, handler)
     inline fun onMoveOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::moveOutside, handler)
     inline fun onExit(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::exit, handler)
+    inline fun onScroll(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scroll, handler)
+    inline fun onScrollAnywhere(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scrollAnywhere, handler)
+    inline fun onScrollOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents = _mouseEvent(MouseEvents::scrollOutside, handler)
 
     var hitTest: View? = null; private set
 	private var lastOver = false
@@ -218,46 +178,28 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val downPosStage get() = views.stage.globalToLocal(downPosGlobal, _downPosStage)
     val upPosStage get() = views.stage.globalToLocal(upPosGlobal, _upPosStage)
 
-    // Deprecated variants
-    @Deprecated("Use startedPosLocal instead")
-    val startedPos get() = startedPosLocal
-    @Deprecated("Use lastPosLocal instead")
-    val lastPos get() = lastPosLocal
-    @Deprecated("Use currentPosLocal instead")
-    val currentPos get() = currentPosLocal
-    @Deprecated("Use downPosLocal or downPosGlobal instead")
-    val downPos get() = downPosGlobal
-    @Deprecated("Use upPosLocal or upPosGlobal instead")
-    val upPos get() = upPosGlobal
-
     var clickedCount = 0
 
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
-    lateinit var lastEvent: MouseEvent
-    var button: MouseButton = MouseButton.LEFT
-    var buttons: Int = 0
-    var scrollDeltaX: Double = 0.0
-    var scrollDeltaY: Double = 0.0
-    var scrollDeltaZ: Double = 0.0
-    var isShiftDown: Boolean = false
-    var isCtrlDown: Boolean = false
-    var isAltDown: Boolean = false
-    var isMetaDown: Boolean = false
+    var lastEventSet = false
+    var lastEvent: MouseEvent = MouseEvent()
+    val button: MouseButton get() = lastEvent.button
+    val buttons: Int get() = lastEvent.buttons
+    val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
+    val scrollDeltaY: Double get() = lastEvent.scrollDeltaY
+    val scrollDeltaZ: Double get() = lastEvent.scrollDeltaZ
+    val isShiftDown: Boolean get() = lastEvent.isShiftDown
+    val isCtrlDown: Boolean get() = lastEvent.isCtrlDown
+    val isAltDown: Boolean get() = lastEvent.isAltDown
+    val isMetaDown: Boolean get() = lastEvent.isMetaDown
+    val pressing get() = views.input.mouseButtons != 0
 
 	@Suppress("DuplicatedCode")
     override fun onMouseEvent(views: Views, event: MouseEvent) {
         this.views = views
         // Store event
         this.lastEvent = event
-        this.button = event.button
-        this.buttons = event.buttons
-        this.scrollDeltaX = event.scrollDeltaX
-        this.scrollDeltaY = event.scrollDeltaY
-        this.scrollDeltaZ = event.scrollDeltaZ
-        this.isShiftDown = event.isShiftDown
-        this.isCtrlDown = event.isCtrlDown
-        this.isAltDown = event.isAltDown
-        this.isMetaDown = event.isMetaDown
+        lastEventSet = true
 
         //println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
@@ -275,8 +217,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 			}
 			MouseEvent.Type.CLICK -> {
 				if (isOver) {
-					onClick(this@MouseEvents)
-					if (onClick.listenerCount > 0) {
+					click(this@MouseEvents)
+					if (click.listenerCount > 0) {
 						preventDefault(view)
 					}
 				}
@@ -290,20 +232,28 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 }
                 */
 			}
+            MouseEvent.Type.SCROLL -> {
+                if (isOver) {
+                    scroll(this@MouseEvents)
+                } else {
+                    scrollOutside(this@MouseEvents)
+                }
+                scrollAnywhere(this@MouseEvents)
+            }
 			else -> {
 			}
 		}
 	}
 
     inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews, Extra by Extra.Mixin() {
-        override fun update(views: Views, ms: Double) {
-            this@MouseEvents.update(views, ms)
+        override fun update(views: Views, dt: TimeSpan) {
+            this@MouseEvents.update(views, dt)
         }
     }
 
     val updater = MouseEventsUpdate(view).attach()
 
-    fun update(views: Views, ms: Double) {
+    fun update(views: Views, dt: TimeSpan) {
 		if (!view.mouseEnabled) return
         this.views = views
 
@@ -315,7 +265,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		val over = isOver
         val inside = views.input.mouseInside
 		if (over) views.input.mouseHitResultUsed = view
-		val pressing = views.input.mouseButtons != 0
 		val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
 		val pressingChanged = pressing != lastPressing
@@ -388,5 +337,6 @@ inline fun <T : View?> T.onUp(noinline handler: @EventsDslMarker suspend (MouseE
 inline fun <T : View?> T.onUpOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upOutside, handler)
 inline fun <T : View?> T.onUpAnywhere(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upAnywhere, handler)
 inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
+inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
-fun ViewsScope.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
+fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
