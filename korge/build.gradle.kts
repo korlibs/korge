@@ -18,6 +18,7 @@ val klockVersion: String by project
 val korauVersion: String by project
 val korimVersion: String by project
 val kormaVersion: String by project
+val korteVersion: String by project
 val korgwVersion: String by project
 val kryptoVersion: String by project
 val korinjectVersion: String by project
@@ -34,4 +35,5 @@ dependencies {
 	add("commonMainApi", "com.soywiz.korlibs.korinject:korinject:$korinjectVersion")
 	add("commonMainApi", "com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
 	add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
+    add("commonMainApi", "com.soywiz.korlibs.korte:korte:$korteVersion")
 }

@@ -81,12 +81,12 @@ class ViewsTest : ViewsForTesting() {
         views.stage += s1
         s1 += s2
         s1 += s3
-        assertNotNull(s1["s2"])
-        assertNotNull(s1["s3"])
+        assertNotNull(s1["s2"].firstOrNull)
+        assertNotNull(s1["s3"].firstOrNull)
 
         s1 -= s3
-        assertNotNull(s1["s2"])
-        assertNull(s1["s3"])
+        assertNotNull(s1["s2"].firstOrNull)
+        assertNull(s1["s3"].firstOrNull)
     }
 
     @Test
@@ -218,6 +218,8 @@ class ViewsTest : ViewsForTesting() {
         image.tween(image::x[-101], time = 4.seconds)
         assertEquals(false, image.isVisibleToUser())
     }
+
+    private fun assertEquals(a: Rectangle, b: Rectangle) = assertEquals(a.toString(), b.toString())
 
     @Test
     fun testRect() = viewsTest {

@@ -125,6 +125,8 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
                 val flipY = cell.extract(30)
                 val rotate = cell.extract(29)
 
+                count++
+
                 val tex = tileset[cellData] ?: continue
 
                 val info = verticesPerTex.getOrPut(tex.bmp) {
@@ -172,7 +174,6 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
                 }
 
                 info.icount += 6
-                count++
             }
         }
         renderTilesCounter.increment(count)
