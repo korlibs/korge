@@ -15,7 +15,7 @@ class AtlasResourceProcessorTest {
     fun name() = suspendTest({ !OS.isWindows }) {
         val memoryVfs = MemoryVfs()
         memoryVfs["atlas"].mkdir()
-        val processed1 = AtlasResourceProcessor.process(resourcesVfs["atlas/simple.atlas"], memoryVfs)
+        val processed1 = AtlasResourceProcessor.process(resourcesVfs["atlas/simple.atlas"], memoryVfs["atlas/simple.atlas"])
         println(memoryVfs.listRecursive().toList())
         assertEquals(true, processed1)
         assertEquals(true, memoryVfs["atlas/simple.atlas.json"].exists())
@@ -29,7 +29,7 @@ class AtlasResourceProcessorTest {
             ),
             ResourceVersion.readMeta(memoryVfs["atlas/simple.atlas.json.meta"])
         )
-        val processed2 = AtlasResourceProcessor.process(resourcesVfs["atlas/simple.atlas"], memoryVfs)
+        val processed2 = AtlasResourceProcessor.process(resourcesVfs["atlas/simple.atlas"], memoryVfs["atlas/simple.atlas"])
         assertEquals(false, processed2)
 
         memoryVfs["atlas/simple.atlas.json"].readAtlas()
