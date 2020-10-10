@@ -26,7 +26,6 @@ if (doEnableKotlinNative) {
 }
 
 dependencies {
-    commonMainApi(project(":korui"))
 	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
 	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
     if (hasAndroid) {
