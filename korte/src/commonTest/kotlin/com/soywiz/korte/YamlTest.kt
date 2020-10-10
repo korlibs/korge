@@ -232,16 +232,43 @@ class YamlTest {
                 "test" to listOf("e", "f")
             ),
             Yaml.decode("""
-			hello:
-			- a
-			- b
-			world:
-			- c
-			- d
-			test:
-			- e
-			- f
-		""".trimIndent())
+                hello:
+                - a
+                - b
+                world:
+                - c
+                - d
+                test:
+                - e
+                - f
+            """.trimIndent())
         )
+    }
+
+    @Test
+    fun testYaml2() {
+        assertEquals(
+            mapOf(
+                "map" to listOf(
+                    mapOf("id" to "asdsadsa", "noaudio" to true),
+                    mapOf("id" to "sadasdsadas", "noaudio" to true),
+                    mapOf("id" to "asdasdasdsad"),
+                    mapOf("id" to "asdasdss"),
+                    mapOf("id" to "sadasdsa-ASd", "noaudio" to true)
+                )
+            ),
+            Yaml.decode("""
+            map:
+                - id: asdsadsa
+                  noaudio: true
+                - id: sadasdsadas
+                  noaudio: true
+                - id: asdasdasdsad
+                - id: asdasdss
+                - id: sadasdsa-ASd
+                  noaudio: true
+        """.trimIndent())
+        )
+
     }
 }

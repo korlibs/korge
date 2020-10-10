@@ -1,17 +1,13 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
+import doIOTest
+import kotlin.test.Test
 
 class AllTargetsSupportMp3 {
     @Test
-    fun testDecode() = suspendTest {
-        if (nativeSoundProvider.target == "android") return@suspendTest
-        if (OS.isJsNodeJs) return@suspendTest
-        if (OS.isLinux) return@suspendTest // TRAVIS: com.[secure].korau.sound.AllTargetsSupportMp3 > testDecode FAILED  com.jogamp.openal.ALException: Error opening default OpenAL device
-
+    fun testDecode() = suspendTest({ doIOTest }) {
         val data = resourcesVfs["mp31.mp3"].readSound().decode()
     }
 }

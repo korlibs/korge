@@ -31,8 +31,10 @@ interface ExprNode : DynamicContext {
 
     data class FILTER(val name: String, val expr: ExprNode, val params: List<ExprNode>, val tok: ExprNode.Token) : ExprNode {
         override suspend fun eval(context: Template.EvalContext): Any? {
-            val filter = context.config.filters[name] ?: tok.exception("Unknown filter '$name'")
+            val filter = context.config.filters[name] ?: context.config.filters["unknown"] ?: context.config.unknownFilter
             return context.filterCtxPool.alloc {
+                it.tok = tok
+                it.name = name
                 it.context = context
                 it.subject = expr.eval(context)
                 it.args = params.map { it.eval(context) }

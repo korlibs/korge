@@ -11,7 +11,7 @@ class NativeAudioStreamNativeLinuxTest {
     @Ignore
     fun test() = suspendTest {
         coroutineScope {
-            val sound = resourcesVfs["mp31.mp3"].readNativeSound()
+            val sound = resourcesVfs["mp31.mp3"].readSound()
             launchAsap {
                 sound.playAndWait()
             }

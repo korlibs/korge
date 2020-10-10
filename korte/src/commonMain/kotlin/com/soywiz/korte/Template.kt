@@ -222,7 +222,6 @@ class Template internal constructor(
     suspend fun prender(args: Any?, mapper: ObjectMapper2 = Mapper2): AsyncTextWriterContainer {
         return createEvalContext().withArgs(args, mapper)
     }
-
 }
 
 suspend fun Template(template: String, config: TemplateConfig = TemplateConfig()): Template = Templates(

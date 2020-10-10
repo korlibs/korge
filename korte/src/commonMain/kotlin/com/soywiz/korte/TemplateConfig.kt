@@ -7,6 +7,7 @@ open class TemplateConfig(
     extraTags: List<Tag> = listOf(),
     extraFilters: List<Filter> = listOf(),
     extraFunctions: List<TeFunction> = listOf(),
+    var unknownFilter: Filter = Filter("unknown") { tok.exception("Unknown filter '$name'") },
     // Here we can convert markdown into html if required. This is available at the template level + content + named blocks
     val contentTypeProcessor: (content: String, contentType: String?) -> String = { content, _ -> content }
 ) {

@@ -4,7 +4,16 @@ package com.soywiz.kds
 
 actual class FastIntMap<T>(dummy: Boolean)
 
-actual fun <T> FastIntMap(): FastIntMap<T> = js("(new Map())")
+@JsName("Map")
+private external class JsMap { }
+@JsName("Array")
+private external class JsArray {
+    companion object {
+        fun from(value: dynamic): Array<dynamic>
+    }
+}
+
+actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
 actual val <T> FastIntMap<T>.size: Int get() = (this.asDynamic()).size
 actual fun <T> FastIntMap<T>.keys(): List<Int> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<Int>>().toList()
 actual inline operator fun <T> FastIntMap<T>.get(key: Int): T? = (this.asDynamic()).get(key)
@@ -37,7 +46,7 @@ actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit)
 actual class FastStringMap<T>(dummy: Boolean)
 //actual typealias FastStringMap<T> = Any<T>
 
-actual fun <T> FastStringMap(): FastStringMap<T> = js("(new Map())")
+actual fun <T> FastStringMap(): FastStringMap<T> = JsMap().asDynamic()
 actual val <T> FastStringMap<T>.size: Int get() = this.asDynamic().size
 actual fun <T> FastStringMap<T>.keys(): List<String> =
     Array_from((this.asDynamic()).keys()).unsafeCast<Array<String>>().toList()
@@ -67,7 +76,7 @@ actual inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) ->
 
 actual class FastIdentityMap<K, V>(dummy: Boolean)
 
-actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = js("(new Map())")
+actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = JsMap().asDynamic()
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.asDynamic().size
 actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<K>>().toList()
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = (this.asDynamic()).get(key)
@@ -108,7 +117,7 @@ actual class WeakMap<K : Any, V> {
     actual operator fun get(key: K): V? = wm.get(key).unsafeCast<V?>()
 }
 
-internal fun Array_from(value: dynamic): Array<dynamic> = js("(Array.from(value))")
+internal fun Array_from(value: dynamic): Array<dynamic> = JsArray.from(value)
 
 //@JsName("delete")
 //external fun jsDelete(v: dynamic): Unit

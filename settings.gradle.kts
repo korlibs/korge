@@ -34,7 +34,7 @@ include(":luak")
 include(":krypto")
 include(":korte")
 //include(":korte-ktor")
-include(":korte-korio")
+//include(":korte-korio")
 //include(":korte-vertx")
 include(":korio")
 include(":korim")
@@ -60,10 +60,11 @@ for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory 
     }
 }
 */
+
 fileTree(File(rootProject.projectDir, "samples")) {
-    include("**/build.gradle.kts")
-    include("**/build.gradle")
-    exclude("**/build/**")
+    include("**"+"/build.gradle.kts")
+    include("**"+"/build.gradle")
+    exclude("**"+"/build/**")
 }.forEach {
     val sample = moduleName(it.parentFile)
     include(":$sample")

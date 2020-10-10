@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korio.async.*
+import com.soywiz.korio.util.toStringDecimal
 import kotlin.test.*
 
 class DistanceBitmapTest {
@@ -15,16 +16,16 @@ class DistanceBitmapTest {
         //bmp[(bmp.width * 0.7).toInt(), (bmp.height * 0.9).toInt()] = 1
         val distanceBmp = bmp.distanceMap()
         assertEquals(
-            listOf(
-                "3.6055512,2.828427,2.236068,2.0,2.236068,2.828427,3.6055512",
-                "2.828427,2.236068,1.4142135,1.0,1.4142135,2.236068,2.828427",
-                "2.236068,1.4142135,1.0,0.0,1.0,1.4142135,2.236068",
-                "2.0,1.0,0.0,-0.0,0.0,1.0,2.0",
-                "2.236068,1.4142135,1.0,0.0,1.0,1.4142135,2.236068",
-                "2.828427,2.236068,1.4142135,1.0,1.4142135,2.236068,2.828427",
-                "3.6055512,2.828427,2.236068,2.0,2.236068,2.828427,3.6055512",
-            ).joinToString("\n"),
-            (0 until distanceBmp.height).joinToString("\n") { y -> (0 until distanceBmp.width).joinToString(",") { x -> "${distanceBmp.getDist(x, y)}" } }
+            """
+                3.6,2.8,2.2,2.0,2.2,2.8,3.6
+                2.8,2.2,1.4,1.0,1.4,2.2,2.8
+                2.2,1.4,1.0,0.0,1.0,1.4,2.2
+                2.0,1.0,0.0,0.0,0.0,1.0,2.0
+                2.2,1.4,1.0,0.0,1.0,1.4,2.2
+                2.8,2.2,1.4,1.0,1.4,2.2,2.8
+                3.6,2.8,2.2,2.0,2.2,2.8,3.6
+            """.trimIndent(),
+            (0 until distanceBmp.height).joinToString("\n") { y -> (0 until distanceBmp.width).joinToString(",") { x -> distanceBmp.getDist(x, y).toStringDecimal(1) } }.replace("-", "")
         )
         //distanceBmp.toNormalizedDistanceBitmap8().showImageAndWait()
     }

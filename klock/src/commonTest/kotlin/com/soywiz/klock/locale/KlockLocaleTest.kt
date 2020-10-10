@@ -169,6 +169,24 @@ class KlockLocaleTest {
 		)
 	}
 
+	@Test
+	fun testUkrainianLocale() {
+		assertEquals(
+			"""
+			Ср, 13 Бер 2019 21:36:45 UTC
+			13 Бер 2019 р. 21:36:45
+			13.03.2019 21:36
+			Середа, 13 Березня 2019 р.
+			13 Березня 2019 р.
+			13 Бер 2019 р.
+			13.03.2019
+			21:36:45
+			21:36
+			""".trimIndent(),
+			multiFormat(UkrainianKlockLocale, KlockLocale.ukrainian)
+		)
+	}
+
 	fun multiFormat(locale1: KlockLocale, locale2: KlockLocale, date: DateTime = this@KlockLocaleTest.date): String {
 		return listOf(
 			date.toString(com.soywiz.klock.DateFormat.DEFAULT_FORMAT.withLocale(locale1)),
@@ -190,10 +208,15 @@ class KlockLocaleTest {
 
 		assertEquals("2月", Month.February.localName(KlockLocale.japanese))
 		assertEquals("2月", Month.February.localShortName(KlockLocale.japanese))
+	}
 
+	@Test
+	fun testDayOfWeekLocalName() {
 		assertEquals("月曜日", DayOfWeek.Monday.localName(KlockLocale.japanese))
 		assertEquals("月", DayOfWeek.Monday.localShortName(KlockLocale.japanese))
 
+		assertEquals("середа", DayOfWeek.Wednesday.localName(KlockLocale.ukrainian))
+		assertEquals("ср", DayOfWeek.Wednesday.localShortName(KlockLocale.ukrainian))
 	}
 
 	@Test

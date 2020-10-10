@@ -103,8 +103,12 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
 
+fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
+
 allprojects {
-    apply(from = "${rootProject.rootDir}/build.idea.gradle")
+    if (project.hasBuildGradle()) {
+        apply(from = "${rootProject.rootDir}/build.idea.gradle")
+    }
 }
 
 subprojects {
@@ -114,7 +118,12 @@ subprojects {
         else -> "com.soywiz.korlibs.${projectName.substringBefore('-')}"
     }
 
-    if (project.name != "korge-intellij-plugin" && project.name != "korge-gradle-plugin") {
+    val doConfigure =
+        project.name != "korge-intellij-plugin" &&
+            project.name != "korge-gradle-plugin" &&
+            project.hasBuildGradle()
+
+    if (doConfigure) {
         val isSample = project.path.startsWith(":samples")
         val hasAndroid = !isSample && doEnableKotlinAndroid && hasAndroidSdk
         //val hasAndroid = !isSample && true
@@ -243,8 +252,11 @@ subprojects {
                     val android = createPairSourceSet("android", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
                         dependencies {
                             if (test) {
+                                //implementation(kotlin("test"))
                                 //implementation(kotlin("test-junit"))
+                                implementation(kotlin("test-junit"))
                             } else {
+                                //implementation(kotlin("stdlib"))
                                 //implementation(kotlin("stdlib-jdk8"))
                             }
                         }
@@ -268,6 +280,10 @@ subprojects {
                     val nativePosixNonApple by lazy { createPairSourceSet("nativePosixNonApple", nativePosix) }
                     val nativePosixApple by lazy { createPairSourceSet("nativePosixApple", nativePosix) }
                     val iosWatchosTvosCommon by lazy { createPairSourceSet("iosWatchosTvosCommon", nativePosixApple) }
+                    val iosWatchosCommon by lazy { createPairSourceSet("iosWatchosCommon", nativePosixApple) }
+                    val iosTvosCommon by lazy { createPairSourceSet("iosTvosCommon", nativePosixApple) }
+                    val macosIosTvosCommon by lazy { createPairSourceSet("macosIosTvosCommon", nativePosixApple) }
+                    val macosIosWatchosCommon by lazy { createPairSourceSet("macosIosWatchosCommon", nativePosixApple) }
                     val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
 
                     for (target in nativeTargets()) {
@@ -333,7 +349,7 @@ open class KorgeJavaExec : JavaExec() {
 
 fun Project.samples(block: Project.() -> Unit) {
     subprojects {
-        if (project.path.startsWith(":samples:")) {
+        if (project.path.startsWith(":samples:") && project.hasBuildGradle()) {
             block()
         }
     }
