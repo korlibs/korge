@@ -13,6 +13,10 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>2.0.0.0-beta-3</h3>
+		<ul>
+		    <li>Supports MacOS BigSur</li>
+		</ul>
 		<h3>2.0.0.0-beta-2</h3>
 		<ul>
 		    <li>Some fixes on the Bitmap debug node renderer</li>
