@@ -56,6 +56,13 @@ val KotlinTarget.isMacos get() = this.name == "macosX64"
 val KotlinTarget.isIosArm64 get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64 get() = this.name == "iosX64"
 val KotlinTarget.isIos get() = isIosArm64 || isIosX64
+val KotlinTarget.isWatchosX86 get() = this.name == "watchosX86"
+val KotlinTarget.isWatchosArm32 get() = this.name == "watchosArm32"
+val KotlinTarget.isWatchosArm64 get() = this.name == "watchosArm64"
+val KotlinTarget.isWatchos get() = isWatchosX86 || isWatchosArm32 || isWatchosArm64
+val KotlinTarget.isTvosX64 get() = this.name == "tvosX64"
+val KotlinTarget.isTvosArm64 get() = this.name == "tvosArm64"
+val KotlinTarget.isTvos get() = isTvosX64 || isTvosArm64
 val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
@@ -299,6 +306,8 @@ subprojects {
                         }
                         if (target.isMacos) {
                             native.dependsOn(nativePosixApple)
+                            native.dependsOn(macosIosTvosCommon)
+                            native.dependsOn(macosIosWatchosCommon)
                         }
                     }
 
@@ -309,6 +318,20 @@ subprojects {
                                 native.dependsOn(nativePosixApple)
                                 native.dependsOn(iosCommon)
                                 native.dependsOn(iosWatchosTvosCommon)
+                                native.dependsOn(iosTvosCommon)
+                                native.dependsOn(macosIosTvosCommon)
+                                native.dependsOn(macosIosWatchosCommon)
+                            }
+                            if (target.isWatchos) {
+                                native.dependsOn(nativePosixApple)
+                                native.dependsOn(iosWatchosTvosCommon)
+                                native.dependsOn(macosIosWatchosCommon)
+                            }
+                            if (target.isTvos) {
+                                native.dependsOn(nativePosixApple)
+                                native.dependsOn(iosWatchosTvosCommon)
+                                native.dependsOn(iosTvosCommon)
+                                native.dependsOn(macosIosTvosCommon)
                             }
                         }
                     }
