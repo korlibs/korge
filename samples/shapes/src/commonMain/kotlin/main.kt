@@ -51,8 +51,8 @@ fun Stage.setupCircle() {
 }
 
 fun Stage.setupRects() {
-	val rect1 = roundRect(80.0, 100.0, 5.0, color = Colors.GREEN).position(820, 128)
-	val rect2 = roundRect(80.0, 100.0, 5.0, color = Colors.GREEN).position(1020, 128).anchor(0.5, 0.5)
+	val rect1 = roundRect(80.0, 100.0, 5.0, fill = Colors.GREEN).position(820, 128)
+	val rect2 = roundRect(80.0, 100.0, 5.0, fill = Colors.GREEN, stroke = Colors.RED, strokeThickness = 4.0).position(1020, 128).anchor(0.5, 0.5)
 	addFixedUpdater(60.timesPerSecond) {
 		rect1.rotation += 1.degrees
 		rect2.rotation += 1.degrees

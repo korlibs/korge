@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.paint.Paint
 import com.soywiz.korma.geom.vector.*
 
 /** Creates a new [RoundRect] of size [width]x[height] and [color]
@@ -13,20 +14,24 @@ inline fun Container.roundRect(
     height: Int,
     rx: Int,
     ry: Int = rx,
-    color: RGBA = Colors.WHITE,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}
-) = roundRect(width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble(), color, autoScaling, callback)
+) = roundRect(width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble(), fill, stroke, strokeThickness, autoScaling, callback)
 
 inline fun Container.roundRect(
     width: Double,
     height: Double,
     rx: Double,
     ry: Double = rx,
-    color: RGBA = Colors.WHITE,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}
-) = RoundRect(width, height, rx, ry, color, autoScaling).addTo(this, callback)
+) = RoundRect(width, height, rx, ry, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
  * A Rect [View] with rounded corners of size [width] and [height] with the initial [color].
@@ -36,9 +41,11 @@ class RoundRect(
     height: Double,
     rx: Double,
     ry: Double = rx,
-    color: RGBA = Colors.WHITE,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true
-) : Graphics(autoScaling) {
+) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
 
     override var width: Double by uiObservable(width) { updateGraphics() }
     override var height: Double by uiObservable(height) { updateGraphics() }
@@ -60,8 +67,8 @@ class RoundRect(
     }
 
     private fun updateGraphics() {
-        clear()
-        fill(Colors.WHITE) {
+        updateShape {
+            clear()
             roundRect(0.0, 0.0, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
         }
     }

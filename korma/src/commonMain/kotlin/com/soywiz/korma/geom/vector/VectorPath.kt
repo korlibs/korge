@@ -366,6 +366,10 @@ open class VectorPath(
     override fun toString(): String = "VectorPath(${toSvgString()})"
 }
 
+fun VectorBuilder.path(path: VectorPath) {
+    write(path)
+}
+
 fun VectorBuilder.write(path: VectorPath) {
     path.visitCmds(
         moveTo = { x, y -> moveTo(x, y) },
