@@ -318,12 +318,14 @@ subprojects {
                                 native.dependsOn(nativePosixApple)
                                 native.dependsOn(iosCommon)
                                 native.dependsOn(iosWatchosTvosCommon)
+                                native.dependsOn(iosWatchosCommon)
                                 native.dependsOn(iosTvosCommon)
                                 native.dependsOn(macosIosTvosCommon)
                                 native.dependsOn(macosIosWatchosCommon)
                             }
                             if (target.isWatchos) {
                                 native.dependsOn(nativePosixApple)
+                                native.dependsOn(iosWatchosCommon)
                                 native.dependsOn(iosWatchosTvosCommon)
                                 native.dependsOn(macosIosWatchosCommon)
                             }
@@ -361,7 +363,7 @@ open class KorgeJavaExec : JavaExec() {
         }
 
         if (useZgc) {
-            jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
+            //jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
         }
         project.afterEvaluate {
             //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
