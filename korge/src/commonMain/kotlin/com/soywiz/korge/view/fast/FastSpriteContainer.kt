@@ -31,37 +31,44 @@ class FastSpriteContainer : View() {
         val bb = ctx.batch
         val fsprite = sprites.first()
         val bmp = fsprite.tex.bmp
-        bb.setStateFast(bmp, true, blendMode.factors, null)
         val colorMul = this.renderColorMul.value
         val colorAdd = this.renderColorAdd
 
-        ////////////////////////////
+        bb.setViewMatrixTemp(globalMatrix) {
+            ////////////////////////////
 
-        val batchSize = min(sprites.size, bb.maxQuads)
-        for (n in 0 until batchSize) {
-            bb.addQuadIndices()
-            bb.vertexCount += 4
-        }
-        bb.vertexCount = 0
-        bb.uploadIndices()
+            bb.setStateFast(bmp, true, blendMode.factors, null)
 
-        ////////////////////////////
+            ////////////////////////////
 
-        for (m in 0 until sprites.size step bb.maxQuads) {
-            for (n in m until min(sprites.size, m + batchSize)) {
-                val sprite = sprites[n]
-                val x0 = sprite.xf
-                val x1 = sprite.xf + sprite.width
-                val y0 = sprite.yf
-                val y1 = sprite.yf + sprite.height
-
-                bb.addQuadVerticesFastNormal(
-                    x0, y0, x1, y0, x1, y1, x0, y1,
-                    sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                    colorMul, colorAdd
-                )
+            val batchSize = min(sprites.size, bb.maxQuads)
+            for (n in 0 until batchSize) {
+                bb.addQuadIndices()
+                bb.vertexCount += 4
             }
-            bb.flush(uploadVertices = true, uploadIndices = false)
+            bb.vertexCount = 0
+            bb.uploadIndices()
+
+            ////////////////////////////
+
+            for (m in 0 until sprites.size step bb.maxQuads) {
+                for (n in m until min(sprites.size, m + batchSize)) {
+                    val sprite = sprites[n]
+                    val x0 = sprite.xf
+                    val x1 = sprite.xf + sprite.width
+                    val y0 = sprite.yf
+                    val y1 = sprite.yf + sprite.height
+
+                    bb.addQuadVerticesFastNormal(
+                        x0, y0, x1, y0, x1, y1, x0, y1,
+                        sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                        colorMul, colorAdd
+                    )
+                }
+                bb.flush(uploadVertices = true, uploadIndices = false)
+            }
+
+            ////////////////////////////
         }
     }
 }
