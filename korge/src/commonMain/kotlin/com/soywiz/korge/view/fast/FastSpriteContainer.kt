@@ -62,14 +62,18 @@ class FastSpriteContainer : View() {
                 for (n in m until min(sprites.size, m + batchSize)) {
                     //spriteCount++
                     val sprite = sprites[n]
+
                     val w = sprite.width * sprite.scalef
                     val h = sprite.height * sprite.scalef
-                    val ax = -sprite.anchorXf * w
-                    val ay = -sprite.anchorXf * w
-                    val x0 = ax + sprite.xf
-                    val x1 = ay + sprite.xf + w
-                    val y0 = ax + sprite.yf
-                    val y1 = ay + sprite.yf + h
+
+                    val ax = w * sprite.anchorXf
+                    val ay = h * sprite.anchorYf
+
+                    val x0 = sprite.xf - ax
+                    val y0 = sprite.yf - ay
+
+                    val x1 = x0 + w
+                    val y1 = y0 + h
 
                     bb.addQuadVerticesFastNormal(
                         x0, y0, x1, y0, x1, y1, x0, y1,

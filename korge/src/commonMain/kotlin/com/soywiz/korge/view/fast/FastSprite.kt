@@ -5,7 +5,7 @@ import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korma.geom.Angle
 
-open class FastSprite(var tex: BmpSlice) {
+open class FastSprite(tex: BmpSlice) {
     var xf: Float = 0f
     var yf: Float = 0f
     var anchorXf: Float = .5f
@@ -13,13 +13,33 @@ open class FastSprite(var tex: BmpSlice) {
     var rotationRadiansf: Float = 0f
     var scalef: Float = 1f
 
-    // @TODO: Set when changing tex
-    var tx0: Float = tex.tl_x
-    var ty0: Float = tex.tl_y
-    var tx1: Float = tex.br_x
-    var ty1: Float = tex.br_y
-    var width: Float = tex.width.toFloat()
-    var height: Float = tex.height.toFloat()
+    var tx0: Float = 0f
+    var ty0: Float = 0f
+    var tx1: Float = 0f
+    var ty1: Float = 0f
+    var width: Float = 0f
+    var height: Float = 0f
+
+    private fun updateTexProps() {
+        tx0 = tex.tl_x
+        ty0 = tex.tl_y
+        tx1 = tex.br_x
+        ty1 = tex.br_y
+        width = tex.width.toFloat()
+        height = tex.height.toFloat()
+    }
+
+    var tex: BmpSlice = tex
+        set(value) {
+            if (field !== value) {
+                field = value
+                updateTexProps()
+            }
+        }
+
+    init {
+        updateTexProps()
+    }
 
     var x: Double
         get() = xf.toDouble()
