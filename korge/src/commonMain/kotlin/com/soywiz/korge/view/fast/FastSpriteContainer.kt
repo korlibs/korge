@@ -14,6 +14,8 @@ inline fun Container.fastSpriteContainer(
 class FastSpriteContainer : View() {
     private val sprites = arrayListOf<FastSprite>()
 
+    val numChildren get() = sprites.size
+
     fun addChild(sprite: FastSprite) {
         this.sprites.add(sprite)
     }
@@ -48,16 +50,26 @@ class FastSpriteContainer : View() {
             }
             bb.vertexCount = 0
             bb.uploadIndices()
+            val realIndexPos = bb.indexPos
 
             ////////////////////////////
 
+            //var batchCount = 0
+            //var spriteCount = 0
             for (m in 0 until sprites.size step bb.maxQuads) {
+                //batchCount++
+                bb.indexPos = realIndexPos
                 for (n in m until min(sprites.size, m + batchSize)) {
+                    //spriteCount++
                     val sprite = sprites[n]
-                    val x0 = sprite.xf
-                    val x1 = sprite.xf + sprite.width
-                    val y0 = sprite.yf
-                    val y1 = sprite.yf + sprite.height
+                    val w = sprite.width
+                    val h = sprite.height
+                    val ax = -sprite.anchorXf * w
+                    val ay = -sprite.anchorXf * w
+                    val x0 = ax + sprite.xf
+                    val x1 = ay + sprite.xf + w
+                    val y0 = ax + sprite.yf
+                    val y1 = ay + sprite.yf + h
 
                     bb.addQuadVerticesFastNormal(
                         x0, y0, x1, y0, x1, y1, x0, y1,
@@ -67,6 +79,8 @@ class FastSpriteContainer : View() {
                 }
                 bb.flush(uploadVertices = true, uploadIndices = false)
             }
+
+            //println("batchCount: $batchCount, spriteCount: $spriteCount")
 
             ////////////////////////////
         }

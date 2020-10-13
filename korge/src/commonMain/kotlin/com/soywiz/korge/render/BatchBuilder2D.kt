@@ -66,8 +66,8 @@ class BatchBuilder2D constructor(
 
 	var vertexCount = 0
         internal set
-	private var vertexPos = 0
-	private var indexPos = 0
+    internal var vertexPos = 0
+	internal var indexPos = 0
 	private var currentTex: AG.Texture? = null
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors

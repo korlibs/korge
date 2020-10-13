@@ -43,11 +43,12 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"
     val bunny4 = wabbitTexture.sliceWithSize(2, 164, 26, 37)
     val bunny5 = wabbitTexture.sliceWithSize(2, 2, 26, 37)
 
-    //val startBunnyCount = 2
+    val startBunnyCount = 2
     //val startBunnyCount = 1_000_000
-    val startBunnyCount = 200_000
+    //val startBunnyCount = 200_000
     val bunnyTextures = listOf(bunny1, bunny2, bunny3, bunny4, bunny5)
-    val currentTexture = bunny1
+    var currentTexture = bunny1
+    val amount = 100
 
     val container = fastSpriteContainer()
     //val container = container()
@@ -56,21 +57,24 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"
 
     val random = Random
 
-    for (i in 0 until startBunnyCount) {
-        //val bunny = BunnyFastSprite(currentTexture)
-        val bunny = Bunny(currentTexture)
-        bunny.speedXf = random.nextFloat() * 10
-        bunny.speedYf = (random.nextFloat() * 10) - 5
-        //bunny.anchorX = 0.5f
-        //bunny.anchorY = 1f
-        bunny.anchorXf = 0.5f
-        bunny.anchorYf = 1.0f
-        bunnys.add(bunny)
-        //	bunny.filters = [filter];
-        //	bunny.position.x = Math.random() * 800;
-        //	bunny.position.y = Math.random() * 600;
-        container.addChild(bunny)
+    fun addBunny(count: Int = 1) {
+        for (n in 0 until count) {
+            val bunny = Bunny(currentTexture)
+            bunny.speedXf = random.nextFloat() * 10
+            bunny.speedYf = (random.nextFloat() * 10) - 5
+            bunny.anchorXf = .5f
+            bunny.anchorYf = 1f
+            //bunny.alpha = 0.3 + Math.random() * 0.7;
+            bunny.scalef = 0.5f + random.nextFloat() * 0.5f
+            bunny.rotationRadiansf = (random.nextFloat() - 0.5f)
+            //bunny.rotation = Math.random() - 0.5;
+            //var random = random.nextInt(0, container.numChildren-2);
+            container.addChild(bunny)//, random);
+            bunnys.add(bunny)
+        }
     }
+
+    addBunny(startBunnyCount)
 
     val maxX = width.toFloat()
     val minX = 0f
@@ -78,7 +82,20 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"
     val minY = 0f
     val gravity = 0.5f // 1.5f
 
+    mouse {
+        up {
+            currentTexture = bunnyTextures.random(random)
+        }
+    }
+
     addUpdater {
+        if (views.input.mouseButtons != 0) {
+            if (bunnys.size < 200_000) {
+                addBunny(200)
+            } else if (bunnys.size < 400_000) {
+                addBunny(1000)
+            }
+        }
         bunnys.fastForEach { bunny ->
             bunny.xf += bunny.speedXf
             bunny.yf += bunny.speedYf
