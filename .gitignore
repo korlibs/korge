@@ -9,3 +9,6 @@ hs_err_*.log
 local.properties
 local.*.properties
 .DS_Store
+/samples/hello-world/game.korgegame.storage
+/samples/hello-world/game.storage
+/samples/hello-world/settings.json

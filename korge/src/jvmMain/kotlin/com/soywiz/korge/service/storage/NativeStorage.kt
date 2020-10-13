@@ -6,11 +6,16 @@ import java.util.*
 
 actual class NativeStorage actual constructor(val views: Views) : IStorage {
 	val props = Properties()
-    val file = File("game.storage")
+    val folder = File(views.realSettingsFolder).also { kotlin.runCatching { it.mkdirs() } }
+    val file = File(folder, "game.jvm.storage")
 
 	init {
 		load()
 	}
+
+    override fun toString(): String = "NativeStorage(${toMap()})"
+
+    actual fun keys(): List<String> = props.keys.toList().map { it.toString() }
 
 	private fun load() {
         if (!file.exists()) return

@@ -35,6 +35,7 @@ import kotlin.reflect.*
  */
 object Korge {
 	val logger = Logger("Korge")
+    val DEFAULT_GAME_ID = "com.soywiz.korge.unknown"
 
     suspend operator fun invoke(config: Config) {
         //println("Korge started from Config")
@@ -64,6 +65,8 @@ object Korge {
             injector = config.injector,
             timeProvider = config.timeProvider,
             blocking = config.blocking,
+            gameId = config.gameId,
+            settingsFolder = config.settingsFolder,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -101,7 +104,9 @@ object Korge {
         timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         debugAg: Boolean = false,
-        blocking:Boolean = true,
+        blocking: Boolean = true,
+        gameId: String = DEFAULT_GAME_ID,
+        settingsFolder: String? = null,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -133,7 +138,17 @@ object Korge {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views: Views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
+            val views: Views = Views(
+                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
+                ag = if (debugAg) PrintAG() else ag,
+                injector = injector,
+                input = input,
+                timeProvider = timeProvider,
+                stats = stats,
+                gameWindow = gameWindow,
+                gameId = gameId,
+                settingsFolder = settingsFolder
+            )
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
@@ -451,6 +466,8 @@ object Korge {
 		val context: Any? = null,
 		val fullscreen: Boolean? = null,
         val blocking: Boolean = true,
+        val gameId: String = DEFAULT_GAME_ID,
+        val settingsFolder: String? = null,
 		val constructedViews: (Views) -> Unit = {}
 	)
 

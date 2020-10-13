@@ -24,7 +24,9 @@ import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.stream.*
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
@@ -44,7 +46,9 @@ class Views constructor(
     val input: Input,
     val timeProvider: TimeProvider,
     val stats: Stats,
-    val gameWindow: GameWindow
+    val gameWindow: GameWindow,
+    val gameId: String = "korgegame",
+    val settingsFolder: String? = null
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
@@ -60,6 +64,19 @@ class Views constructor(
 
     val keys get() = input.keys
 
+    val gameIdFolder get() = gameId.replace("\\", "").replace("/", "").replace("..", "")
+
+    val realSettingsFolder: String by lazy {
+        when {
+            settingsFolder != null -> settingsFolder!!
+            else -> when {
+                OS.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$gameIdFolder"
+                OS.isWindows -> "${Environment["APPDATA"]}/$gameIdFolder"
+                else -> "${Environment["HOME"]}/.config/$gameIdFolder"
+            }
+        }
+    }
+
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
@@ -69,6 +86,7 @@ class Views constructor(
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = 100.0.milliseconds
+
 
     var editingMode: Boolean = false
 
