@@ -149,6 +149,10 @@ class Input : Extra by Extra.Mixin() {
 class InputKeys {
     private val pressing = BooleanArray(Key.MAX)
     private val pressingPrev = BooleanArray(Key.MAX)
+    var shift: Boolean = false ; private set
+    var ctrl: Boolean = false ; private set
+    var alt: Boolean = false ; private set
+    var meta: Boolean = false ; private set
 
     operator fun get(key: Key) = pressing(key)
     fun pressing(key: Key): Boolean = pressing[key.ordinal]
@@ -162,6 +166,11 @@ class InputKeys {
             KeyEvent.Type.DOWN -> pressing[e.key.ordinal] = true
             else -> Unit
         }
+
+        shift = e.shift || this[Key.LEFT_SHIFT] || this[Key.RIGHT_SHIFT]
+        ctrl = e.ctrl || this[Key.LEFT_CONTROL] || this[Key.RIGHT_CONTROL]
+        alt = e.alt || this[Key.LEFT_ALT] || this[Key.RIGHT_ALT]
+        meta = e.meta || this[Key.META]
     }
 
     internal fun startFrame(delta: TimeSpan) {

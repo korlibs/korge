@@ -129,13 +129,8 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
                 val y = ry
                 val button = event.buttonNumber.toInt()
 
-                mouseEvent(MouseEvent.Type.UP, x, y, button)
-                mouseEvent(
-                    MouseEvent.Type.CLICK,
-                    x,
-                    y,
-                    button
-                ) // @TODO: Conditionally depending on the down x,y & time
+                mouseEvent(MouseEvent.Type.UP, x, y, button, event)
+                mouseEvent(MouseEvent.Type.CLICK, x, y, button, event) // @TODO: Conditionally depending on the down x,y & time
             }
 
             override fun mouseDown(event: NSEvent) {
@@ -143,7 +138,7 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
                 val rx = event.locationInWindow.x.toInt()
                 val ry = (getHeight() - event.locationInWindow.y).toInt()
                 //println("mouseDown($rx,$ry)")
-                mouseDown(rx, ry, event.buttonNumber.toInt())
+                mouseEvent(MouseEvent.Type.DOWN, rx, ry, event.buttonNumber.toInt(), event)
             }
 
             override fun mouseMoved(event: NSEvent) {
@@ -151,71 +146,64 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
                 val rx = event.locationInWindow.x.toInt()
                 val ry = (getHeight() - event.locationInWindow.y).toInt()
                 //println("mouseMoved($rx,$ry)")
-                mouseMoved(rx, ry)
+                mouseEvent(MouseEvent.Type.MOVE, rx, ry, 0, event)
             }
 
-
-            private fun mouseEvent(etype: MouseEvent.Type, ex: Int, ey: Int, ebutton: Int) {
+            private fun mouseEvent(etype: MouseEvent.Type, ex: Int, ey: Int, ebutton: Int, e: NSEvent) {
                 val factor = backingScaleFactor
                 val sx = ex * factor
                 val sy = ey * factor
 
-                dispatch(mouseEvent.apply {
-                    this.type = etype
-                    this.x = sx.toInt()
-                    this.y = sy.toInt()
-                    this.buttons = 1 shl ebutton
-                    this.isAltDown = false
-                    this.isCtrlDown = false
-                    this.isShiftDown = false
-                    this.isMetaDown = false
-                    //this.scaleCoords = false
-                })
+                dispatchMouseEvent(
+                    id = 0,
+                    type = etype,
+                    x = sx.toInt(),
+                    y = sy.toInt(),
+                    button = MouseButton[ebutton],
+                    buttons = e.buttonMask.toInt(),
+                    isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta
+                )
             }
-
-            fun mouseDown(x: Int, y: Int, button: Int) =
-                mouseEvent(MouseEvent.Type.DOWN, x, y, button)
-
-            fun mouseMoved(x: Int, y: Int) = mouseEvent(MouseEvent.Type.MOVE, x, y, 0)
-            fun mouseDragged(x: Int, y: Int) = mouseEvent(MouseEvent.Type.DRAG, x, y, 0)
 
             override fun mouseDragged(event: NSEvent) {
                 super.mouseDragged(event)
                 val rx = event.locationInWindow.x.toInt()
                 val ry = (getHeight() - event.locationInWindow.y).toInt()
                 //println("mouseDragged($rx,$ry)")
-                mouseDragged(rx, ry)
+                mouseEvent(MouseEvent.Type.DRAG, rx, ry, 0, event)
             }
 
-            fun keyDownUp(event: NSEvent, pressed: Boolean) {
+            fun keyDownUp(event: NSEvent, pressed: Boolean, e: NSEvent) {
                 val str = event.charactersIgnoringModifiers ?: "\u0000"
                 val c = str.getOrNull(0) ?: '\u0000'
                 val cc = c.toInt().toChar()
                 //println("keyDownUp")
                 val char = cc
-                val modifiers: Int = event.modifierFlags.convert()
                 val keyCode = event.keyCode.toInt()
 
                 val key = KeyCodesToKeys[keyCode] ?: CharToKeys[char] ?: Key.UNKNOWN
-                //println("keyDownUp: char=$char, modifiers=$modifiers, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed")
-                dispatch(keyEvent.apply {
-                    this.type =
-                        if (pressed) KeyEvent.Type.DOWN else KeyEvent.Type.UP
-                    this.id = 0
-                    this.key = key
-                    this.keyCode = keyCode
-                    this.character = char
-                })
+                //println("keyDownUp: char=$char, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed, shift=${e.shift}, ctrl=${e.ctrl}, alt=${e.alt}, meta=${e.meta}")
+                dispatchKeyEventEx(
+                    type = if (pressed) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
+                    id = 0,
+                    character = char,
+                    key = key,
+                    keyCode = keyCode,
+                    shift = e.shift,
+                    ctrl = e.ctrl,
+                    alt = e.alt,
+                    meta = e.meta
+                )
             }
 
             override fun keyDown(event: NSEvent) {
                 //super.keyDown(event)
-                keyDownUp(event, true)
+                keyDownUp(event, true, event)
             }
 
             override fun keyUp(event: NSEvent) {
                 //super.keyUp(event)
-                keyDownUp(event, false)
+                keyDownUp(event, false, event)
             }
 
             //external override fun performKeyEquivalent(event: NSEvent): Boolean {
@@ -528,3 +516,8 @@ val CValue<NSRect>.left get() = this.useContents { origin.x }
 val CValue<NSRect>.top get() = this.useContents { origin.y }
 val CValue<NSRect>.width get() = this.useContents { size.width }
 val CValue<NSRect>.height get() = this.useContents { size.height }
+
+val NSEvent.shift get() = (modifierFlags and NSShiftKeyMask) != 0uL
+val NSEvent.ctrl get() = (modifierFlags and NSControlKeyMask) != 0uL
+val NSEvent.alt get() = (modifierFlags and NSAlternateKeyMask) != 0uL
+val NSEvent.meta get() = (modifierFlags and NSCommandKeyMask) != 0uL
