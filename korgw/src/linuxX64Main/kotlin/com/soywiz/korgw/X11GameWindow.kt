@@ -277,13 +277,6 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
                 MotionNotify, ButtonPress, ButtonRelease -> {
                     val mot = e.xmotion
                     val but = e.xbutton
-                    val scrollDeltaX = 0.0
-                    val scrollDeltaY = 0.0
-                    val scrollDeltaZ = 0.0
-                    val isShiftDown = false
-                    val isCtrlDown = false
-                    val isAltDown = false
-                    val isMetaDown = false
                     val ev = when (e.type) {
                         MotionNotify -> MouseEvent.Type.MOVE
                         ButtonPress -> MouseEvent.Type.DOWN

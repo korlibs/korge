@@ -2,7 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
+import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
@@ -416,20 +416,29 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         })
     }
 
+    private val keysPresing = BooleanArray(Key.MAX)
+    private fun pressing(key: Key) = keysPresing[key.ordinal]
+    private val shift get() = pressing(Key.LEFT_SHIFT) || pressing(Key.RIGHT_SHIFT)
+    private val ctrl get() = pressing(Key.LEFT_CONTROL) || pressing(Key.RIGHT_CONTROL)
+    private val alt get() = pressing(Key.LEFT_ALT) || pressing(Key.RIGHT_ALT)
+    private val meta get() = pressing(Key.META) || pressing(Key.LEFT_SUPER) || pressing(Key.RIGHT_SUPER)
+    private var mouseButtons = 0
+    private val scrollDeltaX = 0.0
+    private val scrollDeltaY = 0.0
+    private val scrollDeltaZ = 0.0
+    private val scaleCoords = false
+
     fun dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int) {
-        dispatch(keyEvent.apply {
-            this.id = id
-            this.character = character
-            this.key = key
-            this.keyCode = keyCode
-            this.type = type
-        })
+        dispatchKeyEventEx(type, id, character, key, keyCode)
     }
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,
-        shift: Boolean, ctrl: Boolean, alt: Boolean, meta: Boolean
+        shift: Boolean = this.shift, ctrl: Boolean = this.ctrl, alt: Boolean = this.alt, meta: Boolean = this.meta
     ) {
+        if (type != KeyEvent.Type.TYPE) {
+            keysPresing[key.ordinal] = (type == KeyEvent.Type.DOWN)
+        }
         dispatch(keyEvent.apply {
             this.id = id
             this.character = character
@@ -446,24 +455,18 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     fun dispatchSimpleMouseEvent(
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, simulateClickOnUp: Boolean = false
     ) {
-        val buttons = 0
-        val scrollDeltaX = 0.0
-        val scrollDeltaY = 0.0
-        val scrollDeltaZ = 0.0
-        val isShiftDown = false
-        val isCtrlDown = false
-        val isAltDown = false
-        val isMetaDown = false
-        val scaleCoords = false
-        dispatchMouseEvent(type, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = simulateClickOnUp)
+        dispatchMouseEvent(type, id, x, y, button, simulateClickOnUp = simulateClickOnUp)
     }
 
     fun dispatchMouseEvent(
-        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int,
-        scrollDeltaX: Double, scrollDeltaY: Double, scrollDeltaZ: Double,
-        isShiftDown: Boolean, isCtrlDown: Boolean, isAltDown: Boolean, isMetaDown: Boolean,
-        scaleCoords: Boolean, simulateClickOnUp: Boolean = false
+        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = this.mouseButtons,
+        scrollDeltaX: Double = this.scrollDeltaX, scrollDeltaY: Double = this.scrollDeltaY, scrollDeltaZ: Double = this.scrollDeltaZ,
+        isShiftDown: Boolean = this.shift, isCtrlDown: Boolean = this.ctrl, isAltDown: Boolean = this.alt, isMetaDown: Boolean = this.meta,
+        scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false
     ) {
+        if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
+            this.mouseButtons = this.mouseButtons.setBits(1 shl button.ordinal, type == MouseEvent.Type.DOWN)
+        }
         dispatch(mouseEvent.apply {
             this.type = type
             this.id = id

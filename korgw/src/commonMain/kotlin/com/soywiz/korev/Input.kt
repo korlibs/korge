@@ -15,6 +15,7 @@ enum class MouseButton(val id: Int) {
     val isRight get() = this == RIGHT
 
 	companion object {
+        val MAX = BUTTON_UNKNOWN.ordinal + 1
 		val BUTTONS = values()
 		operator fun get(id: Int) = BUTTONS.getOrElse(id) { BUTTON_UNKNOWN }
 	}
