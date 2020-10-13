@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.config
 
+import org.junit.Test
 import kotlin.test.*
 
 class KorgeGlobalSettingsTest {

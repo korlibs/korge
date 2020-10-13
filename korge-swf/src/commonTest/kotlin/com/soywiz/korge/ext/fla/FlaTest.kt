@@ -6,9 +6,7 @@ import kotlin.test.*
 
 class FlaTest {
 	@Test
-	@Ignore
 	fun name() = suspendTest {
 		val fla = Fla.read(resourcesVfs["simple1.fla"])
-		//val fla = Fla.read(ResourcesVfs["simple1"])
 	}
 }

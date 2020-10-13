@@ -34,55 +34,19 @@ import kotlin.test.*
 class ErrorsTest : ScriptDrivenTest(ScriptDrivenTest.PlatformType.JSE, dir) {
 
     fun testBaseLibArgs() {
-        globals.STDIN = object : LuaBinInput() {
-            override fun read(): Int = -1
-        }
+        globals.STDIN = object : LuaBinInput() { override fun read(): Int = -1 }
         runTest("baselibargs")
     }
 
-    @Test
-    fun testCoroutineLibArgs() {
-        runTest("coroutinelibargs")
-    }
+    @Test fun testCoroutineLibArgs() { runTest("coroutinelibargs") }
 
-    @Test
-    @Ignore
-    fun testDebugLibArgs() {
-        runTest("debuglibargs")
-    }
-
-    @Test
-    @Ignore
-    fun testIoLibArgs() {
-        runTest("iolibargs")
-    }
-
-    @Test
-    fun testMathLibArgs() {
-        runTest("mathlibargs")
-    }
-
-    @Test
-    @Ignore
-    fun testModuleLibArgs() {
-        runTest("modulelibargs")
-    }
-
-    @Test
-    fun testOperators() {
-        runTest("operators")
-    }
-
-    @Test
-    @Ignore
-    fun testStringLibArgs() {
-        runTest("stringlibargs")
-    }
-
-    @Test
-    fun testTableLibArgs() {
-        runTest("tablelibargs")
-    }
+    //@Test fun testDebugLibArgs() { runTest("debuglibargs") }
+    //@Test fun testIoLibArgs() { runTest("iolibargs") }
+    @Test fun testMathLibArgs() { runTest("mathlibargs") }
+    //@Test fun testModuleLibArgs() { runTest("modulelibargs") }
+    @Test fun testOperators() { runTest("operators") }
+    //@Test fun testStringLibArgs() { runTest("stringlibargs") }
+    @Test fun testTableLibArgs() { runTest("tablelibargs") }
 
     companion object {
 

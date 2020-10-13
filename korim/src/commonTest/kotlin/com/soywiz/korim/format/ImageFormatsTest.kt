@@ -89,7 +89,6 @@ class ImageFormatsTest {
 	}
 
 	//@Test
-	////@Ignore
 	//fun huge() = imageTest {
 	//	//Thread.sleep(10000)
 	//	val bitmap = Bitmap32(8196, 8196)

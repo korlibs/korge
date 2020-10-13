@@ -11,7 +11,6 @@ class SoftMp3DecoderTest {
     val formats = AudioFormats(MP3Decoder)
 
     @Test
-    //@Ignore
     fun testMiniMp3() = suspendTest({ doIOTest }) {
         //for (n in 0 until 100) {
         for (n in 0 until 10) {

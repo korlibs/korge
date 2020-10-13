@@ -1,4 +1,4 @@
-import com.soywiz.klock.hr.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*

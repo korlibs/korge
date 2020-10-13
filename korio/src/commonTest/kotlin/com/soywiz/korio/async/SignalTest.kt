@@ -30,31 +30,30 @@ class SignalTest {
 		assertEquals("[1][2]{2}[3]{3}<3>[4]", out)
 	}
 
-	@Test
-	//@Ignore("Flaky")
-	@Ignore // Flaky
-	fun name2() = suspendTest {
-		var out = ""
-		val s = Signal<Int>()
-		launchImmediately(coroutineContext) {
-			try {
-				withTimeout(200) {
-					while (true) {
-						out += "" + s.waitOneBase()
-					}
-				}
-			} catch (e: CancellationException) {
-				out += "<cancel>"
-			}
-		}
-		s(1)
-		delay(20)
-		s(2)
-		delay(220)
-		s(3)
-		delay(120)
-		assertEquals("12<cancel>", out)
-	}
+	//@Test
+    ////Flaky!
+	//fun name2() = suspendTest {
+	//	var out = ""
+	//	val s = Signal<Int>()
+	//	launchImmediately(coroutineContext) {
+	//		try {
+	//			withTimeout(200) {
+	//				while (true) {
+	//					out += "" + s.waitOneBase()
+	//				}
+	//			}
+	//		} catch (e: CancellationException) {
+	//			out += "<cancel>"
+	//		}
+	//	}
+	//	s(1)
+	//	delay(20)
+	//	s(2)
+	//	delay(220)
+	//	s(3)
+	//	delay(120)
+	//	assertEquals("12<cancel>", out)
+	//}
 
 	@Test
 	fun executeAndWait1() = suspendTest {

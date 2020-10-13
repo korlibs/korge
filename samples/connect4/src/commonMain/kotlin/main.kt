@@ -32,7 +32,7 @@ suspend fun main() = Korge(width = 448, height = 384, bgcolor = Colors["#2b2b2b"
         val bitmap = this
         context2d {
             fill(Colors.BLUE) {
-                rect(0.0, 0.0, bitmap.width, bitmap.height)
+                rect(0.0, 0.0, bitmap.width.toDouble(), bitmap.height.toDouble())
                 for (row in 0 until nrows) {
                     for (col in 0 until ncols) {
                         circle(32.0 + col * 64, 32.0 + row * 64, 24.0)

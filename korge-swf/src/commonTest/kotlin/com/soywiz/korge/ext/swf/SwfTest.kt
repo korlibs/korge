@@ -206,7 +206,7 @@ class SwfTest {
 	}
 
 	@Test
-	@Ignore //("Fix order")
+	//("Fix order")
 	fun events() = swfTest {
 		//val lib = ResourcesVfs["cameras.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
 		val lib = ResourcesVfs["events.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
@@ -230,7 +230,6 @@ class SwfTest {
 	}
 
 	@Test
-	@Ignore
 	fun bigexternal1() = swfTest {
 		val lib = LocalVfs("c:/temp/test29.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
@@ -238,7 +237,6 @@ class SwfTest {
 	}
 
 	@Test
-	@Ignore
 	fun bigexternal2() = swfTest {
 		val lib = ResourcesVfs["c:/temp/ui.swf"].readSWFDeserializing(views)
 		val mc = lib.createMainTimeLine()

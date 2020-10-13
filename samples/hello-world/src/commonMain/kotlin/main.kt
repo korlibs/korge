@@ -9,10 +9,16 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korge.input.*
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"]) {
 	val minDegrees = (-16).degrees
 	val maxDegrees = (+16).degrees
+
+    this.mouse {
+        down { println(it.button) }
+        up { println(it.button) }
+    }
 
 	val image = image(resourcesVfs["korge.png"].readBitmap()) {
 		rotation = maxDegrees

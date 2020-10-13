@@ -39,9 +39,8 @@ class RasterizerTest {
     }
 
     @Test
-    @Ignore
     fun test2() = suspendTest {
-        Bitmap32(100, 100).context2d {
+        val bmp1 = Bitmap32(100, 100).context2d {
             //debug = true
             fill(
                 createLinearGradient(0, 0, 0, 100) {
@@ -55,9 +54,9 @@ class RasterizerTest {
                 lineToH(-100)
                 close()
             }
-        }.showImageAndWait()
+        }
         val shipSize = 24
-        Bitmap32(shipSize, shipSize).context2d {
+        val bmp2 = Bitmap32(shipSize, shipSize).context2d {
             stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
                 moveTo(shipSize * 0.5, 0.0)
                 lineTo(shipSize, shipSize)
@@ -65,30 +64,21 @@ class RasterizerTest {
                 lineTo(0, shipSize)
                 close()
             }
-        }.showImageAndWait()
-        Bitmap32(3, (shipSize * 0.3).toInt()).context2d {
+        }
+        val bmp3 = Bitmap32(3, (shipSize * 0.3).toInt()).context2d {
             lineWidth = 1.0
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {
                 moveTo(width / 2, 0)
                 lineToV(height)
             }
-        }.showImageAndWait()
-        //bulletBitmap.showImageAndWait()
-
-        /*
-        Bitmap32(128, 128).context2d {
-            moveTo(0, 100)
-            lineTo(30, 10)
-            lineTo(60, 100)
-            close()
-            fill()
-        }.showImageAndWait()
-         */
+        }
+        //bmp1.showImageAndWait()
+        //bmp2.showImageAndWait()
+        //bmp3.showImageAndWait()
     }
 
     @Test
-    @Ignore
     fun testLineJoin() = suspendTest {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
         val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
@@ -183,19 +173,19 @@ class RasterizerTest {
                 }
             }
         }
-        bmp.showImageAndWait()
+        //bmp.showImageAndWait()
     }
 
     @Test
-    @Ignore
     fun testLineJoin2() = suspendTest {
-        NativeImageOrBitmap32(500, 500, native = false).context2d {
+        val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
             beginPath()
             lineCap = LineCap.SQUARE
             lineWidth = 30.0
             moveTo(200, 200)
             lineTo(300, 100)
             stroke()
-        }.showImageAndWait()
+        }
+        //bmp.showImageAndWait()
     }
 }

@@ -548,7 +548,7 @@ private fun Xml.parseProperties(): Map<String, Property> {
 	val out = LinkedHashMap<String, Property>()
 	for (property in this.children("property")) {
 		val pname = property.str("name")
-		val rawValue = property.str("value")
+		val rawValue = property.strNull("value") ?: property.text
 		val type = property.str("type", "string")
 		val pvalue = when (type) {
 			"string" -> Property.StringT(rawValue)

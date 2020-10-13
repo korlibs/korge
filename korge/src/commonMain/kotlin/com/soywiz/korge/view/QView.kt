@@ -2,6 +2,9 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.input.EventsDslMarker
+import com.soywiz.korge.input.MouseEvents
+import com.soywiz.korge.input.onClick
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
@@ -16,8 +19,6 @@ class QView(val views: List<View>) : List<View> by views, BView {
 
     operator fun get(name: String): QView = QView(views.mapNotNull { it.firstDescendantWith { it.name == name } })
 
-    fun alpha(value: Double) = views.fastForEach { it.alpha(value) }
-
     fun position(): Point = first.pos.copy()
 
     fun <T> setProperty(prop: KMutableProperty1<View, T>, value: T) {
@@ -29,43 +30,43 @@ class QView(val views: List<View>) : List<View> by views, BView {
     }
 
     var alpha: Double
-        get() = first.alpha
+        get() = firstOrNull?.alpha ?: 1.0
         set(value) = fastForEach { it.alpha = value }
 
     var scale: Double
-        get() = first.scale
+        get() = firstOrNull?.scale ?: 1.0
         set(value) = fastForEach { it.scale = value }
 
     var scaleX: Double
-        get() = first.scaleX
+        get() = firstOrNull?.scaleX ?: 1.0
         set(value) = fastForEach { it.scaleX = value }
 
     var scaleY: Double
-        get() = first.scaleY
+        get() = firstOrNull?.scaleY ?: 1.0
         set(value) = fastForEach { it.scaleY = value }
 
     var x: Double
-        get() = first.x
+        get() = firstOrNull?.x ?: 0.0
         set(value) = fastForEach { it.x = value }
 
     var y: Double
-        get() = first.y
+        get() = firstOrNull?.y ?: 0.0
         set(value) = fastForEach { it.y = value }
 
     var rotation: Angle
-        get() = first.rotation
+        get() = firstOrNull?.rotation ?: 0.degrees
         set(value) = fastForEach { it.rotation = value }
 
     var skewX: Angle
-        get() = first.skewX
+        get() = firstOrNull?.skewX ?: 0.degrees
         set(value) = fastForEach { it.skewX = value }
 
     var skewY: Angle
-        get() = first.skewY
+        get() = firstOrNull?.skewY ?: 0.degrees
         set(value) = fastForEach { it.skewY = value }
 
     var colorMul: RGBA
-        get() = first.colorMul
+        get() = firstOrNull?.colorMul ?: Colors.WHITE
         set(value) = fastForEach { it.colorMul = value }
 
     /** Sets the state (if available) of all the views in this query */
@@ -73,6 +74,10 @@ class QView(val views: List<View>) : List<View> by views, BView {
         fastForEach { it.play(name) }
     }
 }
+
+fun QView.alpha(value: Double) = views.fastForEach { it.alpha(value) }
+fun QView.play(name: String) = fastForEach { it.play(name) }
+fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
 
 /** Indexer that allows to get a descendant marked with the name [name]. */
 operator fun View?.get(name: String): QView = QView(this)[name]

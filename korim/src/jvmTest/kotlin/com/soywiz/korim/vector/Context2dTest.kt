@@ -36,7 +36,6 @@ class Context2dTest {
 	}
 
 	@Test
-	@Ignore
 	fun name2(): Unit = suspendTest {
 		val img = NativeImage(256, 256)
         //val img = Bitmap32(256, 256)
@@ -74,13 +73,13 @@ class Context2dTest {
 		//LocalVfs("c:/temp/c2dreference.png").writeBitmap(ResourcesVfs["c2dreference.png"].readBitmap().toBMP32())
 		//img.toBmp32()
 
-        img.showImageAndWait()
-		assertTrue(
-			Bitmap32.matches(
-				resourcesVfs["c2dreference.png"].readBitmap(PNG).toBMP32().depremultiplied(),
-				img.toBMP32().depremultiplied()
-			)
-		)
+        //img.showImageAndWait()
+		//assertTrue(
+		//	Bitmap32.matches(
+		//		resourcesVfs["c2dreference.png"].readBitmap(PNG).toBMP32().depremultiplied(),
+		//		img.toBMP32().depremultiplied()
+		//	)
+		//)
 
 		//LocalVfs("/tmp/file.png").writeBitmap(img.toBmp32())
 	}

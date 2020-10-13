@@ -51,8 +51,8 @@ suspend fun main() = Korge {
 	}
 
 	keys {
-		onKeyDown { keysDownText.text = "Key:Down ${nowTime()} ${it.key}" }
-		onKeyUp { keysUpText.text = "Key:Up ${nowTime()} ${it.key}" }
+		down { keysDownText.text = "Key:Down ${nowTime()} ${it.key}" }
+		up { keysUpText.text = "Key:Up ${nowTime()} ${it.key}" }
 	}
 
 	mouse {

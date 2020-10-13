@@ -18,7 +18,6 @@ class AsyncClientServerTest {
 		val UUIDLength = 36
 	}
 
-	//@Ignore
     @Test
 	fun testClientServer() = suspendTest({ OS.isJvm || OS.isNativeDesktop }) {
         val server = AsyncServer(port = 0)

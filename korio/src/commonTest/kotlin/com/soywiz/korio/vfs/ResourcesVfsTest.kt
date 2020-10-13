@@ -3,6 +3,7 @@ package com.soywiz.korio.vfs
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.util.OS
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
@@ -10,8 +11,7 @@ import kotlin.test.*
 
 class ResourcesVfsTest {
 	@Test
-	@Ignore
-	fun name() = suspendTest {
+	fun name() = suspendTest({ OS.isJvm }) {
 		println("[A]")
 		val listing = resourcesVfs["tresfolder"].list()
 		println("[B]")

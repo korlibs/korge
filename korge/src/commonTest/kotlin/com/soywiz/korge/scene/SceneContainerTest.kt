@@ -44,23 +44,20 @@ class SceneContainerTest : ViewsForTesting() {
 		}
 	}
 
-	@Test
-	@Ignore
-	fun name() = viewsTest {
-		val sc = SceneContainer(views)
-		injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
-		injector.mapPrototype(Scene1::class) { Scene1(get(SceneInfo::class)) }
-		injector.mapPrototype(Scene2::class) { Scene2() }
-		views.stage += sc
-		sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
-		//sc.changeTo<Scene1>(time = 10)
-
-		delay(10.milliseconds)
-
-		assertNotNull(sc["box"])
-		assertEquals(
-			"Scene1.sceneInit, Scene1.sceneAfterDestroy, Scene1.sceneAfterInit, SceneInfo(name=hello), Scene2.sceneInit, Scene1.sceneDestroy, Scene2.sceneAfterDestroy, Scene2.sceneAfterInit",
-			mylog.joinToString(", ")
-		)
-	}
+	//@Test
+	//fun name() = viewsTest {
+	//	val sc = SceneContainer(views)
+	//	injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+	//	injector.mapPrototype(Scene1::class) { Scene1(get(SceneInfo::class)) }
+	//	injector.mapPrototype(Scene2::class) { Scene2() }
+	//	views.stage += sc
+	//	sc.changeTo<Scene1>(SceneInfo("hello"), time = 10.milliseconds)
+	//	//sc.changeTo<Scene1>(time = 10)
+	//	delay(10.milliseconds)
+	//	assertNotNull(sc["box"])
+	//	assertEquals(
+	//		"Scene1.sceneInit, Scene1.sceneAfterDestroy, Scene1.sceneAfterInit, SceneInfo(name=hello), Scene2.sceneInit, Scene1.sceneDestroy, Scene2.sceneAfterDestroy, Scene2.sceneAfterInit",
+	//		mylog.joinToString(", ")
+	//	)
+	//}
 }

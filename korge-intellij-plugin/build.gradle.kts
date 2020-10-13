@@ -64,6 +64,8 @@ dependencies {
     implementation(project(":korge-spine"))
     implementation(project(":korge-box2d"))
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
 	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")
 	//implementation("javax.xml.bind:jaxb-api:2.3.1")
 	//implementation("com.sun.xml.bind:jaxb-impl:2.3.1")

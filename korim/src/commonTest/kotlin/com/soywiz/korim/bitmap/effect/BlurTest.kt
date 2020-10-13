@@ -9,15 +9,12 @@ import kotlin.test.*
 
 class BlurTest {
     @Test
-    @Ignore
     fun test() = suspendTest {
-        Bitmap32(100, 100, premultiplied = true).context2d {
+        val bmpWithDropShadow = Bitmap32(100, 100, premultiplied = true).context2d {
             fill(Colors.RED) {
                 circle(50, 50, 40)
             }
-        }
-            .dropShadowInplace(0, 0, 10, Colors.BLUE)
-            //.blur(10)
-            .showImageAndWait()
+        }.dropShadowInplace(0, 0, 5, Colors.BLUE)
+        //bmpWithDropShadow.showImageAndWait()
     }
 }

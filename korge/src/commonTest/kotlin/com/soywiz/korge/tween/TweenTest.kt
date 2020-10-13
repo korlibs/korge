@@ -12,8 +12,9 @@ import kotlin.coroutines.*
 import kotlin.test.*
 
 class TweenTest : ViewsForTesting(20.milliseconds) {
+    /*
 	@Test
-	@Ignore // @TODO: Flaky!
+	// @TODO: Flaky!
 	fun name() = viewsTest {
 		//println("BLOCK START")
 		val result = arrayListOf<Any>()
@@ -66,4 +67,5 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 			result2.joinToString(",")
 		)
 	}
+     */
 }

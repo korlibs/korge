@@ -22,14 +22,13 @@ class TtfFontTest {
     }
 
     //@Test
-    //@Ignore
     //fun name() = ttfTest {
     //    val font = TtfFont(root["Comfortaa-Regular.ttf"].readAll().openSync())
     //    NativeImage(512, 128).apply {
     //        getContext2d()
     //            .fillText(
-    //                font,
     //                "HELLO WORLD. This 0123 ñáéíóúç",
+    //                font = font,
     //                size = 32.0,
     //                x = 0.0,
     //                y = 0.0,

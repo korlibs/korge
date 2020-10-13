@@ -63,14 +63,12 @@ class LoadOrderTest {
         }
     }
 
-    @Ignore
+    @Test
     fun testClassLoadsStringFirst() {
-        /*
         val launcher = LuajClassLoader
             .NewLauncher(TestLauncherLoadStringFirst::class.java)
         val results = launcher.launch("foo", null)
         assertNotNull(results)
-        */
     }
 
 }

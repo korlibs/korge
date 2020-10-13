@@ -1,17 +1,15 @@
 package com.soywiz.korge.intellij.debug
 
 import com.intellij.debugger.impl.*
+import com.soywiz.klock.measureTimeWithResult
 import com.sun.jdi.*
 import com.sun.jdi.event.*
 import com.sun.jdi.request.*
 import org.junit.*
 import java.io.*
-import kotlin.time.*
 
 class DebugExtTest {
-	@UseExperimental(ExperimentalTime::class)
 	@Test
-	@Ignore
 	fun test() {
 		val manager: VirtualMachineManager = Bootstrap.virtualMachineManager()
 		val connector = manager.defaultConnector()
@@ -75,22 +73,22 @@ class DebugExtTest {
 								val data = frame.visibleVariableByName("data")
 								val dataValue = frame.getValue(data)
 
-								val bytes0 = measureTimedValue { (dataValue as ArrayReference).readBytesArray3(thread) }
-								println(bytes0.value!![0])
-								println(bytes0.value!![10000])
-								println(bytes0.value!![bytes0.value!!.size - 1])
+								val bytes0 = measureTimeWithResult { (dataValue as ArrayReference).readBytesArray3(thread) }
+								println(bytes0.result!![0])
+								println(bytes0.result!![10000])
+								println(bytes0.result!![bytes0.result!!.size - 1])
 								println("$bytes0")
 
-								val bytes0b = measureTimedValue { DebuggerUtilsImplExt.fastReadBytesArray(dataValue, thread) }
-								println(bytes0b.value!![0])
-								println(bytes0b.value!![10000])
-								println(bytes0b.value!![bytes0.value!!.size - 1])
+								val bytes0b = measureTimeWithResult { DebuggerUtilsImplExt.fastReadBytesArray(dataValue, thread) }
+								println(bytes0b.result!![0])
+								println(bytes0b.result!![10000])
+								println(bytes0b.result!![bytes0.result!!.size - 1])
 								println("$bytes0b")
 
-								val bytes1 = measureTimedValue { (dataValue as ArrayReference).convertToLocalBytes() }.duration
+								val bytes1 = measureTimeWithResult { (dataValue as ArrayReference).convertToLocalBytes() }.time
 								//val bytes1b = measureTimedValue { (dataValue as ArrayReference).convertToLocalBytes() }.duration
 								println("$bytes1")
-								val bytes2 = measureTimedValue { DebuggerUtilsImpl.readBytesArray(dataValue) }.duration
+								val bytes2 = measureTimeWithResult { DebuggerUtilsImpl.readBytesArray(dataValue) }.time
 								//val bytes2b = measureTimedValue { DebuggerUtilsImpl.readBytesArray(dataValue) }.duration
 								println("$bytes2")
 								//val bytes3 = measureTimedValue { readBytesArray2(dataValue) }.duration

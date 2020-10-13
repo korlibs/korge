@@ -24,8 +24,8 @@ suspend fun Board.Cell.setAnimate(type: Chip) {
 	set(type)
 	launchImmediately(coroutineContext) {
 		view.tween(
-			(view["chip"]!!::alpha[0.7, 1.0]).linear(),
-			(view["chip"]!!::scale[0.8, 1.0]).easeOutElastic(),
+			(view["chip"]::alpha[0.7, 1.0]).linear(),
+			(view["chip"]::scale[0.8, 1.0]).easeOutElastic(),
 			time = 300.milliseconds
 		)
 	}
@@ -34,7 +34,7 @@ suspend fun Board.Cell.setAnimate(type: Chip) {
 var Board.Cell.highlighting by Extra.Property { false }
 
 suspend fun Board.Cell.highlight(highlight: Boolean) {
-	view["highlight"].play(if (highlight) "highlight" else "none")
+	view["highlight"].first.play(if (highlight) "highlight" else "none")
 	this.highlighting = highlight
 	if (highlight) {
 		launchImmediately(coroutineContext) {

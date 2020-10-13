@@ -12,7 +12,7 @@ import org.jbox2d.dynamics.joints.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
     worldView {
-        debugWorldViews = true
+        //debugWorldViews = true
         scale = 10.0
         position(200, 200)
 
@@ -39,6 +39,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My
         joint1.motorSpeed = 1.0f * MathUtils.PI
         joint1.maxMotorTorque = 10000f
         joint1.enableMotor = true
+        val world = getOrCreateBox2dWorld().world
         world.createJoint(joint1)
 
         prevBody = obj1.body!!

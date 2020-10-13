@@ -109,6 +109,22 @@ suspend fun BaseView?.tween(
 	}
 }
 
+suspend fun QView.tween(
+    vararg vs: V2<*>,
+    time: TimeSpan = DEFAULT_TIME,
+    easing: Easing = DEFAULT_EASING,
+    callback: (Double) -> Unit = { }
+): Unit {
+    if (isEmpty()) {
+        // @TODO: Do this?
+        delay(time)
+    } else {
+        fastForEach {
+            tween(*vs, time = time, easing = easing, callback = callback)
+        }
+    }
+}
+
 @PublishedApi
 internal val DEFAULT_EASING = Easing.EASE_IN_OUT_QUAD
 

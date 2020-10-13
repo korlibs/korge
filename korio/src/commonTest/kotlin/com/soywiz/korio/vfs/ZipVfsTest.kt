@@ -125,25 +125,22 @@ class ZipVfsTest {
 		}
 	}
 
-	@Test
-	@Ignore
-	fun testZip1() = suspendTestNoBrowser {
-		val mem = MemoryVfs()
-		//UrlVfs("https://github.com/soywiz/korge-tools/releases/download/binaries/rhubarb-lip-sync-1.4.2-win32.zip").copyTo(LocalVfs["c:/temp/file.zip"])
-
-		//val zip = LocalVfs("c:/temp/rhubarb-lip-sync-1.4.2-osx.zip").openAsZip()
-		localVfs("c:/temp/rhubarb-lip-sync-1.4.2-win32.zip").openAsZip { zip ->
-			//zip.copyTo(mem) // IOException
-			zip.copyToTree(mem) // IOException
-
-			//assertEquals(
-			//	listOf("/rhubarb-lip-sync-1.4.2-osx"),
-			//	zip.list().map { it.fullname }.toList()
-			//)
-			//val mem = MemoryVfs()
-			//zip.copyToTree(mem)
-		}
-	}
+	//@Test
+	//fun testZip1() = suspendTestNoBrowser {
+	//	val mem = MemoryVfs()
+	//	//UrlVfs("https://github.com/soywiz/korge-tools/releases/download/binaries/rhubarb-lip-sync-1.4.2-win32.zip").copyTo(LocalVfs["c:/temp/file.zip"])
+	//	//val zip = LocalVfs("c:/temp/rhubarb-lip-sync-1.4.2-osx.zip").openAsZip()
+	//	localVfs("c:/temp/rhubarb-lip-sync-1.4.2-win32.zip").openAsZip { zip ->
+	//		//zip.copyTo(mem) // IOException
+	//		zip.copyToTree(mem) // IOException
+	//		//assertEquals(
+	//		//	listOf("/rhubarb-lip-sync-1.4.2-osx"),
+	//		//	zip.list().map { it.fullname }.toList()
+	//		//)
+	//		//val mem = MemoryVfs()
+	//		//zip.copyToTree(mem)
+	//	}
+	//}
 
 	@Test
 	fun testReadChunk() = suspendTestNoBrowser {

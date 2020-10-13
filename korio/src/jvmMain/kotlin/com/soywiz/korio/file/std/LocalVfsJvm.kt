@@ -370,11 +370,6 @@ private class LocalVfsJvm : LocalVfsV2() {
 			(File(path).listFiles() ?: emptyArray<File>()).map { that.file("$path/${it.name}") }
 
 	override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
-		try {
-			TODO()
-		} catch (e: Throwable) {
-			e.printStackTrace()
-		}
 		for (it in (File(path).listFiles() ?: emptyArray<File>())) {
 			emit(that.file("$path/${it.name}"))
 		}

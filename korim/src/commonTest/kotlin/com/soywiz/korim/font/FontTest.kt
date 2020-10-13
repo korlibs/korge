@@ -15,7 +15,6 @@ import kotlin.test.assertEquals
 
 class FontTest {
     @Test
-    @Ignore
     fun test() = suspendTest {
         BitmapFont(SystemFont("Arial"), 100.0, chars = CharacterSet.LATIN_ALL).register(name = "Arial")
         //BitmapFont(SystemFont("Arial"), 10.0, chars = CharacterSet.LATIN_ALL).register(name = "Arial")
@@ -25,7 +24,7 @@ class FontTest {
         //resourcesVfs["Comfortaa-Regular.ttf"].readTtfFont().register(name = "Arial")
         //resourcesVfs["OptimusPrinceps.ttf"].readTtfFont().register(name = "Arial")
 
-        println(buildSvgXml {
+        val svgXmlString = buildSvgXml {
             this.fillStyle = createLinearGradient(0, 0, 0, 48).add(0.0, Colors.BLUE).add(1.0, Colors.GREEN)
             //this.fillStyle = createColor(Colors.BLACK)
             this.fontName = "Arial"
@@ -34,7 +33,7 @@ class FontTest {
             translate(20, 20)
             rotate(15.degrees)
             fillText("12 Hello World!", 16, 48)
-        })
+        }
 
         //val font =
         //val font = SystemFont("Arial")
@@ -55,11 +54,10 @@ class FontTest {
             fillText("12 Hello World!", 16, 48)
             //font.fillText(this, "HELLO", color = Colors.BLACK, x = 50.0, y = 50.0)
         }
-        image.showImageAndWait()
+        //image.showImageAndWait()
     }
 
     @Test
-    @Ignore
     fun test2() = suspendTest {
         //val font = DefaultTtfFont
 
@@ -77,7 +75,7 @@ class FontTest {
         //BitmapFont(DefaultTtfFont, 64.0, paint = ColorPaint(Colors.RED)).atlas.showImageAndWait()
         //BitmapFont(SystemFont("Arial"), 64.0, paint = ColorPaint(Colors.RED)).atlas.showImageAndWait()
 
-        Bitmap32(128, 128).context2d {
+        val img1 = Bitmap32(128, 128).context2d {
             //rect(0, 0, 50, 50)
             circle(25, 50, 30)
             clip()
@@ -88,7 +86,7 @@ class FontTest {
             lineTo(60, 100)
             close()
             fill()
-        }.showImageAndWait()
+        }
 
         //val font = SystemFont("Arial")
         val font = DefaultTtfFont
@@ -121,7 +119,9 @@ class FontTest {
             put(c)
             advance(advance * scale)
         })
-        result.bmp.showImageAndWait()
+
+        //img1.showImageAndWait()
+        //result.bmp.showImageAndWait()
     }
 
     @Test

@@ -179,14 +179,13 @@ class OsLibTest {
     }
 
     @Test
-    @Ignore // Fails on CI Windows
     fun testJseOsGetenvForEnvVariables() {
-        val USER = LuaValue.valueOf("USER")
-        val jse_user = jse_lib.get("getenv").call(USER)
+        val USER = LuaValue.valueOf("TEMP")
+        val jse_user = jse_lib["getenv"].call(USER)
         //LuaValue jme_user = jme_lib.get("getenv").call(USER);
         assertFalse(jse_user.isnil())
         //assertTrue(jme_user.isnil());
-        println("User: $jse_user")
+        println("Temp: $jse_user")
     }
 
     @Test

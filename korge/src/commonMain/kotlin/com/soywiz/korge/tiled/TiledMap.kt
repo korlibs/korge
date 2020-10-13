@@ -275,13 +275,30 @@ class TiledMap constructor(
     }
 
     sealed class Property {
-        class StringT(var value: String) : Property()
-        class IntT(var value: Int) : Property()
-        class FloatT(var value: Double) : Property()
-        class BoolT(var value: Boolean) : Property()
-        class ColorT(var value: RGBA) : Property()
-        class FileT(var path: String) : Property()
-        class ObjectT(var id: Int) : Property()
+        abstract val string: String
+        override fun toString(): String = string
+
+        class StringT(var value: String) : Property() {
+            override val string: String get() = value
+        }
+        class IntT(var value: Int) : Property() {
+            override val string: String get() = "$value"
+        }
+        class FloatT(var value: Double) : Property() {
+            override val string: String get() = "$value"
+        }
+        class BoolT(var value: Boolean) : Property() {
+            override val string: String get() = "$value"
+        }
+        class ColorT(var value: RGBA) : Property() {
+            override val string: String get() = "$value"
+        }
+        class FileT(var path: String) : Property() {
+            override val string: String get() = path
+        }
+        class ObjectT(var id: Int) : Property() {
+            override val string: String get() = "$id"
+        }
     }
 
     data class TiledTileset(

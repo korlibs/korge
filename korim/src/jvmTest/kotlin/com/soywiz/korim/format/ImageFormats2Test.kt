@@ -43,12 +43,11 @@ class ImageFormats2Test {
     }
 
     @Test
-    @Ignore
     fun mipmaps() = imgTest {
         val bitmap = root["kotlin24.png"].readBitmapNoNative(formats)
         assertEquals("Bitmap32(190, 190)", bitmap.toString())
         val bitmap2 = bitmap.toBMP32().mipmap(2)
-        awtShowImage(bitmap2); Thread.sleep(10000L)
+        //bitmap2.showImageAndWait()
     }
 
     @Test

@@ -32,14 +32,6 @@ class Bitmap32Test {
         assertTrue(c.any { it == Colors.BLUE })
 	}
 
-	//@Test
-	//	//@Ignore
-	//fun mipmaps() = suspendTest {
-	//	val bmp = Bitmap32(4096 * 2, 4096 * 2, Colors.BLACK)
-	//	val bitmap2 = bmp.mipmap(2)
-	//	//awtShowImage(bitmap2); Thread.sleep(10000L)
-	//}
-
     @Test
     fun bitmapsAreNotComparedNorHashedByContent() {
         val bmp1 = Bitmap32(32, 32)

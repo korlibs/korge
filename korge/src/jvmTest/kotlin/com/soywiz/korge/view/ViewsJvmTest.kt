@@ -57,7 +57,6 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	}
 
 	@Test
-	@Ignore
 	fun textGetBounds() = viewsTest {
 		val font = debugBmpFont
 		val text = Text("Hello World", font = font, textSize = 8.0)

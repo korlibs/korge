@@ -1,5 +1,6 @@
 package com.soywiz.korge.intellij.module
 
+import org.junit.Test
 import kotlin.test.*
 
 internal class KorgeProjectTemplateTest {

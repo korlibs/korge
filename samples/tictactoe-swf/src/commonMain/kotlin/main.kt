@@ -71,7 +71,7 @@ class TicTacToeMainScene : Scene() {
 				}
 			}
 			sceneView += results
-			results["hit"]?.mouse?.click?.waitOne()
+			results["hit"]?.firstOrNull?.mouse?.click?.waitOne()
 			//sceneView -= results
 			results.removeFromParent()
 		}

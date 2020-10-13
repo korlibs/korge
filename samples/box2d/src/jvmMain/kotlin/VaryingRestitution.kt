@@ -10,7 +10,7 @@ import org.jbox2d.dynamics.*
 
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "My Awesome Box2D Game!") {
     worldView {
-        debugWorldViews = true
+        //debugWorldViews = true
         scale = 20.0
 
         sgraphics {

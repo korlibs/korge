@@ -6,7 +6,6 @@ import kotlin.test.*
 
 class SvgTest {
 	@Test
-	//@Ignore
 	fun name() = suspendTest {
 		val logo = SVG(SAMPLE_LOGO)
 		//val img = logo.render().toBmp32()

@@ -16,6 +16,13 @@ class Bitmap8(
     override fun getIntIndex(n: Int): Int = datau[n]
     override fun setIntIndex(n: Int, color: Int) = run { datau[n] = color }
 
+    override fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
+        if (dst !is Bitmap8) return super.copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)
+        for (y in 0 until height) {
+            com.soywiz.kmem.arraycopy(this.data, this.index(srcX, srcY + y), (dst as Bitmap8).data, dst.index(dstX, dstY + y), width)
+        }
+    }
+
     override fun clone() = Bitmap8(width, height, data.copyOf(), RgbaArray(palette.ints.copyOf()))
 
 	override fun toString(): String = "Bitmap8($width, $height, palette=${palette.size})"
