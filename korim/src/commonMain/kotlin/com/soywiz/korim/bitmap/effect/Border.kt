@@ -6,6 +6,12 @@ import com.soywiz.korim.color.*
 fun Bitmap32.border(r: Int, color: RGBA = Colors.BLACK): Bitmap32 {
     val out = Bitmap32(width + (r * 2), height + (r * 2), premultiplied = true)
     out.put(this, r, r)
+    out.borderInline(r, color)
+    return out
+}
+
+fun Bitmap32.borderInline(r: Int, color: RGBA = Colors.BLACK) {
+    val out = this
     val distance = out.distanceMap()
     for (y in 0 until out.height) {
         for (x in 0 until out.width) {
@@ -17,5 +23,4 @@ fun Bitmap32.border(r: Int, color: RGBA = Colors.BLACK): Bitmap32 {
             }
         }
     }
-    return out
 }

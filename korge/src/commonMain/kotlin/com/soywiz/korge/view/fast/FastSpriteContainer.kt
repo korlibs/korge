@@ -62,8 +62,8 @@ class FastSpriteContainer : View() {
                 for (n in m until min(sprites.size, m + batchSize)) {
                     //spriteCount++
                     val sprite = sprites[n]
-                    val w = sprite.width
-                    val h = sprite.height
+                    val w = sprite.width * sprite.scalef
+                    val h = sprite.height * sprite.scalef
                     val ax = -sprite.anchorXf * w
                     val ay = -sprite.anchorXf * w
                     val x0 = ax + sprite.xf

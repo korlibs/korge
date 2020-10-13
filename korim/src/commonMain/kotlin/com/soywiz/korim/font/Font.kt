@@ -5,6 +5,8 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.effect.BitmapEffect
+import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.DefaultPaint
 import com.soywiz.korim.vector.paint.Paint
@@ -33,6 +35,7 @@ data class TextToBitmapResult(
 
 fun Font.renderGlyphToBitmap(
     size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
+    effect: BitmapEffect? = null,
     border: Int = 1, nativeRendering: Boolean = true
 ): TextToBitmapResult {
     val font = this
@@ -49,7 +52,8 @@ fun Font.renderGlyphToBitmap(
         font.renderGlyph(this, size, codePoint, gx + border, gy + border, fill = true, metrics = gmetrics)
         if (fill) fill() else stroke()
     }
-    return TextToBitmapResult(image, fmetrics, TextMetrics(), listOf(
+    val imageOut = image.toBMP32IfRequired().applyEffect(effect)
+    return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(
         TextToBitmapResult.PlacedGlyph(codePoint, gx + border, gy + border, gmetrics, Matrix())
     ))
 }

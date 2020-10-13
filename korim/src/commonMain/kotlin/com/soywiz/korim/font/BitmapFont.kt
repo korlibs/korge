@@ -8,6 +8,7 @@ import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.atlas.MutableAtlas
+import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageFormat
@@ -152,7 +153,8 @@ class BitmapFont(
             chars: CharacterSet = CharacterSet.LATIN_ALL,
             fontName: String = font.name,
             paint: Paint = ColorPaint(Colors.WHITE),
-            mipmaps: Boolean = true
+            mipmaps: Boolean = true,
+            effect: BitmapEffect? = null,
         ): BitmapFont {
             val fontSize = fontSize.toDouble()
             val fmetrics = font.getFontMetrics(fontSize)
@@ -162,7 +164,7 @@ class BitmapFont(
             val matlas = MutableAtlas<TextToBitmapResult>(requiredAreaSide.nextPowerOfTwo, requiredAreaSide.nextPowerOfTwo)
             val border = 2
             for (codePoint in chars.codePoints) {
-                val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = paint, fill = true, border = 1)
+                val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = paint, fill = true, border = 1, effect = effect)
                 //val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = DefaultPaint, fill = true)
                 matlas.add(result.bmp.toBMP32().premultipliedIfRequired(), result)
             }
@@ -345,5 +347,6 @@ fun Font.toBitmapFont(
     chars: CharacterSet = CharacterSet.LATIN_ALL,
     fontName: String = this.name,
     paint: Paint = ColorPaint(Colors.WHITE),
-    mipmaps: Boolean = true
-) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps)
+    mipmaps: Boolean = true,
+    effect: BitmapEffect? = null,
+) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)

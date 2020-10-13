@@ -18,7 +18,11 @@ import com.soywiz.korge.view.fast.FastSprite
 import com.soywiz.korge.view.fast.FastSpriteContainer
 import com.soywiz.korge.view.fast.fastSpriteContainer
 import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
+import com.soywiz.korim.font.DefaultTtfFont
+import com.soywiz.korim.font.toBitmapFont
+import com.soywiz.korim.vector.VerticalAlign
 import kotlin.random.Random
 
 //class BunnyFastSprite(tex: BmpSlice) : FastSprite(tex) {
@@ -33,6 +37,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
 }
 
 // bunnymark ported from PIXI.js
+// https://www.goodboydigital.com/pixijs/bunnymark/
 // https://www.goodboydigital.com/pixijs/bunnymark/js/bunnyBenchMark.js
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"]) {
     val wabbitTexture = resourcesVfs["bunnys.png"].readBitmap()
@@ -51,6 +56,13 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"
     val amount = 100
 
     val container = fastSpriteContainer()
+    val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(
+        dropShadowX = 1,
+        dropShadowY = 1,
+        dropShadowRadius = 2,
+    ))
+    //val font = DefaultTtfFont
+    val bunnyCountText = text2("Bunnies", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
     //val container = container()
 
     val bunnys = arrayListOf<Bunny>()
@@ -72,6 +84,7 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b9b"
             container.addChild(bunny)//, random);
             bunnys.add(bunny)
         }
+        bunnyCountText.text = "Bunnies ${bunnys.size}"
     }
 
     addBunny(startBunnyCount)
