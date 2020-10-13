@@ -69,7 +69,7 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	}
 
 	operator fun get(index: Int): Int = i8[index].toInt() and 0xFF
-	operator fun set(index: Int, value: Int): Unit = run { i8[index] = value.toByte() }
+	operator fun set(index: Int, value: Int): Unit { i8[index] = value.toByte() }
 
 	fun getByte(index: Int): Byte = arrayByte[index]
 	fun getShort(index: Int): Short = arrayShort[index]
@@ -77,35 +77,38 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	fun getFloat(index: Int): Float = arrayFloat[index]
 	fun getDouble(index: Int): Double = arrayDouble[index]
 
-	fun setByte(index: Int, value: Byte): Unit = run { arrayByte[index] = value }
-	fun setShort(index: Int, value: Short): Unit = run { arrayShort[index] = value }
-	fun setInt(index: Int, value: Int): Unit = run { arrayInt[index] = value }
-	fun setFloat(index: Int, value: Float): Unit = run { arrayFloat[index] = value }
-	fun setDouble(index: Int, value: Double): Unit = run { arrayDouble[index] = value }
+	fun setByte(index: Int, value: Byte): Unit { arrayByte[index] = value }
+	fun setShort(index: Int, value: Short): Unit { arrayShort[index] = value }
+	fun setInt(index: Int, value: Int): Unit { arrayInt[index] = value }
+	fun setFloat(index: Int, value: Float): Unit { arrayFloat[index] = value }
+	fun setDouble(index: Int, value: Double): Unit { arrayDouble[index] = value }
 
 	fun dispose() = Unit
 
-	fun setAlignedInt16(index: Int, value: Short): Unit = run { i16[index] = value }
+    fun setAlignedUInt16(index: Int, value: Int): Unit { i16[index] = value.toShort() }
+    fun getAlignedUInt16(index: Int): Int = i16[index].toInt() and 0xFFFF
+
+    fun setAlignedInt16(index: Int, value: Short): Unit { i16[index] = value }
 	fun getAlignedInt16(index: Int): Short = i16[index]
-	fun setAlignedInt32(index: Int, value: Int): Unit = run { i32[index] = value }
+	fun setAlignedInt32(index: Int, value: Int): Unit { i32[index] = value }
 	fun getAlignedInt32(index: Int): Int = i32[index]
     fun getAlignedInt64(index: Int): Long {
         val low = i32[index * 2 + 0]
         val high = i32[index * 2 + 1]
         return ((high.toLong() and 0xFFFFFFFFL) shl 32) or (low.toLong() and 0xFFFFFFFFL)
     }
-	fun setAlignedFloat32(index: Int, value: Float): Unit = run { f32[index] = value }
+	fun setAlignedFloat32(index: Int, value: Float): Unit { f32[index] = value }
 	fun getAlignedFloat32(index: Int): Float = f32[index]
-	fun setAlignedFloat64(index: Int, value: Double): Unit = run { f64[index] = value }
+	fun setAlignedFloat64(index: Int, value: Double): Unit { f64[index] = value }
 	fun getAlignedFloat64(index: Int): Double = f64[index]
 
 	fun getUnalignedInt16(index: Int): Short = data.getShort(index)
-	fun setUnalignedInt16(index: Int, value: Short): Unit = run { data.setShort(index, value) }
-	fun setUnalignedInt32(index: Int, value: Int): Unit = run { data.setInt(index, value) }
+	fun setUnalignedInt16(index: Int, value: Short): Unit { data.setShort(index, value) }
+	fun setUnalignedInt32(index: Int, value: Int): Unit { data.setInt(index, value) }
 	fun getUnalignedInt32(index: Int): Int = data.getInt(index)
-	fun setUnalignedFloat32(index: Int, value: Float): Unit = run { data.setFloat(index, value) }
+	fun setUnalignedFloat32(index: Int, value: Float): Unit { data.setFloat(index, value) }
 	fun getUnalignedFloat32(index: Int): Float = data.getFloat(index)
-	fun setUnalignedFloat64(index: Int, value: Double): Unit = run { data.setDouble(index, value) }
+	fun setUnalignedFloat64(index: Int, value: Double): Unit { data.setDouble(index, value) }
 	fun getUnalignedFloat64(index: Int): Double = data.getDouble(index)
 
 	fun setArrayInt8(dstPos: Int, src: ByteArray, srcPos: Int, len: Int) = copy(src, srcPos, this, dstPos, len)
@@ -141,14 +144,14 @@ inline class Uint8Buffer(val b: Int8Buffer) {
 	companion object
 	val size: Int get() = b.size
 	operator fun get(index: Int): Int = b[index].toInt() and 0xFF
-	operator fun set(index: Int, value: Int): Unit = run { b[index] = value.toByte() }
+	operator fun set(index: Int, value: Int): Unit { b[index] = value.toByte() }
 }
 
 inline class Uint16Buffer(val b: Int16Buffer) {
 	companion object
 	val size: Int get() = b.size
 	operator fun get(index: Int): Int = b[index].toInt() and 0xFFFF
-	operator fun set(index: Int, value: Int): Unit = run { b[index] = value.toShort() }
+	operator fun set(index: Int, value: Int): Unit { b[index] = value.toShort() }
 }
 
 fun Uint8BufferAlloc(size: Int): Uint8Buffer = Uint8Buffer(Int8BufferAlloc(size))
