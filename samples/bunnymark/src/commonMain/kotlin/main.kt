@@ -56,13 +56,14 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val amount = 100
 
     val container = fastSpriteContainer()
-    val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(
-        dropShadowX = 1,
-        dropShadowY = 1,
-        dropShadowRadius = 2,
-    ))
+    val font = DefaultTtfFont
+        //.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(
+        //    dropShadowX = 1,
+        //    dropShadowY = 1,
+        //    dropShadowRadius = 2,
+        //))
     //val font = DefaultTtfFont
-    val bunnyCountText = text2("Bunnies", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
+    val bunnyCountText = text2("", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
     //val container = container()
 
     val bunnys = arrayListOf<Bunny>()
@@ -84,7 +85,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
             container.addChild(bunny)//, random);
             bunnys.add(bunny)
         }
-        bunnyCountText.text = "Bunnies ${bunnys.size}"
+        bunnyCountText.text = "(WIP) KorGE Bunnymark. Bunnies: ${bunnys.size}"
     }
 
     addBunny(startBunnyCount)

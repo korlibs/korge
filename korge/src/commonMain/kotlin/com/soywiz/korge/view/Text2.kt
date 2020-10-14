@@ -114,6 +114,7 @@ open class Text2(
         container.colorMul = color
         val font = this.font
         if (font is BitmapFont) {
+            staticImage = null
             bitmapFontActions.x = 0.0
             bitmapFontActions.y = 0.0
 
@@ -153,13 +154,20 @@ open class Text2(
                 val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                 val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
 
-                container.removeChildren()
-                container.image(textToBitmapResult.bmp).position(x, y)
+                if (staticImage == null) {
+                    container.removeChildren()
+                    staticImage = container.image(textToBitmapResult.bmp)
+                } else {
+                    ctx.agBitmapTextureManager.removeBitmap(staticImage!!.texture.bmp)
+                    staticImage!!.texture = textToBitmapResult.bmp.slice()
+                }
+                staticImage?.position(x, y)
             }
         }
         super.renderInternal(ctx)
     }
 
+    private var staticImage: Image? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection("Text") {
