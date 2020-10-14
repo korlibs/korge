@@ -21,6 +21,7 @@ import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.font.DefaultTtfFont
+import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.font.toBitmapFont
 import com.soywiz.korim.vector.VerticalAlign
 import kotlin.random.Random
@@ -56,12 +57,8 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val amount = 100
 
     val container = fastSpriteContainer()
-    val font = DefaultTtfFont
-        //.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(
-        //    dropShadowX = 1,
-        //    dropShadowY = 1,
-        //    dropShadowRadius = 2,
-        //))
+    val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
+    //val font = resourcesVfs["font1.fnt"].readBitmapFont()
     //val font = DefaultTtfFont
     val bunnyCountText = text2("", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
     //val container = container()

@@ -28,13 +28,13 @@ val BitmapEffect?.safeBorder get() = this?.safeBorder ?: 0
 fun Bitmap32.applyEffectInline(effect: BitmapEffect?) {
     if (effect == null) return
 
-    if (effect.blurRadius > 0) {
+    if (effect.blurRadius != 0) {
         this.blurInplace(effect.blurRadius)
     }
-    if (effect.dropShadowRadius > 0) {
+    if (effect.dropShadowRadius != 0 || effect.dropShadowX != 0 || effect.dropShadowY != 0) {
         this.dropShadowInplace(effect.dropShadowX, effect.dropShadowY, effect.dropShadowRadius, effect.dropShadowColor)
     }
-    if (effect.borderSize > 0) {
+    if (effect.borderSize != 0) {
         this.borderInline(effect.borderSize, effect.borderColor)
     }
 }

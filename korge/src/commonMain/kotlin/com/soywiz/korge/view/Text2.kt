@@ -137,14 +137,13 @@ open class Text2(
             val dx = -textWidth * horizontalAlign.ratio
 
             for (n in 0 until bitmapFontActions.arrayTex.size) {
-                (container[n] as Image).also {
-                    it.texture = bitmapFontActions.arrayTex[n]
-                    it.x = bitmapFontActions.arrayX[n] + dx
-                    it.y = bitmapFontActions.arrayY[n]
-                    it.scaleX = bitmapFontActions.arraySX[n]
-                    it.scaleY = bitmapFontActions.arraySY[n]
-                    it.rotation = bitmapFontActions.arrayRot[n].radians
-                }
+                val it = (container[n] as Image)
+                it.texture = bitmapFontActions.arrayTex[n]
+                it.x = bitmapFontActions.arrayX[n] + dx
+                it.y = bitmapFontActions.arrayY[n]
+                it.scaleX = bitmapFontActions.arraySX[n]
+                it.scaleY = bitmapFontActions.arraySY[n]
+                it.rotation = bitmapFontActions.arrayRot[n].radians
             }
         } else {
             if (cachedVersion != version) {
