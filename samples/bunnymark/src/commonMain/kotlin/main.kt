@@ -32,6 +32,8 @@ import kotlin.random.Random
 //}
 
 class Bunny(tex: BmpSlice) : FastSprite(tex) {
+    // Temporal placeholder until FastSpriteContainer supports rotation
+    var rotationRadiansf: Float = 0f
     var speedXf: Float = 0f
     var speedYf: Float = 0f
     var spinf: Float = 0f

@@ -10,7 +10,7 @@ open class FastSprite(tex: BmpSlice) {
     var yf: Float = 0f
     var anchorXf: Float = .5f
     var anchorYf: Float = .5f
-    var rotationRadiansf: Float = 0f
+    //var rotationRadiansf: Float = 0f
     var scalef: Float = 1f
 
     var tx0: Float = 0f
@@ -57,9 +57,9 @@ open class FastSprite(tex: BmpSlice) {
         get() = anchorYf.toDouble()
         set(value) { anchorYf = value.toFloat() }
 
-    var rotationRadians: Double
-        get() = rotationRadiansf.toDouble()
-        set(value) { rotationRadiansf = value.toFloat() }
+    //var rotationRadians: Double
+    //    get() = rotationRadiansf.toDouble()
+    //    set(value) { rotationRadiansf = value.toFloat() }
 
     var scale: Double
         get() = scalef.toDouble()
