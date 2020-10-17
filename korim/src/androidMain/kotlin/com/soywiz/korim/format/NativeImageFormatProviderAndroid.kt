@@ -114,10 +114,15 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
     NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = androidBitmap.isPremultiplied()) {
     override val name: String = "AndroidNativeImage"
 
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) =
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         androidBitmap.getPixels(out.ints, offset, this.width, x, y, width, height)
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) =
+        BGRA.bgraToRgba(out.ints, offset, width * height)
+    }
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+        BGRA.rgbaToBgra(out.ints, offset, width * height)
         androidBitmap.setPixels(out.ints, offset, this.width, x, y, width, height)
+        BGRA.bgraToRgba(out.ints, offset, width * height)
+    }
     override fun setRgba(x: Int, y: Int, v: RGBA) = run { androidBitmap.setPixel(x, y, v.value) }
     override fun getRgba(x: Int, y: Int): RGBA = RGBA(androidBitmap.getPixel(x, y))
 
