@@ -150,6 +150,8 @@ open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val ma
             }
         }
     }
+
+    override fun toString(): String = this::class.portableSimpleName
 }
 
 object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
@@ -201,8 +203,6 @@ object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
     }
 
     override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? = Mp3AudioDecoder(data, props).createAudioStream()
-
-    override fun toString(): String = "NativeMp3DecoderFormat"
 }
 
 object NativeOggVorbisDecoderFormat : AudioFormat("ogg") {
@@ -293,10 +293,4 @@ object NativeOggVorbisDecoderFormat : AudioFormat("ogg") {
             }
         }.createAudioStream()
     }
-
-    override suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps) {
-        super.encode(data, out, filename, props)
-    }
-
-    override fun toString(): String = "NativeOggVorbisDecoderFormat"
 }
