@@ -11,6 +11,25 @@ fun Project.addGenResourcesTasks() = this {
         val jvmMainClasses by lazy { (tasks["jvmMainClasses"]) }
         val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
+        create("listKorgePlugins", Task::class.java) {
+            it.dependsOn(jvmMainClasses)
+            it.doLast {
+                //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+
+                URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                    val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                    try {
+                        clazz.methods.first { it.name == "printPlugins" }.invoke(null, classLoader)
+                    } catch (e: java.lang.reflect.InvocationTargetException) {
+                        val re = (e.targetException ?: e)
+                        re.printStackTrace()
+                        System.err.println(re.toString())
+                    }
+                }
+                System.gc()
+            }
+        }
+
         for (target in kotlin.targets) {
             for (compilation in target.compilations) {
                 val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
