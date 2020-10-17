@@ -96,12 +96,12 @@ class KorgeGradleApply(val project: Project) {
 		project.plugins.apply("idea")
 		(project["idea"] as IdeaModel).apply {
 			module { module ->
-				for (file in listOf(
-					".gradle", "node_modules", "classes", "docs", "dependency-cache",
-					"libs", "reports", "resources", "test-results", "tmp"
-				)) {
-					module.excludeDirs.add(file(".gradle"))
-				}
+                module.excludeDirs = module.excludeDirs.also {
+                    it.addAll(listOf(
+                        ".gradle", ".idea", "gradle", "node_modules", "classes", "docs", "dependency-cache",
+                        "libs", "reports", "resources", "test-results", "tmp", "bundles",
+                    ).map { file(it) })
+                }
 			}
 		}
 	}
