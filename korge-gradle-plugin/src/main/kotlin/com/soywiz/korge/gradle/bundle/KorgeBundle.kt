@@ -16,12 +16,37 @@ class KorgeBundles(val project: Project) {
         val bundleName = baseName ?: zipFile.name.removeSuffix(".korgebundle")
         val outputDir = project.file("${project.buildDir}/bundles/$bundleName")
         if (!outputDir.exists()) {
-            logger.warn("Unzipping $zipFile...")
+            logger.warn("KorGE.bundle: Unzipping $zipFile...")
             project.sync {
                 it.from(if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile))
                 it.into(outputDir)
             }
+        } else {
+            logger.info("KorGE.bundle: Already unzipped $zipFile")
         }
+        logger.info("KorGE.bundle: $outputDir")
+        project.afterEvaluate {
+            for (target in project.gkotlin.targets) {
+                logger.info("  target: $target")
+                target.compilations.all { compilation ->
+                    logger.info("    compilation: $compilation")
+                    for (sourceSet in compilation.kotlinSourceSets) {
+                        logger.info("      sourceSet: $sourceSet")
+                        val kotlinSrc = File(project.buildDir, "bundles/${bundleName}/src/${sourceSet.name}/kotlin")
+                        val resourcesSrc = File(project.buildDir, "bundles/${bundleName}/src/${sourceSet.name}/resources")
+                        if (kotlinSrc.exists()) {
+                            logger.info("        kotlinSrc: $kotlinSrc")
+                            sourceSet.kotlin.srcDirs(kotlinSrc)
+                        }
+                        if (resourcesSrc.exists()) {
+                            logger.info("        resourcesSrc: $resourcesSrc")
+                            sourceSet.resources.srcDirs(resourcesSrc)
+                        }
+                    }
+                }
+            }
+        }
+        //println(project.gkotlin.metadata().compilations["main"].kotlinSourceSets)
         project.gkotlin.metadata().compilations["main"].kotlinSourceSets.first().kotlin.srcDirs("${project.buildDir}/bundles/${bundleName}/src/commonMain/kotlin")
     }
 
@@ -29,8 +54,10 @@ class KorgeBundles(val project: Project) {
     fun bundle(url: java.net.URL, baseName: String? = null) {
         val outFile = bundlesDir["${baseName ?: File(url.path).nameWithoutExtension}.korgebundle"]
         if (!outFile.exists()) {
-            logger.warn("Downloading $url...")
+            logger.warn("KorGE.bundle: Downloading $url...")
             outFile.writeBytes(url.readBytes())
+        } else {
+            logger.info("KorGE.bundle: Already downloaded $url")
         }
         bundle(outFile, baseName)
     }
@@ -48,11 +75,13 @@ class KorgeBundles(val project: Project) {
         val packDir = File(bundlesDir, packPath)
         if (!File(packDir, ".git").exists()) {
             packDir.mkdirs()
-            logger.warn("Git clonning $repo @ $ref...")
+            logger.warn("KorGE.bundle: Git clonning $repo @ $ref...")
             project.exec {
                 it.workingDir(packDir)
                 it.commandLine("git", "clone", "--single-branch", "--branch", ref, repo, ".")
             }
+        } else {
+            logger.info("KorGE.bundle: Already clonned $repo @ $ref")
         }
         bundle(File(packDir, folder), bundleName)
     }
