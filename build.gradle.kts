@@ -592,6 +592,12 @@ samples {
     }
 }
 
+val buildVersionsFile = file("korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt")
+val oldBuildVersionsText = buildVersionsFile.readText()
+val newBuildVersionsText = oldBuildVersionsText.replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
+if (oldBuildVersionsText != newBuildVersionsText) {
+    buildVersionsFile.writeText(newBuildVersionsText)
+}
 
 /*
 if (Os.isFamily(Os.FAMILY_UNIX) &&
