@@ -10,6 +10,18 @@ import java.net.URL
 class KorgeBundles(val project: Project) {
     val bundlesDir get() = project.file("bundles").also { it.mkdirs() }
     val logger get() = project.logger
+    val bundles = arrayListOf<BundleInfo>()
+    data class BundleInfo(
+        val path: File,
+        val bundleName: String,
+        val repositories: List<BundleRepository>,
+        val dependencies: List<BundleDependency>
+    ) {
+        fun dependenciesForSourceSet(sourceSet: String) = dependencies.filter { it.sourceSet == sourceSet }
+        fun dependenciesForSourceSet(sourceSet: Set<String>) = dependencies.filter { it.sourceSet in sourceSet }
+    }
+    data class BundleRepository(val url: String)
+    data class BundleDependency(val sourceSet: String, val artifactPath: String)
 
     @JvmOverloads
     fun bundle(zipFile: File, baseName: String? = null) {
@@ -24,6 +36,30 @@ class KorgeBundles(val project: Project) {
         } else {
             logger.info("KorGE.bundle: Already unzipped $zipFile")
         }
+
+        val repositories = arrayListOf<BundleRepository>()
+        val dependencies = arrayListOf<BundleDependency>()
+        val dependenciesTxtFile = File(outputDir, "dependencies.txt")
+        if (dependenciesTxtFile.exists()) {
+            for (rline in dependenciesTxtFile.readLines()) {
+                val line = rline.trim()
+                if (line.startsWith("#")) continue
+                val (key, value) = line.split(":", limit = 2).map { it.trim() }.takeIf { it.size >= 2 } ?: continue
+                if (key == "repository") {
+                    repositories.add(BundleRepository(value))
+                } else {
+                    dependencies.add(BundleDependency(key, value))
+                }
+            }
+        }
+
+        bundles += BundleInfo(
+            path = outputDir,
+            bundleName = bundleName,
+            repositories = repositories,
+            dependencies = dependencies,
+        )
+
         logger.info("KorGE.bundle: $outputDir")
         project.afterEvaluate {
             for (target in project.gkotlin.targets) {
@@ -47,7 +83,6 @@ class KorgeBundles(val project: Project) {
             }
         }
         //println(project.gkotlin.metadata().compilations["main"].kotlinSourceSets)
-        project.gkotlin.metadata().compilations["main"].kotlinSourceSets.first().kotlin.srcDirs("${project.buildDir}/bundles/${bundleName}/src/commonMain/kotlin")
     }
 
     @JvmOverloads
@@ -102,5 +137,12 @@ class KorgeBundles(val project: Project) {
         }
     }
 
+    fun getPaths(name: String, resources: Boolean, test: Boolean): Set<File> {
+        val lfolder = if (resources) "resources" else "kotlin"
+        val lmain = if (test) "Test" else "Main"
+        return bundles.flatMap { bundle ->
+            listOf(File(bundle.path, "src/${name}$lmain/$lfolder"))
+        }.filter { it.isDirectory && it.exists() }.toSet()
+    }
 }
 
