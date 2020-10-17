@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.bundle.KorgeBundles
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
 import com.sun.net.httpserver.*
@@ -27,7 +28,7 @@ class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLo
 		URLClassLoader(urls.toTypedArray(), parentClassLoader)
 	}
 
-    val pluginExts = KorgePluginExtensions()
+    val pluginExts = KorgePluginExtensions(project)
 
 	fun addPlugin(artifact: MavenLocation): KorgePluginDescriptor {
 		return plugins.getOrPut(artifact) { KorgePluginDescriptor(this, artifact) }
@@ -85,6 +86,11 @@ class KorgeExtension(val project: Project) {
 	internal fun init() {
 		// Do nothing, but serves to be referenced to be installed
 	}
+
+    val bundles = KorgeBundles(project)
+
+    @JvmOverloads
+    fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
 
     val DEFAULT_JVM_TARGET = "1.8"
     //val DEFAULT_JVM_TARGET = "1.6"

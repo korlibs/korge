@@ -1,6 +1,8 @@
 package com.soywiz.korge.gradle
 
-class KorgePluginExtensions {
+import org.gradle.api.Project
+
+class KorgePluginExtensions(val project: Project) {
     /*
     val pluginExts: List<KorgePluginExtension> by lazy {
         val exts = ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList()
