@@ -16,17 +16,7 @@ fun Project.addGenResourcesTasks() = this {
             it.doLast {
                 //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-                URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                    val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                    try {
-                        clazz.methods.first { it.name == "printPlugins" }.invoke(null, classLoader)
-                    } catch (e: java.lang.reflect.InvocationTargetException) {
-                        val re = (e.targetException ?: e)
-                        re.printStackTrace()
-                        System.err.println(re.toString())
-                    }
-                }
-                System.gc()
+                executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "printPlugins") { listOf(it) }
             }
         }
 
@@ -42,19 +32,10 @@ fun Project.addGenResourcesTasks() = this {
                         processedResourcesFolder.mkdirs()
                         //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-                        URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                            val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                        executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "run") { classLoader ->
                             val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
-                            //println(folders)
-                            try {
-                                clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
-                            } catch (e: java.lang.reflect.InvocationTargetException) {
-                                val re = (e.targetException ?: e)
-                                re.printStackTrace()
-                                System.err.println(re.toString())
-                            }
+                            listOf(classLoader, folders, processedResourcesFolder.toString(), compilation.name)
                         }
-                        System.gc()
                     }
                 }
                 if (compilation.compileKotlinTask.name != "compileKotlinJvm") {

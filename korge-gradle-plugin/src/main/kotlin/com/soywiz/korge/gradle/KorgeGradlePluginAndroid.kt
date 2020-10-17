@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle
 import com.android.build.gradle.internal.crash.afterEvaluate
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.builder.core.DefaultApiVersion
+import com.soywiz.korge.gradle.targets.android.AndroidInfo
 import com.soywiz.korge.gradle.targets.android.hasAndroidConfigured
 import com.soywiz.korge.gradle.targets.android.tryToDetectAndroidSdkPath
 import com.soywiz.korge.gradle.targets.android.writeAndroidManifest
@@ -34,7 +35,8 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 		project.kotlin.android()
 
 		project.afterEvaluate {
-			writeAndroidManifest(project.rootDir, project.korge)
+            println("@TODO: Info is not generated")
+			writeAndroidManifest(project.rootDir, project.korge, AndroidInfo(null))
 		}
 
 		android.apply {

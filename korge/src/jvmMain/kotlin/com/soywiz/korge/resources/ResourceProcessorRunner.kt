@@ -14,13 +14,21 @@ object ResourceProcessorRunner {
 
     @JvmStatic
     fun printPlugins(classLoader: ClassLoader) {
-        val processors = ResourceProcessorContainer(ServiceLoader.load(ResourceProcessor::class.java, classLoader).toList())
-        println("KORGE Plugins:")
-        for (processor in processors.processors) {
-            @Suppress("SENSELESS_COMPARISON")
-            if (processor != null) {
+        println("KORGE ResourceProcessors:")
+        try {
+            for (processor in ServiceLoader.load(ResourceProcessor::class.java, classLoader).toList().filterNotNull()) {
                 println(" - ${processor::class.qualifiedName}")
             }
+        } catch (e: Throwable) {
+            println(" - ERROR: ${e.message}")
+        }
+        println("KORGE Plugins:")
+        try {
+            for (plugin in ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList().filterNotNull()) {
+                println(" - ${plugin::class.qualifiedName}")
+            }
+        } catch (e: Throwable) {
+            println(" - ERROR: ${e.message}")
         }
     }
 

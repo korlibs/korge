@@ -3,12 +3,14 @@ package com.soywiz.korge.gradle.targets.android
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
+import java.net.URLClassLoader
 import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
@@ -74,8 +76,12 @@ fun Project.configureNativeAndroid() {
 
 	//val androidPackageName = "com.example.myapplication"
 	//val androidAppName = "My Awesome APP Name"
-	val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
+
+    val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
+
+    val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
 		task.dependsOn("compileTestKotlinJvm") // So artifacts are resolved
+        task.dependsOn("jvmMainClasses")
 		task.apply {
 			val overwrite = korge.overwriteAndroidFiles
 			val outputFolder = File(buildDir, "platforms/android")
@@ -131,6 +137,10 @@ fun Project.configureNativeAndroid() {
                         line("// When this file exists, it won't be oerriden")
                     })
                 }
+
+                val info = AndroidInfo(executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.plugin.KorgePluginExtensions", "getAndroidInfo", throws = true) { classLoader ->
+                    listOf(classLoader, project.korge.configs)
+                } as Map<String, Any?>?)
 
                 File(outputFolder, "build.gradle").always {
 					ensureParents().writeTextIfChanged(Indenter {
@@ -269,7 +279,7 @@ fun Project.configureNativeAndroid() {
 								line("implementation '$name:$version'")
 							}
 
-							for (dependency in korge.plugins.pluginExts.getAndroidDependencies()) {
+							for (dependency in korge.plugins.pluginExts.getAndroidDependencies() + info.androidDependencies) {
 								line("implementation ${dependency.quoted}")
 							}
 
@@ -296,7 +306,7 @@ fun Project.configureNativeAndroid() {
 					}.toString())
 				}
 
-				writeAndroidManifest(outputFolder, korge)
+				writeAndroidManifest(outputFolder, korge, info)
 
 				File(outputFolder, "gradle.properties").conditionally(ifNotExists) {
 					ensureParents().writeTextIfChanged(
@@ -368,7 +378,7 @@ fun Project.configureNativeAndroid() {
 	}
 }
 
-fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
+fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo) {
 	val androidPackageName = korge.id
 	val androidAppName = korge.name
 	val ifNotExists = korge.overwriteAndroidFiles
@@ -405,7 +415,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 				}
 				line(">")
 				indent {
-					for (text in korge.plugins.pluginExts.getAndroidManifestApplication()) {
+					for (text in korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest) {
 						line(text)
 					}
 					for (text in korge.androidManifestApplicationChunks) {
@@ -466,7 +476,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 			line("class MainActivity : KorgwActivity()") {
 				line("override suspend fun activityMain()") {
 					//line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
-						for (text in korge.plugins.pluginExts.getAndroidInit()) {
+						for (text in korge.plugins.pluginExts.getAndroidInit() + info.androidInit) {
 							line(text)
 						}
 						line("${korge.realEntryPoint}()")
@@ -475,6 +485,13 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 			}
 		}.toString())
 	}
+}
+
+class AndroidInfo(val map: Map<String, Any?>?) {
+    //init { println("AndroidInfo: $map") }
+    val androidInit: List<String> = (map?.get("androidInit") as? List<String?>?)?.filterNotNull() ?: listOf()
+    val androidManifest: List<String> = (map?.get("androidManifest") as? List<String?>?)?.filterNotNull() ?: listOf()
+    val androidDependencies: List<String> = (map?.get("androidDependencies") as? List<String>?)?.filterNotNull() ?: listOf()
 }
 
 private var _tryAndroidSdkDirs: List<File>? = null
