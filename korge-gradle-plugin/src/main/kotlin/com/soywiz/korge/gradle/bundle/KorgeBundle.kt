@@ -1,11 +1,13 @@
 package com.soywiz.korge.gradle.bundle
 
-import com.soywiz.korge.gradle.KorgeExtension
 import com.soywiz.korge.gradle.gkotlin
 import com.soywiz.korge.gradle.util.get
+import com.soywiz.korge.gradle.util.hex
 import org.gradle.api.Project
+import org.gradle.api.file.FileTree
 import java.io.File
 import java.net.URL
+import java.security.MessageDigest
 
 class KorgeBundles(val project: Project) {
     val bundlesDir get() = project.file("bundles").also { it.mkdirs() }
@@ -23,14 +25,40 @@ class KorgeBundles(val project: Project) {
     data class BundleRepository(val url: String)
     data class BundleDependency(val sourceSet: String, val artifactPath: String)
 
+    fun sha256Tree(tree: FileTree): String {
+        val files = LinkedHashMap<String, File>()
+        tree.visit {
+            if (!it.isDirectory) {
+                files[it.path] = it.file
+            }
+        }
+        val digest = MessageDigest.getInstance("SHA-256")
+        for (fileKey in files.keys.toList().sorted()) {
+            //println(fileKey)
+            digest.update(fileKey.toByteArray(Charsets.UTF_8))
+            digest.update(files[fileKey]!!.readBytes())
+        }
+        return digest.digest().hex
+    }
+
     @JvmOverloads
-    fun bundle(zipFile: File, baseName: String? = null) {
+    fun bundle(zipFile: File, baseName: String? = null, checkSha256: String? = null) {
         val bundleName = baseName ?: zipFile.name.removeSuffix(".korgebundle")
         val outputDir = project.file("${project.buildDir}/bundles/$bundleName")
         if (!outputDir.exists()) {
-            logger.warn("KorGE.bundle: Unzipping $zipFile...")
+            logger.warn("KorGE.bundle: Extracting $zipFile...")
+            val tree = if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile)
+
+            val computedSha25 = sha256Tree(tree)
+            when {
+                checkSha256 == null -> logger.warn("  - Security WARNING! Not checking SHA256 for bundle $bundleName. That should be: $computedSha25")
+                checkSha256 != computedSha25 -> error("Bundle '$bundleName' expects SHA256=$checkSha256, but found SHA256=$computedSha25")
+                else -> logger.info("Marching bundle SHA256=$computedSha25")
+            }
+            //println("SHA256: ${sha256Tree(tree)}")
+
             project.sync {
-                it.from(if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile))
+                it.from(tree)
                 it.into(outputDir)
             }
         } else {
@@ -86,7 +114,7 @@ class KorgeBundles(val project: Project) {
     }
 
     @JvmOverloads
-    fun bundle(url: java.net.URL, baseName: String? = null) {
+    fun bundle(url: java.net.URL, baseName: String? = null, checkSha256: String? = null) {
         val outFile = bundlesDir["${baseName ?: File(url.path).nameWithoutExtension}.korgebundle"]
         if (!outFile.exists()) {
             logger.warn("KorGE.bundle: Downloading $url...")
@@ -94,11 +122,11 @@ class KorgeBundles(val project: Project) {
         } else {
             logger.info("KorGE.bundle: Already downloaded $url")
         }
-        bundle(outFile, baseName)
+        bundle(outFile, baseName, checkSha256)
     }
 
     @JvmOverloads
-    fun bundleGit(repo: String, folder: String = "", ref: String = "master", bundleName: String? = null) {
+    fun bundleGit(repo: String, folder: String = "", ref: String = "master", bundleName: String? = null, checkSha256: String? = null) {
         val repoURL = URL(repo)
         val packPath = "${repoURL.host}/${repoURL.path}/$ref"
             .replace("\\", "/")
@@ -110,37 +138,35 @@ class KorgeBundles(val project: Project) {
         val packDir = File(bundlesDir, packPath)
         if (!File(packDir, ".git").exists()) {
             packDir.mkdirs()
-            logger.warn("KorGE.bundle: Git clonning $repo @ $ref...")
+            logger.warn("KorGE.bundle: Git cloning $repo @ $ref...")
             project.exec {
                 it.workingDir(packDir)
                 it.commandLine("git", "clone", repo, ".")
             }
             project.exec {
                 it.workingDir(packDir)
-                it.commandLine("git", "reset", "--hard")
-            }
-            project.exec {
-                it.workingDir(packDir)
-                it.commandLine("git", "checkout", ref)
+                it.commandLine("git", "reset", "--hard", ref)
             }
         } else {
             logger.info("KorGE.bundle: Already clonned $repo @ $ref")
         }
-        bundle(File(packDir, folder), bundleName)
+        bundle(File(packDir, folder), bundleName, checkSha256)
     }
 
     @JvmOverloads
-    fun bundle(uri: String, baseName: String? = null) {
+    fun bundle(fullUri: String, baseName: String? = null) {
+        val (uri, ssha256) = (fullUri.split("##", limit = 2) + listOf(""))
+        val sha256 = ssha256.takeIf { it.isNotEmpty() }
         when {
             uri.contains(".git") -> {
                 val parts = uri.split("::", limit = 3)
-                bundleGit(parts[0], parts.getOrElse(1) { "" }, parts.getOrElse(2) { "master" }, parts.getOrNull(3))
+                bundleGit(parts[0], parts.getOrElse(1) { "" }, parts.getOrElse(2) { "master" }, parts.getOrNull(3), checkSha256 = sha256)
             }
             uri.startsWith("http://") || uri.startsWith("https://") -> {
-                bundle(URL(uri), baseName)
+                bundle(URL(uri), baseName, checkSha256 = sha256)
             }
             else -> {
-                bundle(project.file(uri), baseName)
+                bundle(project.file(uri), baseName, checkSha256 = sha256)
             }
         }
     }
