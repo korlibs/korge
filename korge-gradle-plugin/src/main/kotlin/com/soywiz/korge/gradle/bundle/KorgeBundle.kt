@@ -113,7 +113,15 @@ class KorgeBundles(val project: Project) {
             logger.warn("KorGE.bundle: Git clonning $repo @ $ref...")
             project.exec {
                 it.workingDir(packDir)
-                it.commandLine("git", "clone", "--single-branch", "--branch", ref, repo, ".")
+                it.commandLine("git", "clone", repo, ".")
+            }
+            project.exec {
+                it.workingDir(packDir)
+                it.commandLine("git", "reset", "--hard")
+            }
+            project.exec {
+                it.workingDir(packDir)
+                it.commandLine("git", "checkout", ref)
             }
         } else {
             logger.info("KorGE.bundle: Already clonned $repo @ $ref")
