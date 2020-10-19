@@ -47,10 +47,12 @@ class KorgeBundles(val project: Project) {
         return digest.digest().hex
     }
 
+    val buildDirBundleFolder = "korge-bundles"
+
     @JvmOverloads
     fun bundle(zipFile: File, baseName: String? = null, checkSha256: String? = null) {
         val bundleName = baseName ?: zipFile.name.removeSuffix(".korgebundle")
-        val outputDir = project.file("${project.buildDir}/korge-bundles/$bundleName")
+        val outputDir = project.file("${project.buildDir}/$buildDirBundleFolder/$bundleName")
         if (!outputDir.exists()) {
             logger.warn("KorGE.bundle: Extracting $zipFile...")
             val tree = if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile)
@@ -102,8 +104,8 @@ class KorgeBundles(val project: Project) {
                     logger.info("    compilation: $compilation")
                     for (sourceSet in compilation.kotlinSourceSets) {
                         logger.info("      sourceSet: $sourceSet")
-                        val kotlinSrc = File(project.buildDir, "bundles/${bundleName}/src/${sourceSet.name}/kotlin")
-                        val resourcesSrc = File(project.buildDir, "bundles/${bundleName}/src/${sourceSet.name}/resources")
+                        val kotlinSrc = File(project.buildDir, "$buildDirBundleFolder/${bundleName}/src/${sourceSet.name}/kotlin")
+                        val resourcesSrc = File(project.buildDir, "$buildDirBundleFolder/${bundleName}/src/${sourceSet.name}/resources")
                         if (kotlinSrc.exists()) {
                             logger.info("        kotlinSrc: $kotlinSrc")
                             sourceSet.kotlin.srcDirs(kotlinSrc)
