@@ -138,17 +138,32 @@ class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
     }
 
     override var fullscreen: Boolean
-        get() = frame.rootPane.bounds == frame.bounds
+        get() = when {
+            OS.isMac -> frame.rootPane.bounds == frame.bounds
+            else -> GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow == frame
+        }
         set(value) {
             //println("fullscreen: $fullscreen -> $value")
             if (fullscreen != value) {
-                if (OS.isMac) {
-                    //println("TOGGLING!")
-                    queue {
-                        MicroDynamic {
-                            //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
-                            getClass("com.apple.eawt.Application").invoke("getApplication").invoke("requestToggleFullScreen", frame)
+                when {
+                    OS.isMac -> {
+                        //println("TOGGLING!")
+                        if (fullscreen != value) {
+                            queue {
+                                MicroDynamic {
+                                    //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
+                                    getClass("com.apple.eawt.Application").invoke("getApplication").invoke("requestToggleFullScreen", frame)
+                                }
+                            }
                         }
+                    }
+                    else -> {
+                        GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow = if (value) frame else null
+
+                        //frame.extendedState = if (value) JFrame.MAXIMIZED_BOTH else JFrame.NORMAL
+                        //frame.isUndecorated = value
+                        frame.isVisible = true
+                        //frame.isAlwaysOnTop = true
                     }
                 }
             }

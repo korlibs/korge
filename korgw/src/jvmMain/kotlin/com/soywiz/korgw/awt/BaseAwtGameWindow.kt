@@ -440,20 +440,33 @@ abstract class BaseAwtGameWindow : GameWindow() {
         EventQueue.invokeLater {
             component.isVisible = true
             component.repaint()
-            (component as? Frame?)?.apply {
-                val frame = this
-                frame.isAlwaysOnTop = true
-                // @TODO: HACK so the windows grabs focus on Windows 10 at least when launching on gradle daemon
-                try {
-                    val robot = Robot()
-                    val pos = MouseInfo.getPointerInfo().location
-                    robot.mouseMove(frame.x + 1, frame.y + 1)
-                    robot.mousePress(InputEvent.BUTTON1_MASK)
-                    robot.mouseRelease(InputEvent.BUTTON1_MASK)
-                    robot.mouseMove(pos.x, pos.y)
-                } catch (e: Throwable) {
+            //fullscreen = true
+
+            // keys.up(Key.ENTER) { if (it.alt) gameWindow.toggleFullScreen() }
+            if (OS.isWindows) {
+                (component as? Frame?)?.apply {
+                    val frame = this
+                    val insets = frame.insets
+                    frame.isAlwaysOnTop = true
+                    // @TODO: HACK so the windows grabs focus on Windows 10 at least when launching on gradle daemon
+                    try {
+                        val robot = Robot()
+                        val pos = MouseInfo.getPointerInfo().location
+                        val bounds = frame.bounds
+                        bounds.setFrameFromDiagonal(bounds.minX + insets.left, bounds.minY + insets.top, bounds.maxX - insets.right, bounds.maxY - insets.bottom)
+
+                        //println("frame.bounds: ${frame.bounds}")
+                        //println("frame.bounds: ${bounds}")
+                        //println("frame.insets: ${insets}")
+                        //println(frame.contentPane.bounds)
+                        robot.mouseMove(bounds.centerX.toInt(), bounds.centerY.toInt())
+                        robot.mousePress(InputEvent.BUTTON1_MASK)
+                        robot.mouseRelease(InputEvent.BUTTON1_MASK)
+                        robot.mouseMove(pos.x, pos.y)
+                    } catch (e: Throwable) {
+                    }
+                    frame.isAlwaysOnTop = false
                 }
-                frame.isAlwaysOnTop = false
             }
         }
 
