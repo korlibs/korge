@@ -43,8 +43,8 @@ class KorgeBundles(val project: Project) {
             val file = files[fileKey]!!
             digest.update(fileKey.toByteArray(Charsets.UTF_8))
             digest.update(file.readBytes())
-            if (logger.isDebugEnabled) {
-                logger.debug("SHA256: $fileKey[${file.length()}]: ${digest.digest().hex}")
+            if (logger.isInfoEnabled) {
+                logger.info("SHA256: $fileKey[${file.length()}]: ${(digest.clone() as MessageDigest).digest().hex}")
             }
         }
         return digest.digest().hex
