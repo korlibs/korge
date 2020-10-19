@@ -40,9 +40,12 @@ class KorgeBundles(val project: Project) {
         }
         val digest = MessageDigest.getInstance("SHA-256")
         for (fileKey in files.keys.toList().sorted()) {
+            val file = files[fileKey]!!
             digest.update(fileKey.toByteArray(Charsets.UTF_8))
-            digest.update(files[fileKey]!!.readBytes())
-            println("$fileKey: ${digest.digest().hex}")
+            digest.update(file.readBytes())
+            if (logger.isDebugEnabled) {
+                logger.debug("SHA256: $fileKey[${file.length()}]: ${digest.digest().hex}")
+            }
         }
         return digest.digest().hex
     }
@@ -162,6 +165,9 @@ class KorgeBundles(val project: Project) {
                 it.workingDir(packDir)
                 it.commandLine("git", "-c", "core.autocrlf=false", "reset", "--hard", ref)
             }.assertNormalExitValue()
+            project.delete {
+                it.delete(File(packDir, ".git"))
+            }
             packEnsure.writeText(ref)
         } else {
             logger.info("KorGE.bundle: Already at reference $ref @ $repo")
