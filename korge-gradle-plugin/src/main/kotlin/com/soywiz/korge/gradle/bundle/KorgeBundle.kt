@@ -33,7 +33,8 @@ class KorgeBundles(val project: Project) {
                 val rpath = "/$mpath"
                 when {
                     rpath.contains("/.git") -> Unit
-                    rpath.contains("/.DS_Store") -> Unit
+                    rpath.endsWith("/.DS_Store") -> Unit
+                    rpath.endsWith("/thumbs.db") -> Unit
                     else -> files[mpath] = it.file
                 }
             }
