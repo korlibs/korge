@@ -151,7 +151,7 @@ class KorgeBundles(val project: Project) {
             logger.warn("KorGE.bundle: Git cloning $repo @ $ref...")
             project.exec {
                 it.workingDir(packDir)
-                it.commandLine("git", "clone", repo, ".")
+                it.commandLine("git", "-c", "core.autocrlf=false", "clone", repo, ".")
             }.assertNormalExitValue()
         } else {
             logger.info("KorGE.bundle: Already cloned $repo")
@@ -160,7 +160,7 @@ class KorgeBundles(val project: Project) {
         if (packEnsure.takeIf { it.exists() }?.readText() != ref) {
             project.exec {
                 it.workingDir(packDir)
-                it.commandLine("git", "reset", "--hard", ref)
+                it.commandLine("git", "-c", "core.autocrlf=false", "reset", "--hard", ref)
             }.assertNormalExitValue()
             packEnsure.writeText(ref)
         } else {
