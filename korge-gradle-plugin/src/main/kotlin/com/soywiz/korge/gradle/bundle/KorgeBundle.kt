@@ -61,7 +61,7 @@ class KorgeBundles(val project: Project) {
             when {
                 checkSha256 == null -> logger.warn("  - Security WARNING! Not checking SHA256 for bundle $bundleName. That should be: $computedSha25")
                 checkSha256 != computedSha25 -> error("Bundle '$bundleName' expects SHA256=$checkSha256, but found SHA256=$computedSha25")
-                else -> logger.info("Marching bundle SHA256=$computedSha25")
+                else -> logger.info("Matching bundle SHA256=$computedSha25")
             }
             //println("SHA256: ${sha256Tree(tree)}")
 

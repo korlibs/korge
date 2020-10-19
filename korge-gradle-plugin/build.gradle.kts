@@ -42,6 +42,12 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     }
 }
 
+tasks {
+    val publishJvmPublicationToMavenLocal by creating(Task::class) {
+        dependsOn("publishToMavenLocal")
+    }
+}
+
 //val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
 
