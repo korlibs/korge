@@ -40,9 +40,9 @@ class KorgeBundles(val project: Project) {
         }
         val digest = MessageDigest.getInstance("SHA-256")
         for (fileKey in files.keys.toList().sorted()) {
-            //println(fileKey)
             digest.update(fileKey.toByteArray(Charsets.UTF_8))
             digest.update(files[fileKey]!!.readBytes())
+            println("$fileKey: ${digest.digest().hex}")
         }
         return digest.digest().hex
     }
