@@ -150,8 +150,10 @@ class KorgeBundles(val project: Project) {
 
         val packDir = File(bundlesDir, packPath)
         val packEnsure = File(bundlesDir, "$packPath.refname")
+        val existsDotGitFolder = File(packDir, ".git").exists()
+        val matchingReg = packEnsure.takeIf { it.exists() }?.readText() == ref
 
-        if (!File(packDir, ".git").exists()) {
+        if (!matchingReg && !existsDotGitFolder) {
             packDir.mkdirs()
             logger.warn("KorGE.bundle: Git cloning $repo @ $ref...")
             project.exec {
@@ -162,7 +164,7 @@ class KorgeBundles(val project: Project) {
             logger.info("KorGE.bundle: Already cloned $repo")
         }
 
-        if (packEnsure.takeIf { it.exists() }?.readText() != ref) {
+        if (!matchingReg) {
             project.exec {
                 it.workingDir(packDir)
                 it.commandLine("git", "-c", "core.autocrlf=false", "reset", "--hard", ref)
