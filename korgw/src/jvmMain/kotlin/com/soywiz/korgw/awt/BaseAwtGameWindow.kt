@@ -447,7 +447,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 try {
                     val robot = Robot()
                     val pos = MouseInfo.getPointerInfo().location
-                    robot.mouseMove(frame.x + frame.width - 1, frame.y + frame.height - 1)
+                    robot.mouseMove(frame.x + 1, frame.y + 1)
                     robot.mousePress(InputEvent.BUTTON1_MASK)
                     robot.mouseRelease(InputEvent.BUTTON1_MASK)
                     robot.mouseMove(pos.x, pos.y)
