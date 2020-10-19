@@ -3,7 +3,6 @@ package com.soywiz.korgw
 import GL.*
 import com.soywiz.kds.IntMap
 import com.soywiz.kgl.*
-import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.kmem.startAddressOf
 import com.soywiz.kmem.write32LE
 import com.soywiz.korag.AGOpengl
@@ -177,9 +176,60 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
     }
 
     // https://stackoverflow.com/questions/9065669/x11-glx-fullscreen-mode
-    fun realSetFullscreen(value: Boolean): Unit = run {
-        if (d == null || w == NilWin) return@run
+    fun realSetFullscreen(value: Boolean): Unit {
+        println("realSetFullscreen. value=$value")
+        if (d == null || w == NilWin) return
+        val fullscreen = value
+        memScoped {
+
+            val _NET_WM_STATE = XInternAtom(d, "_NET_WM_STATE", 1)
+            val _NET_WM_STATE_ADD = XInternAtom(d, "_NET_WM_STATE_ADD", 1)
+            val _NET_WM_STATE_REMOVE = XInternAtom(d, "_NET_WM_STATE_REMOVE", 1)
+            val _NET_WM_STATE_FULLSCREEN = XInternAtom(d, "_NET_WM_STATE_FULLSCREEN", 1)
+
+            //println("realSetFullscreen: wm_state=$_NET_WM_STATE, wm_fullscreen=$_NET_WM_STATE_FULLSCREEN")
+
+            //val attributes = alloc<XSetWindowAttributes>()
+            //val CWOverrideRedirect = (1L shl 9)
+            //attributes.override_redirect = if (value) 1 else 0
+            //XChangeWindowAttributes(d, w, CWOverrideRedirect.convert(), attributes.ptr)
+
+            val isWindowMapped = true
+            if (isWindowMapped) {
+                val e = alloc<XEvent>()
+                e.xany.type = ClientMessage
+                e.xclient.message_type = _NET_WM_STATE
+                e.xclient.format = 32
+                e.xclient.window = w
+                e.xclient.data.l[0] = (if (fullscreen) _NET_WM_STATE_ADD else _NET_WM_STATE_REMOVE).convert()
+                e.xclient.data.l[1] = _NET_WM_STATE_FULLSCREEN.convert()
+                e.xclient.data.l[3] = 0.convert()
+
+                XSendEvent(
+                    d,
+                    XDefaultRootWindow(d),
+                    0.convert(),
+                    SubstructureNotifyMask or SubstructureRedirectMask,
+                    e.ptr
+                )
+
+            } else {
+                val atoms = allocArray<AtomVar>(3)
+                var count = 0
+                if (fullscreen) {
+                    atoms[count++] = _NET_WM_STATE_FULLSCREEN
+                }
+                val XA_ATOM: Atom = 4.convert()
+                if (count > 0) {
+                    XChangeProperty(d, w, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, atoms.getPointer(this).reinterpret(), count)
+                } else {
+                    XDeleteProperty(d, w, _NET_WM_STATE);
+                }
+            }
+            XFlush(d)
+        }
     }
+
     fun realSetVisible(value: Boolean): Unit = run {
         if (d == null || w == NilWin) return@run
     }
