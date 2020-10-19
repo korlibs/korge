@@ -1,16 +1,13 @@
 package com.soywiz.korgw.awt
 
-import com.soywiz.klock.hr.*
-import com.soywiz.klock.seconds
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
-import com.soywiz.korgw.win32.XInput
-import com.soywiz.korgw.win32.XInputEventAdapter
-import com.soywiz.korgw.win32.XInputState
-import com.soywiz.korgw.x11.LinuxJoyEventAdapter
+import com.soywiz.korgw.win32.*
+import com.soywiz.korgw.x11.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -26,6 +23,7 @@ import javax.swing.*
 
 abstract class BaseAwtGameWindow : GameWindow() {
     abstract override val ag: AwtAg
+
     //val fvsync get() = vsync
     val fvsync get() = false
     open val ctx: BaseOpenglContext? = null
@@ -204,11 +202,12 @@ abstract class BaseAwtGameWindow : GameWindow() {
     private val macosGamepadEventAdapter by lazy { MacosGamepadEventAdapter() }
 
 
-    val frameScaleFactor: Double get() = run {
-        getDisplayScalingFactor(component)
-        //val res = frame.toolkit.getDesktopProperty("apple.awt.contentScaleFactor") as? Number
-        //if (res != null) return res.toDouble()
-    }
+    val frameScaleFactor: Double
+        get() = run {
+            getDisplayScalingFactor(component)
+            //val res = frame.toolkit.getDesktopProperty("apple.awt.contentScaleFactor") as? Number
+            //if (res != null) return res.toDouble()
+        }
 
     val nonScaledWidth get() = contentComponent.width.toDouble()
     val nonScaledHeight get() = contentComponent.height.toDouble()
@@ -442,8 +441,19 @@ abstract class BaseAwtGameWindow : GameWindow() {
             component.isVisible = true
             component.repaint()
             (component as? Frame?)?.apply {
-                isAlwaysOnTop = true
-                isAlwaysOnTop = false
+                val frame = this
+                frame.isAlwaysOnTop = true
+                // @TODO: HACK so the windows grabs focus on Windows 10 at least when launching on gradle daemon
+                try {
+                    val robot = Robot()
+                    val pos = MouseInfo.getPointerInfo().location
+                    robot.mouseMove(frame.x + frame.width - 1, frame.y + frame.height - 1)
+                    robot.mousePress(InputEvent.BUTTON1_MASK)
+                    robot.mouseRelease(InputEvent.BUTTON1_MASK)
+                    robot.mouseMove(pos.x, pos.y)
+                } catch (e: Throwable) {
+                }
+                frame.isAlwaysOnTop = false
             }
         }
 
