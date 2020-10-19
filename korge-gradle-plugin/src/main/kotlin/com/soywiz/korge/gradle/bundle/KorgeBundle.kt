@@ -29,7 +29,13 @@ class KorgeBundles(val project: Project) {
         val files = LinkedHashMap<String, File>()
         tree.visit {
             if (!it.isDirectory) {
-                files[it.path] = it.file
+                val mpath = it.path.trim('/')
+                val rpath = "/$mpath"
+                when {
+                    rpath.contains("/.git") -> Unit
+                    rpath.contains("/.DS_Store") -> Unit
+                    else -> files[mpath] = it.file
+                }
             }
         }
         val digest = MessageDigest.getInstance("SHA-256")
@@ -44,7 +50,7 @@ class KorgeBundles(val project: Project) {
     @JvmOverloads
     fun bundle(zipFile: File, baseName: String? = null, checkSha256: String? = null) {
         val bundleName = baseName ?: zipFile.name.removeSuffix(".korgebundle")
-        val outputDir = project.file("${project.buildDir}/bundles/$bundleName")
+        val outputDir = project.file("${project.buildDir}/korge-bundles/$bundleName")
         if (!outputDir.exists()) {
             logger.warn("KorGE.bundle: Extracting $zipFile...")
             val tree = if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile)
@@ -136,20 +142,30 @@ class KorgeBundles(val project: Project) {
             .replace("/..", "")
 
         val packDir = File(bundlesDir, packPath)
+        val packEnsure = File(bundlesDir, "$packPath.refname")
+
         if (!File(packDir, ".git").exists()) {
             packDir.mkdirs()
             logger.warn("KorGE.bundle: Git cloning $repo @ $ref...")
             project.exec {
                 it.workingDir(packDir)
                 it.commandLine("git", "clone", repo, ".")
-            }
+            }.assertNormalExitValue()
+        } else {
+            logger.info("KorGE.bundle: Already cloned $repo")
+        }
+
+        if (packEnsure.takeIf { it.exists() }?.readText() != ref) {
             project.exec {
                 it.workingDir(packDir)
                 it.commandLine("git", "reset", "--hard", ref)
-            }
+            }.assertNormalExitValue()
+            packEnsure.writeText(ref)
         } else {
-            logger.info("KorGE.bundle: Already clonned $repo @ $ref")
+            logger.info("KorGE.bundle: Already at reference $ref @ $repo")
         }
+
+
         bundle(File(packDir, folder), bundleName, checkSha256)
     }
 
