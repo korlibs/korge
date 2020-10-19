@@ -41,10 +41,11 @@ class KorgeBundles(val project: Project) {
         val digest = MessageDigest.getInstance("SHA-256")
         for (fileKey in files.keys.toList().sorted()) {
             val file = files[fileKey]!!
-            digest.update(fileKey.toByteArray(Charsets.UTF_8))
+            val hashString = "$fileKey[${file.length()}]"
+            digest.update(hashString.toByteArray(Charsets.UTF_8))
             digest.update(file.readBytes())
             if (logger.isInfoEnabled) {
-                logger.info("SHA256: $fileKey[${file.length()}]: ${(digest.clone() as MessageDigest).digest().hex}")
+                logger.info("SHA256: $hashString: ${(digest.clone() as MessageDigest).digest().hex}")
             }
         }
         return digest.digest().hex
