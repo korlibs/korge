@@ -440,12 +440,13 @@ abstract class BaseAwtGameWindow : GameWindow() {
         }
         EventQueue.invokeLater {
             component.isVisible = true
+            component.repaint()
+            (component as? Frame?)?.apply {
+                isAlwaysOnTop = true
+                isAlwaysOnTop = false
+            }
         }
 
-        EventQueue.invokeLater {
-            //println("repaint!")
-            component.repaint()
-        }
         //val timer = Timer(1000 / 60, ActionListener { component.repaint() })
         //timer.start()
 
