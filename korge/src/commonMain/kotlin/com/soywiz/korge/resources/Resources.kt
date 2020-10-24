@@ -1,5 +1,6 @@
 package com.soywiz.korge.resources
 
+import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
@@ -8,16 +9,20 @@ import kotlin.reflect.*
 
 annotation class ResourcePath()
 
+interface Resourceable<T : Any> {
+    suspend fun get(): T
+}
+
 class Resource<T : Any>(
     val resources: Resources,
     val name: String,
     val scope: ResourceScope,
     val gen: suspend (Resources) -> T
-) {
+) : Resourceable<T> {
     private val thread = AsyncThread()
     var valueOrNull: T? = null
 
-    suspend fun get(): T = thread {
+    override suspend fun get(): T = thread {
         if (valueOrNull == null) {
             valueOrNull = gen(resources)
         }
@@ -63,6 +68,8 @@ open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile =
 }
 
 enum class ResourceScope { GLOBAL, LOCAL, NONE }
+
+suspend fun resources(): Resources = injector().get()
 
 class ResourceRef<T : Any>(val scope: ResourceScope = ResourceScope.GLOBAL, val gen: suspend (Resources) -> T) {
     operator fun getValue(resources: Resources, property: KProperty<*>): Resource<T> {

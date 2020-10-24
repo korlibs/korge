@@ -71,7 +71,9 @@ object Korge {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
-                injector.mapInstance(Module::class, module).mapInstance(Config::class, config)
+                injector
+                    .mapInstance(Module::class, module)
+                    .mapInstance(Config::class, config)
                 config.constructedViews(views)
                 module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
@@ -211,6 +213,7 @@ object Korge {
         val injector = views.injector
         injector.mapInstance(views)
         injector.mapInstance(views.ag)
+        injector.mapInstance(Resources::class, views.globalResources)
         injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
         injector.mapInstance(views.input)
         injector.mapInstance(views.stats)

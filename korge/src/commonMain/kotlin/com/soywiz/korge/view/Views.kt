@@ -13,6 +13,7 @@ import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.resources.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
@@ -87,6 +88,7 @@ class Views constructor(
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = 100.0.milliseconds
 
+    val globalResources: Resources = Resources(coroutineContext, currentVfs)
 
     var editingMode: Boolean = false
 
@@ -547,3 +549,5 @@ interface BoundsProvider {
 }
 
 var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
+
+suspend fun views(): Views = injector().get()
