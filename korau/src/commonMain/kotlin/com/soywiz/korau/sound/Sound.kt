@@ -1,5 +1,6 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korau.format.*
 import com.soywiz.korio.async.*
@@ -181,8 +182,7 @@ val SoundChannelBase.playingOrPaused get() = state.playingOrPaused
 
 fun <T : SoundChannelBase> T.attachTo(group: SoundChannelGroup): T = this.apply { group.add(this) }
 
-abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
-    val thread = AsyncThread()
+abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra.Mixin() {
 	private var startTime = DateTime.now()
 	override var volume = 1.0
 	override var pitch = 1.0
