@@ -187,7 +187,7 @@ object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
 
         private var mp3SeekingTable: MP3Base.SeekingTable? = null
         suspend fun getSeekingTable(): MP3Base.SeekingTable {
-            if (mp3SeekingTable == null) mp3SeekingTable = MP3Base.Parser(data).getSeekingTable()
+            if (mp3SeekingTable == null) mp3SeekingTable = MP3Base.Parser(data, data.getLength()).getSeekingTable()
             return mp3SeekingTable!!
         }
 

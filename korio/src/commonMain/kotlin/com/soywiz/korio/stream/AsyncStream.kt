@@ -836,3 +836,8 @@ suspend inline fun AsyncOutputStream.writeSync(hintSize: Int = 4096, callback: S
 		callback()
 	})
 }
+
+fun AsyncStreamBase.toSyncOrNull(): SyncStreamBase? = (this as? SyncAsyncStreamBase?)?.sync
+    ?: (this as? MemoryAsyncStreamBase?)?.let { MemorySyncStreamBase(it.data) }
+
+fun AsyncStream.toSyncOrNull(): SyncStream? = this.base.toSyncOrNull()?.let { SyncStream(it, this.position) }
