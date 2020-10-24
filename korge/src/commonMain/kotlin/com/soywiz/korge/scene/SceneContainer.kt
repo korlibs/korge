@@ -189,6 +189,7 @@ class SceneContainer(
         if (oldScene != null) {
             withContext(oldScene.coroutineContext) {
                 oldScene.sceneDestroy()
+                oldScene.sceneDestroyInternal()
             }
 
             oldScene.launchImmediately {

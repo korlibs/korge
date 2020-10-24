@@ -5,16 +5,19 @@ import kotlin.reflect.*
 
 interface AsyncObjectProvider<T> {
     suspend fun get(injector: AsyncInjector): T
+    suspend fun deinit()
 }
 
 class PrototypeAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T> {
     override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector))
+    override suspend fun deinit() = Unit
     override fun toString(): String = "PrototypeAsyncObjectProvider()"
 }
 
 class FactoryAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> AsyncFactory<T>) :
     AsyncObjectProvider<T> {
     override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector).create())
+    override suspend fun deinit() = Unit
     override fun toString(): String = "FactoryAsyncObjectProvider()"
 }
 
@@ -24,12 +27,18 @@ class SingletonAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() ->
         if (value == null) value = injector.created(generator(injector))
         return value!!
     }
+    override suspend fun deinit() {
+        (value as? AsyncDestructor?)?.deinit()
+    }
 
     override fun toString(): String = "SingletonAsyncObjectProvider($value)"
 }
 
 class InstanceAsyncObjectProvider<T>(val instance: T) : AsyncObjectProvider<T> {
     override suspend fun get(injector: AsyncInjector): T = instance
+    override suspend fun deinit() {
+        (instance as? AsyncDestructor?)?.deinit()
+    }
     override fun toString(): String = "InstanceAsyncObjectProvider($instance)"
 }
 
@@ -162,6 +171,10 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         if (instance is InjectorAsyncDependency) instance.init(this)
         return instance
     }
+
+    suspend fun deinit() {
+        for (pair in providersByClass) pair.value.deinit()
+    }
 }
 
 interface AsyncFactory<T> {
@@ -179,6 +192,10 @@ annotation class AsyncFactoryClass(val clazz: KClass<out AsyncFactory<*>>)
 
 interface AsyncDependency {
     suspend fun init(): Unit
+}
+
+interface AsyncDestructor {
+    suspend fun deinit(): Unit
 }
 
 interface InjectorAsyncDependency {

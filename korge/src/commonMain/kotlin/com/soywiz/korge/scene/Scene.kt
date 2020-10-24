@@ -104,8 +104,12 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * has been performed, and the old scene is not visible anymore.
      */
 	open suspend fun sceneDestroy() {
-		cancellables.cancel()
 	}
+
+    internal suspend fun sceneDestroyInternal() {
+        cancellables.cancel()
+        injector.deinit()
+    }
 
     /**
      * DO NOT BLOCK. Called on the old scene after the transition
