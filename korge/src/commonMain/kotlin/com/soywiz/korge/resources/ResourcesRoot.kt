@@ -15,7 +15,7 @@ class ResourcesRoot : AsyncDependency {
 	}
 
 	operator fun get(
-        @Resource
+        @ResourcePath
         //@Language("resource") // @TODO: This doesn't work on Kotlin Common. reported already on Kotlin issue tracker
         //language=resource
         path: String
