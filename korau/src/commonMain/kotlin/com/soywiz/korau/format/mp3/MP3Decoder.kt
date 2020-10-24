@@ -18,15 +18,16 @@ private suspend fun createJavaMp3DecoderStream(s: AsyncStream): AudioStream = cr
 // @TODO: Use AsyncStream and read frame chunks
 private suspend fun createJavaMp3DecoderStream(idata: ByteArray): AudioStream {
     val sdata = idata.openAsync()
-    var data = JavaMp3Decoder.init(idata) ?: error("Not an mp3 file [2]")
-    val samples = ShortArray(data.samplesBuffer.size / 2)
+    val data = JavaMp3Decoder.init(idata) ?: error("Not an mp3 file [2]")
+    val samplesBuffer = data._samplesBuffer!!
+    val samples = ShortArray(samplesBuffer.size / 2)
     val deque = AudioSamplesDeque(data.nchannels)
     var samplesPos = 0L
     var seekPos = -1L
     val mp3SeekingTable = MP3Base.Parser(sdata).getSeekingTable(44100)
 
     fun decodeSamples() {
-        for (n in samples.indices) samples[n] = data.samplesBuffer.readU16LE(n * 2).toShort()
+        for (n in samples.indices) samples[n] = samplesBuffer.readU16LE(n * 2).toShort()
     }
 
     return object : AudioStream(data.frequency, data.nchannels) {
