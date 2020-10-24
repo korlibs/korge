@@ -547,7 +547,7 @@ object JavaMp3Decoder {
             val header = FrameHeader(soundData)
             var skipped = 0
             while (!header.isValid) {
-                if (soundData.buffer!!.lastByte == -1 || skipped >= maxBytesSkipped) {
+                if (soundData.buffer.lastByte == -1 || skipped >= maxBytesSkipped) {
                     return null
                 }
                 skipped++
@@ -606,11 +606,11 @@ object JavaMp3Decoder {
             synth(soundData, sampleDecoded, soundData.synthOffset, soundData.synthBuffer, if (header.mode == 3 /* single_channel */) 1 else 2)
         } else if (header.layer == 2 /* layer II */) {
             val bitrate: Int = BITRATE_LAYER_II[header.bitrateIndex]
-            val sampleDecoded: FloatArray? = /* single_channel */when (header.mode) {
+            val sampleDecoded: FloatArray = /* single_channel */when (header.mode) {
                 3 /* single_channel */ -> samples_II(soundData.buffer, 1, -1, bitrate, soundData.frequency)
                 0 /* stereo */, 2 /* dual_channel */ -> samples_II(soundData.buffer, 2, -1, bitrate, soundData.frequency)
                 1 /* intensity_stereo */ -> samples_II(soundData.buffer, 2, bound, bitrate, soundData.frequency)
-                else -> null
+                else -> error("Invalid header.mode")
             }
             synth(soundData, sampleDecoded, soundData.synthOffset, soundData.synthBuffer, if (header.mode == 3 /* single_channel */) 1 else 2)
         } else if (header.layer == 1 /* layer III */) {
@@ -644,10 +644,31 @@ object JavaMp3Decoder {
 
     const val L3_NSAMPLES = 576
 
+    private val stereo = 2
+    val scfsi = IntArray(stereo * 4)
+    val part2_3_length = IntArray(stereo * 2)
+    val big_values = IntArray(stereo * 2)
+    val global_gain: IntArray = IntArray(stereo * 2)
+    val scalefac_compress: IntArray = IntArray(stereo * 2)
+    val win_switch_flag: IntArray = IntArray(stereo * 2)
+    val block_type: IntArray = IntArray(stereo * 2)
+    val mixed_block_flag: IntArray = IntArray(stereo * 2)
+    val table_select: IntArray = IntArray(stereo * 2 * 3)
+    val subblock_gain: IntArray = IntArray(stereo * 2 * 3)
+    val region0_count = IntArray(stereo * 2)
+    val region1_count = IntArray(stereo * 2)
+    val preflag = IntArray(stereo * 2)
+    val scalefac_scale = IntArray(stereo * 2)
+    val count1table_select = IntArray(stereo * 2)
+    val count1 = IntArray(stereo * 2)
+    val scalefac_l = IntArray(stereo * 2 * 21)
+    val scalefac_s = IntArray(stereo * 2 * 12 * 3)
+    val `is` = FloatArray(stereo * 2 * 576)
+
     internal fun samples_III(
-        buffer: Buffer?,
+        buffer: Buffer,
         stereo: Int,
-        mainDataReader: MainDataReader?,
+        mainDataReader: MainDataReader,
         frameSize: Int,
         samplingFrequency: Int,
         mode: Int,
@@ -656,25 +677,26 @@ object JavaMp3Decoder {
         v: FloatArray,
         soundData: SoundData
     ) {
-        val scfsi = IntArray(stereo * 4)
-        val part2_3_length = IntArray(stereo * 2)
-        val big_values = IntArray(stereo * 2)
-        val global_gain: IntArray = IntArray(stereo * 2)
-        val scalefac_compress: IntArray = IntArray(stereo * 2)
-        val win_switch_flag: IntArray = IntArray(stereo * 2)
-        val block_type: IntArray = IntArray(stereo * 2)
-        val mixed_block_flag: IntArray = IntArray(stereo * 2)
-        val table_select: IntArray = IntArray(stereo * 2 * 3)
-        val subblock_gain: IntArray = IntArray(stereo * 2 * 3)
-        val region0_count = IntArray(stereo * 2)
-        val region1_count = IntArray(stereo * 2)
-        val preflag = IntArray(stereo * 2)
-        val scalefac_scale = IntArray(stereo * 2)
-        val count1table_select = IntArray(stereo * 2)
-        val count1 = IntArray(stereo * 2)
-        val scalefac_l = IntArray(stereo * 2 * 21)
-        val scalefac_s = IntArray(stereo * 2 * 12 * 3)
-        val `is` = FloatArray(stereo * 2 * 576)
+        scfsi.fill(0)
+        part2_3_length.fill(0)
+        big_values.fill(0)
+        global_gain.fill(0)
+        scalefac_compress.fill(0)
+        win_switch_flag.fill(0)
+        block_type.fill(0)
+        mixed_block_flag.fill(0)
+        table_select.fill(0)
+        subblock_gain.fill(0)
+        region0_count.fill(0)
+        region1_count.fill(0)
+        preflag.fill(0)
+        scalefac_scale.fill(0)
+        count1table_select.fill(0)
+        count1.fill(0)
+        scalefac_l.fill(0)
+        scalefac_s.fill(0)
+        `is`.fill(0f)
+
         val mainDataBegin: Int = read(buffer, 9)
         read(buffer, if (stereo == 1) 5 else 3)
         for (ch in 0 until stereo) {
@@ -717,7 +739,7 @@ object JavaMp3Decoder {
                 count1table_select[ch * 2 + gr] = read(buffer, 1)
             }
         }
-        arraycopy(mainDataReader!!.array, mainDataReader.top - mainDataBegin, mainDataReader.array, 0, mainDataBegin)
+        arraycopy(mainDataReader.array, mainDataReader.top - mainDataBegin, mainDataReader.array, 0, mainDataBegin)
         val mainDataSize: Int = frameSize - (if (stereo == 2) 32 else 17) - 4
         readInto(buffer, mainDataReader.array, mainDataBegin, mainDataSize)
         mainDataReader.index = 0
@@ -1254,7 +1276,7 @@ object JavaMp3Decoder {
                             soundData.samplesBuffer[(gr * 18 * 32 * 2 * 2) + (ss * 32 * 2 * 2) + (i * 2 * 2) + (ch * 2) + 1] = (samp ushr 8).toByte()
                         } else {
                             soundData.samplesBuffer[(gr * 18 * 32 * 2) + (ss * 32 * 2) + (i * 2)] = samp.toByte()
-                            soundData.samplesBuffer!![(gr * 18 * 32 * 2) + (ss * 32 * 2) + (i * 2) + 1] = (samp ushr 8).toByte()
+                            soundData.samplesBuffer[(gr * 18 * 32 * 2) + (ss * 32 * 2) + (i * 2) + 1] = (samp ushr 8).toByte()
                         }
                     } /* end for (i... */
                 } /* end for (ss... */
@@ -1366,7 +1388,7 @@ object JavaMp3Decoder {
         `is`[(ch * 2 * 576) + (gr * 576) + is_pos] = tmp1 * tmp2 * tmp3
     }
 
-    internal fun huffman_III(mainDataReader: MainDataReader?, table_num: Int, array: IntArray) {
+    internal fun huffman_III(mainDataReader: MainDataReader, table_num: Int, array: IntArray) {
         /* Table entries are 16 bits each:
         * Bit(s)
         * 15     hit/miss (1/0)
@@ -1452,7 +1474,7 @@ object JavaMp3Decoder {
         }
     }
 
-    internal fun samples_I(buffer: Buffer?, stereo: Int, bound: Int): FloatArray? {
+    internal fun samples_I(buffer: Buffer, stereo: Int, bound: Int): FloatArray? {
         var bound: Int = bound
         if (bound < 0) {
             bound = 32
@@ -1528,7 +1550,7 @@ object JavaMp3Decoder {
         return sampleDecoded
     }
 
-    internal fun samples_II(buffer: Buffer?, stereo: Int, bound: Int, bitrate: Int, frequency: Int): FloatArray {
+    internal fun samples_II(buffer: Buffer, stereo: Int, bound: Int, bitrate: Int, frequency: Int): FloatArray {
         var bound: Int = bound
         val sbIndex = when {
             frequency != 48000 && (bitrate >= 96000 || bitrate == 0) -> 1
@@ -1702,8 +1724,8 @@ object JavaMp3Decoder {
         return sampleDecoded
     }
 
-    internal fun synth(soundData: SoundData, samples: FloatArray?, synthOffset: IntArray, synthBuffer: FloatArray, stereo: Int) {
-        val size: Int = samples!!.size / stereo / 32
+    internal fun synth(soundData: SoundData, samples: FloatArray, synthOffset: IntArray, synthBuffer: FloatArray, stereo: Int) {
+        val size: Int = samples.size / stereo / 32
         val pcm: FloatArray = FloatArray(size * 32 * stereo)
         for (ch in 0 until stereo) {
             for (s in 0 until size) {
@@ -1736,16 +1758,16 @@ object JavaMp3Decoder {
             } else if (sample < -32768) {
                 sample = -32768
             }
-            soundData.samplesBuffer!![i * 2] = sample.toByte()
-            soundData.samplesBuffer!![i * 2 + 1] = (sample ushr 8).toByte()
+            soundData.samplesBuffer[i * 2] = sample.toByte()
+            soundData.samplesBuffer[i * 2 + 1] = (sample ushr 8).toByte()
         }
     }
 
-    internal fun read(reader: MainDataReader?, bits: Int): Int {
+    internal fun read(reader: MainDataReader, bits: Int): Int {
         var bits: Int = bits
         var number: Int = 0
         while (bits > 0) {
-            val advance: Int = min(bits, 8 - reader!!.current)
+            val advance: Int = min(bits, 8 - reader.current)
             bits -= advance
             reader.current += advance
             number = number or ((((reader.array[reader.index].toInt() and 0xFF) ushr (8 - reader.current)) and (0xFF ushr (8 - advance))) shl bits)
@@ -1757,11 +1779,11 @@ object JavaMp3Decoder {
         return number
     }
 
-    internal fun read(buffer: Buffer?, bits: Int): Int {
+    internal fun read(buffer: Buffer, bits: Int): Int {
         var bits: Int = bits
         var number: Int = 0
         while (bits > 0) {
-            val advance: Int = min(bits, 8 - buffer!!.current)
+            val advance: Int = min(bits, 8 - buffer.current)
             bits -= advance
             buffer.current += advance
             if (bits != 0 && buffer.lastByte == -1) {
@@ -1776,8 +1798,8 @@ object JavaMp3Decoder {
         return number
     }
 
-    internal fun readInto(buffer: Buffer?, array: ByteArray, offset: Int, length: Int) {
-        if (buffer!!.current != 0) // TODO remove
+    internal fun readInto(buffer: Buffer, array: ByteArray, offset: Int, length: Int) {
+        if (buffer.current != 0) // TODO remove
         {
             throw IllegalStateException("buffer current is " + buffer.current)
         }
@@ -1811,7 +1833,7 @@ object JavaMp3Decoder {
         internal fun set(soundData: SoundData) {
             // previously aborted data reads might have left the Buffer off a byte
             // boundary, so reset back to reading from the beginning of the byte
-            soundData.buffer!!.current = 0
+            soundData.buffer.current = 0
             // read 4 byte header with possibility of rollback
             soundData.buffer.mark(4)
             try {
@@ -1834,7 +1856,7 @@ object JavaMp3Decoder {
         }
 
         internal fun unRead(soundData: SoundData) {
-            soundData.buffer!!.reset()
+            soundData.buffer.reset()
             soundData.buffer.lastByte = sigBytes ushr 4
         }
 
