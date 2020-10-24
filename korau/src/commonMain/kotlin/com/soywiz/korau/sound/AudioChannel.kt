@@ -5,7 +5,9 @@ import com.soywiz.klock.*
 class AudioChannel {
     private var channel: SoundChannel? = null
 
-    val playing get() = channel?.playing ?: false
+    val state get() = channel?.state ?: SoundChannelState.INITIAL
+
+    val playing get() = state.playingOrPaused
     val current get() = channel?.current ?: 0.seconds
     val total get() = channel?.total ?: 0.seconds
 

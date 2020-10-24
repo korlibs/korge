@@ -36,9 +36,9 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 
 class AudioBufferSound(
     val buffer: AudioBuffer?,
-    val coroutineContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
     override val name: String = "unknown"
-) : Sound() {
+) : Sound(coroutineContext) {
 	override val length: TimeSpan = ((buffer?.duration) ?: 0.0).seconds
 
 	override suspend fun decode(): AudioData = if (buffer == null) {
@@ -75,8 +75,11 @@ class AudioBufferSound(
                 get() = channel?.currentTime ?: 0.seconds
                 set(value) = run { channel?.currentTime = value }
 			override val total: TimeSpan = buffer?.duration?.seconds ?: 0.seconds
-			override val playing: Boolean
-                get() = channel?.playing ?: (current < total)
+            override val state: SoundChannelState get() = when {
+                channel?.pausedAt != null -> SoundChannelState.PAUSED
+                channel?.playing ?: (current < total) -> SoundChannelState.PLAYING
+                else -> SoundChannelState.STOPPED
+            }
 
             override fun pause() {
                 channel?.pause()

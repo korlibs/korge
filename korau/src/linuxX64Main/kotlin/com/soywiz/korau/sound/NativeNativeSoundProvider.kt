@@ -172,11 +172,11 @@ class OpenALPlatformAudioOutput(
 // https://ffainelli.github.io/openal-example/
 class OpenALNativeSoundNoStream(
     val provider: OpenALNativeSoundProvider,
-    val coroutineContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
     val data: AudioData?,
     val sourceProvider: SourceProvider = SourceProvider(0.convert()),
     override val name: String = "Unknown"
-) : Sound(), SoundProps by JnaSoundPropsProvider(sourceProvider) {
+) : Sound(coroutineContext), SoundProps by JnaSoundPropsProvider(sourceProvider) {
     override suspend fun decode(): AudioData = data ?: AudioData.DUMMY
 
     var source: ALuint
@@ -209,12 +209,18 @@ class OpenALNativeSoundNoStream(
                 get() = data.timeAtSample(currentSampleOffset)
                 set(value) = run { alSourcef(source, AL_SEC_OFFSET, value.seconds.toFloat())  }
             override val total: TimeSpan get() = data.totalTime
-            override val playing: Boolean
-                get() {
-                    val result = alGetSourceState(source) == AL_PLAYING
-                    checkAlErrors("alGetSourceState")
-                    return result
+
+            override val state: SoundChannelState get() {
+                val result = alGetSourceState(source)
+                checkAlErrors("alGetSourceState")
+                return when (result) {
+                    AL_INITIAL -> SoundChannelState.INITIAL
+                    AL_PLAYING -> SoundChannelState.PLAYING
+                    AL_PAUSED -> SoundChannelState.PAUSED
+                    AL_STOPPED -> SoundChannelState.STOPPED
+                    else -> error("Invalid alGetSourceState $result")
                 }
+            }
 
             override fun pause() {
                 alSourcePause(source)

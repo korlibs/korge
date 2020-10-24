@@ -65,7 +65,7 @@ open class NativeSoundProvider {
         //println("STREAM.RATE:" + stream.rate)
         //println("STREAM.CHANNELS:" + stream.channels)
         val coroutineContext = coroutineContext
-        return object : Sound() {
+        return object : Sound(coroutineContext) {
             override val name: String = name
             val nativeSound = this
             override val length: TimeSpan get() = stream.totalLength
@@ -123,7 +123,11 @@ open class NativeSoundProvider {
                         get() = stream.currentTime
                         set(value) = run { stream.currentTime = value }
                     override val total: TimeSpan get() = stream.totalLength
-                    override val playing: Boolean get() = playing
+                    override val state: SoundChannelState get() = when {
+                        paused -> SoundChannelState.PAUSED
+                        playing -> SoundChannelState.PLAYING
+                        else -> SoundChannelState.STOPPED
+                    }
                     override fun pause() { paused = true }
                     override fun resume() { paused = false }
                     override fun stop() = close()
@@ -170,7 +174,11 @@ interface SoundProps : ReadonlySoundProps {
 class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase {
     private val channels = arrayListOf<SoundChannelBase>()
 
-    override val playing: Boolean get() = channels.any { it.playing }
+    override val state: SoundChannelState get() = when {
+        channels.any { it.playing } -> SoundChannelState.PLAYING
+        channels.any { it.paused } -> SoundChannelState.PAUSED
+        else -> SoundChannelState.STOPPED
+    }
 
     override var volume: Double = 1.0
         set(value) {
@@ -222,19 +230,33 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
     override fun stop(): Unit = all { it.stop() }
 }
 
+enum class SoundChannelState {
+    INITIAL, PAUSED, PLAYING, STOPPED;
+
+    val playing get() = this == PLAYING
+    val paused get() = this == PAUSED
+    val playingOrPaused get() = this == PAUSED || this == PLAYING
+}
+
+
 interface SoundChannelBase : SoundProps {
-    val playing: Boolean
+    val state: SoundChannelState
     fun reset(): Unit
     fun stop(): Unit
 
     suspend fun await() {
-        while (playing) delay(1.milliseconds)
+        while (playingOrPaused) delay(1.milliseconds)
     }
 }
+
+val SoundChannelBase.playing get() = state.playing
+val SoundChannelBase.paused get() = state.paused
+val SoundChannelBase.playingOrPaused get() = state.playingOrPaused
 
 fun <T : SoundChannelBase> T.attachTo(group: SoundChannelGroup): T = this.apply { group.add(this) }
 
 abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
+    val thread = AsyncThread()
 	private var startTime = DateTime.now()
 	override var volume = 1.0
 	override var pitch = 1.0
@@ -244,18 +266,22 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
         get() = DateTime.now() - startTime
         set(value) { startTime = DateTime.now() - value }
 	open val total: TimeSpan get() = sound.length
-	override val playing: Boolean get() = current < total
+    override val state: SoundChannelState get() = when {
+        current < total -> SoundChannelState.PLAYING
+        else -> SoundChannelState.STOPPED
+    }
     final override fun reset(): Unit { current = 0.seconds }
 	abstract override fun stop(): Unit
 
     open fun pause(): Unit = unsupported()
     open fun resume(): Unit = unsupported()
+    fun togglePaused(): Unit = if (paused) resume() else pause()
 }
 
 suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }) {
 	try {
-		while (playing) {
-			progress(current, total)
+		while (playingOrPaused) {
+			if (!paused) progress(current, total)
 			delay(4.milliseconds)
 		}
 		progress(total, total)
@@ -264,7 +290,7 @@ suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total:
 	}
 }
 
-abstract class Sound : SoundProps {
+abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps {
     open val name: String = "UnknownNativeSound"
     override var volume: Double = 1.0
     override var panning: Double = 0.0

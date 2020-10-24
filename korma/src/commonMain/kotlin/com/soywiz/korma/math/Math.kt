@@ -11,8 +11,15 @@ fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) &
 /** Clamps the integer value in the 0..255 range */
 fun Int.clampUByte(): Int {
     val n = this and -(if (this >= 0) 1 else 0)
-    return (n or (255 - n shr 31)) and 0xFF
+    return (n or (0xFF - n shr 31)) and 0xFF
 }
+fun Int.clampUShort(): Int {
+    val n = this and -(if (this >= 0) 1 else 0)
+    return (n or (0xFFFF - n shr 31)) and 0xFFFF
+}
+
+fun Int.toShortClamped(): Short = this.clamp(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+fun Int.toByteClamped(): Byte = this.clamp(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toByte()
 
 fun almostEquals(a: Float, b: Float) = almostZero(a - b)
 fun almostZero(a: Float) = abs(a) <= 0.0000001
