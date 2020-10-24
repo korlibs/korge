@@ -10,7 +10,7 @@ import kotlin.reflect.*
 annotation class ResourcePath()
 
 interface Resourceable<T : Any> {
-    fun getNowOrNull(): T?
+    fun getOrNull(): T?
     suspend fun get(): T
 }
 
@@ -18,13 +18,12 @@ class Resource<T : Any>(
     val resources: Resources,
     val name: String,
     val cache: ResourceCache,
-    val gen: suspend Resources.() -> T
+    private val gen: suspend Resources.() -> T
 ) : Resourceable<T> {
-    private val thread = AsyncThread()
-    var valueDeferred: Deferred<T>? = null
-    var valueOrNull: T? = null
+    private var valueDeferred: Deferred<T>? = null
+    private var valueOrNull: T? = null
 
-    override fun getNowOrNull(): T? {
+    override fun getOrNull(): T? {
         getDeferred()
         return valueOrNull
     }
@@ -41,7 +40,9 @@ class Resource<T : Any>(
 
     override suspend fun get(): T = getDeferred().await()
 
-    fun preload() {
+    suspend fun preload(): T = get()
+
+    fun preloadNoWait() {
         getDeferred()
     }
 
@@ -95,6 +96,7 @@ class ResourceRef<T : Any>(val cache: ResourceCache = ResourceCache.GLOBAL, val 
     }
 }
 
+fun <T : Any> resource(cache: ResourceCache = ResourceCache.GLOBAL, gen: suspend Resources.() -> T) = ResourceRef(cache, gen)
 fun <T : Any> resourceGlobal(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.GLOBAL, gen)
 fun <T : Any> resourceLocal(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.LOCAL, gen)
 fun <T : Any> resourceUncached(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.NONE, gen)

@@ -58,7 +58,8 @@ class Views constructor(
 	BoundsProvider,
     DialogInterface by gameWindow,
     AsyncCloseable,
-    KTreeSerializerHolder
+    KTreeSerializerHolder,
+    ResourcesContainer
 {
     override val views = this
 
@@ -89,7 +90,9 @@ class Views constructor(
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
 	var clampElapsedTimeTo = 100.0.milliseconds
 
-    val globalResources: Resources = Resources(coroutineContext, currentVfs)
+    override val resources: Resources = Resources(coroutineContext, currentVfs)
+
+    val globalResources: Resources get() = resources
 
     var editingMode: Boolean = false
 

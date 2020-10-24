@@ -5,7 +5,6 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -113,7 +112,7 @@ open class Text2(
             }
         }
         container.colorMul = color
-        val font = this.font.getNowOrNull()
+        val font = this.font.getOrNull()
         when (font) {
             null -> Unit
             is BitmapFont -> {
@@ -141,7 +140,7 @@ open class Text2(
 
                 for (n in 0 until bitmapFontActions.arrayTex.size) {
                     val it = (container[n] as Image)
-                    it.texture = bitmapFontActions.arrayTex[n]
+                    it.bitmap = bitmapFontActions.arrayTex[n]
                     it.x = bitmapFontActions.arrayX[n] + dx
                     it.y = bitmapFontActions.arrayY[n]
                     it.scaleX = bitmapFontActions.arraySX[n]
@@ -161,8 +160,8 @@ open class Text2(
                         container.removeChildren()
                         staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        ctx.agBitmapTextureManager.removeBitmap(staticImage!!.texture.bmp)
-                        staticImage!!.texture = textToBitmapResult.bmp.slice()
+                        ctx.agBitmapTextureManager.removeBitmap(staticImage!!.bitmap.bmp)
+                        staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
                     staticImage?.position(x, y)
                 }

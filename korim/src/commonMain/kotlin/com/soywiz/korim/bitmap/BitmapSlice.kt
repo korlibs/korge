@@ -2,10 +2,14 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
 // @TODO: We should convert this into an open class, then put those immutable fields in the constructor so accessing them doesn't require virtualization
-interface BmpSlice : Extra {
+interface BmpSlice : Extra, Resourceable<BmpSlice> {
+    override fun getOrNull() = this
+    override suspend fun get() = this
+
 	val name: String?
 	var parent: Any?
 	val bmp: Bitmap

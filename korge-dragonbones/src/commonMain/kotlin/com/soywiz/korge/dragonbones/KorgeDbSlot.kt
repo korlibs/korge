@@ -235,7 +235,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 				} else { // Normal texture.
 					this._textureScale = currentTextureData.parent!!.scale * this._armature!!._armatureData!!.scale
 					val normalDisplay = this._renderDisplay as Image
-					normalDisplay.texture = renderTexture
+					normalDisplay.bitmap = renderTexture
 					//normalDisplay.name = renderTexture.name
 					normalDisplay.name = this.name
 				}

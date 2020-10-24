@@ -6,6 +6,7 @@ import com.soywiz.korim.annotation.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
@@ -17,6 +18,9 @@ abstract class Bitmap(
     var premultiplied: Boolean,
     val backingArray: Any?
 ) : Sizeable, Extra by Extra.Mixin() {
+    //override fun getOrNull() = this
+    //override suspend fun get() = this
+
     //@ThreadLocal
     protected val tempRgba: RgbaArray by lazy { RgbaArray(width * 2) }
 

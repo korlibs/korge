@@ -353,7 +353,7 @@ class Board(
 					imageSlices[board[py][px]]
 				}
 
-				images[py][px].texture = image
+				images[py][px].bitmap = image
 			}
 		}
 		super.renderInternal(ctx)

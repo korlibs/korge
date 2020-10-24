@@ -45,7 +45,7 @@ class BitmapFont(
     val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmp ?: Bitmaps.transparent.bmp,
     override val name: String = "BitmapFont"
 ) : Font, Extra by Extra.Mixin() {
-    override fun getNowOrNull() = this
+    override fun getOrNull() = this
     override suspend fun get() = this
 
     private val naturalFontMetrics by lazy {

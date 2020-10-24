@@ -5,11 +5,12 @@ import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
 inline fun Container.image(
-	texture: BmpSlice, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
+	texture: Resourceable<out BmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.image(
@@ -19,7 +20,7 @@ inline fun Container.image(
 //typealias Sprite = Image
 
 open class BaseImage(
-    bitmap: BmpSlice,
+    bitmap: Resourceable<out BmpSlice>,
     anchorX: Double = 0.0,
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
@@ -33,15 +34,40 @@ open class BaseImage(
         smoothing: Boolean = true
     ) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
 
-    var bitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
-    var texture: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
+    private var setBitmapSource: Boolean = false
 
-    init {
-        this.baseBitmap = bitmap
+    var bitmap: BmpSlice
+        get() = baseBitmap
+        set(value) {
+            bitmapSrc = value
+        }
+
+    var bitmapSrc: Resourceable<out BmpSlice> = bitmap
+        set(value) {
+            setBitmapSource = false
+            field = value
+            trySetSource()
+        }
+
+    fun trySetSource() {
+        if (setBitmapSource) return
+        bitmapSrc.getOrNull()?.let {
+            setBitmapSource = true
+            this.baseBitmap = it
+        }
     }
 
-    override val bwidth: Double get() = bitmap.width.toDouble()
-    override val bheight: Double get() = bitmap.height.toDouble()
+    init {
+        trySetSource()
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
+        trySetSource()
+        super.renderInternal(ctx)
+    }
+
+    override val bwidth: Double get() = baseBitmap.width.toDouble()
+    override val bheight: Double get() = baseBitmap.height.toDouble()
 
     override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
 
@@ -50,7 +76,7 @@ open class BaseImage(
 }
 
 class Image(
-	bitmap: BmpSlice,
+	bitmap: Resourceable<out BmpSlice>,
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,

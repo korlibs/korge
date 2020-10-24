@@ -14,7 +14,7 @@ import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
 interface Font : Resourceable<Font> {
-    override fun getNowOrNull() = this
+    override fun getOrNull() = this
     override suspend fun get() = this
 
     val name: String
