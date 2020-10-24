@@ -223,6 +223,7 @@ abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps, Audio
     override var panning: Double = 0.0
     override var pitch: Double = 1.0
 	open val length: TimeSpan = 0.seconds
+    open val nchannels: Int get() = 1
 	abstract suspend fun decode(): AudioData
 	open fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
     fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(PlaybackParameters(times, startTime))

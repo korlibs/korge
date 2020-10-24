@@ -41,7 +41,9 @@ class AudioBufferSound(
 ) : Sound(coroutineContext) {
 	override val length: TimeSpan = ((buffer?.duration) ?: 0.0).seconds
 
-	override suspend fun decode(): AudioData = if (buffer == null) {
+    override val nchannels: Int get() = buffer?.numberOfChannels ?: 1
+
+    override suspend fun decode(): AudioData = if (buffer == null) {
 		AudioData.DUMMY
 	} else {
 		val nchannels = buffer.numberOfChannels

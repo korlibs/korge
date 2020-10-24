@@ -17,6 +17,7 @@ class SoundAudioStream(
     override val length: TimeSpan get() = stream.totalLength
     override suspend fun decode(): AudioData = stream.toData()
     override suspend fun toStream(): AudioStream = stream.clone()
+    override val nchannels: Int get() = stream.channels
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun play(params: PlaybackParameters): SoundChannel {

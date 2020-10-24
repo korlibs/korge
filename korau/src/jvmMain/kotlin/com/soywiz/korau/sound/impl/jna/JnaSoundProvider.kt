@@ -201,6 +201,8 @@ class OpenALSoundNoStream(
 
     override val length: TimeSpan get() = data?.totalTime ?: 0.seconds
 
+    override val nchannels: Int get() = data?.channels ?: 1
+
     override fun play(params: PlaybackParameters): SoundChannel {
         val data = data ?: return DummySoundChannel(this)
         provider.makeCurrent()
