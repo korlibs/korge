@@ -2,6 +2,7 @@ package com.soywiz.korau.sound
 
 import com.soywiz.kmem.*
 import com.soywiz.korau.internal.*
+import kotlin.math.*
 
 interface IAudioSamples {
     val channels: Int
@@ -27,14 +28,65 @@ internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.tota
     return out
 }
 
+class AudioSamplesProcessor(val channels: Int, val totalSamples: Int, val data: Array<FloatArray> = Array(channels) { FloatArray(totalSamples) })  {
+    fun reset(): AudioSamplesProcessor {
+        for (ch in 0 until channels) data[ch].fill(0f)
+        return this
+    }
+    fun add(samples: AudioSamples, scale: Float = 1f): AudioSamplesProcessor {
+        for (ch in 0 until min(channels, samples.channels)) {
+            val odata = this.data[ch]
+            val idata = samples.data[ch]
+            for (n in 0 until samples.totalSamples) {
+                odata[n] += SampleConvert.shortToFloat(idata[n]) * scale
+            }
+        }
+        return this
+    }
+    fun normalize(): AudioSamplesProcessor {
+        for (ch in 0 until channels) {
+            val odata = this.data[ch]
+            var maxAbs = 0f
+            for (n in 0 until totalSamples) {
+                maxAbs = kotlin.math.max(maxAbs, odata[n].absoluteValue)
+            }
+            if (maxAbs > 1f) {
+                val invMaxAbs = 1f / maxAbs
+                for (n in 0 until totalSamples) {
+                    odata[n] *= invMaxAbs
+                }
+            }
+        }
+        return this
+    }
+    fun copyTo(samples: AudioSamples) {
+        for (ch in 0 until min(channels, samples.channels)) {
+            val idata = this.data[ch]
+            val odata = samples.data[ch]
+            for (n in 0 until samples.totalSamples) {
+                odata[n] = SampleConvert.floatToShort(idata[n])
+            }
+        }
+    }
+}
+
 class AudioSamples(override val channels: Int, override val totalSamples: Int, val data: Array<ShortArray> = Array(channels) { ShortArray(totalSamples) }) : IAudioSamples {
     //val interleaved by lazy { interleaved() }
-
 
     operator fun get(channel: Int): ShortArray = data[channel]
 
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
     override operator fun set(channel: Int, sample: Int, value: Short) = run { data[channel][sample] = value }
+
+    fun setTo(that: AudioSamples) {
+        that.copyTo(this)
+    }
+
+    fun copyTo(that: AudioSamples) {
+        for (ch in 0 until min(channels, that.channels)) {
+            arraycopy(this.data[ch], 0, that.data[ch], 0, min(totalSamples, that.totalSamples))
+        }
+    }
 
     override fun hashCode(): Int = channels + totalSamples * 32 + data.contentDeepHashCode() * 64
     override fun equals(other: Any?): Boolean = (other is AudioSamples) && this.channels == other.channels && this.totalSamples == other.totalSamples && this.data.contentDeepEquals(other.data)
