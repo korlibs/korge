@@ -75,9 +75,18 @@ class AudioBufferSound(
                 get() = channel?.currentTime ?: 0.seconds
                 set(value) = run { channel?.currentTime = value }
 			override val total: TimeSpan = buffer?.duration?.seconds ?: 0.seconds
-			override val playing: Boolean get() = channel?.playing ?: (current < total)
+			override val playing: Boolean
+                get() = channel?.playing ?: (current < total)
 
-			override fun stop(): Unit = run { channel?.stop() }
+            override fun pause() {
+                channel?.pause()
+            }
+
+            override fun resume() {
+                channel?.resume()
+            }
+
+            override fun stop(): Unit = run { channel?.stop() }
 		}.also {
             //it.current = params.startTime
             it.copySoundPropsFrom(params)

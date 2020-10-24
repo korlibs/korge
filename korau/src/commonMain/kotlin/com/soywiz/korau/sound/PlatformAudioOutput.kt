@@ -19,6 +19,7 @@ open class PlatformAudioOutput(
     }
 	suspend fun add(data: AudioData) = add(data.samples, 0, data.totalSamples)
 	open fun start() = Unit
+    //open fun pause() = unsupported()
 	open fun stop() = Unit
     override fun dispose() = stop()
 }

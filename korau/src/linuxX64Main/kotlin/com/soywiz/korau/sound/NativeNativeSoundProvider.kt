@@ -216,6 +216,14 @@ class OpenALNativeSoundNoStream(
                     return result
                 }
 
+            override fun pause() {
+                alSourcePause(source)
+            }
+
+            override fun resume() {
+                alSourcePlay(source)
+            }
+
             override fun stop() {
                 if (!stopped) {
                     stopped = true

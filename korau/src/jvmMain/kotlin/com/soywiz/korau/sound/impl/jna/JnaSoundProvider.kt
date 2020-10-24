@@ -161,6 +161,10 @@ class OpenALPlatformAudioOutput(
         //checkAlErrors()
     }
 
+    //override fun pause() {
+    //    al.alSourcePause(source)
+    //}
+
     override fun stop() {
         dispose()
     }
@@ -234,6 +238,14 @@ class OpenALSoundNoStream(
                     al.alDeleteSource(source)
                     al.alDeleteBuffer(buffer)
                 }
+            }
+
+            override fun pause() {
+                al.alSourcePause(source)
+            }
+
+            override fun resume() {
+                al.alSourcePlay(source)
             }
         }.also {
             it.copySoundPropsFrom(params)

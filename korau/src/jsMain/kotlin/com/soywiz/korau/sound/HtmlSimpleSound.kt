@@ -82,9 +82,9 @@ object HtmlSimpleSound {
                                 deferred.complete(Unit)
                             }
                         }
-                        times = times.oneLess
                         //println("awaiting sound")
                         deferred.await()
+                        times = times.oneLess
                         //println("sound awaited")
                         if (!times.hasMore) break
                     }
@@ -124,12 +124,28 @@ object HtmlSimpleSound {
             }
 
 		private var running = true
+
 		//val playing get() = running && currentTime < buffer.duration
-        val playing get() = running.also {
+        val playing: Boolean
+            get() = running.also {
             //println("playing: $running")
         }
 
-		fun stop() {
+        var pausedAt: TimeSpan? = null
+        fun pause() {
+            this.pausedAt = currentTime
+            stop()
+        }
+
+        fun resume() {
+            val pausedAt = this.pausedAt
+            if (pausedAt != null) {
+                currentTime = pausedAt
+            }
+            this.pausedAt = null
+        }
+
+        fun stop() {
             job.cancel()
 		}
 	}

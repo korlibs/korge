@@ -38,10 +38,10 @@ open class AudioFormat(vararg exts: String) {
 }
 
 open class AudioDecodingProps(
-    val exactTimings: Boolean? = null
-    //, val readInMemory: Boolean = true
+    val exactTimings: Boolean? = null,
+    val readInMemory: Boolean = true,
 ) {
-    var readInMemory: Boolean = true
+    //var readInMemory: Boolean = true
 
     companion object {
         val DEFAULT = AudioDecodingProps()

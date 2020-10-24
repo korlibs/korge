@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korau.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
@@ -73,6 +74,7 @@ open class NativeSoundProvider {
                 val nas: PlatformAudioOutput = createAudioStream(coroutineContext, stream.rate)
                 nas.copySoundPropsFrom(params)
                 var playing = true
+                var paused = false
                 val job = launchImmediately(coroutineContext) {
                     val stream = stream.clone()
                     stream.currentTime = params.startTime
@@ -85,10 +87,9 @@ open class NativeSoundProvider {
                         val minBuf = (stream.rate * nchannels * params.bufferTime.seconds).toInt()
                         nas.start()
                         while (times.hasMore) {
-                            times = times.oneLess
-
                             while (!stream.finished) {
                                 //println("STREAM")
+                                while (paused) delay(2.milliseconds)
                                 val read = stream.read(temp, 0, temp.totalSamples)
                                 nas.add(temp, 0, read)
                                 while (nas.availableSamples in minBuf..minBuf * 2) {
@@ -96,6 +97,7 @@ open class NativeSoundProvider {
                                     //println("STREAM.WAIT: ${nas.availableSamples}")
                                 }
                             }
+                            times = times.oneLess
                             stream.currentPositionInSamples = 0L
                         }
                     } catch (e: CancellationException) {
@@ -122,6 +124,8 @@ open class NativeSoundProvider {
                         set(value) = run { stream.currentTime = value }
                     override val total: TimeSpan get() = stream.totalLength
                     override val playing: Boolean get() = playing
+                    override fun pause() { paused = true }
+                    override fun resume() { paused = false }
                     override fun stop() = close()
                 }
             }
@@ -169,19 +173,34 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
     override val playing: Boolean get() = channels.any { it.playing }
 
     override var volume: Double = 1.0
-        set(value) = run { field = value}.also { all { it.volume = value } }
+        set(value) {
+            field = value
+            all { it.volume = value }
+        }
     override var pitch: Double = 1.0
-        set(value) = run { field = value}.also { all { it.pitch = value } }
+        set(value) {
+            field = value
+            all { it.pitch = value }
+        }
     override var panning: Double = 0.0
-        set(value) = run { field = value}.also { all { it.panning = value } }
+        set(value) {
+            field = value
+            all { it.panning = value }
+        }
+
     init {
         this.volume = volume
         this.pitch = pitch
         this.panning = panning
     }
 
-    fun add(channel: SoundChannelBase) = run { channels.add(channel) }.also { setProps(channel) }
-    fun remove(channel: SoundChannelBase) = run { channels.remove(channel) }
+    fun add(channel: SoundChannelBase) {
+        channels.add(channel)
+        setProps(channel)
+    }
+    fun remove(channel: SoundChannelBase) {
+        channels.remove(channel)
+    }
 
     private fun setProps(channel: SoundChannelBase) {
         channel.volume = this.volume
@@ -190,13 +209,17 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
     }
 
     @PublishedApi
-    internal fun prune() = run {  channels.removeAll { !it.playing }  }
+    internal fun prune() {
+        channels.removeAll { !it.playing }
+    }
 
-    private inline fun all(callback: (SoundChannelBase) -> Unit) = run { for (channel in channels) callback(channel) }.also { prune() }
+    private inline fun all(callback: (SoundChannelBase) -> Unit) {
+        for (channel in channels) callback(channel)
+        prune()
+    }
 
     override fun reset(): Unit = all { it.reset() }
     override fun stop(): Unit = all { it.stop() }
-
 }
 
 interface SoundChannelBase : SoundProps {
@@ -219,11 +242,14 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
     // @TODO: Rename to position
 	open var current: TimeSpan
         get() = DateTime.now() - startTime
-        set(value) = run { startTime = DateTime.now() - value }
+        set(value) { startTime = DateTime.now() - value }
 	open val total: TimeSpan get() = sound.length
 	override val playing: Boolean get() = current < total
-    final override fun reset(): Unit = run { current = 0.seconds }
+    final override fun reset(): Unit { current = 0.seconds }
 	abstract override fun stop(): Unit
+
+    open fun pause(): Unit = unsupported()
+    open fun resume(): Unit = unsupported()
 }
 
 suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }) {
