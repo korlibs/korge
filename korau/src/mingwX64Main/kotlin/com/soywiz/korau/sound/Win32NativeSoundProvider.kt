@@ -41,6 +41,7 @@ object Win32NativeSoundProvider : NativeSoundProvider() {
         return object : PlatformAudioOutput(coroutineContext, freq) {
             val scope = Arena()
             var hWaveOut: CPointerVarOf<CPointer<HWAVEOUT__>>? = null
+            val hWaveOutValue get() = hWaveOut?.value
 
             private var emitedSamples: Long = 0
             private val currentSamples: Long get() {
@@ -77,10 +78,10 @@ object Win32NativeSoundProvider : NativeSoundProvider() {
                     delay(1L)
                 }
                 //println("add.[3]")
-                val chunk = WinAudioChunk(samples, pitch, panning)
+                val chunk = WinAudioChunk(samples.copyOfRange(offset, offset + size), pitch, panning)
                 chunksDeque.add(chunk)
-                val resPrepare = waveOutPrepareHeader(hWaveOut!!.value, chunk.hdr.ptr, WAVEHDR.size.convert())
-                val resOut = waveOutWrite(hWaveOut!!.value, chunk.hdr.ptr, WAVEHDR.size.convert())
+                val resPrepare = waveOutPrepareHeader(hWaveOutValue, chunk.hdr.ptr, WAVEHDR.size.convert())
+                val resOut = waveOutWrite(hWaveOutValue, chunk.hdr.ptr, WAVEHDR.size.convert())
                 //println("add.[4]")
                 emitedSamples += chunk.totalSamples
             }
