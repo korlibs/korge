@@ -79,9 +79,10 @@ open class MP3Base : AudioFormat("mp3") {
 			var info: Mp3Info? = null
 
             var nframes = 0
+            val block2 = UByteArrayInt(ByteArray(10))
 			while (!fd.eof()) {
-				val block2 = UByteArrayInt(fd.readBytesUpTo(10))
-				if (block2.size < 10) break
+                val block2Size = fd.readBytesUpTo(block2.bytes, 0, 10)
+				if (block2Size < 10) break
 
 				if (block2[0] == 0xFF && ((block2[1] and 0xe0) != 0)) {
                     val framePos = fd.position
@@ -125,9 +126,9 @@ open class MP3Base : AudioFormat("mp3") {
 				val flag_extended_header = id3v2_flags.extract(6)
 				val flag_experimental_ind = id3v2_flags.extract(5)
 				val flag_footer_present = id3v2_flags.extract(4)
-				val z0 = b.readU8();
-				val z1 = b.readU8();
-				val z2 = b.readU8();
+				val z0 = b.readU8()
+				val z1 = b.readU8()
+				val z2 = b.readU8()
 				val z3 = b.readU8()
 				if (((z0 and 0x80) == 0) && ((z1 and 0x80) == 0) && ((z2 and 0x80) == 0) && ((z3 and 0x80) == 0)) {
 					val header_size = 10
@@ -156,13 +157,17 @@ open class MP3Base : AudioFormat("mp3") {
 			val layers = intArrayOf(-1, 3, 2, 1)
 
 			val bitrates = mapOf(
-				"V1L1" to intArrayOf(0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448),
-				"V1L2" to intArrayOf(0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384),
-				"V1L3" to intArrayOf(0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320),
-				"V2L1" to intArrayOf(0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256),
-				"V2L2" to intArrayOf(0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160),
-				"V2L3" to intArrayOf(0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160)
+                getBitrateKey(1, 1) to intArrayOf(0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448),
+                getBitrateKey(1, 2) to intArrayOf(0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384),
+                getBitrateKey(1, 3) to intArrayOf(0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320),
+                getBitrateKey(2, 1) to intArrayOf(0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256),
+                getBitrateKey(2, 2) to intArrayOf(0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160),
+                getBitrateKey(2, 3) to intArrayOf(0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160)
 			)
+
+            fun getBitrateKey(version: Int, layer: Int): Int {
+                return version * 10 + layer
+            }
 
 			val sampleRates = mapOf(
 				"1" to intArrayOf(44100, 48000, 32000),
@@ -198,7 +203,7 @@ open class MP3Base : AudioFormat("mp3") {
 				val layer = layers[b1.extract(1, 2)]
 
 				val protection_bit = b1.extract(0, 1)
-				val bitrate_key = "V%dL%d".format(simple_version, layer)
+				val bitrate_key = getBitrateKey(simple_version, layer)
 				val bitrate_idx = b2.extract(4, 4)
 
 				val bitrate = bitrates[bitrate_key]?.get(bitrate_idx) ?: 0

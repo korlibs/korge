@@ -45,21 +45,19 @@ class AsyncQueueWithContext(val queue: AsyncQueue, val context: CoroutineContext
 	suspend fun await() = queue.await()
 }
 
-class AsyncThread : AsyncInvokable {
-	private var lastPromise: Deferred<*> = CompletableDeferred(Unit).apply {
-		this.complete(Unit)
-	}
+class AsyncThread() : AsyncInvokable {
+	private var lastPromise: Deferred<*>? = null
 
 	suspend fun await() {
 		while (true) {
 			val cpromise = lastPromise
-			lastPromise.await()
+			lastPromise?.await()
 			if (cpromise == lastPromise) break
 		}
 	}
 
 	fun cancel(): AsyncThread {
-		lastPromise.cancel()
+		lastPromise?.cancel()
 		lastPromise = CompletableDeferred(Unit)
 		return this
 	}
@@ -86,7 +84,7 @@ class AsyncThread : AsyncInvokable {
 	fun <T> sync(context: CoroutineContext, func: suspend () -> T): Deferred<T> {
 		val oldPromise = lastPromise
 		val promise = asyncImmediately(context) {
-			oldPromise.await()
+			oldPromise?.await()
 			func()
 		}
 		lastPromise = promise

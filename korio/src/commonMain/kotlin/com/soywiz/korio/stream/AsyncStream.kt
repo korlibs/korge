@@ -157,23 +157,33 @@ suspend fun AsyncStreamBase.readBytes(position: Long, count: Int): ByteArray {
 
 fun AsyncStreamBase.toAsyncStream(position: Long = 0L): AsyncStream = AsyncStream(this, position)
 
-class AsyncStream(val base: AsyncStreamBase, var position: Long = 0L) : Extra by Extra.Mixin(), AsyncInputStream, AsyncInputStreamWithLength, AsyncOutputStream, AsyncPositionLengthStream,
+class AsyncStream(val base: AsyncStreamBase, var position: Long = 0L, val queue: Boolean = false) : Extra by Extra.Mixin(), AsyncInputStream, AsyncInputStreamWithLength, AsyncOutputStream, AsyncPositionLengthStream,
 	AsyncCloseable {
-	private val readQueue = AsyncThread()
-	private val writeQueue = AsyncThread()
+	private val readQueue by lazy { AsyncThread() }
+	private val writeQueue by lazy { AsyncThread() }
 
-	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = readQueue {
-		val read = base.read(position, buffer, offset, len)
-		if (read >= 0) position += read
-		read
-	}
+	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = when {
+        queue -> readQueue { readInternal(buffer, offset, len) }
+        else -> readInternal(buffer, offset, len)
+    }
 
-	override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit = writeQueue {
-		base.write(position, buffer, offset, len)
-		position += len
-	}
+	override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit = when {
+        queue -> writeQueue { writeInternal(buffer, offset, len) }
+        else -> writeInternal(buffer, offset, len)
+    }
 
-	override suspend fun setPosition(value: Long): Unit = run { this.position = value }
+    private suspend fun readInternal(buffer: ByteArray, offset: Int, len: Int): Int {
+        val read = base.read(position, buffer, offset, len)
+        if (read >= 0) position += read
+        return read
+    }
+
+    private suspend fun writeInternal(buffer: ByteArray, offset: Int, len: Int) {
+        base.write(position, buffer, offset, len)
+        position += len
+    }
+
+    override suspend fun setPosition(value: Long) { this.position = value }
 	override suspend fun getPosition(): Long = this.position
 	override suspend fun setLength(value: Long): Unit = base.setLength(value)
 	override suspend fun getLength(): Long = base.getLength()
@@ -447,45 +457,41 @@ suspend fun AsyncInputStream.readBytesUpToFirst(len: Int): ByteArray {
 	return out.copyOf(read)
 }
 
+suspend fun AsyncInputStream.readBytesUpTo(out: ByteArray, offset: Int, len: Int): Int {
+    var total = 0
+    var pending = len
+    var offset = offset
+    while (true) {
+        val result = read(out, offset, pending)
+        if (result <= 0) break
+        offset += result
+        pending -= result
+        total += result
+    }
+    return total
+}
+
+suspend fun AsyncInputStream.readBytesUpToCopy(out: ByteArray): ByteArray {
+    val pos = readBytesUpTo(out, 0, out.size)
+    return if (out.size == pos) out else out.copyOf(pos)
+}
+
 suspend fun AsyncInputStream.readBytesUpTo(len: Int): ByteArray {
 	val BYTES_TEMP_SIZE = 0x1000
-	if (len > BYTES_TEMP_SIZE) {
-		if (this is AsyncPositionLengthStream) {
-			val ba = ByteArray(min(len, this.getAvailable().toIntClamp()))
-			var available = ba.size
-			var pos = 0
-			while (true) {
-				val alen = read(ba, pos, available)
-				if (alen <= 0) break
-				pos += alen
-				available -= alen
-			}
-			return if (ba.size == pos) ba else ba.copyOf(pos)
-		} else {
-			var pending = len
-			val temp = ByteArray(BYTES_TEMP_SIZE)
-			val bout = ByteArrayBuilder()
-			while (pending > 0) {
-				val read = this.read(temp, 0, min(temp.size, pending))
-				if (read <= 0) break
-				bout.append(temp, 0, read)
-				pending -= read
-			}
-			return bout.toByteArray()
-		}
-	} else {
-		val ba = ByteArray(len)
-		var available = len
-		var pos = 0
-		while (true) {
-			val rlen = read(ba, pos, available)
-			if (rlen <= 0) break
-			pos += rlen
-			available -= rlen
-		}
-		return if (ba.size == pos) ba else ba.copyOf(pos)
-	}
 
+    if (len <= BYTES_TEMP_SIZE) return readBytesUpToCopy(ByteArray(len))
+    if (this is AsyncPositionLengthStream) return readBytesUpToCopy(ByteArray(min(len, this.getAvailable().toIntClamp())))
+
+    var pending = len
+    val temp = ByteArray(BYTES_TEMP_SIZE)
+    val bout = ByteArrayBuilder()
+    while (pending > 0) {
+        val read = this.read(temp, 0, min(temp.size, pending))
+        if (read <= 0) break
+        bout.append(temp, 0, read)
+        pending -= read
+    }
+    return bout.toByteArray()
 }
 
 suspend fun AsyncInputStream.readBytesExact(len: Int): ByteArray = ByteArray(len).apply { readExact(this, 0, len) }
