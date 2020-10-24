@@ -29,6 +29,23 @@ class AudioBufferOrHTMLMediaElement(
     val numberOfChannels: Int get() = audioBuffer?.numberOfChannels ?: 1
 }
 
+fun createAudioElement(
+    src: String,
+    currentTime: Double = 0.0,
+    autoplay: Boolean = false,
+    crossOrigin: String? = "anonymous"
+): Audio {
+    val out = Audio(src)
+    out.crossOrigin = crossOrigin
+    out.currentTime = currentTime
+    out.autoplay = autoplay
+    out.pause()
+    return out
+}
+
+fun HTMLAudioElement.clone(): Audio =
+    createAudioElement(this.src, this.currentTime, this.autoplay, this.crossOrigin)
+
 object HtmlSimpleSound {
 	val ctx: BaseAudioContext? = try {
 		when {
@@ -57,23 +74,34 @@ object HtmlSimpleSound {
         var gainNode: GainNode? = null
         var pannerNode: PannerNode? = null
         var sourceNode: AudioScheduledSourceNode? = null
+        var realHtmlAudioElement: HTMLAudioElement? = null
 
         fun createNode(startTime: TimeSpan) {
+            realHtmlAudioElement?.pause()
+            sourceNode?.disconnect()
+
+            val htmlAudioElement = buffer.htmlAudioElement
+            val audioBuffer = buffer.audioBuffer
+
             ctx.destination.apply {
                 pannerNode = panner {
                     gainNode = gain {
-                        this.gain.value = 1.0
-                        sourceNode = sourceAny(buffer) {
-                            //start(0.0)
+                        when {
+                            htmlAudioElement != null -> {
+                                realHtmlAudioElement = htmlAudioElement.clone()
+                                sourceNode = source(realHtmlAudioElement!!)
+                            }
+                            audioBuffer != null -> {
+                                sourceNode = source(audioBuffer)
+                            }
                         }
                     }
                 }
                 updateNodes()
             }
-            val htmlAudioElement = buffer.htmlAudioElement
-            if (htmlAudioElement != null) {
-                htmlAudioElement.currentTime = startTime.seconds
-                htmlAudioElement.play()
+            if (realHtmlAudioElement != null) {
+                realHtmlAudioElement?.currentTime = startTime.seconds
+                realHtmlAudioElement?.play()
             } else {
                 sourceNode?.start(0.0, startTime.seconds)
             }
@@ -112,10 +140,10 @@ object HtmlSimpleSound {
                     //println("sound completed")
 
                     running = false
-                    val htmlAudioElement = buffer.htmlAudioElement
-                    if (htmlAudioElement != null) {
-                        htmlAudioElement.pause()
-                        htmlAudioElement.currentTime = 0.0
+                    val realHtmlAudioElement = this.realHtmlAudioElement
+                    if (realHtmlAudioElement != null) {
+                        realHtmlAudioElement.pause()
+                        realHtmlAudioElement.currentTime = 0.0
                         //sourceNode?.stop()
                     } else {
                         sourceNode?.stop()
@@ -149,6 +177,8 @@ object HtmlSimpleSound {
                 updatePanning()
             }
 
+
+
         private var running = true
         var pausedAt: TimeSpan? = null
 
@@ -178,13 +208,18 @@ object HtmlSimpleSound {
 
         fun pause() {
             this.pausedAt = currentTime
-            stop()
+            if (realHtmlAudioElement != null) {
+                realHtmlAudioElement?.pause()
+            } else {
+                stop()
+            }
         }
 
         fun resume() {
-            val pausedAt = this.pausedAt
-            if (pausedAt != null) {
-                currentTime = pausedAt
+            if (realHtmlAudioElement != null) {
+                realHtmlAudioElement?.play()
+            } else {
+                this.pausedAt?.let { currentTime = it }
             }
             this.pausedAt = null
         }
@@ -194,8 +229,12 @@ object HtmlSimpleSound {
 		}
 
         fun play() {
-            stop()
-            job = createJobAt(params.startTime)
+            if (job != null && realHtmlAudioElement != null) {
+                realHtmlAudioElement?.play()
+            } else {
+                stop()
+                job = createJobAt(params.startTime)
+            }
         }
 
         var job: Job? = null
@@ -282,15 +321,9 @@ object HtmlSimpleSound {
 		}
 	}
 
-	suspend fun loadSoundBuffer(url: String): HTMLAudioElement? {
+	fun loadSoundBuffer(url: String): HTMLAudioElement? {
 		if (ctx == null) return null
-		val audioPool = document.createElement("audio").unsafeCast<HTMLAudioElement>()
-        audioPool.crossOrigin = "anonymous"
-        audioPool.currentTime = 0.0
-		audioPool.pause()
-		audioPool.autoplay = false
-		audioPool.src = url
-		return audioPool
+		return createAudioElement(url)
 	}
 
     /*

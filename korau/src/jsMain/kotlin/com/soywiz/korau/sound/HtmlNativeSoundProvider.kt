@@ -43,7 +43,7 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 }
 
 class HtmlElementAudio(
-    val audio: Audio,
+    val audio: HTMLAudioElement,
     coroutineContext: CoroutineContext,
 ) : Sound(coroutineContext) {
     override val length: TimeSpan get() = audio.duration.seconds
@@ -53,8 +53,7 @@ class HtmlElementAudio(
 
     companion object {
         suspend operator fun invoke(url: String): HtmlElementAudio {
-            val audio = Audio(url)
-            audio.crossOrigin = "anonymous"
+            val audio = createAudioElement(url)
             val promise = CompletableDeferred<Unit>()
             audio.oncanplay = { promise.complete(Unit) }
             audio.oncanplaythrough = { promise.complete(Unit) }
@@ -65,8 +64,7 @@ class HtmlElementAudio(
     }
 
     override fun play(params: PlaybackParameters): SoundChannel {
-        val audioCopy = Audio(audio.src)
-        audioCopy.crossOrigin = "anonymous"
+        val audioCopy = audio.clone()
         audioCopy.volume = params.volume
         HtmlSimpleSound.callOnUnlocked {
             audioCopy.play()
