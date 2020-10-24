@@ -188,7 +188,14 @@ object HtmlSimpleSound {
 		channel?.stop(0.0)
 	}
 
+    fun ensureUnlockStart() {
+        unlock
+    }
+
 	suspend fun waitUnlocked(): BaseAudioContext? {
+        if (!unlock.isCompleted) {
+            console.warn("Waiting for key or mouse down to start sound...")
+        }
 		unlock.await()
 		return ctx
 	}

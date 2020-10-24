@@ -18,7 +18,7 @@ open class NativeSoundProvider {
 
 	private var initialized = false
 
-	open fun initOnce() {
+	fun initOnce() {
 		if (!initialized) {
 			initialized = true
 			init()
@@ -35,6 +35,7 @@ open class NativeSoundProvider {
         createStreamingSound(audioFormats.decodeStreamOrError(data.openAsync(), props), closeStream = true, name = name)
 
     open val audioFormats: AudioFormats = AudioFormats(WAV)
+    //open val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, OGG)
 
     open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound {
         return if (streaming) {
@@ -90,12 +91,12 @@ interface SoundProps : ReadonlySoundProps {
     override var volume: Double
     override var pitch: Double
     override var panning: Double
+}
 
-    fun copySoundPropsFrom(other: ReadonlySoundProps) {
-        this.volume = other.volume
-        this.pitch = other.pitch
-        this.panning = other.panning
-    }
+fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {
+    this.volume = other.volume
+    this.pitch = other.pitch
+    this.panning = other.panning
 }
 
 class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase {
@@ -170,10 +171,10 @@ interface SoundChannelBase : SoundProps {
     val state: SoundChannelState
     fun reset(): Unit
     fun stop(): Unit
+}
 
-    suspend fun await() {
-        while (playingOrPaused) delay(1.milliseconds)
-    }
+suspend fun SoundChannelBase.await() {
+    while (playingOrPaused) delay(1.milliseconds)
 }
 
 val SoundChannelBase.playing get() = state.playing

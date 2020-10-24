@@ -6,11 +6,14 @@ import com.soywiz.korau.internal.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
+import org.w3c.dom.*
 import kotlin.coroutines.*
 
 class HtmlNativeSoundProvider : NativeSoundProvider() {
-	override fun initOnce() {
-	}
+    override fun init() {
+        HtmlSimpleSound.ensureUnlockStart()
+    }
 
 	override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
 
@@ -25,13 +28,86 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 				is UrlVfs -> vfs.getFullUrl(path)
 				else -> invalidOp
 			}
-			AudioBufferSound(HtmlSimpleSound.loadSound(rpath), coroutineContext)
+            if (streaming) {
+                MyHTMLAudio(rpath)
+            } else {
+                AudioBufferSound(HtmlSimpleSound.loadSound(rpath), coroutineContext)
+            }
 		}
 		else -> {
             //println("createSound[2]")
 			super.createSound(vfs, path)
 		}
 	}
+}
+
+class MyHTMLAudio(
+    val audio: Audio,
+    coroutineContext: CoroutineContext,
+) : Sound(coroutineContext) {
+    override val length: TimeSpan get() = audio.duration.seconds
+
+    override suspend fun decode(): AudioData =
+        AudioBufferSound(HtmlSimpleSound.loadSound(audio.src), coroutineContext).decode()
+
+    companion object {
+        suspend operator fun invoke(url: String): MyHTMLAudio {
+            val audio = Audio(url)
+            val promise = CompletableDeferred<Unit>()
+            audio.oncanplay = { promise.complete(Unit) }
+            audio.oncanplaythrough = { promise.complete(Unit) }
+            promise.await()
+            //HtmlSimpleSound.waitUnlocked()
+            return MyHTMLAudio(audio, coroutineContext)
+        }
+    }
+
+    override fun play(params: PlaybackParameters): SoundChannel {
+        val audioCopy = Audio(audio.src)
+        audioCopy.volume = params.volume
+        HtmlSimpleSound.callOnUnlocked {
+            audioCopy.play()
+        }
+        return object : SoundChannel(this@MyHTMLAudio) {
+            override var volume: Double
+                get() = audioCopy.volume
+                set(value) {
+                    audioCopy.volume = value
+                }
+
+            override var pitch: Double
+                get() = 1.0
+                set(value) {}
+
+            override var panning: Double
+                get() = 0.0
+                set(value) {}
+
+            override val total: TimeSpan get() = audioCopy.duration.seconds
+            override var current: TimeSpan
+                get() = audioCopy.currentTime.seconds
+                set(value) { audioCopy.currentTime = value.seconds }
+
+            override val state: SoundChannelState get() = when {
+                audioCopy.paused -> SoundChannelState.PAUSED
+                audioCopy.ended -> SoundChannelState.STOPPED
+                else -> SoundChannelState.PLAYING
+            }
+
+            override fun pause() {
+                audioCopy.pause()
+            }
+
+            override fun resume() {
+                audioCopy.play()
+            }
+
+            override fun stop() {
+                audioCopy.pause()
+                current = 0.seconds
+            }
+        }
+    }
 }
 
 class AudioBufferSound(
