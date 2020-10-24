@@ -1,15 +1,16 @@
-package com.soywiz.korge.resources
+package com.soywiz.korio.resources
 
-import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.coroutines.*
+import kotlinx.coroutines.*
 import kotlin.reflect.*
 
 annotation class ResourcePath()
 
 interface Resourceable<T : Any> {
+    fun getNowOrNull(): T?
     suspend fun get(): T
 }
 
@@ -20,20 +21,28 @@ class Resource<T : Any>(
     val gen: suspend Resources.() -> T
 ) : Resourceable<T> {
     private val thread = AsyncThread()
+    var valueDeferred: Deferred<T>? = null
     var valueOrNull: T? = null
 
-    override suspend fun get(): T = thread {
-        if (valueOrNull == null) {
-            resources.add(this)
-            valueOrNull = gen(resources)
-        }
-        valueOrNull!!
+    override fun getNowOrNull(): T? {
+        getDeferred()
+        return valueOrNull
     }
 
-    fun preload() {
-        launchImmediately(resources.coroutineContext) {
-            get()
+    fun getDeferred(): Deferred<T> {
+        if (valueDeferred == null) {
+            valueDeferred = asyncImmediately(resources.coroutineContext) {
+                resources.add(this)
+                gen(resources).also { valueOrNull = it }
+            }
         }
+        return valueDeferred!!
+    }
+
+    override suspend fun get(): T = getDeferred().await()
+
+    fun preload() {
+        getDeferred()
     }
 
     fun unload() {
@@ -44,7 +53,12 @@ class Resource<T : Any>(
 
 open class GlobalResources(coroutineContext: CoroutineContext, root: VfsFile = resourcesVfs) : Resources(coroutineContext, root, null)
 
-open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile = resourcesVfs, val parent: Resources? = null) : AsyncDestructor {
+interface ResourcesContainer {
+    val resources: Resources
+}
+
+open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile = resourcesVfs, val parent: Resources? = null) : ResourcesContainer {
+    override val resources: Resources get() = this
     internal val map = LinkedHashMap<String, Resource<*>>()
     internal fun remove(name: String) {
         if (map.containsKey(name)) {
@@ -66,18 +80,13 @@ open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile =
         if (cache == ResourceCache.GLOBAL) return parent?.get(name)
         return null
     }
-
-    override suspend fun deinit() {
-        map.clear()
-    }
 }
 
 enum class ResourceCache { GLOBAL, LOCAL, NONE }
 
-suspend fun resources(): Resources = injector().get()
-
 class ResourceRef<T : Any>(val cache: ResourceCache = ResourceCache.GLOBAL, val gen: suspend Resources.() -> T) {
-    operator fun getValue(resources: Resources, property: KProperty<*>): Resource<T> {
+    operator fun getValue(resourcesContainer: ResourcesContainer, property: KProperty<*>): Resource<T> {
+        val resources = resourcesContainer.resources
         val res = resources.get<T>(property.name, cache)
         if (res != null) return res
         val res2 = Resource(resources, property.name, cache, gen)

@@ -10,9 +10,13 @@ import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.DefaultPaint
 import com.soywiz.korim.vector.paint.Paint
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
-interface Font {
+interface Font : Resourceable<Font> {
+    override fun getNowOrNull() = this
+    override suspend fun get() = this
+
     val name: String
 
     // Metrics

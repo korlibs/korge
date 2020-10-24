@@ -3,6 +3,7 @@ package com.soywiz.korge.resources
 import com.soywiz.korinject.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.util.*
 
 //@Singleton

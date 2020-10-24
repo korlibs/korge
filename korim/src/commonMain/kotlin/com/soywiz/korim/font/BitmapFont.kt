@@ -25,6 +25,7 @@ import com.soywiz.korim.vector.paint.Paint
 import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.substr
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.util.unquote
@@ -43,7 +44,10 @@ class BitmapFont(
     val kernings: IntMap<Kerning>,
     val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmp ?: Bitmaps.transparent.bmp,
     override val name: String = "BitmapFont"
-) : Extra by Extra.Mixin(), Font {
+) : Font, Extra by Extra.Mixin() {
+    override fun getNowOrNull() = this
+    override suspend fun get() = this
+
     private val naturalFontMetrics by lazy {
         FontMetrics(
             fontSize, lineHeight, lineHeight, 0.0, 0.0, 0.0, 0.0,

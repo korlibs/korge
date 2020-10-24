@@ -26,6 +26,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.*

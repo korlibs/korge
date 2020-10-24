@@ -9,6 +9,7 @@ import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
@@ -29,7 +30,7 @@ import kotlin.coroutines.*
  * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
  * - ## New scene is returned
  */
-abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode {
+abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode, ResourcesContainer {
     /** A child [AsyncInjector] for this instance. Set by the [init] method. */
 	lateinit var injector: AsyncInjector
     /** The [Views] singleton of the application. Set by the [init] method. */
@@ -52,6 +53,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	val sceneView: Container = createSceneView().apply {
 		_sceneViewContainer += this
 	}
+    override val resources: Resources by lazy { injector.getSync() }
 	protected open fun createSceneView(): Container = Container()
 
     /**

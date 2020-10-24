@@ -14,6 +14,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.paint.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -37,7 +38,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 @KorgeExperimental
 inline fun Container.text2(
         text: String, fontSize: Double = 64.0,
-        color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
+        color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
         horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
         noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
         block: @ViewDslMarker Text2.() -> Unit = {}
@@ -47,7 +48,7 @@ inline fun Container.text2(
 @KorgeExperimental
 open class Text2(
         text: String, fontSize: Double = 64.0,
-        color: RGBA = Colors.WHITE, font: Font = DefaultTtfFont,
+        color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
         horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT, verticalAlign: VerticalAlign = VerticalAlign.TOP,
         renderer: TextRenderer<String> = DefaultStringTextRenderer
 ) : Container(), ViewLeaf {
@@ -77,7 +78,7 @@ open class Text2(
 
     var text: String = text; set(value) { if (field != value) { field = value; version++ } }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
-    var font: Font = font; set(value) { if (field != value) { field = value; version++ } }
+    var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
     var fontSize: Double = fontSize; set(value) { if (field != value) { field = value; version++ } }
     var horizontalAlign: HorizontalAlign = horizontalAlign; set(value) { if (field != value) { field = value; version++ } }
     var verticalAlign: VerticalAlign = verticalAlign; set(value) { if (field != value) { field = value; version++ } }
@@ -112,55 +113,59 @@ open class Text2(
             }
         }
         container.colorMul = color
-        val font = this.font
-        if (font is BitmapFont) {
-            staticImage = null
-            bitmapFontActions.x = 0.0
-            bitmapFontActions.y = 0.0
+        val font = this.font.getNowOrNull()
+        when (font) {
+            null -> Unit
+            is BitmapFont -> {
+                staticImage = null
+                bitmapFontActions.x = 0.0
+                bitmapFontActions.y = 0.0
 
-            bitmapFontActions.mreset()
-            bitmapFontActions.verticalAlign = verticalAlign
-            bitmapFontActions.horizontalAlign = horizontalAlign
-            renderer(bitmapFontActions, text, fontSize, font)
-            while (container.numChildren < bitmapFontActions.arrayTex.size) {
-                container.image(Bitmaps.transparent)
-            }
-            while (container.numChildren > bitmapFontActions.arrayTex.size) {
-                container[container.numChildren - 1].removeFromParent()
-            }
-            //println(font.glyphs['H'.toInt()])
-            //println(font.glyphs['a'.toInt()])
-            //println(font.glyphs['g'.toInt()])
-
-            val textWidth = bitmapFontActions.x
-
-            val dx = -textWidth * horizontalAlign.ratio
-
-            for (n in 0 until bitmapFontActions.arrayTex.size) {
-                val it = (container[n] as Image)
-                it.texture = bitmapFontActions.arrayTex[n]
-                it.x = bitmapFontActions.arrayX[n] + dx
-                it.y = bitmapFontActions.arrayY[n]
-                it.scaleX = bitmapFontActions.arraySX[n]
-                it.scaleY = bitmapFontActions.arraySY[n]
-                it.rotation = bitmapFontActions.arrayRot[n].radians
-            }
-        } else {
-            if (cachedVersion != version) {
-                cachedVersion = version
-                textToBitmapResult = font.renderTextToBitmap(fontSize, text, paint = ColorPaint(Colors.WHITE), fill = true, renderer = renderer)
-
-                val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
-                val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
-
-                if (staticImage == null) {
-                    container.removeChildren()
-                    staticImage = container.image(textToBitmapResult.bmp)
-                } else {
-                    ctx.agBitmapTextureManager.removeBitmap(staticImage!!.texture.bmp)
-                    staticImage!!.texture = textToBitmapResult.bmp.slice()
+                bitmapFontActions.mreset()
+                bitmapFontActions.verticalAlign = verticalAlign
+                bitmapFontActions.horizontalAlign = horizontalAlign
+                renderer(bitmapFontActions, text, fontSize, font)
+                while (container.numChildren < bitmapFontActions.arrayTex.size) {
+                    container.image(Bitmaps.transparent)
                 }
-                staticImage?.position(x, y)
+                while (container.numChildren > bitmapFontActions.arrayTex.size) {
+                    container[container.numChildren - 1].removeFromParent()
+                }
+                //println(font.glyphs['H'.toInt()])
+                //println(font.glyphs['a'.toInt()])
+                //println(font.glyphs['g'.toInt()])
+
+                val textWidth = bitmapFontActions.x
+
+                val dx = -textWidth * horizontalAlign.ratio
+
+                for (n in 0 until bitmapFontActions.arrayTex.size) {
+                    val it = (container[n] as Image)
+                    it.texture = bitmapFontActions.arrayTex[n]
+                    it.x = bitmapFontActions.arrayX[n] + dx
+                    it.y = bitmapFontActions.arrayY[n]
+                    it.scaleX = bitmapFontActions.arraySX[n]
+                    it.scaleY = bitmapFontActions.arraySY[n]
+                    it.rotation = bitmapFontActions.arrayRot[n].radians
+                }
+            }
+            else -> {
+                if (cachedVersion != version) {
+                    cachedVersion = version
+                    textToBitmapResult = font.renderTextToBitmap(fontSize, text, paint = ColorPaint(Colors.WHITE), fill = true, renderer = renderer)
+
+                    val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
+                    val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
+
+                    if (staticImage == null) {
+                        container.removeChildren()
+                        staticImage = container.image(textToBitmapResult.bmp)
+                    } else {
+                        ctx.agBitmapTextureManager.removeBitmap(staticImage!!.texture.bmp)
+                        staticImage!!.texture = textToBitmapResult.bmp.slice()
+                    }
+                    staticImage?.position(x, y)
+                }
             }
         }
         super.renderInternal(ctx)

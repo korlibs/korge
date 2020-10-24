@@ -10,6 +10,7 @@ import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.async
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
