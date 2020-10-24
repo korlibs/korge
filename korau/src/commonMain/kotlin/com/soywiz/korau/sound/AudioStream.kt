@@ -10,7 +10,7 @@ import kotlin.math.*
 abstract class AudioStream(
     val rate: Int,
     val channels: Int
-) : Closeable {
+) : AudioStreamable, Closeable {
     open val finished = false
     open val totalLengthInSamples: Long? = null
     val totalLength get() = ((totalLengthInSamples ?: 0L).toDouble() / rate.toDouble()).seconds
@@ -22,6 +22,7 @@ abstract class AudioStream(
     override fun close() = Unit
 
     abstract suspend fun clone(): AudioStream
+    override suspend fun toStream(): AudioStream = clone()
 
     companion object {
         fun generator(rate: Int, channels: Int, generateChunk: suspend AudioSamplesDeque.(step: Int) -> Boolean): AudioStream =

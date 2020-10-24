@@ -57,84 +57,10 @@ open class NativeSoundProvider {
 		formats: AudioFormats = defaultAudioFormats,
 		streaming: Boolean = false,
         name: String = "Unknown"
-	): Sound {
-		return createSound(WAV.encodeToByteArray(data), streaming, name = name)
-	}
+	): Sound = createSound(WAV.encodeToByteArray(data), streaming, name = name)
 
-    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): Sound {
-        //println("STREAM.RATE:" + stream.rate)
-        //println("STREAM.CHANNELS:" + stream.channels)
-        val coroutineContext = coroutineContext
-        return object : Sound(coroutineContext) {
-            override val name: String = name
-            val nativeSound = this
-            override val length: TimeSpan get() = stream.totalLength
-            override suspend fun decode(): AudioData = stream.toData()
-            override fun play(params: PlaybackParameters): SoundChannel {
-                val nas: PlatformAudioOutput = createAudioStream(coroutineContext, stream.rate)
-                nas.copySoundPropsFrom(params)
-                var playing = true
-                var paused = false
-                val job = launchImmediately(coroutineContext) {
-                    val stream = stream.clone()
-                    stream.currentTime = params.startTime
-                    playing = true
-                    //println("STREAM.START")
-                    var times = params.times
-                    try {
-                        val temp = AudioSamples(stream.channels, 1024)
-                        val nchannels = 2
-                        val minBuf = (stream.rate * nchannels * params.bufferTime.seconds).toInt()
-                        nas.start()
-                        while (times.hasMore) {
-                            while (!stream.finished) {
-                                //println("STREAM")
-                                while (paused) delay(2.milliseconds)
-                                val read = stream.read(temp, 0, temp.totalSamples)
-                                nas.add(temp, 0, read)
-                                while (nas.availableSamples in minBuf..minBuf * 2) {
-                                    delay(2.milliseconds) // 100ms of buffering, and 1s as much
-                                    //println("STREAM.WAIT: ${nas.availableSamples}")
-                                }
-                            }
-                            times = times.oneLess
-                            stream.currentPositionInSamples = 0L
-                        }
-                    } catch (e: CancellationException) {
-                        nas.stop()
-                        nas.dispose()
-                    } finally {
-                        //println("STREAM.STOP")
-                        if (closeStream) {
-                            stream.close()
-                        }
-                        playing = false
-                        onComplete?.invoke()
-                    }
-                }
-                fun close() {
-                    job.cancel()
-                }
-                return object : SoundChannel(nativeSound) {
-                    override var volume: Double by nas::volume.redirected()
-                    override var pitch: Double by nas::pitch.redirected()
-                    override var panning: Double by nas::panning.redirected()
-                    override var current: TimeSpan
-                        get() = stream.currentTime
-                        set(value) = run { stream.currentTime = value }
-                    override val total: TimeSpan get() = stream.totalLength
-                    override val state: SoundChannelState get() = when {
-                        paused -> SoundChannelState.PAUSED
-                        playing -> SoundChannelState.PLAYING
-                        else -> SoundChannelState.STOPPED
-                    }
-                    override fun pause() { paused = true }
-                    override fun resume() { paused = false }
-                    override fun stop() = close()
-                }
-            }
-        }
-    }
+    suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): Sound =
+        SoundAudioStream(kotlin.coroutines.coroutineContext, stream, closeStream, name, onComplete)
 
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
 }
@@ -278,6 +204,7 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase {
     fun togglePaused(): Unit = if (paused) resume() else pause()
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }) {
 	try {
 		while (playingOrPaused) {
@@ -290,7 +217,7 @@ suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total:
 	}
 }
 
-abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps {
+abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps, AudioStreamable {
     open val name: String = "UnknownNativeSound"
     override var volume: Double = 1.0
     override var panning: Double = 0.0
@@ -302,8 +229,8 @@ abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps {
     fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = play(infinitePlaybackTimes, startTime)
     suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
     suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
-    suspend fun toData(): AudioData = decode()
-    suspend fun toStream(): AudioStream = decode().toStream()
+    open suspend fun toData(): AudioData = decode()
+    override suspend fun toStream(): AudioStream = decode().toStream()
     override fun toString(): String = "NativeSound('$name')"
 }
 
