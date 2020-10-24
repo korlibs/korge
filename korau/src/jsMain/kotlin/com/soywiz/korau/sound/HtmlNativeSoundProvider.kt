@@ -18,20 +18,21 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 	override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
 
 	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
-        AudioBufferSound(HtmlSimpleSound.loadSound(data), coroutineContext, name)
+        AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(data)), "#bytes", coroutineContext, name)
 
 	override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): Sound = when (vfs) {
 		is LocalVfs, is UrlVfs -> {
             //println("createSound[1]")
-			val rpath = when (vfs) {
+			val url = when (vfs) {
 				is LocalVfs -> path
 				is UrlVfs -> vfs.getFullUrl(path)
 				else -> invalidOp
 			}
             if (streaming) {
-                MyHTMLAudio(rpath)
+                AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSoundBuffer(url)), url, coroutineContext)
+                //HtmlElementAudio(url)
             } else {
-                AudioBufferSound(HtmlSimpleSound.loadSound(rpath), coroutineContext)
+                AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(url)), url, coroutineContext)
             }
 		}
 		else -> {
@@ -41,34 +42,36 @@ class HtmlNativeSoundProvider : NativeSoundProvider() {
 	}
 }
 
-class MyHTMLAudio(
+class HtmlElementAudio(
     val audio: Audio,
     coroutineContext: CoroutineContext,
 ) : Sound(coroutineContext) {
     override val length: TimeSpan get() = audio.duration.seconds
 
     override suspend fun decode(): AudioData =
-        AudioBufferSound(HtmlSimpleSound.loadSound(audio.src), coroutineContext).decode()
+        AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(audio.src)), audio.src, coroutineContext).decode()
 
     companion object {
-        suspend operator fun invoke(url: String): MyHTMLAudio {
+        suspend operator fun invoke(url: String): HtmlElementAudio {
             val audio = Audio(url)
+            audio.crossOrigin = "anonymous"
             val promise = CompletableDeferred<Unit>()
             audio.oncanplay = { promise.complete(Unit) }
             audio.oncanplaythrough = { promise.complete(Unit) }
             promise.await()
             //HtmlSimpleSound.waitUnlocked()
-            return MyHTMLAudio(audio, coroutineContext)
+            return HtmlElementAudio(audio, coroutineContext)
         }
     }
 
     override fun play(params: PlaybackParameters): SoundChannel {
         val audioCopy = Audio(audio.src)
+        audioCopy.crossOrigin = "anonymous"
         audioCopy.volume = params.volume
         HtmlSimpleSound.callOnUnlocked {
             audioCopy.play()
         }
-        return object : SoundChannel(this@MyHTMLAudio) {
+        return object : SoundChannel(this@HtmlElementAudio) {
             override var volume: Double
                 get() = audioCopy.volume
                 set(value) {
@@ -111,34 +114,40 @@ class MyHTMLAudio(
 }
 
 class AudioBufferSound(
-    val buffer: AudioBuffer?,
+    val buffer: AudioBufferOrHTMLMediaElement,
+    val url: String,
     coroutineContext: CoroutineContext,
     override val name: String = "unknown"
 ) : Sound(coroutineContext) {
-	override val length: TimeSpan = ((buffer?.duration) ?: 0.0).seconds
+	override val length: TimeSpan = ((buffer.duration) ?: 0.0).seconds
 
-    override val nchannels: Int get() = buffer?.numberOfChannels ?: 1
+    override val nchannels: Int get() = buffer.numberOfChannels ?: 1
 
-    override suspend fun decode(): AudioData = if (buffer == null) {
-		AudioData.DUMMY
-	} else {
-		val nchannels = buffer.numberOfChannels
-		val nsamples = buffer.length
-		val data = AudioSamples(nchannels, nsamples)
-		var m = 0
-		for (c in 0 until nchannels) {
-			val channelF = buffer.getChannelData(c)
-			for (n in 0 until nsamples) {
-				data[c][m++] = SampleConvert.floatToShort(channelF[n])
-			}
-		}
-		AudioData(buffer.sampleRate, data)
-	}
+    override suspend fun decode(): AudioData {
+        if (this.buffer.isNull) return AudioData.DUMMY
+        val buffer = this.buffer.audioBuffer
+            ?: return AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(url)), url, coroutineContext).decode()
+        val nchannels = buffer.numberOfChannels
+        val nsamples = buffer.length
+        val data = AudioSamples(nchannels, nsamples)
+        var m = 0
+        for (c in 0 until nchannels) {
+            val channelF = buffer.getChannelData(c)
+            for (n in 0 until nsamples) {
+                data[c][m++] = SampleConvert.floatToShort(channelF[n])
+            }
+        }
+        return AudioData(buffer.sampleRate, data)
+    }
 
 	override fun play(params: PlaybackParameters): SoundChannel {
         //println("AudioBufferNativeSound.play: $params")
+        val channel = if (buffer.isNotNull) HtmlSimpleSound.playSound(buffer, params, coroutineContext) else null
+        HtmlSimpleSound.callOnUnlocked {
+            channel?.play()
+        }
+
 		return object : SoundChannel(this) {
-			val channel = if (buffer != null) HtmlSimpleSound.playSound(buffer, params,coroutineContext) else null
 
 			override var volume: Double
 				get() = channel?.volume ?: 1.0
@@ -167,7 +176,9 @@ class AudioBufferSound(
                 channel?.resume()
             }
 
-            override fun stop(): Unit = run { channel?.stop() }
+            override fun stop() {
+                channel?.stop()
+            }
 		}.also {
             //it.current = params.startTime
             it.copySoundPropsFrom(params)
