@@ -125,14 +125,11 @@ class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = fals
 
     init {
         makeCurrent()
-        println("GL_VERSION: " + Win32KmlGl.getString(Win32KmlGl.VERSION))
-        println("GL_VENDOR: " + Win32KmlGl.getString(Win32KmlGl.VENDOR))
-        println("GL_RED_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.RED_BITS))
-        println("GL_GREEN_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.GREEN_BITS))
-        println("GL_BLUE_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.BLUE_BITS))
-        println("GL_ALPHA_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.ALPHA_BITS))
-        println("GL_DEPTH_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.DEPTH_BITS))
-        println("GL_STENCIL_BITS: " + Win32KmlGl.getIntegerv(Win32KmlGl.STENCIL_BITS))
+        Win32KmlGl.apply {
+            println("GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}")
+            println("GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, GL_BLUE_BITS: ${getIntegerv(BLUE_BITS)}, GL_ALPHA_BITS: ${getIntegerv(ALPHA_BITS)}")
+            println("GL_DEPTH_BITS: ${getIntegerv(DEPTH_BITS)}, GL_STENCIL_BITS: ${getIntegerv(STENCIL_BITS)}")
+        }
     }
 
     override fun makeCurrent() {
