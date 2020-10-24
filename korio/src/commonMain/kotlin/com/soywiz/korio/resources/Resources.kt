@@ -96,7 +96,7 @@ class ResourceRef<T : Any>(val cache: ResourceCache = ResourceCache.GLOBAL, val 
     }
 }
 
-fun <T : Any> resource(cache: ResourceCache = ResourceCache.GLOBAL, gen: suspend Resources.() -> T) = ResourceRef(cache, gen)
+fun <T : Any> resource(cache: ResourceCache = ResourceCache.LOCAL, gen: suspend Resources.() -> T) = ResourceRef(cache, gen)
 fun <T : Any> resourceGlobal(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.GLOBAL, gen)
 fun <T : Any> resourceLocal(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.LOCAL, gen)
 fun <T : Any> resourceUncached(gen: suspend Resources.() -> T) = ResourceRef(ResourceCache.NONE, gen)

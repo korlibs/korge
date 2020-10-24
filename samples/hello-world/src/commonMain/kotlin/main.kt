@@ -1,18 +1,22 @@
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+import com.soywiz.korge.resources.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
+
+val ResourcesContainer.korge_png by resourceBitmap("korge.png")
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
     val minDegrees = (-16).degrees
     val maxDegrees = (+16).degrees
 
-    val image = image(resourcesVfs["korge.png"].readBitmap()) {
+    val image = image(korge_png) {
         rotation = maxDegrees
         anchor(.5, .5)
         scale(.8)
