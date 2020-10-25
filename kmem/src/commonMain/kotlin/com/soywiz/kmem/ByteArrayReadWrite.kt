@@ -17,7 +17,7 @@ private inline fun ByteArray.read32BE(o: Int): Int = (u8(o + 3) shl 0) or (u8(o 
 private inline fun ByteArray.read64BE(o: Int): Long = (read32BE(o + 4).unsigned shl 0) or (read32BE(o + 0).unsigned shl 32)
 
 // Unsigned
-fun ByteArray.readU8(o: Int): Int = u8(o)
+fun ByteArray.readU8(o: Int): Int = this[o].toInt() and 0xFF
 fun ByteArray.readU16LE(o: Int): Int = read16LE(o)
 fun ByteArray.readU24LE(o: Int): Int = read24LE(o)
 fun ByteArray.readU32LE(o: Int): Long = read32LE(o).unsigned
