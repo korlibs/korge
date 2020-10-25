@@ -77,11 +77,10 @@ fun Project.configureJavaScript() {
             //println(File(targetDir, "index.html"))
 
             try {
-                val bmp16 = project.korge.getIconBytes(16).decodeImage()
-                val bmp32 = project.korge.getIconBytes(32).decodeImage()
-                val bmp48 = project.korge.getIconBytes(48).decodeImage()
 
-                File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(bmp16, bmp32, bmp48)))
+                File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {
+                    project.korge.getIconBytes(it).decodeImage()
+                }))
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
