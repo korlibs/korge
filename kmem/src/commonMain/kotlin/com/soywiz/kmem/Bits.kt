@@ -98,6 +98,8 @@ fun Int.extract(offset: Int, count: Int): Int = (this ushr offset) and count.mas
 fun Int.extract(offset: Int): Boolean = ((this ushr offset) and 1) != 0
 /** Extracts a bits at [offset] from [this] [Int] (returning a [Boolean]) */
 fun Int.extractBool(offset: Int) = this.extract(offset)
+/** Extracts 4 bits at [offset] from [this] [Int] */
+fun Int.extract4(offset: Int): Int = (this ushr offset) and 0xF
 /** Extracts 8 bits at [offset] from [this] [Int] */
 fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
 /** Extracts 16 bits at [offset] from [this] [Int] */

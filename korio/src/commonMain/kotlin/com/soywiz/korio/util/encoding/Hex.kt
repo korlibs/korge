@@ -1,5 +1,7 @@
 package com.soywiz.korio.util.encoding
 
+import com.soywiz.kmem.*
+
 object Hex {
 	private const val DIGITS = "0123456789ABCDEF"
 	val DIGITS_UPPER = DIGITS.toUpperCase()
@@ -14,6 +16,11 @@ object Hex {
 
 	fun encodeCharLower(v: Int): Char = DIGITS_LOWER[v]
 	fun encodeCharUpper(v: Int): Char = DIGITS_UPPER[v]
+
+    fun appendHexByte(appender: Appendable, value: Int) {
+        appender.append(Hex.encodeCharLower(value.extract4(4)))
+        appender.append(Hex.encodeCharLower(value.extract4(0)))
+    }
 
 	fun isHexDigit(c: Char): Boolean = decodeChar(c) >= 0
 
@@ -51,6 +58,8 @@ object Hex {
 		return out.toString()
 	}
 }
+
+fun Appendable.appendHexByte(value: Int) = Hex.appendHexByte(this, value)
 
 val List<String>.unhexIgnoreSpaces get() = joinToString("").unhexIgnoreSpaces
 val String.unhexIgnoreSpaces get() = this.replace(" ", "").replace("\n", "").replace("\r", "").unhex
