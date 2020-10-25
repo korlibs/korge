@@ -157,53 +157,44 @@ open class VectorPath(
     override var lastX = 0.0
     override var lastY = 0.0
 
+    fun lastXY(x: Double, y: Double) {
+        this.lastX = x
+        this.lastY = y
+    }
+
     override fun moveTo(x: Double, y: Double) {
-        commands += Command.MOVE_TO
-        data += x
-        data += y
-        lastX = x
-        lastY = y
+        commands.add(Command.MOVE_TO)
+        data.add(x, y)
+        lastXY(x, y)
         version++
     }
 
     override fun lineTo(x: Double, y: Double) {
         ensureMoveTo(x, y)
-        commands += Command.LINE_TO
-        data += x
-        data += y
-        lastX = x
-        lastY = y
+        commands.add(Command.LINE_TO)
+        data.add(x, y)
+        lastXY(x, y)
         version++
     }
 
     override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
         ensureMoveTo(cx, cy)
-        commands += Command.QUAD_TO
-        data += cx
-        data += cy
-        data += ax
-        data += ay
-        lastX = ax
-        lastY = ay
+        commands.add(Command.QUAD_TO)
+        data.add(cx, cy, ax, ay)
+        lastXY(ax, ay)
         version++
     }
 
     override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
         ensureMoveTo(cx1, cy1)
-        commands += Command.CUBIC_TO
-        data += cx1
-        data += cy1
-        data += cx2
-        data += cy2
-        data += ax
-        data += ay
-        lastX = ax
-        lastY = ay
+        commands.add(Command.CUBIC_TO)
+        data.add(cx1, cy1, cx2, cy2, ax, ay)
+        lastXY(ax, ay)
         version++
     }
 
     override fun close() {
-        commands += Command.CLOSE
+        commands.add(Command.CLOSE)
         version++
     }
 

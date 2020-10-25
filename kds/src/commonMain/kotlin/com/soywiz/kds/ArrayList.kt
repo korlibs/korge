@@ -38,9 +38,49 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 
     fun clear() = run { length = 0 }
 
-    fun add(value: Int) {
+    fun add(v0: Int) {
         ensure(1)
-        data[length++] = value
+        data[length++] = v0
+    }
+
+    fun add(v0: Int, v1: Int) {
+        ensure(2)
+        data[length++] = v0
+        data[length++] = v1
+    }
+
+    fun add(v0: Int, v1: Int, v2: Int) {
+        ensure(3)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+    }
+
+    fun add(v0: Int, v1: Int, v2: Int, v3: Int) {
+        ensure(4)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+    }
+
+    fun add(v0: Int, v1: Int, v2: Int, v3: Int, v4: Int) {
+        ensure(5)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+        data[length++] = v4
+    }
+
+    fun add(v0: Int, v1: Int, v2: Int, v3: Int, v4: Int, v5: Int) {
+        ensure(6)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+        data[length++] = v4
+        data[length++] = v5
     }
 
     operator fun plusAssign(value: Int) = add(value)
@@ -197,9 +237,44 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
 
     fun clear() = run { length = 0 }
 
-    fun add(value: Double) {
+    fun add(v0: Double) {
         ensure(1)
-        data[length++] = value
+        data[length++] = v0
+    }
+    fun add(v0: Double, v1: Double) {
+        ensure(2)
+        data[length++] = v0
+        data[length++] = v1
+    }
+    fun add(v0: Double, v1: Double, v2: Double) {
+        ensure(3)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+    }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double) {
+        ensure(4)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+    }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) {
+        ensure(4)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+        data[length++] = v4
+    }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) {
+        ensure(5)
+        data[length++] = v0
+        data[length++] = v1
+        data[length++] = v2
+        data[length++] = v3
+        data[length++] = v4
+        data[length++] = v5
     }
 
     operator fun plusAssign(value: Double) = add(value)
