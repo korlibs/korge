@@ -66,8 +66,8 @@ object PSD : ImageFormat("psd") {
                     val carray = channels[cindex]
                     var cpos = 0
                     for (size in sizes[cindex]) {
-                        val end = offset + size
-                        while (offset < end) {
+                        val end = position + size
+                        while (position < end) {
                             val len = readU8()
                             if (len >= 128) {
                                 val byte = readU8()

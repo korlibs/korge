@@ -3,20 +3,32 @@ package com.soywiz.korio.stream
 import com.soywiz.kmem.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import kotlin.math.*
 
-class FastByteArrayInputStream(val ba: ByteArray, var offset: Int = 0) {
-	val length: Int get() = ba.size
-	val available: Int get() = ba.size - offset
+class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: Int = 0, val end: Int = ba.size) {
+    private var offset = offset + start
+    val position get() = start - offset
+	val length: Int get() = end - start
+	val available: Int get() = end - offset
 	val hasMore: Boolean get() = available > 0
 	val eof: Boolean get() = !hasMore
 
+    fun Int.coerceRange() = this.coerceIn(start, end)
+
+    fun sliceStart(offset: Int = 0) = FastByteArrayInputStream(ba, 0, (start + offset).coerceRange(), end)
+    fun clone() = FastByteArrayInputStream(ba, position, start, end)
+    fun sliceWithSize(offset: Int, len: Int) = FastByteArrayInputStream(ba, 0, (start + offset).coerceRange(), (start + offset + len).coerceRange())
+
 	// Skipping
-	fun skip(count: Int) = run { offset += count }
+	fun skip(count: Int) { offset += count }
 
 	fun skipToAlign(count: Int) {
 		val nextPosition = offset.nextAlignedTo(offset)
 		readBytes((nextPosition - offset).toInt())
 	}
+
+    fun readBytesExact(len: Int) = increment(len) { ba.copyOfRange(offset, offset + len) }
+    fun readAll() = readBytesExact(available)
 
 	// 8 bit
 	fun readS8() = increment(1) { ba.readS8(offset) }
@@ -49,7 +61,11 @@ class FastByteArrayInputStream(val ba: ByteArray, var offset: Int = 0) {
 	fun readF64LE() = increment(8) { ba.readF64LE(offset) }
 	fun readF64BE() = increment(8) { ba.readF64BE(offset) }
 
-	// Bytes
+    // 64 bits Long
+    fun readS64LE() = increment(8) { ba.readS64LE(offset) }
+    fun readS64BE() = increment(8) { ba.readS64BE(offset) }
+
+    // Bytes
     fun read(data: ByteArray, offset: Int = 0, count: Int = data.size - offset) = increment(count) {
         val readCount = count.coerceAtMost(available)
         arraycopy(this.ba, this.offset, data, offset, readCount)
