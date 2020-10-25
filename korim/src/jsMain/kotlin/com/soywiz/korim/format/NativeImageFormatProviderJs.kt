@@ -267,7 +267,12 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
+    private var cachedFontSize: Double = Double.NaN
+    private var cachedFontName: String = ""
 	private fun setFont(font: Font, fontSize: Double) {
+        if (font.name == cachedFontName && fontSize == cachedFontSize) return
+        cachedFontName = font.name
+        cachedFontSize = fontSize
 		ctx.font = "${fontSize}px '${font.name}'"
 	}
 
@@ -311,12 +316,14 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         else -> "source-over" // Default
     }
 
-	private fun setState(state: Context2d.State, fill: Boolean, fontSize: Double) {
+	private fun setState(state: Context2d.State, fill: Boolean, doSetFont: Boolean) {
 		ctx.globalAlpha = state.globalAlpha
         ctx.globalCompositeOperation = state.globalCompositeOperation.toJsStr()
-		setFont(state.font, state.fontSize)
+        if (doSetFont) {
+            setFont(state.font, state.fontSize)
+        }
 		if (fill) {
-			ctx.fillStyle = state.fillStyle.toJsStr()
+            ctx.fillStyle = state.fillStyle.toJsStr()
 		} else {
             ctx.lineWidth = state.lineWidth
 			ctx.lineJoin = when (state.lineJoin) {
@@ -329,7 +336,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				LineCap.ROUND -> CanvasLineCap.ROUND
 				LineCap.SQUARE -> CanvasLineCap.SQUARE
 			}
-			ctx.strokeStyle = state.strokeStyle.toJsStr()
+            ctx.strokeStyle = state.strokeStyle.toJsStr()
 		}
 	}
 
@@ -361,7 +368,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         //println("RENDER: $width,$height,fill=$fill")
         //println(" fillStyle=${ctx.fillStyle}, transform=${state.transform}")
 		keep {
-			setState(state, fill, state.fontSize)
+			setState(state, fill, doSetFont = false)
 			ctx.beginPath()
 
 			state.path.visitCmds(
