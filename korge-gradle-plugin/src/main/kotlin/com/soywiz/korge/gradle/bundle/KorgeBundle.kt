@@ -1,10 +1,11 @@
 package com.soywiz.korge.gradle.bundle
 
 import com.soywiz.korge.gradle.gkotlin
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.get
 import com.soywiz.korge.gradle.util.hex
 import org.gradle.api.Project
-import org.gradle.api.file.FileTree
+import org.gradle.api.file.*
 import java.io.File
 import java.net.URL
 import java.security.MessageDigest
@@ -101,28 +102,57 @@ class KorgeBundles(val project: Project) {
             dependencies = dependencies,
         )
 
-        logger.info("KorGE.bundle: $outputDir")
         project.afterEvaluate {
+            logger.info("KorGE.bundle: $outputDir")
             for (target in project.gkotlin.targets) {
                 logger.info("  target: $target")
                 target.compilations.all { compilation ->
                     logger.info("    compilation: $compilation")
-                    for (sourceSet in compilation.kotlinSourceSets) {
+
+                    val sourceSets = compilation.kotlinSourceSets.toMutableSet()
+
+                    for (sourceSet in sourceSets) {
                         logger.info("      sourceSet: $sourceSet")
-                        val kotlinSrc = File(project.buildDir, "$buildDirBundleFolder/${bundleName}/src/${sourceSet.name}/kotlin")
-                        val resourcesSrc = File(project.buildDir, "$buildDirBundleFolder/${bundleName}/src/${sourceSet.name}/resources")
-                        if (kotlinSrc.exists()) {
-                            logger.info("        kotlinSrc: $kotlinSrc")
-                            sourceSet.kotlin.srcDirs(kotlinSrc)
+
+                        fun addSource(ss: SourceDirectorySet, sourceSetName: String, folder: String) {
+                            val folder = File(project.buildDir, "$buildDirBundleFolder/${bundleName}/src/${sourceSetName}/$folder")
+                            if (folder.exists()) {
+                                logger.info("        ${ss.name}Src: $folder")
+                                ss.srcDirs(folder)
+                            }
                         }
-                        if (resourcesSrc.exists()) {
-                            logger.info("        resourcesSrc: $resourcesSrc")
-                            sourceSet.resources.srcDirs(resourcesSrc)
+
+                        fun addSources(sourceSetName: String) {
+                            addSource(sourceSet.kotlin, sourceSetName, "kotlin")
+                            addSource(sourceSet.resources, sourceSetName, "resources")
                         }
+
+                        fun addSourcesAddSuffix(sourceSetName: String) {
+                            when {
+                                sourceSet.name.endsWith("Test") -> addSources("${sourceSetName}Test")
+                                sourceSet.name.endsWith("Main") -> addSources("${sourceSetName}Main")
+                            }
+                        }
+
+                        addSources(sourceSet.name)
+                        if (target.isNative) addSourcesAddSuffix("nativeCommon")
+                        if (target.isNativeDesktop) addSourcesAddSuffix("nativeDesktop")
+                        if (target.isNativePosix) addSourcesAddSuffix("nativePosix")
+                        if (target.isNativePosix && !target.isApple) addSourcesAddSuffix("nativePosixNonApple")
+                        if (target.isApple) addSourcesAddSuffix("nativePosixApple")
+                        if (target.isIosTvosWatchos) addSourcesAddSuffix("iosWatchosTvosCommon")
+                        if (target.isWatchos) addSourcesAddSuffix("iosWatchosCommon")
+                        if (target.isTvos) addSourcesAddSuffix("iosTvosCommon")
+                        if (target.isMacos || target.isIosTvos) addSourcesAddSuffix("macosIosTvosCommon")
+                        if (target.isMacos || target.isIosWatchos) addSourcesAddSuffix("macosIosWatchosCommon")
+                        if (target.isIos) addSourcesAddSuffix("iosCommon")
                     }
                 }
             }
         }
+        //project.gkotlin.sourceSets.configureEach {
+        //    logger.info("KorGE.sourceSet: ${it.name}")
+        //}
         //println(project.gkotlin.metadata().compilations["main"].kotlinSourceSets)
     }
 

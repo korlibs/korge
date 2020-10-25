@@ -35,10 +35,33 @@ private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
 fun Project.configureNativeDesktop() {
 	val project = this
 
+    /*
+    val common = gkotlin.sourceSets.createPairSourceSet("common") { test ->
+        dependencies {
+            if (test) {
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+            } else {
+                implementation(kotlin("stdlib-common"))
+            }
+        }
+    }
+    val concurrent = gkotlin.sourceSets.createPairSourceSet("concurrent", common)
+    val nonNativeCommon = gkotlin.sourceSets.createPairSourceSet("nonNativeCommon", common)
+    val nonJs = gkotlin.sourceSets.createPairSourceSet("nonJs", common)
+    val nonJvm = gkotlin.sourceSets.createPairSourceSet("nonJvm", common)
+    val jvmAndroid = gkotlin.sourceSets.createPairSourceSet("jvmAndroid", common)
+    val nativeCommon by lazy { gkotlin.sourceSets.createPairSourceSet("nativeCommon", concurrent) }
+    */
+
 	for (preset in DESKTOP_NATIVE_TARGETS) {
         //val target = gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset
 		gkotlin.targets.add((gkotlin.presets.getAt(preset) as AbstractKotlinNativeTargetPreset<*>).createTarget(preset).apply {
-			//(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
+            //val target = this
+            //val native = gkotlin.sourceSets.createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
+            //native.dependsOn(nativeCommon)
+
+            //(compilations["main"] as KotlinNativeCompilation).outputKinds("EXECUTABLE")
 			binaries {
                 executable {
                     //this.entryPoint = "korge.bootstrap.main"
