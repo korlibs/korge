@@ -290,6 +290,7 @@ class Views constructor(
 		}
 
         onAfterRender(renderContext)
+        renderContext.flush()
     }
 
 	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL) {
