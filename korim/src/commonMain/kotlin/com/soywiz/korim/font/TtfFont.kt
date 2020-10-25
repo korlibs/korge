@@ -22,8 +22,8 @@ import kotlin.collections.set
 // - https://en.wikipedia.org/wiki/Em_(typography)
 // - http://stevehanov.ca/blog/index.php?id=143 (Let's read a Truetype font file from scratch)
 // - http://chanae.walon.org/pub/ttf/ttf_glyphs.htm
-class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, private val extName: String? = null) : VectorFont {
-    constructor(d: ByteArray, freeze: Boolean = false, extName: String? = null) : this(d.openSync(), freeze, extName)
+class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boolean = false, private val extName: String? = null) : VectorFont {
+    constructor(d: ByteArray, freeze: Boolean = false, extName: String? = null) : this(d.openFastStream(), freeze, extName)
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
@@ -143,7 +143,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
     }
 
     private data class Table(val id: String, val checksum: Int, val offset: Int, val length: Int) {
-		lateinit var s: SyncStream
+		lateinit var s: FastByteArrayInputStream
 
 		fun open() = s.clone()
 	}
@@ -163,7 +163,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 		}
 	}
 
-	fun SyncStream.readFixed() = Fixed(readS16LE(), readS16LE())
+    fun FastByteArrayInputStream.readFixed() = Fixed(readS16LE(), readS16LE())
 	data class HorMetric(val advanceWidth: Int, val lsb: Int)
 
     @PublishedApi
@@ -189,11 +189,11 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 		//for (table in tables) println(table)
 	}
 
-    private inline fun runTableUnit(name: String, callback: SyncStream.() -> Unit) {
+    private inline fun runTableUnit(name: String, callback: FastByteArrayInputStream.() -> Unit) {
 		openTable(name)?.callback()
 	}
 
-    private inline fun <T> runTable(name: String, callback: SyncStream.(Table) -> T): T? = openTable(name)?.let { callback(it, tablesByName[name]!!) }
+    private inline fun <T> runTable(name: String, callback: FastByteArrayInputStream.(Table) -> T): T? = openTable(name)?.let { callback(it, tablesByName[name]!!) }
 
     private fun readNames() = runTableUnit("name") {
 		val format = readU16BE()
@@ -214,7 +214,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 			}
 			//println("" + (stringOffset.toLong() + offset) + " : " + length + " : " + charset)
 			val string =
-				this.clone().sliceWithSize(stringOffset.toLong() + offset, length.toLong()).readAll().toString(charset)
+				this.clone().sliceWithSize(stringOffset + offset, length).readAll().toString(charset)
 			//println(string)
 		}
 	}
@@ -331,7 +331,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 		val tables = (0 until numTables).map { EncodingRecord(readU16BE(), readU16BE(), readS32BE()) }
 
 		for (table in tables) {
-			sliceStart(table.offset.toLong()).run {
+			sliceStart(table.offset).run {
 				val format = readU16BE()
 				when (format) {
 					4 -> {
@@ -364,7 +364,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 									var glyphIndexOffset = rangeOffsetPos + n * 2
 									glyphIndexOffset += iro
 									glyphIndexOffset += (c - sc) * 2
-									index = sliceStart(glyphIndexOffset.toLong()).readU16BE()
+									index = sliceStart(glyphIndexOffset).readU16BE()
 									if (index != 0) {
 										index += delta
 									}
@@ -415,12 +415,12 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
     private operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
 
     private fun getGlyphByIndex(index: Int, cache: Boolean = true): Glyph? {
-        val start = locs.getOrNull(index)?.unsigned ?: 0
-        val end = locs.getOrNull(index + 1)?.unsigned ?: start
+        val start = locs.getOrNull(index) ?: 0
+        val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
         //println("GLYPH INDEX: $index")
         val glyph = when {
-            size != 0L -> this.glyphCache[index] ?: runTable("glyf") { table ->
+            size != 0 -> this.glyphCache[index] ?: runTable("glyf") { table ->
                 //println("READ GLYPH[$index]: start=$start, end=$end, size=$size, table=$table")
                 sliceStart(start).readGlyph(index)
             }
@@ -593,7 +593,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
         }
     }
 
-    private fun SyncStream.readF2DOT14(): Float {
+    private fun FastByteArrayInputStream.readF2DOT14(): Float {
 		val v = readS16BE()
 		val i = v shr 14
 		val f = v and 0x3FFF
@@ -601,7 +601,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 	}
 
 	@Suppress("FunctionName")
-    private fun SyncStream.readMixBE(signed: Boolean, word: Boolean): Int {
+    private fun FastByteArrayInputStream.readMixBE(signed: Boolean, word: Boolean): Int {
 		return when {
 			!word && signed -> readS8()
 			!word && !signed -> readU8()
@@ -611,7 +611,7 @@ class TtfFont(private val s: SyncStream, private val freeze: Boolean = false, pr
 		}
 	}
 
-    private fun SyncStream.readGlyph(index: Int): Glyph {
+    private fun FastByteArrayInputStream.readGlyph(index: Int): Glyph {
 		val ncontours = readS16BE()
 		val xMin = readS16BE()
 		val yMin = readS16BE()
