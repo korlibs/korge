@@ -1,9 +1,6 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.associateByInt
-import com.soywiz.kds.toIntMap
+import com.soywiz.kds.*
 import com.soywiz.kmem.insert
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
@@ -12,10 +9,7 @@ import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.format.ImageFormat
-import com.soywiz.korim.format.RegisteredImageFormats
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.HorizontalAlign
 import com.soywiz.korim.vector.VerticalAlign
@@ -23,7 +17,7 @@ import com.soywiz.korim.vector.paint.ColorPaint
 import com.soywiz.korim.vector.paint.DefaultPaint
 import com.soywiz.korim.vector.paint.Paint
 import com.soywiz.korio.dynamic.KDynamic
-import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.serialization.xml.Xml
@@ -358,3 +352,34 @@ fun Font.toBitmapFont(
     mipmaps: Boolean = true,
     effect: BitmapEffect? = null,
 ) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
+
+suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {
+    val font = this
+    val fntFile = out
+    val bmpFile = out.parent["${out.pathInfo.baseNameWithoutExtension}.png"]
+    if (writeBitmap) {
+        bmpFile.writeBitmap(font.baseBmp, PNG)
+    }
+    fntFile.writeString(buildString {
+        appendLine("info face=\"${font.name}\" size=${font.fontSize.toInt()} bold=0 italic=0 charset=\"\" unicode=0 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0")
+        appendLine("common lineHeight=${font.lineHeight.toInt()} base=${font.base.toInt()} scaleW=${font.baseBmp.width} scaleH=${font.baseBmp.height} pages=1 packed=0")
+        appendLine("page id=0 file=\"${bmpFile.baseName}\"")
+        val glyphs = font.glyphs.toMap()
+        appendLine("chars count=${glyphs.size}")
+        for ((charId, glyph) in glyphs) {
+            val x = glyph.texture.left
+            val y = glyph.texture.top
+            val width = glyph.texture.width
+            val height = glyph.texture.height
+            val xoffset = glyph.xoffset
+            val yoffset = glyph.yoffset
+            val xadvance = glyph.xadvance
+            appendLine("char id=$charId x=$x y=$y width=$width height=$height xoffset=$xoffset yoffset=$yoffset xadvance=$xadvance page=0 chnl=0")
+        }
+        val kernings = font.kernings.toMap()
+        appendLine("kernings count=${kernings.size}")
+        for ((_, kerning) in kernings) {
+            appendLine("kerning first=${kerning.first} second=${kerning.second} amount=${kerning.amount}")
+        }
+    })
+}
