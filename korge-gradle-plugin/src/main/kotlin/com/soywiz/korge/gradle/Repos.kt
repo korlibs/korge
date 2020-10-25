@@ -14,14 +14,6 @@ fun Project.configureRepositories() {
 				it.excludeGroup("Kotlin/Native")
 			}
 		}
-		if (BuildVersions.isEAP()) {
-			maven {
-				it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
-				it.content {
-					it.excludeGroup("Kotlin/Native")
-				}
-			}
-		}
 		jcenter().content {
 			it.excludeGroup("Kotlin/Native")
 		}
@@ -30,9 +22,20 @@ fun Project.configureRepositories() {
 		}
         google().content {
         }
-        if (BuildVersions.KOTLIN.contains("release")) {
-			maven { it.url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-		}
+        if (BuildVersions.isEAP()) {
+            maven {
+                it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
+                it.content {
+                    it.excludeGroup("Kotlin/Native")
+                }
+            }
+            maven {
+                it.url = URI("https://dl.bintray.com/kotlin/kotlin-dev")
+                it.content {
+                    it.excludeGroup("Kotlin/Native")
+                }
+            }
+        }
 	}
 }
 

@@ -15,8 +15,9 @@ object BuildVersions {
 	const val KORGW = KORLIBS_VERSION
     ////////////////////
 	const val KORGE = KORLIBS_VERSION
-    const val KOTLIN = "1.4.10"
+    //const val KOTLIN = "1.4.10"
 	//const val KOTLIN = "1.4.20-M1"
+    const val KOTLIN = "1.4.20-RC-202"
 	const val COROUTINES = "1.3.9"
 	//const val ANDROID_BUILD = "3.6.0"
     const val ANDROID_BUILD = "4.0.1"
