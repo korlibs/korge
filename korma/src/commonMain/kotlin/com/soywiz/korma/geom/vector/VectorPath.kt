@@ -15,6 +15,7 @@ private val tempMatrix: Matrix = Matrix()
 @ThreadLocal
 private val identityMatrix: Matrix = Matrix()
 
+@OptIn(KormaExperimental::class)
 open class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
@@ -111,8 +112,7 @@ open class VectorPath(
     fun clear() {
         commands.clear()
         data.clear()
-        lastX = 0.0
-        lastY = 0.0
+        lastXY(0.0, 0.0)
         version = 0
         scanline.version = version - 1  // ensure scanline will be updated after this "clear" operation
     }
@@ -125,8 +125,7 @@ open class VectorPath(
     fun appendFrom(other: VectorPath) {
         this.commands.add(other.commands)
         this.data.add(other.data)
-        this.lastX = other.lastX
-        this.lastY = other.lastY
+        lastXY(other.lastX, other.lastY)
         version++
     }
 
@@ -210,7 +209,6 @@ open class VectorPath(
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
-    @OptIn(KormaExperimental::class)
     private val scanline by lazy { PolygonScanline().also {
         it.add(this)
         it.version = this.version
@@ -302,8 +300,7 @@ open class VectorPath(
         this.commands += path.commands
         if (transform.isIdentity()) {
             this.data += path.data
-            this.lastX = path.lastX
-            this.lastY = path.lastY
+            lastXY(path.lastX, path.lastY)
         } else {
             @Suppress("ReplaceManualRangeWithIndicesCalls")
             for (n in 0 until path.data.size step 2) {
@@ -312,8 +309,10 @@ open class VectorPath(
                 this.data += transform.transformX(x, y)
                 this.data += transform.transformY(x, y)
             }
-            this.lastX = transform.transformX(path.lastX, path.lastY)
-            this.lastY = transform.transformY(path.lastX, path.lastY)
+            lastXY(
+                transform.transformX(path.lastX, path.lastY),
+                transform.transformY(path.lastX, path.lastY)
+            )
         }
         version++
     }
