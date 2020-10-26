@@ -1,14 +1,14 @@
 package com.soywiz.korge.gradle.bundle
 
-import com.soywiz.korge.gradle.gkotlin
+import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.util.get
-import com.soywiz.korge.gradle.util.hex
-import org.gradle.api.Project
+import com.soywiz.korge.gradle.util.*
+import org.gradle.api.*
+import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
-import java.io.File
-import java.net.URL
-import java.security.MessageDigest
+import java.io.*
+import java.net.*
+import java.security.*
 
 class KorgeBundles(val project: Project) {
     val bundlesDir get() = project.file("bundles").also { it.mkdirs() }
@@ -103,6 +103,24 @@ class KorgeBundles(val project: Project) {
         )
 
         project.afterEvaluate {
+            for (repo in repositories) {
+                logger.info("KorGE.bundle.repository: $repo")
+                project.repositories.maven {
+                    it.url = project.uri(repo.url)
+                }
+            }
+            for (dep in dependencies) {
+                //val available = dep.sourceSet in project.configurations
+                val available = try {
+                    project.configurations.getAt(dep.sourceSet) != null
+                } catch (e: UnknownConfigurationException) {
+                    false
+                }
+                logger.info("KorGE.bundle.dependency: $dep -- available=$available")
+                if (available) {
+                    project.dependencies.add(dep.sourceSet, dep.artifactPath)
+                }
+            }
             logger.info("KorGE.bundle: $outputDir")
             for (target in project.gkotlin.targets) {
                 logger.info("  target: $target")
