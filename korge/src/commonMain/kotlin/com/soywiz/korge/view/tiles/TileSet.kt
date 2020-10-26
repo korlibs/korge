@@ -31,9 +31,9 @@ class TileSet(
     fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
-		operator fun invoke(textureMap: Map<Int, out BmpSlice>): TileSet = TileSet(textureMap.toIntMap())
+		operator fun invoke(textureMap: Map<Int, BmpSlice>): TileSet = TileSet(textureMap.toIntMap())
 
-        operator fun invoke(tileSets: List<out TileSet>): TileSet {
+        operator fun invoke(tileSets: List<TileSet>): TileSet {
             val map = IntMap<BmpSlice>()
             tileSets.fastForEach { tileSet ->
                 map.putAll(tileSet.texturesMap)
@@ -41,7 +41,7 @@ class TileSet(
             return TileSet(map)
         }
 
-        operator fun invoke(tiles: List<out BmpSlice>, width: Int, height: Int): TileSet {
+        operator fun invoke(tiles: List<BmpSlice>, width: Int, height: Int): TileSet {
             val map = IntMap<BmpSlice>()
             tiles.fastForEachWithIndex { index, value -> map[index] = value }
             return TileSet(map, width, height)

@@ -11,7 +11,7 @@ inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true
 	TiledMapView(tiledMap, showShapes).addTo(this, callback)
 
 class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Container() {
-    val tileset = TileSet(tiledMap.tilesets.map { it.tileset })
+    val tileset = tiledMap.tilesets.toTileSet()
 	init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {

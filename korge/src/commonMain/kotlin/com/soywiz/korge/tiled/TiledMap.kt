@@ -1,5 +1,6 @@
 package com.soywiz.korge.tiled
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
@@ -136,6 +137,18 @@ data class TileSetData(
     val width: Int get() = image?.width ?: 0
     val height: Int get() = image?.height ?: 0
     fun clone() = copy()
+}
+
+fun List<TiledMap.TiledTileset>.toTileSet(): TileSet {
+    val tilesets = this
+    val maxGid = tilesets.map { it.maxgid }.maxOrNull() ?: 0
+    val tiles = IntMap<BmpSlice>(maxGid * 2)
+    tilesets.fastForEach { tileset ->
+        tileset.tileset.texturesMap.fastForEach { key, value ->
+            tiles[tileset.firstgid + key] = value
+        }
+    }
+    return TileSet(tiles)
 }
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -312,14 +325,13 @@ class TiledMap constructor(
             spacing = 0,
             margin = 0,
             columns = tileset.base.width / tileset.width,
-            image = TODO(), //null
-            //width = tileset.base.width,
-            //height = tileset.base.height,
+            image = null,
             terrains = listOf(),
             tiles = tileset.textures.mapIndexed { index, bmpSlice -> TileData(index) }
         ),
         val firstgid: Int = 1
     ) {
+        val maxgid get() = firstgid + tileset.textures.size
         fun clone(): TiledTileset = TiledTileset(tileset.clone(), data.clone(), firstgid)
     }
 
