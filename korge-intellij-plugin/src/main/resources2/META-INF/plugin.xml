@@ -140,7 +140,7 @@
         </group>
 
         <group id="KorgeNew">
-            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewGroup1"/>
+            <add-to-group group-id="NewGroup" anchor="last"/>
 
             <separator/>
 

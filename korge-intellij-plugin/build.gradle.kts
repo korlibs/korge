@@ -62,7 +62,7 @@ dependencies {
     implementation(project(":korge-swf"))
     implementation(project(":korge-dragonbones"))
     implementation(project(":korge-spine"))
-    implementation(project(":korge-box2d"))
+    implementation(project(":kbox2d"))
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
