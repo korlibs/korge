@@ -260,7 +260,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
         data[length++] = v3
     }
     fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) {
-        ensure(4)
+        ensure(5)
         data[length++] = v0
         data[length++] = v1
         data[length++] = v2
@@ -268,7 +268,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
         data[length++] = v4
     }
     fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) {
-        ensure(5)
+        ensure(6)
         data[length++] = v0
         data[length++] = v1
         data[length++] = v2
