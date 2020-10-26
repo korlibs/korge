@@ -97,7 +97,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
     fun add(values: IntArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Int>) = run { for (v in values) add(v) }
 
-    operator fun get(index: Int): Int = getAt(index)
+    operator fun get(index: Int): Int = data[index]
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Int = data[index]
@@ -291,7 +291,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
     fun add(values: DoubleArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Double>) = run { for (v in values) add(v) }
 
-    operator fun get(index: Int): Double = getAt(index)
+    operator fun get(index: Int): Double = data[index]
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Double = data[index]
@@ -450,7 +450,7 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
     fun add(values: FloatArrayList) = add(values.data, 0, values.size)
     fun add(values: Iterable<Float>) = run { for (v in values) add(v) }
 
-    operator fun get(index: Int): Float = getAt(index)
+    operator fun get(index: Int): Float = data[index]
 
     /** Gets an item of the list without boxing */
     fun getAt(index: Int): Float = data[index]

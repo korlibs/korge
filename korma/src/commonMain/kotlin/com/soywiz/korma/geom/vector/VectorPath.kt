@@ -53,35 +53,11 @@ open class VectorPath(
         var n = 0
         commands.fastForEach { cmd ->
             when (cmd) {
-                Command.MOVE_TO -> {
-                    val x = data.getAt(n++)
-                    val y = data.getAt(n++)
-                    moveTo(x, y)
-                }
-                Command.LINE_TO -> {
-                    val x = data.getAt(n++)
-                    val y = data.getAt(n++)
-                    lineTo(x, y)
-                }
-                Command.QUAD_TO -> {
-                    val x1 = data.getAt(n++)
-                    val y1 = data.getAt(n++)
-                    val x2 = data.getAt(n++)
-                    val y2 = data.getAt(n++)
-                    quadTo(x1, y1, x2, y2)
-                }
-                Command.CUBIC_TO -> {
-                    val x1 = data.getAt(n++)
-                    val y1 = data.getAt(n++)
-                    val x2 = data.getAt(n++)
-                    val y2 = data.getAt(n++)
-                    val x3 = data.getAt(n++)
-                    val y3 = data.getAt(n++)
-                    cubicTo(x1, y1, x2, y2, x3, y3)
-                }
-                Command.CLOSE -> {
-                    close()
-                }
+                Command.MOVE_TO -> moveTo(data[n++], data[n++])
+                Command.LINE_TO -> lineTo(data[n++], data[n++])
+                Command.QUAD_TO -> quadTo(data[n++], data[n++], data[n++], data[n++])
+                Command.CUBIC_TO -> cubicTo(data[n++], data[n++], data[n++], data[n++], data[n++], data[n++])
+                Command.CLOSE -> close()
             }
         }
     }
@@ -329,9 +305,10 @@ open class VectorPath(
             this.lastX = path.lastX
             this.lastY = path.lastY
         } else {
+            @Suppress("ReplaceManualRangeWithIndicesCalls")
             for (n in 0 until path.data.size step 2) {
-                val x = path.data.getAt(n + 0)
-                val y = path.data.getAt(n + 1)
+                val x = path.data[n + 0]
+                val y = path.data[n + 1]
                 this.data += transform.transformX(x, y)
                 this.data += transform.transformY(x, y)
             }
@@ -412,6 +389,7 @@ fun BoundsBuilder.add(path: VectorPath) {
 }
 
 fun VectorPath.applyTransform(m: Matrix): VectorPath {
+    @Suppress("ReplaceManualRangeWithIndicesCalls")
     for (n in 0 until data.size step 2) {
         val x = data.getAt(n + 0)
         val y = data.getAt(n + 1)
