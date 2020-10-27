@@ -1,6 +1,5 @@
 package com.dragonbones.geom
 
-import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -308,17 +307,17 @@ class Matrix
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun transformPoint(x: Float, y: Float, result: XY, delta: Boolean = false): Unit {
-		result.x = this.a * x + this.c * y
-		result.y = this.b * x + this.d * y
+	fun transformPoint(x: Float, y: Float, result: XYf, delta: Boolean = false): Unit {
+		result.xf = this.a * x + this.c * y
+		result.yf = this.b * x + this.d * y
 
 		if (!delta) {
-			result.x += this.tx
-			result.y += this.ty
+			result.xf += this.tx
+			result.yf += this.ty
 		}
 	}
 
-	fun transformPoint(x: Double, y: Double, result: XY, delta: Boolean = false): Unit = transformPoint(x.toFloat(), y.toFloat(), result, delta)
+	fun transformPoint(x: Double, y: Double, result: XYf, delta: Boolean = false): Unit = transformPoint(x.toFloat(), y.toFloat(), result, delta)
 
 	fun transformX(x: Float, y: Float): Float = (this.a * x + this.c * y + this.tx)
 	fun transformY(x: Float, y: Float): Float = (this.b * x + this.d * y + this.ty)

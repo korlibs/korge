@@ -132,17 +132,17 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 		if (this.offsetMode == OffsetMode.Additive) {
 			if (origin != null) {
 				// global.copyFrom(this.origin).add(this.offset).add(this.animationPose);
-				global.x = origin.x + offset.x + animationPose.x
+				global.xf = origin.xf + offset.xf + animationPose.xf
 				global.scaleX = origin.scaleX * offset.scaleX * animationPose.scaleX
 				global.scaleY = origin.scaleY * offset.scaleY * animationPose.scaleY
 
 				if (DragonBones.yDown) {
-					global.y = origin.y + offset.y + animationPose.y
+					global.yf = origin.yf + offset.yf + animationPose.yf
 					global.skew = origin.skew + offset.skew + animationPose.skew
 					global.rotation = origin.rotation + offset.rotation + animationPose.rotation
 				}
 				else {
-					global.y = origin.y - offset.y + animationPose.y
+					global.yf = origin.yf - offset.yf + animationPose.yf
 					global.skew = origin.skew - offset.skew + animationPose.skew
 					global.rotation = origin.rotation - offset.rotation + animationPose.rotation
 				}
@@ -151,7 +151,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 				global.copyFrom(offset)
 
 				if (!DragonBones.yDown) {
-					global.y = -global.y
+					global.yf = -global.yf
 					global.skew = -global.skew
 					global.rotation = -global.rotation
 				}
@@ -172,7 +172,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 			global.copyFrom(offset)
 
 			if (!DragonBones.yDown) {
-				global.y = -global.y
+				global.yf = -global.yf
 				global.skew = -global.skew
 				global.rotation = -global.rotation
 			}
@@ -182,7 +182,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 			val parent = parent!!
 			val isSurface = parent._boneData!!.isSurface
 			val surfaceBone = if (isSurface) (parent as Surface)._bone else null
-			val parentMatrix = if (isSurface) (parent as Surface)._getGlobalTransformMatrix(global.x, global.y) else parent.globalTransformMatrix
+			val parentMatrix = if (isSurface) (parent as Surface)._getGlobalTransformMatrix(global.xf, global.yf) else parent.globalTransformMatrix
 
 			if (boneData!!.inheritScale && (!isSurface || surfaceBone != null)) {
 				if (isSurface) {
@@ -193,16 +193,16 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					(surfaceBone as Bone).updateGlobalTransform()
 					global.scaleX *= surfaceBone.global.scaleX
 					global.scaleY *= surfaceBone.global.scaleY
-					parentMatrix.transformPoint(global.x, global.y, global)
+					parentMatrix.transformPoint(global.xf, global.yf, global)
 					global.toMatrix(globalTransformMatrix)
 
 					if (boneData.inheritTranslation) {
-						global.x = globalTransformMatrix.tx
-						global.y = globalTransformMatrix.ty
+						global.xf = globalTransformMatrix.tx
+						global.yf = globalTransformMatrix.ty
 					}
 					else {
-						globalTransformMatrix.tx = global.x
-						globalTransformMatrix.ty = global.y
+						globalTransformMatrix.tx = global.xf
+						globalTransformMatrix.ty = global.yf
 					}
 				}
 				else {
@@ -229,12 +229,12 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					globalTransformMatrix.concat(parentMatrix)
 
 					if (boneData.inheritTranslation) {
-						global.x = globalTransformMatrix.tx
-						global.y = globalTransformMatrix.ty
+						global.xf = globalTransformMatrix.tx
+						global.yf = globalTransformMatrix.ty
 					}
 					else {
-						globalTransformMatrix.tx = global.x
-						globalTransformMatrix.ty = global.y
+						globalTransformMatrix.tx = global.xf
+						globalTransformMatrix.ty = global.yf
 					}
 
 					if (isCache) {
@@ -247,18 +247,18 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 			}
 			else {
 				if (boneData.inheritTranslation) {
-					val x = global.x
-					val y = global.y
-					global.x = parentMatrix.a * x + parentMatrix.c * y + parentMatrix.tx
-					global.y = parentMatrix.b * x + parentMatrix.d * y + parentMatrix.ty
+					val x = global.xf
+					val y = global.yf
+					global.xf = parentMatrix.a * x + parentMatrix.c * y + parentMatrix.tx
+					global.yf = parentMatrix.b * x + parentMatrix.d * y + parentMatrix.ty
 				}
 				else {
 					if (flipX) {
-						global.x = -global.x
+						global.xf = -global.xf
 					}
 
 					if (flipY) {
-						global.y = -global.y
+						global.yf = -global.yf
 					}
 				}
 
@@ -310,11 +310,11 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 		else {
 			if (flipX || flipY) {
 				if (flipX) {
-					global.x = -global.x
+					global.xf = -global.xf
 				}
 
 				if (flipY) {
-					global.y = -global.y
+					global.yf = -global.yf
 				}
 
 				if (flipX && flipY) {

@@ -25,9 +25,11 @@ package com.dragonbones.model
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.dragonbones.util.*
+import com.dragonbones.util.length
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
 
 /**
  * @private

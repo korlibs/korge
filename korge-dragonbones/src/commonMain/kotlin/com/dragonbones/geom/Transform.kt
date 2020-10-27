@@ -46,29 +46,29 @@ class Transform
 	 * @language zh_CN
 	 */
 
-	/**
+    /**
 	 * - Horizontal translate.
 	 * @version DragonBones 3.0
 	 * @language en_US
 	 */
-	override var x: Float = 0f,
+	override var xf: Float = 0f,
 	/**
 	 * - 垂直位移。
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	/**
+    /**
 	 * - Vertical translate.
 	 * @version DragonBones 3.0
 	 * @language en_US
 	 */
-	override var y: Float = 0f,
+	override var yf: Float = 0f,
 	/**
 	 * - 倾斜。 （以弧度为单位）
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	/**
+    /**
 	 * - Skew. (In radians)
 	 * @version DragonBones 3.0
 	 * @language en_US
@@ -79,7 +79,7 @@ class Transform
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	/**
+    /**
 	 * - rotation. (In radians)
 	 * @version DragonBones 3.0
 	 * @language en_US
@@ -90,7 +90,7 @@ class Transform
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	/**
+    /**
 	 * - Horizontal Scaling.
 	 * @version DragonBones 3.0
 	 * @language en_US
@@ -101,13 +101,13 @@ class Transform
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	/**
+    /**
 	 * - Vertical scaling.
 	 * @version DragonBones 3.0
 	 * @language en_US
 	 */
 	var scaleY: Float = 1f
-) : XY {
+) : XYf {
 	companion object {
 		/**
 		 * @private
@@ -146,12 +146,12 @@ class Transform
 	}
 
 	override fun toString(): String {
-		return "[object dragonBones.Transform] x:" + this.x + " y:" + this.y + " skewX:" + this.skew * 180f / PI + " skewY:" + this.rotation * 180f / PI + " scaleX:" + this.scaleX + " scaleY:" + this.scaleY
+		return "[object dragonBones.Transform] x:" + this.xf + " y:" + this.yf + " skewX:" + this.skew * 180f / PI + " skewY:" + this.rotation * 180f / PI + " scaleX:" + this.scaleX + " scaleY:" + this.scaleY
 	}
 
 	fun setTo(x: Float, y: Float, skew: Float, rotation: Float, scaleX: Float, scaleY: Float): Transform {
-		this.x = x
-		this.y = y
+		this.xf = x
+		this.yf = y
 		this.skew = skew
 		this.rotation = rotation
 		this.scaleX = scaleX
@@ -167,7 +167,7 @@ class Transform
 	/**
 	 * @private
 	 */
-	fun copyFrom(value: Transform): Transform = value.apply { this@Transform.setTo(x, y, skew, rotation, scaleX, scaleY) }
+	fun copyFrom(value: Transform): Transform = value.apply { this@Transform.setTo(xf, yf, skew, rotation, scaleX, scaleY) }
 
 	/**
 	 * @private
@@ -178,8 +178,8 @@ class Transform
 	 * @private
 	 */
 	fun add(value: Transform): Transform = setTo(
-		x + value.x,
-		y + value.y,
+		xf + value.xf,
+		yf + value.yf,
 		skew + value.skew,
 		rotation + value.rotation,
 		scaleX * value.scaleX,
@@ -190,8 +190,8 @@ class Transform
 	 * @private
 	 */
 	fun minus(value: Transform): Transform = setTo(
-		x - value.x,
-		y - value.y,
+		xf - value.xf,
+		yf - value.yf,
 		skew - value.skew,
 		rotation - value.rotation,
 		scaleX / value.scaleX,
@@ -206,8 +206,8 @@ class Transform
 		val backupScaleY = this.scaleY
 		val PI_Q = Transform.PI_Q
 
-		this.x = matrix.tx
-		this.y = matrix.ty
+		this.xf = matrix.tx
+		this.yf = matrix.ty
 		this.rotation = atan(matrix.b / matrix.a)
 		var skewX = atan(-matrix.c / matrix.d)
 
@@ -261,8 +261,8 @@ class Transform
 			matrix.d *= this.scaleY
 		}
 
-		matrix.tx = this.x
-		matrix.ty = this.y
+		matrix.tx = this.xf
+		matrix.ty = this.yf
 
 		return this
 	}
@@ -296,8 +296,8 @@ class Transform
 			matrix.d *= this.scaleY
 		}
 
-		matrix.tx = this.x.toDouble()
-		matrix.ty = this.y.toDouble()
+		matrix.tx = this.xf.toDouble()
+		matrix.ty = this.yf.toDouble()
 
 		return this
 	}

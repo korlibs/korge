@@ -27,7 +27,6 @@ import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
 import com.dragonbones.model.*
-import com.dragonbones.util.*
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -344,15 +343,15 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		val result = bone.animationPose
 
 		if (blendState.dirty > 1) {
-			result.x += (rd[0] * blendWeight * valueScale).toFloat()
-			result.y += (rd[1] * blendWeight * valueScale).toFloat()
+			result.xf += (rd[0] * blendWeight * valueScale).toFloat()
+			result.yf += (rd[1] * blendWeight * valueScale).toFloat()
 			result.rotation += (rd[2] * blendWeight).toFloat()
 			result.skew += (rd[3] * blendWeight).toFloat()
 			result.scaleX += ((rd[4] - 1.0) * blendWeight).toFloat()
 			result.scaleY += ((rd[5] - 1.0) * blendWeight).toFloat()
 		} else {
-			result.x = (rd[0] * blendWeight * valueScale).toFloat()
-			result.y = (rd[1] * blendWeight * valueScale).toFloat()
+			result.xf = (rd[0] * blendWeight * valueScale).toFloat()
+			result.yf = (rd[1] * blendWeight * valueScale).toFloat()
 			result.rotation = (rd[2] * blendWeight).toFloat()
 			result.skew = (rd[3] * blendWeight).toFloat()
 			result.scaleX = ((rd[4] - 1.0) * blendWeight + 1.0).toFloat() //
@@ -390,16 +389,16 @@ class BoneTranslateTimelineState(pool: SingleObjectPool<BoneTranslateTimelineSta
 
 		when {
 			blendState.dirty > 1 -> {
-				result.x += (this._resultA * blendWeight).toFloat()
-				result.y += (this._resultB * blendWeight).toFloat()
+				result.xf += (this._resultA * blendWeight).toFloat()
+				result.yf += (this._resultB * blendWeight).toFloat()
 			}
 			blendWeight != 1.0 -> {
-				result.x = (this._resultA * blendWeight).toFloat()
-				result.y = (this._resultB * blendWeight).toFloat()
+				result.xf = (this._resultA * blendWeight).toFloat()
+				result.yf = (this._resultB * blendWeight).toFloat()
 			}
 			else -> {
-				result.x = this._resultA.toFloat()
-				result.y = this._resultB.toFloat()
+				result.xf = this._resultA.toFloat()
+				result.yf = this._resultB.toFloat()
 			}
 		}
 

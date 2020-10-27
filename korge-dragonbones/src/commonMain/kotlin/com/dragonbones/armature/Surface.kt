@@ -26,9 +26,6 @@ import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
-import com.dragonbones.util.*
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -106,10 +103,10 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 		transform.scaleY = sqrt(dacX * dacX + dacY * dacY) / lY
 		transform.toMatrix(matrix)
 		val rx = aX - (matrix.a * x + matrix.c * y)
-		transform.x = rx
+		transform.xf = rx
 		matrix.tx = rx
 		val ry = aY - (matrix.b * x + matrix.d * y)
-		transform.y = ry
+		transform.yf = ry
 		matrix.ty = ry
 	}
 
@@ -581,27 +578,27 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 			// Update hull vertices.
 			val lB = 1000f
 			val lA = 200f
-			val ddX = 2 * global.x
-			val ddY = 2 * global.y
+			val ddX = 2 * global.xf
+			val ddY = 2 * global.yf
 			//
 			val helpPoint = _helpPoint
 			globalTransformMatrix.transformPoint(lB, -lA, helpPoint)
-			_hullCache0 = helpPoint.x
-			_hullCache1 = helpPoint.y
-			_hullCache2 = ddX - helpPoint.x
-			_hullCache3 = ddY - helpPoint.y
+			_hullCache0 = helpPoint.xf
+			_hullCache1 = helpPoint.yf
+			_hullCache2 = ddX - helpPoint.xf
+			_hullCache3 = ddY - helpPoint.yf
 			globalTransformMatrix.transformPoint(0f, _dY, helpPoint, true)
-			_hullCache4 = helpPoint.x
-			_hullCache5 = helpPoint.y
+			_hullCache4 = helpPoint.xf
+			_hullCache5 = helpPoint.yf
 			//
 			globalTransformMatrix.transformPoint(lA, lB, helpPoint)
-			_hullCache6 = helpPoint.x
-			_hullCache7 = helpPoint.y
-			_hullCache8 = ddX - helpPoint.x
-			_hullCache9 = ddY - helpPoint.y
+			_hullCache6 = helpPoint.xf
+			_hullCache7 = helpPoint.yf
+			_hullCache8 = ddX - helpPoint.xf
+			_hullCache9 = ddY - helpPoint.yf
 			globalTransformMatrix.transformPoint(_dX, 0f, helpPoint, true)
-			_hullCache10 = helpPoint.x
-			_hullCache11 = helpPoint.y
+			_hullCache10 = helpPoint.xf
+			_hullCache11 = helpPoint.yf
 		}
 		else if (_childrenTransformDirty) {
 			_childrenTransformDirty = false

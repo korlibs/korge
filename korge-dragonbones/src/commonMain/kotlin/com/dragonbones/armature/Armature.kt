@@ -31,9 +31,10 @@ import com.dragonbones.geom.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
-import com.soywiz.kds.iterators.*
+import com.dragonbones.util.length
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
 
 /**
  * - Armature is the core of the skeleton animation system.
@@ -533,37 +534,37 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 			if (intersectionCount > 0) {
 				if (intersectionPointA != null || intersectionPointB != null) {
 					if (intersectionPointA != null) {
-						var d = if (isV) intersectionPointA.y - yA else intersectionPointA.x - xA
+						var d = if (isV) intersectionPointA.yf - yA else intersectionPointA.xf - xA
 						if (d < 0.0) {
 							d = -d
 						}
 
 						if (intSlotA == null || d < dMin) {
 							dMin = d
-							intXA = intersectionPointA.x.toDouble()
-							intYA = intersectionPointA.y.toDouble()
+							intXA = intersectionPointA.xf.toDouble()
+							intYA = intersectionPointA.yf.toDouble()
 							intSlotA = slot
 
 							if (normalRadians != null) {
-								intAN = normalRadians.x.toDouble()
+								intAN = normalRadians.xf.toDouble()
 							}
 						}
 					}
 
 					if (intersectionPointB != null) {
-						var d = intersectionPointB.x - xA
+						var d = intersectionPointB.xf - xA
 						if (d < 0.0) {
 							d = -d
 						}
 
 						if (intSlotB == null || d > dMax) {
 							dMax = d
-							intXB = intersectionPointB.x.toDouble()
-							intYB = intersectionPointB.y.toDouble()
+							intXB = intersectionPointB.xf.toDouble()
+							intYB = intersectionPointB.yf.toDouble()
 							intSlotB = slot
 
 							if (normalRadians != null) {
-								intBN = normalRadians.y.toDouble()
+								intBN = normalRadians.yf.toDouble()
 							}
 						}
 					}
@@ -576,20 +577,20 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 		}
 
 		if (intSlotA != null && intersectionPointA != null) {
-			intersectionPointA.x = intXA.toFloat()
-			intersectionPointA.y = intYA.toFloat()
+			intersectionPointA.xf = intXA.toFloat()
+			intersectionPointA.yf = intYA.toFloat()
 
 			if (normalRadians != null) {
-				normalRadians.x = intAN.toFloat()
+				normalRadians.xf = intAN.toFloat()
 			}
 		}
 
 		if (intSlotB != null && intersectionPointB != null) {
-			intersectionPointB.x = intXB.toFloat()
-			intersectionPointB.y = intYB.toFloat()
+			intersectionPointB.xf = intXB.toFloat()
+			intersectionPointB.yf = intYB.toFloat()
 
 			if (normalRadians != null) {
-				normalRadians.y = intBN.toFloat()
+				normalRadians.yf = intBN.toFloat()
 			}
 		}
 

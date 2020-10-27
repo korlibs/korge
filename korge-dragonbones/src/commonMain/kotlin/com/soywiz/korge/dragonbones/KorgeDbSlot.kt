@@ -369,15 +369,15 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
         val rd = this._renderDisplay
 
 		if (rd === this._rawDisplay || rd === this._meshDisplay) {
-			val x = transform.x - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
-			val y = transform.y - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
+			val x = transform.xf - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
+			val y = transform.yf - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
             if (rd != null) {
                 rd.position(x, y)
                 rd.scale(transform.scaleX * this._textureScale, transform.scaleY * this._textureScale)
             }
 		} else {
             if (rd != null) {
-                rd.position(transform.x.toDouble(), transform.y.toDouble())
+                rd.position(transform.xf.toDouble(), transform.yf.toDouble())
                 rd.scale(transform.scaleX.toDouble(), transform.scaleY.toDouble())
             }
 		}

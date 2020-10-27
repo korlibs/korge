@@ -22,7 +22,6 @@
  */
 package com.dragonbones.model
 
-import com.dragonbones.armature.Bone
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.dragonbones.geom.Matrix
@@ -325,8 +324,8 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 		transform.skew = dataArray[arrayOffset + 7].toFloat()
 		transform.scaleX = dataArray[arrayOffset + 8].toFloat()
 		transform.scaleY = dataArray[arrayOffset + 9].toFloat()
-		transform.x = globalTransformMatrix.tx
-		transform.y = globalTransformMatrix.ty
+		transform.xf = globalTransformMatrix.tx
+		transform.yf = globalTransformMatrix.ty
 	}
 
 	/**
