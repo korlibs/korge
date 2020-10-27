@@ -24,7 +24,7 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 
 /**
  * - The skin data, typically a armature data instance contains at least one skinData.

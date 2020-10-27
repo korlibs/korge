@@ -26,7 +26,7 @@ import com.dragonbones.core.*
 import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import kotlin.math.*
 
 /**

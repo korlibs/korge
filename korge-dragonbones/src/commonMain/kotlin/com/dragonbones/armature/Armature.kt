@@ -28,10 +28,10 @@ import com.dragonbones.animation.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 
 /**

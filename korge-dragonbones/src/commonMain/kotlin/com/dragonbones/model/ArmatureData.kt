@@ -25,10 +25,12 @@ package com.dragonbones.model
 import com.dragonbones.armature.Bone
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
-import com.dragonbones.internal.fastForEach
+import com.dragonbones.geom.Matrix
+import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 /**
  * - The armature data.

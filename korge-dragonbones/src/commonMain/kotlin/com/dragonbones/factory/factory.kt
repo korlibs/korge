@@ -32,7 +32,7 @@ import com.dragonbones.model.*
 import com.dragonbones.parser.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 
 /**

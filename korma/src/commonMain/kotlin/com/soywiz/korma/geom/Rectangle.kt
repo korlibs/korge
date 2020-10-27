@@ -136,6 +136,8 @@ data class Rectangle(
     fun inflate(dx: Float, dy: Float) = inflate(dx.toDouble(), dy.toDouble())
     fun inflate(dx: Int, dy: Int) = inflate(dx.toDouble(), dy.toDouble())
 
+    fun clear() = setTo(0.0, 0.0, 0.0, 0.0)
+
     fun clone() = Rectangle(x, y, width, height)
 
     fun setToAnchoredRectangle(item: Rectangle, anchor: Anchor, container: Rectangle) = setToAnchoredRectangle(item.size, anchor, container)

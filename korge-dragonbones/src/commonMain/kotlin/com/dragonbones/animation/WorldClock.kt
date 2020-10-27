@@ -1,6 +1,6 @@
 package com.dragonbones.animation
 
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.klock.*
 
