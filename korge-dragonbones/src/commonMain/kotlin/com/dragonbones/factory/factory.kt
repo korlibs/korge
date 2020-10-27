@@ -33,6 +33,7 @@ import com.dragonbones.parser.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 
 /**
@@ -501,7 +502,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		val rname = name ?: data.name
 		if (rname in this._dragonBonesDataMap) {
 			if (this._dragonBonesDataMap[rname] == data) return
-			console.warn("Can not add same name data: $rname")
+			Console.warn("Can not add same name data: $rname")
 			return
 		}
 
@@ -719,7 +720,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 		if (!this._fillBuildArmaturePackage(dataPackage, dragonBonesName, armatureName, skinName,
 				textureAtlasName
 			)) {
-			console.warn("No armature data: $armatureName, $dragonBonesName")
+			Console.warn("No armature data: $armatureName, $dragonBonesName")
 			return null
 		}
 

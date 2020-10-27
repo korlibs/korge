@@ -32,6 +32,7 @@ import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 
 /**
@@ -323,11 +324,11 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 		this._lockUpdate = true
 
 		if (this._armatureData == null) {
-			console.warn("The armature has been disposed.")
+			Console.warn("The armature has been disposed.")
 			return
 		}
 		else if (this._armatureData?.parent == null) {
-			console.warn("The armature data has been disposed.\nPlease make sure dispose armature before call factory.clear().")
+			Console.warn("The armature data has been disposed.\nPlease make sure dispose armature before call factory.clear().")
 			return
 		}
 

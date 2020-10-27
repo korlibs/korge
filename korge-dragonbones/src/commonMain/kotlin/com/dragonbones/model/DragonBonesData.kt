@@ -25,6 +25,7 @@ package com.dragonbones.model
 import com.dragonbones.core.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 
 /**
@@ -192,7 +193,7 @@ class DragonBonesData(pool: SingleObjectPool<DragonBonesData>) : BaseObject(pool
 	 */
 	fun addArmature(value: ArmatureData) {
 		if (value.name in this.armatures) {
-			console.warn("Same armature: " + value.name)
+			Console.warn("Same armature: " + value.name)
 			return
 		}
 

@@ -7,3 +7,7 @@ actual inline fun Console.error(vararg msg: Any?) {
 actual inline fun Console.log(vararg msg: Any?) {
 	println(msg.joinToString(", "))
 }
+
+actual inline fun Console.warn(vararg msg: Any?) {
+    println(msg.joinToString(", "))
+}

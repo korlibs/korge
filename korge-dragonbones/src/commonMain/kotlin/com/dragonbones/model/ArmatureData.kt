@@ -29,6 +29,7 @@ import com.dragonbones.geom.Matrix
 import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.klogger.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
@@ -333,7 +334,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addBone(value: BoneData) {
 		if (value.name in this.bones) {
-			console.warn("Same bone: " + value.name)
+			Console.warn("Same bone: " + value.name)
 			return
 		}
 
@@ -346,7 +347,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addSlot(value: SlotData) {
 		if (value.name in this.slots) {
-			console.warn("Same slot: " + value.name)
+			Console.warn("Same slot: " + value.name)
 			return
 		}
 
@@ -359,7 +360,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addConstraint(value: ConstraintData) {
 		if (value.name in this.constraints) {
-			console.warn("Same constraint: " + value.name)
+			Console.warn("Same constraint: " + value.name)
 			return
 		}
 
@@ -371,7 +372,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addSkin(value: SkinData) {
 		if (value.name in this.skins) {
-			console.warn("Same skin: " + value.name)
+			Console.warn("Same skin: " + value.name)
 			return
 		}
 
@@ -391,7 +392,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addAnimation(value: AnimationData) {
 		if (value.name in this.animations) {
-			console.warn("Same animation: " + value.name)
+			Console.warn("Same animation: " + value.name)
 			return
 		}
 

@@ -29,6 +29,7 @@ import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.parser.ObjectDataParser.Companion.intArrayList
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import kotlin.math.*
@@ -899,7 +900,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			polygonBoundingBox.width -= polygonBoundingBox.x
 			polygonBoundingBox.height -= polygonBoundingBox.y
 		} else {
-			console.warn("Data error.\n Please reexport DragonBones Data to fixed the bug.")
+			Console.warn("Data error.\n Please reexport DragonBones Data to fixed the bug.")
 		}
 
 		return polygonBoundingBox
@@ -2424,7 +2425,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 			return data
 		} else {
-			console.assert(
+			Console.assert(
 				false,
 				"Nonsupport data version: " + version + "\n" +
 						"Please convert DragonBones data to support version.\n" +

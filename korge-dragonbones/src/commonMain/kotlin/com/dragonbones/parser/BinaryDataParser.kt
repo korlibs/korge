@@ -27,6 +27,7 @@ import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.serialization.json.*
 import kotlin.math.*
@@ -392,7 +393,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		val tag = NewUint8Buffer(rawData as MemBuffer, 0, 8)
         val data = rawData.getData()
 		if (tag[0] != 'D'.toInt() || tag[1] != 'B'.toInt() || tag[2] != 'D'.toInt() || tag[3] != 'T'.toInt()) {
-			console.assert(false, "Nonsupport data.")
+			Console.assert(false, "Nonsupport data.")
 			return null
 		}
 
