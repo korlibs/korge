@@ -51,7 +51,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
     //val font = resourcesVfs["font1.fnt"].readBitmapFont()
     //val font = DefaultTtfFont
-    val bunnyCountText = text("", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
+    val bunnyCountText = text("", font = font, textSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
     //val container = container()
 
     val bunnys = arrayListOf<Bunny>()

@@ -7,6 +7,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.html.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -205,9 +206,11 @@ class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbol
 	override fun createInstance(): View = symbol.create(library) as View
 }
 
+@OptIn(KorgeDeprecated::class)
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(),
 	AnElement, IText, IHtml, ViewLeaf {
-	private val textField = TextOld("", 16.0).apply {
+    private val textField = TextOld("", 16.0).apply {
+        fontsCatalog = library.fontsCatalog
 		textBounds.copyFrom(this@AnTextField.symbol.bounds)
 		html = this@AnTextField.symbol.initialHtml
 		relayout()

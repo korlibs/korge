@@ -1,7 +1,6 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
@@ -48,7 +47,7 @@ open class UITextButton(
 
 	private fun updateText() {
         textView.font = textFont
-        textView.fontSize = textSize.toDouble()
+        textView.textSize = textSize.toDouble()
         textView.color = textColor
         textView.alignment = textAlignment
 		textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
@@ -58,7 +57,7 @@ open class UITextButton(
 	private fun updateShadow() {
 		textShadow.visible = shadowVisible
         textView.font = textFont
-        textView.fontSize = textSize.toDouble()
+        textView.textSize = textSize.toDouble()
         textView.color = shadowColor
         textView.alignment = textAlignment
 		textShadow.setTextBounds(Rectangle(0.0, 0.0, width, height))

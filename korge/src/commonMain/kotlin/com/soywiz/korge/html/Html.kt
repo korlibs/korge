@@ -11,6 +11,14 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 object Html {
+    class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) {
+        fun String.normalize() = this.toLowerCase().trim()
+        fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
+        fun getBitmapFont(name: String): Font = fonts[name.normalize()] ?: default ?: SystemFont(name)
+    }
+
+    val DefaultFontsCatalog = FontsCatalog(null, mapOf())
+
 	data class Format(
         override var parent: Format? = null,
         var color: RGBA? = null,
@@ -137,7 +145,7 @@ object Html {
 		}
 	}
 
-	class HtmlParser {
+	class HtmlParser(val fontsCatalog: FontsCatalog) {
 		val document = Document()
 		var currentLine = Line()
 		var currentParagraph = Paragraph()
@@ -180,7 +188,7 @@ object Html {
 						else -> format.align
 					}
 					val face = xml.strNull("face")
-					format.face = if (face != null) SystemFont(face) else format.face
+					format.face = if (face != null) fontsCatalog.getBitmapFont(face) else format.face
 					format.size = xml.intNull("size") ?: format.size
 					format.letterSpacing = xml.doubleNull("letterSpacing") ?: format.letterSpacing
 					format.kerning = xml.intNull("kerning") ?: format.kerning
@@ -207,5 +215,5 @@ object Html {
 		}
 	}
 
-	fun parse(html: String): Document = HtmlParser().apply { parse(html) }.document
+	fun parse(html: String, fontsCatalog: FontsCatalog = DefaultFontsCatalog): Document = HtmlParser(fontsCatalog).apply { parse(html) }.document
 }

@@ -37,9 +37,6 @@ open class NativeSystemFontProvider {
         = 0.0
 }
 
-// @TODO: We can check the system's font directory with a VfsFile folder,
-// @TODO: then construct a catalog parsing the TTF files as a way of getting system fonts
-
 // Windows: C:\Windows\Fonts (%DRIVE%)
 // Linux: /usr/share/fonts , /usr/local/share/fonts and ~/.fonts
 // MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts

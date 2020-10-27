@@ -20,7 +20,7 @@ private suspend fun Stage3D.orbit(v: View3D, distance: Double, time: TimeSpan) {
 }
 
 class Button(text: String, handler: suspend () -> Unit) : Container() {
-	val textField = Text(text, fontSize = 32.0).apply { smoothing = false }
+	val textField = Text(text, textSize = 32.0).apply { smoothing = false }
 	private val bounds = textField.textBounds
 	val g = Graphics().apply {
 		fill(Colors.DARKGREY, 0.7) {

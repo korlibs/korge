@@ -16,6 +16,7 @@ inline fun Container.textOld(
 	textSize: Double = 16.0,
 	color: RGBA = Colors.WHITE,
 	font: BitmapFont = Fonts.defaultFont,
+    fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
 	callback: @ViewDslMarker TextOld.() -> Unit = {}
 ) = TextOld(text, textSize = textSize, color = color, font = font).addTo(this, callback)
 
@@ -26,14 +27,17 @@ class TextOld : View(), IText, IHtml {
 			text: String,
 			textSize: Double = 16.0,
 			color: RGBA = Colors.WHITE,
-			font: BitmapFont = Fonts.defaultFont
+			font: BitmapFont = Fonts.defaultFont,
+            fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
 		): TextOld = TextOld().apply {
 			this.format = Html.Format(color = color, face = font, size = textSize.toInt())
 			if (text != "") this.text = text
+            this.fontsCatalog = fontsCatalog
 		}
 	}
 
 	//var verticalAlign: Html.VerticalAlignment = Html.VerticalAlignment.TOP
+    var fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog
 	val textBounds = Rectangle(0, 0, 1024, 1024)
 	private val tempRect = Rectangle()
 	var _text: String = ""
@@ -96,7 +100,7 @@ class TextOld : View(), IText, IHtml {
 	override var html: String
 		get() = if (document != null) _html else _text
 		set(value) {
-			document = Html.parse(value)
+			document = Html.parse(value, fontsCatalog)
 			relayout()
 			document!!.defaultFormat.parent = format
 			_text = ""

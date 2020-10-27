@@ -33,16 +33,16 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-        text: String, fontSize: Double = 64.0,
-        color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
-        alignment: TextAlignment = TextAlignment.TOP_LEFT,
-        noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
-        block: @ViewDslMarker Text.() -> Unit = {}
+    text: String, textSize: Double = 64.0,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
+    alignment: TextAlignment = TextAlignment.TOP_LEFT,
+    noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
+    block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, fontSize, color, font, alignment, renderer).addTo(this, block)
+    = Text(text, textSize, color, font, alignment, renderer).addTo(this, block)
 
 open class Text(
-    text: String, fontSize: Double = 64.0,
+    text: String, textSize: Double = 64.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer
@@ -52,7 +52,7 @@ open class Text(
     object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
         add(Text::text, "Text")
         add(Text::fontSource)
-        add(Text::fontSize, 10.0)
+        add(Text::textSize, 10.0)
         add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
         add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
         //view.fontSource = xml.str("fontSource", "")
@@ -76,7 +76,10 @@ open class Text(
     var text: String = text; set(value) { if (field != value) { field = value; version++ } }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
     var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
-    var fontSize: Double = fontSize; set(value) { if (field != value) { field = value; version++ } }
+    var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
+    var fontSize: Double
+        get() = textSize
+        set(value) { textSize = value }
     var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
 
     var alignment: TextAlignment = alignment; set(value) { if (field != value) { field = value; version++ } }
@@ -132,7 +135,7 @@ open class Text(
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(fontSize, text, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, renderer = renderer)
             textBounds.copyFrom(metrics.bounds)
         }
 
@@ -148,7 +151,7 @@ open class Text(
                 bitmapFontActions.mreset()
                 bitmapFontActions.verticalAlign = verticalAlign
                 bitmapFontActions.horizontalAlign = horizontalAlign
-                renderer(bitmapFontActions, text, fontSize, font)
+                renderer(bitmapFontActions, text, textSize, font)
                 while (container.numChildren < bitmapFontActions.arrayTex.size) {
                     container.image(Bitmaps.transparent)
                 }
@@ -177,7 +180,7 @@ open class Text(
             else -> {
                 if (cachedVersion != version) {
                     cachedVersion = version
-                    textToBitmapResult = font.renderTextToBitmap(fontSize, text, paint = Colors.WHITE, fill = true, renderer = renderer)
+                    textToBitmapResult = font.renderTextToBitmap(textSize, text, paint = Colors.WHITE, fill = true, renderer = renderer)
 
                     val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                     val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
@@ -202,7 +205,7 @@ open class Text(
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection("Text") {
             uiEditableValue(::text)
-            uiEditableValue(::fontSize, min= 1.0, max = 300.0)
+            uiEditableValue(::textSize, min= 1.0, max = 300.0)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
