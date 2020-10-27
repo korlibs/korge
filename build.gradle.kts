@@ -23,14 +23,13 @@ buildscript {
 }
 
 plugins {
+    val kotlinVersion: String by project
 	java
-    //kotlin("multiplatform") version "1.4.10"
-    //kotlin("multiplatform") version "1.4.20-M2"
-    kotlin("multiplatform") version "1.4.20-RC-202"
-
-
+    kotlin("multiplatform") version kotlinVersion
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
+
+val kotlinVersion: String by project
 
 //println(KotlinVersion.CURRENT)
 
@@ -599,7 +598,9 @@ samples {
 
 val buildVersionsFile = file("korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt")
 val oldBuildVersionsText = buildVersionsFile.readText()
-val newBuildVersionsText = oldBuildVersionsText.replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
+val newBuildVersionsText = oldBuildVersionsText
+    .replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
+    .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${kotlinVersion}\"")
 if (oldBuildVersionsText != newBuildVersionsText) {
     buildVersionsFile.writeText(newBuildVersionsText)
 }
