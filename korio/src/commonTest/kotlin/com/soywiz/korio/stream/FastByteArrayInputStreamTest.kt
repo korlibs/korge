@@ -10,7 +10,7 @@ class FastByteArrayInputStreamTest {
 		assertEquals(4, v.available)
 		assertEquals("01020304", "%08X".format(v.readS32BE()))
 		assertEquals(0, v.available)
-		assertEquals(4, v.offset)
+		assertEquals(4, v.position)
 		assertEquals(4, v.length)
 	}
 }

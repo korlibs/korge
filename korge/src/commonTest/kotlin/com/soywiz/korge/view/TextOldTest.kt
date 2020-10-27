@@ -1,10 +1,11 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
-class TextTest {
+class TextOldTest {
     @Test
     fun testRender() {
         val vertices = arrayListOf<List<VertexInfo>>()
@@ -30,6 +31,12 @@ class TextTest {
             vertices.map { it.map { it.xy } }
         )
         //println(ag.log)
+    }
+
+    @Test
+    fun testDebugFontSize() {
+        assertEquals(8.0, debugBmpFont.fontSize)
+        assertEquals(Size(192, 192), debugBmpFont.baseBmp.size)
     }
 
     @Test

@@ -7,7 +7,7 @@ import kotlin.math.*
 
 class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: Int = 0, val end: Int = ba.size) {
     private var offset = offset + start
-    val position get() = start - offset
+    val position get() = offset - start
 	val length: Int get() = end - start
 	val available: Int get() = end - offset
 	val hasMore: Boolean get() = available > 0
@@ -135,6 +135,7 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 
 	// Tools
 	private inline fun <T> increment(count: Int, callback: () -> T): T {
+        if (offset + count > end) throw EOFException("${offset + count} > $end")
 		val out = callback()
 		offset += count
 		return out

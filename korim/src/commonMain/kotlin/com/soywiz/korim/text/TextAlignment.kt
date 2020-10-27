@@ -7,7 +7,7 @@ data class TextAlignment(
     val vertical: VerticalAlign,
 ) {
     val justified get() = horizontal == HorizontalAlign.JUSTIFY
-    val anchor: Anchor = Anchor(horizontal.ratio, vertical.ratio)
+    val anchor: Anchor = Anchor(horizontal.ratioFake, vertical.ratioFake)
 
     fun withHorizontal(horizontal: HorizontalAlign) = fromAlign(horizontal, vertical)
     fun withVertical(vertical: VerticalAlign) = fromAlign(horizontal, vertical)
@@ -30,10 +30,10 @@ data class TextAlignment(
         val BASELINE_RIGHT = BASELINE[2]
         val BASELINE_JUSTIFIED = BASELINE[3]
 
-        val LEFT = BASELINE[0]
-        val CENTER = BASELINE[1]
-        val RIGHT = BASELINE[2]
-        val JUSTIFIED = BASELINE[3]
+        val LEFT = TOP[0]
+        val CENTER = TOP[1]
+        val RIGHT = TOP[2]
+        val JUSTIFIED = TOP[3]
 
         val MIDDLE_LEFT = MIDDLE[0]
         val MIDDLE_CENTER = MIDDLE[1]
@@ -65,6 +65,8 @@ data class TextAlignment(
 }
 
 inline class VerticalAlign(val ratio: Double) {
+    val ratioFake get() = if (this == BASELINE) 1.0 else ratio
+
     companion object {
         val TOP = VerticalAlign(0.0)
         val MIDDLE = VerticalAlign(0.5)
@@ -95,6 +97,8 @@ inline class VerticalAlign(val ratio: Double) {
 }
 
 inline class HorizontalAlign(val ratio: Double) {
+    val ratioFake get() = if (this == JUSTIFY) 0.0 else ratio
+
     companion object {
         val JUSTIFY = HorizontalAlign(-0.00001)
         val LEFT = HorizontalAlign(0.0)

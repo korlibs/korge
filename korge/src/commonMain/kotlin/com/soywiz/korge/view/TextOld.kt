@@ -179,6 +179,7 @@ class TextOld : View(), IText, IHtml {
 
 	private fun recalculateBounds() {
         fontsCatalog.getBounds(text, format, out = textBounds)
+        //println("textBounds: $textBounds")
 	}
 
 	private fun recalculateBoundsWhenRequired() {
@@ -196,6 +197,7 @@ class TextOld : View(), IText, IHtml {
 				out.copyFrom(textBounds)
 			}
 		}
+        //println("getLocalBoundsInternal=$out")
 	}
 
 	override fun createInstance(): View = TextOld()

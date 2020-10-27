@@ -4,6 +4,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.paint.LinearGradientPaint
+import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.degrees

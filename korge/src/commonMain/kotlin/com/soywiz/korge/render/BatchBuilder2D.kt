@@ -32,9 +32,9 @@ class BatchBuilder2D constructor(
     /** Maximum number of quads that could be drawn in a single batch.
      * Bigger numbers will increase memory usage, but might reduce the number of batches per frame when using the same texture and properties.
      */
-    //val maxQuads: Int = 4096
+    val maxQuads: Int = 4096
     //val maxQuads: Int = 8096
-    val maxQuads: Int = 16384
+    //val maxQuads: Int = 16384
     //val maxQuads: Int = 16383
 ) {
     val texManager = ctx.agBitmapTextureManager
