@@ -25,6 +25,11 @@ data class TextAlignment(
         val TOP_RIGHT = TOP[2]
         val TOP_JUSTIFIED = TOP[3]
 
+        val BASELINE_LEFT = BASELINE[0]
+        val BASELINE_CENTER = BASELINE[1]
+        val BASELINE_RIGHT = BASELINE[2]
+        val BASELINE_JUSTIFIED = BASELINE[3]
+
         val LEFT = BASELINE[0]
         val CENTER = BASELINE[1]
         val RIGHT = BASELINE[2]
