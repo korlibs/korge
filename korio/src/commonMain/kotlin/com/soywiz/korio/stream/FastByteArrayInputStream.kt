@@ -135,7 +135,7 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 
 	// Tools
 	private inline fun <T> increment(count: Int, callback: () -> T): T {
-        if (offset + count > end) throw EOFException("${offset + count} > $end")
+        //if (offset + count > end) throw EOFException("${offset + count} > $end")
 		val out = callback()
 		offset += count
 		return out

@@ -27,7 +27,6 @@ package com.dragonbones.armature
 import com.dragonbones.animation.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
-import com.dragonbones.geom.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*

@@ -26,7 +26,6 @@ package com.dragonbones.armature
 
 import com.dragonbones.core.*
 import com.dragonbones.event.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length

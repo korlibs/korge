@@ -25,7 +25,6 @@ package com.soywiz.korge.dragonbones
 
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kmem.*

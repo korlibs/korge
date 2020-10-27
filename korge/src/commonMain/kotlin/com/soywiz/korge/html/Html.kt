@@ -14,10 +14,10 @@ object Html {
     class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) : MetricsProvider {
         fun String.normalize() = this.toLowerCase().trim()
         fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
-        fun getBitmapFont(name: String): Font = fonts[name.normalize()] ?: default ?: SystemFont(name)
+        fun getBitmapFont(name: String, font: Font? = null): Font = fonts[name.normalize()] ?: font ?: default ?: SystemFont(name)
         override fun getBounds(text: String, format: Format, out: Rectangle) {
-            getBitmapFont(format.computedFace.name).getBounds(text, format, out)
-            //getBitmapFont(format.computedFace, format.computedSize).getBounds(text, format, out)
+            val font = format.computedFace
+            getBitmapFont(font.name, font).getBounds(text, format, out)
         }
     }
 

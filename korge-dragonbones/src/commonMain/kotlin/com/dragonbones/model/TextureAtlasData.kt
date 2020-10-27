@@ -23,9 +23,6 @@
 package com.dragonbones.model
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
-import com.soywiz.kds.iterators.*
-import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.klogger.*
 import com.soywiz.korma.geom.*
