@@ -218,7 +218,7 @@ class OpenALNativeSoundNoStream(
                     AL_PLAYING -> SoundChannelState.PLAYING
                     AL_PAUSED -> SoundChannelState.PAUSED
                     AL_STOPPED -> SoundChannelState.STOPPED
-                    else -> error("Invalid alGetSourceState $result")
+                    else -> SoundChannelState.STOPPED
                 }
             }
 

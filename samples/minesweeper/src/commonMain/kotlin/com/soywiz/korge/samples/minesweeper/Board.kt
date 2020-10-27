@@ -45,11 +45,10 @@ class Board(
 		// Creating text with time
 		//timeText = new Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, new Font("Arial", 40));
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
-		val FONT_HEIGHT = 24.0
-		//timeText = text("00:00", font = DefaultTtfFont.toBitmapFont(32), textSize = FONT_HEIGHT).apply {
-        timeText = Text("00:00", textSize = FONT_HEIGHT).apply {
+		val FONT_HEIGHT = 32.0
+        timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.width)
-			y = -FONT_HEIGHT - 5
+			y = -FONT_HEIGHT - 16
 			alignment = TextAlignment.CENTER
 		}
 

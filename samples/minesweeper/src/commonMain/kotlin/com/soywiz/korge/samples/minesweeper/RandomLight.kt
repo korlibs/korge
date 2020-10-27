@@ -42,7 +42,9 @@ class RandomLight(
 			y = h2 - sin(rotation) * h2 * excy + sy
 			scale = 1 + (cos(rotation) / 6) * incs
 
-			// Check if a light sphere collided with another one
+            //println("FRAME! $x -> $x2")
+
+            // Check if a light sphere collided with another one
 			// The default collision system is inner circle
 			if (this.collision<RandomLight>() != null) {
 				alpha = (alpha + 0.01).coerceIn(0.1, 0.8)
