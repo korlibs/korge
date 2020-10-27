@@ -25,6 +25,7 @@ package com.soywiz.korge.dragonbones
 
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
+import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kmem.*
@@ -313,8 +314,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 						yL += deformVertices[iF++].toFloat()
 					}
 
-					xG += matrix.transformX(xL.toFloat(), yL.toFloat()) * weight
-					yG += matrix.transformY(xL.toFloat(), yL.toFloat()) * weight
+					xG += matrix.transformXDb(xL.toFloat(), yL.toFloat()) * weight
+					yG += matrix.transformYDb(xL.toFloat(), yL.toFloat()) * weight
 				}
 
 				meshDisplay.vertices[iD++] = xG
@@ -347,8 +348,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 				if (isSurface) {
 					val matrix = (this._parent as Surface)._getGlobalTransformMatrix(x, y)
 
-					meshDisplay.vertices[i + 0] = matrix.transformX(x, y).toFloat()
-					meshDisplay.vertices[i + 1] = matrix.transformY(x, y).toFloat()
+					meshDisplay.vertices[i + 0] = matrix.transformXDb(x, y).toFloat()
+					meshDisplay.vertices[i + 1] = matrix.transformYDb(x, y).toFloat()
 				} else {
 					meshDisplay.vertices[i + 0] = x.toFloat()
 					meshDisplay.vertices[i + 1] = y.toFloat()
@@ -369,8 +370,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
         val rd = this._renderDisplay
 
 		if (rd === this._rawDisplay || rd === this._meshDisplay) {
-			val x = transform.xf - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
-			val y = transform.yf - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
+			val x = transform.xf - (this.globalTransformMatrix.af * this._pivotX + this.globalTransformMatrix.cf * this._pivotY)
+			val y = transform.yf - (this.globalTransformMatrix.bf * this._pivotX + this.globalTransformMatrix.df * this._pivotY)
             if (rd != null) {
                 rd.position(x, y)
                 rd.scale(transform.scaleX * this._textureScale, transform.scaleY * this._textureScale)

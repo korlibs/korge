@@ -25,6 +25,30 @@ data class Matrix(
         operator fun invoke(m: Matrix, out: Matrix = Matrix()): Matrix = out.copyFrom(m)
     }
 
+    var af: Float
+        get() = a.toFloat()
+        set(value) { a = value.toDouble() }
+
+    var bf: Float
+        get() = b.toFloat()
+        set(value) { b = value.toDouble() }
+
+    var cf: Float
+        get() = c.toFloat()
+        set(value) { c = value.toDouble() }
+
+    var df: Float
+        get() = d.toFloat()
+        set(value) { d = value.toDouble() }
+
+    var txf: Float
+        get() = tx.toFloat()
+        set(value) { tx = value.toDouble() }
+
+    var tyf: Float
+        get() = ty.toFloat()
+        set(value) { ty = value.toDouble() }
+
     enum class Type(val id: Int, val hasRotation: Boolean, val hasScale: Boolean, val hasTranslation: Boolean) {
         IDENTITY(1, hasRotation = false, hasScale = false, hasTranslation = false),
         TRANSLATE(2, hasRotation = false, hasScale = false, hasTranslation = true),
@@ -149,7 +173,12 @@ data class Matrix(
     )
 
     /** Transform point without translation */
-    fun deltaTransformPoint(point: IPoint) = IPoint(point.x * a + point.y * c, point.x * b + point.y * d)
+    fun deltaTransformPoint(point: IPoint, out: XY = Point()) = deltaTransformPoint(point.x, point.y, out)
+    fun deltaTransformPoint(x: Double, y: Double, out: XY = Point()): XY {
+        out.x = (x * a) + (y * c)
+        out.y = (x * b) + (y * d)
+        return out
+    }
 
     fun identity() = setTo(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
@@ -173,6 +202,8 @@ data class Matrix(
 
         return this
     }
+
+    fun concat(value: Matrix): Matrix = this.multiply(this, value)
 
     fun inverted(out: Matrix = Matrix()) = out.invert(this)
 
@@ -233,6 +264,16 @@ data class Matrix(
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
     fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+
+    fun copyFromArray(value: FloatArray, offset: Int = 0): Matrix = setTo(
+        value[offset + 0], value[offset + 1], value[offset + 2],
+        value[offset + 3], value[offset + 4], value[offset + 5]
+    )
+
+    fun copyFromArray(value: DoubleArray, offset: Int = 0): Matrix = setTo(
+        value[offset + 0].toFloat(), value[offset + 1].toFloat(), value[offset + 2].toFloat(),
+        value[offset + 3].toFloat(), value[offset + 4].toFloat(), value[offset + 5].toFloat()
+    )
 
     data class Transform(
         var x: Double = 0.0, var y: Double = 0.0,

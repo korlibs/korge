@@ -4,7 +4,6 @@ import com.dragonbones.animation.*
 import com.dragonbones.armature.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
-import com.dragonbones.geom.Matrix
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*

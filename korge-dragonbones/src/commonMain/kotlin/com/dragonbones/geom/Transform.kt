@@ -206,13 +206,13 @@ class Transform
 		val backupScaleY = this.scaleY
 		val PI_Q = Transform.PI_Q
 
-		this.xf = matrix.tx
-		this.yf = matrix.ty
-		this.rotation = atan(matrix.b / matrix.a)
-		var skewX = atan(-matrix.c / matrix.d)
+		this.xf = matrix.txf
+		this.yf = matrix.tyf
+		this.rotation = atan(matrix.bf / matrix.af)
+		var skewX = atan(-matrix.cf / matrix.df)
 
-		this.scaleX = if (this.rotation > -PI_Q && this.rotation < PI_Q) matrix.a / cos(this.rotation) else matrix.b / sin(this.rotation)
-		this.scaleY = if (skewX > -PI_Q && skewX < PI_Q) matrix.d / cos(skewX) else -matrix.c / sin(skewX)
+		this.scaleX = if (this.rotation > -PI_Q && this.rotation < PI_Q) matrix.af / cos(this.rotation) else matrix.bf / sin(this.rotation)
+		this.scaleY = if (skewX > -PI_Q && skewX < PI_Q) matrix.df / cos(skewX) else -matrix.cf / sin(skewX)
 
 		if (backupScaleX >= 0f && this.scaleX < 0f) {
 			this.scaleX = -this.scaleX
@@ -234,70 +234,35 @@ class Transform
 	 */
 	fun toMatrix(matrix: Matrix): Transform {
 		if (this.rotation == 0f) {
-			matrix.a = 1f
-			matrix.b = 0f
+			matrix.af = 1f
+			matrix.bf = 0f
 		}
 		else {
-			matrix.a = cos(this.rotation)
-			matrix.b = sin(this.rotation)
+			matrix.af = cos(this.rotation)
+			matrix.bf = sin(this.rotation)
 		}
 
 		if (this.skew == 0f) {
-			matrix.c = -matrix.b
-			matrix.d = matrix.a
+			matrix.cf = -matrix.bf
+			matrix.df = matrix.af
 		}
 		else {
-			matrix.c = -sin(this.skew + this.rotation)
-			matrix.d = cos(this.skew + this.rotation)
+			matrix.cf = -sin(this.skew + this.rotation)
+			matrix.df = cos(this.skew + this.rotation)
 		}
 
 		if (this.scaleX != 1f) {
-			matrix.a *= this.scaleX
-			matrix.b *= this.scaleX
+			matrix.af *= this.scaleX
+			matrix.bf *= this.scaleX
 		}
 
 		if (this.scaleY != 1f) {
-			matrix.c *= this.scaleY
-			matrix.d *= this.scaleY
+			matrix.cf *= this.scaleY
+			matrix.df *= this.scaleY
 		}
 
-		matrix.tx = this.xf
-		matrix.ty = this.yf
-
-		return this
-	}
-
-	fun toMatrix2d(matrix: com.soywiz.korma.geom.Matrix): Transform {
-		if (this.rotation == 0f) {
-			matrix.a = 1.0
-			matrix.b = 0.0
-		}
-		else {
-			matrix.a = cos(this.rotation).toDouble()
-			matrix.b = sin(this.rotation).toDouble()
-		}
-
-		if (this.skew == 0f) {
-			matrix.c = -matrix.b
-			matrix.d = matrix.a
-		}
-		else {
-			matrix.c = (-sin(this.skew + this.rotation)).toDouble()
-			matrix.d = cos(this.skew + this.rotation).toDouble()
-		}
-
-		if (this.scaleX != 1f) {
-			matrix.a *= this.scaleX
-			matrix.b *= this.scaleX
-		}
-
-		if (this.scaleY != 1f) {
-			matrix.c *= this.scaleY
-			matrix.d *= this.scaleY
-		}
-
-		matrix.tx = this.xf.toDouble()
-		matrix.ty = this.yf.toDouble()
+		matrix.txf = this.xf
+		matrix.tyf = this.yf
 
 		return this
 	}

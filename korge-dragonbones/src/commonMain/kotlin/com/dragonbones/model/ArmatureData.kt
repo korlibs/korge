@@ -24,7 +24,6 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
-import com.dragonbones.geom.Matrix
 import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
@@ -295,12 +294,12 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 		val arrayOffset = dataArray.size
 
 		dataArray.lengthSet += 10
-		dataArray[arrayOffset] = globalTransformMatrix.a.toDouble()
-		dataArray[arrayOffset + 1] = globalTransformMatrix.b.toDouble()
-		dataArray[arrayOffset + 2] = globalTransformMatrix.c.toDouble()
-		dataArray[arrayOffset + 3] = globalTransformMatrix.d.toDouble()
-		dataArray[arrayOffset + 4] = globalTransformMatrix.tx.toDouble()
-		dataArray[arrayOffset + 5] = globalTransformMatrix.ty.toDouble()
+		dataArray[arrayOffset] = globalTransformMatrix.af.toDouble()
+		dataArray[arrayOffset + 1] = globalTransformMatrix.bf.toDouble()
+		dataArray[arrayOffset + 2] = globalTransformMatrix.cf.toDouble()
+		dataArray[arrayOffset + 3] = globalTransformMatrix.df.toDouble()
+		dataArray[arrayOffset + 4] = globalTransformMatrix.txf.toDouble()
+		dataArray[arrayOffset + 5] = globalTransformMatrix.tyf.toDouble()
 		dataArray[arrayOffset + 6] = transform.rotation.toDouble()
 		dataArray[arrayOffset + 7] = transform.skew.toDouble()
 		dataArray[arrayOffset + 8] = transform.scaleX.toDouble()
@@ -314,18 +313,18 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun getCacheFrame(globalTransformMatrix: Matrix, transform: Transform, arrayOffset: Int) {
 		val dataArray = this.parent!!.cachedFrames
-		globalTransformMatrix.a = dataArray[arrayOffset].toFloat()
-		globalTransformMatrix.b = dataArray[arrayOffset + 1].toFloat()
-		globalTransformMatrix.c = dataArray[arrayOffset + 2].toFloat()
-		globalTransformMatrix.d = dataArray[arrayOffset + 3].toFloat()
-		globalTransformMatrix.tx = dataArray[arrayOffset + 4].toFloat()
-		globalTransformMatrix.ty = dataArray[arrayOffset + 5].toFloat()
+		globalTransformMatrix.af = dataArray[arrayOffset].toFloat()
+		globalTransformMatrix.bf = dataArray[arrayOffset + 1].toFloat()
+		globalTransformMatrix.cf = dataArray[arrayOffset + 2].toFloat()
+		globalTransformMatrix.df = dataArray[arrayOffset + 3].toFloat()
+		globalTransformMatrix.txf = dataArray[arrayOffset + 4].toFloat()
+		globalTransformMatrix.tyf = dataArray[arrayOffset + 5].toFloat()
 		transform.rotation = dataArray[arrayOffset + 6].toFloat()
 		transform.skew = dataArray[arrayOffset + 7].toFloat()
 		transform.scaleX = dataArray[arrayOffset + 8].toFloat()
 		transform.scaleY = dataArray[arrayOffset + 9].toFloat()
-		transform.xf = globalTransformMatrix.tx
-		transform.yf = globalTransformMatrix.ty
+		transform.xf = globalTransformMatrix.txf
+		transform.yf = globalTransformMatrix.tyf
 	}
 
 	/**

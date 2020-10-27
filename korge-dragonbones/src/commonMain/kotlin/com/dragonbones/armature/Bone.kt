@@ -193,16 +193,16 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					(surfaceBone as Bone).updateGlobalTransform()
 					global.scaleX *= surfaceBone.global.scaleX
 					global.scaleY *= surfaceBone.global.scaleY
-					parentMatrix.transformPoint(global.xf, global.yf, global)
+					parentMatrix.transformPointDb(global.xf, global.yf, global)
 					global.toMatrix(globalTransformMatrix)
 
 					if (boneData.inheritTranslation) {
-						global.xf = globalTransformMatrix.tx
-						global.yf = globalTransformMatrix.ty
+						global.xf = globalTransformMatrix.txf
+						global.yf = globalTransformMatrix.tyf
 					}
 					else {
-						globalTransformMatrix.tx = global.xf
-						globalTransformMatrix.ty = global.yf
+						globalTransformMatrix.txf = global.xf
+						globalTransformMatrix.tyf = global.yf
 					}
 				}
 				else {
@@ -229,12 +229,12 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					globalTransformMatrix.concat(parentMatrix)
 
 					if (boneData.inheritTranslation) {
-						global.xf = globalTransformMatrix.tx
-						global.yf = globalTransformMatrix.ty
+						global.xf = globalTransformMatrix.txf
+						global.yf = globalTransformMatrix.tyf
 					}
 					else {
-						globalTransformMatrix.tx = global.xf
-						globalTransformMatrix.ty = global.yf
+						globalTransformMatrix.txf = global.xf
+						globalTransformMatrix.tyf = global.yf
 					}
 
 					if (isCache) {
@@ -249,8 +249,8 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 				if (boneData.inheritTranslation) {
 					val x = global.xf
 					val y = global.yf
-					global.xf = parentMatrix.a * x + parentMatrix.c * y + parentMatrix.tx
-					global.yf = parentMatrix.b * x + parentMatrix.d * y + parentMatrix.ty
+					global.xf = parentMatrix.af * x + parentMatrix.cf * y + parentMatrix.txf
+					global.yf = parentMatrix.bf * x + parentMatrix.df * y + parentMatrix.tyf
 				}
 				else {
 					if (flipX) {
@@ -272,7 +272,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 						rotation = (global.rotation + parent.global.rotation).toDouble()
 					}
 
-					if (parentMatrix.a * parentMatrix.d - parentMatrix.b * parentMatrix.c < 0.0) {
+					if (parentMatrix.af * parentMatrix.df - parentMatrix.bf * parentMatrix.cf < 0.0) {
 						rotation -= global.rotation * 2.0
 
 						if (flipX != flipY || boneData.inheritReflection) {

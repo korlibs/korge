@@ -27,7 +27,6 @@ package com.dragonbones.armature
 import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.geom.*
-import com.dragonbones.geom.Matrix
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
@@ -465,13 +464,13 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 				if (rawDisplayData != null && imageDisplayData != rawDisplayData) {
 					rawDisplayData.transform.toMatrix(_helpMatrix)
 					_helpMatrix.invert()
-					_helpMatrix.transformPoint(0f, 0f, _helpPoint)
+					_helpMatrix.transformPointDb(0f, 0f, _helpPoint)
 					this._pivotX -= _helpPoint.xf
 					this._pivotY -= _helpPoint.yf
 
 					imageDisplayData.transform.toMatrix(_helpMatrix)
 					_helpMatrix.invert()
-					_helpMatrix.transformPoint(0f, 0f, _helpPoint)
+					_helpMatrix.transformPointDb(0f, 0f, _helpPoint)
 					this._pivotX += _helpPoint.xf
 					this._pivotY += _helpPoint.yf
 				}
@@ -998,7 +997,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 
 		_helpMatrix.copyFrom(this.globalTransformMatrix)
 		_helpMatrix.invert()
-		_helpMatrix.transformPoint(x, y, _helpPoint)
+		_helpMatrix.transformPointDb(x, y, _helpPoint)
 
 		return this._boundingBoxData!!.containsPoint(_helpPoint.xf.toDouble(), _helpPoint.yf.toDouble())
 	}
@@ -1045,10 +1044,10 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 		this.updateTransformAndMatrix()
 		_helpMatrix.copyFrom(this.globalTransformMatrix)
 		_helpMatrix.invert()
-		_helpMatrix.transformPoint(xA, yA, _helpPoint)
+		_helpMatrix.transformPointDb(xA, yA, _helpPoint)
 		val xA = _helpPoint.xf
 		val yA = _helpPoint.yf
-		_helpMatrix.transformPoint(xB, yB, _helpPoint)
+		_helpMatrix.transformPointDb(xB, yB, _helpPoint)
 		val xB = _helpPoint.xf
 		val yB = _helpPoint.yf
 
@@ -1057,31 +1056,31 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 		if (intersectionCount > 0) {
 			if (intersectionCount == 1 || intersectionCount == 2) {
 				if (intersectionPointA != null) {
-					this.globalTransformMatrix.transformPoint(intersectionPointA.xf, intersectionPointA.yf, intersectionPointA)
+					this.globalTransformMatrix.transformPointDb(intersectionPointA.xf, intersectionPointA.yf, intersectionPointA)
 					if (intersectionPointB != null) {
 						intersectionPointB.xf = intersectionPointA.xf
 						intersectionPointB.yf = intersectionPointA.yf
 					}
 				}
 				else if (intersectionPointB != null) {
-					this.globalTransformMatrix.transformPoint(intersectionPointB.xf, intersectionPointB.yf, intersectionPointB)
+					this.globalTransformMatrix.transformPointDb(intersectionPointB.xf, intersectionPointB.yf, intersectionPointB)
 				}
 			}
 			else {
 				if (intersectionPointA != null) {
-					this.globalTransformMatrix.transformPoint(intersectionPointA.xf, intersectionPointA.yf, intersectionPointA)
+					this.globalTransformMatrix.transformPointDb(intersectionPointA.xf, intersectionPointA.yf, intersectionPointA)
 				}
 
 				if (intersectionPointB != null) {
-					this.globalTransformMatrix.transformPoint(intersectionPointB.xf, intersectionPointB.yf, intersectionPointB)
+					this.globalTransformMatrix.transformPointDb(intersectionPointB.xf, intersectionPointB.yf, intersectionPointB)
 				}
 			}
 
 			if (normalRadians != null) {
-				this.globalTransformMatrix.transformPoint(cos(normalRadians.xf), sin(normalRadians.xf), _helpPoint, true)
+				this.globalTransformMatrix.transformPointDb(cos(normalRadians.xf), sin(normalRadians.xf), _helpPoint, true)
 				normalRadians.xf = atan2(_helpPoint.yf, _helpPoint.xf)
 
-				this.globalTransformMatrix.transformPoint(cos(normalRadians.yf), sin(normalRadians.yf), _helpPoint, true)
+				this.globalTransformMatrix.transformPointDb(cos(normalRadians.yf), sin(normalRadians.yf), _helpPoint, true)
 				normalRadians.yf = atan2(_helpPoint.yf, _helpPoint.xf)
 			}
 		}

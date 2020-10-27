@@ -19,9 +19,9 @@ interface IPoint {
     }
 }
 
-interface XY {
-    var x: Double
-    var y: Double
+interface XY : IPoint {
+    override var x: Double
+    override var y: Double
 }
 
 interface XYf {

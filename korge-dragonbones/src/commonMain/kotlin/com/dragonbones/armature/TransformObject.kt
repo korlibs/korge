@@ -26,7 +26,6 @@ package com.dragonbones.armature
 
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
-import com.dragonbones.geom.Matrix
 import com.soywiz.korma.geom.*
 
 /**

@@ -24,7 +24,6 @@ package com.dragonbones.parser
 
 import com.dragonbones.core.*
 import com.dragonbones.geom.*
-import com.dragonbones.geom.Matrix
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
@@ -1887,7 +1886,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				val rawBonePoses = this._weightBonePoses[meshName]!!
 				val vertexBoneCount = this._intArray[iB++]
 
-				this._helpMatrixA.transformPoint(x, y, this._helpPoint, true)
+				this._helpMatrixA.transformPointDb(x, y, this._helpPoint, true)
 				x = this._helpPoint.xf
 				y = this._helpPoint.yf
 
@@ -1896,7 +1895,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					val boneIndex = this._intArray[iB++]
 					this._helpMatrixB.copyFromArray(rawBonePoses.data, boneIndex * 7 + 1)
 					this._helpMatrixB.invert()
-					this._helpMatrixB.transformPoint(x, y, this._helpPoint, true)
+					this._helpMatrixB.transformPointDb(x, y, this._helpPoint, true)
 
 					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.xf.toDouble()
 					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.yf.toDouble()
@@ -2226,7 +2225,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 					var x = this._floatArray[verticesOffset + iD].toFloat()
 					var y = this._floatArray[verticesOffset + iD + 1].toFloat()
-					this._helpMatrixA.transformPoint(x, y, this._helpPoint)
+					this._helpMatrixA.transformPointDb(x, y, this._helpPoint)
 					x = this._helpPoint.xf
 					y = this._helpPoint.yf
 
@@ -2236,7 +2235,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 						val boneIndex = weightBoneIndices.indexOf(rawBoneIndex)
 						this._helpMatrixB.copyFromArray(rawBonePoses, boneIndex * 7 + 1)
 						this._helpMatrixB.invert()
-						this._helpMatrixB.transformPoint(x, y, this._helpPoint)
+						this._helpMatrixB.transformPointDb(x, y, this._helpPoint)
 						this._intArray[iB++] = boneIndex
 						this._floatArray[iV++] = rawWeights[iW++]
 						this._floatArray[iV++] = this._helpPoint.xf.toDouble()
