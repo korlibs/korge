@@ -24,7 +24,7 @@ object TicTacToeModule : Module() {
 	override suspend fun AsyncInjector.configure() {
 		mapPrototype { TicTacToeMainScene() }
 		//Fonts.fonts.registerFont("Times New Roman", Fonts.defaultFont)
-		Fonts.fonts.registerFont("Times New Roman", resourcesVfs["fonts/font1.fnt"].readBitmapFont())
+		//Fonts.fonts.registerFont("Times New Roman", resourcesVfs["fonts/font1.fnt"].readBitmapFont())
 	}
 }
 

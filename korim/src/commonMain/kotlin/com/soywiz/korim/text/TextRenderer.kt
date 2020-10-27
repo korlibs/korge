@@ -1,7 +1,8 @@
-package com.soywiz.korim.font
+package com.soywiz.korim.text
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korma.geom.*
 

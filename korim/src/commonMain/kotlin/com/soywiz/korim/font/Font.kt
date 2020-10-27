@@ -10,6 +10,7 @@ import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.paint.DefaultPaint
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.text.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
@@ -91,12 +92,12 @@ fun <T> Font.renderTextToBitmap(
 }
 
 fun <T> Font.drawText(
-        ctx: Context2d, size: Double,
-        text: T, paint: Paint,
-        x: Double = 0.0, y: Double = 0.0,
-        fill: Boolean = true,
-        renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-        placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
+    ctx: Context2d, size: Double,
+    text: T, paint: Paint,
+    x: Double = 0.0, y: Double = 0.0,
+    fill: Boolean = true,
+    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+    placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
 ) {
     val actions = object : TextRendererActions() {
         override fun put(codePoint: Int): GlyphMetrics {

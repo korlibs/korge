@@ -12,6 +12,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.scene.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
@@ -56,7 +57,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             m = mouseHit.globalMatrix
                         )
                         renderContext.drawText(
-                            Fonts.defaultFont,
+                            debugBmpFont,
                             lineHeight.toDouble(),
                             mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
                             x = 0,
@@ -79,7 +80,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                         )
                         var vview = mouseHitResultUsed
                         while (vview != null) {
-                            renderContext.drawText(Fonts.defaultFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
+                            renderContext.drawText(debugBmpFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
                             vview = vview?.parent
                             yy += lineHeight
                         }

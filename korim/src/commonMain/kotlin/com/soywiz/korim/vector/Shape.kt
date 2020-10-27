@@ -5,6 +5,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -384,17 +385,17 @@ class CompoundShape(
 }
 
 class TextShape(
-        val text: String,
-        val x: Double,
-        val y: Double,
-        val font: Font,
-        val fontSize: Double,
-        override val clip: GraphicsPath?,
-        val fill: Paint?,
-        val stroke: Paint?,
-        val halign: HorizontalAlign = HorizontalAlign.LEFT,
-        val valign: VerticalAlign = VerticalAlign.TOP,
-        override val transform: Matrix = Matrix()
+    val text: String,
+    val x: Double,
+    val y: Double,
+    val font: Font,
+    val fontSize: Double,
+    override val clip: GraphicsPath?,
+    val fill: Paint?,
+    val stroke: Paint?,
+    val halign: HorizontalAlign = HorizontalAlign.LEFT,
+    val valign: VerticalAlign = VerticalAlign.TOP,
+    override val transform: Matrix = Matrix()
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 

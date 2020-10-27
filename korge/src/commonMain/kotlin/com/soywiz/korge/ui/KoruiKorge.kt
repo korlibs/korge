@@ -3,11 +3,10 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*

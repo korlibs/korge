@@ -12,6 +12,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.*
 import com.soywiz.korim.paint.DefaultPaint
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.file.*

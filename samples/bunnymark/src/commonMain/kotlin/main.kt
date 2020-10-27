@@ -12,7 +12,7 @@ import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.toBitmapFont
-import com.soywiz.korim.vector.VerticalAlign
+import com.soywiz.korim.text.VerticalAlign
 import kotlin.random.Random
 
 //class BunnyFastSprite(tex: BmpSlice) : FastSprite(tex) {

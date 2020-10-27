@@ -2,11 +2,10 @@ package com.soywiz.korge.samples.minesweeper
 
 import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.random.*
 import kotlin.random.*

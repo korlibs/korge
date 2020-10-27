@@ -1,4 +1,4 @@
-package com.soywiz.korim.vector
+package com.soywiz.korim.text
 
 import com.soywiz.korma.geom.*
 

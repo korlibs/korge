@@ -8,7 +8,7 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.*
 
 class DummyKorviVideoLL(
     val totalFrames: Long,

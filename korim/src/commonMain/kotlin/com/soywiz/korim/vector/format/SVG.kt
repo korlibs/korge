@@ -6,6 +6,7 @@ import com.soywiz.kds.mapWhile
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.lang.printStackTrace

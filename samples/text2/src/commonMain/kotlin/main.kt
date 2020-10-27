@@ -5,6 +5,7 @@ import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 @OptIn(KorgeExperimental::class)

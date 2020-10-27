@@ -6,15 +6,19 @@ import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 object Html {
-    class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) {
+    class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) : MetricsProvider {
         fun String.normalize() = this.toLowerCase().trim()
         fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
         fun getBitmapFont(name: String): Font = fonts[name.normalize()] ?: default ?: SystemFont(name)
+        override fun getBounds(text: String, format: Format, out: Rectangle) {
+            getBitmapFont(format.computedFace.name).getBounds(text, format, out)
+            //getBitmapFont(format.computedFace, format.computedSize).getBounds(text, format, out)
+        }
     }
 
     val DefaultFontsCatalog = FontsCatalog(null, mapOf())

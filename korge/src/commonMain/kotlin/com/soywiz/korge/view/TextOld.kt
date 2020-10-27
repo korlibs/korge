@@ -5,6 +5,7 @@ import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -12,13 +13,13 @@ import com.soywiz.korma.geom.*
 
 @KorgeDeprecated
 inline fun Container.textOld(
-	text: String,
-	textSize: Double = 16.0,
-	color: RGBA = Colors.WHITE,
-	font: BitmapFont = Fonts.defaultFont,
+    text: String,
+    textSize: Double = 16.0,
+    color: RGBA = Colors.WHITE,
+    font: BitmapFont = debugBmpFont,
     fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
-	callback: @ViewDslMarker TextOld.() -> Unit = {}
-) = TextOld(text, textSize = textSize, color = color, font = font).addTo(this, callback)
+    callback: @ViewDslMarker TextOld.() -> Unit = {}
+) = TextOld(text, textSize = textSize, color = color, font = font, fontsCatalog = fontsCatalog).addTo(this, callback)
 
 @KorgeDeprecated
 class TextOld : View(), IText, IHtml {
@@ -27,7 +28,7 @@ class TextOld : View(), IText, IHtml {
 			text: String,
 			textSize: Double = 16.0,
 			color: RGBA = Colors.WHITE,
-			font: BitmapFont = Fonts.defaultFont,
+			font: BitmapFont = debugBmpFont,
             fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
 		): TextOld = TextOld().apply {
 			this.format = Html.Format(color = color, face = font, size = textSize.toInt())
@@ -56,7 +57,6 @@ class TextOld : View(), IText, IHtml {
 			recalculateBoundsWhenRequired()
 		}
 	var bgcolor = Colors.TRANSPARENT_BLACK
-	val fonts = Fonts.fonts
 
 	fun setTextBounds(rect: Rectangle) {
 		this.textBounds.copyFrom(rect)
@@ -109,7 +109,7 @@ class TextOld : View(), IText, IHtml {
 		}
 
 	fun relayout() {
-		document?.doPositioning(fonts, textBounds)
+		document?.doPositioning(fontsCatalog, textBounds)
 	}
 
     //override fun hitTest(x: Double, y: Double): View? {
@@ -142,7 +142,7 @@ class TextOld : View(), IText, IHtml {
 		} else {
 			val font = format.computedFace
 			val anchor = format.computedAlign.anchor
-			fonts.getBounds(text, format, out = tempRect)
+            fontsCatalog.getBounds(text, format, out = tempRect)
 			//println("tempRect=$tempRect, textBounds=$textBounds")
 			//tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
 			//val x = (textBounds.width) * anchor.sx - tempRect.width
@@ -178,7 +178,7 @@ class TextOld : View(), IText, IHtml {
 	}
 
 	private fun recalculateBounds() {
-		fonts.getBounds(text, format, out = textBounds)
+        fontsCatalog.getBounds(text, format, out = textBounds)
 	}
 
 	private fun recalculateBoundsWhenRequired() {
@@ -190,7 +190,7 @@ class TextOld : View(), IText, IHtml {
 			out.copyFrom(document!!.bounds)
 		} else {
 			if (autoSize) {
-				fonts.getBounds(text, format, out)
+                fontsCatalog.getBounds(text, format, out)
 				out.setToAnchoredRectangle(out, format.computedAlign.anchor, textBounds)
 			} else {
 				out.copyFrom(textBounds)

@@ -5,6 +5,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -135,8 +136,8 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 	var font: Font ; get() = state.font ; set(value) = run { state.font = value }
     var fontName: String ; get() = font.name ; set(value) = run { font = fontRegistry[value] }
     var fontSize: Double ; get() = state.fontSize ; set(value) = run { state.fontSize = value }
-	var verticalAlign: VerticalAlign ; get() = state.verticalAlign ; set(value) = run { state.verticalAlign = value }
-	var horizontalAlign: HorizontalAlign ; get() = state.horizontalAlign ; set(value) = run { state.horizontalAlign = value }
+	var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) = run { state.verticalAlign = value }
+	var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) = run { state.horizontalAlign = value }
     var alignment: TextAlignment
         get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
         set(value) {

@@ -11,7 +11,7 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.grid.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
