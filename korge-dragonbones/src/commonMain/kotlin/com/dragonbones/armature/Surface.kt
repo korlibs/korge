@@ -130,8 +130,8 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 					val x = floatArray[verticesOffset + iD + 0] + animationVertices[iD + 0]
 					val y = floatArray[verticesOffset + iD + 1] + animationVertices[iD + 1]
 					val matrix = surface._getGlobalTransformMatrix(x, y)
-					vertices[iD + 0] = matrix.transformXDb(x, y)
-					vertices[iD + 1] = matrix.transformYDb(x, y)
+					vertices[iD + 0] = matrix.transformXf(x, y)
+					vertices[iD + 1] = matrix.transformYf(x, y)
 				}
 			}
 			else {
@@ -141,8 +141,8 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 					val iD = i * 2
 					val x = floatArray[verticesOffset + iD + 0] + animationVertices[iD + 0]
 					val y = floatArray[verticesOffset + iD + 1] + animationVertices[iD + 1]
-					vertices[iD + 0] = parentMatrix.transformXDb(x, y)
-					vertices[iD + 1] = parentMatrix.transformYDb(x, y)
+					vertices[iD + 0] = parentMatrix.transformXf(x, y)
+					vertices[iD + 1] = parentMatrix.transformYf(x, y)
 				}
 			}
 		}
@@ -583,21 +583,21 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 			val ddY = 2 * global.yf
 			//
 			val helpPoint = _helpPoint
-			globalTransformMatrix.transformPointDb(lB, -lA, helpPoint)
+			globalTransformMatrix.transform(lB, -lA, helpPoint)
 			_hullCache0 = helpPoint.xf
 			_hullCache1 = helpPoint.yf
 			_hullCache2 = ddX - helpPoint.xf
 			_hullCache3 = ddY - helpPoint.yf
-			globalTransformMatrix.transformPointDb(0f, _dY, helpPoint, true)
+			globalTransformMatrix.deltaTransformPoint(0f, _dY, helpPoint)
 			_hullCache4 = helpPoint.xf
 			_hullCache5 = helpPoint.yf
 			//
-			globalTransformMatrix.transformPointDb(lA, lB, helpPoint)
+			globalTransformMatrix.transform(lA, lB, helpPoint)
 			_hullCache6 = helpPoint.xf
 			_hullCache7 = helpPoint.yf
 			_hullCache8 = ddX - helpPoint.xf
 			_hullCache9 = ddY - helpPoint.yf
-			globalTransformMatrix.transformPointDb(_dX, 0f, helpPoint, true)
+			globalTransformMatrix.deltaTransformPoint(_dX, 0f, helpPoint)
 			_hullCache10 = helpPoint.xf
 			_hullCache11 = helpPoint.yf
 		}

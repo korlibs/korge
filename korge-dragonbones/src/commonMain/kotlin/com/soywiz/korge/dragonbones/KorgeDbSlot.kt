@@ -314,8 +314,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 						yL += deformVertices[iF++].toFloat()
 					}
 
-					xG += matrix.transformXDb(xL.toFloat(), yL.toFloat()) * weight
-					yG += matrix.transformYDb(xL.toFloat(), yL.toFloat()) * weight
+					xG += matrix.transformXf(xL, yL) * weight
+					yG += matrix.transformYf(xL, yL) * weight
 				}
 
 				meshDisplay.vertices[iD++] = xG
@@ -348,8 +348,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 				if (isSurface) {
 					val matrix = (this._parent as Surface)._getGlobalTransformMatrix(x, y)
 
-					meshDisplay.vertices[i + 0] = matrix.transformXDb(x, y).toFloat()
-					meshDisplay.vertices[i + 1] = matrix.transformYDb(x, y).toFloat()
+					meshDisplay.vertices[i + 0] = matrix.transformXf(x, y).toFloat()
+					meshDisplay.vertices[i + 1] = matrix.transformYf(x, y).toFloat()
 				} else {
 					meshDisplay.vertices[i + 0] = x.toFloat()
 					meshDisplay.vertices[i + 1] = y.toFloat()

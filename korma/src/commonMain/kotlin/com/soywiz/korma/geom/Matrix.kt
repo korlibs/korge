@@ -174,11 +174,15 @@ data class Matrix(
 
     /** Transform point without translation */
     fun deltaTransformPoint(point: IPoint, out: XY = Point()) = deltaTransformPoint(point.x, point.y, out)
+    fun deltaTransformPoint(x: Float, y: Float, out: XY = Point()): XY = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
     fun deltaTransformPoint(x: Double, y: Double, out: XY = Point()): XY {
-        out.x = (x * a) + (y * c)
-        out.y = (x * b) + (y * d)
+        out.x = deltaTransformX(x, y)
+        out.y = deltaTransformY(x, y)
         return out
     }
+
+    fun deltaTransformX(x: Double, y: Double): Double = (x * a) + (y * c)
+    fun deltaTransformY(x: Double, y: Double): Double = (x * b) + (y * d)
 
     fun identity() = setTo(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
@@ -247,6 +251,17 @@ data class Matrix(
     fun transform(px: Float, py: Float, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
     fun transform(px: Int, py: Int, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
 
+    fun transform(px: Double, py: Double, out: XY): XY {
+        out.x = transformX(px, py)
+        out.y = transformY(px, py)
+        return out
+    }
+    fun transform(px: Float, py: Float, out: XYf): XYf {
+        out.xf = transformXf(px, py)
+        out.yf = transformYf(px, py)
+        return out
+    }
+
     fun transformX(p: IPoint): Double = transformX(p.x, p.y)
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
     fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
@@ -264,6 +279,62 @@ data class Matrix(
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
     fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+
+    @Suppress("DuplicatedCode")
+    fun transformRectangle(rectangle: Rectangle, delta: Boolean = false): Unit {
+        val a = this.af
+        val b = this.bf
+        val c = this.cf
+        val d = this.df
+        val tx = if (delta) 0f else this.txf
+        val ty = if (delta) 0f else this.tyf
+
+        val x = rectangle.x
+        val y = rectangle.y
+        val xMax = x + rectangle.width
+        val yMax = y + rectangle.height
+
+        var x0 = a * x + c * y + tx
+        var y0 = b * x + d * y + ty
+        var x1 = a * xMax + c * y + tx
+        var y1 = b * xMax + d * y + ty
+        var x2 = a * xMax + c * yMax + tx
+        var y2 = b * xMax + d * yMax + ty
+        var x3 = a * x + c * yMax + tx
+        var y3 = b * x + d * yMax + ty
+
+        var tmp = 0.0
+
+        if (x0 > x1) {
+            tmp = x0
+            x0 = x1
+            x1 = tmp
+        }
+        if (x2 > x3) {
+            tmp = x2
+            x2 = x3
+            x3 = tmp
+        }
+
+        rectangle.x = floor(if (x0 < x2) x0 else x2)
+        rectangle.width = ceil((if (x1 > x3) x1 else x3) - rectangle.x)
+
+        if (y0 > y1) {
+            tmp = y0
+            y0 = y1
+            y1 = tmp
+        }
+        if (y2 > y3) {
+            tmp = y2
+            y2 = y3
+            y3 = tmp
+        }
+
+        rectangle.y = floor(if (y0 < y2) y0 else y2)
+        rectangle.height = ceil((if (y1 > y3) y1 else y3) - rectangle.y)
+    }
+
+
 
     fun copyFromArray(value: FloatArray, offset: Int = 0): Matrix = setTo(
         value[offset + 0], value[offset + 1], value[offset + 2],

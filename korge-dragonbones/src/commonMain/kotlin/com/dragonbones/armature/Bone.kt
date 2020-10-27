@@ -193,7 +193,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					(surfaceBone as Bone).updateGlobalTransform()
 					global.scaleX *= surfaceBone.global.scaleX
 					global.scaleY *= surfaceBone.global.scaleY
-					parentMatrix.transformPointDb(global.xf, global.yf, global)
+					parentMatrix.transform(global.xf, global.yf, global)
 					global.toMatrix(globalTransformMatrix)
 
 					if (boneData.inheritTranslation) {
