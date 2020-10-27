@@ -99,6 +99,38 @@ data class ColorTransform(
 	var aB: Int get() = _aB; set(v) = run { _aB = v; dirty = true }
 	var aA: Int get() = _aA; set(v) = run { _aA = v; dirty = true }
 
+    var alphaMultiplier: Double
+        get() = mA
+        set(value) { mA = value }
+
+    var redMultiplier: Double
+        get() = mR
+        set(value) { mR = value }
+
+    var greenMultiplier: Double
+        get() = mG
+        set(value) { mG = value }
+
+    var blueMultiplier: Double
+        get() = mB
+        set(value) { mB = value }
+
+    var alphaOffset: Int
+        get() = aA
+        set(value) { aA = value }
+
+    var redOffset: Int
+        get() = aR
+        set(value) { aR = value }
+
+    var greenOffset: Int
+        get() = aG
+        set(value) { aG = value }
+
+    var blueOffset: Int
+        get() = aB
+        set(value) { aB = value }
+
 	fun setMultiplyTo(
 		mR: Double = 1.0,
 		mG: Double = 1.0,
@@ -163,6 +195,10 @@ data class ColorTransform(
 
 		return this
 	}
+
+    fun identity() {
+        setTo(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    }
 
 	fun setToConcat(l: ColorTransform, r: ColorTransform) = this.setTo(
 		l.mR * r.mR,

@@ -28,6 +28,7 @@ import com.dragonbones.geom.*
 import com.dragonbones.internal.fastForEach
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.korim.color.*
 
 /**
  * - The armature data.

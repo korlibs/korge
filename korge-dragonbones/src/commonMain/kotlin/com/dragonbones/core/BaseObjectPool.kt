@@ -8,6 +8,7 @@ import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.korge.dragonbones.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 

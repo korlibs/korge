@@ -19,6 +19,11 @@ interface IPoint {
     }
 }
 
+interface XY {
+    var x: Double
+    var y: Double
+}
+
 fun Point.Companion.middle(a: IPoint, b: IPoint): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
 fun Point.Companion.angle(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
 fun Point.Companion.compare(l: IPoint, r: IPoint): Int = Point.compare(l.x, l.y, r.x, r.y)
@@ -78,7 +83,7 @@ operator fun Point.plusAssign(that: IPoint): Unit = run { setTo(this.x + that.x,
 data class Point(
     override var x: Double,
     override var y: Double
-) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint {
+) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint, XY {
     override fun compareTo(other: IPoint): Int = compare(this.x, this.y, other.x, other.y)
     fun compareTo(other: Point): Int = compare(this.x, this.y, other.x, other.y)
 
