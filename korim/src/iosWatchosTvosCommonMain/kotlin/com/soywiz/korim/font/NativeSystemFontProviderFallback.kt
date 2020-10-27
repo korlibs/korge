@@ -1,3 +1,4 @@
 package com.soywiz.korim.font
 
-actual val nativeSystemFontProvider: NativeSystemFontProvider = FallbackNativeSystemFontProvider(DefaultTtfFont)
+private val iosFontsFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
+actual val nativeSystemFontProvider: NativeSystemFontProvider = FolderBasedNativeSystemFontProvider(iosFontsFolders)

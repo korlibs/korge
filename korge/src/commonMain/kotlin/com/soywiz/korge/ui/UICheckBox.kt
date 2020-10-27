@@ -6,6 +6,8 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -15,7 +17,7 @@ inline fun Container.uiCheckBox(
     height: Double = 32.0,
     checked: Boolean = false,
     text: String = "CheckBox",
-    textFont: Html.FontFace = defaultUIFont,
+    textFont: Font = defaultUIFont,
     skin: UISkin = defaultUISkin,
     checkIcon: IconSkin = defaultCheckSkin,
     block: @ViewDslMarker UICheckBox.() -> Unit = {}
@@ -26,7 +28,7 @@ open class UICheckBox(
     height: Double = 32.0,
     checked: Boolean = false,
     text: String = "CheckBox",
-    textFont: Html.FontFace = DefaultUIFont,
+    textFont: Font = DefaultUIFont,
     private val skin: UISkin = DefaultUISkin,
     private val checkIcon: IconSkin = DefaultCheckSkin
 ) : UIView(width, height), ViewLeaf {
@@ -47,7 +49,7 @@ open class UICheckBox(
         checkIcon.calculateHeight(height),
         0.0, 0.0, 0.0, 0.0
     ).position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)).also { it.visible = false }
-    private val textView = text(text)
+    private val textView = textOld(text)
 
     private var over by uiObservable(false) { updateState() }
     private var pressing by uiObservable(false) { updateState() }
@@ -98,7 +100,7 @@ open class UICheckBox(
             face = textFont,
             size = textSize,
             color = textColor,
-            align = Html.Alignment.MIDDLE_LEFT
+            align = TextAlignment.MIDDLE_LEFT
         )
         textView.setTextBounds(Rectangle(0.0, 0.0, width - height, height))
         textView.setText(text)

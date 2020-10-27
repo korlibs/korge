@@ -1,0 +1,208 @@
+package com.soywiz.korge.view
+
+import com.soywiz.kds.iterators.*
+import com.soywiz.korge.bitmapfont.*
+import com.soywiz.korge.html.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korma.geom.*
+
+@KorgeDeprecated
+inline fun Container.textOld(
+	text: String,
+	textSize: Double = 16.0,
+	color: RGBA = Colors.WHITE,
+	font: BitmapFont = Fonts.defaultFont,
+	callback: @ViewDslMarker TextOld.() -> Unit = {}
+) = TextOld(text, textSize = textSize, color = color, font = font).addTo(this, callback)
+
+@KorgeDeprecated
+class TextOld : View(), IText, IHtml {
+	companion object {
+		operator fun invoke(
+			text: String,
+			textSize: Double = 16.0,
+			color: RGBA = Colors.WHITE,
+			font: BitmapFont = Fonts.defaultFont
+		): TextOld = TextOld().apply {
+			this.format = Html.Format(color = color, face = font, size = textSize.toInt())
+			if (text != "") this.text = text
+		}
+	}
+
+	//var verticalAlign: Html.VerticalAlignment = Html.VerticalAlignment.TOP
+	val textBounds = Rectangle(0, 0, 1024, 1024)
+	private val tempRect = Rectangle()
+	var _text: String = ""
+	var _html: String = ""
+	var document: Html.Document? = null
+	private var _format: Html.Format = Html.Format()
+	var filtering = true
+    var smoothing: Boolean
+        get() = filtering
+        set(value) {
+            filtering = value
+        }
+	var autoSize = true
+		set(value) {
+			field = value
+			recalculateBoundsWhenRequired()
+		}
+	var bgcolor = Colors.TRANSPARENT_BLACK
+	val fonts = Fonts.fonts
+
+	fun setTextBounds(rect: Rectangle) {
+		this.textBounds.copyFrom(rect)
+		autoSize = false
+	}
+
+	fun unsetTextBounds() {
+		autoSize = true
+	}
+
+	var format: Html.Format
+		get() = _format
+		set(value) {
+			_format = value
+			if (value != document?.defaultFormat) {
+				document?.defaultFormat?.parent = value
+			}
+			recalculateBoundsWhenRequired()
+		}
+
+    var font: Font?
+        get() = format.computedFace
+        set(value) = run { format.face = value }
+
+    var color: RGBA
+        get() = format.computedColor
+        set(value) = run { format.color = value }
+
+    var textSize: Double
+        get() = format.computedSize.toDouble()
+        set(value) = run { format.size = value.toInt() }
+
+	override var text: String
+		get() = if (document != null) document?.xml?.text ?: "" else _text
+		set(value) {
+			_text = value
+			_html = ""
+			document = null
+			recalculateBoundsWhenRequired()
+		}
+	override var html: String
+		get() = if (document != null) _html else _text
+		set(value) {
+			document = Html.parse(value)
+			relayout()
+			document!!.defaultFormat.parent = format
+			_text = ""
+			_html = value
+			_format = document!!.firstFormat.consolidate()
+		}
+
+	fun relayout() {
+		document?.doPositioning(fonts, textBounds)
+	}
+
+    //override fun hitTest(x: Double, y: Double): View? {
+    //    val rect = when {
+    //        autoSize -> tempRect.also { fonts.getBounds(text, format, out = it) }
+    //        else -> textBounds
+    //    }
+    //    return if (rect.contains(globalToLocalX(x, y), globalToLocalY(x, y))) this else null
+    //}
+
+    override fun renderInternal(ctx: RenderContext) {
+		if (!visible) return
+		val colorMul = renderColorMul
+		val colorAdd = renderColorAdd
+		val m = globalMatrix
+		if (document != null) {
+			document!!.allSpans.fastForEach { span ->
+				val font = span.format.computedFace
+				val format = span.format
+                (font as BitmapFont).drawText(
+					ctx, format.computedSize.toDouble(), text,
+					span.bounds.x.toInt(), span.bounds.y.toInt(),
+					m,
+					colMul = RGBA.multiply(colorMul, format.computedColor),
+					colAdd = colorAdd,
+					blendMode = renderBlendMode,
+					filtering = filtering
+				)
+			}
+		} else {
+			val font = format.computedFace
+			val anchor = format.computedAlign.anchor
+			fonts.getBounds(text, format, out = tempRect)
+			//println("tempRect=$tempRect, textBounds=$textBounds")
+			//tempRect.setToAnchoredRectangle(tempRect, format.align.anchor, textBounds)
+			//val x = (textBounds.width) * anchor.sx - tempRect.width
+			val px = textBounds.x + (textBounds.width - tempRect.width) * anchor.sx
+			//val x = textBounds.x + (textBounds.width) * anchor.sx
+			val py = textBounds.y + (textBounds.height - tempRect.height) * anchor.sy
+
+			if (bgcolor.a != 0) {
+				ctx.batch.drawQuad(
+					ctx.getTex(Bitmaps.white),
+					x = textBounds.x.toFloat(),
+					y = textBounds.y.toFloat(),
+					width = textBounds.width.toFloat(),
+					height = textBounds.height.toFloat(),
+					m = m,
+					filtering = false,
+					colorMul = RGBA.multiply(bgcolor, renderColorMul),
+					colorAdd = colorAdd,
+					blendFactors = renderBlendMode.factors
+				)
+			}
+
+			//println(" -> ($x, $y)")
+            (font as BitmapFont).drawText(
+				ctx, format.computedSize.toDouble(), text, px.toInt(), py.toInt(),
+				m,
+				colMul = RGBA.multiply(colorMul, format.computedColor),
+				colAdd = colorAdd,
+				blendMode = renderBlendMode,
+				filtering = filtering
+			)
+		}
+	}
+
+	private fun recalculateBounds() {
+		fonts.getBounds(text, format, out = textBounds)
+	}
+
+	private fun recalculateBoundsWhenRequired() {
+		if (autoSize) recalculateBounds()
+	}
+
+	override fun getLocalBoundsInternal(out: Rectangle) {
+		if (document != null) {
+			out.copyFrom(document!!.bounds)
+		} else {
+			if (autoSize) {
+				fonts.getBounds(text, format, out)
+				out.setToAnchoredRectangle(out, format.computedAlign.anchor, textBounds)
+			} else {
+				out.copyFrom(textBounds)
+			}
+		}
+	}
+
+	override fun createInstance(): View = TextOld()
+	override fun copyPropsFrom(source: View) {
+		super.copyPropsFrom(source)
+		source as TextOld
+		this.textBounds.copyFrom(source.textBounds)
+		if (source._html.isNotEmpty()) {
+			this.html = source.html
+		} else {
+			this.text = source.text
+		}
+	}
+}

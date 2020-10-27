@@ -3,6 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
+import java.awt.*
 import java.awt.font.*
 import java.awt.geom.*
 import java.awt.image.*
@@ -13,6 +14,10 @@ object AwtNativeSystemFontProvider : NativeSystemFontProvider() {
     val out = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
     //println("BufferedImage.clone:${this.type} -> ${out.type}")
     val g = out.createGraphics(false)
+
+    override fun listFontNames(): List<String> {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames.toList()
+    }
 
     override fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath): GlyphPath? {
         val font = systemFont.toAwt(size)

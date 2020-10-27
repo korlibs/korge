@@ -5,8 +5,8 @@ import com.soywiz.kds.expect
 import com.soywiz.kds.mapWhile
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.substr

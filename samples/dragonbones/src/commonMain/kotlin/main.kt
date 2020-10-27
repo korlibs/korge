@@ -171,7 +171,7 @@ class MyScene : MyBaseScene() {
 }
 
 class Button(text: String, handler: suspend () -> Unit) : Container() {
-	val textField = Text(text, textSize = 32.0).apply { filtering = false }
+	val textField = TextOld(text, textSize = 32.0).apply { filtering = false }
 	private val bounds = textField.textBounds
 	val g = Graphics().apply {
 		fill(Colors.DARKGREY, 0.7) {

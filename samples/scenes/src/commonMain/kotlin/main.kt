@@ -5,7 +5,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.textOld
 import com.soywiz.korim.color.Colors
 import com.soywiz.korinject.AsyncInjector
 import kotlin.reflect.KClass
@@ -26,7 +26,7 @@ class MyDependency(val value: String)
 
 class MyScene1(val myDependency: MyDependency) : Scene() {
 	override suspend fun Container.sceneInit() {
-		text("MyScene1: ${myDependency.value}") { filtering = false }
+		textOld("MyScene1: ${myDependency.value}") { filtering = false }
 		solidRect(100, 100, Colors.RED) {
 			position(200, 200)
 			alpha = 0.7
@@ -51,7 +51,7 @@ class MyScene1(val myDependency: MyDependency) : Scene() {
 
 class MyScene2(val myDependency: MyDependency) : Scene() {
 	override suspend fun Container.sceneInit() {
-		text("MyScene2: ${myDependency.value}") { filtering = false }
+		textOld("MyScene2: ${myDependency.value}") { filtering = false }
 		solidRect(100, 100, Colors.BLUE) {
 			position(200, 200)
 			onClick {

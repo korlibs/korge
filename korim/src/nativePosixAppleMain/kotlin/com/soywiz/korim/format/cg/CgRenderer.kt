@@ -7,7 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.cinterop.*

@@ -3,7 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.paint.Paint
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
@@ -13,13 +13,13 @@ import com.soywiz.korui.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.ellipse(
-    radiusX: Double = 16.0,
-    radiusY: Double = 16.0,
-    fill: Paint = Colors.WHITE,
-    stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
-    autoScaling: Boolean = true,
-    callback: @ViewDslMarker Ellipse.() -> Unit = {}
+        radiusX: Double = 16.0,
+        radiusY: Double = 16.0,
+        fill: Paint = Colors.WHITE,
+        stroke: Paint = Colors.WHITE,
+        strokeThickness: Double = 0.0,
+        autoScaling: Boolean = true,
+        callback: @ViewDslMarker Ellipse.() -> Unit = {}
 ): Ellipse = Ellipse(radiusX, radiusY, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
@@ -27,12 +27,12 @@ inline fun Container.ellipse(
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Ellipse(
-    radiusX: Double = 16.0,
-    radiusY: Double = 16.0,
-    fill: Paint = Colors.WHITE,
-    stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
-    autoScaling: Boolean = true,
+        radiusX: Double = 16.0,
+        radiusY: Double = 16.0,
+        fill: Paint = Colors.WHITE,
+        stroke: Paint = Colors.WHITE,
+        strokeThickness: Double = 0.0,
+        autoScaling: Boolean = true,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
     /** Radius of the circle */
     var radiusX: Double by uiObservable(radiusX) { updateGraphics() }

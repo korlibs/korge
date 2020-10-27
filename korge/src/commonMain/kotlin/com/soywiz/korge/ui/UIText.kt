@@ -3,6 +3,7 @@ package com.soywiz.korge.ui
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiText(
@@ -24,13 +25,13 @@ class UIText(
     var textColor by uiObservable(skin.normal.color) { updateText() }
     var textSize by uiObservable(skin.normal.size) { updateText() }
     var textFont by uiObservable(skin.normal.font) { updateText() }
-    var textAlignment by uiObservable(Html.Alignment.MIDDLE_CENTER) { updateText() }
+    var textAlignment by uiObservable(TextAlignment.MIDDLE_CENTER) { updateText() }
 
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
     private val background = solidRect(width, height, skin.backColor)
-    private val textView = text(text)
+    private val textView = textOld(text)
 
     init {
         mouse {

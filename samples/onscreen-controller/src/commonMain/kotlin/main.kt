@@ -4,9 +4,9 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.util.*
 
 suspend fun main() = Korge(bgcolor = Colors.DARKBLUE) {
-	val text1 = text("-").position(5, 5).apply { filtering = false }
+	val text1 = textOld("-").position(5, 5).apply { filtering = false }
 	val buttonTexts = (0 until 2).map {
-		text("-").position(5, 20 * (it + 1) + 5).apply { filtering = false }
+		textOld("-").position(5, 20 * (it + 1) + 5).apply { filtering = false }
 	}
 
 	addTouchGamepad(

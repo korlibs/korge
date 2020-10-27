@@ -2,7 +2,7 @@ package com.soywiz.korim.vector
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.paint.BitmapPaint
+import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*

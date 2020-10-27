@@ -52,6 +52,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
     private fun getTextScale(size: Double) = size / unitsPerEm.toDouble()
 
+    private val names = LinkedHashMap<Int, String>()
     private val tempContours = Array(3) { Contour() }
     private val lineHeight get() = yMax - yMin
 
@@ -128,7 +129,11 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         frozen = true
     }
 
-    override val name: String get() = extName ?: "TtfFont" // @TODO: Use loaded name
+    val ttfName: String get() = getName(NameId.NAME) ?: getName(NameId.COMPLETE_NAME) ?: "TtfFont"
+    val ttfCompleteName: String get() = getName(NameId.COMPLETE_NAME) ?: ttfName
+    override val name: String get() = extName ?: ttfName
+
+    override fun toString(): String = "TtfFont(name=$name)"
 
     private val fontMetrics1px = FontMetrics().also {
         val scale = getTextScale(1.0)
@@ -195,6 +200,38 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
     private inline fun <T> runTable(name: String, callback: FastByteArrayInputStream.(Table) -> T): T? = openTable(name)?.let { callback(it, tablesByName[name]!!) }
 
+    enum class NameId(val id: Int) {
+        COPYRIGHT(0),
+        NAME(1),
+        STYLE(2),
+        UNAME(3),
+        COMPLETE_NAME(4),
+        RELEASE_VERSION(5),
+        POSTSCRIPT_NAME(6),
+        TRADEMARK(7),
+        MANUFACTURER(8),
+        DESIGNER(9),
+        DESCRIPTION(10),
+        URL_VENDOR(11),
+        URL_DESIGNER(12),
+        LICENSE_DESCRIPTION(13),
+        LICENSE_URL(14),
+        RESERVED_15(15),
+        PREFERRED_FAMILY(16),
+        PREFERRED_SUBFAMILY(17),
+        COMPATIBLE_FULL(18),
+        SAMPLE_TEXT(19),
+        POSTSCRIPT_CID(20),
+        WWS_FAMILY_NAME(21),
+        WWS_SUBFAMILY_NAME(22),
+        LIGHT_BACKGROUND(23),
+        DARK_BACKGROUND(23),
+        VARIATION_POSTSCRIPT_PREFIX(25),
+    }
+
+    fun getName(nameId: Int): String? = names[nameId]
+    fun getName(nameId: NameId): String? = getName(nameId.id)
+
     private fun readNames() = runTableUnit("name") {
 		val format = readU16BE()
 		val count = readU16BE()
@@ -213,9 +250,11 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 				else -> UTF16_BE
 			}
 			//println("" + (stringOffset.toLong() + offset) + " : " + length + " : " + charset)
-			val string =
-				this.clone().sliceWithSize(stringOffset + offset, length).readAll().toString(charset)
-			//println(string)
+			val string = this.clone().sliceWithSize(stringOffset + offset, length).readAll().toString(charset)
+            if ((platformId == 0 && languageId == 0) || nameId !in names) {
+                names[nameId] = string
+            }
+			//println("p=$platformId, e=$encodingId, l=$languageId, n=$nameId, l=$length, o=$offset: $string")
 		}
 	}
 

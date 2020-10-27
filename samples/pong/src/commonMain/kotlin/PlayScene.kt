@@ -35,7 +35,7 @@ class PlayScene() : Scene() {
 		val ballSpeedIncrease = 50.0
 
 		// Add a HUD for reporting the FPS
-		val fpsText = text("FPS: 0") {
+		val fpsText = textOld("FPS: 0") {
 			position(10, 30)
 			addUpdater {
 				text = "FPS: " + views.gameWindow.fps.toString()
@@ -43,7 +43,7 @@ class PlayScene() : Scene() {
 		}
 
 		// Add a HUD for reporting the ticks/frame length
-		val tickSizeText = text("Tick: 0") {
+		val tickSizeText = textOld("Tick: 0") {
 			position(10, 50)
 			addUpdater {
 				text = "Tick: " + views.gameWindow.timePerFrame.toString()
@@ -51,7 +51,7 @@ class PlayScene() : Scene() {
 		}
 
 		// Add a help text which explains the rules of the game
-		val helpText = text("") {
+		val helpText = textOld("") {
 			position(10, 100)
 			addUpdater {
 				// this text is only visible if the game is not in Playing state
@@ -72,7 +72,7 @@ class PlayScene() : Scene() {
 		}
 
 		// A simple flavour text informing that a goal was scored
-		val scoredYellText = text("SCORED!!!\n\n") {
+		val scoredYellText = textOld("SCORED!!!\n\n") {
 			position(views.virtualWidth / 2 - 100, views.virtualHeight / 2 - 20)
 			addUpdater {
 				// this is only visible when the game is in Scored state
@@ -81,7 +81,7 @@ class PlayScene() : Scene() {
 		}
 
 		// text to show the score of the player on the Left side
-		val scoreLeftText = text("0") {
+		val scoreLeftText = textOld("0") {
 //            textSize = 24.0
 			position(views.virtualWidth / 4, views.virtualHeight / 2)
 			addUpdater {
@@ -89,7 +89,7 @@ class PlayScene() : Scene() {
 			}
 		}
 		// text to show the score of the player on the Right side
-		val scoreRightText = text("0") {
+		val scoreRightText = textOld("0") {
 			position(views.virtualWidth * 3 / 4, views.virtualHeight / 2)
 			addUpdater {
 				text = scorePlayerRight.toString()

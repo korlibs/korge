@@ -4,7 +4,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 
 @OptIn(KorgeExperimental::class)
@@ -16,7 +16,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, width = 512
 
 	var offset = 0.degrees
 	addUpdater { offset += 10.degrees }
-	text2("Hello World!", font = font, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
+	text("Hello World!", font = font, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
 		transform.identity()
 		val sin = sin(offset + (n * 360 / text.length).degrees)
 		transform.rotate(15.degrees)

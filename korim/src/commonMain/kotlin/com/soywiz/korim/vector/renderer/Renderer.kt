@@ -2,8 +2,9 @@ package com.soywiz.korim.vector.renderer
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 

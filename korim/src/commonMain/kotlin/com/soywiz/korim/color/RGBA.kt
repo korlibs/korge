@@ -7,8 +7,7 @@ import com.soywiz.korim.internal.*
 import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
-import com.soywiz.korim.vector.paint.*
-import com.soywiz.korio.lang.format
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Interpolable

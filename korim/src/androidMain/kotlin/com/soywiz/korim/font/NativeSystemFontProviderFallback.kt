@@ -1,6 +1,11 @@
 package com.soywiz.korim.font
 
-actual val nativeSystemFontProvider: NativeSystemFontProvider = FallbackNativeSystemFontProvider(DefaultTtfFont)
+//import android.graphics.fonts.*
+
+// https://developer.android.com/reference/android/graphics/fonts/SystemFonts
+private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
+
+actual val nativeSystemFontProvider: NativeSystemFontProvider = FolderBasedNativeSystemFontProvider(androidFolders)
 
 //override fun renderText(
 //    state: Context2d.State,

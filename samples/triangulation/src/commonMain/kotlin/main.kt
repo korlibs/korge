@@ -9,7 +9,7 @@ import com.soywiz.korma.triangle.triangulate.*
 
 suspend fun main() = Korge(width = 512, height = 512) {
 	val stage = this
-	text("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
+	textOld("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
 	graphics {
 		val graphics = this
 		graphics.useNativeRendering = false

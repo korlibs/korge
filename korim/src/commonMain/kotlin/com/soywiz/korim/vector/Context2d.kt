@@ -4,10 +4,9 @@ import com.soywiz.kds.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
@@ -98,6 +97,13 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         val transformTransform by lazy { transform.toTransform() }
         val scaledLineWidth get() = lineWidth * transformTransform.scaleAvg.absoluteValue.toFloat()
 
+        var alignment: TextAlignment
+            get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
+            set(value) {
+                horizontalAlign = value.horizontal
+                verticalAlign = value.vertical
+            }
+
         var lineCap: LineCap
             get() = startLineCap
             set(value) {
@@ -123,14 +129,20 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     var startLineCap: LineCap ; get() = state.startLineCap ; set(value) = run { state.startLineCap = value }
     var endLineCap: LineCap ; get() = state.endLineCap ; set(value) = run { state.endLineCap = value }
     var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) = run { state.lineJoin = value }
-	var strokeStyle: Paint ; get() = state.strokeStyle ; set(value) = run { state.strokeStyle = value }
-	var fillStyle: Paint ; get() = state.fillStyle ; set(value) = run { state.fillStyle = value }
+	var strokeStyle: Paint; get() = state.strokeStyle ; set(value) = run { state.strokeStyle = value }
+	var fillStyle: Paint; get() = state.fillStyle ; set(value) = run { state.fillStyle = value }
     var fontRegistry: FontRegistry ; get() = state.fontRegistry ; set(value) = run { state.fontRegistry = value }
 	var font: Font ; get() = state.font ; set(value) = run { state.font = value }
     var fontName: String ; get() = font.name ; set(value) = run { font = fontRegistry[value] }
     var fontSize: Double ; get() = state.fontSize ; set(value) = run { state.fontSize = value }
 	var verticalAlign: VerticalAlign ; get() = state.verticalAlign ; set(value) = run { state.verticalAlign = value }
 	var horizontalAlign: HorizontalAlign ; get() = state.horizontalAlign ; set(value) = run { state.horizontalAlign = value }
+    var alignment: TextAlignment
+        get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
+        set(value) {
+            horizontalAlign = value.horizontal
+            verticalAlign = value.vertical
+        }
 	var globalAlpha: Double ; get() = state.globalAlpha ; set(value) = run { state.globalAlpha = value }
     var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) = run { state.globalCompositeOperation = value }
 
@@ -417,7 +429,9 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		repeat: Boolean = false,
 		smooth: Boolean = true,
 		transform: Matrix = Matrix()
-	) = BitmapPaint(bitmap, transform, repeat, smooth)
+	) = createPattern(
+        bitmap, CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth, transform
+    )
 
     fun createPattern(
         bitmap: Bitmap,

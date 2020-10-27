@@ -13,7 +13,7 @@ class TextTest {
             ctx.batch.beforeFlush {
                 vertices.add(it.readVertices())
             }
-            val text = Text("1").apply {
+            val text = TextOld("1").apply {
                 textSize = 32.0
             }
             text.render(ctx)
@@ -34,13 +34,13 @@ class TextTest {
 
     @Test
     fun testBounds() {
-        val text = Text("1", textSize = 32.0)
+        val text = TextOld("1", textSize = 32.0)
         assertEquals(Rectangle(0, 0, 28, 32), text.getLocalBounds())
     }
 
     @Test
     fun testHitTest() {
-        val text = Text("1", textSize = 32.0)
+        val text = TextOld("1", textSize = 32.0)
         assertEquals(text, text.hitTest(10, 5))
         assertEquals(null, text.hitTest(30, 5))
         text.setTextBounds(Rectangle(0, 0, 32, 32))

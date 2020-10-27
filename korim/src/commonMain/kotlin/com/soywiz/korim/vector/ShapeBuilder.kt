@@ -2,9 +2,7 @@ package com.soywiz.korim.vector
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.font.TextMetrics
-import com.soywiz.korim.vector.paint.BitmapPaint
+import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*

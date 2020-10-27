@@ -29,15 +29,10 @@ class Fonts : Html.MetricsProvider {
 		return fonts[nameLC] ?: defaultFont
 	}
 
-	fun getBitmapFont(face: Html.FontFace, size: Int): Font = when (face) {
-		is Html.FontFace.Named -> getBitmapFont(face.name, size)
-		is Html.FontFace.Font -> face.font
-		else -> invalidOp("Unsupported font face: $face")
-	}
-
+	fun getBitmapFont(face: Font, size: Int): Font = face
 	fun getBitmapFont(format: Html.Format): Font = getBitmapFont(format.computedFace, format.computedSize)
 
-	fun named(name: String) = Html.FontFace.Named(name)
+	fun named(name: String) = SystemFont(name)
 
 	override fun getBounds(text: String, format: Html.Format, out: Rectangle) =
 		getBitmapFont(format.computedFace, format.computedSize).getBounds(text, format, out)

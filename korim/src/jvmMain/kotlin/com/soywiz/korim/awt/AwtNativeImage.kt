@@ -2,9 +2,10 @@ package com.soywiz.korim.awt
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.paint.GradientPaint
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
-import com.soywiz.korim.vector.paint.GradientPaint
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import java.awt.*
@@ -235,7 +236,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         CycleMethod.REFLECT -> MultipleGradientPaint.CycleMethod.REFLECT
 	}
 
-	fun com.soywiz.korim.vector.paint.Paint.toAwt(transform: AffineTransform): java.awt.Paint = try {
+	fun Paint.toAwt(transform: AffineTransform): java.awt.Paint = try {
 		this.toAwtUnsafe(transform)
 	} catch (e: Throwable) {
         warningProcessor?.invoke("Paint.toAwt: $e")
@@ -251,7 +252,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         GradientInterpolationMethod.NORMAL -> MultipleGradientPaint.ColorSpaceType.SRGB
 	}
 
-	fun com.soywiz.korim.vector.paint.Paint.toAwtUnsafe(transform: AffineTransform): java.awt.Paint = when (this) {
+	fun Paint.toAwtUnsafe(transform: AffineTransform): java.awt.Paint = when (this) {
         is ColorPaint -> convertColor(this.color)
         is TransformedPaint -> {
             val t1 = AffineTransform()

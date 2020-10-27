@@ -7,6 +7,7 @@ import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
@@ -20,10 +21,10 @@ open class KorgeNativeUiFactory : NativeUiFactory {
 
     override fun createWindow() = KorgeWindow(this, FixedSizeContainer())
     override fun createContainer() = KorgeContainer(this, FixedSizeContainer())
-    override fun createButton() = KorgeButton(this, TextButton())
+    override fun createButton() = KorgeButton(this, UITextButton())
     override fun createCheckBox() = KorgeCheckBox(this, UICheckBox())
     override fun <T> createComboBox() = KorgeComboBox(this, UIComboBox<T>())
-    override fun createLabel() = KorgeLabel(this, UIText("").also { it.textAlignment = Html.Alignment.MIDDLE_LEFT })
+    override fun createLabel() = KorgeLabel(this, UIText("").also { it.textAlignment = TextAlignment.MIDDLE_LEFT })
     override fun createTextField() = KorgeTextField(this, UIText(""))
 
     open class KorgeComponent(override val factory: KorgeNativeUiFactory, val view: View) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
@@ -80,7 +81,7 @@ open class KorgeNativeUiFactory : NativeUiFactory {
         }
     }
 
-    open class KorgeButton(override val factory: KorgeNativeUiFactory, val button: TextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeButton {
+    open class KorgeButton(override val factory: KorgeNativeUiFactory, val button: UITextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeButton {
         override var text: String
             get() = button.text
             set(value) {

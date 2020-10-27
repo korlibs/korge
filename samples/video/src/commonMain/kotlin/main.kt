@@ -12,14 +12,13 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.util.*
 import com.soywiz.korvi.*
-import kotlin.coroutines.coroutineContext
 import com.soywiz.korio.lang.*
 
 suspend fun main() = Korge(width = 1280, height = 720, bgcolor = Colors["#2b2b2b"]) {
 	//addUpdaterOnce {
 		val view = korviView(views, resourcesVfs["video.mp4"])
 		if (OS.isJs) {
-			val text = text("Click to start playing the video...")
+			val text = textOld("Click to start playing the video...")
 			mouse.click.once {
 				text.removeFromParent()
 				view.play()

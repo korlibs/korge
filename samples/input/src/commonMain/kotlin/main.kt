@@ -1,13 +1,12 @@
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.component.GamepadComponent
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 
 suspend fun main() = Korge {
 	var line = 0
-	fun textLine(text: String) = text(text).position(2, line++ * 20 + 5).apply { filtering = false }
+	fun textLine(text: String) = textOld(text).position(2, line++ * 20 + 5).apply { filtering = false }
 	fun nowTime() = DateTime.now().local.format(DateFormat("HH:mm:ss.SSS"))
 
 	textLine("Events :")

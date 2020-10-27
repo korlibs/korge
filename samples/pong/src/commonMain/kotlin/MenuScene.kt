@@ -10,18 +10,18 @@ class MenuScene() : Scene() {
 		views.clearColor = Colors.BLACK
 
 		// Add a text to show the name of the game
-		var gameNameText = text("Super Pong Bros II") {
+		var gameNameText = textOld("Super Pong Bros II") {
 			position(views.virtualWidth / 2 - 128, views.virtualHeight / 2 - 128)
 		}
 
-		var playButton = textButton(256.0, 32.0) {
+		var playButton = uiTextButton(256.0, 32.0) {
 			text = "Play"
 			position(views.virtualWidth / 2 - 128, views.virtualHeight / 2 - 64)
 			onClick {
 				sceneContainer.changeTo<PlayScene>()
 			}
 		}
-		var exitButton = textButton(256.0, 32.0) {
+		var exitButton = uiTextButton(256.0, 32.0) {
 			text = "Exit"
 			position(views.virtualWidth / 2 - 128, views.virtualHeight / 2)
 			onClick {

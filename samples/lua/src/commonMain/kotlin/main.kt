@@ -23,7 +23,7 @@ suspend fun main() = Korge {
 		print(b)
 		return res
 	""").call()
-	text("Result from LUA: ${result.toint()}")
+	textOld("Result from LUA: ${result.toint()}")
 }
 
 fun createLuaGlobals(): Globals = Globals().apply {

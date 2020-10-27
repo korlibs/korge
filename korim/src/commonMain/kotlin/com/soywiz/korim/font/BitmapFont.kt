@@ -10,16 +10,12 @@ import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.HorizontalAlign
-import com.soywiz.korim.vector.VerticalAlign
-import com.soywiz.korim.vector.paint.ColorPaint
-import com.soywiz.korim.vector.paint.DefaultPaint
-import com.soywiz.korim.vector.paint.Paint
+import com.soywiz.korim.paint.DefaultPaint
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.substr
-import com.soywiz.korio.resources.*
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.util.unquote
@@ -148,13 +144,13 @@ class BitmapFont(
          * Allows to set a different [fontName] than the one provided at [Font].
          */
         operator fun invoke(
-            font: Font,
-            fontSize: Number,
-            chars: CharacterSet = CharacterSet.LATIN_ALL,
-            fontName: String = font.name,
-            paint: Paint = ColorPaint(Colors.WHITE),
-            mipmaps: Boolean = true,
-            effect: BitmapEffect? = null,
+                font: Font,
+                fontSize: Number,
+                chars: CharacterSet = CharacterSet.LATIN_ALL,
+                fontName: String = font.name,
+                paint: Paint = Colors.WHITE,
+                mipmaps: Boolean = true,
+                effect: BitmapEffect? = null,
         ): BitmapFont {
             val fontSize = fontSize.toDouble()
             val fmetrics = font.getFontMetrics(fontSize)
@@ -333,24 +329,22 @@ fun Bitmap32.drawText(
     x: Int = 0, y: Int = 0,
     color: RGBA = Colors.WHITE,
     size: Double = font.fontSize.toDouble(),
-    horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT,
-    verticalAlign: VerticalAlign = VerticalAlign.TOP
+    alignment: TextAlignment = TextAlignment.TOP_LEFT,
 ) = context2d {
     this.font = font
     this.fontSize = size
-    this.horizontalAlign = horizontalAlign
-    this.verticalAlign = verticalAlign
+    this.alignment = alignment
     this.fillStyle = createColor(color)
     this.fillText(str, x, y)
 }
 
 fun Font.toBitmapFont(
-    fontSize: Number,
-    chars: CharacterSet = CharacterSet.LATIN_ALL,
-    fontName: String = this.name,
-    paint: Paint = ColorPaint(Colors.WHITE),
-    mipmaps: Boolean = true,
-    effect: BitmapEffect? = null,
+        fontSize: Number,
+        chars: CharacterSet = CharacterSet.LATIN_ALL,
+        fontName: String = this.name,
+        paint: Paint = Colors.WHITE,
+        mipmaps: Boolean = true,
+        effect: BitmapEffect? = null,
 ) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
 
 suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {

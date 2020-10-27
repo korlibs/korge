@@ -6,6 +6,7 @@ import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
@@ -33,7 +34,7 @@ class Board(
 	// Variables used for the counter
 	var tstart: DateTime = DateTime.EPOCH
 	var tstop: DateTime = DateTime.EPOCH
-	var timeText: Text
+	var timeText: TextOld
 
 	var lastx: Int = 0
 	var lasty: Int = 0
@@ -47,10 +48,10 @@ class Board(
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
 		val FONT_HEIGHT = 24.0
 		//timeText = text("00:00", font = DefaultTtfFont.toBitmapFont(32), textSize = FONT_HEIGHT).apply {
-        timeText = text("00:00", textSize = FONT_HEIGHT).apply {
+        timeText = textOld("00:00", textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.width)
 			y = -FONT_HEIGHT - 5
-			format.align = Html.Alignment.CENTER
+			format.align = TextAlignment.CENTER
 		}
 
 		//The board is centered on the screen

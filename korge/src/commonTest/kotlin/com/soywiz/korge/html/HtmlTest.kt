@@ -1,6 +1,8 @@
 package com.soywiz.korge.html
 
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.font.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.Rectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,11 +16,11 @@ class HtmlTest {
 		assertEquals(Rectangle(48.5, 0.0, 3.0, 1.0), doc.bounds)
 		assertEquals(listOf(Rectangle(48.5, 0.0, 3.0, 1.0)), doc.allSpans.map { it.bounds })
 		val format = doc.firstFormat
-		assertEquals(Html.FontFace.Named("Times New Roman"), format.computedFace)
+		assertEquals(SystemFont("Times New Roman"), format.computedFace)
 		assertEquals(33, format.computedSize)
 		assertEquals(Colors.WHITE, format.computedColor)
 		assertEquals(1, format.computedKerning)
 		assertEquals(0.0, format.computedLetterSpacing)
-		assertEquals(Html.Alignment.CENTER, format.computedAlign)
+		assertEquals(TextAlignment.CENTER, format.computedAlign)
 	}
 }

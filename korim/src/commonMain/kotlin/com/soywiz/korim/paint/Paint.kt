@@ -1,4 +1,4 @@
-package com.soywiz.korim.vector.paint
+package com.soywiz.korim.paint
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IntArrayList
@@ -172,17 +172,9 @@ class BitmapPaint(
     val cycleY: CycleMethod = CycleMethod.NO_CYCLE,
     val smooth: Boolean = true
 ) : TransformedPaint {
-    val repeatX: Boolean get() = cycleX != CycleMethod.NO_CYCLE
-    val repeatY: Boolean get() = cycleY != CycleMethod.NO_CYCLE
+    val repeatX: Boolean get() = cycleX.repeating
+    val repeatY: Boolean get() = cycleY.repeating
     val repeat: Boolean get() = repeatX || repeatY
-
-    // Old constructor
-    constructor(
-        bitmap: Bitmap,
-        transform: Matrix,
-        repeat: Boolean = false,
-        smooth: Boolean = true
-    ) : this(bitmap, transform, if (repeat) CycleMethod.REPEAT else CycleMethod.NO_CYCLE, if (repeat) CycleMethod.REPEAT else CycleMethod.NO_CYCLE, smooth)
 
     val bmp32 = bitmap.toBMP32()
     override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(m, this.transform))

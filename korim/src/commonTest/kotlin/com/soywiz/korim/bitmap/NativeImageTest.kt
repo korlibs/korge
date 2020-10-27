@@ -2,7 +2,6 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.vector.paint.ColorPaint
 import com.soywiz.korio.async.suspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +16,7 @@ class NativeImageTest {
         bmp.setRgba(1, 1, Colors.GREEN)
         //bmp.setRgba(0, 1, Colors.PINK)
         bmp.context2d {
-            fillStyle = ColorPaint(Colors.PINK)
+            fillStyle = Colors.PINK
             fillRect(0, 1, 1, 1)
         }
         bmp.copy(0, 0, bmp, 2, 2, 2, 2)

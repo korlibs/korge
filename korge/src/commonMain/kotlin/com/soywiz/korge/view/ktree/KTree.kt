@@ -131,8 +131,8 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
     val extensionsByName = LinkedHashMap<String, KTreeSerializerExtension>()
 
     init {
-        register(TextButton.Serializer)
-        register(Text2.Serializer)
+        register(UITextButton.Serializer)
+        register(Text.Serializer)
         register(UIProgressBar.Serializer)
         register(UICheckBox.Serializer)
     }
@@ -263,7 +263,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             double(view::width, 100.0)
             double(view::height, 100.0)
         }
-        if (view is Text2) {
+        if (view is Text) {
             string(view::text, "Text")
             double(view::fontSize, 10.0)
             //view.fontSource = xml.str("fontSource", "")
@@ -359,8 +359,8 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 is Image -> Xml("image", rproperties)
                 is TreeViewRef -> Xml("treeviewref", rproperties)
                 is TiledMapViewRef -> Xml("tiledmapref", rproperties)
-                is Text2 -> Xml("text", rproperties)
-                is TextButton -> Xml("uitextbutton", rproperties)
+                is Text -> Xml("text", rproperties)
+                is UITextButton -> Xml("uitextbutton", rproperties)
                 is Container -> Xml("container", rproperties) {
                     view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
                 }

@@ -6,24 +6,23 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 val DefaultTextSkin by lazy {
     TextSkin(
-        normal = TextFormat(RGBA(0, 0, 0), 16, Html.FontFace.Font(Fonts.defaultFont)),
-        over = TextFormat(RGBA(80, 80, 80), 16, Html.FontFace.Font(Fonts.defaultFont)),
-        down = TextFormat(RGBA(120, 120, 120), 16, Html.FontFace.Font(Fonts.defaultFont)),
-        disabled = TextFormat(RGBA(160, 160, 160), 16, Html.FontFace.Font(Fonts.defaultFont)),
+        normal = TextFormat(RGBA(0, 0, 0), 16, (Fonts.defaultFont)),
+        over = TextFormat(RGBA(80, 80, 80), 16, (Fonts.defaultFont)),
+        down = TextFormat(RGBA(120, 120, 120), 16, (Fonts.defaultFont)),
+        disabled = TextFormat(RGBA(160, 160, 160), 16, (Fonts.defaultFont)),
         backColor = Colors.WHITE
     )
 }
 
-val DefaultUIFont by lazy {
-    Html.FontFace.Font(debugBmpFont)
-    //Html.FontFace.Font(DefaultTtfFont)
-}
+val DefaultUIFont get() = DefaultUIBitmapFont
+val DefaultUIBitmapFont get() = debugBmpFont
+val DefaultUIVectorFont get() = DefaultTtfFont
 
 private fun buildDefaultButton(index: Int): Bitmap {
     return NativeImage(64, 64).context2d {
@@ -36,9 +35,9 @@ private fun buildDefaultButton(index: Int): Bitmap {
         }
 
         val border = when (index) {
-            2 -> ColorPaint(Colors["#4B4955"])
-            3 -> ColorPaint(Colors["#6A6A6A"])
-            else -> ColorPaint(Colors["#3C3A44"])
+            2 -> com.soywiz.korim.paint.ColorPaint(Colors["#4B4955"])
+            3 -> com.soywiz.korim.paint.ColorPaint(Colors["#6A6A6A"])
+            else -> com.soywiz.korim.paint.ColorPaint(Colors["#3C3A44"])
         }
         fill(gradient) {
             stroke(border, lineWidth = 8.0) {
@@ -49,7 +48,7 @@ private fun buildDefaultButton(index: Int): Bitmap {
 }
 
 private fun buildDefaultShape(index: Int, enabled: Boolean): Bitmap {
-    val color = ColorPaint(if (enabled) Colors["#484848"] else Colors["#737373"])
+    val color = com.soywiz.korim.paint.ColorPaint(if (enabled) Colors["#484848"] else Colors["#737373"])
     val lineWidth = 8.0
     return NativeImage(64, 64).context2d {
         when (index) {

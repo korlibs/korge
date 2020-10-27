@@ -5,7 +5,6 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge3d.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
@@ -21,7 +20,7 @@ private suspend fun Stage3D.orbit(v: View3D, distance: Double, time: TimeSpan) {
 }
 
 class Button(text: String, handler: suspend () -> Unit) : Container() {
-	val textField = Text(text, textSize = 32.0).apply { filtering = false }
+	val textField = Text(text, fontSize = 32.0).apply { smoothing = false }
 	private val bounds = textField.textBounds
 	val g = Graphics().apply {
 		fill(Colors.DARKGREY, 0.7) {

@@ -1,10 +1,17 @@
 package com.soywiz.korim.font
 
-import com.soywiz.korim.vector.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.*
 
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 
 open class NativeSystemFontProvider {
+    open fun listFontNames(): List<String> {
+        return listOf()
+    }
+
     open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath()): GlyphPath? {
         return null
     }
@@ -30,12 +37,80 @@ open class NativeSystemFontProvider {
         = 0.0
 }
 
-open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : NativeSystemFontProvider() {
+// @TODO: We can check the system's font directory with a VfsFile folder,
+// @TODO: then construct a catalog parsing the TTF files as a way of getting system fonts
+
+// Windows: C:\Windows\Fonts (%DRIVE%)
+// Linux: /usr/share/fonts , /usr/local/share/fonts and ~/.fonts
+// MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts
+
+private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
+private val windowsFolders = listOf("%WINDIR%\\Fonts")
+private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
+
+open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linuxFolders + windowsFolders + macosFolders, val fontCacheFile: String = "~/.korimFontCache") : TtfNativeSystemFontProvider() {
+    fun listFontNamesMap(): Map<String, VfsFile> = runBlockingNoJs {
+        val fontCacheVfsFile = localVfs(com.soywiz.korio.lang.Environment.expand(fontCacheFile))
+        val out = LinkedHashMap<String, VfsFile>()
+        val fileNamesToName = LinkedHashMap<String, String>()
+        val oldFontCacheVfsFileText = try { fontCacheVfsFile.readString() } catch (e: Throwable) { "" }
+        for (line in oldFontCacheVfsFileText.split("\n")) {
+            val (file, name) = line.split("=", limit = 2) + listOf("", "")
+            fileNamesToName[file] = name
+        }
+        for (folder in folders) {
+            try {
+                val file = localVfs(Environment.expand(folder))
+                for (f in file.listSimple()) {
+                    try {
+                        val name = fileNamesToName.getOrPut(f.baseName) { com.soywiz.korim.font.TtfFont(f.readAll()).ttfCompleteName }
+                        if (name != "") {
+                            out[name] = f
+                        }
+                    } catch (e: Throwable) {
+                        fileNamesToName.getOrPut(f.baseName) { "" }
+                    }
+                }
+            } catch (e: Throwable) {
+            }
+        }
+        val newFontCacheVfsFileText = fileNamesToName.map { "${it.key}=${it.value}" }.joinToString("\n")
+        if (newFontCacheVfsFileText != oldFontCacheVfsFileText) {
+            fontCacheVfsFile.writeString(newFontCacheVfsFileText)
+        }
+        //println("fileNamesToName: $fileNamesToName")
+        out
+    }
+
+    fun listFontNamesMapLC(): Map<String, VfsFile> = listFontNamesMap().mapKeys { it.key.normalizeName() }
+
+    override fun listFontNames(): List<String> = listFontNamesMap().keys.toList()
+
+    private val namesMapLC by lazy { listFontNamesMapLC() }
+
+    override fun loadFontByName(name: String): TtfFont? =
+        runBlockingNoJs { namesMapLC[name.normalizeName()]?.let { com.soywiz.korim.font.TtfFont(it.readAll()) } }
+}
+
+abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
+    abstract fun loadFontByName(name: String): TtfFont?
+
+    fun String.normalizeName() = this.toLowerCase().trim()
+
+    private val ttfCache by lazy { LinkedHashMap<String, TtfFont?>() }
+
+    fun locateFontByName(name: String): TtfFont? {
+        val normalizedName = name.normalizeName()
+        return ttfCache.getOrPut(normalizedName) { loadFontByName(name) }
+    }
+
+    fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: DefaultTtfFont
+
     override fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath): GlyphPath? =
-        ttf.getGlyphPath(size, codePoint, path)
+        ttf(systemFont).getGlyphPath(size, codePoint, path)
 
     override fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
-        ttf.getFontMetrics(size, metrics)
+        ttf(systemFont).getFontMetrics(size, metrics)
     }
 
     override fun getSystemFontGlyphMetrics(
@@ -44,7 +119,7 @@ open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : NativeSystemFont
         codePoint: Int,
         metrics: GlyphMetrics
     ) {
-        ttf.getGlyphMetrics(size, codePoint, metrics)
+        ttf(systemFont).getGlyphMetrics(size, codePoint, metrics)
     }
 
     override fun getSystemFontKerning(
@@ -52,13 +127,10 @@ open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : NativeSystemFont
         size: Double,
         leftCodePoint: Int,
         rightCodePoint: Int
-    ): Double = ttf.getKerning(size, leftCodePoint, rightCodePoint)
+    ): Double = ttf(systemFont).getKerning(size, leftCodePoint, rightCodePoint)
 }
 
-// @TODO: We can check the system's font directory with a VfsFile folder,
-// @TODO: then construct a catalog parsing the TTF files as a way of getting system fonts
-
-// Windows: C:\Windows\Fonts (%DRIVE%)
-// Linux: /usr/share/fonts , /usr/local/share/fonts and ~/.fonts
-// MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts
-
+open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemFontProvider() {
+    override fun listFontNames(): List<String> = listOf(ttf.ttfCompleteName)
+    override fun loadFontByName(name: String): TtfFont? = ttf
+}

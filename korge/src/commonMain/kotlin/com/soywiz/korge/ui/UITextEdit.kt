@@ -1,23 +1,5 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korge.view.Image
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.sliceWithSize
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.TtfFont
-import com.soywiz.korim.font.drawText
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.paint.ColorPaint
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.util.isPrintable
-
 /**
  *
  * @author Matthias Wienand and Dr.D.H.Akehurst

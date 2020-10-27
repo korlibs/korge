@@ -5,7 +5,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.vector.*
 import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*

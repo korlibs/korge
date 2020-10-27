@@ -3,12 +3,7 @@ package com.soywiz.korim.vector
 import com.soywiz.kds.intArrayListOf
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-import com.soywiz.korim.vector.filler.*
-import com.soywiz.korim.vector.paint.BitmapPaint
-import com.soywiz.korim.vector.paint.ColorPaint
-import com.soywiz.korim.vector.paint.GradientPaint
-import com.soywiz.korim.vector.paint.NonePaint
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.rasterizer.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*

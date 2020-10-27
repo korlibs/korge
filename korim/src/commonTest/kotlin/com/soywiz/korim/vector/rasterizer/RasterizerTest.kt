@@ -2,13 +2,11 @@ package com.soywiz.korim.vector.rasterizer
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.showImageAndWait
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
 import kotlin.test.*
 
 class RasterizerTest {
@@ -164,7 +162,7 @@ class RasterizerTest {
                 lineWidth = 1.0
                 for (i in 0 until 6) {
                     for (j in 0 until 6) {
-                        strokeStyle = ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
+                        strokeStyle = com.soywiz.korim.paint.ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
                         beginPath();
                         //arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.0, PI * 2, true)
                         arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.degrees, 360.degrees)

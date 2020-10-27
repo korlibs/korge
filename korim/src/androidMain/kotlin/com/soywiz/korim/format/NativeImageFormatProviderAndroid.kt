@@ -12,9 +12,8 @@ import com.soywiz.korio.android.androidContext
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.Font
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
@@ -180,7 +179,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         CycleMethod.REPEAT -> Shader.TileMode.REPEAT
     }
 
-    fun convertPaint(c: com.soywiz.korim.vector.paint.Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
+    fun convertPaint(c: Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
         when (c) {
             is NonePaint -> {
                 out.shader = null

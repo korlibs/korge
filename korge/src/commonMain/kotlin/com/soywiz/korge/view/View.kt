@@ -22,7 +22,6 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
-import kotlin.collections.set
 
 /**
  * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.

@@ -1,9 +1,12 @@
 package com.soywiz.korim.font
 
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.resources.*
 
 inline class SystemFont(override val name: String) : VectorFont, Resourceable<Font> {
+    companion object {
+        fun listFontNames() = nativeSystemFontProvider.listFontNames()
+    }
+
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.also { nativeSystemFontProvider.getSystemFontMetrics(this, size, metrics) }
 

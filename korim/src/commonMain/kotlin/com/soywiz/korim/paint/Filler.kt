@@ -1,4 +1,4 @@
-package com.soywiz.korim.vector.filler
+package com.soywiz.korim.paint
 
 import com.soywiz.kmem.clamp01
 import com.soywiz.korim.bitmap.Bitmap32
@@ -8,9 +8,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.BitmapPaint
-import com.soywiz.korim.vector.paint.ColorPaint
-import com.soywiz.korim.vector.paint.GradientPaint
 import com.soywiz.korma.geom.*
 
 abstract class BaseFiller {

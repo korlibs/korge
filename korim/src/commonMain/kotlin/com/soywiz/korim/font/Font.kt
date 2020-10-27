@@ -8,8 +8,8 @@ import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.DefaultPaint
-import com.soywiz.korim.vector.paint.Paint
+import com.soywiz.korim.paint.DefaultPaint
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
@@ -38,9 +38,9 @@ data class TextToBitmapResult(
 }
 
 fun Font.renderGlyphToBitmap(
-    size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
-    effect: BitmapEffect? = null,
-    border: Int = 1, nativeRendering: Boolean = true
+        size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
+        effect: BitmapEffect? = null,
+        border: Int = 1, nativeRendering: Boolean = true
 ): TextToBitmapResult {
     val font = this
     val fmetrics = getFontMetrics(size)
@@ -63,7 +63,16 @@ fun Font.renderGlyphToBitmap(
 }
 
 // @TODO: Fix metrics
-fun <T> Font.renderTextToBitmap(size: Double, text: T, paint: Paint = DefaultPaint, fill: Boolean = true, border: Int = 0, renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>, returnGlyphs: Boolean = true, nativeRendering: Boolean = true): TextToBitmapResult {
+fun <T> Font.renderTextToBitmap(
+    size: Double,
+    text: T,
+    paint: Paint = DefaultPaint,
+    fill: Boolean = true,
+    border: Int = 0,
+    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+    returnGlyphs: Boolean = true,
+    nativeRendering: Boolean = true
+): TextToBitmapResult {
     val font = this
     val bounds = getTextBounds(size, text, renderer = renderer)
     //println("BOUNDS: $bounds")
@@ -82,12 +91,12 @@ fun <T> Font.renderTextToBitmap(size: Double, text: T, paint: Paint = DefaultPai
 }
 
 fun <T> Font.drawText(
-    ctx: Context2d, size: Double,
-    text: T, paint: Paint,
-    x: Double = 0.0, y: Double = 0.0,
-    fill: Boolean = true,
-    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-    placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
+        ctx: Context2d, size: Double,
+        text: T, paint: Paint,
+        x: Double = 0.0, y: Double = 0.0,
+        fill: Boolean = true,
+        renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+        placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
 ) {
     val actions = object : TextRendererActions() {
         override fun put(codePoint: Int): GlyphMetrics {

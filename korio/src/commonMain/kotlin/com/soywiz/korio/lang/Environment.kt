@@ -6,3 +6,13 @@ expect object Environment {
 
 	fun getAll(): Map<String, String>
 }
+
+fun Environment.expand(str: String): String {
+    return str.replace(Regex("(~|%(\\w+)%)")) {
+        val key = it.value.trim('%')
+        when (key) {
+            "~" -> this["HOMEPATH"] ?: this["HOME"] ?: this["TEMP"] ?: this["TMP"] ?: "/tmp"
+            else -> this[key]
+        } ?: ""
+    }
+}

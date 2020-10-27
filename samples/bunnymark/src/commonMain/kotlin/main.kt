@@ -1,27 +1,16 @@
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.*
-import com.soywiz.klogger.Console
 import com.soywiz.korge.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.service.storage.NativeStorage
-import com.soywiz.korge.time.delay
 import com.soywiz.korge.view.fast.FastSprite
-import com.soywiz.korge.view.fast.FastSpriteContainer
 import com.soywiz.korge.view.fast.fastSpriteContainer
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.font.toBitmapFont
 import com.soywiz.korim.vector.VerticalAlign
 import kotlin.random.Random
@@ -62,7 +51,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
     //val font = resourcesVfs["font1.fnt"].readBitmapFont()
     //val font = DefaultTtfFont
-    val bunnyCountText = text2("", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
+    val bunnyCountText = text("", font = font, fontSize = 16.0, verticalAlign = VerticalAlign.TOP).position(16.0, 16.0)
     //val container = container()
 
     val bunnys = arrayListOf<Bunny>()
