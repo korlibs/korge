@@ -25,7 +25,6 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.soywiz.korma.geom.*
 
 /**
@@ -42,7 +41,7 @@ import com.soywiz.korma.geom.*
  */
 abstract class TransformObject(pool: SingleObjectPool<out TransformObject>) : BaseObject(pool) {
 	internal val _helpMatrix: Matrix get() = pool._helpMatrix
-	internal val _helpTransform: Transform get() = pool._helpTransform
+	internal val _helpTransform: TransformDb get() = pool._helpTransform
 	internal val _helpPoint: Point get() = pool._helpPoint
 
 	/**
@@ -68,7 +67,7 @@ abstract class TransformObject(pool: SingleObjectPool<out TransformObject>) : Ba
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	val global: Transform = Transform()
+	val global: TransformDb = TransformDb()
 	/**
 	 * - The offset transform relative to the armature or the parent bone coordinate system.
 	 * @see #dragonBones.Bone#invalidUpdate()
@@ -81,11 +80,11 @@ abstract class TransformObject(pool: SingleObjectPool<out TransformObject>) : Ba
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	val offset: Transform = Transform()
+	val offset: TransformDb = TransformDb()
 	/**
 	 * @private
 	 */
-	var origin: Transform? = null
+	var origin: TransformDb? = null
 	/**
 	 * @private
 	 */

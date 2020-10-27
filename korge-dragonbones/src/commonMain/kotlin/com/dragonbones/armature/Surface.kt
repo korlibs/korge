@@ -23,7 +23,6 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.soywiz.kmem.*
@@ -84,9 +83,9 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 	}
 
 	private fun _getAffineTransform(
-		x: Float, y: Float, lX: Float, lY: Float,
-		aX: Float, aY: Float, bX: Float, bY: Float, cX: Float, cY: Float,
-		transform: Transform, matrix: Matrix, isDown: Boolean
+        x: Float, y: Float, lX: Float, lY: Float,
+        aX: Float, aY: Float, bX: Float, bY: Float, cX: Float, cY: Float,
+        transform: TransformDb, matrix: Matrix, isDown: Boolean
 	) {
 		val dabX = bX - aX
 		val dabY = bY - aY

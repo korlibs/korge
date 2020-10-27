@@ -23,7 +23,6 @@
 package com.dragonbones.parser
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
@@ -164,7 +163,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	private var _frameValueScale: Double = 1.0
 	private val _helpMatrixA: Matrix = Matrix()
 	private val _helpMatrixB: Matrix = Matrix()
-	private val _helpTransform: Transform = Transform()
+	private val _helpTransform: TransformDb = TransformDb()
 	private val _helpColorTransform: ColorTransform = ColorTransform()
 	private val _helpPoint: Point = Point()
 	private val _helpArray: DoubleArrayList = DoubleArrayList()
@@ -1119,7 +1118,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 							}
 						} else {
 							if (timelineType == TimelineType.BoneRotate) {
-								this._frameValueScale = Transform.DEG_RAD.toDouble()
+								this._frameValueScale = TransformDb.DEG_RAD.toDouble()
 							} else {
 								this._frameValueScale = 1.0
 							}
@@ -1697,14 +1696,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		var rotation = this._helpTransform.rotation
 		if (frameStart != 0) {
 			if (this._prevClockwise == 0.0) {
-				rotation = (this._prevRotation + Transform.normalizeRadian(rotation - this._prevRotation)).toFloat()
+				rotation = (this._prevRotation + TransformDb.normalizeRadian(rotation - this._prevRotation)).toFloat()
 			} else {
 				if (if (this._prevClockwise > 0) rotation >= this._prevRotation else rotation <= this._prevRotation) {
 					this._prevClockwise =
 							if (this._prevClockwise > 0) this._prevClockwise - 1 else this._prevClockwise + 1
 				}
 
-				rotation = (this._prevRotation + rotation - this._prevRotation + Transform.PI_D * this._prevClockwise).toFloat()
+				rotation = (this._prevRotation + rotation - this._prevRotation + TransformDb.PI_D * this._prevClockwise).toFloat()
 			}
 		}
 
@@ -1737,18 +1736,18 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 	protected fun _parseBoneRotateFrame(rawData: Any?, frameStart: Int, frameCount: Int): Int {
 		// Modify rotation.
-		var rotation = ObjectDataParser._getNumber(rawData, DataParser.ROTATE, 0.0) * Transform.DEG_RAD
+		var rotation = ObjectDataParser._getNumber(rawData, DataParser.ROTATE, 0.0) * TransformDb.DEG_RAD
 
 		if (frameStart != 0) {
 			if (this._prevClockwise == 0.0) {
-				rotation = this._prevRotation + Transform.normalizeRadian(rotation - this._prevRotation)
+				rotation = this._prevRotation + TransformDb.normalizeRadian(rotation - this._prevRotation)
 			} else {
 				if (if (this._prevClockwise > 0) rotation >= this._prevRotation else rotation <= this._prevRotation) {
 					this._prevClockwise =
 							if (this._prevClockwise > 0) this._prevClockwise - 1 else this._prevClockwise + 1
 				}
 
-				rotation = this._prevRotation + rotation - this._prevRotation + Transform.PI_D * this._prevClockwise
+				rotation = this._prevRotation + rotation - this._prevRotation + TransformDb.PI_D * this._prevClockwise
 			}
 		}
 
@@ -1760,7 +1759,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		this._frameFloatArray.length += 2
 		this._frameFloatArray[frameFloatOffset++] = rotation
 		this._frameFloatArray[frameFloatOffset++] = ObjectDataParser._getNumber(rawData, DataParser.SKEW, 0.0) *
-				Transform.DEG_RAD
+				TransformDb.DEG_RAD
 
 		return frameOffset
 	}
@@ -2084,39 +2083,39 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		return frameOffset
 	}
 
-	protected fun _parseTransform(rawData: Any?, transform: Transform, scale: Double) {
+	protected fun _parseTransform(rawData: Any?, transform: TransformDb, scale: Double) {
 		transform.xf = (ObjectDataParser._getNumber(rawData, DataParser.X, 0.0) * scale).toFloat()
 		transform.yf = (ObjectDataParser._getNumber(rawData, DataParser.Y, 0.0) * scale).toFloat()
 
 		if (rawData.containsDynamic(DataParser.ROTATE) || rawData.containsDynamic(DataParser.SKEW)) {
-			transform.rotation = Transform.normalizeRadian(
+			transform.rotation = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.ROTATE,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
-			transform.skew = Transform.normalizeRadian(
+			transform.skew = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
 		} else if (rawData.containsDynamic(DataParser.SKEW_X) || rawData.containsDynamic(DataParser.SKEW_Y)) {
-			transform.rotation = Transform.normalizeRadian(
+			transform.rotation = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW_Y,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
-			transform.skew = (Transform.normalizeRadian(
+			transform.skew = (TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW_X,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			) - transform.rotation).toFloat()
 		}
 

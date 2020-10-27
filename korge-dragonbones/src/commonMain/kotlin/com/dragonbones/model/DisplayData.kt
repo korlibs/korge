@@ -23,10 +23,8 @@
 package com.dragonbones.model
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
-import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
@@ -77,7 +75,7 @@ abstract class DisplayData (pool: SingleObjectPool<out DisplayData>) : BaseObjec
 	var type: DisplayType = DisplayType.None
 	var name: String = ""
 	var path: String = ""
-	val transform: Transform = Transform()
+	val transform: TransformDb = TransformDb()
 	lateinit var parent: SkinData
 
 	override fun _onClear() {

@@ -173,9 +173,9 @@ data class Matrix(
     )
 
     /** Transform point without translation */
-    fun deltaTransformPoint(point: IPoint, out: XY = Point()) = deltaTransformPoint(point.x, point.y, out)
-    fun deltaTransformPoint(x: Float, y: Float, out: XY = Point()): XY = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
-    fun deltaTransformPoint(x: Double, y: Double, out: XY = Point()): XY {
+    fun deltaTransformPoint(point: IPoint, out: Point = Point()) = deltaTransformPoint(point.x, point.y, out)
+    fun deltaTransformPoint(x: Float, y: Float, out: Point = Point()): Point = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
+    fun deltaTransformPoint(x: Double, y: Double, out: Point = Point()): Point {
         out.x = deltaTransformX(x, y)
         out.y = deltaTransformY(x, y)
         return out
@@ -250,17 +250,6 @@ data class Matrix(
     fun transform(px: Double, py: Double, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
     fun transform(px: Float, py: Float, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
     fun transform(px: Int, py: Int, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
-
-    fun transform(px: Double, py: Double, out: XY): XY {
-        out.x = transformX(px, py)
-        out.y = transformY(px, py)
-        return out
-    }
-    fun transform(px: Float, py: Float, out: XYf): XYf {
-        out.xf = transformXf(px, py)
-        out.yf = transformYf(px, py)
-        return out
-    }
 
     fun transformX(p: IPoint): Double = transformX(p.x, p.y)
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
@@ -347,11 +336,20 @@ data class Matrix(
     )
 
     data class Transform(
-        var x: Double = 0.0, var y: Double = 0.0,
+        override var x: Double = 0.0, override var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
         var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
-    ) : MutableInterpolable<Transform>, Interpolable<Transform> {
+    ) : MutableInterpolable<Transform>, Interpolable<Transform>, XY, XYf {
+
+        override var xf: Float
+            get() = x.toFloat()
+            set(value) { x = value.toDouble() }
+
+        override var yf: Float
+            get() = y.toFloat()
+            set(value) { y = value.toDouble() }
+
         val scaleAvg get() = (scaleX + scaleY) * 0.5
 
         override fun interpolateWith(ratio: Double, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
@@ -419,6 +417,26 @@ data class Matrix(
         }
         fun setTo(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Transform =
             setTo(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
+
+        fun add(value: Transform): Transform = setTo(
+            x + value.x,
+            y + value.y,
+            scaleX * value.scaleX,
+            scaleY * value.scaleY,
+            rotation + value.rotation,
+            skewX + value.skewX,
+            skewY + value.skewY,
+        )
+
+        fun minus(value: Transform): Transform = setTo(
+            x - value.x,
+            y - value.y,
+            scaleX / value.scaleX,
+            scaleY / value.scaleY,
+            rotation - value.rotation,
+            skewX - value.skewX,
+            skewY - value.skewY,
+        )
 
         fun clone() = Transform().copyFrom(this)
     }

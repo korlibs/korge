@@ -25,7 +25,6 @@ package com.dragonbones.animation
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.soywiz.kmem.*
 import kotlin.math.*
@@ -309,8 +308,8 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		super._onArriveAtFrame()
 
 		if (this._isTween && this._frameIndex == this._frameCount - 1) {
-			this._rd[2] = Transform.normalizeRadian(this._rd[2])
-			this._rd[3] = Transform.normalizeRadian(this._rd[3])
+			this._rd[2] = TransformDb.normalizeRadian(this._rd[2])
+			this._rd[3] = TransformDb.normalizeRadian(this._rd[3])
 		}
 
 		if (this._timelineData == null) { // Pose.
@@ -329,8 +328,8 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 
 	override fun fadeOut() {
 		this.dirty = false
-		this._rd[2] = Transform.normalizeRadian(this._rd[2])
-		this._rd[3] = Transform.normalizeRadian(this._rd[3])
+		this._rd[2] = TransformDb.normalizeRadian(this._rd[2])
+		this._rd[3] = TransformDb.normalizeRadian(this._rd[3])
 	}
 
 	override fun blend(_isDirty: Boolean) {
@@ -421,8 +420,8 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 		super._onArriveAtFrame()
 
 		if (this._isTween && this._frameIndex == this._frameCount - 1) {
-			this._differenceA = Transform.normalizeRadian(this._differenceA)
-			this._differenceB = Transform.normalizeRadian(this._differenceB)
+			this._differenceA = TransformDb.normalizeRadian(this._differenceA)
+			this._differenceB = TransformDb.normalizeRadian(this._differenceB)
 		}
 	}
 
@@ -435,8 +434,8 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 
 	override fun fadeOut() {
 		this.dirty = false
-		this._resultA = Transform.normalizeRadian(this._resultA)
-		this._resultB = Transform.normalizeRadian(this._resultB)
+		this._resultA = TransformDb.normalizeRadian(this._resultA)
+		this._resultB = TransformDb.normalizeRadian(this._resultB)
 	}
 
 	override fun blend(_isDirty: Boolean) {

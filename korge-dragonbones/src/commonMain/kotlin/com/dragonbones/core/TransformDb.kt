@@ -1,42 +1,14 @@
-package com.dragonbones.geom
+package com.dragonbones.core
 
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
- * The MIT License (MIT)
- *
- * Copyright (c) 2012-2018 DragonBones team and other contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/**
- * - 2D Transform.
- * @version DragonBones 3.0
- * @language en_US
- */
-/**
  * - 2D 变换。
  * @version DragonBones 3.0
  * @language zh_CN
  */
-class Transform
+class TransformDb
 /**
  * @private
  */(
@@ -149,7 +121,7 @@ class Transform
 		return "[object dragonBones.Transform] x:" + this.xf + " y:" + this.yf + " skewX:" + this.skew * 180f / PI + " skewY:" + this.rotation * 180f / PI + " scaleX:" + this.scaleX + " scaleY:" + this.scaleY
 	}
 
-	fun setTo(x: Float, y: Float, skew: Float, rotation: Float, scaleX: Float, scaleY: Float): Transform {
+	fun setTo(x: Float, y: Float, skew: Float, rotation: Float, scaleX: Float, scaleY: Float): TransformDb {
 		this.xf = x
 		this.yf = y
 		this.skew = skew
@@ -167,17 +139,17 @@ class Transform
 	/**
 	 * @private
 	 */
-	fun copyFrom(value: Transform): Transform = value.apply { this@Transform.setTo(xf, yf, skew, rotation, scaleX, scaleY) }
+	fun copyFrom(value: TransformDb): TransformDb = value.apply { this@TransformDb.setTo(xf, yf, skew, rotation, scaleX, scaleY) }
 
 	/**
 	 * @private
 	 */
-	fun identity(): Transform = setTo(0f, 0f, 0f, 0f, 1f, 1f)
+	fun identity(): TransformDb = setTo(0f, 0f, 0f, 0f, 1f, 1f)
 
 	/**
 	 * @private
 	 */
-	fun add(value: Transform): Transform = setTo(
+	fun add(value: TransformDb): TransformDb = setTo(
 		xf + value.xf,
 		yf + value.yf,
 		skew + value.skew,
@@ -189,7 +161,7 @@ class Transform
 	/**
 	 * @private
 	 */
-	fun minus(value: Transform): Transform = setTo(
+	fun minus(value: TransformDb): TransformDb = setTo(
 		xf - value.xf,
 		yf - value.yf,
 		skew - value.skew,
@@ -201,10 +173,10 @@ class Transform
 	/**
 	 * @private
 	 */
-	fun fromMatrix(matrix: Matrix): Transform {
+	fun fromMatrix(matrix: Matrix): TransformDb {
 		val backupScaleX = this.scaleX
 		val backupScaleY = this.scaleY
-		val PI_Q = Transform.PI_Q
+		val PI_Q = TransformDb.PI_Q
 
 		this.xf = matrix.txf
 		this.yf = matrix.tyf
@@ -232,7 +204,7 @@ class Transform
 	/**
 	 * @private
 	 */
-	fun toMatrix(matrix: Matrix): Transform {
+	fun toMatrix(matrix: Matrix): TransformDb {
 		if (this.rotation == 0f) {
 			matrix.af = 1f
 			matrix.bf = 0f

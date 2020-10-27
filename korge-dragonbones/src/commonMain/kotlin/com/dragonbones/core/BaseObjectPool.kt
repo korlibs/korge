@@ -3,15 +3,11 @@ package com.dragonbones.core
 import com.dragonbones.animation.*
 import com.dragonbones.armature.*
 import com.dragonbones.event.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
-import com.dragonbones.util.*
 import com.soywiz.kds.*
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import kotlin.reflect.*
 
 class SingleObjectPool<T : BaseObject>(val base: BaseObjectPool, gen: (SingleObjectPool<T>) -> T) {
     private val pool = Pool { gen(this) }
@@ -29,7 +25,7 @@ class SingleObjectPool<T : BaseObject>(val base: BaseObjectPool, gen: (SingleObj
 class BaseObjectPool {
     var __hashCode = 0
     internal val _helpMatrix: Matrix = Matrix()
-    internal val _helpTransform: Transform = Transform()
+    internal val _helpTransform: TransformDb = TransformDb()
     internal val _helpPoint: Point = Point()
 
 	val DEFAULT_COLOR: ColorTransform = ColorTransform()

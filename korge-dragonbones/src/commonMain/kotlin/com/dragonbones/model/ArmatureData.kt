@@ -23,7 +23,6 @@
 package com.dragonbones.model
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
@@ -289,7 +288,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun setCacheFrame(globalTransformMatrix: Matrix, transform: Transform): Int {
+	fun setCacheFrame(globalTransformMatrix: Matrix, transform: TransformDb): Int {
 		val dataArray = this.parent!!.cachedFrames
 		val arrayOffset = dataArray.size
 
@@ -311,7 +310,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun getCacheFrame(globalTransformMatrix: Matrix, transform: Transform, arrayOffset: Int) {
+	fun getCacheFrame(globalTransformMatrix: Matrix, transform: TransformDb, arrayOffset: Int) {
 		val dataArray = this.parent!!.cachedFrames
 		globalTransformMatrix.af = dataArray[arrayOffset].toFloat()
 		globalTransformMatrix.bf = dataArray[arrayOffset + 1].toFloat()
@@ -543,7 +542,7 @@ open class BoneData(pool: SingleObjectPool<out BoneData>) : BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	val transform: Transform = Transform()
+	val transform: TransformDb = TransformDb()
 	/**
 	 * @private
 	 */

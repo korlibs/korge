@@ -23,7 +23,6 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
@@ -106,7 +105,7 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 			radian += PI.toFloat()
 		}
 
-		global.rotation += (Transform.normalizeRadian((radian - global.rotation).toDouble()) * this._weight).toFloat()
+		global.rotation += (TransformDb.normalizeRadian((radian - global.rotation).toDouble()) * this._weight).toFloat()
 		global.toMatrix(globalTransformMatrix)
 	}
 
@@ -171,7 +170,7 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 			radianA = atan2(global.yf - parentGlobal.yf, global.xf - parentGlobal.xf).toDouble()
 		}
 
-		val dR = Transform.normalizeRadian(radianA - rawRadianA)
+		val dR = TransformDb.normalizeRadian(radianA - rawRadianA)
 		parentGlobal.rotation = (rawParentRadian + dR * this._weight).toFloat()
 		parentGlobal.toMatrix(parent.globalTransformMatrix)
 		//
@@ -184,7 +183,7 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 			radianB += PI.toFloat()
 		}
 
-		global.rotation = (parentGlobal.rotation + rawRadian - rawParentRadian + Transform.normalizeRadian(radianB - dR - rawRadian) * this._weight).toFloat()
+		global.rotation = (parentGlobal.rotation + rawRadian - rawParentRadian + TransformDb.normalizeRadian(radianB - dR - rawRadian) * this._weight).toFloat()
 		global.toMatrix(globalTransformMatrix)
 	}
 
@@ -832,7 +831,7 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 			val bone = pathSlot._parent
 			if (bone != null) {
 				val matrix = bone.globalTransformMatrix
-				rotateOffset *= if (matrix.af * matrix.df - matrix.bf * matrix.cf > 0) Transform.DEG_RAD else -Transform.DEG_RAD
+				rotateOffset *= if (matrix.af * matrix.df - matrix.bf * matrix.cf > 0) TransformDb.DEG_RAD else -TransformDb.DEG_RAD
 			}
 		}
 
@@ -889,11 +888,11 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 					r += rotateOffset
 				}
 
-				if (r > Transform.PI) {
-					r -= Transform.PI_D
+				if (r > TransformDb.PI) {
+					r -= TransformDb.PI_D
 				}
-				else if (r < - Transform.PI) {
-					r += Transform.PI_D
+				else if (r < - TransformDb.PI) {
+					r += TransformDb.PI_D
 				}
 
 				r *= rotateMix

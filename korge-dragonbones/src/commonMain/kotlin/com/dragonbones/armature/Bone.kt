@@ -23,7 +23,6 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
@@ -68,7 +67,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 	/**
 	 * @internal
 	 */
-	val animationPose: Transform = Transform()
+	val animationPose: TransformDb = TransformDb()
 	/**
 	 * @internal
 	 */
@@ -193,7 +192,8 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 					(surfaceBone as Bone).updateGlobalTransform()
 					global.scaleX *= surfaceBone.global.scaleX
 					global.scaleY *= surfaceBone.global.scaleY
-					parentMatrix.transform(global.xf, global.yf, global)
+					global.xf = parentMatrix.transformXf(global.xf, global.yf)
+                    global.yf = parentMatrix.transformYf(global.xf, global.yf)
 					global.toMatrix(globalTransformMatrix)
 
 					if (boneData.inheritTranslation) {
