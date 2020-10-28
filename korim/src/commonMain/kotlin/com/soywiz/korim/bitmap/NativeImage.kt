@@ -4,7 +4,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 
 abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplied: Boolean) : Bitmap(width, height, 32, premultiplied, null) {
     /** Allow to force to use a texture id from OpenGL. For example a video texture from Android */

@@ -4,7 +4,7 @@ import com.soywiz.korge.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 
 object KorgeUiSample {

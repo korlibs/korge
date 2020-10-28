@@ -11,9 +11,9 @@ import com.soywiz.korim.vector.renderer.Renderer
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import org.khronos.webgl.set

@@ -1,8 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.test.*
 
 class Bitmap1Test {

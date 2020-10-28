@@ -8,7 +8,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.checksum.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.collections.*

@@ -6,7 +6,7 @@ import com.soywiz.korio.net.FakeAsyncClient
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.net.http.Http
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.encoding.hex
+import com.soywiz.krypto.encoding.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

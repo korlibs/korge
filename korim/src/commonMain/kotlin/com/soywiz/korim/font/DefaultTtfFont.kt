@@ -3,7 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.klock.*
 import com.soywiz.korio.compression.deflate.ZLib
 import com.soywiz.korio.compression.uncompress
-import com.soywiz.korio.util.encoding.fromBase64
+import com.soywiz.krypto.encoding.*
 import kotlin.native.concurrent.*
 
 // Sani Trixie Sans

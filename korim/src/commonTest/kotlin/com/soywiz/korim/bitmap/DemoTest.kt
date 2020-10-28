@@ -1,14 +1,16 @@
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.toIntMap
+@file:Suppress("UnusedImport")
+
+import com.soywiz.kds.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.krypto.encoding.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.encoding.*
-import com.soywiz.korma.geom.Size
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.*
 import kotlin.test.*
 
 class DemoTest {

@@ -1,9 +1,11 @@
+@file:Suppress("UnusedImport")
+
 package com.soywiz.korio.compression
 
+import com.soywiz.korio.compression.deflate.GZIP
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.test.*
 
 class CompressionTest {

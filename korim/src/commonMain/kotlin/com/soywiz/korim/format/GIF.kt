@@ -6,7 +6,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.math.*
 
 object GIF : ImageFormat("gif") {

@@ -1,3 +1,5 @@
+@file:Suppress("UnusedImport")
+
 package com.soywiz.korau.format
 
 import com.soywiz.korio.async.*
@@ -5,6 +7,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.checksum.*
 import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import doIOTest
 import kotlin.test.*
 

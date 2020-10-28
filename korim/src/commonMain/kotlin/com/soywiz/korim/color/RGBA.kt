@@ -8,10 +8,10 @@ import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.paint.*
-import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.krypto.encoding.*
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
     override fun transformed(m: Matrix): Paint = this

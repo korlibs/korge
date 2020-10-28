@@ -14,9 +14,8 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.basename
-import com.soywiz.korio.util.encoding.hex
-import com.soywiz.korio.util.encoding.unhex
 import com.soywiz.korio.util.jvmFallback
+import com.soywiz.krypto.encoding.*
 import com.soywiz.krypto.sha1
 import java.io.File
 import java.net.URL

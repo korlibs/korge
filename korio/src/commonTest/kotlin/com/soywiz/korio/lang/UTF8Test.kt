@@ -1,6 +1,6 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.test.*
 
 class UTF8Test {

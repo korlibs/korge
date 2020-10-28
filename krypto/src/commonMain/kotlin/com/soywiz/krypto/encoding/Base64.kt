@@ -85,5 +85,7 @@ object Base64 {
         (readU8(index + 0) shl 16) or (readU8(index + 1) shl 8) or (readU8(index + 2) shl 0)
 }
 
+fun String.fromBase64IgnoreSpaces(): ByteArray = Base64.decode(this.replace(" ", "").replace("\n", "").replace("\r", ""))
 fun String.fromBase64(ignoreSpaces: Boolean = false): ByteArray = if (ignoreSpaces) Base64.decodeIgnoringSpaces(this) else Base64.decode(this)
+fun ByteArray.toBase64(): String = Base64.encode(this)
 val ByteArray.base64: String get() = Base64.encode(this)

@@ -10,6 +10,7 @@ import com.soywiz.korio.net.http.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.coroutines.*
 import kotlin.random.*
 

@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 
 interface Http {
 	companion object {

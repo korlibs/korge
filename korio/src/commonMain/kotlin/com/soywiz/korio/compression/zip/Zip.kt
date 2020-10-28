@@ -7,7 +7,7 @@ import com.soywiz.kmem.unsigned
 import com.soywiz.korio.file.*
 import com.soywiz.korio.internal.indexOf
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.encoding.hex
+import com.soywiz.krypto.encoding.*
 import kotlin.math.max
 
 class ZipFile private constructor(

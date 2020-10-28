@@ -4,7 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 
 data class URL private constructor(
 	val isOpaque: Boolean,

@@ -6,7 +6,6 @@ import com.soywiz.korio.dynamic.serialization.stringifyTyped
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.encoding.hex
 import com.soywiz.krypto.*
 
 data class ResourceVersion(val name: String, val loaderVersion: Int, val sha1: String, val configSha1: String = "") {

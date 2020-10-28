@@ -9,7 +9,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.toBase64
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 import org.w3c.dom.HTMLLinkElement
 import org.w3c.dom.TouchEvent

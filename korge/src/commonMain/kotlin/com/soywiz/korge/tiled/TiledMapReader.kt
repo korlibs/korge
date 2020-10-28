@@ -12,8 +12,8 @@ import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
+import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
 
 suspend fun VfsFile.readTiledMap(

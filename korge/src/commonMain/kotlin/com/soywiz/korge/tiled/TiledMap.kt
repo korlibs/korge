@@ -14,7 +14,6 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
 import kotlin.collections.set
 
