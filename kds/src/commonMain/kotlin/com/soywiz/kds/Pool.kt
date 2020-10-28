@@ -38,7 +38,7 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
 
     fun free(elements: Iterable<T>) = run { for (element in elements) free(element) }
 
-    inline fun <R> alloc(crossinline callback: (T) -> R): R {
+    inline fun <R> alloc(callback: (T) -> R): R {
         val temp = alloc()
         try {
             return callback(temp)

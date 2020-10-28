@@ -5,6 +5,7 @@ dependencies {
 	add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
+    add("commonMainApi", project(":krypto"))
     add("commonMainApi", project(":klogger"))
 
     afterEvaluate {
