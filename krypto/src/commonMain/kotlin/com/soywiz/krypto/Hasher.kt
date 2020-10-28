@@ -7,6 +7,15 @@ import kotlin.math.min
 
 open class HasherFactory(val create: () -> Hasher) {
     fun digest(data: ByteArray) = create().also { it.update(data, 0, data.size) }.digest()
+
+    inline fun digest(temp: ByteArray = ByteArray(0x1000), readBytes: (data: ByteArray) -> Int): Hash =
+        this.create().also {
+            while (true) {
+                val count = readBytes(temp)
+                if (count <= 0) break
+                it.update(temp, 0, count)
+            }
+        }.digest()
 }
 
 abstract class Hasher(val chunkSize: Int, val digestSize: Int) {
@@ -76,13 +85,3 @@ inline class Hash(val bytes: ByteArray) {
 }
 
 fun ByteArray.hash(algo: HasherFactory): Hash = algo.digest(this)
-
-inline fun HasherFactory.hash(temp: ByteArray = ByteArray(0x1000), readBytes: (data: ByteArray) -> Int): Hash {
-    return this.create().also {
-        while (true) {
-            val count = readBytes(temp)
-            if (count <= 0) break
-            it.update(temp, 0, count)
-        }
-    }.digest()
-}

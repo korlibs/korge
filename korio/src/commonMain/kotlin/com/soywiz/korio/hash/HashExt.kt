@@ -7,8 +7,8 @@ import com.soywiz.korio.stream.*
 import com.soywiz.krypto.*
 
 suspend fun VfsFile.hash(algo: HasherFactory) = openRead().use { hash(algo) }
-suspend fun AsyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.hash(temp) { read(it) } }
-fun SyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.hash(temp) { read(it) } }
+suspend fun AsyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
+fun SyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
 
 suspend fun VfsFile.md5() = hash(MD5)
 suspend fun AsyncStream.md5() = hash(MD5)
