@@ -6,14 +6,14 @@ import com.soywiz.korio.internal.*
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.*
 
-suspend fun VfsFile.hash(algo: HasherFactory) = openRead().use { hash(algo) }
-suspend fun AsyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
-fun SyncStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
+suspend fun AsyncInputOpenable.hash(algo: HasherFactory) = openRead().use { hash(algo) }
+suspend fun AsyncInputStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
+fun SyncInputStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }
 
-suspend fun VfsFile.md5() = hash(MD5)
-suspend fun AsyncStream.md5() = hash(MD5)
-fun SyncStream.md5() = hash(MD5)
+suspend fun AsyncInputOpenable.md5() = hash(MD5)
+suspend fun AsyncInputStream.md5() = hash(MD5)
+fun SyncInputStream.md5() = hash(MD5)
 
-suspend fun VfsFile.sha1() = hash(SHA1)
-suspend fun AsyncStream.sha1() = hash(SHA1)
-fun SyncStream.sha1() = hash(SHA1)
+suspend fun AsyncInputOpenable.sha1() = hash(SHA1)
+suspend fun AsyncInputStream.sha1() = hash(SHA1)
+fun SyncInputStream.sha1() = hash(SHA1)
