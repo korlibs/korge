@@ -63,7 +63,7 @@ class PolygonScanline : RastScale() {
         fun addThresold(edge: Edge, threshold: Int = Int.MAX_VALUE): Boolean {
             val min = getIndex(edge.minY)
             val max = getIndex(edge.maxY)
-            if (max - min < threshold) {
+            if (max - min <= threshold) {
                 for (n in min..max) getForIndex(n).edges.add(edge)
                 return true
             }

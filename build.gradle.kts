@@ -13,8 +13,7 @@ buildscript {
         maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
     dependencies {
-        classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
-        classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.16")
+        classpath("com.gradle.publish:plugin-publish-plugin:0.12.0")
         //classpath("com.android.tools.build:gradle:3.4.1")
         classpath("com.android.tools.build:gradle:4.0.1")
         //classpath("com.android.tools.build:gradle:4.1.0-rc03")
@@ -27,7 +26,9 @@ plugins {
 
 	java
     kotlin("multiplatform") version kotlinVersion
-    `maven-publish`
+    id("org.jetbrains.intellij") version "0.6.1" apply false
+
+    //`maven-publish`
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
@@ -128,15 +129,14 @@ allprojects {
     if (project.hasBuildGradle()) {
         apply(from = "${rootProject.rootDir}/build.idea.gradle")
     }
-}
-
-subprojects {
     val projectName = project.name
     group = when {
         projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
         else -> "com.soywiz.korlibs.${projectName.substringBefore('-')}"
     }
+}
 
+subprojects {
     val doConfigure =
         project.name != "korge-intellij-plugin" &&
             project.name != "korge-gradle-plugin" &&
@@ -420,6 +420,7 @@ val BINTRAY_KEY = rootProject.findProperty("BINTRAY_KEY")?.toString()
         ?: System.getenv("BINTRAY_API_KEY")
         ?: System.getenv("BINTRAY_KEY")
 
+/*
 nonSamples {
     if (BINTRAY_USER.isNullOrEmpty() || BINTRAY_KEY.isNullOrEmpty()) return@nonSamples
 
@@ -561,6 +562,7 @@ nonSamples {
         }
     }
 }
+*/
 
 samples {
 
@@ -788,4 +790,24 @@ if (
     exec { commandLine("sudo", "apt-get", "update") }
     exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
     // exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
+}
+
+allprojects {
+    //println("GROUP: $group")
+}
+
+subprojects {
+    afterEvaluate {
+        tasks {
+            val publishJvmLocal by creating(Task::class) {
+                if (findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
+                    dependsOn("publishJvmPublicationToMavenLocal")
+                    dependsOn("publishMetadataPublicationToMavenLocal")
+                    dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+                } else if (findByName("publishToMavenLocal") != null) {
+                    dependsOn("publishToMavenLocal")
+                }
+            }
+        }
+    }
 }
