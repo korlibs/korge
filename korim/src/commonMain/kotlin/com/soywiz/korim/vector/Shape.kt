@@ -208,8 +208,10 @@ private fun colorToSvg(color: RGBA): String {
 	val g = color.g
 	val b = color.b
 	val af = color.af
-	return "rgba($r,$g,$b,$af)"
+	return "rgba($r,$g,$b,${af.smallNiceStr})"
 }
+
+private val Float.smallNiceStr: String get() = if (round(this) == this) "${this.toInt()}" else "$this"
 
 fun Paint.toSvg(svg: SvgBuilder): String {
 	val id = svg.defs.size
@@ -228,37 +230,34 @@ fun Paint.toSvg(svg: SvgBuilder): String {
 				Xml.Tag("stop", mapOf("offset" to "${ratio * 100}%", "stop-color" to colorToSvg(color)), listOf())
 			}
 
-			when (this) {
-				is GradientPaint -> {
-					when (this.kind) {
-						GradientKind.LINEAR -> {
-							svg.defs += Xml.Tag(
-								"linearGradient",
-								mapOf(
-									"id" to "def$id",
-									"x1" to "$x0", "y1" to "$y0",
-									"x2" to "$x1", "y2" to "$y1",
-									"gradientTransform" to transform.toSvg()
-								),
-								stops
-							)
-						}
-                        GradientKind.RADIAL -> {
-							svg.defs += Xml.Tag(
-								"radialGradient",
-								mapOf(
-									"id" to "def$id",
-									"cx" to "$x0", "cy" to "$y0",
-									"fx" to "$x1", "fy" to "$y1",
-									"r" to "$r1",
-									"gradientTransform" to transform.toSvg()
-								),
-								stops
-							)
-						}
-					}
-				}
-			}
+            when (this.kind) {
+                GradientKind.LINEAR -> {
+                    svg.defs += Xml.Tag(
+                        "linearGradient",
+                        mapOf(
+                            "id" to "def$id",
+                            "x1" to "$x0", "y1" to "$y0",
+                            "x2" to "$x1", "y2" to "$y1",
+                            "gradientTransform" to transform.toSvg()
+                        ),
+                        stops
+                    )
+                }
+                GradientKind.RADIAL -> {
+                    svg.defs += Xml.Tag(
+                        "radialGradient",
+                        mapOf(
+                            "id" to "def$id",
+                            "cx" to "$x0", "cy" to "$y0",
+                            "fx" to "$x1", "fy" to "$y1",
+                            "r" to "$r1",
+                            "gradientTransform" to transform.toSvg()
+                        ),
+                        stops
+                    )
+                }
+            }
+
 			return "url(#def$id)"
 		}
 		is BitmapPaint -> {
