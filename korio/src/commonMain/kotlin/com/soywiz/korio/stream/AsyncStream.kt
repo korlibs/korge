@@ -627,6 +627,18 @@ suspend fun AsyncOutputStream.writeStream(source: AsyncInputStream): Long = sour
 suspend fun AsyncOutputStream.writeFile(source: VfsFile): Long =
 	source.openUse(VfsOpenMode.READ) { this@writeFile.writeStream(this) }
 
+suspend inline fun AsyncInputStream.consume(autoclose: Boolean = true, temp: ByteArray = ByteArray(0x10000), block: (data: ByteArray, offset: Int, size: Int) -> Unit) {
+    try {
+        while (true) {
+            val read = read(temp, 0, temp.size)
+            if (read < 0) break
+            block(temp, 0, read)
+        }
+    } finally {
+        if (autoclose) close()
+    }
+}
+
 suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 0x10000): Long {
 	// Optimization to reduce suspensions
 	if (this is AsyncStream && base is MemoryAsyncStreamBase) {
@@ -634,14 +646,11 @@ suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 
 		return base.ilength.toLong()
 	}
 
-	val chunk = ByteArray(chunkSize)
-	var totalCount = 0L
-	while (true) {
-		val count = this.read(chunk)
-		if (count <= 0) break
-		target.write(chunk, 0, count)
-		totalCount += count
-	}
+    var totalCount = 0L
+    consume(autoclose = false, temp = ByteArray(chunkSize)) { data, offset, size ->
+        target.write(data, offset, size)
+        totalCount += size
+    }
 	return totalCount
 }
 
