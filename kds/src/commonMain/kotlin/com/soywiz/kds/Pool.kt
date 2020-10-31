@@ -47,6 +47,16 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
         }
     }
 
+    inline fun <R> allocThis(callback: T.() -> R): R {
+        val temp = alloc()
+        try {
+            return callback(temp)
+        } finally {
+            free(temp)
+        }
+    }
+
+
     override fun hashCode(): Int = items.hashCode()
     override fun equals(other: Any?): Boolean = (other is Pool<*>) && this.items == other.items && this.itemsInPool == other.itemsInPool
 }

@@ -28,13 +28,13 @@ interface AsyncInputOpenable {
 
 interface AsyncInputStream : AsyncBaseStream {
 	suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int
-	suspend fun read(): Int = smallBytesPool.alloc2 { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
+	suspend fun read(): Int = smallBytesPool.alloc { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
 	//suspend fun read(): Int
 }
 
 interface AsyncOutputStream : AsyncBaseStream {
 	suspend fun write(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset)
-	suspend fun write(byte: Int) = smallBytesPool.alloc2 { it[0] = byte.toByte(); write(it, 0, 1) }
+	suspend fun write(byte: Int) = smallBytesPool.alloc { it[0] = byte.toByte(); write(it, 0, 1) }
 	//suspend fun write(byte: Int)
 }
 
@@ -576,21 +576,21 @@ suspend fun AsyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBy
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray): Unit = write(data, 0, data.size)
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray, position: Int, length: Int): Unit = write(data, position, length)
 suspend fun AsyncOutputStream.write8(v: Int): Unit = write(v)
-suspend fun AsyncOutputStream.write16LE(v: Int): Unit = smallBytesPool.alloc2 { it.write16LE(0, v); write(it, 0, 2) }
-suspend fun AsyncOutputStream.write24LE(v: Int): Unit = smallBytesPool.alloc2 { it.write24LE(0, v); write(it, 0, 3) }
-suspend fun AsyncOutputStream.write32LE(v: Int): Unit = smallBytesPool.alloc2 { it.write32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write32LE(v: Long): Unit = smallBytesPool.alloc2 { it.write32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write64LE(v: Long): Unit = smallBytesPool.alloc2 { it.write64LE(0, v); write(it, 0, 8) }
-suspend fun AsyncOutputStream.writeF32LE(v: Float): Unit = smallBytesPool.alloc2 { it.writeF32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.writeF64LE(v: Double): Unit = smallBytesPool.alloc2 { it.writeF64LE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.write16LE(v: Int): Unit = smallBytesPool.alloc { it.write16LE(0, v); write(it, 0, 2) }
+suspend fun AsyncOutputStream.write24LE(v: Int): Unit = smallBytesPool.alloc { it.write24LE(0, v); write(it, 0, 3) }
+suspend fun AsyncOutputStream.write32LE(v: Int): Unit = smallBytesPool.alloc { it.write32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write32LE(v: Long): Unit = smallBytesPool.alloc { it.write32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write64LE(v: Long): Unit = smallBytesPool.alloc { it.write64LE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.writeF32LE(v: Float): Unit = smallBytesPool.alloc { it.writeF32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.writeF64LE(v: Double): Unit = smallBytesPool.alloc { it.writeF64LE(0, v); write(it, 0, 8) }
 
-suspend fun AsyncOutputStream.write16BE(v: Int): Unit = smallBytesPool.alloc2 { it.write16BE(0, v); write(it, 0, 2) }
-suspend fun AsyncOutputStream.write24BE(v: Int): Unit = smallBytesPool.alloc2 { it.write24BE(0, v); write(it, 0, 3) }
-suspend fun AsyncOutputStream.write32BE(v: Int): Unit = smallBytesPool.alloc2 { it.write32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write32BE(v: Long): Unit = smallBytesPool.alloc2 { it.write32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write64BE(v: Long): Unit = smallBytesPool.alloc2 { it.write64BE(0, v); write(it, 0, 8) }
-suspend fun AsyncOutputStream.writeF32BE(v: Float): Unit = smallBytesPool.alloc2 { it.writeF32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.writeF64BE(v: Double): Unit = smallBytesPool.alloc2 { it.writeF64BE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.write16BE(v: Int): Unit = smallBytesPool.alloc { it.write16BE(0, v); write(it, 0, 2) }
+suspend fun AsyncOutputStream.write24BE(v: Int): Unit = smallBytesPool.alloc { it.write24BE(0, v); write(it, 0, 3) }
+suspend fun AsyncOutputStream.write32BE(v: Int): Unit = smallBytesPool.alloc { it.write32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write32BE(v: Long): Unit = smallBytesPool.alloc { it.write32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write64BE(v: Long): Unit = smallBytesPool.alloc { it.write64BE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.writeF32BE(v: Float): Unit = smallBytesPool.alloc { it.writeF32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.writeF64BE(v: Double): Unit = smallBytesPool.alloc { it.writeF64BE(0, v); write(it, 0, 8) }
 
 fun SyncStream.toAsync(): AsyncStream = this.base.toAsync().toAsyncStream(this.position)
 fun SyncStreamBase.toAsync(): AsyncStreamBase = when (this) {

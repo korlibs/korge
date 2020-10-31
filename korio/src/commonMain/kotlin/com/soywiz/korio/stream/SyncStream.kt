@@ -8,12 +8,12 @@ import kotlin.math.*
 
 interface SyncInputStream : OptionalCloseable {
 	fun read(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Int
-	fun read(): Int = smallBytesPool.alloc2 { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
+	fun read(): Int = smallBytesPool.alloc { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
 }
 
 interface SyncOutputStream : OptionalCloseable {
 	fun write(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Unit
-	fun write(byte: Int) = smallBytesPool.alloc2 { it[0] = byte.toByte(); write(it, 0, 1) }
+	fun write(byte: Int) = smallBytesPool.alloc { it[0] = byte.toByte(); write(it, 0, 1) }
 	fun flush() = Unit
 }
 
@@ -267,7 +267,7 @@ fun SyncStream.readStream(length: Long): SyncStream = readSlice(length)
 
 fun SyncInputStream.readStringz(charset: Charset = UTF8): String {
 	val buf = ByteArrayBuilder()
-	return bytesTempPool.alloc2 { temp ->
+	return bytesTempPool.alloc { temp ->
 		while (true) {
 			val read = read(temp, 0, 1)
 			if (read <= 0) break
@@ -403,7 +403,7 @@ fun String.openAsync(charset: Charset = UTF8): AsyncStream = toByteArray(charset
 fun SyncOutputStream.writeStream(source: SyncInputStream): Unit = source.copyTo(this)
 
 fun SyncInputStream.copyTo(target: SyncOutputStream): Unit {
-	bytesTempPool.alloc2 { chunk ->
+	bytesTempPool.alloc { chunk ->
 		while (true) {
 			val count = this.read(chunk)
 			if (count <= 0) break
