@@ -8,6 +8,7 @@ import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.paint.*
+import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -81,7 +82,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         appendHexByte(g)
         appendHexByte(b)
     }
-	val htmlColor: String get() = "rgba($r, $g, $b, $af)"
+	val htmlColor: String get() = "rgba($r, $g, $b, ${af.niceStr})"
 	val htmlStringSimple: String get() = hexStringNoAlpha
 
 	override fun toString(): String = hexString
