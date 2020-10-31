@@ -111,7 +111,16 @@ class Edge {
     val maxY get() = max(ay, by)
 
     @Suppress("ConvertTwoComparisonsToRangeCheck")
-    fun containsY(y: Int): Boolean = if (wind >= 0) y >= ay && y < by else y > ay && y <= by
+    //fun containsY(y: Int): Boolean = if (ay == by) y == ay else if (wind >= 0) y >= ay && y < by else y > ay && y <= by
+    fun containsY(y: Int): Boolean {
+        return y >= ay && y < by
+        //val a = if (wind >= 0) y >= ay && y < by else y > ay && y <= by
+        //val b = y >= ay && y < by
+        //if (a != b) {
+        //    println("wind=$wind, y=$y, ay=$ay, by=$by, a=$a, b=$b")
+        //}
+        //return a
+    }
 
     //fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y < (by + offset)
     //fun containsY(y: Int): Boolean = y in ay..by
