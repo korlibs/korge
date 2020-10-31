@@ -8,17 +8,15 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
+import java.awt.*
 import kotlin.test.*
 
 class TestE2eJava {
-    init {
-        System.setProperty("java.awt.headless", "true");
-    }
-
     @Test
     fun test() {
         // @TODO: java.lang.IllegalStateException: Can't find opengl method glGenBuffers
         if (OS.isWindows) return
+        if (GraphicsEnvironment.isHeadless()) return
 
         val bmp = Bitmap32(64, 64)
         var step = 0
