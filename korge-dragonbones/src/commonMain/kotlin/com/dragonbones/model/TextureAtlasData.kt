@@ -23,10 +23,9 @@
 package com.dragonbones.model
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
-import com.dragonbones.internal.fastForEach
-import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.klogger.*
+import com.soywiz.korma.geom.*
 
 /**
  * - The texture atlas data.
@@ -131,7 +130,7 @@ abstract class TextureAtlasData(pool: SingleObjectPool<out TextureAtlasData>) : 
 	 */
 	fun addTexture(value: TextureData) {
 		if (value.name in this.textures) {
-			console.warn("Same texture: " + value.name)
+			Console.warn("Same texture: " + value.name)
 			return
 		}
 

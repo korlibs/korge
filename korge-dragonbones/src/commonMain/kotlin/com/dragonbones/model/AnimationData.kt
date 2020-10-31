@@ -23,7 +23,7 @@ package com.dragonbones.model
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import com.dragonbones.core.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
 import kotlin.math.*

@@ -11,6 +11,19 @@ open class KorgePluginExtension(
 	open fun init(context: InitContext) {
 	}
 
+    open fun initProps(props: Map<String, String>) {
+        for (param in params) {
+            val propName = param.name
+            val prop = props[propName]
+            if (prop != null) {
+                @Suppress("UNCHECKED_CAST")
+                (param as KMutableProperty1<KorgePluginExtension, String>).set(this, prop)
+            } else {
+                error("Must set the custom property '$propName' for plugin '${this::class.qualifiedName}'. korge { config(\"$propName\", \"...\") }")
+            }
+        }
+    }
+
 	open fun getAndroidInit(): String? = null
 	open fun getAndroidManifestApplication(): String? = null
 	open fun getAndroidDependencies(): List<String> = listOf()

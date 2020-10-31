@@ -30,9 +30,12 @@ class BatchBuilder2D constructor(
     @KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
-     * Bigger numbers will increase memory usage, bug might reduce the number of batches per frame when using the same texture and properties.
+     * Bigger numbers will increase memory usage, but might reduce the number of batches per frame when using the same texture and properties.
      */
     val maxQuads: Int = 4096
+    //val maxQuads: Int = 8096
+    //val maxQuads: Int = 16384
+    //val maxQuads: Int = 16383
 ) {
     val texManager = ctx.agBitmapTextureManager
     constructor(ag: AG, maxQuads: Int = 512) : this(RenderContext(ag), maxQuads)
@@ -55,13 +58,16 @@ class BatchBuilder2D constructor(
 
 	internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
     internal val indices = FBuffer.alloc(2 * maxIndices)
+    val indicesI16 = indices.i16
+    val verticesI32 = vertices.i32
+    val verticesF32 = vertices.f32
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
 	var vertexCount = 0
-        private set
-	private var vertexPos = 0
-	private var indexPos = 0
+        internal set
+    internal var vertexPos = 0
+	internal var indexPos = 0
 	private var currentTex: AG.Texture? = null
 	private var currentSmoothing: Boolean = false
 	private var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
@@ -145,21 +151,21 @@ class BatchBuilder2D constructor(
 
 	// @TODO: copy data from TexturedVertexArray
 	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
-		vertices.setAlignedFloat32(vertexPos++, x)
-		vertices.setAlignedFloat32(vertexPos++, y)
-		vertices.setAlignedFloat32(vertexPos++, u)
-		vertices.setAlignedFloat32(vertexPos++, v)
-		vertices.setAlignedInt32(vertexPos++, colorMul.value)
-		vertices.setAlignedInt32(vertexPos++, colorAdd)
+		verticesF32[vertexPos++] = x
+		verticesF32[vertexPos++] = y
+		verticesF32[vertexPos++] = u
+		verticesF32[vertexPos++] = v
+		verticesI32[vertexPos++] = colorMul.value
+		verticesI32[vertexPos++] = colorAdd
 		vertexCount++
 	}
 
 	fun addIndex(idx: Int) {
-		indices.setAlignedInt16(indexPos++, idx.toShort())
+		indicesI16[indexPos++] = idx.toShort()
 	}
 
     fun addIndexRelative(idx: Int) {
-        indices.setAlignedInt16(indexPos++, (vertexCount + idx).toShort())
+        indicesI16[indexPos++] = (vertexCount + idx).toShort()
     }
 
 	fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
@@ -194,29 +200,119 @@ class BatchBuilder2D constructor(
         /** Not working right now */
 		rotated: Boolean = false
 	) {
-		ensure(6, 4)
-
-		addIndex(vertexCount + 0)
-		addIndex(vertexCount + 1)
-		addIndex(vertexCount + 2)
-
-		addIndex(vertexCount + 3)
-		addIndex(vertexCount + 0)
-		addIndex(vertexCount + 2)
-
-		if (rotated) {
-			// @TODO:
-			addVertex(x0, y0, tex.x0, tex.y0, colorMul, colorAdd)
-			addVertex(x1, y1, tex.x1, tex.y0, colorMul, colorAdd)
-			addVertex(x2, y2, tex.x1, tex.y1, colorMul, colorAdd)
-			addVertex(x3, y3, tex.x0, tex.y1, colorMul, colorAdd)
-		} else {
-			addVertex(x0, y0, tex.x0, tex.y0, colorMul, colorAdd)
-			addVertex(x1, y1, tex.x1, tex.y0, colorMul, colorAdd)
-			addVertex(x2, y2, tex.x1, tex.y1, colorMul, colorAdd)
-			addVertex(x3, y3, tex.x0, tex.y1, colorMul, colorAdd)
-		}
+        drawQuadFast(x0, y0, x1, y1, x2, y2, x3, y3, tex.x0, tex.y0, tex.x1, tex.y1, colorMul, colorAdd, rotated)
 	}
+
+    fun drawQuadFast(
+        x0: Float, y0: Float,
+        x1: Float, y1: Float,
+        x2: Float, y2: Float,
+        x3: Float, y3: Float,
+        tx0: Float, ty0: Float,
+        tx1: Float, ty1: Float,
+        colorMul: RGBA,
+        colorAdd: Int,
+        rotated: Boolean
+    ) {
+        ensure(6, 4)
+
+        addQuadIndices()
+
+        if (rotated) {
+            // @TODO:
+            addQuadVerticesFastRotated(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul, colorAdd)
+        } else {
+            addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd)
+        }
+    }
+
+    fun drawQuadFast(
+        x0: Float, y0: Float,
+        x1: Float, y1: Float,
+        x2: Float, y2: Float,
+        x3: Float, y3: Float,
+        tx0: Float, ty0: Float,
+        tx1: Float, ty1: Float,
+        colorMul: RGBA,
+        colorAdd: Int
+    ) {
+        ensure(6, 4)
+        addQuadIndices()
+        addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd)
+    }
+
+    fun addQuadIndices() {
+        val vc = vertexCount
+        addIndices(vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
+    }
+
+    fun addQuadVerticesFastNormal(
+        x0: Float, y0: Float,
+        x1: Float, y1: Float,
+        x2: Float, y2: Float,
+        x3: Float, y3: Float,
+        tx0: Float, ty0: Float,
+        tx1: Float, ty1: Float,
+        colorMul: Int,
+        colorAdd: Int,
+    ) {
+        //addVertex(x0, y0, tx0, ty0, colorMul, colorAdd)
+        //addVertex(x1, y1, tx1, ty0, colorMul, colorAdd)
+        //addVertex(x2, y2, tx1, ty1, colorMul, colorAdd)
+        //addVertex(x3, y3, tx0, ty1, colorMul, colorAdd)
+
+        val vp = vertexPos
+        val f32 = verticesF32
+        val i32 = verticesI32
+
+        f32[vp + (0 * 6) + 0] = x0
+        f32[vp + (0 * 6) + 1] = y0
+        f32[vp + (0 * 6) + 2] = tx0
+        f32[vp + (0 * 6) + 3] = ty0
+        i32[vp + (0 * 6) + 4] = colorMul
+        i32[vp + (0 * 6) + 5] = colorAdd
+
+        f32[vp + (1 * 6) + 0] = x1
+        f32[vp + (1 * 6) + 1] = y1
+        f32[vp + (1 * 6) + 2] = tx1
+        f32[vp + (1 * 6) + 3] = ty0
+        i32[vp + (1 * 6) + 4] = colorMul
+        i32[vp + (1 * 6) + 5] = colorAdd
+
+        f32[vp + (2 * 6) + 0] = x2
+        f32[vp + (2 * 6) + 1] = y2
+        f32[vp + (2 * 6) + 2] = tx1
+        f32[vp + (2 * 6) + 3] = ty1
+        i32[vp + (2 * 6) + 4] = colorMul
+        i32[vp + (2 * 6) + 5] = colorAdd
+
+        f32[vp + (3 * 6) + 0] = x3
+        f32[vp + (3 * 6) + 1] = y3
+        f32[vp + (3 * 6) + 2] = tx0
+        f32[vp + (3 * 6) + 3] = ty1
+        i32[vp + (3 * 6) + 4] = colorMul
+        i32[vp + (3 * 6) + 5] = colorAdd
+
+        vertexCount += 4
+        vertexPos += 6 * 4
+    }
+
+    fun addQuadVerticesFastRotated(
+        x0: Float, y0: Float,
+        x1: Float, y1: Float,
+        x2: Float, y2: Float,
+        x3: Float, y3: Float,
+        tx0: Float, ty0: Float,
+        tx1: Float, ty1: Float,
+        colorMul: RGBA,
+        colorAdd: Int,
+    ) {
+        // @TODO:
+        addVertex(x0, y0, tx0, ty0, colorMul, colorAdd)
+        addVertex(x1, y1, tx1, ty0, colorMul, colorAdd)
+        addVertex(x2, y2, tx1, ty1, colorMul, colorAdd)
+        addVertex(x3, y3, tx0, ty1, colorMul, colorAdd)
+    }
 
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
@@ -516,8 +612,16 @@ class BatchBuilder2D constructor(
 	private val tempRect = Rectangle()
     val beforeFlush = Signal<BatchBuilder2D>()
 
+    fun uploadVertices() {
+        vertexBuffer.upload(vertices, 0, vertexPos * 4)
+    }
+
+    fun uploadIndices() {
+        indexBuffer.upload(indices, 0, indexPos * 2)
+    }
+
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
-	fun flush() {
+	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
 		if (vertexCount > 0) {
 			if (flipRenderTexture && ag.renderingToTexture) {
 				projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
@@ -529,8 +633,8 @@ class BatchBuilder2D constructor(
 
 			val factors = currentBlendFactors
 
-			vertexBuffer.upload(vertices, 0, vertexPos * 4)
-			indexBuffer.upload(indices, 0, indexPos * 2)
+			if (uploadVertices) uploadVertices()
+            if (uploadIndices) uploadIndices()
 
 			textureUnit.texture = currentTex
 			textureUnit.linear = currentSmoothing

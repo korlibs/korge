@@ -23,13 +23,15 @@
 package com.dragonbones.parser
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
+import com.dragonbones.util.length
 import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
-import com.dragonbones.parser.ObjectDataParser.Companion.intArrayList
+import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -161,7 +163,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	private var _frameValueScale: Double = 1.0
 	private val _helpMatrixA: Matrix = Matrix()
 	private val _helpMatrixB: Matrix = Matrix()
-	private val _helpTransform: Transform = Transform()
+	private val _helpTransform: TransformDb = TransformDb()
 	private val _helpColorTransform: ColorTransform = ColorTransform()
 	private val _helpPoint: Point = Point()
 	private val _helpArray: DoubleArrayList = DoubleArrayList()
@@ -202,8 +204,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val kC = 3.0 * l_t * powB
 		val kD = t * powB
 
-		result.x = (kA * x1 + kB * x2 + kC * x3 + kD * x4).toFloat()
-		result.y = (kA * y1 + kB * y2 + kC * y3 + kD * y4).toFloat()
+		result.xf = (kA * x1 + kB * x2 + kC * x3 + kD * x4).toFloat()
+		result.yf = (kA * y1 + kB * y2 + kC * y3 + kD * y4).toFloat()
 	}
 
 	private fun _samplingEasingCurve(curve: DoubleArrayList, samples: DoubleArrayList): Boolean {
@@ -233,14 +235,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				while (higher - lower > 0.0001) {
 					val percentage = (higher + lower) * 0.5
 					this._getCurvePoint(x1, y1, x2, y2, x3, y3, x4, y4, percentage, this._helpPoint)
-					if (t - this._helpPoint.x > 0.0) {
+					if (t - this._helpPoint.xf > 0.0) {
 						lower = percentage
 					} else {
 						higher = percentage
 					}
 				}
 
-				samples[i] = this._helpPoint.y.toDouble()
+				samples[i] = this._helpPoint.yf.toDouble()
 			}
 
 			return true
@@ -267,14 +269,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				while (higher - lower > 0.0001) {
 					val percentage = (higher + lower) * 0.5
 					this._getCurvePoint(x1, y1, x2, y2, x3, y3, x4, y4, percentage, this._helpPoint)
-					if (t - this._helpPoint.x > 0.0) {
+					if (t - this._helpPoint.xf > 0.0) {
 						lower = percentage
 					} else {
 						higher = percentage
 					}
 				}
 
-				samples[i] = this._helpPoint.y.toDouble()
+				samples[i] = this._helpPoint.yf.toDouble()
 			}
 
 			return false
@@ -801,11 +803,11 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected fun _parsePivot(rawData: Any?, display: ImageDisplayData) {
 		if (rawData.containsDynamic(DataParser.PIVOT)) {
 			val rawPivot = rawData.getDynamic(DataParser.PIVOT)
-			display.pivot.x = ObjectDataParser._getNumber(rawPivot, DataParser.X, 0.0).toFloat()
-			display.pivot.y = ObjectDataParser._getNumber(rawPivot, DataParser.Y, 0.0).toFloat()
+			display.pivot.xf = ObjectDataParser._getNumber(rawPivot, DataParser.X, 0.0).toFloat()
+			display.pivot.yf = ObjectDataParser._getNumber(rawPivot, DataParser.Y, 0.0).toFloat()
 		} else {
-			display.pivot.x = 0.5f
-			display.pivot.y = 0.5f
+			display.pivot.xf = 0.5f
+			display.pivot.yf = 0.5f
 		}
 	}
 
@@ -898,7 +900,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			polygonBoundingBox.width -= polygonBoundingBox.x
 			polygonBoundingBox.height -= polygonBoundingBox.y
 		} else {
-			console.warn("Data error.\n Please reexport DragonBones Data to fixed the bug.")
+			Console.warn("Data error.\n Please reexport DragonBones Data to fixed the bug.")
 		}
 
 		return polygonBoundingBox
@@ -1116,7 +1118,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 							}
 						} else {
 							if (timelineType == TimelineType.BoneRotate) {
-								this._frameValueScale = Transform.DEG_RAD.toDouble()
+								this._frameValueScale = TransformDb.DEG_RAD.toDouble()
 							} else {
 								this._frameValueScale = 1.0
 							}
@@ -1694,14 +1696,14 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		var rotation = this._helpTransform.rotation
 		if (frameStart != 0) {
 			if (this._prevClockwise == 0.0) {
-				rotation = (this._prevRotation + Transform.normalizeRadian(rotation - this._prevRotation)).toFloat()
+				rotation = (this._prevRotation + TransformDb.normalizeRadian(rotation - this._prevRotation)).toFloat()
 			} else {
 				if (if (this._prevClockwise > 0) rotation >= this._prevRotation else rotation <= this._prevRotation) {
 					this._prevClockwise =
 							if (this._prevClockwise > 0) this._prevClockwise - 1 else this._prevClockwise + 1
 				}
 
-				rotation = (this._prevRotation + rotation - this._prevRotation + Transform.PI_D * this._prevClockwise).toFloat()
+				rotation = (this._prevRotation + rotation - this._prevRotation + TransformDb.PI_D * this._prevClockwise).toFloat()
 			}
 		}
 
@@ -1711,8 +1713,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameOffset = this._parseTweenFrame(rawData, frameStart, frameCount)
 		var frameFloatOffset = this._frameFloatArray.length
 		this._frameFloatArray.length += 6
-		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.x.toDouble()
-		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.y.toDouble()
+		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.xf.toDouble()
+		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.yf.toDouble()
 		this._frameFloatArray[frameFloatOffset++] = rotation.toDouble()
 		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.skew.toDouble()
 		this._frameFloatArray[frameFloatOffset++] = this._helpTransform.scaleX.toDouble()
@@ -1734,18 +1736,18 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 	protected fun _parseBoneRotateFrame(rawData: Any?, frameStart: Int, frameCount: Int): Int {
 		// Modify rotation.
-		var rotation = ObjectDataParser._getNumber(rawData, DataParser.ROTATE, 0.0) * Transform.DEG_RAD
+		var rotation = ObjectDataParser._getNumber(rawData, DataParser.ROTATE, 0.0) * TransformDb.DEG_RAD
 
 		if (frameStart != 0) {
 			if (this._prevClockwise == 0.0) {
-				rotation = this._prevRotation + Transform.normalizeRadian(rotation - this._prevRotation)
+				rotation = this._prevRotation + TransformDb.normalizeRadian(rotation - this._prevRotation)
 			} else {
 				if (if (this._prevClockwise > 0) rotation >= this._prevRotation else rotation <= this._prevRotation) {
 					this._prevClockwise =
 							if (this._prevClockwise > 0) this._prevClockwise - 1 else this._prevClockwise + 1
 				}
 
-				rotation = this._prevRotation + rotation - this._prevRotation + Transform.PI_D * this._prevClockwise
+				rotation = this._prevRotation + rotation - this._prevRotation + TransformDb.PI_D * this._prevClockwise
 			}
 		}
 
@@ -1757,7 +1759,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		this._frameFloatArray.length += 2
 		this._frameFloatArray[frameFloatOffset++] = rotation
 		this._frameFloatArray[frameFloatOffset++] = ObjectDataParser._getNumber(rawData, DataParser.SKEW, 0.0) *
-				Transform.DEG_RAD
+				TransformDb.DEG_RAD
 
 		return frameOffset
 	}
@@ -1883,19 +1885,19 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				val rawBonePoses = this._weightBonePoses[meshName]!!
 				val vertexBoneCount = this._intArray[iB++]
 
-				this._helpMatrixA.transformPoint(x, y, this._helpPoint, true)
-				x = this._helpPoint.x
-				y = this._helpPoint.y
+				this._helpMatrixA.deltaTransformPoint(x, y, this._helpPoint)
+				x = this._helpPoint.xf
+				y = this._helpPoint.yf
 
 				//for (var j = 0; j < vertexBoneCount; ++j) {
 				for (j in 0 until vertexBoneCount) {
 					val boneIndex = this._intArray[iB++]
 					this._helpMatrixB.copyFromArray(rawBonePoses.data, boneIndex * 7 + 1)
 					this._helpMatrixB.invert()
-					this._helpMatrixB.transformPoint(x, y, this._helpPoint, true)
+					this._helpMatrixB.deltaTransformPoint(x, y, this._helpPoint)
 
-					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.x.toDouble()
-					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.y.toDouble()
+					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.xf.toDouble()
+					this._frameFloatArray[frameFloatOffset + iV++] = this._helpPoint.yf.toDouble()
 				}
 			} else {
 				this._frameFloatArray[frameFloatOffset + i] = x.toDouble()
@@ -2081,39 +2083,39 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		return frameOffset
 	}
 
-	protected fun _parseTransform(rawData: Any?, transform: Transform, scale: Double) {
-		transform.x = (ObjectDataParser._getNumber(rawData, DataParser.X, 0.0) * scale).toFloat()
-		transform.y = (ObjectDataParser._getNumber(rawData, DataParser.Y, 0.0) * scale).toFloat()
+	protected fun _parseTransform(rawData: Any?, transform: TransformDb, scale: Double) {
+		transform.xf = (ObjectDataParser._getNumber(rawData, DataParser.X, 0.0) * scale).toFloat()
+		transform.yf = (ObjectDataParser._getNumber(rawData, DataParser.Y, 0.0) * scale).toFloat()
 
 		if (rawData.containsDynamic(DataParser.ROTATE) || rawData.containsDynamic(DataParser.SKEW)) {
-			transform.rotation = Transform.normalizeRadian(
+			transform.rotation = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.ROTATE,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
-			transform.skew = Transform.normalizeRadian(
+			transform.skew = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
 		} else if (rawData.containsDynamic(DataParser.SKEW_X) || rawData.containsDynamic(DataParser.SKEW_Y)) {
-			transform.rotation = Transform.normalizeRadian(
+			transform.rotation = TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW_Y,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			).toFloat()
-			transform.skew = (Transform.normalizeRadian(
+			transform.skew = (TransformDb.normalizeRadian(
 				ObjectDataParser._getNumber(
 					rawData,
 					DataParser.SKEW_X,
 					0.0
-				) * Transform.DEG_RAD
+				) * TransformDb.DEG_RAD
 			) - transform.rotation).toFloat()
 		}
 
@@ -2222,9 +2224,9 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 					var x = this._floatArray[verticesOffset + iD].toFloat()
 					var y = this._floatArray[verticesOffset + iD + 1].toFloat()
-					this._helpMatrixA.transformPoint(x, y, this._helpPoint)
-					x = this._helpPoint.x
-					y = this._helpPoint.y
+					this._helpMatrixA.transform(x, y, this._helpPoint)
+					x = this._helpPoint.xf
+					y = this._helpPoint.yf
 
 					//for (var j = 0; j < vertexBoneCount; ++j) {
 					for (j in 0 until vertexBoneCount) {
@@ -2232,11 +2234,11 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 						val boneIndex = weightBoneIndices.indexOf(rawBoneIndex)
 						this._helpMatrixB.copyFromArray(rawBonePoses, boneIndex * 7 + 1)
 						this._helpMatrixB.invert()
-						this._helpMatrixB.transformPoint(x, y, this._helpPoint)
+						this._helpMatrixB.transform(x, y, this._helpPoint)
 						this._intArray[iB++] = boneIndex
 						this._floatArray[iV++] = rawWeights[iW++]
-						this._floatArray[iV++] = this._helpPoint.x.toDouble()
-						this._floatArray[iV++] = this._helpPoint.y.toDouble()
+						this._floatArray[iV++] = this._helpPoint.xf.toDouble()
+						this._floatArray[iV++] = this._helpPoint.yf.toDouble()
 					}
 				}
 			} else {
@@ -2423,7 +2425,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 			return data
 		} else {
-			console.assert(
+			Console.assert(
 				false,
 				"Nonsupport data version: " + version + "\n" +
 						"Please convert DragonBones data to support version.\n" +

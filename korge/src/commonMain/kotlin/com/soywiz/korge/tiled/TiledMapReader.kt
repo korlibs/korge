@@ -12,8 +12,8 @@ import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.encoding.*
 import com.soywiz.korma.geom.*
+import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
 
 suspend fun VfsFile.readTiledMap(
@@ -548,7 +548,7 @@ private fun Xml.parseProperties(): Map<String, Property> {
 	val out = LinkedHashMap<String, Property>()
 	for (property in this.children("property")) {
 		val pname = property.str("name")
-		val rawValue = property.str("value")
+		val rawValue = property.strNull("value") ?: property.text
 		val type = property.str("type", "string")
 		val pvalue = when (type) {
 			"string" -> Property.StringT(rawValue)

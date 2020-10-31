@@ -5,6 +5,7 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.convertRange
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.math.*
 
@@ -36,8 +37,8 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         previousTime = currentTime
 
         fun drawTextWithShadow(text: String, x: Int, y: Int) {
-            ctx.drawText(Fonts.defaultFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK)
-            ctx.drawText(Fonts.defaultFont, fontSize, text, x = x, y = y, colMul = Colors.WHITE)
+            ctx.drawText(debugBmpFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK)
+            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = Colors.WHITE)
         }
 
         drawTextWithShadow("FPS: " +

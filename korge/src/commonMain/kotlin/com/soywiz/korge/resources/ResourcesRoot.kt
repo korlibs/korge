@@ -3,6 +3,7 @@ package com.soywiz.korge.resources
 import com.soywiz.korinject.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.util.*
 
 //@Singleton
@@ -15,7 +16,7 @@ class ResourcesRoot : AsyncDependency {
 	}
 
 	operator fun get(
-        @Resource
+        @ResourcePath
         //@Language("resource") // @TODO: This doesn't work on Kotlin Common. reported already on Kotlin issue tracker
         //language=resource
         path: String

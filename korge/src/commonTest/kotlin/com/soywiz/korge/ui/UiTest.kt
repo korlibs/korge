@@ -21,8 +21,8 @@ class UiTest : ViewsForTesting() {
 
         //uiSkin(OtherUISkin()) {
         defaultUISkin = OtherUISkin()
-        defaultUIFont = Html.FontFace.Font(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
-        textButton(256.0, 32.0) {
+        defaultUIFont = resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps()
+        uiTextButton(256.0, 32.0) {
             text = "Disabled Button"
             position(128, 128)
             onClick {
@@ -30,7 +30,7 @@ class UiTest : ViewsForTesting() {
             }
             disable()
         }
-        textButton(256.0, 32.0) {
+        uiTextButton(256.0, 32.0) {
             text = "Enabled Button"
             position(128, 128 + 32)
             onClick {
@@ -65,7 +65,7 @@ class UiTest : ViewsForTesting() {
         }) {
 
             for (n in 0 until 16) {
-                textButton(text = "HELLO $n").position(0, n * 64)
+                uiTextButton(text = "HELLO $n").position(0, n * 64)
             }
         }
 

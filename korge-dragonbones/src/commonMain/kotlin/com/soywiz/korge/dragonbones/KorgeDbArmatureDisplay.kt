@@ -29,13 +29,11 @@ import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
@@ -111,10 +109,10 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 				for (i in 0 until bones.length) {
 					val bone = bones[i]
 					val boneLength = bone.boneData.length
-					val startX = bone.globalTransformMatrix.tx
-					val startY = bone.globalTransformMatrix.ty
-					val endX = startX + bone.globalTransformMatrix.a * boneLength
-					val endY = startY + bone.globalTransformMatrix.b * boneLength
+					val startX = bone.globalTransformMatrix.txf
+					val startY = bone.globalTransformMatrix.tyf
+					val endX = startX + bone.globalTransformMatrix.af * boneLength
+					val endY = startY + bone.globalTransformMatrix.bf * boneLength
 
                     boneDrawer.stroke(Colors.PURPLE.withAd(0.7), Context2d.StrokeInfo(thickness = 2.0)) {
                         boneDrawer.moveTo(startX.toDouble(), startY.toDouble())
@@ -186,10 +184,8 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 						slot.updateGlobalTransform()
 
 						val transform = slot.global
-						val m = com.soywiz.korma.geom.Matrix()
-						slot.globalTransformMatrix.toMatrix2d(m)
 						//println("SET TRANSFORM: $transform")
-						child.setMatrix(m)
+						child.setMatrix(slot.globalTransformMatrix)
 					} else {
 						val child = this._debugDrawer?.getChildByName(slot.name)
 						if (child != null) {

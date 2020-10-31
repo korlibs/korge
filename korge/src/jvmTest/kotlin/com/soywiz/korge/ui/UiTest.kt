@@ -1,14 +1,9 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.*
 
 fun main(): Unit = runBlocking { korge() }
@@ -19,14 +14,14 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(128, 265)
     }
 
-    textButton(256.0, 32.0, "Disabled Button") {
+    uiTextButton(256.0, 32.0, "Disabled Button") {
         position(128, 128)
         onClick {
             println("CLICKED!")
         }
         disable()
     }
-    textButton(256.0, 32.0, "Enabled Button") {
+    uiTextButton(256.0, 32.0, "Enabled Button") {
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")
@@ -59,7 +54,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(480, 128)
     }) {
         for (n in 0 until 16) {
-            textButton(text = "HELLO $n").position(0, n * 64)
+            uiTextButton(text = "HELLO $n").position(0, n * 64)
         }
     }
 

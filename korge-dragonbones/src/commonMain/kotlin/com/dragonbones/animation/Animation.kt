@@ -27,10 +27,11 @@ package com.dragonbones.animation
 
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.klogger.*
 
 /**
  * - The animation player is used to play the animation data and manage the animation states.
@@ -344,7 +345,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	fun playConfig(animationConfig: AnimationConfig): AnimationState? {
 		val animationName = animationConfig.animation
 		if (animationName !in this._animations) {
-			console.warn(
+			Console.warn(
 				"Non-existent animation.\n",
 				"DragonBones name: " + this._armature?.armatureData?.parent?.name,
 				"Armature name: " + this._armature?.name,

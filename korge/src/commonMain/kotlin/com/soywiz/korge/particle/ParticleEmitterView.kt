@@ -112,7 +112,11 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
         //println("### Trying to load sourceImage=$sourceImage")
         this.texture = sourceFile
         textureLoaded = true
-        emitter.texture = currentVfs["$sourceFile"].readBitmapSlice()
+        try {
+            emitter.texture = currentVfs["$sourceFile"].readBitmapSlice()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {

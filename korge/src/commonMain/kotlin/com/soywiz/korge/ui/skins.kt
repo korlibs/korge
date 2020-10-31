@@ -3,11 +3,12 @@ package com.soywiz.korge.ui
 import com.soywiz.korge.html.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 
 data class TextFormat(
     var color: RGBA = Colors.BLACK,
     var size: Int = 16,
-    var font: Html.FontFace? = null
+    var font: Font? = null
 )
 
 data class TextSkin(
@@ -33,7 +34,7 @@ data class ComboBoxSkin(
     val showIcon: IconSkin,
     val hideIcon: IconSkin,
     val scrollbarSkin: ScrollBarSkin,
-    val textFont: Html.FontFace
+    val textFont: Font
 )
 
 data class ScrollBarSkin(

@@ -1,11 +1,10 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.camera2.*
+import com.soywiz.korge.view.camera.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
-import javax.swing.tree.*
 
 open class ViewsDebuggerActions(val views: Views) {
     lateinit var component: ViewsDebuggerComponent
@@ -17,7 +16,7 @@ open class ViewsDebuggerActions(val views: Views) {
     var gridShowing = true
     var gridSnapping = true
 
-    val camera = stage.cameraContainer2(1280.toDouble(), 720.toDouble(), clip = false, contentBuilder = {
+    val camera = stage.cameraContainer(1280.toDouble(), 720.toDouble(), clip = false, contentBuilder = {
         KTreeRoot(it.width, it.height)
     })
     val root: KTreeRoot = camera.content as KTreeRoot

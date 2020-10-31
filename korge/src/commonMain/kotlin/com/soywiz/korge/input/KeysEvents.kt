@@ -30,9 +30,10 @@ class KeysEvents(override val view: View) : KeyComponent {
                     ke.type = KeyEvent.Type.DOWN
                     ke.key = key
                     ke.keyCode = key.ordinal
-                    ke.shift = keys[Key.LEFT_SHIFT] || keys[Key.RIGHT_SHIFT]
-                    ke.ctrl = keys[Key.LEFT_CONTROL] || keys[Key.RIGHT_CONTROL]
-                    ke.meta = keys[Key.META]
+                    ke.shift = keys.shift
+                    ke.ctrl = keys.ctrl
+                    ke.alt = keys.alt
+                    ke.meta = keys.meta
                     ke.deltaTime = dt
                     callback(ke)
                 }

@@ -235,7 +235,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 				} else { // Normal texture.
 					this._textureScale = currentTextureData.parent!!.scale * this._armature!!._armatureData!!.scale
 					val normalDisplay = this._renderDisplay as Image
-					normalDisplay.texture = renderTexture
+					normalDisplay.bitmap = renderTexture
 					//normalDisplay.name = renderTexture.name
 					normalDisplay.name = this.name
 				}
@@ -313,8 +313,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 						yL += deformVertices[iF++].toFloat()
 					}
 
-					xG += matrix.transformX(xL.toFloat(), yL.toFloat()) * weight
-					yG += matrix.transformY(xL.toFloat(), yL.toFloat()) * weight
+					xG += matrix.transformXf(xL, yL) * weight
+					yG += matrix.transformYf(xL, yL) * weight
 				}
 
 				meshDisplay.vertices[iD++] = xG
@@ -347,8 +347,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 				if (isSurface) {
 					val matrix = (this._parent as Surface)._getGlobalTransformMatrix(x, y)
 
-					meshDisplay.vertices[i + 0] = matrix.transformX(x, y).toFloat()
-					meshDisplay.vertices[i + 1] = matrix.transformY(x, y).toFloat()
+					meshDisplay.vertices[i + 0] = matrix.transformXf(x, y).toFloat()
+					meshDisplay.vertices[i + 1] = matrix.transformYf(x, y).toFloat()
 				} else {
 					meshDisplay.vertices[i + 0] = x.toFloat()
 					meshDisplay.vertices[i + 1] = y.toFloat()
@@ -369,15 +369,15 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
         val rd = this._renderDisplay
 
 		if (rd === this._rawDisplay || rd === this._meshDisplay) {
-			val x = transform.x - (this.globalTransformMatrix.a * this._pivotX + this.globalTransformMatrix.c * this._pivotY)
-			val y = transform.y - (this.globalTransformMatrix.b * this._pivotX + this.globalTransformMatrix.d * this._pivotY)
+			val x = transform.xf - (this.globalTransformMatrix.af * this._pivotX + this.globalTransformMatrix.cf * this._pivotY)
+			val y = transform.yf - (this.globalTransformMatrix.bf * this._pivotX + this.globalTransformMatrix.df * this._pivotY)
             if (rd != null) {
                 rd.position(x, y)
                 rd.scale(transform.scaleX * this._textureScale, transform.scaleY * this._textureScale)
             }
 		} else {
             if (rd != null) {
-                rd.position(transform.x.toDouble(), transform.y.toDouble())
+                rd.position(transform.xf.toDouble(), transform.yf.toDouble())
                 rd.scale(transform.scaleX.toDouble(), transform.scaleY.toDouble())
             }
 		}

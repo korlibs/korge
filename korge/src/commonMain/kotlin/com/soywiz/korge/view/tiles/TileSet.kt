@@ -18,17 +18,22 @@ class TileSet(
 ) {
     val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmp else texturesMap.firstValue().bmp }
     val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it != null && it.bmp != base } }
-    val textures by lazy { Array<BmpSlice?>(texturesMap.keys.max() ?: 0) { texturesMap[it] } }
+    val textures by lazy { Array<BmpSlice?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { texturesMap[it] } }
 	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
+
+    //init {
+    //    println("texturesMap: ${texturesMap.toMap()}")
+    //    println("textures: ${textures.size}")
+    //}
 
 	operator fun get(index: Int): BmpSlice? = textures.getOrNull(index)
 
     fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
-		operator fun invoke(textureMap: Map<Int, out BmpSlice>): TileSet = TileSet(textureMap.toIntMap())
+		operator fun invoke(textureMap: Map<Int, BmpSlice>): TileSet = TileSet(textureMap.toIntMap())
 
-        operator fun invoke(tileSets: List<out TileSet>): TileSet {
+        operator fun invoke(tileSets: List<TileSet>): TileSet {
             val map = IntMap<BmpSlice>()
             tileSets.fastForEach { tileSet ->
                 map.putAll(tileSet.texturesMap)
@@ -36,7 +41,7 @@ class TileSet(
             return TileSet(map)
         }
 
-        operator fun invoke(tiles: List<out BmpSlice>, width: Int, height: Int): TileSet {
+        operator fun invoke(tiles: List<BmpSlice>, width: Int, height: Int): TileSet {
             val map = IntMap<BmpSlice>()
             tiles.fastForEachWithIndex { index, value -> map[index] = value }
             return TileSet(map, width, height)

@@ -15,7 +15,6 @@ open class OrthographicGrid(
     var width: Int,
     var height: Int,
 ) : Grid {
-
     var size: Int
         get() = (width + height) / 2
         set(value) {

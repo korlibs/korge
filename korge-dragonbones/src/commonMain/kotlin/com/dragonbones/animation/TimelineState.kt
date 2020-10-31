@@ -25,9 +25,7 @@ package com.dragonbones.animation
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
-import com.dragonbones.util.*
 import com.soywiz.kmem.*
 import kotlin.math.*
 
@@ -310,8 +308,8 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		super._onArriveAtFrame()
 
 		if (this._isTween && this._frameIndex == this._frameCount - 1) {
-			this._rd[2] = Transform.normalizeRadian(this._rd[2])
-			this._rd[3] = Transform.normalizeRadian(this._rd[3])
+			this._rd[2] = TransformDb.normalizeRadian(this._rd[2])
+			this._rd[3] = TransformDb.normalizeRadian(this._rd[3])
 		}
 
 		if (this._timelineData == null) { // Pose.
@@ -330,8 +328,8 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 
 	override fun fadeOut() {
 		this.dirty = false
-		this._rd[2] = Transform.normalizeRadian(this._rd[2])
-		this._rd[3] = Transform.normalizeRadian(this._rd[3])
+		this._rd[2] = TransformDb.normalizeRadian(this._rd[2])
+		this._rd[3] = TransformDb.normalizeRadian(this._rd[3])
 	}
 
 	override fun blend(_isDirty: Boolean) {
@@ -344,15 +342,15 @@ class BoneAllTimelineState(pool: SingleObjectPool<BoneAllTimelineState>) : Mutil
 		val result = bone.animationPose
 
 		if (blendState.dirty > 1) {
-			result.x += (rd[0] * blendWeight * valueScale).toFloat()
-			result.y += (rd[1] * blendWeight * valueScale).toFloat()
+			result.xf += (rd[0] * blendWeight * valueScale).toFloat()
+			result.yf += (rd[1] * blendWeight * valueScale).toFloat()
 			result.rotation += (rd[2] * blendWeight).toFloat()
 			result.skew += (rd[3] * blendWeight).toFloat()
 			result.scaleX += ((rd[4] - 1.0) * blendWeight).toFloat()
 			result.scaleY += ((rd[5] - 1.0) * blendWeight).toFloat()
 		} else {
-			result.x = (rd[0] * blendWeight * valueScale).toFloat()
-			result.y = (rd[1] * blendWeight * valueScale).toFloat()
+			result.xf = (rd[0] * blendWeight * valueScale).toFloat()
+			result.yf = (rd[1] * blendWeight * valueScale).toFloat()
 			result.rotation = (rd[2] * blendWeight).toFloat()
 			result.skew = (rd[3] * blendWeight).toFloat()
 			result.scaleX = ((rd[4] - 1.0) * blendWeight + 1.0).toFloat() //
@@ -390,16 +388,16 @@ class BoneTranslateTimelineState(pool: SingleObjectPool<BoneTranslateTimelineSta
 
 		when {
 			blendState.dirty > 1 -> {
-				result.x += (this._resultA * blendWeight).toFloat()
-				result.y += (this._resultB * blendWeight).toFloat()
+				result.xf += (this._resultA * blendWeight).toFloat()
+				result.yf += (this._resultB * blendWeight).toFloat()
 			}
 			blendWeight != 1.0 -> {
-				result.x = (this._resultA * blendWeight).toFloat()
-				result.y = (this._resultB * blendWeight).toFloat()
+				result.xf = (this._resultA * blendWeight).toFloat()
+				result.yf = (this._resultB * blendWeight).toFloat()
 			}
 			else -> {
-				result.x = this._resultA.toFloat()
-				result.y = this._resultB.toFloat()
+				result.xf = this._resultA.toFloat()
+				result.yf = this._resultB.toFloat()
 			}
 		}
 
@@ -422,8 +420,8 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 		super._onArriveAtFrame()
 
 		if (this._isTween && this._frameIndex == this._frameCount - 1) {
-			this._differenceA = Transform.normalizeRadian(this._differenceA)
-			this._differenceB = Transform.normalizeRadian(this._differenceB)
+			this._differenceA = TransformDb.normalizeRadian(this._differenceA)
+			this._differenceB = TransformDb.normalizeRadian(this._differenceB)
 		}
 	}
 
@@ -436,8 +434,8 @@ class BoneRotateTimelineState(pool: SingleObjectPool<BoneRotateTimelineState>) :
 
 	override fun fadeOut() {
 		this.dirty = false
-		this._resultA = Transform.normalizeRadian(this._resultA)
-		this._resultB = Transform.normalizeRadian(this._resultB)
+		this._resultA = TransformDb.normalizeRadian(this._resultA)
+		this._resultB = TransformDb.normalizeRadian(this._resultB)
 	}
 
 	override fun blend(_isDirty: Boolean) {

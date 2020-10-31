@@ -3,9 +3,10 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.font.*
 
 var View.defaultTextSkin: TextSkin by extraProperty { DefaultTextSkin }
-var View.defaultUIFont: Html.FontFace by extraProperty { DefaultUIFont }
+var View.defaultUIFont: Font by extraProperty { DefaultUIFont }
 var View.defaultUISkin: UISkin by extraProperty { DefaultUISkin }
 var View.defaultCheckSkin: IconSkin by extraProperty { DefaultCheckSkin }
 var View.defaultUpSkin: IconSkin by extraProperty { DefaultUpSkin }

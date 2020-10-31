@@ -22,12 +22,13 @@
  */
 package com.dragonbones.model
 
-import com.dragonbones.armature.Bone
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
+import com.soywiz.klogger.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 /**
  * - The armature data.
@@ -287,17 +288,17 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun setCacheFrame(globalTransformMatrix: Matrix, transform: Transform): Int {
+	fun setCacheFrame(globalTransformMatrix: Matrix, transform: TransformDb): Int {
 		val dataArray = this.parent!!.cachedFrames
 		val arrayOffset = dataArray.size
 
 		dataArray.lengthSet += 10
-		dataArray[arrayOffset] = globalTransformMatrix.a.toDouble()
-		dataArray[arrayOffset + 1] = globalTransformMatrix.b.toDouble()
-		dataArray[arrayOffset + 2] = globalTransformMatrix.c.toDouble()
-		dataArray[arrayOffset + 3] = globalTransformMatrix.d.toDouble()
-		dataArray[arrayOffset + 4] = globalTransformMatrix.tx.toDouble()
-		dataArray[arrayOffset + 5] = globalTransformMatrix.ty.toDouble()
+		dataArray[arrayOffset] = globalTransformMatrix.af.toDouble()
+		dataArray[arrayOffset + 1] = globalTransformMatrix.bf.toDouble()
+		dataArray[arrayOffset + 2] = globalTransformMatrix.cf.toDouble()
+		dataArray[arrayOffset + 3] = globalTransformMatrix.df.toDouble()
+		dataArray[arrayOffset + 4] = globalTransformMatrix.txf.toDouble()
+		dataArray[arrayOffset + 5] = globalTransformMatrix.tyf.toDouble()
 		dataArray[arrayOffset + 6] = transform.rotation.toDouble()
 		dataArray[arrayOffset + 7] = transform.skew.toDouble()
 		dataArray[arrayOffset + 8] = transform.scaleX.toDouble()
@@ -309,20 +310,20 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun getCacheFrame(globalTransformMatrix: Matrix, transform: Transform, arrayOffset: Int) {
+	fun getCacheFrame(globalTransformMatrix: Matrix, transform: TransformDb, arrayOffset: Int) {
 		val dataArray = this.parent!!.cachedFrames
-		globalTransformMatrix.a = dataArray[arrayOffset].toFloat()
-		globalTransformMatrix.b = dataArray[arrayOffset + 1].toFloat()
-		globalTransformMatrix.c = dataArray[arrayOffset + 2].toFloat()
-		globalTransformMatrix.d = dataArray[arrayOffset + 3].toFloat()
-		globalTransformMatrix.tx = dataArray[arrayOffset + 4].toFloat()
-		globalTransformMatrix.ty = dataArray[arrayOffset + 5].toFloat()
+		globalTransformMatrix.af = dataArray[arrayOffset].toFloat()
+		globalTransformMatrix.bf = dataArray[arrayOffset + 1].toFloat()
+		globalTransformMatrix.cf = dataArray[arrayOffset + 2].toFloat()
+		globalTransformMatrix.df = dataArray[arrayOffset + 3].toFloat()
+		globalTransformMatrix.txf = dataArray[arrayOffset + 4].toFloat()
+		globalTransformMatrix.tyf = dataArray[arrayOffset + 5].toFloat()
 		transform.rotation = dataArray[arrayOffset + 6].toFloat()
 		transform.skew = dataArray[arrayOffset + 7].toFloat()
 		transform.scaleX = dataArray[arrayOffset + 8].toFloat()
 		transform.scaleY = dataArray[arrayOffset + 9].toFloat()
-		transform.x = globalTransformMatrix.tx
-		transform.y = globalTransformMatrix.ty
+		transform.xf = globalTransformMatrix.txf
+		transform.yf = globalTransformMatrix.tyf
 	}
 
 	/**
@@ -330,7 +331,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addBone(value: BoneData) {
 		if (value.name in this.bones) {
-			console.warn("Same bone: " + value.name)
+			Console.warn("Same bone: " + value.name)
 			return
 		}
 
@@ -343,7 +344,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addSlot(value: SlotData) {
 		if (value.name in this.slots) {
-			console.warn("Same slot: " + value.name)
+			Console.warn("Same slot: " + value.name)
 			return
 		}
 
@@ -356,7 +357,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addConstraint(value: ConstraintData) {
 		if (value.name in this.constraints) {
-			console.warn("Same constraint: " + value.name)
+			Console.warn("Same constraint: " + value.name)
 			return
 		}
 
@@ -368,7 +369,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addSkin(value: SkinData) {
 		if (value.name in this.skins) {
-			console.warn("Same skin: " + value.name)
+			Console.warn("Same skin: " + value.name)
 			return
 		}
 
@@ -388,7 +389,7 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 */
 	fun addAnimation(value: AnimationData) {
 		if (value.name in this.animations) {
-			console.warn("Same animation: " + value.name)
+			Console.warn("Same animation: " + value.name)
 			return
 		}
 
@@ -541,7 +542,7 @@ open class BoneData(pool: SingleObjectPool<out BoneData>) : BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	val transform: Transform = Transform()
+	val transform: TransformDb = TransformDb()
 	/**
 	 * @private
 	 */

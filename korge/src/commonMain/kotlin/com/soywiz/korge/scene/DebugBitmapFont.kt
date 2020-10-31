@@ -4,8 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.util.*
-import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.native.concurrent.*
 
 object DebugBitmapFont {

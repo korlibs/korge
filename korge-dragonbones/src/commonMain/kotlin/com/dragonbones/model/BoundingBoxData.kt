@@ -23,9 +23,7 @@
 package com.dragonbones.model
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
-import com.dragonbones.util.*
-import com.soywiz.kds.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -255,7 +253,7 @@ class RectangleBoundingBoxData(pool: SingleObjectPool<RectangleBoundingBoxData>)
 					outcode0 = RectangleBoundingBoxData._computeOutCode(xA, yA, xMin, yMin, xMax, yMax)
 
 					if (normalRadians != null) {
-						normalRadians.x = normalRadian.toFloat()
+						normalRadians.xf = normalRadian.toFloat()
 					}
 				} else {
 					xB = x
@@ -263,7 +261,7 @@ class RectangleBoundingBoxData(pool: SingleObjectPool<RectangleBoundingBoxData>)
 					outcode1 = RectangleBoundingBoxData._computeOutCode(xB, yB, xMin, yMin, xMax, yMax)
 
 					if (normalRadians != null) {
-						normalRadians.y = normalRadian.toFloat()
+						normalRadians.yf = normalRadian.toFloat()
 					}
 				}
 			}
@@ -273,44 +271,44 @@ class RectangleBoundingBoxData(pool: SingleObjectPool<RectangleBoundingBoxData>)
 					intersectionCount = 2 // 10
 
 					if (intersectionPointA != null) {
-						intersectionPointA.x = xB.toFloat()
-						intersectionPointA.y = yB.toFloat()
+						intersectionPointA.xf = xB.toFloat()
+						intersectionPointA.yf = yB.toFloat()
 					}
 
 					if (intersectionPointB != null) {
-						intersectionPointB.x = xB.toFloat()
-						intersectionPointB.y = xB.toFloat()
+						intersectionPointB.xf = xB.toFloat()
+						intersectionPointB.yf = xB.toFloat()
 					}
 
 					if (normalRadians != null) {
-						normalRadians.x = (normalRadians.y + PI).toFloat()
+						normalRadians.xf = (normalRadians.yf + PI).toFloat()
 					}
 				} else if (inSideB) {
 					intersectionCount = 1 // 01
 
 					if (intersectionPointA != null) {
-						intersectionPointA.x = xA.toFloat()
-						intersectionPointA.y = yA.toFloat()
+						intersectionPointA.xf = xA.toFloat()
+						intersectionPointA.yf = yA.toFloat()
 					}
 
 					if (intersectionPointB != null) {
-						intersectionPointB.x = xA.toFloat()
-						intersectionPointB.y = yA.toFloat()
+						intersectionPointB.xf = xA.toFloat()
+						intersectionPointB.yf = yA.toFloat()
 					}
 
 					if (normalRadians != null) {
-						normalRadians.y = (normalRadians.x + PI).toFloat()
+						normalRadians.yf = (normalRadians.xf + PI).toFloat()
 					}
 				} else {
 					intersectionCount = 3 // 11
 					if (intersectionPointA != null) {
-						intersectionPointA.x = xA.toFloat()
-						intersectionPointA.y = yA.toFloat()
+						intersectionPointA.xf = xA.toFloat()
+						intersectionPointA.yf = yA.toFloat()
 					}
 
 					if (intersectionPointB != null) {
-						intersectionPointB.x = xB.toFloat()
-						intersectionPointB.y = yB.toFloat()
+						intersectionPointB.xf = xB.toFloat()
+						intersectionPointB.yf = yB.toFloat()
 					}
 				}
 			}
@@ -425,18 +423,18 @@ class EllipseBoundingBoxData(pool: SingleObjectPool<EllipseBoundingBoxData>) : B
 						yB = (yA + sB * yD) / d
 
 						if (intersectionPointA != null) {
-							intersectionPointA.x = xB.toFloat()
-							intersectionPointA.y = yB.toFloat()
+							intersectionPointA.xf = xB.toFloat()
+							intersectionPointA.yf = yB.toFloat()
 						}
 
 						if (intersectionPointB != null) {
-							intersectionPointB.x = xB.toFloat()
-							intersectionPointB.y = yB.toFloat()
+							intersectionPointB.xf = xB.toFloat()
+							intersectionPointB.yf = yB.toFloat()
 						}
 
 						if (normalRadians != null) {
-							normalRadians.x = atan2(yB / rr * dd, xB / rr).toFloat()
-							normalRadians.y = (normalRadians.x + PI).toFloat()
+							normalRadians.xf = atan2(yB / rr * dd, xB / rr).toFloat()
+							normalRadians.yf = (normalRadians.xf + PI).toFloat()
 						}
 					} else if (inSideB == 1) {
 						intersectionCount = 1 // 01
@@ -444,37 +442,37 @@ class EllipseBoundingBoxData(pool: SingleObjectPool<EllipseBoundingBoxData>) : B
 						yA = (yA + sA * yD) / d
 
 						if (intersectionPointA != null) {
-							intersectionPointA.x = xA.toFloat()
-							intersectionPointA.y = yA.toFloat()
+							intersectionPointA.xf = xA.toFloat()
+							intersectionPointA.yf = yA.toFloat()
 						}
 
 						if (intersectionPointB != null) {
-							intersectionPointB.x = xA.toFloat()
-							intersectionPointB.y = yA.toFloat()
+							intersectionPointB.xf = xA.toFloat()
+							intersectionPointB.yf = yA.toFloat()
 						}
 
 						if (normalRadians != null) {
-							normalRadians.x = atan2(yA / rr * dd, xA / rr).toFloat()
-							normalRadians.y = (normalRadians.x + PI).toFloat()
+							normalRadians.xf = atan2(yA / rr * dd, xA / rr).toFloat()
+							normalRadians.yf = (normalRadians.xf + PI).toFloat()
 						}
 					} else {
 						intersectionCount = 3 // 11
 
 						if (intersectionPointA != null) {
-							intersectionPointA.x = (xA + sA * xD).toFloat()
-							intersectionPointA.y = ((yA + sA * yD) / d).toFloat()
+							intersectionPointA.xf = (xA + sA * xD).toFloat()
+							intersectionPointA.yf = ((yA + sA * yD) / d).toFloat()
 
 							if (normalRadians != null) {
-								normalRadians.x = atan2(intersectionPointA.y / rr * dd, intersectionPointA.x / rr).toFloat()
+								normalRadians.xf = atan2(intersectionPointA.yf / rr * dd, intersectionPointA.xf / rr).toFloat()
 							}
 						}
 
 						if (intersectionPointB != null) {
-							intersectionPointB.x = (xA + sB * xD).toFloat()
-							intersectionPointB.y = ((yA + sB * yD) / d).toFloat()
+							intersectionPointB.xf = (xA + sB * xD).toFloat()
+							intersectionPointB.yf = ((yA + sB * yD) / d).toFloat()
 
 							if (normalRadians != null) {
-								normalRadians.y = atan2(intersectionPointB.y / rr * dd, intersectionPointB.x / rr).toFloat()
+								normalRadians.yf = atan2(intersectionPointB.yf / rr * dd, intersectionPointB.xf / rr).toFloat()
 							}
 						}
 					}
@@ -606,8 +604,8 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 							yMax = y
 
 							if (normalRadians != null) {
-								normalRadians.x = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
-								normalRadians.y = normalRadians.x
+								normalRadians.xf = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
+								normalRadians.yf = normalRadians.xf
 							}
 						} else {
 							if (d < dMin) {
@@ -616,7 +614,7 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 								yMin = y
 
 								if (normalRadians != null) {
-									normalRadians.x = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
+									normalRadians.xf = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
 								}
 							}
 
@@ -626,7 +624,7 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 								yMax = y
 
 								if (normalRadians != null) {
-									normalRadians.y = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
+									normalRadians.yf = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
 								}
 							}
 						}
@@ -640,8 +638,8 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 						intersectionCount++
 
 						if (normalRadians != null) {
-							normalRadians.x = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
-							normalRadians.y = normalRadians.x
+							normalRadians.xf = (atan2(yD - yC, xD - xC) - PI * 0.5).toFloat()
+							normalRadians.yf = normalRadians.xf
 						}
 						break
 					}
@@ -654,29 +652,29 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 
 		if (intersectionCount == 1) {
 			if (intersectionPointA != null) {
-				intersectionPointA.x = xMin.toFloat()
-				intersectionPointA.y = yMin.toFloat()
+				intersectionPointA.xf = xMin.toFloat()
+				intersectionPointA.yf = yMin.toFloat()
 			}
 
 			if (intersectionPointB != null) {
-				intersectionPointB.x = xMin.toFloat()
-				intersectionPointB.y = yMin.toFloat()
+				intersectionPointB.xf = xMin.toFloat()
+				intersectionPointB.yf = yMin.toFloat()
 			}
 
 			if (normalRadians != null) {
-				normalRadians.y = (normalRadians.x + PI).toFloat()
+				normalRadians.yf = (normalRadians.xf + PI).toFloat()
 			}
 		} else if (intersectionCount > 1) {
 			intersectionCount++
 
 			if (intersectionPointA != null) {
-				intersectionPointA.x = xMin.toFloat()
-				intersectionPointA.y = yMin.toFloat()
+				intersectionPointA.xf = xMin.toFloat()
+				intersectionPointA.yf = yMin.toFloat()
 			}
 
 			if (intersectionPointB != null) {
-				intersectionPointB.x = xMax.toFloat()
-				intersectionPointB.y = yMax.toFloat()
+				intersectionPointB.xf = xMax.toFloat()
+				intersectionPointB.yf = yMax.toFloat()
 			}
 		}
 

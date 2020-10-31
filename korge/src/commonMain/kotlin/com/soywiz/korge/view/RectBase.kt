@@ -13,14 +13,12 @@ import com.soywiz.korui.*
  * [RectBase] is an abstract [Container] [View] that represents something with a Rect-like shape: like a [SolidRect] or an [Image].
  * It supports anchoring [anchorX] and [anchorY] ratios [0..1] for anchoring this rectangle, and handles pre-computing of vertices for performance.
  */
-// @TODO: In KorGE 2.0 this should extend [Container] but [View]
 @UseExperimental(KorgeInternal::class)
 open class RectBase(
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
-//) : Container(), Anchorable {
 ) : View(), Anchorable {
     init {
         this.hitShape = hitShape

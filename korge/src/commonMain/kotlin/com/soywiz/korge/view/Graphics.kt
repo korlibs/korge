@@ -3,12 +3,12 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
@@ -124,9 +124,9 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun stroke(
-		paint: Paint,
-		info: Context2d.StrokeInfo,
-		callback: @ViewDslMarker VectorBuilder.() -> Unit
+            paint: Paint,
+            info: Context2d.StrokeInfo,
+            callback: @ViewDslMarker VectorBuilder.() -> Unit
 	) {
 		beginStroke(paint, info)
 		try {
@@ -137,10 +137,10 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun fillStroke(
-		fill: Paint,
-		stroke: Paint,
-		strokeInfo: Context2d.StrokeInfo,
-		callback: @ViewDslMarker VectorBuilder.() -> Unit
+            fill: Paint,
+            stroke: Paint,
+            strokeInfo: Context2d.StrokeInfo,
+            callback: @ViewDslMarker VectorBuilder.() -> Unit
 	) {
 		beginFillStroke(fill, stroke, strokeInfo)
 		try {
@@ -151,9 +151,9 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun beginFillStroke(
-		fill: Paint,
-		stroke: Paint,
-		strokeInfo: Context2d.StrokeInfo
+            fill: Paint,
+            stroke: Paint,
+            strokeInfo: Context2d.StrokeInfo
 	) {
 		this.fill = fill
 		this.stroke = stroke

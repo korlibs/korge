@@ -5,8 +5,8 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
@@ -192,7 +192,9 @@ class SWFShapeExporter(
 		flush()
 		drawingFill = true
 		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
-		fillStyle = BitmapPaint(bmp, matrix.clone(), repeat, smooth)
+		fillStyle = BitmapPaint(
+            bmp, matrix.clone(), CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth
+        )
 	}
 
 	override fun endFill() {

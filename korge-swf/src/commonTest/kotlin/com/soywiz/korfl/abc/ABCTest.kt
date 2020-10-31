@@ -3,6 +3,7 @@ package com.soywiz.korfl.abc
 import com.soywiz.korfl.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 import kotlin.test.*
 
 class ABCTest {
@@ -34,7 +35,7 @@ class ABCTest {
 			"4f 05 02 47 00 00 03 02 01 01 09 27 d0 30 65 00",        // O**G*******'*0e* |
 			"60 06 30 60 07 30 60 08 30 60 09 30 60 0a 30 60",        // `*0`*0`*0`*0`*0` |
 			"0b 30 60 02 30 60 02 58 00 1d 1d 1d 1d 1d 1d 1d",        // *0`*0`*X******** |
-			"68 01 47 00 00 		                        "       //  h*G** |
+			"68 01 47 00 00 		                        "         //  h*G** |
 		).unhexIgnoreSpaces
 
 		val abc = ABC().readFile(data.openSync())

@@ -23,6 +23,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
@@ -35,6 +36,7 @@ import kotlin.reflect.*
  */
 object Korge {
 	val logger = Logger("Korge")
+    val DEFAULT_GAME_ID = "com.soywiz.korge.unknown"
 
     suspend operator fun invoke(config: Config) {
         //println("Korge started from Config")
@@ -64,11 +66,15 @@ object Korge {
             injector = config.injector,
             timeProvider = config.timeProvider,
             blocking = config.blocking,
+            gameId = config.gameId,
+            settingsFolder = config.settingsFolder,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
-                injector.mapInstance(Module::class, module).mapInstance(Config::class, config)
+                injector
+                    .mapInstance(Module::class, module)
+                    .mapInstance(Config::class, config)
                 config.constructedViews(views)
                 module.apply { injector.configure() }
                 val sc = SceneContainer(views, name = "rootSceneContainer")
@@ -101,7 +107,9 @@ object Korge {
         timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         debugAg: Boolean = false,
-        blocking:Boolean = true,
+        blocking: Boolean = true,
+        gameId: String = DEFAULT_GAME_ID,
+        settingsFolder: String? = null,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -133,7 +141,17 @@ object Korge {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views: Views = Views(coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(), if (debugAg) PrintAG() else ag, injector, input, timeProvider, stats, gameWindow)
+            val views: Views = Views(
+                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
+                ag = if (debugAg) PrintAG() else ag,
+                injector = injector,
+                input = input,
+                timeProvider = timeProvider,
+                stats = stats,
+                gameWindow = gameWindow,
+                gameId = gameId,
+                settingsFolder = settingsFolder
+            )
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
@@ -196,6 +214,7 @@ object Korge {
         val injector = views.injector
         injector.mapInstance(views)
         injector.mapInstance(views.ag)
+        injector.mapInstance(Resources::class, views.globalResources)
         injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
         injector.mapInstance(views.input)
         injector.mapInstance(views.stats)
@@ -451,6 +470,8 @@ object Korge {
 		val context: Any? = null,
 		val fullscreen: Boolean? = null,
         val blocking: Boolean = true,
+        val gameId: String = DEFAULT_GAME_ID,
+        val settingsFolder: String? = null,
 		val constructedViews: (Views) -> Unit = {}
 	)
 

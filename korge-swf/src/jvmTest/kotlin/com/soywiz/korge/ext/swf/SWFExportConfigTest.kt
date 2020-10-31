@@ -10,7 +10,6 @@ import kotlin.test.*
 
 class SWFExportConfigTest {
 	@Test
-	//@Ignore // Must fix Mapper first
 	fun name() {
 		val config = Yaml.decodeToType<SWFExportConfig>(
 			"""

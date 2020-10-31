@@ -4,6 +4,10 @@ import kotlinx.cinterop.*
 import platform.posix.*
 
 object KorgeSimpleNativeSyncIO {
+    fun mkdirs(file: String) {
+        com.soywiz.korio.doMkdir(file, "0777".toInt(8))
+    }
+
     fun writeBytes(file: String, bytes: ByteArray) {
         val fd = fopen(file, "wb") ?: error("Can't open file '$file' for writing")
         try {
@@ -24,13 +28,15 @@ object KorgeSimpleNativeSyncIO {
         try {
             fseek(fd, 0L.convert(), SEEK_END)
             val fileSize = ftell(fd)
-            fseek(fd, 0L.convert(), SEEK_CUR)
+            fseek(fd, 0L.convert(), SEEK_SET)
 
             val out = ByteArray(fileSize.toInt())
             if (out.isNotEmpty()) {
                 memScoped {
                     out.usePinned { pin ->
-                        fread(pin.addressOf(0), 1.convert(), out.size.convert(), fd)
+                        @Suppress("UNUSED_VARIABLE")
+                        val readCount = fread(pin.addressOf(0), 1.convert(), out.size.convert(), fd)
+                        //println("readCount: $readCount, out.size=${out.size}, fileSize=$fileSize")
                     }
                 }
             }

@@ -1,224 +1,323 @@
 package com.soywiz.korge.view.camera
 
-import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.interpolate
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
-@KorgeExperimental
-class Camera(
-    x: Double = 0.0,
-    y: Double = 0.0,
+inline fun Container.cameraContainer(
+    width: Double,
+    height: Double,
+    clip: Boolean = true,
+    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    noinline block: @ViewDslMarker CameraContainer.() -> Unit = {},
+    content: @ViewDslMarker Container.() -> Unit = {}
+) = CameraContainer(width, height, clip, contentBuilder, block).addTo(this).also { content(it.content) }
+
+class CameraContainer(
     width: Double = 100.0,
     height: Double = 100.0,
-    zoom: Double = 1.0,
-    angle: Angle = 0.degrees,
-    override var anchorX: Double = 0.0,
-    override var anchorY: Double = 0.0
-) : MutableInterpolable<Camera>, Interpolable<Camera>, Anchorable {
+    clip: Boolean = true,
+    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    block: @ViewDslMarker CameraContainer.() -> Unit = {}
+) : FixedSizeContainer(width, height, clip), View.Reference {
 
-    var x: Double by Observable(x, before = { if (withUpdate) setTo(x = it) })
-    var y: Double by Observable(y, before = { if (withUpdate) setTo(y = it) })
-    var width: Double by Observable(width, before = { if (withUpdate) setTo(width = it) })
-    var height: Double by Observable(height, before = { if (withUpdate) setTo(height = it) })
-    var zoom: Double by Observable(zoom, before = { if (withUpdate) setTo(zoom = it) })
-    var angle: Angle by Observable(angle, before = { if (withUpdate) setTo(angle = it) })
+    private val contentContainer = Container()
 
-    internal var container: CameraContainer? = null
-    private var cancelFollowing: Cancellable? = null
-    private var withUpdate: Boolean = true
-
-    internal fun attach(container: CameraContainer) {
-        this.container = container
-    }
-
-    internal fun detach() {
-        container = null
-    }
-
-    // when we don't want to update CameraContainer
-    private inline fun withoutUpdate(callback: Camera.() -> Unit) {
-        val prev = withUpdate
-        withUpdate = false
-        callback()
-        withUpdate = prev
-    }
-
-    fun setTo(other: Camera) = setTo(
-        other.x,
-        other.y,
-        other.width,
-        other.height,
-        other.zoom,
-        other.angle,
-        other.anchorX,
-        other.anchorY
-    )
-
-    fun setTo(
-        x: Double = this.x,
-        y: Double = this.y,
-        width: Double = this.width,
-        height: Double = this.height,
-        zoom: Double = this.zoom,
-        angle: Angle = this.angle,
-        anchorX: Double = this.anchorX,
-        anchorY: Double = this.anchorY
-    ): Camera {
-        if (withUpdate) {
-            container?.setTo(x, y, width, height, zoom, angle, anchorX, anchorY)
-        }
-        withoutUpdate {
-            this.x = x
-            this.y = y
-            this.width = width
-            this.height = height
-            this.zoom = zoom
-            this.angle = angle
-            this.anchorX = anchorX
-            this.anchorY = anchorY
-        }
-        return this
-    }
-
-    suspend fun tweenTo(other: Camera, time: TimeSpan, easing: Easing = Easing.LINEAR) = tweenTo(
-        x = other.x,
-        y = other.y,
-        width = other.width,
-        height = other.height,
-        zoom = other.zoom,
-        angle = other.angle,
-        anchorX = other.anchorX,
-        anchorY = other.anchorY,
-        time = time,
-        easing = easing
-    )
-
-    suspend fun tweenTo(
-        x: Double = this.x,
-        y: Double = this.y,
-        width: Double = this.width,
-        height: Double = this.height,
-        zoom: Double = this.zoom,
-        angle: Angle = this.angle,
-        anchorX: Double = this.anchorX,
-        anchorY: Double = this.anchorY,
-        time: TimeSpan,
-        easing: Easing = Easing.LINEAR
-    ) {
-        val initialX = this.x
-        val initialY = this.y
-        val initialWidth = this.width
-        val initialHeight = this.height
-        val initialZoom = this.zoom
-        val initialAngle = this.angle
-        val initialAnchorX = this.anchorX
-        val initialAnchorY = this.anchorY
-        container?.tween(time = time, easing = easing) { ratio ->
-            setTo(
-                ratio.interpolate(initialX, x),
-                ratio.interpolate(initialY, y),
-                ratio.interpolate(initialWidth, width),
-                ratio.interpolate(initialHeight, height),
-                ratio.interpolate(initialZoom, zoom),
-                ratio.interpolate(initialAngle, angle),
-                ratio.interpolate(initialAnchorX, anchorX),
-                ratio.interpolate(initialAnchorY, anchorY)
-            )
+    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
+        override fun getLocalBoundsInternal(out: Rectangle) {
+            //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
+            out.setTo(0, 0, width, height)
         }
     }
 
-    fun follow(view: View, threshold: Double = 0.0) {
-        val inside = container?.content?.let { view.hasAncestor(it) } ?: false
-        if (!inside) throw IllegalStateException("Can't follow view that is not in the content of CameraContainer")
-        cancelFollowing?.cancel()
-        cancelFollowing = view.addUpdater {
-            val camera = this@Camera
-            val x = view.x + view.width / 2
-            val y = view.y + view.height / 2
-            val dx = x - camera.x
-            val dy = y - camera.y
-            if (abs(dx) > threshold || abs(dy) > threshold) {
-                camera.xy(x - dx.sign * threshold, y - dy.sign * threshold)
-            }
+    val content: Container by lazy { contentBuilder(this) }
+
+    private val sourceCamera = Camera(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    private val currentCamera = sourceCamera.copy()
+    private val targetCamera = sourceCamera.copy()
+
+    override var width: Double = width
+        set(value) {
+            field = value
+            sync()
+        }
+    override var height: Double = height
+        set(value) {
+            field = value
+            sync()
+        }
+
+    var cameraX: Double
+        set(value) {
+            currentCamera.x = value
+            manualSet()
+        }
+        get() = currentCamera.x
+    var cameraY: Double
+        set(value) {
+            currentCamera.y = value
+            manualSet()
+        }
+        get() = currentCamera.y
+    var cameraZoom: Double
+        set(value) {
+            currentCamera.zoom = value
+            manualSet()
+        }
+        get() = currentCamera.zoom
+    var cameraAngle: Angle
+        set(value) {
+            currentCamera.angle = value
+            manualSet()
+        }
+        get() = currentCamera.angle
+    var cameraAnchorX: Double
+        set(value) {
+            currentCamera.anchorX = value
+            manualSet()
+        }
+        get() = currentCamera.anchorX
+    var cameraAnchorY: Double
+        set(value) {
+            currentCamera.anchorY = value
+            manualSet()
+        }
+        get() = currentCamera.anchorY
+
+    private fun manualSet() {
+        elapsedTime = transitionTime
+        sync()
+    }
+
+    val onCompletedTransition = Signal<Unit>()
+
+    fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
+    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera {
+        val size = Rectangle(0.0, 0.0, width, height).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
+        val scaleX = size.width / rect.width
+        val scaleY = size.height / rect.height
+        return out.setTo(
+            rect.x + rect.width * cameraAnchorX,
+            rect.y + rect.height * cameraAnchorY,
+            zoom = min(scaleX, scaleY),
+            angle = 0.degrees,
+            anchorX = cameraAnchorX,
+            anchorY = cameraAnchorY
+        )
+    }
+
+    fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
+    fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
+
+    private var transitionTime = 1.0.seconds
+    private var elapsedTime = 0.0.milliseconds
+    //var easing = Easing.EASE_OUT
+    private var easing = Easing.LINEAR
+
+    private var following: View? = null
+
+    fun follow(view: View?, setImmediately: Boolean = false) {
+        following = view
+        if (setImmediately) {
+            val point = getFollowingXY(tempPoint)
+            cameraX = point.x
+            cameraY = point.y
+            sourceCamera.x = cameraX
+            sourceCamera.y = cameraY
         }
     }
 
     fun unfollow() {
-        cancelFollowing?.cancel()
+        following = null
     }
 
-    fun copy(
-        x: Double = this.x,
-        y: Double = this.y,
-        width: Double = this.width,
-        height: Double = this.height,
-        zoom: Double = this.zoom,
-        angle: Angle = this.angle,
-        anchorX: Double = this.anchorX,
-        anchorY: Double = this.anchorY
-    ) = Camera(
-        x = x,
-        y = y,
-        width = width,
-        height = height,
-        zoom = zoom,
-        angle = angle,
-        anchorX = anchorX,
-        anchorY = anchorY
-    )
+    fun updateCamera(block: Camera.() -> Unit) {
+        block(currentCamera)
+    }
 
-    override fun setToInterpolated(ratio: Double, l: Camera, r: Camera) = setTo(
-        x = ratio.interpolate(l.x, r.x),
-        y = ratio.interpolate(l.y, r.y),
-        width = ratio.interpolate(l.width, r.width),
-        height = ratio.interpolate(l.height, r.height),
-        zoom = ratio.interpolate(l.zoom, r.zoom),
-        angle = ratio.interpolate(l.angle, r.angle),
-        anchorX = ratio.interpolate(l.anchorX, r.anchorX),
-        anchorY = ratio.interpolate(l.anchorY, r.anchorY)
-    )
+    fun setCurrentCamera(camera: Camera) {
+        elapsedTime = transitionTime
+        following = null
+        sourceCamera.copyFrom(camera)
+        currentCamera.copyFrom(camera)
+        targetCamera.copyFrom(camera)
+        sync()
+    }
 
-    override fun interpolateWith(ratio: Double, other: Camera) = Camera().setToInterpolated(ratio, this, other)
+    fun setTargetCamera(camera: Camera, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
+        elapsedTime = 0.seconds
+        this.transitionTime = time
+        this.easing = easing
+        following = null
+        sourceCamera.copyFrom(currentCamera)
+        targetCamera.copyFrom(camera)
+    }
 
-    override fun toString() = "Camera(" +
-        "x=$x, y=$y, width=$width, height=$height, " +
-        "zoom=$zoom, angle=$angle, anchorX=$anchorX, anchorY=$anchorY)"
+    suspend fun tweenCamera(camera: Camera, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
+        setTargetCamera(camera, time, easing)
+        onCompletedTransition.waitOne()
+    }
+
+    fun getFollowingXY(out: Point = Point()): Point {
+        val followGlobalX = following!!.globalX
+        val followGlobalY = following!!.globalY
+        val localToContentX = content!!.globalToLocalX(followGlobalX, followGlobalY)
+        val localToContentY = content!!.globalToLocalY(followGlobalX, followGlobalY)
+        return out.setTo(localToContentX, localToContentY)
+    }
+
+    private val tempPoint = Point()
+    init {
+        block(this)
+        contentContainer.addTo(this)
+        content.addTo(contentContainer)
+        addUpdater {
+            when {
+                following != null -> {
+                    val point = getFollowingXY(tempPoint)
+                    cameraX = 0.1.interpolate(currentCamera.x, point.x)
+                    cameraY = 0.1.interpolate(currentCamera.y, point.y)
+                    sourceCamera.x = cameraX
+                    sourceCamera.y = cameraY
+                    //cameraX = 0.0
+                    //cameraY = 0.0
+                    //println("$cameraX, $cameraY - ${following?.x}, ${following?.y}")
+                    sync()
+                }
+                elapsedTime < transitionTime -> {
+                    elapsedTime += it
+                    val ratio = (elapsedTime / transitionTime).coerceIn(0.0, 1.0)
+                    currentCamera.setToInterpolated(easing(ratio), sourceCamera, targetCamera)
+                    /*
+                    val ratioCamera = easing(ratio)
+                    val ratioZoom = easing(ratio)
+                    currentCamera.zoom = ratioZoom.interpolate(sourceCamera.zoom, targetCamera.zoom)
+                    currentCamera.x = ratioCamera.interpolate(sourceCamera.x, targetCamera.x)
+                    currentCamera.y = ratioCamera.interpolate(sourceCamera.y, targetCamera.y)
+                    currentCamera.angle = ratioCamera.interpolate(sourceCamera.angle, targetCamera.angle)
+                    currentCamera.anchorX = ratioCamera.interpolate(sourceCamera.anchorX, targetCamera.anchorX)
+                    currentCamera.anchorY = ratioCamera.interpolate(sourceCamera.anchorY, targetCamera.anchorY)
+                     */
+                    sync()
+                    if (ratio >= 1.0) {
+                        onCompletedTransition()
+                    }
+                }
+            }
+        }
+    }
+
+    fun sync() {
+        //val realScaleX = (content.unscaledWidth / width) * cameraZoom
+        //val realScaleY = (content.unscaledHeight / height) * cameraZoom
+        val realScaleX = cameraZoom
+        val realScaleY = cameraZoom
+
+        val contentContainerX = width * cameraAnchorX
+        val contentContainerY = height * cameraAnchorY
+
+        content.x = -cameraX
+        content.y = -cameraY
+        contentContainer.x = contentContainerX
+        contentContainer.y = contentContainerY
+        contentContainer.rotation = cameraAngle
+        contentContainer.scaleX = realScaleX
+        contentContainer.scaleY = realScaleY
+    }
+
+    fun setZoomAt(anchor: Point, zoom: Double) {
+        setAnchorPosKeepingPos(anchor.x, anchor.y)
+        cameraZoom = zoom
+    }
+
+    fun setZoomAt(anchorX: Double, anchorY: Double, zoom: Double) {
+        setAnchorPosKeepingPos(anchorX, anchorY)
+        cameraZoom = zoom
+    }
+
+    fun setAnchorPosKeepingPos(anchor: Point) {
+        setAnchorPosKeepingPos(anchor.x, anchor.y)
+    }
+
+    fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
+        setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
+    }
+    fun setAnchorRatioKeepingPos(ratioX: Double, ratioY: Double) {
+        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, width, height)
+        sync()
+    }
 }
 
-fun Camera.xy(x: Double, y: Double): Camera {
-    return setTo(x = x, y = y)
-}
+data class Camera(
+    var x: Double = 0.0,
+    var y: Double = 0.0,
+    var zoom: Double = 1.0,
+    var angle: Angle = 0.degrees,
+    var anchorX: Double = 0.5,
+    var anchorY: Double = 0.5
+) : MutableInterpolable<Camera> {
+    fun setTo(
+        x: Double = 0.0,
+        y: Double = 0.0,
+        zoom: Double = 1.0,
+        angle: Angle = 0.degrees,
+        anchorX: Double = 0.5,
+        anchorY: Double = 0.5
+    ): Camera = this.apply {
+        this.x = x
+        this.y = y
+        this.zoom = zoom
+        this.angle = angle
+        this.anchorX = anchorX
+        this.anchorY = anchorY
+    }
 
-fun Camera.size(width: Double, height: Double): Camera {
-    return setTo(width = width, height = height)
-}
+    fun setAnchorRatioKeepingPos(anchorX: Double, anchorY: Double, width: Double, height: Double) {
+        val sx = width / zoom
+        val sy = height / zoom
+        val oldPaX = this.anchorX * sx
+        val oldPaY = this.anchorY * sy
+        val newPaX = anchorX * sx
+        val newPaY = anchorY * sy
+        this.x += newPaX - oldPaX
+        this.y += newPaY - oldPaY
+        this.anchorX = anchorX
+        this.anchorY = anchorY
+        //println("ANCHOR: $anchorX, $anchorY")
+    }
 
-fun Camera.anchor(anchorX: Double, anchorY: Double): Camera {
-    return setTo(anchorX = anchorX, anchorY = anchorY)
-}
+    fun copyFrom(source: Camera) = source.apply { this@Camera.setTo(x, y, zoom, angle, anchorX, anchorY) }
 
-suspend fun Camera.moveTo(x: Double, y: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(x = x, y = y, time = time, easing = easing)
-}
+    // @TODO: Easing must be adjusted from the zoom change
+    // @TODO: This is not exact. We have to preserve final pixel-level speed while changing the zoom
+    fun posEasing(zoomLeft: Double, zoomRight: Double, lx: Double, rx: Double, it: Double): Double {
+        val zoomChange = zoomRight - zoomLeft
+        return if (zoomChange <= 0.0) {
+            it.pow(sqrt(-zoomChange).toInt().toDouble())
+        } else {
+            val inv = it - 1.0
+            inv.pow(sqrt(zoomChange).toInt().toDouble()) + 1
+        }
+    }
 
-suspend fun Camera.moveBy(dx: Double, dy: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(x = x + dx, y = y + dy, time = time, easing = easing)
-}
+    override fun setToInterpolated(ratio: Double, l: Camera, r: Camera): Camera {
+        // Adjust based on the zoom changes
+        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio)
 
-suspend fun Camera.resizeTo(width: Double, height: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(width = width, height = height, time = time, easing = easing)
-}
-
-suspend fun Camera.rotate(angle: Angle, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(angle = this.angle + angle, time = time, easing = easing)
-}
-
-suspend fun Camera.zoom(value: Double, time: TimeSpan, easing: Easing = Easing.LINEAR) {
-    tweenTo(zoom = value, time = time, easing = easing)
+        return setTo(
+            posRatio.interpolate(l.x, r.x),
+            posRatio.interpolate(l.y, r.y),
+            ratio.interpolate(l.zoom, r.zoom),
+            ratio.interpolate(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
+            ratio.interpolate(l.anchorX, r.anchorX),
+            ratio.interpolate(l.anchorY, r.anchorY)
+        )
+    }
 }

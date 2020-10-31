@@ -11,10 +11,10 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.paint.GradientPaint
-import com.soywiz.korim.vector.paint.LinearGradientPaint
-import com.soywiz.korim.vector.paint.RadialGradientPaint
-import com.soywiz.korim.vector.paint.SweepGradientPaint
+import com.soywiz.korim.paint.GradientPaint
+import com.soywiz.korim.paint.LinearGradientPaint
+import com.soywiz.korim.paint.RadialGradientPaint
+import com.soywiz.korim.paint.SweepGradientPaint
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korui.*
 

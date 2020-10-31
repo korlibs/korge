@@ -15,7 +15,10 @@ actual class NativeStorage actual constructor(val views: Views) : IStorage {
         }
     }
 
-	actual override fun set(key: String, value: String) {
+    override fun toString(): String = "NativeStorage(${toMap()})"
+    actual fun keys(): List<String> = preferences.getAll().keys.toList()
+
+    actual override fun set(key: String, value: String) {
         edit { putString(key, value) }
 	}
 

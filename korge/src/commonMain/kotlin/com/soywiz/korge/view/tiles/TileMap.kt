@@ -127,7 +127,11 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
                 count++
 
+                //println("CELL_DATA: $cellData")
+
                 val tex = tileset[cellData] ?: continue
+
+                //println("CELL_DATA_TEX: $tex")
 
                 val info = verticesPerTex.getOrPut(tex.bmp) {
                     infosPool.alloc().also { info ->

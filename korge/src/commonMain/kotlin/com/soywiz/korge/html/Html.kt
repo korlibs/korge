@@ -5,54 +5,32 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 object Html {
-	data class Alignment(val anchor: Anchor) {
-		companion object {
-            val TOP_LEFT = Alignment(Anchor.TOP_LEFT)
-            val TOP_CENTER = Alignment(Anchor.TOP_CENTER)
-            val TOP_RIGHT = Alignment(Anchor.TOP_RIGHT)
+    class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) : MetricsProvider {
+        fun String.normalize() = this.toLowerCase().trim()
+        fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
+        fun getBitmapFont(name: String, font: Font? = null): Font = fonts[name.normalize()] ?: font ?: default ?: SystemFont(name)
+        override fun getBounds(text: String, format: Format, out: Rectangle) {
+            val font = format.computedFace
+            getBitmapFont(font.name, font).getBounds(text, format, out)
+        }
+    }
 
-			val LEFT = Alignment(Anchor.TOP_LEFT)
-			val CENTER = Alignment(Anchor.TOP_CENTER)
-			val RIGHT = Alignment(Anchor.TOP_RIGHT)
-
-			val JUSTIFIED = Alignment(Anchor.TOP_LEFT)
-
-			val MIDDLE_LEFT = Alignment(Anchor.MIDDLE_LEFT)
-			val MIDDLE_CENTER = Alignment(Anchor.MIDDLE_CENTER)
-			val MIDDLE_RIGHT = Alignment(Anchor.MIDDLE_RIGHT)
-
-			val BOTTOM_LEFT = Alignment(Anchor.BOTTOM_LEFT)
-			val BOTTOM_CENTER = Alignment(Anchor.BOTTOM_CENTER)
-			val BOTTOM_RIGHT = Alignment(Anchor.BOTTOM_RIGHT)
-		}
-	}
-
-	//enum class VerticalAlignment(val ratio: Double) {
-	//	TOP(0.0),
-	//	MIDDLE(0.5),
-	//	BOTTOM(1.0);
-	//}
-
-
-	interface FontFace {
-		data class Named(val name: String) : FontFace
-		data class Font(val font: com.soywiz.korim.font.Font) : FontFace, Html.MetricsProvider {
-			override fun getBounds(text: String, format: Format, out: Rectangle) = font.getBounds(text, format, out)
-		}
-	}
+    val DefaultFontsCatalog = FontsCatalog(null, mapOf())
 
 	data class Format(
-		override var parent: Format? = null,
-		var color: RGBA? = null,
-		var face: FontFace? = null,
-		var size: Int? = null,
-		var letterSpacing: Double? = null,
-		var kerning: Int? = null,
-		var align: Alignment? = null
+        override var parent: Format? = null,
+        var color: RGBA? = null,
+        var face: Font? = null,
+        var size: Int? = null,
+        var letterSpacing: Double? = null,
+        var kerning: Int? = null,
+        var align: TextAlignment? = null
 	) : Computed.WithParent<Format> {
 		//java.lang.ClassCastException: com.soywiz.korim.color.RGBA cannot be cast to java.lang.Number
 		//	at com.soywiz.korge.html.Html$Format.getComputedColor(Html.kt)
@@ -63,11 +41,11 @@ object Html {
 		val computedColor: RGBA get() = parent?.computedColor ?: color ?: Colors.WHITE
 
 		//val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
-        val computedFace by Computed(Format::face) { FontFace.Font(debugBmpFont) }
+        val computedFace by Computed(Format::face) { debugBmpFont }
 		val computedSize by Computed(Format::size) { 16 }
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }
-		val computedAlign by Computed(Format::align) { Alignment.LEFT }
+		val computedAlign by Computed(Format::align) { TextAlignment.LEFT }
 
 		fun consolidate(): Format = Format(
 			parent = null,
@@ -84,8 +62,9 @@ object Html {
 		fun getBounds(text: String, format: Format, out: Rectangle): Unit
 
 		object Identity : MetricsProvider {
-			override fun getBounds(text: String, format: Format, out: Rectangle): Unit =
-				run { out.setTo(0, 0, text.length, 1) }
+			override fun getBounds(text: String, format: Format, out: Rectangle) {
+                out.setTo(0, 0, text.length, 1)
+            }
 		}
 	}
 
@@ -170,7 +149,7 @@ object Html {
 		}
 	}
 
-	class HtmlParser {
+	class HtmlParser(val fontsCatalog: FontsCatalog) {
 		val document = Document()
 		var currentLine = Line()
 		var currentParagraph = Paragraph()
@@ -206,14 +185,14 @@ object Html {
 				xml.isNode -> {
 					val block = xml.isDisplayBlock
 					format.align = when (xml.str("align").toLowerCase()) {
-						"center" -> Alignment.CENTER
-						"left" -> Alignment.LEFT
-						"right" -> Alignment.RIGHT
-						"jusitifed" -> Alignment.JUSTIFIED
+						"center" -> TextAlignment.CENTER
+						"left" -> TextAlignment.LEFT
+						"right" -> TextAlignment.RIGHT
+						"jusitifed" -> TextAlignment.JUSTIFIED
 						else -> format.align
 					}
 					val face = xml.strNull("face")
-					format.face = if (face != null) FontFace.Named(face) else format.face
+					format.face = if (face != null) fontsCatalog.getBitmapFont(face) else format.face
 					format.size = xml.intNull("size") ?: format.size
 					format.letterSpacing = xml.doubleNull("letterSpacing") ?: format.letterSpacing
 					format.kerning = xml.intNull("kerning") ?: format.kerning
@@ -240,5 +219,5 @@ object Html {
 		}
 	}
 
-	fun parse(html: String): Document = HtmlParser().apply { parse(html) }.document
+	fun parse(html: String, fontsCatalog: FontsCatalog = DefaultFontsCatalog): Document = HtmlParser(fontsCatalog).apply { parse(html) }.document
 }

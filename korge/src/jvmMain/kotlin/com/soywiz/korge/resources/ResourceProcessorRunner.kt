@@ -12,6 +12,26 @@ import kotlin.collections.LinkedHashMap
 object ResourceProcessorRunner {
 	val logger = Logger.getLogger("ResourceProcessorRunner")
 
+    @JvmStatic
+    fun printPlugins(classLoader: ClassLoader) {
+        println("KORGE ResourceProcessors:")
+        try {
+            for (processor in ServiceLoader.load(ResourceProcessor::class.java, classLoader).toList().filterNotNull()) {
+                println(" - ${processor::class.qualifiedName}")
+            }
+        } catch (e: Throwable) {
+            println(" - ERROR: ${e.message}")
+        }
+        println("KORGE Plugins:")
+        try {
+            for (plugin in ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList().filterNotNull()) {
+                println(" - ${plugin::class.qualifiedName}")
+            }
+        } catch (e: Throwable) {
+            println(" - ERROR: ${e.message}")
+        }
+    }
+
 	@JvmStatic
 	fun run(classLoader: ClassLoader, foldersMain: List<String>, outputMain: String, kind: String) {
 		logger.info("ResourceProcessorRunner:")

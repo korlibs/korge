@@ -26,11 +26,10 @@ package com.dragonbones.animation
 import com.dragonbones.armature.*
 import com.dragonbones.core.*
 import com.dragonbones.event.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
 import kotlin.math.*
 
 /**
@@ -884,8 +883,8 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 
 						if (blendState.dirty == 1) {
 							val pose = (blendState.targetBone)!!.animationPose
-							pose.x = 0f
-							pose.y = 0f
+							pose.xf = 0f
+							pose.yf = 0f
 							pose.rotation = 0f
 							pose.skew = 0f
 							pose.scaleX = 1f

@@ -1,14 +1,13 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.html.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -19,7 +18,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
-import kotlin.math.*
 
 interface AnElement {
 	val library: AnLibrary
@@ -208,9 +206,11 @@ class AnEmptyView(override val library: AnLibrary, override val symbol: AnSymbol
 	override fun createInstance(): View = symbol.create(library) as View
 }
 
+@OptIn(KorgeDeprecated::class)
 class AnTextField(override val library: AnLibrary, override val symbol: AnTextFieldSymbol) : Container(),
 	AnElement, IText, IHtml, ViewLeaf {
-	private val textField = Text("", 16.0).apply {
+    private val textField = TextOld("", 16.0).apply {
+        fontsCatalog = library.fontsCatalog
 		textBounds.copyFrom(this@AnTextField.symbol.bounds)
 		html = this@AnTextField.symbol.initialHtml
 		relayout()

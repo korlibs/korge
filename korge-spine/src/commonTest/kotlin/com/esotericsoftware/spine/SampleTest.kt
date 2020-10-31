@@ -14,7 +14,6 @@ import kotlin.test.*
 
 class SampleTest {
     @Test
-    //@Ignore
     fun test() = suspendTest({ !OS.isJs }) {
         val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas()
         //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)

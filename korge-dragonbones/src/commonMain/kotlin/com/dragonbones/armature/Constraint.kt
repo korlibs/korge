@@ -23,7 +23,6 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
@@ -101,12 +100,12 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 		val global = this._root.global
 		val globalTransformMatrix = this._root.globalTransformMatrix
 
-		var radian = atan2(ikGlobal.y - global.y, ikGlobal.x - global.x)
+		var radian = atan2(ikGlobal.yf - global.yf, ikGlobal.xf - global.xf)
 		if (global.scaleX < 0.0) {
 			radian += PI.toFloat()
 		}
 
-		global.rotation += (Transform.normalizeRadian((radian - global.rotation).toDouble()) * this._weight).toFloat()
+		global.rotation += (TransformDb.normalizeRadian((radian - global.rotation).toDouble()) * this._weight).toFloat()
 		global.toMatrix(globalTransformMatrix)
 	}
 
@@ -118,26 +117,26 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 		val global = (this._bone!!).global
 		val globalTransformMatrix = (this._bone!!).globalTransformMatrix
 
-		val x = globalTransformMatrix.a * boneLength
-		val y = globalTransformMatrix.b * boneLength
+		val x = globalTransformMatrix.af * boneLength
+		val y = globalTransformMatrix.bf * boneLength
 		val lLL = x * x + y * y
 		val lL = sqrt(lLL)
-		var dX = global.x - parentGlobal.x
-		var dY = global.y - parentGlobal.y
+		var dX = global.xf - parentGlobal.xf
+		var dY = global.yf - parentGlobal.yf
 		val lPP = dX * dX + dY * dY
 		val lP = sqrt(lPP)
 		val rawRadian = global.rotation
 		val rawParentRadian = parentGlobal.rotation
 		val rawRadianA = atan2(dY, dX)
 
-		dX = ikGlobal.x - parentGlobal.x
-		dY = ikGlobal.y - parentGlobal.y
+		dX = ikGlobal.xf - parentGlobal.xf
+		dY = ikGlobal.yf - parentGlobal.yf
 		val lTT = dX * dX + dY * dY
 		val lT = sqrt(lTT)
 
 		var radianA: Double
 		if (lL + lP <= lT || lT + lL <= lP || lT + lP <= lL) {
-			radianA = atan2(ikGlobal.y - parentGlobal.y, ikGlobal.x - parentGlobal.x).toDouble()
+			radianA = atan2(ikGlobal.yf - parentGlobal.yf, ikGlobal.xf - parentGlobal.xf).toDouble()
 			if (lL + lP <= lT) {
 			}
 			else if (lP < lL) {
@@ -147,8 +146,8 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 		else {
 			val h = (lPP - lLL + lTT) / (2.0 * lTT)
 			val r = sqrt(lPP - h * h * lTT) / lT
-			val hX = parentGlobal.x + (dX * h)
-			val hY = parentGlobal.y + (dY * h)
+			val hX = parentGlobal.xf + (dX * h)
+			val hY = parentGlobal.yf + (dY * h)
 			val rX = -dY * r
 			val rY = dX * r
 
@@ -156,35 +155,35 @@ class IKConstraint(pool: SingleObjectPool<IKConstraint>) :  Constraint(pool) {
 			val parentParent = parent.parent
 			if (parentParent != null) {
 				val parentParentMatrix = parentParent.globalTransformMatrix
-				isPPR = parentParentMatrix.a * parentParentMatrix.d - parentParentMatrix.b * parentParentMatrix.c < 0.0
+				isPPR = parentParentMatrix.af * parentParentMatrix.df - parentParentMatrix.bf * parentParentMatrix.cf < 0.0
 			}
 
 			if (isPPR != this._bendPositive) {
-				global.x = (hX - rX).toFloat()
-				global.y = (hY - rY).toFloat()
+				global.xf = (hX - rX).toFloat()
+				global.yf = (hY - rY).toFloat()
 			}
 			else {
-				global.x = (hX + rX).toFloat()
-				global.y = (hY + rY).toFloat()
+				global.xf = (hX + rX).toFloat()
+				global.yf = (hY + rY).toFloat()
 			}
 
-			radianA = atan2(global.y - parentGlobal.y, global.x - parentGlobal.x).toDouble()
+			radianA = atan2(global.yf - parentGlobal.yf, global.xf - parentGlobal.xf).toDouble()
 		}
 
-		val dR = Transform.normalizeRadian(radianA - rawRadianA)
+		val dR = TransformDb.normalizeRadian(radianA - rawRadianA)
 		parentGlobal.rotation = (rawParentRadian + dR * this._weight).toFloat()
 		parentGlobal.toMatrix(parent.globalTransformMatrix)
 		//
 		val currentRadianA = rawRadianA + dR * this._weight
-		global.x = (parentGlobal.x + cos(currentRadianA) * lP).toFloat()
-		global.y = (parentGlobal.y + sin(currentRadianA) * lP).toFloat()
+		global.xf = (parentGlobal.xf + cos(currentRadianA) * lP).toFloat()
+		global.yf = (parentGlobal.yf + sin(currentRadianA) * lP).toFloat()
 		//
-		var radianB = atan2(ikGlobal.y - global.y, ikGlobal.x - global.x)
+		var radianB = atan2(ikGlobal.yf - global.yf, ikGlobal.xf - global.xf)
 		if (global.scaleX < 0.0) {
 			radianB += PI.toFloat()
 		}
 
-		global.rotation = (parentGlobal.rotation + rawRadian - rawParentRadian + Transform.normalizeRadian(radianB - dR - rawRadian) * this._weight).toFloat()
+		global.rotation = (parentGlobal.rotation + rawRadian - rawParentRadian + TransformDb.normalizeRadian(radianB - dR - rawRadian) * this._weight).toFloat()
 		global.toMatrix(globalTransformMatrix)
 	}
 
@@ -305,8 +304,8 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 				val vx = floatArray[iV++] * scale
 				val vy = floatArray[iV++] * scale
 
-				val x = matrix.a * vx + matrix.c * vy + matrix.tx
-				val y = matrix.b * vx + matrix.d * vy + matrix.ty
+				val x = matrix.af * vx + matrix.cf * vy + matrix.txf
+				val y = matrix.bf * vx + matrix.df * vy + matrix.tyf
 
 				//
 				this._pathGlobalVertices[i] = x
@@ -340,8 +339,8 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 				val weight = floatArray[iV++]
 				val vx = floatArray[iV++] * scale
 				val vy = floatArray[iV++] * scale
-				xG += (matrix.a * vx + matrix.c * vy + matrix.tx) * weight
-				yG += (matrix.b * vx + matrix.d * vy + matrix.ty) * weight
+				xG += (matrix.af * vx + matrix.cf * vy + matrix.txf) * weight
+				yG += (matrix.bf * vx + matrix.df * vy + matrix.tyf) * weight
 			}
 
 			this._pathGlobalVertices[iW++] = xG
@@ -799,8 +798,8 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 				bone.updateByConstraint()
 				val boneLength = bone._boneData!!.length.toInt()
 				val matrix = bone.globalTransformMatrix
-				val x = boneLength * matrix.a
-				val y = boneLength * matrix.b
+				val x = boneLength * matrix.af
+				val y = boneLength * matrix.bf
 
 				val len = sqrt(x * x + y * y)
 				if (isChainScaleMode) {
@@ -832,7 +831,7 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 			val bone = pathSlot._parent
 			if (bone != null) {
 				val matrix = bone.globalTransformMatrix
-				rotateOffset *= if (matrix.a * matrix.d - matrix.b * matrix.c > 0) Transform.DEG_RAD else -Transform.DEG_RAD
+				rotateOffset *= if (matrix.af * matrix.df - matrix.bf * matrix.cf > 0) TransformDb.DEG_RAD else -TransformDb.DEG_RAD
 			}
 		}
 
@@ -845,8 +844,8 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 			val bone = bones[i]
 			bone.updateByConstraint()
 			val matrix = bone.globalTransformMatrix
-			matrix.tx += ((boneX - matrix.tx) * translateMix).toFloat()
-			matrix.ty += ((boneY - matrix.ty) * translateMix).toFloat()
+			matrix.txf += ((boneX - matrix.txf) * translateMix).toFloat()
+			matrix.tyf += ((boneY - matrix.tyf) * translateMix).toFloat()
 
 			val x = positions[p]
 			val y = positions[p + 1]
@@ -856,17 +855,17 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 				val lenght = this._boneLengths[i]
 
 				val s = (sqrt(dx * dx + dy * dy) / lenght - 1) * rotateMix + 1
-				matrix.a *= s.toFloat()
-				matrix.b *= s.toFloat()
+				matrix.af *= s.toFloat()
+				matrix.bf *= s.toFloat()
 			}
 
 			boneX = x
 			boneY = y
 			if (rotateMix > 0) {
-				val a = matrix.a
-				val b = matrix.b
-				val c = matrix.c
-				val d = matrix.d
+				val a = matrix.af
+				val b = matrix.bf
+				val c = matrix.cf
+				val d = matrix.df
 				var cos: Double
 				var sin: Double
 				var r: Double = if (isTangentMode) {
@@ -889,11 +888,11 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 					r += rotateOffset
 				}
 
-				if (r > Transform.PI) {
-					r -= Transform.PI_D
+				if (r > TransformDb.PI) {
+					r -= TransformDb.PI_D
 				}
-				else if (r < - Transform.PI) {
-					r += Transform.PI_D
+				else if (r < - TransformDb.PI) {
+					r += TransformDb.PI_D
 				}
 
 				r *= rotateMix
@@ -901,10 +900,10 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 				cos = cos(r)
 				sin = sin(r)
 
-				matrix.a = (cos * a - sin * b).toFloat()
-				matrix.b = (sin * a + cos * b).toFloat()
-				matrix.c = (cos * c - sin * d).toFloat()
-				matrix.d = (sin * c + cos * d).toFloat()
+				matrix.af = (cos * a - sin * b).toFloat()
+				matrix.bf = (sin * a + cos * b).toFloat()
+				matrix.cf = (cos * c - sin * d).toFloat()
+				matrix.df = (sin * c + cos * d).toFloat()
 			}
 
 			bone.global.fromMatrix(matrix)

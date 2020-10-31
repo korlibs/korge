@@ -23,13 +23,10 @@
 package com.dragonbones.armature
 
 import com.dragonbones.core.*
-import com.dragonbones.geom.*
-import com.dragonbones.internal.fastForEach
+import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
-import com.dragonbones.util.*
-import com.soywiz.kds.*
-import com.dragonbones.internal.fastForEach
 import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**
@@ -86,9 +83,9 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 	}
 
 	private fun _getAffineTransform(
-		x: Float, y: Float, lX: Float, lY: Float,
-		aX: Float, aY: Float, bX: Float, bY: Float, cX: Float, cY: Float,
-		transform: Transform, matrix: Matrix, isDown: Boolean
+        x: Float, y: Float, lX: Float, lY: Float,
+        aX: Float, aY: Float, bX: Float, bY: Float, cX: Float, cY: Float,
+        transform: TransformDb, matrix: Matrix, isDown: Boolean
 	) {
 		val dabX = bX - aX
 		val dabY = bY - aY
@@ -105,12 +102,12 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 		transform.scaleX = sqrt(dabX * dabX + dabY * dabY) / lX
 		transform.scaleY = sqrt(dacX * dacX + dacY * dacY) / lY
 		transform.toMatrix(matrix)
-		val rx = aX - (matrix.a * x + matrix.c * y)
-		transform.x = rx
-		matrix.tx = rx
-		val ry = aY - (matrix.b * x + matrix.d * y)
-		transform.y = ry
-		matrix.ty = ry
+		val rx = aX - (matrix.af * x + matrix.cf * y)
+		transform.xf = rx
+		matrix.txf = rx
+		val ry = aY - (matrix.bf * x + matrix.df * y)
+		transform.yf = ry
+		matrix.tyf = ry
 	}
 
 	private fun _updateVertices() {
@@ -132,8 +129,8 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 					val x = floatArray[verticesOffset + iD + 0] + animationVertices[iD + 0]
 					val y = floatArray[verticesOffset + iD + 1] + animationVertices[iD + 1]
 					val matrix = surface._getGlobalTransformMatrix(x, y)
-					vertices[iD + 0] = matrix.transformX(x, y)
-					vertices[iD + 1] = matrix.transformY(x, y)
+					vertices[iD + 0] = matrix.transformXf(x, y)
+					vertices[iD + 1] = matrix.transformYf(x, y)
 				}
 			}
 			else {
@@ -143,8 +140,8 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 					val iD = i * 2
 					val x = floatArray[verticesOffset + iD + 0] + animationVertices[iD + 0]
 					val y = floatArray[verticesOffset + iD + 1] + animationVertices[iD + 1]
-					vertices[iD + 0] = parentMatrix.transformX(x, y)
-					vertices[iD + 1] = parentMatrix.transformY(x, y)
+					vertices[iD + 0] = parentMatrix.transformXf(x, y)
+					vertices[iD + 1] = parentMatrix.transformYf(x, y)
 				}
 			}
 		}
@@ -445,12 +442,12 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 		helpMatrix: Matrix
 	) {
 		matrices[matrixIndex] = 1f
-		matrices[matrixIndex + 1] = helpMatrix.a
-		matrices[matrixIndex + 2] = helpMatrix.b
-		matrices[matrixIndex + 3] = helpMatrix.c
-		matrices[matrixIndex + 4] = helpMatrix.d
-		matrices[matrixIndex + 5] = helpMatrix.tx
-		matrices[matrixIndex + 6] = helpMatrix.ty
+		matrices[matrixIndex + 1] = helpMatrix.af
+		matrices[matrixIndex + 2] = helpMatrix.bf
+		matrices[matrixIndex + 3] = helpMatrix.cf
+		matrices[matrixIndex + 4] = helpMatrix.df
+		matrices[matrixIndex + 5] = helpMatrix.txf
+		matrices[matrixIndex + 6] = helpMatrix.tyf
 	}
 
 	/**
@@ -581,27 +578,27 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 			// Update hull vertices.
 			val lB = 1000f
 			val lA = 200f
-			val ddX = 2 * global.x
-			val ddY = 2 * global.y
+			val ddX = 2 * global.xf
+			val ddY = 2 * global.yf
 			//
 			val helpPoint = _helpPoint
-			globalTransformMatrix.transformPoint(lB, -lA, helpPoint)
-			_hullCache0 = helpPoint.x
-			_hullCache1 = helpPoint.y
-			_hullCache2 = ddX - helpPoint.x
-			_hullCache3 = ddY - helpPoint.y
-			globalTransformMatrix.transformPoint(0f, _dY, helpPoint, true)
-			_hullCache4 = helpPoint.x
-			_hullCache5 = helpPoint.y
+			globalTransformMatrix.transform(lB, -lA, helpPoint)
+			_hullCache0 = helpPoint.xf
+			_hullCache1 = helpPoint.yf
+			_hullCache2 = ddX - helpPoint.xf
+			_hullCache3 = ddY - helpPoint.yf
+			globalTransformMatrix.deltaTransformPoint(0f, _dY, helpPoint)
+			_hullCache4 = helpPoint.xf
+			_hullCache5 = helpPoint.yf
 			//
-			globalTransformMatrix.transformPoint(lA, lB, helpPoint)
-			_hullCache6 = helpPoint.x
-			_hullCache7 = helpPoint.y
-			_hullCache8 = ddX - helpPoint.x
-			_hullCache9 = ddY - helpPoint.y
-			globalTransformMatrix.transformPoint(_dX, 0f, helpPoint, true)
-			_hullCache10 = helpPoint.x
-			_hullCache11 = helpPoint.y
+			globalTransformMatrix.transform(lA, lB, helpPoint)
+			_hullCache6 = helpPoint.xf
+			_hullCache7 = helpPoint.yf
+			_hullCache8 = ddX - helpPoint.xf
+			_hullCache9 = ddY - helpPoint.yf
+			globalTransformMatrix.deltaTransformPoint(_dX, 0f, helpPoint)
+			_hullCache10 = helpPoint.xf
+			_hullCache11 = helpPoint.yf
 		}
 		else if (_childrenTransformDirty) {
 			_childrenTransformDirty = false

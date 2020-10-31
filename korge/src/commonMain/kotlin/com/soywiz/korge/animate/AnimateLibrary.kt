@@ -7,6 +7,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korge.animate.serialization.*
+import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
@@ -300,6 +301,8 @@ val Views.animateLibraryLoaders by Extra.Property {
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AnLibrary.Factory::class)
 class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+    val fontsCatalog = Html.FontsCatalog(null)
+
     data class Context(
         val coroutineContext: CoroutineContext = EmptyCoroutineContext,
         val imageFormats: ImageFormat = RegisteredImageFormats,

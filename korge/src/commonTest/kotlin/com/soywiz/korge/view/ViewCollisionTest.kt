@@ -5,8 +5,8 @@ import com.soywiz.korim.color.Colors
 import kotlin.test.*
 
 class ViewCollisionTest {
+    /*
 	@Test
-    @Ignore
 	fun test() {
 		val container = Container().apply {
 			solidRect(16, 16, Colors.RED).position(0, 0).name("view1")
@@ -19,4 +19,5 @@ class ViewCollisionTest {
 		container["view1"].first.updateSingleView(0.0.milliseconds)
 		assertEquals(listOf("collision[view1, view1]"), log)
 	}
+     */
 }

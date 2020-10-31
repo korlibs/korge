@@ -22,7 +22,7 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
-import kotlin.collections.set
+import com.soywiz.krypto.encoding.*
 
 /**
  * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.
@@ -806,6 +806,14 @@ abstract class View internal constructor(
 
     /** Converts the global point [x], [y] (using root/stage as reference) into the Y in the local coordinate system. */
     fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.fastTransformY(x, y)
+
+    fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
+    fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
+    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: Point = Point()): Point = out.setTo(
+        globalToLocalDX(x0, y0, x1, y1),
+        globalToLocalDY(x0, y0, x1, y1),
+    )
+    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: Point = Point()): Point = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
 
     /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
     fun localToGlobal(p: IPoint, out: Point = Point()): Point = localToGlobalXY(p.x, p.y, out)
