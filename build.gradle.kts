@@ -420,44 +420,21 @@ val BINTRAY_KEY = rootProject.findProperty("BINTRAY_KEY")?.toString()
         ?: System.getenv("BINTRAY_API_KEY")
         ?: System.getenv("BINTRAY_KEY")
 
-/*
 nonSamples {
     if (BINTRAY_USER.isNullOrEmpty() || BINTRAY_KEY.isNullOrEmpty()) return@nonSamples
 
     plugins.apply("maven-publish")
 
-    val javadocJar = tasks.create<Jar>("javadocJar") {
-        classifier = "javadoc"
-    }
+    val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
+    val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
+    val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
 
-    val sourcesJar = tasks.create<Jar>("sourceJar") {
-        classifier = "sources"
-    }
-
-    val emptyJar = tasks.create<Jar>("emptyJar") {
-    }
-
-    val publishing = extensions.getByType(PublishingExtension::class.java)
-
-    val projectBintrayRepository by lazy {
-        findProperty("project.bintray.repository")?.toString() ?: error("Can't find project.bintray.repository")
-    }
-    val projectBintrayPackage by lazy {
-        findProperty("project.bintray.package")?.toString() ?: error("Can't find project.bintray.package")
-    }
-    val projectVersion by lazy { project.version.toString() }
-    val bintrayUser by lazy { BINTRAY_USER }
-    val bintrayPass by lazy { BINTRAY_KEY }
-
-    val publishUser = BINTRAY_USER
-    val publishPassword = BINTRAY_KEY
-
-    publishing.apply {
+    extensions.getByType(PublishingExtension::class.java).apply {
         repositories {
             maven {
                 credentials {
-                    username = publishUser
-                    setPassword(publishPassword)
+                    username = BINTRAY_USER
+                    password = BINTRAY_KEY
                 }
                 url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
             }
@@ -465,15 +442,11 @@ nonSamples {
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
 
-            publications.withType(MavenPublication::class.java) {
-                val publication = this
-
+            fun configure(publication: MavenPublication) {
                 //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
                 if (publication.name == "kotlinMultiplatform") {
-                    publication.artifact(sourcesJar) {
-                    }
-                    publication.artifact(emptyJar) {
-                    }
+                    publication.artifact(sourcesJar) {}
+                    publication.artifact(emptyJar) {}
                 }
 
                 /*
@@ -559,10 +532,23 @@ nonSamples {
                     }
                 }
             }
+
+            if (project.tasks.findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
+                publications.withType(MavenPublication::class.java) {
+                    configure(this)
+                }
+            } else {
+                publications.maybeCreate<MavenPublication>("maven").apply {
+                    groupId = project.group.toString()
+                    artifactId = project.name
+                    version = project.version.toString()
+                    from(components["java"])
+                    configure(this)
+                }
+            }
         }
     }
 }
-*/
 
 samples {
 
