@@ -1,0 +1,1204 @@
+This is all the information I was able to find on MOD files.
+The original files were at:
+ 
+ftp://ftp.cwi.nl/pub/audio/
+
+-----
+
+From: Lars Hamre <larsha@lise.unit.no>
+To: guido@cwi.nl
+Date: Tue, 23 Mar 1993 19:38:04 +0100
+
+There are _NO_ standard sample rate for the samples used in modules.
+But most often the samples are done on the rate called C-3 (which is
+about 16574 Hz if you have a PAL machine). Sometimes drums are sampled
+at A-3 (around 28 kHz), and some sounds are at ~8 kHz or anything else
+to save space.
+
+The sample rate on each of the channels can be selected by a period value,
+which tells the hardware how many ~3.5 MHz clocks to count down before
+playing the next sample. If you have a 16 kHz sample you simply play
+it at a note that gives you 16 kHz sample rate. If you play it one octave
+lower, you get a 8 kHz sample rate (and a double period value).
+
+Here are the magic formulas:
+
+                7093789.2
+SampleRate = --------------    (For a PAL machine)
+               Period * 2
+
+                7159090.5
+SampleRate = --------------    (For a NTSC machine)
+               Period * 2
+
+
+So, the most normal rate is (C-3, period 214):
+
+  7093789.2
+ ----------- = 16574.27 Hz
+   214 * 2
+
+(16726.8 Hz if you use the NTSC formula, but i have a PAL machine)
+
+The Amiga has four channels with independent sample rates, so there are
+no such thing as a common rate for all channels, and there are no mixing
+going on.
+
+For a list of period values and what notes they are supposed to correspond
+to, see the list of period values in the MOD format below.
+
+Also note that finetuning are actually done by switching between 16 different
+period tables (not included here, but get the Amiga Protracker Playroutine).
+
+---
+Lars Hamre
+larsha@lise.unit.no
+
+
+[ A description of the mod format follows:  -Lars]
+
+
+Newsgroups: comp.sys.amiga.audio
+From: steinarm@ifi.uio.no (Steinar Midtskogen)
+Subject: Old MOD. format + PowerPacking
+Summary: Description of the MOD format and powerpacking
+Keywords: MOD, Powerpacker
+Organization: University of Oslo, Norway
+Date: Sun, 14 Mar 1993 23:49:00 GMT
+
+  Since everybody seem to ask about the module format, here it comes.  I
+will post this information every forthnight, at least for a period (pun
+intended).
+
+  I have put together most of the documentation about the module format
+from PT2.3, edited it heavily (all credit to the original authors, but I
+take responsibility for all errors) and added information about
+powerpacking and how the Amiga volume work.
+
+  The reason for not using documentation following PT3.0, which is written
+by my group, is that there is no docmentation on the MOD format following
+that.  Our reason for not distributing the documentation of the MOD.
+format with the tracker is that we try to discourage the usage of the MOD.
+format; a new format is coming up soon.  So don't write a revolutionary
+piece of code based on the information presented herein; it will hopefully
+be outdated in only another month.
+
+[ Outdated? I don't think so... -Lars]
+
+  (The "I" in this file refer to Vishnu of Cryptoburners, the "we" refer to
+respectively Amiga Freelancers and Cryptoburners; it should be obvious from
+the context which of them)
+
+Credits for original doc files:
+
+Lars "ZAP" Hamre /Amiga Freelancers
+  The documentation to the song/module format.
+  The information about how to calculate BMPs from the Amiga CIA timings.
+
+Peter "CRAYON" Hanning /Mushroom Studios/Noxious
+  Updates to the song/module format information. (I thought that it looked
+   pretty similar to the one from PT1.3, but he had put his name under,
+   so...)
+  The table of effect commands.
+
+[ Hrm. Both files are mine. I can see no big changes. -Lars]
+
+
+  I have updated the information in the song/module format text, and added
+information on how the finetuning work.
+
+***********************************************************************
+
+Protracker 2.3A Song/Module Format:
+-----------------------------------
+
+Offset  Bytes  Description
+------  -----  -----------
+   0     20    Songname. Remember to put trailing null bytes at the end...
+               When written by ProTracker this will be only uppercase;
+               there are only historical reasons for this. (And the
+               historical reason is that Karsten Obarski, who made the
+               first SoundTracker, was stupid.)
+
+Information for sample 1-31:
+
+Offset  Bytes  Description
+------  -----  -----------
+  20     22    Samplename for sample 1. Pad with null bytes. Will only be
+               uppercase.  The samplenames are often used for storing
+               messages from the author; in particular, samplenames
+               starting with a '#' sign will generally be a message.  This
+               convention is a result of a player called IntuiTracker
+               displaying all samples starting with # as a message to the
+               person playing the module.
+  42      2    A WORD with samplelength for sample 1.  Stored as number of
+               words.  Multiply by two to get real sample length in bytes.
+               This is a big-endian number; for all PC programmers out
+               there, this means that to get your 8-bit-orginated format,
+               you have to swap the two bytes.
+  44      1    Lower four bits are the finetune value, stored as a signed
+               four bit number. The upper four bits are not used, and
+               should be set to zero.
+	       They should also be masked out reading; you can never be
+	       sure what some stupid program could have stored here...
+  45      1    Volume for sample 1. Range is $00-$40, or 0-64 decimal.
+  46      2    Repeat point for sample 1. Stored as number of words offset
+               from start of sample. Multiply by two to get offset in bytes.
+  48      2    Repeat Length for sample 1. Stored as number of words in
+               loop. Multiply by two to get replen in bytes.
+
+Information for the next 30 samples starts here. It's just like the info for
+sample 1.
+
+Offset  Bytes  Description
+------  -----  -----------
+  50     30    Sample 2...
+  80     30    Sample 3...
+   .
+   .
+   .
+ 890     30    Sample 30...
+ 920     30    Sample 31...
+
+Offset  Bytes  Description
+------  -----  -----------
+ 950      1    Songlength. Range is 1-128.
+ 951      1    This byte is set to 127, so that old trackers will search
+               through all patterns when loading.
+               Noisetracker uses this byte for restart, ProTracker doesn't.
+ 952    128    Song positions 0-127.  Each hold a number from 0-63 (or
+               0-127) that tells the tracker what pattern to play at that
+               position.
+1080      4    The four letters "M.K." - This is something Mahoney & Kaktus
+               inserted when they increased the number of samples from
+               15 to 31. If it's not there, the module/song uses 15 samples
+               or the text has been removed to make the module harder to
+               rip. Startrekker puts "FLT4" or "FLT8" there instead.
+               If there are more than 64 patterns, PT2.3 will insert M!K!
+               here. (Hey - Noxious - why didn't you document the part here
+               relating to YOUR OWN PROGRAM? -Vishnu)
+
+Offset  Bytes  Description
+------  -----  -----------
+1084    1024   Data for pattern 00.
+   .
+   .
+   .
+xxxx  Number of patterns stored is equal to the highest patternnumber
+      in the song position table (at offset 952-1079).
+
+  Each note is stored as 4 bytes, and all four notes at each position in
+the pattern are stored after each other.
+
+00 -  chan1  chan2  chan3  chan4
+01 -  chan1  chan2  chan3  chan4
+02 -  chan1  chan2  chan3  chan4
+etc.
+
+Info for each note:
+
+ _____byte 1_____   byte2_    _____byte 3_____   byte4_
+/                \ /      \  /                \ /      \
+0000          0000-00000000  0000          0000-00000000
+
+Upper four    12 bits for    Lower four    Effect command.
+bits of sam-  note period.   bits of sam-
+ple number.                  ple number.
+
+  To separate out the different parts of the note, something like this
+would be used (C to have it a bit portable; I like assembler and Pascal
+better myself):
+
+int samplenum,effectcommand,effectdata,extendedcommand;
+char notename[];
+...
+
+void ProcessNote(byte notedata[]) {
+  extendedcommand=-1;
+  samplenum=(*notedata&0xF0)|(*(notedata+2)>>4);
+  switch(((*notedata<<8)|(*notedata))&0xfff) {
+    case 856: notename="C-1"; break;
+    case 808: notename="C#1"; break;
+    case 762: notename="D-1"; break;
+    case 856: notename="D#1"; break;
+   /* etc */
+    default: notename="???"; /* This should NOT occur; if it do, it is */
+                             /* not a ProTracker module! */
+   }
+   effectcommand=*(notedata+2)&0xF;
+   effectdata=*(notedata+3);
+   if effectcommand==0xE then /* Extended command */ {
+      extendedcommand=effectdata>>4;
+      effectdata&=0xf; /* Only one nibble data for extended command */
+   }
+}
+
+Probably this isn't 100% valid C code, but I think you catch my drift...
+
+
+
+Periodtable for Tuning 0, Normal
+  C-1 to B-1 : 856,808,762,720,678,640,604,570,538,508,480,453
+  C-2 to B-2 : 428,404,381,360,339,320,302,285,269,254,240,226
+  C-3 to B-3 : 214,202,190,180,170,160,151,143,135,127,120,113
+
+  To determine what note to show, scan through the table until you find the
+same period as the one stored in byte 1-2.  Use the index to look up in a
+notenames table.
+
+  If you have a bit of memory, it is probably smarter to use an 744 byte
+block to store the indexes relating to the different periods (ie:  at
+position 808 in the block you store 1, as 1 is the index of period 808.
+Then you use the block as a look up table)
+
+  This is the data stored in a normal song.  A packed song starts with the
+four letters "PACK", and then comes the packed data.
+
+  It is somewhat unclear to me what kind of packing that is referred to
+here.  One thing is clear though - it is NOT powerpacked or LHAed modules!
+I belive somebody (Probably Amiga Freelancers) was planning to install some
+form of direct packing into ProTracker, reserved this ID, and then it never
+came...  -Vishnu
+
+[No. We never intended to install any packing here. This is an older
+ invention :)  Songs (modules WITHOUT the samples) can be packed by this
+ method, and it will put the "PACK" tag at the beginning of the file.
+ But since everyone saves modules with samples instead of songs, I wouldn't
+ care about it. The packer/depacker for PACK'ed files are in the PT source
+ code, available on aminet sites.  -Lars Hamre]
+
+  In a module, all the samples are stored right after the patterndata.  To
+determine where a sample starts and stops, you use the sampleinfo
+structures in the beginning of the file (from offset 20).  Take a look at
+the mt_init routine in the playroutine, and you'll see just how it is done.
+  The data for a sample must _ALWAYS_ start with two zeros, as it is used for
+repeating is the sample is to be terminated.
+
+[ Well, the playroutine will clear these two bytes anyway...  -Lars]
+
+***********************************************************************
+                                Finetuning
+
+Value:    0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+Finetune: 0  +1  +2  +3  +4  +5  +6  +7  -8  -7  -6  -5  -4  -3  -2  -1
+
+
+  Finetuning are done by multiplying the frequency of the playback by
+X^(finetune), where X ~= 1.0072382087
+  This means that Amiga PERIODS, which represent delay times before
+fetching the next sample, should be multiplied by X^(-finetune)
+
+Vishnu of Cryptoburners
+
+[ This should be 2^(finetune/12/8). And 2^(1/12/8) is 1.007246412 on
+  my calculator...  (12 notes per octave and 1/8 of this)  -Lars Hamre ]
+
+
+***********************************************************************
+          Decibel Values and Volume Ranges
+
+   Volume  Decibel Value     Volume  Decibel Value
+
+     64         0.0            32        -6.0
+     63        -0.1            31        -6.3
+     62        -0.3            30        -6.6
+     61        -0.4            29        -6.9
+     60        -0.6            28        -7.2
+     59        -0.7            27        -7.5
+     58        -0.9            26        -7.8
+     57        -1.0            25        -8.2
+     56        -1.2            24        -8.5
+     55        -1.3            23        -8.9
+     54        -1.5            22        -9.3
+     53        -1.6            21        -9.7
+     52        -1.8            20       -10.1
+     51        -2.0            19       -10.5
+     50        -2.1            18       -11.0
+     49        -2.3            17       -11.5
+     48        -2.5            16       -12.0
+     47        -2.7            15       -12.6
+     46        -2.9            14       -13.2
+     45        -3.1            13       -13.8
+     44        -3.3            12       -14.5
+     43        -3.5            11       -15.3
+     42        -3.7            10       -16.1
+     41        -3.9             9       -17.0
+     40        -4.1             8       -18.1
+     39        -4.3             7       -19.2
+     38        -4.5             6       -20.6
+     37        -4.8             5       -22.1
+     36        -5.0             4       -24.1
+     35        -5.2             3       -26.6
+     34        -5.5             2       -30.1
+     33        -5.8             1       -36.1
+                                0    Minus infinity
+
+  The reason for the table starting at 0 dB as the convention from
+taperecorders of having 0 dB as the optimal recording condition, and
+displaying anything worse as a negative number.
+
+  Decibel is a logrithmical unit, just like we feel sound intensity.  It
+represent the ratio between two intensities.
+
+  On the other hand, the Amiga volumes represent the linear difference
+between sound intensities; this mean that you have less accuracy between
+the low volumes than between the high ones.  If you need to, you can safely
+remove volume 64 and replace it with volume 63; but you can NOT remove
+volume 0 and replace it with volume 1.
+
+  If you are implementing a MOD player for another sound-device, then
+remember to check whether it has linear or logarithmic volume control.
+
+  The above table can be calculated from the formula dB=20*log10(Volume/64)
+To go the other way, from dB to Amiga volumes, do
+Volume=64*10^(dB/20)
+
+  The dB here have to do with ratios of sound, not absolute sound power.
+This is the way it is used in recording equipment etc, and not the for
+measuring absolute ear-destroying capability.
+
+  If you need to implement volume artificially, just multiply by the volume
+and shift right 6 times.
+  If you need to mix samples on-the-fly to lower the amount of voices used,
+your best bet is probably doing a DCT (Convert the samples to sums of
+cosines) on small blocks of the sample (64 bytes?) before playing, and
+mixing with the exact position in which you generate a sample.  This is the
+only way I can think of to give adequate quality, at least.
+
+-Vishnu of Cryptoburners
+
+***********************************************************************
+Protracker V2.3A/3.01 Effect Commands
+----------------------------------------------------------------------------
+0 - Normal play or Arpeggio             0xy : x-first halfnote add, y-second
+1 - Slide Up                            1xx : upspeed
+2 - Slide Down                          2xx : downspeed
+3 - Tone Portamento                     3xx : up/down speed
+4 - Vibrato                             4xy : x-speed,   y-depth
+5 - Tone Portamento + Volume Slide      5xy : x-upspeed, y-downspeed
+6 - Vibrato + Volume Slide              6xy : x-upspeed, y-downspeed
+7 - Tremolo                             7xy : x-speed,   y-depth
+8 - NOT USED
+9 - Set SampleOffset                    9xx : offset (23 -> 2300)
+A - VolumeSlide                         Axy : x-upspeed, y-downspeed
+B - Position Jump                       Bxx : songposition
+C - Set Volume                          Cxx : volume, 00-40
+D - Pattern Break                       Dxx : break position in next patt
+E - E-Commands                          Exy : see below...
+F - Set Speed                           Fxx : speed (00-1F) / tempo (20-FF)
+----------------------------------------------------------------------------
+E0- Set Filter                          E0x : 0-filter on, 1-filter off
+E1- FineSlide Up                        E1x : value
+E2- FineSlide Down                      E2x : value
+E3- Glissando Control                   E3x : 0-off, 1-on (use with tonep.)
+E4- Set Vibrato Waveform                E4x : 0-sine, 1-ramp down, 2-square
+E5- Set Loop                            E5x : set loop point
+E6- Jump to Loop                        E6x : jump to loop, play x times
+E7- Set Tremolo Waveform                E7x : 0-sine, 1-ramp down. 2-square
+E8- NOT USED
+E9- Retrig Note                         E9x : retrig from note + x vblanks
+EA- Fine VolumeSlide Up                 EAx : add x to volume
+EB- Fine VolumeSlide Down               EBx : subtract x from volume
+EC- NoteCut                             ECx : cut from note + x vblanks
+ED- NoteDelay                           EDx : delay note x vblanks
+EE- PatternDelay                        EEx : delay pattern x notes
+EF- Invert Loop                         EFx : speed
+----------------------------------------------------------------------------
+Peter "CRAYON" Hanning /Mushroom Studios/Noxious
+
+For a more complete description see my previous post about the new format.
+This format also allow you to have more effects, and several effects on the
+same note.  Hopefully, it will soon replace the module format.
+ - Vishnu
+
+***********************************************************************
+
+Protracker CIA (Complex Interface Adapter) Timer Tempo Calculations:
+--------------------------------------------------------------------
+Fcolor                        = 4.43361825 MHz (PAL color carrier frequency)
+CPU Clock   = Fcolor * 1.6    = 7.0937892  MHz
+CIA Clock   = Cpu Clock / 10  = 709.37892  kHz
+50 Hz Timer = CIA Clock / 50  = 14187.5784
+Tempo num.  = 50 Hz Timer*125 = 1773447
+
+For NTSC: CPU Clock = 7.1590905 MHz --> Tempo num. = 1789773
+
+ To calculate tempo we use the formula: TimerValue = 1773447 / Tempo
+ The timer is only a word, so the available tempo range is 28-255 (++).
+ Tempo 125 will give a normal 50 Hz timer (VBlank).
+
+ A normal Protracker VBlank song tempo can be calculated as follows:
+ We want to know the tempo in BPM (Beats Per Minute), or rather quarter-
+ notes per minute. Four notes makes up a quarternote.
+ First find interrupts per minute: 60 seconds * 50 per second = 3000
+ Divide by interrupts per quarter note = 4 notes * speed
+ This gives: Tempo = 3000/(4*speed)
+ simplified: Tempo = 750/speed
+ For a normal song in speed 6 this formula gives: 750/6 = 125 BPM
+
+ Lars "ZAP" Hamre/Amiga Freelancers 1990
+
+***********************************************************************
+
+The "PowerPacker" crunching algorithm:
+
+Powerpacker use a variant of Lemel-Ziv compression.  This mean that it in
+some cases store strings of bytes as only an offset from the current
+position and a counter.  (How LZ could get a patent on this is beyond me!)
+
+A PowerPacked file has the following format:
+	dc.b	'PP20'			; Identifier
+	dc.l	Efficiency
+	... crunched data ...
+	dc.l	(Length*256)+NumOfBitsToDiscard
+
+The Efficiency is 4 bytes representing the length of offset from the
+current position for different runs of equal bytes.  The first three are
+used for runs of from 2 to 4 bytes; the last is used for all runs of 5
+bytes and over.
+The length is the length of the original, UNcrunched file.
+The bits to be discarded are discarded off the END of the crunched data.
+ 
+All bits in the crunched data are stored in reverse order, to permit
+decrunching in a buffer where the crunched data are loaded at the start (An
+8 byte margin between the start of the file and the decrunching position is
+needed, though).  This mean you have to get bits in the reverse order when
+decrunching, and when I refer to "Get A Bit" or Get Eight Bits" or
+something, that is the LAST bit or bits from the source.  Kinda obvious
+isn't it? ;-)
+
+This means that also when a full set of 8 bits are read from the file,
+their bit order are reversed.
+
+The varying efficiencies used by PowerPacker are as follows:
+Fast:      9, 9, 9, 9
+Medicore:  9,10,10,10
+Good:      9,10,11,11
+Very Good: 9,10,12,12
+Best:      9,10,12,13
+
+
+                         The Decrunching Algorithm
+
+WritePointer is a pointer to the position in memory where decrunched bytes
+ are currently written.
+
+Decrunch:
+REPEAT
+  Get A Bit (X);
+  IF X=0 THEN Copy bytes from source;
+  Copy string from already decrunched part of file;
+    (* Done no matter what the state of X *)
+UNTIL WritePointer<=Start Of Decrunchbuffer;
+END.
+
+
+Copy bytes from source:
+BEGIN
+  n:=0;
+  REPEAT
+    Get Two Bits (X);
+    n:=n+X;
+  UNTIL X<>3;
+  Copy n+1 bytes as bits from Crunched Data to WritePointer;
+  (* At this stage, the bytes get their order of bits reversed; and
+     WritePointer DECREASES *)
+END;
+
+Copy string from already decrunched part of file:
+BEGIN
+  Get Two Bits(n);
+  OffsetLen:=Efficiency[n];
+  IF n<>3 THEN Get OffsetLen Bits (X)
+  ELSE
+  BEGIN
+    Get One Bit (X);
+    IF X=0 THEN Get Seven Bits (X) ELSE Get OffsetLen Bits (X);
+    REPEAT
+      Get Three Bits (Y);
+      n:=n+Y;
+    UNTIL Y<>7;
+  END;
+  Copy n+2 bytes from WritePointer+X;
+   (* Here it is copied reversely through memory; X is constant, while
+      WritePointer decreases. *)
+END;
+
+If you can't read this, the original decrunchroutine follows here, in 68000
+assembler.  It was NOT commented before I cleared it up with macros...
+So complaints about the comments must go to me, too!
+
+Registers used are (in the main decrunch routine):
+d0 - Counter for number of bits to fetch with the READD1 macro.
+d1 - Return register for the READBIT macros.
+d2 - Used as counter register for the copy routines.
+d3 - Used as offset for the oldstring copy routine.
+d5 - Used to store the longword currently read bits from.
+d7 - Used for storing the number of bits left in d5.
+     0 means one bit left, read new longword to d5 when d7 wraps to
+     negative.
+a0 - Pointer to current longword of source (the one in d5).
+a1 - Current position in the buffer to decrunch to.
+a2 - Start of buffer to decrunch to.  Used only for checking whether the
+     decrunching is through.
+a5 - Pointer to efficiency array.
+
+Things to consider:
+Bits are shifted from d5 to d1 with code like this
+	lsr.l	#1,d5
+	addx.l	d1,d1
+shifting bits from the BOTTOM of d5 into the BOTTOM of d1, reversing the
+order of the bits as they go from d5 to d1.
+The predecrement mode, as in
+	move.b	d1,-(a1)
+decrement a1 BEFORE writing d1.
+
+***********************************************************************
+;
+; PowerPacker Decrunch assembler subroutine V1.1
+;
+; call as:
+;    DecrunchBuffer (endcrun, buffer, efficiency);
+;                      a0       a1        d0
+; with:
+;    endcrun   : UBYTE * just after last byte of crunched file
+;    buffer    : UBYTE * to memory block to decrunch in
+;    efficiency: Longword defining efficiency with wich file was crunched
+;
+; NOTE:
+;    Decrunch a few bytes higher (safety margin) than the crunched file
+;    to decrunch in the same memory space. (64 bytes suffice)
+;
+
+Decrunch:
+	lea	myBitsTable(pc),a5	; Efficiency array
+	move.l	d0,(a5)			; Store efficiency for this file.
+	move.l	a1,a2			; Store start of decrunch memory.
+	move.l	-(a0),d5		; Get length & number of bits to 
+	moveq	#0,d1			;  trash...
+	move.b	d5,d1			; Copy number of bits to trash...
+	lsr.l	#8,d5			; Find length of decrunched file...
+	add.l	d5,a1			; And end of decrunch buffer.
+	move.l	-(a0),d5		; First longword of crunched data.
+	lsr.l	d1,d5			; Skip unused bits...
+	moveq	#32-1,d7		; Number of bits in longword...
+	sub.b	d1,d7			; And be sure to read another when 
+					;  d5 is spent!
+
+LoopCheckCrunch:			; The decrunch loop.
+	READBIT				; State of bit is returned in d1
+	bne.s	CrunchedBytes		; and Z flag
+NormalBytes:
+	moveq	#0,d2
+Read2BitsRow:
+	READBITS #2,d1			; Get length of run-1
+	add.w	d1,d2			; Loop until not %11, increasing
+	cmp.w	#3,d1			; all the time... (Sort of Huffman
+	beq.s	Read2BitsRow		; on the run lengths...)
+.ReadNormalByte:			; REPEAT
+	READBITS #8,d1			; Get from crunched data...
+	move.b	d1,-(a1)		; Store...
+	dbf	d2,.ReadNormalByte	; UNTIL d2<0
+	cmp.l	a1,a2			; End of crunch?
+	bcs.s	CrunchedBytes		; Nope, now do crunched bytes...
+	rts				; Chicken out - FINITO!
+
+CrunchedBytes:
+	READBITS #2,d1			; Get 2 bits of runlength-2
+	moveq	#0,d0
+	move.b	(a5,d1.w),d0		; Get number of bits offset for
+	move.w	d1,d2			; this runlength
+	addq.w	#1,d2			; Runlength always 2+
+	cmp.w	#3+1,d2			; Did data indicate longer run?
+	bne.s	ReadOffset		; Nope....
+	READBIT				; Is the longer run with offsetlen
+	bne.s	.LongBlockOffset	; from Efficiency?
+	moveq	#7,d0			; Nope, hard code length 7
+.LongBlockOffset:
+	READD1				; Get offset...
+	move.w	d1,d3
+Read3BitsRow:
+	READBITS #3,d1			; Get more string length...
+	add.w	d1,d2			; Increase until stop indicated...
+	cmp.w	#7,d1			; By not having the max value.
+	beq.s	Read3BitsRow
+	bra.s	DecrunchBlock		; And start the copying.
+ReadOffset:
+	READD1				; Get offset for short run...
+	move.w	d1,d3			; and use it!
+DecrunchBlock:
+	move.b	(a1,d3.w),-(a1)		; Loop the copy...
+	dbf	d2,DecrunchBlock	; One time more than the initial d2
+EndOfLoop:
+_pp_DecrunchColor:
+	move.w	a1,$dff1a2		; Set colour
+	cmp.l	a1,a2			; Check if we have reached/passed 
+	bcs	LoopCheckCrunch		;  lower limit...
+	rts				; Yeah - chicken out!
+
+myBitsTable:
+	dc.b	$09,$0a,$0b,$0b		; Efficiency table
+***********************************************************************
+
+That's all for now - hope you don't mind...
+If you want to use the PowerPacker decrunching routine, I suggest instead
+using powerpacker.library if you are on the Amiga; if it is for a demo, I
+suggest using another cruncher, for instance CrunchMaster.  It has better
+compression ratios than PowerPacker.
+
+Vishnu CRB           Feel free to e-mail me.
+steinarm@ifi.uio.no  "...all the modern inconveniences..." (Mark Twain)
+From: iantw@castle.ed.ac.uk (Ian Tweedie)
+Newsgroups: comp.sys.ibm.pc.demos
+Subject: Re: Does anyone have the MOD file format?
+Message-ID: <33868@castle.ed.ac.uk>
+Date: 5 Apr 93 11:48:50 GMT
+References: <lru8ebINN79h@earth.cs.utexas.edu> <LESHER.93Apr4142851@vega.cs.bucknell.edu>
+Organization: Edinburgh University
+Lines: 542
+
+lesher@vega.cs.bucknell.edu (Tim Lesher) writes:
+
+>I don't have it, but I seem to remember that there's a really good
+>tutorial packaged with the Mac mod player "The Sound Trecker".  You
+>can get if from wuarchive.wustl.edu, /mirrors/info-mac/sound/st.
+
+Here is the Amiga (ProTracker) module format document. The first part
+I got from a BBS, the second part I got from Mark Cox (author of
+ModPlay, etc).
+ 
+*********************************************************************
+ 
+ 
+Protracker 1.1B Song/Module Format:
+ 
+Offset  Bytes  Description
+   0     20    Songname. Remember to put trailing null bytes at the end...
+ 
+Information for sample 1-31:
+ 
+Offset  Bytes  Description
+  20     22    Samplename for sample 1. Pad with null bytes.
+  42      2    Samplelength for sample 1. Stored as number of words.
+               Multiply by two to get real sample length in bytes.
+  44      1    Lower four bits are the finetune value, stored as a signed
+               four bit number. The upper four bits are not used, and
+               should be set to zero.
+               Value:  Finetune:
+                 0        0
+                 1       +1
+                 2       +2
+                 3       +3
+                 4       +4
+                 5       +5
+                 6       +6
+                 7       +7
+                 8       -8
+                 9       -7
+                 A       -6
+                 B       -5
+                 C       -4
+                 D       -3
+                 E       -2
+                 F       -1
+ 
+  45      1    Volume for sample 1. Range is $00-$40, or 0-64 decimal.
+  46      2    Repeat point for sample 1. Stored as number of words offset
+               from start of sample. Multiply by two to get offset in bytes.
+  48      2    Repeat Length for sample 1. Stored as number of words in
+               loop. Multiply by two to get replen in bytes.
+ 
+Information for the next 30 samples starts here. It's just like the info for
+sample 1.
+ 
+Offset  Bytes  Description
+  50     30    Sample 2...
+  80     30    Sample 3...
+   .
+   .
+   .
+ 890     30    Sample 30...
+ 920     30    Sample 31...
+ 
+Offset  Bytes  Description
+ 950      1    Songlength. Range is 1-128.
+ 951      1    Well... this little byte here is set to 127, so that old
+               trackers will search through all patterns when loading.
+               Noisetracker uses this byte for restart, but we don't.
+ 952    128    Song positions 0-127. Each hold a number from 0-63 that
+               tells the tracker what pattern to play at that position.
+1080      4    The four letters "M.K." - This is something Mahoney & Kaktus
+               inserted when they increased the number of samples from
+               15 to 31. If it's not there, the module/song uses 15 samples
+               or the text has been removed to make the module harder to
+               rip. Startrekker puts "FLT4" or "FLT8" there instead.
+ 
+Offset  Bytes  Description
+1084    1024   Data for pattern 00.
+   .
+   .
+   .
+xxxx  Number of patterns stored is equal to the highest patternnumber
+      in the song position table (at offset 952-1079).
+ 
+Each note is stored as 4 bytes, and all four notes at each position in
+the pattern are stored after each other.
+ 
+00 -  chan1  chan2  chan3  chan4
+01 -  chan1  chan2  chan3  chan4
+02 -  chan1  chan2  chan3  chan4
+etc.
+ 
+Info for each note:
+ 
+ _____byte 1_____   byte2_    _____byte 3_____   byte4_
+/                 /        /                 /      
+0000          0000-00000000  0000          0000-00000000
+ 
+Upper four    12 bits for    Lower four    Effect command.
+bits of sam-  note period.   bits of sam-
+ple number.                  ple number.
+ 
+Periodtable for Tuning 0, Normal
+  C-1 to B-1 : 856,808,762,720,678,640,604,570,538,508,480,453
+  C-2 to B-2 : 428,404,381,360,339,320,302,285,269,254,240,226
+  C-3 to B-3 : 214,202,190,180,170,160,151,143,135,127,120,113
+ 
+To determine what note to show, scan through the table until you find
+the same period as the one stored in byte 1-2. Use the index to look
+up in a notenames table.
+ 
+This is the data stored in a normal song. A packed song starts with the
+four letters "PACK", but i don't know how the song is packed: You can
+get the source code for the cruncher/decruncher from us if you need it,
+but I don't understand it; I've just ripped it from another tracker...
+ 
+In a module, all the samples are stored right after the patterndata.
+To determine where a sample starts and stops, you use the sampleinfo
+structures in the beginning of the file (from offset 20). Take a look
+at the mt_init routine in the playroutine, and you'll see just how it
+is done.
+ 
+Lars "ZAP" Hamre/Amiga Freelancers
+ 
+--------------------------
+ 
+Found that document...
+ 
+Mark J Cox ------------------------------------------- m.j.h.cox@bradford.ac.uk
+University of Bradford ---------------------------- bc732@cleveland.freenet.edu
+Mark
+ 
+             EFFECT COMMANDS
+             ---------------
+ Effect commands on protracker should
+ be compatible with all other trackers.
+ 0 - None/Arpeggio     8 - * NOT USED *
+ 1 - Portamento Up     9 - SampleOffset
+ 2 - Portamento Down   A - VolumeSlide
+ 3 - TonePortamento    B - PositionJump
+ 4 - Vibrato           C - Set Volume
+ 5 - ToneP + VolSlide  D - PatternBreak
+ 6 - Vibra + VolSlide  E - Misc. Cmds
+ 7 - Tremolo           F - Set Speed
+ 
+ 
+              E - COMMANDS
+              ------------
+ The E command has been altered to
+ contain more commands than one.
+ E0- Filter On/Off     E8- * NOT USED *
+ E1- Fineslide Up      E9- Retrig Note
+ E2- Fineslide Down    EA- FineVol Up
+ E3- Glissando Control EB- FineVol Down
+ E4- Vibrato Control   EC- NoteCut
+ E5- Set Finetune      ED- NoteDelay
+ E6- Patternloop       EE- PatternDelay
+ E7- Tremolo Control   EF- Invert Loop
+ 
+ 
+  Cmd 0. Arpeggio [Range:$0-$F/$0-$F]
+  -----------------------------------
+ Usage: $0 + 1st halfnote add
+           + 2nd halfnote add
+ Arpeggio is used to simulate chords.
+ This is done by rapidly changing the
+ pitch between 3(or 2) different notes.
+ It sounds very noisy and grainy on
+ most samples, but ok on monotone ones.
+ Example: C-300047  C-major chord:
+          (C+E+G  or C+4+7 halfnotes)
+          C-300037  C-minor chord:
+          (C+D#+G or C+3+7 halfnotes)
+ 
+ 
+  Cmd 1. Portamento up [Speed:$00-$FF]
+  ------------------------------------
+ Usage: $1 + portamento speed
+ Portamento up will simply slide the
+ sample pitch up. You can NOT slide
+ higher than B-3! (Period 113)
+ Example: C-300103  1 is the command,
+            3 is the portamentospeed.
+ NOTE: The portamento will be called as
+ many times as the speed of the song.
+ This means that you'll sometimes have
+ trouble sliding accuratly. If you
+ change the speed without changing the
+ sliderates, it will sound bad...
+ 
+ 
+  Cmd 2. Portamento down [Speed:$00-FF]
+  -------------------------------------
+ Usage: $2 + portamento speed
+ Just like command 1, except that this
+ one slides the pitch down instead.
+ (Adds to the period).
+ You can NOT slide lower than C-1!
+ (Period 856)
+ Example: C-300203  2 is the command,
+            3 is the portamentospeed.
+ 
+ 
+ Cmd 3. Tone-portamento [Speed:$00-$FF]
+ --------------------------------------
+ Usage: Dest-note + $3 + slidespeed
+ This command will automatically slide
+ from the old note to the new.
+ You don't have to worry about which
+ direction to slide, you need only set
+ the slide speed. To keep on sliding,
+ just select the command $3 + 00.
+ Example: A-200000  First play a note.
+          C-300305  C-3 is the note to
+               slide to, 3 the command,
+               and 5 the speed.
+ 
+ 
+ Cmd 4. Vibrato [Rate:$0-$F,Dpth:$0-$F]
+ --------------------------------------
+ Usage: $4 + vibratorate + vibratodepth
+ Example: C-300481  4 is the command,
+       8 is the speed of the vibrato,
+   and 1 is the depth of the vibrato.
+ To keep on vibrating, just select
+ the command $4 + 00. To change the
+ vibrato, you can alter the rate,
+ depth or both. Use command E4- to
+ change the vibrato-waveform.
+ 
+ 
+ Cmd 5. ToneP + Volsl [Spd:$0-$F/$0-$F]
+ --------------------------------------
+ Usage: $5 + upspeed + downspeed
+ This command will continue the current
+ toneportamento and slide the volume
+ at the same time. Stolen from NT2.0.
+ Example: C-300503  3 is the speed to
+                turn the volume down.
+          C-300540  4 is the speed to
+                         slide it up.
+ 
+ 
+ Cmd 6. Vibra + Volsl [Spd:$0-$F/$0-$F]
+ --------------------------------------
+ Usage: $6 + upspeed + downspeed
+ This command will continue the current
+ vibrato and slide the volume at the
+ same time. Stolen from NT2.0.
+ Example: C-300605  5 is the speed to
+                turn the volume down.
+          C-300640  4 is the speed to
+                         slide it up.
+ 
+ 
+ Cmd 7. Tremolo [Rate:$0-$F,Dpth:$0-$F]
+ --------------------------------------
+ Usage: $7 + tremolorate + tremolodepth
+ Tremolo vibrates the volume.
+ Example: C-300794  7 is the command,
+       9 is the speed of the tremolo,
+   and 4 is the depth of the tremolo.
+ To keep on tremoling, just select
+ the command $7 + 00. To change the
+ tremolo, you can alter the rate,
+ depth or both. Use command E7- to
+ change the tremolo-waveform.
+ 
+ 
+ Cmd 9. Set SampleOffset [Offs:$00-$FF]
+ --------------------------------------
+ Usage: $9 + Sampleoffset
+ This command will play from a chosen
+ position in the sample, and not from
+ the beginning. The two numbers equal
+ the two first numbers in the length
+ of the sample. Handy for speech-
+ samples.
+ Example: C-300923  Play sample from
+                    offset $2300.
+ 
+ 
+ Cmd A. Volumeslide [Speed:$0-$F/$0-$F]
+ --------------------------------------
+ Usage: $A + upspeed + downspeed
+ Example: C-300A05  5 is the speed to
+                turn the volume down.
+          C-300A40  4 is the speed to
+                         slide it up.
+ NOTE: The slide will be called as
+ many times as the speed of the song.
+ The slower the song, the more the
+ volume will be changed on each note.
+ 
+ 
+   Cmd B. Position-jump [Pos:$00-$7F]
+   ----------------------------------
+ Usage: $B + position to continue at
+ Example: C-300B01  B is the command,
+                 1 is the position to
+                 restart the song at.
+ This command will also perform a
+ pattern-break (see 2 pages below).
+ You can use this command instead of
+ restart as on noisetracker, but you 
+ must enter the position in hex!
+ 
+ 
+   Cmd C. Set volume [Volume:$00-$40]
+   ----------------------------------
+ Usage: $C + new volume
+ Well, this old familiar command will
+ set the current volume to your own
+ selected. The highest volume is $40.
+ All volumes are represented in hex.
+ (Programmers do it in hex, you know!)
+ Example: C-300C10  C is the command,
+       10 is the volume (16 decimal).
+ 
+ 
+      Cmd D. Pattern-break
+      [Pattern-pos:00-63, decimal]
+      ----------------------------
+ Usage: $D + pattern-position
+ This command just jumps to the next
+ song-position, and continues play
+ from the patternposition you specify.
+ Example: C-300D00  Jump to the next
+     song-position and continue play
+            from patternposition 00.
+      Or: C-300D32  Jump to the next
+     song-position and continue play
+    from patternposition 32 instead.
+ 
+ 
+    Cmd E0. Set filter [Range:$0-$1]
+    --------------------------------
+ Usage: $E0 + filter-status
+ This command jerks around with the
+ sound-filter on some A500 + A2000.
+ All other Amiga-users should keep out
+ of playing around with it.
+ Example: C-300E01  disconnects filter
+                 (turns power LED off)
+          C-300E00  connects filter
+                  (turns power LED on)
+ 
+ 
+   Cmd E1. Fineslide up [Range:$0-$F]
+   ----------------------------------
+ Usage: $E1 + value
+ This command works just like the
+ normal portamento up, except that
+ it only slides up once. It does not
+ continue sliding during the length of
+ the note.
+ Example: C-300E11  Slide up 1 at the
+               beginning of the note.
+ (Great for creating chorus effects)
+ 
+ 
+  Cmd E2. Fineslide down [Range:$0-$F]
+  ------------------------------------
+ Usage: $E2 + value
+ This command works just like the
+ normal portamento down, except that
+ it only slides down once. It does not
+ continue sliding during the length of
+ the note.
+ Example: C-300E26  Slide up 6 at the
+               beginning of the note.
+ 
+ 
+  Cmd E3. Glissando Ctrl [Range:$0-$1]
+  ------------------------------------
+ Usage: $E3 + Glissando-Status
+ Glissando must be used with the tone-
+ portamento command. When glissando is
+ activated, toneportamento will slide
+ a halfnote at a time, instead of a
+ straight slide.
+ Example: C-300E31  Turn Glissando on.
+          C-300E30  Turn Glissando off.
+ 
+ 
+      Cmd E4. Set vibrato waveform
+      [Range:$0-$3]
+      ----------------------------
+ Usage: $E4 + vibrato-waveform
+ Example: C-300E40  Set sine(default)
+               E44  Don't retrig WF
+          C-300E41  Set Ramp Down
+               E45  Don't retrig WF
+          C-300E42  Set Squarewave
+               E46  Don't retrig WF
+          C-300E43  Set Random
+               E47  Don't retrig WF
+ 
+ 
+   Cmd E5. Set finetune [Range:$0-$F]
+   ----------------------------------
+ Usage: $E5 + finetune-value
+ Example: C-300E51  Set finetune to 1.
+ Use these tables to figure out the
+ finetune-value.
+ Finetune: +7 +6 +5 +4 +3 +2 +1  0
+    Value:  7  6  5  4  3  2  1  0
+ Finetune: -1 -2 -3 -4 -5 -6 -7 -8
+    Value:  F  E  D  C  B  A  9  8
+ 
+ 
+   Cmd E6. PatternLoop [Loops:$0-$F]
+   ----------------------------------
+ Usage: $E6 + number of loops
+ This command will loop a part of a
+ pattern.
+ Example: C-300E60  Set loopstart.
+          C-300E63  Jump to loop 3
+           times before playing on.
+ 
+ 
+      Cmd E7. Set tremolo waveform
+      [Range:$0-$3]
+      ----------------------------
+ Usage: $E7 + tremolo-waveform
+ Example: C-300E70  Set sine(default)
+               E74  Don't retrig WF
+          C-300E71  Set Ramp Down
+               E75  Don't retrig WF
+          C-300E72  Set Squarewave
+               E76  Don't retrig WF
+          C-300E73  Set Random
+               E77  Don't retrig WF
+ 
+ 
+    Cmd E9. Retrig note [Value:$0-$F]
+    ---------------------------------
+ Usage: $E9 + Tick to Retrig note at.
+ This command will retrig the same note
+ before playing the next. Where to
+ retrig depends on the speed of the
+ song. If you retrig with 1 in speed 6
+ that note will be trigged 6 times in
+ one note slot. Retrig on hi-hats!
+ Example: C-300F06  Set speed to 6.
+          C-300E93  Retrig at tick 3
+                    out of 6.
+ 
+ 
+   Cmd EA. FineVolsl up [Range:$0-$F]
+   ----------------------------------
+ Usage: $EA + value
+ This command works just like the
+ normal volumeslide up, except that
+ it only slides up once. It does not
+ continue sliding during the length of
+ the note.
+ Example: C-300EA3  Slide volume up 1
+        at the beginning of the note.
+ 
+ 
+  Cmd EB. FineVolsl down [Range:$0-$F]
+  ------------------------------------
+ Usage: $EB + value
+ This command works just like the
+ normal volumeslide down, except that
+ it only slides down once. It does not
+ continue sliding during the length of
+ the note.
+ Example: C-300EB6  Slide volume down
+       6 at the beginning of the note.
+ 
+ 
+     Cmd EC. Cut note [Value:$0-$F]
+     ------------------------------
+ Usage: $EC + Tick to Cut note at.
+ This command will cut the note
+ at the selected tick, creating
+ extremely short notes.
+ Example: C-300F06  Set speed to 6.
+          C-300EC3  Cut at tick 3 out
+                    of 6.
+ Note that the note is not really cut,
+ the volume is just turned down.
+ 
+ 
+     Cmd ED. NoteDelay [Value:$0-$F]
+     -------------------------------
+ Usage: $ED + ticks to delay note.
+ This command will delay the note
+ to the selected tick.
+ Example: C-300F06  Set speed to 6.
+          C-300ED3  Play note at tick
+                    3 out of 6.
+ 
+ 
+   Cmd EE. PatternDelay [Notes:$0-$F]
+   ----------------------------------
+ Usage: $EE + notes to delay pattern.
+ This command will delay the pattern
+ the selected numbers of notes.
+ Example: C-300EE8  Delay pattern 8
+           notes before playing on.
+ All other effects are still active
+ when the pattern is being delayed.
+ 
+ 
+    Cmd EF. Invert Loop [Speed:$0-$F]
+    ---------------------------------
+ Usage: $EF + Invertspeed
+ This command will need a short loop
+ ($10,20,40,80 etc. bytes) to work.
+ It will invert the loop byte by byte.
+ Sounds better than funkrepeat...
+ Example: C-300EF8 Set invspeed to 8.
+ To turn off the inverting, set 
+ invspeed to 0, or press ctrl + Z.
+ 
+ 
+    Cmd F. Set speed [Speed:$00-$FF]
+    --------------------------------
+ Usage: $F + speed
+ This command will set the speed of the
+ song.  
+ 
+ 
+
+
+
+---------------------------end forwarded message----------------------------
+-- 
+ --Jeff Hartung--  	
+ Disclaimer: My opinions only, etc., etc., BLAH! BLAH! BLAH!...
+ InterNet - hartung@crl.ucsd.edu    	 BITNET - hartung@ucsd
+ UUCP - ucsd!crl.ucsd.edu!hartung
+
+
+This is a reposting for an earlier one.
+
+Enjoy.....
+
+ian
+
+
+
