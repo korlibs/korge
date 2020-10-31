@@ -24,8 +24,10 @@ buildscript {
 
 plugins {
     val kotlinVersion: String by project
+
 	java
     kotlin("multiplatform") version kotlinVersion
+    `maven-publish`
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
@@ -391,9 +393,168 @@ fun Project.samples(block: Project.() -> Unit) {
     }
 }
 
+fun Project.nonSamples(block: Project.() -> Unit) {
+    subprojects {
+        if (!project.path.startsWith(":samples:") && project.hasBuildGradle()) {
+            block()
+        }
+    }
+}
+
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
 
+val BINTRAY_USER = rootProject.findProperty("BINTRAY_USER")?.toString()
+        ?: project.findProperty("bintrayUser")?.toString()
+        ?: System.getenv("BINTRAY_USER")
+
+
+val BINTRAY_KEY = rootProject.findProperty("BINTRAY_KEY")?.toString()
+        ?: project.findProperty("bintrayApiKey")?.toString()
+        ?: System.getenv("BINTRAY_API_KEY")
+        ?: System.getenv("BINTRAY_KEY")
+
+nonSamples {
+    if (BINTRAY_USER.isNullOrEmpty() || BINTRAY_KEY.isNullOrEmpty()) return@nonSamples
+
+    plugins.apply("maven-publish")
+
+    val javadocJar = tasks.create<Jar>("javadocJar") {
+        classifier = "javadoc"
+    }
+
+    val sourcesJar = tasks.create<Jar>("sourceJar") {
+        classifier = "sources"
+    }
+
+    val emptyJar = tasks.create<Jar>("emptyJar") {
+    }
+
+    val publishing = extensions.getByType(PublishingExtension::class.java)
+
+    val projectBintrayRepository by lazy {
+        findProperty("project.bintray.repository")?.toString() ?: error("Can't find project.bintray.repository")
+    }
+    val projectBintrayPackage by lazy {
+        findProperty("project.bintray.package")?.toString() ?: error("Can't find project.bintray.package")
+    }
+    val projectVersion by lazy { project.version.toString() }
+    val bintrayUser by lazy { BINTRAY_USER }
+    val bintrayPass by lazy { BINTRAY_KEY }
+
+    val publishUser = BINTRAY_USER
+    val publishPassword = BINTRAY_KEY
+
+    publishing.apply {
+        repositories {
+            maven {
+                credentials {
+                    username = publishUser
+                    setPassword(publishPassword)
+                }
+                url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
+            }
+        }
+        afterEvaluate {
+            //println(gkotlin.sourceSets.names)
+
+            publications.withType(MavenPublication::class.java) {
+                val publication = this
+
+                //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
+                if (publication.name == "kotlinMultiplatform") {
+                    publication.artifact(sourcesJar) {
+                    }
+                    publication.artifact(emptyJar) {
+                    }
+                }
+
+                /*
+                val sourcesJar = tasks.create<Jar>("sourcesJar${publication.name.capitalize()}") {
+                    classifier = "sources"
+                    baseName = publication.name
+                    val pname = when (publication.name) {
+                        "metadata" -> "common"
+                        else -> publication.name
+                    }
+                    val names = listOf("${pname}Main", pname)
+                    val sourceSet = names.mapNotNull { gkotlin.sourceSets.findByName(it) }.firstOrNull() as? KotlinSourceSet
+                    sourceSet?.let { from(it.kotlin) }
+                    //println("${publication.name} : ${sourceSet?.javaClass}")
+                    /*
+                    doFirst {
+                        println(gkotlin.sourceSets)
+                        println(gkotlin.sourceSets.names)
+                        println(gkotlin.sourceSets.getByName("main"))
+                        //from(sourceSets.main.allSource)
+                    }
+                    afterEvaluate {
+                        println(gkotlin.sourceSets.names)
+                    }
+                     */
+                }
+                */
+
+                //val mustIncludeDocs = publication.name != "kotlinMultiplatform"
+                val mustIncludeDocs = true
+
+                //if (publication.name == "")
+                if (mustIncludeDocs) {
+                    publication.artifact(javadocJar)
+                }
+                publication.pom.withXml {
+                    asNode().apply {
+                        appendNode("name", project.name)
+                        appendNode("description", project.property("project.description"))
+                        appendNode("url", project.property("project.scm.url"))
+                        appendNode("licenses").apply {
+                            appendNode("license").apply {
+                                appendNode("name").setValue(project.property("project.license.name"))
+                                appendNode("url").setValue(project.property("project.license.url"))
+                            }
+                        }
+                        appendNode("scm").apply {
+                            appendNode("url").setValue(project.property("project.scm.url"))
+                        }
+
+                        // Workaround for kotlin-native cinterops without gradle metadata
+                        //if (korlibs.cinterops.isNotEmpty()) {
+                        //    val dependenciesList = (this.get("dependencies") as NodeList)
+                        //    if (dependenciesList.isNotEmpty()) {
+                        //        (dependenciesList.first() as Node).apply {
+                        //            for (cinterop in korlibs.cinterops.filter { it.targets.contains(publication.name) }) {
+                        //                appendNode("dependency").apply {
+                        //                    appendNode("groupId").setValue("${project.group}")
+                        //                    appendNode("artifactId").setValue("${project.name}-${publication.name.toLowerCase()}")
+                        //                    appendNode("version").setValue("${project.version}")
+                        //                    appendNode("type").setValue("klib")
+                        //                    appendNode("classifier").setValue("cinterop-${cinterop.name}")
+                        //                    appendNode("scope").setValue("compile")
+                        //                    appendNode("exclusions").apply {
+                        //                        appendNode("exclusion").apply {
+                        //                            appendNode("artifactId").setValue("*")
+                        //                            appendNode("groupId").setValue("*")
+                        //                        }
+                        //                    }
+                        //                }
+                        //            }
+                        //        }
+                        //    }
+                        //}
+
+                        // Changes runtime -> compile in Android's AAR publications
+                        if (publication.pom.packaging == "aar") {
+                            val nodes = this.getAt(groovy.xml.QName("dependencies")).getAt("dependency").getAt("scope")
+                            for (node in nodes) {
+                                (node as groovy.util.Node).setValue("compile")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 samples {
 

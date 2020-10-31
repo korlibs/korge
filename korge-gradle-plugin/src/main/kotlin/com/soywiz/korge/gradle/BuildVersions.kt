@@ -2,7 +2,7 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-    const val KORLIBS_VERSION = "2.0.0-alpha"
+    const val KORLIBS_VERSION = "2.0.0-rc"
 
     ////////////////////
 	const val KLOCK = KORLIBS_VERSION
