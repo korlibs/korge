@@ -35,12 +35,13 @@ val kotlinVersion: String by project
 
 //println(KotlinVersion.CURRENT)
 
-allprojects {
-    allprojects {
-        val forcedVersion = System.getenv("FORCED_VERSION")
-        project.version = forcedVersion?.removePrefix("refs/tags/v")?.removePrefix("v") ?: project.version
-    }
+val forcedVersion = System.getenv("FORCED_VERSION")
 
+allprojects {
+    project.version = forcedVersion?.removePrefix("refs/tags/v")?.removePrefix("v") ?: project.version
+}
+
+allprojects {
 	repositories {
         mavenLocal()
 		mavenCentral()
@@ -778,14 +779,13 @@ if (oldBuildVersionsText != newBuildVersionsText) {
     buildVersionsFile.writeText(newBuildVersionsText)
 }
 
-/*
-if (Os.isFamily(Os.FAMILY_UNIX) &&
+if (
+    org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_UNIX) &&
     (File("/.dockerenv").exists() || System.getenv("TRAVIS") != null || System.getenv("GITHUB_REPOSITORY") != null) &&
-    (File("/usr/bin/apt-get").exists())
+    (File("/usr/bin/apt-get").exists()) &&
+    (!(File("/usr/include/GL/glut.h").exists()) || !(File("/usr/include/AL/al.h").exists()))
 ) {
-
-    exec { commandLine("sudo", "apt-get", "update")  }
-    exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev", "ncurses5")  }
-    //exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
+    exec { commandLine("sudo", "apt-get", "update") }
+    exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
+    // exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
 }
-*/
