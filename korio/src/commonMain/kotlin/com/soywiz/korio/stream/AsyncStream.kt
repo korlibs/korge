@@ -573,6 +573,16 @@ suspend fun AsyncInputStream.readFloatArrayBE(count: Int): FloatArray = readByte
 suspend fun AsyncInputStream.readDoubleArrayLE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayLE(0, count)
 suspend fun AsyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayBE(0, count)
 
+suspend fun AsyncOutputStream.writeTempBytes(size: Int, block: ByteArray.() -> Unit): Unit {
+    if (size <= BYTES_TEMP_SIZE) {
+        bytesTempPool.allocThis {
+            this@writeTempBytes.write(this@allocThis.apply(block), 0, size)
+        }
+    } else {
+        write(ByteArray(size).apply(block))
+    }
+}
+
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray): Unit = write(data, 0, data.size)
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray, position: Int, length: Int): Unit = write(data, position, length)
 suspend fun AsyncOutputStream.write8(v: Int): Unit = write(v)
@@ -661,45 +671,25 @@ suspend fun AsyncStream.writeToAlign(alignment: Int, value: Int = 0) {
 	writeBytes(data)
 }
 
-suspend fun AsyncStream.skip(count: Int): AsyncStream = this.apply { position += count }
-suspend fun AsyncStream.skipToAlign(alignment: Int) = run { position = position.nextAlignedTo(alignment.toLong()) }
+suspend fun AsyncStream.skip(count: Int): AsyncStream {
+    position += count
+    return this
+}
+suspend fun AsyncStream.skipToAlign(alignment: Int) { position = position.nextAlignedTo(alignment.toLong()) }
 suspend fun AsyncStream.truncate() = setLength(position)
 
-suspend fun AsyncOutputStream.writeCharArrayLE(array: CharArray) =
-	writeBytes(ByteArray(array.size * 2).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeShortArrayLE(array: ShortArray) =
-	writeBytes(ByteArray(array.size * 2).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeIntArrayLE(array: IntArray) =
-	writeBytes(ByteArray(array.size * 4).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeLongArrayLE(array: LongArray) =
-	writeBytes(ByteArray(array.size * 8).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeFloatArrayLE(array: FloatArray) =
-	writeBytes(ByteArray(array.size * 4).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeDoubleArrayLE(array: DoubleArray) =
-	writeBytes(ByteArray(array.size * 8).apply { writeArrayLE(0, array) })
-
-suspend fun AsyncOutputStream.writeCharArrayBE(array: CharArray) =
-	writeBytes(ByteArray(array.size * 2).apply { writeArrayBE(0, array) })
-
-suspend fun AsyncOutputStream.writeShortArrayBE(array: ShortArray) =
-	writeBytes(ByteArray(array.size * 2).apply { writeArrayBE(0, array) })
-
-suspend fun AsyncOutputStream.writeIntArrayBE(array: IntArray) =
-	writeBytes(ByteArray(array.size * 4).apply { writeArrayBE(0, array) })
-
-suspend fun AsyncOutputStream.writeLongArrayBE(array: LongArray) =
-	writeBytes(ByteArray(array.size * 8).apply { writeArrayBE(0, array) })
-
-suspend fun AsyncOutputStream.writeFloatArrayBE(array: FloatArray) =
-	writeBytes(ByteArray(array.size * 4).apply { writeArrayBE(0, array) })
-
-suspend fun AsyncOutputStream.writeDoubleArrayBE(array: DoubleArray) =
-	writeBytes(ByteArray(array.size * 8).apply { writeArrayBE(0, array) })
+suspend fun AsyncOutputStream.writeCharArrayLE(array: CharArray) = writeTempBytes(array.size * 2) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeShortArrayLE(array: ShortArray) = writeTempBytes(array.size * 2) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeIntArrayLE(array: IntArray) = writeTempBytes(array.size * 4) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeLongArrayLE(array: LongArray) = writeTempBytes(array.size * 8) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeFloatArrayLE(array: FloatArray) = writeTempBytes(array.size * 4) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeDoubleArrayLE(array: DoubleArray) = writeTempBytes(array.size * 8) { writeArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeCharArrayBE(array: CharArray) = writeTempBytes(array.size * 2) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeShortArrayBE(array: ShortArray) = writeTempBytes(array.size * 2) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeIntArrayBE(array: IntArray) = writeTempBytes(array.size * 4) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeLongArrayBE(array: LongArray) = writeTempBytes(array.size * 8) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeFloatArrayBE(array: FloatArray) = writeTempBytes(array.size * 4) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeDoubleArrayBE(array: DoubleArray) = writeTempBytes(array.size * 8) { writeArrayBE(0, array) }
 
 suspend fun AsyncInputStream.readUntil(endByte: Byte, limit: Int = 0x1000): ByteArray {
 	val temp = ByteArray(1)
