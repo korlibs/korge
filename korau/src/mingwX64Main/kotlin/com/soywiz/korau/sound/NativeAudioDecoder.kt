@@ -15,6 +15,8 @@ import com.soywiz.korio.stream.*
 import kotlinx.cinterop.*
 import stb_vorbis.*
 
+actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
+
 open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val maxChannels: Int = 2) {
     val scope = Arena()
 
@@ -187,7 +189,7 @@ object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
 
         private var mp3SeekingTable: MP3Base.SeekingTable? = null
         suspend fun getSeekingTable(): MP3Base.SeekingTable {
-            if (mp3SeekingTable == null) mp3SeekingTable = MP3Base.Parser(data, data.getLength()).getSeekingTable()
+            if (mp3SeekingTable == null) mp3SeekingTable = MP3Base.Parser(data).getSeekingTable()
             return mp3SeekingTable!!
         }
 
