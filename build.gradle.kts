@@ -158,7 +158,7 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-                jvmTest.systemProperty("java.awt.headless", true)
+                jvmTest.systemProperty("java.awt.headless", "true")
             }
         }
 

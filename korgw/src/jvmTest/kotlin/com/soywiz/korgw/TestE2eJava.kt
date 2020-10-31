@@ -11,6 +11,10 @@ import kotlinx.coroutines.*
 import kotlin.test.*
 
 class TestE2eJava {
+    init {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     @Test
     fun test() {
         // @TODO: java.lang.IllegalStateException: Can't find opengl method glGenBuffers

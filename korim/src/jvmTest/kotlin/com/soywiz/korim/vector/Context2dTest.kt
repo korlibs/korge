@@ -9,7 +9,7 @@ import kotlin.test.*
 
 class Context2dTest {
 	init {
-		//System.setProperty("java.awt.headless", "true");
+		System.setProperty("java.awt.headless", "true");
 	}
 
 	@Test
