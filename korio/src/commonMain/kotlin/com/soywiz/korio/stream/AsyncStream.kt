@@ -631,7 +631,7 @@ suspend inline fun AsyncInputStream.consume(autoclose: Boolean = true, temp: Byt
     try {
         while (true) {
             val read = read(temp, 0, temp.size)
-            if (read < 0) break
+            if (read <= 0) break
             block(temp, 0, read)
         }
     } finally {
