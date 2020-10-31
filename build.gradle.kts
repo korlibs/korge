@@ -36,6 +36,11 @@ val kotlinVersion: String by project
 //println(KotlinVersion.CURRENT)
 
 allprojects {
+    allprojects {
+        val forcedVersion = System.getenv("FORCED_VERSION")
+        project.version = forcedVersion?.removePrefix("refs/tags/v")?.removePrefix("v") ?: project.version
+    }
+
 	repositories {
         mavenLocal()
 		mavenCentral()
