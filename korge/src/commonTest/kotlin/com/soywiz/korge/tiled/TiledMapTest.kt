@@ -48,7 +48,7 @@ class TiledMapTest : ViewsForTesting() {
 	}
 
 	@Test
-	fun testObjProps() = suspendTest {
+	fun testObjProps() = suspendTestNoJs {
 		val data = resourcesVfs["tiled/library1.tmx"].readTiledMapData()
 		val librarian = data.getObjectByName("librarian")!!
 		assertEquals("hair-girl1", librarian.properties["hair"]?.string)
