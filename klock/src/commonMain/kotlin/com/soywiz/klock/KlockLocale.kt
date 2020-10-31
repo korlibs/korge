@@ -84,11 +84,11 @@ abstract class KlockLocale {
 		override val firstDayOfWeek: DayOfWeek = DayOfWeek.Sunday
 
 		override val daysOfWeek: List<String> = listOf(
-			"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"
+			"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 		)
 		override val months: List<String> = listOf(
-			"january", "february", "march", "april", "may", "june",
-			"july", "august", "september", "october", "november", "december"
+			"January", "February", "March", "April", "May", "June",
+			"July", "August", "September", "October", "November", "December"
 		)
 
 		override val formatTimeMedium = format("h:mm:ss a")

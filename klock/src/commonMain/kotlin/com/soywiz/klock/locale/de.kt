@@ -15,11 +15,11 @@ open class GermanKlockLocale : KlockLocale() {
 	override val firstDayOfWeek: DayOfWeek = DayOfWeek.Monday
 
 	override val daysOfWeek = listOf(
-		"sonntag", "montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag"
+		"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"
 	)
 	override val months = listOf(
-		"januar", "februar", "märz", "april", "mai", "juni",
-		"juli", "august", "september", "oktober", "november", "dezember"
+		"Januar", "Februar", "März", "April", "Mai", "Juni",
+		"Juli", "August", "September", "Oktober", "November", "Dezember"
 	)
 
 	override val formatDateTimeMedium = format("dd.MM.y HH:mm:ss")

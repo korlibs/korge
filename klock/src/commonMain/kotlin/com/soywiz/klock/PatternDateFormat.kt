@@ -132,14 +132,14 @@ data class PatternDateFormat @JvmOverloads constructor(
         for (name in chunks) {
             val nlen = name.length
             out += when (name) {
-                "E", "EE", "EEE" -> realLocale.daysOfWeekShort[utc.dayOfWeek.index0].capitalize()
-                "EEEE", "EEEEE", "EEEEEE" -> realLocale.daysOfWeek[utc.dayOfWeek.index0].capitalize()
+                "E", "EE", "EEE" -> DayOfWeek[utc.dayOfWeek.index0].localShortName(realLocale)
+                "EEEE", "EEEEE", "EEEEEE" -> DayOfWeek[utc.dayOfWeek.index0].localName(realLocale)
                 "z", "zzz" -> dd.offset.timeZone
                 "d", "dd" -> utc.dayOfMonth.padded(nlen)
                 "M", "MM" -> utc.month1.padded(nlen)
-                "MMM" -> realLocale.months[utc.month0].substr(0, 3).capitalize()
-                "MMMM" -> realLocale.months[utc.month0].capitalize()
-                "MMMMM" -> realLocale.months[utc.month0].substr(0, 1).capitalize()
+                "MMM" -> Month[utc.month1].localName(realLocale).substr(0, 3)
+                "MMMM" -> Month[utc.month1].localName(realLocale)
+                "MMMMM" -> Month[utc.month1].localName(realLocale).substr(0, 1)
                 "y" -> utc.yearInt
                 "yy" -> (utc.yearInt % 100).padded(2)
                 "yyy" -> (utc.yearInt % 1000).padded(3)
@@ -212,7 +212,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                 }
                 "d", "dd" -> day = value.toInt()
                 "M", "MM" -> month = value.toInt()
-                "MMM" -> month = realLocale.monthsShort.indexOf(value.toLowerCase()) + 1
+                "MMM" -> month = realLocale.monthsShort.indexOf(value) + 1
                 "y", "yyyy", "YYYY" -> fullYear = value.toInt()
                 "yy" -> if (doThrow) throw RuntimeException("Not guessing years from two digits.") else return null
                 "yyy" -> fullYear = value.toInt() + if (value.toInt() < 800) 2000 else 1000 // guessing year...
@@ -257,7 +257,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                         }
                     }
                 }
-                "MMMM" -> month = realLocale.months.indexOf(value.toLowerCase()) + 1
+                "MMMM" -> month = realLocale.months.indexOf(value) + 1
                 "MMMMM" -> if (doThrow) throw RuntimeException("Not possible to get the month from one letter.") else return null
                 "a" -> isPm = value == "pm"
                 else -> {

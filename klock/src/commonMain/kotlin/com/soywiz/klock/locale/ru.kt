@@ -17,6 +17,11 @@ open class RussianKlockLocale : KlockLocale() {
 	override val daysOfWeek = listOf(
 		"воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"
 	)
+
+	override val daysOfWeekShort = listOf(
+		"вс", "пн", "вт", "ср", "чт", "пт", "сб"
+	)
+
 	override val months = listOf(
 		"января", "февраля", "марта", "апреля", "мая", "июня",
 		"июля", "августа", "сентября", "октября", "ноября", "декабря"

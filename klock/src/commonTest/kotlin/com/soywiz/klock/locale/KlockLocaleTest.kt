@@ -11,11 +11,11 @@ class KlockLocaleTest {
 	fun testSpanishLocale() {
 		assertEquals(
 			"""
-			Mié, 13 Mar 2019 21:36:45 UTC
+			mié, 13 mar 2019 21:36:45 UTC
 			13/03/2019 21:36:45
 			13/03/19 21:36
-			Miércoles, 13 de Marzo de 2019
-			13 de Marzo de 2019
+			miércoles, 13 de marzo de 2019
+			13 de marzo de 2019
 			13/03/2019
 			13/03/19
 			21:36:45
@@ -29,12 +29,12 @@ class KlockLocaleTest {
 	fun testFrenchLocale() {
 		assertEquals(
 			"""
-			Mer, 13 Mar 2019 21:36:45 UTC
-			13 Mar 2019 21:36:45
+			mer, 13 mar 2019 21:36:45 UTC
+			13 mar 2019 21:36:45
 			13/03/2019 21:36
-			Mercredi 13 Mars 2019
-			13 Mars 2019
-			13 Mar 2019
+			mercredi 13 mars 2019
+			13 mars 2019
+			13 mar 2019
 			13/03/2019
 			21:36:45
 			21:36
@@ -61,6 +61,42 @@ class KlockLocaleTest {
 		)
 	}
 
+    @Test
+    fun testNorwegianLocale() {
+        assertEquals(
+            """
+			ons, 13 mar 2019 21:36:45 UTC
+			13.03.2019 21:36:45
+			13.03.19 21:36
+			onsdag, 13. mars 2019
+			13. mars 2019
+			13.03.2019
+			13.03.19
+			21:36:45
+			21:36
+			""".trimIndent(),
+            multiFormat(NorwegianKlockLocale, KlockLocale.norwegian)
+        )
+    }
+
+    @Test
+    fun testSwedishLocale() {
+        assertEquals(
+            """
+			ons, 13 mar 2019 21:36:45 UTC
+			13.03.2019 21:36:45
+			13.03.19 21:36
+			onsdag, 13. mars 2019
+			13. mars 2019
+			13.03.2019
+			13.03.19
+			21:36:45
+			21:36
+			""".trimIndent(),
+            multiFormat(SwedishKlockLocale, KlockLocale.swedish)
+        )
+    }
+
 	@Test
 	fun testJapaneseLocale() {
 		assertEquals(
@@ -83,12 +119,12 @@ class KlockLocaleTest {
 	fun testDutchLocale() {
 		assertEquals(
 			"""
-			Woe, 13 Maa 2019 21:36:45 UTC
-			13 Maa 2019 21:36:45
+			woe, 13 maa 2019 21:36:45 UTC
+			13 maa 2019 21:36:45
 			13-03-19 21:36
-			Woensdag 13 Maart 2019
-			13 Maart 2019
-			13 Maa 2019
+			woensdag 13 maart 2019
+			13 maart 2019
+			13 maa 2019
 			13-03-2019
 			21:36:45
 			21:36
@@ -101,12 +137,12 @@ class KlockLocaleTest {
 	fun testPortugueseLocale() {
 		assertEquals(
 			"""
-			Qua, 13 Mar 2019 21:36:45 UTC
-			13 de Mar de 2019 21:36:45
+			qua, 13 mar 2019 21:36:45 UTC
+			13 de mar de 2019 21:36:45
 			13/03/2019 21:36
-			Quarta-feira, 13 de Março de 2019
-			13 de Março de 2019
-			13 de Mar de 2019
+			quarta-feira, 13 de março de 2019
+			13 de março de 2019
+			13 de mar de 2019
 			13/03/2019
 			21:36:45
 			21:36
@@ -119,12 +155,12 @@ class KlockLocaleTest {
 	fun testRussianLocale() {
 		assertEquals(
 			"""
-			Сре, 13 Мар 2019 21:36:45 UTC
-			13 Мар 2019 г. 21:36:45
+			ср, 13 мар 2019 21:36:45 UTC
+			13 мар 2019 г. 21:36:45
 			13.03.2019 21:36
-			Среда, 13 Марта 2019 г.
-			13 Марта 2019 г.
-			13 Мар 2019 г.
+			среда, 13 марта 2019 г.
+			13 марта 2019 г.
+			13 мар 2019 г.
 			13.03.2019
 			21:36:45
 			21:36
@@ -173,12 +209,12 @@ class KlockLocaleTest {
 	fun testUkrainianLocale() {
 		assertEquals(
 			"""
-			Ср, 13 Бер 2019 21:36:45 UTC
-			13 Бер 2019 р. 21:36:45
+			ср, 13 бер 2019 21:36:45 UTC
+			13 бер 2019 р. 21:36:45
 			13.03.2019 21:36
-			Середа, 13 Березня 2019 р.
-			13 Березня 2019 р.
-			13 Бер 2019 р.
+			середа, 13 березня 2019 р.
+			13 березня 2019 р.
+			13 бер 2019 р.
 			13.03.2019
 			21:36:45
 			21:36
@@ -217,13 +253,16 @@ class KlockLocaleTest {
 
 		assertEquals("середа", DayOfWeek.Wednesday.localName(KlockLocale.ukrainian))
 		assertEquals("ср", DayOfWeek.Wednesday.localShortName(KlockLocale.ukrainian))
+
+		assertEquals("воскресенье", DayOfWeek.Sunday.localName(KlockLocale.russian))
+		assertEquals("вс", DayOfWeek.Sunday.localShortName(KlockLocale.russian))
 	}
 
 	@Test
 	fun testTemporalSetDefault() {
 		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toString())
 		KlockLocale.setTemporarily(KlockLocale.spanish) {
-			assertEquals("Mié, 13 Mar 2019 21:36:45 UTC", date.toString())
+			assertEquals("mié, 13 mar 2019 21:36:45 UTC", date.toString())
 		}
 		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toString())
 	}
