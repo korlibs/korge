@@ -44,6 +44,7 @@ sourceSets {
     this.maybeCreate("main").apply {
         java {
             srcDirs("src/main/kotlin")
+            //srcDirs("src/main/kotlin-debug")
         }
         resources {
             srcDirs("src/main/resources")
@@ -55,6 +56,11 @@ sourceSets {
 val korgeVersion: String by project
 //val kotlinVersion: String by project
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 dependencies {
 	//implementation("com.soywiz.korlibs.korge.plugins:korge-build:$korgeVersion")
     //implementation(project(":korte"))
@@ -63,7 +69,7 @@ dependencies {
     implementation(project(":korge-dragonbones"))
     implementation(project(":korge-spine"))
     implementation(project(":kbox2d"))
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
 	//implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8")

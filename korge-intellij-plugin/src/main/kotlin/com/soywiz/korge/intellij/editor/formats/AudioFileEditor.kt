@@ -1,21 +1,19 @@
 package com.soywiz.korge.intellij.editor.formats
 
 import com.soywiz.klock.*
-import com.soywiz.korau.sound.readSound
-import com.soywiz.korge.animate.AnSimpleAnimation
+import com.soywiz.korau.sound.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.intellij.editor.KorgeFileEditorProvider
-import com.soywiz.korge.lipsync.Voice
-import com.soywiz.korge.lipsync.readVoice
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.textButton
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korma.geom.Anchor
-import kotlinx.coroutines.Job
+import com.soywiz.korge.intellij.editor.*
+import com.soywiz.korge.lipsync.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 
 private suspend fun getLipTexture(char: Char) =
     runCatching { KorgeFileEditorProvider.pluginResurcesVfs["/com/soywiz/korge/intellij/lips/lisa-$char.png"].readBitmapSlice() }.getOrNull()
@@ -86,7 +84,7 @@ suspend fun Scene.audioFileEditor(file: VfsFile) {
     //	mouth.tex = lips[e.lip] ?: views.transparentTexture
     //}
 
-    sceneView.textButton(text = "Replay").apply {
+    sceneView.uiTextButton(text = "Replay").apply {
         width = 80.0
         height = 24.0
         x = 0.0
@@ -96,7 +94,7 @@ suspend fun Scene.audioFileEditor(file: VfsFile) {
         }
     }
 
-    sceneView.textButton(text = "Stop").apply {
+    sceneView.uiTextButton(text = "Stop").apply {
         width = 80.0
         height = 24.0
         x = 80.0

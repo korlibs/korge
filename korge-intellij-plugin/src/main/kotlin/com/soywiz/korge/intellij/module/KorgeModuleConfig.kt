@@ -4,6 +4,7 @@ import com.soywiz.korge.intellij.*
 import com.soywiz.korge.intellij.util.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.util.encoding.*
+import com.soywiz.krypto.encoding.*
 
 class KorgeModuleConfig {
 	var artifactGroup = "com.example"
