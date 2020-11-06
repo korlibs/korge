@@ -67,7 +67,7 @@ class MyToolbarButton(text: String) : JButton() {
     }
 }
 
-fun Styled<out Container>.toolbarButton(text: String, tooltip: String? = null, block: @UIDslMarker Styled<AbstractButton>.() -> Unit = {}) {
+fun Styled<out Container>.toolbarButton(text: String, tooltip: String? = null, block: @UIDslMarker Styled<AbstractButton>.() -> Unit = {}): Styled<AbstractButton> {
     /*
     val fg1: Color? = JPanel().foreground
     //val fg2 = Colors.WHITE.toAwt()
@@ -106,7 +106,9 @@ fun Styled<out Container>.toolbarButton(text: String, tooltip: String? = null, b
         }
         .also { block(it.styled) })
      */
-    component.add(MyToolbarButton(text)
+    val button = MyToolbarButton(text)
         .also { it.toolTipText = tooltip }
-        .also { block(it.styled) })
+        .also { block(it.styled) }
+    component.add(button)
+    return button.styled
 }
