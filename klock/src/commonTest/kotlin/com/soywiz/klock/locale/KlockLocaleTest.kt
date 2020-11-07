@@ -276,4 +276,16 @@ class KlockLocaleTest {
 			HttpDate.withTimezoneNames(ExtendedTimezoneNames).parse("Tue, 19 Sep 2017 00:58:45 MSK").toString()
 		)
 	}
+
+    @Test
+    fun testOrdinalsEnglish() {
+        val englishOrdinalsMap = mapOf(0 to "0th",  1 to "1st",  2 to "2nd",  3 to "3rd",  4 to "4th", 5 to "5th", 6 to "6th", 7 to "7th", 8 to "8th", 9 to "9th",
+            10 to "10th", 11 to "11th", 12 to "12th", 13 to "13th", 14 to "14th", 15 to "15th", 16 to "16th", 17  to "17th", 18 to "18th", 19 to "19th",
+            20 to "20th", 21 to "21st", 22 to "22nd", 23 to "23rd", 24 to "24th", 25 to "25th", 26 to "26th", 27 to "27th", 28 to "28th", 29 to "29th",
+            30 to "30th", 31 to "31st")
+        englishOrdinalsMap.forEach {
+            assertEquals(it.value, KlockLocale.english.getOrdinalByDay(it.key))
+            assertEquals(it.key, KlockLocale.english.getDayByOrdinal(it.value))
+        }
+    }
 }

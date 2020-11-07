@@ -63,6 +63,11 @@ data class WDate(val value: Date) : Comparable<WDate>, Serializable {
     operator fun plus(time: WDateTimeSpan) = (this.value + time.value).wrapped
     operator fun plus(time: WTime) = (this.value + time.value).wrapped
 
+    operator fun minus(time: WTimeSpan) = (this.value - time.value).wrapped
+    operator fun minus(time: WMonthSpan) = (this.value - time.value).wrapped
+    operator fun minus(time: WDateTimeSpan) = (this.value - time.value).wrapped
+    operator fun minus(time: WTime) = (this.value - time.value).wrapped
+
     /** Converts this date to String formatting it like "2020-01-01", "2020-12-31" or "-2020-12-31" if the [year] is negative */
     override fun toString(): String = value.toString()
 }

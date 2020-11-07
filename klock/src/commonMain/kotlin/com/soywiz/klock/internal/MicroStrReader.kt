@@ -21,6 +21,9 @@ internal class MicroStrReader(val str: String, var offset: Int = 0) {
 		readChar()
 		return true
 	}
+    fun tryReadOrNull(expected: String): String? {
+        return if (tryRead(expected)) expected else null
+    }
     fun tryRead(expected: String): Boolean {
         if (expected.length > available) return false
         for (n in expected.indices) if (this.str[offset + n] != expected[n]) return false

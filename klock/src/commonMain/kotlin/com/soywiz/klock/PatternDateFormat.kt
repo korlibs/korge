@@ -58,11 +58,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                     continue
                 }
             }
-            val chunk = s.readChunk {
-                val c = s.readChar()
-                while (s.hasMore && s.tryRead(c)) Unit
-            }
-            chunks.add(chunk)
+            chunks.add(s.tryReadOrNull("do") ?: s.readRepeatedChar())
         }
     }.toList()
 
@@ -70,6 +66,7 @@ data class PatternDateFormat @JvmOverloads constructor(
         when (it) {
             "E", "EE", "EEE", "EEEE", "EEEEE", "EEEEEE" -> """(\w+)"""
             "z", "zzz" -> """([\w\s\-\+\:]+)"""
+            "do" -> """(\d{1,2}\w+)"""
             "d" -> """(\d{1,2})"""
             "dd" -> """(\d{2})"""
             "M" -> """(\d{1,5})"""
@@ -136,6 +133,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                 "EEEE", "EEEEE", "EEEEEE" -> DayOfWeek[utc.dayOfWeek.index0].localName(realLocale)
                 "z", "zzz" -> dd.offset.timeZone
                 "d", "dd" -> utc.dayOfMonth.padded(nlen)
+                "do" -> realLocale.getOrdinalByDay(utc.dayOfMonth)
                 "M", "MM" -> utc.month1.padded(nlen)
                 "MMM" -> Month[utc.month1].localName(realLocale).substr(0, 3)
                 "MMMM" -> Month[utc.month1].localName(realLocale)
@@ -211,6 +209,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                     offset = MicroStrReader(value).readTimeZoneOffset(tzNames)
                 }
                 "d", "dd" -> day = value.toInt()
+                "do" -> day = realLocale.getDayByOrdinal(value)
                 "M", "MM" -> month = value.toInt()
                 "MMM" -> month = realLocale.monthsShort.indexOf(value) + 1
                 "y", "yyyy", "YYYY" -> fullYear = value.toInt()
@@ -283,4 +282,11 @@ private fun mconvertRangeZero(value: Int, size: Int): Int {
 private fun mconvertRangeNonZero(value: Int, size: Int): Int {
     val res = (value umod size)
     return if (res == 0) size else res
+}
+
+private fun MicroStrReader.readRepeatedChar(): String {
+    return readChunk {
+        val c = readChar()
+        while (hasMore && (tryRead(c))) Unit
+    }
 }

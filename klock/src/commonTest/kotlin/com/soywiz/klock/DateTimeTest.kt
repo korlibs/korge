@@ -426,4 +426,44 @@ class DateTimeTest {
             DateTime(1595507452999L).format("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ")
         )
     }
+
+    @Test
+    fun testDaySuffix() {
+        // 2020-03-21 11:13:31.317 +05:00
+        val dateTime = DateTime(
+            year = 2020, month = 3, day = 21,
+            hour = 11, minute = 13, second = 31, milliseconds = 317
+        )
+        val original = DateTimeTz.local(dateTime, TimezoneOffset(5.hours))
+
+        val formatter = DateFormat("yyyy-MM-do HH:mm:ss.SSS xxx")
+        val string = formatter.format(original)
+        assertEquals("2020-03-21st 11:13:31.317 +05:00", string)
+        assertEquals(original, formatter.parse(string))
+
+        // 2020-03-22 11:13:31.317 +05:00
+        val dateTime2 = DateTime(
+            year = 2020, month = 3, day = 22,
+            hour = 11, minute = 13, second = 31, milliseconds = 317
+        )
+        val original2 = DateTimeTz.local(dateTime2, TimezoneOffset(5.hours))
+
+        val formatter2 = DateFormat("yyyy-MM-do HH:mm:ss.SSS xxx")
+        val string2 = formatter2.format(original2)
+        assertEquals("2020-03-22nd 11:13:31.317 +05:00", string2)
+        assertEquals(original2, formatter2.parse(string2))
+
+
+        // 2020-03-20 11:13:31.317 +05:00
+        val dateTime3 = DateTime(
+            year = 2020, month = 3, day = 20,
+            hour = 11, minute = 13, second = 31, milliseconds = 317
+        )
+        val original3 = DateTimeTz.local(dateTime3, TimezoneOffset(5.hours))
+
+        val formatter3 = DateFormat("yyyy-MM-do HH:mm:ss.SSS xxx")
+        val string3 = formatter3.format(original3)
+        assertEquals("2020-03-20th 11:13:31.317 +05:00", string3)
+        assertEquals(original3, formatter3.parse(string3))
+    }
 }

@@ -17,6 +17,23 @@ abstract class KlockLocale {
     open val monthsShort: List<String> by klockLazyOrGet { months.map { it.substr(0, 3) } }
     open val daysOfWeekShort: List<String> by klockLazyOrGet { daysOfWeek.map { it.substr(0, 3) } }
 
+    open val ordinals = Array(32) {
+        if (it in 11..13) {
+            "${it}th"
+        } else {
+            when (it % 10) {
+                1 -> "${it}st"
+                2 -> "${it}nd"
+                3 -> "${it}rd"
+                else -> "${it}th"
+            }
+        }
+    }
+
+    open fun getOrdinalByDay(day: Int): String = ordinals[day]
+
+    open fun getDayByOrdinal(ordinal: String): Int = ordinals.indexOf(ordinal)
+
     //open val monthsShort: List<String> by klockAtomicLazy { months.map { it.substr(0, 3) } }
     //open val daysOfWeekShort: List<String> by klockAtomicLazy { daysOfWeek.map { it.substr(0, 3) } }
     /*
