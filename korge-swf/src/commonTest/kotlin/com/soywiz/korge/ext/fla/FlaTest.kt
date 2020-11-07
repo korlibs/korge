@@ -6,7 +6,7 @@ import kotlin.test.*
 
 class FlaTest {
 	@Test
-	fun name() = suspendTest {
+	fun name() = suspendTestNoJs {
 		val fla = Fla.read(resourcesVfs["simple1.fla"])
 	}
 }
