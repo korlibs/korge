@@ -36,6 +36,10 @@ open class ViewsDebuggerActions(val views: Views) {
         playing = !playing
     }
 
+    fun toggleReset() {
+        playing = false
+    }
+
     fun toggleGridSnapping() {
         gridSnapping = !gridSnapping
     }

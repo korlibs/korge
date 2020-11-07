@@ -1,5 +1,6 @@
 package com.soywiz.korge.awt
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
@@ -50,6 +51,12 @@ class AnchorPointResult(
         )
     }
 }
+
+//class KTreeSaveEvent : Event()
+//class KTreeRestoreEvent : Event()
+
+val Views.save2Handlers by extraProperty { Signal<Unit>() }
+val Views.restore2Handlers by extraProperty { Signal<Unit>() }
 
 abstract class BaseKorgeFileToEdit(val file: VfsFile) {
     val onRequestSave = Signal<String>()
@@ -141,8 +148,12 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
             load(file.readKTree(views) as Container)
         }
 
+        fun serialize(): String {
+            return root.viewTreeToKTree(views).toOuterXmlIndentedString()
+        }
+
         fun save(message: String) {
-            fileToEdit.save(root.viewTreeToKTree(views).toOuterXmlIndentedString(), message)
+            fileToEdit.save(serialize(), message)
         }
 
         fileToEdit.onChanged {
@@ -152,6 +163,27 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         views.debugSavedHandlers.add {
             save(it.toString())
         }
+
+        var saved: String? = null
+
+        //println("KORGE.KTreeEditor")
+
+        views.save2Handlers {
+            //println("KTreeSaveEvent!")
+            saved = serialize()
+        }
+        views.restore2Handlers {
+            //println("KTreeRestoreEvent! : $saved")
+            if (saved != null) {
+                load(saved!!)
+            }
+        }
+        //views.addEventListener<KTreeSaveEvent> {
+        //    println("KTreeSaveEvent!")
+        //    saved = serialize()
+        //}
+        //views.addEventListener<KTreeRestoreEvent> {
+        //}
 
         load(fileToEdit.file)
 
