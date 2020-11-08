@@ -401,7 +401,7 @@ class UInt16ArrayZeroPad private constructor(val data: IntArray) {
 	fun copyOf(size: Int): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOf(size))
 }
 
-fun uint16ArrayZeroPadOf(vararg values: Int) =
+internal fun uint16ArrayZeroPadOf(vararg values: Int) =
 	UInt16ArrayZeroPad(values.size).apply { for (n in 0 until values.size) this[n] = values[n] }
 
 private fun digit(v: Int): Char {
@@ -419,7 +419,7 @@ private fun digit(c: Char): Int {
 	}
 }
 
-object UnsignedBigInt {
+internal object UnsignedBigInt {
 	internal fun add(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
 		var carry = 0
 		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
