@@ -4,6 +4,8 @@ pluginManagement {
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
+        // @TODO: https://github.com/korlibs/korte/issues/13
+        jcenter()
         maven ("https://dl.bintray.com/kotlin/kotlin-dev")
 		maven ("https://dl.bintray.com/kotlin/kotlin-eap")
 	}

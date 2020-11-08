@@ -27,6 +27,7 @@ plugins {
 	java
     kotlin("multiplatform") version kotlinVersion
     id("org.jetbrains.intellij") version "0.6.1" apply false
+    id("org.jetbrains.dokka") version "1.4.10.2" apply false
 
     //`maven-publish`
     //id("com.gradle.plugin-publish") version "0.12.0" apply false
@@ -154,6 +155,24 @@ subprojects {
         }
 
         apply(plugin = "kotlin-multiplatform")
+
+        // @TODO: When Kotlin/Native is enabled:
+        // @TODO: Cannot change dependencies of dependency configuration ':kbignum:iosArm64MainImplementationDependenciesMetadata' after task dependencies have been resolved
+        if (!doEnableKotlinNative && !doEnableKotlinMobile) {
+            apply(plugin = "org.jetbrains.dokka")
+
+            tasks {
+                val dokkaCopy by creating(Task::class) {
+                    dependsOn("dokkaHtml")
+                    doLast {
+                        copy {
+                            from(File(project.buildDir, "dokka/html"))
+                            into(File(project.rootProject.projectDir, "build/dokka-all"))
+                        }
+                    }
+                }
+            }
+        }
 
         if (mustPublish) {
             apply(plugin = "maven-publish")
@@ -419,6 +438,7 @@ val BINTRAY_KEY = rootProject.findProperty("BINTRAY_KEY")?.toString()
         ?: project.findProperty("bintrayApiKey")?.toString()
         ?: System.getenv("BINTRAY_API_KEY")
         ?: System.getenv("BINTRAY_KEY")
+
 
 nonSamples {
     if (BINTRAY_USER.isNullOrEmpty() || BINTRAY_KEY.isNullOrEmpty()) return@nonSamples
