@@ -125,6 +125,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
 
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
+val Project.isSample: Boolean get() = project.path.startsWith(":samples:")
 
 allprojects {
     if (project.hasBuildGradle()) {
@@ -159,15 +160,20 @@ subprojects {
         // @TODO: When Kotlin/Native is enabled:
         // @TODO: Cannot change dependencies of dependency configuration ':kbignum:iosArm64MainImplementationDependenciesMetadata' after task dependencies have been resolved
         if (!doEnableKotlinNative && !doEnableKotlinMobile) {
-            apply(plugin = "org.jetbrains.dokka")
+            if (!isSample) {
+                apply(plugin = "org.jetbrains.dokka")
 
-            tasks {
-                val dokkaCopy by creating(Task::class) {
-                    dependsOn("dokkaHtml")
-                    doLast {
-                        copy {
-                            from(File(project.buildDir, "dokka/html"))
-                            into(File(project.rootProject.projectDir, "build/dokka-all"))
+                tasks {
+                    val dokkaCopy by creating(Task::class) {
+                        dependsOn("dokkaHtml")
+                        doLast {
+                            val ffrom = File(project.buildDir, "dokka/html")
+                            val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
+                            copy {
+                                from(ffrom)
+                                into(finto)
+                            }
+                            File(finto, "index.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
                         }
                     }
                 }
@@ -412,7 +418,7 @@ open class KorgeJavaExec : JavaExec() {
 
 fun Project.samples(block: Project.() -> Unit) {
     subprojects {
-        if (project.path.startsWith(":samples:") && project.hasBuildGradle()) {
+        if (project.isSample && project.hasBuildGradle()) {
             block()
         }
     }
@@ -420,7 +426,7 @@ fun Project.samples(block: Project.() -> Unit) {
 
 fun Project.nonSamples(block: Project.() -> Unit) {
     subprojects {
-        if (!project.path.startsWith(":samples:") && project.hasBuildGradle()) {
+        if (!project.isSample && project.hasBuildGradle()) {
             block()
         }
     }
