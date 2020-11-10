@@ -50,8 +50,8 @@ open class Mesh(
 			val x = vertices[n * 2 + 0].toDouble() + pivotX
 			val y = vertices[n * 2 + 1].toDouble() + pivotY
 
-			val tx = m.fastTransformX(x, y)
-			val ty = m.fastTransformY(x, y)
+			val tx = m.transformX(x, y)
+			val ty = m.transformY(x, y)
 
 			tva.select(n)
 				.xy(tx, ty)

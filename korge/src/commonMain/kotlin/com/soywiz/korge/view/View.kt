@@ -585,10 +585,10 @@ abstract class View internal constructor(
     val renderAlpha: Double get() = renderColorTransform.mA
 
     /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseX(views: Views): Double = this.globalMatrixInv.fastTransformX(views.input.mouse)
+    fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
 
     /** Computes the local Y coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseY(views: Views): Double = this.globalMatrixInv.fastTransformY(views.input.mouse)
+    fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
 
     /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [Point] to avoid allocation. */
     fun localMouseXY(views: Views, target: Point = Point()): Point =
@@ -802,10 +802,10 @@ abstract class View internal constructor(
     fun globalToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
     /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
-    fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.fastTransformX(x, y)
+    fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
 
     /** Converts the global point [x], [y] (using root/stage as reference) into the Y in the local coordinate system. */
-    fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.fastTransformY(x, y)
+    fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
     fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
     fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
@@ -822,10 +822,10 @@ abstract class View internal constructor(
     fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
 
     /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
-    fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.fastTransformX(x, y)
+    fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
 
     /** Converts the local point [x], [y] into a global Y coordinate (using root/stage as reference). */
-    fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.fastTransformY(x, y)
+    fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
     // Version with View.Reference as reference
     /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
@@ -835,10 +835,10 @@ abstract class View internal constructor(
     fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
-    fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.fastTransformX(x, y)
+    fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local Y coordinate. */
-    fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.fastTransformY(x, y)
+    fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
     /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
     fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
@@ -847,10 +847,10 @@ abstract class View internal constructor(
     fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
 
     /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
-    fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.fastTransformX(x, y)
+    fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
 
     /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
-    fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.fastTransformY(x, y)
+    fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
     /**
      * Determines the view at the global point defined by [x] and [y] if any, or null
@@ -1090,10 +1090,10 @@ abstract class View internal constructor(
         val concat = this.getConcatMatrix(target ?: this, boundsTemp)
 
         bb.reset()
-        bb.add(concat.fastTransformX(p1x, p1y), concat.fastTransformY(p1x, p1y))
-        bb.add(concat.fastTransformX(p2x, p2y), concat.fastTransformY(p2x, p2y))
-        bb.add(concat.fastTransformX(p3x, p3y), concat.fastTransformY(p3x, p3y))
-        bb.add(concat.fastTransformX(p4x, p4y), concat.fastTransformY(p4x, p4y))
+        bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+        bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+        bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+        bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
 
         bb.getBounds(out)
         return out

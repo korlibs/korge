@@ -1,10 +1,8 @@
 package com.soywiz.korim.font
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.vector.*
@@ -126,34 +124,4 @@ fun <T> Font.getTextBounds(size: Double, text: T, out: TextMetrics = TextMetrics
     renderer.invoke(actions, text, size, this)
     actions.bb.getBounds(out.bounds)
     return out
-}
-
-class BoundBuilderTextRendererActions : TextRendererActions() {
-    val bb = BoundsBuilder()
-
-    private fun add(x: Double, y: Double) {
-        //val itransform = transform.inverted()
-        val rx = this.x + transform.transformX(x, y)
-        val ry = this.y + transform.transformY(x, y)
-        //println("P: $rx, $ry [$x, $y]")
-        bb.add(rx, ry)
-    }
-
-    override fun put(codePoint: Int): GlyphMetrics {
-        val g = getGlyphMetrics(codePoint)
-        // y = 0 is the baseline
-
-        val fx = g.bounds.left
-        val fy = g.bounds.top
-        val w = g.bounds.width
-        val h = g.bounds.height
-
-        //println("------: [$x,$y] -- ($fx, $fy)-($w, $h)")
-        add(fx, fy)
-        add(fx + w, fy)
-        add(fx + w, fy + h)
-        add(fx, fy + h)
-
-        return g
-    }
 }

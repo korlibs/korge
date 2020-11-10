@@ -73,12 +73,12 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val posX = m.fastTransformX(0.0, 0.0)
-        val posY = m.fastTransformY(0.0, 0.0)
-        val dUX = m.fastTransformX(tileWidth, 0.0) - posX
-        val dUY = m.fastTransformY(tileWidth, 0.0) - posY
-        val dVX = m.fastTransformX(0.0, tileHeight) - posX
-        val dVY = m.fastTransformY(0.0, tileHeight) - posY
+        val posX = m.transformX(0.0, 0.0)
+        val posY = m.transformY(0.0, 0.0)
+        val dUX = m.transformX(tileWidth, 0.0) - posX
+        val dUY = m.transformY(tileWidth, 0.0) - posY
+        val dVX = m.transformX(0.0, tileHeight) - posX
+        val dVY = m.transformY(0.0, tileHeight) - posY
 
         val colMul = renderColorMul
         val colAdd = renderColorAdd

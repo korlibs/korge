@@ -506,10 +506,10 @@ class BatchBuilder2D constructor(
 		setStateFast(tex.base, filtering, blendFactors, program)
 
 		drawQuadFast(
-            m.fastTransformXf(x0, y0), m.fastTransformYf(x0, y0),
-            m.fastTransformXf(x1, y0), m.fastTransformYf(x1, y0),
-            m.fastTransformXf(x1, y1), m.fastTransformYf(x1, y1),
-            m.fastTransformXf(x0, y1), m.fastTransformYf(x0, y1),
+            m.transformXf(x0, y0), m.transformYf(x0, y0),
+            m.transformXf(x1, y0), m.transformYf(x1, y0),
+            m.transformXf(x1, y1), m.transformYf(x1, y1),
+            m.transformXf(x0, y1), m.transformYf(x0, y1),
 			tex, colorMul, colorAdd, rotated
 		)
 	}
@@ -811,7 +811,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         return this
     }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
-	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.fastTransformXf(x, y)).setY(matrix.fastTransformYf(x, y))
+	fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.transformXf(x, y)).setY(matrix.transformYf(x, y))
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
 	fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
@@ -840,15 +840,15 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         //fun Matrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
         //fun Matrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
 
-        val x0 = matrix.fastTransformXf(x, y)
-        val x1 = matrix.fastTransformXf(x + width, y)
-        val x2 = matrix.fastTransformXf(x + width, y + height)
-        val x3 = matrix.fastTransformXf(x, y + height)
+        val x0 = matrix.transformXf(x, y)
+        val x1 = matrix.transformXf(x + width, y)
+        val x2 = matrix.transformXf(x + width, y + height)
+        val x3 = matrix.transformXf(x, y + height)
 
-        val y0 = matrix.fastTransformYf(x, y)
-        val y1 = matrix.fastTransformYf(x + width, y)
-        val y2 = matrix.fastTransformYf(x + width, y + height)
-        val y3 = matrix.fastTransformYf(x, y + height)
+        val y0 = matrix.transformYf(x, y)
+        val y1 = matrix.transformYf(x + width, y)
+        val y2 = matrix.transformYf(x + width, y + height)
+        val y3 = matrix.transformYf(x, y + height)
 
         /*
         val wf = width.toFloat()

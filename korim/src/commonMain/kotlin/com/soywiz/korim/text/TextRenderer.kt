@@ -1,5 +1,7 @@
 package com.soywiz.korim.text
 
+import com.soywiz.kds.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.*
@@ -46,6 +48,80 @@ abstract class TextRendererActions {
     open fun newLine(y: Double) {
         this.x = 0.0
         this.y += y
+    }
+}
+
+class BoundBuilderTextRendererActions : TextRendererActions() {
+    val bb = BoundsBuilder()
+
+    private fun add(x: Double, y: Double) {
+        //val itransform = transform.inverted()
+        val rx = this.x + transform.transformX(x, y)
+        val ry = this.y + transform.transformY(x, y)
+        //println("P: $rx, $ry [$x, $y]")
+        bb.add(rx, ry)
+    }
+
+    override fun put(codePoint: Int): GlyphMetrics {
+        val g = getGlyphMetrics(codePoint)
+        // y = 0 is the baseline
+
+        val fx = g.bounds.left
+        val fy = g.bounds.top
+        val w = g.bounds.width
+        val h = g.bounds.height
+
+        //println("------: [$x,$y] -- ($fx, $fy)-($w, $h)")
+        add(fx, fy)
+        add(fx + w, fy)
+        add(fx + w, fy + h)
+        add(fx, fy + h)
+
+        return g
+    }
+}
+
+class Text2TextRendererActions : TextRendererActions() {
+    var verticalAlign: VerticalAlign = VerticalAlign.TOP
+    var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT
+    val arrayTex = arrayListOf<BmpSlice>()
+    val arrayX = doubleArrayListOf()
+    val arrayY = doubleArrayListOf()
+    val arraySX = doubleArrayListOf()
+    val arraySY = doubleArrayListOf()
+    val arrayRot = doubleArrayListOf()
+    val tr = Matrix.Transform()
+
+    fun mreset() {
+        arrayTex.clear()
+        arrayX.clear()
+        arrayY.clear()
+        arraySX.clear()
+        arraySY.clear()
+        arrayRot.clear()
+    }
+
+    override fun put(codePoint: Int): GlyphMetrics {
+        val bf = font as BitmapFont
+        val m = getGlyphMetrics(codePoint)
+        val g = bf[codePoint]
+        val x = -g.xoffset.toDouble()
+        val y = g.yoffset.toDouble() - when (verticalAlign) {
+            VerticalAlign.BASELINE -> bf.base
+            else -> bf.lineHeight * verticalAlign.ratio
+        }
+
+        val fontScale = fontSize / bf.fontSize
+
+        tr.setMatrix(transform)
+        //println("x: ${this.x}, y: ${this.y}")
+        arrayTex += g.texture
+        arrayX += this.x + transform.transformX(x, y) * fontScale
+        arrayY += this.y + transform.transformY(x, y) * fontScale
+        arraySX += tr.scaleX * fontScale
+        arraySY += tr.scaleY * fontScale
+        arrayRot += tr.rotation.radians
+        return m
     }
 }
 
