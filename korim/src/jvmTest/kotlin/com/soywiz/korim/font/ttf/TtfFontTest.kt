@@ -8,6 +8,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class TtfFontTest {
@@ -26,6 +27,14 @@ class TtfFontTest {
         assertEquals(
             "M300,0 L100,0 L100,-200 L300,-200 L300,0 Z M300,-800 L100,-800 L100,-1000 L300,-1000 L300,-800 Z",
             DefaultTtfFont.getGlyphByChar(':')!!.path!!.toSvgString()
+        )
+    }
+
+    @Test
+    fun testBounds() {
+        assertEquals(
+            "Rectangle(x=-3, y=-12, width=342, height=56)",
+            DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()
         )
     }
 
