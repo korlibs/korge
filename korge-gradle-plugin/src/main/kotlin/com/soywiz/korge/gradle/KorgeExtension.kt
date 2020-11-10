@@ -224,7 +224,11 @@ class KorgeExtension(val project: Project) {
 		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
-	fun supportBox2d() {
+    fun supportSpine() {
+        dependencyMulti("com.soywiz.korlibs.korge:korge-spine:${BuildVersions.KORGE}", registerPlugin = false)
+    }
+
+    fun supportBox2d() {
 		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
