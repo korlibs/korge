@@ -2,7 +2,7 @@ package com.soywiz.korim.font.ttf
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.TtfFont
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
@@ -19,6 +19,14 @@ class TtfFontTest {
             if (root["kotlin8.png"].exists()) break
         }
         callback()
+    }
+
+    @Test
+    fun testColon() {
+        assertEquals(
+            "M300,0 L100,0 L100,-200 L300,-200 L300,0 Z M300,-800 L100,-800 L100,-1000 L300,-1000 L300,-800 Z",
+            DefaultTtfFont.getGlyphByChar(':')!!.path!!.toSvgString()
+        )
     }
 
     //@Test
