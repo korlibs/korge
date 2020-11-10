@@ -15,19 +15,21 @@ inline fun Container.uiTextButton(
     text: String = "Button",
     skin: UISkin = defaultUISkin,
     textFont: Font = defaultUIFont,
+    textSize: Double = 16.0,
     block: @ViewDslMarker UITextButton.() -> Unit = {}
-): UITextButton = UITextButton(width, height, text, skin, textFont).addTo(this).apply(block)
+): UITextButton = UITextButton(width, height, text, skin, textFont, textSize).addTo(this).apply(block)
 
 open class UITextButton(
-	width: Double = 128.0,
-	height: Double = 64.0,
-	text: String = "Button",
-	skin: UISkin = DefaultUISkin,
-	textFont: Font = DefaultUIFont
+    width: Double = 128.0,
+    height: Double = 64.0,
+    text: String = "Button",
+    skin: UISkin = DefaultUISkin,
+    textFont: Font = DefaultUIFont,
+    textSize: Double = 16.0
 ) : UIButton(width, height, skin), ViewLeaf {
 
 	var text by uiObservable(text) { updateText(); updateShadow() }
-	var textSize by uiObservable(16) { updateText() }
+	var textSize by uiObservable(textSize) { updateText() }
 	var textColor by uiObservable(Colors.WHITE) { updateText() }
 	var textAlignment by uiObservable(TextAlignment.MIDDLE_CENTER) { updateText() }
 	var textFont by uiObservable(textFont) { updateText(); updateShadow() }
@@ -37,8 +39,8 @@ open class UITextButton(
 	var shadowColor by uiObservable(Colors.BLACK.withA(64)) { updateShadow() }
 	var shadowVisible by uiObservable(true) { updateShadow() }
 
-	private val textView = text(text)
-	private val textShadow = text(text)
+	private val textView = text(text, textSize)
+	private val textShadow = text(text, textSize)
 
 	init {
 		updateText()
@@ -47,7 +49,7 @@ open class UITextButton(
 
 	private fun updateText() {
         textView.font = textFont
-        textView.textSize = textSize.toDouble()
+        textView.textSize = textSize
         textView.color = textColor
         textView.alignment = textAlignment
 		textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
@@ -56,10 +58,10 @@ open class UITextButton(
 
 	private fun updateShadow() {
 		textShadow.visible = shadowVisible
-        textView.font = textFont
-        textView.textSize = textSize.toDouble()
-        textView.color = shadowColor
-        textView.alignment = textAlignment
+        textShadow.font = textFont
+        textShadow.textSize = textSize
+        textShadow.color = shadowColor
+        textShadow.alignment = textAlignment
 		textShadow.setTextBounds(Rectangle(0.0, 0.0, width, height))
 		textShadow.setText(text)
 		textShadow.position(shadowX, shadowY)
@@ -74,7 +76,7 @@ open class UITextButton(
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection(UITextButton::class.simpleName!!) {
             uiEditableValue(::text)
-            uiEditableValue(::textSize, min = 1, max = 300)
+            uiEditableValue(::textSize, min = 1.0, max = 300.0)
             /*
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
