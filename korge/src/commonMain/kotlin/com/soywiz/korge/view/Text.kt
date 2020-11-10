@@ -111,9 +111,14 @@ open class Text(
         }
     }
 
-    val textBounds = Rectangle(0, 0, 2048, 2048)
+    private val _textBounds = Rectangle(0, 0, 2048, 2048)
     var autoSize = true
     private var boundsVersion = -1
+    val textBounds: Rectangle
+        get() {
+            getLocalBounds(_textBounds)
+            return _textBounds
+        }
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.size, color: RGBA = this.color, align: TextAlignment = this.alignment) {
         this.font = face ?: DefaultTtfFont
@@ -127,8 +132,8 @@ open class Text(
     }
 
     fun setTextBounds(rect: Rectangle) {
-        if (this.textBounds == rect && !autoSize) return
-        this.textBounds.copyFrom(rect)
+        if (this._textBounds == rect && !autoSize) return
+        this._textBounds.copyFrom(rect)
         autoSize = false
         boundsVersion++
         version++
@@ -146,7 +151,7 @@ open class Text(
         if (autoSize) {
             super.getLocalBoundsInternal(out)
         } else {
-            out.copyFrom(textBounds)
+            out.copyFrom(_textBounds)
         }
     }
 
@@ -176,7 +181,7 @@ open class Text(
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
             val metrics = font.getTextBounds(textSize, text, renderer = renderer)
-            textBounds.copyFrom(metrics.bounds)
+            _textBounds.copyFrom(metrics.bounds)
         }
 
         when (font) {
@@ -252,7 +257,7 @@ open class Text(
             container?.position(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
-            container?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y - alignment.vertical.getOffsetY(textBounds.height, baseline))
+            container?.position(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
     }
 
