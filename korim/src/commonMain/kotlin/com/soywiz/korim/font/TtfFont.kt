@@ -444,16 +444,16 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		//println(tables)
 	}
 
-    private fun getCharIndexFromCodePoint(codePoint: Int): Int? = getCharacterMapOrNull(codePoint)
-    private fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.toInt())
+    fun getCharIndexFromCodePoint(codePoint: Int): Int? = getCharacterMapOrNull(codePoint)
+    fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.toInt())
 
-    private fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache) }
-    private fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.toInt(), cache)
+    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache) }
+    fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.toInt(), cache)
 
-    private operator fun get(char: Char) = getGlyphByChar(char)
-    private operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
+    operator fun get(char: Char) = getGlyphByChar(char)
+    operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
 
-    private fun getGlyphByIndex(index: Int, cache: Boolean = true): Glyph? {
+    fun getGlyphByIndex(index: Int, cache: Boolean = true): Glyph? {
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
@@ -472,7 +472,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         return glyph
     }
 
-    private fun getAllGlyphs(cache: Boolean = false) = (0 until numGlyphs).mapNotNull { getGlyphByIndex(it, cache) }
+    fun getAllGlyphs(cache: Boolean = false) = (0 until numGlyphs).mapNotNull { getGlyphByIndex(it, cache) }
 
     private val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
 
@@ -484,7 +484,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		}
 	}
 
-    private data class GlyphReference(
+    data class GlyphReference(
         val glyph: Glyph,
         val x: Int, val y: Int,
         val scaleX: Float,
@@ -493,7 +493,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         val scaleY: Float
 	)
 
-    private abstract inner class Glyph(
+    abstract inner class Glyph(
         val index: Int,
         val xMin: Int, val yMin: Int,
         val xMax: Int, val yMax: Int,
@@ -501,7 +501,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     ) {
         abstract val path: GraphicsPath
 
-        internal val metrics1px = run {
+        val metrics1px = run {
             val size = unitsPerEm.toDouble()
             val scale = getTextScale(size)
             GlyphMetrics(size, true, -1, Rectangle.fromBounds(
@@ -511,7 +511,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         }
     }
 
-    private inner class CompositeGlyph(
+    inner class CompositeGlyph(
         index: Int,
         xMin: Int, yMin: Int,
         xMax: Int, yMax: Int,
@@ -543,7 +543,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 	}
 
 
-    private inner class SimpleGlyph(
+    inner class SimpleGlyph(
         index: Int,
 		xMin: Int, yMin: Int,
 		xMax: Int, yMax: Int,
