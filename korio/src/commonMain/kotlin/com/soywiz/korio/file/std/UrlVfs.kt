@@ -8,17 +8,17 @@ import com.soywiz.korio.net.http.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 
-fun UrlVfs(url: String, client: HttpClient = createHttpClient()): VfsFile = UrlVfs(URL(url), client)
+fun UrlVfs(url: String, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile = UrlVfs(URL(url), client, failFromStatus)
 
-fun UrlVfs(url: URL, client: HttpClient = createHttpClient()): VfsFile =
-	UrlVfs(url.copy(path = "", query = null).fullUrl, Unit, client)[url.path]
+fun UrlVfs(url: URL, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
+	UrlVfs(url.copy(path = "", query = null).fullUrl, Unit, client, failFromStatus)[url.path]
 
-fun UrlVfsJailed(url: String, client: HttpClient = createHttpClient()): VfsFile = UrlVfsJailed(URL(url), client)
+fun UrlVfsJailed(url: String, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile = UrlVfsJailed(URL(url), client, failFromStatus)
 
-fun UrlVfsJailed(url: URL, client: HttpClient = createHttpClient()): VfsFile =
-	UrlVfs(url.fullUrl, Unit, client)[url.path]
+fun UrlVfsJailed(url: URL, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
+	UrlVfs(url.fullUrl, Unit, client, failFromStatus)[url.path]
 
-class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHttpClient()) : Vfs() {
+class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHttpClient(), val failFromStatus: Boolean = true) : Vfs() {
 	override val absolutePath: String = url
 
 	fun getFullUrl(path: String): String {
@@ -54,11 +54,7 @@ class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHt
 			return object : AsyncStreamBase() {
 				override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
 					if (len == 0) return 0
-					val res = client.request(
-						Http.Method.GET,
-						fullUrl,
-						Http.Headers(linkedMapOf("range" to "bytes=$position-${position + len - 1}"))
-					)
+					val res = _readRangeBase(fullUrl, position until (position + len))
 					val s = res.content
 					var coffset = offset
 					var pending = len
@@ -82,15 +78,23 @@ class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHt
 		}
 	}
 
-	override suspend fun openInputStream(path: String): AsyncInputStream {
-		return client.request(Http.Method.GET, getFullUrl(path)).content
-	}
+	override suspend fun openInputStream(path: String): AsyncInputStream =
+        _readRangeBase(getFullUrl(path), LONG_ZERO_TO_MAX_RANGE).content
 
-	override suspend fun readRange(path: String, range: LongRange): ByteArray = client.requestAsBytes(
-		Http.Method.GET,
-		getFullUrl(path),
-		Http.Headers(if (range == LONG_ZERO_TO_MAX_RANGE) LinkedHashMap() else linkedHashMapOf("range" to "bytes=${range.start}-${range.endInclusive}"))
-	).content
+    private suspend fun _readRangeBase(fullUrl: String, range: LongRange): HttpClient.Response {
+        return client.request(
+            Http.Method.GET,
+            fullUrl,
+            Http.Headers(if (range == LONG_ZERO_TO_MAX_RANGE) LinkedHashMap() else linkedHashMapOf("range" to "bytes=${range.start}-${range.endInclusive}"))
+        ).also {
+            if (failFromStatus) {
+                if (it.status == 404) throw FileNotFoundException("$fullUrl not found")
+                it.checkErrors()
+            }
+        }
+    }
+
+	override suspend fun readRange(path: String, range: LongRange): ByteArray = _readRangeBase(getFullUrl(path), range).content.readAll()
 
 	class HttpHeaders(val headers: Http.Headers) : Attribute
 
