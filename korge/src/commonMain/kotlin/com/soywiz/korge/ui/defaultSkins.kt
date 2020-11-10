@@ -12,15 +12,15 @@ import com.soywiz.korma.geom.vector.*
 
 val DefaultTextSkin by lazy {
     TextSkin(
-        normal = TextFormat(RGBA(0, 0, 0), 16, debugBmpFont),
-        over = TextFormat(RGBA(80, 80, 80), 16, debugBmpFont),
-        down = TextFormat(RGBA(120, 120, 120), 16, debugBmpFont),
-        disabled = TextFormat(RGBA(160, 160, 160), 16, debugBmpFont),
+        normal = TextFormat(RGBA(0, 0, 0), 16, DefaultUIFont),
+        over = TextFormat(RGBA(80, 80, 80), 16, DefaultUIFont),
+        down = TextFormat(RGBA(120, 120, 120), 16, DefaultUIFont),
+        disabled = TextFormat(RGBA(160, 160, 160), 16, DefaultUIFont),
         backColor = Colors.WHITE
     )
 }
 
-val DefaultUIFont get() = DefaultUIBitmapFont
+val DefaultUIFont get() = DefaultUIVectorFont
 val DefaultUIBitmapFont get() = debugBmpFont
 val DefaultUIVectorFont get() = DefaultTtfFont
 

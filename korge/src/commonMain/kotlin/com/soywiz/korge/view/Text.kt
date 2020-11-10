@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.ktree.*
@@ -36,7 +37,7 @@ inline fun Container.text(
     text: String, textSize: Double = 64.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
-    noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
+    renderer: TextRenderer<String> = DefaultStringTextRenderer,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
     = Text(text, textSize, color, font, alignment, renderer).addTo(this, block)
@@ -71,6 +72,7 @@ open class Text(
     }
 
     private var cachedVersion = -1
+    private var cachedVersionRenderer = -1
     private var version = 0
 
     var text: String = text; set(value) { if (field != value) { field = value; version++ } }
@@ -113,21 +115,59 @@ open class Text(
     var autoSize = true
     private var boundsVersion = -1
 
+    fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.size, color: RGBA = this.color, align: TextAlignment = this.alignment) {
+        this.font = face ?: DefaultTtfFont
+        this.textSize = size.toDouble()
+        this.color = color
+        this.alignment = align
+    }
+
+    fun setFormat(format: Html.Format) {
+        setFormat(format.computedFace, format.computedSize, format.computedColor, format.computedAlign)
+    }
+
     fun setTextBounds(rect: Rectangle) {
+        if (this.textBounds == rect && !autoSize) return
         this.textBounds.copyFrom(rect)
         autoSize = false
+        boundsVersion++
+        version++
     }
 
     fun unsetTextBounds() {
+        if (autoSize) return
         autoSize = true
+        boundsVersion++
+        version++
+    }
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        _renderInternal(null)
+        if (autoSize) {
+            super.getLocalBoundsInternal(out)
+        } else {
+            out.copyFrom(textBounds)
+        }
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        val fontSource = fontSource
-        if (!fontLoaded && fontSource != null) {
-            fontLoaded = true
-            launchImmediately(ctx.coroutineContext) {
-                forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
+        _renderInternal(ctx)
+        while (imagesToRemove.isNotEmpty()) {
+            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
+        }
+        super.renderInternal(ctx)
+    }
+
+    private val tempBmpEntry = Text2TextRendererActions.Entry()
+
+    fun _renderInternal(ctx: RenderContext?) {
+        if (ctx != null) {
+            val fontSource = fontSource
+            if (!fontLoaded && fontSource != null) {
+                fontLoaded = true
+                launchImmediately(ctx.coroutineContext) {
+                    forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
+                }
             }
         }
         container.colorMul = color
@@ -139,42 +179,50 @@ open class Text(
             textBounds.copyFrom(metrics.bounds)
         }
 
-        // @TODO: Use textBounds when autoSize = false to limit the bounds of the bitmap and the glyph rendering
-
         when (font) {
             null -> Unit
             is BitmapFont -> {
-                staticImage = null
-                bitmapFontActions.x = 0.0
-                bitmapFontActions.y = 0.0
+                val rversion = renderer.version
+                if (cachedVersion != version || cachedVersionRenderer != rversion) {
+                    cachedVersionRenderer = rversion
+                    cachedVersion = version
 
-                bitmapFontActions.mreset()
-                bitmapFontActions.verticalAlign = verticalAlign
-                bitmapFontActions.horizontalAlign = horizontalAlign
-                renderer(bitmapFontActions, text, textSize, font)
-                while (container.numChildren < bitmapFontActions.arrayTex.size) {
-                    container.image(Bitmaps.transparent)
-                }
-                while (container.numChildren > bitmapFontActions.arrayTex.size) {
-                    container[container.numChildren - 1].removeFromParent()
-                }
-                //println(font.glyphs['H'.toInt()])
-                //println(font.glyphs['a'.toInt()])
-                //println(font.glyphs['g'.toInt()])
+                    staticImage = null
+                    bitmapFontActions.x = 0.0
+                    bitmapFontActions.y = 0.0
 
-                val textWidth = bitmapFontActions.x
+                    bitmapFontActions.mreset()
+                    bitmapFontActions.verticalAlign = verticalAlign
+                    bitmapFontActions.horizontalAlign = horizontalAlign
+                    renderer.invoke(bitmapFontActions, text, textSize, font)
+                    while (container.numChildren < bitmapFontActions.size) {
+                        container.image(Bitmaps.transparent)
+                    }
+                    while (container.numChildren > bitmapFontActions.size) {
+                        container[container.numChildren - 1].removeFromParent()
+                    }
+                    //println(font.glyphs['H'.toInt()])
+                    //println(font.glyphs['a'.toInt()])
+                    //println(font.glyphs['g'.toInt()])
 
-                val dx = -textWidth * horizontalAlign.ratio
+                    val textWidth = bitmapFontActions.x
 
-                for (n in 0 until bitmapFontActions.arrayTex.size) {
-                    val it = (container[n] as Image)
-                    it.smoothing = smoothing
-                    it.bitmap = bitmapFontActions.arrayTex[n]
-                    it.x = bitmapFontActions.arrayX[n] + dx
-                    it.y = bitmapFontActions.arrayY[n]
-                    it.scaleX = bitmapFontActions.arraySX[n]
-                    it.scaleY = bitmapFontActions.arraySY[n]
-                    it.rotation = bitmapFontActions.arrayRot[n].radians
+                    val dx = -textWidth * horizontalAlign.ratio
+
+                    for (n in 0 until bitmapFontActions.size) {
+                        val it = (container[n] as Image)
+                        it.anchor(0, 0)
+                        it.smoothing = smoothing
+                        val entry = bitmapFontActions.read(n, tempBmpEntry)
+                        it.bitmap = entry.tex
+                        it.x = entry.x + dx
+                        it.y = entry.y
+                        it.scaleX = entry.sx
+                        it.scaleY = entry.sy
+                        it.rotation = entry.rot
+                    }
+
+                    setContainerPosition(0.0, 0.0, font.base)
                 }
             }
             else -> {
@@ -189,18 +237,28 @@ open class Text(
                         container.removeChildren()
                         staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        ctx.agBitmapTextureManager.removeBitmap(staticImage!!.bitmap.bmp)
+                        imagesToRemove.add(staticImage!!.bitmap.bmp)
                         staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
-                    staticImage?.position(x, y)
+                    setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
                 }
                 staticImage?.smoothing = smoothing
             }
         }
-        super.renderInternal(ctx)
     }
 
-    private var staticImage: Image? = null
+    private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
+        if (autoSize) {
+            container?.position(x, y)
+        } else {
+            //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
+            container?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y - alignment.vertical.getOffsetY(textBounds.height, baseline))
+        }
+    }
+
+    private val imagesToRemove = arrayListOf<Bitmap>()
+
+    var staticImage: Image? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection("Text") {
@@ -214,49 +272,4 @@ open class Text(
         }
         super.buildDebugComponent(views, container)
     }
-}
-
-class Text2TextRendererActions : TextRendererActions() {
-    var verticalAlign: VerticalAlign = VerticalAlign.TOP
-    var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT
-    internal val arrayTex = arrayListOf<BmpSlice>()
-    internal val arrayX = doubleArrayListOf()
-    internal val arrayY = doubleArrayListOf()
-    internal val arraySX = doubleArrayListOf()
-    internal val arraySY = doubleArrayListOf()
-    internal val arrayRot = doubleArrayListOf()
-    private val tr = Matrix.Transform()
-
-    fun mreset() {
-        arrayTex.clear()
-        arrayX.clear()
-        arrayY.clear()
-        arraySX.clear()
-        arraySY.clear()
-        arrayRot.clear()
-    }
-
-    override fun put(codePoint: Int): GlyphMetrics {
-        val bf = font as BitmapFont
-        val m = getGlyphMetrics(codePoint)
-        val g = bf[codePoint]
-        val x = -g.xoffset.toDouble()
-        val y = g.yoffset.toDouble() - when (verticalAlign) {
-            VerticalAlign.BASELINE -> bf.base
-            else -> bf.lineHeight * verticalAlign.ratio
-        }
-
-        val fontScale = fontSize / bf.fontSize
-
-        tr.setMatrix(transform)
-        //println("x: ${this.x}, y: ${this.y}")
-        arrayTex += g.texture
-        arrayX += this.x + transform.fastTransformX(x, y) * fontScale
-        arrayY += this.y + transform.fastTransformY(x, y) * fontScale
-        arraySX += tr.scaleX * fontScale
-        arraySY += tr.scaleY * fontScale
-        arrayRot += tr.rotation.radians
-        return m
-    }
-
 }

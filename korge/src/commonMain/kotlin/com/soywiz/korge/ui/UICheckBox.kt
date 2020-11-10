@@ -1,7 +1,6 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
@@ -49,7 +48,7 @@ open class UICheckBox(
         checkIcon.calculateHeight(height),
         0.0, 0.0, 0.0, 0.0
     ).position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)).also { it.visible = false }
-    private val textView = textOld(text)
+    private val textView = text(text)
 
     private var over by uiObservable(false) { updateState() }
     private var pressing by uiObservable(false) { updateState() }
@@ -96,7 +95,7 @@ open class UICheckBox(
     }
 
     private fun updateText() {
-        textView.format = Html.Format(
+        textView.setFormat(
             face = textFont,
             size = textSize,
             color = textColor,
