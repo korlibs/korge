@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.ktree.*
@@ -114,18 +115,39 @@ open class Text(
     var autoSize = true
     private var boundsVersion = -1
 
+    fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.size, color: RGBA = this.color, align: TextAlignment = this.alignment) {
+        this.font = face ?: DefaultTtfFont
+        this.textSize = size.toDouble()
+        this.color = color
+        this.alignment = align
+    }
+
+    fun setFormat(format: Html.Format) {
+        setFormat(format.computedFace, format.computedSize, format.computedColor, format.computedAlign)
+    }
+
     fun setTextBounds(rect: Rectangle) {
+        if (this.textBounds == rect && !autoSize) return
         this.textBounds.copyFrom(rect)
         autoSize = false
+        boundsVersion++
+        version++
     }
 
     fun unsetTextBounds() {
+        if (autoSize) return
         autoSize = true
+        boundsVersion++
+        version++
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        super.getLocalBoundsInternal(out)
+        if (autoSize) {
+            super.getLocalBoundsInternal(out)
+        } else {
+            out.copyFrom(textBounds)
+        }
     }
 
     override fun renderInternal(ctx: RenderContext) {
@@ -156,8 +178,6 @@ open class Text(
             val metrics = font.getTextBounds(textSize, text, renderer = renderer)
             textBounds.copyFrom(metrics.bounds)
         }
-
-        // @TODO: Use textBounds when autoSize = false to limit the bounds of the bitmap and the glyph rendering
 
         when (font) {
             null -> Unit
@@ -201,6 +221,8 @@ open class Text(
                         it.scaleY = entry.sy
                         it.rotation = entry.rot
                     }
+
+                    setContainerPosition(0.0, 0.0, font.base)
                 }
             }
             else -> {
@@ -218,10 +240,19 @@ open class Text(
                         imagesToRemove.add(staticImage!!.bitmap.bmp)
                         staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
-                    staticImage?.position(x, y)
+                    setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
                 }
                 staticImage?.smoothing = smoothing
             }
+        }
+    }
+
+    private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
+        if (autoSize) {
+            container?.position(x, y)
+        } else {
+            //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
+            container?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y - alignment.vertical.getOffsetY(textBounds.height, baseline))
         }
     }
 

@@ -31,7 +31,7 @@ class UIText(
     protected var bpressing by uiObservable(false) { updateState() }
 
     private val background = solidRect(width, height, skin.backColor)
-    private val textView = textOld(text)
+    private val textView = text(text)
 
     init {
         mouse {
@@ -85,7 +85,7 @@ class UIText(
     }
 
     private fun updateText() {
-        textView.format = Html.Format(face = textFont, size = textSize, color = textColor, align = textAlignment)
+        textView.setFormat(face = textFont, size = textSize, color = textColor, align = textAlignment)
         textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
         textView.setText(text)
     }
