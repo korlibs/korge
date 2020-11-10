@@ -119,11 +119,11 @@ fun <T> Font.drawText(
             return glyphMetrics
         }
     }
-    renderer(actions, text, size, this)
+    renderer.invoke(actions, text, size, this)
 }
 fun <T> Font.getTextBounds(size: Double, text: T, out: TextMetrics = TextMetrics(), renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>): TextMetrics {
     val actions = BoundBuilderTextRendererActions()
-    renderer(actions, text, size, this)
+    renderer.invoke(actions, text, size, this)
     actions.bb.getBounds(out.bounds)
     return out
 }

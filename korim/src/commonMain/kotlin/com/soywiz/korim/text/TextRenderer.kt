@@ -49,28 +49,43 @@ abstract class TextRendererActions {
     }
 }
 
-typealias TextRenderer<T> = TextRendererActions.(text: T, size: Double, defaultFont: Font) -> Unit
+interface TextRenderer<T> {
+    val version: Int get() = 0
+    fun TextRendererActions.run(text: T, size: Double, defaultFont: Font): Unit
+    fun invoke(actions: TextRendererActions, text: T, size: Double, defaultFont: Font) {
+        actions.apply { run(text, size, defaultFont) }
+    }
+}
+
 
 inline fun <reified T> DefaultTextRenderer() = when (T::class) {
     String::class -> DefaultStringTextRenderer
     else -> error("No default DefaultTextRenderer for class ${T::class} only for String")
 }
 
-fun CreateStringTextRenderer(handler: TextRendererActions.(text: String, n: Int, c: Int, c1: Int, g: GlyphMetrics, advance: Double) -> Unit): TextRenderer<String> = { text, size, defaultFont ->
-    reset()
-    setFont(defaultFont, size)
-    for (n in text.indices) {
-        val c = text[n].toInt()
-        val c1 = text.getOrElse(n + 1) { '\u0000' }.toInt()
-        if (c == '\n'.toInt()) {
-            newLine(lineHeight)
-        } else {
-            val g = getGlyphMetrics(c)
-            transform.identity()
-            handler(text, n, c, c1, g, (g.xadvance + getKerning(c, c1)))
+fun CreateStringTextRenderer(
+    getVersion: () -> Int = { 0 },
+    handler: TextRendererActions.(text: String, n: Int, c: Int, c1: Int, g: GlyphMetrics, advance: Double) -> Unit
+): TextRenderer<String> = object : TextRenderer<String> {
+    override val version: Int get() = getVersion()
+
+    override fun TextRendererActions.run(text: String, size: Double, defaultFont: Font) {
+        reset()
+        setFont(defaultFont, size)
+        for (n in text.indices) {
+            val c = text[n].toInt()
+            val c1 = text.getOrElse(n + 1) { '\u0000' }.toInt()
+            if (c == '\n'.toInt()) {
+                newLine(lineHeight)
+            } else {
+                val g = getGlyphMetrics(c)
+                transform.identity()
+                handler(text, n, c, c1, g, (g.xadvance + getKerning(c, c1)))
+            }
         }
     }
 }
+
 val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer { text, n, c, c1, g, advance ->
     put(c)
     advance(advance)

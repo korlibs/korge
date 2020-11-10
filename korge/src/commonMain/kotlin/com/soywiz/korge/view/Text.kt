@@ -36,7 +36,7 @@ inline fun Container.text(
     text: String, textSize: Double = 64.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
-    noinline renderer: TextRenderer<String> = DefaultStringTextRenderer,
+    renderer: TextRenderer<String> = DefaultStringTextRenderer,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
     = Text(text, textSize, color, font, alignment, renderer).addTo(this, block)
@@ -71,6 +71,7 @@ open class Text(
     }
 
     private var cachedVersion = -1
+    private var cachedVersionRenderer = -1
     private var version = 0
 
     var text: String = text; set(value) { if (field != value) { field = value; version++ } }
@@ -159,37 +160,43 @@ open class Text(
         when (font) {
             null -> Unit
             is BitmapFont -> {
-                staticImage = null
-                bitmapFontActions.x = 0.0
-                bitmapFontActions.y = 0.0
+                val rversion = renderer.version
+                if (cachedVersion != version || cachedVersionRenderer != rversion) {
+                    cachedVersionRenderer = rversion
+                    cachedVersion = version
 
-                bitmapFontActions.mreset()
-                bitmapFontActions.verticalAlign = verticalAlign
-                bitmapFontActions.horizontalAlign = horizontalAlign
-                renderer(bitmapFontActions, text, textSize, font)
-                while (container.numChildren < bitmapFontActions.arrayTex.size) {
-                    container.image(Bitmaps.transparent)
-                }
-                while (container.numChildren > bitmapFontActions.arrayTex.size) {
-                    container[container.numChildren - 1].removeFromParent()
-                }
-                //println(font.glyphs['H'.toInt()])
-                //println(font.glyphs['a'.toInt()])
-                //println(font.glyphs['g'.toInt()])
+                    staticImage = null
+                    bitmapFontActions.x = 0.0
+                    bitmapFontActions.y = 0.0
 
-                val textWidth = bitmapFontActions.x
+                    bitmapFontActions.mreset()
+                    bitmapFontActions.verticalAlign = verticalAlign
+                    bitmapFontActions.horizontalAlign = horizontalAlign
+                    renderer.invoke(bitmapFontActions, text, textSize, font)
+                    while (container.numChildren < bitmapFontActions.arrayTex.size) {
+                        container.image(Bitmaps.transparent)
+                    }
+                    while (container.numChildren > bitmapFontActions.arrayTex.size) {
+                        container[container.numChildren - 1].removeFromParent()
+                    }
+                    //println(font.glyphs['H'.toInt()])
+                    //println(font.glyphs['a'.toInt()])
+                    //println(font.glyphs['g'.toInt()])
 
-                val dx = -textWidth * horizontalAlign.ratio
+                    val textWidth = bitmapFontActions.x
 
-                for (n in 0 until bitmapFontActions.arrayTex.size) {
-                    val it = (container[n] as Image)
-                    it.smoothing = smoothing
-                    it.bitmap = bitmapFontActions.arrayTex[n]
-                    it.x = bitmapFontActions.arrayX[n] + dx
-                    it.y = bitmapFontActions.arrayY[n]
-                    it.scaleX = bitmapFontActions.arraySX[n]
-                    it.scaleY = bitmapFontActions.arraySY[n]
-                    it.rotation = bitmapFontActions.arrayRot[n].radians
+                    val dx = -textWidth * horizontalAlign.ratio
+
+                    for (n in 0 until bitmapFontActions.arrayTex.size) {
+                        val it = (container[n] as Image)
+                        it.smoothing = smoothing
+                        it.bitmap = bitmapFontActions.arrayTex[n]
+                        it.x = bitmapFontActions.arrayX[n] + dx
+                        it.y = bitmapFontActions.arrayY[n]
+                        it.scaleX = bitmapFontActions.arraySX[n]
+                        it.scaleY = bitmapFontActions.arraySY[n]
+                        it.rotation = bitmapFontActions.arrayRot[n].radians
+                    }
                 }
             }
             else -> {
