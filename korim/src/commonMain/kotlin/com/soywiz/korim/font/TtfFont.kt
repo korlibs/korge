@@ -534,7 +534,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
             GraphicsPath(IntArrayList(commandsSize), DoubleArrayList(dataSize)).also { out ->
                 refs.fastForEach { ref ->
                     val m = Matrix()
-                    m.translate(ref.x, ref.y)
+                    m.translate(ref.x, -ref.y)
                     m.scale(ref.scaleX, ref.scaleY)
                     out.write(ref.glyph.path, m)
                 }
