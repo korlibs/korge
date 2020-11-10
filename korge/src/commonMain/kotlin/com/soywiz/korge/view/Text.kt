@@ -136,6 +136,8 @@ open class Text(
         super.renderInternal(ctx)
     }
 
+    private val tempBmpEntry = Text2TextRendererActions.Entry()
+
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
             val fontSource = fontSource
@@ -173,10 +175,10 @@ open class Text(
                     bitmapFontActions.verticalAlign = verticalAlign
                     bitmapFontActions.horizontalAlign = horizontalAlign
                     renderer.invoke(bitmapFontActions, text, textSize, font)
-                    while (container.numChildren < bitmapFontActions.arrayTex.size) {
+                    while (container.numChildren < bitmapFontActions.size) {
                         container.image(Bitmaps.transparent)
                     }
-                    while (container.numChildren > bitmapFontActions.arrayTex.size) {
+                    while (container.numChildren > bitmapFontActions.size) {
                         container[container.numChildren - 1].removeFromParent()
                     }
                     //println(font.glyphs['H'.toInt()])
@@ -187,15 +189,17 @@ open class Text(
 
                     val dx = -textWidth * horizontalAlign.ratio
 
-                    for (n in 0 until bitmapFontActions.arrayTex.size) {
+                    for (n in 0 until bitmapFontActions.size) {
                         val it = (container[n] as Image)
+                        it.anchor(0, 0)
                         it.smoothing = smoothing
-                        it.bitmap = bitmapFontActions.arrayTex[n]
-                        it.x = bitmapFontActions.arrayX[n] + dx
-                        it.y = bitmapFontActions.arrayY[n]
-                        it.scaleX = bitmapFontActions.arraySX[n]
-                        it.scaleY = bitmapFontActions.arraySY[n]
-                        it.rotation = bitmapFontActions.arrayRot[n].radians
+                        val entry = bitmapFontActions.read(n, tempBmpEntry)
+                        it.bitmap = entry.tex
+                        it.x = entry.x + dx
+                        it.y = entry.y
+                        it.scaleX = entry.sx
+                        it.scaleY = entry.sy
+                        it.rotation = entry.rot
                     }
                 }
             }

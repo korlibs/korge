@@ -6,6 +6,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 abstract class TextRendererActions {
@@ -84,13 +85,44 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
 class Text2TextRendererActions : TextRendererActions() {
     var verticalAlign: VerticalAlign = VerticalAlign.TOP
     var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT
-    val arrayTex = arrayListOf<BmpSlice>()
-    val arrayX = doubleArrayListOf()
-    val arrayY = doubleArrayListOf()
-    val arraySX = doubleArrayListOf()
-    val arraySY = doubleArrayListOf()
-    val arrayRot = doubleArrayListOf()
-    val tr = Matrix.Transform()
+    private val arrayTex = arrayListOf<BmpSlice>()
+    private val arrayX = doubleArrayListOf()
+    private val arrayY = doubleArrayListOf()
+    private val arraySX = doubleArrayListOf()
+    private val arraySY = doubleArrayListOf()
+    private val arrayRot = doubleArrayListOf()
+    private val tr = Matrix.Transform()
+    val size get() = arrayX.size
+
+    data class Entry(
+        var tex: BmpSlice = Bitmaps.transparent,
+        var x: Double = 0.0,
+        var y: Double = 0.0,
+        var sx: Double = 1.0,
+        var sy: Double = 1.0,
+        var rot: Angle = 0.radians
+    ) {
+        override fun toString(): String = buildString {
+            append("Entry(")
+            append("'${tex.name}', ${x.toInt()}, ${y.toInt()}, ${tex.width}, ${tex.height}")
+            if (sx != 1.0) append(", ${sx.niceStr}")
+            if (sy != 1.0) append(", ${sy.niceStr}")
+            if (rot != 0.radians) append(", ${rot.degrees.niceStr}")
+            append(")")
+        }
+    }
+
+    fun readAll(): List<Entry> = (0 until size).map { read(it) }
+
+    fun read(n: Int, out: Entry = Entry()): Entry {
+        out.tex = arrayTex[n]
+        out.x = arrayX[n]
+        out.y = arrayY[n]
+        out.sx = arraySX[n]
+        out.sy = arraySY[n]
+        out.rot = arrayRot[n].radians
+        return out
+    }
 
     fun mreset() {
         arrayTex.clear()
@@ -105,7 +137,7 @@ class Text2TextRendererActions : TextRendererActions() {
         val bf = font as BitmapFont
         val m = getGlyphMetrics(codePoint)
         val g = bf[codePoint]
-        val x = -g.xoffset.toDouble()
+        val x = g.xoffset.toDouble()
         val y = g.yoffset.toDouble() - when (verticalAlign) {
             VerticalAlign.BASELINE -> bf.base
             else -> bf.lineHeight * verticalAlign.ratio
@@ -115,12 +147,12 @@ class Text2TextRendererActions : TextRendererActions() {
 
         tr.setMatrix(transform)
         //println("x: ${this.x}, y: ${this.y}")
-        arrayTex += g.texture
-        arrayX += this.x + transform.transformX(x, y) * fontScale
-        arrayY += this.y + transform.transformY(x, y) * fontScale
-        arraySX += tr.scaleX * fontScale
-        arraySY += tr.scaleY * fontScale
-        arrayRot += tr.rotation.radians
+        arrayTex.add(g.texture)
+        arrayX.add(this.x + transform.transformX(x, y) * fontScale)
+        arrayY.add(this.y + transform.transformY(x, y) * fontScale)
+        arraySX.add(tr.scaleX * fontScale)
+        arraySY.add(tr.scaleY * fontScale)
+        arrayRot.add(tr.rotation.radians)
         return m
     }
 }
