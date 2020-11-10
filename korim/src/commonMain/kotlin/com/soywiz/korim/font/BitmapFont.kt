@@ -236,13 +236,14 @@ private suspend fun readBitmapFontTxt(
 				val page = map["page"]?.toIntOrNull() ?: 0
 				val texture = textures[page] ?: textures.values.first()
 				glyphs += KDynamic {
+                    val id = map["id"].int
                     BitmapFont.Glyph(
                         fontSize = fontSize,
-                        id = map["id"].int,
+                        id = id,
                         xoffset = map["xoffset"].int,
                         yoffset = map["yoffset"].int,
                         xadvance = map["xadvance"].int,
-                        texture = texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int)
+                        texture = texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}")
                     )
 				}
 			}
