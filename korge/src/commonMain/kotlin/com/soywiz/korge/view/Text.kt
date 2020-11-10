@@ -122,12 +122,27 @@ open class Text(
         autoSize = true
     }
 
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        _renderInternal(null)
+        super.getLocalBoundsInternal(out)
+    }
+
     override fun renderInternal(ctx: RenderContext) {
-        val fontSource = fontSource
-        if (!fontLoaded && fontSource != null) {
-            fontLoaded = true
-            launchImmediately(ctx.coroutineContext) {
-                forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
+        _renderInternal(ctx)
+        while (imagesToRemove.isNotEmpty()) {
+            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
+        }
+        super.renderInternal(ctx)
+    }
+
+    fun _renderInternal(ctx: RenderContext?) {
+        if (ctx != null) {
+            val fontSource = fontSource
+            if (!fontLoaded && fontSource != null) {
+                fontLoaded = true
+                launchImmediately(ctx.coroutineContext) {
+                    forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
+                }
             }
         }
         container.colorMul = color
@@ -189,7 +204,7 @@ open class Text(
                         container.removeChildren()
                         staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        ctx.agBitmapTextureManager.removeBitmap(staticImage!!.bitmap.bmp)
+                        imagesToRemove.add(staticImage!!.bitmap.bmp)
                         staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
                     staticImage?.position(x, y)
@@ -197,10 +212,11 @@ open class Text(
                 staticImage?.smoothing = smoothing
             }
         }
-        super.renderInternal(ctx)
     }
 
-    private var staticImage: Image? = null
+    private val imagesToRemove = arrayListOf<Bitmap>()
+
+    var staticImage: Image? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection("Text") {
