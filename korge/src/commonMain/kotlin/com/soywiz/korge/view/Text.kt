@@ -242,7 +242,7 @@ open class Text(
 
                 if (cachedVersion != version) {
                     cachedVersion = version
-                    textToBitmapResult = font.renderTextToBitmap(textSize * autoscaling.renderedAtScaleXY, text, paint = Colors.WHITE, fill = true, renderer = renderer)
+                    textToBitmapResult = font.renderTextToBitmap(textSize * autoscaling.renderedAtScaleXY, text, paint = Colors.WHITE, fill = true, renderer = renderer, nativeRendering = useNativeRendering)
 
                     val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                     val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
@@ -261,6 +261,8 @@ open class Text(
             }
         }
     }
+
+    var useNativeRendering: Boolean = true
 
     private val autoscaling = InternalViewAutoscaling()
 
