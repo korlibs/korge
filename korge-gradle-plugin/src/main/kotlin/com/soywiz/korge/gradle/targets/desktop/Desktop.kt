@@ -188,8 +188,9 @@ private fun Project.addNativeRun() {
 							project.compileWindowsRC(appRcFile, appRcObjFile)
 
 							val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
-							val subsystem = "console"
-							//val subsystem = "windows"
+
+                            val isConsole = korge.win32EnableConsole ?: (kind == DEBUG)
+							val subsystem = if (isConsole) "console" else "windows"
 							linkTask.binary.linkerOpts(
 								appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem"
 							)

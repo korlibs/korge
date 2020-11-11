@@ -110,6 +110,8 @@ class KorgeExtension(val project: Project) {
 
 	var supressWarnings: Boolean = false
 
+    var win32EnableConsole: Boolean? = null
+
 	var authorName = "unknown"
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"

@@ -8,6 +8,7 @@ object WindowsRC {
     fun generate(info: KorgeExtension): String = kotlin.text.buildString {
         appendLine("1000 ICON \"icon.ico\"")
         appendLine("")
+        // https://docs.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource
         appendLine("1 VERSIONINFO")
         appendLine("FILEVERSION     1,0,0,0")
         appendLine("PRODUCTVERSION  1,0,0,0")
