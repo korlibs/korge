@@ -3,12 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
@@ -17,8 +14,8 @@ inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMa
 inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback).apply { redrawIfRequired() }
 
 open class Graphics @JvmOverloads constructor(
-    var autoScaling: Boolean = false
-) : BaseImage(Bitmaps.transparent), VectorBuilder {
+    autoScaling: Boolean = false
+) : BaseGraphics(autoScaling), VectorBuilder {
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
@@ -27,8 +24,6 @@ open class Graphics @JvmOverloads constructor(
 	private var stroke: Paint? = null
 	@PublishedApi
 	internal var currentPath = graphicsPathPool.alloc()
-	@PublishedApi
-	internal var dirty = true
 
     private var hitShapeVersion = -1
     private var hitShapeAnchorVersion = -1
@@ -40,6 +35,13 @@ open class Graphics @JvmOverloads constructor(
     override var hitShape: VectorPath?
         set(value) = run { customHitShapes = value?.let { listOf(it) } }
         get() = hitShapes?.firstOrNull()
+
+    @PublishedApi
+    internal inline fun dirty(callback: () -> Unit): Graphics {
+        this.dirty = true
+        callback()
+        return this
+    }
 
     override var hitShapes: List<VectorPath>?
         set(value) {
@@ -64,13 +66,6 @@ open class Graphics @JvmOverloads constructor(
             //println("AAAAAAAAAAAAAAAA")
             return tempVectorPaths
         }
-
-    @PublishedApi
-    internal inline fun dirty(callback: () -> Unit): Graphics {
-		this.dirty = true
-		callback()
-        return this
-	}
 
     /**
      * Ensure that after this function the [bitmap] property is up-to-date with all the drawings inside [block].
@@ -215,106 +210,10 @@ open class Graphics @JvmOverloads constructor(
         shapeVersion++
 	}
 
-	internal val _sLeft get() = sLeft
-	internal val _sTop get() = sTop
+    override fun drawShape(ctx: Context2d) {
+        this@Graphics.compoundShape.draw(ctx)    }
 
-    override val sLeft: Double get() {
-        var out = bounds.x - anchorDispX
-        if (bwidth < 0) out -= bwidth
-        return out
-    }
-    override val sTop: Double get() {
-        var out = bounds.y - anchorDispY
-        if (bheight < 0) out -= bheight
-        return out
-    }
-
-	private val bb = BoundsBuilder()
-	private val bounds = Rectangle()
-
-    private var renderedAtScaleX = 1.0
-    private var renderedAtScaleY = 1.0
-    private val matrixTransform = Matrix.Transform()
-
-    override val bwidth: Double get() = bitmap.width.toDouble() / renderedAtScaleX
-    override val bheight: Double get() = bitmap.height.toDouble() / renderedAtScaleY
-
-    var useNativeRendering = true
-
-    private fun createImage(width: Int, height: Int): Bitmap {
-        return if (useNativeRendering) NativeImage(width, height) else Bitmap32(width, height, premultiplied = true)
-    }
-
-    override fun renderInternal(ctx: RenderContext) {
-        bitmapsToRemove.fastForEach {
-            ctx.agBitmapTextureManager.removeBitmap(it)
-        }
-        bitmapsToRemove.clear()
-
-        redrawIfRequired()
-		super.renderInternal(ctx)
-	}
-
-    @PublishedApi
-    internal val bitmapsToRemove = arrayListOf<Bitmap>()
-
-    @PublishedApi
-    internal fun redrawIfRequired() {
-        if (autoScaling) {
-            matrixTransform.setMatrix(this.globalMatrix)
-            //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
-            //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
-
-            val sx = kotlin.math.abs(matrixTransform.scaleX)
-            val sy = kotlin.math.abs(matrixTransform.scaleY)
-
-            val diffX = kotlin.math.abs((sx / renderedAtScaleX) - 1.0)
-            val diffY = kotlin.math.abs((sy / renderedAtScaleY) - 1.0)
-
-            if (diffX >= 0.1 || diffY >= 0.1) {
-                renderedAtScaleX = sx
-                renderedAtScaleY = sy
-                //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
-                dirty = true
-            }
-        }
-
-        if (dirty) {
-            dirty = false
-
-            getLocalBoundsInternalNoAnchor(bounds)
-
-            // Removes old image
-            run {
-                bitmapsToRemove.add(this.bitmap.bmp)
-            }
-            // Generates new image
-            run {
-                //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
-
-                val image = createImage(
-                    (bounds.width * renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
-                    (bounds.height * renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
-                )
-                image.context2d {
-                    scale(this@Graphics.renderedAtScaleX, this@Graphics.renderedAtScaleY)
-                    translate(-this@Graphics.bounds.x, -this@Graphics.bounds.y)
-                    this@Graphics.compoundShape.draw(this)
-                }
-                this.bitmap = image.slice()
-            }
-        }
-    }
-
-    fun getLocalBoundsInternalNoAnchor(out: Rectangle) {
-        bb.reset()
+    override fun getShapeBounds(bb: BoundsBuilder) {
         shapes.fastForEach { it.addBounds(bb) }
-        bb.getBounds(out)
-        //println("Graphics.BOUNDS: $out")
-    }
-
-    override fun getLocalBoundsInternal(out: Rectangle) {
-        getLocalBoundsInternalNoAnchor(out)
-        out.displace(-anchorDispX, -anchorDispY)
     }
 }
