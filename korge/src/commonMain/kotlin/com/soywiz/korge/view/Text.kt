@@ -5,6 +5,8 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.view.internal.*
+import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -38,15 +40,17 @@ inline fun Container.text(
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
+    autoScaling: Boolean = true,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer).addTo(this, block)
+    = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
 
 open class Text(
     text: String, textSize: Double = 64.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
-    renderer: TextRenderer<String> = DefaultStringTextRenderer
+    renderer: TextRenderer<String> = DefaultStringTextRenderer,
+    autoScaling: Boolean = true
 ) : Container(), ViewLeaf {
     var smoothing: Boolean = true
 
@@ -96,6 +100,7 @@ open class Text(
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
+    var autoScaling = autoScaling
     var fontSource: String? = null
         set(value) {
             field = value
@@ -231,9 +236,13 @@ open class Text(
                 }
             }
             else -> {
+                if (autoscaling.onRender(autoScaling, this.globalMatrix)) {
+                    version++
+                }
+
                 if (cachedVersion != version) {
                     cachedVersion = version
-                    textToBitmapResult = font.renderTextToBitmap(textSize, text, paint = Colors.WHITE, fill = true, renderer = renderer)
+                    textToBitmapResult = font.renderTextToBitmap(textSize * autoscaling.renderedAtScaleXY, text, paint = Colors.WHITE, fill = true, renderer = renderer)
 
                     val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                     val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
@@ -245,12 +254,15 @@ open class Text(
                         imagesToRemove.add(staticImage!!.bitmap.bmp)
                         staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
+                    staticImage!!.scale(1.0 / autoscaling.renderedAtScaleXY, 1.0 / autoscaling.renderedAtScaleXY)
                     setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
                 }
                 staticImage?.smoothing = smoothing
             }
         }
     }
+
+    private val autoscaling = InternalViewAutoscaling()
 
     private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
         if (autoSize) {

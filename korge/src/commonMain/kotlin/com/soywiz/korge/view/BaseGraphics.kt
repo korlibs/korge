@@ -3,6 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.view.internal.*
+import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
@@ -20,12 +22,10 @@ abstract class BaseGraphics(
     @PublishedApi
     internal val bitmapsToRemove = arrayListOf<Bitmap>()
 
-    private var renderedAtScaleX = 1.0
-    private var renderedAtScaleY = 1.0
-    private val matrixTransform = Matrix.Transform()
+    private var autoscaling = InternalViewAutoscaling()
 
-    override val bwidth: Double get() = bitmap.width.toDouble() / renderedAtScaleX
-    override val bheight: Double get() = bitmap.height.toDouble() / renderedAtScaleY
+    override val bwidth: Double get() = bitmap.width.toDouble() / autoscaling.renderedAtScaleX
+    override val bheight: Double get() = bitmap.height.toDouble() / autoscaling.renderedAtScaleY
 
     @PublishedApi
     internal var dirty = true
@@ -45,23 +45,8 @@ abstract class BaseGraphics(
 
     @PublishedApi
     internal fun redrawIfRequired() {
-        if (autoScaling) {
-            matrixTransform.setMatrix(this.globalMatrix)
-            //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
-            //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
-
-            val sx = kotlin.math.abs(matrixTransform.scaleX)
-            val sy = kotlin.math.abs(matrixTransform.scaleY)
-
-            val diffX = kotlin.math.abs((sx / renderedAtScaleX) - 1.0)
-            val diffY = kotlin.math.abs((sy / renderedAtScaleY) - 1.0)
-
-            if (diffX >= 0.1 || diffY >= 0.1) {
-                renderedAtScaleX = sx
-                renderedAtScaleY = sy
-                //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
-                dirty = true
-            }
+        if (autoscaling.onRender(autoScaling, globalMatrix)) {
+            dirty = true
         }
 
         if (dirty) {
@@ -78,11 +63,11 @@ abstract class BaseGraphics(
                 //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
 
                 val image = createImage(
-                    (bounds.width * renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
-                    (bounds.height * renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
+                    (bounds.width * autoscaling.renderedAtScaleX).toIntCeil().coerceAtLeast(1) + 1,
+                    (bounds.height * autoscaling.renderedAtScaleY).toIntCeil().coerceAtLeast(1) + 1
                 )
                 image.context2d {
-                    scale(this@BaseGraphics.renderedAtScaleX, this@BaseGraphics.renderedAtScaleY)
+                    scale(this@BaseGraphics.autoscaling.renderedAtScaleX, this@BaseGraphics.autoscaling.renderedAtScaleY)
                     translate(-this@BaseGraphics.bounds.x, -this@BaseGraphics.bounds.y)
                     drawShape(this)
                     //this@BaseGraphics.compoundShape.draw(this)
