@@ -344,7 +344,7 @@ abstract class View internal constructor(
      * @NOTE: If you don't have this value computed, you can use [ColorTransform.aR] aB, aG and aA to control the
      * per component values. You should call the [View.invalidate] method after that.
      */
-    var colorAdd: Int
+    var colorAdd: ColorAdd
         get() = _colorTransform.colorAdd;
         set(v) {
             _colorTransform.colorAdd = v
@@ -579,7 +579,7 @@ abstract class View internal constructor(
     val renderColorMul: RGBA get() = renderColorTransform.colorMul
 
     /** The concatenated/global version of the local [colorAdd] */
-    val renderColorAdd: Int get() = renderColorTransform.colorAdd
+    val renderColorAdd: ColorAdd get() = renderColorTransform.colorAdd
 
     /** The concatenated/global version of the local [alpha] */
     val renderAlpha: Double get() = renderColorTransform.mA
@@ -788,7 +788,7 @@ abstract class View internal constructor(
         if (!visible) out += ":visible=$visible"
         if (alpha != 1.0) out += ":alpha=$alpha"
         if (this.colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${this.colorMul.hexString}"
-        if (colorAdd != 0x7f7f7f7f) out += ":colorAdd=${colorAdd.shex}"
+        if (colorAdd != ColorAdd.NEUTRAL) out += ":colorAdd=${colorAdd.shex}"
         return out
     }
 

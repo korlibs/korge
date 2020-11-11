@@ -150,13 +150,13 @@ class BatchBuilder2D constructor(
     }
 
 	// @TODO: copy data from TexturedVertexArray
-	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: Int) {
+	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: ColorAdd) {
 		verticesF32[vertexPos++] = x
 		verticesF32[vertexPos++] = y
 		verticesF32[vertexPos++] = u
 		verticesF32[vertexPos++] = v
 		verticesI32[vertexPos++] = colorMul.value
-		verticesI32[vertexPos++] = colorAdd
+		verticesI32[vertexPos++] = colorAdd.value
 		vertexCount++
 	}
 
@@ -196,7 +196,7 @@ class BatchBuilder2D constructor(
 		x2: Float, y2: Float,
 		x3: Float, y3: Float,
 		tex: Texture,
-		colorMul: RGBA, colorAdd: Int,
+		colorMul: RGBA, colorAdd: ColorAdd,
         /** Not working right now */
 		rotated: Boolean = false
 	) {
@@ -211,7 +211,7 @@ class BatchBuilder2D constructor(
         tx0: Float, ty0: Float,
         tx1: Float, ty1: Float,
         colorMul: RGBA,
-        colorAdd: Int,
+        colorAdd: ColorAdd,
         rotated: Boolean
     ) {
         ensure(6, 4)
@@ -222,7 +222,7 @@ class BatchBuilder2D constructor(
             // @TODO:
             addQuadVerticesFastRotated(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul, colorAdd)
         } else {
-            addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd)
+            addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd.value)
         }
     }
 
@@ -234,11 +234,11 @@ class BatchBuilder2D constructor(
         tx0: Float, ty0: Float,
         tx1: Float, ty1: Float,
         colorMul: RGBA,
-        colorAdd: Int
+        colorAdd: ColorAdd
     ) {
         ensure(6, 4)
         addQuadIndices()
-        addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd)
+        addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd.value)
     }
 
     fun addQuadIndices() {
@@ -305,7 +305,7 @@ class BatchBuilder2D constructor(
         tx0: Float, ty0: Float,
         tx1: Float, ty1: Float,
         colorMul: RGBA,
-        colorAdd: Int,
+        colorAdd: ColorAdd,
     ) {
         // @TODO:
         addVertex(x0, y0, tx0, ty0, colorMul, colorAdd)
@@ -410,7 +410,7 @@ class BatchBuilder2D constructor(
 		m: Matrix = identity,
 		filtering: Boolean = true,
 		colorMul: RGBA = Colors.WHITE,
-		colorAdd: Int = 0x7f7f7f7f,
+		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
 		program: Program? = null
 	) {
@@ -492,7 +492,7 @@ class BatchBuilder2D constructor(
 		m: Matrix = identity,
 		filtering: Boolean = true,
 		colorMul: RGBA = Colors.WHITE,
-		colorAdd: Int = 0x7f7f7f7f,
+		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
         /** Not working right now */
 		rotated: Boolean = false,
@@ -806,8 +806,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         return this
     }
     /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
-	fun setCAdd(v: Int): TexturedVertexArray {
-        i32[offset + 5] = v
+	fun setCAdd(v: ColorAdd): TexturedVertexArray {
+        i32[offset + 5] = v.value
         return this
     }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
@@ -817,26 +817,26 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
 	fun uv(tx: Float, ty: Float) = setU(tx).setV(ty)
     /** Sets the [cMul] and [cAdd] (multiplicative and additive colors) of the vertex previously selected calling [select] */
-	fun cols(colMul: RGBA, colAdd: Int) = setCMul(colMul).setCAdd(colAdd)
+	fun cols(colMul: RGBA, colAdd: ColorAdd) = setCMul(colMul).setCAdd(colAdd)
 
-    fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: Int) {
+    fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
         val pos = index * COMPONENTS_PER_VERTEX
         f32[pos + 0] = x
         f32[pos + 1] = y
         f32[pos + 2] = u
         f32[pos + 3] = v
         i32[pos + 4] = colMul.value
-        i32[pos + 5] = colAdd
+        i32[pos + 5] = colAdd.value
     }
 
-    fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: Int) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
+    fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
 
     /**
      * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
      * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]
      */
     @OptIn(KorgeInternal::class)
-	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: Int) {
+	fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpSlice, colMul: RGBA, colAdd: ColorAdd) {
         //fun Matrix.transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
         //fun Matrix.transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
 

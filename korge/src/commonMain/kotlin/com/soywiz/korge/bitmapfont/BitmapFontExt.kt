@@ -47,7 +47,7 @@ fun BitmapFont.drawText(
 	y: Int,
 	m: Matrix = Matrix(),
 	colMul: RGBA = Colors.WHITE,
-	colAdd: Int = 0x7f7f7f7f,
+	colAdd: ColorAdd = ColorAdd.NEUTRAL,
 	blendMode: BlendMode = BlendMode.INHERIT,
 	filtering: Boolean = true
 ) {
@@ -90,7 +90,7 @@ fun RenderContext.drawText(
 	y: Int,
 	m: Matrix = Matrix(),
 	colMul: RGBA = Colors.WHITE,
-	colAdd: Int = 0x7f7f7f7f,
+	colAdd: ColorAdd = ColorAdd.NEUTRAL,
 	blendMode: BlendMode = BlendMode.INHERIT,
 	filtering: Boolean = true
 ) {

@@ -2,7 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
 
@@ -17,14 +17,14 @@ class ComposedFilter(val filters: List<Filter>) : Filter {
 	override val border get() = filters.sumBy { it.border }
 
 	override fun render(
-		ctx: RenderContext,
-		matrix: Matrix,
-		texture: Texture,
-		texWidth: Int,
-		texHeight: Int,
-		renderColorAdd: Int,
-		renderColorMul: RGBA,
-		blendMode: BlendMode
+        ctx: RenderContext,
+        matrix: Matrix,
+        texture: Texture,
+        texWidth: Int,
+        texHeight: Int,
+        renderColorAdd: ColorAdd,
+        renderColorMul: RGBA,
+        blendMode: BlendMode
 	) {
 		if (filters.isEmpty()) {
             IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
@@ -41,7 +41,7 @@ class ComposedFilter(val filters: List<Filter>) : Filter {
 		texture: Texture,
 		texWidth: Int,
 		texHeight: Int,
-		renderColorAdd: Int,
+		renderColorAdd: ColorAdd,
 		renderColorMul: RGBA,
 		blendMode: BlendMode,
 		level: Int
