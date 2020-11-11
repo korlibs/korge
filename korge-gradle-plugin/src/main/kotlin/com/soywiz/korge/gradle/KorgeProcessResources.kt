@@ -3,8 +3,13 @@ package com.soywiz.korge.gradle
 import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.File
 import java.net.*
+
+fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File {
+    return File(project.buildDir, "korgeProcessedResources/${compilation.target.name}/${compilation.name}")
+}
 
 fun Project.addGenResourcesTasks() = this {
     tasks.apply {
@@ -22,7 +27,7 @@ fun Project.addGenResourcesTasks() = this {
 
         for (target in kotlin.targets) {
             for (compilation in target.compilations) {
-                val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
+                val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
                 compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
                 val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
                     //dependsOn(prepareResourceProcessingClasses)
