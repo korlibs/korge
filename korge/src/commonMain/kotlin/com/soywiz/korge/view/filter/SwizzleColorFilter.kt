@@ -41,7 +41,7 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: Int,
+        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode
     ) = proxy.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)

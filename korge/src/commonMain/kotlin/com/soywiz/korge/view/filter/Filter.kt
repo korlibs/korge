@@ -52,7 +52,7 @@ interface Filter : KorgeDebugNode {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: Int,
+        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode
     )

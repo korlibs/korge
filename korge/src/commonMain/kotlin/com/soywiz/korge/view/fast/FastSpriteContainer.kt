@@ -34,7 +34,7 @@ class FastSpriteContainer : View() {
         val fsprite = sprites.first()
         val bmp = fsprite.tex.bmp
         val colorMul = this.renderColorMul.value
-        val colorAdd = this.renderColorAdd
+        val colorAdd = this.renderColorAdd.value
 
         bb.setViewMatrixTemp(globalMatrix) {
             ////////////////////////////

@@ -25,7 +25,7 @@ class BlurFilter(initialRadius: Double = 4.0) : Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: Int,
+        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode
     ) {

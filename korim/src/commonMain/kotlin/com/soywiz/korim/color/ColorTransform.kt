@@ -3,6 +3,7 @@ package com.soywiz.korim.color
 import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.krypto.encoding.*
 
 data class ColorTransform(
 	private var _mR: Double,
@@ -38,13 +39,13 @@ data class ColorTransform(
 	private var dirty = true
 
 	private var _colorMul: RGBA = Colors.WHITE
-	private var _colorAdd: Int = 0
+	private var _colorAdd: ColorAdd = ColorAdd(0)
 
 	private fun computeColors() = this.apply {
 		if (dirty) {
 			dirty = false
 			_colorMul = RGBA.float(_mR.toFloat(), _mG.toFloat(), _mB.toFloat(), _mA.toFloat())
-			_colorAdd = ColorAdd.pack(_aR, _aG, _aB, _aA)
+			_colorAdd = ColorAdd(_aR, _aG, _aB, _aA)
 		}
 	}
 
@@ -64,17 +65,16 @@ data class ColorTransform(
             }
         }
 
-	var colorAdd: Int
+	var colorAdd: ColorAdd
 		get() {
 			//println("%08X".format(computeColors()._colorAdd))
 			return computeColors()._colorAdd
 		}
 		set(v) {
-            val c = RGBA(v)
-            aR = ColorAdd.unpackComponent(c.r)
-			aG = ColorAdd.unpackComponent(c.g)
-			aB = ColorAdd.unpackComponent(c.b)
-			aA = ColorAdd.unpackComponent(c.a)
+            aR = v.r
+			aG = v.g
+			aB = v.b
+			aA = v.a
             if (_aR != aR || _aG != aG || _aB != aB || _aA != aA) {
                 _aR = aR
                 _aG = aG
@@ -233,20 +233,24 @@ data class ColorTransform(
     fun applyToRGBA(color: RGBA): RGBA = RGBA(applyToColor(color.value))
 }
 
-inline class ColorAdd(val rgba: Int) {
-	val r get() = unpackComponent((rgba ushr 0) and 0xFF)
-	val g get() = unpackComponent((rgba ushr 8) and 0xFF)
-	val b get() = unpackComponent((rgba ushr 16) and 0xFF)
-	val a get() = unpackComponent((rgba ushr 24) and 0xFF)
+inline class ColorAdd(val value: Int) {
+	val r get() = unpackComponent((value ushr 0) and 0xFF)
+	val g get() = unpackComponent((value ushr 8) and 0xFF)
+	val b get() = unpackComponent((value ushr 16) and 0xFF)
+	val a get() = unpackComponent((value ushr 24) and 0xFF)
 
 	fun withR(r: Int) = ColorAdd(r, g, b, a)
 	fun withG(g: Int) = ColorAdd(r, g, b, a)
 	fun withB(b: Int) = ColorAdd(r, g, b, a)
 	fun withA(a: Int) = ColorAdd(r, g, b, a)
 
-	fun toInt() = rgba
+	fun toInt() = value
+
+    val shex get() = value.shex
 
 	companion object {
+        val NEUTRAL = ColorAdd(0x7f7f7f7f)
+
 		operator fun invoke(r: Int, g: Int, b: Int, a: Int) = ColorAdd(pack(r, g, b, a))
 
 		fun packComponent(v: Int) = (0x7f + (v shr 1)).clamp(0, 0xFF)
