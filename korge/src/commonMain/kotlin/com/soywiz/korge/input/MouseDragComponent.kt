@@ -74,17 +74,18 @@ fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
     return this
 }
 
-fun <T : View> T.draggable(): T {
+fun <T : View> T.draggable(selector: View = this, onDrag: ((MouseDragInfo) -> Unit)? = null): T {
     val view = this
     var sx = 0.0
     var sy = 0.0
-    onMouseDrag { info ->
+    selector.onMouseDrag { info ->
         if (info.start) {
             sx = view.x
             sy = view.y
         }
         view.x = sx + info.localDX
         view.y = sy + info.localDY
+        onDrag?.invoke(info)
         //println("DRAG: $dx, $dy, $start, $end")
     }
     return this
