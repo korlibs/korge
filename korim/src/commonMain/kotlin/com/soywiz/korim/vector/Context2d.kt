@@ -13,6 +13,22 @@ import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
 open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBuilder {
+    companion object {
+        @Deprecated(
+            "",
+            ReplaceWith("com.soywiz.korim.vector.StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)", "com.soywiz.korim.vector.StrokeInfo"),
+            level = DeprecationLevel.ERROR
+        )
+        fun StrokeInfo(
+            thickness: Double = 1.0, pixelHinting: Boolean = false,
+            scaleMode: LineScaleMode = LineScaleMode.NORMAL,
+            startCap: LineCap = LineCap.BUTT,
+            endCap: LineCap = LineCap.BUTT,
+            lineJoin: LineJoin = LineJoin.MITER,
+            miterLimit: Double = 20.0
+        ) = com.soywiz.korim.vector.StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+    }
+
     var debug: Boolean
         get() = renderer.debug
         set(value) = run { renderer.debug = value }
@@ -484,14 +500,6 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     inline fun drawImage(image: Bitmap, x: Number, y: Number, width: Number = image.width.toDouble(), height: Number = image.height.toDouble())
         = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
-    data class StrokeInfo(
-        val thickness: Double = 1.0, val pixelHinting: Boolean = false,
-        val scaleMode: LineScaleMode = LineScaleMode.NORMAL,
-        val startCap: LineCap = LineCap.BUTT,
-        val endCap: LineCap = LineCap.BUTT,
-        val lineJoin: LineJoin = LineJoin.MITER,
-        val miterLimit: Double = 20.0
-    )
 }
 
 fun RGBA.toFill() = ColorPaint(this)

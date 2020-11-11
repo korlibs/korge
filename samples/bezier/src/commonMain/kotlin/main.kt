@@ -1,14 +1,9 @@
-import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
@@ -25,13 +20,13 @@ suspend fun main() = Korge(bgcolor = Colors["#111"]) {
 
     fun updateGraphics() {
         graphics.clear()
-        graphics.stroke(Colors.DIMGREY, info = Context2d.StrokeInfo(thickness = 1.0)) {
+        graphics.stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
             moveTo(p0)
             lineTo(p1)
             lineTo(p2)
             lineTo(p3)
         }
-        graphics.stroke(Colors.RED, info = Context2d.StrokeInfo(thickness = 2.0)) {
+        graphics.stroke(Colors.RED, info = StrokeInfo(thickness = 2.0)) {
             moveTo(p0)
             cubicTo(p1, p2, p3)
         }

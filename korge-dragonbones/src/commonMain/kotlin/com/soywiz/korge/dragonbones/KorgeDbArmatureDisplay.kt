@@ -114,7 +114,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 					val endX = startX + bone.globalTransformMatrix.af * boneLength
 					val endY = startY + bone.globalTransformMatrix.bf * boneLength
 
-                    boneDrawer.stroke(Colors.PURPLE.withAd(0.7), Context2d.StrokeInfo(thickness = 2.0)) {
+                    boneDrawer.stroke(Colors.PURPLE.withAd(0.7), StrokeInfo(thickness = 2.0)) {
                         boneDrawer.moveTo(startX.toDouble(), startY.toDouble())
                         boneDrawer.lineTo(endX, endY)
                     }
@@ -137,7 +137,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 							this._debugDrawer?.addChild(child)
 						}
 
-						child.stroke(Colors.RED.withAd(0.7), Context2d.StrokeInfo(thickness = 2.0)) {
+						child.stroke(Colors.RED.withAd(0.7), StrokeInfo(thickness = 2.0)) {
 
                             when (boundingBoxData.type) {
                                 BoundingBoxType.Rectangle -> {

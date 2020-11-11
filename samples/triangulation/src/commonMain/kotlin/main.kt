@@ -41,7 +41,7 @@ suspend fun main() = Korge(width = 512, height = 512) {
 			}
 
 			if (points.size >= 3) {
-				stroke(Colors.GREEN, Context2d.StrokeInfo(thickness = 1.0)) {
+				stroke(Colors.GREEN, StrokeInfo(thickness = 1.0)) {
 					for (triangle in points.triangulate()) {
 						val p0 = Point(triangle.p0)
 						val p1 = Point(triangle.p1)
@@ -57,7 +57,7 @@ suspend fun main() = Korge(width = 512, height = 512) {
 				val e0 = Point(edges[n])
 				val e1 = Point(edges[n + 1])
 				val last = n == edges.size - 2
-				stroke(if (last) Colors.RED else Colors.BLUE, Context2d.StrokeInfo(thickness = 2.0)) {
+				stroke(if (last) Colors.RED else Colors.BLUE, StrokeInfo(thickness = 2.0)) {
 					line(e0, e1)
 				}
 			}

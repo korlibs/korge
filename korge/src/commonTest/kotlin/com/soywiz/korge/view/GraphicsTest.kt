@@ -113,7 +113,7 @@ class GraphicsTest {
     @Test
     fun testGraphicsTextureSize() {
         val bitmap = Graphics().lock {
-            stroke(Colors["#f0f0f0"], Context2d.StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
         }.bitmap
         assertEquals("153x103", "${bitmap.width}x${bitmap.height}")
     }
@@ -123,7 +123,7 @@ class GraphicsTest {
         val g = Graphics()
         assertEquals(0, g.bitmapsToRemove.size)
         g.apply {
-            stroke(Colors["#f0f0f0"], Context2d.StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
         }
         assertEquals(0, g.bitmapsToRemove.size)
         assertEquals("1x1", "${g.bitmap.width}x${g.bitmap.height}")

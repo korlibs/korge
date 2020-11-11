@@ -67,7 +67,7 @@ open class ShapeView(
                 this.path(shape)
             }
             if (strokeThickness != 0.0) {
-                stroke(this@ShapeView.stroke, Context2d.StrokeInfo(thickness = strokeThickness)) {
+                stroke(this@ShapeView.stroke, StrokeInfo(thickness = strokeThickness)) {
                     this.path(shape)
                 }
             }

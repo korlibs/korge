@@ -119,9 +119,9 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun stroke(
-            paint: Paint,
-            info: Context2d.StrokeInfo,
-            callback: @ViewDslMarker VectorBuilder.() -> Unit
+        paint: Paint,
+        info: StrokeInfo,
+        callback: @ViewDslMarker VectorBuilder.() -> Unit
 	) {
 		beginStroke(paint, info)
 		try {
@@ -132,10 +132,10 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	inline fun fillStroke(
-            fill: Paint,
-            stroke: Paint,
-            strokeInfo: Context2d.StrokeInfo,
-            callback: @ViewDslMarker VectorBuilder.() -> Unit
+        fill: Paint,
+        stroke: Paint,
+        strokeInfo: StrokeInfo,
+        callback: @ViewDslMarker VectorBuilder.() -> Unit
 	) {
 		beginFillStroke(fill, stroke, strokeInfo)
 		try {
@@ -148,7 +148,7 @@ open class Graphics @JvmOverloads constructor(
 	fun beginFillStroke(
             fill: Paint,
             stroke: Paint,
-            strokeInfo: Context2d.StrokeInfo
+            strokeInfo: StrokeInfo
 	) {
 		this.fill = fill
 		this.stroke = stroke
@@ -160,7 +160,7 @@ open class Graphics @JvmOverloads constructor(
 		currentPath.clear()
 	}
 
-	private fun setStrokeInfo(info: Context2d.StrokeInfo) {
+	private fun setStrokeInfo(info: StrokeInfo) {
 		this.thickness = info.thickness
 		this.pixelHinting = info.pixelHinting
 		this.scaleMode = info.scaleMode
@@ -170,7 +170,7 @@ open class Graphics @JvmOverloads constructor(
 		this.miterLimit = info.miterLimit
 	}
 
-	fun beginStroke(paint: Paint, info: Context2d.StrokeInfo) = dirty {
+	fun beginStroke(paint: Paint, info: StrokeInfo) = dirty {
 		setStrokeInfo(info)
 		stroke = paint
         currentPath.clear()
