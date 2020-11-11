@@ -464,8 +464,8 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             kotlin.system.exitProcess(0.convert())
         }
         _WM_MOUSEMOVE -> {
-            val x = lParam.toInt().extract(0, 8)
-            val y = lParam.toInt().extract(16, 8)
+            val x = lParam.toInt().extract(0, 16)
+            val y = lParam.toInt().extract(16, 16)
             mouseMove(x, y, wParam.toInt())
         }
         _WM_MOUSEWHEEL -> {
