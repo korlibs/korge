@@ -2,6 +2,7 @@ package com.soywiz.korma.geom.vector
 
 import com.soywiz.korma.annotations.KorDslMarker
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
 import kotlin.math.*
 
 @KorDslMarker
@@ -243,6 +244,9 @@ fun VectorBuilder.cubic(x0: Int, y0: Int, cx1: Int, cy1: Int, cx2: Int, cy2: Int
 
 fun VectorBuilder.quad(o: Point, c: Point, a: Point) = quad(o.x, o.y, c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubic(o: Point, c1: Point, c2: Point, a: Point) = cubic(o.x, o.y, c1.x, c1.y, c2.x, c2.y, a.x, a.y)
+
+fun VectorBuilder.quad(curve: Bezier.Quad) = quad(curve.p0, curve.p1, curve.p2)
+fun VectorBuilder.cubic(curve: Bezier.Cubic) = cubic(curve.p0, curve.p1, curve.p2, curve.p3)
 
 // Variants supporting relative and absolute modes
 

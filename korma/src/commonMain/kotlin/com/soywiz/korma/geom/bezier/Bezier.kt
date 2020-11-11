@@ -13,10 +13,14 @@ interface Bezier {
     fun calc(t: Double, target: Point = Point()): Point
 
     class Quad(
-        var p0x: Double = 0.0, var p0y: Double = 0.0,
-        var p1x: Double = 0.0, var p1y: Double = 0.0,
-        var p2x: Double = 0.0, var p2y: Double = 0.0,
+        p0x: Double = 0.0, p0y: Double = 0.0,
+        p1x: Double = 0.0, p1y: Double = 0.0,
+        p2x: Double = 0.0, p2y: Double = 0.0,
     ) : Bezier {
+        val p0 = Point(p0x, p0y)
+        val p1 = Point(p1x, p1y)
+        val p2 = Point(p2x, p2y)
+
         constructor(p0: IPoint, p1: IPoint, p2: IPoint) : this(
             p0.x, p0.y,
             p1.x, p1.y,
@@ -28,36 +32,38 @@ interface Bezier {
             p1x: Double, p1y: Double,
             p2x: Double, p2y: Double,
         ): Quad {
-            this.p0x = p0x
-            this.p0y = p0y
-
-            this.p1x = p1x
-            this.p1y = p1y
-
-            this.p2x = p2x
-            this.p2y = p2y
+            this.p0.setTo(p0x, p0y)
+            this.p1.setTo(p1x, p1y)
+            this.p2.setTo(p2x, p2y)
             return this
         }
-
-        fun copyFrom(other: Quad): Quad = setTo(other.p0x, other.p0y, other.p1x, other.p1y, other.p2x, other.p2y)
-        override fun getBounds(target: Rectangle): Rectangle = quadBounds(p0x, p0y, p1x, p1y, p2x, p2y, target)
-        override fun calc(t: Double, target: Point): Point = quadCalc(p0x, p0y, p1x, p1y, p2x, p2y, t, target)
+        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y)
+        fun copyFrom(other: Quad): Quad = setTo(other.p0, other.p1, other.p2)
+        override fun getBounds(target: Rectangle): Rectangle = quadBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, target)
+        override fun calc(t: Double, target: Point): Point = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
         // http://fontforge.github.io/bezier.html
         fun toCubic(out: Cubic = Cubic()): Cubic = out.setTo(
-            p0x, p0y,
-            p0x + (p1x - p0x) * (2.0 / 3.0), p0y + (p1y - p0y) * (2.0 / 3.0),
-            p2x + (p1x - p2x) * (2.0 / 3.0), p2y + (p1y - p2y) * (2.0 / 3.0),
-            p2x, p2y
+            p0.x, p0.y,
+            p0.x + (p1.x - p0.x) * (2.0 / 3.0), p0.y + (p1.y - p0.y) * (2.0 / 3.0),
+            p2.x + (p1.x - p2.x) * (2.0 / 3.0), p2.y + (p1.y - p2.y) * (2.0 / 3.0),
+            p2.x, p2.y
         )
+
+        override fun toString(): String = "Bezier.Quad($p0, $p1, $p2)"
     }
 
     class Cubic(
-        var p0x: Double = 0.0, var p0y: Double = 0.0,
-        var p1x: Double = 0.0, var p1y: Double = 0.0,
-        var p2x: Double = 0.0, var p2y: Double = 0.0,
-        var p3x: Double = 0.0, var p3y: Double = 0.0,
+        p0x: Double = 0.0, p0y: Double = 0.0,
+        p1x: Double = 0.0, p1y: Double = 0.0,
+        p2x: Double = 0.0, p2y: Double = 0.0,
+        p3x: Double = 0.0, p3y: Double = 0.0,
     ) : Bezier {
+        val p0 = Point(p0x, p0y)
+        val p1 = Point(p1x, p1y)
+        val p2 = Point(p2x, p2y)
+        val p3 = Point(p3x, p3y)
+
         constructor(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) : this(
             p0.x, p0.y,
             p1.x, p1.y,
@@ -67,24 +73,32 @@ interface Bezier {
 
         private val temp = Temp()
 
+        fun setToSplitFirst(p0: Point, p1: Point, p2: Point, p3: Point, ratio: Double = 0.5): Cubic {
+            val np1 = temp.tpoint0.setToInterpolated(ratio, p0, p1)
+            val t = temp.tpoint1.setToInterpolated(ratio, p1, p2)
+            val np2 = temp.tpoint2.setToInterpolated(ratio, np1, t)
+            val p3 = cubicCalc(p0, p1, p2, p3, ratio, temp.tpoint3)
+            return setTo(p0, np1, np2, p3)
+        }
+
         fun setToSplitFirst(cubic: Cubic, ratio: Double = 0.5): Cubic {
-            val np1x = ratio.interpolate(cubic.p0x, cubic.p1x)
-            val np1y = ratio.interpolate(cubic.p0y, cubic.p1y)
+            return setToSplitFirst(cubic.p0, cubic.p1, cubic.p2, cubic.p3, ratio)
+        }
 
-            val tx = ratio.interpolate(cubic.p1x, cubic.p2x)
-            val ty = ratio.interpolate(cubic.p1y, cubic.p2y)
+        fun setToSplitSecond(cubic: Cubic, ratio: Double = 0.5): Cubic {
+            return setToSplitFirst(cubic.p3, cubic.p2, cubic.p1, cubic.p0, 1.0 - ratio).reverseDirection()
+        }
 
-            val np2x = ratio.interpolate(np1x, tx)
-            val np2y = ratio.interpolate(np1y, ty)
-
-            val p3 = calc(ratio, temp.tpoint0)
-
-            return setTo(
-                p0x, p0y,
-                np1x, np1y,
-                np2x, np2y,
-                p3.x, p3.y
-            )
+        fun reverseDirection(): Cubic {
+            temp.tpoint0.copyFrom(p0)
+            temp.tpoint1.copyFrom(p1)
+            temp.tpoint2.copyFrom(p2)
+            temp.tpoint3.copyFrom(p3)
+            p0.copyFrom(temp.tpoint3)
+            p1.copyFrom(temp.tpoint2)
+            p2.copyFrom(temp.tpoint1)
+            p3.copyFrom(temp.tpoint0)
+            return this
         }
 
         fun setTo(
@@ -93,24 +107,19 @@ interface Bezier {
             p2x: Double, p2y: Double,
             p3x: Double, p3y: Double,
         ): Cubic {
-            this.p0x = p0x
-            this.p0y = p0y
-
-            this.p1x = p1x
-            this.p1y = p1y
-
-            this.p2x = p2x
-            this.p2y = p2y
-
-            this.p3x = p3x
-            this.p3y = p3y
+            this.p0.setTo(p0x, p0y)
+            this.p1.setTo(p1x, p1y)
+            this.p2.setTo(p2x, p2y)
+            this.p3.setTo(p3x, p3y)
             return this
         }
-        fun copyFrom(other: Cubic): Cubic =
-            setTo(other.p0x, other.p0y, other.p1x, other.p1y, other.p2x, other.p2y, other.p3x, other.p3y)
-        override fun getBounds(target: Rectangle): Rectangle = cubicBounds(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, target, temp)
-        override fun calc(t: Double, target: Point): Point = cubicCalc(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, target)
-        fun clone() = Cubic(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y)
+        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+        fun copyFrom(other: Cubic): Cubic = setTo(other.p0, other.p1, other.p2, other.p3)
+        override fun getBounds(target: Rectangle): Rectangle = cubicBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, target, temp)
+        override fun calc(t: Double, target: Point): Point = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+        fun clone() = Cubic(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+
+        override fun toString(): String = "Bezier.Cubic($p0, $p1, $p2, $p3)"
     }
 
     class Temp {
@@ -119,6 +128,8 @@ interface Bezier {
         val yvalues = DoubleArray(8)
         var tpoint0 = Point()
         var tpoint1 = Point()
+        var tpoint2 = Point()
+        var tpoint3 = Point()
     }
 
     companion object {
@@ -281,6 +292,16 @@ interface Bezier {
         fun cubicNPoints(x0: Double, y0: Double, cx1: Double, cy1: Double, cx2: Double, cy2: Double, x1: Double, y1: Double, scale: Double = 1.0): Int {
             return ((Point.distance(x0, y0, cx1, cy1) + Point.distance(cx1, cy1, cx2, cy2) + Point.distance(cx2, cy2, x1, y1)) * scale).toInt().clamp(5, 256)
         }
+
+        fun cubicCalc(
+            p0: Point, p1: Point, p2: Point, p3: Point,
+            t: Double, target: Point = Point()
+        ): Point = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+
+        fun quadCalc(
+            p0: Point, p1: Point, p2: Point,
+            t: Double, target: Point = Point()
+        ): Point = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
     }
 }

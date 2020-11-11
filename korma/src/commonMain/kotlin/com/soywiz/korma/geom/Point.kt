@@ -243,8 +243,10 @@ data class Point(
     override fun interpolateWith(ratio: Double, other: Point): Point =
         Point().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: Point, r: Point): Point =
-        this.setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
+    override fun setToInterpolated(ratio: Double, l: Point, r: Point): Point = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+
+    fun setToInterpolated(ratio: Double, lx: Double, ly: Double, rx: Double, ry: Double): Point =
+        this.setTo(ratio.interpolate(lx, rx), ratio.interpolate(ly, ry))
 
     override fun toString(): String = "(${this.x.niceStr}, ${this.y.niceStr})"
 
