@@ -110,7 +110,13 @@ class KorgeExtension(val project: Project) {
 
 	var supressWarnings: Boolean = false
 
-    var win32EnableConsole: Boolean? = null
+    /**
+     * Determines whether the standard console will be available on Windows or not
+     * by setting the windows subsystem to console or windows.
+     *
+     * When set to null, on debug builds it will include open console, and on release builds it won't open any console.
+     */
+    var enableConsole: Boolean? = null
 
 	var authorName = "unknown"
 	var authorEmail = "unknown@unknown"
