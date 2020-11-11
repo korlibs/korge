@@ -2,8 +2,10 @@ package com.soywiz.korui.native
 
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import java.awt.*
+import java.awt.event.*
 import javax.swing.*
 
 actual val DEFAULT_UI_FACTORY: NativeUiFactory get() = DEFAULT_AWT_UI_FACTORY
@@ -22,6 +24,7 @@ open class BaseAwtUiFactory : NativeUiFactory {
         val container = native as Container
         return AwtContainer(this, container)
     }
+
     override fun createWindow() = AwtWindow(this)
     override fun createContainer() = AwtContainer(this)
     override fun createToolbar() = AwtToolbar(this)
@@ -38,20 +41,45 @@ open class BaseAwtUiFactory : NativeUiFactory {
         it.verticalScrollBar.unitIncrement = 16
         it.horizontalScrollBar.unitIncrement = 16
     }
+
     open fun createJToolBar() = JToolBar().also {
         it.isOpaque = true
         it.background = JPanel().background
     }
+
     open fun createJPopupMenu() = JPopupMenu()
     open fun createJMenuItem() = JMenuItem()
     open fun createJMenu() = JMenu()
     open fun createJMenuBar(): JMenuBar = JMenuBar()
     open fun awtOpenFileDialog(component: Component, file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
-        TODO()
+        val fileChooser = JFileChooser()
+        fileChooser.selectedFile = file?.absolutePath?.let { java.io.File(it) }
+        val selection = fileChooser.showOpenDialog(component)
+        return fileChooser.selectedFile?.let { localVfs(it) }
     }
 
     open fun awtOpenColorPickerDialog(component: Component, color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
-        TODO()
+        var fcolor = color.toAwt()
+
+        val pane = JColorChooser(fcolor)
+        pane.selectionModel.addChangeListener {
+            listener?.invoke(pane.color.toRgba())
+        }
+        val dialog = JColorChooser.createDialog(
+            component, "Pick color", true, pane,
+            { fcolor = pane.color },
+            null
+        )
+        dialog.addComponentListener(object : ComponentAdapter() {
+            override fun componentHidden(e: ComponentEvent?) {
+                val w = e!!.component as Window
+                w.dispose()
+            }
+        })
+
+        dialog.show()
+
+        return fcolor.toRgba()
     }
 
     open fun createJPanel(): JPanel {
