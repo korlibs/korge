@@ -237,19 +237,21 @@ class KorgeExtension(val project: Project) {
     }
 
     fun supportBox2d() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
+        // https://awesome.korge.org/
+        bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::4ac7fcee689e1b541849cedd1e017016128624b9##d15f5b28abbc2f58ba375d7204a6db2e90342978d02e675cd29249d0cade8f9f")
 	}
 
 	fun admob(ADMOB_APP_ID: String) {
-        plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
+        bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
+        config("ADMOB_APP_ID", ADMOB_APP_ID)
     }
 
     fun gameServices() {
-        plugin("com.soywiz.korlibs.korge:korge-services:${project.korgeVersion}")
+        bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
     }
 
     fun billing() {
-        plugin("com.soywiz.korlibs.korge:korge-billing:${project.korgeVersion}")
+        bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
     }
 
     fun author(name: String, email: String, href: String) {
