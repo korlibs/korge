@@ -234,6 +234,9 @@ data class ColorTransform(
 }
 
 inline class ColorAdd(val value: Int) {
+    // Alias
+    val rgba get() = value
+
 	val r get() = unpackComponent((value ushr 0) and 0xFF)
 	val g get() = unpackComponent((value ushr 8) and 0xFF)
 	val b get() = unpackComponent((value ushr 16) and 0xFF)
