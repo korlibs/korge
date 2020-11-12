@@ -43,12 +43,11 @@ interface Bezier {
         override fun calc(t: Double, target: Point): Point = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
         // http://fontforge.github.io/bezier.html
-        fun toCubic(out: Cubic = Cubic()): Cubic = out.setTo(
-            p0.x, p0.y,
-            p0.x + (p1.x - p0.x) * (2.0 / 3.0), p0.y + (p1.y - p0.y) * (2.0 / 3.0),
-            p2.x + (p1.x - p2.x) * (2.0 / 3.0), p2.y + (p1.y - p2.y) * (2.0 / 3.0),
-            p2.x, p2.y
-        )
+        fun toCubic(out: Cubic = Cubic()): Cubic {
+            return quadToCubic(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y) { p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y ->
+                out.setTo(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y)
+            }
+        }
 
         override fun toString(): String = "Bezier.Quad($p0, $p1, $p2)"
     }
@@ -137,6 +136,7 @@ interface Bezier {
         operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint): Bezier.Cubic =
             Bezier.Cubic(p0, p1, p2, p3)
 
+
         // http://fontforge.github.io/bezier.html
         //Any quadratic spline can be expressed as a cubic (where the cubic term is zero). The end points of the cubic will be the same as the quadratic's.
         //CP0 = QP0
@@ -148,12 +148,22 @@ interface Bezier {
             x0: Double, y0: Double, xc: Double, yc: Double, x1: Double, y1: Double,
             bezier: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> T
         ): T {
+            val ratio = 2.0 / 3.0
+
             return bezier(
                 x0, y0,
-                x0 + 2 / 3 * (xc - x0), y0 + 2 / 3 * (yc - y0),
-                x1 + 2 / 3 * (xc - x1), y1 + 2 / 3 * (yc - y1),
+                x0 + (xc - x0) * ratio, y0 + (yc - y0) * ratio,
+                x1 + (xc - x1) * ratio, y1 + (yc - y1) * ratio,
                 x1, y1
             )
+            //val D2_3 = 2.0 / 3.0
+            //val D1_3 = 1.0 / 3.0
+            //return bezier(
+            //    x0, y0,
+            //    xc * D2_3 + x0 * D1_3, yc * D2_3 + y0 * D1_3,
+            //    xc * D2_3 + x1 * D1_3, yc * D2_3 + y1 * D1_3,
+            //    x1, y1
+            //)
         }
 
         fun quadBounds(

@@ -153,7 +153,9 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
 
 	override fun mipmap(bmp: Bitmap): NativeImage {
 		val out = NativeImage(ceil(bmp.width * 0.5).toInt(), ceil(bmp.height * 0.5).toInt())
-		out.getContext2d(antialiasing = true).renderer.drawImage(bmp, 0.0, 0.0, out.width.toDouble(), out.height.toDouble())
+        out.context2d(antialiased = true) {
+            renderer.drawImage(bmp, 0.0, 0.0, out.width.toDouble(), out.height.toDouble())
+        }
 		return out
 	}
 }

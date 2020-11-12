@@ -65,11 +65,12 @@ fun NativeImage(
 ): NativeImage {
 	val bmp = NativeImage(width, height)
 	try {
-		val ctx = bmp.getContext2d()
-		ctx.keep {
-			ctx.scale(scaleX, scaleY)
-			ctx.draw(d)
-		}
+		bmp.context2d {
+            keep {
+                scale(scaleX, scaleY)
+                draw(d)
+            }
+        }
 	} catch (e: Throwable) {
 		e.printStackTrace()
 	}

@@ -12,6 +12,8 @@ import platform.windows.*
 import kotlin.native.concurrent.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
+    override fun createBitmapNativeImage(bmp: Bitmap) = GdiNativeImage(bmp.toBMP32())
+
     override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage {
         data class Info(val data: ByteArray, val premultiplied: Boolean)
         initGdiPlusOnce()
@@ -91,7 +93,7 @@ private fun argbToAbgr(col: Int): Int {
 }
 
 private var initializedGdiPlus = korAtomic(false)
-private fun initGdiPlusOnce() {
+internal fun initGdiPlusOnce() {
     if (!initializedGdiPlus.compareAndSet(expect = false, update = true)) return
     memScoped {
         val ptoken = allocArray<ULONG_PTRVar>(1)

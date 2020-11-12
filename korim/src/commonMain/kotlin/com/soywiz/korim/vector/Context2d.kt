@@ -541,19 +541,17 @@ fun SizedDrawable.render(): NativeImage = render(native = true) as NativeImage
 fun SizedDrawable.renderNoNative(): Bitmap32 = render(native = false) as Bitmap32
 
 fun SizedDrawable.render(native: Boolean): Bitmap {
-    val image = NativeImageOrBitmap32(this.width, this.height, native = native)
-    val ctx = image.getContext2d()
-    this.draw(ctx)
-    return image
+    return NativeImageOrBitmap32(this.width, this.height, native = native).context2d {
+        this@render.draw(this)
+    }
 }
 
 fun Drawable.renderToImage(width: Int, height: Int): NativeImage = renderToImage(width, height, native = true) as NativeImage
 
 fun Drawable.renderToImage(width: Int, height: Int, native: Boolean): Bitmap {
-    val image = NativeImageOrBitmap32(width, height, native = native)
-    val ctx = image.getContext2d()
-    this.draw(ctx)
-    return image
+    return NativeImageOrBitmap32(width, height, native = native).context2d {
+        this@renderToImage.draw(this)
+    }
 }
 
 private fun VectorBuilder.write(path: VectorPath) {

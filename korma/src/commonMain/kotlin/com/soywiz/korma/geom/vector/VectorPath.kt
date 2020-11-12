@@ -99,6 +99,17 @@ open class VectorPath(
         )
     }
 
+    inline fun visitEdgesSimple(
+        line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
+        cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        close: () -> Unit
+    ) = visitEdges(
+        line,
+        { x0, y0, x1, y1, x2, y2 -> Bezier.quadToCubic(x0, y0, x1, y1, x2, y2, cubic) },
+        cubic,
+        close,
+    )
+
     fun visit(visitor: Visitor) {
         visitCmds(
             moveTo = visitor::moveTo,

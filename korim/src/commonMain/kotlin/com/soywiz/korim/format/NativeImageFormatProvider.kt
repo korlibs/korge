@@ -33,7 +33,9 @@ abstract class NativeImageFormatProvider {
 	open fun mipmap(bmp: Bitmap, levels: Int): NativeImage = bmp.toBMP32().mipmap(levels).ensureNative()
 	open fun mipmap(bmp: Bitmap): NativeImage {
         val out = NativeImage(ceil(bmp.width * 0.5).toInt(), ceil(bmp.height * 0.5).toInt())
-        out.getContext2d(antialiasing = true).renderer.drawImage(bmp, 0, 0, out.width, out.height)
+        out.context2d(antialiased = true) {
+            renderer.drawImage(bmp, 0, 0, out.width, out.height)
+        }
         return out
     }
 }
