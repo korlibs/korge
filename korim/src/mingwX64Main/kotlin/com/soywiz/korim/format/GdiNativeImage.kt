@@ -87,12 +87,29 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         GdipCreatePath(gdipFillMode, ppath).checkp("GdipCreatePath")
                         val path = ppath[0]
                         GdipStartPathFigure(path).checkp("GdipStartPathFigure")
-                        state.path.visitEdgesSimple(
+                        state.path.visitEdges(
                             { x0, y0, x1, y1 ->
                                 GdipAddPathLine(path, x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat()).checkp("GdipAddPathLine")
                             },
+                            { x0, y0, x1, y1, x2, y2 ->
+                                val cx1 = Bezier.quadToCubic1(x0, x1, x2)
+                                val cy1 = Bezier.quadToCubic1(y0, y1, y2)
+                                val cx2 = Bezier.quadToCubic2(x0, x1, x2)
+                                val cy2 = Bezier.quadToCubic2(y0, y1, y2)
+                                GdipAddPathBezier(path,
+                                    x0.toFloat(), y0.toFloat(),
+                                    cx1.toFloat(), cy1.toFloat(),
+                                    cx2.toFloat(), cy2.toFloat(),
+                                    x2.toFloat(), y2.toFloat()
+                                ).checkp("GdipAddPathBezier")
+                            },
                             { x0, y0, x1, y1, x2, y2, x3, y3 ->
-                                GdipAddPathBezier(path, x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat(), x3.toFloat(), y3.toFloat()).checkp("GdipAddPathBezier")
+                                GdipAddPathBezier(path,
+                                    x0.toFloat(), y0.toFloat(),
+                                    x1.toFloat(), y1.toFloat(),
+                                    x2.toFloat(), y2.toFloat(),
+                                    x3.toFloat(), y3.toFloat()
+                                ).checkp("GdipAddPathBezier")
                             },
                             {
                                 GdipClosePathFigure(path).checkp("GdipClosePathFigure")

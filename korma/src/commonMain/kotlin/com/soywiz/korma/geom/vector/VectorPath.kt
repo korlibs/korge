@@ -105,7 +105,13 @@ open class VectorPath(
         close: () -> Unit
     ) = visitEdges(
         line,
-        { x0, y0, x1, y1, x2, y2 -> Bezier.quadToCubic(x0, y0, x1, y1, x2, y2, cubic) },
+        { x0, y0, x1, y1, x2, y2 ->
+            val cx1 = Bezier.quadToCubic1(x0, x1, x2)
+            val cy1 = Bezier.quadToCubic1(y0, y1, y2)
+            val cx2 = Bezier.quadToCubic2(x0, x1, x2)
+            val cy2 = Bezier.quadToCubic2(y0, y1, y2)
+            cubic(x0, y0, cx1, cy1, cx2, cy2, x2, y2)
+        },
         cubic,
         close,
     )

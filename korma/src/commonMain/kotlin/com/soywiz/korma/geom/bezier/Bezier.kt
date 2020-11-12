@@ -44,9 +44,12 @@ interface Bezier {
 
         // http://fontforge.github.io/bezier.html
         fun toCubic(out: Cubic = Cubic()): Cubic {
-            return quadToCubic(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y) { p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y ->
-                out.setTo(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y)
-            }
+            return out.setTo(
+                p0.x, p0.y,
+                quadToCubic1(p0.x, p1.x, p2.x), quadToCubic1(p0.y, p1.y, p2.y),
+                quadToCubic2(p0.x, p1.x, p2.x), quadToCubic2(p0.y, p1.y, p2.y),
+                p2.x, p2.y,
+            )
         }
 
         override fun toString(): String = "Bezier.Quad($p0, $p1, $p2)"
@@ -144,38 +147,38 @@ interface Bezier {
         //The two control points for the cubic are:
         //CP1 = QP0 + 2/3 *(QP1-QP0)
         //CP2 = QP2 + 2/3 *(QP1-QP2)
+        // @TODO: Is there a bug here when inlining?
         inline fun <T> quadToCubic(
             x0: Double, y0: Double, xc: Double, yc: Double, x1: Double, y1: Double,
-            bezier: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> T
+            bezier: (qx0: Double, qy0: Double, qx1: Double, qy1: Double, qx2: Double, qy2: Double, qx3: Double, qy3: Double) -> T
         ): T {
-            val ratio = 2.0 / 3.0
-
             return bezier(
                 x0, y0,
-                x0 + (xc - x0) * ratio, y0 + (yc - y0) * ratio,
-                x1 + (xc - x1) * ratio, y1 + (yc - y1) * ratio,
+                quadToCubic1(x0, xc, x1), quadToCubic1(y0, yc, y1),
+                quadToCubic2(x0, xc, x1), quadToCubic2(y0, yc, y1),
                 x1, y1
             )
-            //val D2_3 = 2.0 / 3.0
-            //val D1_3 = 1.0 / 3.0
-            //return bezier(
-            //    x0, y0,
-            //    xc * D2_3 + x0 * D1_3, yc * D2_3 + y0 * D1_3,
-            //    xc * D2_3 + x1 * D1_3, yc * D2_3 + y1 * D1_3,
-            //    x1, y1
-            //)
         }
 
+        @Suppress("UNUSED_PARAMETER")
+        fun quadToCubic1(v0: Double, v1: Double, v2: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
+        @Suppress("UNUSED_PARAMETER")
+        fun quadToCubic2(v0: Double, v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
+
+        // @TODO: Make an optimized version!
         fun quadBounds(
             x0: Double, y0: Double,
             xc: Double, yc: Double,
             x1: Double, y1: Double,
             target: Rectangle = Rectangle(),
             temp: Temp = Temp()
-            // @TODO: Make an optimized version!
-        ): Rectangle = quadToCubic(x0, y0, xc, yc, x1, y1) { aX, aY, bX, bY, cX, cY, dX, dY ->
-            cubicBounds(aX, aY, bX, bY, cX, cY, dX, dY, target, temp)
-        }
+        ): Rectangle = cubicBounds(
+            x0, y0,
+            quadToCubic1(x0, xc, x1), quadToCubic1(y0, yc, y1),
+            quadToCubic2(x0, xc, x1), quadToCubic2(y0, yc, y1),
+            x1, y1,
+            target, temp
+        )
 
         inline fun <T> quadCalc(
             x0: Double, y0: Double,
