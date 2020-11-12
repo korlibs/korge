@@ -6,6 +6,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.renderer.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.geom.vector.LineCap
@@ -127,10 +128,43 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         val clip = createPath(pclip, state.clip)
 
                         val pbrush = allocArray<COpaquePointerVar>(1)
+                        val pmatrix = allocArray<COpaquePointerVar>(1)
+                        val pbitmap = allocArray<COpaquePointerVar>(1)
                         val style = if (fill) state.fillStyle else state.strokeStyle
+
                         when (style) {
                             is RGBA -> {
                                 GdipCreateSolidFill(style.value.toUInt(), pbrush).checkp("GdipCreateSolidFill")
+                            }
+                            is BitmapPaint -> {
+                                GdipCreateMatrix(pmatrix)
+                                val matrix = pmatrix[0]
+                                //val transform = Matrix().copyFrom(style.transform)
+                                val transform = Matrix().apply {
+                                    identity()
+                                    multiply(this, style.transform)
+                                    multiply(this, state.transform)
+                                }
+
+                                //transform.invert()
+                                //style.transform
+                                //transform.invert()
+                                //val transform = style.transform
+                                GdipSetMatrixElements(matrix, transform.af, transform.bf, transform.cf, transform.df, transform.txf, transform.tyf)
+                                val bmp = style.bmp32
+                                bmp.intData.usePinned { bmpPin ->
+                                    val ptr = bmpPin.addressOf(0)
+                                    GdipCreateBitmapFromScan0(bmp.width, bmp.height, 4 * bmp.width, if (bmp.premultiplied) PixelFormat32bppARGB else PixelFormat32bppPARGB, ptr.reinterpret(), pbitmap)
+                                }
+                                val wrapMode = when {
+                                    style.cycleX == CycleMethod.NO_CYCLE && style.cycleY == CycleMethod.NO_CYCLE -> WrapModeClamp
+                                    style.cycleX == CycleMethod.REFLECT && style.cycleY == CycleMethod.REPEAT -> WrapModeTileFlipX
+                                    style.cycleX == CycleMethod.REPEAT && style.cycleY == CycleMethod.REFLECT -> WrapModeTileFlipY
+                                    style.cycleX == CycleMethod.REFLECT && style.cycleY == CycleMethod.REFLECT -> WrapModeTileFlipXY
+                                    else -> WrapModeTile
+                                }
+                                GdipCreateTexture(pbitmap[0], wrapMode, pbrush)
+                                GdipSetTextureTransform(pbrush[0], matrix)
                             }
                             // Missing gradients
                             else -> {
@@ -160,6 +194,8 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                             }
                         }
 
+                        if (pbitmap[0] != null) GdipDeleteCachedBitmap(pbitmap[0])
+                        if (pmatrix[0] != null) GdipDeleteMatrix(pmatrix[0]).checkp("GdipDeleteMatrix")
                         GdipDeleteBrush(brush).checkp("GdipDeleteBrush")
                         GdipDeletePath(path).checkp("GdipDeletePath")
                         if (clip != null) GdipDeletePath(clip).checkp("GdipDeletePath")
