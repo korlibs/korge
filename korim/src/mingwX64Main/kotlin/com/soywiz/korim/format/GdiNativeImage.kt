@@ -59,6 +59,30 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
         LineJoin.ROUND -> LineJoinRound
     }
 
+    private fun createPath(ppath: CArrayPointer<COpaquePointerVar>, vpath: VectorPath?): COpaquePointer? {
+        if (vpath == null) return null
+        GdipCreatePath(vpath.winding.toGdip(), ppath).checkp("GdipCreatePath")
+        val path = ppath[0]
+        GdipStartPathFigure(path).checkp("GdipStartPathFigure")
+        vpath.visitEdgesSimple(
+            { x0, y0, x1, y1 ->
+                GdipAddPathLine(path, x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat()).checkp("GdipAddPathLine")
+            },
+            { x0, y0, x1, y1, x2, y2, x3, y3 ->
+                GdipAddPathBezier(path,
+                    x0.toFloat(), y0.toFloat(),
+                    x1.toFloat(), y1.toFloat(),
+                    x2.toFloat(), y2.toFloat(),
+                    x3.toFloat(), y3.toFloat()
+                ).checkp("GdipAddPathBezier")
+            },
+            {
+                GdipClosePathFigure(path).checkp("GdipClosePathFigure")
+            }
+        )
+        return path
+    }
+
     override fun flushCommands(commands: List<RenderCommand>) {
         bitmap.flipY()
         memScoped {
@@ -98,25 +122,9 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         val state = command.state
                         val fill = command.fill
                         val ppath = allocArray<COpaquePointerVar>(1)
-                        GdipCreatePath(state.path.winding.toGdip(), ppath).checkp("GdipCreatePath")
-                        val path = ppath[0]
-                        GdipStartPathFigure(path).checkp("GdipStartPathFigure")
-                        state.path.visitEdgesSimple(
-                            { x0, y0, x1, y1 ->
-                                GdipAddPathLine(path, x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat()).checkp("GdipAddPathLine")
-                            },
-                            { x0, y0, x1, y1, x2, y2, x3, y3 ->
-                                GdipAddPathBezier(path,
-                                    x0.toFloat(), y0.toFloat(),
-                                    x1.toFloat(), y1.toFloat(),
-                                    x2.toFloat(), y2.toFloat(),
-                                    x3.toFloat(), y3.toFloat()
-                                ).checkp("GdipAddPathBezier")
-                            },
-                            {
-                                GdipClosePathFigure(path).checkp("GdipClosePathFigure")
-                            }
-                        )
+                        val pclip = allocArray<COpaquePointerVar>(1)
+                        val path = createPath(ppath, state.path)
+                        val clip = createPath(pclip, state.clip)
 
                         val pbrush = allocArray<COpaquePointerVar>(1)
                         val style = if (fill) state.fillStyle else state.strokeStyle
@@ -130,6 +138,11 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                             }
                         }
                         val brush = pbrush[0]
+                        if (state.clip != null) {
+                            GdipSetClipPath(graphics, clip, CombineModeIntersect)
+                        } else {
+                            GdipResetClip(graphics)
+                        }
 
                         if (fill) {
                             GdipFillPath(graphics, brush, path).checkp("GdipFillPath")
@@ -147,6 +160,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
 
                         GdipDeleteBrush(brush).checkp("GdipDeleteBrush")
                         GdipDeletePath(path).checkp("GdipDeletePath")
+                        if (clip != null) GdipDeletePath(clip).checkp("GdipDeletePath")
                         GdipFlush(graphics, FlushIntentionSync).checkp("GdipFlush")
 
                         GetDIBits(hdc, bmap, 0, height.convert(), dataPtr, bmpInfo.ptr, DIB_RGB_COLORS)
