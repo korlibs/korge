@@ -54,7 +54,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                 SelectObject(hdc, bmap)
 
                 bmpInfo.bmiHeader.also {
-                    it.biSize = BITMAPINFO.size.convert()
+                    it.biSize = sizeOf<BITMAPINFO>().convert()
                     it.biWidth = width
                     it.biHeight = height
                     it.biPlanes = 1.convert()
