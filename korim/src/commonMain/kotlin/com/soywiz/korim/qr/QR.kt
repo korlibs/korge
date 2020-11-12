@@ -120,7 +120,7 @@ open class QR(
             return nType
         }
 
-        private var QRCodeLimitLength = listOf(
+        private val QRCodeLimitLength = listOf(
             intArrayOf(17, 14, 11, 7),
             intArrayOf(32, 26, 20, 14),
             intArrayOf(53, 42, 32, 24),
@@ -233,7 +233,7 @@ private class QRCodeModel(val typeNumber: Int, val errorCorrectLevel: QRErrorCor
         setupTypeInfo(test, maskPattern)
         if (typeNumber >= 7) setupTypeNumber(test)
         if (dataCache == null) {
-            dataCache = QRCodeModel.createData(typeNumber, errorCorrectLevel, dataList)
+            dataCache = createData(typeNumber, errorCorrectLevel, dataList)
         }
         mapData(dataCache!!, maskPattern)
     }
@@ -383,11 +383,11 @@ private class QRCodeModel(val typeNumber: Int, val errorCorrectLevel: QRErrorCor
             while (buffer.getLengthInBits() % 8 != 0) buffer.putBit(false)
             while (true) {
                 if (buffer.getLengthInBits() >= totalDataCount * 8) break
-                buffer.put(QRCodeModel.PAD0, 8)
+                buffer.put(PAD0, 8)
                 if (buffer.getLengthInBits() >= totalDataCount * 8) break
-                buffer.put(QRCodeModel.PAD1, 8)
+                buffer.put(PAD1, 8)
             }
-            return QRCodeModel.createBytes(buffer, rsBlocks)
+            return createBytes(buffer, rsBlocks)
         }
 
         fun createBytes(buffer: QRBitBuffer, rsBlocks: List<QRRSBlock>): IntArray {
@@ -499,16 +499,16 @@ private object QRUtil {
 
     fun getBCHTypeInfo(data: Int): Int {
         var d = data shl 10
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
-            d = d xor (QRUtil.G15 shl (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15)))
+        while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+            d = d xor (G15 shl (getBCHDigit(d) - getBCHDigit(G15)))
         }
-        return ((data shl 10) or d) xor QRUtil.G15_MASK
+        return ((data shl 10) or d) xor G15_MASK
     }
 
     fun getBCHTypeNumber(data: Int): Int {
         var d = data shl 12
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
-            d = d xor (QRUtil.G18 shl (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18)))
+        while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+            d = d xor (G18 shl (getBCHDigit(d) - getBCHDigit(G18)))
         }
         return (data shl 12) or d
     }
@@ -523,7 +523,7 @@ private object QRUtil {
         return digit
     }
 
-    fun getPatternPosition(typeNumber: Int): IntArray = QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1]
+    fun getPatternPosition(typeNumber: Int): IntArray = PATTERN_POSITION_TABLE[typeNumber - 1]
 
     fun getMask(maskPattern: Int, i: Int, j: Int): Boolean = when (maskPattern) {
         QRMaskPattern.PATTERN000 -> (i + j) % 2 == 0
@@ -835,7 +835,7 @@ private class QRRSBlock(val totalCount: Int, val dataCount: Int) {
         )
 
         fun getRSBlocks(typeNumber: Int, errorCorrectLevel: QRErrorCorrectLevel): List<QRRSBlock> {
-            val rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel)
+            val rsBlock = getRsBlockTable(typeNumber, errorCorrectLevel)
             val length = rsBlock.size / 3
             val list = arrayListOf<QRRSBlock>()
             for (i in 0 until length) {
@@ -849,10 +849,10 @@ private class QRRSBlock(val totalCount: Int, val dataCount: Int) {
 
         fun getRsBlockTable(typeNumber: Int, errorCorrectLevel: QRErrorCorrectLevel): IntArray {
             return when (errorCorrectLevel) {
-                QRErrorCorrectLevel.L -> QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0]
-                QRErrorCorrectLevel.M -> QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1]
-                QRErrorCorrectLevel.Q -> QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2]
-                QRErrorCorrectLevel.H -> QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3]
+                QRErrorCorrectLevel.L -> RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0]
+                QRErrorCorrectLevel.M -> RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1]
+                QRErrorCorrectLevel.Q -> RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2]
+                QRErrorCorrectLevel.H -> RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3]
             }
         }
     }
