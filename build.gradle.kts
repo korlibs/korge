@@ -814,7 +814,7 @@ subprojects {
             val publishJvmLocal by creating(Task::class) {
                 if (findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
                     dependsOn("publishJvmPublicationToMavenLocal")
-                    dependsOn("publishMetadataPublicationToMavenLocal")
+                    //dependsOn("publishMetadataPublicationToMavenLocal")
                     dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
                 } else if (findByName("publishToMavenLocal") != null) {
                     dependsOn("publishToMavenLocal")
