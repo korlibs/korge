@@ -9,6 +9,7 @@ import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
@@ -242,6 +243,11 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 	inline fun rotate(angle: Number) = rotate(angle.toDouble())
 	inline fun rotateDeg(degs: Number) = rotateDeg(degs.toDouble())
 
+    inline fun scale(sx: Int, sy: Int = sx) = scale(sx.toDouble(), sy.toDouble())
+    inline fun translate(tx: Int, ty: Int) = translate(tx.toDouble(), ty.toDouble())
+    inline fun rotate(angle: Int) = rotate(angle.toDouble())
+    inline fun rotateDeg(degs: Int) = rotateDeg(degs.toDouble())
+
     inline fun scale(sx: Double, sy: Double = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
@@ -355,17 +361,14 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		}
 	}
 
-    inline fun fill(color: RGBA, block: () -> Unit) {
-        block()
-        fill(ColorPaint(color))
-    }
-
-    inline fun fill(paint: Paint, block: () -> Unit) {
+    inline fun fill(paint: Paint, begin: Boolean = true, block: () -> Unit) {
+        if (begin) beginPath()
         block()
         fill(paint)
     }
 
-    inline fun stroke(paint: Paint, lineWidth: Double = this.lineWidth, lineCap: LineCap = this.lineCap, lineJoin: LineJoin = this.lineJoin, callback: () -> Unit) {
+    inline fun stroke(paint: Paint, lineWidth: Double = this.lineWidth, lineCap: LineCap = this.lineCap, lineJoin: LineJoin = this.lineJoin, begin: Boolean = true, callback: () -> Unit) {
+        if (begin) beginPath()
 		callback()
         this.lineWidth = lineWidth
         this.lineCap = lineCap
@@ -373,13 +376,9 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		stroke(paint)
 	}
 
-	inline fun stroke(color: RGBA, lineWidth: Double = this.lineWidth, lineCap: LineCap = this.lineCap, lineJoin: LineJoin = this.lineJoin, callback: () -> Unit) {
-		callback()
-        this.lineWidth = lineWidth
-        this.lineCap = lineCap
-        this.lineJoin = lineJoin
-		stroke(ColorPaint(color))
-	}
+    inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit) {
+        stroke(paint, info.thickness, info.startCap, info.lineJoin, begin, callback)
+    }
 
     inline fun fillStroke(fill: Paint, stroke: Paint, callback: () -> Unit) {
         callback()
@@ -388,14 +387,33 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     }
 
     fun fillStroke() = run { fill(); stroke() }
-	fun clip() = clip(Winding.NON_ZERO)
-    fun clip(winding: Winding) = run {
-        if (state.clip == null) {
-            state.clip = GraphicsPath()
+    fun unclip() = clip(null)
+    fun clip(path: VectorPath? = state.path, winding: Winding = Winding.NON_ZERO) {
+        if (path != null) {
+            if (state.clip == null) {
+                state.clip = GraphicsPath()
+            }
+            state.clip!!.clear()
+            state.clip!!.winding = winding
+            state.clip!!.write(path)
+        } else {
+            state.clip = null
         }
-        state.clip!!.clear()
-        state.clip!!.winding = winding
-        state.clip!!.write(state.path)
+    }
+
+    inline fun clip(path: VectorPath?, winding: Winding = Winding.NON_ZERO, block: () -> Unit) {
+        val oldClip = state.clip
+        state.clip = null
+        try {
+            clip(path, winding)
+            block()
+        } finally {
+            state.clip = oldClip
+        }
+    }
+
+    inline fun clip(path: VectorPath.() -> Unit, winding: Winding = Winding.NON_ZERO, block: () -> Unit) {
+        clip(buildPath { path() }, winding, block)
     }
 
     fun drawShape(

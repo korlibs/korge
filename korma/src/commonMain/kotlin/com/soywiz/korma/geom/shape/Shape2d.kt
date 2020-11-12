@@ -170,7 +170,7 @@ fun VectorPath.getPoints2(out: PointArrayList = PointArrayList()): PointArrayLis
     return out
 }
 
-fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
+inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
 inline fun approximateCurve(

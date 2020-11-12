@@ -144,18 +144,20 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                             GdipResetClip(graphics)
                         }
 
-                        if (fill) {
-                            GdipFillPath(graphics, brush, path).checkp("GdipFillPath")
-                        } else {
-                            val ppen = allocArray<COpaquePointerVar>(1)
-                            GdipCreatePen2(brush, state.lineWidth.toFloat(), UnitPixel, ppen).checkp("GdipCreatePen2")
-                            val pen = ppen[0]
-                            GdipSetPenEndCap(pen, state.endLineCap.toGdip()).checkp("GdipSetPenEndCap")
-                            GdipSetPenStartCap(pen, state.startLineCap.toGdip()).checkp("GdipSetPenStartCap")
-                            GdipSetPenLineJoin(pen, state.lineJoin.toGdip()).checkp("GdipSetPenLineJoin")
-                            GdipSetPenMiterLimit(pen, state.miterLimit.toFloat()).checkp("GdipSetPenMiterLimit")
-                            GdipDrawPath(graphics, pen, path).checkp("GdipDrawPath")
-                            GdipDeletePen(pen).checkp("GdipDeletePen")
+                        if (brush != null) {
+                            if (fill) {
+                                GdipFillPath(graphics, brush, path).checkp("GdipFillPath")
+                            } else {
+                                val ppen = allocArray<COpaquePointerVar>(1)
+                                GdipCreatePen2(brush, state.lineWidth.toFloat(), UnitPixel, ppen).checkp("GdipCreatePen2")
+                                val pen = ppen[0]
+                                GdipSetPenEndCap(pen, state.endLineCap.toGdip()).checkp("GdipSetPenEndCap")
+                                GdipSetPenStartCap(pen, state.startLineCap.toGdip()).checkp("GdipSetPenStartCap")
+                                GdipSetPenLineJoin(pen, state.lineJoin.toGdip()).checkp("GdipSetPenLineJoin")
+                                GdipSetPenMiterLimit(pen, state.miterLimit.toFloat()).checkp("GdipSetPenMiterLimit")
+                                GdipDrawPath(graphics, pen, path).checkp("GdipDrawPath")
+                                GdipDeletePen(pen).checkp("GdipDeletePen")
+                            }
                         }
 
                         GdipDeleteBrush(brush).checkp("GdipDeleteBrush")
