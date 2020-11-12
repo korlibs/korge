@@ -27,6 +27,11 @@ class TransitionView() : Container() {
 		setViews(this.next, next)
 	}
 
+    fun endTransition() {
+        this.ratio = 1.0
+        setViews(dummyView(), next)
+    }
+
     /** Changes the views with [prev] and [next] */
 	fun setViews(prev: View, next: View) {
 		this.removeChildren()
