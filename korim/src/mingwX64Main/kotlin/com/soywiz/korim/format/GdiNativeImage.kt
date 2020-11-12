@@ -8,6 +8,8 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
 import kotlinx.cinterop.*
 import platform.gdiplus.*
 import platform.windows.*
@@ -39,6 +41,23 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
     }
 
     override fun isBuffering(): Boolean = true
+
+    fun Winding.toGdip() = when (this) {
+        Winding.EVEN_ODD -> FillModeAlternate
+        Winding.NON_ZERO -> FillModeWinding
+    }
+
+    fun LineCap.toGdip() = when (this) {
+        LineCap.BUTT -> LineCapFlat
+        LineCap.SQUARE -> LineCapSquare
+        LineCap.ROUND -> LineCapRound
+    }
+
+    fun LineJoin.toGdip() = when (this) {
+        LineJoin.BEVEL -> LineJoinBevel
+        LineJoin.MITER -> LineJoinMiter
+        LineJoin.ROUND -> LineJoinRound
+    }
 
     override fun flushCommands(commands: List<RenderCommand>) {
         bitmap.flipY()
@@ -79,29 +98,12 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         val state = command.state
                         val fill = command.fill
                         val ppath = allocArray<COpaquePointerVar>(1)
-                        val gdipFillMode = when (state.path.winding) {
-                            Winding.EVEN_ODD -> FillModeAlternate
-                            Winding.NON_ZERO -> FillModeWinding
-                        }
-
-                        GdipCreatePath(gdipFillMode, ppath).checkp("GdipCreatePath")
+                        GdipCreatePath(state.path.winding.toGdip(), ppath).checkp("GdipCreatePath")
                         val path = ppath[0]
                         GdipStartPathFigure(path).checkp("GdipStartPathFigure")
-                        state.path.visitEdges(
+                        state.path.visitEdgesSimple(
                             { x0, y0, x1, y1 ->
                                 GdipAddPathLine(path, x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat()).checkp("GdipAddPathLine")
-                            },
-                            { x0, y0, x1, y1, x2, y2 ->
-                                val cx1 = Bezier.quadToCubic1(x0, x1, x2)
-                                val cy1 = Bezier.quadToCubic1(y0, y1, y2)
-                                val cx2 = Bezier.quadToCubic2(x0, x1, x2)
-                                val cy2 = Bezier.quadToCubic2(y0, y1, y2)
-                                GdipAddPathBezier(path,
-                                    x0.toFloat(), y0.toFloat(),
-                                    cx1.toFloat(), cy1.toFloat(),
-                                    cx2.toFloat(), cy2.toFloat(),
-                                    x2.toFloat(), y2.toFloat()
-                                ).checkp("GdipAddPathBezier")
                             },
                             { x0, y0, x1, y1, x2, y2, x3, y3 ->
                                 GdipAddPathBezier(path,
@@ -135,6 +137,10 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                             val ppen = allocArray<COpaquePointerVar>(1)
                             GdipCreatePen2(brush, state.lineWidth.toFloat(), UnitPixel, ppen).checkp("GdipCreatePen2")
                             val pen = ppen[0]
+                            GdipSetPenEndCap(pen, state.endLineCap.toGdip()).checkp("GdipSetPenEndCap")
+                            GdipSetPenStartCap(pen, state.startLineCap.toGdip()).checkp("GdipSetPenStartCap")
+                            GdipSetPenLineJoin(pen, state.lineJoin.toGdip()).checkp("GdipSetPenLineJoin")
+                            GdipSetPenMiterLimit(pen, state.miterLimit.toFloat()).checkp("GdipSetPenMiterLimit")
                             GdipDrawPath(graphics, pen, path).checkp("GdipDrawPath")
                             GdipDeletePen(pen).checkp("GdipDeletePen")
                         }
