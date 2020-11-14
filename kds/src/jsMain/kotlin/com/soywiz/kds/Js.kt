@@ -43,6 +43,8 @@ actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit)
     }
 }
 
+/////////////////
+
 actual class FastStringMap<T>(dummy: Boolean)
 //actual typealias FastStringMap<T> = Any<T>
 
