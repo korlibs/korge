@@ -782,7 +782,7 @@ abstract class View internal constructor(
         if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
         if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
         if (skewX.radians != 0.0 || skewY.radians != 0.0) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
-        if (rotation != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
+        if (rotation.absoluteValue != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
