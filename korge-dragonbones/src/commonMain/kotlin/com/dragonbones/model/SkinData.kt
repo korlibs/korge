@@ -37,9 +37,6 @@ import com.soywiz.kds.iterators.*
  * @language zh_CN
  */
 class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
-	override fun toString(): String {
-		return "[class dragonBones.SkinData]"
-	}
 	/**
 	 * - The skin name.
 	 * @version DragonBones 3.0
@@ -63,9 +60,7 @@ class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	override fun _onClear() {
 		this.displays.fastValueForEach { slotDisplays ->
 			slotDisplays.fastForEach { display ->
-				if (display != null) {
-					display.returnToPool()
-				}
+                display?.returnToPool()
 			}
 		}
 		this.displays.clear()
@@ -107,4 +102,6 @@ class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	 * @private
 	 */
 	fun getDisplays(slotName: String?): ArrayList<DisplayData?>? = this.displays.getNull(slotName)
+
+    override fun toString(): String = "[class dragonBones.SkinData]"
 }

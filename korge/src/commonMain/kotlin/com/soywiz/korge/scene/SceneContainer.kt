@@ -187,6 +187,8 @@ class SceneContainer(
             transitionView.ratio = 1.0
         }
 
+        transitionView.endTransition()
+
         if (oldScene != null) {
             withContext(oldScene.coroutineContext) {
                 oldScene.sceneDestroy()
