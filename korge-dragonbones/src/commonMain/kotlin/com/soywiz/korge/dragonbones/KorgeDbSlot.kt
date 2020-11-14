@@ -146,7 +146,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 	override fun _updateFrame() {
 		var currentTextureData = this._textureData as KorgeDbTextureData?
 
-		if (this._displayIndex >= 0 && this._display !== null && currentTextureData !== null) {
+        val geometryData = this._geometryData
+        if (this._displayIndex >= 0 && this._display !== null && currentTextureData !== null) {
 			var currentTextureAtlasData = currentTextureData.parent as KorgeDbTextureAtlasData
 
 			if (this._armature?.replacedTexture != null) { // Update replaced texture atlas.
@@ -164,16 +165,15 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 
 			val renderTexture = currentTextureData.renderTexture
 			if (renderTexture !== null) {
-				if (this._geometryData !== null) { // Mesh.
-					val data = this._geometryData!!.data!!
+				if (geometryData !== null) { // Mesh.
+					val data = geometryData.data!!
 					val intArray = data.intArray!!
 					val floatArray = data.floatArray!!
-					val vertexCount =
-						intArray[this._geometryData!!.offset + BinaryOffset.GeometryVertexCount].toInt()
+					val vertexCount = intArray[geometryData.offset + BinaryOffset.GeometryVertexCount].toInt()
 					val triangleCount =
-						intArray[this._geometryData!!.offset + BinaryOffset.GeometryTriangleCount].toInt()
+						intArray[geometryData.offset + BinaryOffset.GeometryTriangleCount].toInt()
 					var vertexOffset =
-						intArray[this._geometryData!!.offset + BinaryOffset.GeometryFloatOffset].toInt()
+						intArray[geometryData.offset + BinaryOffset.GeometryFloatOffset].toInt()
 
 					if (vertexOffset < 0) {
 						vertexOffset += 65536 // Fixed out of bounds bug.
@@ -183,10 +183,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 					val scale = this._armature!!._armatureData!!.scale
 
 					val meshDisplay = this._renderDisplay as Mesh
-					val textureAtlasWidth =
-						if (currentTextureAtlasData.width > 0.0) currentTextureAtlasData.width else renderTexture.bmp.width
-					val textureAtlasHeight =
-						if (currentTextureAtlasData.height > 0.0) currentTextureAtlasData.height else renderTexture.bmp.height
+					val textureAtlasWidth = if (currentTextureAtlasData.width > 0.0) currentTextureAtlasData.width else renderTexture.bmp.width
+					val textureAtlasHeight = if (currentTextureAtlasData.height > 0.0) currentTextureAtlasData.height else renderTexture.bmp.height
 					val region = currentTextureData.region
 
 					meshDisplay.vertices = Float32BufferAlloc(vertexCount * 2)
@@ -203,8 +201,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 
 					//for (let i = 0; i < triangleCount * 3; ++i) {
 					for (i in 0 until triangleCount * 3) {
-						meshDisplay.indices[i] =
-								intArray[this._geometryData!!.offset + BinaryOffset.GeometryVertexIndices + i].toInt()
+						meshDisplay.indices[i] = intArray[geometryData.offset + BinaryOffset.GeometryVertexIndices + i].toInt()
 					}
 
 					//for (let i = 0, l = vertexCount * 2; i < l; i += 2) {
@@ -227,7 +224,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 					meshDisplay.indexDirty++
 					meshDisplay.name = this.name
 
-					val isSkinned = this._geometryData!!.weight !== null
+					val isSkinned = geometryData!!.weight !== null
 					val isSurface = this._parent?._boneData?.isSurface ?: false
 					if (isSkinned || isSurface) {
 						this._identityTransform()
@@ -246,7 +243,7 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 			}
 		}
 
-		if (this._geometryData !== null) {
+		if (geometryData !== null) {
 			val meshDisplay = this._renderDisplay as Mesh
 			//meshDisplay.texture = null as any
 			meshDisplay.texture = null

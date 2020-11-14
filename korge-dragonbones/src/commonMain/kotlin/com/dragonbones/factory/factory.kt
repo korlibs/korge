@@ -560,7 +560,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun getTextureAtlasData(name: String): ArrayList<TextureAtlasData>? = this._textureAtlasDataMap[name]!!
+	fun getTextureAtlasData(name: String): ArrayList<TextureAtlasData>? = this._textureAtlasDataMap[name]
 	/**
 	 * - Cache a TextureAtlasData instance to the factory.
 	 * @param data - The TextureAtlasData instance.
