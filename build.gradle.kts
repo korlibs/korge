@@ -453,7 +453,7 @@ nonSamples {
 
     val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
     val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
-    val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
+    //val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
 
     extensions.getByType(PublishingExtension::class.java).apply {
         repositories {
@@ -472,7 +472,7 @@ nonSamples {
                 //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
                 if (publication.name == "kotlinMultiplatform") {
                     publication.artifact(sourcesJar) {}
-                    publication.artifact(emptyJar) {}
+                    //publication.artifact(emptyJar) {}
                 }
 
                 /*
