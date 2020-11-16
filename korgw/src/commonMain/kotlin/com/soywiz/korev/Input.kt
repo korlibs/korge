@@ -156,10 +156,10 @@ class GamepadInfo(
     }
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
-        GameStick.RIGHT -> get(GameButton.LY)
+        GameStick.RIGHT -> get(GameButton.RX)
     }
     fun getY(stick: GameStick) = when (stick) {
-        GameStick.LEFT -> get(GameButton.RX)
+        GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
 	override fun toString(): String = "Gamepad[$index][$name]" + mapping.toString(this)
