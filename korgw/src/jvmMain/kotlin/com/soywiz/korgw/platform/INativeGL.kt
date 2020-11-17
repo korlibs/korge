@@ -153,7 +153,7 @@ interface INativeGL {
     fun glVertexAttrib3fv(index: Int, v: FloatPtr)
     fun glVertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float)
     fun glVertexAttrib4fv(index: Int, v: FloatPtr)
-    fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: IntSize)
+    fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Int, stride: Int, pointer: IntSize)
     fun glViewport(x: Int, y: Int, width: Int, height: Int)
     
     companion object {
