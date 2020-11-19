@@ -2,22 +2,17 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-    const val KORLIBS_VERSION = "2.0.0-rc2"
-
-    ////////////////////
-	const val KLOCK = KORLIBS_VERSION
-	const val KDS = KORLIBS_VERSION
-	const val KMEM = KORLIBS_VERSION
-	const val KORMA = KORLIBS_VERSION
-	const val KORIO = KORLIBS_VERSION
-	const val KORIM = KORLIBS_VERSION
-	const val KORAU = KORLIBS_VERSION
-	const val KORGW = KORLIBS_VERSION
+	const val KLOCK = "2.0.0-rc3"
+	const val KDS = "2.0.0-rc3"
+	const val KMEM = "2.0.0-rc3"
+	const val KORMA = "2.0.0-rc3"
+	const val KORIO = "2.0.0-rc3"
+	const val KORIM = "2.0.0-rc3"
+	const val KORAU = "2.0.0-rc3"
+	const val KORGW = "2.0.0-rc3"
+	const val KORGE = "2.0.0-rc3"
+	const val KOTLIN = "1.4.20"
     const val JNA = "5.6.0"
-    ////////////////////
-	const val KORGE = KORLIBS_VERSION
-    const val KOTLIN = "1.4.20-RC"
 	const val COROUTINES = "1.4.1"
-	//const val ANDROID_BUILD = "3.6.0"
-    const val ANDROID_BUILD = "4.0.1"
+	const val ANDROID_BUILD = "4.0.1"
 }

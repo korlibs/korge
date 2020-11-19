@@ -60,9 +60,9 @@ private val Project.jvmCompilation get() = kotlin.targets.getByName("jvm").compi
 private val Project.mainJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 open class KorgeJavaExec : JavaExec() {
-    val mainJvmCompilation by lazy { project.mainJvmCompilation }
+    private val mainJvmCompilation by lazy { project.mainJvmCompilation }
 
-    val korgeClassPathGet: FileCollection get() = listOf(
+    private val korgeClassPathGet: FileCollection get() = listOf(
         mainJvmCompilation.runtimeDependencyFiles,
         mainJvmCompilation.compileDependencyFiles,
         mainJvmCompilation.output.allOutputs,
@@ -75,6 +75,7 @@ open class KorgeJavaExec : JavaExec() {
         korgeClassPathGet
     }
 
+    @get:Input
     val useZgc get() = ((System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14) && (System.getenv("JVM_USE_ZGC") != "false")
 
     override fun exec() {
