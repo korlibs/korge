@@ -15,6 +15,14 @@ object Html {
         fun String.normalize() = this.toLowerCase().trim()
         fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
         fun getBitmapFont(name: String, font: Font? = null): Font = fonts[name.normalize()] ?: font ?: default ?: SystemFont(name)
+        fun getBitmapFont(font: Font): BitmapFont {
+            if (font is BitmapFont) return font
+            val fontName = font.name.normalize()
+            (fonts[fontName] as? BitmapFont)?.let { return it }
+            return (fonts as MutableMap<String, Font>)?.getOrPut("$fontName.\$BitmapFont") {
+                font.toBitmapFont(32.0)
+            } as BitmapFont
+        }
         override fun getBounds(text: String, format: Format, out: Rectangle) {
             val font = format.computedFace
             getBitmapFont(font.name, font).getBounds(text, format, out)
