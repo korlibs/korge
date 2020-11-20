@@ -115,6 +115,7 @@ class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
     val debugFrame = JFrame("Debug").apply {
         this.defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
         this.setSize(256, 256)
+        this.type = Window.Type.UTILITY
         //focusableWindowState = false
     }
 
@@ -131,7 +132,7 @@ class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
             debugFrame.isVisible = it
             synchronizeDebugFrameCoordinates()
             if (debugFrame.isVisible) {
-                frame.isVisible = false
+                //frame.isVisible = false
                 frame.isVisible = true
             }
         }
