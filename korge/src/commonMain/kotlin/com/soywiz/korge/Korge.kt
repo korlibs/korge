@@ -28,6 +28,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -116,6 +117,7 @@ object Korge {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        lastGlobalGameWindow = realGameWindow
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)
@@ -477,3 +479,7 @@ object Korge {
 
 	data class ModuleArgs(val args: Array<String>)
 }
+
+@ThreadLocal
+var lastGlobalGameWindow: GameWindow? = null
+
