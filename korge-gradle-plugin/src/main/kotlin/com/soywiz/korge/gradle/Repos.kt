@@ -22,18 +22,16 @@ fun Project.configureRepositories() {
 		}
         google().content {
         }
-        if (BuildVersions.isEAP()) {
-            maven {
-                it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
-                it.content {
-                    it.excludeGroup("Kotlin/Native")
-                }
+        maven {
+            it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
+            it.content {
+                it.excludeGroup("Kotlin/Native")
             }
-            maven {
-                it.url = URI("https://dl.bintray.com/kotlin/kotlin-dev")
-                it.content {
-                    it.excludeGroup("Kotlin/Native")
-                }
+        }
+        maven {
+            it.url = URI("https://dl.bintray.com/kotlin/kotlin-dev")
+            it.content {
+                it.excludeGroup("Kotlin/Native")
             }
         }
 	}

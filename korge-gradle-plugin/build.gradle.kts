@@ -50,6 +50,7 @@ tasks {
 
 //val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
+val proguardVersion: String by project
 
 dependencies {
 	//implementation(project(":korge-build"))
@@ -59,7 +60,7 @@ dependencies {
     //testImplementation("junit:junit:4.12")
 
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
-	implementation("net.sf.proguard:proguard-gradle:6.2.2")
+	implementation("net.sf.proguard:proguard-gradle:$proguardVersion")
     implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
 
 	implementation(gradleApi())

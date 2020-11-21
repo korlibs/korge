@@ -27,30 +27,32 @@ class KorgeGradleApply(val project: Project) {
 			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
 		}
 
-		//KorgeBuildServiceProxy.init()
+        project.korge.init(includeIndirectAndroid)
+
+        project.configureIdea()
 		project.addVersionExtension()
 		project.configureRepositories()
 		project.configureKotlin()
 
-		project.configureIdea()
+        project.configureJvm()
 
-		project.configureJvm()
-
-		if (korge.nativeEnabled) {
-			project.configureNativeDesktop()
-			if (includeIndirectAndroid) {
-				project.configureNativeAndroid()
-			}
-			if (isMacos) {
-				project.configureNativeIos()
-			}
-		}
-		project.configureJavaScript()
-
-		project.korge.init()
-
-		project.configureDependencies()
-        project.addGenResourcesTasks()
+        project.afterEvaluate {
+            if (project.korge.targets.isEmpty()) {
+                println("WARNING! No KorGE targets specified. Trying to enable all the available targets.")
+                if (korge.nativeEnabled) {
+                    project.configureNativeDesktop()
+                    if (includeIndirectAndroid) {
+                        project.configureNativeAndroid()
+                    }
+                    if (isMacos) {
+                        project.configureNativeIos()
+                    }
+                }
+                project.configureJavaScript()
+            }
+            project.configureDependencies()
+            project.addGenResourcesTasks()
+        }
 	}
 
 	private fun Project.configureDependencies() {

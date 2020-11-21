@@ -1,7 +1,12 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.bundle.KorgeBundles
-import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
+import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.android.*
+import com.soywiz.korge.gradle.targets.desktop.*
+import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.js.*
+import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
 import com.sun.net.httpserver.*
 import org.gradle.api.*
@@ -83,9 +88,59 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 
 @Suppress("unused")
 class KorgeExtension(val project: Project) {
-	internal fun init() {
-		// Do nothing, but serves to be referenced to be installed
+    private var includeIndirectAndroid: Boolean = false
+	internal fun init(includeIndirectAndroid: Boolean) {
+	    this.includeIndirectAndroid = includeIndirectAndroid
 	}
+
+    internal var targets = LinkedHashSet<String>()
+
+    private fun target(name: String, block: () -> Unit) {
+        if (!targets.contains(name)) {
+            targets.add(name)
+            block()
+        }
+    }
+
+    fun targetJvm() {
+        target("jvm") {
+            project.configureJvm()
+        }
+    }
+
+    fun targetJs() {
+        target("js") {
+            project.configureJavaScript()
+        }
+    }
+
+    fun targetDesktop() {
+        target("desktop") {
+            project.configureNativeDesktop()
+        }
+    }
+
+    fun targetAndroid() {
+        target("android") {
+            if (includeIndirectAndroid) {
+                project.configureNativeAndroid()
+            }
+        }
+    }
+
+    fun targetIos() {
+        target("ios") {
+            project.configureNativeIos()
+        }
+    }
+
+    fun targetAll() {
+        targetJvm()
+        targetJs()
+        targetDesktop()
+        targetAndroid()
+        targetIos()
+    }
 
     val bundles = KorgeBundles(project)
 

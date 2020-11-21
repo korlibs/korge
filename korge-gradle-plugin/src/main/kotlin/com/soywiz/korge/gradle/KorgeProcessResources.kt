@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
@@ -16,7 +17,15 @@ fun Project.addGenResourcesTasks() = this {
         val jvmMainClasses by lazy { (tasks["jvmMainClasses"]) }
         val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
+        create("listKorgeTargets", Task::class.java) {
+            it.group = GROUP_KORGE_LIST
+            it.doLast {
+                println("gkotlin.targets: ${gkotlin.targets.names}")
+            }
+        }
+
         create("listKorgePlugins", Task::class.java) {
+            it.group = GROUP_KORGE_LIST
             it.dependsOn(jvmMainClasses)
             it.doLast {
                 //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->

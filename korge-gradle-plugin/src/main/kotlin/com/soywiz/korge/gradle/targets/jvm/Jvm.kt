@@ -13,7 +13,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.gradle.*
 
 fun Project.configureJvm() {
-	val jvmTarget = (gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset).createTarget("jvm")
+    if (gkotlin.targets.findByName("jvm") != null) return
+
+    val jvmPreset = (gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset)
+	val jvmTarget = jvmPreset.createTarget("jvm")
 	gkotlin.targets.add(jvmTarget)
 	//jvmTarget.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 
@@ -125,8 +128,10 @@ private fun Project.addProguard() {
 			"com/sun/jna/sunos-sparcv9/**",
 			"com/sun/jna/sunos-x86/**",
 			"com/sun/jna/sunos-x86-64/**",
-			"natives/macosx64/**"
+			"natives/macosx64/**",
+            "META-INF/*.kotlin_module",
 		)
+        task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         task.doFirst {
             task.from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
         }

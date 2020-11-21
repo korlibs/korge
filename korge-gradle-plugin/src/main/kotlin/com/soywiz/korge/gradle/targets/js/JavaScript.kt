@@ -19,6 +19,8 @@ val Project.node_modules get() = korgeCacheDir["node_modules"]
 private object JavaScriptClass
 
 fun Project.configureJavaScript() {
+    if (gkotlin.targets.findByName("js") != null) return
+
     gkotlin.apply {
 		js(KotlinJsCompilerType.IR) {
             browser {
