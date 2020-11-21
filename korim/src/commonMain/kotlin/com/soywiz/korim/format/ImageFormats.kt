@@ -59,4 +59,11 @@ suspend fun Bitmap.writeTo(
 	props: ImageEncodingProps = ImageEncodingProps()
 ) = file.writeBytes(formats.encode(this, props.copy(filename = file.baseName)))
 
+@Suppress("unused")
+suspend fun BmpSlice.writeTo(
+    file: VfsFile,
+    formats: ImageFormat = RegisteredImageFormats,
+    props: ImageEncodingProps = ImageEncodingProps()
+) = this.extract().writeTo(file, formats, props)
+
 suspend fun Bitmap.encode(formats: ImageFormat = RegisteredImageFormats, props: ImageEncodingProps = ImageEncodingProps()) = formats.encode(this, props)
