@@ -686,7 +686,7 @@ abstract class View internal constructor(
     protected open fun renderDebugAnnotationsInternal(ctx: RenderContext) {
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
-        val local = getLocalBounds()
+        val local = getLocalBounds(doAnchoring = true)
         ctx.debugLineRenderContext.drawVector(Colors.RED) {
             rect(globalBounds)
         }
@@ -1025,25 +1025,47 @@ abstract class View internal constructor(
     //	return out
     //}
 
+    //fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix = getConcatMatrix(target, false, out)
+
     /**
      * Gets the concatenated [Matrix] of this [View] up to the [target] view.
+     * If [inclusive] is true, the concatenated matrix will include the [target] view too.
      * Allows to define an [out] matrix that will hold the result to prevent allocations.
      */
-    fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix {
-        return getConcatMatrix(target, false, out)
-    }
-
-    fun getConcatMatrix(target: View, inclusive: Boolean, out: Matrix = Matrix()): Matrix {
+    fun getConcatMatrix(target: View, out: Matrix = Matrix(), inclusive: Boolean = false): Matrix {
         when {
             target === parent -> out.copyFrom(this.localMatrix)
             target === this -> out.identity()
-            // @TODO: Verify
-            View.commonAncestor(this, target) != null -> out.multiply(this.globalMatrix, target.globalMatrixInv)
-            //View.commonAncestor(this, target) != null -> out.multiply(target.globalMatrixInv, this.globalMatrix)
-            else -> out.identity()
+            else -> {
+                val commonAncestor = View.commonAncestor(this, target)
+                when {
+                    commonAncestor !== null -> {
+                        if (target?.parent == null && inclusive) {
+                            return out.copyFrom(globalMatrix)
+                        }
+                        out.multiply(globalMatrix, target.globalMatrixInv)
+                    }
+                    else -> {
+                        out.identity()
+                    }
+                }
+            }
         }
         if (inclusive) {
-            out.premultiply(target.localMatrix)
+            out.multiply(out, target.localMatrix)
+        }
+        return out
+    }
+
+    fun getConcatMatrixAccurateSlow(target: View, out: Matrix = Matrix(), inclusive: Boolean = false): Matrix {
+        out.identity()
+        if (target !== this) {
+            var current: View? = this
+            val stopAt = if (inclusive) target.parent else target
+            while (current !== null && current !== stopAt) {
+                out.multiply(out, current.localMatrix) // Verified
+                current = current.parent
+            }
         }
         return out
     }
@@ -1052,7 +1074,8 @@ abstract class View internal constructor(
     val globalBounds: Rectangle get() = getGlobalBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
-    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(this.root, out)
+    //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = _getBounds(globalMatrix, out)
+    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
 
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
@@ -1061,57 +1084,57 @@ abstract class View internal constructor(
     private val boundsTemp = Matrix()
     private val bb = BoundsBuilder()
 
-    fun getBounds(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
-        return getBounds(target, true, out)
+    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false): Rectangle {
+        return getBounds(target, out, false, inclusive)
     }
 
-    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle()): Rectangle {
-        return getBounds(target, false, out)
-    }
+    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true): Rectangle {
+        getLocalBounds(out, doAnchoring)
 
-    fun getBounds(target: View? = this, doAnchoring: Boolean, out: Rectangle = Rectangle()): Rectangle {
-        getLocalBounds(doAnchoring, out)
+        if (concat != null && !concat.isIdentity()) {
+            val p1x = out.left
+            val p1y = out.top
 
-        if (target === parent && localMatrix.isIdentity()) return out
+            val p2x = out.right
+            val p2y = out.top
 
-        val p1x = out.left
-        val p1y = out.top
+            val p3x = out.right
+            val p3y = out.bottom
 
-        val p2x = out.right
-        val p2y = out.top
+            val p4x = out.left
+            val p4y = out.bottom
 
-        val p3x = out.right
-        val p3y = out.bottom
+            bb.reset()
+            bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+            bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+            bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+            bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
 
-        val p4x = out.left
-        val p4y = out.bottom
-
-        //val concat = (parent ?: this).getConcatMatrix(target ?: this)
-        val concat = this.getConcatMatrix(target ?: this, boundsTemp)
-
-        bb.reset()
-        bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-        bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-        bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-        bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
-
-        bb.getBounds(out)
+            bb.getBounds(out)
+        }
         return out
     }
 
+    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false): Rectangle {
+        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring)
+    }
+
     /**
-     * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBounds(out: Rectangle = Rectangle()) = out.apply { getLocalBoundsInternal(out) }
+    fun getLocalBoundsOptimized(): Rectangle = getLocalBounds(_localBounds)
 
-    fun getLocalBoundsOptimized(out: Rectangle = _localBounds) = out.apply { getLocalBoundsInternal(out) }
-
-    fun getLocalBounds(doAnchoring: Boolean, out: Rectangle = _localBounds) = getLocalBounds(out).also {
+    /**
+     * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
+     */
+    fun getLocalBounds(out: Rectangle = Rectangle(), doAnchoring: Boolean = true): Rectangle {
+        getLocalBoundsInternal(out)
+        val it = out
         if (!doAnchoring) {
             it.x += anchorDispX
             it.y += anchorDispY
         }
+        return it
     }
 
     private val _localBounds: Rectangle = Rectangle()
@@ -1598,12 +1621,12 @@ fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
 fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
-    val mat = this.parent!!.getConcatMatrix(view, false)
+    val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     return mat.transform(pos, out)
 }
 
 fun View.setPositionRelativeTo(view: View, pos: Point) {
-    val mat = this.parent!!.getConcatMatrix(view, false)
+    val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     val out = matInv.transform(pos)
     this.x = out.x
@@ -1611,12 +1634,12 @@ fun View.setPositionRelativeTo(view: View, pos: Point) {
 }
 
 fun View.getPointRelativeTo(pos: Point, view: View, out: Point = Point()): Point {
-    val mat = this.getConcatMatrix(view, false)
+    val mat = this.getConcatMatrix(view, inclusive = false)
     return mat.transform(pos, out)
 }
 
 fun View.getPointRelativeToInv(pos: Point, view: View, out: Point = Point()): Point {
-    val mat = this.getConcatMatrix(view, false)
+    val mat = this.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     matInv.transform(pos, out)
     return out

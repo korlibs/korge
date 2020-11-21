@@ -5,6 +5,7 @@ package com.soywiz.korma.geom
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
+import kotlin.jvm.*
 import kotlin.math.*
 
 data class Matrix(
@@ -82,8 +83,12 @@ data class Matrix(
     fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
     fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
-    fun copyFrom(that: Matrix): Matrix {
-        setTo(that.a, that.b, that.c, that.d, that.tx, that.ty)
+    fun copyFrom(that: Matrix?): Matrix {
+        if (that != null) {
+            setTo(that.a, that.b, that.c, that.d, that.tx, that.ty)
+        } else {
+            identity()
+        }
         return this
     }
 
@@ -171,6 +176,17 @@ data class Matrix(
         l.tx * r.a + l.ty * r.c + r.tx,
         l.tx * r.b + l.ty * r.d + r.ty
     )
+
+    @JvmName("multiplyNullable")
+    fun multiply(l: Matrix?, r: Matrix?): Matrix {
+        when {
+            l != null && r != null -> multiply(l, r)
+            l != null -> copyFrom(l)
+            r != null -> copyFrom(r)
+            else -> identity()
+        }
+        return this
+    }
 
     /** Transform point without translation */
     fun deltaTransformPoint(point: IPoint, out: Point = Point()) = deltaTransformPoint(point.x, point.y, out)
@@ -480,3 +496,4 @@ data class Matrix(
 
     override fun toString(): String = "Matrix(a=$a, b=$b, c=$c, d=$d, tx=$tx, ty=$ty)"
 }
+

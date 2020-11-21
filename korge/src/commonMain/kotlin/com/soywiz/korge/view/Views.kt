@@ -376,6 +376,7 @@ class Views constructor(
 	fun dispose() {
 	}
 
+    /*
     @KorgeInternal
     fun getWindowBounds(view: View, out: Rectangle = Rectangle()): Rectangle {
         val bounds = view.getGlobalBounds(out)
@@ -388,9 +389,12 @@ class Views constructor(
     }
 
     /** Transform global coordinates [x] and [y] into coordinates in the window space X */
-    fun globalToWindowX(x: Double, y: Double): Double = stage.localMatrix.transformX(x, y)
+    //internal fun globalToWindowX(x: Double, y: Double): Double = stage.localMatrix.transformX(x, y)
+    internal fun globalToWindowX(x: Double, y: Double): Double = x
     /** Transform global coordinates [x] and [y] into coordinates in the window space Y */
-    fun globalToWindowY(x: Double, y: Double): Double = stage.localMatrix.transformY(x, y)
+    //internal fun globalToWindowY(x: Double, y: Double): Double = stage.localMatrix.transformY(x, y)
+    internal fun globalToWindowY(x: Double, y: Double): Double = y
+    */
 
     val debugHighlighters = Signal<View?>()
 
