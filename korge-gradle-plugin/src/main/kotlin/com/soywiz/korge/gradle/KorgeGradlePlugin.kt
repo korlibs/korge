@@ -15,31 +15,6 @@ import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
-val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
-val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
-val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
-val Project.korge: KorgeExtension
-	get() {
-		val extension = project.extensions.findByName("korge") as? KorgeExtension?
-		return if (extension == null) {
-			val newExtension = KorgeExtension(this)
-			project.extensions.add("korge", newExtension)
-			newExtension
-		} else {
-			extension
-		}
-	}
-
-open class JsWebCopy() : Copy() {
-	@OutputDirectory
-	open lateinit var targetDir: File
-}
-
-val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
-//val node_modules by lazy { project.file("node_modules") }
-
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
 		System.setProperty("java.awt.headless", "true")
@@ -141,3 +116,28 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
 }
+
+val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
+val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
+
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
+val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
+val Project.korge: KorgeExtension
+    get() {
+        val extension = project.extensions.findByName("korge") as? KorgeExtension?
+        return if (extension == null) {
+            val newExtension = KorgeExtension(this)
+            project.extensions.add("korge", newExtension)
+            newExtension
+        } else {
+            extension
+        }
+    }
+
+open class JsWebCopy() : Copy() {
+    @OutputDirectory
+    open lateinit var targetDir: File
+}
+
+val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+//val node_modules by lazy { project.file("node_modules") }
