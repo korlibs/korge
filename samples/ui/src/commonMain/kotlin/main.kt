@@ -1,7 +1,6 @@
 import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.font.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.service.process.*
@@ -11,6 +10,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
@@ -50,7 +50,7 @@ suspend fun main2() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 	val nativeProcess = NativeProcess(views)
 
 	defaultUISkin = OtherUISkin()
-	defaultUIFont = resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps()
+	defaultUIFont = resourcesVfs["uifont.fnt"].readBitmapFont()
 
 	uiTextButton(256.0, 32.0) {
 		text = "Disabled Button"
