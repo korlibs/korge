@@ -113,7 +113,7 @@ class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
         }
 
     val debugFrame = JFrame("Debug").apply {
-        this.defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+        this.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
         this.setSize(256, 256)
         this.type = Window.Type.UTILITY
         //focusableWindowState = false
