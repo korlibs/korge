@@ -1,6 +1,7 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kmem.toIntRound
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.Rectangle
 import kotlin.math.roundToInt
 
@@ -92,7 +93,8 @@ data class GlyphMetrics(
 }
 
 data class TextMetrics(
-    val bounds: Rectangle = Rectangle()
+    val bounds: Rectangle = Rectangle(),
+    val firstLineBounds: Rectangle = Rectangle()
 ) {
     val left: Double get() = bounds.left
     val top: Double get() = bounds.top
@@ -102,4 +104,15 @@ data class TextMetrics(
 
     val width: Double get() = bounds.width
     val height: Double get() = bounds.height
+
+    val drawLeft get() = -left
+    val drawTop get() = firstLineBounds.height + firstLineBounds.top
+
+    fun round(): TextMetrics {
+        bounds.round()
+        firstLineBounds.round()
+        return this
+    }
+
+    override fun toString(): String = "TextMetrics[${left.niceStr}, ${top.niceStr}, ${width.niceStr}, ${height.niceStr}][${drawLeft.niceStr}, ${drawTop.niceStr}]"
 }

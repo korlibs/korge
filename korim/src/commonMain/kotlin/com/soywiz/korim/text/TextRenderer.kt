@@ -25,7 +25,7 @@ abstract class TextRendererActions {
     var x = 0.0
     var y = 0.0
 
-    fun reset() {
+    open fun reset() {
         x = 0.0
         y = 0.0
     }
@@ -53,7 +53,9 @@ abstract class TextRendererActions {
 }
 
 class BoundBuilderTextRendererActions : TextRendererActions() {
+    val flbb = BoundsBuilder()
     val bb = BoundsBuilder()
+    var currentLine = 0
 
     private fun add(x: Double, y: Double) {
         //val itransform = transform.inverted()
@@ -61,24 +63,41 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         val ry = this.y + transform.transformY(x, y)
         //println("P: $rx, $ry [$x, $y]")
         bb.add(rx, ry)
+        if (currentLine == 0) {
+            flbb.add(rx, ry)
+        }
     }
 
-    override fun put(codePoint: Int): GlyphMetrics {
-        val g = getGlyphMetrics(codePoint)
-        // y = 0 is the baseline
-
-        val fx = g.bounds.left
-        val fy = g.bounds.top
-        val w = g.bounds.width
-        val h = g.bounds.height
+    private fun add(rect: Rectangle) {
+        val fx = rect.left
+        val fy = rect.top
+        val w = rect.width
+        val h = rect.height
 
         //println("------: [$x,$y] -- ($fx, $fy)-($w, $h)")
         add(fx, fy)
         add(fx + w, fy)
         add(fx + w, fy + h)
         add(fx, fy + h)
+    }
 
+    override fun reset() {
+        super.reset()
+        currentLine = 0
+        bb.reset()
+        flbb.reset()
+    }
+
+    override fun put(codePoint: Int): GlyphMetrics {
+        val g = getGlyphMetrics(codePoint)
+        // y = 0 is the baseline
+        add(g.bounds)
         return g
+    }
+
+    override fun newLine(y: Double) {
+        super.newLine(y)
+        currentLine++
     }
 }
 
@@ -164,7 +183,6 @@ interface TextRenderer<T> {
         actions.apply { run(text, size, defaultFont) }
     }
 }
-
 
 inline fun <reified T> DefaultTextRenderer() = when (T::class) {
     String::class -> DefaultStringTextRenderer

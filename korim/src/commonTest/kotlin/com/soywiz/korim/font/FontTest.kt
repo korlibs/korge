@@ -143,4 +143,18 @@ class FontTest {
         //font1.renderTextToBitmap(20.0, "Hello World!", border = 64, nativeRendering = false).bmp.showImageAndWait()
         //font4.renderTextToBitmap(64.0, "12 Hello World", nativeRendering = true).bmp.showImageAndWait()
     }
+
+    @Test
+    fun testTextBounds() {
+        assertEquals(
+            """
+                TextMetrics[1, -3, 78, 14][-1, 11]            
+                TextMetrics[0, -3, 78, 30][0, 11]
+            """.trimIndent(),
+            """
+                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld").round()}            
+                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld\ntest").round()}
+            """.trimIndent()
+        )
+    }
 }

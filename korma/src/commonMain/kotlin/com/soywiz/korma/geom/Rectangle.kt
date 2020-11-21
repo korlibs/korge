@@ -169,6 +169,18 @@ data class Rectangle(
         out.setTo(left + width * anchor.sx, top + height * anchor.sy)
 
     fun toInt() = RectangleInt(x, y, width, height)
+    fun floor(): Rectangle {
+        setTo(kotlin.math.floor(x), kotlin.math.floor(y), kotlin.math.floor(width), kotlin.math.floor(height))
+        return this
+    }
+    fun round(): Rectangle {
+        setTo(kotlin.math.round(x), kotlin.math.round(y), kotlin.math.round(width), kotlin.math.round(height))
+        return this
+    }
+    fun ceil(): Rectangle {
+        setTo(kotlin.math.ceil(x), kotlin.math.ceil(y), kotlin.math.ceil(width), kotlin.math.ceil(height))
+        return this
+    }
 }
 
 inline fun Rectangle.setTo(x: Number, y: Number, width: Number, height: Number) =

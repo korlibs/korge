@@ -79,8 +79,10 @@ fun <T> Font.renderTextToBitmap(
     val iwidth = bounds.width.toIntCeil() + border * 2 + 1
     val iheight = bounds.height.toIntCeil() + border * 2 + 1
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
+    //println("bounds.firstLineBounds: ${bounds.firstLineBounds}")
+    //println("bounds.bounds: ${bounds.bounds}")
     image.context2d {
-        font.drawText(this, size, text, paint, -bounds.left, bounds.height + bounds.top, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
             if (returnGlyphs) {
                 glyphs += TextToBitmapResult.PlacedGlyph(codePoint, x, y, metrics.clone(), transform.clone())
             }
@@ -123,5 +125,6 @@ fun <T> Font.getTextBounds(size: Double, text: T, out: TextMetrics = TextMetrics
     val actions = BoundBuilderTextRendererActions()
     renderer.invoke(actions, text, size, this)
     actions.bb.getBounds(out.bounds)
+    actions.flbb.getBounds(out.firstLineBounds)
     return out
 }
