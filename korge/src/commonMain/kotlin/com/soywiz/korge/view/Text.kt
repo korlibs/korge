@@ -1,11 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.view.internal.*
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
@@ -36,7 +33,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-    text: String, textSize: Double = 64.0,
+    text: String, textSize: Double = 16.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -46,7 +43,7 @@ inline fun Container.text(
     = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
 
 open class Text(
-    text: String, textSize: Double = 64.0,
+    text: String, textSize: Double = 16.0,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -197,7 +194,7 @@ open class Text(
                     cachedVersionRenderer = rversion
                     cachedVersion = version
 
-                    staticImage = null
+                    _staticImage = null
                     bitmapFontActions.x = 0.0
                     bitmapFontActions.y = 0.0
 
@@ -247,17 +244,17 @@ open class Text(
                     val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                     val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
 
-                    if (staticImage == null) {
+                    if (_staticImage == null) {
                         container.removeChildren()
-                        staticImage = container.image(textToBitmapResult.bmp)
+                        _staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        imagesToRemove.add(staticImage!!.bitmap.bmp)
-                        staticImage!!.bitmap = textToBitmapResult.bmp.slice()
+                        imagesToRemove.add(_staticImage!!.bitmap.bmp)
+                        _staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
-                    staticImage!!.scale(1.0 / autoscaling.renderedAtScaleXY, 1.0 / autoscaling.renderedAtScaleXY)
+                    _staticImage!!.scale(1.0 / autoscaling.renderedAtScaleXY, 1.0 / autoscaling.renderedAtScaleXY)
                     setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
                 }
-                staticImage?.smoothing = smoothing
+                _staticImage?.smoothing = smoothing
             }
         }
     }
@@ -277,7 +274,12 @@ open class Text(
 
     private val imagesToRemove = arrayListOf<Bitmap>()
 
-    var staticImage: Image? = null
+    internal var _staticImage: Image? = null
+
+    val staticImage: Image? get() {
+        _renderInternal(null)
+        return _staticImage
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsableSection("Text") {
