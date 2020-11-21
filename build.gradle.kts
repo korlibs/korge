@@ -34,6 +34,9 @@ plugins {
 }
 
 val kotlinVersion: String by project
+val coroutinesVersion: String by project
+val jnaVersion: String by project
+val androidBuildGradleVersion: String by project
 
 //println(KotlinVersion.CURRENT)
 
@@ -788,7 +791,19 @@ val buildVersionsFile = file("korge-gradle-plugin/src/main/kotlin/com/soywiz/kor
 val oldBuildVersionsText = buildVersionsFile.readText()
 val newBuildVersionsText = oldBuildVersionsText
     .replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
+    .replace(Regex("const val KLOCK = \"(.*?)\""), "const val KLOCK = \"${project.version}\"")
+    .replace(Regex("const val KDS = \"(.*?)\""), "const val KDS = \"${project.version}\"")
+    .replace(Regex("const val KMEM = \"(.*?)\""), "const val KMEM = \"${project.version}\"")
+    .replace(Regex("const val KORMA = \"(.*?)\""), "const val KORMA = \"${project.version}\"")
+    .replace(Regex("const val KORIO = \"(.*?)\""), "const val KORIO = \"${project.version}\"")
+    .replace(Regex("const val KORIM = \"(.*?)\""), "const val KORIM = \"${project.version}\"")
+    .replace(Regex("const val KORAU = \"(.*?)\""), "const val KORAU = \"${project.version}\"")
+    .replace(Regex("const val KORGW = \"(.*?)\""), "const val KORGW = \"${project.version}\"")
+    .replace(Regex("const val KORGE = \"(.*?)\""), "const val KORGE = \"${project.version}\"")
     .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${kotlinVersion}\"")
+    .replace(Regex("const val JNA = \"(.*?)\""), "const val JNA = \"${jnaVersion}\"")
+    .replace(Regex("const val ANDROID_BUILD = \"(.*?)\""), "const val ANDROID_BUILD = \"${androidBuildGradleVersion}\"")
+    .replace(Regex("const val COROUTINES = \"(.*?)\""), "const val COROUTINES = \"${coroutinesVersion}\"")
 if (oldBuildVersionsText != newBuildVersionsText) {
     buildVersionsFile.writeText(newBuildVersionsText)
 }
