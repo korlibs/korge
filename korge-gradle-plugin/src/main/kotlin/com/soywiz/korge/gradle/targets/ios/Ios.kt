@@ -764,7 +764,14 @@ fun Project.configureNativeIos() {
 		task.onlyIf { appleGetBootedDevice() == null }
 		task.dependsOn(iosCreateIphone)
 		task.doLast {
-			val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+            val devices = appleGetDevices()
+			val udid = devices.firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+            logger.info("Booting udid=$udid")
+            if (logger.isInfoEnabled) {
+                for (device in devices) {
+                    logger.info(" - $device")
+                }
+            }
 			execLogger { it.commandLine("xcrun", "simctl", "boot", udid) }
 			execLogger { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
 		}
@@ -802,7 +809,10 @@ fun Project.configureNativeIos() {
 			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+                val devices = appleGetDevices()
+                val udid = devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.booted }?.udid
+                    ?: devices.firstOrNull { it.name.contains("iPhone") && it.booted }?.udid
+                    ?: error("Can't find suitable booted iPhone $iphoneVersion device")
 				execLogger { it.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath) }
 			}
 		}
@@ -864,9 +874,8 @@ fun Project.appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
 	val res = Json.parse(execOutput("xcrun", "simctl", "list", "-j", "devices"))
 	val devices = res["devices"]
 	val oses = devices.keys.map { it.str }
-	//val iosOs = oses.firstOrNull { it.contains(os) } ?: error("No iOS devices created")
-	val iosOs = oses.firstOrNull { it.contains(os) } ?: listOf<String>()
-	devices[iosOs].list.map {
+	val iosOses = oses.filter { it.contains(os) }
+    iosOses.map { devices[it].list }.flatten().map {
 		IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
 	}
 }
