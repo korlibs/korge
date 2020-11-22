@@ -42,7 +42,7 @@ class KorgeGradleApply(val project: Project) {
                 if (korge.nativeEnabled) {
                     project.configureNativeDesktop()
                     if (includeIndirectAndroid) {
-                        project.configureNativeAndroid()
+                        project.configureAndroidIndirect()
                     }
                     if (isMacos) {
                         project.configureNativeIos()

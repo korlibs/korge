@@ -4,40 +4,19 @@ import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
-import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
-import java.net.URLClassLoader
 import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 
-//Linux: ~/Android/Sdk
-//Mac: ~/Library/Android/sdk
-//Windows: %LOCALAPPDATA%\Android\sdk
-val Project.androidSdkPath: String get() {
-    val localPropertiesFile = projectDir["local.properties"]
-    if (localPropertiesFile.exists()) {
-        val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
-        if (props.getProperty("sdk.dir") != null) {
-            return props.getProperty("sdk.dir")!!
-        }
-    }
-    val userHome = System.getProperty("user.home")
-    return listOfNotNull(
-        System.getenv("ANDROID_HOME"),
-        "$userHome/AppData/Local/Android/sdk",
-        "$userHome/Library/Android/sdk",
-        "$userHome/Android/Sdk"
-    ).firstOrNull { File(it).exists() } ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
-}
 
-fun Project.configureNativeAndroid() {
+fun Project.configureAndroidIndirect() {
 	val resolvedKorgeArtifacts = LinkedHashMap<String, String>()
 	val resolvedOtherArtifacts = LinkedHashMap<String, String>()
 	val resolvedModules = LinkedHashMap<String, String>()
@@ -106,15 +85,13 @@ fun Project.configureNativeAndroid() {
 				//		task clean(type: Delete) { delete rootProject.buildDir }
 				//""".trimIndent())
 				//}
-				File(outputFolder, "local.properties").conditionally(ifNotExists) {
-					ensureParents().writeTextIfChanged("sdk.dir=${androidSdkPath.escape()}")
-				}
+                ensureAndroidLocalPropertiesWithSdkDir(outputFolder)
 				//File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
                 File(outputFolder, "settings.gradle").always {
 					ensureParents().writeTextIfChanged(Indenter {
 						line("enableFeaturePreview(\"GRADLE_METADATA\")")
                         line("rootProject.name = ${project.name.quoted}")
-						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureNativeAndroid.parent?.projectDir?.let {
+						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureAndroidIndirect.parent?.projectDir?.let {
 							line("include(\":$parentProjectName\")")
 							line("project(\":$parentProjectName\").projectDir = file(\'$it\')")
 							resolvedModules.forEach { (name, path) ->
@@ -176,18 +153,9 @@ fun Project.configureNativeAndroid() {
                                 line("freeCompilerArgs += \"-Xmulti-platform\"")
                             }
                             line("packagingOptions") {
-                                line("exclude 'META-INF/DEPENDENCIES'")
-                                line("exclude 'META-INF/LICENSE'")
-                                line("exclude 'META-INF/LICENSE.txt'")
-                                line("exclude 'META-INF/license.txt'")
-                                line("exclude 'META-INF/NOTICE'")
-                                line("exclude 'META-INF/NOTICE.txt'")
-                                line("exclude 'META-INF/notice.txt'")
-                                line("exclude 'META-INF/*.kotlin_module'")
-                                line("exclude 'META-INF/LGPL*'")
-                                line("exclude 'META-INF/AL2.0'")
-								line("exclude '**/*.kotlin_metadata'")
-								line("exclude '**/*.kotlin_builtins'")
+                                for (pattern in androidExcludePatterns()) {
+                                    line("exclude '$pattern'")
+                                }
                             }
 							line("compileSdkVersion ${korge.androidCompileSdk}")
 							line("defaultConfig") {
@@ -231,16 +199,6 @@ fun Project.configureNativeAndroid() {
 								line("main") {
 									// @TODO: Use proper source sets of the app
 
-                                    val targets = listOf(kotlin.metadata())
-                                    val mainSourceSets = targets.flatMap { it.compilations["main"].allKotlinSourceSets }
-
-                                    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs }
-                                    val resourcesSrcDirsBundle = project.korge.bundles.getPaths("android", resources = true, test = false)
-                                    val resourcesSrcDirs = resourcesSrcDirsBase + resourcesSrcDirsBundle
-
-                                    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs }
-                                    val kotlinSrcDirsBundle = project.korge.bundles.getPaths("android", resources = false, test = false)
-                                    val kotlinSrcDirs = kotlinSrcDirsBase + kotlinSrcDirsBundle
 
                                     //println("mainSourceSets: $mainSourceSets")
                                     //println("resourcesSrcDirsBase: $resourcesSrcDirsBase")
@@ -248,6 +206,7 @@ fun Project.configureNativeAndroid() {
                                     //println("kotlinSrcDirsBase: $kotlinSrcDirsBase")
                                     //println("kotlinSrcDirsBundle: $kotlinSrcDirsBundle")
 
+                                    val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
                                     line("assets.srcDirs += [${resourcesSrcDirs.joinToString(", ") { it.absolutePath.quoted }}]")
                                     line("java.srcDirs += [${kotlinSrcDirs.joinToString(", ") { it.absolutePath.quoted }}]")
 								}
@@ -337,47 +296,7 @@ fun Project.configureNativeAndroid() {
 		task.dependsOn(bundleAndroid)
 	}
 
-	// adb shell am start -n com.package.name/com.package.name.ActivityName
-	for (debug in listOf(false, true)) {
-		val suffixDebug = if (debug) "Debug" else "Release"
-		val installAndroidTask = tasks.create("installAndroid$suffixDebug", GradleBuild::class.java) { task ->
-			task.apply {
-				group = GROUP_KORGE_INSTALL
-				dependsOn(prepareAndroidBootstrap)
-                dependsOn("korgeProcessedResourcesJvmMain")
-				buildFile = File(buildDir, "platforms/android/build.gradle")
-				version = "4.10.1"
-				tasks = listOf("install$suffixDebug")
-			}
-		}
-
-		for (emulator in listOf(null, false, true)) {
-			val suffixDevice = when (emulator) {
-				null -> ""
-				false -> "Device"
-				true -> "Emulator"
-			}
-
-			val extra = when (emulator) {
-				null -> arrayOf()
-				false -> arrayOf("-d")
-				true -> arrayOf("-e")
-			}
-
-			tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
-				group = GROUP_KORGE_RUN
-				dependsOn(installAndroidTask)
-				doFirst {
-					execLogger {
-						it.commandLine(
-							"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
-							"${korge.id}/${korge.id}.MainActivity"
-						)
-					}
-				}
-			}
-		}
-	}
+    installAndroidRun(listOf(prepareAndroidBootstrap.name), direct = false)
 }
 
 fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo) {

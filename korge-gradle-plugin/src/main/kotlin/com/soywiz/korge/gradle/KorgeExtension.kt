@@ -1,14 +1,12 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.bundle.KorgeBundles
-import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.ios.*
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
-import com.sun.net.httpserver.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
@@ -18,7 +16,6 @@ import java.net.*
 import java.time.*
 import java.util.*
 import kotlin.collections.LinkedHashMap
-import kotlin.reflect.*
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 
@@ -121,10 +118,18 @@ class KorgeExtension(val project: Project) {
     }
 
     fun targetAndroid() {
+        targetAndroidDirect()
+    }
+
+    fun targetAndroidDirect() {
         target("android") {
-            if (includeIndirectAndroid) {
-                project.configureNativeAndroid()
-            }
+            project.configureAndroidDirect()
+        }
+    }
+
+    fun targetAndroidIndirect() {
+        target("android") {
+            project.configureAndroidIndirect()
         }
     }
 
