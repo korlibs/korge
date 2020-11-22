@@ -115,11 +115,11 @@ fun Project.androidGetResourcesFolders(): Pair<List<File>, List<File>> {
     val targets = listOf(kotlin.metadata())
     val mainSourceSets = targets.flatMap { it.compilations["main"].allKotlinSourceSets }
 
-    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs }
+    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs } + listOf(file("src/androidMain/resources"), file("src/main/resources"))
     val resourcesSrcDirsBundle = project.korge.bundles.getPaths("android", resources = true, test = false)
     val resourcesSrcDirs = resourcesSrcDirsBase + resourcesSrcDirsBundle
 
-    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs }
+    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs } + listOf(file("src/androidMain/kotlin"), file("src/main/java"))
     val kotlinSrcDirsBundle = project.korge.bundles.getPaths("android", resources = false, test = false)
     val kotlinSrcDirs = kotlinSrcDirsBase + kotlinSrcDirsBundle
 

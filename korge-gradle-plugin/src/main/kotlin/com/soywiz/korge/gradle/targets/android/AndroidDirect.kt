@@ -62,6 +62,9 @@ fun Project.configureAndroidDirect() {
         sourceSets {
             maybeCreate("main").also {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
+                //println("@ANDROID_DIRECT:")
+                //println(resourcesSrcDirs.joinToString("\n"))
+                //println(kotlinSrcDirs.joinToString("\n"))
                 it.assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
                 it.java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())
             }
