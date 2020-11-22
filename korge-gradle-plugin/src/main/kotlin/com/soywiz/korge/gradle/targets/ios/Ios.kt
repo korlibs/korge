@@ -36,8 +36,10 @@ fun Project.configureNativeIos() {
 		}
 	}
 
+    val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64())
+
 	kotlin.apply {
-		for (target in listOf(iosX64(), iosArm64())) {
+		for (target in iosTargets) {
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
@@ -90,8 +92,10 @@ fun Project.configureNativeIos() {
 
 	val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
 	val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
-		dependsOn("genResources")
-		from(File(buildDir, "genMainResources"))
+        val targetName = "iosX64" // @TODO: Should be one per target?
+        val compilationName = "main"
+		dependsOn(getKorgeProcessResourcesTaskName(targetName, compilationName))
+		from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
 		from(File(rootDir, "src/commonMain/resources"))
 		into(combinedResourcesFolder)
 		doFirst {

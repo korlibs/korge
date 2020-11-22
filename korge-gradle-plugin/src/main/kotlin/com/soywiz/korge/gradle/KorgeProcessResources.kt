@@ -9,8 +9,18 @@ import java.io.File
 import java.net.*
 
 fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File {
-    return File(project.buildDir, "korgeProcessedResources/${compilation.target.name}/${compilation.name}")
+    return getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
 }
+
+fun Project.getCompilationKorgeProcessedResourcesFolder(targetName: String, compilationName: String): File {
+    return File(project.buildDir, "korgeProcessedResources/${targetName}/${compilationName}")
+}
+
+fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
+    getKorgeProcessResourcesTaskName(target.name, compilation.name)
+
+fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
+    "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
 fun Project.addGenResourcesTasks() = this {
     tasks.apply {
@@ -39,6 +49,7 @@ fun Project.addGenResourcesTasks() = this {
                 val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
                 compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
                 val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
+                    it.group = GROUP_KORGE_RESOURCES
                     //dependsOn(prepareResourceProcessingClasses)
                     it.dependsOn(jvmMainClasses)
 
@@ -64,5 +75,3 @@ fun Project.addGenResourcesTasks() = this {
     }
 }
 
-fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
-    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
