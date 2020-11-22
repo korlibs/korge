@@ -802,22 +802,19 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("installIosSimulator$debugSuffix", Task::class.java) { task ->
+		val installIosSimulator = tasks.create("installIosSimulator$debugSuffix", Task::class.java) { task ->
 			val buildTaskName = "iosBuildSimulator$debugSuffix"
 			task.group = GROUP_KORGE_INSTALL
 
 			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                val devices = appleGetDevices()
-                val udid = devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.booted }?.udid
-                    ?: devices.firstOrNull { it.name.contains("iPhone") && it.booted }?.udid
-                    ?: error("Can't find suitable booted iPhone $iphoneVersion device")
-				execLogger { it.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath) }
+                val device = appleGetInstallDevice(iphoneVersion)
+				execLogger { it.commandLine("xcrun", "simctl", "install", device.udid, appFolder.absolutePath) }
 			}
 		}
 
-		tasks.create("installIosDevice$debugSuffix", Task::class.java) { task ->
+		val installIosDevice = tasks.create("installIosDevice$debugSuffix", Task::class.java) { task ->
 			task.group = GROUP_KORGE_INSTALL
 			val buildTaskName = "iosBuildDevice$debugSuffix"
 			task.dependsOn("installIosDeploy", buildTaskName)
@@ -836,7 +833,18 @@ fun Project.configureNativeIos() {
 				commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
 			}
 		}
-	}
+
+        tasks.createTyped<Exec>("runIosSimulator$debugSuffix") {
+            group = GROUP_KORGE_RUN
+            dependsOn(installIosSimulator)
+            doFirst {
+                val device = appleGetInstallDevice(iphoneVersion)
+                // xcrun simctl launch --console 7F49203A-1F16-4DEE-B9A2-7A1BB153DF70 com.sample.demo.app-X64-Debug
+                //logger.info(params.joinToString(" "))
+                execLogger { it.commandLine("xcrun", "simctl", "launch", "--console", device.udid, "${korge.id}.app-X64-$debugSuffix") }
+            }
+        }
+    }
 
 
 	tasks.create("iosEraseAllSimulators") { task ->
@@ -878,6 +886,13 @@ fun Project.appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
     iosOses.map { devices[it].list }.flatten().map {
 		IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
 	}
+}
+
+fun Project.appleGetInstallDevice(iphoneVersion: Int): IosDevice {
+    val devices = appleGetDevices()
+    return devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.booted }
+        ?: devices.firstOrNull { it.name.contains("iPhone") && it.booted }
+        ?: error("Can't find suitable booted iPhone $iphoneVersion device")
 }
 
 fun Project.appleGetBootedDevice(os: String = "iOS"): IosDevice? = appleGetDevices(os).firstOrNull { it.booted }
