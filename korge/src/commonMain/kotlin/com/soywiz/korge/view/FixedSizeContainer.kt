@@ -41,8 +41,7 @@ open class FixedSizeContainer(
     override fun renderInternal(ctx: RenderContext) {
         if (clip) {
             val c2d = ctx.ctx2d
-            //val bounds = stage?.views?.getWindowBounds(this, tempBounds) ?: getGlobalBounds(tempBounds)
-            val bounds = getGlobalBounds(tempBounds)
+            val bounds = getWindowBounds(tempBounds)
             c2d.scissor(bounds) {
                 super.renderInternal(ctx)
             }
