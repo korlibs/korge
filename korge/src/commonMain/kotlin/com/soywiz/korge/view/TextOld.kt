@@ -127,9 +127,9 @@ class TextOld : View(), IText, IHtml {
 		val m = globalMatrix
 		if (document != null) {
 			document!!.allSpans.fastForEach { span ->
-				val font = span.format.computedFace
+				val font = fontsCatalog.getBitmapFont(span.format.computedFace)
 				val format = span.format
-                (font as BitmapFont).drawText(
+                font.drawText(
 					ctx, format.computedSize.toDouble(), text,
 					span.bounds.x.toInt(), span.bounds.y.toInt(),
 					m,
@@ -166,7 +166,7 @@ class TextOld : View(), IText, IHtml {
 			}
 
 			//println(" -> ($x, $y)")
-            (font as BitmapFont).drawText(
+            fontsCatalog.getBitmapFont(font).drawText(
 				ctx, format.computedSize.toDouble(), text, px.toInt(), py.toInt(),
 				m,
 				colMul = RGBA.multiply(colorMul, format.computedColor),

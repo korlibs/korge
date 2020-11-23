@@ -120,7 +120,7 @@ suspend fun QView.tween(
         delay(time)
     } else {
         fastForEach {
-            tween(*vs, time = time, easing = easing, callback = callback)
+            it.tween(*vs, time = time, easing = easing, callback = callback)
         }
     }
 }

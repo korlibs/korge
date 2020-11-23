@@ -6,10 +6,10 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
 import com.soywiz.korui.native.*
-import javax.swing.*
+import java.awt.Container
 
 internal actual fun completeViews(views: Views) {
-    val frame = (views.gameWindow.debugComponent as? JFrame?) ?: return
+    val frame = (views.gameWindow.debugComponent as? Container?) ?: return
     val app = UiApplication(DEFAULT_UI_FACTORY)
     app.views = views
     val debugger = ViewsDebuggerComponent(views, app)
