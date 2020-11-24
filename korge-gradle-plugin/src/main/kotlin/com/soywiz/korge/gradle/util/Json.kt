@@ -45,14 +45,14 @@ object Json {
 				s.tryRead("true") -> true
 				s.tryRead("false") -> false
 				s.tryRead("null") -> null
-				else -> invalidJson()
+				else -> throw IOException("Invalid JSON")
 			}
 		}
 		'"' -> {
 			s.unread()
 			s.readStringLit()
 		}
-		else -> invalidJson("Not expected '$ic'")
+		else -> throw IOException("Not expected '$ic'")
 	}
 
 	fun stringify(obj: Any?, b: StringBuilder) {
@@ -99,8 +99,6 @@ object Json {
 		}
 		b.append('"')
 	}
-
-	private fun invalidJson(msg: String = "Invalid JSON"): Nothing = throw IOException(msg)
 }
 
 fun String.fromJson(): Any? = Json.parse(this)

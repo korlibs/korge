@@ -34,22 +34,9 @@ class KorgeGradleApply(val project: Project) {
 		project.configureRepositories()
 		project.configureKotlin()
 
-        project.configureJvm()
+        korge.targetJvm()
 
         project.afterEvaluate {
-            if (project.korge.targets.isEmpty()) {
-                println("WARNING! No KorGE targets specified. Trying to enable all the available targets.")
-                if (korge.nativeEnabled) {
-                    project.configureNativeDesktop()
-                    if (includeIndirectAndroid) {
-                        project.configureAndroidIndirect()
-                    }
-                    if (isMacos) {
-                        project.configureNativeIos()
-                    }
-                }
-                project.configureJavaScript()
-            }
             project.configureDependencies()
             project.addGenResourcesTasks()
         }

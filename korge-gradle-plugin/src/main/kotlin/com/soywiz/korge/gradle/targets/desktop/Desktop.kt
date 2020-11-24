@@ -32,6 +32,29 @@ val DESKTOP_NATIVE_TARGETS = when {
 
 private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
 
+val Project.nativeDesktopBootstrapFile get() = File(buildDir, "platforms/native-desktop/bootstrap.kt")
+
+val Project.prepareKotlinNativeBootstrap: Task get() = tasks.createOnce("prepareKotlinNativeBootstrap") { task ->
+    task.apply {
+        val output = nativeDesktopBootstrapFile
+        outputs.file(output)
+        doLast {
+            output.parentFile.mkdirs()
+
+            val text = Indenter {
+                //line("package korge.bootstrap")
+                line("import ${korge.realEntryPoint}")
+                line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
+                line("object RootGameMain") {
+                    line("fun runMain() = runMain(arrayOf())")
+                    line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.realEntryPoint}() }")
+                }
+            }
+            if (!output.exists() || output.readText() != text) output.writeText(text)
+        }
+    }
+}
+
 fun Project.configureNativeDesktop() {
 	val project = this
 
@@ -73,30 +96,6 @@ fun Project.configureNativeDesktop() {
 
 	//project.afterEvaluate {}
 
-	// Create a dummy file straight away to prevent issues with K/N
-	val nativeDesktopBootstrapFile = File(buildDir, "platforms/native-desktop/bootstrap.kt")
-	//nativeDesktopBootstrapFile.also { it.parentFile.mkdirs() }.writeText("/*empty*/")
-
-	val prepareKotlinNativeBootstrap = tasks.create("prepareKotlinNativeBootstrap") { task ->
-		task.apply {
-			val output = nativeDesktopBootstrapFile
-			outputs.file(output)
-			doLast {
-				output.parentFile.mkdirs()
-
-				val text = Indenter {
-                    //line("package korge.bootstrap")
-					line("import ${korge.realEntryPoint}")
-					line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
-					line("object RootGameMain") {
-						line("fun runMain() = runMain(arrayOf())")
-						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.realEntryPoint}() }")
-					}
-				}
-				if (!output.exists() || output.readText() != text) output.writeText(text)
-			}
-		}
-	}
 
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {

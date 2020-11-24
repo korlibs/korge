@@ -1071,11 +1071,16 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
+    val windowBounds: Rectangle get() = getGlobalBounds()
+
+    /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
+    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
+
+    /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
-    //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = _getBounds(globalMatrix, out)
-    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
+    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
 
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()

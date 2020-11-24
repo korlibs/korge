@@ -2,6 +2,7 @@ package com.soywiz.korge.gradle.targets.ios
 
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.desktop.prepareKotlinNativeBootstrap
 import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
@@ -104,7 +105,7 @@ fun Project.configureNativeIos() {
 	}
 
 	val prepareKotlinNativeIosProject = tasks.create("prepareKotlinNativeIosProject") { task ->
-		task.dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", "prepareKotlinNativeBootstrap", copyIosResources)
+		task.dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", prepareKotlinNativeBootstrap, copyIosResources)
 		task.doLast {
 			// project.yml requires these folders to be available or it will fail
 			//File(rootDir, "src/commonMain/resources").mkdirs()

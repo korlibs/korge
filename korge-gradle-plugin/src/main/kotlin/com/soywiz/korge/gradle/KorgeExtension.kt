@@ -4,6 +4,7 @@ import com.soywiz.korge.gradle.bundle.KorgeBundles
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.isMacos
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
@@ -99,46 +100,106 @@ class KorgeExtension(val project: Project) {
         }
     }
 
+    /**
+     * Configures JVM target
+     */
     fun targetJvm() {
         target("jvm") {
             project.configureJvm()
         }
     }
 
+    /**
+     * Configures JavaScript target
+     */
     fun targetJs() {
         target("js") {
             project.configureJavaScript()
         }
     }
 
+    /**
+     * Configures Desktop targets depending on the host:
+     *
+     * - mingwX64
+     * - linuxX64
+     * - macosX64
+     */
     fun targetDesktop() {
         target("desktop") {
             project.configureNativeDesktop()
         }
     }
 
+    /**
+     * Configures Android indirect. Alias for [targetAndroidIndirect]
+     */
     fun targetAndroid() {
-        targetAndroidDirect()
+        targetAndroidIndirect()
     }
 
+    /**
+     * Configures android in this project tightly integrated, and creates src/main default stuff
+     *
+     * Android SDK IS required even if android tasks are not executed.
+     */
     fun targetAndroidDirect() {
         target("android") {
             project.configureAndroidDirect()
         }
     }
 
+    /**
+     * Configures android as a separate project in: build/platforms/android
+     *
+     * Android SDK not required if tasks are not executed.
+     * The project can be opened on Android Studio.
+     */
     fun targetAndroidIndirect() {
         target("android") {
             project.configureAndroidIndirect()
         }
     }
 
+    /**
+     * Configures Kotlin/Native iOS target (only on macOS)
+     */
     fun targetIos() {
         target("ios") {
-            project.configureNativeIos()
+            if (isMacos) {
+                project.configureNativeIos()
+            }
         }
     }
 
+    /**
+     * Uses gradle.properties and system environment variables to determine which targets to enable. JVM is always enabled.
+     *
+     * gradle.properties:
+     * - korge.enable.desktop=true
+     * - korge.enable.android.indirect=true
+     * - korge.enable.android.direct=true
+     * - korge.enable.ios=true
+     * - korge.enable.js=true
+     *
+     * Environment Variables:
+     * - KORGE_ENABLE_DESKTOP
+     * - KORGE_ENABLE_ANDROID_INDIRECT
+     * - KORGE_ENABLE_ANDROID_DIRECT
+     * - KORGE_ENABLE_ANDROID_IOS
+     * - KORGE_ENABLE_ANDROID_JS
+     */
+    fun targetDefault() {
+        if (newDesktopEnabled) targetDesktop()
+        if (newAndroidIndirectEnabled) targetAndroidIndirect()
+        if (newAndroidDirectEnabled) targetAndroidDirect()
+        if (newIosEnabled) targetIos()
+        if (newJsEnabled) targetJs()
+    }
+
+    /**
+     * Configure all the available targets unconditionally.
+     */
     fun targetAll() {
         targetJvm()
         targetJs()
@@ -184,7 +245,13 @@ class KorgeExtension(val project: Project) {
 
 	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
 
-	var icon: File? = project.projectDir["icon.png"]
+    val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
+    val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
+    val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
+    val newIosEnabled get() = project.findProperty("korge.enable.ios") == "true" || System.getenv("KORGE_ENABLE_IOS") == "true"
+    val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
+
+    var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]
 
 	var gameCategory: GameCategory? = null
