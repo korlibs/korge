@@ -748,7 +748,7 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	val iphoneVersion = 8
+    val iphoneVersion = korge.preferredIphoneSimulatorVersion
 
 	val iosCreateIphone = tasks.create("iosCreateIphone", Task::class.java) { task ->
 		task.onlyIf { appleGetDevices().none { it.name == "iPhone $iphoneVersion" } }
@@ -756,7 +756,7 @@ fun Project.configureNativeIos() {
             val result = execOutput("xcrun", "simctl", "list")
             val regex = Regex("com\\.apple\\.CoreSimulator\\.SimRuntime\\.iOS[\\w\\-]+")
             val simRuntime = regex.find(result)?.value ?: error("Can't find SimRuntime. exec: xcrun simctl list")
-            println("simRuntime: $simRuntime")
+            logger.info("simRuntime: $simRuntime")
 			execLogger { it.commandLine("xcrun", "simctl", "create", "iPhone $iphoneVersion", "com.apple.CoreSimulator.SimDeviceType.iPhone-$iphoneVersion", simRuntime) }
 		}
 	}
@@ -765,11 +765,11 @@ fun Project.configureNativeIos() {
 		task.onlyIf { appleGetBootedDevice() == null }
 		task.dependsOn(iosCreateIphone)
 		task.doLast {
-            val devices = appleGetDevices()
-			val udid = devices.firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+            val device = appleGetBootDevice(iphoneVersion)
+            val udid = device.udid
             logger.info("Booting udid=$udid")
             if (logger.isInfoEnabled) {
-                for (device in devices) {
+                for (device in appleGetDevices()) {
                     logger.info(" - $device")
                 }
             }
@@ -885,8 +885,23 @@ fun Project.appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
 	val oses = devices.keys.map { it.str }
 	val iosOses = oses.filter { it.contains(os) }
     iosOses.map { devices[it].list }.flatten().map {
-		IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
+        //println(it)
+		IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str).also {
+		    //println(it)
+        }
 	}
+}
+
+fun Project.appleGetBootDevice(iphoneVersion: Int): IosDevice {
+    val devices = appleGetDevices()
+    return devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.isAvailable }
+        ?: devices.firstOrNull { it.name.contains("iPhone") && it.isAvailable }
+        ?: run {
+            val errorMessage = "Can't find suitable available iPhone $iphoneVersion device"
+            logger.info(errorMessage)
+            for (device in devices) logger.info("- $device")
+            error(errorMessage)
+        }
 }
 
 fun Project.appleGetInstallDevice(iphoneVersion: Int): IosDevice {

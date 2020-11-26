@@ -60,3 +60,5 @@ interface Mountable {
 	fun unmount(folder: String): Mountable
 }
 
+fun Mountable.mount(folder: String, vfs: Vfs): Mountable = mount(folder, vfs.root)
+

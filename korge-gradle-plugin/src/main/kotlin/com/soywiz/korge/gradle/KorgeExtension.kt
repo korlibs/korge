@@ -220,6 +220,7 @@ class KorgeExtension(val project: Project) {
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
 	var version: String = "0.0.1"
+    var preferredIphoneSimulatorVersion: Int = 8
 
 	var exeBaseName: String = "app"
 

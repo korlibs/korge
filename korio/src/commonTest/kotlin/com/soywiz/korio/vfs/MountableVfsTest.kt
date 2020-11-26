@@ -31,4 +31,23 @@ class MountableVfsTest {
 			root.vfs.close()
 		}
 	}
+
+    @Test
+    fun testMountable2() = suspendTest {
+        val root = MountableVfsSync {
+            mount("/", MemoryVfsMix("f1" to "v1"))
+            mount("/sdcard", MergedVfs(
+                MemoryVfsMix("f2" to "v2"),
+                MemoryVfsMix("f3" to "v3"),
+                MemoryVfsMix("f4" to "v4")
+            ))
+        }
+        assertEquals("v1", root["f1"].readString())
+        assertEquals("v2", root["/sdcard/f2"].readString())
+        assertEquals("v3", root["/sdcard/f3"].readString())
+        assertEquals("v4", root["/sdcard/f4"].readString())
+
+        assertEquals(listOf("f1"), root["/"].listSimple().map { it.baseName })
+        assertEquals(listOf("f2", "f3", "f4"), root["/sdcard"].listSimple().map { it.baseName })
+    }
 }

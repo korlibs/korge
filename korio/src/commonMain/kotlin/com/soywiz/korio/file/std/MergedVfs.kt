@@ -6,6 +6,8 @@ import com.soywiz.korio.lang.*
 import kotlinx.coroutines.flow.*
 
 open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
+    constructor(vararg vfsList: VfsFile) : this(vfsList.toList())
+
 	private val vfsList = ArrayList(vfsList)
 
 	operator fun plusAssign(other: VfsFile) {
@@ -32,7 +34,9 @@ open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
 		return createNonExistsStat(path)
 	}
 
-	override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
+    override suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
+
+    override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
 		val emitted = LinkedHashSet<String>()
 		vfsList.fastForEach { vfs ->
 			val items = runIgnoringExceptions { vfs[path].list() } ?: return@fastForEach
@@ -45,7 +49,6 @@ open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
                     }
                 }
 			} catch (e: Throwable) {
-
 			}
 		}
 	}

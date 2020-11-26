@@ -56,6 +56,7 @@ open class KDynamic {
 	fun Any?.toDouble(): Double = toNumber().toDouble()
 
 	fun Any?.toBoolOrNull(): Boolean? = when (this) {
+	    is Boolean -> this
 		is String -> this == "1" || this == "true" || this == "on"
 		is Number -> toInt() != 0
 		else -> null
