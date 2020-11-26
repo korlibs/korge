@@ -7,7 +7,10 @@ import com.soywiz.korio.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 
-inline fun MountableVfs(closeMounts: Boolean = false, callback: Mountable.() -> Unit): VfsFile =
+suspend fun MountableVfs(closeMounts: Boolean = false, callback: suspend Mountable.() -> Unit): VfsFile =
+    MountableVfsSync(closeMounts) { callback() }
+
+inline fun MountableVfsSync(closeMounts: Boolean = false, callback: Mountable.() -> Unit): VfsFile =
     MountableVfs(closeMounts).also { callback(it) }.root
 
 class MountableVfs(val closeMounts: Boolean) : Vfs.Proxy(), Mountable {
