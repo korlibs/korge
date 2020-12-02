@@ -48,7 +48,7 @@ open class Text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = true
-) : Container(), ViewLeaf {
+) : Container(), ViewLeaf, IText {
     var smoothing: Boolean = true
 
     object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
@@ -76,7 +76,7 @@ open class Text(
     private var cachedVersionRenderer = -1
     private var version = 0
 
-    var text: String = text; set(value) { if (field != value) { field = value; version++ } }
+    override var text: String = text; set(value) { if (field != value) { field = value; version++ } }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
     var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
     var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
