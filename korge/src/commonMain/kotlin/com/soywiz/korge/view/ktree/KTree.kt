@@ -265,7 +265,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         }
         if (view is Text) {
             string(view::text, "Text")
-            double(view::textSize, 10.0)
+            double(view::textSize, Text.DEFAULT_TEXT_SIZE)
             //view.fontSource = xml.str("fontSource", "")
             view.verticalAlign = VerticalAlign(xml.str("verticalAlign"))
             view.horizontalAlign = HorizontalAlign(xml.str("horizontalAlign"))

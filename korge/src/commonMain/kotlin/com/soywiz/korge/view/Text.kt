@@ -33,7 +33,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-    text: String, textSize: Double = 16.0,
+    text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -43,18 +43,22 @@ inline fun Container.text(
     = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
 
 open class Text(
-    text: String, textSize: Double = 16.0,
+    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = true
 ) : Container(), ViewLeaf, IText {
+    companion object {
+        val DEFAULT_TEXT_SIZE = 16.0
+    }
+
     var smoothing: Boolean = true
 
     object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
         add(Text::text, "Text")
         add(Text::fontSource)
-        add(Text::textSize, 10.0)
+        add(Text::textSize, Text.DEFAULT_TEXT_SIZE)
         add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
         add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
         //view.fontSource = xml.str("fontSource", "")
