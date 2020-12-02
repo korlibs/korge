@@ -29,6 +29,10 @@ class QView(val views: List<View>) : List<View> by views, BView {
         views.fastForEach { callback(it) }
     }
 
+    var visible: Boolean
+        get() = firstOrNull?.visible ?: false
+        set(value) = fastForEach { it.visible = value }
+
     var alpha: Double
         get() = firstOrNull?.alpha ?: 1.0
         set(value) = fastForEach { it.alpha = value }
@@ -75,9 +79,11 @@ class QView(val views: List<View>) : List<View> by views, BView {
     }
 }
 
-fun QView.alpha(value: Double) = views.fastForEach { it.alpha(value) }
+fun QView.visible(value: Boolean) { visible = value }
+fun QView.alpha(value: Double) { alpha = value }
 fun QView.play(name: String) = fastForEach { it.play(name) }
 fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
+inline fun <reified T : View> QView.castTo(): T? = firstOrNull as? T?
 
 /** Indexer that allows to get a descendant marked with the name [name]. */
 operator fun View?.get(name: String): QView = QView(this)[name]
