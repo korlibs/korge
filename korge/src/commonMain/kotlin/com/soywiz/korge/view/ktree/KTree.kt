@@ -386,6 +386,17 @@ suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder, parent: Contain
 fun View.viewTreeToKTree(views: Views, level: Int = 1): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs, level)
 fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile, level: Int = 1): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs, level)
 
+// Views from context versions
+
+suspend fun Xml.ktreeToViewTree(currentVfs: VfsFile? = null, parent: Container? = null): View {
+    val views = views()
+    return ktreeToViewTree(views, currentVfs ?: views.currentVfs, parent)
+}
+suspend fun VfsFile.readKTree(parent: Container? = null): View = readKTree(views(), parent)
+suspend fun View.viewTreeToKTree(level: Int = 1): Xml = viewTreeToKTree(views(), level)
+suspend fun View.viewTreeToKTree(currentVfs: VfsFile, level: Int = 1): Xml = viewTreeToKTree(views(), currentVfs, level)
+
+
 class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, height) {
     val grid = OrthographicGrid(20, 20)
 }
