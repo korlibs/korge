@@ -1,7 +1,6 @@
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.atlas.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
