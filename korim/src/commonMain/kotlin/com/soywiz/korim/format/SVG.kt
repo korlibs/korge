@@ -9,11 +9,16 @@ object SVG : ImageFormat("svg") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = kotlin.runCatching {
         val start = s.sliceStart().readString(min(100, s.length.toInt())).trim().toLowerCase()
         if (start.startsWith("<svg", ignoreCase = true) || start.startsWith("<?xml", ignoreCase = true) || start.startsWith("<!--")) {
-            val content = s.sliceStart().readAll().toString(UTF8).trim()
-            val svg = com.soywiz.korim.vector.format.SVG(content)
-            ImageInfo().apply {
-                width = svg.width
-                height = svg.height
+            try {
+                val content = s.sliceStart().readAll().toString(UTF8).trim()
+                val svg = com.soywiz.korim.vector.format.SVG(content)
+                ImageInfo().apply {
+                    width = svg.width
+                    height = svg.height
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                null
             }
         } else {
             null

@@ -6,7 +6,13 @@ import com.soywiz.korinject.*
 import kotlin.reflect.*
 
 fun createModule(root: Any? = null, block: suspend EditorScene.() -> Unit): Module {
-    return EditorModule(root, block)
+    return EditorModule(root, {
+        try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    })
 }
 
 class EditorModule(val root: Any? = null, val block: suspend EditorScene.() -> Unit) : Module() {
