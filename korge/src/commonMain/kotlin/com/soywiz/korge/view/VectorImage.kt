@@ -27,6 +27,7 @@ class VectorImage(
                 field = value
                 dirty = true
                 redrawIfRequired()
+                scale = 1.0
             }
         }
 
