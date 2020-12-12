@@ -8,14 +8,15 @@ import com.soywiz.korio.file.std.*
 import kotlin.test.*
 
 class SvgTest {
-	@Test
-	fun name() = suspendTest {
-		val logo = SVG(SAMPLE_LOGO)
-		//val img = logo.render().toBmp32()
-		val img = logo.renderNoNative()
+    @Test
+    fun name() = suspendTest {
+        val logo = SVG(SAMPLE_LOGO)
+        //val img = logo.render().toBmp32()
+        val img = logo.renderNoNative()
 
-		//img.writeTo(localVfs("c:/temp/logo.png"), formats = PNG)
-	}
+        //img.writeTo(localVfs("c:/temp/logo.png"), formats = PNG)
+    }
+
 
 	val SAMPLE_LOGO = """
 <svg id="7fe010bd-4468-4253-af77-c0b7be09145b" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="462" height="462" viewBox="0 0 462 462">

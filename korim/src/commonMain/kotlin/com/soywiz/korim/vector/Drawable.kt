@@ -1,9 +1,17 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
 
 interface Drawable {
     fun draw(c: Context2d)
+}
+
+fun <T : Bitmap> Drawable.draw(out: T): T {
+    out.context2d {
+        this@draw.draw(this)
+    }
+    return out
 }
 
 interface SizedDrawable : Drawable {

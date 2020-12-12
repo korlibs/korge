@@ -202,6 +202,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
 		when (nodeName) {
 			"_text_" -> Unit
+            "title" -> Unit
 			"svg" -> drawChildren(xml, c)
 			"lineargradient", "radialgradient" -> {
 				parseDef(xml)
@@ -496,6 +497,13 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 warningProcessor?.invoke("Points: ${state.path.getPoints()}")
 				getBounds(bounds)
 			}
+            "a" -> {
+                drawChildren(xml, c)
+            }
+            else -> {
+                println("WARNING: Unhandled SVG node '$nodeName'")
+                drawChildren(xml, c)
+            }
 		}
 
 		if (xml.hasAttribute("stroke-width")) {

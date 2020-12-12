@@ -1,5 +1,6 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korim.vector.format.SVG
@@ -11,9 +12,18 @@ class SvgJvmTest {
     @Test
     fun test() = suspendTest {
         val svg = SVG(resourcesVfs["tiger.svg"].readString())
+        val bmp = svg.render()
+        //bmp.writeTo("/tmp/demo.png".uniVfs, PNG)
         //svg.renderToImage(512, 512).showImageAndWait()
         //svg.render().showImageAndWait()
         //svg.render(native = false).showImageAndWait()
+    }
+
+    @Test
+    fun test2() = suspendTest {
+        val svg = resourcesVfs["svglogo.svg"].readSVG()
+        val bmp = svg.render()
+        //bmp.writeTo("/tmp/demo.png".uniVfs, PNG)
     }
 
     @Test
