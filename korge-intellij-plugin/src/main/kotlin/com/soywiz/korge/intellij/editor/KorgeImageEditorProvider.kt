@@ -13,7 +13,7 @@ import javax.swing.*
 
 class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 	companion object {
-		val FORMATS = ImageFormats(PSD, KRA, DDS, DXT1, DXT2, DXT3, DXT4, DXT5)
+		val FORMATS get() = AllImageFormats.FORMATS
 	}
 
 	override fun accept(
@@ -30,6 +30,9 @@ class KorgeImageEditorProvider : FileEditorProvider, DumbAware {
 			name.endsWith(".dxt3", ignoreCase = true) -> true
 			name.endsWith(".dxt4", ignoreCase = true) -> true
 			name.endsWith(".dxt5", ignoreCase = true) -> true
+            name.endsWith(".svg", ignoreCase = true) -> true
+            name.endsWith(".ico", ignoreCase = true) -> true
+            name.endsWith(".gif", ignoreCase = true) -> true
 			else -> false
 		}
 	}

@@ -11,6 +11,7 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korinject.*
@@ -83,7 +84,7 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
                     "dbbin" -> dragonBonesEditor(file)
                     "skel" -> spineEditor(file)
                     "tmx" -> createModule(null) { tiledMapEditor(file) }
-                    "svg" -> createModule(null) { sceneView += Image(file.readBitmapSlice()) }
+                    "svg" -> createModule(null) { sceneView += Image(file.readBitmap(AllImageFormats.FORMATS).slice()) }
                     "pex" -> particleEmiterEditor(file)
                     "ktree" -> ktreeEditor(fileToEdit)
                     "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
