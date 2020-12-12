@@ -45,11 +45,6 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		val props = hashMapOf<String, Any?>()
 	}
 
-	enum class GradientUnits {
-		USER_SPACE_ON_USER,
-		OBJECT_BOUNDING_BOX,
-	}
-
 	val defs = hashMapOf<String, Paint>()
 
 	//interface Def
@@ -64,14 +59,18 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				val x1 = def.double("x2", 1.0)
 				val y1 = def.double("y2", 1.0)
 				val stops = parseStops(def)
+                val gradientUnits = when (def.getString("gradientUnits") ?: "objectBoundingBox") {
+                    "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
+                    else -> GradientUnits.OBJECT_BOUNDING_BOX
+                }
 
 				val g: GradientPaint = if (type == "lineargradient") {
 					//println("Linear: ($x0,$y0)-($x1-$y1)")
-					GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0)
+					GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, units = gradientUnits)
 				} else {
 					val r0 = def.double("r0", 0.0)
 					val r1 = def.double("r1", 0.0)
-					GradientPaint(GradientKind.RADIAL, x0, y0, r0, x1, y1, r1)
+					GradientPaint(GradientKind.RADIAL, x0, y0, r0, x1, y1, r1, units = gradientUnits)
 				}
 
 				def.strNull("xlink:href")?.let {
@@ -88,6 +87,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 					//println(" - $offset: $color")
 					g.addColorStop(offset, color)
 				}
+
 				//println("Gradient: $g")
 				def.getString("gradientTransform")?.let {
 					g.transform.premultiply(parseTransform(it))
@@ -105,25 +105,17 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		}
 	}
 
-	fun parseDefs() {
-		for (def in root["defs"].allChildren.filter { !it.isComment }) parseDef(def)
-	}
-
-	init {
-		parseDefs()
-	}
-
 	override fun draw(c: Context2d) {
 		c.keep {
 			c.strokeStyle = NonePaint
 			c.fillStyle = Colors.BLACK
-			drawElement(root, c)
+			drawElement(root, c, true)
 		}
 	}
 
-	fun drawChildren(xml: Xml, c: Context2d) {
+	fun drawChildren(xml: Xml, c: Context2d, render: Boolean) {
 		for (child in xml.allChildren) {
-			drawElement(child, c)
+			drawElement(child, c, render)
 		}
 	}
 
@@ -151,7 +143,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             }
             else -> when (str) {
                 "none" -> NonePaint
-                else -> c.createColor(Colors.Default[str])
+                else -> c.createColor(ColorDefaultBlack[str])
             }
         }
         return when (res) {
@@ -170,24 +162,28 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
     private val t = DoubleArray(6)
 
-    fun drawElement(xml: Xml, c: Context2d): Context2d = c.keepApply {
+    fun drawElement(xml: Xml, c: Context2d, render: Boolean): Context2d = c.keepApply {
 		val bounds = Rectangle()
 		val nodeName = xml.nameLC
 
         var drawChildren = false
+        var render = render
 
         xml.getString("transform")?.let {
             applyTransform(state, parseTransform(it))
         }
 
 		when (nodeName) {
-            "g", "a" -> {
+            "g", "a", "svg" -> {
                 drawChildren = true
+            }
+            "defs" -> {
+                drawChildren = true
+                render = false
             }
             "_text_" -> Unit
             "_comment_" -> Unit
             "title" -> Unit
-			"svg" -> drawChildren(xml, c)
 			"lineargradient", "radialgradient" -> {
 				parseDef(xml)
 			}
@@ -538,11 +534,26 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             }
         }
 		if (xml.hasAttribute("fill-opacity")) {
-			globalAlpha = xml.double("fill-opacity", 1.0)
+			globalAlpha *= xml.double("fill-opacity", 1.0)
 		}
 
+        xml.getString("style")?.let {
+            for ((key, value) in CSSDeclarations.parseToMap(it)) {
+                when (key) {
+                    "opacity" -> globalAlpha *= value.toDoubleOrNull() ?: 1.0
+                    "fill-opacity" -> globalAlpha *= value.toDoubleOrNull() ?: 1.0
+                    "fill-rule" -> Unit // @TODO:
+                    "fill" -> applyFill(c, value, bounds)
+                    "stroke-width" -> lineWidth = value.toDoubleOrNull() ?: 1.0
+                    "stroke-linejoin" -> lineJoin = LineJoin[value]
+                    "stroke-linecap" -> lineCap = LineCap[value]
+                    "stroke" -> strokeStyle = parseFillStroke(c, value, bounds)
+                }
+            }
+        }
+
         if (drawChildren) {
-            drawChildren(xml, c)
+            drawChildren(xml, c, render)
         }
 
 		when (nodeName) {
@@ -671,11 +682,11 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	companion object {
         val ColorDefaultBlack = Colors.WithDefault(Colors.BLACK)
 
-        fun parsePercent(str: String): Double {
+        fun parsePercent(str: String, default: Double = 0.0): Double {
             return if (str.endsWith("%")) {
                 str.substr(0, -1).toDouble() / 100.0
             } else {
-                str.toDouble()
+                str.toDoubleOrNull() ?: default
             }
         }
 
@@ -687,8 +698,9 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 var alphaStop = stop.double("stop-opacity", 1.0)
                 stop.getString("style")?.let { style ->
                     val map = CSSDeclarations.parseToMap(style)
+                    //println(map)
                     map["offset"]?.let { offset = parsePercent(it) }
-                    map["color-stop"]?.let { colorStop = Colors.Default[it] }
+                    map["stop-color"]?.let { colorStop = ColorDefaultBlack[it] }
                     map["stop-opacity"]?.let { alphaStop = it.toDoubleOrNull() ?: 1.0 }
                 }
 
