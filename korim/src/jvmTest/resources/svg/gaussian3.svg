@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   id="svg2"
+   width="744.09448819"
+   height="1052.3622047">
+  <defs>
+    <filter id="filter1"  x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="64" id="feGaussianBlur1"/>
+    </filter>
+
+    <clipPath id="clipPathRegion1" >
+        <circle cx="430" cy="130" r="80" width="110" height="110" />
+    </clipPath>
+
+    <clipPath id="clipPathRegion2" >
+        <rect x="80" y="380" width="240" height="240"/>
+    </clipPath>
+
+  </defs>
+
+  <g id="layer1">
+
+    <!-- Top Black Outline -->
+    <rect id="rect101" style="stroke:black;fill:none"
+          x="100" y="100" width="200" height="200"/>
+    <!-- Top Filled Area -->
+    <rect id="rect1" style="fill:red;filter:url(#filter1);"
+          x="100" y="100" width="200" height="200" />
+
+    <!-- Right Black Outline -->
+    <rect id="rect201" style="stroke:black;fill:none"
+          x="400" y="100" width="200" height="200" />
+    <!-- Right Filled Area -->
+    <rect id="rect2" style="fill:red"
+          x="400" y="100" width="200" height="200"/>
+    <!-- Right Filled Area with limited Filter Region White Background -->
+    <rect id="rect3" style="fill:white;" clip-path="url(#clipPathRegion1)" x="401" y="101" width="199" height="199"/>
+    <!-- Right Filled Area with limited Filter Region Effect -->
+    <rect id="rect4" style="fill:red;filter:url(#filter1);" clip-path="url(#clipPathRegion1)"
+          x="400" y="100" width="200" height="200"/>
+
+    <!-- Bottom Black Outline -->
+    <rect id="rect301" style="stroke:black;fill:none"
+          x="100" y="400" width="200" height="200"/>
+    <!-- Bottom Filled Area with limited Filter Region White Background -->
+    <rect id="rect5" style="fill:white;" clip-path="url(#clipPathRegion2)" x="101" y="401" width="199" height="199"/>
+    <!-- Right Filled Area with limited Filter Region Effect -->
+    <rect id="rect6" style="fill:red;filter:url(#filter1);" clip-path="url(#clipPathRegion2)"
+          x="100" y="400" width="200" height="200"/>
+
+  </g>
+</svg>

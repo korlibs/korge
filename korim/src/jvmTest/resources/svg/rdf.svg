@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100">
+
+  <defs>
+    <g id="node" stroke="none">
+      <circle r="18" fill="#149"/>
+      <path d="M-14,7a16,16,0,0,1,22-21a15,15,0,0,0-14,2a3,3,0,1,1-5,5a15,15,0,0,0-3,14" fill="#fff"/>
+    </g>
+    <path d="M-14-6a44,62,0,0,0,28,0l0,12a44,62,0,0,0-28,0z" fill="#149" id="arc"/>
+  </defs>
+
+  <use xlink:href="#arc" transform="translate(76,50) rotate(90)"/>
+  <use xlink:href="#arc" transform="translate(50,35) rotate(-30)"/>
+  <use xlink:href="#arc" transform="translate(50,65) rotate(30)"/>
+  <use xlink:href="#node" transform="translate(24,50)"/>
+  <use xlink:href="#node" transform="translate(76,80)"/>
+  <use xlink:href="#node" transform="translate(76,20)"/>
+</svg>

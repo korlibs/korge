@@ -1,0 +1,4 @@
+<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg' xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d='M5,95l34-44l-34-46h22l28,37l-42,53zM73,95l-28-37l42-54h8l-34,44l34,47z'/>
+  <audio begin="2s" dur="4s" repeatCount="2" end="7s" xlink:href="sounds/poker_music.mp3"/>
+</svg>

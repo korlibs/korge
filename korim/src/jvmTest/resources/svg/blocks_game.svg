@@ -1,0 +1,498 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+         "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<!-- SVG Tetris-clone for SVG-enabled Mozilla -->
+<!-- (c)2004 alex fritze <alex@croczilla.com> -->
+<!-- ugly score and time hack by Tuna-Fish    -->
+<!--                                          -->
+<!-- For info about Mozilla/SVG see           -->
+<!-- http://www.mozilla.org/projects/svg/     -->
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     onload="loaded();">
+
+<script>
+<![CDATA[
+
+//----------------------------------------------------------------------
+// static data
+
+var SVG_NS ="http://www.w3.org/2000/svg";
+var tickTimeReducer = 0.98;
+var ROWS = 20;
+var COLS = 10;
+
+var HPAD = 2; // horizontal padding used in laying out grids
+var VPAD = 2; // ditto for vertical
+
+var root;
+
+var SHAPE_DESCRIPTORS = [
+  { color: "grey",   orientations: [ [[0,0],[1,0],[0,1],[1,1]] ] },
+  { color: "blue",   orientations: [ [[0,0],[1,0],[2,0],[2,1]],
+                                     [[1,0],[1,1],[1,2],[0,2]],
+                                     [[0,0],[0,1],[1,1],[2,1]],
+                                     [[0,0],[1,0],[0,1],[0,2]] ] },
+  { color: "purple", orientations: [ [[0,0],[0,1],[1,0],[2,0]],
+                                     [[0,0],[1,0],[1,1],[1,2]],
+                                     [[0,1],[1,1],[2,1],[2,0]],
+                                     [[0,0],[0,1],[0,2],[1,2]] ] },
+  { color: "cyan",   orientations: [ [[0,0],[1,0],[2,0],[3,0]],
+                                     [[0,0],[0,1],[0,2],[0,3]] ] },
+  { color: "green",  orientations: [ [[1,0],[2,0],[0,1],[1,1]],
+                                     [[0,0],[0,1],[1,1],[1,2]] ] },
+  { color: "red",    orientations: [ [[1,0],[1,1],[0,1],[0,2]],
+                                     [[0,0],[1,0],[1,1],[2,1]] ] },
+  { color: "yellow", orientations: [ [[0,1],[1,1],[2,1],[1,0]],
+                                     [[0,0],[0,1],[0,2],[1,1]],
+                                     [[0,0],[1,0],[2,0],[1,1]],
+                                     [[1,0],[1,1],[1,2],[0,1]] ] }
+];
+
+//----------------------------------------------------------------------
+// Helper functions
+
+// map a function over an array; accumulate output in new array:
+function mapcar(f, a) {
+  var res = new Array(a.length);
+  for (var i=0;i<a.length;++i) {
+    res[i] = f(a[i]);
+  }
+  return res;
+}
+
+// map a function over an array; don't accumulate output:
+function mapc(f, a) {
+  for (var i=0;i<a.length;++i) {
+    f(a[i]);
+  }
+}
+
+// return true if predicate p is true for every element of the array:
+function every(p, a) {
+  for (var i=0;i<a.length;++i) {
+    if (!p(a[i])) return false;
+  }
+  return true;
+}
+
+function suspendRedraw()
+{
+  root.suspendRedraw(6000);
+}
+
+function unsuspendRedraw()
+{
+  root.unsuspendRedrawAll();
+}
+
+//----------------------------------------------------------------------
+// Shape class
+
+function Shape(position) {
+  // create a new shape, randomly picking a descriptor & orientation:
+  this._descriptor = SHAPE_DESCRIPTORS[Math.round(Math.random()*(SHAPE_DESCRIPTORS.length-1))];
+  this._orientation = Math.round(Math.random()*(this._descriptor.orientations.length-1));
+  this._pos = position;
+}
+
+Shape.prototype = {
+  getCellArray : function() {
+    var s = this;
+    return mapcar(function(coord) { return [coord[0]+s._pos[0],coord[1]+s._pos[1]]; },
+               this._descriptor.orientations[this._orientation]);
+  },
+  getColor : function() {
+    return this._descriptor.color;
+  },
+  move : function(dx,dy) {
+    this._pos[0] += dx; this._pos[1] += dy;
+  },
+  rotate : function(dOrient) {
+    this._orientation = (this._orientation+dOrient) % this._descriptor.orientations.length;
+    if (this._orientation<0) this._orientation += this._descriptor.orientations.length;
+  }
+};
+
+//----------------------------------------------------------------------
+// Grid class
+
+function Grid(cols, rows, color, bordercolor, x, y, width, height, node) {
+  // Create a cols*rows grid with a 1/2-cell border.
+  // Scale to fit width*height user pixels (including border).
+  // Place at x,y user pixel coords.
+
+  this._cols = cols;
+  this._rows = rows;
+  this._color = color;
+
+  node.setAttribute("transform", "translate("+x+","+y+") scale("+
+                                 (width/(cols+1))+","+(height/(rows+1))+") translate(0.5,0.5)");
+
+  this._border = document.createElementNS(SVG_NS, "rect");
+  this._border.setAttribute("fill", bordercolor);
+  this._border.setAttribute("width", cols+1);
+  this._border.setAttribute("height", rows+1);
+  this._border.setAttribute("x", "-0.5");
+  this._border.setAttribute("y", "-0.5");
+
+  this._background = document.createElementNS(SVG_NS, "rect");
+  this._background.setAttribute("fill", color);
+  this._background.setAttribute("width", cols);
+  this._background.setAttribute("height", rows);
+
+  this._rowArray = document.createElementNS(SVG_NS, "g");
+  for (var r=0;r<rows;++r) {
+    var row_group = document.createElementNS(SVG_NS, "g");
+    row_group.setAttribute("transform", "translate(0,"+r+")");
+
+    for (var c=0;c<cols;++c) {
+      var cell = document.createElementNS(SVG_NS, "rect");
+      cell.setAttribute("x", c);
+      cell.setAttribute("width", "1");
+      cell.setAttribute("height", "1");
+      cell.setAttribute("stroke", "grey");
+      cell.setAttribute("fill", "none");
+      cell.occupied = false;
+      row_group.appendChild(cell);
+    }
+    this._rowArray.appendChild(row_group);
+  }
+  
+  node.appendChild(this._border);
+  node.appendChild(this._background);
+  node.appendChild(this._rowArray);
+}
+
+Grid.prototype = {
+  colorCell : function(coord, color) { try {
+    this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).setAttribute("fill", color);  
+}catch(e) {
+alert("error: coord="+coord);
+}
+  },
+  clearCell : function(coord) {
+    this.colorCell(coord, this._color);
+  },
+  occupyCell : function(coord) {
+// XXX ASV has a problem with expando properties, so we use attribs instead:
+//    this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).occupied = true;
+    this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).setAttribute("occupied", "true");
+  },
+  unoccupyCell : function(coord) {
+//    this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).occupied = false;
+    this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).setAttribute("occupied", "false");
+  },
+  cellInBounds : function(coord) {
+    return (coord[0]>=0 && coord[1]>=0 && coord[0]<this._cols && coord[1]<this._rows);
+  },
+  cellOccupied : function(coord) {
+//    return this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).occupied;
+    return this._rowArray.childNodes.item(coord[1]).childNodes.item(coord[0]).getAttribute("occupied")=="true";
+  },
+  eliminateFullRows : function() {
+    var g = this;
+    var bo = false;
+    function rowFull(r) {
+      for (var c=0;c<g._cols;++c) {
+        if (!g.cellOccupied([c,r])) return false;
+      }
+      return true;
+    }
+
+    function moveCellDown(c,r) {
+      var src = g._rowArray.childNodes.item(r).childNodes.item(c);
+      var dest = g._rowArray.childNodes.item(r+1).childNodes.item(c);
+      dest.setAttribute("fill", src.getAttribute("fill"));
+      //dest.occupied = src.occupied;
+      //src.occupied = false;
+      dest.setAttribute("occupied", src.getAttribute("occupied"));
+      src.setAttribute("occupied", "false");
+      src.setAttribute("fill", g._color);
+    }
+    
+    function eliminateRow(row) {
+      suspendRedraw();
+      for (var c=0;c<g._cols;++c) {
+        g.clearCell([c,row]);
+        g.unoccupyCell([c,row]);
+      }
+      for (var r=row-1;r>=0;--r) {
+        for (c=0;c<g._cols;++c) {
+          if (g.cellOccupied([c,r])) 
+            moveCellDown(c,r);
+        }
+      }
+      unsuspendRedraw();
+    }
+
+    for (var r=0;r<this._rows;++r) {
+      if (rowFull(r)) {
+        bo = true;  
+        eliminateRow(r);
+        ++lines;
+      }
+    }
+    if (bo) {
+      tickTime=time(tickTime);
+    }
+  }
+};
+
+//----------------------------------------------------------------------
+// message class
+
+function Message(txt, position, style) {
+  this._node = document.createElementNS(SVG_NS, "text");
+  this._node.setAttribute("style", style);
+  this._node.setAttribute("x", position[0]);
+  this._node.setAttribute("y", position[1]);
+  this._node.appendChild(document.createTextNode(txt, true));
+}
+
+Message.prototype = {
+  show : function() {
+    suspendRedraw();
+    document.documentElement.appendChild(this._node);
+    unsuspendRedraw();
+  },
+  hide : function() {
+    document.documentElement.removeChild(this._node);
+  }
+};
+
+//----------------------------------------------------------------------
+// grid <---> shape operations
+
+function canPlace(shape, grid) {
+  // can only place if all cells in shape are in bounds and not occupied:
+  return every(function(coord){ return grid.cellInBounds(coord) &&
+                                       !grid.cellOccupied(coord); },
+                shape.getCellArray());
+}
+
+function show(shape, grid) {
+  suspendRedraw();
+  mapc(function(coord){ grid.colorCell(coord, shape.getColor()); },
+       shape.getCellArray());
+  unsuspendRedraw();
+}
+
+function hide(shape, grid) {
+  suspendRedraw();
+  mapc(function(coord){ grid.clearCell(coord); },
+       shape.getCellArray());
+  unsuspendRedraw();
+}
+
+function occupy(shape, grid) {
+  mapc(function(coord){ grid.occupyCell(coord); },
+       shape.getCellArray());
+}
+
+function move(shape, grid, dx, dy) {
+  shape.move(dx,dy);
+  if (!canPlace(shape, grid)) {
+    shape.move(-dx,-dy);
+    return false;
+  }
+  suspendRedraw();
+  shape.move(-dx, -dy);
+  hide(shape, grid);
+  shape.move(dx,dy);
+  show(shape, grid);
+  unsuspendRedraw();
+  return true;
+}
+
+function rotate(shape, grid, dOrient) {
+  shape.rotate(dOrient);
+  if (!canPlace(shape, grid)) {
+    shape.rotate(-dOrient);
+    return false;
+  }
+  suspendRedraw();
+  shape.rotate(-dOrient);
+  hide(shape, grid);
+  shape.rotate(dOrient);
+  show(shape, grid);
+  unsuspendRedraw();
+  return true;
+}
+
+function drop(shape, grid) {
+  suspendRedraw();
+  while (move(shape, grid, 0, 1))
+    /**/;
+  unsuspendRedraw();
+}
+
+//----------------------------------------------------------------------
+// the game:
+
+var board;   // grid where the action is
+var preview; // grid where the next shape will be previewed
+var currentShape; 
+var lines;
+var score;
+var nextShape; 
+var gameState; // "stopped", "running", "finished"
+var tickTime;
+var ticker;
+function startNewGame() {
+  // XXX clear grids
+  score = 0;
+  suspendRedraw();
+  currentShape = new Shape([3,0]);
+  lines = 0;
+  show(currentShape, board);
+  nextShape = new Shape([0,0]);
+  show(nextShape, preview);
+  unsuspendRedraw();
+  gameState = "running";
+  tickTime = 300;
+  tick();
+}
+
+function runNextShape() {
+  occupy(currentShape, board);
+  board.eliminateFullRows();
+  score = score+1;
+  suspendRedraw();
+  currentShape = nextShape;
+  hide(nextShape, preview);
+  currentShape.move(3,0);
+  if (!canPlace(currentShape, board)) {
+    unsuspendRedraw();
+    return false; // game over!
+  }
+  show(currentShape, board);
+  nextShape = new Shape([0,0]);
+  show(nextShape, preview);
+  unsuspendRedraw();
+  return true;
+}
+
+function tick() {
+  if (gameState != "running") return;
+
+  if (!move(currentShape, board, 0, 1)) {
+    if(!runNextShape()) {
+      var m = new Message("Game Over! Score:"+score, [1,10], "stroke:none;font-size:2px;fill:red;stroke:black;stroke-width:0.04px;fill-opacity:0.8;");
+      m.show();
+      gameState = "finished";
+      return; // Game over
+    }
+  }
+  
+  if (ticker) {
+    clearTimeout(ticker);
+  }
+  ticker = setTimeout("tick()", tickTime);
+}
+
+function time(tickTime) {
+  tickTime = tickTime*tickTimeReducer;
+  return tickTime;
+}
+
+function pause() {
+  if (gameState == "running")
+    gameState = "stopped";
+}
+
+function resume() {
+  if (gameState == "stopped") {
+    gameState = "running";
+    tick();
+  }
+}
+
+//----------------------------------------------------------------------
+// user input handler
+
+function keyHandler(event) {
+  event.preventDefault();
+  switch (event.keyCode) {
+    case 32: /* space */
+      if (gameState == "running")
+        drop(currentShape, board);
+      break;
+    case 72: /* h */
+      pause();
+      alert("Help:\n"+
+            "-------------------------------------\n\n"+
+            "Score : "+score+"\n"+
+            "Lines : "+lines+"\n"+
+            "h : Display this help\n"+
+            "p : Toggle pause game\n"+
+            "up    : Rotate piece counterclockwise\n"+
+            "down  : Rotate piece clocwise\n"+
+            "left  : Move piece left\n"+
+            "right : Move piece right\n"+
+            "space : Drop piece\n");
+      resume();
+      break;
+    case 80: /* p */
+      if (gameState == "running") 
+        pause();
+      else
+        resume();
+      break;
+    case 38: /* up */
+      if (gameState == "running")
+        rotate(currentShape, board, -1);
+      break;
+    case 40: /* down */
+      if (gameState == "running")
+        rotate(currentShape, board, 1);
+      break;
+    case 37: /* left */
+      if (gameState == "running")
+        move(currentShape, board, -1, 0);
+      break;
+    case 39: /* right */
+      if (gameState == "running")
+        move(currentShape, board, 1, 0);
+      break;
+  }
+}
+
+//----------------------------------------------------------------------
+
+function loaded() {
+  // change onloadFunc to point to your real onload function that you
+  // want called when the page is truly ready
+  var onloadFunc = init;
+  
+  if (top.svgweb != undefined) {
+    top.svgweb.addOnLoad(onloadFunc, true, window);
+  } else {
+    onloadFunc();
+  }
+}
+
+function init() {
+  root = document.getElementsByTagNameNS(svgns, 'svg')[0];
+  
+  // page layout:
+  document.documentElement.setAttribute("viewBox", "0 0 "+(3*HPAD+(COLS+1)+5)+" "+(2*VPAD+(ROWS+1)));
+
+  board = new Grid(COLS, ROWS, "black", "grey", HPAD, VPAD, COLS+1, ROWS+1, document.getElementById("board"));
+  preview = new Grid(4,4, "black", "grey", 2*HPAD+COLS+1, VPAD, 5, 5, document.getElementById("preview"));
+
+  startNewGame();
+
+  // initialize event processing:
+  document.documentElement.addEventListener("keydown", keyHandler, false);
+}
+]]>
+</script>
+
+<text x="1" y="1" font-size="1px">Mozilla SVG Tetris - Press 'h' for help.</text>
+<g id="preview" stroke-width="0.02"/>
+<g id="board" stroke-width="0.02"/>
+
+</svg>

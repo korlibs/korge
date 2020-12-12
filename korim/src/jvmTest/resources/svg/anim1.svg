@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
+<svg version="1.1" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  id="svg-root"
+     width="480" height="360" viewBox="0 0 480 360">
+
+    <g id="test-body-content" font-family="Arial" font-size="10">
+
+            <g transform="translate(0, 0)">
+                <!-- Animated Rect: Zero Animation -->
+                <rect id="rectToAnimateAtZero" x="0" y="0" width="50" height="50" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animate id="animAtZero" attributeName="x" calcMode="linear" additive="replace" accumulate="none"
+                                      from="0" to="50" begin="0s" dur="2s" fill="remove"/>
+                </rect>
+
+                <!-- Animated Rect: Automatic Beginning Animation -->
+                <rect id="rectToAnimateAtStart" x="50" y="50" width="50" height="50" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animate id="animAtStart" attributeName="x" calcMode="linear" additive="replace" accumulate="none"
+                                      from="50" to="100" begin="2s; 5s" dur="2s" fill="remove"/>
+                </rect>
+                <text x="30" y="120" fill="navy">begins at "2s; 5s"</text>
+
+                <!-- Animated Rect: Animation on Click -->
+                <rect id="rectToAnimateOnClick" x="150" y="50" width="50" height="50" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animate id="animOnClick" attributeName="x" calcMode="linear" additive="replace" accumulate="none"
+                                      from="150" to="200" begin="rectToBegin1.click" dur="4s" fill="remove"/>
+                </rect>
+                <text x="140" y="120" fill="navy">"rectToBegin1.click"</text>
+
+                <rect id="rectToAnimateOnClick" x="250" y="50" width="50" height="50" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animate id="animOnClick" attributeName="x" calcMode="linear" additive="replace" accumulate="none"
+                                      from="250" to="300" begin="6s;rectToBegin2.click" dur="4s" fill="remove"/>
+                </rect>
+                <text x="250" y="120" fill="navy">"6s;rectToBegin2.click"</text>
+
+                <!-- Animated Rect: Automatic Ending Animation -->
+                <rect id="rectToAnimateAtEnd" x="350" y="50" width="50" height="50" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animate id="animAtEnd" attributeName="x" calcMode="linear" additive="replace" accumulate="none"
+                                      from="350" to="400" begin="-1s; 8s; 12s" dur="2s" fill="freeze"/>
+                </rect>
+                <text x="370" y="120" fill="navy">"-1s; 8s; 12s"</text>
+
+                <!-- Rects That start animations -->
+                <rect id="rectToBegin1" x="150" y="150" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                <text x="130" y="200" fill="navy">Click me (rectToBegin1)</text>
+                <text x="130" y="220" fill="navy">to start second rect</text>
+
+                <rect id="rectToBegin2" x="250" y="150" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                <text x="250" y="200" fill="navy">Click me (rectToBegin2)</text>
+                <text x="250" y="220" fill="navy">to start third rect</text>
+
+                <!-- Rect Click to Seek and Activate Beginning Animation -->
+                <a xlink:href="#animAtZero">
+                    <rect id="rectToSeek1" x="50" y="250" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                </a>
+                <text x="50" y="310" fill="navy">Click me (rectToSeek1) to seek</text>
+                <text x="50" y="330" fill="navy">to doc start (anim of top rect)</text>
+
+                <!-- Rect Click to Seek and Activate Left Rect Animation -->
+                <a xlink:href="#animAtStart">
+                    <rect id="rectToSeek2" x="200" y="250" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                </a>
+                <text x="200" y="310" fill="navy">Click me (rectToSeek2) to seek</text>
+                <text x="200" y="330" fill="navy">to animation of left rect </text>
+
+                <!-- Rect Click to Seek and Activate Ending Animation -->
+                <a xlink:href="#animAtEnd">
+                    <rect id="rectToSeek3" x="350" y="250" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                </a>
+                <text x="350" y="310" fill="navy">Click me (rectToSeek3) to seek</text>
+                <text x="350" y="330" fill="navy">to animation of right rect </text>
+
+
+            </g>
+
+    <rect id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000000"/>
+   </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg viewBox='0 0 104 96' xmlns='http://www.w3.org/2000/svg'>
+  <desc><![CDATA[
+    Scales of Justice.  Based on work
+    Copyright 2007 by Ken A L Coar.  All rights reserved.
+    The design and this SVG rendition are protected by copyright law,
+    and may not be used or reproduced without the express
+    permission of the author, coar@apache.org.
+  ]]></desc>
+  <g fill='#cbb820' stroke='#cbb820'>
+    <path d='M1,69l13-51l13,51M77,69l13-51l13,51' fill='none'/>
+    <path d='M0,69c5,9,23,9,28,0zM76,69c5,9,23,9,28,0zM48,94l2-88l2-4l2,4l2,88z' stroke='none'/>
+    <path d='M52,14c6-17,35,9,40,0c-2,14-34-14-40,5c-6-19-38,9-40-5c5,9,34-17,40,0'/>
+  </g>
+</svg>

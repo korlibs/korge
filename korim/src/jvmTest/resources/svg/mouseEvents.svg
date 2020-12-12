@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+ xmlns:svg="http://www.w3.org/2000/svg"
+ xmlns="http://www.w3.org/2000/svg"
+ onload="onLoad();" >
+<script type="text/ecmascript">
+<![CDATA[
+function onMouseMove(evt) {
+    //console.info("target: " + evt.target.id);
+    //console.info("currentTarget: " + evt.currentTarget.id);
+    //console.info("mouse move clientxy=" + evt.clientX + ","+ evt.clientY)
+    //console.info("mouse move screenxy=" + evt.screenX + ","+ evt.screenY)
+}
+
+function onLoad() {
+    var g = document.getElementById('foog');
+    g.addEventListener('mousemove', onMouseMove, false);
+}
+function changeColor(id, changeColor) {
+    var g = document.getElementById(id);
+    g.setAttribute('fill',changeColor);
+}
+
+]]>
+</script>
+ <g id="foog">
+     <rect id="foo" x="0" y="0" width="100" height="100" fill="red" onmouseover="changeColor('foo', 'blue');"/>
+     <rect id='barrect1' x="50" y="50" width="500" height="500" fill="rgba(255,0,0,.5)" fill-opacity=".5" opacity=".5" onmouseover="changeColor('barrect1','green');"/>
+     <rect id='barrect2' x="100" y="100" width="500" height="500" fill="rgba(255,0,0,.5)" fill-opacity=".5" opacity=".5" onmouseover="changeColor('barrect2','green');"/>
+     <g id="barg" x="150" y="150" onmouseover="changeColor('barrect3','green');">
+         <rect id='barrect3' width="500" height="500" fill="rgba(255,0,0,.5)" fill-opacity=".5" opacity=".5"/>
+     </g>
+ </g>
+</svg>

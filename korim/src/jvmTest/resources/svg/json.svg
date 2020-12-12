@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 102">
+  <radialGradient id="jsongrad" cx="65" cy="90" r="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#EEF"/><stop offset="1"/></radialGradient>
+  <path d="M61,02 A 49,49 0,0,0 39,98 C 9,79 10,24 45,25 C 72,24 65,75 50,75 C 93,79 91,21 62,02" id="jsonswirl" fill="url(#jsongrad)"/>
+  <use xlink:href="#jsonswirl" transform="rotate(180 50,50)"/>
+</svg>

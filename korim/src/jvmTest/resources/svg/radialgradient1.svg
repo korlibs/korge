@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" height="206.25000" id="svg2" version="1.0" width="406.25000" x="0.00000000" y="0.00000000" sodipodi:version="0.32" inkscape:version="0.46" sodipodi:docname="AJ_Digital_Camera_ok.svg" inkscape:output_extension="org.inkscape.output.svg.inkscape" inkscape:export-filename="C:\joanna\Gfx\drawings_vector\admin\thumbs\AJ_Digital_Camera_ok.png" inkscape:export-xdpi="55.827694" inkscape:export-ydpi="55.827694">
+  <sodipodi:namedview inkscape:window-height="744" inkscape:window-width="1280" inkscape:pageshadow="2" inkscape:pageopacity="0.0" guidetolerance="10.0" gridtolerance="10.0" objecttolerance="10.0" borderopacity="1.0" bordercolor="#666666" pagecolor="#ffffff" id="base" showgrid="false" inkscape:zoom="2.3261538" inkscape:cx="69.088376" inkscape:cy="137.51653" inkscape:window-x="-4" inkscape:window-y="-4" inkscape:current-layer="svg2"/>
+  <defs id="defs3">
+    <inkscape:perspective sodipodi:type="inkscape:persp3d" inkscape:vp_x="0 : 103.125 : 1" inkscape:vp_y="0 : 1000 : 0" inkscape:vp_z="406.25 : 103.125 : 1" inkscape:persp3d-origin="203.125 : 68.75 : 1" id="perspective222"/>
+    <linearGradient id="linearGradient2195">
+      <stop id="stop2197" offset="0.00000000" style="stop-color: rgb(50, 50, 50); stop-opacity: 1;"/>
+      <stop id="stop2199" offset="1.0000000" style="stop-color: rgb(150, 150, 150); stop-opacity: 1;"/>
+    </linearGradient>
+    <radialGradient inkscape:collect="always"
+      xlink:href="#linearGradient2195"
+      id="radialGradient3100"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="matrix(0.793492, 0, 0, 1.26025, -124.125, -349.237)"
+      spreadMethod="reflect"
+      cx="195.33907"
+      cy="367.99432"
+      fx="195.33907"
+      fy="367.99432"
+      r="10.189606"/>
+  </defs>
+  <path d="M 30.875,63.13818 C 17.07501,63.13818 5.87501,81.05816 5.875,103.13818 C 5.875,125.21818 17.07501,143.13817 30.875,143.13818 C 44.67499,143.13818 55.875,125.21817 55.875,103.13818 C 55.875,81.05818 44.67499,63.13819 30.875,63.13818 z M 20.875,93.13818 C 26.39495,93.13818 30.875,97.61819 30.875,103.13818 C 30.875,108.65818 26.39494,113.13818 20.875,113.13818 C 15.35506,113.13818 10.875,108.65817 10.875,103.13818 C 10.87501,97.6182 15.35506,93.13818 20.875,93.13818 z" id="path2384" style="fill: url(#radialGradient3100) rgb(0, 0, 0); fill-opacity: 1; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dashoffset: 0pt; stroke-opacity: 0.196078;"/>
+  <rect height="200" id="rect2052" rx="20" ry="20" style="fill: url(#radialGradient3100) rgb(0, 0, 0); fill-opacity: 1; fill-rule: evenodd; stroke: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dashoffset: 0pt; stroke-opacity: 1;" width="375" x="25.875" y="3.1253552"/>
+</svg>

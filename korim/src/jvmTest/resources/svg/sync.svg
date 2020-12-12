@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 94">
+  <radialGradient id="syncgrad" cx="35" cy="15" r="80" gradientUnits="userSpaceOnUse"><stop stop-color="#2B4"/><stop offset="1" stop-color="#073"/></radialGradient>
+  <ellipse rx="52" ry="47" cx="52" cy="47" fill="#073"/>
+  <ellipse rx="40" ry="20" cx="52" cy="25" fill="url(#syncgrad)"/>
+  <path d="M64,36c-6-7-19-7-25,0c-6,6-16-4-10-9c10-11,35-12,45-0l8-8v25h-25z" fill="#eff"/>
+  <path d="M40,59c6,7,19,7,25,0c6-6,16,4,10,9c-10,11-35,12-45,0l-8,8v-25h25z" fill="#bef"/>
+</svg>

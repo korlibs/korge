@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="no"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" 
+         width="200" height="200" 
+         version="1.1" baseProfile="full"
+         onclick="document.svgOnClick(evt, this)"
+         onmousedown="document.svgOnMouseDown(evt, this)"
+         onmouseup="document.svgOnMouseUp(evt, this)"
+         onmouseover="document.svgOnMouseOver(evt, this)"
+         onmouseout="document.svgOnMouseOut(evt, this)"
+         >
+  <rect x="0" y="0" width="60" height="60" style="stroke: green;"/>
+  <rect id="myRect" x="25" y="25" rx="0.6" ry="0.6" width="150" height="150" 
+        fill="green" stroke="yellow" stroke-width="8"/>
+ </svg>

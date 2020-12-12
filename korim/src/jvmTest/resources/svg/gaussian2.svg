@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="drawing.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs>
+    <filter
+       inkscape:collect="always"
+       id="filter1">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2"
+         id="feGaussianBlur1" />
+    </filter>
+
+    <clipPath
+         id="clipPath1" >
+    <rect
+       id="clipPath1rect1"
+       x="100"
+       y="100"
+       width="25"
+       height="25" />
+    </clipPath>
+
+    <clipPath
+         id="clipPath2" >
+    <rect
+       id="clipPath2rect1"
+       x="200"
+       y="200"
+       width="25"
+       height="25" />
+    </clipPath>
+
+  </defs>
+
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     transform="scale(2.0,2.0)"
+     id="layer1">
+    <rect
+       style="fill:red;filter:url(#filter1);"
+       clip-path="url(#clipPath1)"
+       id="rect1"
+       width="50"
+       height="50"
+       x="100"
+       y="100" />
+    <rect
+       style="stroke:black;fill:none"
+       id="rect101"
+       width="50"
+       height="50"
+       x="100"
+       y="100" />
+
+    <svg x="100" y="100" width="300" height="300" viewBox="0 0 600 600">
+    <rect
+       style="fill:blue;filter:url(#filter1);"
+       clip-path="url(#clipPath2)"
+       id="rect2"
+       width="50"
+       height="50"
+       x="200"
+       y="200"
+       transform="scale(.5,.5)"/>
+    </svg>
+
+  </g>
+</svg>

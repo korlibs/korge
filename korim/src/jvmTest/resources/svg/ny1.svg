@@ -1,0 +1,293 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink" 
+     width="600px" height="388px">
+	<title>
+		Poll Finds Faith in Obama, Mixed With Patience
+	</title>
+	<desc>
+		Poll results on Americans and their view of the state of the economy.
+	</desc>
+	
+	<defs>
+		<rect id="bar" width="196" height="21" fill="#88A4B9" stroke-fill="#DEE9EF" stroke-width="1"/>
+		
+		<line id="standard-pointer" x1="0" y1="0" x2="0" y2="14" stroke="black" stroke-width="1"/>
+		
+		<style type="text/css">
+			text {
+				font-size: 9pt;
+				font-family: sans-serif;
+			}
+			
+			.percentage,
+			.date,
+			.title {
+				font-weight: bold;
+			}
+			
+			.source {
+				font-style: italic;
+				font-size: 7pt;
+			}
+			
+			.publisher {
+				text-transform: uppercase;
+				font-size: 7pt;
+				font-family: Georgia, "Times New Roman", Times, serif;
+			}
+			
+			.bar-section {
+				fill: #C4CDD2;
+				stroke-fill: #E3E7EA;
+				stroke-width: 1;
+			}
+			
+			.graph-line {
+				stroke-dasharray: 1 2;
+				stroke: #B2B2B2;
+			}
+			
+			.tick {
+				stroke: black;
+				stroke-width: 0.5;
+			}
+		</style>
+	</defs>
+	
+	<!-- Looking Back Section -->
+	<g transform="translate(95, 4)">
+		<g>
+			<text class="title" x="0" y="13">Looking back</text>
+	
+			<text class="content" transform="translate(0, 21)">
+				<tspan x="0" dy="1.1em">Compare the way things are going in</tspan>
+				<tspan x="0" dy="1.1em">the United States with how they were</tspan>
+				<tspan x="0" dy="1.1em">going five years ago.</tspan>
+			</text>
+		</g>
+
+		<g transform="translate(0, 99)">
+			<text class="date" transform="translate(-49, -5)">
+				<tspan x="0" dy="1.1em">Apr.</tspan>
+				<tspan x="0" dy="1.1em">2008</tspan>
+			</text>
+	
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="9" y="0" width="34" height="21"/>
+	
+			<text x="1" y="15">4</text>
+			<text x="18" y="15">17</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(4, -10)"/>
+			<text x="1" y="-12">Better</text>
+	
+			<text class="percentage" x="163" y="15">78%</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(177, -10)"/>
+			<text x="158" y="-12">Worse</text>
+		</g>
+	
+		<g transform="translate(0, 134)">
+			<text class="date" transform="translate(-49, -5)">
+				<tspan x="0" dy="1.1em">Jan.</tspan>
+				<tspan x="0" dy="1.1em">2009</tspan>
+			</text>
+	
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="11" y="0" width="20" height="21"/>
+	
+			<text x="1" y="15">5</text>
+			<text x="14" y="15">10</text>
+		
+			<g transform="translate(23, 18)">
+				<path d="M0 0 V15 H7" stroke="black" stroke-width="1" fill="none"/>
+				<text x="11" y="18">About the same</text>
+			</g>
+		
+			<text class="percentage" x="163" y="15">83%</text>
+		</g>
+	</g>
+	
+	<!-- Jobs Section -->
+	<g transform="translate(95, 192)">	
+		<g>
+			<text class="title" x="0" y="13">Jobs</text>
+	
+			<text class="content" transform="translate(0, 21)">
+				<tspan x="0" dy="1.1em">When it comes to the availability of</tspan>
+				<tspan x="0" dy="1.1em">good jobs for American workers, do</tspan>
+				<tspan x="0" dy="1.1em">you think America's best years</tspan>
+				<tspan x="0" dy="1.1em">behind us or yet to come?</tspan>
+			</text>
+		</g>
+
+		<g transform="translate(0, 109)">
+			<text class="date" transform="translate(-49, -5)">
+				<tspan x="0" dy="1.1em">Apr.</tspan>
+				<tspan x="0" dy="1.1em">2008</tspan>
+			</text>
+	
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="98" y="0" width="17" height="21"/>
+	
+			<text x="4" y="15">48</text>
+			<text x="103" y="15">9</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(8, -10)"/>
+			<text x="1" y="-12">Behind us</text>
+	
+			<text class="percentage" x="163" y="15">43%</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(177, -10)"/>
+			<text x="126" y="-12">Yet to come</text>
+		</g>
+	
+		<g transform="translate(0, 144)">
+			<text class="date" transform="translate(-49, -5)">
+				<tspan x="0" dy="1.1em">Jan.</tspan>
+				<tspan x="0" dy="1.1em">2009</tspan>
+			</text>
+	
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="72" y="0" width="14" height="21"/>
+	
+			<text x="4" y="15">35</text>
+			<text x="75" y="15">8</text>
+		
+			<g transform="translate(79, 18)">
+				<path d="M0 0 V15 H7" stroke="black" stroke-width="1" fill="none"/>
+				<text x="11" y="18">No opinion</text>
+			</g>
+		
+			<text class="percentage" x="163" y="15">57%</text>
+		</g>
+	</g>
+	
+	<text class="source" x="95" y="387">
+		Source: New York Times/CBS News Polls
+	</text>
+	
+	<line x1="320" y1="13" x2="320" y2="373" stroke-dasharray="1 2"
+	 			stroke="#B2B2B2"/>
+		
+	<!-- Looking Ahead Section -->
+	<g transform="translate(349, 4)">	
+		<g>
+			<text class="title" x="0" y="13">Looking ahead</text>
+	
+			<text class="content" transform="translate(0, 21)">
+				<tspan x="0" dy="1.1em">What is your best guess about the</tspan>
+				<tspan x="0" dy="1.1em">United States five years from now if</tspan>
+				<tspan x="0" dy="1.1em">things go pretty much as you expect?</tspan>
+			</text>
+		</g>
+
+		<g transform="translate(0, 99)">
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="85" y="0" width="41" height="21"/>
+	
+			<text x="4" y="15">39</text>
+			<text x="97" y="15">19</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(4, -10)"/>
+			<text x="1" y="-12">Better</text>
+	
+			<text class="percentage" x="163" y="15">34%</text>
+	
+			<use xlink:href="#standard-pointer" transform="translate(177, -10)"/>
+			<text x="158" y="-12">Worse</text>
+		</g>
+	
+		<g transform="translate(0, 134)">
+			<use xlink:href="#bar" x="0" y="0"/>
+			<rect class="bar-section" x="125" y="0" width="32" height="21"/>
+	
+			<text x="4" y="15">61</text>
+			<text x="133" y="15">17</text>
+		
+			<g transform="translate(52, 18)">
+				<text x="0" y="18">About the same</text>
+				<path d="M92 0 v15 h-4" stroke="black" stroke-width="1" fill="none"/>
+			</g>
+		
+			<text class="percentage" x="163" y="15">19%</text>
+		</g>
+	</g>
+	
+	<!-- Economy Section -->
+	<g transform="translate(349, 192)">	
+		<g>
+			<text class="title" x="0" y="13">Economy</text>
+	
+			<text class="content" transform="translate(0, 21)">
+				<tspan x="0" dy="1.1em">How would you rate the condition of</tspan>
+				<tspan x="0" dy="1.1em">the national economy these days?</tspan>
+			</text>
+		</g>
+
+		<g transform="translate(0, 75)">
+			<g id="vertical-axis">
+				<text y="8">90</text>
+				<text y="27">80</text>
+				<text y="46">70</text>
+				<text y="65">60</text>
+				<text y="84">50</text>
+			</g>
+			
+			<g id="graph-lines">
+				<line class="graph-line" x1="18" y1="6" x2="192" y2="6"/>
+				<line class="graph-line" x1="18" y1="25" x2="192" y2="25"/>
+				<line class="graph-line" x1="18" y1="44" x2="192" y2="44"/>
+				<line class="graph-line" x1="18" y1="63" x2="192" y2="63"/>
+				<line class="graph-line" x1="18" y1="82" x2="192" y2="82"/>
+			</g>
+			
+			<g id="horizontal-axis">
+				<line class="tick" x1="30" y1="81" x2="30" y2="88"/>
+				<text x="16" y="101">Jan.08</text>
+				
+				<line class="tick" x1="39" y1="81" x2="39" y2="85"/>
+				<line class="tick" x1="48" y1="81" x2="48" y2="85"/>
+				<line class="tick" x1="57" y1="81" x2="57" y2="85"/>
+				<line class="tick" x1="66" y1="81" x2="66" y2="85"/>
+				<line class="tick" x1="75" y1="81" x2="75" y2="85"/>
+				<line class="tick" x1="84" y1="81" x2="84" y2="85"/>
+				<line class="tick" x1="93" y1="81" x2="93" y2="85"/>
+				<line class="tick" x1="102" y1="81" x2="102" y2="85"/>
+				
+				<line class="tick" x1="111" y1="81" x2="111" y2="88"/>
+				<text x="92" y="101">July.08</text>
+				
+				<line class="tick" x1="120" y1="81" x2="120" y2="85"/>
+				<line class="tick" x1="129" y1="81" x2="129" y2="85"/>
+				<line class="tick" x1="138" y1="81" x2="138" y2="85"/>
+				<line class="tick" x1="147" y1="81" x2="147" y2="85"/>
+				<line class="tick" x1="156" y1="81" x2="156" y2="85"/>
+				<line class="tick" x1="165" y1="81" x2="165" y2="85"/>
+				<line class="tick" x1="174" y1="81" x2="174" y2="85"/>
+				<line class="tick" x1="183" y1="81" x2="183" y2="85"/>
+				
+				<line class="tick" x1="192" y1="81" x2="192" y2="88"/>
+				<text x="155" y="101">Jan.09</text>
+			</g>
+			
+			<text x="61" y="-3">Fairly or very bad 92%</text>
+			<path d="M185 -8 h4 v12" stroke="black" stroke-width="1" fill="none"/>
+
+			<!-- Graph data line -->
+			<path d="M28 70 L37 49 L46 52 L55 40 L63 36 L72 39 L80 27
+							 L89 36 L105 22 L114 24 L122 32 L132 28 L139 16
+							 L150 16 L164 23 L181 12 L190 5"
+						fill="none" stroke-width="3" stroke="#38688E"/>
+		</g>
+	</g>
+	
+	<text class="publisher" x="440" y="387">
+		THE NEW YORK TIMES
+	</text>
+	
+</svg>

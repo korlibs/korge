@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   width="1901"
+   height="1018"
+   id="svg2">
+  <g>
+      <rect x="50" y="50" width="100" height="100" style="fill:red"/>
+      <rect id="foo" x="50" y="150" width="500" height="500" style="fill:blue"/>
+      <a xlink:href="http://farm1.static.flickr.com/234/535566372_33c1025c7b_o.jpg">
+      <image id="bar" preserveAspectRatio="xMidYMid" x="50" y="150" width="500" height="500" xlink:href="http://farm1.static.flickr.com/234/535566372_33c1025c7b_o.jpg"/>
+      </a>
+  </g>
+</svg>

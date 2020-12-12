@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 136 72">
+ <defs>
+   <radialGradient id="phpg" gradientUnits="userSpaceOnUse" cx="250" cy="0" r="300" fx="16" fy="0">
+     <stop offset="0.3" stop-color="#CCF"/>
+     <stop offset="0.6" stop-color="#334"/>
+   </radialGradient>
+ </defs>
+ <g fill="#000" fill-rule="evenodd" stroke="#FFF" stroke-width="2" transform="scale(0.45)">
+   <ellipse stroke="url(#phpg)" stroke-width="8" fill="#6C7EB7" cx="150" cy="80" rx="143" ry="73"/>
+   <path d="M116 104l16-81 19 0-4 21 18 0c16,1 22,9 20,19l-7 41-20 0 7-37c1,-5 1,-8-6,-8l-15 0-9 45-19 0z"/>
+   <path d="M45 125l16-81 37 0c16,1 24,9 24,23 0,24-19,38-36,37l-18 0-4 21-19 0zm27-36l5-30 13 0c7,0 12,3 12,9-1,17-9,20-18,21l-12 0z"/>
+   <path d="M179 125l15-81 38 0c16,1 24,9 24,23-1,24-20,38-37,37l-17 0-4 21-19 0zm26-36l6-30 12 0c8,0 13,3 12,9 0,17-8,20-18,21l-12 0z"/>
+ </g>
+</svg>

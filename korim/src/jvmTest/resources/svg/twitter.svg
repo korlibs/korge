@@ -1,0 +1,7 @@
+<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>
+    <linearGradient y1='88' x1='88' id='tgrad' gradientUnits='userSpaceOnUse'>
+      <stop stop-color='#0ee' offset='0'/>
+      <stop stop-color='#FFF' offset='1'/>
+    </linearGradient>
+  <path stroke-linecap='round' stroke='url(#tgrad) #0EE' d='M79,84c-58,1-49,8-50-71M32,39h41' fill='none' stroke-width='16'/>
+</svg>

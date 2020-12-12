@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-70 -70 140 140">
+
+  <defs>
+    <path id="b" d="M 23,-20 A32,32 0,0,0 -23,-20 L -40,-30 A42,42 0,0,1 -14,-47 A17,17 0,0,0 14,-47 A42,42 0,0,1 40,-30 Z"/>
+    <circle id="h" cx="0" cy="-57" r="12"/>
+  </defs>
+
+  <g transform="translate(5,5)" opacity="0.125">
+    <use xlink:href="#h" transform="rotate(30)"/>
+    <use xlink:href="#b" transform="rotate(30)"/>
+    <use xlink:href="#h" transform="rotate(150)"/>
+    <use xlink:href="#b" transform="rotate(150)"/>
+    <use xlink:href="#h" transform="rotate(-90)"/>
+    <use xlink:href="#b" transform="rotate(-90)"/>
+  </g>
+
+  <a xlink:href="http://www.ubuntu.com/">
+    <use xlink:href="#h" fill="#d00" transform="rotate(30)"/>
+    <use xlink:href="#b" fill="#f40" transform="rotate(30)"/>
+    <use xlink:href="#h" fill="#f80" transform="rotate(150)"/>
+    <use xlink:href="#b" fill="#d00" transform="rotate(150)"/>
+    <use xlink:href="#h" fill="#f40" transform="rotate(-90)"/>
+    <use xlink:href="#b" fill="#f80" transform="rotate(-90)"/>
+  </a>
+
+</svg>

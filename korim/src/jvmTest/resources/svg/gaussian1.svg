@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="drawing.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs>
+    <filter
+       inkscape:collect="always"
+       id="filter1">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2"
+         id="feGaussianBlur1" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter2">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4"
+         id="feGaussianBlur2" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter3">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="8"
+         id="feGaussianBlur3" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="16"
+         id="feGaussianBlur4" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter5">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="32"
+         id="feGaussianBlur5" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter6">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="64"
+         id="feGaussianBlur6" />
+    </filter>
+
+    <filter
+       inkscape:collect="always"
+       id="filter7"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2"
+         id="feGaussianBlur7" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter8"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4"
+         id="feGaussianBlur8" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter9"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="8"
+         id="feGaussianBlur9" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter10"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="16"
+         id="feGaussianBlur10" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter11"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="32"
+         id="feGaussianBlur11" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter12"
+       x="-0.4"
+       width="1.8"
+       y="-0.4"
+       height="1.8">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="64"
+         id="feGaussianBlur12" />
+    </filter>
+    <clipPath
+         id="clipPath1" >
+    <rect
+       id="clipPath1rect1"
+       x="100"
+       y="100"
+       width="25"
+       height="25" />
+    </clipPath>
+    <clipPath
+         id="clipPath5" >
+    <rect
+       id="clipPath5rect1"
+       x="500"
+       y="100"
+       width="25"
+       height="25" />
+    </clipPath>
+
+
+  </defs>
+
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:red;filter:url(#filter1);"
+       clip-path="url(#clipPath1)"
+       id="rect1"
+       width="50"
+       height="50"
+       x="100"
+       y="100" />
+    <rect
+       style="stroke:black;fill:none"
+       id="rect101"
+       width="50"
+       height="50"
+       x="100"
+       y="100" />
+    <rect
+       style="fill:red;filter:url(#filter2);"
+       id="rect2"
+       width="50"
+       height="50"
+       x="200"
+       y="100" />
+    <rect
+       style="fill:none;stroke:black"
+       id="rect201"
+       width="50"
+       height="50"
+       x="200"
+       y="100" />
+    <rect
+       style="fill:red;filter:url(#filter3)"
+       id="rect3"
+       width="50"
+       height="50"
+       x="300"
+       y="100" />
+    <rect
+       id="rect4"
+       style="fill:red;filter:url(#filter4)"
+       width="50"
+       height="50"
+       x="400"
+       y="100" />
+    <rect
+       id="rect5"
+       style="fill:red;filter:url(#filter5)"
+       clip-path="url(#clipPath5)"
+       width="50"
+       height="50"
+       x="500"
+       y="100" />
+    <rect
+       style="fill:none;stroke:black"
+       id="rect5"
+       width="50"
+       height="50"
+       x="500"
+       y="100" />
+    <rect
+       style="fill:red;filter:url(#filter6)"
+       id="rect6"
+       width="50"
+       height="50"
+       x="600"
+       y="100" />
+
+    <rect
+       style="fill:red;filter:url(#filter1)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect7"
+       width="100"
+       height="100"
+       x="200"
+       y="400" />
+    <rect
+       style="fill:red;filter:url(#filter2)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect8"
+       width="100"
+       height="100"
+       x="400"
+       y="400" />
+    <rect
+       style="fill:red;filter:url(#filter3)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect9"
+       width="100"
+       height="100"
+       x="600"
+       y="400" />
+    <rect
+       style="fill:red;filter:url(#filter4)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect10"
+       width="100"
+       height="100"
+       x="800"
+       y="400" />
+    <rect
+       style="fill:red;filter:url(#filter5)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect11"
+       width="100"
+       height="100"
+       x="1000"
+       y="400" />
+    <rect
+       style="fill:red;filter:url(#filter6)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect12"
+       width="100"
+       height="100"
+       x="1200"
+       y="400" />
+
+    <rect
+       style="fill:red;filter:url(#filter7)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect13"
+       width="100"
+       height="100"
+       x="200"
+       y="600" />
+    <rect
+       style="fill:red;filter:url(#filter8)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect14"
+       width="100"
+       height="100"
+       x="400"
+       y="600" />
+    <rect
+       style="fill:red;filter:url(#filter9)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect15"
+       width="100"
+       height="100"
+       x="600"
+       y="600" />
+    <rect
+       style="fill:red;filter:url(#filter10)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect16"
+       width="100"
+       height="100"
+       x="800"
+       y="600" />
+    <rect
+       style="fill:red;filter:url(#filter11)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect17"
+       width="100"
+       height="100"
+       x="1000"
+       y="600" />
+    <rect
+       style="fill:red;filter:url(#filter12)"
+       transform="matrix(.5,0,0,.5,0,0)"
+       id="rect18"
+       width="100"
+       height="100"
+       x="1200"
+       y="600" />
+
+    <rect
+       style="fill:red;filter:url(#filter7)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect19"
+       width="200"
+       height="200"
+       x="400"
+       y="1600" />
+    <rect
+       style="fill:red;filter:url(#filter8)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect20"
+       width="200"
+       height="200"
+       x="800"
+       y="1600" />
+    <rect
+       style="fill:red;filter:url(#filter9)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect21"
+       width="200"
+       height="200"
+       x="1200"
+       y="1600" />
+    <rect
+       style="fill:red;filter:url(#filter10)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect22"
+       width="200"
+       height="200"
+       x="1600"
+       y="1600" />
+    <rect
+       style="fill:red;filter:url(#filter11)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect23"
+       width="200"
+       height="200"
+       x="2000"
+       y="1600" />
+    <rect
+       style="fill:red;filter:url(#filter12)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect24"
+       width="200"
+       height="200"
+       x="2400"
+       y="1600" />
+
+
+    <rect
+       style="fill:red;filter:url(#filter7)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect25"
+       width="400"
+       height="400"
+       x="800"
+       y="4000" />
+    <rect
+       style="fill:red;filter:url(#filter8)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect26"
+       width="400"
+       height="400"
+       x="1600"
+       y="4000" />
+    <rect
+       style="fill:red;filter:url(#filter9)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect27"
+       width="400"
+       height="400"
+       x="2400"
+       y="4000" />
+    <rect
+       style="fill:red;filter:url(#filter10)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect28"
+       width="400"
+       height="400"
+       x="3200"
+       y="4000" />
+    <rect
+       style="fill:red;filter:url(#filter11)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect29"
+       width="400"
+       height="400"
+       x="4000"
+       y="4000" />
+    <rect
+       style="fill:red;filter:url(#filter12)"
+       transform="matrix(.125,0,0,.125,0,0)"
+       id="rect30"
+       width="400"
+       height="400"
+       x="4800"
+       y="4000" />
+
+   <g
+       transform="matrix(.5,0,0,.5,0,0)"
+    >
+    <rect
+       style="fill:red;filter:url(#filter7)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect31"
+       width="400"
+       height="400"
+       x="800"
+       y="4800" />
+    <rect
+       style="fill:red;filter:url(#filter8)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect32"
+       width="400"
+       height="400"
+       x="1600"
+       y="4800" />
+    <rect
+       style="fill:red;filter:url(#filter9)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect33"
+       width="400"
+       height="400"
+       x="2400"
+       y="4800" />
+    <rect
+       style="fill:red;filter:url(#filter10)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect34"
+       width="400"
+       height="400"
+       x="3200"
+       y="4800" />
+    <rect
+       style="fill:red;filter:url(#filter11)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect35"
+       width="400"
+       height="400"
+       x="4000"
+       y="4800" />
+    <rect
+       style="fill:red;filter:url(#filter12)"
+       transform="matrix(.25,0,0,.25,0,0)"
+       id="rect36"
+       width="400"
+       height="400"
+       x="4800"
+       y="4800" />
+
+    </g>
+
+  </g>
+</svg>

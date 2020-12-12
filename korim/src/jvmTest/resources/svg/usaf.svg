@@ -1,0 +1,5 @@
+<svg viewBox='0 0 104 96' xmlns='http://www.w3.org/2000/svg'>
+  <path d='M52,94l-26-19l9-8l-16-10l-17-38l9-17l15,30l26,20l26-20l15-30l9,17l-17,38l-16,10l9,8l-26,19z' fill='#ddd' stroke='#aaa'/>
+  <path d='M52,91l10-7l-10-7l-10,7zM40,83l4-11l-6-5l-9,8zM46,63l-32-23l7,16l12,7zM48,61l3-7l-46-34l7,15zM21,28l-10-22l-6,11zM58,63l32-23l-7,16l-12,7zM56,61l-3-7l46-34l-7,15z M83,28l10-22l6,11zM64,83l-4-11l6-5l9,8z' stroke-linejoin='round' stroke='#222' fill='#138'/>
+  <circle r="5" cx="52" cy="69" stroke="#EEE" fill='#138'/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g stroke="#000" stroke-linejoin="round">
+    <path fill="#DDD" d="M27,42c-8-53,55-53,47,0h-8 c10-41-40-41-30,0h-9z"/>
+    <path fill="#CB9" d="M23,91v-50c18-3,36-2,55,0v50c-19,3-37,2-55,0z"/>
+    <path fill="#EDA" d="M23,91v-50c18-3,36-2,55,0z"/>
+    <path fill="#A87" d="M78,41v50c-19,3-37,2-55,0z"/>
+  </g>
+  <path fill="#EEE" d="M30,21c5-10,7-17,23-16c-10,0-18,14-23,16"/>
+  <path fill="#CB9" d="M78,41c-50,4-50,0-55,50c50-5,50,0,55-50z"/>
+  <path fill="#000" d="M46,77h10l-3-11a6,6,0,1,0-5,0z"/>
+</svg>

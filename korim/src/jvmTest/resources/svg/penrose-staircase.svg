@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="Penrose_Staircase" viewBox="0 0 372 283">
+  <desc>A Penrose Staircase (Optical Illusion)</desc>
+    <g id="Layer_1">
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M241.887,18.16l36.924,18l-36.924,18
+            l-36.922-18L241.887,18.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M168.041,46.16l36.924-18l36.922,18
+            l-36.922,18L168.041,46.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M131.117,56.16l36.924-18l36.924,18
+            l-36.925,18L131.117,56.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M94.194,66.16l36.923-18l36.923,18
+            l-36.923,18L94.194,66.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M57.271,76.16l36.923-18l36.923,18
+            l-36.923,18L57.271,76.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M20.348,86.16l36.923-18l36.922,18
+            l-36.923,18L20.348,86.16z"/>
+        <path fill="#999999" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M278.809,36.16l-36.922,17.999V46.16
+            l-36.924,18v-8l-36.924,18v-8l-36.923,18v-8l-36.923,18v76.68h147.696V66.386l36.922-18.219V36.16H278.809z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M241.891,61.377l36.92-18.218l36.922,18
+            l-36.92,18.218L241.891,61.377z"/>
+        <path fill="#999999" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M278.812,79.378l36.92-18.218
+            l-0.004,6.782l-36.92,18.218L278.812,79.378z"/>
+        <path fill="#CCCCCC" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M315.732,104.16l-36.92-18v-6.783
+            l-36.924-18V170.84h36.92l0.002-75.048l36.922,17.999V104.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M57.271,96.16l36.923-18l36.923,18
+            l-36.923,18L57.271,96.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M94.194,106.16l36.923-18l36.923,18
+            l-36.923,18L94.194,106.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M131.117,116.16l36.923-18l36.925,18
+            l-36.924,18L131.117,116.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M168.041,126.16l36.924-18l36.922,18
+            l-36.922,18L168.041,126.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M204.965,136.16l36.922-18l36.924,18
+            l-36.924,18L204.965,136.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M241.887,111.16l36.924-18l36.922,18
+            l-36.922,18L241.887,111.16z"/>
+        <path fill="#FFFFFF" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M278.809,86.16l36.92-18.218l36.924,18
+            l-36.92,18.218L278.809,86.16z"/>
+        <path fill="#999999" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M352.652,85.942l-36.92,18.218v7
+            l-36.924,18v7l-36.922,18v112.68l110.766-53.997V85.942z"/>
+        <path fill="#CCCCCC" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M20.348,158.844V86.16l36.923,18v-8
+            l36.923,18v-8l36.923,18v-8l36.924,18v-8l36.924,18v-8l36.922,18v112.68L20.348,158.844z"/>
+        <path fill="#CCCCCC" stroke="#000000" stroke-linecap="round"
+stroke-linejoin="round" d="M241.887,111.16l36.924,18v7l-36.924-18
+            V111.16z"/>
+        <path fill="none" d="M372,283H0V0h372V283z"/>
+    </g>
+</svg>

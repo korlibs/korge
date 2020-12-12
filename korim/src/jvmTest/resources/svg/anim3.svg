@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
+<svg version="1.1" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  id="svg-root"
+     width="480" height="360" viewBox="0 0 480 360">
+
+    <g id="test-body-content" font-family="Arial" font-size="10">
+
+            <g transform="translate(0, 0)">
+                <!-- Animated Rect: Zero Animation -->
+                <rect id="rectToAnimateAtZero" x="0" y="0" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="animAtZero" attributeName="transform" type="translate" calcMode="linear" additive="replace" accumulate="none"
+                                      from="0 0" to="50 0" begin="0s" dur="1s" fill="remove"/>
+                </rect>
+
+                <!-- Animated Rect 1 -->
+                <rect id="rectToAnimate1" x="50" y="50" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="anim1" attributeName="transform" type="translate" calcMode="linear" additive="replace" accumulate="none"
+                                      from="0" to="300" begin="2s; 7s" dur="4s" fill="freeze"/>
+                </rect>
+                <text x="30" y="80" fill="navy">begin="2s; 7s" dur="4s" from="0" to="300" fill="freeze"</text>
+
+                <rect id="rectToAnimate2" x="50" y="100" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="anim2" attributeName="transform" type="translate" calcMode="linear" additive="replace" accumulate="none"
+                                      values="0;300" keyTimes="0;1.0" begin="2s; 7s" dur="4s" fill="freeze"/>
+                </rect>
+                <text x="30" y="130" fill="navy">begin="2s; 7s" dur="4s" values="0;300" fill="freeze"</text>
+
+                <rect id="rectToAnimate3" x="50" y="150" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="anim3" attributeName="transform" type="translate" calcMode="spline" additive="replace" accumulate="none"
+                                      values="0;300" keyTimes="0;1.0" keySplines=".5 0 .5 1" begin="2s; 7s" dur="4s" fill="freeze"/>
+                </rect>
+                <text x="30" y="180" fill="navy">begin="2s; 7s" dur="4s" values="0;300" keySplines=".5 0 .5 1" fill="freeze"</text>
+
+                <rect id="rectToAnimate4" x="50" y="200" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="anim4" attributeName="transform" type="translate" calcMode="spline" additive="replace" accumulate="none"
+                                      values="0;100;300" keyTimes="0;0.5;1.0" begin="2s; 7s" dur="4s" fill="freeze"/>
+                </rect>
+                <text x="30" y="230" fill="navy">begin="2s; 7s" dur="4s" values="0;100;300" keyTimes="0;0.5;1.0" fill="freeze"</text>
+
+                <rect id="rectToAnimate5" x="50" y="250" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4">
+                    <animateTransform id="anim5" attributeName="transform" type="translate" calcMode="spline" additive="replace" accumulate="none"
+                                      values="0;100;300" keyTimes="0;0.5;1.0" keySplines=".5 0 .5 1;1 0 .25 .25" begin="2s; 7s" dur="4s" fill="freeze"/>
+                </rect>
+                <text x="30" y="280" fill="navy">begin="2s; 7s" dur="4s" values="0;100;300" keyTimes="0;0.5;1.0" keySplines=".5 0 .5 1;1 0 .25 .25" fill="freeze"</text>
+
+
+                <!-- Rect Click to Seek and Activate Beginning Animation -->
+                <a xlink:href="#animAtZero">
+                    <rect id="rectToSeek1" x="50" y="300" width="50" height="20" fill="#0f5" stroke="#085" stroke-width="4"/>
+                </a>
+                <text x="50" y="330" fill="navy">Click me (rectToSeek1) to seek to doc start (anim of top rect)</text>
+
+
+            </g>
+
+    <rect id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000000"/>
+   </g>
+</svg>

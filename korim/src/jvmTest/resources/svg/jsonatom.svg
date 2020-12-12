@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 102">
+  <radialGradient id="jsongrad" cx="65" cy="90" r="100" gradientUnits="userSpaceOnUse"><stop stop-color="#EEF"/><stop offset="1"/></radialGradient>
+  <path d="M61,02 A 49,49 0,0,0 39,99 C 9,79 10,24 45,25 C 72,24 65,75 50,75 C 93,79 91,21 62,02" id="jsonswirl" fill="url(#jsongrad)"/>
+  <use xlink:href="#jsonswirl" transform="translate(50,50) rotate(180) translate(-50,-50)"/>
+  <g transform="scale(2) translate(25,25)" fill="none">
+    <ellipse stroke="#66899a" rx="3" ry="22"/>
+    <ellipse stroke="#e1d85d" rx="3" ry="22" transform="rotate(-66)"/>
+    <ellipse stroke="#80a3cf" rx="3" ry="22" transform="rotate(66)"/>
+    <circle fill="#80a3cf" r="6.5" stroke="#FFF"/>
+ </g>
+</svg>
