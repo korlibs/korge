@@ -4,6 +4,7 @@ import org.gradle.api.Project
 
 val Project.klockVersion get() = findProperty("klockVersion") ?: BuildVersions.KLOCK
 val Project.kmemVersion get() = findProperty("kmemVersion") ?: BuildVersions.KMEM
+val Project.kryptoVersion get() = findProperty("kryptoVerrsion") ?: BuildVersions.KRYPTO
 val Project.kdsVersion get() = findProperty("kdsVersion") ?: BuildVersions.KDS
 val Project.korioVersion get() = findProperty("korioVersion") ?: BuildVersions.KORIO
 val Project.kormaVersion get() = findProperty("kormaVersion") ?: BuildVersions.KORMA
@@ -20,6 +21,7 @@ val Project.coroutinesVersion get() = findProperty("coroutinesVersion") ?: Build
 
 fun Project.getModuleVersion(name: String, defaultVersion: Any): Any {
 	return when (name.split(':').last().trim().toLowerCase().split('-').first().trim()) {
+        "krypto" -> kryptoVersion
 		"klock" -> klockVersion
 		"kmem" -> kmemVersion
 		"kds" -> kdsVersion

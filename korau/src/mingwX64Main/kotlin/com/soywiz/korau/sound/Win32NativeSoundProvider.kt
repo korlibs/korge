@@ -21,7 +21,7 @@ object Win32NativeSoundProvider : NativeSoundProvider() {
         val samplesPin = samplesInterleaved.data.pin()
         val scope = Arena()
         val hdr = scope.alloc<WAVEHDR>().apply {
-            this.lpData = samplesPin.addressOf(0).reinterpret()
+            this.lpData = samplesPin.startAddressOf.reinterpret()
             this.dwBufferLength = (samplesInterleaved.data.size * 2).convert()
             this.dwFlags = 0.convert()
         }

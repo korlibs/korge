@@ -20,17 +20,35 @@ fun Project.configureNativeIos() {
 				File(buildDir, "platforms/native-ios/info.kt").delete() // Delete old versions
 				File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
 					parentFile.mkdirs()
+                    val DOLLAR = "\$"
 					writeText("""
-    					import ${korge.realEntryPoint}
-
-						object RootGameMain {
-							fun runMain() = MyIosGameWindow2.gameWindow.entry { ${korge.realEntryPoint}() }
-						}
-
-						object MyIosGameWindow2 {
-							fun setCustomCwd(cwd: String?) = run { com.soywiz.korio.file.std.customCwd = cwd }
-							val gameWindow get() = com.soywiz.korgw.MyIosGameWindow
-						}
+                        import ${korge.realEntryPoint}
+                        import platform.Foundation.*
+                        
+                        object RootGameMain {
+                            fun preRunMain() {
+                                //println("RootGameMain.preRunMain")
+                                val path = NSBundle.mainBundle.resourcePath
+                                //println("RootGameMain.runMain: path=${DOLLAR}path")
+                                if (path != null) {
+                                    val rpath = "${DOLLAR}path/include/app/resources"
+                                    //println("RootGameMain.runMain: rpath=${DOLLAR}rpath")
+                                    NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
+                                    MyIosGameWindow2.setCustomCwd(rpath)
+                                }                        
+                            }
+                        
+                            fun runMain() {
+                                MyIosGameWindow2.gameWindow.entry {
+                                    ${korge.realEntryPoint}()
+                                }
+                            }
+                        }
+                        
+                        object MyIosGameWindow2 {
+                            fun setCustomCwd(cwd: String?) = run { com.soywiz.korio.file.std.customCwd = cwd }
+                            val gameWindow get() = com.soywiz.korgw.MyIosGameWindow
+                        }
 					""".trimIndent())
 				}
 			}
@@ -361,6 +379,7 @@ fun Project.configureNativeIos() {
 
 					- (void)viewDidLoad {
 						[super viewDidLoad];
+                        //printf("viewDidLoad\n");
 
 						self.initialized = false;
 						self.reshape = true;
@@ -416,6 +435,7 @@ fun Project.configureNativeIos() {
 					-(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
 						if (!self.initialized) {
 							self.initialized = true;
+                            [self.rootGameMain preRunMain];
 							[self.gameWindow2.gameWindow dispatchInitEvent];
 							[self.rootGameMain runMain];
 							self.reshape = true;

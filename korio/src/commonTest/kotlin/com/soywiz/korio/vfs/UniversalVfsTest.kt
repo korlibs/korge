@@ -8,9 +8,11 @@ import com.soywiz.korio.util.*
 import kotlin.test.*
 
 class UniversalVfsTest {
+    private val fileIsLocalVfs get() = !OS.isJsBrowser && !OS.isNative
+
 	@Test
 	fun testProperVfsIsResolved() {
-		if (!OS.isJsBrowser) {
+		if (fileIsLocalVfs) {
 			assertTrue("file:///path/to/my/file".uniVfs.vfs is LocalVfs)
 		}
 		assertTrue("http://google.es/".uniVfs.vfs is UrlVfs)
@@ -19,7 +21,7 @@ class UniversalVfsTest {
 
 	@Test
 	fun testProperPathIsResolved() {
-		if (!OS.isJsBrowser) {
+		if (fileIsLocalVfs) {
 			assertEquals("/path/to/my/file", "file:///path/to/my/file".uniVfs.absolutePath)
 		}
 		assertEquals("http://google.es/", "http://google.es/".uniVfs.absolutePath)

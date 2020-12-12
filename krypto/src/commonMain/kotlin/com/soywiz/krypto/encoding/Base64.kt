@@ -33,10 +33,10 @@ object Base64 {
                 continue // skip character
             }
 
-            val b0 = DECODE[src.readU8(n++)]
-            val b1 = DECODE[src.readU8(n++)]
-            val b2 = DECODE[src.readU8(n++)]
-            val b3 = DECODE[src.readU8(n++)]
+            val b0 = if (n < src.size) DECODE[src.readU8(n++)] else 64
+            val b1 = if (n < src.size) DECODE[src.readU8(n++)] else 64
+            val b2 = if (n < src.size) DECODE[src.readU8(n++)] else 64
+            val b3 = if (n < src.size) DECODE[src.readU8(n++)] else 64
             dst[m++] = (b0 shl 2 or (b1 shr 4)).toByte()
             if (b2 < 64) {
                 dst[m++] = (b1 shl 4 or (b2 shr 2)).toByte()
