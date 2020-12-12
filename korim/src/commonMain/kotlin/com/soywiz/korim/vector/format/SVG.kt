@@ -28,7 +28,9 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	//constructor(@Language("xml") str: String) : this(Xml(str))
 	constructor(str: String) : this(Xml(str))
 
-	val x = root.int("x", 0)
+    override fun toString(): String = "SVG($width, $height)"
+
+    val x = root.int("x", 0)
 	val y = root.int("y", 0)
 
 	val dwidth = root.double("width", 128.0)

@@ -15,9 +15,9 @@ import java.io.*
 fun VirtualFile.toVfs(): VfsFile {
 	val file = this
 	val url = file.canonicalPath ?: ""
-	println("VirtualFile.toVfs: path=${file.path}, canonicalPath=${file.url}")
+	//println("VirtualFile.toVfs: path=${file.path}, canonicalPath=${file.url}")
 	val root = this.root
-	println("VirtualFile.toVfs.root: path=${root.path}, canonicalPath=${root.canonicalPath}")
+	//println("VirtualFile.toVfs.root: path=${root.path}, canonicalPath=${root.canonicalPath}")
 	//return File(URI(url)).toVfs()
 
 	return File(url).toVfs()

@@ -11,8 +11,10 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.vector.*
 import java.awt.*
 import java.util.*
 import javax.swing.*
@@ -45,6 +47,7 @@ open class MyComponentFactory {
 
     open fun getViewFactories(views: Views): List<ViewFactory> = ArrayList<ViewFactory>().also { list ->
         list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
+        list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { setSize(100.0, 100.0) } })
         list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
         list.add(ViewFactory("Ellipse") { Ellipse(50.0, 50.0, Colors.WHITE).center() })
         list.add(ViewFactory("Container") { Container() })

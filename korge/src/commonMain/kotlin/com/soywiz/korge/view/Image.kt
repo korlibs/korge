@@ -92,6 +92,11 @@ class Image(
 
     override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
 
+    override fun renderInternal(ctx: RenderContext) {
+        lazyLoadRenderInternal(ctx, this)
+        super.renderInternal(ctx)
+    }
+
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         //println("### Trying to load sourceImage=$sourceImage")
@@ -102,11 +107,6 @@ class Image(
             bitmap = Bitmaps.white
             scale = 100.0
         }
-    }
-
-    override fun renderInternal(ctx: RenderContext) {
-        lazyLoadRenderInternal(ctx, this)
-        super.renderInternal(ctx)
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

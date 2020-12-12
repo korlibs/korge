@@ -1,8 +1,12 @@
 package com.soywiz.korim.format
 
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korim.vector.format.*
+import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.stream.*
 
 suspend fun ImageFormat.decode(s: VfsFile, props: ImageDecodingProps = ImageDecodingProps()) =
@@ -120,6 +124,8 @@ suspend fun VfsFile.readBitmap(
 }
 
 suspend fun VfsFile.readBitmapSlice(premultiplied: Boolean = true): BitmapSlice<Bitmap> = readBitmapOptimized(premultiplied = premultiplied).slice()
+
+suspend fun VfsFile.readVectorImage(): SizedDrawable = readSVG()
 
 var nativeImageLoadingEnabled = true
 
