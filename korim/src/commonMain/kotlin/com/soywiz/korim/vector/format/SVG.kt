@@ -54,10 +54,6 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		when (type) {
 			"lineargradient", "radialgradient" -> {
 				val id = def.str("id").toLowerCase()
-				val x0 = def.double("x1", 0.0)
-				val y0 = def.double("y1", 0.0)
-				val x1 = def.double("x2", 1.0)
-				val y1 = def.double("y2", 1.0)
 				val stops = parseStops(def)
                 val gradientUnits = when (def.getString("gradientUnits") ?: "objectBoundingBox") {
                     "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
@@ -66,11 +62,18 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
 				val g: GradientPaint = if (type == "lineargradient") {
 					//println("Linear: ($x0,$y0)-($x1-$y1)")
+                    val x0 = def.double("x1", 0.0)
+                    val y0 = def.double("y1", 0.0)
+                    val x1 = def.double("x2", 1.0)
+                    val y1 = def.double("y2", 1.0)
 					GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, units = gradientUnits)
 				} else {
-					val r0 = def.double("r0", 0.0)
-					val r1 = def.double("r1", 0.0)
-					GradientPaint(GradientKind.RADIAL, x0, y0, r0, x1, y1, r1, units = gradientUnits)
+                    val cx = def.double("cx", 0.0)
+                    val cy = def.double("cy", 0.0)
+					val r = def.double("r", 16.0)
+					val fx = def.double("fx", 0.0)
+                    val fy = def.double("fy", 0.0)
+					GradientPaint(GradientKind.RADIAL, cx, cy, 0.0, fx, fy, r, units = gradientUnits)
 				}
 
 				def.strNull("xlink:href")?.let {
@@ -123,7 +126,9 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		val str = str2.toLowerCase().trim()
 		val res = when {
             str.startsWith("url(") -> {
-                val urlPattern = str.substr(4, -1)
+                val urlPattern = str.substr(4, -1).substringBefore(')')
+                val extra = str.substringAfter(')')
+
                 if (urlPattern.startsWith("#")) {
                     val idName = urlPattern.substr(1).toLowerCase()
                     val def = defs[idName]
@@ -131,6 +136,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                         println(defs)
                         println("Can't find svg definition '$idName'")
                     }
+                    //println("URL: def=$def")
                     def ?: NonePaint
                 } else {
                     println("Unsupported $str")
@@ -169,7 +175,9 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var drawChildren = false
         var render = render
 
-        xml.getString("transform")?.let {
+        val attributes = parseAttributesAndStyles(xml)
+
+        attributes["transform"]?.let {
             applyTransform(state, parseTransform(it))
         }
 
@@ -487,68 +495,37 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				getBounds(bounds)
 			}
             else -> {
-                println("WARNING: Unhandled SVG node '$nodeName'")
+                warningProcessor?.invoke("Unhandled SVG node '$nodeName'")
                 drawChildren = true
             }
 		}
 
-		if (xml.hasAttribute("stroke-width")) {
-			lineWidth = xml.double("stroke-width", 1.0)
-		}
-        xml.getString("stroke-linejoin")?.let { lineJoin = LineJoin[it] }
-        xml.getString("stroke-linecap")?.let { lineCap = LineCap[it] }
-		if (xml.hasAttribute("stroke")) {
-			strokeStyle = parseFillStroke(c, xml.str("stroke"), bounds)
-		}
-        xml.doubleNull("opacity")?.let {
-            globalAlpha *= it
-        }
-        xml.getString("fill")?.let {
-            applyFill(c, it, bounds)
-        }
-		if (xml.hasAttribute("font-size")) {
-            fontSize = parseSizeAsDouble(xml.str("font-size"))
-		}
-		if (xml.hasAttribute("font-family")) {
-			font = fontRegistry[xml.str("font-family")]
-		}
-		if (xml.hasAttribute("style")) {
-			applyStyle(c, SvgStyle.parse(xml.str("style"), warningProcessor), bounds)
-		}
-
-		if (xml.hasAttribute("text-anchor")) {
-			horizontalAlign = when (xml.str("text-anchor").toLowerCase().trim()) {
-				"left" -> HorizontalAlign.LEFT
-				"center", "middle" -> HorizontalAlign.CENTER
-				"right", "end" -> HorizontalAlign.RIGHT
-				else -> horizontalAlign
-			}
-		}
-        if (xml.hasAttribute("alignment-baseline")) {
-            verticalAlign = when (xml.str("alignment-baseline").toLowerCase().trim()) {
-                "hanging" -> VerticalAlign.TOP
-                "center", "middle" -> VerticalAlign.MIDDLE
-                "baseline" -> VerticalAlign.BASELINE
-                "bottom" -> VerticalAlign.BOTTOM
-                else -> verticalAlign
-            }
-        }
-		if (xml.hasAttribute("fill-opacity")) {
-			globalAlpha *= xml.double("fill-opacity", 1.0)
-		}
-
-        xml.getString("style")?.let {
-            for ((key, value) in CSSDeclarations.parseToMap(it)) {
-                when (key) {
-                    "opacity" -> globalAlpha *= value.toDoubleOrNull() ?: 1.0
-                    "fill-opacity" -> globalAlpha *= value.toDoubleOrNull() ?: 1.0
-                    "fill-rule" -> Unit // @TODO:
-                    "fill" -> applyFill(c, value, bounds)
-                    "stroke-width" -> lineWidth = value.toDoubleOrNull() ?: 1.0
-                    "stroke-linejoin" -> lineJoin = LineJoin[value]
-                    "stroke-linecap" -> lineCap = LineCap[value]
-                    "stroke" -> strokeStyle = parseFillStroke(c, value, bounds)
+        for ((key, it) in attributes) {
+            when (key) {
+                "stroke-width" -> lineWidth = it.toDoubleOrNull() ?: 1.0
+                "stroke-linejoin" -> lineJoin = LineJoin[it]
+                "stroke-linecap" -> lineCap = LineCap[it]
+                "stroke" -> strokeStyle = parseFillStroke(c, it, bounds)
+                "opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0
+                "fill-opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
+                "stroke-opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
+                "fill" -> applyFill(c, it, bounds)
+                "font-size" -> fontSize = parseSizeAsDouble(it)
+                "font-family" -> font = fontRegistry[it]
+                "text-anchor" -> horizontalAlign = when (it.toLowerCase().trim()) {
+                    "left" -> HorizontalAlign.LEFT
+                    "center", "middle" -> HorizontalAlign.CENTER
+                    "right", "end" -> HorizontalAlign.RIGHT
+                    else -> horizontalAlign
                 }
+                "alignment-baseline" ->  verticalAlign = when (it.toLowerCase().trim()) {
+                    "hanging" -> VerticalAlign.TOP
+                    "center", "middle" -> VerticalAlign.MIDDLE
+                    "baseline" -> VerticalAlign.BASELINE
+                    "bottom" -> VerticalAlign.BOTTOM
+                    else -> verticalAlign
+                }
+                "fill-rule" -> Unit // @TODO
             }
         }
 
@@ -598,17 +575,6 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		state.transform.premultiply(transform)
 	}
 
-	private fun applyStyle(c: Context2d, style: SvgStyle, bounds: Rectangle) {
-		//println("Apply style $style to $c")
-		for ((k, v) in style.styles) {
-			//println("$k <-- $v")
-			when (k) {
-				"fill" -> applyFill(c, v, bounds)
-				else -> warningProcessor?.invoke("Unsupported style $k in css")
-			}
-		}
-	}
-
 	fun parseTransform(str: String): Matrix {
 		val tokens = SvgStyle.tokenize(str)
 		val tr = ListReader(tokens)
@@ -637,7 +603,11 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				"translate" -> out.pretranslate(double(0), double(1))
 				"scale" -> out.prescale(double(0), if (doubleArgs.size >= 2) double(1) else double(0))
 				"matrix" -> out.premultiply(double(0), double(1), double(2), double(3), double(4), double(5))
-                "rotate" -> out.prerotate(double(0).degrees)
+                "rotate" -> {
+                    if (doubleArgs.size >= 3) out.pretranslate(double(1), double(2))
+                    out.prerotate(double(0).degrees)
+                    if (doubleArgs.size >= 3) out.pretranslate(-double(1), -double(2))
+                }
 				else -> invalidOp("Unsupported transform $id : $args : $doubleArgs ($str)")
 			}
 			//println("ID: $id, args=$args")
@@ -682,6 +652,12 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	companion object {
         val ColorDefaultBlack = Colors.WithDefault(Colors.BLACK)
 
+        fun parseAttributesAndStyles(node: Xml): Map<String, String> {
+            val out = node.attributes.toMutableMap()
+            node.getString("style")?.let { out.putAll(CSSDeclarations.parseToMap(it)) }
+            return out
+        }
+
         fun parsePercent(str: String, default: Double = 0.0): Double {
             return if (str.endsWith("%")) {
                 str.substr(0, -1).toDouble() / 100.0
@@ -693,17 +669,17 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         fun parseStops(xml: Xml): List<Pair<Double, RGBA>> {
             val out = arrayListOf<Pair<Double, RGBA>>()
             for (stop in xml.children("stop")) {
-                var offset = parsePercent(stop.str("offset"))
-                var colorStop = ColorDefaultBlack[stop.str("stop-color")]
-                var alphaStop = stop.double("stop-opacity", 1.0)
-                stop.getString("style")?.let { style ->
-                    val map = CSSDeclarations.parseToMap(style)
-                    //println(map)
-                    map["offset"]?.let { offset = parsePercent(it) }
-                    map["stop-color"]?.let { colorStop = ColorDefaultBlack[it] }
-                    map["stop-opacity"]?.let { alphaStop = it.toDoubleOrNull() ?: 1.0 }
+                val info = parseAttributesAndStyles(stop)
+                var offset = 0.0
+                var colorStop = ColorDefaultBlack.defaultColor
+                var alphaStop = 1.0
+                for ((key, value) in info) {
+                    when (key) {
+                        "offset" -> offset = parsePercent(value)
+                        "stop-color" -> colorStop = ColorDefaultBlack[value]
+                        "stop-opacity" -> alphaStop = value.toDoubleOrNull() ?: 1.0
+                    }
                 }
-
                 out += Pair(offset, RGBA(colorStop.rgb, (alphaStop * 255).toInt()))
             }
             return out

@@ -85,7 +85,9 @@ open class KorgeFileEditorProvider : com.intellij.openapi.fileEditor.FileEditorP
                     "dbbin" -> dragonBonesEditor(file)
                     "skel" -> spineEditor(file)
                     "tmx" -> createModule(null) { tiledMapEditor(file) }
-                    "svg" -> createModule(null) { sceneView += VectorImage(file.readSVG()) }
+                    "svg" -> createModule(null) { sceneView += VectorImage(file.readSVG()).also {
+                        //it.useNativeRendering = false
+                    } }
                     "pex" -> particleEmiterEditor(file)
                     "ktree" -> ktreeEditor(fileToEdit)
                     "wav", "mp3", "ogg", "lipsync" -> createModule(null) { audioFileEditor(file) }
