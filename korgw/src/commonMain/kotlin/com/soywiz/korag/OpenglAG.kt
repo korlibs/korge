@@ -4,6 +4,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.kgl.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.Program
@@ -558,38 +559,43 @@ abstract class AGOpengl : AG() {
 
         private fun ensure() {
             if (cachedVersion != contextVersion) {
-                val oldCachedVersion = cachedVersion
-                cachedVersion = contextVersion
-                id = gl.createProgram()
+                val time = measureTime {
+                    val oldCachedVersion = cachedVersion
+                    cachedVersion = contextVersion
+                    id = gl.createProgram()
 
+                    if (GlslGenerator.DEBUG_GLSL) {
+                        println("OpenglAG: Creating program ${program.name} with id $id because contextVersion: $oldCachedVersion != $contextVersion")
+                    }
+
+                    //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
+
+                    val guessedGlSlVersion = glSlVersion ?: gl.versionInt
+                    val usedGlSlVersion = GlslGenerator.FORCE_GLSL_VERSION?.toIntOrNull() ?: when (guessedGlSlVersion) {
+                        460 -> 460
+                        in 300..450 -> 100
+                        else -> guessedGlSlVersion
+                    }
+
+                    if (GlslGenerator.DEBUG_GLSL) {
+                        println("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
+                    }
+
+                    fragmentShaderId = createShaderCompat(gl.FRAGMENT_SHADER) { compatibility ->
+                        program.fragment.toNewGlslStringResult(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig)).result
+                    }
+                    vertexShaderId = createShaderCompat(gl.VERTEX_SHADER) { compatibility ->
+                        program.vertex.toNewGlslStringResult(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig)).result
+                    }
+                    gl.attachShader(id, fragmentShaderId)
+                    gl.attachShader(id, vertexShaderId)
+                    gl.linkProgram(id)
+                    tempBuffer1.setInt(0, 0)
+                    gl.getProgramiv(id, gl.LINK_STATUS, tempBuffer1)
+                }
                 if (GlslGenerator.DEBUG_GLSL) {
-                    println("OpenglAG: Created program ${program.name} with id $id because contextVersion: $oldCachedVersion != $contextVersion")
+                    println("OpenglAG: Created program ${program.name} with id $id in time=$time")
                 }
-
-                //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
-
-                val guessedGlSlVersion = glSlVersion ?: gl.versionInt
-                val usedGlSlVersion = GlslGenerator.FORCE_GLSL_VERSION?.toIntOrNull() ?: when (guessedGlSlVersion) {
-                    460 -> 460
-                    in 300..450 -> 100
-                    else -> guessedGlSlVersion
-                }
-
-                if (GlslGenerator.DEBUG_GLSL) {
-                    println("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
-                }
-
-                fragmentShaderId = createShaderCompat(gl.FRAGMENT_SHADER) { compatibility ->
-                    program.fragment.toNewGlslStringResult(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig)).result
-                }
-                vertexShaderId = createShaderCompat(gl.VERTEX_SHADER) { compatibility ->
-                    program.vertex.toNewGlslStringResult(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig)).result
-                }
-                gl.attachShader(id, fragmentShaderId)
-                gl.attachShader(id, vertexShaderId)
-                gl.linkProgram(id)
-                tempBuffer1.setInt(0, 0)
-                gl.getProgramiv(id, gl.LINK_STATUS, tempBuffer1)
             }
         }
 
