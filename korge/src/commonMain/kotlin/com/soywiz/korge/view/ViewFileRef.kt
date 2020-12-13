@@ -16,6 +16,7 @@ interface ViewFileRef {
         override var sourceTreeLoaded: Boolean = true
         override var sourceFile: String? = null
             set(value) {
+                println("SET sourceFile=$value")
                 sourceTreeLoaded = false
                 field = value
             }

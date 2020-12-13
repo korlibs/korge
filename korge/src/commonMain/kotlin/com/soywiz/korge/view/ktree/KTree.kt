@@ -12,6 +12,7 @@ import com.soywiz.korge.view.grid.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
@@ -188,6 +189,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             "ellipse" -> view = Ellipse(50.0, 50.0, Colors.RED)
             "container" -> view = Container()
             "image" -> view = Image(Bitmaps.transparent)
+            "vectorimage" -> view = VectorImage.createDefault()
             "treeviewref" -> view = TreeViewRef()
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
             "animation" -> view = AnimationViewRef()
@@ -357,6 +359,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 is SolidRect -> Xml("solidrect", rproperties)
                 is Ellipse -> Xml("ellipse", rproperties)
                 is Image -> Xml("image", rproperties)
+                is VectorImage -> Xml("vectorimage", rproperties)
                 is TreeViewRef -> Xml("treeviewref", rproperties)
                 is TiledMapViewRef -> Xml("tiledmapref", rproperties)
                 is Text -> Xml("text", rproperties)
