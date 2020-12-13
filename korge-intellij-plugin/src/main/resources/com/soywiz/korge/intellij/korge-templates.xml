@@ -1,38 +1,37 @@
-<korge-templates version="3">
-<versions>
-	<version>1.15.0.0</version>
-    <version>2.0.0.0-alpha-1</version>
-</versions>
-<features>
-	<feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
-	<feature id="f3d" dependencies="core" name="3D Support" description="Korge 3D Support" documentation="https://korlibs.soywiz.com/korge/3d/" />
-	<feature id="box2d" dependencies="core" name="Box-2D Support" description="Adds support for Box-2D" documentation="https://korlibs.soywiz.com/korge/physics/box2d/" />
-	<feature id="dragonbones" dependencies="core" name="DragonBones Support" description="Adds support for DragonBones" documentation="https://korlibs.soywiz.com/korge/skeleton/dragonbones/" />
-	<feature id="swf" dependencies="core" name="SWF Support" description="Adds support for Adobe Flash/Animate SWF files" documentation="https://korlibs.soywiz.com/korge/animation/swf/" />
-</features>
-<files>
+<korge-templates version="5">
+    <versions>
+        <version>2.0.0.1</version>
+    </versions>
+    <features>
+        <feature id="core" dependencies="" name="Korge" description="Korge support" documentation="https://korlibs.soywiz.com/korge/" />
+        <feature id="f3d" dependencies="core" name="3D Support" description="Korge 3D Support" documentation="https://korlibs.soywiz.com/korge/3d/" />
+        <feature id="box2d" dependencies="core" name="Box-2D Support" description="Adds support for Box-2D" documentation="https://korlibs.soywiz.com/korge/physics/box2d/" />
+        <feature id="dragonbones" dependencies="core" name="DragonBones Support" description="Adds support for DragonBones" documentation="https://korlibs.soywiz.com/korge/skeleton/dragonbones/" />
+        <feature id="swf" dependencies="core" name="SWF Support" description="Adds support for Adobe Flash/Animate SWF files" documentation="https://korlibs.soywiz.com/korge/animation/swf/" />
+    </features>
+    <files>
 
-<file path=".gitignore"><![CDATA[
+        <file path=".gitignore"><![CDATA[
 /.idea
 /.gradle
 *.iml
 ]]></file>
 
-<file path="build.gradle.kts"><![CDATA[
+        <file path="build.gradle.kts"><![CDATA[
 import com.soywiz.korge.gradle.*
 
 buildscript {
+	val korgePluginVersion: String by project
+
 	repositories {
 		mavenLocal()
 		maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
 		maven { url = uri("https://plugins.gradle.org/m2/") }
 		mavenCentral()
 		google()
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 	}
 	dependencies {
-		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:1.15.0.0")
+		classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:$korgePluginVersion")
 	}
 }
 
@@ -52,27 +51,43 @@ korge {
 #if ($feature_swf)
 	supportSwf()
 #end
+// To enable all targets at once
+
+	//targetAll()
+
+// To enable targets based on properties/environment variables
+	//targetDefault()
+
+// To selectively enable targets
+
+	targetJvm()
+	targetJs()
+	targetDesktop()
+	targetIos()
+	targetAndroidIndirect() // targetAndroidDirect()
 }
 
 ]]></file>
 
-<file path="settings.gradle"><![CDATA[
+        <file path="settings.gradle"><![CDATA[
 enableFeaturePreview("GRADLE_METADATA")
 ]]></file>
 
-<file path="gradle.properties"><![CDATA[
+        <file path="gradle.properties"><![CDATA[
+korgePluginVersion=2.0.0.1
 org.gradle.jvmargs=-Xmx2g
+kotlin.mpp.stability.nowarn=true
 ]]></file>
 
-<file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
+        <file path="gradle/wrapper/gradle-wrapper.properties"><![CDATA[
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-6.3-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-6.7.1-all.zip
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 ]]></file>
 
-<file path="src/commonMain/kotlin/main.kt"><![CDATA[
+        <file path="src/commonMain/kotlin/main.kt"><![CDATA[
 import com.soywiz.klock.seconds
 import com.soywiz.korge.*
 import com.soywiz.korge.tween.*
@@ -101,7 +116,7 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 }
 ]]></file>
 
-<file path="src/commonTest/kotlin/test.kt"><![CDATA[
+        <file path="src/commonTest/kotlin/test.kt"><![CDATA[
 import com.soywiz.klock.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tests.*
@@ -130,7 +145,7 @@ class MyTest : ViewsForTesting() {
 }
 ]]></file>
 
-<file path="src/commonMain/resources/korge.png" encoding="base64"><![CDATA[
+        <file path="src/commonMain/resources/korge.png" encoding="base64"><![CDATA[
 iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAAzFBMVEUAAAAzAH0x
 AHw5AI81AIQvAHYoAGgxAHw6AI46AI84AIo2AIc0AIIzAH8yAH0wAHktAHgtAHMs
 AHAqAGwpAGkoAGhBGqCHba2bg8magcCWgrU+F4NSLJff3O7////s6vTQyueuocOh
@@ -425,5 +440,5 @@ UUrrXSY3ktzOcwOxHfaOW4hItFa/WP0t89UeHAgAAAAAAPm/NoKqqqqqqqqqqqqq
 CgApZ0Gt/xKtAAAAAElFTkSuQmCC
 ]]></file>
 
-</files>
+    </files>
 </korge-templates>

@@ -5,7 +5,7 @@
 	<id>com.soywiz.korge.korge-intellij-plugin</id>
 
 	<name>Korge</name>
-	<version>2.0.0.0-beta-3</version>
+	<version>2.0.0.0</version>
 	<vendor email="soywiz@gmail.com" url="https://korge.soywiz.com/">Korge</vendor>
 
 	<description><![CDATA[
@@ -13,6 +13,16 @@
 	]]></description>
 
 	<change-notes><!-- language: HTML --><![CDATA[
+		<h3>2.0.0.0</h3>
+		<ul>
+		    <li>Fixed issue with editors showing black images some times</li>
+		    <li>Added support for VectorImage in ktree (supports reading SVG)</li>
+		    <li>Improved SVG rendering</li>
+		    <li>Fixed text xml attributes in ktree files to match KorGE 2.0</li>
+		    <li>Many fixes and improvements</li>
+		    <li>Disable debug extensions for now</li>
+		    <li>Template for KorGE 2.0.0.1, Kotlin 1.4.20 and Gradle 6.7.1</li>
+		</ul>
 		<h3>2.0.0.0-beta-3</h3>
 		<ul>
 		    <li>Supports MacOS BigSur</li>
