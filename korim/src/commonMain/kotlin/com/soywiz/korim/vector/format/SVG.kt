@@ -200,8 +200,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				val y = xml.double("y")
 				val width = xml.double("width")
 				val height = xml.double("height")
-				val rx = xml.double("rx")
-				val ry = xml.double("ry")
+                val ry = xml.double("ry", xml.double("rx"))
+				val rx = xml.double("rx", xml.double("ry"))
 				bounds.setTo(x, y, width, height)
 				roundRect(x, y, width, height, rx, ry)
 			}
