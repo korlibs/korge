@@ -47,6 +47,7 @@ import java.awt.event.*
 import java.beans.*
 import javax.swing.*
 import com.soywiz.korev.dispatch
+import com.soywiz.korge.input.*
 
 open class KorgeBaseKorgeFileEditor(
     val project: Project,
@@ -89,7 +90,7 @@ open class KorgeBaseKorgeFileEditor(
 		componentsCreated++
 		val panel = JPanel()
 		panel.layout = GridLayout(1, 1)
-        canvas = GLCanvas()
+        canvas = GLCanvas(checkGl = true)
         val canvas = canvas!!
         canvas.minimumSize = Dimension(64, 64)
         panel.add(canvas)
@@ -140,6 +141,9 @@ open class KorgeBaseKorgeFileEditor(
                     injector.mapInstance<ViewsDebuggerComponent>(viewsDebuggerComponent!!)
                     val container = sceneContainer(views)
                     views.setVirtualSize(panel.width, panel.height)
+                    views.stage.keys.down(com.soywiz.korev.Key.F8) {
+                        canvas.logGl = !canvas.logGl
+                    }
                     module.apply {
                         injector.configure()
                     }

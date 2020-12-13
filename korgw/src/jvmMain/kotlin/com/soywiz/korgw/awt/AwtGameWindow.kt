@@ -13,7 +13,7 @@ import java.awt.event.*
 import javax.swing.*
 
 
-class AwtGameWindow( checkGl: Boolean,  logGl:Boolean) : BaseAwtGameWindow() {
+class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
     override val ag: AwtAg = AwtAg(this, checkGl, logGl)
 
     /*

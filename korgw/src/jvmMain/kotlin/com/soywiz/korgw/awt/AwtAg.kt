@@ -7,13 +7,32 @@ import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
 import com.soywiz.korio.util.*
 
-class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, private val logGl:Boolean) : AGOpengl() {
+class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, logGl: Boolean, val cacheGl: Boolean = false) : AGOpengl() {
     override val gles: Boolean = true
     override val linux: Boolean = OS.isLinux
-    private var lazyGl: KmlGl? = null
+    private var baseLazyGl: KmlGl? = null
+    private var baseLazyGlWithLog: LogKmlGlProxy? = null
+    private var lazyGl: KmlGlFastProxy? = null
 
-    override val gl: KmlGl get() {
-        if (lazyGl == null) lazyGl = buildGl()
+    var logGl: Boolean = logGl
+        set(value) {
+            field = value
+            setLogGl()
+        }
+
+    private fun setLogGl() {
+        lazyGl?.parent = if (logGl) baseLazyGlWithLog!! else baseLazyGl!!
+        baseLazyGlWithLog?.logBefore = false
+        baseLazyGlWithLog?.logAfter = logGl
+    }
+
+    override val gl: KmlGlFastProxy get() {
+        if (baseLazyGl == null) {
+            baseLazyGl = buildGl().cachedIf(cacheGl)
+            baseLazyGlWithLog = LogKmlGlProxy(baseLazyGl!!)
+            lazyGl = KmlGlFastProxy(baseLazyGl!!)
+            setLogGl()
+        }
         return lazyGl!!
     }
 
@@ -23,6 +42,6 @@ class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, pri
             OS.isMac -> MacKmlGL
             OS.isWindows -> Win32KmlGl
             else -> X11KmlGl
-        }.checkedIf(checkGl).logIf(logGl)
+        }.checkedIf(checkGl)
     }
 }

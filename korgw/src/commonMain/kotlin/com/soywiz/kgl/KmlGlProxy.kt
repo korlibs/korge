@@ -1013,9 +1013,7 @@ open class KmlGlProxy(val parent: KmlGl) : KmlGl() {
 		return res
 	}
 }
-open class KmlGlFastProxy(val parent: KmlGl) : KmlGl() {
-	open fun before(name: String, params: String): Unit = Unit
-	open fun after(name: String, params: String, result: String): Unit = Unit
+open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun activeTexture(texture: Int): Unit {
 		return parent.activeTexture(texture)
 	}

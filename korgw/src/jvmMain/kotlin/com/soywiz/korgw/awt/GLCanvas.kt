@@ -6,11 +6,13 @@ import com.sun.jna.*
 import java.awt.*
 import java.io.*
 
-open class GLCanvas( checkGl: Boolean = true, logGl:Boolean=false) : Canvas(), Closeable {
-    val ag: AwtAg = AwtAg(this, checkGl, logGl)
+open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), Closeable {
+    val ag: AwtAg = AwtAg(this, checkGl, logGl, cacheGl)
     private var ctxComponentId: Long = -1L
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
+
+    var logGl: Boolean by ag::logGl
 
     override fun getGraphicsConfiguration(): GraphicsConfiguration? {
         return super.getGraphicsConfiguration()
@@ -40,7 +42,11 @@ open class GLCanvas( checkGl: Boolean = true, logGl:Boolean=false) : Canvas(), C
         //if (ctxComponentId != componentId) {
         //    close()
         //}
+        if (logGl) {
+            println("+++++++++++++++++++++++++++++")
+        }
         if (ctx == null) {
+            println("--------------------------------------")
             //ctxComponentId = componentId
             ctx = glContextFromComponent(this)
             ag.contextLost()
