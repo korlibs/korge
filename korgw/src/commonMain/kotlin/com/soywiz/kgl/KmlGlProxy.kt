@@ -1446,9 +1446,13 @@ open class KmlGlFastProxy(val parent: KmlGl) : KmlGl() {
 		return parent.viewport(x, y, width, height)
 	}
 }
-class LogKmlGlProxy(parent: KmlGl) : KmlGlProxy(parent) {
-	override fun before(name: String, params: String): Unit = run { println("before: $name ($params)") }
-	override fun after(name: String, params: String, result: String): Unit = run { println("after: $name ($params) = $result") }
+class LogKmlGlProxy(parent: KmlGl, var logBefore: Boolean = false, var logAfter: Boolean = true) : KmlGlProxy(parent) {
+	override fun before(name: String, params: String): Unit {
+        if (logBefore) println("before: $name ($params)")
+	}
+	override fun after(name: String, params: String, result: String): Unit {
+        if (logAfter || name == "texImage2D") println("after: $name ($params) = $result")
+	}
 }
 class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) : KmlGlProxy(parent) {
     init {
