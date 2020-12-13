@@ -71,7 +71,19 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 	SInt4(VarKind.TINT, elementCount = 4),
 	;
 
-	val bytesSize: Int = kind.bytesSize * elementCount
+    fun withElementCount(length: Int): VarType {
+        return when (kind) {
+            VarKind.TBYTE -> BYTE(length)
+            VarKind.TUNSIGNED_BYTE -> UBYTE(length)
+            VarKind.TSHORT -> SHORT(length)
+            VarKind.TUNSIGNED_SHORT -> USHORT(length)
+            VarKind.TINT -> INT(length)
+            VarKind.TFLOAT -> FLOAT(length)
+            else -> TODO()
+        }
+    }
+
+    val bytesSize: Int = kind.bytesSize * elementCount
 
 	companion object {
 		fun BYTE(count: Int) =

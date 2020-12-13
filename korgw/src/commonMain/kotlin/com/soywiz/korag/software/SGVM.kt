@@ -70,15 +70,28 @@ object SGVMOpcode {
 
 inline class SGVMInstruction(val value: Int) {
     companion object {
-        fun op(op: Int, ext: Int = 1, dst: Int = 0, src: Int = 0, src2: Int = 0): SGVMInstruction =
-            SGVMInstruction(0.insert(op, 0, 7).insert(dst, 7, 7).insert(src, 14, 7).insert(src2, 21, 7).insert(ext, 28, 4))
+        fun op(op: Int, ext: Int = 1, dst: Int = 0, src: Int = 0, src2: Int = 0): SGVMInstruction = SGVMInstruction(0
+            .insert(op, 0, 7)
+            .insert(dst, 7, 7)
+            .insert(src, 14, 7)
+            .insert(src2, 21, 7)
+            .insert(ext, 28, 4)
+        )
+        fun opl(op: Int, ext: Int = 1, dst: Int = 0, srcL: Int = 0): SGVMInstruction = SGVMInstruction(0
+            .insert(op, 0, 7)
+            .insert(dst, 7, 7)
+            .insert(srcL, 14, 14)
+            .insert(ext, 28, 4)
+        )
     }
 
     val OP get() = value.extract(0, 7)
     val DST get() = value.extract(7, 7)
-    val SRC_L get() = value.extract(14, 18)
+
     val SRC get() = value.extract(14, 7)
     val SRC2 get() = value.extract(21, 7)
     val EXT get() = value.extract(28, 4)
+
+    val SRC_L get() = value.extract(14, 14)
 }
 
