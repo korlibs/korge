@@ -258,36 +258,35 @@ abstract class AG : Extra by Extra.Mixin() {
 
 		fun bindEnsuring() {
 			bind()
-            if (!isFbo) {
-                val source = this.source
-                if (!uploaded) {
-                    if (!generating) {
-                        generating = true
-                        when (source) {
-                            is SyncBitmapSource -> {
-                                tempBitmap = source.gen()
-                                generated = true
-                            }
-                            is AsyncBitmapSource -> {
-                                asyncImmediately(source.coroutineContext) {
-                                    tempBitmap = source.gen()
-                                    generated = true
-                                }
-                            }
-                        }
-                    }
+            if (isFbo) return
+            val source = this.source
+            if (uploaded) return
 
-                    if (generated) {
-                        uploaded = true
-                        generating = false
-                        generated = false
-                        actualSyncUpload(source, tempBitmap, requestMipmaps)
-                        tempBitmap = null
-                        ready = true
+            if (!generating) {
+                generating = true
+                when (source) {
+                    is SyncBitmapSource -> {
+                        tempBitmap = source.gen()
+                        generated = true
+                    }
+                    is AsyncBitmapSource -> {
+                        launchImmediately(source.coroutineContext) {
+                            tempBitmap = source.gen()
+                            generated = true
+                        }
                     }
                 }
             }
-		}
+
+            if (generated) {
+                uploaded = true
+                generating = false
+                generated = false
+                actualSyncUpload(source, tempBitmap, requestMipmaps)
+                tempBitmap = null
+                ready = true
+            }
+        }
 
 		open fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
 		}
