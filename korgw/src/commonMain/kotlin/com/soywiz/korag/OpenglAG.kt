@@ -19,9 +19,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.min
@@ -897,7 +895,13 @@ abstract class AGOpengl : AG() {
             super.close()
             if (!closed) {
                 closed = true
-                gl.deleteTextures(1, texIds)
+                if (cachedVersion == contextVersion) {
+                    gl.deleteTextures(1, texIds)
+                    //println("DELETE texture: ${texIds[0]}")
+                    texIds[0] = -1
+                } else {
+                    //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: ${texIds[0]}")
+                }
             }
         }
 
