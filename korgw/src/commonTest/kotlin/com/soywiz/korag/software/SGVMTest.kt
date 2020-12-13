@@ -28,6 +28,7 @@ class SGVMTest {
         val vm = executeShader {
             SET(out["x"], 2f.lit)
             SET(out["y"], 1f.lit)
+            SET(out["z"], -(1f.lit))
         }
         assertEquals(2f, vm.freg[0])
         assertEquals(1f, vm.freg[1])

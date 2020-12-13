@@ -8,6 +8,14 @@ class ShaderToSGVM {
     val program = IntArrayList()
     val flits = FloatArrayList()
 
+    fun addInstruction(i: SGVMInstruction) {
+        program.add(i.value)
+    }
+
+    fun addFloatLit(value: Float): Int {
+        return flits.size.also { flits.add(value) }
+    }
+
     fun toProgram() = SGVM(program.toIntArray(), flits.toFloatArray())
 
     var currentIndex: Int = 0
@@ -28,7 +36,7 @@ class ShaderToSGVM {
         else -> TODO("Unknown swizzle index '$c'")
     }
 
-    val ftemps = Pool { getAllocation(Temp(it, VarType.Float4)) }
+    val ftemps = Array(4) { size -> Pool { getAllocation(Temp(it, VarType.FLOAT(size))) } }
 
     fun handle(shader: Shader): ShaderToSGVM {
         handle(shader.stm)
@@ -71,9 +79,30 @@ class ShaderToSGVM {
         when (op) {
             is Program.FloatLiteral -> {
                 assert(dest.type.elementCount == 1)
-                val flitsIndex = flits.size
-                flits.add(op.value)
-                program.add(SGVMInstruction.opl(SGVMOpcode.FLIT, 1, dest.index, flitsIndex).value)
+                val flitsIndex = addFloatLit(op.value)
+                addInstruction(SGVMInstruction.opl(SGVMOpcode.FLIT, 1, dest.index, flitsIndex))
+            }
+            is Program.Binop -> {
+                val left = op.left
+                val right = op.right
+                val operation = op.op
+                assert(left.elementCount == op.elementCount)
+                val elementCount = left.elementCount
+                ftemps[elementCount].alloc { tempL ->
+                    ftemps[elementCount].alloc { tempR ->
+                        handle(left, tempL)
+                        handle(right, tempR)
+                        val opcode = when (operation) {
+                            "+" -> SGVMOpcode.FADD
+                            "-" -> SGVMOpcode.FSUB
+                            "*" -> SGVMOpcode.FMUL
+                            "/" -> SGVMOpcode.FDIV
+                            "%" -> SGVMOpcode.FREM
+                            else -> TODO("[b] $op - dest=$dest")
+                        }
+                        addInstruction(SGVMInstruction.op(opcode, elementCount, dest.index, tempL.index, tempR.index))
+                    }
+                }
             }
             else -> TODO("[a] $op - dest=$dest")
         }

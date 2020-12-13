@@ -115,6 +115,7 @@ enum class ShaderType {
 }
 
 open class Operand(open val type: VarType) {
+    val elementCount get() = type.elementCount
 }
 
 open class Variable(val name: String, type: VarType, val arrayCount: Int) : Operand(type) {
