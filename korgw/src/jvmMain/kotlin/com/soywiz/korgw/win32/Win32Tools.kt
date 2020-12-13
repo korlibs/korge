@@ -90,8 +90,8 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
     return scaleLinear(scaleX, scaleY)
 }
 
-class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = false) : BaseOpenglContext {
-    constructor(hWnd: WinDef.HWND, doubleBuffered: Boolean = false) : this(Win32.GetDC(hWnd), doubleBuffered)
+class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false) : BaseOpenglContext {
+    constructor(hWnd: WinDef.HWND, doubleBuffered: Boolean = false) : this(hWnd, Win32.GetDC(hWnd), doubleBuffered)
 
     val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference()
 
@@ -148,6 +148,11 @@ class Win32OpenglContext(val hDC: WinDef.HDC, val doubleBuffered: Boolean = fals
         //Thread.sleep(16L)
     }
 
+    override fun dispose() {
+        releaseCurrent()
+        Win32.ReleaseDC(hWnd, hDC)
+        Win32.wglDeleteContext(hRC)
+    }
 
     private var wglSwapIntervalEXTSet: Boolean = false
     private var swapIntervalEXT: SwapIntervalCallback? = null
