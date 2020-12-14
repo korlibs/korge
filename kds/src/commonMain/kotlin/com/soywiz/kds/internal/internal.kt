@@ -1,7 +1,9 @@
 package com.soywiz.kds.internal
 
+@PublishedApi
 internal infix fun Int.divCeil(that: Int): Int = if (this % that != 0) (this / that) + 1 else (this / that)
 
+@PublishedApi
 internal infix fun Int.umod(other: Int): Int {
     val remainder = this % other
     return when {
@@ -10,7 +12,9 @@ internal infix fun Int.umod(other: Int): Int {
     }
 }
 
+@PublishedApi
 internal fun ilog2(v: Int): Int = kotlin.math.log2(v.toDouble()).toInt()
+@PublishedApi
 internal fun ilog2Ceil(v: Int): Int = kotlin.math.ceil(kotlin.math.log2(v.toDouble())).toInt()
 
 //private val ilog2_tab32 = intArrayOf(
