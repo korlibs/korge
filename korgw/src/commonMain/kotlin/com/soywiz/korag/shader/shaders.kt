@@ -259,6 +259,9 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 			return stmIf
 		}
 
+        fun PUT(shader: Shader) {
+            outputStms.add(shader.stm)
+        }
 		fun SET(target: Operand, expr: Operand) = run { outputStms += Stm.Set(target, expr) }
 		fun DISCARD() = run { outputStms += Stm.Discard() }
 

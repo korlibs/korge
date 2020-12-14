@@ -15,6 +15,10 @@ class SGVM(
 
     fun clone() = SGVM(program, flits)
 
+    var tex2d: (sampler: Int, x: Float, y: Float, out: FloatArray, outIndex: Int) -> Unit = { sampler: Int, x: Float, y: Float, out: FloatArray, outIndex: Int ->
+        println("tex2d: sampler=$sampler, x=$x, y=$y, outIndex=$outIndex")
+    }
+
     fun execute(pc: Int = 0): SGVM {
         var cpc = pc
         while (cpc < program.size) {
@@ -44,6 +48,7 @@ class SGVM(
             SGVMOpcode.FREM -> fset { fsrc(it) % fsrc2(it) }
             SGVMOpcode.FMAX -> fset { max(fsrc(it), fsrc2(it)) }
             SGVMOpcode.FMIN -> fset { min(fsrc(it), fsrc2(it)) }
+            SGVMOpcode.TEX2D -> tex2d(SRC, fsrc2(0), fsrc2(1), freg, DST)
             else -> TODO()
         }
     }
@@ -74,6 +79,7 @@ object SGVMOpcode {
     const val FREM = 13 // Remaining
     const val FMAX = 14 // Maximum
     const val FMIN = 15 // Minimum
+    const val TEX2D = 100 // texture2D
 }
 
 inline class SGVMInstruction(val value: Int) {

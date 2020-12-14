@@ -1,6 +1,7 @@
 package com.soywiz.korag.software
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korio.lang.*
 import kotlin.test.*
@@ -88,9 +89,120 @@ class SGVMTest {
         assertEquals(4f, vm.freg[3])
     }
 
+    @Test
+    fun test5b() {
+        val vm = executeShader {
+            SET(out["x"], 1f.lit)
+            SET(out, out)
+        }
+        assertEquals(1f, vm.freg[0])
+    }
+
+    @Test
+    fun test6() {
+        executeShader {
+            PUT(DefaultShaders.FRAGMENT_DEBUG)
+        }
+        executeShader {
+            PUT(DefaultShaders.VERTEX_DEFAULT)
+        }
+    }
+
+    @Test
+    fun test7a() {
+        executeShader {
+            PUT(ShaderTest.PROGRAM_NOPRE.fragment)
+        }
+        executeShader {
+            PUT(ShaderTest.PROGRAM_NOPRE.vertex)
+        }
+    }
+
+    @Test
+    fun test7b() {
+        executeShader {
+            PUT(ShaderTest.PROGRAM_NOPRE.fragment)
+            //PUT(ShaderTest.PROGRAM_PRE.fragment)
+        }
+        executeShader {
+            PUT(ShaderTest.PROGRAM_PRE.vertex)
+        }
+    }
+
     fun executeShader(callback: Program.Builder.() -> Unit): SGVM {
         val s2vm = ShaderToSGVM().handle(VertexShader(callback))
         val vm = s2vm.toProgram()
         return vm.execute()
+    }
+}
+
+object ShaderTest {
+    val a_ColMul = DefaultShaders.a_Col
+    val a_ColAdd = Attribute("a_Col2", VarType.Byte4, normalized = true)
+
+    val v_ColMul = DefaultShaders.v_Col
+    val v_ColAdd = Varying("v_Col2", VarType.Byte4)
+
+    val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, a_ColMul, a_ColAdd)
+    val VERTEX = VertexShader {
+        DefaultShaders.apply {
+            SET(v_Tex, a_Tex)
+            SET(v_ColMul, a_ColMul)
+            SET(v_ColAdd, a_ColAdd)
+            SET(out, (u_ProjMat * u_ViewMat) * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+        }
+    }
+
+    val FRAGMENT_PRE = buildTextureLookupFragment(premultiplied = true)
+
+    val FRAGMENT_NOPRE = buildTextureLookupFragment(premultiplied = false)
+
+    val PROGRAM_PRE = Program(
+        vertex = VERTEX,
+        fragment = FRAGMENT_PRE,
+        name = "BatchBuilder2D.Premultiplied.Tinted"
+    )
+
+    val PROGRAM_NOPRE = Program(
+        vertex = VERTEX,
+        fragment = FRAGMENT_NOPRE,
+        name = "BatchBuilder2D.NoPremultiplied.Tinted"
+    )
+
+    fun getTextureLookupProgram(premultiplied: Boolean) = if (premultiplied) PROGRAM_PRE else PROGRAM_NOPRE
+
+    //val PROGRAM_NORMAL = Program(
+    //	vertex = VERTEX,
+    //	fragment = FragmentShader {
+    //		SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * v_Col2["rgba"])
+    //		SET(out, out + v_Col2)
+    //		// Required for shape masks:
+    //		IF(out["a"] le 0f.lit) { DISCARD() }
+    //	},
+    //	name = "BatchBuilder2D.Tinted"
+    //)
+
+    fun getTextureLookupFragment(premultiplied: Boolean) = if (premultiplied) FRAGMENT_PRE else FRAGMENT_NOPRE
+
+    /**
+     * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
+     */
+    fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShader {
+        DefaultShaders.apply {
+            SET(out, texture2D(u_Tex, v_Tex["xy"]))
+            if (premultiplied) {
+                SET(out["rgb"], out["rgb"] / out["a"])
+            }
+
+            // @TODO: Kotlin.JS bug?
+            //SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
+            SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+
+            //SET(out, t_Temp1)
+            // Required for shape masks:
+            if (premultiplied) {
+                IF(out["a"] le 0f.lit) { DISCARD() }
+            }
+        }
     }
 }

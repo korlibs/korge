@@ -52,7 +52,17 @@ class ShaderToSGVM {
         else -> TODO("Unknown swizzle index '$c'")
     }
 
-    val ftemps = Array(4) { size -> Pool { getAllocation(Temp(it, VarType.FLOAT(size))) } }
+    val ftemps = Array(17) { size ->
+        Pool {
+            val type = when (size) {
+                in 0..4 -> VarType.FLOAT(size)
+                9 -> VarType.Mat3
+                16 -> VarType.Mat4
+                else -> VarType.TVOID
+            }
+            getAllocation(Temp(it, type))
+        }
+    }
 
     fun handle(shader: Shader): ShaderToSGVM {
         handle(shader.stm)
@@ -122,9 +132,10 @@ class ShaderToSGVM {
                 val operation = op.op
                 assert(left.elementCount == op.elementCount)
                 val elementCount = left.elementCount
+                val rightElementCount = right.elementCount
                 // @TODO: Using temps shouldn't be necessary in some cases
                 ftemps[elementCount].alloc { tempL ->
-                    ftemps[elementCount].alloc { tempR ->
+                    ftemps[rightElementCount].alloc { tempR ->
                         handle(left, tempL)
                         handle(right, tempR)
                         val opcode = when (operation) {
@@ -149,7 +160,9 @@ class ShaderToSGVM {
                 }
             }
             is Program.Vector -> {
-                assert(dest.elementCount == op.ops.sumBy { it.elementCount })
+                val destCount = dest.elementCount
+                val sumCount = op.ops.sumBy { it.elementCount }
+                if (destCount != sumCount) error("destCount=$destCount, sumCount=$sumCount, counts=${op.ops.map { it.elementCount }}")
                 var n = 0
                 for (rop in op.ops) {
                     handle(rop, dest.extract(n, rop.elementCount))
@@ -182,12 +195,27 @@ class ShaderToSGVM {
                                     else -> TODO()
                                  }, params[0].elementCount, dest, l, r)
                             }
+                            "texture2D" -> {
+                                assert(params.size == 2)
+                                val l = params[0]
+                                val r = params[1]
+                                assert(l.elementCount == 1)
+                                assert(r.elementCount == 2)
+                                ftemps[dest.elementCount].alloc { destTemp ->
+                                    addInstruction(SGVMInstruction.op(SGVMOpcode.TEX2D, 1, destTemp.indices[0], l.indices[0], r.indices[0]))
+                                    addOp(SGVMOpcode.FSET, op.elementCount, dest, destTemp)
+                                }
+                            }
                             else -> TODO("[c] $op - dest=$dest")
                         }
                     }
                 } finally {
                     for (n in ops.indices) ftemps[ops[n].elementCount].free(params[n])
                 }
+            }
+            is Variable -> {
+                assert(op.elementCount == dest.elementCount)
+                addOp(SGVMOpcode.FSET, op.elementCount, dest, getAllocation(op))
             }
             else -> TODO("[a] $op - dest=$dest")
         }
