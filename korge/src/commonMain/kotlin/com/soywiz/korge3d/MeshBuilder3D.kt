@@ -1,7 +1,6 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.floatArrayListOf
-import com.soywiz.kds.intArrayListOf
+import com.soywiz.kds.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge3d.internal.toFBuffer
@@ -32,7 +31,7 @@ class MeshBuilder3D(
 
     val vertexData = floatArrayListOf()
     var nextVertexIndex = 0
-    val indexData = intArrayListOf()
+    val indexData = ShortArrayList()
 
     private var _material: Material3D? = null
 
@@ -80,7 +79,7 @@ class MeshBuilder3D(
     }
 
     fun addIndex(index: Int) {
-        indexData.add(index)
+        indexData.add(index.toShort())
     }
 
     fun addIndices(vararg indices: Int) = indices.forEach { addIndex(it) }
@@ -237,7 +236,7 @@ class MeshBuilder3D(
     fun build(): Mesh3D = Mesh3D(
         vertexData.toFBuffer(),
         indexData.toFBuffer(),
-        AG.IndexType.UINT,
+        AG.IndexType.USHORT,
         indexData.size,
         layout,
         null,

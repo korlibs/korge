@@ -44,4 +44,10 @@ class ShortArrayList(initialCapacity: Int = 7) {
     fun clear() = array.clear()
     fun add(value: Short) = array.add(value.toInt())
     fun ensureCapacity(capacity: Int) = array.ensure(capacity)
+
+    fun toShortArray(): ShortArray {
+        val out = ShortArray(size)
+        for (n in 0 until size) out[n] = array[n].toShort()
+        return out
+    }
 }
