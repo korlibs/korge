@@ -4,6 +4,7 @@ package com.soywiz.korag.software
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korio.lang.*
 import kotlin.math.*
 
 // Software Graphics Virtual Machine
@@ -41,7 +42,7 @@ class SGVM(
     fun readPC() = program.rdata[cpc++]
 
     fun setF(n: Int, value: Float) {
-        //println("freg[$n] = $freg[n] = valuevalue")
+        //println("freg[$n] = $value")
         freg[n] = value
     }
 
@@ -66,14 +67,14 @@ class SGVM(
             SGVMOpcode.FMIN -> fset { min(fsrc(it), fsrc2(it)) }
             SGVMOpcode.TEX2D -> tex2d(SRC, fsrc2(0), fsrc2(1), freg, DST)
             SGVMOpcode.FTSW -> {
-                //println("FTSW")
+                //println("FTSW[$EXT2]")
                 for (n in 0 until EXT2) {
                     //println("n[$n] = ${SWIZZLE(n)}")
                     setF(DST + SWIZZLE(n), fsrc(n))
                 }
             }
             SGVMOpcode.FFSW -> {
-                //println("FFSW")
+                //println("FFSW[$EXT2]")
                 for (n in 0 until EXT2) setF(DST + n, fsrc(SWIZZLE(n)))
             }
             else -> TODO("$op")
@@ -148,6 +149,7 @@ class SGVMProgram(val data: IntArrayList = IntArrayList()) {
     }
 
     private fun _setSwizzle(op: Int, dst: Int, swizzle: IntArray, src: Int) {
+        assert(swizzle.size in 1..4)
         data.add(0
             .insert(op, 0, 7)
             .insert(dst, 7, 7)
@@ -179,5 +181,8 @@ inline class SGVMInstruction(val value: Int) {
 
     fun SWIZZLE(n: Int) = value.extract(21 + 2 * n, 2)
 
-    val EXT2 get() = value.extract(30, 2)
+    val EXT2: Int get() {
+        val res = value.extract(30, 2)
+        return if (res == 0) 4 else res
+    }
 }

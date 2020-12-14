@@ -129,6 +129,15 @@ class SGVMTest {
         }
     }
 
+    @Test
+    fun test8() {
+        val vm = executeShader {
+            SET(out["wzyx"], vec4(1f.lit, 2f.lit, 3f.lit, 4f.lit)) // 4, 3, 2, 1
+            SET(out["wzyx"], out["yywx"])
+        }
+        assertEquals(listOf(4f, 1f, 3f, 3f), vm.freg.slice(0 until 4).toList())
+    }
+
     fun executeShader(callback: Program.Builder.() -> Unit): SGVM {
         val s2vm = ShaderToSGVM().handle(VertexShader(callback))
         println(s2vm.allocatedNames.keys)
