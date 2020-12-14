@@ -6,25 +6,29 @@ import com.soywiz.kmem.*
 import kotlin.math.*
 
 // Software Graphics Virtual Machine
+// @TODO: Port dynarek for even faster performance https://github.com/kpspemu/kpspemu/tree/master/dynarek2/
 class SGVM(
-    val program: IntArray,
-    val flits: FloatArray = FloatArray(0)
+    var program: IntArray,
+    var flits: FloatArray = FloatArray(0)
 ) {
     val freg = FloatArray(128)
+
+    fun clone() = SGVM(program, flits)
 
     fun execute(pc: Int = 0): SGVM {
         var cpc = pc
         while (cpc < program.size) {
             val i = SGVMInstruction(program[cpc++])
-            if (!i.interpret()) break
+            if (i.OP == SGVMOpcode.END) break
+            i.interpret()
         }
         return this
     }
 
-    private fun SGVMInstruction.interpret(): Boolean {
+    private fun SGVMInstruction.interpret() {
         val op = OP
         when (op) {
-            SGVMOpcode.END -> return false
+            SGVMOpcode.END -> Unit
             SGVMOpcode.FZERO -> fset { 0f }
             SGVMOpcode.FONE -> fset { 1f }
             SGVMOpcode.FLIT -> fset { flits[SRC_L + it] }
@@ -38,13 +42,15 @@ class SGVM(
             SGVMOpcode.FMUL -> fset { fsrc(it) * fsrc2(it) }
             SGVMOpcode.FDIV -> fset { fsrc(it) / fsrc2(it) }
             SGVMOpcode.FREM -> fset { fsrc(it) % fsrc2(it) }
+            SGVMOpcode.FMAX -> fset { max(fsrc(it), fsrc2(it)) }
+            SGVMOpcode.FMIN -> fset { min(fsrc(it), fsrc2(it)) }
             else -> TODO()
         }
-        return true
     }
 
     private inline fun SGVMInstruction.fset(block: (Int) -> Float) {
-        for (n in 0 until EXT) freg[DST + n] = block(n)
+        val dst = DST
+        for (n in 0 until EXT) freg[dst + n] = block(n)
     }
     private fun SGVMInstruction.fsrc(n: Int) = freg[SRC + n]
     private fun SGVMInstruction.fsrc2(n: Int) = freg[SRC2 + n]
@@ -66,6 +72,8 @@ object SGVMOpcode {
     const val FMUL = 11 // Multiplication
     const val FDIV = 12 // Division
     const val FREM = 13 // Remaining
+    const val FMAX = 14 // Maximum
+    const val FMIN = 15 // Minimum
 }
 
 inline class SGVMInstruction(val value: Int) {
@@ -94,4 +102,3 @@ inline class SGVMInstruction(val value: Int) {
 
     val SRC_L get() = value.extract(14, 14)
 }
-
