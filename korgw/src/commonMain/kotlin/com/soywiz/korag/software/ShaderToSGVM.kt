@@ -31,6 +31,7 @@ class ShaderToSGVM {
         fun extract(n: Int, count: Int) = Allocation(indices.subList(n, n + count), type.withElementCount(count))
     }
 
+    val allocatedNames = LinkedHashMap<String, Allocation>()
     val allocatedVariable = LinkedHashMap<Variable, Allocation>()
 
     fun getAllocation(variable: Variable): Allocation {
@@ -40,7 +41,10 @@ class ShaderToSGVM {
                 Allocation(
                     (0 until variable.elementCount).map { currentIndex + it },
                     variable.type
-                ).also { currentIndex += variable.elementCount }
+                ).also {
+                    currentIndex += variable.elementCount
+                    allocatedNames[variable.name] = it
+                }
             }
     }
 
