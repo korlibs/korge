@@ -10,11 +10,11 @@ class SGVMTest {
     @Test
     fun test() {
         val vm = SGVM(
-            intArrayOf(
-                SGVMInstruction.op(SGVMOpcode.FONE, 3, 0).value,
-                SGVMInstruction.op(SGVMOpcode.FADD, 3, 4, 0, 0).value,
-                SGVMInstruction.op(SGVMOpcode.END).value
-            )
+            SGVMProgram {
+                op(SGVMOpcode.FONE, 3, 0)
+                op(SGVMOpcode.FADD, 3, 4, 0, 0)
+                op(SGVMOpcode.END)
+            }
         ).execute()
 
         /*

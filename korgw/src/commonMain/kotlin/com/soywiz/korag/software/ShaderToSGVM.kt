@@ -5,18 +5,14 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korio.lang.*
 
 class ShaderToSGVM {
-    val program = IntArrayList()
+    val program = SGVMProgram()
     val flits = FloatArrayList()
-
-    fun addInstruction(i: SGVMInstruction) {
-        program.add(i.value)
-    }
 
     fun addFloatLit(value: Float): Int {
         return flits.size.also { flits.add(value) }
     }
 
-    fun toProgram() = SGVM(program.toIntArray(), flits.toFloatArray())
+    fun toProgram() = SGVM(program, flits.toFloatArray())
 
     var currentIndex: Int = 0
     data class Allocation(val indices: List<Int>, val type: VarType) {
@@ -107,17 +103,15 @@ class ShaderToSGVM {
 
     fun addOp(opcode: Int, elementCount: Int, dest: Allocation, srcL: Allocation, srcR: Allocation? = null) {
         if (dest.indicesAreCorrelative && srcL.indicesAreCorrelative && srcR?.indicesAreCorrelative != false) {
-            addInstruction(SGVMInstruction.op(opcode, elementCount, dest.indices[0], srcL.indices[0], srcR?.indices?.get(0) ?: 0))
+            program.op(opcode, elementCount, dest.indices[0], srcL.indices[0], srcR?.indices?.get(0) ?: 0)
         } else {
             for (n in 0 until elementCount) {
-                addInstruction(
-                    SGVMInstruction.op(
-                        opcode,
-                        1,
-                        dest.indices[n],
-                        srcL.indices[n],
-                        srcR?.indices?.get(n) ?: 0
-                    )
+                program.op(
+                    opcode,
+                    1,
+                    dest.indices[n],
+                    srcL.indices[n],
+                    srcR?.indices?.get(n) ?: 0
                 )
             }
         }
@@ -128,7 +122,7 @@ class ShaderToSGVM {
             is Program.FloatLiteral -> {
                 assert(dest.type.elementCount == 1)
                 val flitsIndex = addFloatLit(op.value)
-                addInstruction(SGVMInstruction.opl(SGVMOpcode.FLIT, 1, dest.indices[0], flitsIndex))
+                program.opl(SGVMOpcode.FLIT, 1, dest.indices[0], flitsIndex)
             }
             is Program.Binop -> {
                 val left = op.left
@@ -160,7 +154,7 @@ class ShaderToSGVM {
                 val left = getAllocation(op.left as Variable)
                 // @TODO: This SET shouldn't be necessary
                 for (n in swizzle.indices) {
-                    addInstruction(SGVMInstruction.op(SGVMOpcode.FSET, 1, dest.indices[n], left.indices[swizzleIndex(swizzle[n])]))
+                    program.op(SGVMOpcode.FSET, 1, dest.indices[n], left.indices[swizzleIndex(swizzle[n])])
                 }
             }
             is Program.Vector -> {
@@ -206,7 +200,7 @@ class ShaderToSGVM {
                                 assert(l.elementCount == 1)
                                 assert(r.elementCount == 2)
                                 ftemps[dest.elementCount].alloc { destTemp ->
-                                    addInstruction(SGVMInstruction.op(SGVMOpcode.TEX2D, 1, destTemp.indices[0], l.indices[0], r.indices[0]))
+                                    program.op(SGVMOpcode.TEX2D, 1, destTemp.indices[0], l.indices[0], r.indices[0])
                                     addOp(SGVMOpcode.FSET, op.elementCount, dest, destTemp)
                                 }
                             }

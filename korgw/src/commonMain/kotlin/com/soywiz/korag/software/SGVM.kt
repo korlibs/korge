@@ -2,18 +2,27 @@
 
 package com.soywiz.korag.software
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import kotlin.math.*
 
 // Software Graphics Virtual Machine
 // @TODO: Port dynarek for even faster performance https://github.com/kpspemu/kpspemu/tree/master/dynarek2/
 class SGVM(
-    var program: IntArray,
+    var program: SGVMProgram,
     var flits: FloatArray = FloatArray(0)
 ) {
     val freg = FloatArray(128)
 
-    fun clone() = SGVM(program, flits)
+    fun copyFrom(other: SGVM) {
+        this.program = other.program
+        this.flits = other.flits
+        this.tex2d = other.tex2d
+    }
+
+    fun clone() = SGVM(program, flits).also {
+        it.copyFrom(this)
+    }
 
     var tex2d: (sampler: Int, x: Float, y: Float, out: FloatArray, outIndex: Int) -> Unit = { sampler: Int, x: Float, y: Float, out: FloatArray, outIndex: Int ->
         println("tex2d: sampler=$sampler, x=$x, y=$y, outIndex=$outIndex")
@@ -21,8 +30,10 @@ class SGVM(
 
     fun execute(pc: Int = 0): SGVM {
         var cpc = pc
-        while (cpc < program.size) {
-            val i = SGVMInstruction(program[cpc++])
+        val programData = program.data
+        val data = programData.data
+        while (cpc < programData.size) {
+            val i = SGVMInstruction(data[cpc++])
             if (i.OP == SGVMOpcode.END) break
             i.interpret()
         }
@@ -82,23 +93,33 @@ object SGVMOpcode {
     const val TEX2D = 100 // texture2D
 }
 
-inline class SGVMInstruction(val value: Int) {
+class SGVMProgram(val data: IntArrayList = IntArrayList()) {
     companion object {
-        fun op(op: Int, ext: Int = 1, dst: Int = 0, src: Int = 0, src2: Int = 0): SGVMInstruction = SGVMInstruction(0
+        operator fun invoke(block: SGVMProgram.() -> Unit): SGVMProgram {
+            return SGVMProgram().also { block(it) }
+        }
+    }
+
+    fun op(op: Int, ext: Int = 1, dst: Int = 0, src: Int = 0, src2: Int = 0) {
+        data.add(0
             .insert(op, 0, 7)
             .insert(dst, 7, 7)
             .insert(src, 14, 7)
             .insert(src2, 21, 7)
             .insert(ext, 28, 4)
         )
-        fun opl(op: Int, ext: Int = 1, dst: Int = 0, srcL: Int = 0): SGVMInstruction = SGVMInstruction(0
+    }
+    fun opl(op: Int, ext: Int = 1, dst: Int = 0, srcL: Int = 0) {
+        data.add(0
             .insert(op, 0, 7)
             .insert(dst, 7, 7)
             .insert(srcL, 14, 14)
             .insert(ext, 28, 4)
         )
     }
+}
 
+inline class SGVMInstruction(val value: Int) {
     val OP get() = value.extract(0, 7)
     val DST get() = value.extract(7, 7)
 

@@ -13,4 +13,8 @@ open class AGFactorySoftware() : AGFactory {
 
 open class AGSoftware(val bitmap: Bitmap32) : AG() {
 	override val nativeComponent: Any = bitmap
+
+    override fun draw(batch: Batch) {
+        batch.vertexLayout
+    }
 }
