@@ -10,16 +10,9 @@ class ShaderToSGVM {
     fun toProgram() = SGVM(program)
 
     var currentIndex: Int = 0
-    data class Allocation(val indices: List<Int>, val type: VarType) {
-        val elementCount get() = indices.size
-        init {
-            assert(indices.size == type.elementCount)
-        }
-        val indicesAreCorrelative by lazy {
-            (0 until elementCount).all { indices[it] == indices[0] + it }
-        }
-
-        fun extract(n: Int, count: Int) = Allocation(indices.subList(n, n + count), type.withElementCount(count))
+    data class Allocation(val index: Int, val type: VarType) {
+        val elementCount get() = type.elementCount
+        fun extract(n: Int, count: Int) = Allocation(index + n, type.withElementCount(count))
     }
 
     val allocatedNames = LinkedHashMap<String, Allocation>()
@@ -30,7 +23,7 @@ class ShaderToSGVM {
         return allocatedVariable
             .getOrPut(variable) {
                 Allocation(
-                    (0 until variable.elementCount).map { currentIndex + it },
+                    currentIndex,
                     variable.type
                 ).also {
                     currentIndex += variable.elementCount
@@ -58,6 +51,9 @@ class ShaderToSGVM {
             getAllocation(Temp(it, type))
         }
     }
+    inline fun <T> allocateFTemp(type: VarType, block: (allocation: Allocation) -> T): T {
+        return ftemps[type.elementCount].alloc { block(it) }
+    }
 
     fun handle(shader: Shader): ShaderToSGVM {
         handle(shader.stm)
@@ -81,13 +77,11 @@ class ShaderToSGVM {
                         val toleft = to.left
                         val swizzle = to.swizzle
                         if (toleft !is Variable) TODO("[c] $stm")
-                        val allocation = getAllocation(toleft)
-                        // allocation.indices.map { swizzleIndex(swizzle[it]) }
-                        val allocationIndexed = allocation.copy(
-                            indices = (swizzle.indices).map { allocation.indices[swizzleIndex(swizzle[it])] },
-                            type = allocation.type.withElementCount(swizzle.length)
-                        )
-                        handle(from, allocationIndexed)
+                        getAllocation(toleft) // so out is registered first
+                        allocateFTemp(toleft.type.withElementCount(swizzle.length)) { temp ->
+                            handle(from, temp)
+                            program.setToSwizzle(getAllocation(toleft).index, swizzle.map { swizzleIndex(it) }.toIntArray(), temp.index)
+                        }
                     }
                     else -> TODO("[b] $stm")
                 }
@@ -97,26 +91,14 @@ class ShaderToSGVM {
     }
 
     fun addOp(opcode: Int, elementCount: Int, dest: Allocation, srcL: Allocation, srcR: Allocation? = null) {
-        if (dest.indicesAreCorrelative && srcL.indicesAreCorrelative && srcR?.indicesAreCorrelative != false) {
-            program.op(opcode, elementCount, dest.indices[0], srcL.indices[0], srcR?.indices?.get(0) ?: 0)
-        } else {
-            for (n in 0 until elementCount) {
-                program.op(
-                    opcode,
-                    1,
-                    dest.indices[n],
-                    srcL.indices[n],
-                    srcR?.indices?.get(n) ?: 0
-                )
-            }
-        }
+        program.op(opcode, elementCount, dest.index, srcL.index, srcR?.index ?: 0)
     }
 
     fun handle(op: Operand, dest: Allocation) {
         when (op) {
             is Program.FloatLiteral -> {
-                assert(dest.type.elementCount == 1)
-                program.flit(dest.indices[0], op.value)
+                Assert.eq(dest.type.elementCount, 1)
+                program.flit(dest.index, op.value)
             }
             is Program.Binop -> {
                 val left = op.left
@@ -146,10 +128,7 @@ class ShaderToSGVM {
                 val swizzle = op.swizzle
                 assert(op.left is Variable)
                 val left = getAllocation(op.left as Variable)
-                // @TODO: This SET shouldn't be necessary
-                for (n in swizzle.indices) {
-                    program.op(SGVMOpcode.FSET, 1, dest.indices[n], left.indices[swizzleIndex(swizzle[n])])
-                }
+                program.setFromSwizzle(dest.index, swizzle.map { swizzleIndex(it) }.toIntArray(), left.index)
             }
             is Program.Vector -> {
                 val destCount = dest.elementCount
@@ -194,7 +173,7 @@ class ShaderToSGVM {
                                 assert(l.elementCount == 1)
                                 assert(r.elementCount == 2)
                                 ftemps[dest.elementCount].alloc { destTemp ->
-                                    program.op(SGVMOpcode.TEX2D, 1, destTemp.indices[0], l.indices[0], r.indices[0])
+                                    program.op(SGVMOpcode.TEX2D, 1, destTemp.index, l.index, r.index)
                                     addOp(SGVMOpcode.FSET, op.elementCount, dest, destTemp)
                                 }
                             }

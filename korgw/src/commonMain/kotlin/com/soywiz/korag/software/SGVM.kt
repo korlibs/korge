@@ -40,6 +40,11 @@ class SGVM(
 
     fun readPC() = program.rdata[cpc++]
 
+    fun setF(n: Int, value: Float) {
+        //println("freg[$n] = $freg[n] = valuevalue")
+        freg[n] = value
+    }
+
     private fun SGVMInstruction.interpret() {
         val op = OP
         when (op) {
@@ -60,13 +65,24 @@ class SGVM(
             SGVMOpcode.FMAX -> fset { max(fsrc(it), fsrc2(it)) }
             SGVMOpcode.FMIN -> fset { min(fsrc(it), fsrc2(it)) }
             SGVMOpcode.TEX2D -> tex2d(SRC, fsrc2(0), fsrc2(1), freg, DST)
-            else -> TODO()
+            SGVMOpcode.FTSW -> {
+                //println("FTSW")
+                for (n in 0 until EXT2) {
+                    //println("n[$n] = ${SWIZZLE(n)}")
+                    setF(DST + SWIZZLE(n), fsrc(n))
+                }
+            }
+            SGVMOpcode.FFSW -> {
+                //println("FFSW")
+                for (n in 0 until EXT2) setF(DST + n, fsrc(SWIZZLE(n)))
+            }
+            else -> TODO("$op")
         }
     }
 
     private inline fun SGVMInstruction.fset(block: (Int) -> Float) {
         val dst = DST
-        for (n in 0 until EXT) freg[dst + n] = block(n)
+        for (n in 0 until EXT) setF(dst + n, block(n))
     }
     private fun SGVMInstruction.fsrc(n: Int) = freg[SRC + n]
     private fun SGVMInstruction.fsrc2(n: Int) = freg[SRC2 + n]
@@ -90,6 +106,8 @@ object SGVMOpcode {
     const val FREM = 13 // Remaining
     const val FMAX = 14 // Maximum
     const val FMIN = 15 // Minimum
+    const val FFSW = 20  // Copy from swizzled
+    const val FTSW = 21  // Copy to swizzled
     const val TEX2D = 100 // texture2D
 }
 
@@ -128,6 +146,27 @@ class SGVMProgram(val data: IntArrayList = IntArrayList()) {
             .insert(ext, 28, 4)
         )
     }
+
+    private fun _setSwizzle(op: Int, dst: Int, swizzle: IntArray, src: Int) {
+        data.add(0
+            .insert(op, 0, 7)
+            .insert(dst, 7, 7)
+            .insert(src, 14, 7)
+            .insert(swizzle.getOrElse(0) { 0 }, 21, 2)
+            .insert(swizzle.getOrElse(1) { 0 }, 23, 2)
+            .insert(swizzle.getOrElse(2) { 0 }, 25, 2)
+            .insert(swizzle.getOrElse(3) { 0 }, 27, 2)
+            .insert(swizzle.size, 30, 2)
+        )
+    }
+
+    fun setToSwizzle(dst: Int, swizzle: IntArray, src: Int) {
+        _setSwizzle(SGVMOpcode.FTSW, dst, swizzle, src)
+    }
+
+    fun setFromSwizzle(dst: Int, swizzle: IntArray, src: Int) {
+        _setSwizzle(SGVMOpcode.FFSW, dst, swizzle, src)
+    }
 }
 
 inline class SGVMInstruction(val value: Int) {
@@ -137,4 +176,8 @@ inline class SGVMInstruction(val value: Int) {
     val SRC get() = value.extract(14, 7)
     val SRC2 get() = value.extract(21, 7)
     val EXT get() = value.extract(28, 4)
+
+    fun SWIZZLE(n: Int) = value.extract(21 + 2 * n, 2)
+
+    val EXT2 get() = value.extract(30, 2)
 }
