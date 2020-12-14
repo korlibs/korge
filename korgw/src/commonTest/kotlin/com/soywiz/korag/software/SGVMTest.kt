@@ -80,7 +80,7 @@ class SGVMTest {
             //SET(out["zw"], vec2(1f.lit, 2f.lit))
             SET(out["x"], min(1f.lit, 2f.lit))
             SET(out["y"], max(1f.lit, 2f.lit))
-            SET(out["zw"], abs(vec2(3f.lit, (-4f).lit)))
+            SET(out["wz"], abs(vec2((-4f).lit, (-3f).lit)))
         }
         assertEquals(1f, vm.freg[0])
         assertEquals(2f, vm.freg[1])
