@@ -6,13 +6,8 @@ import com.soywiz.korio.lang.*
 
 class ShaderToSGVM {
     val program = SGVMProgram()
-    val flits = FloatArrayList()
 
-    fun addFloatLit(value: Float): Int {
-        return flits.size.also { flits.add(value) }
-    }
-
-    fun toProgram() = SGVM(program, flits.toFloatArray())
+    fun toProgram() = SGVM(program)
 
     var currentIndex: Int = 0
     data class Allocation(val indices: List<Int>, val type: VarType) {
@@ -121,8 +116,7 @@ class ShaderToSGVM {
         when (op) {
             is Program.FloatLiteral -> {
                 assert(dest.type.elementCount == 1)
-                val flitsIndex = addFloatLit(op.value)
-                program.opl(SGVMOpcode.FLIT, 1, dest.indices[0], flitsIndex)
+                program.flit(dest.indices[0], op.value)
             }
             is Program.Binop -> {
                 val left = op.left

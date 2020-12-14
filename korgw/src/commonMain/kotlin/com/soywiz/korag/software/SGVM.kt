@@ -9,18 +9,16 @@ import kotlin.math.*
 // Software Graphics Virtual Machine
 // @TODO: Port dynarek for even faster performance https://github.com/kpspemu/kpspemu/tree/master/dynarek2/
 class SGVM(
-    var program: SGVMProgram,
-    var flits: FloatArray = FloatArray(0)
+    var program: SGVMProgram
 ) {
     val freg = FloatArray(128)
 
     fun copyFrom(other: SGVM) {
         this.program = other.program
-        this.flits = other.flits
         this.tex2d = other.tex2d
     }
 
-    fun clone() = SGVM(program, flits).also {
+    fun clone() = SGVM(program).also {
         it.copyFrom(this)
     }
 
@@ -28,17 +26,19 @@ class SGVM(
         println("tex2d: sampler=$sampler, x=$x, y=$y, outIndex=$outIndex")
     }
 
+    var cpc = 0
     fun execute(pc: Int = 0): SGVM {
-        var cpc = pc
-        val programData = program.data
-        val data = programData.data
+        cpc = pc
+        val programData = program.rdata
         while (cpc < programData.size) {
-            val i = SGVMInstruction(data[cpc++])
+            val i = SGVMInstruction(readPC())
             if (i.OP == SGVMOpcode.END) break
             i.interpret()
         }
         return this
     }
+
+    fun readPC() = program.rdata[cpc++]
 
     private fun SGVMInstruction.interpret() {
         val op = OP
@@ -46,7 +46,7 @@ class SGVM(
             SGVMOpcode.END -> Unit
             SGVMOpcode.FZERO -> fset { 0f }
             SGVMOpcode.FONE -> fset { 1f }
-            SGVMOpcode.FLIT -> fset { flits[SRC_L + it] }
+            SGVMOpcode.FLIT -> fset { Float.fromBits(readPC()) }
             SGVMOpcode.FSET -> fset { fsrc(it) }
             SGVMOpcode.FNEG -> fset { -fsrc(it) }
             SGVMOpcode.FRCP -> fset { 1f / fsrc(it) }
@@ -94,10 +94,21 @@ object SGVMOpcode {
 }
 
 class SGVMProgram(val data: IntArrayList = IntArrayList()) {
+    val rdata by lazy { data.toIntArray() }
+
     companion object {
         operator fun invoke(block: SGVMProgram.() -> Unit): SGVMProgram {
             return SGVMProgram().also { block(it) }
         }
+    }
+
+    fun flit(dst: Int, lit: Float) {
+        flit(dst, 1, floatArrayOf(lit))
+    }
+
+    fun flit(dst: Int, count: Int, lit: FloatArray, litPos: Int = 0) {
+        opl(SGVMOpcode.FLIT, count, dst, 0)
+        for (n in 0 until count) data.add(lit[litPos + n].toRawBits())
     }
 
     fun op(op: Int, ext: Int = 1, dst: Int = 0, src: Int = 0, src2: Int = 0) {
@@ -126,6 +137,4 @@ inline class SGVMInstruction(val value: Int) {
     val SRC get() = value.extract(14, 7)
     val SRC2 get() = value.extract(21, 7)
     val EXT get() = value.extract(28, 4)
-
-    val SRC_L get() = value.extract(14, 14)
 }
