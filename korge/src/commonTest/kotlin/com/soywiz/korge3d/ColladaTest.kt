@@ -140,8 +140,6 @@ class ColladaTest {
     @Test
     fun testParseAnimations_animationsAsNestedStructure() = suspendTestNoBrowser {
         val library = resourcesVfs["animations_nested.dae"].readColladaLibrary()
-        // Reproduces an undesired behavior, tracked in https://github.com/korlibs/korge/issues/308
-        // Will be fixed in the next commit.
-        assertEquals(library.animationDefs.size, 0)
+        assertEquals(library.animationDefs.size, 1)
     }
 }

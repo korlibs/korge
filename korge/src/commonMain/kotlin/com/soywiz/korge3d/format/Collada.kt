@@ -539,6 +539,7 @@ class ColladaParser {
                     frames
                 )
             }
+            parseAnimationNode(sources, animationXml["animation"])
         }
     }
 
