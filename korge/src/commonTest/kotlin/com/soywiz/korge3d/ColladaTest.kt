@@ -130,4 +130,16 @@ class ColladaTest {
 		assertNotNull(instance["Cube"])
 		assertEquals(true, instance["Cube"] is ViewWithMesh3D)
 	}
+
+    @Test
+    fun testParseAnimations_animationsAsFlatStructure() = suspendTestNoBrowser {
+        val library = resourcesVfs["animations_flat.dae"].readColladaLibrary()
+        assertEquals(library.animationDefs.size, 1)
+    }
+
+    @Test
+    fun testParseAnimations_animationsAsNestedStructure() = suspendTestNoBrowser {
+        val library = resourcesVfs["animations_nested.dae"].readColladaLibrary()
+        assertEquals(library.animationDefs.size, 1)
+    }
 }
