@@ -176,9 +176,9 @@ object Demo3 {
 			//mainSceneView.rotation(90.degrees, 0.degrees, 0.degrees)
 
 
-			val animator = Animator3D(library.animationDefs.values, mainSceneView)
+			val animators = library.animationDefs.values.map { Animator3D(it, mainSceneView) }
             addUpdater {
-				animator.update(it)
+				animators.forEach { animator -> animator.update(it) }
 			}
 
 			val camera1 = cameras.firstOrNull() ?: camera
