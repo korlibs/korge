@@ -1,4 +1,5 @@
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.scene.*
@@ -147,8 +148,8 @@ class SkinningScene : Scene() {
 			val mainSceneView = library.mainScene.instantiate()
 			val cameras = mainSceneView.findByType<Camera3D>()
 
-			val animator = Animator3D(library.animationDefs.values, mainSceneView)
-            addUpdater { animator.update(it) }
+			val animators = library.animationDefs.values.map { Animator3D(it, mainSceneView) }
+            addUpdater { animators.fastForEach { animator -> animator.update(it) } }
 			val model = mainSceneView.findByType<ViewWithMesh3D>().first()
 				//.rotation(-90.degrees, 90.degrees, 0.degrees)
 
