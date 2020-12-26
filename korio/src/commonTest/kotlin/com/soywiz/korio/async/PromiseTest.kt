@@ -16,8 +16,12 @@ class PromiseTest {
         assertTrue(endTime - startTime >= 300.milliseconds)
     }
 
-    fun delayPromise(timeMs: Int): Promise<Unit> = Promise<Unit> { resolve, reject ->
-        launchImmediately(EmptyCoroutineContext) {
+    suspend fun delayPromise(timeMs: Int): Promise<Unit> = delayPromise(timeMs, coroutineContext)
+    suspend fun delayPromiseJob(timeMs: Int): Promise<Unit> = delayPromiseJob(timeMs, coroutineContext)
+    suspend fun delayPromiseDeferred(timeMs: Int): Promise<Unit> = delayPromiseDeferred(timeMs, coroutineContext)
+
+    fun delayPromise(timeMs: Int, coroutineContext: CoroutineContext): Promise<Unit> = Promise<Unit> { resolve, reject ->
+        launchImmediately(coroutineContext) {
             try {
                 delay(timeMs.toLong())
                 resolve(Unit)
@@ -27,11 +31,11 @@ class PromiseTest {
         }
     }
 
-    fun delayPromiseJob(timeMs: Int): Promise<Unit> = launchImmediately(EmptyCoroutineContext) {
+    fun delayPromiseJob(timeMs: Int, coroutineContext: CoroutineContext): Promise<Unit> = launchImmediately(coroutineContext) {
         delay(timeMs.toLong())
-    }.toPromise(EmptyCoroutineContext)
+    }.toPromise(coroutineContext)
 
-    fun delayPromiseDeferred(timeMs: Int): Promise<Unit> = asyncImmediately(EmptyCoroutineContext) {
+    fun delayPromiseDeferred(timeMs: Int, coroutineContext: CoroutineContext): Promise<Unit> = asyncImmediately(coroutineContext) {
         delay(timeMs.toLong())
-    }.toPromise(EmptyCoroutineContext)
+    }.toPromise(coroutineContext)
 }

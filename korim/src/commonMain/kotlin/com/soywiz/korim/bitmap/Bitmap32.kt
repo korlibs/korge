@@ -29,7 +29,6 @@ class Bitmap32(
 	private val temp = RgbaArray(max(width, height))
     val bounds: IRectangleInt = RectangleInt(0, 0, width, height)
 
-    @JvmOverloads
 	constructor(width: Int, height: Int, value: RGBA, premultiplied: Boolean = false) : this(width, height, premultiplied = premultiplied) { data.fill(value) }
 	constructor(width: Int, height: Int, premultiplied: Boolean = false, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = premultiplied) { setEach(callback = generator) }
 

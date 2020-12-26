@@ -146,7 +146,7 @@ open class LogBaseAG(
                 log("::draw.vertex[$index]: " + attributes.joinToString(", "))
             }
         } catch (e: Throwable) {
-            log("ERROR: ${e.message}")
+            log("LogBaseAG.draw.ERROR: ${e.message}")
             e.printStackTrace()
         }
     }
