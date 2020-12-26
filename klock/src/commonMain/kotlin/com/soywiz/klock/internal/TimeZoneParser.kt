@@ -13,12 +13,13 @@ internal fun MicroStrReader.readTimeZoneOffset(tzNames: TimezoneNames = Timezone
     }
     if (reader.tryRead('Z')) return 0.minutes
     var sign = +1
-    if (!reader.tryRead("GMT") && !reader.tryRead("UTC")) return null
+    reader.tryRead("GMT")
+    reader.tryRead("UTC")
     if (reader.tryRead("+")) sign = +1
     if (reader.tryRead("-")) sign = -1
     val part = reader.readRemaining().replace(":", "")
-    val hours = part.substr(0, 2).padStart(2, '0').toIntOrNull() ?: 0
-    val minutes = part.substr(2, 2).padStart(2, '0').toIntOrNull() ?: 0
+    val hours = part.substr(0, 2).padStart(2, '0').toIntOrNull() ?: return null
+    val minutes = part.substr(2, 2).padStart(2, '0').toIntOrNull() ?: return null
     val roffset = hours.hours + minutes.minutes
     return if (sign > 0) +roffset else -roffset
 }

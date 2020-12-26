@@ -1449,7 +1449,7 @@ class LogKmlGlProxy(parent: KmlGl, var logBefore: Boolean = false, var logAfter:
         if (logBefore) println("before: $name ($params)")
 	}
 	override fun after(name: String, params: String, result: String): Unit {
-        if (logAfter || name == "texImage2D") println("after: $name ($params) = $result")
+        if (logAfter) println("after: $name ($params) = $result")
 	}
 }
 class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) : KmlGlProxy(parent) {

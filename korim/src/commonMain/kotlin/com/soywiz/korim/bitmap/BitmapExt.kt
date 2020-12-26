@@ -1,7 +1,6 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
 
 // -1 if dimensions do not match
 fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {
@@ -44,18 +43,3 @@ fun <T : Bitmap> T.putWithBorder(x: Int, y: Int, bmp: T, border: Int = 1) {
 		this.copy(x, y + height - 1, this, x, y + height - 1 + n, rwidth, 1)
 	}
 }
-
-fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
-    val bmp = this
-    val width = out.width
-    val height = out.height
-    out.context2d(antialiased = true) {
-        val rect = Rectangle(0, 0, width, height).place(bmp.width.toDouble(), bmp.height.toDouble(), anchor, scale)
-        drawImage(bmp, rect.x, rect.y, rect.width, rect.height)
-    }
-    return out
-}
-
-
-fun Bitmap.resized(width: Int, height: Int, scale: ScaleMode, anchor: Anchor, native: Boolean = true): Bitmap =
-    resized(if (native) NativeImage(width, height) else createWithThisFormat(width, height), scale, anchor)

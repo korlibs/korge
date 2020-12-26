@@ -466,4 +466,13 @@ class DateTimeTest {
         assertEquals("2020-03-20th 11:13:31.317 +05:00", string3)
         assertEquals(original3, formatter3.parse(string3))
     }
+
+    @Test
+    fun testIssue154() {
+        assertEquals(TimezoneOffset(9.hours), DateFormat("z").parse("+09:00").offset)
+        assertEquals(TimezoneOffset((-9).hours), DateFormat("z").parse("-09:00").offset)
+        assertEquals(TimezoneOffset(15.hours), DateFormat("z").parse("+15:00").offset)
+        assertEquals(TimezoneOffset((-15).hours), DateFormat("z").parse("-15:00").offset)
+        assertEquals(TimezoneOffset(0.hours), DateFormat("z").parse("+00:00").offset)
+    }
 }

@@ -67,6 +67,7 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
         override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
             when (level) {
                 Logger.Level.ERROR -> Console.error(logger.name, msg)
+                Logger.Level.WARN -> Console.warn(logger.name, msg)
                 else -> Console.log(logger.name, msg)
             }
         }
