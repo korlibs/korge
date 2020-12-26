@@ -19,7 +19,7 @@ class AnimationViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mix
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("SWF") {
+        container.uiCollapsibleSection("SWF") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "swf" || it.extensionLC == "ani"
             })

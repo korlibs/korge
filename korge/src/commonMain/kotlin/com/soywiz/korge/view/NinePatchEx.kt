@@ -176,7 +176,7 @@ class NinePatchEx(
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("9-PatchImage") {
+        container.uiCollapsibleSection("9-PatchImage") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.baseName.endsWith(".9.png")
             })

@@ -110,7 +110,7 @@ class Image(
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("Image") {
+        container.uiCollapsibleSection("Image") {
             uiEditableValue(this@Image::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"
             })

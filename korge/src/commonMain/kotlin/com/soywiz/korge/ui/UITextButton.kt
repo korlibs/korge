@@ -74,7 +74,7 @@ open class UITextButton(
 	}
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection(UITextButton::class.simpleName!!) {
+        container.uiCollapsibleSection(UITextButton::class.simpleName!!) {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min = 1.0, max = 300.0)
             /*

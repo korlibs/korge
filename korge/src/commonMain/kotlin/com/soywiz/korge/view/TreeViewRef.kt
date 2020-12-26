@@ -21,7 +21,7 @@ class TreeViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() 
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("Tree") {
+        container.uiCollapsibleSection("Tree") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "ktree"
             })
