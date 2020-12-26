@@ -227,7 +227,7 @@ class ColladaParser {
 
 			// @TODO: We should use separate components
 			val combinedVertexData = floatArrayListOf()
-            val combinedIndexData = intArrayListOf()
+            val combinedIndexData = ShortArrayList()
 
 			val hasNormals = (nx.size >= px.size)
 			val hasTexture = TEXCOORD != null
@@ -254,7 +254,7 @@ class ColladaParser {
                         combinedVertexData.add(weightWeights[m][VERTEX_indices[n]])
 					}
 				}
-                combinedIndexData.add(n)
+                combinedIndexData.add(n.toShort())
 			}
 
 			//println(combinedData.toString())
@@ -266,7 +266,7 @@ class ColladaParser {
 					//combinedData.toFloatArray().toFBuffer(),
 					combinedVertexData.toFBuffer(),
                     combinedIndexData.toFBuffer(),
-                    AG.IndexType.UINT,
+                    AG.IndexType.USHORT,
                     combinedIndexData.size,
 					VertexLayout(buildList {
 						add(Shaders3D.a_pos)

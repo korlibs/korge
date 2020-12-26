@@ -21,7 +21,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
 
-open class ViewsForTesting @JvmOverloads constructor(
+open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
     val windowSize: SizeInt = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
     val virtualSize: SizeInt = SizeInt(windowSize.size.clone()),
