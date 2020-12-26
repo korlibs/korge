@@ -92,7 +92,7 @@ open class RectBase(
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         val view = this
-        container.uiCollapsableSection("RectBase") {
+        container.uiCollapsibleSection("RectBase") {
             uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
             button("Center") {
                 views.undoable("Change anchor", view) {

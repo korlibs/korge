@@ -286,7 +286,7 @@ open class Text(
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("Text") {
+        container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })

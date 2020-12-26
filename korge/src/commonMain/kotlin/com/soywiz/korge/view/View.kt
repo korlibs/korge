@@ -91,13 +91,38 @@ abstract class View internal constructor(
     internal var _children: ArrayList<View>? = null
 
     /** Iterates all the children of this container in normal order of rendering. */
+    inline fun forEachChild(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
+
+    /** Iterates all the children of this container in normal order of rendering. */
+    @Deprecated(
+        message = "An older name of `forEachChild`",
+        replaceWith = ReplaceWith("forEachChild(callback)"),
+        level = DeprecationLevel.WARNING
+    )
     inline fun forEachChildren(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
 
     /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
+    inline fun forEachChildWithIndex(callback: (index: Int, child: View) -> Unit) =
+        _children?.fastForEachWithIndex(callback)
+
+    /** Iterates all the children of this container in normal order of rendering. Providing an index in addition to the child to the callback. */
+    @Deprecated(
+        message = "An older name of `forEachChildWithIndex`",
+        replaceWith = ReplaceWith("forEachChildWithIndex(callback)"),
+        level = DeprecationLevel.WARNING
+    )
     inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) =
         _children?.fastForEachWithIndex(callback)
 
     /** Iterates all the children of this container in reverse order of rendering. */
+    inline fun forEachChildReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
+
+    /** Iterates all the children of this container in reverse order of rendering. */
+    @Deprecated(
+        message = "An older name of `forEachChildReversed`",
+        replaceWith = ReplaceWith("forEachChildReversed(callback)"),
+        level = DeprecationLevel.WARNING
+    )
     inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
 
     /** Indicates if this view is going to propagate the events that reach this node to its children */
@@ -1173,7 +1198,7 @@ abstract class View internal constructor(
         if (this.name == name) return this
         if (this.isContainer) {
             //(this as Container).children.fastForEach { child ->
-            (this as Container).forEachChildren { child ->
+            (this as Container).forEachChild { child: View ->
                 val named = child.findViewByName(name)
                 if (named != null) return named
             }
@@ -1207,12 +1232,12 @@ abstract class View internal constructor(
         extraBuildDebugComponent?.invoke(views, view, container)
 
         if (filter != null) {
-            container.uiCollapsableSection("Filter") {
+            container.uiCollapsibleSection("Filter") {
                 filter!!.buildDebugComponent(views, this)
             }
         }
 
-        container.uiCollapsableSection("View") {
+        container.uiCollapsibleSection("View") {
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
             uiEditableValue(view::name)
             uiEditableValue(view::colorMul)
@@ -1483,7 +1508,7 @@ val View?.ancestors: List<View> get() = ancestorsUpTo(null)
 fun View?.dump(indent: String = "", emit: (String) -> Unit = ::println) {
     emit("$indent$this")
     if (this != null && this.isContainer) {
-        this.forEachChildren { child ->
+        this.forEachChild { child: View ->
             child.dump("$indent ", emit)
         }
     }
@@ -1507,7 +1532,7 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
     if (this != null) {
         handler(this)
         if (this.isContainer) {
-            this.forEachChildren { child ->
+            this.forEachChild { child: View ->
                 child.foreachDescendant(handler)
             }
         }
@@ -1576,7 +1601,7 @@ fun View?.firstDescendantWith(check: (View) -> Boolean): View? {
     if (this == null) return null
     if (check(this)) return this
     if (this.isContainer) {
-        this.forEachChildren { child ->
+        this.forEachChild { child: View ->
             val res = child.firstDescendantWith(check)
             if (res != null) return res
         }
@@ -1589,7 +1614,7 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
     if (this != null) {
         if (check(this)) out += this
         if (this.isContainer) {
-            this.forEachChildren { child ->
+            this.forEachChild { child: View ->
                 child.descendantsWith(out, check)
             }
         }

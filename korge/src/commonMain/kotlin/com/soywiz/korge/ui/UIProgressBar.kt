@@ -53,7 +53,7 @@ open class UIProgressBar(
 	}
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection(this@UIProgressBar::class.simpleName!!) {
+        container.uiCollapsibleSection(this@UIProgressBar::class.simpleName!!) {
             uiEditableValue(::current, min = 0.0, max = 100.0, clamp = false)
             uiEditableValue(::maximum, min = 1.0, max = 100.0, clamp = false)
         }

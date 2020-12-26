@@ -352,7 +352,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             result ?: when (view) {
                 is NinePatchEx -> Xml("ninepatch", rproperties)
                 is KTreeRoot -> Xml("ktree", mapOf("width" to view.width, "height" to view.height, "gridWidth" to view.grid.width, "gridHeight" to view.grid.height)) {
-                    view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
+                    view.forEachChild { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
                 }
                 is AnimationViewRef -> Xml("animation", rproperties)
                 is ParticleEmitterView -> Xml("particle", rproperties)
@@ -365,7 +365,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 is Text -> Xml("text", rproperties)
                 is UITextButton -> Xml("uitextbutton", rproperties)
                 is Container -> Xml("container", rproperties) {
-                    view.forEachChildren { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
+                    view.forEachChild { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
                 }
                 else -> error("Don't know how to serialize $view")
             }

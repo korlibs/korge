@@ -49,7 +49,7 @@ class SpineViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin()
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("Spine") {
+        container.uiCollapsibleSection("Spine") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "skel"
             })

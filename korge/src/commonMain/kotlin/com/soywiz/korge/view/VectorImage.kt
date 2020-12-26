@@ -53,7 +53,7 @@ class VectorImage(
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("VectorImage") {
+        container.uiCollapsibleSection("VectorImage") {
             uiEditableValue(this@VectorImage::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "svg"
             })

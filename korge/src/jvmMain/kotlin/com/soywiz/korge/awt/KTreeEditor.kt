@@ -86,7 +86,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         //root.height = camera.height
 
         root.extraBuildDebugComponent = { views, view, container ->
-            container.uiCollapsableSection("Document") {
+            container.uiCollapsibleSection("Document") {
                 uiEditableValue(listOf(root::width, root::height), min = 0.0, max = 4096.0, clamp = true, name = "Document Size")
                 uiEditableValue(actions.grid::size, min = 1, max = 500, clamp = true, name = "Grid Size")
                 uiEditableValue(listOf(actions.grid::width, actions.grid::height), min = 1, max = 500, clamp = true, name = "Grid Size")
