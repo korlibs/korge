@@ -12,7 +12,7 @@ fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Uni
 @Deprecated(
     message = "An older name of `uiCollapsibleSection`",
     replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.WARNING
 )
 fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
     return UiCollapsibleSection(app, name, block).also { addChild(it) }

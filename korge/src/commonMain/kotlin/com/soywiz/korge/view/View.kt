@@ -97,7 +97,7 @@ abstract class View internal constructor(
     @Deprecated(
         message = "An older name of `forEachChild`",
         replaceWith = ReplaceWith("forEachChild(callback)"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.WARNING
     )
     inline fun forEachChildren(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
 
@@ -109,7 +109,7 @@ abstract class View internal constructor(
     @Deprecated(
         message = "An older name of `forEachChildWithIndex`",
         replaceWith = ReplaceWith("forEachChildWithIndex(callback)"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.WARNING
     )
     inline fun forEachChildrenWithIndex(callback: (index: Int, child: View) -> Unit) =
         _children?.fastForEachWithIndex(callback)
@@ -121,7 +121,7 @@ abstract class View internal constructor(
     @Deprecated(
         message = "An older name of `forEachChildReversed`",
         replaceWith = ReplaceWith("forEachChildReversed(callback)"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.WARNING
     )
     inline fun forEachChildrenReversed(callback: (child: View) -> Unit) = _children?.fastForEachReverse(callback)
 
