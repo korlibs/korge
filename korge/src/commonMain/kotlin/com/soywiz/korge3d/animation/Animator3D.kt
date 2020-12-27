@@ -9,6 +9,10 @@ import com.soywiz.korma.interpolation.*
 @Korge3DExperimental
 class Animator3D(val animation: Animation3D, val rootView: View3D) {
 	var currentTime = 0.milliseconds
+
+    val elapsedTimeInAnimation: TimeSpan
+    get() = currentTime % animation.totalTime
+
 	fun update(dt: TimeSpan) {
 		//currentTime += ms.ms * 0.1
 		currentTime += dt
@@ -17,7 +21,6 @@ class Animator3D(val animation: Animation3D, val rootView: View3D) {
 		val ftransforms = keyFrames.transforms
 		val ffloats = keyFrames.floats
 		val aproperty = animation.property
-		val elapsedTimeInAnimation = (currentTime % animation.totalTime)
 		//genericBinarySearch(0, animation.keys.size) { animation.keys[it] }
 
 		val n = keyFrames.findIndex(elapsedTimeInAnimation)
