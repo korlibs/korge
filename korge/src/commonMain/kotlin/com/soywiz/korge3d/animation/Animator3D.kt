@@ -6,12 +6,30 @@ import com.soywiz.korge3d.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
+/**
+ * @param playbackPattern: A function that takes normalized time (from 0 to 1) as argument and returns normalized
+ *                         animation progress (from 0 to 1). Allows defining complex behaviors of an object which range
+ *                         of movement is defined by an animation, and concrete position is defined by game's logic.
+ *                         Normalized time means that as the time flows, it's counted in the number of this animation's
+ *                         periods. For example, if animation is 5 seconds long, after 5 seconds this argument will be
+ *                         equal to 1, and after 7.5 seconds - 1.5.
+ *                         Normalized progress means that the function specifies what frame of the animation should be
+ *                         shown in terms of its defined timeframe. For example, if the function returns 0.25 and the
+ *                         animation is 10 seconds long, it means that the engine should present the animation as if it
+ *                         was at 0.25 * 10 = 2.5 seconds of its regular playback.
+ *                         Thanks to this, it's possible to define normalized, reusable playback patterns, not tied to
+ *                         any specific animation's length.
+ */
 @Korge3DExperimental
-class Animator3D(val animation: Animation3D, val rootView: View3D) {
+class Animator3D(val animation: Animation3D, val rootView: View3D, var playbackPattern: (Double) -> Double = repeatInfinitely) {
+    companion object {
+        val repeatInfinitely: (Double) -> Double = { it % 1.0 }
+    }
+
 	var currentTime = 0.milliseconds
 
     val elapsedTimeInAnimation: TimeSpan
-    get() = currentTime % animation.totalTime
+    get() = animation.totalTime * playbackPattern(currentTime/animation.totalTime)
 
 	fun update(dt: TimeSpan) {
 		//currentTime += ms.ms * 0.1
