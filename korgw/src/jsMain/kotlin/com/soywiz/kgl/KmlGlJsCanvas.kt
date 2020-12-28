@@ -37,7 +37,13 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     private val freeList = (1 until items.size).reversed().toMutableList()
     private fun <T> T.alloc(): Int = run {
 		if (this === null) return 0
-		if (this.asDynamic().id === undefined) { val index = freeList.removeAt(freeList.size - 1); items[index] = this; (this.asDynamic()).id = index; }; this.asDynamic().id.unsafeCast<Int>()
+		if (this.asDynamic().id === undefined) {
+		    if (freeList.isEmpty()) error("KmlGlJsCanvas.freeList is empty. (Probably allocating lots of OpenGL objects without releasing them)")
+		    val index = freeList.removeAt(freeList.size - 1)
+            items[index] = this
+            (this.asDynamic()).id = index
+		}
+        this.asDynamic().id.unsafeCast<Int>()
 	}
 	private fun <T> Int.get(): T? = if (this != 0) items[this].unsafeCast<T>() else null
     private fun <T> Int.free(): T? = run { if (this != 0) { val out = items[this].unsafeCast<T>(); freeList += this; items[this] = null; out } else { null } }
