@@ -278,7 +278,7 @@ class Views constructor(
 
 	fun render() {
         ag.startFrame()
-		if (clearEachFrame) ag.clear(clearColor, stencil = 0, clearColor = true, clearStencil = true)
+		if (clearEachFrame) ag.clear(clearColor, stencil = 0, depth = 0f, clearColor = true, clearStencil = true, clearDepth = true)
         onBeforeRender(renderContext)
 		stage.render(renderContext)
         renderContext.flush()
