@@ -197,6 +197,8 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
             WGL_COLOR_BITS_ARB, 32,
             WGL_DEPTH_BITS_ARB, 24,
             WGL_STENCIL_BITS_ARB, 8,
+            WGL_SAMPLE_BUFFERS_ARB, 1, // Number of buffers (must be 1 at time of writing)
+            WGL_SAMPLES_ARB, 4,        // Number of samples
             0, // End
         )
 
@@ -349,5 +351,7 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
         const val WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002
         const val ERROR_INVALID_PROFILE_ARB         = 0x2096
         const val GL_NUM_EXTENSIONS = 0x821D
+        const val WGL_SAMPLE_BUFFERS_ARB            = 0x2041
+        const val WGL_SAMPLES_ARB                   = 0x2042
     }
 }
