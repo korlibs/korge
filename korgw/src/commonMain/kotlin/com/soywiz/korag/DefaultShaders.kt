@@ -13,10 +13,10 @@ object DefaultShaders {
 
 	val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
-	val a_Pos = Attribute("a_Pos", VarType.Float2, normalized = false)
-	val a_Tex = Attribute("a_Tex", VarType.Float2, normalized = false)
-	val a_Col = Attribute("a_Col", VarType.Byte4, normalized = true)
-	val v_Tex = Varying("v_Tex", VarType.Float2)
+	val a_Pos = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH)
+	val a_Tex = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
+	val a_Col = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW)
+	val v_Tex = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
 	val v_Col = Varying("v_Col", VarType.Byte4)
 
 	val t_Temp0 = Temp(0, VarType.Float4)

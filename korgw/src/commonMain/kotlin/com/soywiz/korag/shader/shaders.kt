@@ -118,8 +118,10 @@ open class Operand(open val type: VarType) {
     val elementCount get() = type.elementCount
 }
 
-open class Variable(val name: String, type: VarType, val arrayCount: Int) : Operand(type) {
-    constructor(name: String, type: VarType) : this(name, type, 1)
+enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }
+
+open class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
+    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
     val indexNames = Array(arrayCount) { "$name[$it]" }
     var id: Int = 0
 	var data: Any? = null
@@ -134,9 +136,10 @@ open class Attribute(
 	type: VarType,
 	val normalized: Boolean,
 	val offset: Int? = null,
-	val active: Boolean = true
-) : Variable(name, type) {
-	constructor(name: String, type: VarType, normalized: Boolean) : this(name, type, normalized, null, true)
+	val active: Boolean = true,
+    precision: Precision = Precision.DEFAULT
+) : Variable(name, type, precision) {
+	constructor(name: String, type: VarType, normalized: Boolean, precision: Precision = Precision.DEFAULT) : this(name, type, normalized, null, true, precision)
 
 	fun inactived() = Attribute(name, type, normalized, offset = null, active = false)
 	override fun toString(): String = "Attribute($name)"
@@ -150,22 +153,22 @@ open class Attribute(
     }
 }
 
-open class Varying(name: String, type: VarType, arrayCount: Int) : Variable(name, type, arrayCount) {
-    constructor(name: String, type: VarType) : this(name, type, 1)
+open class Varying(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
+    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Varying($name)"
     override fun equals(other: Any?): Boolean = mequals<Varying>(other)
     override fun hashCode(): Int = mhashcode()
 }
 
-open class Uniform(name: String, type: VarType, arrayCount: Int) : Variable(name, type, arrayCount) {
-    constructor(name: String, type: VarType) : this(name, type, 1)
+open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
+    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
     override fun hashCode(): Int = mhashcode()
 }
 
-open class Temp(id: Int, type: VarType, arrayCount: Int) : Variable("temp$id", type, arrayCount) {
-    constructor(id: Int, type: VarType) : this(id, type, 1)
+open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
+    constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
 	override fun toString(): String = "Temp($name)"
     override fun equals(other: Any?): Boolean = mequals<Temp>(other)
     override fun hashCode(): Int = mhashcode()
