@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import platform.posix.*
 import platform.windows.*
 
-actual object Environment {
+internal actual object EnvironmentInternal {
 	private fun readStringsz(ptr: CPointer<WCHARVar>?): List<String> {
 		if (ptr == null) return listOf()
 		var n = 0

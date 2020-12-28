@@ -5,7 +5,7 @@ import com.soywiz.korio.net.*
 import com.soywiz.korio.util.*
 import kotlinx.browser.*
 
-actual object Environment {
+internal actual object EnvironmentInternal {
 	val allEnvs: Map<String, String> = when {
 		OS.isJsNodeJs -> jsObjectKeysArray(process.env).associate { it to process.env[it] }
 		else -> QueryString.decode((document.location?.search ?: "").trimStart('?')).map { it.key to (it.value.firstOrNull() ?: it.key) }.toMap()

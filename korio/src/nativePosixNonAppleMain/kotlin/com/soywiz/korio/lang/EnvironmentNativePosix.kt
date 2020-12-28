@@ -3,7 +3,7 @@ package com.soywiz.korio.lang
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual object Environment {
+internal actual object EnvironmentInternal {
 	private fun getEnvs(): Map<String, String> {
 		val out = LinkedHashMap<String, String>()
 		val env = platform.posix.__environ
