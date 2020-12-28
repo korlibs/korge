@@ -117,11 +117,12 @@ class KmlGlState(val gl: KmlGl) {
     fun restoreEnable() = run { for (n in enabledList.indices) gl.enableDisable(enabledList[n], enabledArray[n]) }
 
     inline fun keep(block: () -> Unit): Unit {
-        save()
+        // @TODO: Is this required for Mac as part of intellij-plugin?
+        //save()
         try {
             block()
         } finally {
-            restore()
+            //restore()
         }
     }
 

@@ -30,7 +30,7 @@ actual fun CreateDefaultGameWindow(): GameWindow {
     val checkGl = null
         ?: System.getenv("KORGW_CHECK_OPENGL")?.toBooleanOrNull()
         ?: System.getProperty("korgw.check.opengl")?.toBooleanOrNull()
-        ?: false
+        ?: GLOBAL_CHECK_GL
 
     val logGl = null
         ?: System.getenv("KORGW_LOG_OPENGL")?.toBooleanOrNull()

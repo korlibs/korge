@@ -46,7 +46,12 @@ interface MyGdi32 : GDI32 {
     ): WinDef.HBITMAP
 
     fun CreateDIBSection(hDC: WinDef.HDC?, pbmi: BITMAPV5HEADER?, iUsage: Int, ppvBits: PointerByReference?, hSection: Pointer?, dwOffset: Int): WinDef.HBITMAP?
-
+    fun DescribePixelFormat(
+        hdc: WinDef.HDC?,
+        iPixelFormat: Int,
+        nBytes: Int,
+        ppfd: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?
+    ): Int
     companion object : MyGdi32 by Native.load("gdi32", MyGdi32::class.java, W32APIOptions.DEFAULT_OPTIONS)
 }
 

@@ -49,7 +49,11 @@ abstract class AG : Extra by Extra.Mixin() {
 
 	open val devicePixelRatio: Double = 1.0
 
+    open fun beforeDoRender() {
+    }
+
     inline fun doRender(block: () -> Unit) {
+        beforeDoRender()
         mainRenderBuffer.init()
         setRenderBufferTemporally(mainRenderBuffer) {
             block()
@@ -657,6 +661,9 @@ abstract class AG : Extra by Extra.Mixin() {
 	}
 
 	protected open fun flipInternal() = Unit
+
+    open fun startFrame() {
+    }
 
 	open fun clear(
 		color: RGBA = Colors.TRANSPARENT_BLACK,

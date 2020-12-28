@@ -12,3 +12,5 @@ local.*.properties
 /samples/hello-world/game.korgegame.storage
 /samples/hello-world/game.storage
 /samples/hello-world/settings.json
+out.txt
+err.txt

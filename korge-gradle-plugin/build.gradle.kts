@@ -66,3 +66,7 @@ dependencies {
 	implementation(gradleApi())
 	implementation(localGroovy())
 }
+
+tasks {
+    //val publishJvmPublicationToMavenLocal by creating(Task::class) { dependsOn("publishToMavenLocal") }
+}

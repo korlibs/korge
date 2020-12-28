@@ -20,6 +20,7 @@ import java.security.*
 import javax.swing.*
 
 interface BaseOpenglContext : Disposable {
+    val isCore: Boolean get() = false
     val scaleFactor: Double get() = 1.0
     class ContextInfo(
         val scissors: com.soywiz.korma.geom.RectangleInt? = null,

@@ -44,4 +44,17 @@ class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, log
             else -> X11KmlGl
         }.checkedIf(checkGl)
     }
+
+    var vertexArrayCachedVersion = -1
+    var vertexArray = -1
+
+    override fun beforeDoRender() {
+        if (vertexArrayCachedVersion != contextVersion) {
+            vertexArrayCachedVersion = contextVersion
+            val out = intArrayOf(-1)
+            Win32GL.glGenVertexArrays(1, out)
+            vertexArray = out[0]
+        }
+        Win32GL.glBindVertexArray(vertexArray)
+    }
 }

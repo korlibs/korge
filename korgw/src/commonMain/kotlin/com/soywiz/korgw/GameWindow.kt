@@ -17,6 +17,10 @@ import com.soywiz.korio.net.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.native.concurrent.*
+
+@ThreadLocal
+var GLOBAL_CHECK_GL = false
 
 expect fun CreateDefaultGameWindow(): GameWindow
 
