@@ -318,4 +318,5 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
 
     override fun startFrame(): Unit = Unit
     override fun endFrame(): Unit = Unit
+    open fun beforeDoRender(contextVersion: Int): Unit = Unit
 }

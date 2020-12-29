@@ -12,7 +12,20 @@ import java.awt.*
 import java.lang.reflect.*
 import javax.swing.*
 
-object Win32KmlGl : NativeKgl(Win32GL)
+object Win32KmlGl : NativeKgl(Win32GL) {
+    var vertexArrayCachedVersion = -1
+    var vertexArray = -1
+
+    override fun beforeDoRender(contextVersion: Int): Unit {
+        if (vertexArrayCachedVersion != contextVersion) {
+            vertexArrayCachedVersion = contextVersion
+            val out = intArrayOf(-1)
+            Win32GL.glGenVertexArrays(1, out)
+            vertexArray = out[0]
+        }
+        Win32GL.glBindVertexArray(vertexArray)
+    }
+}
 
 interface Win32GL : INativeGL, Library {
     fun wglGetProcAddress(name: String): Pointer
