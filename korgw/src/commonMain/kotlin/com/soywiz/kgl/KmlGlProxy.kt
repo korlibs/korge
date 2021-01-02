@@ -8,7 +8,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.printStackTrace
 
-open class KmlGlProxy(val parent: KmlGl) : KmlGl() {
+open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 	open fun before(name: String, params: String): Unit = Unit
 	open fun after(name: String, params: String, result: String): Unit = Unit
 	override fun activeTexture(texture: Int): Unit {
@@ -1014,7 +1014,11 @@ open class KmlGlProxy(val parent: KmlGl) : KmlGl() {
 	}
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
-	override fun activeTexture(texture: Int): Unit {
+    override fun beforeDoRender(contextVersion: Int) {
+        parent.beforeDoRender(contextVersion)
+    }
+
+    override fun activeTexture(texture: Int): Unit {
 		return parent.activeTexture(texture)
 	}
 	override fun attachShader(program: Int, shader: Int): Unit {
