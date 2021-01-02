@@ -19,7 +19,7 @@ class TiledMapViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixi
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("TiledMap") {
+        container.uiCollapsibleSection("TiledMap") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "tmx"
             })

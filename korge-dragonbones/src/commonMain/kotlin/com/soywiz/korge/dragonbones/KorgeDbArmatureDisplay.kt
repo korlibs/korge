@@ -309,7 +309,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
     val animationNames get() = animation.animationNames
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("DragonBones") {
+        container.uiCollapsibleSection("DragonBones") {
             addChild(UiRowEditableValue(app, "animation", UiListEditableValue(app, { animationNames }, ObservableProperty(
                 name = "animation",
                 internalSet = { animationName -> animation.play(animationName) },

@@ -129,7 +129,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         if (views.name == "ktree") {
-            container.uiCollapsableSection("Particle Emitter Reference") {
+            container.uiCollapsibleSection("Particle Emitter Reference") {
                 uiEditableValue(::sourceFile, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                     it.extensionLC == "pex"
                 })
@@ -137,27 +137,27 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             return
         }
         val particle = this@ParticleEmitterView.emitter
-        container.uiCollapsableSection("Particle Emitter") {
+        container.uiCollapsibleSection("Particle Emitter") {
             uiEditableValue(::texture, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"
             })
             uiEditableValue(particle::emitterType, values = { ParticleEmitter.Type.values().toList() })
             uiEditableValue(particle::blendFuncSource, values = { AG.BlendFactor.values().toList() })
             uiEditableValue(particle::blendFuncDestination, values = { AG.BlendFactor.values().toList() })
-            uiCollapsableSection("Angle") {
+            uiCollapsibleSection("Angle") {
                 uiEditableValue(listOf(particle::angle, particle::angleVariance))
             }
-            uiCollapsableSection("Speed") {
+            uiCollapsibleSection("Speed") {
                 uiEditableValue(listOf(particle::speed, particle::speedVariance), 0.0, 1000.0)
             }
-            uiCollapsableSection("Lifespan") {
+            uiCollapsibleSection("Lifespan") {
                 uiEditableValue(listOf(particle::lifeSpan, particle::lifespanVariance), -10.0, 10.0)
                 uiEditableValue(particle::duration, -10.0, 10.0)
             }
             uiEditableValue("Gravity", particle.gravity)
             uiEditableValue("Source Position", particle.sourcePosition)
             uiEditableValue("Source Position Variance", particle.sourcePositionVariance)
-            uiCollapsableSection("Acceleration") {
+            uiCollapsibleSection("Acceleration") {
                 uiEditableValue(listOf(particle::radialAcceleration, particle::radialAccelVariance), -1000.0, +1000.0)
                 uiEditableValue(listOf(particle::tangentialAcceleration, particle::tangentialAccelVariance), -1000.0, +1000.0)
             }
@@ -169,11 +169,11 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             uiEditableValue(listOf(particle::startSize, particle::startSizeVariance), -1000.0, +1000.0)
             uiEditableValue(listOf(particle::endSize, particle::endSizeVariance), -1000.0, 1000.0)
 
-            uiCollapsableSection("Radius") {
+            uiCollapsibleSection("Radius") {
                 uiEditableValue(listOf(particle::minRadius, particle::minRadiusVariance), min = -1000.0, max = 1000.0)
                 uiEditableValue(listOf(particle::maxRadius, particle::maxRadiusVariance), min = -1000.0, max = 1000.0)
             }
-            uiCollapsableSection("Rotate") {
+            uiCollapsibleSection("Rotate") {
                 uiEditableValue(listOf(particle::rotatePerSecond, particle::rotatePerSecondVariance))
                 uiEditableValue(listOf(particle::rotationStart, particle::rotationStartVariance))
                 uiEditableValue(listOf(particle::rotationEnd, particle::rotationEndVariance))

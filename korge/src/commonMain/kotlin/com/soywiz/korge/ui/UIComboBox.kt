@@ -77,11 +77,11 @@ open class UIComboBox<T>(
     }
 
 	private fun updateItemsSize() {
-		itemsView.container.forEachChildrenWithIndex { index, child ->
-			child.height = itemHeight.toDouble()
-			child.position(0, index * itemHeight)
-		}
-	}
+        itemsView.container.forEachChildWithIndex { index: Int, child: View ->
+            child.height = itemHeight.toDouble()
+            child.position(0, index * itemHeight)
+        }
+    }
 
 	private fun updateItems() {
 		itemsView.container.removeChildren()

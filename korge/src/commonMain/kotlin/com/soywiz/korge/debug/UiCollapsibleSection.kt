@@ -5,14 +5,23 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsableSection {
-    return UiCollapsableSection(app, name, block).also { addChild(it) }
+fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+    return UiCollapsibleSection(app, name, block).also { addChild(it) }
 }
 
-class UiCollapsableSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
+@Deprecated(
+    message = "An older name of `uiCollapsibleSection`",
+    replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
+    level = DeprecationLevel.WARNING
+)
+fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+    return UiCollapsibleSection(app, name, block).also { addChild(it) }
+}
+
+class UiCollapsibleSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
     companion object {
-        operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsableSection =
-            UiCollapsableSection(app, name, listOf()).also { block(it.mycontainer) }
+        operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection =
+            UiCollapsibleSection(app, name, listOf()).also { block(it.mycontainer) }
 
         private fun createIcon(angle: Angle): NativeImage {
             return NativeImage(ICON_SIZE, ICON_SIZE).context2d {
@@ -55,3 +64,9 @@ class UiCollapsableSection(app: UiApplication, val name: String?, val componentC
         }
     }
 }
+
+@Deprecated(
+    message = "An older spelling of UiCollapsableSection",
+    replaceWith = ReplaceWith("UiCollapsibleSection")
+)
+typealias UiCollapsableSection = UiCollapsibleSection

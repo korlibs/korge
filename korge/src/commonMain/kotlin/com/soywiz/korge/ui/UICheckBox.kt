@@ -117,7 +117,7 @@ open class UICheckBox(
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection(UICheckBox::class.simpleName!!) {
+        container.uiCollapsibleSection(UICheckBox::class.simpleName!!) {
             uiEditableValue(::text)
             uiEditableValue(::checked)
         }

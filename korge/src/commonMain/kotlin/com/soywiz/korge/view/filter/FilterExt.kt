@@ -19,7 +19,7 @@ fun ViewsContainer.registerFilterSerialization() {
             if (filter != null) {
                 val filters = filter.allFilters
                 for (filter in filters) {
-                    contentContainer.uiCollapsableSection(filter::class.simpleName) {
+                    contentContainer.uiCollapsibleSection(filter::class.simpleName) {
                         button("Remove Filter") {
                             view.removeFilter(filter)
                             updateContentContainer()

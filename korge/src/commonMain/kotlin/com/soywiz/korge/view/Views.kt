@@ -503,11 +503,11 @@ private fun <T> ArrayList<T>.replaceOrAdd(pos: Int, value: T) {
 private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed: Boolean, cursor: Int): Int {
     var pos = cursor
     if (reversed) {
-        view.forEachChildrenReversed { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
+        view.forEachChildReversed { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
         out.replaceOrAdd(pos++, view)
     } else {
         out.replaceOrAdd(pos++, view)
-        view.forEachChildren { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
+        view.forEachChild { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
     }
     return pos
 }

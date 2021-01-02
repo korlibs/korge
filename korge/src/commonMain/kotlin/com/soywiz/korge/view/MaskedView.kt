@@ -28,7 +28,7 @@ class MaskedView : Container() {
                 setMaskState(ctx, MaskStates.STATE_CONTENT)
             }
 
-            forEachChildren { child ->
+            forEachChild { child: View ->
                 if (child != mask) {
                     child.render(ctx)
                 }

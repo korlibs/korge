@@ -23,7 +23,7 @@ class KorgeDbRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("DragonBones") {
+        container.uiCollapsibleSection("DragonBones") {
             uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "dbbin" || it.baseName.endsWith("_ske.json")
             })

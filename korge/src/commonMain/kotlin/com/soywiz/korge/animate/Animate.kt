@@ -131,7 +131,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         val view = this
-        container.uiCollapsableSection("AnBaseShape") {
+        container.uiCollapsibleSection("AnBaseShape") {
             uiEditableValue(Pair(view::dxDouble, view::dyDouble), name = "dxy", clamp = false)
             button("Center") {
                 view.dx = (-view.width / 2).toFloat()
@@ -227,7 +227,7 @@ class AnTextField(override val library: AnLibrary, override val symbol: AnTextFi
 	override fun createInstance(): View = symbol.create(library) as View
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("AnTextField") {
+        container.uiCollapsibleSection("AnTextField") {
             uiEditableValue(::text)
         }
         super.buildDebugComponent(views, container)
@@ -453,7 +453,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 
 		//println("::::")
 
-        forEachChildrenWithIndex { depth, child ->
+        forEachChildWithIndex { depth: Int, child: View ->
 			val maskDepth = maskPushDepths.getOrElse(depth) { -1 }
 
 			// Push Mask
@@ -500,7 +500,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 			//println("  " + ctx.batch.colorMask)
 		}
 
-		// Reset stencil
+        // Reset stencil
 		if (usedStencil && ctx.stencilIndex <= 0) {
 			//println("ctx.stencilIndex: ${ctx.stencilIndex}")
 			ctx.stencilIndex = 0
@@ -580,7 +580,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsableSection("SWF") {
+        container.uiCollapsibleSection("SWF") {
             addChild(UiRowEditableValue(app, "symbol", UiListEditableValue(app, { library.symbolsByName.keys.toList() }, ObservableProperty(
                 name = "symbol",
                 internalSet = { symbolName ->
