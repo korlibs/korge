@@ -16,44 +16,45 @@ inline fun <T> Container.uiComboBox(
 ) = UIComboBox(width, height, selectedIndex, items, verticalScroll, skin).addTo(this).apply(block)
 
 open class UIComboBox<T>(
-	width: Double = 192.0,
-	height: Double = 32.0,
-	selectedIndex: Int = 0,
-	items: List<T> = listOf(),
-	verticalScroll: Boolean = true,
+    width: Double = 192.0,
+    height: Double = 32.0,
+    selectedIndex: Int = 0,
+    items: List<T> = listOf(),
+    verticalScroll: Boolean = true,
     private val skin: ComboBoxSkin = DefaultComboBoxSkin
 ) : UIView(width, height) {
 
-	var selectedIndex by uiObservable(selectedIndex) { updateState() }
-	var selectedItem: T?
-		get() = items.getOrNull(selectedIndex)
-		set(value) { selectedIndex = items.indexOf(value) }
-	var items: List<T> by uiObservable(items) { updateItems() }
-	var itemHeight by uiObservable(32) { updateItemsSize() }
-	var viewportHeight by uiObservable(196) { onSizeChanged() }
+    var selectedIndex by uiObservable(selectedIndex) { updateState() }
+    var selectedItem: T?
+        get() = items.getOrNull(selectedIndex)
+        set(value) {
+            selectedIndex = items.indexOf(value)
+        }
+    var items: List<T> by uiObservable(items) { updateItems() }
+    var itemHeight by uiObservable(32) { updateItemsSize() }
+    var viewportHeight by uiObservable(196) { onSizeChanged() }
 
-	private val itemsView = uiScrollableArea(
-		verticalScroll = verticalScroll,
-		horizontalScroll = false,
-		config = { visible = false }
-	)
-	private val selectedButton = uiTextButton(width - height, height, "", skin.selectedSkin, skin.textFont)
-	private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0.0)
-	private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-	private var showItems = false
+    private val itemsView = UIScrollableArea(
+        verticalScroll = verticalScroll,
+        horizontalScroll = false,
+    )
+    private val selectedButton = uiTextButton(width - height, height, "", skin.selectedSkin, skin.textFont)
+    private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0.0)
+    private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    private var showItems = false
 
-	val onSelectionUpdate = Signal<UIComboBox<T>>()
+    val onSelectionUpdate = Signal<UIComboBox<T>>()
 
-	init {
-		updateItems()
-		invisibleRect.onOver {
-			selectedButton.simulateOver()
-			expandButton.simulateOver()
-		}
-		invisibleRect.onOut {
-			selectedButton.simulateOut()
-			expandButton.simulateOut()
-		}
+    init {
+        updateItems()
+        invisibleRect.onOver {
+            selectedButton.simulateOver()
+            expandButton.simulateOver()
+        }
+        invisibleRect.onOut {
+            selectedButton.simulateOut()
+            expandButton.simulateOut()
+        }
         invisibleRect.onDown {
             selectedButton.simulateDown()
             expandButton.simulateDown()
@@ -62,62 +63,72 @@ open class UIComboBox<T>(
             selectedButton.simulateUp()
             expandButton.simulateUp()
         }
-		invisibleRect.onClick {
-			showItems = !showItems
-			onSizeChanged()
-		}
-	}
+        invisibleRect.onClick {
+            showItems = !showItems
+            onSizeChanged()
+        }
+    }
 
     fun open() {
-        showItems = true
+        addChild(itemsView)
     }
 
     fun close() {
-        showItems = false
+        removeChild(itemsView)
     }
 
-	private fun updateItemsSize() {
-        itemsView.container.forEachChildWithIndex { index: Int, child: View ->
+    private fun updateItemsSize() {
+        itemsView.container.forEachChildWithIndex { index, child ->
             child.height = itemHeight.toDouble()
             child.position(0, index * itemHeight)
         }
     }
 
-	private fun updateItems() {
-		itemsView.container.removeChildren()
-		for ((index, item) in items.withIndex()) {
-			itemsView.container.uiTextButton(width - 32.0, itemHeight.toDouble(), item.toString(), skin.itemSkin, skin.textFont) {
-				position(0, index * this@UIComboBox.itemHeight)
-				onClick {
+    private fun updateItems() {
+        itemsView.container.removeChildren()
+        for ((index, item) in items.withIndex()) {
+            itemsView.container.uiTextButton(
+                width - 32.0,
+                itemHeight.toDouble(),
+                item.toString(),
+                skin.itemSkin,
+                skin.textFont
+            ) {
+                position(0, index * this@UIComboBox.itemHeight)
+                onClick {
                     this@UIComboBox.showItems = false
                     this@UIComboBox.selectedIndex = index
-				}
-			}
-		}
-		itemsView.contentHeight = (items.size * itemHeight).toDouble()
-		updateState()
-	}
+                }
+            }
+        }
+        itemsView.contentHeight = (items.size * itemHeight).toDouble()
+        updateState()
+    }
 
-	override fun updateState() {
-		onSizeChanged()
-		for (i in items.indices) {
-			val button = itemsView.container.getChildAtOrNull(i) as? UIButton ?: continue
-			button.forcePressed = selectedIndex == i
-		}
-		onSelectionUpdate(this)
-	}
+    override fun updateState() {
+        onSizeChanged()
+        for (i in items.indices) {
+            val button = itemsView.container.getChildAtOrNull(i) as? UIButton ?: continue
+            button.forcePressed = selectedIndex == i
+        }
+        onSelectionUpdate(this)
+    }
 
-	override fun onSizeChanged() {
-		super.onSizeChanged()
-		itemsView.visible = showItems
-		itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
-		selectedButton.simulatePressing(showItems)
-		expandButton.simulatePressing(showItems)
+    override fun onSizeChanged() {
+        super.onSizeChanged()
+        if (showItems) {
+            open()
+        } else {
+            close()
+        }
+        itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
+        selectedButton.simulatePressing(showItems)
+        expandButton.simulatePressing(showItems)
         expandButton.skin = skin.expandSkin
         expandButton.iconSkin = if (showItems) skin.hideIcon else skin.showIcon
-		invisibleRect.size(width, height)
-		selectedButton.size(width - height, height)
-		selectedButton.text = selectedItem?.toString() ?: ""
-		expandButton.position(width - height, 0.0).size(height, height)
-	}
+        invisibleRect.size(width, height)
+        selectedButton.size(width - height, height)
+        selectedButton.text = selectedItem?.toString() ?: ""
+        expandButton.position(width - height, 0.0).size(height, height)
+    }
 }
