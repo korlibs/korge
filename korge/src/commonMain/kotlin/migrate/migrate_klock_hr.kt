@@ -11,7 +11,7 @@ import com.soywiz.klock.TimeSpan
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to milliseconds",
+    message = "Need to migrate to milliseconds",
     replaceWith = ReplaceWith("this.milliseconds", "com.soywiz.klock.milliseconds"),
     level = DeprecationLevel.ERROR
 )
@@ -24,7 +24,7 @@ public inline val Int.hrMilliseconds: TimeSpan
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to milliseconds",
+    message = "Need to migrate to milliseconds",
     replaceWith = ReplaceWith("this.milliseconds", "com.soywiz.klock.milliseconds"),
     level = DeprecationLevel.ERROR
 )
@@ -37,7 +37,7 @@ inline val Long.hrMilliseconds: TimeSpan
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to milliseconds",
+    message = "Need to migrate to milliseconds",
     replaceWith = ReplaceWith("this.milliseconds", "com.soywiz.klock.milliseconds"),
     level = DeprecationLevel.ERROR
 )
@@ -50,7 +50,7 @@ public inline val Float.hrMilliseconds: TimeSpan
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to milliseconds",
+    message = "Need to migrate to milliseconds",
     replaceWith = ReplaceWith("this.milliseconds", "com.soywiz.klock.milliseconds"),
     level = DeprecationLevel.ERROR
 )
