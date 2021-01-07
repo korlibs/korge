@@ -133,21 +133,24 @@ class GlslGenerator constructor(
                 if (config.programConfig.externalTextureSampler) {
                     line("#extension GL_OES_EGL_image_external : require")
                 }
-                //line("#ifdef GL_ES")
+                line("#ifdef GL_ES")
+                indent {
+                    line("precision highp float;")
+                    line("precision highp int;")
+                    line("precision lowp sampler2D;")
+                    line("precision lowp samplerCube;")
+                }
+                line("#else")
+                indent {
+                    line("  #define highp ")
+                    line("  #define mediump ")
+                    line("  #define lowp ")
+                }
                 //indent {
                 //    line("precision highp float;")
                 //    line("precision highp int;")
                 //}
-                //line("#else")
-                //indent {
-                //    line("precision highp float;")
-                //    line("precision highp int;")
-                //}
-                //line("#endif")
-                line("precision highp float;")
-                line("precision highp int;")
-                line("precision lowp sampler2D;")
-                line("precision lowp samplerCube;")
+                line("#endif")
                 //line("precision highp float;")
                 //line("precision highp int;")
                 //line("precision lowp sampler2D;")
