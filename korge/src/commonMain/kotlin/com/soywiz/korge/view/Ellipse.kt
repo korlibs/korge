@@ -71,7 +71,7 @@ open class Ellipse(
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         val view = this
-        container.uiCollapsableSection("Ellipse") {
+        container.uiCollapsibleSection("Ellipse") {
             uiEditableValue(Pair(view::radiusX, view::radiusY), min = 0.0, max = 1000.0, clamp = false, name = "radius")
         }
         super.buildDebugComponent(views, container)

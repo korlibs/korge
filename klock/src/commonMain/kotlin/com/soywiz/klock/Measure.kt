@@ -11,8 +11,8 @@ inline fun measureTime(callback: () -> Unit): TimeSpan {
 }
 
 /**
- * Executes a [callback] measuring the time it takes to complete.
- * Returns a [TimedResult] with the time and the returning value of the callback.
+ * Executes the [callback] measuring the time it takes to complete.
+ * Returns a [TimedResult] with the time and the return value of the callback.
  */
 inline fun <T> measureTimeWithResult(callback: () -> T): TimedResult<T> {
     val start = PerformanceCounter.microseconds

@@ -108,7 +108,7 @@ fun ViewsContainer.registerBox2dSupportOnce() {
             physicsContainer.removeChildren()
             val body = view.body
             if (body != null) {
-                physicsContainer.uiCollapsableSection("Box2D Physics") {
+                physicsContainer.uiCollapsibleSection("Box2D Physics") {
                     button("Remove") {
                         body.destroyBody()
                         view.body = null
