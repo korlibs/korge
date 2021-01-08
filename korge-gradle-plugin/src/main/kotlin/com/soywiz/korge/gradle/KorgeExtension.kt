@@ -324,6 +324,11 @@ class KorgeExtension(val project: Project) {
 
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
+    var androidReleaseSignStoreFile: String = "korge.keystore"
+    var androidReleaseSignStorePassword: String = "password"
+    var androidReleaseSignKeyAlias: String = "korge"
+    var androidReleaseSignKeyPassword: String = "password"
+
 	// Already included in core
 	fun supportExperimental3d() = Unit
 	fun support3d() = Unit

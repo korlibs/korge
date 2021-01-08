@@ -177,10 +177,10 @@ fun Project.configureAndroidIndirect() {
 							}
 							line("signingConfigs") {
 								line("release") {
-									line("storeFile file(findProperty('RELEASE_STORE_FILE') ?: 'korge.keystore')")
-									line("storePassword findProperty('RELEASE_STORE_PASSWORD') ?: 'password'")
-									line("keyAlias findProperty('RELEASE_KEY_ALIAS') ?: 'korge'")
-									line("keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: 'password'")
+									line("storeFile file(findProperty('RELEASE_STORE_FILE') ?: ${korge.androidReleaseSignStoreFile.quoted})")
+									line("storePassword findProperty('RELEASE_STORE_PASSWORD') ?: ${korge.androidReleaseSignStorePassword.quoted}")
+									line("keyAlias findProperty('RELEASE_KEY_ALIAS') ?: ${korge.androidReleaseSignKeyAlias.quoted}")
+									line("keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: ${korge.androidReleaseSignKeyPassword.quoted}")
 								}
 							}
 							line("buildTypes") {
@@ -345,7 +345,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
 
 					line("<activity android:name=\".MainActivity\"")
 					indent {
-                        line("android:banner=\"@drawable/app_icon\"")
+                        line("android:banner=\"@drawable/app_banner\"")
                         line("android:icon=\"@drawable/app_icon\"")
                         line("android:label=\"$androidAppName\"")
                         line("android:logo=\"@drawable/app_icon\"")
@@ -384,6 +384,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
 		ensureParents().writeBytesIfChanged(korge.getIconBytes())
 	}
     File(outputFolder, "src/main/res/drawable/app_icon.png").conditionally(ifNotExists) {
+        ensureParents().writeBytesIfChanged(korge.getIconBytes())
+    }
+    File(outputFolder, "src/main/res/drawable/app_banner.png").conditionally(ifNotExists) {
         ensureParents().writeBytesIfChanged(korge.getBannerBytes(432, 243))
     }
 	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {

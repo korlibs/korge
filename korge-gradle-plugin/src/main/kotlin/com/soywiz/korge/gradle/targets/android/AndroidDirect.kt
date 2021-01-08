@@ -42,10 +42,10 @@ fun Project.configureAndroidDirect() {
         }
         signingConfigs {
             it.maybeCreate("release").apply {
-                storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: "korge.keystore")
-                storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password"
-                keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge"
-                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password"
+                storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile)
+                storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: korge.androidReleaseSignStorePassword
+                keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: korge.androidReleaseSignKeyAlias
+                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: korge.androidReleaseSignKeyPassword
             }
         }
         buildTypes {

@@ -129,12 +129,12 @@ data class Rectangle(
         return out.setTo(x, y, ow, oh)
     }
 
-    fun inflate(dx: Double, dy: Double) {
+    fun inflate(dx: Double, dy: Double = dx) {
         x -= dx; width += 2 * dx
         y -= dy; height += 2 * dy
     }
-    fun inflate(dx: Float, dy: Float) = inflate(dx.toDouble(), dy.toDouble())
-    fun inflate(dx: Int, dy: Int) = inflate(dx.toDouble(), dy.toDouble())
+    fun inflate(dx: Float, dy: Float = dx) = inflate(dx.toDouble(), dy.toDouble())
+    fun inflate(dx: Int, dy: Int = dx) = inflate(dx.toDouble(), dy.toDouble())
 
     fun clear() = setTo(0.0, 0.0, 0.0, 0.0)
 
@@ -299,16 +299,16 @@ fun RectangleInt.asDouble() = this.rect
 val IRectangle.int get() = RectangleInt(_x, _y, _width, _height)
 val IRectangleInt.float get() = Rectangle(x, y, width, height)
 
-fun IRectangleInt.anchor(ax: Double, ay: Double): IPointInt =
+fun IRectangleInt.anchor(ax: Double, ay: Double): PointInt =
     PointInt((x + width * ax).toInt(), (y + height * ay).toInt())
 
-inline fun IRectangleInt.anchor(ax: Number, ay: Number): IPointInt = anchor(ax.toDouble(), ay.toDouble())
+inline fun IRectangleInt.anchor(ax: Number, ay: Number): PointInt = anchor(ax.toDouble(), ay.toDouble())
 
 val IRectangleInt.center get() = anchor(0.5, 0.5)
 
 ///////////////////////////
 
-fun Iterable<Rectangle>.bounds(target: Rectangle = Rectangle()): Rectangle {
+fun Iterable<IRectangle>.bounds(target: Rectangle = Rectangle()): Rectangle {
     var first = true
     var left = 0.0
     var right = 0.0
