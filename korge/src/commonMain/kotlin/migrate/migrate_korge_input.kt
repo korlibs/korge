@@ -7,22 +7,22 @@ package com.soywiz.korge.input
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to down{...}",
+    message = "Need to migrate to down{...}",
     replaceWith = ReplaceWith("down(callback)"),
     level = DeprecationLevel.ERROR
 )
 public inline fun KeysEvents.onKeyDown(crossinline callback: suspend (com.soywiz.korev.KeyEvent) -> Unit): com.soywiz.korio.lang.Closeable {
-    throw Error("migrate KeysEvents.onKeyDown")
+    throw Error("migrate to KeysEvents.onKeyDown")
 }
 
 /**
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to up{...}",
+    message = "Need to migrate to up{...}",
     replaceWith = ReplaceWith("up(callback)"),
     level = DeprecationLevel.ERROR
 )
 public inline fun KeysEvents.onKeyUp(crossinline callback: suspend (com.soywiz.korev.KeyEvent) -> Unit): com.soywiz.korio.lang.Closeable {
-    throw Error("migrate KeysEvents.up")
+    throw Error("migrate to KeysEvents.up")
 }

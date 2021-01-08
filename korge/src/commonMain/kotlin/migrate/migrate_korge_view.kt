@@ -11,51 +11,51 @@ import com.soywiz.korma.geom.Angle
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to addUpdater()",
+    message = "Need to migrate to addUpdater()",
     replaceWith = ReplaceWith("addUpdater(updatable)"),
     level = DeprecationLevel.ERROR
 )
 public inline fun <T : View> T.addHrUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
-    throw Error("migrate addHrUpdater")
+    throw Error("migrate to addHrUpdater")
 }
 
 /**
  * Migrate from version 1.15.1 to 2.0.0
  */
 @Deprecated(
-    message = "Need migrate to rotation",
+    message = "Need to migrate to rotation",
     replaceWith = ReplaceWith("rotation"),
     level = DeprecationLevel.ERROR
 )
 public inline var View.rotationDegrees: Angle
     get() {
-        throw Error("migrate rotationDegrees")
+        throw Error("migrate to rotationDegrees")
     }
     set(v) {
-        throw Error("migrate rotationDegrees")
+        throw Error("migrate to rotationDegrees")
     }
 
 /**
  * Migrate from version 1.15.1 to 2.0.0
  */
 @property:Deprecated(
-    message = "Need migrate to smoothing",
+    message = "Need to migrate to smoothing",
     replaceWith = ReplaceWith("smoothing"),
     level = DeprecationLevel.ERROR
 )
 public inline var Text.filtering: Boolean
-    get() = throw Error("migrate filtering")
-    set(value) = throw Error("migrate filtering")
+    get() = throw Error("migrate to filtering")
+    set(value) = throw Error("migrate to filtering")
 
 /**
  * Migrate from version 1.15.1 to 2.0.0
  */
 @property:Deprecated(
-    message = "Need migrate to bitmap",
+    message = "Need to migrate to bitmap",
     replaceWith = ReplaceWith("bitmap"),
     level = DeprecationLevel.ERROR
 )
 public inline var BaseImage.texture: BmpSlice
-    get() = throw Error("migrate texture")
-    set(value) = throw Error("migrate texture")
+    get() = throw Error("migrate to texture")
+    set(value) = throw Error("migrate to texture")
 

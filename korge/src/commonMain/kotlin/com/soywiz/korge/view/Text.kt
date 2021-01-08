@@ -269,10 +269,10 @@ open class Text(
 
     private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
         if (autoSize) {
-            container?.position(x, y)
+            container.position(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
-            container?.position(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
+            container.position(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
     }
 

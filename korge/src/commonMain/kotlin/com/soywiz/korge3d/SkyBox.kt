@@ -112,10 +112,10 @@ class SkyBox(
         }
        */
     companion object {
-        val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false)
-        val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
-        val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
-        val v_TexCoords = Varying("v_TexCoords", VarType.Float3)
+        val a_pos = Shaders3D.a_pos
+        val u_ProjMat = Shaders3D.u_ProjMat
+        val u_ViewMat = Shaders3D.u_ViewMat
+        val v_TexCoords = Varying(Shaders3D.v_TexCoords.name, VarType.Float3, precision = Precision.MEDIUM)
         val u_SkyBox = Uniform("u_SkyBox", VarType.SamplerCube)
         val layout = VertexLayout(a_pos)
         val skyboxVertices = floatArrayOf( // positions

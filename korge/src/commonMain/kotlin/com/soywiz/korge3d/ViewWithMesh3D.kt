@@ -51,92 +51,96 @@ open class ViewWithMesh3D(
 
 	override fun render(ctx: RenderContext3D) {
 		val ag = ctx.ag
-        val indexBuffer = ag.createIndexBuffer()
-		ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-			//vertexBuffer.upload(mesh.data)
-			vertexBuffer.upload(mesh.vertexBuffer)
-            indexBuffer.upload(mesh.indexBuffer)
-			//tempMat2.invert()
-			//tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
-			//tempMat3.multiply(ctx.cameraMatInv, Matrix3D().invert(this.localTransform.matrix))
-			//tempMat3.multiply(this.localTransform.matrix, ctx.cameraMat)
 
-			Shaders3D.apply {
-				val meshMaterial = mesh.material
-				ag.draw(
-					vertices = vertexBuffer,
-                    indices = indexBuffer,
-                    indexType = mesh.indexType,
-					type = mesh.drawType,
-					program = mesh.program ?: ctx.shaders.getProgram3D(
-						ctx.lights.size.clamp(0, 4),
-						mesh.maxWeights,
-						meshMaterial,
-						mesh.hasTexture
-					),
-					vertexLayout = mesh.layout,
-					vertexCount = mesh.vertexCount,
-					blending = AG.Blending.NONE,
-					//vertexCount = 6 * 6,
-					uniforms = uniformValues.apply {
-						this[u_ProjMat] = ctx.projCameraMat
-						this[u_ViewMat] = transform.globalMatrix
-						this[u_ModMat] = tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat)
-						//this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
-						this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
+        // @TODO: We should have a managed object for index and vertex buffers like Bitmap -> Texture
+        // @TODO:   that handles this automatically. So they are released and allocated automatically on the GPU
+        ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
+            ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
+                //vertexBuffer.upload(mesh.data)
+                vertexBuffer.upload(mesh.vertexBuffer)
+                indexBuffer.upload(mesh.indexBuffer)
+                //tempMat2.invert()
+                //tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
+                //tempMat3.multiply(ctx.cameraMatInv, Matrix3D().invert(this.localTransform.matrix))
+                //tempMat3.multiply(this.localTransform.matrix, ctx.cameraMat)
 
-						this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
-						this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
+                Shaders3D.apply {
+                    val meshMaterial = mesh.material
+                    ag.draw(
+                        vertices = vertexBuffer,
+                        indices = indexBuffer,
+                        indexType = mesh.indexType,
+                        type = mesh.drawType,
+                        program = mesh.program ?: ctx.shaders.getProgram3D(
+                            ctx.lights.size.clamp(0, 4),
+                            mesh.maxWeights,
+                            meshMaterial,
+                            mesh.hasTexture
+                        ),
+                        vertexLayout = mesh.layout,
+                        vertexCount = mesh.vertexCount,
+                        blending = AG.Blending.NONE,
+                        //vertexCount = 6 * 6,
+                        uniforms = uniformValues.apply {
+                            this[u_ProjMat] = ctx.projCameraMat
+                            this[u_ViewMat] = transform.globalMatrix
+                            this[u_ModMat] = tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat)
+                            //this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
+                            this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
 
-						if (meshMaterial != null) {
-							setMaterialLight(ctx, ambient, meshMaterial.ambient)
-							setMaterialLight(ctx, diffuse, meshMaterial.diffuse)
-							setMaterialLight(ctx, emission, meshMaterial.emission)
-							setMaterialLight(ctx, specular, meshMaterial.specular)
-						}
+                            this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
+                            this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
 
-						val skeleton = this@ViewWithMesh3D.skeleton
-						val skin = mesh.skin
-						this[u_BindShapeMatrix] = identity
-						this[u_BindShapeMatrixInv] = identity
-						//println("skeleton: $skeleton, skin: $skin")
-						if (skeleton != null && skin != null) {
-							skin.bones.fastForEach { bone ->
-								val jointsBySid = skeleton.jointsBySid
-								val joint = jointsBySid[bone.name]
-								if (joint != null) {
-									skin.matrices[bone.index].multiply(
-										joint.transform.globalMatrix,
-										joint.poseMatrixInv
-									)
-								} else {
-									error("Can't find joint with name '${bone.name}'")
-								}
+                            if (meshMaterial != null) {
+                                setMaterialLight(ctx, ambient, meshMaterial.ambient)
+                                setMaterialLight(ctx, diffuse, meshMaterial.diffuse)
+                                setMaterialLight(ctx, emission, meshMaterial.emission)
+                                setMaterialLight(ctx, specular, meshMaterial.specular)
+                            }
 
-							}
-							this[u_BindShapeMatrix] = skin.bindShapeMatrix
-							this[u_BindShapeMatrixInv] = skin.bindShapeMatrixInv
+                            val skeleton = this@ViewWithMesh3D.skeleton
+                            val skin = mesh.skin
+                            this[u_BindShapeMatrix] = identity
+                            this[u_BindShapeMatrixInv] = identity
+                            //println("skeleton: $skeleton, skin: $skin")
+                            if (skeleton != null && skin != null) {
+                                skin.bones.fastForEach { bone ->
+                                    val jointsBySid = skeleton.jointsBySid
+                                    val joint = jointsBySid[bone.name]
+                                    if (joint != null) {
+                                        skin.matrices[bone.index].multiply(
+                                            joint.transform.globalMatrix,
+                                            joint.poseMatrixInv
+                                        )
+                                    } else {
+                                        error("Can't find joint with name '${bone.name}'")
+                                    }
 
-							this[u_BoneMats] = skin.matrices
-						}
+                                }
+                                this[u_BindShapeMatrix] = skin.bindShapeMatrix
+                                this[u_BindShapeMatrixInv] = skin.bindShapeMatrixInv
 
-						this[u_AmbientColor] = ctx.ambientColor
+                                this[u_BoneMats] = skin.matrices
+                            }
 
-						ctx.lights.fastForEachWithIndex { index, light: Light3D ->
-							val lightColor = light.color
-							this[lights[index].u_sourcePos] = light.transform.translation
-							this[lights[index].u_color] =
-								light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
-							this[lights[index].u_attenuation] = light.attenuationVec.setTo(
-								light.constantAttenuation,
-								light.linearAttenuation,
-								light.quadraticAttenuation
-							)
-						}
-					},
-					renderState = rs
-				)
-			}
-		}
+                            this[u_AmbientColor] = ctx.ambientColor
+
+                            ctx.lights.fastForEachWithIndex { index, light: Light3D ->
+                                val lightColor = light.color
+                                this[lights[index].u_sourcePos] = light.transform.translation
+                                this[lights[index].u_color] =
+                                    light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
+                                this[lights[index].u_attenuation] = light.attenuationVec.setTo(
+                                    light.constantAttenuation,
+                                    light.linearAttenuation,
+                                    light.quadraticAttenuation
+                                )
+                            }
+                        },
+                        renderState = rs
+                    )
+                }
+            }
+        }
 	}
 }

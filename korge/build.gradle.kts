@@ -36,4 +36,5 @@ dependencies {
 	add("commonMainApi", "com.soywiz.korlibs.klogger:klogger:$kloggerVersion")
 	add("commonMainApi", "com.soywiz.korlibs.kds:kds:$kdsVersion")
     add("commonMainApi", "com.soywiz.korlibs.korte:korte:$korteVersion")
+    add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
 }

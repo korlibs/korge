@@ -33,7 +33,7 @@ import com.soywiz.krypto.encoding.*
  * [View] itself can't contain children, but the [Container] class and subclasses allow to have children.
  * Typical non-container views are: [Image], [SolidRect] or [Text].
  *
- * Most views doesn't have the concept of size. They act just as points (x,y) or rather affine transforms (since they also include scale, rotation and skew)
+ * Most views don't have the concept of size. They act just as points (x,y) or rather affine transforms (since they also include scale, rotation and skew)
  *
  * ## Properties
  *
@@ -52,7 +52,7 @@ import com.soywiz.krypto.encoding.*
  */
 @OptIn(KorgeInternal::class)
 abstract class View internal constructor(
-    /** Indicates if this class is a container or not. This is only overrided by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
+    /** Indicates if this class is a container or not. This is only overridden by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
     val isContainer: Boolean
 ) : BaseView(), Renderable
     , Extra
@@ -129,9 +129,9 @@ abstract class View internal constructor(
     var propagateEvents = true
 
     /**
-     * Views marked with this, break batching by acting as reference point for computing vertices.
-     * Specially useful for containers whose most of their child are less likely to change but the container
-     * itself is going to change like cameras, viewports and the Stage.
+     * Views marked with this, break batching by acting as a reference point to compute vertices.
+     * Specially useful for containers most children of which are less likely to change while the containers
+     * themselves are going to change (like cameras, viewports and the [Stage]).
      */
     interface Reference // View that breaks batching Viewport
 
@@ -203,9 +203,8 @@ abstract class View internal constructor(
     private var _skewY: Angle = 0.0.radians
     private var _rotation: Angle = 0.0.radians
 
-    /** Position of the view. **@NOTE**: If plan to change its values manually. You should call [View.invalidateMatrix] later to keep the matrix in sync */
+    /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
     var pos = Point()
-        get() = field
         set(value) {
             field.copyFrom(value)
             invalidateMatrix()
@@ -415,7 +414,7 @@ abstract class View internal constructor(
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
     val root: View get() = parent?.root ?: this
 
-    /** When included in the three, this returns the stage. When not attached yet, this will return null. */
+    /** When included in the tree, this returns the stage. When not attached yet, this will return null. */
     open val stage: Stage? get() = root as? Stage?
 
     /** Determines if mouse events will be handled for this view and its children */
@@ -662,7 +661,7 @@ abstract class View internal constructor(
 
     /**
      * An optional [Filter] attached to this view.
-     * Filters allow to render this view to a texture, and to controls how to render that texture (using shaders, repeating the texture, etc.).
+     * Filters allow to render this view to a texture, and to control how to render that texture (using shaders, repeating the texture, etc.).
      * You add multiple filters by creating a composite filter [ComposedFilter].
      */
     var filter: Filter? = null
@@ -1065,7 +1064,7 @@ abstract class View internal constructor(
                 val commonAncestor = View.commonAncestor(this, target)
                 when {
                     commonAncestor !== null -> {
-                        if (target?.parent == null && inclusive) {
+                        if (target.parent == null && inclusive) {
                             return out.copyFrom(globalMatrix)
                         }
                         out.multiply(globalMatrix, target.globalMatrixInv)
@@ -1209,7 +1208,7 @@ abstract class View internal constructor(
     /**
      * Allows to clone this view.
      * This method is inadvisable in normal circumstances.
-     * This might not work property if the [View] doesn't override the [createInstance] method.
+     * This might not work properly if the [View] doesn't override the [createInstance] method.
      */
     open fun clone(): View = createInstance().apply {
         this@apply.copyPropsFrom(this@View)
@@ -1263,7 +1262,7 @@ abstract class View internal constructor(
 val View.width: Double get() = unscaledWidth
 val View.height: Double get() = unscaledHeight
 
-// Doesn't seems to work
+// Doesn't seem to work
 //operator fun <T : View, R> T.invoke(callback: T.() -> R): R = this.apply(callback)
 
 
@@ -1342,20 +1341,20 @@ class ViewTransform(var view: View) {
 */
 
 /**
- * Determines if the local coords [x], [y], hits this view or any of this descendants.
- * Returns the view hitting or null
+ * Determines if the given coords [x] and [y] hit this view or any of its descendants.
+ * Returns the view that was hit or null
  */
 fun View.hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
 /**
- * Determines if the local coords [pos], hits this view or any of this descendants.
- * Returns the view hitting or null
+ * Determines if the given coords [pos] hit this view or any of its descendants.
+ * Returns the view that was hit or null
  */
 fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
 //fun View.hitTest(pos: Point): View? = hitTest(pos.x, pos.y)
 
 /**
- * Checks if this view has an [ancestor].
+ * Checks if this view has the specified [ancestor].
  */
 fun View.hasAncestor(ancestor: View): Boolean {
     return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
@@ -1368,7 +1367,7 @@ fun View?.commonAncestor(ancestor: View?): View? {
 /**
  * Replaces this view in its parent with [view].
  * Returns true if the replacement was successful.
- * If this view doesn't have a parent or [view] is the same as [this], returns null.
+ * If this view doesn't have a parent or [view] is the same as [this], returns false.
  */
 @OptIn(KorgeInternal::class)
 fun View.replaceWith(view: View): Boolean {
@@ -1411,7 +1410,7 @@ fun <T : View> T.addFixedUpdater(
 /**
  * Adds an [updatable] block that will be executed every [time] time, the calls will be discretized on each frame and will handle accumulations.
  * The [initial] properly allows to adjust if the [updatable] will be called immediately after calling this function.
- * To avoid executing too much blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
+ * To avoid executing too many blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
  */
 fun <T : View> T.addFixedUpdater(
     time: TimeSpan,
@@ -1419,7 +1418,6 @@ fun <T : View> T.addFixedUpdater(
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
 ): Cancellable {
-    val tickTime = time
     var accum = 0.0.milliseconds
     val component = object : UpdateComponent {
         override val view: View get() = this@addFixedUpdater
@@ -1427,8 +1425,8 @@ fun <T : View> T.addFixedUpdater(
             accum += dt
             //println("UPDATE: accum=$accum, tickTime=$tickTime")
             var calls = 0
-            while (accum >= tickTime * 0.75) {
-                accum -= tickTime
+            while (accum >= time * 0.75) {
+                accum -= time
                 updatable(this@addFixedUpdater)
                 calls++
                 if (calls >= limitCallsPerFrame) {
@@ -1439,7 +1437,7 @@ fun <T : View> T.addFixedUpdater(
             }
             if (calls > 0) {
                 // Do not accumulate for small fractions since this would cause hiccups!
-                if (accum < tickTime * 0.25) {
+                if (accum < time * 0.25) {
                     accum = 0.0.milliseconds
                 }
             }
@@ -1468,12 +1466,10 @@ fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
 // @TODO: This should be computed and invalidated when a view is attached to a container
 val View?.ancestorCount: Int get() {
     var count = 0
-    var node = this
-    while (node != null) {
-        node = node.parent
-        if (node != null) {
-            count++
-        }
+    var parent = this?.parent
+    while (parent != null) {
+        count++
+        parent = parent.parent
     }
     return count
     /*
@@ -1525,7 +1521,7 @@ fun View?.dumpToString(): String {
 }
 
 /**
- * Iterates all the descendants [View]s including this calling the [handler].
+ * Iterates all the descendant [View]s including this calling the [handler].
  * Iteration happens in [Pre-order (NLR)](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order_(NLR)).
  */
 fun View?.foreachDescendant(handler: (View) -> Unit) {
