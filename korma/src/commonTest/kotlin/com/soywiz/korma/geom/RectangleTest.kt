@@ -36,4 +36,19 @@ class RectangleTest {
         val out = Rectangle(0, 0, 100, 100).place(Size(50, 25), Anchor.MIDDLE_CENTER, ScaleMode.SHOW_ALL)
         assertEquals(Rectangle(0, 25, 100, 50), out)
     }
+
+    @Test
+    fun corners() {
+        val rectangle = Rectangle(1, 20, 300, 4000)
+        assertEquals(IPoint(1, 20), rectangle.topLeft)
+        assertEquals(IPoint(301, 20), rectangle.topRight)
+        assertEquals(IPoint(1, 4020), rectangle.bottomLeft)
+        assertEquals(IPoint(301, 4020), rectangle.bottomRight)
+
+        val iRectangle = IRectangle(1000, 200, 30, 4)
+        assertEquals(IPoint(1000, 200), iRectangle.topLeft)
+        assertEquals(IPoint(1030, 200), iRectangle.topRight)
+        assertEquals(IPoint(1000, 204), iRectangle.bottomLeft)
+        assertEquals(IPoint(1030, 204), iRectangle.bottomRight)
+    }
 }

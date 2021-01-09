@@ -26,15 +26,15 @@ val IRectangle.top get() = _y
 val IRectangle.right get() = _x + _width
 val IRectangle.bottom get() = _y + _height
 
+val IRectangle.topLeft get() = Point(left, top)
+val IRectangle.topRight get() = Point(right, top)
+val IRectangle.bottomLeft get() = Point(left, bottom)
+val IRectangle.bottomRight get() = Point(right, bottom)
+
 data class Rectangle(
     var x: Double, var y: Double,
     var width: Double, var height: Double
 ) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
-    val topLeft get() = Point(left, top)
-    val topRight get() = Point(right, top)
-    val bottomLeft get() = Point(left, bottom)
-    val bottomRight get() = Point(right, bottom)
-
     override val _x: Double get() = x
     override val _y: Double get() = y
     override val _width: Double get() = width
@@ -207,6 +207,11 @@ val IRectangleInt.left get() = x
 val IRectangleInt.top get() = y
 val IRectangleInt.right get() = x + width
 val IRectangleInt.bottom get() = y + height
+
+val IRectangleInt.topLeft get() = PointInt(left, top)
+val IRectangleInt.topRight get() = PointInt(right, top)
+val IRectangleInt.bottomLeft get() = PointInt(left, bottom)
+val IRectangleInt.bottomRight get() = PointInt(right, bottom)
 
 inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
     override var x: Int
