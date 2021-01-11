@@ -37,3 +37,6 @@ actual fun localVfs(path: String): VfsFile {
 		}
 	}
 }
+
+actual fun cleanUpResourcesVfs() {
+}

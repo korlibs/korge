@@ -466,3 +466,6 @@ private class LocalVfsJvm : LocalVfsV2() {
 
 	override fun toString(): String = "LocalVfs"
 }
+
+actual fun cleanUpResourcesVfs() {
+}

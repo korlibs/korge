@@ -20,6 +20,8 @@ abstract class LocalVfsV2 : LocalVfs() {
 
 var resourcesVfsDebug = false
 expect val resourcesVfs: VfsFile
+expect fun cleanUpResourcesVfs()
+
 expect val rootLocalVfs: VfsFile
 expect val applicationVfs: VfsFile
 expect val applicationDataVfs: VfsFile
