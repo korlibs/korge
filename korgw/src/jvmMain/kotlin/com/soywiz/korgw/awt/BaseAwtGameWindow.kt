@@ -427,6 +427,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         component.addMouseWheelListener { e -> handleMouseWheelEvent(e) }
 
+        component.setFocusTraversalKeysEnabled(false)
         component.addKeyListener(object : KeyAdapter() {
             override fun keyTyped(e: KeyEvent) = handleKeyEvent(e)
             override fun keyPressed(e: KeyEvent) = handleKeyEvent(e)
