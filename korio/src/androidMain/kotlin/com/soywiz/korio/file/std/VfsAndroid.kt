@@ -1,5 +1,6 @@
 package com.soywiz.korio.file.std
 
+import android.content.Context
 import com.soywiz.korio.android.androidContext
 import com.soywiz.klock.*
 import com.soywiz.korio.file.*
@@ -15,6 +16,7 @@ import java.net.*
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
 
+private var androidContext: Context? = null
 private var resourcesVfsProvider: ResourcesVfsProviderAndroid? = null
 private lateinit var jailedResourcesVfsFile: VfsFile
 
@@ -52,15 +54,19 @@ class ResourcesVfsProviderAndroid {
     private var androidResourcesVfs: AndroidResourcesVfs? = null
 
     fun deinit() {
+        androidContext = null
         androidResourcesVfs?.context = null
         androidResourcesVfs = null
     }
 
 	operator fun invoke(): Vfs {
+
         val merged = MergedVfs()
+
         return object: Vfs.Decorator(merged.root) {
 			override suspend fun init() = run<ResourcesVfsProviderAndroid, Unit> {
-                androidResourcesVfs = AndroidResourcesVfs(androidContext()).apply {
+                androidContext = androidContext()
+                androidResourcesVfs = AndroidResourcesVfs(androidContext).apply {
                     merged += root
                 }
 			}
@@ -69,7 +75,8 @@ class ResourcesVfsProviderAndroid {
 	}
 }
 
-class AndroidResourcesVfs(var context: android.content.Context?) : Vfs() {
+class AndroidResourcesVfs(var context: Context?) : Vfs() {
+
 	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
 		return readRange(path, LONG_ZERO_TO_MAX_RANGE).openAsync(mode.cmode)
 	}
@@ -282,6 +289,7 @@ private class LocalVfsJvm : LocalVfsV2() {
 }
 
 actual fun cleanUpResourcesVfs() {
+    androidContext = null
     resourcesVfsProvider?.deinit()
     resourcesVfsProvider = null
 }
