@@ -28,6 +28,12 @@ inline fun Container.sceneContainer(
 	callback: SceneContainer.() -> Unit = {}
 ): SceneContainer = SceneContainer(views, defaultTransition, name).addTo(this, callback)
 
+suspend inline fun Container.sceneContainer(
+    defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
+    name: String = "sceneContainer",
+    callback: SceneContainer.() -> Unit = {}
+): SceneContainer = SceneContainer(views(), defaultTransition, name).addTo(this, callback)
+
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.
  * It changes between scene objects by using the [AsyncInjector] and allow to use [Transition]s for the change.
