@@ -116,3 +116,30 @@ class AndroidGameWindow(val activity: KorgwActivity) : GameWindow() {
         entry(this)
     }
 }
+
+class AndroidGameWindowNoActivity(override val width: Int, override val height: Int, override val ag: AG) : GameWindow() {
+
+    override var title: String = "Senaptec"
+    var coroutineContext: CoroutineContext? = null
+
+    override var icon: Bitmap?
+        get() = super.icon
+        set(value) {}
+
+    override var fullscreen: Boolean
+        get() = true
+        set(value) {}
+
+    override var visible: Boolean
+        get() = super.visible
+        set(value) {}
+
+    override var quality: Quality
+        get() = super.quality
+        set(value) {}
+
+    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
+        this.coroutineContext = kotlin.coroutines.coroutineContext
+        entry(this)
+    }
+}
