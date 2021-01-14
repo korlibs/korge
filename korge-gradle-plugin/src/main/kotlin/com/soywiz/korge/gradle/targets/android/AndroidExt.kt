@@ -33,7 +33,9 @@ fun Project.ensureAndroidLocalPropertiesWithSdkDir(outputFolder: File = project.
     if (path != null) {
         val localProperties = File(outputFolder, "local.properties")
         if (!localProperties.exists()) {
-            localProperties.writeText("sdk.dir=${path.absolutePath.replace("\\", "/")}")
+            localProperties
+                .ensureParents()
+                .writeText("sdk.dir=${path.absolutePath.replace("\\", "/")}")
         }
     }
 }
