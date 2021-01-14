@@ -286,3 +286,6 @@ class LocalVfsNative : LocalVfsV2() {
 
 	override fun toString(): String = "LocalVfs"
 }
+
+actual fun cleanUpResourcesVfs() {
+}
