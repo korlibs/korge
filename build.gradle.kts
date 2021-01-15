@@ -18,6 +18,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:4.0.1")
         //classpath("com.android.tools.build:gradle:4.1.0-rc03")
         //classpath("com.android.tools.build:gradle:4.2.0-alpha12")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.15.1")
     }
 }
 

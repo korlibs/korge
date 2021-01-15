@@ -1,11 +1,6 @@
 package com.soywiz.klogger
 
-private var Logger_loggers: LinkedHashMap<String, Logger> = LinkedHashMap()
-private var Logger_defaultLevel: Logger.Level? = null
-private var Logger_defaultOutput: Logger.Output = DefaultLogOutput
-
-private var Logger_levels: LinkedHashMap<String, Logger.Level?> = LinkedHashMap()
-private var Logger_outputs: LinkedHashMap<String, Logger.Output?> = LinkedHashMap()
+import kotlinx.atomicfu.*
 
 /**
  * Utility to log messages.
@@ -34,15 +29,15 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     val isLocalOutputSet: Boolean get() = Logger_outputs[name] != null
 
     companion object {
+        private val Logger_loggers: AtomicLinkedHashMap<String, Logger> = atomic(LinkedHashMap())
+        private val Logger_levels: AtomicLinkedHashMap<String, Level?> = atomic(LinkedHashMap())
+        private val Logger_outputs: AtomicLinkedHashMap<String, Output?> = atomic(LinkedHashMap())
+
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
-        var defaultLevel: Level?
-            get() = Logger_defaultLevel
-            set(value) = run { Logger_defaultLevel = value }
+        var defaultLevel: Level? by atomic(null)
 
         /** The default [Output] used for all [Logger] that doesn't have its [Logger.output] set */
-        var defaultOutput: Output
-            get() = Logger_defaultOutput
-            set(value) = run { Logger_defaultOutput = value }
+        var defaultOutput: Output by atomic(DefaultLogOutput)
 
         /** Gets a [Logger] from its [name] */
         operator fun invoke(name: String) = Logger_loggers[name] ?: Logger(name, true)
@@ -59,15 +54,15 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
 
     /** Logging [Output] to handle logs */
     interface Output {
-        fun output(logger: Logger, level: Logger.Level, msg: Any?)
+        fun output(logger: Logger, level: Level, msg: Any?)
     }
 
     /** Default [Output] to emit logs over the [Console] */
-    object ConsoleLogOutput : Logger.Output {
-        override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
+    object ConsoleLogOutput : Output {
+        override fun output(logger: Logger, level: Level, msg: Any?) {
             when (level) {
-                Logger.Level.ERROR -> Console.error(logger.name, msg)
-                Logger.Level.WARN -> Console.warn(logger.name, msg)
+                Level.ERROR -> Console.error(logger.name, msg)
+                Level.WARN -> Console.warn(logger.name, msg)
                 else -> Console.log(logger.name, msg)
             }
         }
@@ -124,3 +119,12 @@ fun Logger.setLevel(level: Logger.Level): Logger = this.apply { this.level = lev
 
 /** Sets the [Logger.output] */
 fun Logger.setOutput(output: Logger.Output): Logger = this.apply { this.output = output }
+
+private typealias AtomicLinkedHashMap<K, V> = AtomicRef<LinkedHashMap<K, V>>
+
+private inline operator fun <K, V> AtomicLinkedHashMap<K, V>.get(key: K) = value[key]
+private inline operator fun <K, V> AtomicLinkedHashMap<K, V>.set(key: K, value: V) = updateMap { this[key] = value }
+
+private inline fun <K, V> AtomicLinkedHashMap<K, V>.updateMap(updater: LinkedHashMap<K, V>.() -> Unit) =
+    this.update { LinkedHashMap(it).apply(updater) }
+
