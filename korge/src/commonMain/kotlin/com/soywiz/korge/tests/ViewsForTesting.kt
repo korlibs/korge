@@ -128,27 +128,6 @@ open class ViewsForTesting(
         )
     }
 
-	//@Suppress("UNCHECKED_CAST")
-	//fun <T : Scene> testScene(
-	//	module: Module,
-	//	sceneClass: KClass<T>,
-	//	vararg injects: Any,
-	//	callback: suspend T.() -> Unit
-	//) = viewsTest {
-	//	//disableNativeImageLoading {
-	//	val sc = Korge.test(
-	//		Korge.Config(
-	//			module,
-	//			sceneClass = sceneClass,
-	//			sceneInjects = injects.toList(),
-	//			container = canvas,
-	//			eventDispatcher = eventDispatcher,
-	//			timeProvider = TimeProvider { testDispatcher.time })
-	//	)
-	//	callback(sc.currentScene as T)
-	//	//}
-	//}
-
     val View.viewMouse: MouseEvents get() {
         this.mouse.views = views
         return this.mouse
@@ -215,6 +194,27 @@ open class ViewsForTesting(
 			if (completedException != null) throw completedException!!
 		}
 	}
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified S : Scene> sceneTest(
+        module: Module? = null,
+        timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
+        frameTime: TimeSpan = this.frameTime,
+        crossinline block: suspend S.() -> Unit
+    ): Unit =
+        viewsTest(timeout, frameTime) {
+            module?.apply {
+                injector.configure()
+            }
+
+            val container = sceneContainer(views)
+            container.changeTo<S>()
+
+            with(container.currentScene as S) {
+                block()
+            }
+        }
+
 
     private var simulatedFrames = 0
     private var lastDelay = PerformanceCounter.reference
