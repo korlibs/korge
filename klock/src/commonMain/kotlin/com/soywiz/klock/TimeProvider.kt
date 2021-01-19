@@ -14,3 +14,10 @@ interface TimeProvider {
         }
     }
 }
+
+inline fun TimeProvider.measure(block: () -> Unit): TimeSpan {
+    val start = now()
+    block()
+    val end = now()
+    return end - start
+}
