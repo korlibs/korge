@@ -48,6 +48,7 @@ abstract class AG : Extra by Extra.Mixin() {
 	open val maxTextureSize = Size(2048, 2048)
 
 	open val devicePixelRatio: Double = 1.0
+    open val pixelsPerInch: Double get() = 96.0
 
     open fun beforeDoRender() {
     }

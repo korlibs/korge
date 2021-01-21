@@ -311,6 +311,7 @@ abstract class View internal constructor(
      */
     open var width: Double
         get() = getLocalBounds().width
+        @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
             scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
         }
@@ -323,6 +324,7 @@ abstract class View internal constructor(
      */
     open var height: Double
         get() = getLocalBounds().height
+        @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
             scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBounds().height)
         }

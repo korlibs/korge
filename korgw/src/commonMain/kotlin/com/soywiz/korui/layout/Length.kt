@@ -13,20 +13,28 @@ sealed class Length {
 	abstract class Fixed() : Length()
 	abstract class Variable() : Length()
 
-	class Context : LengthExtensions {
-		var fontSize: Double = 16.0
-		var viewportWidth: Double = 640.0
-		var viewportHeight: Double = 480.0
-		var size: Int = 100
-		var pixelsPerInch: Double = 96.0
+    interface LengthContext {
+        val fontSize: Double get() = 16.0
+        val viewportWidth: Double get() = 640.0
+        val viewportHeight: Double get() = 480.0
+        val size: Int get() = 100
+        val pixelsPerInch: Double get() = 96.0
+
+        val viewportWidth1pc: Double get() = viewportWidth * 0.01
+        val viewportHeight1pc: Double get() = viewportHeight * 0.01
+        val pixelRatio: Double get() = pixelsPerInch / 96.0
+    }
+
+	open class Context : LengthContext, LengthExtensions {
+		override var fontSize: Double = 16.0
+		override var viewportWidth: Double = 640.0
+		override var viewportHeight: Double = 480.0
+		override var size: Int = 100
+		override var pixelsPerInch: Double = 96.0
 
 		fun setSize(v: Int) = this.apply {
 			this.size = v
 		}
-
-		val viewportWidth1pc: Double get() = viewportWidth * 0.01
-		val viewportHeight1pc: Double get() = viewportHeight * 0.01
-		val pixelRatio: Double get() = pixelsPerInch / 96.0
 
 		inline fun keep(callback: Context.() -> Unit) {
 			val oldFontSize = fontSize
@@ -47,17 +55,17 @@ sealed class Length {
 	}
 
 	data class MM(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.pixelsPerInch * 0.0393701).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.pixelsPerInch * 0.0393701).toInt()
 		override fun toString() = "${v}mm"
 	}
 
 	data class CM(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.pixelsPerInch * 0.393701).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.pixelsPerInch * 0.393701).toInt()
 		override fun toString() = "${v}cm"
 	}
 
 	data class INCH(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.pixelsPerInch).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.pixelsPerInch).toInt()
 		override fun toString() = "${v}inch"
 	}
 
@@ -67,57 +75,57 @@ sealed class Length {
 	//}
 
 	data class PT(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.pixelRatio).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.pixelRatio).toInt()
 		override fun toString() = "${v}pt"
 	}
 
 	data class EM(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.fontSize).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.fontSize).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class VW(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.viewportWidth1pc).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.viewportWidth1pc).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class VH(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * ctx.viewportHeight1pc).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * ctx.viewportHeight1pc).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class VMIN(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * min(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * min(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class VMAX(val v: Double) : Fixed() {
-		override fun calc(ctx: Context): Int = (v * max(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * max(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class Ratio(val ratio: Double) : Variable() {
-		override fun calc(ctx: Context): Int = (ratio * ctx.size).toInt()
+		override fun calc(ctx: LengthContext): Int = (ratio * ctx.size).toInt()
 		override fun toString() = "${ratio * 100}%"
 	}
 
 	data class Binop(val a: Length, val b: Length, val op: String, val act: (Int, Int) -> Int) : Length() {
-		override fun calc(ctx: Context): Int = act(a.calc(ctx), b.calc(ctx))
+		override fun calc(ctx: LengthContext): Int = act(a.calc(ctx), b.calc(ctx))
 		override fun toString() = "($a $op $b)"
 	}
 
 	data class Scale(val a: Length?, val scale: Double) : Length() {
-		override fun calc(ctx: Context): Int = (a.calcMax(ctx) * scale).toInt()
+		override fun calc(ctx: LengthContext): Int = (a.calcMax(ctx) * scale).toInt()
 		override fun toString() = "($a * $scale)"
 	}
 
-	abstract fun calc(ctx: Context): Int
+	abstract fun calc(ctx: LengthContext): Int
 
 	companion object {
 		val ZERO = PT(0.0)
 
 		fun calc(
-			ctx: Context,
+			ctx: LengthContext,
 			default: Length,
 			size: Length?,
 			min: Length? = null,
@@ -144,14 +152,16 @@ object MathEx {
 
 //fun Length?.calc(size: Int, default: Int): Int = this?.calc(size) ?: default
 
-fun Length?.calcMin(ctx: Length.Context, default: Int = 0): Int = this?.calc(ctx) ?: default
-fun Length?.calcMax(ctx: Length.Context, default: Int = ctx.size): Int = this?.calc(ctx) ?: default
+fun Length?.calcMin(ctx: Length.LengthContext, default: Int = 0): Int = this?.calc(ctx) ?: default
+fun Length?.calcMax(ctx: Length.LengthContext, default: Int = ctx.size): Int = this?.calc(ctx) ?: default
 
 //operator fun Length?.plus(that: Length?): Length? = Length.Binop(this, that, "+") { a, b -> a + b }
 //operator fun Length?.minus(that: Length?): Length? = Length.Binop(this, that, "-") { a, b -> a - b }
 operator fun Length?.times(that: Double): Length? = Length.Scale(this, that)
 
 interface LengthExtensions {
+    companion object : LengthExtensions
+
     //val Int.px: Length get() = Length.PX(this.toDouble())
     val Int.mm: Length get() = Length.MM(this.toDouble())
     val Int.cm: Length get() = Length.CM(this.toDouble())

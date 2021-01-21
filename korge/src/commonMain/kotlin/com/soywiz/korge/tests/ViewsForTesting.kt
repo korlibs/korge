@@ -233,6 +233,10 @@ open class ViewsForTesting(
 		}
 	}
 
+    suspend fun delayFrame() {
+        simulateFrame()
+    }
+
     class TimedTask2(val time: DateTime, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
         var exception: Throwable? = null
         override fun toString(): String = "${time.unixMillisLong}"

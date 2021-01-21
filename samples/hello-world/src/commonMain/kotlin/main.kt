@@ -1,5 +1,6 @@
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+//import com.soywiz.korge.component.length.bindLength
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -16,7 +17,7 @@ val ResourcesContainer.korge_png by resourceBitmap("korge.png")
 
 suspend fun main() {
     //GLOBAL_CHECK_GL = true
-    Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
+    Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"], clipBorders = false) {
         gameWindow.icon = korge_png.get().bmp.toBMP32().scaled(32, 32)
 
         val minDegrees = (-16).degrees
@@ -29,6 +30,9 @@ suspend fun main() {
             scale(.8)
             position(256, 256)
         }
+
+        //bindLength(image::scaledWidth) { 100.vw }
+        //bindLength(image::scaledHeight) { 100.vh }
 
         while (true) {
             image.tween(image::rotation[minDegrees], time = 1.seconds, easing = Easing.EASE_IN_OUT)

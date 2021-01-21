@@ -47,6 +47,9 @@ abstract class KorgwActivity : Activity() {
             mGLView?.invalidate()
         }
 
+        // @TODO: Cache somehow?
+        override val pixelsPerInch: Double get() = getResources().getDisplayMetrics().densityDpi.toDouble()
+
         init {
             println("KorgwActivityAGOpengl: Created ag $this for ${this@KorgwActivity} with gl=$gl")
         }
