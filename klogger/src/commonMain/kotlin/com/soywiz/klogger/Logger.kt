@@ -1,6 +1,7 @@
 package com.soywiz.klogger
 
-import kotlinx.atomicfu.*
+import com.soywiz.klogger.atomic.*
+import com.soywiz.klogger.internal.*
 
 /**
  * Utility to log messages.
@@ -29,15 +30,15 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     val isLocalOutputSet: Boolean get() = Logger_outputs[name] != null
 
     companion object {
-        private val Logger_loggers: AtomicLinkedHashMap<String, Logger> = atomic(LinkedHashMap())
-        private val Logger_levels: AtomicLinkedHashMap<String, Level?> = atomic(LinkedHashMap())
-        private val Logger_outputs: AtomicLinkedHashMap<String, Output?> = atomic(LinkedHashMap())
+        private val Logger_loggers: AtomicMap<String, Logger> = kloggerAtomicRef(emptyMap())
+        private val Logger_levels: AtomicMap<String, Level?> = kloggerAtomicRef(emptyMap())
+        private val Logger_outputs: AtomicMap<String, Output?> = kloggerAtomicRef(emptyMap())
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
-        var defaultLevel: Level? by atomic(null)
+        var defaultLevel: Level? by kloggerAtomicRef(null)
 
         /** The default [Output] used for all [Logger] that doesn't have its [Logger.output] set */
-        var defaultOutput: Output by atomic(DefaultLogOutput)
+        var defaultOutput: Output by kloggerAtomicRef(DefaultLogOutput)
 
         /** Gets a [Logger] from its [name] */
         operator fun invoke(name: String) = Logger_loggers[name] ?: Logger(name, true)
@@ -120,11 +121,10 @@ fun Logger.setLevel(level: Logger.Level): Logger = this.apply { this.level = lev
 /** Sets the [Logger.output] */
 fun Logger.setOutput(output: Logger.Output): Logger = this.apply { this.output = output }
 
-private typealias AtomicLinkedHashMap<K, V> = AtomicRef<LinkedHashMap<K, V>>
+private typealias AtomicMap<K, V> = KloggerAtomicRef<Map<K, V>>
 
-private inline operator fun <K, V> AtomicLinkedHashMap<K, V>.get(key: K) = value[key]
-private inline operator fun <K, V> AtomicLinkedHashMap<K, V>.set(key: K, value: V) = updateMap { this[key] = value }
-
-private inline fun <K, V> AtomicLinkedHashMap<K, V>.updateMap(updater: LinkedHashMap<K, V>.() -> Unit) =
-    this.update { LinkedHashMap(it).apply(updater) }
+private inline operator fun <K, V> AtomicMap<K, V>.get(key: K) = value[key]
+private inline operator fun <K, V> AtomicMap<K, V>.set(key: K, value: V) {
+    this.value = HashMap(this.value).also { it[key] = value }
+}
 
