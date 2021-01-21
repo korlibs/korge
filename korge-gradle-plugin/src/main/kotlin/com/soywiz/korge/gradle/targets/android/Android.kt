@@ -231,7 +231,7 @@ fun Project.configureAndroidIndirect() {
 //								if (name.startsWith("org.jetbrains.kotlin")) continue
 //								if (name.contains("-metadata")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
-                                //if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
+                                //if (name.startsWith("com.soywiz.korlibs.korge2:korge")) {
 								val rversion = getModuleVersion(name, version)
 								line("implementation '$name-android:$rversion'")
 							}

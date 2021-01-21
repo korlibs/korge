@@ -49,7 +49,7 @@ class KorgeGradleApply(val project: Project) {
             add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
             add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
             add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
-            add("commonMainApi", "com.soywiz.korlibs.korge:korge:${korgeVersion}")
+            add("commonMainApi", "com.soywiz.korlibs.korge2:korge:${korgeVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
@@ -90,8 +90,8 @@ class KorgeGradleApply(val project: Project) {
 		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
 		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
 
-		//println("com.soywiz.korlibs.korge:korge:$korgeVersion")
-		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge:korge:$korgeVersion")
+		//println("com.soywiz.korlibs.korge2:korge:$korgeVersion")
+		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge2:korge:$korgeVersion")
 		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
 		//}
 		//kotlin.sourceSets.create("")

@@ -99,7 +99,7 @@ fun Project.configureAndroidDirect() {
                 if (name.startsWith("org.jetbrains.kotlin")) continue
                 if (name.contains("-metadata")) continue
                 //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
-                if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
+                if (name.startsWith("com.soywiz.korlibs.korge2:korge")) {
                     add("implementation", "$name-android:$version")
                 }
             }

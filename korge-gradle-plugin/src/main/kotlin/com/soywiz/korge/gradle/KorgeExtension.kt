@@ -351,7 +351,7 @@ class KorgeExtension(val project: Project) {
 	}
 
 	fun supportSwf() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge2:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
     fun supportShape() {
@@ -362,11 +362,11 @@ class KorgeExtension(val project: Project) {
 	fun supportTriangulation() = supportShape()
 
 	fun supportDragonbones() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
+		dependencyMulti("com.soywiz.korlibs.korge2:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
     fun supportSpine() {
-        dependencyMulti("com.soywiz.korlibs.korge:korge-spine:${BuildVersions.KORGE}", registerPlugin = false)
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-spine:${BuildVersions.KORGE}", registerPlugin = false)
     }
 
     fun supportBox2d() {
