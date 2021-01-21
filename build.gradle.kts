@@ -136,9 +136,11 @@ allprojects {
         apply(from = "${rootProject.rootDir}/build.idea.gradle")
     }
     val projectName = project.name
+    val firstComponent = projectName.substringBefore('-')
     group = when {
         projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
-        else -> "com.soywiz.korlibs.${projectName.substringBefore('-')}"
+        firstComponent == "korge" -> "com.soywiz.korlibs.korge2"
+        else -> "com.soywiz.korlibs.$firstComponent"
     }
 }
 
