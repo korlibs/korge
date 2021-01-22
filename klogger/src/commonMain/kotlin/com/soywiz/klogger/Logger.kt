@@ -125,6 +125,6 @@ private typealias AtomicMap<K, V> = KloggerAtomicRef<Map<K, V>>
 
 private inline operator fun <K, V> AtomicMap<K, V>.get(key: K) = value[key]
 private inline operator fun <K, V> AtomicMap<K, V>.set(key: K, value: V) {
-    this.value = HashMap(this.value).also { it[key] = value }
+    this.update { HashMap(it).also { nmap -> nmap[key] = value } }
 }
 
