@@ -1,11 +1,10 @@
 package com.soywiz.klogger.atomic
 
-actual class KloggerAtomicRef<T> actual constructor(initial: T) {
-    @PublishedApi
-    internal var _value: T = initial
-    actual val value: T get() = _value
+internal actual class KloggerAtomicRef<T> actual constructor(initial: T) {
+
+    actual var value: T = initial
+
     actual inline fun update(block: (T) -> T) {
-        _value = block(_value)
+        value = block(value)
     }
 }
-

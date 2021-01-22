@@ -1,13 +1,13 @@
 package com.soywiz.klogger.test
 
 import com.soywiz.klogger.Logger
-import com.soywiz.klogger.atomic.*
+import com.soywiz.klogger.atomic.KloggerAtomicRef
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class LoggerTest {
-	val out = kloggerAtomicRef(listOf<String>())
+	private val out = KloggerAtomicRef(listOf<String>())
 
 	@Test
 	fun simple() {

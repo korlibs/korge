@@ -30,9 +30,9 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     val isLocalOutputSet: Boolean get() = Logger_outputs[name] != null
 
     companion object {
-        private val Logger_loggers: AtomicMap<String, Logger> = kloggerAtomicRef(emptyMap())
-        private val Logger_levels: AtomicMap<String, Level?> = kloggerAtomicRef(emptyMap())
-        private val Logger_outputs: AtomicMap<String, Output?> = kloggerAtomicRef(emptyMap())
+        private val Logger_loggers: AtomicMap<String, Logger> = AtomicMap(emptyMap())
+        private val Logger_levels: AtomicMap<String, Level?> = AtomicMap(emptyMap())
+        private val Logger_outputs: AtomicMap<String, Output?> = AtomicMap(emptyMap())
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
         var defaultLevel: Level? by kloggerAtomicRef(null)
