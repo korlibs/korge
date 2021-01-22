@@ -360,8 +360,10 @@ abstract class View internal constructor(
     var colorMul: RGBA
         get() = _colorTransform.colorMul
         set(v) {
-            _colorTransform.colorMul = v
-            invalidateColorTransform()
+            if (v != _colorTransform.colorMul) {
+                _colorTransform.colorMul = v
+                invalidateColorTransform()
+            }
         }
 
     /**
@@ -373,8 +375,10 @@ abstract class View internal constructor(
     var colorAdd: ColorAdd
         get() = _colorTransform.colorAdd;
         set(v) {
-            _colorTransform.colorAdd = v
-            invalidateColorTransform()
+            if (v != _colorTransform.colorAdd) {
+                _colorTransform.colorAdd = v
+                invalidateColorTransform()
+            }
         }
 
     /**
@@ -384,8 +388,10 @@ abstract class View internal constructor(
     var alpha: Double
         get() = _colorTransform.mA;
         set(v) {
-            _colorTransform.mA = v
-            invalidateColorTransform()
+            if (v != _colorTransform.mA) {
+                _colorTransform.mA = v
+                invalidateColorTransform()
+            }
         }
 
     /** Alias for [colorMul] to make this familiar to people coming from other engines. */
@@ -558,7 +564,10 @@ abstract class View internal constructor(
     var colorTransform: ColorTransform
         get() = _colorTransform
         set(v) {
-            _colorTransform.copyFrom(v); invalidate()
+            if (v != _colorTransform) {
+                _colorTransform.copyFrom(v)
+                invalidate()
+            }
         }
 
     private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
