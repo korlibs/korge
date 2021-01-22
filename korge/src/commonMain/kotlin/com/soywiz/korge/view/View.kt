@@ -359,8 +359,10 @@ abstract class View internal constructor(
     var colorMul: RGBA
         get() = _colorTransform.colorMul
         set(v) {
-            _colorTransform.colorMul = v
-            invalidateColorTransform()
+            if (v != _colorTransform.colorMul) {
+                _colorTransform.colorMul = v
+                invalidateColorTransform()
+            }
         }
 
     /**
@@ -372,7 +374,8 @@ abstract class View internal constructor(
     var colorAdd: ColorAdd
         get() = _colorTransform.colorAdd;
         set(v) {
-            _colorTransform.colorAdd = v
+            if (v.rgba != _colorTransform.colorAdd.rgba)
+                _colorTransform.colorAdd = v
             invalidateColorTransform()
         }
 
