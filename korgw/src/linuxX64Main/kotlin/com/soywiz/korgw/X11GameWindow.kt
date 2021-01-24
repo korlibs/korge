@@ -35,10 +35,10 @@ class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffe
     companion object {
         fun chooseVisuals(d: CPointer<Display>?, scr: Int = XDefaultScreen(d)): CPointer<XVisualInfo>? {
             val attrsList = listOf(
-                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 24, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 24, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 16, None.toInt()),
+                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, None.toInt()),
+                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, None.toInt()),
+                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, None.toInt(), GLX_STENCIL_SIZE, 8, None.toInt()),
+                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 16, None.toInt(), GLX_STENCIL_SIZE, 8, None.toInt()),
                 intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, None.toInt()),
                 intArrayOf(GLX_RGBA, None.toInt()),
                 intArrayOf(None.toInt())
