@@ -155,6 +155,10 @@ class GlslGenerator constructor(
                 //line("precision highp int;")
                 //line("precision lowp sampler2D;")
                 //line("precision lowp samplerCube;")
+            } else {
+                line("  #define highp ")
+                line("  #define mediump ")
+                line("  #define lowp ")
             }
 
             for (it in attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")

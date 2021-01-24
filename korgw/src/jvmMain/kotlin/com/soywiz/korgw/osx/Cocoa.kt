@@ -528,3 +528,11 @@ interface CoreGraphics : Library {
     fun CVDisplayLinkStop(displayLinkValue: Pointer?): Int
     companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
 }
+
+fun JnaMemory(array: IntArray): Memory {
+    val mem = Memory((array.size * 4).toLong())
+    for (n in 0 until array.size) {
+        mem.setInt((n * 4).toLong(), array[n])
+    }
+    return mem
+}

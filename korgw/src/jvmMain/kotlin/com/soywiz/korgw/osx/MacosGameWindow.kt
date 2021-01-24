@@ -45,23 +45,41 @@ interface MacGL : INativeGL, Library {
 
 private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("initWithBytes:length:", ByteBuffer.wrap(this), this.size)
 
-class MacosGLContext(var contentView: Long, val window: Long) : BaseOpenglContext {
-    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend(
-        "initWithAttributes:", intArrayOf(
-            8, 24,
-            11, 8,
-            5,
-            73,
-            72,
-            55, 1,
-            56, 4,
-            //99, 0x1000, // or 0x3200
-            //99, 0x3200,
-            //99, 0x3100,
-            //99, 0x4100,
+class MacosGLContext(var contentView: Long, val window: Long, val quality: GameWindow.Quality) : BaseOpenglContext {
+    companion object {
+        const val NSOpenGLPFAMultisample = 59
+        const val NSOpenGLPFASampleBuffers = 55
+        const val NSOpenGLPFASamples = 56
+        const val NSOpenGLPFADoubleBuffer = 5
+        const val NSOpenGLPFAColorSize = 8
+        const val NSOpenGLPFAAlphaSize = 11
+        const val NSOpenGLPFADepthSize = 12
+        const val NSOpenGLPFAStencilSize = 13
+        const val NSOpenGLPFAAccumSize = 14
+    }
+
+    val attrs: IntArray by lazy {
+        val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
+        val antialiasArray = if (antialias) intArrayOf(
+            NSOpenGLPFAMultisample,
+            NSOpenGLPFASampleBuffers, 1,
+            NSOpenGLPFASamples, 4
+        ) else intArrayOf()
+        intArrayOf(
+            *antialiasArray,
+            //NSOpenGLPFAOpenGLProfile,
+            //NSOpenGLProfileVersion4_1Core,
+            NSOpenGLPFADoubleBuffer,
+            NSOpenGLPFAColorSize, 24,
+            NSOpenGLPFAAlphaSize, 8,
+            NSOpenGLPFADepthSize, 24,
+            NSOpenGLPFAStencilSize, 8,
+            NSOpenGLPFAAccumSize, 0,
             0
         )
-    )
+    }
+
+    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", attrs)
     val openGLContext = NSClass("NSOpenGLContext").alloc().msgSend("initWithFormat:shareContext:", pixelFormat, null)
 
     init {
@@ -451,7 +469,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         window.msgSend("cascadeTopLeftFromPoint:", NSPoint(20, 20))
 
         contentView = window.msgSend("contentView")
-        glCtx = MacosGLContext(contentView, window)
+        glCtx = MacosGLContext(contentView, window, quality)
         //println("contentView: $contentView")
         contentView.msgSend("setWantsBestResolutionOpenGLSurface:", true)
 

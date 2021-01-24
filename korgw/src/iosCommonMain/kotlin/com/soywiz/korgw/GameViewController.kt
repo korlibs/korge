@@ -46,6 +46,8 @@ class GameViewController(nibName: kotlin.String?, bundle: platform.Foundation.NS
         val view = this.view as GLKView
         view.context = this.context!!
         view.drawableDepthFormat = GLKViewDrawableDepthFormat24
+        view.drawableStencilFormat = GLKViewDrawableStencilFormat8
+        view.drawableMultisample = GLKViewDrawableMultisample4X
         this.setupGL()
     }
 

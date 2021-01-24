@@ -53,15 +53,18 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
             *antialiasArray,
             //NSOpenGLPFAOpenGLProfile,
             //NSOpenGLProfileVersion4_1Core,
+            NSOpenGLPFADoubleBuffer.convert(),
             NSOpenGLPFAColorSize.convert(), 24.convert(),
             NSOpenGLPFAAlphaSize.convert(), 8.convert(),
-            NSOpenGLPFADoubleBuffer.convert(),
-            NSOpenGLPFADepthSize.convert(), 32.convert(),
+            NSOpenGLPFADepthSize.convert(), 24.convert(),
+            NSOpenGLPFAStencilSize.convert(), 8.convert(),
+            NSOpenGLPFAAccumSize.convert(), 0.convert(),
             0.convert()
         ).toUIntArray()
     }
 
     val pixelFormat by lazy {
+        //println("NSOpenGLPFAStencilSize: $NSOpenGLPFAStencilSize")
         attrs.usePinned {
             NSOpenGLPixelFormat(it.addressOf(0).reinterpret<NSOpenGLPixelFormatAttributeVar>())
             //NSOpenGLPixelFormat.alloc()!!.initWithAttributes(it.addressOf(0).reinterpret())!!
