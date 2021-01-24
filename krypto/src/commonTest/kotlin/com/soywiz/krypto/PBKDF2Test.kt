@@ -11,8 +11,8 @@ class PBKDF2Test {
         val iterationCount = 4096
         val keyLength = 256
         val v = PBKDF2.pbkdf2WithHmacSHA1(password, salt, iterationCount, keyLength)
-        println(v.contentToString())
-        println(v.hex)
+        //println(v.contentToString())
+        //println(v.hex)
     }
 
     @Test
