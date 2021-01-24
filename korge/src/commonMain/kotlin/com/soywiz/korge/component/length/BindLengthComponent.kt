@@ -1,7 +1,9 @@
 package com.soywiz.korge.component.length
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.toInt
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -10,45 +12,96 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
-fun View.bindLength(prop: KMutableProperty0<Double>, horizontal: Boolean = prop.isHorizontal, value: LengthExtensions.() -> Length): Cancellable {
-    return bindLength({ prop.set(it) }, horizontal, value)
+/**
+ * Binds a property [prop] in this [View] to the [Length] value returned by [value].
+ * The binding will register a component that will compute the [Length] for that view in its container/context
+ * and will set the specific property.
+ *
+ * The binding requires to know if the property is vertical or horizontal.
+ * The direction will be tried to be determined by its name by default, but you can explicitly specify it with [horizontal]
+ *
+ * Returns a [Cancellable] to stop the binding.
+ */
+@KorgeExperimental
+fun View.bindLength(prop: KMutableProperty1<View, Double>, horizontal: Boolean = prop.isHorizontal, value: LengthExtensions.() -> Length): Cancellable {
+    return bindLength(prop.name, { prop.set(this, it) }, horizontal, value)
 }
 
-fun <T> View.bindLength(receiver: T, prop: KMutableProperty1<T, Double>, horizontal: Boolean = prop.isHorizontal, value: LengthExtensions.() -> Length): Cancellable {
-    return bindLength({ prop.set(receiver, it) }, prop.isHorizontal, value)
-}
-
-fun View.bindLength(setProp: (Double) -> Unit, horizontal: Boolean, value: LengthExtensions.() -> Length): Cancellable {
+@KorgeExperimental
+fun View.bindLength(name: String, setProp: (Double) -> Unit, horizontal: Boolean, value: LengthExtensions.() -> Length): Cancellable {
     val component = getOrCreateComponentUpdateWithViews { BindLengthComponent(it) }
-    component.setBind(horizontal, setProp, value(LengthExtensions))
+    component.setBind(horizontal, name, setProp, value(LengthExtensions))
     return Cancellable {
-        component.removeBind(horizontal, setProp)
+        component.removeBind(horizontal, name)
     }
 }
 
-//var View.widthLength: Length by LengthDelegatedProperty(View::scaledWidth)
-//var View.heightLength: Length by LengthDelegatedProperty(View::scaledHeight)
-//var View.xLength: Length by LengthDelegatedProperty(View::x)
-//var View.yLength: Length by LengthDelegatedProperty(View::y)
-//var View.scaleLength: Length by LengthDelegatedProperty(View::scale)
-//var View.scaleXLength: Length by LengthDelegatedProperty(View::scaleX)
-//var View.scaleYLength: Length by LengthDelegatedProperty(View::scaleY)
+// @TODO: Extension properties for inline classes seem to not be supported for now. This should be more efficient than the Extra.PropertyThis once supported
+//val View.lengths get() = ViewWithLength(this)
+//inline class ViewWithLength(val view: View) : LengthExtensions
 
-class LengthDelegatedProperty(val prop: KMutableProperty1<View, Double>) {
-    operator fun getValue(view: View, property: KProperty<*>): Length = Length.ZERO
-    operator fun setValue(view: View, property: KProperty<*>, length: Length) {
-        (view.parent ?: view).bindLength(view, prop) { length }
+/**
+ * Supports setting/binding properties by using [Length] units, until they are set to null.
+ *
+ * Usage:
+ *
+ * ```
+ * view.lengths { width = 50.vw }
+ * ```
+ *
+ * The current implementation has some side effects to have into consideration:
+ * - The component is using the view to hold a component that will update these properties on each frame
+ * - If the original property is changed, it will be overriden by the computed [Length] on each frame
+ * - To remove the binding, set the property to null
+ */
+@KorgeExperimental
+val View.lengths by Extra.PropertyThis { ViewWithLength(this) }
+class ViewWithLength(val view: View) : LengthExtensions {
+    inline operator fun <T> invoke(block: ViewWithLength.() -> T): T = block()
+}
+
+var ViewWithLength.width: Length? by ViewWithLengthProp(View::scaledWidth)
+var ViewWithLength.height: Length? by ViewWithLengthProp(View::scaledHeight)
+var ViewWithLength.x: Length? by ViewWithLengthProp(View::x)
+var ViewWithLength.y: Length? by ViewWithLengthProp(View::y)
+var ViewWithLength.scale: Length? by ViewWithLengthProp(View::scale)
+var ViewWithLength.scaleX: Length? by ViewWithLengthProp(View::scaleX)
+var ViewWithLength.scaleY: Length? by ViewWithLengthProp(View::scaleY)
+
+fun ViewWithLengthProp(prop: KMutableProperty1<View, Double>, horizontal: Boolean? = null) = LengthDelegatedProperty<ViewWithLength>(prop, horizontal) { it.view }
+fun LengthDelegatedProperty(prop: KMutableProperty1<View, Double>, horizontal: Boolean? = null) = LengthDelegatedProperty<View>(prop, horizontal) { it }
+
+class LengthDelegatedProperty<T>(val prop: KMutableProperty1<View, Double>, horizontal: Boolean? = null, val getView: (T) -> View) {
+    val horizontal = horizontal ?: prop.isHorizontal
+    private fun getBind(view: View): BindLengthComponent =
+        view.getOrCreateComponentUpdateWithViews { BindLengthComponent(it) }
+
+    operator fun getValue(viewHolder: T, property: KProperty<*>): Length? {
+        return getBind(getView(viewHolder)).getLength(prop.name, horizontal)
+    }
+    operator fun setValue(viewHolder: T, property: KProperty<*>, length: Length?) {
+        val view = getView(viewHolder)
+        val bind = getBind(view)
+        if (length == null) {
+            bind.removeBind(horizontal, prop.name)
+        } else {
+            bind.setBind(horizontal, prop.name, { prop.set(view, it) }, length)
+        }
     }
 }
 
-val KProperty<*>.isHorizontal get() = when (name) {
+internal val KCallable<*>.isHorizontal get() = when (name) {
     "x", "width" -> true
     else -> name.contains("x") || name.contains("X") || name.contains("width") || name.contains("Width")
 }
 
 internal class BindLengthComponent(override val view: BaseView) : UpdateComponentWithViews {
-    private val binds = Array(2) { LinkedHashMap<(Double) -> Unit, Length>() }
+    private val binds = Array(2) { LinkedHashMap<String, Pair<(Double) -> Unit, Length>>() }
     private lateinit var views: Views
+
+    fun getLength(key: String, horizontal: Boolean): Length? {
+        return binds[horizontal.toInt()][key]?.second
+    }
 
     private open class BaseLengthContext : Length.Context() {
         override var pixelRatio: Double = 1.0
@@ -56,12 +109,12 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
 
     private val context = BaseLengthContext()
 
-    fun setBind(x: Boolean, prop: (Double) -> Unit, value: Length) {
-        binds[x.toInt()][prop] = value
+    fun setBind(x: Boolean, name: String, prop: (Double) -> Unit, value: Length) {
+        binds[x.toInt()][name] = prop to value
     }
 
-    fun removeBind(x: Boolean, prop: (Double) -> Unit) {
-        binds[x.toInt()].remove(prop)
+    fun removeBind(x: Boolean, name: String) {
+        binds[x.toInt()].remove(name)
         if (binds[0].isEmpty() && binds[1].isEmpty()) {
             removeFromView()
         }
@@ -70,7 +123,7 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
     private val tempTransform = Matrix.Transform()
     override fun update(views: Views, dt: TimeSpan) {
         this.views = views
-        val container = view as? View? ?: views.stage
+        val container = (view as? View?)?.parent ?: views.stage
         tempTransform.setMatrix(container.globalMatrix)
         val scaleAvgInv = 1.0 / tempTransform.scaleAvg
 
@@ -82,10 +135,10 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
         for (horizontal in arrayOf(false, true)) {
             val size = if (horizontal) container.width else container.height
             context.size = size.toInt()
-            for ((prop, value) in binds[horizontal.toInt()]) {
-                val pointValue = value.calc(context).toDouble()
+            for ((_, value) in binds[horizontal.toInt()]) {
+                val pointValue = value.second.calc(context).toDouble()
                 //println("$prop -> $pointValue [$value]")
-                prop(pointValue)
+                value.first(pointValue)
             }
         }
     }
