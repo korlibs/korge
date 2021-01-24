@@ -35,10 +35,10 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
         private val Logger_outputs: AtomicMap<String, Output?> = AtomicMap(emptyMap())
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
-        var defaultLevel: Level? by kloggerAtomicRef(null)
+        var defaultLevel: Level? by KloggerAtomicRef(null)
 
         /** The default [Output] used for all [Logger] that doesn't have its [Logger.output] set */
-        var defaultOutput: Output by kloggerAtomicRef(DefaultLogOutput)
+        var defaultOutput: Output by KloggerAtomicRef(DefaultLogOutput)
 
         /** Gets a [Logger] from its [name] */
         operator fun invoke(name: String) = Logger_loggers[name] ?: Logger(name, true)

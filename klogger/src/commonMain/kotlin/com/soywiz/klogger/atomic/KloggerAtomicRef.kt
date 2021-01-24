@@ -1,11 +1,17 @@
 package com.soywiz.klogger.atomic
 
-import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.*
 
 internal expect class KloggerAtomicRef<T>(initial: T) {
     var value: T
     inline fun update(block: (T) -> T)
 }
 
-//expect fun <T> kloggerAtomicRef(initial: T): KloggerAtomicRef<T>
-internal fun <T> kloggerAtomicRef(initial: T): KMutableProperty0<T> = KloggerAtomicRef(initial)::value
+internal operator fun <T> KloggerAtomicRef<T>.setValue(receiver: Any?, property: KProperty<*>, value: T) {
+    this.value = value
+}
+
+internal operator fun <T> KloggerAtomicRef<T>.getValue(receiver: Any?, property: KProperty<*>): T {
+    return this.value
+}
+
