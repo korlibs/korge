@@ -8,7 +8,7 @@ import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
@@ -128,8 +128,8 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
         val scaleAvgInv = 1.0 / tempTransform.scaleAvg
 
         context.fontSize = 16.0 // @TODO: Can we store something in the views?
-        context.viewportWidth = views.actualVirtualWidth.toDouble()
-        context.viewportHeight = views.actualVirtualHeight.toDouble()
+        context.viewportWidth = if (views.clipBorders || views.scaleAnchor != Anchor.TOP_LEFT) views.virtualWidthDouble else views.actualVirtualWidth.toDouble()
+        context.viewportHeight = if (views.clipBorders || views.scaleAnchor != Anchor.TOP_LEFT) views.virtualHeightDouble else views.actualVirtualHeight.toDouble()
         context.pixelRatio = views.ag.devicePixelRatio * scaleAvgInv
         context.pixelsPerInch = views.ag.pixelsPerInch * scaleAvgInv
         for (horizontal in arrayOf(false, true)) {
