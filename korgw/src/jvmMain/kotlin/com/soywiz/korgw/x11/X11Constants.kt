@@ -25,6 +25,7 @@ internal const val GLX_GREEN_SIZE = 9
 internal const val GLX_BLUE_SIZE = 10
 internal const val GLX_ALPHA_SIZE = 11
 internal const val GLX_DEPTH_SIZE = 12
+internal const val GLX_STENCIL_SIZE = 13
 internal const val GLX_DOUBLEBUFFER = 5
 
 internal const val XK_space = 0x0020  /* U+0020 SPACE */

@@ -19,41 +19,47 @@ class X11OpenglContext(val d: X11.Display?, val w: X11.Drawable?, val scr: Int, 
                 for (specifyRenderType in listOf(true, false)) {
                     for (bitsPerColorComponent in listOf(8, 4, 0)) {
                         for (depth in listOf(24, 16, 0)) {
-                            for (doubleBuffer in listOf(true, false)) {
-                                val attrs = buildList<Int> {
-                                    if (specifyRenderType) {
-                                        //add(GLX_RENDER_TYPE)
-                                        //add(GLX_RGBA_BIT)
-                                        add(GLX_RGBA)
+                            for (stencil in listOf(8, 0)) {
+                                for (doubleBuffer in listOf(true, false)) {
+                                    val attrs = buildList<Int> {
+                                        if (specifyRenderType) {
+                                            //add(GLX_RENDER_TYPE)
+                                            //add(GLX_RGBA_BIT)
+                                            add(GLX_RGBA)
+                                        }
+                                        if (doubleBuffer) {
+                                            add(GLX_DOUBLEBUFFER)
+                                            add(doubleBuffer.toInt())
+                                        }
+                                        if (depth != 0) {
+                                            add(GLX_DEPTH_SIZE)
+                                            add(depth)
+                                        }
+                                        if (stencil != 0) {
+                                            add(GLX_STENCIL_SIZE)
+                                            add(stencil)
+                                        }
+                                        if (bitsPerColorComponent != 0) {
+                                            add(GLX_RED_SIZE)
+                                            add(bitsPerColorComponent)
+                                            add(GLX_GREEN_SIZE)
+                                            add(bitsPerColorComponent)
+                                            add(GLX_BLUE_SIZE)
+                                            add(bitsPerColorComponent)
+                                        }
+                                        if (multisampling) {
+                                            add(GLX_SAMPLE_BUFFERS)
+                                            add(1)
+                                            add(GLX_SAMPLES)
+                                            add(4)
+                                        }
+                                        add(X11.None)
+                                    }.toIntArray()
+                                    val vi = X.glXChooseVisual(d, scr, attrs)
+                                    if (vi != null) {
+                                        println("VI: $vi (doubleBuffer=$doubleBuffer, depth=$depth, bitsPerColorComponent=$bitsPerColorComponent, specifyRenderType=$specifyRenderType)")
+                                        return vi
                                     }
-                                    if (doubleBuffer) {
-                                        add(GLX_DOUBLEBUFFER)
-                                        add(doubleBuffer.toInt())
-                                    }
-                                    if (depth != 0) {
-                                        add(GLX_DEPTH_SIZE)
-                                        add(depth)
-                                    }
-                                    if (bitsPerColorComponent != 0) {
-                                        add(GLX_RED_SIZE)
-                                        add(bitsPerColorComponent)
-                                        add(GLX_GREEN_SIZE)
-                                        add(bitsPerColorComponent)
-                                        add(GLX_BLUE_SIZE)
-                                        add(bitsPerColorComponent)
-                                    }
-                                    if (multisampling) {
-                                        add(GLX_SAMPLE_BUFFERS)
-                                        add(1)
-                                        add(GLX_SAMPLES)
-                                        add(4)
-                                    }
-                                    add(X11.None)
-                                }.toIntArray()
-                                val vi = X.glXChooseVisual(d, scr, attrs)
-                                if (vi != null) {
-                                    println("VI: $vi (doubleBuffer=$doubleBuffer, depth=$depth, bitsPerColorComponent=$bitsPerColorComponent, specifyRenderType=$specifyRenderType)")
-                                    return vi
                                 }
                             }
                         }
