@@ -143,6 +143,8 @@ sealed class Length {
 	operator fun minus(that: Length): Length = Length.Binop(this, that, "-") { a, b -> a - b }
 	operator fun times(that: Double): Length = Length.Scale(this, that)
 	operator fun times(that: Int): Length = Length.Scale(this, that.toDouble())
+    operator fun div(that: Double): Length = Length.Scale(this, 1.0 / that)
+    operator fun div(that: Int): Length = Length.Scale(this, 1.0 / that.toDouble())
 }
 
 object MathEx {
@@ -158,6 +160,7 @@ fun Length?.calcMax(ctx: Length.LengthContext, default: Int = ctx.size): Int = t
 //operator fun Length?.plus(that: Length?): Length? = Length.Binop(this, that, "+") { a, b -> a + b }
 //operator fun Length?.minus(that: Length?): Length? = Length.Binop(this, that, "-") { a, b -> a - b }
 operator fun Length?.times(that: Double): Length? = Length.Scale(this, that)
+operator fun Length?.div(that: Double): Length? = Length.Scale(this, 1.0 / that)
 
 interface LengthExtensions {
     companion object : LengthExtensions
