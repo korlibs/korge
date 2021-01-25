@@ -119,7 +119,15 @@ sealed class Length {
 		override fun toString() = "($a * $scale)"
 	}
 
-	abstract fun calc(ctx: LengthContext): Int
+    data class Max(val a: Length, val b: Length) : Length() {
+        override fun calc(ctx: LengthContext): Int = max(a.calc(ctx), b.calc(ctx))
+    }
+
+    data class Min(val a: Length, val b: Length) : Length() {
+        override fun calc(ctx: LengthContext): Int = min(a.calc(ctx), b.calc(ctx))
+    }
+
+    abstract fun calc(ctx: LengthContext): Int
 
 	companion object {
 		val ZERO = PT(0.0)
@@ -164,6 +172,9 @@ operator fun Length?.div(that: Double): Length? = Length.Scale(this, 1.0 / that)
 
 interface LengthExtensions {
     companion object : LengthExtensions
+
+    fun max(a: Length, b: Length): Length = Length.Max(a, b)
+    fun min(a: Length, b: Length): Length = Length.Min(a, b)
 
     //val Int.px: Length get() = Length.PX(this.toDouble())
     val Int.mm: Length get() = Length.MM(this.toDouble())
