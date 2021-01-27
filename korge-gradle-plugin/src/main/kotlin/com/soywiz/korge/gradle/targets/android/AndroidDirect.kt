@@ -87,11 +87,9 @@ fun Project.configureAndroidDirect() {
                     //println("RESOLVE ARTIFACT: ${it.requested}")
                     //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
                     //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
-                    if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
-                    if (cleanFullName.startsWith("junit:junit")) return@eachDependency
-                    if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
-                    if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
-                    resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+                    if (isKorlibsDependency(cleanFullName)) {
+                        resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+                    }
                 }
             }
 

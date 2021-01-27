@@ -128,6 +128,14 @@ fun Project.androidGetResourcesFolders(): Pair<List<File>, List<File>> {
     return Pair(resourcesSrcDirs, kotlinSrcDirs)
 }
 
+fun isKorlibsDependency(cleanFullName: String): Boolean {
+    if (cleanFullName.startsWith("org.jetbrains")) return false
+    if (cleanFullName.startsWith("junit:junit")) return false
+    if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return false
+    if (cleanFullName.startsWith("org.jogamp")) return false
+    return true
+}
+
 fun androidExcludePatterns(): List<String> = listOf(
     "META-INF/DEPENDENCIES",
     "META-INF/LICENSE",
