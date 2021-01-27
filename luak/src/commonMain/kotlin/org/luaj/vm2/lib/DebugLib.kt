@@ -85,7 +85,7 @@ import kotlin.jvm.*
  */
 class DebugLib : TwoArgFunction() {
 
-    internal var globals: Globals? = null
+    lateinit internal var globals: Globals
 
     /** Perform one-time initialization on the library by creating a table
      * containing the library functions, adding that table to the supplied environment,
@@ -95,7 +95,7 @@ class DebugLib : TwoArgFunction() {
      */
     override fun call(modname: LuaValue, env: LuaValue): LuaValue {
         globals = env.checkglobals()
-        globals!!.debuglib = this
+        globals.debuglib = this
         val debug = LuaTable()
         debug.set("debug", Debug())
         debug["gethook"] = Gethook()
@@ -128,7 +128,7 @@ class DebugLib : TwoArgFunction() {
     // debug.gethook ([thread])
     internal inner class Gethook : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
-            val t = if (args.narg() > 0) args.checkthread(1) else globals!!.running
+            val t = if (args.narg() > 0) args.checkthread(1) else globals.running
             val s = t!!.state
             return LuaValue.varargsOf(
                 if (s.hookfunc != null) s.hookfunc!! else LuaValue.NIL,
@@ -142,7 +142,7 @@ class DebugLib : TwoArgFunction() {
     internal inner class Getinfo : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
             var a = 1
-            val thread = if (args.isthread(a)) args.checkthread(a++) else globals!!.running
+            val thread = if (args.isthread(a)) args.checkthread(a++) else globals.running
             var func: LuaValue? = args.arg(a++)
             val what = args.optjstring(a++, "flnStu")
             val callstack = callstack(thread!!)
@@ -208,7 +208,7 @@ class DebugLib : TwoArgFunction() {
     internal inner class Getlocal : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
             var a = 1
-            val thread = if (args.isthread(a)) args.checkthread(a++) else globals!!.running
+            val thread = if (args.isthread(a)) args.checkthread(a++) else globals.running
             val level = args.checkint(a++)
             val local = args.checkint(a++)
             val f = callstack(thread!!).getCallFrame(level)
@@ -259,7 +259,7 @@ class DebugLib : TwoArgFunction() {
     internal inner class Sethook : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
             var a = 1
-            val t = if (args.isthread(a)) args.checkthread(a++) else globals!!.running
+            val t = if (args.isthread(a)) args.checkthread(a++) else globals.running
             val func = args.optfunction(a++, null)
             val str = args.optjstring(a++, "")
             val count = args.optint(a++, 0)
@@ -286,7 +286,7 @@ class DebugLib : TwoArgFunction() {
     internal inner class Setlocal : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
             var a = 1
-            val thread = if (args.isthread(a)) args.checkthread(a++) else globals!!.running
+            val thread = if (args.isthread(a)) args.checkthread(a++) else globals.running
             val level = args.checkint(a++)
             val local = args.checkint(a++)
             val value = args.arg(a++)
@@ -346,8 +346,8 @@ class DebugLib : TwoArgFunction() {
     internal inner class Traceback : VarArgFunction() {
         override fun invoke(args: Varargs): Varargs {
             var a = 1
-            val thread = if (args.isthread(a)) args.checkthread(a++) else globals!!.running
-            val message = args.optjstring(a++, null!!)
+            val thread = if (args.isthread(a)) args.checkthread(a++) else globals.running
+            val message = args.optjstring(a++, null)
             val level = args.optint(a++, 1)
             val tb = callstack(thread!!).traceback(level)
             return LuaValue.valueOf(if (message != null) message + "\n" + tb else tb)
@@ -386,21 +386,21 @@ class DebugLib : TwoArgFunction() {
     }
 
     fun onCall(f: LuaFunction) {
-        val s = globals!!.running!!.state
+        val s = globals.running.state
         if (s.inhook) return
         callstack().onCall(f)
         if (s.hookcall) callHook(s, CALL, LuaValue.NIL)
     }
 
     fun onCall(c: LuaClosure, varargs: Varargs, stack: Array<LuaValue>) {
-        val s = globals!!.running!!.state
+        val s = globals.running.state
         if (s.inhook) return
         callstack().onCall(c, varargs, stack)
         if (s.hookcall) callHook(s, CALL, LuaValue.NIL)
     }
 
     fun onInstruction(pc: Int, v: Varargs, top: Int) {
-        val s = globals!!.running!!.state
+        val s = globals.running.state
         if (s.inhook) return
         callstack().onInstruction(pc, v, top)
         if (s.hookfunc == null) return
@@ -417,7 +417,7 @@ class DebugLib : TwoArgFunction() {
     }
 
     fun onReturn() {
-        val s = globals!!.running!!.state
+        val s = globals.running.state
         if (s.inhook) return
         callstack().onReturn()
         if (s.hookrtrn) callHook(s, RETURN, LuaValue.NIL)
@@ -442,7 +442,7 @@ class DebugLib : TwoArgFunction() {
     }
 
     @JvmOverloads
-    internal fun callstack(t: LuaThread = globals!!.running!!): CallStack {
+    internal fun callstack(t: LuaThread = globals.running): CallStack {
         if (t.callstack == null)
             t.callstack = CallStack()
         return t.callstack as CallStack

@@ -1,27 +1,5 @@
-/*******************************************************************************
- * Copyright (c) 2009 Luaj.org. All rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package org.luaj.vm2
 
-import org.luaj.vm2.TypeTest.*
 import org.luaj.vm2.lib.*
 import kotlin.test.*
 
@@ -30,6 +8,8 @@ class MetatableTest {
     private val samplestring = "abcdef"
     private val sampleobject = Any()
     private val sampledata = MyData()
+
+    class MyData
 
     private val string = LuaValue.valueOf(samplestring)
     private val table = LuaValue.tableOf()
@@ -55,7 +35,7 @@ class MetatableTest {
         LuaFunction.s_metatable = null
         LuaNil.s_metatable = null
         LuaNumber.s_metatable = null
-        //		LuaString.s_metatable = null;
+        LuaString.s_metatable = null
         LuaThread.s_metatable = null
     }
 
@@ -64,7 +44,7 @@ class MetatableTest {
         assertEquals(null, LuaValue.NIL.getmetatable())
         assertEquals(null, LuaValue.TRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
-        //		assertEquals( null, string.getmetatable() );
+        //assertEquals( null, string.getmetatable() );
         assertEquals(null, table.getmetatable())
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
@@ -90,7 +70,7 @@ class MetatableTest {
         assertEquals(null, LuaValue.NIL.getmetatable())
         assertEquals(null, LuaValue.TRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
-        //		assertEquals( null, string.getmetatable() );
+        assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
@@ -98,26 +78,26 @@ class MetatableTest {
         assertEquals(mt, LuaValue.NIL.getmetatable())
         assertEquals(null, LuaValue.TRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
-        //		assertEquals( null, string.getmetatable() );
+        assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
         LuaBoolean.s_metatable = mt
         assertEquals(mt, LuaValue.TRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
-        //		assertEquals( null, string.getmetatable() );
+        assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
         LuaNumber.s_metatable = mt
         assertEquals(mt, LuaValue.ONE.getmetatable())
         assertEquals(mt, LuaValue.valueOf(1.25).getmetatable())
-        //		assertEquals( null, string.getmetatable() );
+        assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
-        //		LuaString.s_metatable = mt;
-        //		assertEquals( mt, string.getmetatable() );
+        LuaString.s_metatable = mt;
+        assertEquals( mt, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
@@ -145,14 +125,14 @@ class MetatableTest {
         LuaFunction.s_metatable = mt
         LuaNil.s_metatable = mt
         LuaNumber.s_metatable = mt
-        //		LuaString.s_metatable = mt;
+        LuaString.s_metatable = mt;
         LuaThread.s_metatable = mt
         assertEquals(mt, table.getmetatable())
         assertEquals(mt, userdata.getmetatable())
         assertEquals(mt, LuaValue.NIL.getmetatable())
         assertEquals(mt, LuaValue.TRUE.getmetatable())
         assertEquals(mt, LuaValue.ONE.getmetatable())
-        // 		assertEquals( StringLib.instance, string.getmetatable() );
+        assertEquals(mt, string.getmetatable() );
         assertEquals(mt, function.getmetatable())
         assertEquals(mt, thread.getmetatable())
 
@@ -164,7 +144,7 @@ class MetatableTest {
         assertEquals(abc, LuaValue.NIL.get(1))
         assertEquals(abc, LuaValue.TRUE.get(1))
         assertEquals(abc, LuaValue.ONE.get(1))
-        // 		assertEquals( abc, string.get(1) );
+        assertEquals( abc, string.get(1) );
         assertEquals(abc, function.get(1))
         assertEquals(abc, thread.get(1))
 
@@ -233,7 +213,7 @@ class MetatableTest {
         LuaValue.NIL.set(14, abc)
         LuaValue.TRUE.set(15, abc)
         LuaValue.ONE.set(16, abc)
-        // 		string.set(17,abc);
+        //string.set(17,abc);
         function.set(18, abc)
         thread.set(19, abc)
         val via = LuaValue.valueOf("via-func-abc")
@@ -242,7 +222,7 @@ class MetatableTest {
         assertEquals(via, fallback.get(14))
         assertEquals(via, fallback.get(15))
         assertEquals(via, fallback.get(16))
-        //		assertEquals( via, StringLib.instance.get(17) );
+        //assertEquals(via, fallback.get(17) );
         assertEquals(via, fallback.get(18))
         assertEquals(via, fallback.get(19))
     }

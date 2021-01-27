@@ -249,7 +249,7 @@ abstract class Varargs {
      * @return String value if argument i is a string or number, or defval if not supplied or nil
      * @exception LuaError if the argument is not a string or number
      */
-    fun optjstring(i: Int, defval: String): String? = arg(i).optjstring(defval)
+    fun optjstring(i: Int, defval: String?): String? = arg(i).optjstring(defval)
 
     /** Return argument i as a LuaString if a string or number, `defval` if nil, or throw a LuaError  if any other type
      * @param i the index of the argument to test, 1 is the first argument

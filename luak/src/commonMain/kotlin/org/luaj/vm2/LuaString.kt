@@ -27,6 +27,7 @@ import org.luaj.vm2.io.*
 
 import org.luaj.vm2.lib.MathLib
 import kotlin.jvm.*
+import kotlin.native.concurrent.*
 
 /**
  * Subclass of [LuaValue] for representing lua strings.
@@ -509,8 +510,11 @@ private constructor(
          * server environment where there may be roge scripts, this should be replaced with a
          * read-only table since it is shared across all lua code in this Java VM.
          */
-        @kotlin.jvm.JvmField
-        var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaString_metatable
+            set(value) {
+                LuaString_metatable = value
+            }
 
         /** Size of cache of recent short strings. This is the maximum number of LuaStrings that
          * will be retained in the cache of recent short strings.  Exposed to package for testing.  */
@@ -796,3 +800,6 @@ private constructor(
  * @param bytes byte buffer
  * @return [LuaString] wrapping the byte buffer
  */
+
+@ThreadLocal
+private var LuaString_metatable: LuaValue? = null

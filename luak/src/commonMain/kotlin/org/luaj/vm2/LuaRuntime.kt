@@ -1,6 +1,7 @@
 package org.luaj.vm2
 
 import org.luaj.vm2.internal.*
+import kotlin.native.concurrent.*
 
 open class LuaRuntime {
     /** Simple cache of recently created strings that are short.
@@ -11,8 +12,12 @@ open class LuaRuntime {
     val recent_short_strings = arrayOfNulls<LuaString>(LuaString.RECENT_STRINGS_CACHE_SIZE)
 
     companion object {
-        private val _defaultRuntime by lazy { LuaRuntime() }
+        private val _defaultRuntime get() = LuaRuntime_defaultRuntime
         // Temporal hack to support statics on JVM, but allow to pass initial tests on native
-        val default: LuaRuntime? get() = if (JSystem.supportStatic) _defaultRuntime else null
+        //val default: LuaRuntime? get() = if (JSystem.supportStatic) _defaultRuntime else null
+        val default: LuaRuntime? get() = _defaultRuntime
     }
 }
+
+@ThreadLocal
+private val LuaRuntime_defaultRuntime by lazy { LuaRuntime() }

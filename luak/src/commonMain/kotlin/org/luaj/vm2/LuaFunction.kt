@@ -23,6 +23,7 @@ package org.luaj.vm2
 
 import org.luaj.vm2.internal.*
 import kotlin.js.*
+import kotlin.native.concurrent.*
 
 /**
  * Base class for functions implemented in Java.
@@ -93,6 +94,14 @@ abstract class LuaFunction : LuaValue() {
     companion object {
 
         /** Shared static metatable for all functions and closures.  */
-        @kotlin.jvm.JvmField var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaFunction_metatable
+            set(value) {
+                LuaFunction_metatable = value
+            }
     }
 }
+
+
+@ThreadLocal
+private var LuaFunction_metatable: LuaValue? = null

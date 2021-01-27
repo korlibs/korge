@@ -1,14 +1,16 @@
 package org.luaj.vm2
 
-import org.luaj.vm2.lib.jse.*
+import org.luaj.vm2.internal.*
+import org.luaj.vm2.lib.common.*
 import kotlin.test.*
 
 class StringTest {
 
     init {
-        JsePlatform.standardGlobals()
+        CommonPlatform.standardGlobals()
     }
 
+    /*
     @Test
     fun testToInputStream() {
         val str = LuaString.valueOf("Hello")
@@ -48,16 +50,16 @@ class StringTest {
 
         assertEquals('e', `is`.read().toChar())
     }
-
+    */
 
     private fun userFriendly(s: String): String {
-        val sb = StringBuffer()
+        val sb = StringBuilder()
         var i = 0
         val n = s.length
         while (i < n) {
             val c = s[i].toInt()
             if (c < ' '.toInt() || c >= 0x80) {
-                sb.append("\\u" + Integer.toHexString(0x10000 + c).substring(1))
+                sb.append("\\u" + (0x10000 + c).toHexString().substring(1))
             } else {
                 sb.append(c.toChar())
             }
@@ -108,7 +110,7 @@ class StringTest {
             194.toByte(),
             164.toByte()
         )
-        val expected = String(bytes, Charsets.UTF_8)
+        val expected = bytes.decodeToString()
         val actual = LuaString.valueOf(bytes).tojstring()
         val d = actual.toCharArray()
         assertEquals(160, d[0].toInt())
@@ -176,10 +178,10 @@ class StringTest {
 
     @Test
     fun testRecentStringsLongStrings() {
-        val abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toByteArray()
+        val abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".encodeToByteArray()
         assertTrue(abc.size > LuaString.RECENT_STRINGS_MAX_LENGTH)
-        val abc1 = LuaString.valueOf(abc)
-        val abc2 = LuaString.valueOf(abc)
+        val abc1 = LuaString.Companion.valueOf(abc)
+        val abc2 = LuaString.Companion.valueOf(abc)
         assertNotSame(abc1, abc2)
     }
 

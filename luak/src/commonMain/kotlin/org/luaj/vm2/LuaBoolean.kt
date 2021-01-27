@@ -21,6 +21,8 @@
  */
 package org.luaj.vm2
 
+import kotlin.native.concurrent.*
+
 /**
  * Extension of [LuaValue] which can hold a Java boolean as its value.
  *
@@ -71,6 +73,13 @@ class LuaBoolean internal constructor(
         /** The singleton instance representing lua `false`  */
         @kotlin.jvm.JvmField internal val _FALSE = LuaBoolean(false)
         /** Shared static metatable for boolean values represented in lua.  */
-        @kotlin.jvm.JvmField var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaBoolean_metatable
+            set(value) {
+                LuaBoolean_metatable = value
+            }
     }
 }
+
+@ThreadLocal
+private var LuaBoolean_metatable: LuaValue? = null

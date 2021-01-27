@@ -21,6 +21,7 @@
  */
 package org.luaj.vm2
 
+import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -75,6 +76,13 @@ open class LuaNil internal constructor() : LuaValue() {
 
     companion object {
         @kotlin.jvm.JvmField internal val _NIL = LuaNil()
-        @kotlin.jvm.JvmField var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaNil_metatable
+            set(value) {
+                LuaNil_metatable = value
+            }
     }
 }
+
+@ThreadLocal
+private var LuaNil_metatable: LuaValue? = null

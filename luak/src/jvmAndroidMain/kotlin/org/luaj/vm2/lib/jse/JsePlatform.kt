@@ -21,6 +21,7 @@
  */
 package org.luaj.vm2.lib.jse
 
+import org.luaj.vm2.lib.common.*
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LoadState
 import org.luaj.vm2.LuaThread
@@ -85,7 +86,7 @@ import org.luaj.vm2.lib.TableLib
  * @see Globals
  * //@see org.luaj.vm2.lib.jme.JmePlatform
  */
-object JsePlatform {
+object JsePlatform : CommonPlatform() {
 
     /**
      * Create a standard set of globals for JSE including all the libraries.
@@ -95,7 +96,7 @@ object JsePlatform {
      * @see JsePlatform
      * //@see org.luaj.vm2.lib.jme.JmePlatform
      */
-     fun standardGlobals(): Globals {
+     override fun standardGlobals(): Globals {
         val globals = Globals()
         globals.load(JseBaseLib())
         globals.load(PackageLib())
@@ -110,35 +111,5 @@ object JsePlatform {
         LoadState.install(globals)
         LuaC.install(globals)
         return globals
-    }
-
-    /** Create standard globals including the [DebugLib] library.
-     *
-     * @return Table of globals initialized with the standard JSE and debug libraries
-     * @see .standardGlobals
-     * @see JsePlatform
-     * //@see org.luaj.vm2.lib.jme.JmePlatform
-     *
-     * @see DebugLib
-     */
-     fun debugGlobals(): Globals {
-        val globals = standardGlobals()
-        globals.load(DebugLib())
-        return globals
-    }
-
-
-    /** Simple wrapper for invoking a lua function with command line arguments.
-     * The supplied function is first given a new Globals object,
-     * then the program is run with arguments.
-     */
-     fun luaMain(mainChunk: LuaValue, args: Array<String>) {
-        val g = standardGlobals()
-        val vargs = Array<LuaValue>(args.size) { LuaValue.valueOf(args[it]) }
-        val arg = LuaValue.listOf(vargs)
-        arg["n"] = args.size
-        g["arg"] = arg
-        mainChunk.initupvalue1(g)
-        mainChunk.invoke(LuaValue.varargsOf(vargs))
     }
 }

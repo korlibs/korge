@@ -1,11 +1,11 @@
 package org.luaj.vm2
 
-import org.luaj.vm2.lib.jse.JsePlatform
+import org.luaj.vm2.lib.common.*
 import kotlin.test.*
 
 class MathLibTest {
 
-    private val j2se: LuaValue = JsePlatform.standardGlobals().get("math")
+    private val j2se: LuaValue = CommonPlatform.standardGlobals().get("math")
     //private LuaValue j2me = JmePlatform.standardGlobals().get("math");
     private var supportedOnJ2me: Boolean = true
 
@@ -196,14 +196,14 @@ class MathLibTest {
 
     private fun tryTrigOps(op: String) {
         tryMathOp(op, 0.0)
-        tryMathOp(op, Math.PI / 8)
-        tryMathOp(op, Math.PI * 7 / 8)
-        tryMathOp(op, Math.PI * 8 / 8)
-        tryMathOp(op, Math.PI * 9 / 8)
-        tryMathOp(op, -Math.PI / 8)
-        tryMathOp(op, -Math.PI * 7 / 8)
-        tryMathOp(op, -Math.PI * 8 / 8)
-        tryMathOp(op, -Math.PI * 9 / 8)
+        tryMathOp(op, kotlin.math.PI / 8)
+        tryMathOp(op, kotlin.math.PI * 7 / 8)
+        tryMathOp(op, kotlin.math.PI * 8 / 8)
+        tryMathOp(op, kotlin.math.PI * 9 / 8)
+        tryMathOp(op, -kotlin.math.PI / 8)
+        tryMathOp(op, -kotlin.math.PI * 7 / 8)
+        tryMathOp(op, -kotlin.math.PI * 8 / 8)
+        tryMathOp(op, -kotlin.math.PI * 9 / 8)
     }
 
     private fun tryMathOp(op: String, x: Double) {

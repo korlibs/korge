@@ -24,6 +24,7 @@ package org.luaj.vm2
 
 import org.luaj.vm2.internal.*
 import kotlin.jvm.*
+import kotlin.native.concurrent.*
 
 /**
  * Subclass of [LuaValue] that implements
@@ -258,7 +259,11 @@ class LuaThread : LuaValue {
     companion object {
 
         /** Shared metatable for lua threads.  */
-        var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaThread_metatable
+            set(value) {
+                LuaThread_metatable = value
+            }
 
         /** The current number of coroutines.  Should not be set.  */
         var coroutine_count = 0
@@ -284,3 +289,6 @@ class LuaThread : LuaValue {
     }
 
 }
+
+@ThreadLocal
+private var LuaThread_metatable: LuaValue? = null

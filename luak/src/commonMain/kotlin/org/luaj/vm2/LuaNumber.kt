@@ -21,6 +21,8 @@
  */
 package org.luaj.vm2
 
+import kotlin.native.concurrent.*
+
 /**
  * Base class for representing numbers as lua values directly.
  *
@@ -51,7 +53,14 @@ abstract class LuaNumber : LuaValue() {
 
     companion object {
         /** Shared static metatable for all number values represented in lua.  */
-        @kotlin.jvm.JvmField var s_metatable: LuaValue? = null
+        var s_metatable: LuaValue?
+            get() = LuaNumber_metatable
+            set(value) {
+                LuaNumber_metatable = value
+            }
     }
 
 }
+
+@ThreadLocal
+private var LuaNumber_metatable: LuaValue? = null
