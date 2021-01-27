@@ -10,16 +10,19 @@ internal expect object EnvironmentInternal {
 }
 
 @ThreadLocal
-private var customEnvironments = LinkedHashMap<String, String>()
+private var customEnvironments: LinkedHashMap<String, String>? = null
 
 object Environment {
     // Uses querystring on JS/Browser, and proper env vars in the rest
-    operator fun get(key: String): String? = customEnvironments[key] ?: EnvironmentInternal[key]
+    operator fun get(key: String): String? = customEnvironments?.get(key) ?: EnvironmentInternal[key]
     operator fun set(key: String, value: String) {
-        customEnvironments[key] = value
+        if (customEnvironments != null) {
+            customEnvironments = LinkedHashMap()
+        }
+        customEnvironments?.set(key, value)
     }
 
-    fun getAll(): Map<String, String> = customEnvironments + EnvironmentInternal.getAll()
+    fun getAll(): Map<String, String> = (customEnvironments ?: mapOf()) + EnvironmentInternal.getAll()
 }
 
 fun Environment.expand(str: String): String {
