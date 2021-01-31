@@ -1,5 +1,6 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.internal.*
 import com.soywiz.kds.internal.umod
 
 inline fun count(cond: (index: Int) -> Boolean): Int {
@@ -66,9 +67,9 @@ fun DoubleArrayList.binarySearchRight(v: Double, fromIndex: Int = 0, toIndex: In
 inline fun genericBinarySearchResult(fromIndex: Int, toIndex: Int, check: (value: Int) -> Int): BSearchResult = BSearchResult(genericBinarySearch(fromIndex, toIndex, { _, _, low, _ -> -low - 1 }, check))
 
 inline fun genericBinarySearchLeft(fromIndex: Int, toIndex: Int, check: (value: Int) -> Int): Int =
-    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> kotlin.math.min(low, high).coerceIn(from, to - 1) }, check = check)
+    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> min2(low, high).coerceIn(from, to - 1) }, check = check)
 inline fun genericBinarySearchRight(fromIndex: Int, toIndex: Int, check: (value: Int) -> Int): Int =
-    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> kotlin.math.max(low, high).coerceIn(from, to - 1) }, check = check)
+    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> max2(low, high).coerceIn(from, to - 1) }, check = check)
 
 inline fun genericBinarySearch(
     fromIndex: Int,

@@ -1,5 +1,7 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.internal.*
+import com.soywiz.kds.internal.min2
 import kotlin.math.*
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
@@ -57,13 +59,13 @@ private fun <T> timSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boole
 
     val n = r - l + 1
     for (i in 0 until n step RUN) {
-        insertionSort(arr, l + i, l + min((i + 31), (n - 1)), ops, reversed)
+        insertionSort(arr, l + i, l + min2((i + 31), (n - 1)), ops, reversed)
     }
     var size = RUN
     while (size < n) {
         for (left in 0 until n step (2 * size)) {
             val mid = left + size - 1
-            val right = min((left + 2 * size - 1), (n - 1))
+            val right = min2((left + 2 * size - 1), (n - 1))
             merge(arr, l + left, l + mid, l + right, ops, reversed)
         }
         size *= 2

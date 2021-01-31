@@ -32,7 +32,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 
     fun ensure(count: Int) {
         if (length + count > data.size) {
-            data = data.copyOf(kotlin.math.max(length + count, data.size * 3)) as IntArray
+            data = data.copyOf(max2(length + count, data.size * 3)) as IntArray
         }
     }
 
@@ -231,7 +231,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
 
     private fun ensure(count: Int) {
         if (length + count > data.size) {
-            data = data.copyOf(kotlin.math.max(length + count, data.size * 3)) as DoubleArray
+            data = data.copyOf(max2(length + count, data.size * 3)) as DoubleArray
         }
     }
 
@@ -425,7 +425,7 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
 
     private fun ensure(count: Int) {
         if (length + count > data.size) {
-            data = data.copyOf(kotlin.math.max(length + count, data.size * 3)) as FloatArray
+            data = data.copyOf(max2(length + count, data.size * 3)) as FloatArray
         }
     }
 
