@@ -33,6 +33,7 @@ import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.attachments.*
+import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*
@@ -498,7 +499,7 @@ class SkeletonJson {
                                 timeline.setFrame(frameIndex++, valueMap!!.getFloat("time", 0f), valueMap!!.getString("name"))
                             }
                             timelines.add(timeline)
-                            duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+                            duration = max2(duration, timeline.frames[timeline.frameCount - 1])
 
                         }
                         "color" -> {
@@ -513,7 +514,7 @@ class SkeletonJson {
                                 frameIndex++
                             }
                             timelines.add(timeline)
-                            duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * ColorTimeline.ENTRIES])
+                            duration = max2(duration, timeline.frames[(timeline.frameCount - 1) * ColorTimeline.ENTRIES])
 
                         }
                         "twoColor" -> {
@@ -530,7 +531,7 @@ class SkeletonJson {
                                 frameIndex++
                             }
                             timelines.add(timeline)
-                            duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TwoColorTimeline.ENTRIES])
+                            duration = max2(duration, timeline.frames[(timeline.frameCount - 1) * TwoColorTimeline.ENTRIES])
 
                         }
                         else -> throw RuntimeException("Invalid timeline type for a slot: " + timelineName + " (" + slotMap!!.name + ")")
@@ -556,7 +557,7 @@ class SkeletonJson {
                             frameIndex++
                         }
                         timelines.add(timeline)
-                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * RotateTimeline.ENTRIES])
+                        duration = max2(duration, timeline.frames[(timeline.frameCount - 1) * RotateTimeline.ENTRIES])
 
                     }
                     "translate", "scale", "shear" -> {
@@ -583,7 +584,7 @@ class SkeletonJson {
                             frameIndex++
                         }
                         timelines.add(timeline)
-                        duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * TranslateTimeline.ENTRIES])
+                        duration = max2(duration, timeline.frames[(timeline.frameCount - 1) * TranslateTimeline.ENTRIES])
 
                     }
                     else -> throw RuntimeException("Invalid timeline type for a bone: " + timelineName + " (" + boneMap.name + ")")
@@ -608,7 +609,7 @@ class SkeletonJson {
                     frameIndex++
                 }
                 timelines.add(timeline)
-                duration = kotlin.math.max(duration, timeline.frames[(timeline.frameCount - 1) * IkConstraintTimeline.ENTRIES])
+                duration = max2(duration, timeline.frames[(timeline.frameCount - 1) * IkConstraintTimeline.ENTRIES])
             }
         }
 
@@ -626,7 +627,7 @@ class SkeletonJson {
                     frameIndex++
                 }
                 timelines.add(timeline)
-                duration = kotlin.math.max(duration,
+                duration = max2(duration,
                         timeline.frames[(timeline.frameCount - 1) * TransformConstraintTimeline.ENTRIES])
             }
         }
@@ -657,7 +658,7 @@ class SkeletonJson {
                             frameIndex++
                         }
                         timelines.add(timeline)
-                        duration = kotlin.math.max(duration,
+                        duration = max2(duration,
                             timeline.frames[(timeline.frameCount - 1) * PathConstraintPositionTimeline.ENTRIES])
                     }
                     "mix" -> {
@@ -671,7 +672,7 @@ class SkeletonJson {
                             frameIndex++
                         }
                         timelines.add(timeline)
-                        duration = kotlin.math.max(duration,
+                        duration = max2(duration,
                             timeline.frames[(timeline.frameCount - 1) * PathConstraintMixTimeline.ENTRIES])
                     }
                 }
@@ -723,7 +724,7 @@ class SkeletonJson {
                         frameIndex++
                     }
                     timelines.add(timeline)
-                    duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+                    duration = max2(duration, timeline.frames[timeline.frameCount - 1])
                 }
             }
         }
@@ -764,7 +765,7 @@ class SkeletonJson {
                 timeline.setFrame(frameIndex++, drawOrderMap.getFloat("time", 0f), drawOrder)
             }
             timelines.add(timeline)
-            duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+            duration = max2(duration, timeline.frames[timeline.frameCount - 1])
         }
 
         // Event timeline.
@@ -786,7 +787,7 @@ class SkeletonJson {
                 timeline.setFrame(frameIndex++, event)
             }
             timelines.add(timeline)
-            duration = kotlin.math.max(duration, timeline.frames[timeline.frameCount - 1])
+            duration = max2(duration, timeline.frames[timeline.frameCount - 1])
         }
 
         timelines.shrink()

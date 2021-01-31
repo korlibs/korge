@@ -320,7 +320,7 @@ class BatchBuilder2D constructor(
 	fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
 		ensure(icount, vcount)
 
-		for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+		for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
 		//for (p in array.points) addVertex(p.x, p.y, p.tx, p.ty, p.colMul, p.colAdd)
 
 		FBuffer.copy(array._data, 0, vertices, vertexPos * 4, vcount * 6 * 4)

@@ -4,6 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.max2
 import com.soywiz.korge3d.*
 import com.soywiz.korge3d.animation.*
 import com.soywiz.korge3d.internal.*
@@ -48,7 +50,7 @@ class ColladaParser {
 		val jointInputs: FastStringMap<Input>,
 		val skinSource: String
 	) {
-		val maxVcount = vcounts.map { it }.max() ?: 0
+		val maxVcount = vcounts.map { it }.maxOrNull() ?: 0
 		//fun toDef() = Library3D.SkinDef(bindShapeMatrix, skinSource, )
 	}
 
@@ -344,7 +346,7 @@ class ColladaParser {
 						val source = sources[sourceId] ?: continue
 						inputs += Input(semantic, offset, source, intArrayListOf())
 					}
-					val stride = (inputs.map { it.offset }.max() ?: 0) + 1
+					val stride = (inputs.map { it.offset }.maxOrNull() ?: 0) + 1
 
 					for (i in inputs) {
 						for (n in 0 until v.size / stride) {
@@ -663,7 +665,7 @@ class ColladaParser {
 					val inputs = arrayListOf<Input>()
 					for (input in triangles["input"]) {
 						val offset = input.getInt("offset") ?: 0
-						stride = max(stride, offset + 1)
+						stride = max2(stride, offset + 1)
 
 						val semantic = input.getString("semantic") ?: "unknown"
 						val source = input.getString("source")?.trim('#') ?: "unknown"

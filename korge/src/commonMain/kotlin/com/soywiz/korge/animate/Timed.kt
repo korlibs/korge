@@ -3,6 +3,8 @@ package com.soywiz.korge.animate
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import kotlin.math.*
 
 open class Timed<T>(initialCapacity: Int = 7) {
@@ -62,8 +64,8 @@ open class Timed<T>(initialCapacity: Int = 7) {
 			val time = times[n]
 			//if (time in (startTime + 1)..endTime) {
 			if (time in rangeLow..rangeHigh) {
-				min = min(min, n)
-				max = max(max, n)
+				min = min2(min, n)
+				max = max2(max, n)
 			}
 		}
 		out.startIndex = min

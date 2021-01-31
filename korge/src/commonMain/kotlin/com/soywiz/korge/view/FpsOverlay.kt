@@ -122,8 +122,8 @@ private class TimeSlidingWindow(val capacity: Int) {
 
     val avg: TimeSpan get() = (totalMicroseconds.toDouble() / deque.size).microseconds
     // @TODO: Can we compute this incrementally?
-    val min: TimeSpan get() = deque.min()?.microseconds ?: 1.microseconds
-    val max: TimeSpan get() = deque.max()?.microseconds ?: 1.microseconds
+    val min: TimeSpan get() = deque.minOrNull()?.microseconds ?: 1.microseconds
+    val max: TimeSpan get() = deque.maxOrNull()?.microseconds ?: 1.microseconds
 
     val avgFps: Double get() = 1.seconds / avg
     val minFps: Double get() = 1.seconds / max

@@ -106,7 +106,7 @@ data class Animation3D(val id: String, val target: String, val property: String,
 	) {
 		val transforms = matrices?.map { Transform3D().setMatrix(it) }?.toTypedArray()
 		val totalFrames = seconds.size
-		val totalTime = seconds.max()?.let { it.toDouble().seconds } ?: 0.seconds
+		val totalTime = seconds.maxOrNull()?.let { it.toDouble().seconds } ?: 0.seconds
 
 		// @TODO: Binary Search
 		fun findIndex(time: TimeSpan): Int {

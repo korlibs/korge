@@ -6,6 +6,7 @@ import android.os.Vibrator
 import androidx.core.content.ContextCompat.getSystemService
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.android.androidActivity
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.Views
 import kotlin.math.abs
 import kotlin.math.min
@@ -50,7 +51,7 @@ actual class NativeVibration actual constructor(views: Views) {
      */
     private fun Double.toAndroidAmplitude() : Int{
         val amplitude = 255 * abs(this)
-        return min(amplitude, 255.0).toInt()
+        return min2(amplitude, 255.0).toInt()
     }
 
 }
