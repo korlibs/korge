@@ -2,7 +2,9 @@ package com.soywiz.krypto
 
 import com.soywiz.krypto.encoding.Base64
 import com.soywiz.krypto.encoding.Hex
+import com.soywiz.krypto.internal.*
 import com.soywiz.krypto.internal.arraycopy
+import com.soywiz.krypto.internal.min2
 import kotlin.math.min
 
 open class HasherFactory(val create: () -> Hasher) {
@@ -35,7 +37,7 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int) {
         var left = count
         while (left > 0) {
             val remainingInChunk = chunkSize - writtenInChunk
-            val toRead = min(remainingInChunk, left)
+            val toRead = min2(remainingInChunk, left)
             arraycopy(data, curr, chunk, writtenInChunk, toRead)
             left -= toRead
             curr += toRead

@@ -11,3 +11,12 @@ internal fun arraycopy(src: IntArray, srcPos: Int, dst: IntArray, dstPos: Int, c
 internal fun ByteArray.readU8(o: Int): Int = this[o].toInt() and 0xFF
 internal fun ByteArray.readS32_be(o: Int): Int =
     (readU8(o + 3) shl 0) or (readU8(o + 2) shl 8) or (readU8(o + 1) shl 16) or (readU8(o + 0) shl 24)
+
+@PublishedApi internal fun min2(a: Int, b: Int) = if (a < b) a else b
+@PublishedApi internal fun max2(a: Int, b: Int) = if (a > b) a else b
+
+@PublishedApi internal fun min2(a: Float, b: Float) = if (a < b) a else b
+@PublishedApi internal fun max2(a: Float, b: Float) = if (a > b) a else b
+
+@PublishedApi internal fun min2(a: Double, b: Double) = if (a < b) a else b
+@PublishedApi internal fun max2(a: Double, b: Double) = if (a > b) a else b
