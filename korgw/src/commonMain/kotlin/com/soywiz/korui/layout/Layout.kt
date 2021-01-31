@@ -1,6 +1,7 @@
 package com.soywiz.korui.layout
 
 import com.soywiz.kds.*
+import com.soywiz.kgl.internal.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
@@ -20,8 +21,8 @@ object UiFillLayout : UiLayout {
 
         container.forEachVisibleChild { child ->
             val size = ctx.computeChildSize(child)
-            maxWidth = kotlin.math.max(size.width, maxWidth)
-            maxHeight = kotlin.math.max(size.height, maxHeight)
+            maxWidth = max2(size.width, maxWidth)
+            maxHeight = max2(size.height, maxHeight)
         }
         return SizeInt(maxWidth, maxHeight)
         */
@@ -82,7 +83,7 @@ open class LineUiLayout(
 
             //println(main)
             sum += main + padding
-            max = kotlin.math.max(max, rev)
+            max = max2(max, rev)
         }
         //println("${container.preferredSize} - ${container.minimumSize} - ${container.maximumSize}")
 

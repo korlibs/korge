@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.kgl.internal.*
 import com.soywiz.kgl.toInt
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -311,8 +312,8 @@ class WindowsGameWindow : EventLoopGameWindow() {
                 clazzName,
                 title,
                 winStyle.convert(),
-                min(max(0, (screenWidth - realWidth) / 2), screenWidth - 16).convert(),
-                min(max(0, (screenHeight - realHeight) / 2), screenHeight - 16).convert(),
+                min2(max2(0, (screenWidth - realWidth) / 2), screenWidth - 16).convert(),
+                min2(max2(0, (screenHeight - realHeight) / 2), screenHeight - 16).convert(),
                 realWidth.convert(),
                 realHeight.convert(),
                 null, null, null, null

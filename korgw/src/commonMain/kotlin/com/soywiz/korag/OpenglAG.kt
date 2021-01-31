@@ -4,6 +4,8 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.kgl.*
+import com.soywiz.kgl.internal.*
+import com.soywiz.kgl.internal.min2
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
@@ -333,7 +335,7 @@ abstract class AGOpengl : AG() {
                         is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
                         else -> error("Not an array or a matrix3d")
                     } as Array<Matrix3D>
-                    val arrayCount = min(declArrayCount, matArray.size)
+                    val arrayCount = min2(declArrayCount, matArray.size)
 
                     val matSize = when (uniformType) {
                         VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
@@ -380,11 +382,11 @@ abstract class AGOpengl : AG() {
                         is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
                         is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is FloatArray -> {
-                            arrayCount = min(declArrayCount, value.size / stride)
+                            arrayCount = min2(declArrayCount, value.size / stride)
                             tempBuffer.setFloats(0, value, 0, stride * arrayCount)
                         }
                         is Array<*> -> {
-                            arrayCount = min(declArrayCount, value.size)
+                            arrayCount = min2(declArrayCount, value.size)
                             for (n in 0 until value.size) {
                                 val vector = value[n] as Vector3D
                                 tempBuffer.setFloats(n * stride, vector.data, 0, stride)
