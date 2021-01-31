@@ -9,3 +9,6 @@ internal fun Int.trailingZeros(): Int = countTrailingZeroBits()
 
 @OptIn(ExperimentalStdlibApi::class)
 internal fun Int.leadingZeros(): Int = countLeadingZeroBits()
+
+internal fun min2(a: Int, b: Int) = if (a < b) a else b
+internal fun max2(a: Int, b: Int) = if (a > b) a else b

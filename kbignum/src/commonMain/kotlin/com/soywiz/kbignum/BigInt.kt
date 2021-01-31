@@ -1,8 +1,8 @@
 package com.soywiz.kbignum
 
+import com.soywiz.kbignum.internal.*
 import com.soywiz.kbignum.internal.bitCount
 import com.soywiz.kbignum.internal.leadingZeros
-import com.soywiz.kbignum.internal.trailingZeros
 import kotlin.math.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -331,7 +331,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	private inline fun bitwise(other: BigInt, op: (a: Int, b: Int) -> Int): BigInt {
 		return BigInt(
 			UInt16ArrayZeroPad(
-				max(
+				max2(
 					this.data.size,
 					other.data.size
 				)
@@ -386,7 +386,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 class UInt16ArrayZeroPad private constructor(val data: IntArray) {
 	val size get() = data.size
 
-	constructor(size: Int) : this(IntArray(max(1, size)))
+	constructor(size: Int) : this(IntArray(max2(1, size)))
 
 	operator fun get(index: Int): Int {
         if (index !in data.indices) return 0
@@ -422,7 +422,7 @@ private fun digit(c: Char): Int {
 internal object UnsignedBigInt {
 	internal fun add(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
 		var carry = 0
-		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
+		val out = UInt16ArrayZeroPad(max2(l.size, r.size) + 1)
 		for (i in 0 until out.size) {
 			val sum = l[i] + r[i] + carry
 			carry = if ((sum ushr 16) != 0) 1 else 0
@@ -434,7 +434,7 @@ internal object UnsignedBigInt {
 	// l >= 0 && r >= 0 && l >= r
 	internal fun sub(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
 		var borrow = 0
-		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
+		val out = UInt16ArrayZeroPad(max2(l.size, r.size) + 1)
 		for (i in 0 until out.size) {
 			val difference = l[i] - borrow - r[i]
 			out[i] = difference
@@ -477,7 +477,7 @@ internal object UnsignedBigInt {
 	}
 
 	fun compare(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): Int {
-		for (n in max(l.size, r.size) - 1 downTo 0) {
+		for (n in max2(l.size, r.size) - 1 downTo 0) {
 			val vl = l[n]
 			val vr = r[n]
 			if (vl < vr) return -1

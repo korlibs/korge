@@ -1,6 +1,6 @@
 package com.soywiz.kbignum
 
-import kotlin.math.*
+import com.soywiz.kbignum.internal.*
 
 class BigNum(val int: BigInt, val scale: Int) {
 	init {
@@ -68,7 +68,7 @@ class BigNum(val int: BigInt, val scale: Int) {
 
 	override fun equals(other: Any?): Boolean = (other is BigNum) && this.compareTo(other) == 0
 
-	private fun commonScale(other: BigNum) = max(this.scale, other.scale)
+	private fun commonScale(other: BigNum) = max2(this.scale, other.scale)
 
 	private inline fun binary(other: BigNum, callback: (l: BigInt, r: BigInt) -> BigInt): BigNum {
 		val commonScale = this.commonScale(other)
