@@ -493,7 +493,7 @@ class DebugLib : TwoArgFunction() {
         @Synchronized
         private fun pushcall(): CallFrame {
             if (calls >= frame.size) {
-                val n = kotlin.math.max(4, frame.size * 3 / 2)
+                val n = max2(4, frame.size * 3 / 2)
                 val f = arrayOfNulls<CallFrame>(n)
                 arraycopy(frame as Array<CallFrame?>, 0, f, 0, frame.size)
                 for (i in frame.size until n)

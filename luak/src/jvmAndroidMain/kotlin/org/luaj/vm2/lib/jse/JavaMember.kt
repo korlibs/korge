@@ -22,6 +22,7 @@
 package org.luaj.vm2.lib.jse
 
 import org.luaj.vm2.Varargs
+import org.luaj.vm2.internal.*
 import org.luaj.vm2.lib.VarArgFunction
 import org.luaj.vm2.lib.jse.CoerceLuaToJava.Coercion
 
@@ -66,7 +67,7 @@ internal abstract class JavaMember protected constructor(params: Array<Class<*>>
         val a: Array<Any?> = if (varargs == null) {
             Array(fixedargs.size) { fixedargs[it].coerce(args.arg(it + 1)) }
         } else {
-            val n = Math.max(fixedargs.size, args.narg())
+            val n = max2(fixedargs.size, args.narg())
             arrayOfNulls<Any>(n).also { a ->
                 for (i in fixedargs.indices) a[i] = fixedargs[i].coerce(args.arg(i + 1))
                 for (i in fixedargs.size until n) a[i] = varargs.coerce(args.arg(i + 1))

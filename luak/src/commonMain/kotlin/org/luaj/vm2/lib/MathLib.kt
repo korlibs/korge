@@ -25,6 +25,8 @@ import org.luaj.vm2.LuaDouble
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.Varargs
+import org.luaj.vm2.internal.*
+import org.luaj.vm2.internal.max2
 import kotlin.native.concurrent.*
 import kotlin.random.Random
 
@@ -244,7 +246,7 @@ open class MathLib : TwoArgFunction() {
             var i = 2
             val n = args.narg()
             while (i <= n) {
-                m = kotlin.math.max(m, args.checkdouble(i))
+                m = max2(m, args.checkdouble(i))
                 ++i
             }
             return LuaValue.valueOf(m)
@@ -257,7 +259,7 @@ open class MathLib : TwoArgFunction() {
             var i = 2
             val n = args.narg()
             while (i <= n) {
-                m = kotlin.math.min(m, args.checkdouble(i))
+                m = min2(m, args.checkdouble(i))
                 ++i
             }
             return LuaValue.valueOf(m)

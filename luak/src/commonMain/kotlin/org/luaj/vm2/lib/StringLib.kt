@@ -1093,9 +1093,9 @@ class StringLib : TwoArgFunction() {
             var init = args.optint(3, 1)
 
             if (init > 0) {
-                init = kotlin.math.min(init - 1, s!!.length())
+                init = min2(init - 1, s!!.length())
             } else if (init < 0) {
-                init = kotlin.math.max(0, s!!.length() + init)
+                init = max2(0, s!!.length() + init)
             }
 
             val fastMatch = find && (args.arg(4).toboolean() || pat!!.indexOfAny(SPECIALS) == -1)

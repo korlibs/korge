@@ -79,7 +79,7 @@ abstract class LuaFunction : LuaValue() {
      */
     fun classnamestub(): String {
         val s = this::class.portableName
-        return s.substring(kotlin.math.max(s.lastIndexOf('.'), s.lastIndexOf('$')) + 1)
+        return s.substring(max2(s.lastIndexOf('.'), s.lastIndexOf('$')) + 1)
     }
 
     /** Return a human-readable name for this function.  Returns the last part of the class name by default.

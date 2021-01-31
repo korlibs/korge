@@ -621,7 +621,7 @@ abstract class Varargs {
         }
 
         override fun copyto(dest: Array<LuaValue>, offset: Int, length: Int) {
-            val n = kotlin.math.min(v.size, length)
+            val n = min2(v.size, length)
             arraycopy(v, 0, dest, offset, n)
             r.copyto(dest, offset + n, length - n)
         }
@@ -688,7 +688,7 @@ abstract class Varargs {
         }
 
         override fun copyto(dest: Array<LuaValue>, offset: Int, length: Int) {
-            val n = kotlin.math.min(this.length, length)
+            val n = min2(this.length, length)
             arraycopy(this.v, this.offset, dest, offset, n)
             more.copyto(dest, offset + n, length - n)
         }

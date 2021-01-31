@@ -323,13 +323,13 @@ open class Globals(
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             val a = avail()
             if (a <= 0) return -1
-            val n_read = kotlin.math.min(a, len)
+            val n_read = min2(a, len)
             arraycopy(this.b, i, b, off, n_read)
             i += n_read
             return n_read
         }
 
-        override fun skip(n: Long): Long = kotlin.math.min(n, (j - i).toLong()).also { i += it.toInt() }
+        override fun skip(n: Long): Long = min2(n, (j - i).toLong()).also { i += it.toInt() }
         override fun available(): Int = j - i
     }
 

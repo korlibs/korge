@@ -152,7 +152,7 @@ open class LuaTable : LuaValue, Metatable {
     @JvmOverloads
     constructor(varargs: Varargs, firstarg: Int = 1) {
         val nskip = firstarg - 1
-        val n = kotlin.math.max(varargs.narg() - nskip, 0)
+        val n = max2(varargs.narg() - nskip, 0)
         presize(n, 1)
         set(N, LuaValue.valueOf(n))
         for (i in 1..n)
@@ -552,7 +552,7 @@ open class LuaTable : LuaValue, Metatable {
         for (bit in 0..30) {
             if (i > array.size)
                 break
-            val j = kotlin.math.min(array.size, 1 shl bit)
+            val j = min2(array.size, 1 shl bit)
             var c = 0
             while (i <= j) {
                 if (array[i++ - 1] != null)
@@ -640,7 +640,7 @@ open class LuaTable : LuaValue, Metatable {
                     ++i
                 }
             }
-            arraycopy(oldArray, 0, newArray, 0, kotlin.math.min(oldArray.size, newArraySize))
+            arraycopy(oldArray, 0, newArray, 0, min2(oldArray.size, newArraySize))
         } else {
             newArray = array
         }

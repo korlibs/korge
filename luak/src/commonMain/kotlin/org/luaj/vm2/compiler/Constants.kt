@@ -115,42 +115,42 @@ open class Constants protected constructor() : Lua() {
          fun realloc(v: Array<LuaValue>?, n: Int): Array<LuaValue> {
             val a = arrayOfNulls<LuaValue>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<LuaValue>
         }
 
          fun realloc(v: Array<Prototype>?, n: Int): Array<Prototype> {
             val a = arrayOfNulls<Prototype>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<Prototype>
         }
 
          fun realloc(v: Array<LuaString>?, n: Int): Array<LuaString> {
             val a = arrayOfNulls<LuaString>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<LuaString>
         }
 
          fun realloc(v: Array<LocVars>?, n: Int): Array<LocVars> {
             val a = arrayOfNulls<LocVars>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<LocVars>
         }
 
          fun realloc(v: Array<Upvaldesc>?, n: Int): Array<Upvaldesc> {
             val a = arrayOfNulls<Upvaldesc>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<Upvaldesc>
         }
 
          fun realloc(v: Array<LexState.Vardesc>?, n: Int): Array<LexState.Vardesc> {
             val a = arrayOfNulls<LexState.Vardesc>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<LexState.Vardesc>
         }
 
@@ -161,28 +161,28 @@ open class Constants protected constructor() : Lua() {
          fun realloc(v: Array<LexState.Labeldesc>?, n: Int): Array<LexState.Labeldesc> {
             val a = arrayOfNulls<LexState.Labeldesc>(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a as Array<LexState.Labeldesc>
         }
 
          fun realloc(v: IntArray?, n: Int): IntArray {
             val a = IntArray(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a
         }
 
          fun realloc(v: ByteArray?, n: Int): ByteArray {
             val a = ByteArray(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a
         }
 
          fun realloc(v: CharArray?, n: Int): CharArray {
             val a = CharArray(n)
             if (v != null)
-                arraycopy(v, 0, a, 0, kotlin.math.min(v.size, n))
+                arraycopy(v, 0, a, 0, min2(v.size, n))
             return a
         }
     }

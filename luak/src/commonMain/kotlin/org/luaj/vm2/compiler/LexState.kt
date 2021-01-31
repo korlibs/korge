@@ -787,7 +787,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
         val reg = registerlocalvar(name)
         fs!!.checklimit(dyd.n_actvar + 1, Constants.LUAI_MAXVARS, "local variables")
         if (dyd.actvar == null || dyd.n_actvar + 1 > dyd.actvar!!.size)
-            dyd.actvar = Constants.realloc(dyd.actvar, kotlin.math.max(1, dyd.n_actvar * 2))
+            dyd.actvar = Constants.realloc(dyd.actvar, max2(1, dyd.n_actvar * 2))
         dyd.actvar!![dyd.n_actvar++] = Vardesc(reg)
     }
 
@@ -952,7 +952,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
         val clp: Prototype
         val f = fs!!.f  /* prototype of current function */
         if (f!!.p == null || fs!!.np >= f.p.size) {
-            f.p = Constants.realloc(f.p, kotlin.math.max(1, fs!!.np * 2))
+            f.p = Constants.realloc(f.p, max2(1, fs!!.np * 2))
         }
         clp = Prototype()
         f.p[fs!!.np++] = clp
