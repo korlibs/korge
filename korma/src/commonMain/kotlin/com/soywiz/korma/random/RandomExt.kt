@@ -50,7 +50,7 @@ data class RandomWeights<T>(val weightsMap: Map<T, Double>) {
 
     companion object {
         private fun normalizeWeights(weights: List<Double>): List<Double> {
-            val min = weights.min() ?: 0.0
+            val min = weights.minOrNull() ?: 0.0
             return weights.map { (it + min) + 1 }
         }
     }

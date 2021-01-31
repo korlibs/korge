@@ -778,7 +778,7 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
 
     private fun doRound(j: Int, k: Int) {
         val a = atan2(inA, normals[k].x * normals[j].x + normals[k].y * normals[j].y)
-        val steps = kotlin.math.max(round(stepsPerRad * abs(a)).toInt(), 1)
+        val steps = max2(round(stepsPerRad * abs(a)).toInt(), 1)
 
         var x = normals[k].x
         var y = normals[k].y
@@ -2826,19 +2826,19 @@ internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESER
         ): Boolean {
             if (a1 < a2) {
                 if (b1 < b2) {
-                    Left[0] = kotlin.math.max(a1, b1)
-                    Right[0] = kotlin.math.min(a2, b2)
+                    Left[0] = max2(a1, b1)
+                    Right[0] = min2(a2, b2)
                 } else {
-                    Left[0] = kotlin.math.max(a1, b2)
-                    Right[0] = kotlin.math.min(a2, b1)
+                    Left[0] = max2(a1, b2)
+                    Right[0] = min2(a2, b1)
                 }
             } else {
                 if (b1 < b2) {
-                    Left[0] = kotlin.math.max(a2, b1)
-                    Right[0] = kotlin.math.min(a1, b2)
+                    Left[0] = max2(a2, b1)
+                    Right[0] = min2(a1, b2)
                 } else {
-                    Left[0] = kotlin.math.max(a2, b2)
-                    Right[0] = kotlin.math.min(a1, b1)
+                    Left[0] = max2(a2, b2)
+                    Right[0] = min2(a1, b1)
                 }
             }
             return Left[0] < Right[0]

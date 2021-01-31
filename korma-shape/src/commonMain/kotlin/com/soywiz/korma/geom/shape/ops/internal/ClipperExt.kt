@@ -15,10 +15,10 @@ internal fun Path.toShape2d(): Shape2d {
             val bl = this[(n + 3) % 4]
 
             if ((tl.x == bl.x) && (tr.x == br.x) && (tl.y == tr.y) && (bl.y == br.y)) {
-                val xmin = kotlin.math.min(tl.x, tr.x)
-                val xmax = kotlin.math.max(tl.x, tr.x)
-                val ymin = kotlin.math.min(tl.y, bl.y)
-                val ymax = kotlin.math.max(tl.y, bl.y)
+                val xmin = min2(tl.x, tr.x)
+                val xmax = max2(tl.x, tr.x)
+                val ymin = min2(tl.y, bl.y)
+                val ymax = max2(tl.y, bl.y)
                 //println("($xmin,$ymin)-($xmax-$ymax) : $tl,$tr,$br,$bl")
                 return Shape2d.Rectangle(xmin, ymin, xmax - xmin, ymax - ymin)
             }

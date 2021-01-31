@@ -1,5 +1,7 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.internal.max2
 import kotlin.native.concurrent.ThreadLocal
 
 class ScaleMode(
@@ -27,14 +29,14 @@ class ScaleMode(
         val COVER = ScaleMode { c, iw, ih, cw, ch ->
             val s0 = cw / iw
             val s1 = ch / ih
-            val s = kotlin.math.max(s0, s1)
+            val s = max2(s0, s1)
             if (c == 0) iw * s else ih * s
         }
 
         val SHOW_ALL = ScaleMode { c, iw, ih, cw, ch ->
             val s0 = cw / iw
             val s1 = ch / ih
-            val s = kotlin.math.min(s0, s1)
+            val s = min2(s0, s1)
             if (c == 0) iw * s else ih * s
         }
 

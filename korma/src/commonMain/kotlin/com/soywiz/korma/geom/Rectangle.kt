@@ -106,8 +106,8 @@ data class Rectangle(
     infix fun intersection(that: Rectangle) = intersection(that, Rectangle())
 
     fun intersection(that: Rectangle, target: Rectangle = Rectangle()) = if (this intersects that) target.setBounds(
-        kotlin.math.max(this.left, that.left), kotlin.math.max(this.top, that.top),
-        kotlin.math.min(this.right, that.right), kotlin.math.min(this.bottom, that.bottom)
+        max2(this.left, that.left), max2(this.top, that.top),
+        min2(this.right, that.right), min2(this.bottom, that.bottom)
     ) else null
 
     fun displaced(dx: Double, dy: Double) = Rectangle(this.x + dx, this.y + dy, width, height)
@@ -327,10 +327,10 @@ fun Iterable<IRectangle>.bounds(target: Rectangle = Rectangle()): Rectangle {
             bottom = r.bottom
             first = false
         } else {
-            left = kotlin.math.min(left, r.left)
-            right = kotlin.math.max(right, r.right)
-            top = kotlin.math.min(top, r.top)
-            bottom = kotlin.math.max(bottom, r.bottom)
+            left = min2(left, r.left)
+            right = max2(right, r.right)
+            top = min2(top, r.top)
+            bottom = max2(bottom, r.bottom)
         }
     }
     return target.setBounds(left, top, right, bottom)

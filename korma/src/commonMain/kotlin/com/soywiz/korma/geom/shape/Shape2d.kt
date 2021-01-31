@@ -178,7 +178,7 @@ inline fun approximateCurve(
     crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,
     crossinline emit: (x: Double, y: Double) -> Unit
 ) {
-    val rcurveSteps = max(curveSteps, 20)
+    val rcurveSteps = max2(curveSteps, 20)
     val dt = 1.0 / rcurveSteps
     var lastX = 0.0
     var lastY = 0.0
@@ -218,10 +218,10 @@ fun IPointArrayList.toRectangleOrNull(): Shape2d.Rectangle? {
     val ys = setOf(getY(0), getY(1), getY(2), getY(3))
     if (xs.size != 2 || ys.size != 2) return null
     //get coordinates
-    val left = xs.min() ?: return null
-    val right = xs.max() ?: return null
-    val top = ys.max() ?: return null
-    val bottom = ys.min() ?: return null
+    val left = xs.minOrNull() ?: return null
+    val right = xs.maxOrNull() ?: return null
+    val top = ys.maxOrNull() ?: return null
+    val bottom = ys.minOrNull() ?: return null
     return Shape2d.Rectangle(Rectangle.fromBounds(top, left, right, bottom))
 }
 
