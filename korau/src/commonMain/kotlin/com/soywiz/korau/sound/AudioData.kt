@@ -3,6 +3,8 @@ package com.soywiz.korau.sound
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.format.*
+import com.soywiz.korau.internal.*
+import com.soywiz.korau.internal.min2
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import kotlin.math.*
@@ -44,7 +46,7 @@ fun AudioData.withRate(rate: Int) = AudioData(rate, samples)
 //    for (chunk in 0 until ceil(out.totalSamples.toDouble() / MAX_CHUNK_SIZE).toInt()) {
 //        val offset = chunk * MAX_CHUNK_SIZE
 //        val available = out.totalSamples - offset
-//        val chunkSize = min(MAX_CHUNK_SIZE, available)
+//        val chunkSize = min2(MAX_CHUNK_SIZE, available)
 //        //println("chunk=$chunk, offset=$offset, available=$available, chunkSize=$chunkSize")
 //        for (channel in 0 until channels) {
 //            for (n in 0 until chunkSize) {
@@ -70,7 +72,7 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
 
     override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
         val available = data.samples.totalSamples - cursor
-        val toread = min(available, length)
+        val toread = min2(available, length)
         if (toread > 0) {
             for (n in 0 until channels) {
                 arraycopy(data.samples[n], cursor, out[n], offset, toread)

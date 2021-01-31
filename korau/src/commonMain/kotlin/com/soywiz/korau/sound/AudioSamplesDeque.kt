@@ -7,7 +7,7 @@ import kotlin.math.*
 class AudioSamplesDeque(val channels: Int) {
     val buffer = Array(channels) { ShortArrayDeque() }
     val availableRead get() = buffer.getOrNull(0)?.availableRead ?: 0
-    val availableReadMax: Int get() = buffer.map { it.availableRead }.max() ?: 0
+    val availableReadMax: Int get() = buffer.map { it.availableRead }.maxOrNull() ?: 0
 
     private val temp = ShortArray(1)
 
@@ -60,19 +60,19 @@ class AudioSamplesDeque(val channels: Int) {
     }
 
     fun read(out: AudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min(len, availableRead)
+        val result = min2(len, availableRead)
         for (channel in 0 until out.channels) this.buffer[channel].read(out[channel], offset, len)
         return result
     }
 
     fun read(out: AudioSamplesInterleaved, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min(len, availableRead)
+        val result = min2(len, availableRead)
         for (channel in 0 until out.channels) for (n in 0 until len) out[channel, offset + n] = this.read(channel)
         return result
     }
 
     fun read(out: IAudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min(len, availableRead)
+        val result = min2(len, availableRead)
         when (out) {
             is AudioSamples -> read(out, offset, len)
             is AudioSamplesInterleaved -> read(out, offset, len)

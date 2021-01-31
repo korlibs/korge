@@ -34,7 +34,7 @@ class AudioSamplesProcessor(val channels: Int, val totalSamples: Int, val data: 
         return this
     }
     fun add(samples: AudioSamples, scale: Float = 1f): AudioSamplesProcessor {
-        for (ch in 0 until min(channels, samples.channels)) {
+        for (ch in 0 until min2(channels, samples.channels)) {
             val odata = this.data[ch]
             val idata = samples.data[ch]
             for (n in 0 until samples.totalSamples) {
@@ -48,7 +48,7 @@ class AudioSamplesProcessor(val channels: Int, val totalSamples: Int, val data: 
             val odata = this.data[ch]
             var maxAbs = 0f
             for (n in 0 until totalSamples) {
-                maxAbs = kotlin.math.max(maxAbs, odata[n].absoluteValue)
+                maxAbs = max2(maxAbs, odata[n].absoluteValue)
             }
             if (maxAbs > 1f) {
                 val invMaxAbs = 1f / maxAbs
@@ -60,7 +60,7 @@ class AudioSamplesProcessor(val channels: Int, val totalSamples: Int, val data: 
         return this
     }
     fun copyTo(samples: AudioSamples) {
-        for (ch in 0 until min(channels, samples.channels)) {
+        for (ch in 0 until min2(channels, samples.channels)) {
             val idata = this.data[ch]
             val odata = samples.data[ch]
             for (n in 0 until samples.totalSamples) {
@@ -83,8 +83,8 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     }
 
     fun copyTo(that: AudioSamples) {
-        for (ch in 0 until min(channels, that.channels)) {
-            arraycopy(this.data[ch], 0, that.data[ch], 0, min(totalSamples, that.totalSamples))
+        for (ch in 0 until min2(channels, that.channels)) {
+            arraycopy(this.data[ch], 0, that.data[ch], 0, min2(totalSamples, that.totalSamples))
         }
     }
 
