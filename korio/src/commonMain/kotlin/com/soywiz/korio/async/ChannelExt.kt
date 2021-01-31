@@ -1,6 +1,8 @@
 package com.soywiz.korio.async
 
 import com.soywiz.kmem.*
+import com.soywiz.korio.internal.*
+import com.soywiz.korio.internal.min2
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -47,7 +49,7 @@ fun ReceiveChannel<ByteArray>.toAsyncInputStream(): AsyncInputStream {
 				currentPos = 0
 			}
 
-			val toRead = min(currentAvailable, len)
+			val toRead = min2(currentAvailable, len)
 			arraycopy(currentData, currentPos, buffer, offset, toRead)
 			currentPos += toRead
 			return toRead

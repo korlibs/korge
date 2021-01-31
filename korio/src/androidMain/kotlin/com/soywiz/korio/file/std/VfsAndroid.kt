@@ -4,6 +4,7 @@ import android.content.Context
 import com.soywiz.korio.android.androidContext
 import com.soywiz.klock.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
@@ -93,7 +94,7 @@ class AndroidResourcesVfs(var context: Context?) : Vfs() {
             val temp = ByteArray(16 * 1024)
             var available = (range.endExclusiveClamped - range.start)
             while (available >= 0) {
-                val read = fs.read(temp, 0, Math.min(temp.size.toLong(), available).toInt())
+                val read = fs.read(temp, 0, min2(temp.size.toLong(), available).toInt())
                 if (read <= 0) break
                 out.write(temp, 0, read)
                 available -= read
@@ -181,8 +182,8 @@ private class LocalVfsJvm : LocalVfsV2() {
 	override suspend fun readRange(path: String, range: LongRange): ByteArray = executeIo {
 		RandomAccessFile(resolveFile(path), "r").use { raf ->
 			val fileLength = raf.length()
-			val start = kotlin.math.min(range.start, fileLength)
-			val end = kotlin.math.min(range.endInclusive, fileLength - 1) + 1
+			val start = min2(range.start, fileLength)
+			val end = min2(range.endInclusive, fileLength - 1) + 1
 			val totalRead = (end - start).toInt()
 			val out = ByteArray(totalRead)
 			raf.seek(start)

@@ -3,6 +3,7 @@ package com.soywiz.korio.file
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korio.*
+import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 
@@ -14,7 +15,7 @@ inline class PathInfo(val fullPath: String)
 fun PathInfo.relativePathTo(relative: PathInfo): String? {
     val thisParts = this.parts().toMutableList()
     val relativeParts = relative.parts().toMutableList()
-    val maxNumParts = kotlin.math.min(thisParts.size, relativeParts.size)
+    val maxNumParts = min2(thisParts.size, relativeParts.size)
     val outputParts = arrayListOf<String>()
     val commonCount = count { it < maxNumParts && thisParts[it] == relativeParts[it] }
     while (relativeParts.size > commonCount) {

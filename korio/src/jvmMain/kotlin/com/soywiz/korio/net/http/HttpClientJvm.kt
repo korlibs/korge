@@ -3,6 +3,7 @@ package com.soywiz.korio.net.http
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.atomic.*
+import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
@@ -83,7 +84,7 @@ class HttpClientJvm : HttpClient() {
 
 				val os = con.outputStream
 				while (left > 0) {
-					val read = ccontent.read(temp, 0, Math.min(temp.size, left.toUintClamp()))
+					val read = ccontent.read(temp, 0, min2(temp.size, left.toUintClamp()))
 					if (read <= 0) invalidOp("Problem reading")
 					left -= read
 					os.write(temp, 0, read)

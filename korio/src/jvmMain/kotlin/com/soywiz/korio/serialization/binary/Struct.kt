@@ -125,8 +125,8 @@ class StructReflect<T>(val clazz: Class<T>) {
 		.sortedBy { it.offset }
 
 	val specifiedSize = clazz.getAnnotation(Size::class.java)?.size
-	val calculatedSize = fieldsWithAnnotation.map { it.offset + it.type.size }.max()
-	val size = specifiedSize ?: calculatedSize ?: fieldsWithAnnotation.map { it.offset + it.type.size }.max()
+	val calculatedSize = fieldsWithAnnotation.map { it.offset + it.type.size }.maxOrNull()
+	val size = specifiedSize ?: calculatedSize ?: fieldsWithAnnotation.map { it.offset + it.type.size }.maxOrNull()
 	?: throw IllegalArgumentException("Empty struct $clazz or without @Offset")
 
 	@Suppress("UNCHECKED_CAST")

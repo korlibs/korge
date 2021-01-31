@@ -5,6 +5,8 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.internal.*
+import com.soywiz.korio.internal.max2
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
@@ -121,7 +123,7 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 
 			override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
 				files.writeData(npath, position, buffer, offset, len)
-				updateInfo(info.copy(size = max(info.size, position + len)))
+				updateInfo(info.copy(size = max2(info.size, position + len)))
 			}
 
 			override suspend fun setLength(value: Long) {
@@ -239,7 +241,7 @@ private class StorageFiles(val storage: SimpleStorage) {
 			val inChunk = (apos % CHUNK_SIZE).toInt()
 			val c = getFileChunk(fileName, chunk) ?: byteArrayOf()
 			val available = CHUNK_SIZE - inChunk
-			val written = min(available, pending)
+			val written = min2(available, pending)
 			if (written <= 0) invalidOp("Unexpected written")
 			val cc = c.copyOf(inChunk + written)
 			arraycopy(buffer, aoffset, cc, inChunk, written)
@@ -257,7 +259,7 @@ private class StorageFiles(val storage: SimpleStorage) {
 		val inChunk = (position % CHUNK_SIZE).toInt()
 		val c = getFileChunk(fileName, chunk) ?: return 0
 		val available = c.size - inChunk
-		val read = min(available, len)
+		val read = min2(available, len)
 		arraycopy(c, inChunk, buffer, offset, read)
 		return read
 	}

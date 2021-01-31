@@ -2,6 +2,7 @@ package com.soywiz.korio.lang
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korio.internal.*
 import kotlin.native.concurrent.SharedImmutable
 
 abstract class Charset(val name: String) {
@@ -194,7 +195,7 @@ fun ByteArray.toString(charset: Charset): String {
 
 fun ByteArray.readStringz(o: Int, size: Int, charset: Charset = UTF8): String {
 	var idx = o
-	val stop = kotlin.math.min(this.size, o + size)
+	val stop = min2(this.size, o + size)
 	while (idx < stop) {
 		if (this[idx] == 0.toByte()) break
 		idx++

@@ -3,6 +3,8 @@
 package com.soywiz.korio.compression.lzma
 
 import com.soywiz.korio.experimental.*
+import com.soywiz.korio.internal.*
+import com.soywiz.korio.internal.max2
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.checksum.*
 import kotlin.math.*
@@ -533,8 +535,8 @@ object SevenZip {
 			if (dictionarySize < 0) return false
 			if (m_DictionarySize != dictionarySize) {
 				m_DictionarySize = dictionarySize
-				m_DictionarySizeCheck = max(m_DictionarySize, 1)
-				m_OutWindow.create(max(m_DictionarySizeCheck, 1 shl 12))
+				m_DictionarySizeCheck = max2(m_DictionarySize, 1)
+				m_OutWindow.create(max2(m_DictionarySizeCheck, 1 shl 12))
 			}
 			return true
 		}
@@ -1414,7 +1416,7 @@ object SevenZip {
 				}
 
 				var numAvailableBytesFull = _matchFinder!!.getNumAvailableBytes() + 1
-				numAvailableBytesFull = min(kNumOpts - 1 - cur, numAvailableBytesFull)
+				numAvailableBytesFull = min2(kNumOpts - 1 - cur, numAvailableBytesFull)
 				numAvailableBytes = numAvailableBytesFull
 
 				if (numAvailableBytes < 2)
@@ -1423,7 +1425,7 @@ object SevenZip {
 					numAvailableBytes = _numFastBytes
 				if (!nextIsChar && matchByte != currentByte) {
 					// try Literal + rep0
-					val t = min(numAvailableBytesFull - 1, _numFastBytes)
+					val t = min2(numAvailableBytesFull - 1, _numFastBytes)
 					val lenTest2 = _matchFinder!!.getMatchLen(0, reps[0], t)
 					if (lenTest2 >= 2) {
 						val state2 = LzmaBase.stateUpdateChar(state)
@@ -1483,7 +1485,7 @@ object SevenZip {
 
 					// if (_maxMode)
 					if (lenTest < numAvailableBytesFull) {
-						val t = min(numAvailableBytesFull - 1 - lenTest, _numFastBytes)
+						val t = min2(numAvailableBytesFull - 1 - lenTest, _numFastBytes)
 						val lenTest2 = _matchFinder!!.getMatchLen(lenTest, reps[repIndex], t)
 						if (lenTest2 >= 2) {
 							var state2 =
@@ -1572,7 +1574,7 @@ object SevenZip {
 
 						if (lenTest == _matchDistances[offs]) {
 							if (lenTest < numAvailableBytesFull) {
-								val t = min(numAvailableBytesFull - 1 - lenTest, _numFastBytes)
+								val t = min2(numAvailableBytesFull - 1 - lenTest, _numFastBytes)
 								val lenTest2 = _matchFinder!!.getMatchLen(lenTest, curBack, t)
 								if (lenTest2 >= 2) {
 									var state2 =
@@ -2202,7 +2204,7 @@ object SevenZip {
 					_cyclicBufferPos - delta + _cyclicBufferSize) shl 1
 
 				val pby1 = _bufferOffset + curMatch
-				var len = min(len0, len1)
+				var len = min2(len0, len1)
 				if (_bufferBase!![pby1 + len] == _bufferBase!![cur + len]) {
 					while (++len != lenLimit)
 						if (_bufferBase!![pby1 + len] != _bufferBase!![cur + len])
@@ -2291,7 +2293,7 @@ object SevenZip {
 						_cyclicBufferPos - delta + _cyclicBufferSize) shl 1
 
 					val pby1 = _bufferOffset + curMatch
-					var len = min(len0, len1)
+					var len = min2(len0, len1)
 					if (_bufferBase!![pby1 + len] == _bufferBase!![cur + len]) {
 						while (++len != lenLimit)
 							if (_bufferBase!![pby1 + len] != _bufferBase!![cur + len])

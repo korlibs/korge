@@ -10,6 +10,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.net.http.*
@@ -146,8 +147,8 @@ class LocalVfsNative : LocalVfsV2() {
 				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
 				val length: Long = ftell(fd).convert()
 
-				val start = kotlin.math.min(range.start, length)
-				val end = kotlin.math.min(range.endInclusive, length - 1) + 1
+				val start = min2(range.start, length)
+				val end = min2(range.endInclusive, length - 1) + 1
 				val totalRead = (end - start).toInt()
 
 				//println("range=$range")
