@@ -1,6 +1,8 @@
 package com.soywiz.korim.vector.chart
 
 import com.soywiz.korim.color.*
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.min2
 import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
@@ -16,12 +18,12 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     }
 
     data class DataPoint(val name: String, val values: List<Double>) {
-        val localMaxValue = values.max() ?: 0.0
+        val localMaxValue = values.maxOrNull() ?: 0.0
     }
 
     override fun draw(c: Context2d) = c.renderChart()
 
-    val maxValue = list.map { it.localMaxValue }.max() ?: 0.0
+    val maxValue = list.map { it.localMaxValue }.maxOrNull() ?: 0.0
     val chartStep = 10.0.pow(floor(log10(maxValue))) / 2.0
     val rMaxValue = ceil(maxValue / chartStep) * chartStep
 
@@ -86,7 +88,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
                 bounds.bounds.width > barWidth -> Fit.DEG45
                 else -> Fit.FULL
             }
-        }.max() ?: Fit.FULL
+        }.maxOrNull() ?: Fit.FULL
 
         for (n in list.indices) {
             val item = list[n]
@@ -113,8 +115,8 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     var count = 0
     override fun Context2d.renderChart() {
         //println("Context2d.renderChart:$width,$height")
-        val hpadding = min(64.0, width * 0.1)
-        val vpadding = min(64.0, height * 0.1)
+        val hpadding = min2(64.0, width * 0.1)
+        val vpadding = min2(64.0, height * 0.1)
         renderBars(Rectangle.fromBounds(hpadding, vpadding, width - hpadding, height - vpadding))
     }
 }

@@ -4,6 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.max2
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -42,8 +44,8 @@ class NinePatchInfo(
 
 	class AxisInfo(ranges: List<Pair<Boolean, IntRange>>, val totalLen: Int) {
 		val segments = ranges.map { AxisSegment(it.first, it.second) }
-		val fixedLen = max(1, segments.filter { it.fixed }.map { it.length }.sum())
-		val scaledLen = max(1, segments.filter { it.scaled }.map { it.length }.sum())
+		val fixedLen = max2(1, segments.filter { it.fixed }.map { it.length }.sum())
+		val scaledLen = max2(1, segments.filter { it.scaled }.map { it.length }.sum())
 	}
 
 	val xaxis = AxisInfo(xranges, width)

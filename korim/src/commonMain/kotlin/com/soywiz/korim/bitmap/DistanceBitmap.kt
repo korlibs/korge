@@ -2,6 +2,8 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.min2
 import com.soywiz.korio.lang.*
 import kotlin.math.*
 
@@ -133,8 +135,8 @@ class DistanceBitmap(
         var min = Float.MAX_VALUE
         var max = Float.MIN_VALUE
         for (n in 0 until area) {
-            min = kotlin.math.min(min, d[n])
-            max = kotlin.math.max(max, d[n])
+            min = min2(min, d[n])
+            max = max2(max, d[n])
         }
         for (n in 0 until area) {
             out.data[n] = d[n].convertRange(min, max, 0f, 255f).toInt().toByte()

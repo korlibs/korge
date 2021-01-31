@@ -387,7 +387,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 						val idDelta = readShortArrayBE(segCount)
 						val rangeOffsetPos = position.toInt()
 						val idRangeOffset = readCharArrayBE(segCount)
-						//val glyphIdArray = readCharArrayBE(idRangeOffset.max()?.toInt() ?: 0)
+						//val glyphIdArray = readCharArrayBE(idRangeOffset.maxOrNull()?.toInt() ?: 0)
 
 						//println("$language")
 

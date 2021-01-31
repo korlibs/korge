@@ -4,6 +4,8 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.Font
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.max2
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.serialization.xml.*
@@ -343,7 +345,7 @@ data class PolylineShape(
         tempBB.getBounds(tempRect)
 
         val halfThickness = thickness / 2
-        tempRect.inflate(max(halfThickness, 0.0), max(halfThickness, 0.0))
+        tempRect.inflate(max2(halfThickness, 0.0), max2(halfThickness, 0.0))
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
         bb.add(tempRect)

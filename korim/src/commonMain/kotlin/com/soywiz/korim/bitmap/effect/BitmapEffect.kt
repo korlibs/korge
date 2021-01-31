@@ -6,6 +6,8 @@ import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.max2
 import kotlin.math.absoluteValue
 
 data class BitmapEffect(
@@ -20,7 +22,7 @@ data class BitmapEffect(
     var borderSize: Int = 0,
     var borderColor: RGBA = Colors.BLACK
 ) {
-    val safeBorder get() = kotlin.math.max(kotlin.math.max(kotlin.math.max(blurRadius, dropShadowX.absoluteValue), dropShadowY.absoluteValue), borderSize)
+    val safeBorder get() = max2(max2(max2(blurRadius, dropShadowX.absoluteValue), dropShadowY.absoluteValue), borderSize)
 }
 
 val BitmapEffect?.safeBorder get() = this?.safeBorder ?: 0

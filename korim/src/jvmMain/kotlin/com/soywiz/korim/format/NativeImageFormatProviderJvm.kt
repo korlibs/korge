@@ -6,6 +6,7 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.SystemFont
+import com.soywiz.korim.internal.*
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -36,7 +37,7 @@ object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage =
-		AwtNativeImage(BufferedImage(Math.max(width, 1), Math.max(height, 1), if (premultiplied == false) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_ARGB_PRE))
+		AwtNativeImage(BufferedImage(max2(width, 1), max2(height, 1), if (premultiplied == false) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_ARGB_PRE))
 
 	override fun copy(bmp: Bitmap): NativeImage = AwtNativeImage(bmp.toAwt())
 	override suspend fun display(bitmap: Bitmap, kind: Int): Unit = awtShowImageAndWait(bitmap)

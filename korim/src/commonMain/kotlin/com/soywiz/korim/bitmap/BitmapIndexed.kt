@@ -2,6 +2,8 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.max2
 import kotlin.math.*
 
 abstract class BitmapIndexed(
@@ -16,7 +18,7 @@ abstract class BitmapIndexed(
 
 	override fun toString() = "BitmapIndexed(bpp=$bpp, width=$width, height=$height, clut=${palette.size})"
 
-	protected val temp = ByteArray(max(width, height))
+	protected val temp = ByteArray(max2(width, height))
 
 	val datau = UByteArrayInt(data)
     private val n8_dbpp: Int = 8 / bpp

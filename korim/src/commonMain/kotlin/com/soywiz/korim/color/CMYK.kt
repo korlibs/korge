@@ -31,7 +31,7 @@ inline class CMYK(val value: Int) {
             val r0 = rgba.rf
             val g0 = rgba.gf
             val b0 = rgba.bf
-            val k = 1f - max(max(r0, g0), b0)
+            val k = 1f - max2(max2(r0, g0), b0)
             val ik = 1f / (1 - k)
             val c = (1f - r0 - k) * ik
             val m = (1f - g0 - k) * ik

@@ -2,6 +2,8 @@ package com.soywiz.korim.vector.rasterizer
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korim.internal.*
+import com.soywiz.korim.internal.max2
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -61,8 +63,8 @@ class Rasterizer : RastScale() {
         val xmin = bounds.left.s
         val xmax = bounds.right.s
         path.getBounds(tempRect)
-        val startY = max(bounds.top, tempRect.top).s
-        val endY = min(bounds.bottom, tempRect.bottom).s
+        val startY = max2(bounds.top, tempRect.top).s
+        val endY = min2(bounds.bottom, tempRect.bottom).s
         val func: (x0: Int, x1: Int, y: Int) -> Unit = { a, b, y ->
             //println("CHUNK")
             if (a <= xmax && b >= xmin) {
