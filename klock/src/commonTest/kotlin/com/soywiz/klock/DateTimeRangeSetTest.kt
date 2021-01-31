@@ -1,5 +1,6 @@
 package com.soywiz.klock
 
+import com.soywiz.klock.internal.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -33,7 +34,7 @@ class DateTimeRangeSetTest {
 		fun randomRange(): DateTimeRange {
 			val a = random.nextInt(min, max)
 			val b = random.nextInt(min, max)
-			return range(min(a, b), max(a, b))
+			return range(min2(a, b), max2(a, b))
 		}
 		return (0 until count).map { randomRange() }
 	}
