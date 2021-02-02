@@ -42,6 +42,7 @@ entities.
 
 package com.soywiz.korma.triangle.internal
 
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import kotlin.math.*
@@ -855,7 +856,7 @@ internal data class PolyTriangle internal constructor(
     override var p1: IPoint,
     override var p2: IPoint
 ) : Triangle {
-    val neighbors: ArrayList<PolyTriangle?> = ArrayList<PolyTriangle?>(3).apply { add(null); add(null); add(null) } as ArrayList<PolyTriangle?> // Neighbor list
+    val neighbors: FastArrayList<PolyTriangle?> = FastArrayList<PolyTriangle?>(3).apply { add(null); add(null); add(null) } // Neighbor list
     var interior: Boolean = false // Has this triangle been marked as an interior triangle?
     val constrained_edge = BooleanArray(3) // Flags to determine if an edge is a Constrained edge
     val delaunay_edge = BooleanArray(3) // Flags to determine if an edge is a Delauney edge

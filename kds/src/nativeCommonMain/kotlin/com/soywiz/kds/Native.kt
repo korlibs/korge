@@ -136,4 +136,4 @@ actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K)
     }
 }
 
-
+actual typealias FastArrayList<E> = ArrayList<E>

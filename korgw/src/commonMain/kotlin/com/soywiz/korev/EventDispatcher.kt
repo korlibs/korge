@@ -1,5 +1,6 @@
 package com.soywiz.korev
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
@@ -10,18 +11,18 @@ interface EventDispatcher {
 	fun copyFrom(other: EventDispatcher) = Unit
 
 	open class Mixin : EventDispatcher {
-		private var handlers: LinkedHashMap<KClass<out Event>, ArrayList<(Event) -> Unit>>? = null
+		private var handlers: LinkedHashMap<KClass<out Event>, FastArrayList<(Event) -> Unit>>? = null
 
-		private fun <T : Event> getHandlersFor(clazz: KClass<T>): ArrayList<(T) -> Unit>? {
+		private fun <T : Event> getHandlersFor(clazz: KClass<T>): FastArrayList<(T) -> Unit>? {
             if (handlers == null) return null
 			@Suppress("UNCHECKED_CAST")
-			return handlers?.get(clazz) as? ArrayList<(T) -> Unit>?
+			return handlers?.get(clazz) as? FastArrayList<(T) -> Unit>?
 		}
 
-        private fun <T : Event> getHandlersForCreate(clazz: KClass<T>): ArrayList<(T) -> Unit> {
+        private fun <T : Event> getHandlersForCreate(clazz: KClass<T>): FastArrayList<(T) -> Unit> {
             if (handlers == null) handlers = LinkedHashMap()
             @Suppress("UNCHECKED_CAST")
-            return handlers!!.getOrPut(clazz) { arrayListOf() } as ArrayList<(T) -> Unit>
+            return handlers!!.getOrPut(clazz) { FastArrayList() } as FastArrayList<(T) -> Unit>
         }
 
         override fun <T : Event> addEventListener(clazz: KClass<T>, handler: (T) -> Unit): Closeable {

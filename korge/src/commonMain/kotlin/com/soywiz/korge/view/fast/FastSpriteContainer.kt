@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.fast
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.FBuffer
 import com.soywiz.korag.*
@@ -14,7 +15,7 @@ inline fun Container.fastSpriteContainer(
 ): FastSpriteContainer = FastSpriteContainer().addTo(this, callback)
 
 class FastSpriteContainer : View() {
-    private val sprites = arrayListOf<FastSprite>()
+    private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
 

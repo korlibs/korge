@@ -4,6 +4,8 @@ import com.soywiz.korge.view.Image
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korma.geom.Angle
+import kotlin.coroutines.*
+
 
 open class FastSprite(tex: BmpSlice) {
     var xf: Float = 0f

@@ -1,3 +1,4 @@
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.*
 import com.soywiz.korge.view.*
@@ -54,7 +55,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val bunnyCountText = text("", font = font, textSize = 16.0, alignment = com.soywiz.korim.text.TextAlignment.TOP_LEFT).position(16.0, 16.0)
     //val container = container()
 
-    val bunnys = arrayListOf<Bunny>()
+    val bunnys = FastArrayList<Bunny>()
 
     val random = Random
 

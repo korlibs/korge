@@ -813,8 +813,8 @@ abstract class AG : Extra by Extra.Mixin() {
 			internal val EMPTY = UniformValues()
 		}
 
-		private val _uniforms = arrayListOf<Uniform>()
-		private val _values = arrayListOf<Any>()
+		private val _uniforms = FastArrayList<Uniform>()
+		private val _values = FastArrayList<Any>()
 		val uniforms = _uniforms as List<Uniform>
 
 		val keys get() = uniforms

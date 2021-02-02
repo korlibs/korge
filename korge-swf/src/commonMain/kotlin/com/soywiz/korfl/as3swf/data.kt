@@ -1455,7 +1455,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 		styleIdxArray.sort()
 		for (i in 0 until styleIdxArray.size) {
-			newPath.addAll(edgeMap[styleIdxArray[i]] as ArrayList<IEdge>)
+			newPath.addAll(edgeMap[styleIdxArray[i]]!!)
 		}
 		return newPath
 	}
