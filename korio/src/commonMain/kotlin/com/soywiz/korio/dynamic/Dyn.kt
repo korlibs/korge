@@ -7,7 +7,7 @@ import kotlin.math.*
 val Any?.dyn: Dyn get() = Dyn(this)
 
 @Suppress("DEPRECATION")
-inline class Dyn(val value: Any?) {
+inline class Dyn(val value: Any?) : Comparable<Dyn> {
     val dyn get() = this
     val isNull get() = value == null
     val isNotNull get() = value != null
@@ -19,8 +19,8 @@ inline class Dyn(val value: Any?) {
         else -> value.toString() as Comparable<Any?>
     }
 
-    fun unop(op: String): Dyn = unop(this, op)
-    fun binop(op: String, r: Dyn): Dyn = binop(this, r, op)
+    //fun unop(op: String): Dyn = unop(this, op)
+    //fun binop(op: String, r: Dyn): Dyn = binop(this, r, op)
 
     operator fun unaryMinus(): Dyn = (-toDouble()).dyn
     operator fun unaryPlus(): Dyn = this
@@ -44,52 +44,65 @@ inline class Dyn(val value: Any?) {
     infix fun bitAnd(r: Dyn): Dyn = (this.toInt() and r.toInt()).dyn
     infix fun bitOr(r: Dyn): Dyn = (this.toInt() or r.toInt()).dyn
     infix fun bitXor(r: Dyn): Dyn = (this.toInt() xor r.toInt()).dyn
+    /** Logical AND */
     infix fun and(r: Dyn): Boolean = (this.toBool() && r.toBool())
+    /** Logical OR */
     infix fun or(r: Dyn): Boolean = (this.toBool() || r.toBool())
+
+    /** Equal */
     infix fun eq(r: Dyn): Boolean = when {
         this.value is Number && r.value is Number -> this.toDouble() == r.toDouble()
         this.value is String || r.value is String -> this.toString() == r.toString()
         else -> this.value == r.value
     }
+    /** Not Equal */
     infix fun ne(r: Dyn): Boolean = when {
         this.value is Number && r.value is Number -> this.toDouble() != r.toDouble()
         this.value is String || r.value is String -> this.toString() != r.toString()
         else -> this.value != r.value
     }
+    /** Strict EQual */
     infix fun seq(r: Dyn): Boolean = this.value === r.value
+    /** Strict Not Equal */
     infix fun sne(r: Dyn): Boolean = this.value !== r.value
+    /** Less Than */
     infix fun lt(r: Dyn): Boolean = compare(this, r) < 0
+    /** Less or Equal */
     infix fun le(r: Dyn): Boolean = compare(this, r) <= 0
+    /** Greater Than */
     infix fun gt(r: Dyn): Boolean = compare(this, r) > 0
+    /** Greater or Equal */
     infix fun ge(r: Dyn): Boolean = compare(this, r) >= 0
-    operator fun contains(r: Dyn) = contains(this, r)
-    fun coalesce(default: Dyn) = binop("?:", default)
+    operator fun contains(r: Dyn): Boolean {
+        val collection = this
+        val element = r
+        if (collection.value == element.value) return true
+        return when (collection.value) {
+            is String -> collection.value.contains(element.value.toString())
+            is Set<*> -> element.value in collection.value
+            else -> element.value in collection.toListAny()
+        }
+    }
+    fun coalesce(default: Dyn): Dyn = if (this.isNotNull) this else default
+
+    override fun compareTo(other: Dyn): Int {
+        val l = this
+        val r = other
+        if (l.value is Number && r.value is Number) {
+            return l.value.toDouble().compareTo(r.value.toDouble())
+        }
+        val lc = l.toComparable()
+        val rc = r.toComparable()
+        return if (lc::class.isInstance(rc)) lc.compareTo(rc) else -1
+    }
 
     companion object {
         val global get() = dynApi.global.dyn
 
-        fun compare(l: Dyn, r: Dyn): Int {
-            if (l.value is Number && r.value is Number) {
-                return l.value.toDouble().compareTo(r.value.toDouble())
-            }
-            val lc = l.toComparable()
-            val rc = r.toComparable()
-            if (lc::class.isInstance(rc)) {
-                return lc.compareTo(rc)
-            } else {
-                return -1
-            }
-        }
+        fun compare(l: Dyn, r: Dyn): Int = l.compareTo(r)
+        fun contains(collection: Dyn, element: Dyn): Boolean = element in collection
 
-        fun contains(collection: Dyn, element: Dyn): Boolean {
-            if (collection.value == element.value) return true
-            return when (collection.value) {
-                is String -> collection.value.contains(element.value.toString())
-                is Set<*> -> element.value in collection.value
-                else -> element.value in collection.toListAny()
-            }
-        }
-
+        /*
         fun unop(r: Dyn, op: String): Dyn = when (op) {
             "+" -> +r
             "-" -> -r
@@ -127,6 +140,7 @@ inline class Dyn(val value: Any?) {
                 else -> error("Not implemented binary operator '$op'")
             }
         }
+         */
     }
 
     fun toList(): List<Dyn> = toList().map { it.dyn }
@@ -147,10 +161,21 @@ inline class Dyn(val value: Any?) {
         fun invoke(name: String, args: Array<out Any?>): Any?
     }
 
+    interface SuspendInvokable {
+        suspend fun invoke(name: String, args: Array<out Any?>): Any?
+    }
+
     fun dynamicInvoke(name: String, vararg args: Any?): Dyn = when (value) {
         null -> null.dyn
         is Invokable -> value.invoke(name, args).dyn
         else -> dynApi.invoke(value, name, args).dyn
+    }
+
+    suspend fun suspendDynamicInvoke(name: String, vararg args: Any?): Dyn = when (value) {
+        null -> null.dyn
+        is Invokable -> value.invoke(name, args).dyn
+        is SuspendInvokable -> value.invoke(name, args).dyn
+        else -> dynApi.suspendInvoke(value, name, args).dyn
     }
 
     operator fun set(key: Dyn, value: Dyn) = set(key.value, value.value)
@@ -169,6 +194,24 @@ inline class Dyn(val value: Any?) {
         is Map<*, *> -> (value as Map<Any?, Any?>)[key].dyn
         is List<*> -> value[key.dyn.toInt()].dyn
         else -> dynApi.get(value, key.toString()).dyn
+    }
+
+    suspend fun suspendSet(key: Dyn, value: Dyn) = suspendSet(key.value, value.value)
+    suspend fun suspendSet(key: Any?, value: Dyn) = suspendSet(key, value.value)
+    suspend fun suspendSet(key: Any?, value: Any?) {
+        when (value) {
+            is MutableMap<*, *> -> (this.value as MutableMap<Any?, Any?>)[key] = value
+            is MutableList<*> -> (this.value as MutableList<Any?>)[key.dyn.toInt()] = value
+            else -> dynApi.suspendSet(this.value, key.toString(), value)
+        }
+    }
+
+    suspend fun suspendGet(key: Dyn): Dyn = suspendGet(key.value)
+    suspend fun suspendGet(key: Any?): Dyn = when (value) {
+        null -> null.dyn
+        is Map<*, *> -> (value as Map<Any?, Any?>)[key].dyn
+        is List<*> -> value[key.dyn.toInt()].dyn
+        else -> dynApi.suspendGet(value, key.toString()).dyn
     }
 
     val mapAny: Map<Any?, Any?> get() = if (value is Map<*, *>) value as Map<Any?, Any?> else LinkedHashMap()
