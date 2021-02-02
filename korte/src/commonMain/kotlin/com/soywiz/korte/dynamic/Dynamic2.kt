@@ -28,6 +28,7 @@ object Dynamic2 : DynamicContext {
         "%" -> toDouble(l) % toDouble(r)
         "**" -> toDouble(l).pow(toDouble(r))
         "&" -> toInt(l) and toInt(r)
+        "|" -> toInt(l) or toInt(r)
         "^" -> toInt(l) xor toInt(r)
         "&&" -> toBool(l) && toBool(r)
         "||" -> toBool(l) || toBool(r)

@@ -1,12 +1,11 @@
 package com.soywiz.korio.dynamic
 
-import com.soywiz.korio.util.*
 import java.lang.reflect.*
 
-internal actual object DynamicInternal {
+internal actual object DynamicInternal : DynApi {
     class JavaPackage(val name: String)
 
-    actual val global: Any? = JavaPackage("")
+    override val global: Any? = JavaPackage("")
 
     private fun tryGetField(clazz: Class<*>, name: String): Field? {
         val field = runCatching { clazz.getDeclaredField(name) }.getOrNull()
@@ -43,7 +42,7 @@ internal actual object DynamicInternal {
         }
     }
 
-    actual fun get(instance: Any?, key: String): Any? {
+    override fun get(instance: Any?, key: String): Any? {
         if (instance == null) return null
 
         val static = instance is Class<*>
@@ -68,7 +67,7 @@ internal actual object DynamicInternal {
         return null
     }
 
-    actual fun set(instance: Any?, key: String, value: Any?) {
+    override fun set(instance: Any?, key: String, value: Any?) {
         if (instance == null) return
 
         val static = instance is Class<*>
@@ -86,9 +85,17 @@ internal actual object DynamicInternal {
         }
     }
 
-    actual fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any? {
+    override fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any? {
         if (instance == null) return null
         val method = tryGetMethod(if (instance is Class<*>) instance else instance.javaClass, key, args)
         return method?.invoke(if (instance is Class<*>) null else instance, *args)
     }
 }
+
+private val Class<*>.allDeclaredFields: List<Field>
+    get() = this.declaredFields.toList() + (this.superclass?.allDeclaredFields?.toList() ?: listOf<Field>())
+
+private fun Class<*>.isSubtypeOf(that: Class<*>) = that.isAssignableFrom(this)
+
+private val Class<*>.allDeclaredMethods: List<Method>
+    get() = this.declaredMethods.toList() + (this.superclass?.allDeclaredMethods?.toList() ?: listOf<Method>())
