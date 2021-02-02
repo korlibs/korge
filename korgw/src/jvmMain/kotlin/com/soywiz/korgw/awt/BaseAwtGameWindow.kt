@@ -20,6 +20,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.net.*
 import javax.swing.*
+import java.awt.GraphicsDevice
 
 abstract class BaseAwtGameWindow : GameWindow() {
     abstract override val ag: AwtAg
@@ -515,6 +516,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         }
 
         println("running: ${Thread.currentThread()}")
+
         while (running) {
             if (fvsync) {
                 Thread.sleep(1L)
@@ -565,5 +567,9 @@ abstract class BaseAwtGameWindow : GameWindow() {
         frameDispose()
 
         //exitProcess(0) // Don't do this since we might continue in the e2e test
+    }
+
+    override fun computeDisplayRefreshRate(): Int {
+        return this.window.getScreenDevice().displayMode.refreshRate
     }
 }

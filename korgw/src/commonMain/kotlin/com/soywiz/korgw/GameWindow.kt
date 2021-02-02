@@ -6,6 +6,7 @@ import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
+import com.soywiz.korgw.internal.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
@@ -204,23 +205,19 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         addEventListener<RenderEvent>(block)
     }
 
-    protected open fun _setFps(fps: Int): Int {
-        return if (fps <= 0) 60 else fps
-    }
-
-    var counterTimePerFrame: TimeSpan = 0.0.milliseconds; private set
+    val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
     val timePerFrame: TimeSpan get() = counterTimePerFrame
 
-    var fps: Int = 60
-        set(value) {
-            val value = _setFps(value)
-            field = value
-            counterTimePerFrame = (1_000_000.0 / value).microseconds
-        }
-
-    init {
-        fps = 60
+    open fun computeDisplayRefreshRate(): Int {
+        return 60
     }
+
+    private val fpsCached by IntTimedCache(100.milliseconds) { computeDisplayRefreshRate() }
+
+    open var fps: Int
+        get() = fpsCached
+        @Deprecated("Deprecated setting fps")
+        set(value) = Unit
 
     open var title: String get() = ""; set(value) = Unit
     open val width: Int = 0
