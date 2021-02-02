@@ -96,6 +96,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         return if (lc::class.isInstance(rc)) lc.compareTo(rc) else -1
     }
 
+    override fun toString(): String = value.toString()
+
     companion object {
         val global get() = dynApi.global.dyn
 
