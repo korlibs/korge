@@ -10,6 +10,7 @@ import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import java.io.*
 
 private val RELEASE = NativeBuildType.RELEASE
@@ -123,12 +124,12 @@ fun Project.configureNativeDesktop() {
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
-			val targetTestTask = project.tasks.getByName("${target}Test")
+			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
 			val task = project.addTask<Copy>(taskName) { task ->
 				for (sourceSet in project.gkotlin.sourceSets) {
 					task.from(sourceSet.resources)
 				}
-				task.into(File(targetTestTask.inputs.properties["executable"].toString()).parentFile)
+				task.into(targetTestTask.executableFolder)
 			}
 			targetTestTask.dependsOn(task)
 		}

@@ -44,6 +44,12 @@ fun Project.configureJavaScript() {
 				}
 			}
 		}
+
+        sourceSets.maybeCreate("jsTest").apply {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test-js")
+            }
+        }
 	}
 
     val runJs = project.addTask<Task>(name = "runJs") { task ->
