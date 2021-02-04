@@ -211,6 +211,12 @@ subprojects {
                 compilations.all {
                     kotlinOptions.jvmTarget = "1.8"
                     kotlinOptions.suppressWarnings = true
+
+                    // @TODO:
+                    // Tested on Kotlin 1.4.30:
+                    // Class org.luaj.vm2.WeakTableTest.WeakKeyTableTest
+                    // java.lang.AssertionError: expected:<null> but was:<mydata-111>
+                    //kotlinOptions.useIR = true
                 }
             }
             js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
