@@ -160,7 +160,9 @@ open class ViewsForTesting(
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-    fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, frameTime: TimeSpan = this.frameTime, block: suspend Stage.() -> Unit) = suspendTest(timeout = timeout, cond = { !OS.isAndroid }) {
+    fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, frameTime: TimeSpan = this.frameTime, block: suspend Stage.() -> Unit) =
+        suspendTest(timeout = timeout, cond = { OS.isJvm && !OS.isAndroid }) {
+        //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
         Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)
 
 		injector.mapInstance<Module>(object : Module() {
