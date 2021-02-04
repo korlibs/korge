@@ -1,5 +1,7 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
@@ -53,8 +55,8 @@ class NinePatch(
 		val ratioX = if (width < tex.width) width / tex.width else 1.0
 		val ratioY = if (height < tex.height) height / tex.height else 1.0
 
-		val actualRatioX = min(ratioX, ratioY)
-		val actualRatioY = min(ratioX, ratioY)
+		val actualRatioX = min2(ratioX, ratioY)
+		val actualRatioY = min2(ratioX, ratioY)
 
 		//val ratioX = 1.0
 		//val ratioY = 1.0

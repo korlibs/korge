@@ -346,7 +346,8 @@ class Components {
 
     @Suppress("UNCHECKED_CAST")
     fun add(c: Component): Component {
-        (getArrayComponent(c) as ArrayList<Component>).plusAssign(c); return c
+        (getArrayComponent(c) as MutableList<Component>).add(c)
+        return c
     }
 
     fun add(c: MouseComponent): MouseComponent {

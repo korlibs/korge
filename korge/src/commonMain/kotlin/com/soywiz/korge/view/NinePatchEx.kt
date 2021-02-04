@@ -3,6 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
@@ -88,12 +90,12 @@ class NinePatchEx(
                 if (x.fixed && y.fixed) {
                     val xScale = segWidth / x.length.toDouble()
                     val yScale = segHeight / y.length.toDouble()
-                    val minScale = min(xScale, yScale)
-                    xComputed[xindex] = min(xComputed[xindex], (x.length * minScale).toInt())
-                    yComputed[yindex] = min(yComputed[yindex], (y.length * minScale).toInt())
+                    val minScale = min2(xScale, yScale)
+                    xComputed[xindex] = min2(xComputed[xindex], (x.length * minScale).toInt())
+                    yComputed[yindex] = min2(yComputed[yindex], (y.length * minScale).toInt())
                 } else {
-                    xComputed[xindex] = min(xComputed[xindex], segWidth.toInt())
-                    yComputed[yindex] = min(yComputed[yindex], segHeight.toInt())
+                    xComputed[xindex] = min2(xComputed[xindex], segWidth.toInt())
+                    yComputed[yindex] = min2(yComputed[yindex], segHeight.toInt())
                 }
             }
         }

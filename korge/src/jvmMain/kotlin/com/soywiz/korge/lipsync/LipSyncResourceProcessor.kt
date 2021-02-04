@@ -141,7 +141,7 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
 	//data class MouthCue(val start: Double, var end: Double, var value: Char)
 
 	data class RhubarbFile(val metadata: Metadata, val mouthCues: List<MouthCue>) {
-		val totalTime: Double by lazy { mouthCues.map { it.end }.max() ?: 0.0 }
+		val totalTime: Double by lazy { mouthCues.map { it.end }.maxOrNull() ?: 0.0 }
 		fun findCue(time: Double): MouthCue? =
 			mouthCues.getOrNull(mouthCues.binarySearch { if (time < it.start) +1 else if (time >= it.end) -1 else 0 })
 

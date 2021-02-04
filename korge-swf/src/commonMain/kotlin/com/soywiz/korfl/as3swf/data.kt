@@ -1,5 +1,7 @@
 package com.soywiz.korfl.as3swf
 
+import com.soywiz.korfl.internal.*
+import com.soywiz.korfl.internal.min2
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -431,7 +433,7 @@ open class SWFColorTransform {
 
 	protected open fun updateHasAddTerms(): Unit = run { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
 
-	protected fun clamp(value: Int): Int = min(max(value, -32768), 32767)
+	protected fun clamp(value: Int): Int = min2(max2(value, -32768), 32767)
 	fun isIdentity(): Boolean = !hasMultTerms && !hasAddTerms
 	override fun toString(): String = "($rMult,$gMult,$bMult,$rAdd,$gAdd,$bAdd)"
 }
@@ -1453,7 +1455,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 		styleIdxArray.sort()
 		for (i in 0 until styleIdxArray.size) {
-			newPath.addAll(edgeMap[styleIdxArray[i]] as ArrayList<IEdge>)
+			newPath.addAll(edgeMap[styleIdxArray[i]]!!)
 		}
 		return newPath
 	}

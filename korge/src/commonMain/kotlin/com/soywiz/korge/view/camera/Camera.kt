@@ -1,6 +1,8 @@
 package com.soywiz.korge.view.camera
 
 import com.soywiz.klock.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -106,7 +108,7 @@ class CameraContainer(
         return out.setTo(
             rect.x + rect.width * cameraAnchorX,
             rect.y + rect.height * cameraAnchorY,
-            zoom = min(scaleX, scaleY),
+            zoom = min2(scaleX, scaleY),
             angle = 0.degrees,
             anchorX = cameraAnchorX,
             anchorY = cameraAnchorY

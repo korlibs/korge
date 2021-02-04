@@ -35,6 +35,8 @@ import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
+import com.esotericsoftware.spine.internal.*
+import com.esotericsoftware.spine.internal.min2
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
@@ -765,10 +767,10 @@ class Skeleton {
                 while (ii < verticesLength) {
                     val x = vertices[ii]
                     val y = vertices[ii + 1]
-                    minX = kotlin.math.min(minX, x)
-                    minY = kotlin.math.min(minY, y)
-                    maxX = kotlin.math.max(maxX, x)
-                    maxY = kotlin.math.max(maxY, y)
+                    minX = min2(minX, x)
+                    minY = min2(minY, y)
+                    maxX = max2(maxX, x)
+                    maxY = max2(maxY, y)
                     ii += 2
                 }
             }

@@ -5,6 +5,8 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korfl.*
+import com.soywiz.korfl.internal.*
+import com.soywiz.korfl.internal.min2
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
@@ -34,8 +36,8 @@ data class MinMaxDouble(
 			min = value
 			max = value
 		} else {
-			min = min(min, value)
-			max = max(max, value)
+			min = min2(min, value)
+			max = max2(max, value)
 		}
 		count++
 	}
@@ -76,7 +78,7 @@ class SymbolAnalyzeInfo(val characterId: Int) {
 	}
 
 	fun registerScale(scaleX: Double, scaleY: Double) {
-		scaleBounds.register(max(scaleX, scaleY))
+		scaleBounds.register(max2(scaleX, scaleY))
 	}
 
 	fun registerMatrix(matrix: Matrix) {
@@ -485,11 +487,11 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 						items += it.depth0 to it.characterId
 					}
 
-					maxDepth = max(maxDepth, it.depth0)
+					maxDepth = max2(maxDepth, it.depth0)
 					if (it.hasClipDepth) {
-						maxDepth = max(maxDepth, it.clipDepth0 + 1)
+						maxDepth = max2(maxDepth, it.clipDepth0 + 1)
 					}
-					//if (it.hasClipDepth) maxDepth = max(maxDepth, it.clipDepth0)
+					//if (it.hasClipDepth) maxDepth = max2(maxDepth, it.clipDepth0)
 				}
 				is TagShowFrame -> {
 					totalFrames++

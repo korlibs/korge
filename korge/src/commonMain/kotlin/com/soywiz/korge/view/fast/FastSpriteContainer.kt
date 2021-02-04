@@ -1,8 +1,11 @@
 package com.soywiz.korge.view.fast
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.FBuffer
 import com.soywiz.korag.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import kotlin.math.min
@@ -12,7 +15,7 @@ inline fun Container.fastSpriteContainer(
 ): FastSpriteContainer = FastSpriteContainer().addTo(this, callback)
 
 class FastSpriteContainer : View() {
-    private val sprites = arrayListOf<FastSprite>()
+    private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
 
@@ -43,7 +46,7 @@ class FastSpriteContainer : View() {
 
             ////////////////////////////
 
-            val batchSize = min(sprites.size, bb.maxQuads)
+            val batchSize = min2(sprites.size, bb.maxQuads)
             for (n in 0 until batchSize) {
                 bb.addQuadIndices()
                 bb.vertexCount += 4
@@ -59,7 +62,7 @@ class FastSpriteContainer : View() {
             for (m in 0 until sprites.size step bb.maxQuads) {
                 //batchCount++
                 bb.indexPos = realIndexPos
-                for (n in m until min(sprites.size, m + batchSize)) {
+                for (n in m until min2(sprites.size, m + batchSize)) {
                     //spriteCount++
                     val sprite = sprites[n]
 

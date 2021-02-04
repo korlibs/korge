@@ -43,7 +43,7 @@ class TiledMapData(
     inline val imageLayers get() = allLayers.images
     inline val objectLayers get() = allLayers.objects
 
-    val maxGid get() = tilesets.map { it.firstgid + it.tileCount }.max() ?: 0
+    val maxGid get() = tilesets.map { it.firstgid + it.tileCount }.maxOrNull() ?: 0
 
     fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
 
@@ -166,7 +166,7 @@ class TiledMap constructor(
     val tileLayers get() = data.tileLayers
     val imageLayers get() = data.imageLayers
     val objectLayers get() = data.objectLayers
-    val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.max() ?: 1
+    val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.maxOrNull() ?: 1
 
     fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }.toMutableList())
 

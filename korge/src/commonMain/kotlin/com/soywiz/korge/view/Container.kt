@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.internal.*
@@ -28,9 +29,9 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
 open class Container : View(true) {
     @KorgeInternal
     @PublishedApi
-	internal val childrenInternal: ArrayList<View> get() {
-        if (_children == null) _children = arrayListOf()
-        return _children as ArrayList<View>
+	internal val childrenInternal: FastArrayList<View> get() {
+        if (_children == null) _children = FastArrayList()
+        return _children!!
     }
 
 	/**

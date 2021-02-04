@@ -30,6 +30,7 @@
 package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
+import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 
@@ -122,10 +123,10 @@ class SkeletonBounds {
             while (ii < nn) {
                 val x = vertices[ii]
                 val y = vertices[ii + 1]
-                minX = kotlin.math.min(minX, x)
-                minY = kotlin.math.min(minY, y)
-                maxX = kotlin.math.max(maxX, x)
-                maxY = kotlin.math.max(maxY, y)
+                minX = min2(minX, x)
+                minY = min2(minY, y)
+                maxX = max2(maxX, x)
+                maxY = max2(maxY, y)
                 ii += 2
             }
             i++

@@ -1,5 +1,7 @@
 package com.esotericsoftware.spine.utils
 
+import com.esotericsoftware.spine.internal.*
+import com.esotericsoftware.spine.internal.max2
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 
@@ -38,7 +40,7 @@ internal fun <T> ArrayList<T>.containsIdentity(value: T?): Boolean = indexOfIden
 
 internal fun <T> ArrayList<T>.shrink() = run { if (size != size) resize(size) }
 internal fun <T> ArrayList<T>.setSize(newSize: Int): ArrayList<T> {
-    truncate(kotlin.math.max(8, newSize))
+    truncate(max2(8, newSize))
     return this
 }
 internal fun <T> ArrayList<T>.resize(newSize: Int) = run {

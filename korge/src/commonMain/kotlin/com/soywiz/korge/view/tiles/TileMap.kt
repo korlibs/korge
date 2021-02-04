@@ -97,10 +97,10 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
         val my2 = ((pp2.y / tileHeight) + 1).toInt()
         val my3 = ((pp3.y / tileHeight) + 1).toInt()
 
-        val ymin = min(min(min(my0, my1), my2), my3)
-        val ymax = max(max(max(my0, my1), my2), my3)
-        val xmin = min(min(min(mx0, mx1), mx2), mx3)
-        val xmax = max(max(max(mx0, mx1), mx2), mx3)
+        val ymin = min2(min2(min2(my0, my1), my2), my3)
+        val ymax = max2(max2(max2(my0, my1), my2), my3)
+        val xmin = min2(min2(min2(mx0, mx1), mx2), mx3)
+        val xmax = max2(max2(max2(mx0, mx1), mx2), mx3)
 
         val yheight = ymax - ymin
         val xwidth = xmax - xmin

@@ -88,7 +88,7 @@ abstract class View internal constructor(
 
     @KorgeInternal
     @PublishedApi
-    internal var _children: ArrayList<View>? = null
+    internal var _children: FastArrayList<View>? = null
 
     /** Iterates all the children of this container in normal order of rendering. */
     inline fun forEachChild(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
