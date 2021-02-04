@@ -52,7 +52,7 @@ include(":kbox2d")
 include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
-//include(":korge-intellij-plugin")
+include(":korge-intellij-plugin")
 include(":korge-gradle-plugin")
 
 /*

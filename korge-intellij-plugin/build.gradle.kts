@@ -103,7 +103,7 @@ extensions.getByType<org.jetbrains.intellij.IntelliJPluginExtension>().apply {
 
 tasks {
 	val runIde by existing(org.jetbrains.intellij.tasks.RunIdeTask::class) {
-		maxHeapSize = "2g"
+		maxHeapSize = "4g"
 	}
 	val runDebugTilemap by creating(JavaExec::class) {
 		//classpath = sourceSets.main.runtimeClasspath
