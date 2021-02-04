@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 class BonePositionTest {
     @Test
-    fun test() = suspendTest({ !OS.isJs }) {
+    fun test() = suspendTest({ !OS.isJs && !OS.isAndroid }) {
         var expectedResult = """walk,188.15375,135.85548,-51.369995
 walk,225.49426,175.73358,-37.55294
 walk,230.3062,184.0278,-33.824528
