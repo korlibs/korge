@@ -16,7 +16,8 @@ class BindLengthComponentTest : ViewsForTesting(log = true) {
         assertEquals(0.0, rect.x)
         assertEquals(0.0, rect.y)
         delayFrame()
-        assertTrue { logAg!!.getLogAsString().contains("a_Pos[vec2(150.0,350.0)]") }
+        val logStr = logAg!!.getLogAsString().replace(".0", "")
+        assertTrue { logStr.contains("a_Pos[vec2(150,350)]") }
         assertEquals(150.0, rect.x)
         assertEquals(250.0, rect.y)
     }
