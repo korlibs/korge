@@ -1732,15 +1732,17 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     //val parent = this.parent
     //val bounds = other.getBoundsNoAnchoring(this)
     val bounds = other.getBoundsNoAnchoring(parent)
+    val localBounds = this.getLocalBoundsOptimized()
+
     //bounds.setTo(other.x, other.y, other.unscaledWidth, other.unscaledHeight)
     val ratioM1_1 = (ratio * 2 - 1)
     val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
     val iratio = if (inside) ratio else 1.0 - ratio
     //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
-        x = (bounds.x + (bounds.width * ratio)) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
+        x = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {
-        y = (bounds.y + (bounds.height * ratio)) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
+        y = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
     }
     return this
 }
