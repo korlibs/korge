@@ -723,7 +723,7 @@ abstract class View internal constructor(
         //ctx.flush()
         val local = getLocalBounds(doAnchoring = true)
         ctx.debugLineRenderContext.drawVector(Colors.RED) {
-            rect(globalBounds)
+            rect(windowBounds)
         }
         ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
             moveTo(localToGlobal(Point(local.left, local.top)))
@@ -1106,7 +1106,7 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val windowBounds: Rectangle get() = getGlobalBounds()
+    val windowBounds: Rectangle get() = getWindowBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
