@@ -9,7 +9,7 @@ typealias Stack<TGen> = TGenStack<TGen>
  * A LIFO (Last In First Out) structure.
  */
 class TGenStack<TGen>() : Collection<TGen> {
-    private val items = arrayListOf<TGen>()
+    private val items = FastArrayList<TGen>()
 
     override val size: Int get() = items.size
     override fun isEmpty() = size == 0
@@ -18,7 +18,7 @@ class TGenStack<TGen>() : Collection<TGen> {
         for (item in items) push(item)
     }
 
-    fun push(v: TGen) = run { items.add(v) }
+    fun push(v: TGen) { items.add(v) }
     fun pop(): TGen = items.removeAt(items.size - 1)
     fun peek(): TGen? = items.lastOrNull()
 

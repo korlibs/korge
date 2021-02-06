@@ -1,5 +1,8 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.iterators.*
+import com.soywiz.kds.lock.*
+
 /**
  * Structure containing a set of reusable objects.
  *
@@ -14,16 +17,21 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
 
     constructor(preallocate: Int = 0, gen: (Int) -> T) : this({}, preallocate, gen)
 
+    private val lock = Lock()
     private val items = Stack<T>()
     private var lastId = 0
 
     val itemsInPool: Int get() = items.size
 
     init {
-        for (n in 0 until preallocate) items.push(gen(lastId++))
+        lock {
+            for (n in 0 until preallocate) items.push(gen(lastId++))
+        }
     }
 
-    fun alloc(): T = if (items.isNotEmpty()) items.pop() else gen(lastId++)
+    fun alloc(): T {
+        return lock { if (items.isNotEmpty()) items.pop() else gen(lastId++) }
+    }
 
     interface Poolable {
         fun reset()
@@ -31,12 +39,16 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
 
     fun free(element: T) {
         reset(element)
-        items.push(element)
+        lock {
+            items.push(element)
+        }
     }
 
-    fun free(vararg elements: T) = run { for (element in elements) free(element) }
+    fun free(vararg elements: T) { elements.fastForEach { free(it) } }
 
-    fun free(elements: Iterable<T>) = run { for (element in elements) free(element) }
+    fun free(elements: Iterable<T>) { for (element in elements) free(element) }
+
+    inline operator fun <R> invoke(callback: (T) -> R): R = alloc(callback)
 
     inline fun <R> alloc(callback: (T) -> R): R {
         val temp = alloc()
