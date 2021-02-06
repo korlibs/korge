@@ -49,7 +49,7 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile)
             player.prepare()
             player.setOnCompletionListener {
 //                launchImmediately(coroutineContext) {
-                    onComplete(Unit)
+                onComplete(Unit)
 //                }
             }
             //println("CREATE SURFACE FOR VIDEO: ${player.videoWidth},${player.videoHeight}")
@@ -61,12 +61,17 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile)
     private var lastUpdatedFrame = -1
     override fun render() {
         if (lastUpdatedFrame == frameAvailable) return
-        //println("AndroidKorviVideoAndroidMediaPlayer.render! $frameAvailable")
-        lastUpdatedFrame = frameAvailable
-        val surfaceTexture = nativeImage.surfaceTexture
-        surfaceTexture.updateTexImage()
-        lastTimeSpan = surfaceTexture.timestamp.toDouble().nanoseconds.hr
-        onVideoFrame(Frame(nativeImage, lastTimeSpan, frameRate.timeSpan.hr))
+        try {
+            //println("AndroidKorviVideoAndroidMediaPlayer.render! $frameAvailable")
+            lastUpdatedFrame = frameAvailable
+            val surfaceTexture = nativeImage.surfaceTexture
+            surfaceTexture.updateTexImage()
+            lastTimeSpan = surfaceTexture.timestamp.toDouble().nanoseconds.hr
+            onVideoFrame(Frame(nativeImage, lastTimeSpan, frameRate.timeSpan.hr))
+        }
+        catch(e: Exception) {
+            System.err.println(e.message)
+        }
     }
 
     override val running: Boolean get() = player?.isPlaying ?: false
