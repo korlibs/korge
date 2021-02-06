@@ -80,7 +80,19 @@ open class Text(
     private var cachedVersionRenderer = -1
     private var version = 0
 
-    override var text: String = text; set(value) { if (field != value) { field = value; version++ } }
+    var lineCount: Int = 0; private set
+
+    override var text: String = text; set(value) { if (field != value) {
+        field = value;
+        updateLineCount()
+        version++
+    } }
+    private fun updateLineCount() {
+        lineCount = text.count { it == '\n' } + 1
+    }
+    init {
+        updateLineCount()
+    }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
     var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
     var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
@@ -154,7 +166,9 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        if (autoSize) {
+        val font = this.font.getOrNull()
+        // @TODO: Bounds should be consistent with BitmapFont
+        if (autoSize && font !is BitmapFont) {
             super.getLocalBoundsInternal(out)
         } else {
             out.copyFrom(_textBounds)
@@ -170,6 +184,8 @@ open class Text(
     }
 
     private val tempBmpEntry = Text2TextRendererActions.Entry()
+    private val fontMetrics = FontMetrics()
+    private val textMetrics = TextMetrics()
 
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
@@ -186,8 +202,16 @@ open class Text(
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
             _textBounds.copyFrom(metrics.bounds)
+            _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
+            _textBounds.x = when (alignment.horizontal) {
+                else -> -_textBounds.width * alignment.horizontal.ratioFake + metrics.left
+            }
+            _textBounds.y = when (alignment.vertical) {
+                VerticalAlign.BASELINE -> -metrics.drawTop
+                else -> -_textBounds.height * alignment.vertical.ratioFake
+            }
         }
 
         when (font) {
@@ -255,8 +279,9 @@ open class Text(
                         imagesToRemove.add(_staticImage!!.bitmap.bmp)
                         _staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
-                    _staticImage!!.scale(1.0 / autoscaling.renderedAtScaleXY, 1.0 / autoscaling.renderedAtScaleXY)
-                    setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
+                    val mscale = 1.0 / autoscaling.renderedAtScaleXY
+                    _staticImage!!.scale(mscale, mscale)
+                    setContainerPosition(x * mscale, y * mscale, font.getFontMetrics(fontSize, fontMetrics).baseline)
                 }
                 _staticImage?.smoothing = smoothing
             }
