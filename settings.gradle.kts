@@ -55,6 +55,8 @@ include(":korge-swf")
 include(":korge-intellij-plugin")
 include(":korge-gradle-plugin")
 
+enableFeaturePreview("GRADLE_METADATA")
+
 /*
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
     if (File(sample, "build.gradle.kts").exists() || File(sample, "build.gradle").exists()) {

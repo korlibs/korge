@@ -1,8 +1,20 @@
 val coroutinesVersion: String by project
 
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+            }
+        }
+    }
+}
 dependencies {
 	add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-	add("commonMainApi", project(":klock"))
+    add("jsMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutinesVersion")
+    //add("mingwX64MainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core-mingwx64:$coroutinesVersion")
+
+    add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
     add("commonMainApi", project(":krypto"))

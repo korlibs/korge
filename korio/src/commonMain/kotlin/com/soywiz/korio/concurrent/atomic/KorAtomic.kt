@@ -7,6 +7,11 @@ expect fun korAtomic(initial: Boolean): KorAtomicBoolean
 expect fun korAtomic(initial: Int): KorAtomicInt
 expect fun korAtomic(initial: Long): KorAtomicLong
 
+fun <T> KorAtomicRef(initial: T): KorAtomicRef<T> = korAtomic(initial)
+fun KorAtomicBoolean(initial: Boolean): KorAtomicBoolean = korAtomic(initial)
+fun KorAtomicInt(initial: Int): KorAtomicInt = korAtomic(initial)
+fun KorAtomicLong(initial: Long): KorAtomicLong = korAtomic(initial)
+
 //fun <T> korAtomic(initial: T): KorAtomicRef<T> = KorAtomicRef(initial)
 //fun korAtomic(initial: Boolean): KorAtomicBoolean = KorAtomicBoolean(initial)
 //fun korAtomic(initial: Int): KorAtomicInt = KorAtomicInt(initial)
@@ -21,7 +26,7 @@ interface KorAtomicNumber<T : Number> : KorAtomicBase<T> {
 	fun addAndGet(delta: T): T
 }
 
-open class KorAtomicRef<T>(initial: T) : KorAtomicBase<T> {
+open class KorAtomicRef<T> internal constructor(initial: T, dummy: Boolean) : KorAtomicBase<T> {
 	override var value: T = initial
 
 	override fun compareAndSet(expect: T, update: T): Boolean {
@@ -34,7 +39,7 @@ open class KorAtomicRef<T>(initial: T) : KorAtomicBase<T> {
 	}
 }
 
-open class KorAtomicBoolean(initial: Boolean) : KorAtomicBase<Boolean> {
+open class KorAtomicBoolean internal constructor(initial: Boolean, dummy: Boolean) : KorAtomicBase<Boolean> {
 	override var value: Boolean = initial
 
 	override fun compareAndSet(expect: Boolean, update: Boolean): Boolean {
@@ -47,7 +52,7 @@ open class KorAtomicBoolean(initial: Boolean) : KorAtomicBase<Boolean> {
 	}
 }
 
-open class KorAtomicInt(initial: Int) : KorAtomicNumber<Int> {
+open class KorAtomicInt internal constructor(initial: Int, dummy: Boolean) : KorAtomicNumber<Int> {
 	override var value: Int = initial
 
 	override fun compareAndSet(expect: Int, update: Int): Boolean {
@@ -65,7 +70,7 @@ open class KorAtomicInt(initial: Int) : KorAtomicNumber<Int> {
 	}
 }
 
-open class KorAtomicLong(initial: Long) : KorAtomicNumber<Long> {
+open class KorAtomicLong internal constructor(initial: Long, dummy: Boolean) : KorAtomicNumber<Long> {
 	override var value: Long = initial
 
 	override fun compareAndSet(expect: Long, update: Long): Boolean {
