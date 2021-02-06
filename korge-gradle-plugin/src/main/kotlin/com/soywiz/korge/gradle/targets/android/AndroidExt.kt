@@ -46,24 +46,23 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
         val suffixDebug = if (debug) "Debug" else "Release"
         val installAndroidTask = when {
             direct -> tasks.create("installAndroid$suffixDebug", Task::class.java) { task ->
-                task.group = GROUP_KORGE_INSTALL
                 for (dependsOnTaskNAme in dependsOnList) {
                     task.dependsOn(dependsOnTaskNAme)
                 }
-                task.dependsOn("korgeProcessedResourcesJvmMain")
                 task.dependsOn("install$suffixDebug")
             }
             else -> tasks.create("installAndroid$suffixDebug", GradleBuild::class.java) { task ->
-                task.group = GROUP_KORGE_INSTALL
                 for (dependsOnTaskNAme in dependsOnList) {
                     task.dependsOn(dependsOnTaskNAme)
                 }
-                task.dependsOn("korgeProcessedResourcesJvmMain")
                 task.buildFile = File(buildDir, "platforms/android/build.gradle")
                 //task.versi = "4.10.1"
                 task.tasks = listOf("install$suffixDebug")
             }
         }
+        installAndroidTask.group = GROUP_KORGE_INSTALL
+        installAndroidTask.dependsOn("korgeProcessedResourcesJvmMain")
+        installAndroidTask.dependsOn("korgeProcessedResourcesMetadataMain")
 
         for (emulator in listOf(null, false, true)) {
             val suffixDevice = when (emulator) {
