@@ -277,7 +277,10 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     fun exit(): Unit = close()
 
     var running = true; protected set
-    override fun close() = run {
+    private var closing = false
+    override fun close() {
+        if (closing) return
+        closing = true
         running = false
         println("GameWindow.close")
         coroutineDispatcher.close()
