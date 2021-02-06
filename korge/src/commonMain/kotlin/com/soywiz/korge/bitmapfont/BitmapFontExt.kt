@@ -10,7 +10,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-fun Font.getBounds(text: String, format: Html.Format, out: Rectangle) {
+fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle()): Rectangle {
 	//val font = getBitmapFont(format.computedFace, format.computedSize)
 	val font = this
     val textSize = format.computedSize.toDouble()
@@ -39,6 +39,7 @@ fun Font.getBounds(text: String, format: Html.Format, out: Rectangle) {
     //val scale = textSize / font.fontSize.toDouble()
 	//out.setTo(0.0, 0.0, width * scale, height * scale)
     out.setTo(0.0, 0.0, width, height)
+    return out
 }
 
 fun BitmapFont.drawText(
