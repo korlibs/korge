@@ -195,6 +195,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val isMetaDown: Boolean get() = lastEvent.isMetaDown
     val pressing get() = views.input.mouseButtons != 0
 
+    override fun toString(): String = lastEvent.toString()
+
 	@Suppress("DuplicatedCode")
     override fun onMouseEvent(views: Views, event: MouseEvent) {
         this.views = views
