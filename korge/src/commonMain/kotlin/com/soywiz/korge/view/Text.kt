@@ -271,7 +271,7 @@ open class Text(
                     )
 
                     val met = textToBitmapResult.metrics
-                    val x = horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
+                    val x = -horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
                     val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent + met.descent))
                     //val y = textToBitmapResult.metrics.drawTop
 
