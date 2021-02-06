@@ -8,7 +8,11 @@ import com.soywiz.korma.geom.*
 /**
  * Simple [Filter] that draws the texture pixels without any kind of transformation
  */
-object IdentityFilter : Filter {
+open class IdentityFilter(val smoothing: Boolean) : Filter {
+    companion object : IdentityFilter(smoothing = true)
+    object Linear : IdentityFilter(smoothing = true)
+    object Nearest : IdentityFilter(smoothing = false)
+
     override fun render(
         ctx: RenderContext,
         matrix: Matrix,
@@ -22,7 +26,7 @@ object IdentityFilter : Filter {
         ctx.batch.drawQuad(
             texture,
             m = matrix,
-            filtering = true,
+            filtering = smoothing,
             colorAdd = renderColorAdd,
             colorMul = renderColorMul,
             blendFactors = blendMode.factors,
